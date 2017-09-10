@@ -13,6 +13,7 @@ public class RenderingConfig implements ClientRenderingConfig
 {
 	//Open GL limitations
 	public static int gl_MaxTextureUnits;
+	public static int gl_MaxTextureArraySize;
 	public static boolean gl_IsInstancingSupported;
 	public static boolean gl_openGL3Capable = true;
 	public static boolean gl_fbExtCapable = false;

@@ -29,27 +29,20 @@ public class TrianglesClipper
 		toClipSpace = new Matrix4f(rotationMatrix);
 		toClipSpace.translate(new Vector3f((float)originPosition.x(), (float)originPosition.y(), (float)originPosition.z()).negate());
 		
-		
 		Matrix4f resize = new Matrix4f();
 		resize.scale(new Vector3f(1f / (float)size.x(), 1f / (float)size.y(), 1));
 		
 		resize.transpose();
-		//Matrix4f.transpose(resize, resize);
-
 		
 		resize.mul(toClipSpace, toClipSpace);
-		//Matrix4f.mul(resize, toClipSpace, toClipSpace);
 
 		Matrix4f decal = new Matrix4f();
 		decal.translate(new Vector3f(0.5f, 0.5f, 1.0f));
 
 		decal.mul(toClipSpace, toClipSpace);
-		
-		//Matrix4f.mul(decal, toClipSpace, toClipSpace);
 
 		fromClipSpace = new Matrix4f();
 		toClipSpace.invert(fromClipSpace);
-		//fromClipSpace = Matrix4f.invert(toClipSpace, fromClipSpace);
 
 		TrianglesClipper.out = out;
 
@@ -61,7 +54,7 @@ public class TrianglesClipper
 			Vector3f normal = new Vector3f(in.getFloat(), in.getFloat(), in.getFloat());
 			if (normal.dot(direction) >= 0)
 			{
-				for (int i = 0; i < 6; i++)
+				for (int i = 0; i < 12; i++)
 					in.getFloat();
 				continue;
 			}

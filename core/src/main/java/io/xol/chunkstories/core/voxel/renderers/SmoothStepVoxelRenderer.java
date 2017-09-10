@@ -48,9 +48,9 @@ public class SmoothStepVoxelRenderer implements VoxelRenderer {
 		int wy = y + chunk.getChunkY() * 32;
 		int wz = z + chunk.getChunkZ() * 32;
 		
-		int sunlight = 0;//bakingContext.getCurrentVoxelLighter().getSunlightLevelInterpolated(x + 0.5f, y + 0.5f, z + 0.5f);
-		int blockLight = 15;//bakingContext.getCurrentVoxelLighter().getBlocklightLevelInterpolated(x + 0.5f, y + 0.5f, z + 0.5f);
-		int ao = bakingContext.getCurrentVoxelLighter().getAoLevelInterpolated(x + 0.5f, y + 0.5f, z + 0.5f);
+		byte sunlight = 0;//bakingContext.getCurrentVoxelLighter().getSunlightLevelInterpolated(x + 0.5f, y + 0.5f, z + 0.5f);
+		byte blockLight = 15;//bakingContext.getCurrentVoxelLighter().getBlocklightLevelInterpolated(x + 0.5f, y + 0.5f, z + 0.5f);
+		byte ao = bakingContext.getCurrentVoxelLighter().getAoLevelInterpolated(x + 0.5f, y + 0.5f, z + 0.5f);
 		
 		VoxelBakerHighPoly baker = chunkRenderer.getHighpolyBakerFor(LodLevel.ANY, ShadingType.OPAQUE);
 		
@@ -66,9 +66,11 @@ public class SmoothStepVoxelRenderer implements VoxelRenderer {
 		
 		VoxelTexture texture = voxel.getVoxelTexture(voxelInformations.getData(), VoxelSides.TOP, voxelInformations);
 		
-		int offset = texture.getAtlasOffset() / texture.getTextureScale();
-		int textureS = texture.getAtlasS() + (x % texture.getTextureScale()) * offset;
-		int textureT = texture.getAtlasT() + (z % texture.getTextureScale()) * offset;
+		baker.usingTexture(texture);
+		
+		//int offset = texture.getAtlasOffset() / texture.getTextureScale();
+		//int textureS = texture.getAtlasS() + (x % texture.getTextureScale()) * offset;
+		//int textureT = texture.getAtlasT() + (z % texture.getTextureScale()) * offset;
 		
 		final int max_step = 8;
 		int goodID = voxel.getId();
@@ -265,39 +267,45 @@ public class SmoothStepVoxelRenderer implements VoxelRenderer {
 		}*/
 		//float corner11 = VoxelFormat.id(data11) == voxel.getId() ? 1/8f + y + VoxelFormat.meta(data11) / 8f : Math.min(corner10, corner01);
 		
-		baker.addVerticeFloat(x, corner00, z);
-		baker.addTexCoordInt(textureS, textureT);
-		baker.addColors(sunlight, blockLight, ao);
-		baker.addNormalsInt(511, 1023, 511, (byte)0);
+		baker.setNormal(0f, 1f, 0f);
 		
-		baker.addVerticeFloat(x + 1, corner11, z + 1);
-		baker.addTexCoordInt(textureS + offset, textureT + offset);
-		baker.addColors(sunlight, blockLight, ao);
-		baker.addNormalsInt(511, 1023, 511, (byte)0);
+		baker.beginVertex(x, corner00, z);
+		baker.setTextureCoordinates(0, 0);
+		baker.setVoxelLight(sunlight, blockLight, ao);
+		//baker.addNormalsInt(511, 1023, 511, (byte)0);
+		baker.endVertex();
 		
-		baker.addVerticeFloat(x + 1, corner10, z);
-		baker.addTexCoordInt(textureS + offset, textureT);
-		baker.addColors(sunlight, blockLight, ao);
-		baker.addNormalsInt(511, 1023, 511, (byte)0);
+		baker.beginVertex(x + 1, corner11, z + 1);
+		baker.setTextureCoordinates(0 + 1, 0 + 1);
+		baker.setVoxelLight(sunlight, blockLight, ao);
+		//baker.addNormalsInt(511, 1023, 511, (byte)0);
+		baker.endVertex();
+		
+		baker.beginVertex(x + 1, corner10, z);
+		baker.setTextureCoordinates(0 + 1, 0);
+		baker.setVoxelLight(sunlight, blockLight, ao);
+		//baker.addNormalsInt(511, 1023, 511, (byte)0);
+		baker.endVertex();
 		
 		// <- ------------------- ->
 		
-		baker.addVerticeFloat(x, corner01, z + 1);
-		baker.addTexCoordInt(textureS, textureT + offset);
-		baker.addColors(sunlight, blockLight, ao);
-		baker.addNormalsInt(511, 1023, 511, (byte)0);
+		baker.beginVertex(x, corner01, z + 1);
+		baker.setTextureCoordinates(0, 0 + 1);
+		baker.setVoxelLight(sunlight, blockLight, ao);
+		//baker.addNormalsInt(511, 1023, 511, (byte)0);
+		baker.endVertex();
 		
-		baker.addVerticeFloat(x + 1, corner11, z + 1);
-		baker.addTexCoordInt(textureS + offset, textureT + offset);
-		baker.addColors(sunlight, blockLight, ao);
-		baker.addNormalsInt(511, 1023, 511, (byte)0);
+		baker.beginVertex(x + 1, corner11, z + 1);
+		baker.setTextureCoordinates(0 + 1, 0 + 1);
+		baker.setVoxelLight(sunlight, blockLight, ao);
+		//baker.addNormalsInt(511, 1023, 511, (byte)0);
+		baker.endVertex();
 		
-		baker.addVerticeFloat(x, corner00, z);
-		baker.addTexCoordInt(textureS, textureT);
-		baker.addColors(sunlight, blockLight, ao);
-		baker.addNormalsInt(511, 1023, 511, (byte)0);
-		
-		
+		baker.beginVertex(x, corner00, z);
+		baker.setTextureCoordinates(0, 0);
+		baker.setVoxelLight(sunlight, blockLight, ao);
+		//baker.addNormalsInt(511, 1023, 511, (byte)0);
+		baker.endVertex();
 		
 		return 6;
 	}

@@ -5,15 +5,20 @@ package io.xol.engine.base;
 // http://xol.io
 
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL12.*;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.opengl.GL15.*;
+import static org.lwjgl.opengl.GL13.*;
 
 import static org.lwjgl.glfw.GLFW.*;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -25,12 +30,16 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 
+import org.lwjgl.BufferUtils;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GLCapabilities;
 import org.lwjgl.system.MemoryUtil;
 
+import de.matthiasmann.twl.utils.PNGDecoder;
+import de.matthiasmann.twl.utils.PNGDecoder.Format;
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.rendering.GameWindow;
@@ -92,15 +101,18 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 	
 	//GLFW
 	public long glfwWindowHandle;
+	@SuppressWarnings("unused")
 	private GLFWFramebufferSizeCallback framebufferSizeCallback;
 
-	public GameWindowOpenGL_LWJGL3(Client client, String name, int width, int height)
+	private BusyMainThreadLoop pleaseWait = null;
+	protected GLCapabilities capabilities;
+	
+	public GameWindowOpenGL_LWJGL3(Client client, String name)
 	{
-		// Creates Input manager
 		this.windowName = name;
 		this.client = client;
 		
-		instance = this;//TODO: no
+		instance = this;
 		
 		// Load natives for LWJGL
 		// NativesLoader.load();
@@ -110,10 +122,8 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 		
 		createOpenGLContext();
 
-		this.soundManager = new ALSoundManager();
-		this.inputsManager = new Lwjgl3ClientInputsManager(this);
-
 		mainGLThreadId = Thread.currentThread().getId();
+		//pleaseWait = new BusyMainThreadLoop(this);
 	}
 
 	private void createOpenGLContext()
@@ -124,8 +134,11 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 			computeDisplayModes();
 		
 			glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
+			
+			//We want anything above 3.3
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+			glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); 
 			
 			glfwWindowHandle = glfwCreateWindow(windowWidth, windowHeight, windowName, 0, 0);
@@ -134,13 +147,19 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 			    throw new RuntimeException("Failed to create window");
 			
 			glfwMakeContextCurrent(glfwWindowHandle);
-			GL.createCapabilities();
+			capabilities = GL.createCapabilities();
 
 			systemInfo();
 			glInfo();
 			
 			switchResolution();
 			glfwShowWindow(glfwWindowHandle);
+			
+			//Oops.. Didn't use any VAOs anywhere so we put this there to be GL 3.2 core compliant
+			int vao = glGenVertexArrays();
+			glBindVertexArray(vao);
+			
+			//displaySplashScreen();
 			
 			//Keyboard.enableRepeatEvents(true);
 
@@ -154,12 +173,113 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 		}
 	}
 
+	private void displaySplashScreen() throws IOException {
+		int texture = glGenTextures();
+		
+		InputStream is = getClass().getResourceAsStream("/splash.png");
+		PNGDecoder decoder = new PNGDecoder(is);
+		int width = decoder.getWidth();
+		int height = decoder.getHeight();
+		ByteBuffer temp = ByteBuffer.allocateDirect(4 * width * height);
+		decoder.decode(temp, width * 4, Format.RGBA);
+		is.close();
+		
+		//ChunkStoriesLogger.getInstance().log("decoded " + width + " by " + height + " pixels (" + name + ")", ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.DEBUG);
+		temp.flip();
+		
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, (ByteBuffer) temp);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		
+		int shaderProgramId = glCreateProgram();
+		int vertexShaderId = glCreateShader(GL_VERTEX_SHADER);
+		int fragShaderId = glCreateShader(GL_FRAGMENT_SHADER);
+		
+		String vertexSource = "#version 330\n\n\nin vec3 vertexIn;\nout vec2 texCoord;\nuniform float ratio;\n\nvoid main()\n{\ngl_Position = vec4(vertexIn.x*ratio, vertexIn.y, 0.0, 1.0);\ntexCoord = vertexIn.xy*0.5+0.5;\n}";
+		String fragSource = "#version 330\nuniform sampler2D diffuseTexture;\n\nin vec2 texCoord;\nout vec4 fragColor;\n\nvoid main()\n{\nfragColor = texture(diffuseTexture, vec2(texCoord.x, 1.0-texCoord.y));\n}\n";
+		
+		//System.out.println(vertexSource);
+		//System.out.println(fragSource);
+		
+		glShaderSource(vertexShaderId, vertexSource);
+		glCompileShader(vertexShaderId);
+
+		glBindFragDataLocation(shaderProgramId, 0, "fragColor");
+		
+		glShaderSource(fragShaderId, fragSource);
+		glCompileShader(fragShaderId);
+		
+		glAttachShader(shaderProgramId, vertexShaderId);
+		glAttachShader(shaderProgramId, fragShaderId);
+
+		glLinkProgram(shaderProgramId);
+		glUseProgram(shaderProgramId);
+
+		int uniformLocation = glGetUniformLocation(shaderProgramId, "diffuseTexture");
+		//glUniform2f(uniformLocation, ((Vector2fc)uniformData).x(), ((Vector2fc)uniformData).y());
+		glUniform1i(uniformLocation, (Integer)0);
+		
+		float ratio = (float)windowHeight / windowWidth;
+		uniformLocation = glGetUniformLocation(shaderProgramId, "ratio");
+		glUniform1f(uniformLocation, ratio);
+		
+		glValidateProgram(shaderProgramId);
+		
+		FloatBuffer fsQuadBuffer = BufferUtils.createFloatBuffer(6 * 2);
+		fsQuadBuffer.put(new float[] { 1f, 1f, -1f, -1f, 1f, -1f, 1f, 1f, -1f, 1f, -1f, -1f });
+		fsQuadBuffer.flip();
+		
+		int vertexBuffer = glGenBuffers();
+		glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+		glBufferData(GL_ARRAY_BUFFER, (FloatBuffer) fsQuadBuffer, GL_STATIC_DRAW);
+		
+		int location = glGetAttribLocation(shaderProgramId, "vertexIn");
+		glEnableVertexAttribArray(location);
+		glVertexAttribPointer(location, 2, GL_FLOAT, false, 0, 0L);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		
+		//while(1 - Math.floor(1) == 0 && !glfwWindowShouldClose(glfwWindowHandle))
+		{
+
+			glClearColor(0.25f, 0.25f, 0.25f, 1f);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+			//Draw happens here
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+			
+			glfwSwapBuffers(glfwWindowHandle);
+			
+			glfwPollEvents();
+		}
+
+		glDisable(GL_BLEND);
+		glDisableVertexAttribArray(location);
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glDeleteBuffers(vertexBuffer);
+		
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glDeleteTextures(texture);
+		
+		glUseProgram(0);
+		glDeleteProgram(shaderProgramId);
+		glDeleteShader(vertexShaderId);
+		glDeleteShader(fragShaderId);
+		
+		glClearColor(0.0f, 0.0f, 0.0f, 1f);
+	}
+	
 	private void systemInfo()
 	{
 		// Will print some debug information on the general context
 		ChunkStoriesLoggerImplementation.getInstance().log("Running on " + System.getProperty("os.name"));
 		ChunkStoriesLoggerImplementation.getInstance().log(Runtime.getRuntime().availableProcessors() + " avaible CPU cores");
-		ChunkStoriesLoggerImplementation.getInstance().log("Trying cpu detection : " + CPUModelDetection.detectModel());
+		ChunkStoriesLoggerImplementation.getInstance().log("Trying cpu detection :" + CPUModelDetection.detectModel());
 		long allocatedRam = Runtime.getRuntime().maxMemory();
 		ChunkStoriesLoggerImplementation.getInstance().log("Allocated ram : " + allocatedRam);
 		if (allocatedRam < 1024*1024*1024L)
@@ -170,29 +290,32 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 					+ "\n Use the official launcher to launch the game properly, or add -Xmx1G to the java command.");
 		}
 	}
+	
 
 	private void glInfo()
 	{
 		// Will print some debug information on the openGL context
 		String glVersion = glGetString(GL_VERSION);
-		ChunkStoriesLoggerImplementation.getInstance().log("Render device : " + glGetString(GL_RENDERER) + " made by " + glGetString(GL_VENDOR) + " driver version " + glVersion);
-		// Check OpenGL 3.x capacity
+		ChunkStoriesLoggerImplementation.getInstance().log("Render device :" + glGetString(GL_RENDERER) + " vendor:" + glGetString(GL_VENDOR) + " version:" + glVersion);
+		// Check OpenGL 3.3 capacity
 		glVersion = glVersion.split(" ")[0];
 		float glVersionf = Float.parseFloat(glVersion.split("\\.")[0] + "." + glVersion.split("\\.")[1]);
-		ChunkStoriesLoggerImplementation.getInstance().log("OpenGL VERSION STRING = " + glGetString(GL_VERSION) + " parsed: " + glVersionf);
-		ChunkStoriesLoggerImplementation.getInstance().log("OpenGL Extensions avaible : " + glGetString(GL_EXTENSIONS));
-		if (glVersionf < 3.2f)
+		ChunkStoriesLoggerImplementation.getInstance().log("OpenGL parsed version :" + glGetString(GL_VERSION) + " parsed: " + glVersionf);
+		ChunkStoriesLoggerImplementation.getInstance().log("OpenGL Extensions avaible :" + glGetString(GL_EXTENSIONS));
+		
+		//Kill the game early if not fit
+		if (glVersionf < 3.3f)
 		{
 			RenderingConfig.gl_openGL3Capable = false;
-			if (GL.getCapabilities().GL_EXT_framebuffer_object && GL.getCapabilities().GL_ARB_texture_rg)
+			/*if (GL.getCapabilities().GL_EXT_framebuffer_object && GL.getCapabilities().GL_ARB_texture_rg)
 			{
 				RenderingConfig.gl_fbExtCapable = true;
 				ChunkStoriesLoggerImplementation.getInstance().log("Pre-OpenGL 3.0 Hardware with needed extensions support detected.");
 			}
-			else
+			else*/
 			{
-				// bien le moyen-ï¿½ge ?
-				ChunkStoriesLoggerImplementation.getInstance().log("Pre-OpenGL 3.0 Hardware without needed extensions support detected.");
+				// bien le moyen-âge ?
+				ChunkStoriesLoggerImplementation.getInstance().log("Pre-OpenGL 3.3 Hardware detected.");
 				ChunkStoriesLoggerImplementation.getInstance().log("This game isn't made to run in those conditions, please update your drivers or upgrade your graphics card.");
 				JOptionPane.showMessageDialog(null, "Pre-OpenGL 3.0 Hardware without needed extensions support detected.\n" + "This game isn't made to run in those conditions, please update your drivers or upgrade your graphics card.");
 				// If you feel brave after all
@@ -201,16 +324,23 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 			}
 		}
 		else
-			ChunkStoriesLoggerImplementation.getInstance().log("OpenGL 3.2+ Hardware detected.");
+			ChunkStoriesLoggerImplementation.getInstance().log("OpenGL 3.3+ Hardware detected OK!");
 
 		//Check for various limitations
 		RenderingConfig.gl_MaxTextureUnits = glGetInteger(GL_MAX_TEXTURE_IMAGE_UNITS);
+		RenderingConfig.gl_MaxTextureArraySize = glGetInteger(GL_MAX_ARRAY_TEXTURE_LAYERS);
 		
 		RenderingConfig.gl_IsInstancingSupported = GL.getCapabilities().GL_ARB_draw_instanced;
 		RenderingConfig.gl_InstancedArrays = GL.getCapabilities().GL_ARB_instanced_arrays;
-
 	}
 
+	public void stage_2_init() {
+		//pleaseWait.takeControl();
+		
+		this.soundManager = new ALSoundManager();
+		this.inputsManager = new Lwjgl3ClientInputsManager(this);
+	}
+	
 	public void run()
 	{
 		try
@@ -218,9 +348,23 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 			//Client.onStart();
 			IconLoader.load(this);
 
-			//Oops.. Didn't use any VAOs anywhere so we put this there to be GL 3.2 core compliant
-			int vao = glGenVertexArrays();
-			glBindVertexArray(vao);
+			//Resize window logic
+			glfwSetFramebufferSizeCallback(glfwWindowHandle, (framebufferSizeCallback = new GLFWFramebufferSizeCallback() {
+			    @Override
+			    public void invoke(long window, int width, int height) {
+			    	
+			    	windowWidth = width;
+					windowHeight = height;
+
+					glViewport(0, 0, width, height);
+
+					Layer layer = GameWindowOpenGL_LWJGL3.this.layer;
+					while (layer != null) {
+						layer.onResize(width, height);
+						layer = layer.getParentLayer();
+					}
+			    }
+			}));
 			
 			while (glfwWindowShouldClose(glfwWindowHandle) == false && !closeRequest)
 			{
@@ -230,24 +374,6 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 
 				//Clear windows
 				renderingContext.getRenderTargetManager().clearBoundRenderTargetAll();
-
-				//Resize window logic
-				glfwSetFramebufferSizeCallback(glfwWindowHandle, (framebufferSizeCallback = new GLFWFramebufferSizeCallback() {
-				    @Override
-				    public void invoke(long window, int width, int height) {
-				    	
-				    	windowWidth = width;
-						windowHeight = height;
-
-						glViewport(0, 0, width, height);
-
-						Layer layer = GameWindowOpenGL_LWJGL3.this.layer;
-						while (layer != null) {
-							layer.onResize(width, height);
-							layer = layer.getParentLayer();
-						}
-				    }
-				}));
 
 				//Do scene changes etc
 				Iterator<SynchronousTask> is = mainThreadQueue.iterator();

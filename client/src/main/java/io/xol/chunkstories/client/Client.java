@@ -39,6 +39,7 @@ import io.xol.chunkstories.gui.overlays.ingame.InventoryOverlay;
 import io.xol.chunkstories.input.lwjgl3.Lwjgl3ClientInputsManager;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.chunkstories.tools.DebugProfiler;
+import io.xol.chunkstories.voxels.textures.VoxelTexturesArrays;
 import io.xol.chunkstories.world.WorldClientCommon;
 
 public class Client implements ClientInterface
@@ -75,15 +76,11 @@ public class Client implements ClientInterface
 		String modsStringArgument = null;
 		for (String s : args) // Debug arguments
 		{
-			if (s.equals("-oldgl"))
-			{
-				RenderingConfig.gl_openGL3Capable = false;
-				System.out.println("Legacy OpenGL mode enabled");
-			}
-			else if (s.equals("-forceobsolete"))
+			if (s.equals("-forceobsolete"))
 			{
 				RenderingConfig.ignoreObsoleteHardware = false;
-				System.out.println("Legacy OpenGL mode enabled");
+				System.out.println("Ignoring OpenGL detection. This is absolutely definitely not going to make the game run, proceed at your own risk of imminent failure."
+						+ "You are stripped of any tech support rights when running the game using this.");
 			}
 			else if (s.contains("--mods"))
 			{
@@ -102,9 +99,8 @@ public class Client implements ClientInterface
 				else
 					helpText += "Unrecognized command: "+s + "\n";
 				
-				helpText += "-oldgl Disables OpenGL 3.0+ stuff\n";
-				helpText += "-forceobsolete Forces the game to run even if requirements aren't met\n";
-				helpText +=  "-mods=xxx,yyy | -mods=* Tells the game to start with those mods enabled\n";
+				helpText += "-forceobsolete Forces the game to run even if requirements aren't met. !NO SUPPORT! \n";
+				helpText += "-mods=xxx,yyy | -mods=* Tells the game to start with those mods enabled\n";
 				helpText += "-dir=whatever Tells the game not to look for .chunkstories at it's normal location and instead use the argument";
 			
 				System.out.println(helpText);
@@ -126,7 +122,7 @@ public class Client implements ClientInterface
 		Thread.currentThread().setName("Main OpenGL Rendering thread");
 		Thread.currentThread().setPriority(Constants.MAIN_GL_THREAD_PRIORITY);
 		
-		// Start logs
+		// Start logging system
 		Calendar cal = Calendar.getInstance();
 		SimpleDateFormat sdf = new SimpleDateFormat("YYYY.MM.dd HH.mm.ss");
 		String time = sdf.format(cal.getTime());
@@ -135,18 +131,22 @@ public class Client implements ClientInterface
 		//Get configuration right
 		clientConfig = new ConfigFile("./config/client.cfg");
 		
+		// Creates game window, no use of any user content up to this point
+		gameWindow = new GameWindowOpenGL_LWJGL3(this, "Chunk Stories " + VersionInfo.version);
+		RenderingConfig.define();
+		
 		// Create game content manager
 		gameContent = new ClientGameContent(this, modsStringArgument);
 		gameContent.reload();
+
+		//new VoxelTexturesArrays(gameContent.voxels());
+		
+		gameWindow.stage_2_init();
 		
 		//Load the correct language
 		String lang = clientConfig.getString("language", "undefined");
 		if(!lang.equals("undefined"))
 			gameContent.localization().loadTranslation(lang);
-		
-		// Creates game window
-		gameWindow = new GameWindowOpenGL_LWJGL3(this, "Chunk Stories " + VersionInfo.version, -1, -1);
-		RenderingConfig.define();
 
 		//Initlializes windows screen to main menu ( and ask for login )
 		gameWindow.setLayer(new LoginOverlay(gameWindow, new MainMenu(gameWindow)));

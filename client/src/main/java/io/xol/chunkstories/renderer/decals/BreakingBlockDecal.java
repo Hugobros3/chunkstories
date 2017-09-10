@@ -7,6 +7,7 @@ import org.joml.Vector3f;
 import org.lwjgl.system.MemoryUtil;
 
 import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.client.ClientContent;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
@@ -20,10 +21,11 @@ import io.xol.chunkstories.api.voxel.models.ChunkRenderer;
 import io.xol.chunkstories.api.voxel.models.VoxelBakerCubic;
 import io.xol.chunkstories.api.voxel.models.VoxelBakerHighPoly;
 import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
+import io.xol.chunkstories.api.voxel.models.layout.IntricateLayoutBaker;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.LodLevel;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
-import io.xol.chunkstories.api.voxel.models.ChunkRenderer.ChunkRenderContext.VoxelLighter;
 import io.xol.chunkstories.api.world.VoxelContext;
+import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.core.item.ItemMiningTool.MiningProgress;
 import io.xol.chunkstories.core.voxel.renderers.DefaultVoxelRenderer;
 import io.xol.engine.base.MemFreeByteBuffer;
@@ -38,10 +40,9 @@ public class BreakingBlockDecal {
 	
 	public BreakingBlockDecal(MiningProgress miningProgress) {
 		this.miningProgress = miningProgress;
-		
 		VoxelContext ctx = miningProgress.loc.getWorld().peek(miningProgress.loc);
 		
-		BreakingBlockDecalVoxelBaker bbdvb = new BreakingBlockDecalVoxelBaker(miningProgress.loc);
+		BreakingBlockDecalVoxelBaker bbdvb = new BreakingBlockDecalVoxelBaker(((WorldClient) ctx.getWorld()).getClient().getContent(), null, miningProgress.loc);
 		
 		ChunkRenderer chunkRenderer = new ChunkRenderer() {
 
@@ -184,18 +185,11 @@ public class BreakingBlockDecal {
 		}
 	};
 	
-	class BreakingBlockDecalVoxelBaker implements VoxelBakerHighPoly, VoxelBakerCubic {
+	class BreakingBlockDecalVoxelBaker extends IntricateLayoutBaker implements VoxelBakerCubic {
 
-		Location loc;
-		ArrayList<Float> memesAreMyReality;
-		int cx,cy,cz;
-
-		Vector3f position = new Vector3f();
-		Vector3f positionF = new Vector3f();
-		Vector3f normal = new Vector3f();
-		Vector3f scrap = new Vector3f();
-		
-		BreakingBlockDecalVoxelBaker(Location loc) {
+		protected BreakingBlockDecalVoxelBaker(ClientContent content, ByteBuffer output, Location loc) {
+			super(content, output);
+			
 			memesAreMyReality = memesAreDreams.get();
 			this.loc = loc;
 			
@@ -203,8 +197,36 @@ public class BreakingBlockDecal {
 			cy = (int)Math.floor(loc.y / 32);
 			cz = (int)Math.floor(loc.z / 32);
 		}
+
+		Location loc;
+		ArrayList<Float> memesAreMyReality;
+		int cx,cy,cz;
+
+		Vector3f position = new Vector3f();
+		Vector3f positionF = new Vector3f();
+		Vector3f normal2 = new Vector3f();
+		Vector3f scrap = new Vector3f();
+		
+		/*BreakingBlockDecalVoxelBaker(Location loc) {
+			memesAreMyReality = memesAreDreams.get();
+			this.loc = loc;
+			
+			cx = (int)Math.floor(loc.x / 32);
+			cy = (int)Math.floor(loc.y / 32);
+			cz = (int)Math.floor(loc.z / 32);
+		}*/
 		
 		@Override
+		public void beginVertex(int i0, int i1, int i2) {
+			this.beginVertex((float)i0, (float)i1, (float)i2);
+		}
+		
+		@Override
+		public void beginVertex(float f0, float f1, float f2) {
+			super.beginVertex(f0, f1, f2);
+		}
+		
+		/*@Override
 		public void addTexCoordInt(int i0, int i1) {}
 
 		@Override
@@ -225,25 +247,21 @@ public class BreakingBlockDecal {
 		@Override
 		public void addNormalsInt(int i0, int i1, int i2, byte extra) {
 			//System.out.println(i0 + " " + i1 + " " + i2);
-			normal.set(i0 / 512f - 1.0f, i1 / 512f - 1.0f, i2 / 512f - 1.0f);
-			normal.normalize();
+			normal2.set(i0 / 512f - 1.0f, i1 / 512f - 1.0f, i2 / 512f - 1.0f);
+			normal2.normalize();
 			
 			//System.out.println(normal.x + " " + normal.y + " " + normal.z);
 			
-			scrap.set(normal.z, normal.x, normal.y);
+			scrap.set(normal2.z, normal2.x, normal2.y);
 			
 			float scrapzer = scrap.dot(positionF);
-			/*if(scrapzer < -0.89)
-				scrapzer += 1f;*/
 			memesAreMyReality.add(scrapzer);
 			
 			//System.out.println(scrapzer);
 			
-			scrap.set(normal.y, normal.z, normal.x);
+			scrap.set(normal2.y, normal2.z, normal2.x);
 			
 			scrapzer = scrap.dot(positionF);
-			/*if(scrapzer < -0.89)
-				scrapzer += 1f;*/
 			memesAreMyReality.add(scrapzer);
 		}
 
@@ -273,8 +291,46 @@ public class BreakingBlockDecal {
 			
 			//System.out.println(f0 + cx * 32 + "\\" + loc);
 			
-			/*memesAreMyReality.add((fx + fy - fz) % 1.0f);
-			memesAreMyReality.add((fz + fx - fy) % 1.0f);*/
+			size++;
+		}*/
+		
+		@Override
+		public void endVertex() {
+			float f0 = currentVertex.x;
+			float f1 = currentVertex.y;
+			float f2 = currentVertex.z;
+			
+			memesAreMyReality.add(f0 + cx * 32);
+			memesAreMyReality.add(f1 + cy * 32);
+			memesAreMyReality.add(f2 + cz * 32);
+			
+			position.set(f0 + cx * 32, f1 + cy * 32, f2 + cz * 32);
+			
+			float fx = f0 - (float)loc.x;
+			float fy = f1 - (float)loc.y;
+			float fz = f2 - (float)loc.z;
+			positionF.set(fx, fy, fz);
+			
+			//normal2.set(i0 / 512f - 1.0f, i1 / 512f - 1.0f, i2 / 512f - 1.0f);
+			//normal2.normalize();
+			
+			normal2.set(normal);
+			
+			scrap.set(normal2.z, normal2.x, normal2.y);
+			
+			float scrapzer = scrap.dot(positionF);
+			/*if(scrapzer < -0.89)
+				scrapzer += 1f;*/
+			memesAreMyReality.add(scrapzer);
+			
+			//System.out.println(scrapzer);
+			
+			scrap.set(normal2.y, normal2.z, normal2.x);
+			
+			scrapzer = scrap.dot(positionF);
+			/*if(scrapzer < -0.89)
+				scrapzer += 1f;*/
+			memesAreMyReality.add(scrapzer);
 			
 			size++;
 		}

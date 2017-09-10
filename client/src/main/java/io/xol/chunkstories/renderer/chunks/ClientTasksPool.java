@@ -6,9 +6,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.lwjgl.system.MemoryUtil;
 
 import io.xol.chunkstories.api.rendering.world.ChunkRenderable;
+import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogLevel;
+import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogType;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes;
-import io.xol.chunkstories.api.voxel.models.RenderByteBuffer;
+import io.xol.chunkstories.api.voxel.models.layout.BaseLayoutBaker;
+import io.xol.chunkstories.api.voxel.models.layout.IntricateLayoutBaker;
+import io.xol.chunkstories.api.voxel.models.layout.WholeBlocksLayoutBaker;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.LodLevel;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.VertexLayout;
@@ -130,7 +134,7 @@ public class ClientTasksPool extends TasksPool<Task> implements ChunkMeshesBaker
 			//protected ByteBufferPool buffersPool;
 
 			protected ByteBuffer[][][] byteBuffers;
-			protected RenderByteBuffer[][][] byteBuffersWrappers;
+			protected BaseLayoutBaker[][][] byteBuffersWrappers;
 			
 			protected DefaultVoxelRenderer defaultVoxelRenderer;
 			
@@ -143,7 +147,7 @@ public class ClientTasksPool extends TasksPool<Task> implements ChunkMeshesBaker
 				//buffersPool = new ByteBufferPool(8, 0x800000);
 				
 				byteBuffers = new ByteBuffer[ChunkMeshDataSubtypes.VertexLayout.values().length][ChunkMeshDataSubtypes.LodLevel.values().length][ChunkMeshDataSubtypes.ShadingType.values().length];;
-				byteBuffersWrappers = new RenderByteBuffer[ChunkMeshDataSubtypes.VertexLayout.values().length][ChunkMeshDataSubtypes.LodLevel.values().length][ChunkMeshDataSubtypes.ShadingType.values().length];;
+				byteBuffersWrappers = new BaseLayoutBaker[ChunkMeshDataSubtypes.VertexLayout.values().length][ChunkMeshDataSubtypes.LodLevel.values().length][ChunkMeshDataSubtypes.ShadingType.values().length];;
 				
 				//Allocate dedicated sizes for relevant buffers
 				byteBuffers[VertexLayout.WHOLE_BLOCKS.ordinal()][LodLevel.ANY.ordinal()][ShadingType.OPAQUE.ordinal()] = MemoryUtil.memAlloc(0x800000);//BufferUtils.createByteBuffer(0x800000);
@@ -171,7 +175,18 @@ public class ClientTasksPool extends TasksPool<Task> implements ChunkMeshesBaker
 								System.exit(-1);
 							}
 							
-							byteBuffersWrappers[i][j][k] = new RenderByteBuffer(byteBuffers[i][j][k]);
+							switch(ChunkMeshDataSubtypes.VertexLayout.values()[i]) {
+							case INTRICATE:
+								byteBuffersWrappers[i][j][k] = new IntricateLayoutBaker(world.getClient().getContent(), byteBuffers[i][j][k]);
+								break;
+							case WHOLE_BLOCKS:
+								byteBuffersWrappers[i][j][k] = new WholeBlocksLayoutBaker(world.getClient().getContent(), byteBuffers[i][j][k]);
+								break;
+							default:
+									world.getClient().logger().log("NO SPECIFIC LAYOUT BAKER FOR : " + ChunkMeshDataSubtypes.VertexLayout.values()[i], LogType.INTERNAL, LogLevel.CRITICAL);
+									System.exit(-400);
+							}
+							//byteBuffersWrappers[i][j][k] = new RenderByteBuffer(byteBuffers[i][j][k]);
 						}
 					}
 				}

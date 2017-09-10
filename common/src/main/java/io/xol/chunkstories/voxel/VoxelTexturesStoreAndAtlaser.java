@@ -43,8 +43,8 @@ public class VoxelTexturesStoreAndAtlaser implements ClientContent.ClientVoxels.
 	int uniquesIds = 0;
 	//static Map<String, Vector4f> colors = new HashMap<String, Vector4f>();
 
-	public static int BLOCK_ATLAS_SIZE;
-	public static int BLOCK_ATLAS_FACTOR;
+	private int BLOCK_ATLAS_SIZE;
+	private int BLOCK_ATLAS_FACTOR;
 
 	private final GameContentStore content;
 	private final VoxelsStore voxels;
@@ -75,10 +75,8 @@ public class VoxelTexturesStoreAndAtlaser implements ClientContent.ClientVoxels.
 			// Get all sizes :
 			List<VoxelTextureAtlased> voxelTexturesSortedBySize = new ArrayList<VoxelTextureAtlased>();
 
-			//for (File f : folder.listFiles())
-
+			//First we want to iterate over every file to get an idea of how many textures (and of how many sizes) we are dealing
 			Iterator<AssetHierarchy> allFiles = content.modsManager().getAllUniqueEntries();
-			//Iterator<Entry<String, Deque<File>>> allFiles = GameContent.getAllUniqueEntries();
 			AssetHierarchy entry;
 			Asset f;
 			while (allFiles.hasNext())

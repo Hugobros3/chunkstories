@@ -1,4 +1,4 @@
-package io.xol.chunkstories.renderer.chunks;
+/*package io.xol.chunkstories.renderer.chunks;
 
 import io.xol.chunkstories.Constants;
 import io.xol.chunkstories.renderer.buffers.ByteBufferPool;
@@ -20,7 +20,6 @@ import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.LodLevel;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.VertexLayout;
 import io.xol.chunkstories.api.voxel.models.ChunkRenderer;
-import io.xol.chunkstories.api.voxel.models.RenderByteBuffer;
 import io.xol.chunkstories.api.voxel.models.ChunkRenderer.ChunkRenderContext;
 import io.xol.chunkstories.api.voxel.models.VoxelBakerCubic;
 import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
@@ -115,7 +114,7 @@ public class ChunkMeshesBakerThread extends Thread implements ChunkMeshesBaker
 
 	public void requestChunkRender(ChunkRenderable chunk)
 	{
-		if (!(chunk.isMarkedForReRender() /*|| chunk.needsLightningUpdates()*/) || chunk.isRenderAleadyInProgress())
+		if (!(chunk.isMarkedForReRender() ) || chunk.isRenderAleadyInProgress())
 			return;
 
 		int[] request = new int[] { chunk.getChunkX(), chunk.getChunkY(), chunk.getChunkZ() };
@@ -180,11 +179,6 @@ public class ChunkMeshesBakerThread extends Thread implements ChunkMeshesBaker
 			}
 		}
 	}
-
-	/*public MeshedChunkData getNextRenderedChunkData()
-	{
-		return doneQueue.poll();
-	}*/
 
 	@Override
 	public void run()
@@ -278,9 +272,7 @@ public class ChunkMeshesBakerThread extends Thread implements ChunkMeshesBaker
 							work.markRenderInProgress(false);
 							// If can't do it, reschedule it
 							// System.out.println("Forget about "+task[0]+":"+task[1]+":"+task[2]+", not circled ");
-							/*
-							 * synchronized(todo) { todo.add(task); }
-							 */
+							
 						}
 						work.markRenderInProgress(false);
 					}
@@ -316,13 +308,7 @@ public class ChunkMeshesBakerThread extends Thread implements ChunkMeshesBaker
 			System.out.println("This should not happen when rendering normal blocks and may be caused by a weird or buggy mod.");
 			data = world.getVoxelData(c.getChunkX() * 32 + x, c.getChunkY() * 32 + y, c.getChunkZ() * 32 + z);
 		}
-		/*if (x > 0 && z > 0 && y > 0 && y < 32 && x < 32 && z < 32)
-		{
-			data = c.getDataAt(x, y, z);
-		}
-		else
-			data = Client.world.getDataAt(c.chunkX * 32 + x, c.chunkY * 32 + y, c.chunkZ * 32 + z);
-		*/
+		
 		return data;
 	}
 
@@ -604,17 +590,7 @@ public class ChunkMeshesBakerThread extends Thread implements ChunkMeshesBaker
 				}
 		
 		//Move data in final buffer in correct orders
-		/*rawBlocksBuffer.limit(rawBlocksBuffer.position());
-		rawBlocksBuffer.position(0);
-		byteBuffer.put(rawBlocksBuffer);
-
-		waterBlocksBuffer.limit(waterBlocksBuffer.position());
-		waterBlocksBuffer.position(0);
-		byteBuffer.put(waterBlocksBuffer);
-
-		complexBlocksBuffer.limit(complexBlocksBuffer.position());
-		complexBlocksBuffer.position(0);
-		byteBuffer.put(complexBlocksBuffer);*/
+		
 
 		recyclableByteBufferData.flip();
 		
@@ -975,3 +951,4 @@ public class ChunkMeshesBakerThread extends Thread implements ChunkMeshesBaker
 		return "[ChunkMeshesBaker todoList:"+this.todoQueue.size()+"]";
 	}
 }
+*/

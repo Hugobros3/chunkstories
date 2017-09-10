@@ -95,4 +95,10 @@ public class VoxelTextureAtlased implements VoxelTexture
 	{
 		this.color = color;
 	}
+
+	@Override
+	public int getAnimationFrames() {
+		// TODO Auto-generated method stub
+		return 1;
+	}
 }

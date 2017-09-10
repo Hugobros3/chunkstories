@@ -62,6 +62,8 @@ public class DefaultVoxelRenderer implements VoxelRenderer
 			if (j != 0 || bakingContext.isBackChunkLoaded())
 				addQuadBack(chunk, bakingContext, vbc, i, k, j, vox.getVoxelTexture(src, VoxelSides.BACK, voxelInformations), extraByte);
 		}
+		
+		vbc.reset();
 
 		return 0;
 	}
@@ -122,39 +124,44 @@ public class DefaultVoxelRenderer implements VoxelRenderer
 		// float s = (llMs)/15f;
 		// aoA = aoB = aoC = aoD = new float[]{s,s,s};
 */
+		
+		rbbf.usingTexture(texture);
+		rbbf.setNormal(0f, 1f, 0f);
+		rbbf.setWavyFlag(wavy != 0);
+		
 		int offset = texture.getAtlasOffset() / texture.getTextureScale();
 		int textureS = texture.getAtlasS() + (sx % texture.getTextureScale()) * offset;
 		int textureT = texture.getAtlasT() + (sz % texture.getTextureScale()) * offset;
 		
-		rbbf.addVerticeInt(sx, sy + 1, sz);
-		rbbf.addTexCoordInt(textureS, textureT);
-		rbbf.addColorsAuto(bakingContext.getCurrentVoxelLighter(), Corners.TOP_BACK_LEFT);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, wavy);
+		rbbf.beginVertex(sx, sy + 1, sz);
+		rbbf.setTextureCoordinates(0f, 0f);
+		rbbf.setVoxelLightAuto(bakingContext.getCurrentVoxelLighter(), Corners.TOP_BACK_LEFT);
+		rbbf.endVertex();
 
-		rbbf.addVerticeInt(sx + 1, sy + 1, sz + 1);
-		rbbf.addTexCoordInt(textureS + offset, textureT + offset);
-		rbbf.addColorsAuto(bakingContext.getCurrentVoxelLighter(), Corners.TOP_FRONT_RIGHT);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, wavy);
+		rbbf.beginVertex(sx + 1, sy + 1, sz + 1);
+		rbbf.setTextureCoordinates(1f, 1f);
+		rbbf.setVoxelLightAuto(bakingContext.getCurrentVoxelLighter(), Corners.TOP_FRONT_RIGHT);
+		rbbf.endVertex();
 
-		rbbf.addVerticeInt(sx + 1, sy + 1, sz);
-		rbbf.addTexCoordInt(textureS + offset, textureT);
-		rbbf.addColorsAuto(bakingContext.getCurrentVoxelLighter(), Corners.TOP_BACK_RIGHT);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, wavy);
+		rbbf.beginVertex(sx + 1, sy + 1, sz);
+		rbbf.setTextureCoordinates(1f, 0f);
+		rbbf.setVoxelLightAuto(bakingContext.getCurrentVoxelLighter(), Corners.TOP_BACK_RIGHT);
+		rbbf.endVertex();
 
-		rbbf.addVerticeInt(sx, sy + 1, sz + 1);
-		rbbf.addTexCoordInt(textureS, textureT + offset);
-		rbbf.addColorsAuto(bakingContext.getCurrentVoxelLighter(), Corners.TOP_FRONT_LEFT);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, wavy);
+		rbbf.beginVertex(sx, sy + 1, sz + 1);
+		rbbf.setTextureCoordinates(0f, 1f);
+		rbbf.setVoxelLightAuto(bakingContext.getCurrentVoxelLighter(), Corners.TOP_FRONT_LEFT);
+		rbbf.endVertex();
 
-		rbbf.addVerticeInt(sx + 1, sy + 1, sz + 1);
-		rbbf.addTexCoordInt(textureS + offset, textureT + offset);
-		rbbf.addColorsAuto(bakingContext.getCurrentVoxelLighter(), Corners.TOP_FRONT_RIGHT);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, wavy);
+		rbbf.beginVertex(sx + 1, sy + 1, sz + 1);
+		rbbf.setTextureCoordinates(1f, 1f);
+		rbbf.setVoxelLightAuto(bakingContext.getCurrentVoxelLighter(), Corners.TOP_FRONT_RIGHT);
+		rbbf.endVertex();
 
-		rbbf.addVerticeInt(sx, sy + 1, sz);
-		rbbf.addTexCoordInt(textureS, textureT);
-		rbbf.addColorsAuto(bakingContext.getCurrentVoxelLighter(), Corners.TOP_BACK_LEFT);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, wavy);
+		rbbf.beginVertex(sx, sy + 1, sz);
+		rbbf.setTextureCoordinates(0f, 0f);
+		rbbf.setVoxelLightAuto(bakingContext.getCurrentVoxelLighter(), Corners.TOP_BACK_LEFT);
+		rbbf.endVertex();
 	}
 
 	protected void addQuadBottom(Chunk c, ChunkRenderContext bakingContext, VoxelBakerCubic rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
@@ -195,39 +202,43 @@ public class DefaultVoxelRenderer implements VoxelRenderer
 
 		aoC = bakeLightColors(llEb, llFb, llGb, llMb, llEs, llFs, llGs, llMs);*/
 
+		rbbf.usingTexture(texture);
+		rbbf.setNormal(0f, -1f, 0f);
+		rbbf.setWavyFlag(wavy != 0);
+		
 		int offset = texture.getAtlasOffset() / texture.getTextureScale();
 		int textureS = texture.getAtlasS() + (sx % texture.getTextureScale()) * offset;
 		int textureT = texture.getAtlasT() + (sz % texture.getTextureScale()) * offset;
 
-		rbbf.addVerticeInt(sx + 1, sy, sz);
-		rbbf.addTexCoordInt(textureS, textureT);
-		rbbf.addColorsAuto(bakingContext.getCurrentVoxelLighter(), Corners.BOTTOM_BACK_RIGHT);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, wavy);
+		rbbf.beginVertex(sx + 1, sy, sz);
+		rbbf.setTextureCoordinates(0f, 0f);
+		rbbf.setVoxelLightAuto(bakingContext.getCurrentVoxelLighter(), Corners.BOTTOM_BACK_RIGHT);
+		rbbf.endVertex();
 
-		rbbf.addVerticeInt(sx + 1, sy, sz + 1);
-		rbbf.addTexCoordInt(textureS, textureT + offset);
-		rbbf.addColorsAuto(bakingContext.getCurrentVoxelLighter(), Corners.BOTTOM_FRONT_RIGHT);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, wavy);
+		rbbf.beginVertex(sx + 1, sy, sz + 1);
+		rbbf.setTextureCoordinates(0f, 1f);
+		rbbf.setVoxelLightAuto(bakingContext.getCurrentVoxelLighter(), Corners.BOTTOM_FRONT_RIGHT);
+		rbbf.endVertex();
 
-		rbbf.addVerticeInt(sx, sy, sz);
-		rbbf.addTexCoordInt(textureS + offset, textureT);
-		rbbf.addColorsAuto(bakingContext.getCurrentVoxelLighter(), Corners.BOTTOM_BACK_LEFT);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, wavy);
+		rbbf.beginVertex(sx, sy, sz);
+		rbbf.setTextureCoordinates(1f, 0f);
+		rbbf.setVoxelLightAuto(bakingContext.getCurrentVoxelLighter(), Corners.BOTTOM_BACK_LEFT);
+		rbbf.endVertex();
 
-		rbbf.addVerticeInt(sx, sy, sz);
-		rbbf.addTexCoordInt(textureS + offset, textureT);
-		rbbf.addColorsAuto(bakingContext.getCurrentVoxelLighter(), Corners.BOTTOM_BACK_LEFT);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, wavy);
+		rbbf.beginVertex(sx, sy, sz);
+		rbbf.setTextureCoordinates(1f, 0f);
+		rbbf.setVoxelLightAuto(bakingContext.getCurrentVoxelLighter(), Corners.BOTTOM_BACK_LEFT);
+		rbbf.endVertex();
 
-		rbbf.addVerticeInt(sx + 1, sy, sz + 1);
-		rbbf.addTexCoordInt(textureS, textureT + offset);
-		rbbf.addColorsAuto(bakingContext.getCurrentVoxelLighter(), Corners.BOTTOM_FRONT_RIGHT);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, wavy);
+		rbbf.beginVertex(sx + 1, sy, sz + 1);
+		rbbf.setTextureCoordinates(0f, 1f);
+		rbbf.setVoxelLightAuto(bakingContext.getCurrentVoxelLighter(), Corners.BOTTOM_FRONT_RIGHT);
+		rbbf.endVertex();
 
-		rbbf.addVerticeInt(sx, sy, sz + 1);
-		rbbf.addTexCoordInt(textureS + offset, textureT + offset);
-		rbbf.addColorsAuto(bakingContext.getCurrentVoxelLighter(), Corners.BOTTOM_FRONT_LEFT);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, wavy);
+		rbbf.beginVertex(sx, sy, sz + 1);
+		rbbf.setTextureCoordinates(1f, 1f);
+		rbbf.setVoxelLightAuto(bakingContext.getCurrentVoxelLighter(), Corners.BOTTOM_FRONT_LEFT);
+		rbbf.endVertex();
 	}
 
 	protected void addQuadRight(Chunk c, ChunkRenderContext bakingContext, VoxelBakerCubic rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
@@ -270,39 +281,43 @@ public class DefaultVoxelRenderer implements VoxelRenderer
 
 		aoC = bakeLightColors(llEb, llFb, llGb, llMb, llEs, llFs, llGs, llMs);*/
 
+		rbbf.usingTexture(texture);
+		rbbf.setNormal(1f, 0f, 0f);
+		rbbf.setWavyFlag(wavy != 0);
+		
 		int offset = texture.getAtlasOffset() / texture.getTextureScale();
 		int textureS = texture.getAtlasS() + mod(sz, texture.getTextureScale()) * offset;
 		int textureT = texture.getAtlasT() + mod(-sy, texture.getTextureScale()) * offset;
 
-		rbbf.addVerticeInt(sx + 1, sy + 1, sz);
-		rbbf.addTexCoordInt(textureS + offset, textureT);
-		rbbf.addColorsAuto(bakingContext.getCurrentVoxelLighter(), Corners.TOP_BACK_RIGHT);
-		rbbf.addNormalsInt(1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
+		rbbf.beginVertex(sx + 1, sy + 1, sz);
+		rbbf.setTextureCoordinates(1f, 0f);
+		rbbf.setVoxelLightAuto(bakingContext.getCurrentVoxelLighter(), Corners.TOP_BACK_RIGHT);
+		rbbf.endVertex();
 
-		rbbf.addVerticeInt(sx + 1, sy + 1, sz + 1);
-		rbbf.addTexCoordInt(textureS, textureT);
-		rbbf.addColorsAuto(bakingContext.getCurrentVoxelLighter(), Corners.TOP_FRONT_RIGHT);
-		rbbf.addNormalsInt(1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
+		rbbf.beginVertex(sx + 1, sy + 1, sz + 1);
+		rbbf.setTextureCoordinates(0f, 0f);
+		rbbf.setVoxelLightAuto(bakingContext.getCurrentVoxelLighter(), Corners.TOP_FRONT_RIGHT);
+		rbbf.endVertex();
 
-		rbbf.addVerticeInt(sx + 1, sy - 0, sz);
-		rbbf.addTexCoordInt(textureS + offset, textureT + offset);
-		rbbf.addColorsAuto(bakingContext.getCurrentVoxelLighter(), Corners.BOTTOM_BACK_RIGHT);
-		rbbf.addNormalsInt(1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
+		rbbf.beginVertex(sx + 1, sy - 0, sz);
+		rbbf.setTextureCoordinates(1f, 1f);
+		rbbf.setVoxelLightAuto(bakingContext.getCurrentVoxelLighter(), Corners.BOTTOM_BACK_RIGHT);
+		rbbf.endVertex();
 
-		rbbf.addVerticeInt(sx + 1, sy - 0, sz);
-		rbbf.addTexCoordInt(textureS + offset, textureT + offset);
-		rbbf.addColorsAuto(bakingContext.getCurrentVoxelLighter(), Corners.BOTTOM_BACK_RIGHT);
-		rbbf.addNormalsInt(1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
+		rbbf.beginVertex(sx + 1, sy - 0, sz);
+		rbbf.setTextureCoordinates(1f, 1f);
+		rbbf.setVoxelLightAuto(bakingContext.getCurrentVoxelLighter(), Corners.BOTTOM_BACK_RIGHT);
+		rbbf.endVertex();
 
-		rbbf.addVerticeInt(sx + 1, sy + 1, sz + 1);
-		rbbf.addTexCoordInt(textureS, textureT);
-		rbbf.addColorsAuto(bakingContext.getCurrentVoxelLighter(), Corners.TOP_FRONT_RIGHT);
-		rbbf.addNormalsInt(1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
+		rbbf.beginVertex(sx + 1, sy + 1, sz + 1);
+		rbbf.setTextureCoordinates(0f, 0f);
+		rbbf.setVoxelLightAuto(bakingContext.getCurrentVoxelLighter(), Corners.TOP_FRONT_RIGHT);
+		rbbf.endVertex();
 
-		rbbf.addVerticeInt(sx + 1, sy - 0, sz + 1);
-		rbbf.addTexCoordInt(textureS, textureT + offset);
-		rbbf.addColorsAuto(bakingContext.getCurrentVoxelLighter(), Corners.BOTTOM_FRONT_RIGHT);
-		rbbf.addNormalsInt(1023 /* intifyNormal(1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
+		rbbf.beginVertex(sx + 1, sy - 0, sz + 1);
+		rbbf.setTextureCoordinates(0f, 1f);
+		rbbf.setVoxelLightAuto(bakingContext.getCurrentVoxelLighter(), Corners.BOTTOM_FRONT_RIGHT);
+		rbbf.endVertex();
 	}
 
 	private int mod(int a, int b)
@@ -352,39 +367,43 @@ public class DefaultVoxelRenderer implements VoxelRenderer
 
 		aoC = bakeLightColors(llEb, llFb, llGb, llMb, llEs, llFs, llGs, llMs);*/
 
+		rbbf.usingTexture(texture);
+		rbbf.setNormal(-1f, 0f, 0f);
+		rbbf.setWavyFlag(wavy != 0);
+		
 		int offset = texture.getAtlasOffset() / texture.getTextureScale();
 		int textureS = texture.getAtlasS() + mod(sz, texture.getTextureScale()) * offset;
 		int textureT = texture.getAtlasT() + mod(-sy, texture.getTextureScale()) * offset;
 
-		rbbf.addVerticeInt(sx, sy - 0, sz);
-		rbbf.addTexCoordInt(textureS, textureT + offset);
-		rbbf.addColorsAuto(bakingContext.getCurrentVoxelLighter(), Corners.BOTTOM_BACK_LEFT);
-		rbbf.addNormalsInt(0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
+		rbbf.beginVertex(sx, sy - 0, sz);
+		rbbf.setTextureCoordinates(0f, 1f);
+		rbbf.setVoxelLightAuto(bakingContext.getCurrentVoxelLighter(), Corners.BOTTOM_BACK_LEFT);
+		rbbf.endVertex();
 
-		rbbf.addVerticeInt(sx, sy + 1, sz + 1);
-		rbbf.addTexCoordInt(textureS + offset, textureT);
-		rbbf.addColorsAuto(bakingContext.getCurrentVoxelLighter(), Corners.TOP_FRONT_LEFT);
-		rbbf.addNormalsInt(0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
+		rbbf.beginVertex(sx, sy + 1, sz + 1);
+		rbbf.setTextureCoordinates(1f, 0f);
+		rbbf.setVoxelLightAuto(bakingContext.getCurrentVoxelLighter(), Corners.TOP_FRONT_LEFT);
+		rbbf.endVertex();
 
-		rbbf.addVerticeInt(sx, sy + 1, sz);
-		rbbf.addTexCoordInt(textureS, textureT);
-		rbbf.addColorsAuto(bakingContext.getCurrentVoxelLighter(), Corners.TOP_BACK_LEFT);
-		rbbf.addNormalsInt(0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
+		rbbf.beginVertex(sx, sy + 1, sz);
+		rbbf.setTextureCoordinates(0f, 0f);
+		rbbf.setVoxelLightAuto(bakingContext.getCurrentVoxelLighter(), Corners.TOP_BACK_LEFT);
+		rbbf.endVertex();
 
-		rbbf.addVerticeInt(sx, sy - 0, sz + 1);
-		rbbf.addTexCoordInt(textureS + offset, textureT + offset);
-		rbbf.addColorsAuto(bakingContext.getCurrentVoxelLighter(), Corners.BOTTOM_FRONT_LEFT);
-		rbbf.addNormalsInt(0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
+		rbbf.beginVertex(sx, sy - 0, sz + 1);
+		rbbf.setTextureCoordinates(1f, 1f);
+		rbbf.setVoxelLightAuto(bakingContext.getCurrentVoxelLighter(), Corners.BOTTOM_FRONT_LEFT);
+		rbbf.endVertex();
 
-		rbbf.addVerticeInt(sx, sy + 1, sz + 1);
-		rbbf.addTexCoordInt(textureS + offset, textureT);
-		rbbf.addColorsAuto(bakingContext.getCurrentVoxelLighter(), Corners.TOP_FRONT_LEFT);
-		rbbf.addNormalsInt(0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
+		rbbf.beginVertex(sx, sy + 1, sz + 1);
+		rbbf.setTextureCoordinates(1f, 0f);
+		rbbf.setVoxelLightAuto(bakingContext.getCurrentVoxelLighter(), Corners.TOP_FRONT_LEFT);
+		rbbf.endVertex();
 
-		rbbf.addVerticeInt(sx, sy - 0, sz);
-		rbbf.addTexCoordInt(textureS, textureT + offset);
-		rbbf.addColorsAuto(bakingContext.getCurrentVoxelLighter(), Corners.BOTTOM_BACK_LEFT);
-		rbbf.addNormalsInt(0 /* intifyNormal(-1) */, 511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, wavy);
+		rbbf.beginVertex(sx, sy - 0, sz);
+		rbbf.setTextureCoordinates(0f, 1f);
+		rbbf.setVoxelLightAuto(bakingContext.getCurrentVoxelLighter(), Corners.BOTTOM_BACK_LEFT);
+		rbbf.endVertex();
 
 	}
 
@@ -427,45 +446,51 @@ public class DefaultVoxelRenderer implements VoxelRenderer
 
 		aoC = bakeLightColors(llEb, llFb, llGb, llMb, llEs, llFs, llGs, llMs);*/
 
+		rbbf.usingTexture(texture);
+		rbbf.setNormal(0f, 0f, 1f);
+		rbbf.setWavyFlag(wavy != 0);
+		
 		int offset = texture.getAtlasOffset() / texture.getTextureScale();
 		int textureS = texture.getAtlasS() + mod(sx, texture.getTextureScale()) * offset;
 		int textureT = texture.getAtlasT() + mod(-sy, texture.getTextureScale()) * offset;
 
-		rbbf.addVerticeInt(sx, sy - 0, sz + 1);
-		rbbf.addTexCoordInt(textureS, textureT + offset);
-		rbbf.addColorsAuto(bakingContext.getCurrentVoxelLighter(), Corners.BOTTOM_FRONT_LEFT);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, wavy);
+		rbbf.beginVertex(sx, sy - 0, sz + 1);
+		rbbf.setTextureCoordinates(0f, 1f);
+		rbbf.setVoxelLightAuto(bakingContext.getCurrentVoxelLighter(), Corners.BOTTOM_FRONT_LEFT);
+		rbbf.endVertex();
 
-		rbbf.addVerticeInt(sx + 1, sy + 1, sz + 1);
-		rbbf.addTexCoordInt(textureS + offset, textureT);
-		rbbf.addColorsAuto(bakingContext.getCurrentVoxelLighter(), Corners.TOP_FRONT_RIGHT);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, wavy);
+		rbbf.beginVertex(sx + 1, sy + 1, sz + 1);
+		rbbf.setTextureCoordinates(1f, 0f);
+		rbbf.setVoxelLightAuto(bakingContext.getCurrentVoxelLighter(), Corners.TOP_FRONT_RIGHT);
+		rbbf.endVertex();
 
-		rbbf.addVerticeInt(sx, sy + 1, sz + 1);
-		rbbf.addTexCoordInt(textureS, textureT);
-		rbbf.addColorsAuto(bakingContext.getCurrentVoxelLighter(), Corners.TOP_FRONT_LEFT);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, wavy);
+		rbbf.beginVertex(sx, sy + 1, sz + 1);
+		rbbf.setTextureCoordinates(0f, 0f);
+		rbbf.setVoxelLightAuto(bakingContext.getCurrentVoxelLighter(), Corners.TOP_FRONT_LEFT);
+		rbbf.endVertex();
 
-		rbbf.addVerticeInt(sx + 1, sy - 0, sz + 1);
-		rbbf.addTexCoordInt(textureS + offset, textureT + offset);
-		rbbf.addColorsAuto(bakingContext.getCurrentVoxelLighter(), Corners.BOTTOM_FRONT_RIGHT);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, wavy);
+		rbbf.beginVertex(sx + 1, sy - 0, sz + 1);
+		rbbf.setTextureCoordinates(1f, 1f);
+		rbbf.setVoxelLightAuto(bakingContext.getCurrentVoxelLighter(), Corners.BOTTOM_FRONT_RIGHT);
+		rbbf.endVertex();
 
-		rbbf.addVerticeInt(sx + 1, sy + 1, sz + 1);
-		rbbf.addTexCoordInt(textureS + offset, textureT);
-		rbbf.addColorsAuto(bakingContext.getCurrentVoxelLighter(), Corners.TOP_FRONT_RIGHT);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, wavy);
+		rbbf.beginVertex(sx + 1, sy + 1, sz + 1);
+		rbbf.setTextureCoordinates(1f, 0f);
+		rbbf.setVoxelLightAuto(bakingContext.getCurrentVoxelLighter(), Corners.TOP_FRONT_RIGHT);
+		rbbf.endVertex();
 
-		rbbf.addVerticeInt(sx, sy - 0, sz + 1);
-		rbbf.addTexCoordInt(textureS, textureT + offset);
-		rbbf.addColorsAuto(bakingContext.getCurrentVoxelLighter(), Corners.BOTTOM_FRONT_LEFT);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 1023 /* intifyNormal(1) */, wavy);
+		rbbf.beginVertex(sx, sy - 0, sz + 1);
+		rbbf.setTextureCoordinates(0f, 1f);
+		rbbf.setVoxelLightAuto(bakingContext.getCurrentVoxelLighter(), Corners.BOTTOM_FRONT_LEFT);
+		rbbf.endVertex();
 
 	}
 
 	protected void addQuadBack(Chunk c, ChunkRenderContext bakingContext, VoxelBakerCubic rbbf, int sx, int sy, int sz, VoxelTexture texture, byte wavy)
 	{
 
+		rbbf.usingTexture(texture);
+		
 		/*int llMs = getSunlight(c, sx, sy, sz - 1);
 		int llMb = getBlocklight(c, sx, sy, sz - 1);
 
@@ -503,39 +528,49 @@ public class DefaultVoxelRenderer implements VoxelRenderer
 
 		aoC = bakeLightColors(llEb, llFb, llGb, llMb, llEs, llFs, llGs, llMs);*/
 
+		rbbf.usingTexture(texture);
+		rbbf.setNormal(0f, 0f, -1f);
+		rbbf.setWavyFlag(wavy != 0);
+		
 		int offset = texture.getAtlasOffset() / texture.getTextureScale();
 		int textureS = texture.getAtlasS() + mod(sx, texture.getTextureScale()) * offset;
 		int textureT = texture.getAtlasT() + mod(-sy, texture.getTextureScale()) * offset;
 
-		rbbf.addVerticeInt(sx, sy + 1, sz);
-		rbbf.addTexCoordInt(textureS + offset, textureT);
-		rbbf.addColorsAuto(bakingContext.getCurrentVoxelLighter(), Corners.TOP_BACK_LEFT);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
+		rbbf.beginVertex(sx, sy + 1, sz);
+		rbbf.setTextureCoordinates(1f, 0f);
+		rbbf.setVoxelLightAuto(bakingContext.getCurrentVoxelLighter(), Corners.TOP_BACK_LEFT);
+		//rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
+		rbbf.endVertex();
 
-		rbbf.addVerticeInt(sx + 1, sy + 1, sz);
-		rbbf.addTexCoordInt(textureS, textureT);
-		rbbf.addColorsAuto(bakingContext.getCurrentVoxelLighter(), Corners.TOP_BACK_RIGHT);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
+		rbbf.beginVertex(sx + 1, sy + 1, sz);
+		rbbf.setTextureCoordinates(0f, 0f);
+		rbbf.setVoxelLightAuto(bakingContext.getCurrentVoxelLighter(), Corners.TOP_BACK_RIGHT);
+		//rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
+		rbbf.endVertex();
 
-		rbbf.addVerticeInt(sx, sy - 0, sz);
-		rbbf.addTexCoordInt(textureS + offset, textureT + offset);
-		rbbf.addColorsAuto(bakingContext.getCurrentVoxelLighter(), Corners.BOTTOM_BACK_LEFT);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
+		rbbf.beginVertex(sx, sy - 0, sz);
+		rbbf.setTextureCoordinates(1f, 1f);
+		rbbf.setVoxelLightAuto(bakingContext.getCurrentVoxelLighter(), Corners.BOTTOM_BACK_LEFT);
+		//rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
+		rbbf.endVertex();
 
-		rbbf.addVerticeInt(sx, sy - 0, sz);
-		rbbf.addTexCoordInt(textureS + offset, textureT + offset);
-		rbbf.addColorsAuto(bakingContext.getCurrentVoxelLighter(), Corners.BOTTOM_BACK_LEFT);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
+		rbbf.beginVertex(sx, sy - 0, sz);
+		rbbf.setTextureCoordinates(1f, 1f);
+		rbbf.setVoxelLightAuto(bakingContext.getCurrentVoxelLighter(), Corners.BOTTOM_BACK_LEFT);
+		//rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
+		rbbf.endVertex();
 
-		rbbf.addVerticeInt(sx + 1, sy + 1, sz);
-		rbbf.addTexCoordInt(textureS, textureT);
-		rbbf.addColorsAuto(bakingContext.getCurrentVoxelLighter(), Corners.TOP_BACK_RIGHT);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
+		rbbf.beginVertex(sx + 1, sy + 1, sz);
+		rbbf.setTextureCoordinates(0f, 0f);
+		rbbf.setVoxelLightAuto(bakingContext.getCurrentVoxelLighter(), Corners.TOP_BACK_RIGHT);
+		//rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
+		rbbf.endVertex();
 
-		rbbf.addVerticeInt(sx + 1, sy - 0, sz);
-		rbbf.addTexCoordInt(textureS, textureT + offset);
-		rbbf.addColorsAuto(bakingContext.getCurrentVoxelLighter(), Corners.BOTTOM_BACK_RIGHT);
-		rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
+		rbbf.beginVertex(sx + 1, sy - 0, sz);
+		rbbf.setTextureCoordinates(0f, 1f);
+		rbbf.setVoxelLightAuto(bakingContext.getCurrentVoxelLighter(), Corners.BOTTOM_BACK_RIGHT);
+		//rbbf.addNormalsInt(511 /* intifyNormal(0) */, 511 /* intifyNormal(0) */, 0 /* intifyNormal(-1) */, wavy);
+		rbbf.endVertex();
 	}
 
 	protected boolean shallBuildWallArround(VoxelContext renderInfo, int face)

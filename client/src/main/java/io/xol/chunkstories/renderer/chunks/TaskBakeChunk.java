@@ -187,13 +187,13 @@ public class TaskBakeChunk extends Task {
 			@Override
 			public VoxelBakerHighPoly getHighpolyBakerFor(LodLevel lodLevel, ShadingType renderPass)
 			{
-				return cmd.byteBuffersWrappers[VertexLayout.INTRICATE.ordinal()][lodLevel.ordinal()][renderPass.ordinal()];
+				return (VoxelBakerHighPoly) cmd.byteBuffersWrappers[VertexLayout.INTRICATE.ordinal()][lodLevel.ordinal()][renderPass.ordinal()];
 			}
 
 			@Override
 			public VoxelBakerCubic getLowpolyBakerFor(LodLevel lodLevel, ShadingType renderPass)
 			{
-				return cmd.byteBuffersWrappers[VertexLayout.WHOLE_BLOCKS.ordinal()][lodLevel.ordinal()][renderPass.ordinal()];
+				return (VoxelBakerCubic) cmd.byteBuffersWrappers[VertexLayout.WHOLE_BLOCKS.ordinal()][lodLevel.ordinal()][renderPass.ordinal()];
 			}
 			
 		};

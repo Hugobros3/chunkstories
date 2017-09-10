@@ -66,7 +66,7 @@ public class VoxelModelLoaded implements VoxelRenderer, VoxelModel
 		return name;
 	}
 	
-	public int renderInto(VoxelBakerHighPoly renderByteBuffer,  ChunkRenderContext bakingContext, VoxelContext info, Chunk chunk, int x, int y, int z)
+	public int renderInto(VoxelBakerHighPoly baker, ChunkRenderContext bakingContext, VoxelContext info, Chunk chunk, int x, int y, int z)
 	{
 		//int lightLevelSun = chunk.getSunLight(x, y, z);
 		//int lightLevelVoxel = chunk.getBlockLight(x, y, z);
@@ -81,11 +81,13 @@ public class VoxelModelLoaded implements VoxelRenderer, VoxelModel
 		
 		//Selects an appropriate texture
 		currentVoxelTexture = selectsTextureFromIndex(info, modelTextureIndex);
+		baker.usingTexture(currentVoxelTexture);
+		
 		int maxVertexIndexToUseThisTextureFor = this.texturesOffsets[modelTextureIndex];
 		
 		//Actual coordinates in the Atlas
-		int textureS = currentVoxelTexture.getAtlasS();
-		int textureT = currentVoxelTexture.getAtlasT();
+		//int textureS = currentVoxelTexture.getAtlasS();
+		//int textureT = currentVoxelTexture.getAtlasT();
 
 		//We look the 6 adjacent faces to determine wether or not we should consider them culled
 		Voxel occlusionTestedVoxel;
@@ -121,8 +123,10 @@ public class VoxelModelLoaded implements VoxelRenderer, VoxelModel
 				currentVoxelTexture = selectsTextureFromIndex(info, modelTextureIndex);
 				
 				maxVertexIndexToUseThisTextureFor = this.texturesOffsets[modelTextureIndex];
-				textureS = currentVoxelTexture.getAtlasS();// +mod(sx,texture.textureScale)*offset;
-				textureT = currentVoxelTexture.getAtlasT();// +mod(sz,texture.textureScale)*offset;
+				
+				baker.usingTexture(currentVoxelTexture);
+				//textureS = currentVoxelTexture.getAtlasS();// +mod(sx,texture.textureScale)*offset;
+				//textureT = currentVoxelTexture.getAtlasT();// +mod(sz,texture.textureScale)*offset;
 			}
 			
 			/*
@@ -151,17 +155,25 @@ public class VoxelModelLoaded implements VoxelRenderer, VoxelModel
 			float vertX = this.vertices[i_currentVertex*3+0];
 			float vertY = this.vertices[i_currentVertex*3+1];
 			float vertZ = this.vertices[i_currentVertex*3+2];
-			renderByteBuffer.addVerticeFloat(vertX + x + dx, vertY + y + dy, vertZ + z + dz);
-			renderByteBuffer.addTexCoordInt((int) (textureS + this.texCoords[i_currentVertex*2+0] * currentVoxelTexture.getAtlasOffset()), (int) (textureT + this.texCoords[i_currentVertex*2+1] * currentVoxelTexture.getAtlasOffset()));
+			
+			baker.beginVertex(vertX + x + dx, vertY + y + dy, vertZ + z + dz);
+			//renderByteBuffer.addVerticeFloat(vertX + x + dx, vertY + y + dy, vertZ + z + dz);
+			
+			baker.setTextureCoordinates(this.texCoords[i_currentVertex*2+0], this.texCoords[i_currentVertex*2+1]);
+			//renderByteBuffer.addTexCoordInt((int) (textureS + this.texCoords[i_currentVertex*2+0] * currentVoxelTexture.getAtlasOffset()), (int) (textureT + this.texCoords[i_currentVertex*2+1] * currentVoxelTexture.getAtlasOffset()));
 			
 			byte sunLight, blockLight, ao;
 			sunLight = bakingContext.getCurrentVoxelLighter().getSunlightLevelInterpolated(vertX, vertY, vertZ);
 			blockLight = bakingContext.getCurrentVoxelLighter().getBlocklightLevelInterpolated(vertX, vertY, vertZ);
 			ao = bakingContext.getCurrentVoxelLighter().getAoLevelInterpolated(vertX, vertY, vertZ);
 			
-			renderByteBuffer.addColors(sunLight, blockLight, ao);
-			renderByteBuffer.addNormalsInt(intifyNormal(this.normals[i_currentVertex*3+0]), intifyNormal(this.normals[i_currentVertex*3+1]), intifyNormal(this.normals[i_currentVertex*3+2]), this.extra[i_currentVertex]);
+			baker.setVoxelLight(sunLight, blockLight, ao);
+			//renderByteBuffer.addColors(sunLight, blockLight, ao);
+			
+			baker.setNormal(normals[i_currentVertex*3+0], normals[i_currentVertex*3+1], normals[i_currentVertex*3+2]);
+			//renderByteBuffer.addNormalsInt(intifyNormal(this.normals[i_currentVertex*3+0]), intifyNormal(this.normals[i_currentVertex*3+1]), intifyNormal(this.normals[i_currentVertex*3+2]), this.extra[i_currentVertex]);
 		
+			baker.endVertex();
 			//drewVertices++;
 		}
 		

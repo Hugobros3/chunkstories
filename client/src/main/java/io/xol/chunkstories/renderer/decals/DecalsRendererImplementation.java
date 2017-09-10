@@ -32,7 +32,7 @@ import io.xol.chunkstories.api.voxel.models.VoxelBakerCubic;
 import io.xol.chunkstories.api.voxel.models.VoxelBakerHighPoly;
 import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.api.world.VoxelContext;
-import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.renderer.WorldRendererImplementation;
 import io.xol.chunkstories.voxel.VoxelContextOlder;
@@ -52,8 +52,14 @@ public class DecalsRendererImplementation implements DecalsRenderer
 	Map<Texture2DGL, DecalType> decalsTypes = new HashMap<Texture2DGL, DecalType>();
 	
 	WorldRendererImplementation worldRenderer;
-	World world;
+	WorldClient world;
 
+	public DecalsRendererImplementation(WorldRendererImplementation worldRenderer)
+	{
+		this.worldRenderer = worldRenderer;
+		this.world = worldRenderer.getWorld();
+	}
+	
 	class DecalType {
 		
 		Texture2D texture;
@@ -103,7 +109,7 @@ public class DecalsRendererImplementation implements DecalsRenderer
 			rotationMatrix.setLookAt(new Vector3f(0.0f), lookAt, up);
 			//MatrixHelper.getLookAtMatrix(new Vector3f(0.0f), lookAt, up);
 			
-			DecalsVoxelBaker virtualRenderBytebuffer = new DecalsVoxelBaker(bbuf);
+			DecalsVoxelBaker virtualRenderBytebuffer = new DecalsVoxelBaker(world.getClient().getContent(), bbuf);
 			Vector3d size2 = new Vector3d(size);
 			size2.mul(1.5);
 			size2.add(new Vector3d(0.5));
@@ -294,12 +300,6 @@ public class DecalsRendererImplementation implements DecalsRenderer
 					kount = decalsByteBuffer.capacity() / (4 * (3 + 2));
 			}
 		}
-	}
-	
-	public DecalsRendererImplementation(WorldRendererImplementation worldRenderer)
-	{
-		this.worldRenderer = worldRenderer;
-		this.world = worldRenderer.getWorld();
 	}
 	
 	public void drawDecal(Vector3dc position, Vector3dc orientation, Vector3dc size, String decalName)
