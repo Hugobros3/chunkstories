@@ -126,7 +126,7 @@ public class HashMapWorldRegionsHolder
 		return allRegionsFences;
 	}
 
-	public void clearAll()
+	/*public void clearAll()
 	{
 		Iterator<RegionImplementation> i = regions.values().iterator();
 		RegionImplementation holder;
@@ -139,7 +139,7 @@ public class HashMapWorldRegionsHolder
 			}
 		}
 		regions.clear();
-	}
+	}*/
 
 	public void markChunkForReRender(int chunkX, int chunkY, int chunkZ)
 	{

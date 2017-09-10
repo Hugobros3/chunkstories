@@ -22,13 +22,19 @@ public class RenderableChunk extends CubicChunk implements ChunkRenderable {
 	public RenderableChunk(ChunkHolderImplementation holder, int chunkX, int chunkY, int chunkZ) {
 		super(holder, chunkX, chunkY, chunkZ);
 		
-		this.chunkRenderData = holder.getRegion().getWorld() instanceof WorldClient ? new ChunkRenderDataHolder(this) : null;
+		if(world instanceof WorldClient)
+			this.chunkRenderData = new ChunkRenderDataHolder(this, ((WorldClient)world).getWorldRenderer());
+		else
+			this.chunkRenderData = null;
 	}
 
 	public RenderableChunk(ChunkHolderImplementation holder, int chunkX, int chunkY, int chunkZ, int[] data) {
 		super(holder, chunkX, chunkY, chunkZ, data);
 		
-		this.chunkRenderData = holder.getRegion().getWorld() instanceof WorldClient ? new ChunkRenderDataHolder(this) : null;
+		if(world instanceof WorldClient)
+			this.chunkRenderData = new ChunkRenderDataHolder(this, ((WorldClient)world).getWorldRenderer());
+		else
+			this.chunkRenderData = null;
 	}
 	
 	@Override
@@ -55,11 +61,12 @@ public class RenderableChunk extends CubicChunk implements ChunkRenderable {
 		return !requestable.get();
 	}
 
+	@Override
 	public void destroy()
 	{
 		super.destroy();
 		if(chunkRenderData != null)
-			chunkRenderData.free();
+			chunkRenderData.destroy();
 	}
 
 	@Override

@@ -100,9 +100,11 @@ void main()
 	vertexPassed = vertice.xyz;
 	eyeDirection = vertice.xyz-camPos;
 	
+	<ifdef hqTerrain>
 	if(lodLevel ==0 && maskPresence == 1) {
 		vertice.y -= (1.0 - clamp(length(eyeDirection), 0.0, 512) / 512.0) * 32;
 	}
+	<endif hqTerrain>
 	
 	lightMapCoords = vec2(0.0, sunIntensity);
 	

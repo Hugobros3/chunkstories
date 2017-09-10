@@ -44,13 +44,13 @@ public class DecalsVoxelBaker extends IntricateLayoutBaker implements VoxelBaker
 	@Override
 	public void endVertex() {
 		//We spit out this layout to feed the TrianglesClipper class
-		byteBuffer.putFloat(currentVertex.x);
-		byteBuffer.putFloat(currentVertex.y);
-		byteBuffer.putFloat(currentVertex.z);
+		output.putFloat(currentVertex.x);
+		output.putFloat(currentVertex.y);
+		output.putFloat(currentVertex.z);
 		
-		byteBuffer.putFloat(normal.x);
-		byteBuffer.putFloat(normal.y);
-		byteBuffer.putFloat(normal.z);
+		output.putFloat(normal.x);
+		output.putFloat(normal.y);
+		output.putFloat(normal.z);
 	}
 
 	/*@Override

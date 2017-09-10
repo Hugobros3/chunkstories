@@ -725,8 +725,9 @@ public abstract class WorldImplementation implements World
 	//@Override
 	public void unloadEverything()
 	{
+		throw new UnsupportedOperationException();
 		//TODO exterminate this
-		regions.clearAll();
+		//regions.clearAll();
 		//getRegionSummaries().clearAll();
 	}
 

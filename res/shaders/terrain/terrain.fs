@@ -115,13 +115,13 @@ void main()
 	}
 	
 	//512-voxel types summary... not best
-	//vec4 diffuseColor = texture(blocksTexturesSummary, (float(voxelId))/512.0);
+	vec4 diffuseColor = texture(blocksTexturesSummary, (float(voxelId))/512.0);
 	
-	vec4 diffuseColor = vec4(0.5, float(voxelId) / 50, mod(float(voxelId), 1.0), 1.0);
+	//vec4 diffuseColor = vec4(0.5, float(voxelId) / 50, mod(float(voxelId), 1.0), 1.0);
 	
 	//Apply plants color if alpha is < 1.0
-	//if(diffuseColor.a < 1.0)
-	//	diffuseColor.rgb *= texture(vegetationColorTexture, vertexPassed.xz / vec2(mapSize)).rgb;
+	if(diffuseColor.a < 1.0)
+		diffuseColor.rgb *= texture(vegetationColorTexture, vertexPassed.xz / vec2(mapSize)).rgb;
 	
 	//Apply gamma then
 	diffuseColor.rgb = pow(diffuseColor.rgb, vec3(gamma));
@@ -130,7 +130,7 @@ void main()
 	vec3 normal = normalPassed;
 	
 	//Water case
-	if(voxelId == 128)
+	if(voxelId == 512)
 	{
 		diffuseColor.rgb = pow(vec3(51 / 255.0, 105 / 255.0, 110 / 255.0), vec3(gamma));
 	

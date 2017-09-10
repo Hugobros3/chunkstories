@@ -76,7 +76,7 @@ public class SummaryRegenerator
 							}
 							//System.out.println(world.chunksData.free());
 							world.saveEverything();
-							world.getRegionsHolder().clearAll();
+							//world.getRegionsHolder().clearAll();
 							world.unloadEverything();
 						}
 					}

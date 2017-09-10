@@ -283,7 +283,7 @@ public class DecalsRendererImplementation implements DecalsRenderer
 				int actualCount = 0;
 				
 				actualCount += TrianglesClipper.clipTriangles(bbuf, decalsByteBuffer, rotationMatrix, position, lookAt, size);
-				System.out.println("clipped " + actualCount);
+				//System.out.println("clipped " + actualCount);
 				
 				int p = decalsByteBuffer.position();
 				decalsByteBuffer.rewind();

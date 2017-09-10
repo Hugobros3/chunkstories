@@ -73,10 +73,20 @@ public class TaskBakeChunk extends Task {
 		
 		this.cmd = ((BakeChunkTaskExecutor)taskExecutor).getBuffers();
 		
-		ChunkRenderable work = (ChunkRenderable) world.getChunk(chunk.getChunkX(), chunk.getChunkY(), chunk.getChunkZ());
+		ChunkRenderable chunkWithinWorld = (ChunkRenderable) world.getChunk(chunk.getChunkX(), chunk.getChunkY(), chunk.getChunkZ());
+		
+		if(chunk == null) {
+			throw new RuntimeException("Fuck off no");
+		}
+		
+		//If the chunk was unloaded then replaced with another one
+		/*if(chunkWithinWorld != chunk) {
+			chunk.markRenderInProgress(false);
+			return true;
+		}*/
 		
 		//Second part is most likely redundant
-		if (work != null && (work.isMarkedForReRender() || work.needsLightningUpdates()))
+		if (chunkWithinWorld != null && (chunkWithinWorld.isMarkedForReRender() || chunkWithinWorld.needsLightningUpdates()))
 		{
 			int nearChunks = 0;
 			if (world.isChunkLoaded(chunk.getChunkX() + 1, chunk.getChunkY(), chunk.getChunkZ()))
@@ -92,14 +102,11 @@ public class TaskBakeChunk extends Task {
 			if (world.isChunkLoaded(chunk.getChunkX(), chunk.getChunkY() - 1, chunk.getChunkZ()) || chunk.getChunkY() == 0)
 				nearChunks++;
 
-			if (nearChunks == 6)
-			{
+			if (nearChunks == 6) {
 				//Let task exec
-				//result = task.run(this);
 			}
 			else {
-				//Fast-fail
-
+				//Fail
 				chunk.markRenderInProgress(false);
 				return true;
 			}
@@ -111,37 +118,15 @@ public class TaskBakeChunk extends Task {
 			return true;
 		}
 
-		// Update lightning as well if needed
-		if (chunk == null)
-		{
-			//recyclableByteBuffer.recycle();
-			//buffersPool.releaseByteBuffer(buffer);
-			throw new RuntimeException("Fuck off no");
-			//return false;
-		}
-
 		if (chunk.needRelightning.getAndSet(false))
 			chunk.computeVoxelLightning(true);
-
-		//System.out.println("k");
 
 		// Don't bother
 		if (!chunk.need_render.get())
 		{
-			//recyclableByteBuffer.recycle();
-
 			chunk.markRenderInProgress(false);
 			return true;
 		}
-
-		//RecyclableByteBuffer recyclableByteBuffer = cmd.buffersPool.requestByteBuffer();
-		
-		//TODO only requests a ByteBuffer when it is sure it will actually need one
-		//ByteBuffer recyclableByteBufferData = recyclableByteBuffer.accessByteBuffer();
-		
-		//Wait until we get that
-		//if(recyclableByteBufferData == null)
-		//	return false;
 		
 		long cr_start = System.nanoTime();
 
@@ -261,6 +246,7 @@ public class TaskBakeChunk extends Task {
 		ChunkBakerRenderContext chunkRenderingContext = new ChunkBakerRenderContext(chunk, cx, cy, cz);
 		
 		bakedBlockId = -1;
+		
 		//Render the fucking thing!
 		for (i = 0; i < 32; i++)
 		{
@@ -289,14 +275,11 @@ public class TaskBakeChunk extends Task {
 			}
 		}
 
-		// Prepare output
-		//recyclableByteBufferData.clear();
-
+		//Parse output neatly
 		int[][][] sizes = new int[ChunkMeshDataSubtypes.VertexLayout.values().length][ChunkMeshDataSubtypes.LodLevel.values().length][ChunkMeshDataSubtypes.ShadingType.values().length];;
 		int[][][] offsets = new int[ChunkMeshDataSubtypes.VertexLayout.values().length][ChunkMeshDataSubtypes.LodLevel.values().length][ChunkMeshDataSubtypes.ShadingType.values().length];;
 		
 		int currentOffset = 0;
-
 		
 		//Compute total size
 		int sizeInBytes = 0;
@@ -311,7 +294,9 @@ public class TaskBakeChunk extends Task {
 						final ByteBuffer relevantByteBuffer = cmd.byteBuffers[vertexLayoutIndex][lodLevelIndex][renderPassIndex];
 						sizeInBytes += relevantByteBuffer.position();// / vertexLayout.bytesPerVertex;
 					}
+		
 		ByteBuffer finalData = MemoryUtil.memAlloc(sizeInBytes);
+		MemFreeByteBuffer wrappedBuffer = new MemFreeByteBuffer(finalData);
 		
 		//For EACH section, make offset and shite
 		for(VertexLayout vertexLayout : VertexLayout.values())
@@ -338,32 +323,16 @@ public class TaskBakeChunk extends Task {
 					
 					//System.out.println("Doing chunk "+chunk+" -> "+vertexLayout+":"+lodLevel+":"+renderPass+" ; o="+offsets[vertexLayoutIndex][lodLevelIndex][renderPassIndex]+" s:"+sizes[vertexLayoutIndex][lodLevelIndex][renderPassIndex]);
 				}
-		
-		//Move data in final buffer in correct orders
-		/*rawBlocksBuffer.limit(rawBlocksBuffer.position());
-		rawBlocksBuffer.position(0);
-		byteBuffer.put(rawBlocksBuffer);
-
-		waterBlocksBuffer.limit(waterBlocksBuffer.position());
-		waterBlocksBuffer.position(0);
-		byteBuffer.put(waterBlocksBuffer);
-
-		complexBlocksBuffer.limit(complexBlocksBuffer.position());
-		complexBlocksBuffer.position(0);
-		byteBuffer.put(complexBlocksBuffer);*/
 
 		finalData.flip();
 		
-		VertexBuffer verticesObject = new VertexBufferGL();
-		Fence fence = verticesObject.uploadData(new MemFreeByteBuffer(finalData));
+		//VertexBuffer verticesObject = new VertexBufferGL();
+		//Fence fence = verticesObject.uploadData(wrappedBuffer);
 
-		ChunkMeshDataSections parent = chunk.getChunkRenderData().getData();
-		ChunkMeshDataSections newRenderData = new ChunkMeshDataSections(parent, verticesObject, sizes, offsets);
+		//ChunkMeshDataSections parent = chunk.getChunkRenderData().getRenderData();
+		ChunkMeshDataSections newRenderData = new ChunkMeshDataSections(wrappedBuffer, sizes, offsets);
 		chunk.getChunkRenderData().setData(newRenderData);
 		
-		//chunk.getChunkRenderData().setChunkMeshes(new MeshedChunkData(chunk, recyclableByteBuffer, rawBlocksBuffer.position() / (16), complexBlocksBuffer.position() / (24), waterBlocksBuffer.position() / (24)));
-		//doneQueue.add(new MeshedChunkData(work, buffer, rawBlocksBuffer.position() / (16), complexBlocksBuffer.position() / (24), waterBlocksBuffer.position() / (24)));
-
 		baker.totalChunksRendered.incrementAndGet();
 
 		chunk.need_render.set(false);
@@ -372,7 +341,7 @@ public class TaskBakeChunk extends Task {
 		
 		//Wait until data is actually uploaded to not accidentally OOM while it struggles uploading it
 		if(Client.getInstance().configDeprecated().getBoolean("waitForChunkMeshDataUploadBeforeStartingTheNext", true))
-			fence.traverse();
+			newRenderData.fence.traverse();
 		
 		return true;
 	}

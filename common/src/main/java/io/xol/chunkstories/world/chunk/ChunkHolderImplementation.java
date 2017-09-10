@@ -165,9 +165,11 @@ public class ChunkHolderImplementation implements ChunkHolder
 		if(chunk != null && region.getWorld() instanceof WorldMaster && chunk.unsavedBlockModifications.get() > 0)//chunk.lastModification.get() > chunk.lastModificationSaved.get())
 			compressChunkData();
 
-		//Unlist it
-		if(chunk != null)
+		//Unlist it and destroy it
+		if(chunk != null) {
 			regionLoadedChunks.remove(chunk);
+			chunk.destroy();
+		}
 		
 		//Null-out reference
 		chunk = null;

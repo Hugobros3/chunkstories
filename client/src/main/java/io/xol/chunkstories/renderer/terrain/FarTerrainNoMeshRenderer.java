@@ -41,12 +41,16 @@ public class FarTerrainNoMeshRenderer implements FarTerrainRenderer {
 
 	final WorldRendererImplementation worldRenderer;
 	
+	private VoxelTexturesColours colours;
+	
 	public FarTerrainNoMeshRenderer(WorldRendererImplementation worldRenderer) {
 		this.worldRenderer = worldRenderer;
 		
 		for(int i = 0; i < detailLevels.length; i++) {
 			grids[i] = generateGrid(detailLevels[i]);
 		}
+		
+		colours = new VoxelTexturesColours();
 	}
 	
 	@Override
@@ -131,6 +135,8 @@ public class FarTerrainNoMeshRenderer implements FarTerrainRenderer {
 		
 		renderer.bindArrayTexture("heights", worldRenderer.getSummariesTexturesHolder().getHeightsArrayTexture());
 		renderer.bindArrayTexture("topVoxels", worldRenderer.getSummariesTexturesHolder().getTopVoxelsArrayTexture());
+		
+		renderer.bindTexture1D("blocksTexturesSummary", colours.get());
 
 		//TODO hidden inputs ?
 		

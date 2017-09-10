@@ -1,34 +1,36 @@
 package io.xol.chunkstories.renderer.chunks;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import io.xol.chunkstories.api.rendering.Primitive;
-import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
-import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
-import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.LodLevel;
-import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
-import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.VertexLayout;
+import io.xol.chunkstories.api.rendering.vertex.RecyclableByteBuffer;
+import io.xol.engine.concurrency.SimpleFence;
 
 public class ChunkMeshDataSections
 {
-	private ChunkMeshDataSections parentReference;
-	private AtomicBoolean isDoneUploading = new AtomicBoolean(false);
-	
-	public ChunkMeshDataSections(ChunkMeshDataSections parentReference, VertexBuffer verticesObject, int[][][] vertices_type_size, int[][][] vertices_type_offset)
-	{
-		this.parentReference = parentReference;
-		this.verticesObject = verticesObject;
-		this.vertices_type_size = vertices_type_size;
-		this.vertices_type_offset = vertices_type_offset;
-	}
-	
-	private final VertexBuffer verticesObject;
-	
 	public final int[][][] vertices_type_size;
 	public final int[][][] vertices_type_offset;
 	
-	public boolean isReady()
+	RecyclableByteBuffer dataToUpload;
+	SimpleFence fence = new SimpleFence();
+	
+	public ChunkMeshDataSections(RecyclableByteBuffer dataToUpload, int[][][] vertices_type_size, int[][][] vertices_type_offset)
+	{
+		this.dataToUpload = dataToUpload;
+		this.vertices_type_size = vertices_type_size;
+		this.vertices_type_offset = vertices_type_offset;
+	}
+
+	public void notNeeded() {
+		
+		//Your life was a lie
+		dataToUpload.recycle();
+		
+		fence.signal();
+	}
+	
+	public void consumed() {
+		fence.signal();
+	}
+	
+	/*public boolean isReady()
 	{
 		if(isDoneUploading.get())
 			return true;
@@ -49,17 +51,9 @@ public class ChunkMeshDataSections
 			}
 		}
 		return true;
-	}
+	}*/
 	
-	public int renderSections(RenderingInterface renderingContext, LodLevel lodLevel, ShadingType renderPass)
-	{
-		int total = 0;
-		for(VertexLayout vertexLayout : VertexLayout.values())
-			total += this.renderSection(renderingContext, vertexLayout, lodLevel, renderPass);
-		return total;
-	}
-	
-	public int renderSection(RenderingInterface renderingContext, VertexLayout vertexLayout, LodLevel lodLevel, ShadingType renderPass)
+	/*public int renderSection(RenderingInterface renderingContext, VertexLayout vertexLayout, LodLevel lodLevel, ShadingType renderPass)
 	{
 		//Check size isn't 0
 		int size = vertices_type_size[vertexLayout.ordinal()][lodLevel.ordinal()][renderPass.ordinal()];
@@ -67,7 +61,7 @@ public class ChunkMeshDataSections
 			return 0;
 		
 		//If we aren't ready yet.
-		if(!isReady())
+		/*if(!isReady())
 		{
 			//Check parent reference exists atomically and then go for it
 			ChunkMeshDataSections parent = this.parentReference;
@@ -75,7 +69,7 @@ public class ChunkMeshDataSections
 				return parent.renderSection(renderingContext, vertexLayout, lodLevel, renderPass);
 			
 			return 0;
-		}
+		}*//*
 		
 		int offset = vertices_type_offset[vertexLayout.ordinal()][lodLevel.ordinal()][renderPass.ordinal()];
 		
@@ -101,10 +95,10 @@ public class ChunkMeshDataSections
 		}
 		
 		throw new RuntimeException("Unsupported vertex layout in "+this);
-	}
+	}*/
 	
-	public void destroy()
+	/*public void destroy()
 	{
 		verticesObject.destroy();
-	}
+	}*/
 }

@@ -362,7 +362,8 @@ public class ChunkMeshesRenderer
 					for(int c = centerChunkZ - xz_dimension; c <= centerChunkZ + xz_dimension; c++)
 					{
 						Chunk chunk = world.getChunk(a, b, c);
-						if(chunk != null && (chunk.isAirChunk() || ((RenderableChunk)chunk).getChunkRenderData().getData() != null))
+						//If the chunk is loaded & it either empty or has rendering data, we add it to the mask
+						if(chunk != null && (chunk.isAirChunk() || ((RenderableChunk)chunk).getChunkRenderData().isDataAvailable()))
 						{
 							int dx = a - centerChunkX + xz_dimension;
 							int dy = b - centerChunkY + y_dimension;

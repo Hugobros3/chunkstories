@@ -1,9 +1,21 @@
 package io.xol.chunkstories.renderer.chunks;
 
+import java.util.Iterator;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.WorldRenderer;
+import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
+import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
+import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.LodLevel;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
+import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.VertexLayout;
 import io.xol.chunkstories.world.chunk.CubicChunk;
+import io.xol.engine.concurrency.SimpleFence;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -15,83 +27,44 @@ import io.xol.chunkstories.world.chunk.CubicChunk;
  */
 public class ChunkRenderDataHolder
 {
-	public CubicChunk chunk;
+	private final CubicChunk chunk;
+	private final WorldRenderer worldRenderer;
 	
-	private ChunkMeshDataSections data;
-	/*private VerticesObject verticesObject = new VerticesObject();
+	private ChunkMeshDataSections currentData;
 	
-	public int vboSizeFullBlocks;
-	public int vboSizeWaterBlocks;
-	public int vboSizeCustomBlocks;*/
+	//ConcurrentLinkedDeque<ChunkMeshDataSections> pendingUpload = new ConcurrentLinkedDeque<ChunkMeshDataSections>();
 	
-	public ChunkRenderDataHolder(CubicChunk chunk)
+	boolean isDestroyed = false;
+	
+	private Semaphore noDrawDeleteConflicts = new Semaphore(1);
+	private Semaphore oneUploadAtATime = new Semaphore(1);
+	protected VertexBuffer verticesObject = null;
+	
+	protected ChunkMeshDataSections pleaseUploadMe = null;
+	protected SimpleFence pleaseUploadMeFence = null;
+	
+	public ChunkRenderDataHolder(CubicChunk chunk, WorldRenderer worldRenderer)
 	{
 		this.chunk = chunk;
+		this.worldRenderer = worldRenderer;
 	}
 	
 	/**
 	 * Frees the ressources allocated to this ChunkRenderData
 	 */
-	public void free()
+	public void destroy()
 	{
-		data = null;
+		noDrawDeleteConflicts.acquireUninterruptibly();
+		
+		isDestroyed = true;
+		
+		currentData = null;
 		//Deallocate the VBO
-		//verticesObject.destroy();
+		if(verticesObject != null)
+			verticesObject.destroy();
+		
+		noDrawDeleteConflicts.release();
 	}
-
-	/*public int renderCubeSolidBlocks(RenderingContext renderingContext)
-	{
-		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		if (this.vboSizeFullBlocks > 0)
-		{
-			// We're going back to interlaced format
-			// Raw blocks ( integer faces ) alignment :
-			// Vertex data : [VERTEX_POS(4b)][TEXCOORD(4b)][COLORS(4b)][NORMALS(4b)] Stride 16 bits
-			renderingContext.bindAttribute("vertexIn", verticesObject.asAttributeSource(VertexFormat.UBYTE, 4, 16, 0));
-			renderingContext.bindAttribute("texCoordIn", verticesObject.asAttributeSource(VertexFormat.USHORT, 2, 16, 4));
-			renderingContext.bindAttribute("colorIn", verticesObject.asAttributeSource(VertexFormat.NORMALIZED_UBYTE, 4, 16, 8));
-			renderingContext.bindAttribute("normalIn", verticesObject.asAttributeSource(VertexFormat.U1010102, 4, 16, 12));
-			renderingContext.draw(Primitive.TRIANGLE, 0, vboSizeFullBlocks);
-			return vboSizeFullBlocks;
-		}
-		return 0;
-	}
-	
-	public int renderCustomSolidBlocks(RenderingContext renderingContext)
-	{
-		if (this.vboSizeCustomBlocks > 0)
-		{
-			int dekal = this.vboSizeFullBlocks * 16 + this.vboSizeWaterBlocks * 24;
-			// We're going back to interlaced format
-			// Complex blocks ( integer faces ) alignment :
-			// Vertex data : [VERTEX_POS(12b)][TEXCOORD(4b)][COLORS(4b)][NORMALS(4b)] Stride 24 bits
-			renderingContext.bindAttribute("vertexIn", verticesObject.asAttributeSource(VertexFormat.FLOAT, 3, 24, dekal + 0));
-			renderingContext.bindAttribute("texCoordIn", verticesObject.asAttributeSource(VertexFormat.USHORT, 2, 24, dekal + 12));
-			renderingContext.bindAttribute("colorIn", verticesObject.asAttributeSource(VertexFormat.NORMALIZED_UBYTE, 4, 24, dekal + 16));
-			renderingContext.bindAttribute("normalIn", verticesObject.asAttributeSource(VertexFormat.U1010102, 4, 24, dekal + 20));
-			renderingContext.draw(Primitive.TRIANGLE, 0, vboSizeCustomBlocks);
-			return vboSizeCustomBlocks;
-		}
-		return 0;
-	}
-	
-	public int renderWaterBlocks(RenderingContext renderingContext)
-	{
-		if (this.vboSizeWaterBlocks > 0)
-		{
-			int dekal = this.vboSizeFullBlocks * 16;
-			// We're going back to interlaced format
-			// Complex blocks ( integer faces ) alignment :
-			// Vertex data : [VERTEX_POS(12b)][TEXCOORD(4b)][COLORS(4b)][NORMALS(4b)] Stride 24 bits
-			renderingContext.bindAttribute("vertexIn", verticesObject.asAttributeSource(VertexFormat.FLOAT, 3, 24, dekal + 0));
-			renderingContext.bindAttribute("texCoordIn", verticesObject.asAttributeSource(VertexFormat.USHORT, 2, 24, dekal + 12));
-			renderingContext.bindAttribute("colorIn", verticesObject.asAttributeSource(VertexFormat.NORMALIZED_UBYTE, 4, 24, dekal + 16));
-			renderingContext.bindAttribute("normalIn", verticesObject.asAttributeSource(VertexFormat.U1010102, 4, 24, dekal + 20));
-			renderingContext.draw(Primitive.TRIANGLE, 0, vboSizeWaterBlocks);
-			return vboSizeWaterBlocks;
-		}
-		return 0;
-	}*/
 	
 	/*public void renderChunkBounds(RenderingContext renderingContext)
 	{
@@ -101,32 +74,132 @@ public class ChunkRenderDataHolder
 		SelectionRenderer.cubeVertices(chunk.getChunkX() * 32 + 16, chunk.getChunkY() * 32, chunk.getChunkZ() * 32 + 16, 32, 32, 32);
 	}*/
 
-	public ChunkMeshDataSections getData()
+	public boolean isDataAvailable()
 	{
-		return data;
+		return currentData != null;
 	}
 
-	public void setData(ChunkMeshDataSections data)
+	public void setData(ChunkMeshDataSections newData)
 	{
-		if(data == null)
+		if(newData == null)
 			throw new NullPointerException("setData() requires non-null ata");
-		this.data = data;
+		
+		oneUploadAtATime.acquireUninterruptibly();
+		noDrawDeleteConflicts.acquireUninterruptibly();
+		
+		//Meh that's a waste of time then
+		if(isDestroyed) {
+			noDrawDeleteConflicts.release();
+			oneUploadAtATime.release();
+			newData.notNeeded(); //<-- Free the data
+			return;
+		}
+		
+		//currentData = data;
+		
+		//No verticesObject already created; create one, fill it and then change the bails
+		if(verticesObject == null) {
+			VertexBuffer wip = worldRenderer.getRenderingInterface().newVertexBuffer();
+			Fence fence = wip.uploadData(newData.dataToUpload);
+			
+			//We unlock while waiting for the upload
+			noDrawDeleteConflicts.release();
+			fence.traverse();
+			
+			//Then we lock again
+			noDrawDeleteConflicts.acquireUninterruptibly();
+			verticesObject = wip;
+			currentData = newData;
+			
+			//And we're good !
+		}
+		//Already a VerticesObject present hum, we create another one then delete the old one
+		else {
+			VertexBuffer wip = worldRenderer.getRenderingInterface().newVertexBuffer();
+			Fence fence = wip.uploadData(newData.dataToUpload);
+			
+			//We unlock while waiting for the upload
+			noDrawDeleteConflicts.release();
+			fence.traverse();
+			
+			//Then we lock again
+			noDrawDeleteConflicts.acquireUninterruptibly();
+			
+			//We delete the OLD one
+			verticesObject.destroy();
+			
+			//We swap the new one in
+			verticesObject = wip;
+			currentData = newData;
+		}
+		
+		newData.consumed();
+		
+		noDrawDeleteConflicts.release();
+		oneUploadAtATime.release();
 	}
 
 	public int renderPass(RenderingInterface renderingInterface, RenderLodLevel renderLodLevel, ShadingType shadingType)
 	{
-		ChunkMeshDataSections data = this.data;
-		if(data == null)
+		try {
+			noDrawDeleteConflicts.acquireUninterruptibly();
+			
+			if(currentData == null)
+				return 0;
+			
+			switch(renderLodLevel) {
+			case HIGH:
+				return renderSections(renderingInterface, LodLevel.ANY, shadingType) + renderSections(renderingInterface, LodLevel.HIGH, shadingType);
+			case LOW:
+				return renderSections(renderingInterface, LodLevel.ANY, shadingType) + renderSections(renderingInterface, LodLevel.LOW, shadingType);
+			}
+			
+			throw new RuntimeException("Undefined switch() case for RenderLodLevel "+renderLodLevel);
+		}
+		finally {
+			noDrawDeleteConflicts.release();
+		}
+	}
+	
+	/** Render the lodLevel+shading type combination using any VertexLayout */
+	public int renderSections(RenderingInterface renderingContext, LodLevel lodLevel, ShadingType renderPass)
+	{
+		int total = 0;
+		for(VertexLayout vertexLayout : VertexLayout.values())
+			total += this.renderSection(renderingContext, vertexLayout, lodLevel, renderPass);
+		return total;
+	}
+	
+	public int renderSection(RenderingInterface renderingContext, VertexLayout vertexLayout, LodLevel lodLevel, ShadingType renderPass)
+	{
+		//Check size isn't 0
+		int size = currentData.vertices_type_size[vertexLayout.ordinal()][lodLevel.ordinal()][renderPass.ordinal()];
+		if(size == 0)
 			return 0;
+		int offset = currentData.vertices_type_offset[vertexLayout.ordinal()][lodLevel.ordinal()][renderPass.ordinal()];
 		
-		switch(renderLodLevel) {
-		case HIGH:
-			return data.renderSections(renderingInterface, LodLevel.ANY, shadingType) + data.renderSections(renderingInterface, LodLevel.HIGH, shadingType);
-		case LOW:
-			return data.renderSections(renderingInterface, LodLevel.ANY, shadingType) + data.renderSections(renderingInterface, LodLevel.LOW, shadingType);
+		switch(vertexLayout) {
+		case WHOLE_BLOCKS:
+			// Raw blocks ( integer faces coordinates ) alignment :
+			// Vertex data : [VERTEX_POS(4b)][TEXCOORD(4b)][COLORS(4b)][NORMALS(4b)] Stride 16 bits
+			renderingContext.bindAttribute("vertexIn", verticesObject.asAttributeSource(VertexFormat.UBYTE, 4, 16, offset + 0));
+			renderingContext.bindAttribute("texCoordIn", verticesObject.asAttributeSource(VertexFormat.USHORT, 2, 16, offset + 4));
+			renderingContext.bindAttribute("colorIn", verticesObject.asAttributeSource(VertexFormat.NORMALIZED_UBYTE, 4, 16, offset + 8));
+			renderingContext.bindAttribute("normalIn", verticesObject.asAttributeSource(VertexFormat.U1010102, 4, 16, offset + 12));
+			renderingContext.draw(Primitive.TRIANGLE, 0, size);
+			return size; 
+		case INTRICATE:
+			// Complex blocks ( fp faces coordinates ) alignment :
+			// Vertex data : [VERTEX_POS(12b)][TEXCOORD(4b)][COLORS(4b)][NORMALS(4b)] Stride 24 bits
+			renderingContext.bindAttribute("vertexIn", verticesObject.asAttributeSource(VertexFormat.FLOAT, 3, 24, offset + 0));
+			renderingContext.bindAttribute("texCoordIn", verticesObject.asAttributeSource(VertexFormat.USHORT, 2, 24, offset + 12));
+			renderingContext.bindAttribute("colorIn", verticesObject.asAttributeSource(VertexFormat.NORMALIZED_UBYTE, 4, 24, offset + 16));
+			renderingContext.bindAttribute("normalIn", verticesObject.asAttributeSource(VertexFormat.U1010102, 4, 24, offset + 20));
+			renderingContext.draw(Primitive.TRIANGLE, 0, size);
+			return size;
 		}
 		
-		throw new RuntimeException("Undefined switch() case for RenderLodLevel "+renderLodLevel);
+		throw new RuntimeException("Unsupported vertex layout in "+this);
 	}
 	
 	public enum RenderLodLevel {

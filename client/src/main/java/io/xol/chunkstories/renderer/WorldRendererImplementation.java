@@ -812,4 +812,9 @@ public class WorldRendererImplementation implements WorldRenderer
 	public SummariesTexturesHolder getSummariesTexturesHolder() {
 		return summariesTexturesHolder;
 	}
+
+	@Override
+	public RenderingInterface getRenderingInterface() {
+		return Client.getInstance().getGameWindow().getRenderingContext();
+	}
 }
