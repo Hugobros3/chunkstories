@@ -712,13 +712,6 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 
 	@Override
 	public void setLayer(Layer layer) {
-		
-		System.out.println("Switching to layer "+layer);
-		
-		/*if(this.layer != null && this.layer != layer && this.layer != layer.getParentLayer()) {
-			this.layer.destroy();
-		}*/
-		
 		this.layer = layer;
 		this.client.getInputsManager().getMouse().setGrabbed(false);
 	}

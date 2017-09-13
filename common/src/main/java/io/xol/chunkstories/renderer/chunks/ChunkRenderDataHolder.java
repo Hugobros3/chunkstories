@@ -147,14 +147,16 @@ public class ChunkRenderDataHolder
 			if(currentData == null)
 				return 0;
 			
-			switch(renderLodLevel) {
+			/*switch(renderLodLevel) {
 			case HIGH:
 				return renderSections(renderingInterface, LodLevel.ANY, shadingType) + renderSections(renderingInterface, LodLevel.HIGH, shadingType);
 			case LOW:
 				return renderSections(renderingInterface, LodLevel.ANY, shadingType) + renderSections(renderingInterface, LodLevel.LOW, shadingType);
-			}
+			}*/
 			
-			throw new RuntimeException("Undefined switch() case for RenderLodLevel "+renderLodLevel);
+			return renderSections(renderingInterface, renderLodLevel, shadingType);
+			
+			//throw new RuntimeException("Undefined switch() case for RenderLodLevel "+renderLodLevel);
 		}
 		finally {
 			noDrawDeleteConflicts.release();
@@ -162,21 +164,39 @@ public class ChunkRenderDataHolder
 	}
 	
 	/** Render the lodLevel+shading type combination using any VertexLayout */
-	public int renderSections(RenderingInterface renderingContext, LodLevel lodLevel, ShadingType renderPass)
+	public int renderSections(RenderingInterface renderingContext, RenderLodLevel renderLodLevel, ShadingType renderPass)
 	{
 		int total = 0;
 		for(VertexLayout vertexLayout : VertexLayout.values())
-			total += this.renderSection(renderingContext, vertexLayout, lodLevel, renderPass);
+			total += this.renderSection(renderingContext, vertexLayout, renderLodLevel, renderPass);
 		return total;
 	}
 	
-	public int renderSection(RenderingInterface renderingContext, VertexLayout vertexLayout, LodLevel lodLevel, ShadingType renderPass)
+	int array[] = new int[4];
+	
+	public int renderSection(RenderingInterface renderingContext, VertexLayout vertexLayout, RenderLodLevel renderLodLevel, ShadingType renderPass)
 	{
+		LodLevel any = LodLevel.ANY;
+		LodLevel also = renderLodLevel.equals(RenderLodLevel.HIGH) ? LodLevel.HIGH : LodLevel.LOW; 
+		
 		//Check size isn't 0
-		int size = currentData.vertices_type_size[vertexLayout.ordinal()][lodLevel.ordinal()][renderPass.ordinal()];
-		if(size == 0)
+		int sizeAny = currentData.vertices_type_size[vertexLayout.ordinal()][any.ordinal()][renderPass.ordinal()];
+		int sizeAlso = currentData.vertices_type_size[vertexLayout.ordinal()][also.ordinal()][renderPass.ordinal()];
+		
+		if(sizeAny + sizeAlso == 0)
 			return 0;
-		int offset = currentData.vertices_type_offset[vertexLayout.ordinal()][lodLevel.ordinal()][renderPass.ordinal()];
+		
+		int offsetAny = currentData.vertices_type_offset[vertexLayout.ordinal()][any.ordinal()][renderPass.ordinal()];
+		int offsetAlso = currentData.vertices_type_offset[vertexLayout.ordinal()][also.ordinal()][renderPass.ordinal()];
+
+		int offset = 0;
+		
+		if(offsetAlso < offsetAny)
+			System.out.println("prout.");
+		
+		offset = offsetAny;
+		offsetAny = 0;
+		offsetAlso -= offsetAny;
 		
 		switch(vertexLayout) {
 		case WHOLE_BLOCKS:
@@ -186,8 +206,9 @@ public class ChunkRenderDataHolder
 			renderingContext.bindAttribute("texCoordIn", verticesObject.asAttributeSource(VertexFormat.USHORT, 2, 16, offset + 4));
 			renderingContext.bindAttribute("colorIn", verticesObject.asAttributeSource(VertexFormat.NORMALIZED_UBYTE, 4, 16, offset + 8));
 			renderingContext.bindAttribute("normalIn", verticesObject.asAttributeSource(VertexFormat.U1010102, 4, 16, offset + 12));
-			renderingContext.draw(Primitive.TRIANGLE, 0, size);
-			return size; 
+			//renderingContext.draw(Primitive.TRIANGLE, 0, size);
+			//return size; 
+			break;
 		case INTRICATE:
 			// Complex blocks ( fp faces coordinates ) alignment :
 			// Vertex data : [VERTEX_POS(12b)][TEXCOORD(4b)][COLORS(4b)][NORMALS(4b)] Stride 24 bits
@@ -195,11 +216,31 @@ public class ChunkRenderDataHolder
 			renderingContext.bindAttribute("texCoordIn", verticesObject.asAttributeSource(VertexFormat.USHORT, 2, 24, offset + 12));
 			renderingContext.bindAttribute("colorIn", verticesObject.asAttributeSource(VertexFormat.NORMALIZED_UBYTE, 4, 24, offset + 16));
 			renderingContext.bindAttribute("normalIn", verticesObject.asAttributeSource(VertexFormat.U1010102, 4, 24, offset + 20));
-			renderingContext.draw(Primitive.TRIANGLE, 0, size);
-			return size;
+			//renderingContext.draw(Primitive.TRIANGLE, 0, size);
+			//return size;
+			break;
+		default:
+			throw new RuntimeException("Unsupported vertex layout in "+this);
 		}
 		
-		throw new RuntimeException("Unsupported vertex layout in "+this);
+		if(sizeAlso == 0) {
+			renderingContext.draw(Primitive.TRIANGLE, offsetAny / vertexLayout.bytesPerVertex, sizeAny);
+			return sizeAny;
+		}
+		else if(sizeAny == 0) {
+			renderingContext.draw(Primitive.TRIANGLE, offsetAlso / vertexLayout.bytesPerVertex, sizeAlso);
+			return sizeAlso;
+		}
+		else {
+			array[0] = offsetAny / vertexLayout.bytesPerVertex;
+			array[2] = offsetAlso / vertexLayout.bytesPerVertex;
+			array[1] = sizeAny;
+			array[3] = sizeAlso;
+			renderingContext.drawMany(Primitive.TRIANGLE, array);
+			return sizeAny + sizeAlso;
+		}
+		
+		//throw new RuntimeException("Unsupported vertex layout in "+this);
 	}
 	
 	public enum RenderLodLevel {
