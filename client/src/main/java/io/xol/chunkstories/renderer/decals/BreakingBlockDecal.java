@@ -3,7 +3,9 @@ package io.xol.chunkstories.renderer.decals;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
+import org.joml.Vector3dc;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import org.lwjgl.system.MemoryUtil;
 
 import io.xol.chunkstories.api.Location;
@@ -21,7 +23,7 @@ import io.xol.chunkstories.api.voxel.models.ChunkRenderer;
 import io.xol.chunkstories.api.voxel.models.VoxelBakerCubic;
 import io.xol.chunkstories.api.voxel.models.VoxelBakerHighPoly;
 import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
-import io.xol.chunkstories.api.voxel.models.layout.IntricateLayoutBaker;
+import io.xol.chunkstories.api.voxel.models.layout.BaseLayoutBaker;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.LodLevel;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
 import io.xol.chunkstories.api.world.VoxelContext;
@@ -42,7 +44,7 @@ public class BreakingBlockDecal {
 		this.miningProgress = miningProgress;
 		VoxelContext ctx = miningProgress.loc.getWorld().peek(miningProgress.loc);
 		
-		BreakingBlockDecalVoxelBaker bbdvb = new BreakingBlockDecalVoxelBaker(((WorldClient) ctx.getWorld()).getClient().getContent(), null, miningProgress.loc);
+		BreakingBlockDecalVoxelBaker bbdvb = new BreakingBlockDecalVoxelBaker(((WorldClient) ctx.getWorld()).getClient().getContent(), miningProgress.loc);
 		
 		ChunkRenderer chunkRenderer = new ChunkRenderer() {
 
@@ -167,7 +169,7 @@ public class BreakingBlockDecal {
 		//System.out.println(ctx.getVoxel().getVoxelRenderer(ctx));
 		VoxelRenderer voxelRenderer = ctx.getVoxelRenderer();
 		if(voxelRenderer == null) {
-			voxelRenderer = new DefaultVoxelRenderer();
+			voxelRenderer = new DefaultVoxelRenderer(ctx.getVoxel().store());
 		}
 		
 		voxelRenderer.renderInto(chunkRenderer, o2, ctx.getWorld().getChunkWorldCoordinates(miningProgress.loc), ctx);
@@ -185,10 +187,10 @@ public class BreakingBlockDecal {
 		}
 	};
 	
-	class BreakingBlockDecalVoxelBaker extends IntricateLayoutBaker implements VoxelBakerCubic {
+	class BreakingBlockDecalVoxelBaker extends BaseLayoutBaker implements VoxelBakerCubic, VoxelBakerHighPoly {
 
-		protected BreakingBlockDecalVoxelBaker(ClientContent content, ByteBuffer output, Location loc) {
-			super(content, output);
+		protected BreakingBlockDecalVoxelBaker(ClientContent content, Location loc) {
+			super(content);
 			
 			memesAreMyReality = memesAreDreams.get();
 			this.loc = loc;
@@ -207,6 +209,8 @@ public class BreakingBlockDecal {
 		Vector3f normal2 = new Vector3f();
 		Vector3f scrap = new Vector3f();
 		
+		Vector3f currentVertex = new Vector3f();
+		
 		/*BreakingBlockDecalVoxelBaker(Location loc) {
 			memesAreMyReality = memesAreDreams.get();
 			this.loc = loc;
@@ -221,9 +225,18 @@ public class BreakingBlockDecal {
 			this.beginVertex((float)i0, (float)i1, (float)i2);
 		}
 		
-		@Override
 		public void beginVertex(float f0, float f1, float f2) {
-			super.beginVertex(f0, f1, f2);
+			currentVertex.set(f0, f1, f2);
+		}
+
+		@Override
+		public void beginVertex(Vector3fc vertex) {
+			currentVertex.set(vertex);
+		}
+
+		@Override
+		public void beginVertex(Vector3dc vertex) {
+			currentVertex.set(vertex);
 		}
 		
 		/*@Override
