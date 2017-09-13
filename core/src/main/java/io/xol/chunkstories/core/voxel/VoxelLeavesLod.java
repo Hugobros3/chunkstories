@@ -1,5 +1,6 @@
 package io.xol.chunkstories.core.voxel;
 
+import io.xol.chunkstories.api.Content.Voxels;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelType;
 import io.xol.chunkstories.api.voxel.models.ChunkRenderer;
@@ -23,13 +24,14 @@ public class VoxelLeavesLod extends Voxel
 	VoxelTexture baseTexture;
 	VoxelTexture opaqueTexture;
 	
-	LodedLeavesBlocksRenderer renderer = new LodedLeavesBlocksRenderer();
+	LodedLeavesBlocksRenderer renderer;
 	
 	public VoxelLeavesLod(VoxelType type)
 	{
 		super(type);
 		this.baseTexture = store.textures().getVoxelTextureByName(getName());
 		this.opaqueTexture = store.textures().getVoxelTextureByName(getName() + "Opaque");
+		this.renderer = new LodedLeavesBlocksRenderer(type.store());
 	}
 	
 	@Override
@@ -39,6 +41,10 @@ public class VoxelLeavesLod extends Voxel
 	
 	class LodedLeavesBlocksRenderer extends DefaultVoxelRenderer {
 		
+		public LodedLeavesBlocksRenderer(Voxels store) {
+			super(store);
+		}
+
 		@Override
 		public int renderInto(ChunkRenderer chunkRenderer, ChunkRenderContext bakingContext, Chunk chunk, VoxelContext voxelInformations)
 		{

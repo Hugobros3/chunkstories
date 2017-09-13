@@ -191,7 +191,7 @@ public class ClientTasksPool extends TasksPool<Task> implements ChunkMeshesBaker
 					}
 				}
 				
-				defaultVoxelRenderer = new DefaultVoxelRenderer();
+				defaultVoxelRenderer = new DefaultVoxelRenderer(world.getGameContext().getContent().voxels());
 			}
 			
 			protected int getBlockData(CubicChunk c, int x, int y, int z)

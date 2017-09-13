@@ -13,12 +13,11 @@ import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
 import io.xol.chunkstories.api.rendering.text.TextMesh;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
-import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
 
 import io.xol.chunkstories.core.entity.components.EntityComponentSignText;
-import io.xol.chunkstories.voxel.VoxelsStore;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -89,10 +88,13 @@ public class EntitySign extends EntityBase implements EntityVoxel, EntityRendera
 				renderingContext.bindNormalTexture(renderingContext.textures().getTexture("./textures/normalnormal.png"));
 				//renderingContext.currentShader().setUniform3f("objectPosition", new Vector3f(0));
 
-				int modelBlockData = entitySign.getWorld().getVoxelData(entitySign.getLocation());
-				Voxel voxel = VoxelsStore.get().getVoxelById(modelBlockData);
+				//int modelBlockData = entitySign.getWorld().getVoxelData(entitySign.getLocation());
+				VoxelContext context = entitySign.getWorld().peek(entitySign.getLocation());
+				int modelBlockData = context.getData();
 				
-				boolean isPost = voxel.getName().endsWith("_post");
+				//Voxel voxel = VoxelsStore.get().getVoxelById(modelBlockData);
+				
+				boolean isPost = context.getVoxel().getName().endsWith("_post");
 
 				int lightSky = VoxelFormat.sunlight(modelBlockData);
 				int lightBlock = VoxelFormat.blocklight(modelBlockData);

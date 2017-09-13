@@ -1,5 +1,7 @@
 package io.xol.chunkstories.core.voxel.renderers;
 
+import io.xol.chunkstories.api.Content.Voxels;
+
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
@@ -16,10 +18,19 @@ import io.xol.chunkstories.api.voxel.models.ChunkRenderer.ChunkRenderContext;
 import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.chunk.Chunk;
-import io.xol.chunkstories.voxel.VoxelsStore;
+
+//(c) 2015-2017 XolioWare Interactive
+//http://chunkstories.xyz
+//http://xol.io
 
 public class DefaultVoxelRenderer implements VoxelRenderer
 {
+	final Voxels store;
+	
+	public DefaultVoxelRenderer(Voxels store) {
+		this.store = store;
+	}
+	
 	@Override
 	public int renderInto(ChunkRenderer chunkRenderer, ChunkRenderContext bakingContext, Chunk chunk, VoxelContext voxelInformations)
 	{
@@ -577,7 +588,7 @@ public class DefaultVoxelRenderer implements VoxelRenderer
 	{
 		//int baseID = renderInfo.data;
 		int facingId = renderInfo.getSideId(face);
-		Voxel facing = VoxelsStore.get().getVoxelById(facingId);
+		Voxel facing = store.getVoxelById(facingId);
 		Voxel voxel = renderInfo.getVoxel();
 
 		if (voxel.getType().isLiquid() && !facing.getType().isLiquid())
