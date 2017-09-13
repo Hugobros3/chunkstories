@@ -1,7 +1,5 @@
 package io.xol.chunkstories.core.entity;
 
-import io.xol.engine.misc.ColorsTools;
-
 import java.util.Iterator;
 
 import io.xol.chunkstories.api.Location;
@@ -43,6 +41,7 @@ import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.sound.SoundSource.Mode;
+import io.xol.chunkstories.api.util.ColorsTools;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
@@ -51,21 +50,19 @@ import io.xol.chunkstories.api.world.WorldMaster;
 
 import io.xol.chunkstories.core.entity.EntityArmorInventory.EntityWithArmor;
 import io.xol.chunkstories.core.entity.components.EntityComponentFoodLevel;
+import io.xol.chunkstories.core.entity.components.EntityComponentInventory;
 import io.xol.chunkstories.core.entity.components.EntityComponentSelectedItem;
 import io.xol.chunkstories.core.entity.interfaces.EntityWithSelectedItem;
 import io.xol.chunkstories.core.item.armor.ItemArmor;
+import io.xol.chunkstories.core.item.inventory.InventoryLocalCreativeMenu;
 import io.xol.chunkstories.core.voxel.VoxelClimbable;
-import io.xol.chunkstories.entity.components.EntityComponentInventory;
-import io.xol.chunkstories.item.inventory.InventoryLocalCreativeMenu;
-import io.xol.chunkstories.voxel.VoxelsStore;
-import io.xol.chunkstories.world.WorldImplementation;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
 /**
- * Core/Vanilla player, has all the functionality you'd want from it
+ * Core/Vanilla player, has all the functionality you'd want from it: creative/survival mode, flying and walking controller...
  */
 public class EntityPlayer extends EntityHumanoid implements EntityControllable, EntityFeedable, EntityOverlay, EntityNameable, EntityWithInventory, EntityWithSelectedItem, EntityCreative, EntityFlying, EntityWithArmor
 {
@@ -114,7 +111,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		armor = new EntityArmorInventory(this, 4, 1);
 	}
 
-	public EntityPlayer(EntityType t, WorldImplementation w, double x, double y, double z, String name)
+	public EntityPlayer(EntityType t, World w, double x, double y, double z, String name)
 	{
 		this(t, w, x, y, z);
 		this.name.setName(name);
@@ -195,7 +192,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 
 		if (world instanceof WorldMaster)
 		{
-			//Food/health subsystem hanled here decrease over time
+			//Food/health subsystem handled here decrease over time
 			
 			//Take damage when starving
 			if ((world.getTicksElapsed() % 100L) == 0L)
@@ -287,8 +284,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 				this.stance.set(EntityHumanoidStance.STANDING);
 		}
 		
-		//voxelIn = VoxelTypes.get(VoxelFormat.id(world.getDataAt((int) (pos.x), (int) (pos.y + 1), (int) (pos.z))));
-		boolean inWater = isInWater(); //voxelIn != null && voxelIn.getType().isLiquid();
+		boolean inWater = isInWater();
 		
 		onLadder = false;
 		
@@ -624,7 +620,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 		{
 			
 			if(creativeMode.get()) {
-				((WorldClient)getWorld()).getClient().openInventories(this.inventoryComponent.getInventory(), new InventoryLocalCreativeMenu());
+				((WorldClient)getWorld()).getClient().openInventories(this.inventoryComponent.getInventory(), new InventoryLocalCreativeMenu(this.getType().store().parent().voxels()));
 			}
 			else {
 				((WorldClient)getWorld()).getClient().openInventories(this.inventoryComponent.getInventory(), this.armor.getInventory());
@@ -701,7 +697,7 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 						{
 							//Spawn new itemPile in his inventory
 							ItemVoxel item = (ItemVoxel) world.getGameContext().getContent().items().getItemTypeByName("item_voxel").newItem();
-							item.voxel = VoxelsStore.get().getVoxelById(voxelID);
+							item.voxel = world.getGameContext().getContent().voxels().getVoxelById(voxelID);
 							item.voxelMeta = voxelMeta;
 
 							ItemPile itemVoxel = new ItemPile(item);

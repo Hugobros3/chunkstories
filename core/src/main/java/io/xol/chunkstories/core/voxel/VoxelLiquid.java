@@ -4,8 +4,6 @@ import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelType;
 import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.core.voxel.renderers.VoxelWaterRenderer;
-import io.xol.chunkstories.voxel.VoxelsStore;
-import io.xol.chunkstories.voxel.models.VoxelModelLoaded;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -13,8 +11,8 @@ import io.xol.chunkstories.voxel.models.VoxelModelLoaded;
 
 public class VoxelLiquid extends Voxel
 {
-	VoxelModelLoaded surface;
-	VoxelModelLoaded inside;
+	VoxelWaterRenderer surface;
+	VoxelWaterRenderer inside;
 
 	public VoxelLiquid(VoxelType type)
 	{
@@ -24,10 +22,11 @@ public class VoxelLiquid extends Voxel
 	}
 
 	@Override
-	public VoxelModelLoaded getVoxelRenderer(VoxelContext info)
+	public VoxelWaterRenderer getVoxelRenderer(VoxelContext info)
 	{
+		//Return the surface only if the top block isn't liquid
 		int data = info.getSideId(4);
-		if(!VoxelsStore.get().getVoxelById(data).getType().isLiquid())
+		if(!store.getVoxelById(data).getType().isLiquid())
 			return surface;
 		else return inside;
 	}

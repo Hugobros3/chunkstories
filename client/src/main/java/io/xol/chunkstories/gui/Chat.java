@@ -2,7 +2,6 @@ package io.xol.chunkstories.gui;
 
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.gui.elements.InputText;
-import io.xol.engine.misc.ColorsTools;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -19,6 +18,7 @@ import io.xol.chunkstories.api.mods.Mod;
 import io.xol.chunkstories.api.plugin.ChunkStoriesPlugin;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.util.ColorsTools;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.renderer.WorldRendererImplementation;

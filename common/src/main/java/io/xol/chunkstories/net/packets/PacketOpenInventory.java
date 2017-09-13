@@ -10,7 +10,7 @@ import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketSynchPrepared;
 import io.xol.chunkstories.api.net.PacketsProcessor;
-import io.xol.chunkstories.net.InventoryTranslator;
+import io.xol.chunkstories.core.item.inventory.InventoryTranslator;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

@@ -4,6 +4,7 @@ import org.joml.Vector3d;
 import org.joml.Vector3dc;
 import org.joml.Vector3fc;
 
+import io.xol.chunkstories.api.Content.Voxels;
 import io.xol.chunkstories.api.particles.ParticleDataWithTextureCoordinates;
 import io.xol.chunkstories.api.particles.ParticleDataWithVelocity;
 import io.xol.chunkstories.api.particles.ParticleType;
@@ -15,8 +16,6 @@ import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.voxel.VoxelsStore;
-import io.xol.chunkstories.world.WorldImplementation;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
@@ -24,8 +23,12 @@ import io.xol.chunkstories.world.WorldImplementation;
 
 public class ParticleVoxelFragment extends ParticleTypeHandler
 {
+	Voxels voxelStore;
+	
 	public ParticleVoxelFragment(ParticleType type) {
 		super(type);
+		
+		voxelStore = type.store().parent().voxels();
 	}
 
 	public class FragmentData extends ParticleData implements ParticleDataWithTextureCoordinates, ParticleDataWithVelocity {
@@ -42,7 +45,7 @@ public class ParticleVoxelFragment extends ParticleTypeHandler
 			super(x, y, z);
 			int id = VoxelFormat.id(data);
 			
-			tex = VoxelsStore.get().getVoxelById(id).getVoxelTexture(data, VoxelSides.LEFT, null);
+			tex = voxelStore.getVoxelById(id).getVoxelTexture(data, VoxelSides.LEFT, null);
 			setData(data);
 			//System.out.println("id+"+id + " "+ tex.atlasOffset / 32768f);
 		}
@@ -114,7 +117,7 @@ public class ParticleVoxelFragment extends ParticleTypeHandler
 		void setData(int data)
 		{
 			int id = VoxelFormat.id(data);
-			VoxelTexture tex = VoxelsStore.get().getVoxelById(id).getVoxelTexture(data, VoxelSides.LEFT, null);
+			VoxelTexture tex = voxelStore.getVoxelById(id).getVoxelTexture(data, VoxelSides.LEFT, null);
 			
 			int qx = (int) Math.floor(Math.random() * 4.0);
 			int rx = qx + 1;
@@ -152,7 +155,7 @@ public class ParticleVoxelFragment extends ParticleTypeHandler
 		b.y = ((float) (b.y() + b.vel.y()));
 		b.z = ((float) (b.z() + b.vel.z()));
 		
-		if (!((WorldImplementation) world).checkCollisionPoint(b.x(), b.y() - 0.1, b.z()))
+		if(b.isCollidingAgainst(world, b.x, b.y - 0.1f, b.z))//if (!((WorldImplementation) world).checkCollisionPoint(b.x(), b.y() - 0.1, b.z()))
 			b.vel.y = (b.vel.y() + -0.89/60.0);
 		else
 			b.vel.set(0d, 0d, 0d);

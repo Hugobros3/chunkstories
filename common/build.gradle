@@ -14,6 +14,7 @@ apply plugin: 'maven'
 
 dependencies {
     //api project(':api')
+    api project(':core')
 }
 
 //Create a properties.gradle with login credentials to use this.

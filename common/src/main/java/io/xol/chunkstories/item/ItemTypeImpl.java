@@ -11,7 +11,9 @@ import io.xol.chunkstories.api.exceptions.content.IllegalItemDeclarationExceptio
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.api.item.renderer.ItemRenderer;
-import io.xol.chunkstories.item.renderer.DefaultItemRenderer;
+import io.xol.chunkstories.api.item.renderer.NullItemRenderer;
+import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogLevel;
+import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogType;
 import io.xol.chunkstories.materials.GenericNamedConfigurable;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 
@@ -93,7 +95,22 @@ public class ItemTypeImpl extends GenericNamedConfigurable implements ItemType
 
 		if (store.parent() instanceof ClientContent)
 		{
-			ItemRenderer defaultItemRenderer = new DefaultItemRenderer(this, (ClientContent)store.parent());
+			ItemRenderer defaultItemRenderer;
+			try {
+				Class<?> defaultItemRendererClass = store.parent().modsManager().getClassByName("io.xol.chunkstories.core.item.renderer.DefaultItemRenderer");
+				Constructor<?> defaultItemRendererConstructor = defaultItemRendererClass.getConstructor(ItemType.class, ClientContent.class);
+				defaultItemRenderer = (ItemRenderer)defaultItemRendererConstructor.newInstance(this, (ClientContent)store.parent());
+			}
+			catch(Exception e) {
+				//TODO obtain the constructor once ?
+				store().parent().logger().log("Could not instanciate DefaultItemRenderer: "+e, LogType.CONTENT_LOADING, LogLevel.ERROR);
+				e.printStackTrace();
+				e.printStackTrace(store().parent().logger().getPrintWriter());
+				store().parent().logger().log("Using NullItemRenderer(). "+e, LogType.CONTENT_LOADING, LogLevel.WARN);
+				defaultItemRenderer = new NullItemRenderer(null);
+			}
+			
+			//ItemRenderer defaultItemRenderer = new DefaultItemRenderer(this, (ClientContent)store.parent());
 			
 			Item sampleItem = this.newItem();
 			ItemRenderer customItemRenderer = sampleItem.getCustomItemRenderer(defaultItemRenderer);

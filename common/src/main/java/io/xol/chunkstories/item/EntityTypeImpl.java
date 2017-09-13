@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
+import io.xol.chunkstories.api.Content.EntityTypes;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityType;
 import io.xol.chunkstories.api.exceptions.content.IllegalEntityDeclarationException;
@@ -17,6 +18,8 @@ public class EntityTypeImpl extends GenericNamedConfigurable implements EntityTy
 	
 	//final String name;
 	//final String className;
+	final EntityTypesStore store;
+	
 	final Constructor<? extends Entity> constructor;
 	final short id;
 
@@ -26,6 +29,7 @@ public class EntityTypeImpl extends GenericNamedConfigurable implements EntityTy
 		super(name, reader);
 		
 		this.id = id;
+		this.store = store;
 		
 		String className = this.resolveProperty("class", null);
 		if(className == null)
@@ -85,5 +89,10 @@ public class EntityTypeImpl extends GenericNamedConfigurable implements EntityTy
 			e.printStackTrace(ChunkStoriesLoggerImplementation.getInstance().getPrintWriter());
 			return null;
 		}
+	}
+
+	@Override
+	public EntityTypes store() {
+		return store;
 	}
 }

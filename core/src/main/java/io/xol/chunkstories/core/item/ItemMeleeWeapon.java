@@ -20,13 +20,12 @@ import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.player.PlayerClient;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.sound.SoundSource.Mode;
-import io.xol.chunkstories.api.voxel.Voxel;
+import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.core.entity.EntityPlayer;
-import io.xol.chunkstories.item.renderer.FlatIconItemRenderer;
-import io.xol.chunkstories.item.renderer.ObjViewModelRenderer;
-import io.xol.chunkstories.voxel.VoxelsStore;
+import io.xol.chunkstories.core.item.renderer.FlatIconItemRenderer;
+import io.xol.chunkstories.core.item.renderer.ObjViewModelRenderer;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -65,9 +64,7 @@ public class ItemMeleeWeapon extends ItemWeapon
 		
 		String modelName = getType().resolveProperty("modelObj", "none");
 		if (!modelName.equals("none"))
-		{
 			itemRenderer = new ObjViewModelRenderer(this, fallbackRenderer, modelName, getType().resolveProperty("modelDiffuse", "none"));
-		}
 		else
 			itemRenderer = new FlatIconItemRenderer(this, fallbackRenderer, getType());
 
@@ -145,10 +142,9 @@ public class ItemMeleeWeapon extends ItemWeapon
 			//Loops to try and break blocks
 			while(owner.getWorld() instanceof WorldMaster && shotBlock != null)
 			{
-				int data = owner.getWorld().getVoxelData(shotBlock);
-				Voxel voxel = VoxelsStore.get().getVoxelById(data);
+				VoxelContext peek = owner.getWorld().peek(shotBlock);
 				
-				if(voxel.getId() != 0 && voxel.getMaterial().resolveProperty("bulletBreakable") != null && voxel.getMaterial().resolveProperty("bulletBreakable").equals("true"))
+				if(peek.getVoxel().getId() != 0 && peek.getVoxel().getMaterial().resolveProperty("bulletBreakable") != null && peek.getVoxel().getMaterial().resolveProperty("bulletBreakable").equals("true"))
 				{
 					//Spawn an event to check if it's okay
 					
@@ -185,15 +181,11 @@ public class ItemMeleeWeapon extends ItemWeapon
 
 					Vector3d reflected = new Vector3d(direction);
 					reflected.sub(NxNbyI2x);
-					//Vector3d.sub(direction, NxNbyI2x, reflected);
 
-					//shotBlock.setX(shotBlock.getX() + 1);
-					int data = owner.getWorld().getVoxelData(shotBlock);
-					Voxel voxel = VoxelsStore.get().getVoxelById(data);
+					VoxelContext peek = owner.getWorld().peek(shotBlock);
 
 					//This seems fine
-
-					for (CollisionBox box : voxel.getTranslatedCollisionBoxes(owner.getWorld(), (int) (double) shotBlock.x(), (int) (double) shotBlock.y(), (int) (double) shotBlock.z()))
+					for (CollisionBox box : peek.getVoxel().getTranslatedCollisionBoxes(owner.getWorld(), (int) (double) shotBlock.x(), (int) (double) shotBlock.y(), (int) (double) shotBlock.z()))
 					{
 						Vector3dc thisLocation = box.lineIntersection(eyeLocation, direction);
 						if (thisLocation != null)
@@ -224,8 +216,7 @@ public class ItemMeleeWeapon extends ItemWeapon
 
 						Vector3d ppos = new Vector3d(nearestLocation);
 						owner.getWorld().getParticlesManager().spawnParticleAtPositionWithVelocity("voxel_frag", ppos, untouchedReflection);
-
-						owner.getWorld().getSoundManager().playSoundEffect(VoxelsStore.get().getVoxelById(shotBlock.getVoxelDataAtLocation()).getMaterial().resolveProperty("landingSounds"), Mode.NORMAL, ppos, 1, 0.25f);
+						owner.getWorld().getSoundManager().playSoundEffect(owner.getWorld().peek(shotBlock).getVoxel().getMaterial().resolveProperty("landingSounds"), Mode.NORMAL, ppos, 1, 0.25f);
 					}
 
 					owner.getWorld().getDecalsManager().drawDecal(nearestLocation, normal.negate(), new Vector3d(0.5), "bullethole");

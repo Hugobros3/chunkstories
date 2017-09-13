@@ -13,7 +13,6 @@ import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.core.voxel.renderers.DefaultVoxelRenderer;
-import io.xol.chunkstories.voxel.VoxelsStore;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -56,7 +55,7 @@ public class VoxelLeavesLod extends Voxel
 		protected boolean shallBuildWallArround(VoxelContext renderInfo, int face, LodLevel lodLevel)
 		{
 			//int baseID = renderInfo.data;
-			Voxel facing = VoxelsStore.get().getVoxelById(renderInfo.getSideId(face));
+			Voxel facing = store.getVoxelById(renderInfo.getSideId(face));
 			Voxel voxel = renderInfo.getVoxel();
 
 			if (voxel.getType().isLiquid() && !facing.getType().isLiquid())

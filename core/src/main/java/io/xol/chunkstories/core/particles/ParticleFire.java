@@ -12,7 +12,6 @@ import io.xol.chunkstories.api.particles.ParticlesRenderer;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
 import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.world.WorldImplementation;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
@@ -122,7 +121,8 @@ public class ParticleFire extends ParticleTypeHandler
 		b.y = ((float) (b.y() + b.vel.y()));
 		b.z = ((float) (b.z() + b.vel.z()));
 		
-		if (!((WorldImplementation) world).checkCollisionPoint(b.x(), b.y(), b.z()) && !ignoreCollisions)
+		if(!b.isCollidingAgainst(world))
+			//if (!((WorldImplementation) world).checkCollisionPoint(b.x(), b.y(), b.z()) && !ignoreCollisions)
 			b.vel.y = (b.vel.y() + 0.02/60.0);
 		else
 			b.vel.set(0d, 0d, 0d);
@@ -147,7 +147,8 @@ public class ParticleFire extends ParticleTypeHandler
 			b.temp = 1;	
 		}
 		
-		if(((WorldImplementation) world).checkCollisionPoint(b.x(), b.y(), b.z()) && destroyOnCollision)
+		if(b.isCollidingAgainst(world) && destroyOnCollision)
+			//if(((WorldImplementation) world).checkCollisionPoint(b.x(), b.y(), b.z()) && destroyOnCollision)
 			b.destroy();
 	}
 	

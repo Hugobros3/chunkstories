@@ -5,8 +5,8 @@ import java.util.Iterator;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
+import io.xol.chunkstories.core.entity.components.EntityComponentInventory;
 import io.xol.chunkstories.core.item.armor.ItemArmor;
-import io.xol.chunkstories.entity.components.EntityComponentInventory;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

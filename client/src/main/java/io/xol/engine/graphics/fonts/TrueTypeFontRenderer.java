@@ -11,10 +11,10 @@ import org.joml.Vector4fc;
 
 import io.xol.chunkstories.api.rendering.text.FontRenderer;
 import io.xol.chunkstories.api.rendering.text.TextMesh;
+import io.xol.chunkstories.api.util.ColorsTools;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.TextMeshObject;
 import io.xol.engine.graphics.textures.Texture2DGL;
-import io.xol.engine.misc.ColorsTools;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

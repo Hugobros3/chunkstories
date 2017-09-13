@@ -31,7 +31,6 @@ import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.core.entity.components.EntityComponentStance;
 import io.xol.chunkstories.core.entity.interfaces.EntityWithSelectedItem;
-import io.xol.chunkstories.voxel.VoxelsStore;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -421,7 +420,7 @@ public abstract class EntityHumanoid extends EntityLivingImplementation
 
 		boolean inWater = isInWater(); //voxelIn != null && voxelIn.getType().isLiquid();
 
-		Voxel voxelStandingOn = VoxelsStore.get().getVoxelById(world.getVoxelData(new Vector3d(this.getLocation()).add(0.0, -0.01, 0.0)));
+		Voxel voxelStandingOn = world.peek(new Vector3d(this.getLocation()).add(0.0, -0.01, 0.0)).getVoxel();//world.getGameContext().getContent().voxels().getVoxelById(world.getVoxelData(new Vector3d(this.getLocation()).add(0.0, -0.01, 0.0)));
 
 		if (voxelStandingOn == null || !voxelStandingOn.getType().isSolid() && !voxelStandingOn.getType().isLiquid())
 			return;

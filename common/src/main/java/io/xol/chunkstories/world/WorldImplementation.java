@@ -759,7 +759,6 @@ public abstract class WorldImplementation implements World
 		int id = VoxelFormat.id(data);
 		if (id > 0)
 		{
-
 			Voxel v = VoxelsStore.get().getVoxelById(id);
 
 			CollisionBox[] boxes = v.getTranslatedCollisionBoxes(this, (int) posX, (int) posY, (int) posZ);
@@ -770,7 +769,6 @@ public abstract class WorldImplementation implements World
 
 			if (v.getType().isSolid())
 				return true;
-
 		}
 		return false;
 	}

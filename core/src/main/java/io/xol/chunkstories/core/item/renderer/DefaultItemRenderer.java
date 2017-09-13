@@ -1,8 +1,10 @@
-package io.xol.chunkstories.item.renderer;
+package io.xol.chunkstories.core.item.renderer;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.client.ClientContent;
 import io.xol.chunkstories.api.client.ClientContent.TexturesLibrary;
@@ -10,8 +12,6 @@ import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.item.renderer.ItemRenderer;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;

@@ -1,4 +1,4 @@
-package io.xol.chunkstories.item.inventory;
+package io.xol.chunkstories.core.item.inventory;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -17,7 +17,6 @@ import io.xol.chunkstories.api.serialization.StreamSource;
 import io.xol.chunkstories.api.serialization.StreamTarget;
 import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogLevel;
 import io.xol.chunkstories.api.util.IterableIterator;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 
 public class BasicInventory implements Inventory
 {
@@ -337,8 +336,8 @@ public class BasicInventory implements Inventory
 				catch (UndefinedItemTypeException e)
 				{
 					//This is slightly more problematic
-					ChunkStoriesLoggerImplementation.getInstance().log(e.getMessage(), LogLevel.WARN);
-					e.printStackTrace(ChunkStoriesLoggerImplementation.getInstance().getPrintWriter());
+					content.logger().log(e.getMessage(), LogLevel.WARN);
+					e.printStackTrace(content.logger().getPrintWriter());
 				}
 			}
 	}

@@ -7,7 +7,6 @@ import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.voxel.VoxelType;
 import io.xol.chunkstories.api.voxel.models.VoxelModel;
 import io.xol.chunkstories.api.world.VoxelContext;
-import io.xol.chunkstories.voxel.VoxelsStore;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
@@ -60,7 +59,7 @@ public class VoxelHalfTile extends Voxel
 		int side = side2.ordinal();
 		
 		//Special cases when half-tiles meet
-		if(VoxelsStore.get().getVoxelById(dataTo) instanceof VoxelHalfTile && side < 4)
+		if(store.getVoxelById(dataTo) instanceof VoxelHalfTile && side < 4)
 		{
 			//If they are the same type, allow the light to transfer
 			if(bottomOrTop(VoxelFormat.meta(dataFrom)) == bottomOrTop(VoxelFormat.meta(dataTo)))

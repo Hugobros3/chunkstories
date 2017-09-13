@@ -36,7 +36,7 @@ end
 
 packet partial_inv_update 7
 	allowedFrom: server
-	commonClass: io.xol.chunkstories.net.packets.PacketInventoryPartialUpdate
+	commonClass: io.xol.chunkstories.core.net.packets.PacketInventoryPartialUpdate
 end
 
 packet time 8

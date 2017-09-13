@@ -1,4 +1,4 @@
-package io.xol.chunkstories.net.packets;
+package io.xol.chunkstories.core.net.packets;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -14,8 +14,7 @@ import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketSynchPrepared;
 import io.xol.chunkstories.api.net.PacketsProcessor;
 import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogLevel;
-import io.xol.chunkstories.net.InventoryTranslator;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
+import io.xol.chunkstories.core.item.inventory.InventoryTranslator;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -71,13 +70,15 @@ public class PacketInventoryPartialUpdate extends PacketSynchPrepared
 		}
 		catch (NullItemException e)
 		{
+			//This is fine.
 			itemPile = null;
 		}
 		catch (UndefinedItemTypeException e)
 		{
-			//This is slightly more problematic
+			//This is slightly more problematic.
 			processor.getContext().logger().log(e.getMessage(), LogLevel.WARN);
-			e.printStackTrace(ChunkStoriesLoggerImplementation.getInstance().getPrintWriter());
+			e.printStackTrace(processor.getContext().logger().getPrintWriter());
+			e.printStackTrace();
 		}
 		
 		if (inventory != null)

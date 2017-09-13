@@ -21,8 +21,6 @@ import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.World.WorldVoxelContext;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
-import io.xol.chunkstories.voxel.VoxelsStore;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -133,7 +131,7 @@ public class VoxelDoor extends Voxel implements VoxelLogic, VoxelInteractive, Vo
 			otherPartLocation.add(0.0, 1.0, 0.0);
 
 		int otherLocationId = VoxelFormat.id(otherPartLocation.getVoxelDataAtLocation());
-		if (VoxelsStore.get().getVoxelById(otherLocationId) instanceof VoxelDoor)
+		if (store.getVoxelById(otherLocationId) instanceof VoxelDoor)
 		{
 			System.out.println("new door status : " + newState);
 			voxelContext.getWorld().getSoundManager().playSoundEffect("sounds/sfx/door.ogg", Mode.NORMAL, voxelContext.getLocation(), 1.0f, 1.0f);
@@ -143,7 +141,7 @@ public class VoxelDoor extends Voxel implements VoxelLogic, VoxelInteractive, Vo
 		}
 		else
 		{
-			ChunkStoriesLoggerImplementation.getInstance().error("Incomplete door @ " + otherPartLocation);
+			store.parent().logger().error("Incomplete door @ " + otherPartLocation);
 		}
 
 		return true;
@@ -282,7 +280,7 @@ public class VoxelDoor extends Voxel implements VoxelLogic, VoxelInteractive, Vo
 			default:
 				break;
 			}
-			if (VoxelsStore.get().getVoxelById(adjacentId) instanceof VoxelDoor)
+			if (store.getVoxelById(adjacentId) instanceof VoxelDoor)
 			{
 				hingeSide = true;
 			}
@@ -324,7 +322,7 @@ public class VoxelDoor extends Voxel implements VoxelLogic, VoxelInteractive, Vo
 		world.setVoxelDataWithoutUpdates(x, y, z, 0);
 		int otherData = world.getVoxelData(x, otherY, z);
 		//Remove the other part as well, if it still exists
-		if (VoxelsStore.get().getVoxelById(otherData) instanceof VoxelDoor)
+		if (store.getVoxelById(otherData) instanceof VoxelDoor)
 		{
 			world.setVoxelData(x, otherY, z, 0);
 		}

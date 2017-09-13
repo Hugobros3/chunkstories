@@ -14,7 +14,7 @@ apply plugin: 'maven'
 
 dependencies {
     //api project(':api')
-    api project(':common')
+    //api project(':common')
 }
 
 version = rootProject.version

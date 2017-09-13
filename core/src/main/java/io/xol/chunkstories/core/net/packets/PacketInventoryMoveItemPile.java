@@ -16,9 +16,8 @@ import io.xol.chunkstories.api.server.ServerPacketsProcessor.ServerPlayerPackets
 import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogLevel;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.core.entity.EntityGroundItem;
-import io.xol.chunkstories.item.inventory.InventoryLocalCreativeMenu;
-import io.xol.chunkstories.net.InventoryTranslator;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
+import io.xol.chunkstories.core.item.inventory.InventoryLocalCreativeMenu;
+import io.xol.chunkstories.core.item.inventory.InventoryTranslator;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -109,13 +108,13 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 			catch (NullItemException e)
 			{
 				//This ... isn't supposed to happen
-				ChunkStoriesLoggerImplementation.getInstance().log("User "+sender+" is trying to spawn a null ItemPile for some reason.", LogLevel.WARN);
+				processor.getContext().logger().log("User "+sender+" is trying to spawn a null ItemPile for some reason.", LogLevel.WARN);
 			}
 			catch (UndefinedItemTypeException e)
 			{
 				//This is slightly more problematic
-				ChunkStoriesLoggerImplementation.getInstance().log(e.getMessage(), LogLevel.WARN);
-				e.printStackTrace(ChunkStoriesLoggerImplementation.getInstance().getPrintWriter());
+				processor.getContext().logger().log(e.getMessage(), LogLevel.WARN);
+				e.printStackTrace(processor.getContext().logger().getPrintWriter());
 			}
 		}
 		else

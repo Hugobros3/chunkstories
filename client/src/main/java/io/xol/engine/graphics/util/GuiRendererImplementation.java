@@ -11,6 +11,7 @@ import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTes
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
+import io.xol.chunkstories.api.util.ColorsTools;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.geometry.VertexBufferGL;
 import io.xol.engine.graphics.geometry.VertexBufferGL.UploadRegime;
@@ -20,8 +21,6 @@ import io.xol.engine.graphics.textures.TexturesHandler;
 import java.nio.ByteBuffer;
 
 import org.lwjgl.BufferUtils;
-
-import io.xol.engine.misc.ColorsTools;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

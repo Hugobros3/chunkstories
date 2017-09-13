@@ -11,7 +11,6 @@ import io.xol.chunkstories.api.particles.ParticlesRenderer;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
 import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.world.WorldImplementation;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
@@ -69,7 +68,7 @@ public class ParticleSmoke extends ParticleTypeHandler
 		if(b.vel.length() < 0.1/60.0)
 			b.vel.set(0d, 0d, 0d);
 		
-		if(b.timer < 0 || ((WorldImplementation) world).checkCollisionPoint(b.x(), b.y(), b.z()))
+		if(b.timer < 0 || b.isCollidingAgainst(world))//((WorldImplementation) world).checkCollisionPoint(b.x(), b.y(), b.z()))
 			b.destroy();
 	}
 

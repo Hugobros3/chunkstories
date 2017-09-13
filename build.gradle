@@ -48,13 +48,9 @@ subprojects {
 		//TODO: Split these even more, the server likely doesn't have an use for jorbis.
 		dependencies {
 			compile group: 'org.fusesource.jansi', name: 'jansi', version: '1.15'
-
 			compile group: 'org.l33tlabs.twl', name: 'pngdecoder', version: '1.0'
-
 			compile group: 'net.jpountz.lz4', name: 'lz4', version: '1.3.0'
-
 			compile group: 'com.googlecode.soundlibs', name: 'jorbis', version: '0.0.17.4'
-
 			compile group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'
 			
 			compile group: 'io.xol.chunkstories', name: 'api', version: '110'

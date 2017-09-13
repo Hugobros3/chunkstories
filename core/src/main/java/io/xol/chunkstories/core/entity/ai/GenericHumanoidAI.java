@@ -13,7 +13,6 @@ import org.joml.Vector3d;
 import org.joml.Vector3dc;
 
 import io.xol.chunkstories.core.entity.EntityHumanoid;
-import io.xol.chunkstories.voxel.VoxelsStore;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -36,7 +35,6 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 		if(entity.isDead())
 		{
 			//Dead entities shouldn't be moving
-			
 			entity.getTargetVelocity().x = (0d);
 			entity.getTargetVelocity().z = (0d);
 			return;
@@ -56,7 +54,7 @@ public class GenericHumanoidAI extends AI<EntityHumanoid>
 		}
 		
 		//Water-jump
-		if(VoxelsStore.get().getVoxelById(entity.getWorld().getVoxelData(entity.getLocation())).getType().isLiquid())
+		if(entity.getWorld().peek(entity.getLocation()).getVoxel().getType().isLiquid())
 		{
 			if(entity.getVelocityComponent().getVelocity().y() < 0.15)
 				entity.getVelocityComponent().addVelocity(0.0, 0.15, 0.0);

@@ -1,4 +1,4 @@
-package io.xol.chunkstories.entity.components;
+package io.xol.chunkstories.core.entity.components;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -18,8 +18,8 @@ import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.serialization.StreamSource;
 import io.xol.chunkstories.api.serialization.StreamTarget;
-import io.xol.chunkstories.item.inventory.BasicInventory;
-import io.xol.chunkstories.net.packets.PacketInventoryPartialUpdate;
+import io.xol.chunkstories.core.item.inventory.BasicInventory;
+import io.xol.chunkstories.core.net.packets.PacketInventoryPartialUpdate;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
