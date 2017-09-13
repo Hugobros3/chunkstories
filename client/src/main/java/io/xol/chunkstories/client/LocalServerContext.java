@@ -14,15 +14,15 @@ import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.player.PlayerClient;
 import io.xol.chunkstories.api.plugin.ClientPluginManager;
-import io.xol.chunkstories.api.plugin.PluginManager;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.server.PermissionsManager;
 import io.xol.chunkstories.api.server.ServerInterface;
+import io.xol.chunkstories.api.server.UserPrivileges;
 import io.xol.chunkstories.api.util.ChunkStoriesLogger;
 import io.xol.chunkstories.api.util.ConfigDeprecated;
-import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.world.WorldClient;
+import io.xol.chunkstories.server.UsersPrivilegesFile;
 import io.xol.chunkstories.world.WorldClientLocal;
 
 /**
@@ -34,6 +34,8 @@ public class LocalServerContext implements ClientInterface, ServerInterface
 	private final Client client;
 	private final WorldClientLocal world;
 	
+	//TODO SAVE IT
+	private UsersPrivilegesFile usersPrivilege = new UsersPrivilegesFile();
 	private PermissionsManager permissionsManager;
 	
 	public LocalServerContext(Client client)
@@ -73,12 +75,12 @@ public class LocalServerContext implements ClientInterface, ServerInterface
 	}
 
 	@Override
-	public IterableIterator<Player> getConnectedPlayers()
+	public ConnectedPlayers getConnectedPlayers()
 	{
 		Set<Player> players = new HashSet<Player>();
 		players.add(Client.getInstance().getPlayer());
 			
-		return new IterableIterator<Player>()
+		return new ConnectedPlayers()
 				{
 					Iterator<Player> i = players.iterator();
 					@Override
@@ -95,6 +97,12 @@ public class LocalServerContext implements ClientInterface, ServerInterface
 					public Iterator<Player> iterator()
 					{
 						return this;
+					}
+					
+					@Override
+					public int count() {
+						// TODO Auto-generated method stub
+						return 1;
 					}
 			
 				};
@@ -238,6 +246,28 @@ public class LocalServerContext implements ClientInterface, ServerInterface
 	@Override
 	public ClientRenderingConfig renderingConfig() {
 		return client.renderingConfig();
+	}
+
+	@Override
+	public String getPublicIp() {
+		// TODO Auto-generated method stub
+		return "[127.0.0.1]";
+	}
+
+	@Override
+	public long getUptime() {
+		// TODO Auto-generated method stub
+		return -1;
+	}
+
+	@Override
+	public UserPrivileges getUserPrivileges() {
+		return usersPrivilege;
+	}
+
+	@Override
+	public void reloadConfig() {
+		usersPrivilege.load();
 	}
 
 }

@@ -270,7 +270,7 @@ public class ServerPlayer implements Player
 	@Override
 	public boolean hasPermission(String permissionNode)
 	{
-		return Server.server.getPermissionsManager().hasPermission(this, permissionNode);
+		return DedicatedServer.server.getPermissionsManager().hasPermission(this, permissionNode);
 	}
 
 	public Location getLastPosition()

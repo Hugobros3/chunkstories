@@ -19,11 +19,13 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.server.PermissionsManager;
 import io.xol.chunkstories.api.server.ServerInterface;
+import io.xol.chunkstories.api.server.UserPrivileges;
 import io.xol.chunkstories.api.util.ChunkStoriesLogger;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.plugin.DefaultPluginManager;
 import io.xol.chunkstories.content.GameContentStore;
+import io.xol.chunkstories.server.commands.DedicatedServerConsole;
 import io.xol.chunkstories.server.net.ServerAnnouncerThread;
 import io.xol.chunkstories.server.net.UserConnection;
 import io.xol.chunkstories.server.net.ServerConnectionsManager;
@@ -41,10 +43,9 @@ import io.xol.chunkstories.world.WorldServer;
  * It also takes care of the command line input as it's the main thread,
  * thought the processing of command lines is handled by ServerConsole.java
  */
-public class Server implements Runnable, ServerInterface
+public class DedicatedServer implements Runnable, ServerInterface
 {
-	
-	static Server server;
+	static DedicatedServer server;
 	
 	public static void main(String args[])
 	{
@@ -68,13 +69,14 @@ public class Server implements Runnable, ServerInterface
 			}
 		}
 
-		server = new Server(modsString);
+		server = new DedicatedServer(modsString);
 
 		server.run();
 	}
 
 	private ChunkStoriesLoggerImplementation log = null;
 	private ConfigFile serverConfig = new ConfigFile("./config/server.cfg");
+	private UsersPrivilegesFile userPrivileges = new UsersPrivilegesFile();
 
 	private AtomicBoolean running = new AtomicBoolean(true);
 	private long initTimestamp = System.currentTimeMillis() / 1000;
@@ -95,7 +97,7 @@ public class Server implements Runnable, ServerInterface
 
 	private GameContentStore gameContent;
 	
-	public Server(String modsString)
+	public DedicatedServer(String modsString)
 	{
 		server = this;
 		// Start server services
@@ -120,7 +122,7 @@ public class Server implements Runnable, ServerInterface
 			modsProvider = new ServerModsProvider(this);
 			
 			// load users privs
-			UsersPrivileges.load();
+			// UsersPrivilegesFile.load();
 			pluginsManager = new DefaultServerPluginManager(this);
 
 			// Load the world(s)
@@ -148,7 +150,7 @@ public class Server implements Runnable, ServerInterface
 				@Override
 				public boolean hasPermission(Player player, String permissionNode)
 				{
-					if (UsersPrivileges.isUserAdmin(player.getName()))
+					if (userPrivileges.isUserAdmin(player.getName()))
 						return true;
 					return false;
 				}
@@ -248,12 +250,17 @@ public class Server implements Runnable, ServerInterface
 			ec++;
 		}
 
-		txt += "Chunk Stories Server " + VersionInfo.version;
-		txt += " | world running at " + world.getGameLogic().getSimulationFps() + " Fps";
-		txt += " | " + ec + " Entities";
-		txt += " | " + this.connectionsManager.getNumberOfAuthentificatedClients() + "/" + this.connectionsManager.getMaxClients() + " players";
-		txt += " | " + this.world.getRegionsHolder().getStats() + " + " + this.world.getRegionsSummariesHolder().countSummaries() + " summaries ";
-		txt += " | " + this.world.ioHandler.toString();
+		long maxRam = Runtime.getRuntime().maxMemory() / (1024 * 1024);
+		long freeRam = Runtime.getRuntime().freeMemory() / (1024 * 1024);
+		long usedRam = maxRam - freeRam;
+		
+		txt += "ChunkStories server " + VersionInfo.version;
+		txt += " | fps:" + world.getGameLogic().getSimulationFps();
+		txt += " | entities:" + ec;
+		txt += " | players:" + this.connectionsManager.getNumberOfAuthentificatedClients() + "/" + this.connectionsManager.getMaxClients();
+		txt += " | lr:" + this.world.getRegionsHolder().getStats() + " ls:" + this.world.getRegionsSummariesHolder().countSummaries();
+		txt += " | ram:" + usedRam + "/" + maxRam;
+		txt += " | ioq:" + this.world.ioHandler.toString();
 
 		txt += ansi().bg(BLACK).fg(WHITE);
 
@@ -298,7 +305,7 @@ public class Server implements Runnable, ServerInterface
 
 		log.info("Saving configuration");
 		serverConfig.save();
-		UsersPrivileges.save();
+		userPrivileges.save();
 		log.info("Good night sweet prince");
 		Runtime.getRuntime().exit(0);
 	}
@@ -317,14 +324,14 @@ public class Server implements Runnable, ServerInterface
 
 	public void reloadConfig()
 	{
-		UsersPrivileges.load();
+		userPrivileges.load();
 		serverConfig.load();
 	}
 
 	@Override
-	public IterableIterator<Player> getConnectedPlayers()
+	public ConnectedPlayers getConnectedPlayers()
 	{
-		return new IterableIterator<Player>()
+		return new ConnectedPlayers()
 		{
 			Iterator<UserConnection> authClients = connectionsManager.getAuthentificatedClients();
 
@@ -338,6 +345,11 @@ public class Server implements Runnable, ServerInterface
 			public Player next()
 			{
 				return authClients.next().getProfile();
+			}
+
+			@Override
+			public int count() {
+				return connectionsManager.getNumberOfAuthentificatedClients();
 			}
 
 		};
@@ -432,5 +444,16 @@ public class Server implements Runnable, ServerInterface
 	@Override
 	public ChunkStoriesLogger logger() {
 		return log;
+	}
+
+	@Override
+	/** Dedicated servers openly broadcast their public IP */
+	public String getPublicIp() {
+		return this.connectionsManager.getIP();
+	}
+
+	@Override
+	public UserPrivileges getUserPrivileges() {
+		return userPrivileges;
 	}
 }

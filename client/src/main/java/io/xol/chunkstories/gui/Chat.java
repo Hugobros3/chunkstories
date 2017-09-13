@@ -260,11 +260,11 @@ public class Chat
 			else if (cmdName.equals("plugins"))
 			{
 				String list = "";
-				int i = 0;
-				for (ChunkStoriesPlugin csp : ingame.getPluginManager().loadedPlugins())
-				{
-					i++;
-					list += csp.getName() + (i == ingame.getPluginManager().loadedPlugins().size() ? "" : ", ");
+				
+				Iterator<ChunkStoriesPlugin> i = ingame.getPluginManager().activePlugins();
+				while(i.hasNext()) {
+					ChunkStoriesPlugin plugin = i.next();
+					list += plugin.getName() + (i.hasNext() ? ", " : "");
 				}
 				
 				if(Client.getInstance().getWorld() instanceof WorldClientLocal)

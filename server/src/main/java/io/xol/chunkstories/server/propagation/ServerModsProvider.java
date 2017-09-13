@@ -13,7 +13,7 @@ import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.api.mods.Mod;
 import io.xol.chunkstories.content.mods.ModFolder;
 import io.xol.chunkstories.content.mods.ModZip;
-import io.xol.chunkstories.server.Server;
+import io.xol.chunkstories.server.DedicatedServer;
 import io.xol.engine.misc.FoldersUtils;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -30,7 +30,7 @@ public class ServerModsProvider
 	Map<String, File> redistribuables = new HashMap<String, File>();
 	String modsString;
 
-	public ServerModsProvider(Server server)
+	public ServerModsProvider(DedicatedServer server)
 	{
 		server.logger().info("Starting to build server mods cache to provide to users");
 		cacheFolder = new File("./cache/servermods-" + (int) (Math.random() * 100000) + "/");

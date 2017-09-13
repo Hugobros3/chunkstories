@@ -7,7 +7,7 @@ import org.joml.Vector3dc;
 import io.xol.chunkstories.api.net.packets.PacketDecal;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
-import io.xol.chunkstories.server.Server;
+import io.xol.chunkstories.server.DedicatedServer;
 import io.xol.chunkstories.world.WorldServer;
 import io.xol.chunkstories.server.ServerPlayer;
 
@@ -19,7 +19,7 @@ public class VirtualServerDecalsManager implements DecalsManager
 {
 	WorldServer worldServer;
 
-	public VirtualServerDecalsManager(WorldServer worldServer, Server server)
+	public VirtualServerDecalsManager(WorldServer worldServer, DedicatedServer server)
 	{
 		this.worldServer = worldServer;
 	}

@@ -14,9 +14,8 @@ import io.xol.chunkstories.api.net.packets.PacketText;
 import io.xol.chunkstories.api.util.ChunkStoriesLogger;
 import io.xol.chunkstories.net.SendQueue;
 import io.xol.chunkstories.net.packets.PacketSendFile;
-import io.xol.chunkstories.server.Server;
+import io.xol.chunkstories.server.DedicatedServer;
 import io.xol.chunkstories.server.ServerPlayer;
-import io.xol.chunkstories.server.UsersPrivileges;
 import io.xol.chunkstories.server.net.ServerPacketsProcessorImplementation.UserPacketsProcessor;
 import io.xol.engine.net.HttpRequestThread;
 import io.xol.engine.net.HttpRequester;
@@ -29,6 +28,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Inet4Address;
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -218,7 +219,7 @@ public class UserConnection extends Thread implements HttpRequester, PacketDesti
 		{
 			if (name.equals("undefined"))
 				return;
-			if (UsersPrivileges.isUserBanned(name))
+			if (connectionsManager.getServer().getUserPrivileges().isUserBanned(name))
 			{
 				disconnect("Banned username - " + name);
 				return;
@@ -297,7 +298,12 @@ public class UserConnection extends Thread implements HttpRequester, PacketDesti
 		InetAddress inet = socket.getInetAddress();
 
 		if (inet == null)
-			return "[IP:Unconnected socket]";
+			return "ip0x0:Unconnected socket";
+		else if(inet instanceof Inet6Address)
+			return "ipv6:"+((Inet6Address)inet).getHostAddress();
+		else if(inet instanceof Inet4Address)
+			return "ipv4:"+((Inet4Address)inet).getHostAddress();
+
 		return inet.getHostAddress();
 	}
 
@@ -491,7 +497,7 @@ public class UserConnection extends Thread implements HttpRequester, PacketDesti
 			return "[Unknown connection from " + this.getIp() + "]";
 	}
 
-	public Server getServer()
+	public DedicatedServer getServer()
 	{
 		return connectionsManager.getServer();
 	}

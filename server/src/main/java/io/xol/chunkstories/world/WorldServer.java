@@ -16,7 +16,7 @@ import io.xol.chunkstories.net.PacketsProcessorActual;
 import io.xol.chunkstories.net.PacketsProcessorCommon.PendingSynchPacket;
 import io.xol.chunkstories.net.packets.PacketSendWorldInfo;
 import io.xol.chunkstories.server.ServerPlayer;
-import io.xol.chunkstories.server.Server;
+import io.xol.chunkstories.server.DedicatedServer;
 import io.xol.chunkstories.server.net.UserConnection;
 import io.xol.chunkstories.server.propagation.VirtualServerDecalsManager;
 import io.xol.chunkstories.server.propagation.VirtualServerParticlesManager;
@@ -30,13 +30,13 @@ import io.xol.engine.sound.sources.VirtualSoundManager;
 
 public class WorldServer extends WorldImplementation implements WorldMaster, WorldNetworked
 {
-	private Server server;
+	private DedicatedServer server;
 	
 	private VirtualSoundManager virtualServerSoundManager;
 	private VirtualServerParticlesManager virtualServerParticlesManager;
 	private VirtualServerDecalsManager virtualServerDecalsManager;
 
-	public WorldServer(Server server, WorldInfoFile worldInfo)
+	public WorldServer(DedicatedServer server, WorldInfoFile worldInfo)
 	{
 		super(server, worldInfo); //new WorldInfoImplementation(new File(worldDir + "/info.world"), new File(worldDir).getName()));
 
@@ -49,7 +49,7 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 		ioHandler.start();
 	}
 	
-	public Server getServer()
+	public DedicatedServer getServer()
 	{
 		return server;
 	}

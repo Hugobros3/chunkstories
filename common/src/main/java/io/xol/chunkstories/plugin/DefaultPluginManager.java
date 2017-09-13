@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -31,7 +32,9 @@ import io.xol.chunkstories.api.plugin.PluginInformation.PluginType;
 import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
 import io.xol.chunkstories.api.plugin.commands.CommandHandler;
+import io.xol.chunkstories.api.plugin.commands.SystemCommand;
 import io.xol.chunkstories.api.util.ChunkStoriesLogger;
+import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.content.DefaultModsManager;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
@@ -57,9 +60,23 @@ public abstract class DefaultPluginManager implements PluginManager
 	}
 
 	@Override
-	public Collection<ChunkStoriesPlugin> loadedPlugins()
+	public IterableIterator<ChunkStoriesPlugin> activePlugins()
 	{
-		return activePlugins;
+		return new IterableIterator<ChunkStoriesPlugin>() {
+
+			Iterator<ChunkStoriesPlugin> i = activePlugins.iterator();
+			
+			@Override
+			public boolean hasNext() {
+				return i.hasNext();
+			}
+
+			@Override
+			public ChunkStoriesPlugin next() {
+				return i.next();
+			}
+			
+		};
 	}
 
 	@Override
@@ -201,6 +218,21 @@ public abstract class DefaultPluginManager implements PluginManager
 		}
 
 		command.setHandler(commandHandler);
+	}
+
+	@Override
+	public SystemCommand registerCommand(String commandName, String... aliases) {
+		SystemCommand command = new SystemCommand(pluginExecutionContext, commandName);
+		for(String alias : aliases)
+			command.addAlias(alias);
+		
+		return command;
+	}
+
+	//@Override
+	public void unregisterCommand(Command command) {
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override

@@ -1,8 +1,7 @@
 package io.xol.chunkstories.server.net;
 
 import io.xol.chunkstories.api.util.ColorsTools;
-import io.xol.chunkstories.server.Server;
-import io.xol.chunkstories.server.UsersPrivileges;
+import io.xol.chunkstories.server.DedicatedServer;
 import io.xol.chunkstories.server.net.UserConnection.FailedToConnectionException;
 import io.xol.engine.net.HttpRequests;
 
@@ -24,7 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class ServerConnectionsManager extends Thread
 {
-	private final Server server;
+	private final DedicatedServer server;
 	private final ServerPacketsProcessorImplementation packetsProcessor;
 
 	private AtomicBoolean closed = new AtomicBoolean(false);
@@ -37,7 +36,7 @@ public class ServerConnectionsManager extends Thread
 	private String hostname = HttpRequests.sendPost("http://chunkstories.xyz/api/sayMyName.php?host=1", "");
 	private static String externalIP = "none";
 
-	public ServerConnectionsManager(Server server)
+	public ServerConnectionsManager(DedicatedServer server)
 	{
 		this.server = server;
 		this.packetsProcessor = new ServerPacketsProcessorImplementation(server);
@@ -45,7 +44,7 @@ public class ServerConnectionsManager extends Thread
 		this.maxClients = server.getServerConfig().getInteger("maxusers", 100);
 	}
 
-	public Server getServer()
+	public DedicatedServer getServer()
 	{
 		return server;
 	}
@@ -101,7 +100,7 @@ public class ServerConnectionsManager extends Thread
 					clientConnection = new UserConnection(this, sock);
 					clients.add(clientConnection);
 					// Check for banned ip
-					if (UsersPrivileges.isIpBanned(clientConnection.getIp()))
+					if (server.getUserPrivileges().isIpBanned(clientConnection.getIp()))
 						clientConnection.disconnect("Banned IP address - " + clientConnection.getIp());
 					// Check if too many connected users
 					if (clients.size() > maxClients)

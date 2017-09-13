@@ -4,7 +4,7 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.xol.chunkstories.VersionInfo;
-import io.xol.chunkstories.server.Server;
+import io.xol.chunkstories.server.DedicatedServer;
 import io.xol.engine.net.HttpRequests;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -21,9 +21,9 @@ public class ServerAnnouncerThread extends Thread
 	public String srv_name;
 	public String srv_desc;
 
-	Server server;
+	DedicatedServer server;
 	
-	public ServerAnnouncerThread(Server server)
+	public ServerAnnouncerThread(DedicatedServer server)
 	{
 		this.server = server;
 		

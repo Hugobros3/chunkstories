@@ -72,6 +72,7 @@ dependencies {
     //compile project(':api')
     compile project(':core')
     compile project(':common')
+	compile project(':server')
 }
 
 // Define the main class for the application

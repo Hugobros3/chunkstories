@@ -15,45 +15,50 @@ import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.xol.chunkstories.api.server.UserPrivileges;
+
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
-public class UsersPrivileges
+public class UsersPrivilegesFile implements UserPrivileges
 {
 	// Takes care of the admins/banned/whitelisted people lists
+	public UsersPrivilegesFile() {
+		this.load();
+	}
 
-	public static List<String> admins = new ArrayList<String>();
+	public List<String> admins = new ArrayList<String>();
+	public List<String> whitelist = new ArrayList<String>();
+	public List<String> banned_users = new ArrayList<String>();
+	public List<String> banned_ips = new ArrayList<String>();
 
-	public static List<String> whitelist = new ArrayList<String>();
-
-	public static List<String> banned_users = new ArrayList<String>();
-
-	public static List<String> banned_ips = new ArrayList<String>();
-
-	public static boolean isUserAdmin(String username)
+	@Override
+	public boolean isUserAdmin(String username)
 	{
 		return admins.contains(username);
 	}
 
-	public static boolean isUserWhitelisted(String username)
+	@Override
+	public boolean isUserWhitelisted(String username)
 	{
 		return whitelist.contains(username);
 	}
-
-	public static boolean isUserBanned(String username)
+	
+	@Override
+	public boolean isUserBanned(String username)
 	{
 		return banned_users.contains(username);
 	}
 
-	public static boolean isIpBanned(String username)
+	@Override
+	public boolean isIpBanned(String username)
 	{
 		return banned_ips.contains(username);
 	}
 
 	// Ugly load/save methods
-
-	public static void load()
+	public void load()
 	{
 		admins = loadListFile(new File(System.getProperty("user.dir") + "/config/server-admins.txt"));
 		whitelist = loadListFile(new File(System.getProperty("user.dir") + "/config/server-whitelist.txt"));
@@ -61,7 +66,7 @@ public class UsersPrivileges
 		banned_ips = loadListFile(new File(System.getProperty("user.dir") + "/config/server-banips.txt"));
 	}
 
-	public static void save()
+	public void save()
 	{
 		saveListFile(new File(System.getProperty("user.dir") + "/config/server-admins.txt"), admins);
 		saveListFile(new File(System.getProperty("user.dir") + "/config/server-whitelist.txt"), whitelist);
@@ -72,7 +77,7 @@ public class UsersPrivileges
 	// Uglier file loading/saving routines
 
 	@SuppressWarnings("deprecation")
-	static void saveListFile(File f, List<String> list)
+	void saveListFile(File f, List<String> list)
 	{
 		check4Folder(f);
 		try
@@ -94,7 +99,7 @@ public class UsersPrivileges
 		}
 	}
 
-	static List<String> loadListFile(File f)
+	List<String> loadListFile(File f)
 	{
 		check4Folder(f);
 		List<String> list = new ArrayList<String>();
@@ -118,7 +123,7 @@ public class UsersPrivileges
 		return list;
 	}
 
-	static void check4Folder(File file)
+	void check4Folder(File file)
 	{
 		File folder = null;
 		if (!file.isDirectory())
@@ -134,5 +139,37 @@ public class UsersPrivileges
 			{
 				e.printStackTrace();
 			}
+	}
+
+	@Override
+	public void setUserAdmin(String username, boolean admin) {
+		if(admin)
+			this.admins.add(username);
+		else
+			this.admins.remove(username);
+	}
+
+	@Override
+	public void setUserWhitelisted(String username, boolean whitelisted) {
+		if(whitelisted)
+			this.whitelist.add(username);
+		else
+			this.whitelist.remove(username);
+	}
+
+	@Override
+	public void setUserBanned(String username, boolean banned) {
+		if(banned)
+			this.banned_users.add(username);
+		else
+			this.banned_users.remove(username);
+	}
+
+	@Override
+	public void setIpBanned(String ip, boolean banned) {
+		if(banned)
+			this.banned_ips.add(ip);
+		else
+			this.banned_ips.remove(ip);
 	}
 }

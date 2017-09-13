@@ -28,7 +28,7 @@ import io.xol.chunkstories.api.plugin.ChunkStoriesPlugin;
 import io.xol.chunkstories.api.plugin.ClientPlugin;
 import io.xol.chunkstories.api.plugin.PluginInformation;
 import io.xol.chunkstories.api.plugin.ServerPlugin;
-import io.xol.chunkstories.api.plugin.commands.Command;
+import io.xol.chunkstories.api.plugin.commands.PluginCommand;
 import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.content.GameDirectory;
 
@@ -45,7 +45,7 @@ public class PluginInformationImplementation extends URLClassLoader implements P
 	private String entryPointClassName;
 
 	// Commands handled by this plugin
-	private final Set<Command> commands = new HashSet<Command>();
+	private final Set<PluginCommand> commands = new HashSet<PluginCommand>();
 
 	private final PluginType pluginType;
 
@@ -204,7 +204,7 @@ public class PluginInformationImplementation extends URLClassLoader implements P
 						break;
 					case "command":
 						String[] aliases = value.split(" ");
-						Command command = new Command(this, aliases[0]);
+						PluginCommand command = new PluginCommand(this, aliases[0]);
 
 						for (int i = 1; i < aliases.length; i++)
 							command.addAlias(aliases[i]);
@@ -302,7 +302,7 @@ public class PluginInformationImplementation extends URLClassLoader implements P
 	}
 
 	@Override
-	public Collection<Command> getCommands()
+	public Collection<PluginCommand> getCommands()
 	{
 		return commands;
 	}

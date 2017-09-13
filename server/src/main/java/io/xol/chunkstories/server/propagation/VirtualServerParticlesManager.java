@@ -7,7 +7,7 @@ import org.joml.Vector3dc;
 import io.xol.chunkstories.api.net.packets.PacketParticle;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.player.Player;
-import io.xol.chunkstories.server.Server;
+import io.xol.chunkstories.server.DedicatedServer;
 import io.xol.chunkstories.world.WorldServer;
 import io.xol.chunkstories.server.ServerPlayer;
 
@@ -19,7 +19,7 @@ public class VirtualServerParticlesManager implements ParticlesManager
 {
 	WorldServer worldServer;
 	
-	public VirtualServerParticlesManager(WorldServer worldServer, Server server)
+	public VirtualServerParticlesManager(WorldServer worldServer, DedicatedServer server)
 	{
 		this.worldServer = worldServer;
 	}

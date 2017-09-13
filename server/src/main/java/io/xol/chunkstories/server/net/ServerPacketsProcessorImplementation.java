@@ -20,14 +20,14 @@ import io.xol.chunkstories.net.PacketTypeDeclared;
 import io.xol.chunkstories.net.PacketsProcessorActual;
 import io.xol.chunkstories.net.PacketsProcessorCommon;
 import io.xol.chunkstories.net.PacketsProcessorCommon.PendingSynchPacket;
-import io.xol.chunkstories.server.Server;
+import io.xol.chunkstories.server.DedicatedServer;
 import io.xol.chunkstories.server.ServerPlayer;
 
 public class ServerPacketsProcessorImplementation extends PacketsProcessorCommon implements ServerPacketsProcessor {
 
-	final Server server;
+	final DedicatedServer server;
 	
-	public ServerPacketsProcessorImplementation(Server server) {
+	public ServerPacketsProcessorImplementation(DedicatedServer server) {
 		super(server);
 		this.server = server;
 	}

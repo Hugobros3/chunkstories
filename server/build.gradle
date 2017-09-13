@@ -27,7 +27,7 @@ buildscript {
 apply plugin: 'com.github.johnrengelman.shadow'
 
 // Define the main class for the application
-mainClassName = 'io.xol.chunkstories.server.Server'
+mainClassName = 'io.xol.chunkstories.server.DedicatedServer'
 
 dependencies {
     //compile project(':api')
