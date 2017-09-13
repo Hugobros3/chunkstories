@@ -7,8 +7,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import io.xol.chunkstories.api.animation.SkeletalAnimation;
 import org.joml.Matrix4f;
@@ -28,7 +28,7 @@ public class BVHAnimation implements SkeletalAnimation
 	float frameTime = 0f;
 
 	BVHTreeBone root;
-	public List<BVHTreeBone> bones = new ArrayList<BVHTreeBone>();
+	private Map<String, BVHTreeBone> bones = new HashMap<String, BVHTreeBone>();
 
 	public static void main(String a[]) throws FileNotFoundException
 	{
@@ -134,32 +134,11 @@ public class BVHAnimation implements SkeletalAnimation
 		load(fileInputStream);
 	}
 
-	/*public void buildAnimationCache()
-	{
-		double totalAnimationTime = frames * frameTime;
-		
-		totalCachedFrames = (int) (totalAnimationTime * RenderingConfig.animationCacheFrameRate);
-		
-		//Don't waste too much ram
-		if(totalCachedFrames * bones.size() * 64 > RenderingConfig.animationCacheMaxSize)
-			return;
-		
-		System.out.println("Building "+(totalCachedFrames * bones.size() * 64 / 1024)+"kb of animation cached data at " + RenderingConfig.animationCacheFrameRate);
-		cachedAnimations = new Matrix4f[totalCachedFrames * bones.size()];
-		//Foreach bone
-		for(BVHTreeBone bone : bones)
-		{
-			int boneId = bone.id;
-			int boneOffset = boneId * totalCachedFrames;
-			double timer = 0.0;
-			for(int f = 0; f < totalCachedFrames; f++)
-			{
-				timer += 1.0 / RenderingConfig.animationCacheFrameRate;
-				cachedAnimations[boneOffset + f] = getBoneHierarchyTransformationMatrix(bone.name, timer);
-			}
-		}
+	/*public Matrix4f getBoneHierarchyTransformationMatrix(String boneName, double animationTime) {
+		BVHTreeBone bone = getBone(boneName);
+		return bone.getTransformationMatrix(animationTime);
 	}*/
-
+	
 	public Matrix4f getBoneHierarchyTransformationMatrix(String boneName, double animationTime)
 	{
 		Matrix4f matrix = new Matrix4f();
@@ -168,21 +147,6 @@ public class BVHAnimation implements SkeletalAnimation
 			System.out.println("fack you");
 			return matrix;
 		}
-
-		System.out.println("k");
-		
-		/*if(cachedAnimations == null && RenderingConfig.animationCacheFrameRate > 0)
-		{
-			buildAnimationCache();
-		}
-		if(cachedAnimations != null && RenderingConfig.animationCacheFrameRate > 0)
-		{
-			double frameD = animationTime * 1000.0 / frameTime;
-			
-			System.out.println("that'd be the "+(int)frameD+" frame out of "+totalCachedFrames+"cached frames");
-			
-			//return cachedAnimations[];
-		}*/
 		
 		double frame = animationTime / 1000.0 / frameTime;
 
@@ -197,15 +161,11 @@ public class BVHAnimation implements SkeletalAnimation
 		int frameLower = (int) (frameLowerBound) % frames;
 		int frameUpper = (int) (frameUpperBound) % frames;
 
-		for (BVHTreeBone b : bones)
-			if (b.name.equals(boneName))
-			{
-				matrix = b.getTransformationMatrixInterpolatedRecursive(frameLower, frameUpper, interp);
-			}
+		matrix = getBone(boneName).getTransformationMatrixInterpolatedRecursive(frameLower, frameUpper, interp);
 
 		System.out.println("lel unused");
 		transformBlenderBVHExportToChunkStoriesWorldSpace(matrix);
-
+		
 		return matrix;
 	}
 
@@ -220,22 +180,18 @@ public class BVHAnimation implements SkeletalAnimation
 		
 		//Rotate the matrix first to apply the transformation in blender space
 		blender2ingame.mul(matrix, matrix);
-		//Matrix4f.mul(blender2ingame, matrix, matrix);
 
 		//Mirror it
 		Matrix4f mirror = new Matrix4f();
 		mirror.m22(-1.0f);
 		
 		mirror.mul(matrix, matrix);
-		//Matrix4f.mul(mirror, matrix, matrix);
 
 		//Rotate again after so it's back the correct way arround
 		
 		matrix.mul(blender2ingame, matrix);
-		//Matrix4f.mul(matrix, blender2ingame, matrix);
 
 		matrix.mul(mirror, matrix);
-		//Matrix4f.mul(matrix, mirror, matrix);
 
 		return matrix;
 	}
@@ -243,30 +199,26 @@ public class BVHAnimation implements SkeletalAnimation
 	public Matrix4f getOffsetMatrix(String boneName)
 	{
 		Matrix4f offsetMatrix = new Matrix4f();
-		
-		new Matrix4f();
 		Vector3f offsetTotal = new Vector3f();
 
-		//Sanity checking
-		for (BVHTreeBone b : bones)
-			if (b.name.equals(boneName))
-			{
-				//Accumulate the transformation offset
-				BVHTreeBone kek = b;
-				while (kek != null)
-				{
-					//Swap yz arround and negate input Y to apply blender -> ingame coordinates system transformation
-					offsetTotal.x = (offsetTotal.x() + kek.offset.x());
-					offsetTotal.y = (offsetTotal.y() + kek.offset.z());
-					offsetTotal.z = (offsetTotal.z() + -kek.offset.y());
-					kek = kek.parent;
-				}
-				//Negate it and build the offset matrix
-				offsetTotal.negate();
-				offsetMatrix.m30(offsetMatrix.m30() + offsetTotal.x());
-				offsetMatrix.m31(offsetMatrix.m31() + offsetTotal.y());
-				offsetMatrix.m32(offsetMatrix.m32() + offsetTotal.z());
-			}
+		BVHTreeBone bone = getBone(boneName);
+		
+		//Accumulate the transformation offset
+		BVHTreeBone loop = bone;
+		while (loop != null)
+		{
+			//Swap yz arround and negate input Y to apply blender -> ingame coordinates system transformation
+			offsetTotal.x = (offsetTotal.x() + loop.offset.x());
+			offsetTotal.y = (offsetTotal.y() + loop.offset.z());
+			offsetTotal.z = (offsetTotal.z() + -loop.offset.y());
+			loop = loop.parent;
+		}
+		
+		//Negate it and build the offset matrix
+		offsetTotal.negate();
+		offsetMatrix.m30(offsetMatrix.m30() + offsetTotal.x());
+		offsetMatrix.m31(offsetMatrix.m31() + offsetTotal.y());
+		offsetMatrix.m32(offsetMatrix.m32() + offsetTotal.z());
 
 		return offsetMatrix;
 	}
@@ -284,18 +236,15 @@ public class BVHAnimation implements SkeletalAnimation
 		matrix = getBoneHierarchyTransformationMatrix(boneName, animationTime);
 
 		//Apply the offset matrix
-		
 		matrix.mul(getOffsetMatrix(boneName));
-		//Matrix4f.mul(matrix, getOffsetMatrix(boneName), matrix);
+		
 		return matrix;
 	}
 
 	public BVHTreeBone getBone(String boneName)
 	{
-		for (BVHTreeBone bone : bones)
-			if (bone.name.equals(boneName))
-				return bone;
-		return null;
+		BVHTreeBone bone = bones.get(boneName);
+		return bone == null ? root : bone;
 	}
 
 	private void load(InputStream is)
@@ -374,10 +323,11 @@ public class BVHAnimation implements SkeletalAnimation
 					}
 					else if (line.startsWith("ROOT"))
 					{
-						root = new BVHTreeBone(items[1], null, this);
+						final String boneName = items[1];
+						root = new BVHTreeBone(boneName, null, this);
 						currentBone = root;
 						// Add to global bones list
-						bones.add(root);
+						bones.put(boneName, root);
 					}
 					else if (line.startsWith("{"))
 					{
@@ -398,11 +348,12 @@ public class BVHAnimation implements SkeletalAnimation
 					}
 					else if (line.startsWith("JOINT"))
 					{
-						BVHTreeBone newBone = new BVHTreeBone(items[1], currentBone, this);
+						final String boneName = items[1];
+						BVHTreeBone newBone = new BVHTreeBone(boneName, currentBone, this);
 						currentBone.childs.add(newBone);
 						currentBone = newBone;
 						// Add to global bones list
-						bones.add(newBone);
+						bones.put(boneName, newBone);
 					}
 					else if (line.equals("End Site"))
 					{

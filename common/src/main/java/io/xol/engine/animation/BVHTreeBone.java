@@ -19,7 +19,7 @@ public class BVHTreeBone implements SkeletonBone
 {
 	private final BVHAnimation bvh;
 	public final String name;
-	final int id;
+	//final int id;
 	
 	//Offset from 0.0.0 ( for rigging )
 	Vector3f offset;
@@ -45,30 +45,11 @@ public class BVHTreeBone implements SkeletonBone
 		this.name = name;
 		this.parent = parent;
 		this.bvh = bvh;
-		this.id = bvh.bones.size();
-	}
-
-	// Pretty recursive debug function :D
-	@Override
-	public String toString()
-	{
-		String txt = "";
-		BVHTreeBone p = parent;
-		while (p != null)
-		{
-			txt = txt + "\t";
-			p = p.parent;
-		}
-		txt += name + " " + channels + " channels, offset=" + offset.toString();// + ", dest=" + dest + "\n";
-		for (BVHTreeBone c : childs)
-			txt += c.toString();
-
-		return "[BVHTreeBone" + txt + "]";
+		//this.id = bvh.bones.size();
 	}
 
 	/**
-	 * Initializes this bone's and it's children's animationData arrays to empty floats arrays of floats 
-	 * @param frames
+	 * Initializes this bone's and it's children's animationData arrays to empty floats arrays of 
 	 */
 	public void recursiveInitMotion(int frames)
 	{
@@ -84,53 +65,6 @@ public class BVHTreeBone implements SkeletonBone
 		for (BVHTreeBone c : childs)
 			c.recursiveResetFlag();
 	}
-
-	/**
-	 * Returns a Matrix4f describing how to end up at the bone transformation at the given frame.
-	 * @param frame
-	 * @return
-	 */
-	/*public Matrix4f getTransformationMatrix(int frame)
-	{
-		//Read rotation data from where it is
-		float rotX = toRad(animationData[frame][0]);
-		float rotY = toRad(animationData[frame][1]);
-		float rotZ = toRad(animationData[frame][2]);
-		if (channels == 6)
-		{
-			rotX = toRad(animationData[frame][3]);
-			rotY = toRad(animationData[frame][4]);
-			rotZ = toRad(animationData[frame][5]);
-		}
-
-		Matrix4f matrix = new Matrix4f();
-
-		//Apply rotations
-		matrix.rotate(rotX, new Vector3f(1, 0, 0));
-		matrix.rotate(rotY, new Vector3f(0, 1, 0));
-		matrix.rotate(rotZ, new Vector3f(0, 0, 1));
-		
-		//Apply transformations
-		if (channels == 6)
-		{
-			matrix.m30 += animationData[frame][0];
-			matrix.m31 += animationData[frame][1];
-			matrix.m32 += animationData[frame][2];
-		}
-		//TODO check on that, I'm not sure if you should apply both when possible
-		else
-		{
-			matrix.m30 += offset.x;
-			matrix.m31 += offset.y;
-			matrix.m32 += offset.z;
-		}
-
-		//Apply the father transformation
-		if (parent != null)
-			Matrix4f.mul(parent.getTransformationMatrix(frame), matrix, matrix);
-
-		return matrix;
-	}*/
 	
 	/**
 	 * Returns a Matrix4f describing how to end up at the bone transformation at the given frame.
@@ -144,7 +78,6 @@ public class BVHTreeBone implements SkeletonBone
 		//Apply the father transformation
 		if (parent != null) {
 			parent.getTransformationMatrixInterpolatedRecursive(frameLower, frameUpper, t).mul(matrix, matrix);
-			//Matrix4f.mul(parent.getTransformationMatrixInterpolatedRecursive(frameLower, frameUpper, t), matrix, matrix);
 		}
 		
 		return matrix;
@@ -166,6 +99,7 @@ public class BVHTreeBone implements SkeletonBone
 		int frameUpper = (int)(frameUpperBound) % bvh.frames;
 		
 		return getTransformationMatrixInterpolatedInternal(frameLower, frameUpper, interp);
+		//return BVHAnimation.transformBlenderBVHExportToChunkStoriesWorldSpace(getTransformationMatrixInterpolatedInternal(frameLower, frameUpper, interp));
 	}
 	
 	private Matrix4f getTransformationMatrixInterpolatedInternal(int frameLower, int frameUpper, double t)
@@ -232,7 +166,7 @@ public class BVHTreeBone implements SkeletonBone
 			matrix.m32(matrix.m32() + offset.z());
 		}
 		
-		return matrix;
+		return BVHAnimation.transformBlenderBVHExportToChunkStoriesWorldSpace(matrix);
 	}
 
 	private float toRad(float f)
@@ -244,10 +178,26 @@ public class BVHTreeBone implements SkeletonBone
 	public BVHTreeBone getParent() {
 		return parent;
 	}
-
 	
 	@Override
 	public String getName() {
 		return name;
+	}
+	
+	@Override
+	public String toString()
+	{
+		String txt = "";
+		BVHTreeBone p = parent;
+		while (p != null)
+		{
+			txt = txt + "\t";
+			p = p.parent;
+		}
+		txt += name + " " + channels + " channels, offset=" + offset.toString();// + ", dest=" + dest + "\n";
+		for (BVHTreeBone c : childs)
+			txt += c.toString();
+
+		return "[BVHTreeBone" + txt + "]";
 	}
 }

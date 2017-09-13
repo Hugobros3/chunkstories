@@ -3,6 +3,7 @@ package io.xol.chunkstories.core.entity;
 import java.util.Arrays;
 
 import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.animation.CompoundAnimationHelper;
 import io.xol.chunkstories.api.animation.SkeletalAnimation;
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.DamageCause;
@@ -31,8 +32,6 @@ import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.core.entity.components.EntityComponentStance;
 import io.xol.chunkstories.core.entity.interfaces.EntityWithSelectedItem;
 import io.xol.chunkstories.voxel.VoxelsStore;
-
-import io.xol.engine.animation.CompoundAnimationHelper;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -147,7 +146,7 @@ public abstract class EntityHumanoid extends EntityLivingImplementation
 			if (boneName.endsWith("boneHead"))
 			{
 				Matrix4f modify = new Matrix4f(getAnimationPlayingForBone(boneName, animationTime).getBone(boneName).getTransformationMatrix(animationTime));
-				modify.rotate((float) (EntityHumanoid.this.getEntityRotationComponent().getVerticalRotation() / 180 * Math.PI), new Vector3f(0, 1, 0));
+				modify.rotate((float) (-EntityHumanoid.this.getEntityRotationComponent().getVerticalRotation() / 180 * Math.PI), new Vector3f(0, 0, 1));
 				return modify;
 			}
 
@@ -167,7 +166,7 @@ public abstract class EntityHumanoid extends EntityLivingImplementation
 			Matrix4f characterRotationMatrix = new Matrix4f();
 			//Only the torso is modified, the effect is replicated accross the other bones later
 			if (boneName.endsWith("boneTorso"))
-				characterRotationMatrix.rotate((90 - getEntityRotationComponent().getHorizontalRotation()) / 180f * 3.14159f, new Vector3f(0, 0, 1));
+				characterRotationMatrix.rotate((90 - getEntityRotationComponent().getHorizontalRotation()) / 180f * 3.14159f, new Vector3f(0, 1, 0));
 
 			ItemPile selectedItem = null;
 
@@ -176,20 +175,18 @@ public abstract class EntityHumanoid extends EntityLivingImplementation
 
 			if (Arrays.asList("boneArmLU", "boneArmRU").contains(boneName))
 			{
-				double k = (stance.get() == EntityHumanoidStance.CROUCHING) ? 0.65 : 0.75;
+				float k = (stance.get() == EntityHumanoidStance.CROUCHING) ? 0.65f : 0.75f;
 
 				if (selectedItem != null)
 				{
-					characterRotationMatrix.translate(new Vector3f(0f, 0f, (float) k));
-					characterRotationMatrix.rotate((getEntityRotationComponent().getVerticalRotation() + ((stance.get() == EntityHumanoidStance.CROUCHING) ? -50f : 0f)) / 180f * 3.14159f, new Vector3f(0, 1, 0));
-					characterRotationMatrix.translate(new Vector3f(0f, 0f, -(float) k));
+					characterRotationMatrix.translate(new Vector3f(0f, k, 0));
+					characterRotationMatrix.rotate((getEntityRotationComponent().getVerticalRotation() + ((stance.get() == EntityHumanoidStance.CROUCHING) ? -50f : 0f)) / 180f * -3.14159f, new Vector3f(0, 0, 1));
+					characterRotationMatrix.translate(new Vector3f(0f, -k, 0));
 					
 					
 					
 					if(stance.get() == EntityHumanoidStance.CROUCHING && EntityHumanoid.this.equals(((WorldClient)getWorld()).getClient().getPlayer().getControlledEntity()))
-						characterRotationMatrix.translate(new Vector3f(-0.25f, 0f, -0.2f));
-					
-					//characterRotationMatrix.rotate((getEntityRotationComponent().getVerticalRotation() + ((stance.get() == EntityHumanoidStance.CROUCHING) ? -50f : 0f)) / 180f * 3.14159f, new Vector3f(0, 1, 0));
+						characterRotationMatrix.translate(new Vector3f(-0.25f, -0.2f, 0f));
 					
 				}
 			}
@@ -199,7 +196,6 @@ public abstract class EntityHumanoid extends EntityLivingImplementation
 			}
 
 			return characterRotationMatrix.mul(getAnimationPlayingForBone(boneName, animationTime).getBone(boneName).getTransformationMatrix(animationTime));
-			//return Matrix4f.mul(characterRotationMatrix, getAnimationPlayingForBone(boneName, animationTime).getBone(boneName).getTransformationMatrix(animationTime), null);
 		}
 
 		public boolean shouldHideBone(RenderingInterface renderingContext, String boneName)
