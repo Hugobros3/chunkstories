@@ -6,7 +6,6 @@ package io.xol.chunkstories.renderer.terrain;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
@@ -127,12 +126,27 @@ public class SummariesArrayTexture implements SummariesTexturesHolder {
 					if(!arrayTextureContents[slot].hasData) {
 						RegionSummary sum = world.getRegionsSummariesHolder().getRegionSummary(arrayTextureContents[slot].regionX, arrayTextureContents[slot].regionZ);
 						if(sum != null && sum.isLoaded()) {
-							
-							loadHeights((RegionSummaryImplementation)sum, bb);
-							heights.uploadTextureData(slot, 0, bb);
 
-							loadTopVoxels((RegionSummaryImplementation)sum, bb);
+							loadHeights((RegionSummaryImplementation)sum, bb, 0);
+							heights.uploadTextureData(slot, 0, bb);
+							//heights.computeMipmaps();
+							
+							for(int lod = 1; lod <= 8; lod++) {
+								loadHeights((RegionSummaryImplementation)sum, bb, lod);
+								heights.uploadTextureData(slot, lod, bb);
+							}
+							heights.setMipMapping(true);
+							heights.setMipmapLevelsRange(0, 8);
+
+							loadTopVoxels((RegionSummaryImplementation)sum, bb, 0);
 							topVoxels.uploadTextureData(slot, 0, bb);
+							
+							for(int lod = 1; lod <= 8; lod++) {
+								loadTopVoxels((RegionSummaryImplementation)sum, bb, lod);
+								topVoxels.uploadTextureData(slot, lod, bb);
+							}
+							topVoxels.setMipMapping(true);
+							topVoxels.setMipmapLevelsRange(0, 8);
 							
 							arrayTextureContents[slot].hasData = true;
 						}
@@ -150,21 +164,27 @@ public class SummariesArrayTexture implements SummariesTexturesHolder {
 		}
 	}
 	
-	private void loadHeights(RegionSummaryImplementation sum, ByteBuffer bb) {
+	int size[] = {256, 128, 64, 32, 16, 8, 4, 2, 1};
+	
+	private void loadHeights(RegionSummaryImplementation sum, ByteBuffer bb, int lod) {
+		bb.clear();
 		int heights[] = sum.getHeightData();
-		for (int i = 0; i < 256 * 256; i++)
+		for (int i = 0; i < size[lod] * size[lod]; i++)
 		{
-			bb.putInt(heights[i]);
+			int j = RegionSummaryImplementation.offsets[lod] + i;
+			bb.putInt(heights[j]);
 		}
 		bb.flip();
 	}
 	
-	private void loadTopVoxels(RegionSummaryImplementation sum, ByteBuffer bb) {
+	private void loadTopVoxels(RegionSummaryImplementation sum, ByteBuffer bb, int lod) {
+		bb.clear();
 		int ids[] = sum.getVoxelData();
-		for (int i = 0; i < 256 * 256; i++)
+		for (int i = 0; i < size[lod] * size[lod]; i++)
 		{
+			int j = RegionSummaryImplementation.offsets[lod] + i;
 			//bb.putInt(ids[i]);
-			int id = ids[i];
+			int id = ids[j];
 			Voxel v = VoxelsStore.get().getVoxelById(id);
 			if (v.getType().isLiquid())
 				bb.putInt(512);
@@ -231,13 +251,11 @@ public class SummariesArrayTexture implements SummariesTexturesHolder {
 
 	@Override
 	public ArrayTexture getHeightsArrayTexture() {
-		// TODO Auto-generated method stub
 		return heights;
 	}
 
 	@Override
 	public ArrayTexture getTopVoxelsArrayTexture() {
-		// TODO Auto-generated method stub
 		return topVoxels;
 	}
 }

@@ -1,4 +1,5 @@
-#version 150 core
+#version 330
+
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
@@ -49,12 +50,36 @@ uniform float fogEndDistance;
 
 uniform usampler2DArray heights;
 uniform int lodLevel;
+uniform float textureLodLevel;
 uniform int maskPresence;
 
 //Unused
 //flat out int voxelData;
 
 uint access(usampler2DArray tex, vec2 coords) {
+	
+	if(coords.x <= 1.0) {
+		if(coords.y <= 1.0) {
+			return textureLod(tex, vec3(coords, indexIn.x), textureLodLevel).r;
+		}
+		else {
+			return textureLod(tex, vec3(coords - vec2(0.0, 1.0), indexIn.y), textureLodLevel).r;
+		}
+	}
+	else {
+		if(coords.y <= 1.0) {
+			return textureLod(tex, vec3(coords - vec2(1.0, 0.0), indexIn.z), textureLodLevel).r;
+		}
+		else {
+			return textureLod(tex, vec3(coords - vec2(1.0), indexIn.w), textureLodLevel).r;
+		}
+	}
+}
+
+/*uint access(usampler2DArray tex, vec2 coords) {
+	
+	float lod = float(lodLevel);
+	
 	if(coords.x <= 1.0) {
 		if(coords.y <= 1.0) {
 			return texture(tex, vec3(coords, indexIn.x)).r;
@@ -71,7 +96,7 @@ uint access(usampler2DArray tex, vec2 coords) {
 			return texture(tex, vec3(coords - vec2(1.0), indexIn.w)).r;
 		}
 	}
-}
+}*/
 
 void main()
 {

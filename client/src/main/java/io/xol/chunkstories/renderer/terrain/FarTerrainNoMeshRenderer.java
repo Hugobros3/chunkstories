@@ -16,7 +16,6 @@ import io.xol.chunkstories.api.rendering.Primitive;
 //http://xol.io
 
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.WorldRenderer;
 import io.xol.chunkstories.api.rendering.WorldRenderer.FarTerrainRenderer;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
@@ -175,8 +174,8 @@ public class FarTerrainNoMeshRenderer implements FarTerrainRenderer {
 			double lodExponent = 0.35;
 			
 			if(!RenderingConfig.hqTerrain) {
-				lodBias = 0.8;
-				lodExponent = 0.15;
+				lodBias = 0.4;
+				lodExponent = 0.35;
 			}
 			
 			if(mask == null) {
@@ -294,6 +293,7 @@ public class FarTerrainNoMeshRenderer implements FarTerrainRenderer {
 				gridAttributes.uploadData(auto_free_summariesAttributes);
 				
 				terrainShader.setUniform1i("lodLevel", lod);
+				terrainShader.setUniform1f("textureLodLevel", lod-5);
 				terrainShader.setUniform1i("maskPresence", mask == null ? 0 : 1);
 				
 				renderer.bindAttribute("vertexIn", grids[lod].asAttributeSource(VertexFormat.FLOAT, 3, 0, 0L));

@@ -62,6 +62,8 @@ public class RegionSummaryImplementation implements RegionSummary
 	
 	protected final Fence loadFence;
 
+	public final static int[] offsets = { 0, 65536, 81920, 86016, 87040, 87296, 87360, 87376, 87380, 87381 };
+
 	RegionSummaryImplementation(WorldRegionSummariesHolder worldSummariesHolder, int rx, int rz)
 	{
 		this.worldSummariesHolder = worldSummariesHolder;
@@ -427,8 +429,6 @@ public class RegionSummaryImplementation implements RegionSummary
 			resolution /= 2;
 		}
 	}
-
-	static int[] offsets = { 0, 65536, 81920, 86016, 87040, 87296, 87360, 87376, 87380, 87381 };
 
 	public int getHeightMipmapped(int x, int z, int level)
 	{

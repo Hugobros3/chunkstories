@@ -4,6 +4,7 @@ import io.xol.chunkstories.Constants;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
+import io.xol.chunkstories.tools.WorldTool;
 import io.xol.chunkstories.workers.Task;
 import io.xol.chunkstories.workers.TaskExecutor;
 import io.xol.chunkstories.world.WorldImplementation;
@@ -264,8 +265,8 @@ public class IOTasks extends Thread implements TaskExecutor
 				
 				//TODO Look into this properly
 				//We never want to mess with that when we are the world
-				//if(!(world instanceof WorldTool))
-				//	result.bakeVoxelLightning(false);
+				if(!(world instanceof WorldTool))
+					chunkSlot.getChunk().computeVoxelLightning(false);
 			}
 
 			//chunkSlot.setChunk(result);

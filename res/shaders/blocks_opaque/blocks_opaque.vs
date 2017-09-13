@@ -48,9 +48,7 @@ void main(){
 	//Usual variable passing
 	texCoordPassed = texCoordIn;
 	
-	//vec4 v = vec4(vertexIn.xyz, 1.0);
 	vec4 v = objectMatrix * vec4(vertexIn.xyz, 1.0);
-	//v.y += gl_VertexID / 6000.0;
 	
 	<ifdef dynamicGrass>
 	float movingness = normalIn.w;
@@ -60,8 +58,6 @@ void main(){
 		v.z += cos(time + v.x*1.5 + 0.3) * 0.1;
 	}
 	<endif dynamicGrass>
-	
-	//v+=vec4(objectPosition,0);
 	
 	vertexPassed = v;
 	normalPassed =  (normalIn.xyz-0.5)*2.0;//normalIn;

@@ -121,7 +121,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 				//chunk.setChunkData(null);
 
 			//TODO make that a task ?
-			//chunk.computeVoxelLightning(true);
+			holder.getChunk().computeVoxelLightning(true);
 
 			//Remove any object preventing us from asking it again
 			//ChunkLocation loc = new ChunkLocation(chunkX, chunkY, chunkZ);
