@@ -23,7 +23,7 @@ public class ModerationCommands extends ServerCommandBasic {
 
 	@Override
 	public boolean handleCommand(CommandEmitter emitter, Command command, String[] arguments) {
-		if (command.equals("kick") && emitter.hasPermission("server.admin.kick"))
+		if (command.getName().equals("kick") && emitter.hasPermission("server.admin.kick"))
 		{
 			if(arguments.length >= 1) {
 				Player clientByName = server.getPlayerByName(arguments[0]);
@@ -52,6 +52,7 @@ public class ModerationCommands extends ServerCommandBasic {
 				emitter.sendMessage("Syntax: /kick <playerName> [reason]");
 			}
 		}
+		//TODO ban/unban commands
 		return false;
 	}
 

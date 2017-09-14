@@ -20,7 +20,7 @@ public class StopTheFuckingTree extends ServerCommandBasic{
 
 	@Override
 	public boolean handleCommand(CommandEmitter emitter, Command command, String[] arguments) {
-		if (command.equals("stop") && emitter.hasPermission("server.stop"))
+		if (command.getName().equals("stop") && emitter.hasPermission("server.stop"))
 		{
 			if(server instanceof DedicatedServer) {
 				emitter.sendMessage("Stopping server.");

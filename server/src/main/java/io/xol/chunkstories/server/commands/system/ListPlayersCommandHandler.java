@@ -21,7 +21,7 @@ public class ListPlayersCommandHandler extends ServerCommandBasic {
 
 	@Override
 	public boolean handleCommand(CommandEmitter emitter, Command command, String[] arguments) {
-		if (command.equals("list"))
+		if (command.getName().equals("list"))
 		{
 			String list = "";
 

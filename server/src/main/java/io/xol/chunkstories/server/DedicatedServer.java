@@ -26,6 +26,7 @@ import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.plugin.DefaultPluginManager;
 import io.xol.chunkstories.content.GameContentStore;
 import io.xol.chunkstories.server.commands.DedicatedServerConsole;
+import io.xol.chunkstories.server.commands.InstallServerCommands;
 import io.xol.chunkstories.server.net.ServerAnnouncerThread;
 import io.xol.chunkstories.server.net.UserConnection;
 import io.xol.chunkstories.server.net.ServerConnectionsManager;
@@ -124,6 +125,8 @@ public class DedicatedServer implements Runnable, ServerInterface
 			// load users privs
 			// UsersPrivilegesFile.load();
 			pluginsManager = new DefaultServerPluginManager(this);
+			
+			new InstallServerCommands(this);
 
 			// Load the world(s)
 			String worldName = serverConfig.getString("world", "world");

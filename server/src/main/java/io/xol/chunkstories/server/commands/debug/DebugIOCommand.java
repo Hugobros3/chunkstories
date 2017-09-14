@@ -19,7 +19,7 @@ public class DebugIOCommand extends ServerCommandBasic{
 
 	@Override
 	public boolean handleCommand(CommandEmitter emitter, Command command, String[] arguments) {
-		if (command.equals("io") && emitter.hasPermission("server.debug"))
+		if (command.getName().equals("io") && emitter.hasPermission("server.debug"))
 		{
 			emitter.sendMessage("#00FFD0" + ((WorldImplementation)server.getWorld()).ioHandler);
 			((WorldImplementation)server.getWorld()).ioHandler.dumpIOTaks();

@@ -9,23 +9,20 @@ import io.xol.chunkstories.server.commands.ServerCommandBasic;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class SayCommandHandler extends ServerCommandBasic {
+public class SaveCommand extends ServerCommandBasic {
 
-	public SayCommandHandler(ServerInterface serverConsole) {
+	public SaveCommand(ServerInterface serverConsole) {
 		super(serverConsole);
-		server.getPluginManager().registerCommand("say").setHandler(this);
+		server.getPluginManager().registerCommand("save").setHandler(this);
 	}
 
 	@Override
 	public boolean handleCommand(CommandEmitter emitter, Command command, String[] arguments) {
-		if (command.equals("say") && emitter.hasPermission("server.admin"))
+		if (command.getName().equals("save") && emitter.hasPermission("server.admin.forcesave"))
 		{
-			String message = "";
-			for(String a : arguments)
-			{
-				message+=a+" ";
-			}
-			server.broadcastMessage("#FFFF00SERVER: "+message);
+			emitter.sendMessage("#00FFD0Saving the world...");
+			server.getWorld().saveEverything();
+			return true;
 		}
 		return false;
 	}

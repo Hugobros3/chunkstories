@@ -20,7 +20,7 @@ public class DebugWorldDataCommands extends ServerCommandBasic {
 
 	@Override
 	public boolean handleCommand(CommandEmitter emitter, Command command, String[] arguments) {
-		if (command.equals("region") && emitter.hasPermission("server.debug"))
+		if (command.getName().equals("region") && emitter.hasPermission("server.debug"))
 		{
 			Player player = (Player) emitter;
 

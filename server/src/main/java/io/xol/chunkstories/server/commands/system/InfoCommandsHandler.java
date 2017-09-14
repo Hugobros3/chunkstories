@@ -30,12 +30,12 @@ public class InfoCommandsHandler extends ServerCommandBasic{
 
 	@Override
 	public boolean handleCommand(CommandEmitter emitter, Command cmd, String[] arguments) {
-		if (cmd.equals("uptime"))
+		if (cmd.getName().equals("uptime"))
 		{
 			emitter.sendMessage("#00FFD0The server has been running for " + server.getUptime() + " seconds.");
 			return true;
 		}
-		else if (cmd.equals("info"))
+		else if (cmd.getName().equals("info"))
 		{
 			emitter.sendMessage("#00FFD0The server's ip is " + server.getPublicIp());
 			emitter.sendMessage("#00FFD0It's running version " + VersionInfo.version + " of the server software.");
@@ -43,7 +43,7 @@ public class InfoCommandsHandler extends ServerCommandBasic{
 			emitter.sendMessage("#00FFD0" + Runtime.getRuntime().freeMemory() / 1024 / 1024 + "Mb used out of " + Runtime.getRuntime().maxMemory() / 1024 / 1024 + "Mb allocated");
 			return true;
 		}
-		else if (cmd.equals("help"))
+		else if (cmd.getName().equals("help"))
 		{
 			emitter.sendMessage("#00FFD0Avaible commands :");
 			emitter.sendMessage("#00FFD0" + " /plugins");
@@ -58,7 +58,7 @@ public class InfoCommandsHandler extends ServerCommandBasic{
 			return true;
 
 		}
-		else if (cmd.equals("plugins"))
+		else if (cmd.getName().equals("plugins"))
 		{
 			String list = "";
 			
@@ -72,7 +72,7 @@ public class InfoCommandsHandler extends ServerCommandBasic{
 			return true;
 
 		}
-		else if (cmd.equals("mods"))
+		else if (cmd.getName().equals("mods"))
 		{
 			String list = "";
 			int i = 0;
