@@ -15,47 +15,47 @@ buildscript {
     }
     dependencies {
         classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.1'
+		classpath 'edu.sc.seis.gradle:launch4j:2.4.1'
     }
 }
 
-apply plugin: 'com.github.johnrengelman.shadow'
+//apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'edu.sc.seis.launch4j'
 
 // Define the main class for the application
 mainClassName = 'io.xol.chunkstories.updater.ChunkStoriesLauncher'
 
 dependencies {
     //compile project(':core')
-    //compile project(':common')
+    compile project(':common')
 }
 
 jar {
-	archivesBaseName = 'server-naked'
-}
-
-jar {
+	archivesBaseName = 'launcher'
+	
 	manifest {
-		attributes  'Implementation-Title': 'Chunk Stories Server',
-					'Implementation-Version': version
+		attributes  'Implementation-Title': 'Chunk Stories Launcher',
+					'Implementation-Version': version,
+					'Main-Class': project.mainClassName
 	}
 	
-   classifier = 'bare'
-}
-
-shadowJar {
-   baseName = 'launcher'
    classifier = null
-   //version = null
-}
-
-run { 
-    /* Need to split the space-delimited value in the exec.args */
-	//println "Running server; Setting project dir : " + rootProject.projectDir
+   
+   from(sourceSets.main.output.classesDir) {
+		include '**'
+	}
+	//include '**/persistence/**/*'
 	
-	//workingDir = rootProject.projectDir
-    //args new String("--dir="+rootProject.projectDir).split()
+	from(project(":common").sourceSets.main.output.classesDir) {
+		//exclude '*'
+		include '**/io/xol/chunkstories/content/GameDirectory.class', 'io/xol/chunkstories/bugsreporter/*.class*'
+	}
+	
+	includeEmptyDirs = false
 }
 
-configurations.archives.with { artifacts.remove artifacts.find { it.archiveTask.is distZip } } 
-configurations.archives.with { artifacts.remove artifacts.find { it.archiveTask.is distTar } } 
-configurations.archives.with { artifacts.remove artifacts.find { it.archiveTask.is shadowDistZip } } 
-configurations.archives.with { artifacts.remove artifacts.find { it.archiveTask.is shadowDistTar } } 
+launch4j {
+	mainClassName = project.mainClassName;//'com.example.myapp.Start'
+	
+	icon = "${projectDir}/favicon.ico"
+}

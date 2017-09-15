@@ -20,6 +20,8 @@ import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 
+import io.xol.chunkstories.content.GameDirectory;
+
 //import io.xol.chunkstories.content.GameDirectory;
 
 public class ChunkStoriesLauncher{
@@ -53,7 +55,7 @@ public class ChunkStoriesLauncher{
 		window.setResizable(false);
 		window.setLayout(null);
 		try {
-			window.setIconImage(ImageIO.read(ChunkStoriesLauncher.class.getResourceAsStream("/res/gfx/icon128.png")));
+			window.setIconImage(ImageIO.read(ChunkStoriesLauncher.class.getResourceAsStream("/gfx/icon128.png")));
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();

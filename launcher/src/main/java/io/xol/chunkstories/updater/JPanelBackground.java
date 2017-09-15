@@ -26,8 +26,8 @@ public class JPanelBackground extends JPanel{
 		super();
 
 		try {
-			logo = ImageIO.read(getClass().getResourceAsStream("/res/gfx/logo.png"));
-			bg = ImageIO.read(getClass().getResourceAsStream("/res/gfx/bg.png"));
+			logo = ImageIO.read(getClass().getResourceAsStream("/gfx/logo.png"));
+			bg = ImageIO.read(getClass().getResourceAsStream("/gfx/bg.png"));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
