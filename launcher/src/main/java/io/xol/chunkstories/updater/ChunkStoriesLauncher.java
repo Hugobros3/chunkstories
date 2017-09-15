@@ -20,7 +20,7 @@ import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 
-import io.xol.chunkstories.content.GameDirectory;
+//import io.xol.chunkstories.content.GameDirectory;
 
 public class ChunkStoriesLauncher{
 	

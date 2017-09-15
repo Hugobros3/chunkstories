@@ -1,0 +1,61 @@
+
+
+// Apply the java plugin to add support for Java
+apply plugin: 'java'
+
+// Apply the application plugin to add support for building an application
+apply plugin: 'application'
+
+version = '1.1'
+description = 'Game launcher & updater'
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.1'
+    }
+}
+
+apply plugin: 'com.github.johnrengelman.shadow'
+
+// Define the main class for the application
+mainClassName = 'io.xol.chunkstories.updater.ChunkStoriesLauncher'
+
+dependencies {
+    //compile project(':core')
+    //compile project(':common')
+}
+
+jar {
+	archivesBaseName = 'server-naked'
+}
+
+jar {
+	manifest {
+		attributes  'Implementation-Title': 'Chunk Stories Server',
+					'Implementation-Version': version
+	}
+	
+   classifier = 'bare'
+}
+
+shadowJar {
+   baseName = 'launcher'
+   classifier = null
+   //version = null
+}
+
+run { 
+    /* Need to split the space-delimited value in the exec.args */
+	//println "Running server; Setting project dir : " + rootProject.projectDir
+	
+	//workingDir = rootProject.projectDir
+    //args new String("--dir="+rootProject.projectDir).split()
+}
+
+configurations.archives.with { artifacts.remove artifacts.find { it.archiveTask.is distZip } } 
+configurations.archives.with { artifacts.remove artifacts.find { it.archiveTask.is distTar } } 
+configurations.archives.with { artifacts.remove artifacts.find { it.archiveTask.is shadowDistZip } } 
+configurations.archives.with { artifacts.remove artifacts.find { it.archiveTask.is shadowDistTar } } 
