@@ -201,6 +201,7 @@ public abstract class DefaultPluginManager implements PluginManager
 		}
 		
 		// Remove registered commands
+		// TODO only remove plugins commands
 		commandsAliases.clear();
 		commands.clear();
 		
@@ -223,8 +224,13 @@ public abstract class DefaultPluginManager implements PluginManager
 	@Override
 	public SystemCommand registerCommand(String commandName, String... aliases) {
 		SystemCommand command = new SystemCommand(pluginExecutionContext, commandName);
-		for(String alias : aliases)
+		for(String alias : aliases) {
 			command.addAlias(alias);
+			commandsAliases.put(alias, command);
+		}
+		
+		this.commands.add(command);
+		commandsAliases.put(commandName, command);
 		
 		return command;
 	}
@@ -241,7 +247,7 @@ public abstract class DefaultPluginManager implements PluginManager
 		Command command = findCommandUsingAlias(commandName);
 		if (command == null)
 			return false;
-
+		
 		try
 		{
 			CommandHandler handler = command.getHandler();

@@ -125,8 +125,6 @@ public class DedicatedServer implements Runnable, ServerInterface
 			// load users privs
 			// UsersPrivilegesFile.load();
 			pluginsManager = new DefaultServerPluginManager(this);
-			
-			new InstallServerCommands(this);
 
 			// Load the world(s)
 			String worldName = serverConfig.getString("world", "world");
@@ -162,6 +160,7 @@ public class DedicatedServer implements Runnable, ServerInterface
 			
 			// Load plugins
 			pluginsManager.reloadPlugins();
+			new InstallServerCommands(this);
 
 			//Finally start logic
 			world.startLogic();

@@ -7,7 +7,6 @@ import io.xol.chunkstories.api.mods.Mod;
 import io.xol.chunkstories.api.plugin.ChunkStoriesPlugin;
 import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
-import io.xol.chunkstories.api.plugin.commands.ServerConsole;
 import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.server.commands.ServerCommandBasic;
 
@@ -86,6 +85,7 @@ public class InfoCommandsHandler extends ServerCommandBasic{
 
 		}
 		
+		System.out.println("fuck off");
 		return false;
 	}
 
