@@ -6,9 +6,7 @@ import org.lwjgl.system.MemoryUtil;
 
 import io.xol.chunkstories.api.Content.Voxels;
 import io.xol.chunkstories.api.math.Math2;
-import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.api.rendering.world.ChunkRenderable;
-import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
@@ -32,7 +30,6 @@ import io.xol.chunkstories.workers.Task;
 import io.xol.chunkstories.workers.TaskExecutor;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.engine.base.MemFreeByteBuffer;
-import io.xol.engine.graphics.geometry.VertexBufferGL;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

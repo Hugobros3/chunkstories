@@ -291,7 +291,6 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 		}
 	}
 	
-
 	private void glInfo()
 	{
 		// Will print some debug information on the openGL context

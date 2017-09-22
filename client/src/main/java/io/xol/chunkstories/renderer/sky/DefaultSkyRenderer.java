@@ -17,7 +17,6 @@ import java.nio.FloatBuffer;
 
 import org.lwjgl.BufferUtils;
 
-
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
@@ -140,8 +139,6 @@ public class DefaultSkyRenderer implements SkyboxRenderer
 		
 		shaderInterface.setUniform3f("sunPos", sunPos.x(), sunPos.y(), sunPos.z());
 		
-		//shaderInterface.setUniform1f("fogStartDistance", 200000);
-		//shaderInterface.setUniform1f("fogEndDistance", 200000);
 		shaderInterface.setUniform1f("dayTime", this.time);
 		shaderInterface.setUniform1f("overcastFactor", world.getWeather());
 	}

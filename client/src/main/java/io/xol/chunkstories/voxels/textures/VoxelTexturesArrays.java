@@ -4,13 +4,11 @@ import static org.lwjgl.opengl.GL11.glGetInteger;
 import static org.lwjgl.opengl.GL20.GL_MAX_TEXTURE_IMAGE_UNITS;
 import static org.lwjgl.opengl.GL30.GL_MAX_ARRAY_TEXTURE_LAYERS;
 
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -22,12 +20,12 @@ import io.xol.chunkstories.api.mods.AssetHierarchy;
 import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogLevel;
 import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogType;
 import io.xol.chunkstories.content.GameContentStore;
-import io.xol.chunkstories.voxel.VoxelTextureAtlased;
 import io.xol.chunkstories.voxel.VoxelsStore;
 
 public class VoxelTexturesArrays {
 	
 	private final GameContentStore content;
+	@SuppressWarnings("unused")
 	private final VoxelsStore voxels;
 	
 	public VoxelTexturesArrays(VoxelsStore voxels)

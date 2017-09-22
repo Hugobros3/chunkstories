@@ -219,7 +219,7 @@ public class LocalServerContext implements ClientInterface, ServerInterface
 	{
 		// TODO Auto-generated method stub
 		// TODO Grant-all permissions system ?
-		return null;
+		return permissionsManager;
 	}
 
 	@Override

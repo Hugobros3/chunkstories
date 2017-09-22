@@ -10,8 +10,8 @@ allprojects {
 	}
 }
 
-version = '2017.09.10'
-//version = 'Alpha1.0rc4'
+//version = '2017.09.10'
+version = 'Alpha1.0rc4'
 description = 'A voxel game and game engine designed for modders'
 group = 'io.xol.chunkstories'
 

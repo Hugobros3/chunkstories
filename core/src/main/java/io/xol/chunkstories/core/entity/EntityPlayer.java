@@ -86,8 +86,8 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 	protected boolean noclip = true;
 	
 	//Nasty bullshit
-	float lastPX = -1f;
-	float lastPY = -1f;
+	double lastPX = -1f;
+	double lastPY = -1f;
 
 	Location lastCameraLocation;
 
@@ -123,33 +123,33 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 	{
 		if (isDead())
 			return;
-		float cPX = (float)controller.getInputsManager().getMouse().getCursorX();
-		float cPY = (float)controller.getInputsManager().getMouse().getCursorY();
+		double cPX = controller.getInputsManager().getMouse().getCursorX();
+		double cPY = controller.getInputsManager().getMouse().getCursorY();
 		
-		float dx = 0, dy = 0;
+		double dx = 0, dy = 0;
 		if (lastPX != -1f)
 		{
-			dx = cPX - controller.getWindow().getWidth() / 2;
-			dy = cPY - controller.getWindow().getHeight() / 2;
+			dx = cPX - controller.getWindow().getWidth() / 2.0;
+			dy = cPY - controller.getWindow().getHeight() / 2.0;
 		}
 		lastPX = cPX;
 		lastPY = cPY;
 		
-		float rotH = this.getEntityRotationComponent().getHorizontalRotation();
-		float rotV = this.getEntityRotationComponent().getVerticalRotation();
+		double rotH = this.getEntityRotationComponent().getHorizontalRotation();
+		double rotV = this.getEntityRotationComponent().getVerticalRotation();
 
-		float modifier = 1.0f;
+		double modifier = 1.0f;
 		if (this.getSelectedItemComponent().getSelectedItem() != null && this.getSelectedItemComponent().getSelectedItem().getItem() instanceof ItemZoom)
 		{
 			ItemZoom item = (ItemZoom) this.getSelectedItemComponent().getSelectedItem().getItem();
-			modifier = 1.0f / item.getZoomFactor();
+			modifier = 1.0 / item.getZoomFactor();
 		}
 		
-		rotH += dx * modifier / 3f * controller.getClient().renderingConfig().getMouseSensitivity();//RenderingConfig.mouseSensitivity;
+		rotH += dx * modifier / 3f * controller.getClient().renderingConfig().getMouseSensitivity();
 		rotV -= dy * modifier / 3f * controller.getClient().renderingConfig().getMouseSensitivity();
 		this.getEntityRotationComponent().setRotation(rotH, rotV);
 		
-		controller.getInputsManager().getMouse().setMouseCursorLocation(controller.getWindow().getWidth() / 2, controller.getWindow().getHeight() / 2);
+		controller.getInputsManager().getMouse().setMouseCursorLocation(controller.getWindow().getWidth() / 2.0, controller.getWindow().getHeight() / 2.0);
 	}
 
 	// Server-side updating
