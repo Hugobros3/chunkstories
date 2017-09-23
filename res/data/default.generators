@@ -14,4 +14,3 @@ end
 generator noise
 	class: io.xol.chunkstories.core.generator.NoiseWorldGenerator
 end
-

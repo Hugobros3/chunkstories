@@ -4,8 +4,10 @@ import java.util.Random;
 
 import io.xol.chunkstories.api.Content.WorldGenerators.WorldGeneratorType;
 import io.xol.chunkstories.api.math.random.SeededSimplexNoiseGenerator;
+import io.xol.chunkstories.api.world.generator.environment.DefaultWorldEnvironment;
 import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.api.world.WorldGenerator;
+import io.xol.chunkstories.api.world.generator.environment.WorldEnvironment;
+import io.xol.chunkstories.api.world.generator.WorldGenerator;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -14,6 +16,7 @@ import io.xol.chunkstories.api.world.chunk.Chunk;
 
 public class HorizonGenerator extends WorldGenerator
 {
+	DefaultWorldEnvironment worldEnv;
 	Random rnd = new Random();
 	SeededSimplexNoiseGenerator ssng;
 	
@@ -24,6 +27,7 @@ public class HorizonGenerator extends WorldGenerator
 		super(type, w);
 		ssng = new SeededSimplexNoiseGenerator(w.getWorldInfo().getSeed());
 		worldSizeInBlocks = world.getSizeInChunks() * 32;
+		worldEnv = new DefaultWorldEnvironment(world);
 	}
 	
 	@Override
@@ -125,5 +129,10 @@ public class HorizonGenerator extends WorldGenerator
 		//if(finalHeight < 60)
 		//	return 128;
 		return 2;
+	}
+
+	@Override
+	public WorldEnvironment getEnvironment() {
+		return worldEnv;
 	}
 }

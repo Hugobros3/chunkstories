@@ -11,6 +11,7 @@ import io.xol.chunkstories.api.entity.interfaces.EntityOverlay;
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.math.Math2;
 import org.joml.Matrix4f;
+import org.joml.Vector3dc;
 import org.joml.Vector3f;
 import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.GameWindow;
@@ -215,7 +216,8 @@ public class WorldRendererImplementation implements WorldRenderer
 		renderingInterface.bindMaterialTexture(worldTextures.blocksMaterialTexture);
 
 		renderingInterface.bindTexture2D("lightColors", worldTextures.lightmapTexture);
-		renderingInterface.bindTexture2D("vegetationColorTexture", getGrassTexture());
+		renderingInterface.bindTexture2D("vegetationColorTexture", world.getGenerator().getEnvironment().getGrassTexture(renderingInterface));
+		//renderingInterface.bindTexture2D("vegetationColorTexture", getGrassTexture());
 
 		//Set texturing arguments
 		worldTextures.blocksAlbedoTexture.setTextureWrapping(false);
@@ -237,7 +239,7 @@ public class WorldRendererImplementation implements WorldRenderer
 		opaqueBlocksShader.setUniform1f("mapSize", world.getSizeInChunks() * 32);
 		opaqueBlocksShader.setUniform1f("shadowVisiblity", shadower.getShadowVisibility());
 		opaqueBlocksShader.setUniform1f("overcastFactor", world.getWeather());
-		opaqueBlocksShader.setUniform1f("wetness", getWorldWetness());
+		opaqueBlocksShader.setUniform1f("wetness", world.getGenerator().getEnvironment().getWorldWetness(renderingInterface.getCamera().getCameraPosition()));
 		opaqueBlocksShader.setUniform1f("time", animationTimer);
 
 		opaqueBlocksShader.setUniform2f("screenSize", gameWindow.getWidth(), gameWindow.getHeight());
@@ -352,7 +354,7 @@ public class WorldRendererImplementation implements WorldRenderer
 		entitiesShader.setUniform1f("time", animationTimer);
 
 		entitiesShader.setUniform1f("overcastFactor", world.getWeather());
-		entitiesShader.setUniform1f("wetness", getWorldWetness());
+		entitiesShader.setUniform1f("wetness", world.getGenerator().getEnvironment().getWorldWetness(renderingContext.getCamera().getCameraPosition()));
 
 		renderingContext.currentShader().setUniform1f("useColorIn", 0.0f);
 		renderingContext.currentShader().setUniform1f("useNormalIn", 1.0f);
@@ -369,10 +371,12 @@ public class WorldRendererImplementation implements WorldRenderer
 	public void renderShadedBlocks(RenderingInterface renderingContext, ComputedShadowMap sun_shadowMap)
 	{
 		ShaderInterface applyShadowsShader = renderingContext.useShader("shadows_apply");
-		setupShadowColors(applyShadowsShader);
+		
+		world.getGenerator().getEnvironment().setupShadowColors(renderingContext, applyShadowsShader);
+		//setupShadowColors(applyShadowsShader);
 
 		applyShadowsShader.setUniform1f("overcastFactor", world.getWeather());
-		applyShadowsShader.setUniform1f("wetness", getWorldWetness());
+		applyShadowsShader.setUniform1f("wetness", world.getGenerator().getEnvironment().getWorldWetness(renderingContext.getCamera().getCameraPosition()));
 
 		renderingContext.setDepthTestMode(DepthTestMode.DISABLED);
 		renderingContext.setBlendMode(BlendMode.DISABLED);
@@ -721,52 +725,6 @@ public class WorldRendererImplementation implements WorldRenderer
 		}
 	}
 	
-	//TODO Make that a world generator returned value
-	private float getWorldWetness()
-	{
-		float wetFactor = Math.min(Math.max(0.0f, world.getWeather() - 0.5f) / 0.3f, 1.0f);
-
-		//Special case of cancelling out by snow
-		Entity e = Client.getInstance().getPlayer().getControlledEntity();
-		if (e != null)
-		{
-			return wetFactor * (1f - Math2.clamp((e.getLocation().y() - 110) / 20, 0, 1));
-		}
-
-		return wetFactor;
-	}
-	
-	//TODO ask the world generator the location of that
-	public Texture2D getGrassTexture()
-	{
-		Texture2D vegetationTexture = null;
-		if (world.getFolderPath() != null)
-			vegetationTexture = TexturesHandler.getTexture(world.getFolderPath() + "/grassColor.png");
-		if (vegetationTexture == null || vegetationTexture == TexturesHandler.nullTexture())
-			vegetationTexture = TexturesHandler.getTexture("./textures/environement/grassColor.png");
-		vegetationTexture.setMipMapping(false);
-		vegetationTexture.setLinearFiltering(true);
-		return vegetationTexture;
-	}
-	
-	//TODO make those configurables by the world generator
-	public void setupShadowColors(ShaderInterface shader)
-	{
-		float sunLightFactor = Math.min(Math.max(0.0f, world.getWeather() - 0.0f) / 1.0f, 1.0f);
-
-		shader.setUniform1f("shadowStrength", 1.0f);
-
-		//shader.setUniform3f("sunColor", Math2.mix(new Vector3f(0.80f, 0.80f, 0.69f), new Vector3f(0.5f), sunLightFactor));
-		shader.setUniform3f("sunColor", Math2.mix(new Vector3f(1.0f), new Vector3f(0.5f), sunLightFactor));
-
-		float shadowBrightness = 0.5f / 255f;
-		Vector3f shadowColorSunny = new Vector3f(0.0f, 88f * shadowBrightness, 150f * shadowBrightness);
-		shadowColorSunny = Math2.mix(shadowColorSunny, new Vector3f(shadowBrightness * 255f), 0.5f);
-
-		Vector3f shadowColor = Math2.mix(shadowColorSunny, new Vector3f(0.5f), sunLightFactor);
-		shader.setUniform3f("shadowColor", shadowColor);
-	}
-
 	@Override
 	public void flagChunksModified()
 	{

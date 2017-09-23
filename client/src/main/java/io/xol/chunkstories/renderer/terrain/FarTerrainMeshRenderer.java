@@ -49,7 +49,7 @@ public class FarTerrainMeshRenderer implements FarTerrainRenderer
 	private static final int TRIANGLE_SIZE = 3; // 3 vertex per triangles
 	private static final int VERTEX_SIZE = 3; // A vertex is 3 coordinates : xyz
 
-	private static final int[] offsets = { 0, 65536, 81920, 86016, 87040, 87296, 87360, 87376, 87380, 87381 };
+	//private static final int[] offsets = { 0, 65536, 81920, 86016, 87040, 87296, 87360, 87376, 87380, 87381 };
 
 	//Single 6Mb Buffer
 	private ByteBuffer regionMeshBuffer = BufferUtils.createByteBuffer(256 * 256 * 5 * TRIANGLE_SIZE * VERTEX_SIZE * TRIANGLES_PER_FACE * (8 + 4));
@@ -67,8 +67,8 @@ public class FarTerrainMeshRenderer implements FarTerrainRenderer
 	private int centerChunkX = -1;
 	private int centerChunkZ = -1;
 	
-	private int lastRegionX = -1;
-	private int lastRegionZ = -1;
+	//private int lastRegionX = -1;
+	//private int lastRegionZ = -1;
 
 	@SuppressWarnings("unused")
 	private int lastLevelDetail = -1;
@@ -143,10 +143,10 @@ public class FarTerrainMeshRenderer implements FarTerrainRenderer
 		return blockTexturesSummary;
 	}
 
-	public void renderTerrain(RenderingInterface renderingContext, ReadyVoxelMeshesMask mask)
+	public void renderTerrain(RenderingInterface renderer, ReadyVoxelMeshesMask mask)
 	{
 		//Check for world updates
-		Vector3dc cameraPosition = renderingContext.getCamera().getCameraPosition();
+		Vector3dc cameraPosition = renderer.getCamera().getCameraPosition();
 		
 		int xCoordinates = ((int)(double)cameraPosition.x());
 		int zCoordinates = ((int)(double)cameraPosition.z());
@@ -169,9 +169,9 @@ public class FarTerrainMeshRenderer implements FarTerrainRenderer
 		}
 		
 		//Setup shader etc
-		ShaderInterface terrainShader = renderingContext.useShader("terrain");
-		renderingContext.setBlendMode(BlendMode.DISABLED);
-		renderingContext.getCamera().setupShader(terrainShader);
+		ShaderInterface terrainShader = renderer.useShader("terrain");
+		renderer.setBlendMode(BlendMode.DISABLED);
+		renderer.getCamera().setupShader(terrainShader);
 		worldRenderer.getSky().setupShader(terrainShader);
 
 		terrainShader.setUniform3f("sunPos", worldRenderer.getSky().getSunPosition());
@@ -180,31 +180,34 @@ public class FarTerrainMeshRenderer implements FarTerrainRenderer
 		worldRenderer.worldTextures.waterNormalTexture.setLinearFiltering(true);
 		worldRenderer.worldTextures.waterNormalTexture.setMipMapping(true);
 
-		renderingContext.bindCubemap("environmentCubemap", worldRenderer.renderBuffers.rbEnvironmentMap);
-		renderingContext.bindTexture2D("sunSetRiseTexture", worldRenderer.worldTextures.sunGlowTexture);
-		renderingContext.bindTexture2D("skyTextureSunny", worldRenderer.worldTextures.skyTextureSunny);
-		renderingContext.bindTexture2D("skyTextureRaining", worldRenderer.worldTextures.skyTextureRaining);
-		renderingContext.bindTexture2D("blockLightmap", worldRenderer.worldTextures.lightmapTexture);
+		renderer.bindCubemap("environmentCubemap", worldRenderer.renderBuffers.rbEnvironmentMap);
+		renderer.bindTexture2D("sunSetRiseTexture", worldRenderer.worldTextures.sunGlowTexture);
+		renderer.bindTexture2D("skyTextureSunny", worldRenderer.worldTextures.skyTextureSunny);
+		renderer.bindTexture2D("skyTextureRaining", worldRenderer.worldTextures.skyTextureRaining);
+		renderer.bindTexture2D("blockLightmap", worldRenderer.worldTextures.lightmapTexture);
 		Texture2D lightColors = TexturesHandler.getTexture("./textures/environement/lightcolors.png");
 
-		renderingContext.bindTexture2D("lightColors", lightColors);
-		renderingContext.bindTexture2D("normalTexture", worldRenderer.worldTextures.waterNormalTexture);
-		worldRenderer.setupShadowColors(terrainShader);
+		renderer.bindTexture2D("lightColors", lightColors);
+		renderer.bindTexture2D("normalTexture", worldRenderer.worldTextures.waterNormalTexture);
+		
+		world.getGenerator().getEnvironment().setupShadowColors(renderer, terrainShader);
+		//worldRenderer.setupShadowColors(terrainShader);
 		terrainShader.setUniform1f("time", worldRenderer.getSky().time);
 
-		renderingContext.bindTexture2D("vegetationColorTexture", worldRenderer.getGrassTexture());
+		renderer.bindTexture2D("vegetationColorTexture", world.getGenerator().getEnvironment().getGrassTexture(renderer));
+		//renderingContext.bindTexture2D("vegetationColorTexture", worldRenderer.getGrassTexture());
 		terrainShader.setUniform1f("mapSize", world.getSizeInChunks() * 32);
 
 		//TODO hidden inputs ?
-		if(renderingContext.getClient().getInputsManager().getInputByName("wireframeFarTerrain").isPressed() && RenderingConfig.isDebugAllowed)
-			renderingContext.setPolygonFillMode(PolygonFillMode.WIREFRAME);
+		if(renderer.getClient().getInputsManager().getInputByName("wireframeFarTerrain").isPressed() && RenderingConfig.isDebugAllowed)
+			renderer.setPolygonFillMode(PolygonFillMode.WIREFRAME);
 
-		if(!renderingContext.getClient().getInputsManager().getInputByName("hideFarTerrain").isPressed() && RenderingConfig.isDebugAllowed)
-			drawTerrainBits(renderingContext, mask, terrainShader);
+		if(!renderer.getClient().getInputsManager().getInputByName("hideFarTerrain").isPressed() && RenderingConfig.isDebugAllowed)
+			drawTerrainBits(renderer, mask, terrainShader);
 		
-		renderingContext.flush();
+		renderer.flush();
 
-		renderingContext.setPolygonFillMode(PolygonFillMode.FILL);
+		renderer.setPolygonFillMode(PolygonFillMode.FILL);
 	}
 	
 	List<FarTerrainBaker.RegionMesh> regionsMeshesToRenderSorted = new ArrayList<FarTerrainBaker.RegionMesh>();

@@ -3,8 +3,10 @@ package io.xol.chunkstories.core.generator;
 import java.util.Random;
 
 import io.xol.chunkstories.api.Content.WorldGenerators.WorldGeneratorType;
+import io.xol.chunkstories.api.world.generator.environment.DefaultWorldEnvironment;
 import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.api.world.WorldGenerator;
+import io.xol.chunkstories.api.world.generator.environment.WorldEnvironment;
+import io.xol.chunkstories.api.world.generator.WorldGenerator;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -13,12 +15,14 @@ import io.xol.chunkstories.api.world.chunk.Chunk;
 
 public class FlatGenerator extends WorldGenerator
 {
+	DefaultWorldEnvironment worldEnv;
 	Random rnd = new Random();
 
 	public FlatGenerator(WorldGeneratorType type, World w)
 	{
 		super(type, w);
 		ws = world.getSizeInChunks() * 32;
+		worldEnv = new DefaultWorldEnvironment(world);
 	}
 
 	int ws;
@@ -84,5 +88,10 @@ public class FlatGenerator extends WorldGenerator
 		}
 
 		return type;
+	}
+
+	@Override
+	public WorldEnvironment getEnvironment() {
+		return worldEnv;
 	}
 }

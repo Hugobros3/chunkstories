@@ -38,12 +38,14 @@ import io.xol.engine.graphics.textures.TexturesHandler;
  */
 public class FarTerrainNoMeshRenderer implements FarTerrainRenderer {
 
+	final World world;
 	final WorldRendererImplementation worldRenderer;
 	
 	private VoxelTexturesColours colours;
 	
 	public FarTerrainNoMeshRenderer(WorldRendererImplementation worldRenderer) {
 		this.worldRenderer = worldRenderer;
+		this.world = worldRenderer.getWorld();
 		
 		for(int i = 0; i < detailLevels.length; i++) {
 			grids[i] = generateGrid(detailLevels[i]);
@@ -126,10 +128,12 @@ public class FarTerrainNoMeshRenderer implements FarTerrainRenderer {
 
 		renderer.bindTexture2D("lightColors", lightColors);
 		renderer.bindTexture2D("normalTexture", worldRenderer.worldTextures.waterNormalTexture);
-		worldRenderer.setupShadowColors(terrainShader);
+		
+		world.getGenerator().getEnvironment().setupShadowColors(renderer, terrainShader);
+		//worldRenderer.setupShadowColors(terrainShader);
 		terrainShader.setUniform1f("time", worldRenderer.getSky().time);
 
-		renderer.bindTexture2D("vegetationColorTexture", worldRenderer.getGrassTexture());
+		renderer.bindTexture2D("vegetationColorTexture", world.getGenerator().getEnvironment().getGrassTexture(renderer));
 		terrainShader.setUniform1f("mapSize", worldRenderer.getWorld().getSizeInChunks() * 32);
 		
 		renderer.bindArrayTexture("heights", worldRenderer.getSummariesTexturesHolder().getHeightsArrayTexture());
