@@ -32,27 +32,27 @@ public class BloomRenderer
 		this.computeAverageLuma();
 		this.renderAndBlurBloom(renderingContext);
 		
-		return worldRenderer.renderBuffers.bloomBuffer;
+		return worldRenderer.renderBuffers.rbBloom;
 	}
 	
 	private void computeAverageLuma() {
-		worldRenderer.renderBuffers.shadedBuffer.setMipMapping(true);
+		worldRenderer.renderBuffers.rbShaded.setMipMapping(true);
 
-		int maxMipLevel = worldRenderer.renderBuffers.shadedBuffer.getMaxMipmapLevel();
-		worldRenderer.renderBuffers.shadedBuffer.setMipmapLevelsRange(0, maxMipLevel);
+		int maxMipLevel = worldRenderer.renderBuffers.rbShaded.getMaxMipmapLevel();
+		worldRenderer.renderBuffers.rbShaded.setMipmapLevelsRange(0, maxMipLevel);
 
 		int divisor = 1 << maxMipLevel;
-		int mipWidth = worldRenderer.renderBuffers.shadedBuffer.getWidth() / divisor;
-		int mipHeight = worldRenderer.renderBuffers.shadedBuffer.getHeight() / divisor;
+		int mipWidth = worldRenderer.renderBuffers.rbShaded.getWidth() / divisor;
+		int mipHeight = worldRenderer.renderBuffers.rbShaded.getHeight() / divisor;
 
 		if (illuminationDownloadInProgress == null)
 		{
 			//Start mipmap calculation for next frame
-			worldRenderer.renderBuffers.shadedBuffer.computeMipmaps();
+			worldRenderer.renderBuffers.rbShaded.computeMipmaps();
 			frameLumaDownloadDelay = FRAME_DELAY_FOR_LUMA_MIP_GRAB + 6;
 
 			//To avoid crashing when the windows size change, we send the PBO copy request immediately and instead wait to look for it
-			this.illuminationDownloadInProgress = this.illuminationDownloader.copyTexure(worldRenderer.renderBuffers.shadedBuffer, maxMipLevel);
+			this.illuminationDownloadInProgress = this.illuminationDownloader.copyTexure(worldRenderer.renderBuffers.rbShaded, maxMipLevel);
 
 			//We remember the size of the data to expect since that may change due to windows resizes and whatnot
 			downloadSize = mipWidth * mipHeight;
@@ -106,18 +106,18 @@ public class BloomRenderer
 			float clamped = (float) Math.min(Math.max(1 / apertureModifier, 0.998), 1.002);
 			apertureModifier *= clamped;
 		}
-		worldRenderer.renderBuffers.shadedBuffer.setMipmapLevelsRange(0, 0);
+		worldRenderer.renderBuffers.rbShaded.setMipmapLevelsRange(0, 0);
 	}
 	
 	private void renderAndBlurBloom(RenderingInterface renderingContext)
 	{
-		worldRenderer.renderBuffers.shadedBuffer.setLinearFiltering(true);
-		worldRenderer.renderBuffers.bloomBuffer.setLinearFiltering(true);
-		worldRenderer.renderBuffers.blurIntermediateBuffer.setLinearFiltering(true);
+		worldRenderer.renderBuffers.rbShaded.setLinearFiltering(true);
+		worldRenderer.renderBuffers.rbBloom.setLinearFiltering(true);
+		worldRenderer.renderBuffers.rbBlurTemp.setLinearFiltering(true);
 
 		ShaderInterface bloomShader = renderingContext.useShader("bloom");
 
-		renderingContext.bindTexture2D("shadedBuffer", worldRenderer.renderBuffers.shadedBuffer);
+		renderingContext.bindTexture2D("shadedBuffer", worldRenderer.renderBuffers.rbShaded);
 		bloomShader.setUniform1f("apertureModifier", apertureModifier);
 		bloomShader.setUniform2f("screenSize", renderingContext.getWindow().getWidth() / 2f, renderingContext.getWindow().getHeight() / 2f);
 
@@ -137,7 +137,7 @@ public class BloomRenderer
 		ShaderInterface blurV = renderingContext.useShader("blurV");
 		blurV.setUniform2f("screenSize", renderingContext.getWindow().getWidth() / 2f, renderingContext.getWindow().getHeight() / 2f);
 		blurV.setUniform1f("lookupScale", 1);
-		renderingContext.bindTexture2D("inputTexture", worldRenderer.renderBuffers.bloomBuffer);
+		renderingContext.bindTexture2D("inputTexture", worldRenderer.renderBuffers.rbBloom);
 		renderingContext.drawFSQuad();
 
 		// Horizontal pass
@@ -146,7 +146,7 @@ public class BloomRenderer
 
 		ShaderInterface blurH = renderingContext.useShader("blurH");
 		blurH.setUniform2f("screenSize", renderingContext.getWindow().getWidth() / 2f, renderingContext.getWindow().getHeight() / 2f);
-		renderingContext.bindTexture2D("inputTexture", worldRenderer.renderBuffers.blurIntermediateBuffer);
+		renderingContext.bindTexture2D("inputTexture", worldRenderer.renderBuffers.rbBlurTemp);
 		renderingContext.drawFSQuad();
 
 		renderingContext.getRenderTargetManager().setConfiguration(worldRenderer.renderBuffers.fboBlur);
@@ -156,7 +156,7 @@ public class BloomRenderer
 
 		blurV.setUniform2f("screenSize", renderingContext.getWindow().getWidth() / 4f, renderingContext.getWindow().getHeight() / 4f);
 		blurV.setUniform1f("lookupScale", 1);
-		renderingContext.bindTexture2D("inputTexture", worldRenderer.renderBuffers.bloomBuffer);
+		renderingContext.bindTexture2D("inputTexture", worldRenderer.renderBuffers.rbBloom);
 		renderingContext.drawFSQuad();
 
 		// Horizontal pass
@@ -164,7 +164,7 @@ public class BloomRenderer
 
 		blurH = renderingContext.useShader("blurH");
 		blurH.setUniform2f("screenSize", renderingContext.getWindow().getWidth() / 4f, renderingContext.getWindow().getHeight() / 4f);
-		renderingContext.bindTexture2D("inputTexture", worldRenderer.renderBuffers.blurIntermediateBuffer);
+		renderingContext.bindTexture2D("inputTexture", worldRenderer.renderBuffers.rbBlurTemp);
 		renderingContext.drawFSQuad();
 		
 		renderingContext.getRenderTargetManager().setConfiguration(worldRenderer.renderBuffers.fboShadedBuffer);

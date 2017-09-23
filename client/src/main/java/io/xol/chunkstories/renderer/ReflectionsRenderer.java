@@ -26,10 +26,10 @@ public class ReflectionsRenderer {
 		renderingContext.getRenderTargetManager().clearBoundRenderTargetAll();
 
 		//Required to execute SSR
-		renderingContext.bindTexture2D("shadedBuffer", worldRenderer.renderBuffers.shadedBuffer);
-		renderingContext.bindTexture2D("depthBuffer", worldRenderer.renderBuffers.zBuffer);
-		renderingContext.bindTexture2D("normalBuffer", worldRenderer.renderBuffers.normalBuffer);
-		renderingContext.bindTexture2D("metaBuffer", worldRenderer.renderBuffers.materialBuffer);
+		renderingContext.bindTexture2D("shadedBuffer", worldRenderer.renderBuffers.rbShaded);
+		renderingContext.bindTexture2D("depthBuffer", worldRenderer.renderBuffers.rbZBuffer);
+		renderingContext.bindTexture2D("normalBuffer", worldRenderer.renderBuffers.rbNormals);
+		renderingContext.bindTexture2D("metaBuffer", worldRenderer.renderBuffers.rbMaterial);
 
 		//Required to shade the sky
 		renderingContext.bindTexture2D("sunSetRiseTexture", worldRenderer.worldTextures.sunGlowTexture);
@@ -40,7 +40,7 @@ public class ReflectionsRenderer {
 		//Texture2D lightColors = TexturesHandler.getTexture("./textures/environement/lightcolors.png");
 		//renderingContext.bindTexture2D("lightColors", lightColors);
 
-		renderingContext.bindCubemap("environmentCubemap", worldRenderer.renderBuffers.environmentMap);
+		renderingContext.bindCubemap("environmentCubemap", worldRenderer.renderBuffers.rbEnvironmentMap);
 
 		// Matrices for screen-space transformations
 		renderingContext.getCamera().setupShader(reflectionsShader);

@@ -102,7 +102,7 @@ public class CubemapRenderer {
 			}
 
 			if (onlyTerrain)
-				renderingContext.getRenderTargetManager().setConfiguration(buffers.environmentMapFastFbo);
+				renderingContext.getRenderTargetManager().setConfiguration(buffers.fboTempBufferEnvMap);
 			//environmentMapFastFbo.bind();
 			else
 				renderingContext.getRenderTargetManager().setConfiguration(buffers.fboShadedBuffer);
@@ -131,14 +131,12 @@ public class CubemapRenderer {
 
 				renderingContext.useShader("blit");
 
-				renderingContext.getRenderTargetManager().setConfiguration(buffers.environmentMapFBO);
-				//this.environmentMapFBO.bind();
-				buffers.environmentMapFBO.setColorAttachement(0, cubemap.getFace(f));
+				renderingContext.getRenderTargetManager().setConfiguration(buffers.fbosEnvMap[f]);
 
 				if (onlyTerrain)
-					renderingContext.bindTexture2D("diffuseTexture", buffers.environmentMapBufferHDR);
+					renderingContext.bindTexture2D("diffuseTexture", buffers.rbEnvMapTemp);
 				else
-					renderingContext.bindTexture2D("diffuseTexture", buffers.shadedBuffer);
+					renderingContext.bindTexture2D("diffuseTexture", buffers.rbShaded);
 
 				renderingContext.currentShader().setUniform2f("screenSize", resolution, resolution);
 
@@ -148,7 +146,7 @@ public class CubemapRenderer {
 			{
 				// GL access
 				
-				glBindTexture(GL_TEXTURE_2D, buffers.shadedBuffer.getId());
+				glBindTexture(GL_TEXTURE_2D, buffers.rbShaded.getId());
 				//glBindTexture(GL_TEXTURE_2D, environmentMapBufferHDR.getId());
 
 				// File access

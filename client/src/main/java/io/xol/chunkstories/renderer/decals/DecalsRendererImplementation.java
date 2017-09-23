@@ -335,7 +335,7 @@ public class DecalsRendererImplementation implements DecalsRenderer
 
 		renderingInterface.getCamera().setupShader(decalsShader);
 		
-		renderingInterface.bindTexture2D("zBuffer", worldRenderer.renderBuffers.zBuffer);
+		renderingInterface.bindTexture2D("zBuffer", worldRenderer.renderBuffers.rbZBuffer);
 		//decalsShader.setUniformSampler(1, "zBuffer", worldRenderer.zBuffer);
 
 		renderingInterface.setCullingMode(CullingMode.DISABLED);

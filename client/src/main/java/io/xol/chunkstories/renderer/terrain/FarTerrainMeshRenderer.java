@@ -180,7 +180,7 @@ public class FarTerrainMeshRenderer implements FarTerrainRenderer
 		worldRenderer.worldTextures.waterNormalTexture.setLinearFiltering(true);
 		worldRenderer.worldTextures.waterNormalTexture.setMipMapping(true);
 
-		renderingContext.bindCubemap("environmentCubemap", worldRenderer.renderBuffers.environmentMap);
+		renderingContext.bindCubemap("environmentCubemap", worldRenderer.renderBuffers.rbEnvironmentMap);
 		renderingContext.bindTexture2D("sunSetRiseTexture", worldRenderer.worldTextures.sunGlowTexture);
 		renderingContext.bindTexture2D("skyTextureSunny", worldRenderer.worldTextures.skyTextureSunny);
 		renderingContext.bindTexture2D("skyTextureRaining", worldRenderer.worldTextures.skyTextureRaining);

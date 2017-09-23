@@ -31,7 +31,7 @@ public class ShadowMapRenderer
 			return null; // No shadows at night :)
 
 		//Size dependant of end texture resolution
-		int shadowMapTextureSize = worldRenderer.renderBuffers.shadowMapBuffer.getWidth();
+		int shadowMapTextureSize = worldRenderer.renderBuffers.rbShadowMap.getWidth();
 		int shadowRange = 128;
 		if (shadowMapTextureSize > 1024)
 			shadowRange = 192;
@@ -60,7 +60,7 @@ public class ShadowMapRenderer
 		renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
 
 		//Bind relevant FBO and clear it
-		renderingContext.getRenderTargetManager().setConfiguration(worldRenderer.renderBuffers.shadowMapFBO);
+		renderingContext.getRenderTargetManager().setConfiguration(worldRenderer.renderBuffers.fboShadowMap);
 		renderingContext.getRenderTargetManager().clearBoundRenderTargetZ(1.0f);
 
 		ShaderInterface shadowsPassShader = renderingContext.useShader("shadows");
@@ -83,7 +83,7 @@ public class ShadowMapRenderer
 			@Override
 			public Texture2D getShadowMap()
 			{
-				return worldRenderer.renderBuffers.shadedBuffer;
+				return worldRenderer.renderBuffers.rbShaded;
 			}
 
 			@Override
