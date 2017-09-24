@@ -77,7 +77,10 @@ vec4 computeLight(vec4 inputColor2, vec3 normal, vec4 worldSpacePosition, vec4 m
 	//Voxel light input, modified linearly according to time of day
 	vec3 voxelSunlight = textureGammaIn(blockLightmap, vec2(0.0, meta.y)).rgb;
 	voxelSunlight *= textureGammaIn(lightColors, vec2(dayTime, 1.0)).rgb;
-	
+		
+	vec3 sunLight_g = pow(sunColor, vec3(gamma));
+	vec3 shadowLight_g = pow(shadowColor, vec3(gamma));
+		
 	<ifdef shadows>
 	//Shadows sampling
 		vec4 coordinatesInShadowmap = accuratizeShadow(shadowMatrix * (untranslatedMVInv * worldSpacePosition));
@@ -106,33 +109,32 @@ vec4 computeLight(vec4 inputColor2, vec3 normal, vec4 worldSpacePosition, vec4 m
 		
 		float sunlightAmount = ( directionalLightning * ( mix( shadowIllumination, meta.y, 1-edgeSmoother) ) ) * shadowVisiblity;
 		
-		vec3 sunLight_g = pow(sunColor, vec3(gamma));
-		vec3 shadowLight_g = pow(shadowColor, vec3(gamma));
-		
 		finalLight += sunLight_g * sunlightAmount;
 		finalLight += voxelSunlight * shadowLight_g;
 		
 		//finalLight = mix(sunLight_g, voxelSunlight * shadowLight_g, (1.0 - sunlightAmount));
-		
-		finalLight += inputColor2.rgb * 5.0 * meta.b;
 		
 	<endif shadows>
 	<ifdef !shadows>
 		// Simple lightning for lower end machines
 		float opacityModified = 0.0;
 		vec3 shadingDir = normalize(normalMatrixInv * normal);
-		opacityModified += 0.25 * abs(dot(vec3(1.0, 0.0, 0.0), shadingDir));
-		opacityModified += 0.45 * abs(dot(vec3(0.0, 0.0, 1.0), shadingDir));
-		opacityModified += 0.6 * clamp(dot(vec3(0.0, -1.0, 0.0), shadingDir), 0.0, 1.0);
+		opacityModified += 0.35 * abs(dot(vec3(1.0, 0.0, 0.0), shadingDir));
+		opacityModified += 0.55 * abs(dot(vec3(0.0, 0.0, 1.0), shadingDir));
+		opacityModified += 0.75 * clamp(dot(vec3(0.0, -1.0, 0.0), shadingDir), 0.0, 1.0);
 		
 		opacity = mix(opacity, opacityModified, meta.a);
-		finalLight = mix(voxelSunlight, vec3(0.0), opacity);
+		finalLight = mix(voxelSunlight * sunLight_g, vec3(0.0), opacity);
 	<endif !shadows>
 	
 	//Adds block light
 	finalLight += textureGammaIn(blockLightmap, vec2(meta.x, 0.0)).rgb;
 	
+	//Multiplies the albedo
 	inputColor.rgb *= finalLight;
+	
+	// Emmissive materials
+	finalLight += inputColor.rgb * 5.0 * meta.b;
 	
 	return inputColor;
 }
