@@ -1,28 +1,28 @@
 #version 150
 
-varying vec4 texcoord;
-varying vec2 lightMapCoords;
+out vec4 texcoord;
+out vec2 lightMapCoords;
 
 //Lighthing
 uniform float sunIntensity;
 
 // The normal we're going to pass to the fragment shader.
-varying vec3 varyingNormal;
+out vec3 outNormal;
 // The vertex we're going to pass to the fragment shader.
-varying vec4 varyingVertex;
+out vec4 outVertex;
 
-varying float fogI;
+out float fogI;
 
 uniform float time;
-varying vec3 eye;
+out vec3 eye;
 uniform vec3 camPos;
 uniform vec3 objectPosition;
 
 uniform float vegetation;
-varying float chunkFade;
+out float chunkFade;
 uniform float viewDistance;
 
-varying vec4 modelview;
+out vec4 modelview;
 
 attribute vec4 particlesPositionIn;
 attribute vec2 textureCoordinatesIn;
@@ -64,7 +64,7 @@ void main(){
 	
 	vec4 v = particlesPositionIn;
 	
-	varyingVertex = v;
+	outVertex = v;
 	
 	//Compute lightmap coords
 	lightMapCoords = vec2(0.0, 1.0);

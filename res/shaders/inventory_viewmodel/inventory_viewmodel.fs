@@ -1,10 +1,12 @@
 #version 150
 // Copyright 2015 XolioWare Interactive
 
-varying vec4 interpolatedColor;
+in vec4 interpolatedColor;
 
-varying vec2 texCoord;
+in vec2 texCoord;
 uniform sampler2D diffuseTexture;
+
+out vec4 fragColor;
 
 void main()
 {
@@ -15,5 +17,5 @@ void main()
 		diffuse.rgb *= vec3(0.2, 0.8, 0.2);
 		diffuse.a = 1.0;
 	}
-	gl_FragColor = diffuse * interpolatedColor;
+	fragColor = diffuse * interpolatedColor;
 }

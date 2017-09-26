@@ -4,11 +4,11 @@ attribute vec3 vertexIn;
 attribute vec2 texCoordIn;
 attribute vec3 normalIn;
 
-varying vec2 texCoord;
+in vec2 texCoord;
 
 //uniform vec4 colorIn;
 
-varying vec4 interpolatedColor;
+in vec4 interpolatedColor;
 
 uniform mat4 transformation;
 

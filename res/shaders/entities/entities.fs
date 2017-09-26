@@ -5,8 +5,8 @@
 in vec2 texcoord; // Coordinate
 in vec3 eye; // eye-position
 in float chunkFade;
-in vec3 varyingNormal;
-in vec4 varyingVertex;
+in vec3 inNormal;
+in vec4 inVertex;
 in vec4 colorPassed;
 in float fresnelTerm;
 in float rainWetness;
@@ -59,7 +59,7 @@ out vec4 outMaterialColor;
 
 void main(){
 	
-	vec3 normal = varyingNormal;
+	vec3 normal = inNormal;
 	
 	if(useNormalIn < 1.0)
 		normal = vec3(0.0, 1.0, 0.0);
@@ -93,7 +93,7 @@ void main(){
 	//Rain makes shit glint
 	float spec = rainWetness * fresnelTerm;
 	<ifdef perPixelFresnel>
-	float dynamicFresnelTerm = 0.0 + 1.0 * clamp(0.7 + dot(normalize(eye), vec3(varyingNormal)), 0.0, 1.0);
+	float dynamicFresnelTerm = 0.0 + 1.0 * clamp(0.7 + dot(normalize(eye), vec3(inNormal)), 0.0, 1.0);
 	spec = rainWetness * dynamicFresnelTerm;
 	<endif perPixelFresnel>
 	

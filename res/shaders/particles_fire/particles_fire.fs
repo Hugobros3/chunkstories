@@ -2,9 +2,9 @@
 // Copyright 2015 XolioWare Interactive
 
 //General data
-varying vec4 proc_texcoord; // Coordinate
-varying vec4 texcoord; // Coordinate
-varying vec3 eye; // eye-position
+in vec4 proc_texcoord; // Coordinate
+in vec4 texcoord; // Coordinate
+in vec3 eye; // eye-position
 
 //Diffuse colors
 uniform sampler2D diffuseTexture; // diffuse texture
@@ -14,11 +14,11 @@ uniform vec3 blockColor;
 uniform sampler2D normalMap; // Blocks normal texture atlas
 
 //Block and sun Lightning
-varying vec2 lightMapCoords; //Computed in vertex shader
+in vec2 lightMapCoords; //Computed in vertex shader
 uniform sampler2D colorTempSampler;
 
 //Normal mapping
-varying vec4 varyingVertex;
+in vec4 inVertex;
 
 uniform sampler2D diffuseGBuffer;
 

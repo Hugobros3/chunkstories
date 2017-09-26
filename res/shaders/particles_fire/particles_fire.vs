@@ -1,15 +1,15 @@
 #version 150
 
-varying vec4 proc_texcoord;
-varying vec4 texcoord;
-varying vec2 lightMapCoords;
+out vec4 proc_texcoord;
+out vec4 texcoord;
+out vec2 lightMapCoords;
 
 // The vertex we're going to pass to the fragment shader.
-varying vec4 varyingVertex;
+out vec4 outVertex;
 
 uniform float time;
 
-varying vec4 modelview;
+out vec4 modelview;
 
 attribute vec4 particlesPositionIn;
 attribute vec2 textureCoordinatesIn;
@@ -49,7 +49,7 @@ void main(){
 	
 	vec4 v = particlesPositionIn;
 	
-	varyingVertex = v;
+	outVertex = v;
 	
 	//Compute lightmap coords
 	lightMapCoords = vec2(0.0, 1.0);

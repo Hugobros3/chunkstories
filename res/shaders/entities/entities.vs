@@ -14,8 +14,8 @@ out float fogI;
 out vec4 modelview;
 out vec3 eye;
 
-out vec3 varyingNormal;
-out vec4 varyingVertex;
+out vec3 inNormal;
+out vec4 inVertex;
 out vec4 colorPassed;
 
 uniform float useColorIn;
@@ -65,16 +65,16 @@ void main(){
 	
 		v = matrixInstanced * vec4(vertexIn.xyz, 1.0);
 		
-		varyingVertex = v;
-		varyingNormal =  mat3(transpose(inverse(matrixInstanced))) * (normalIn).xyz;//(normalIn.xyz-0.5)*2.0;//normalIn;;
+		inVertex = v;
+		inNormal =  mat3(transpose(inverse(matrixInstanced))) * (normalIn).xyz;//(normalIn.xyz-0.5)*2.0;//normalIn;;
 	}
 	else
 	{
-		varyingVertex = v;
-		varyingNormal = objectMatrixNormal * (normalIn).xyz;//(normalIn.xyz-0.5)*2.0;//normalIn;
+		inVertex = v;
+		inNormal = objectMatrixNormal * (normalIn).xyz;//(normalIn.xyz-0.5)*2.0;//normalIn;
 	}
 	
-	fresnelTerm = 0.0 + 1.0 * clamp(0.7 + dot(normalize(v.xyz - camPos), vec3(varyingNormal)), 0.0, 1.0);
+	fresnelTerm = 0.0 + 1.0 * clamp(0.7 + dot(normalize(v.xyz - camPos), vec3(inNormal)), 0.0, 1.0);
 	
 	colorPassed = colorIn;
 	
