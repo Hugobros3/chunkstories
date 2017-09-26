@@ -33,6 +33,10 @@ uniform mat3 normalMatrixInv;
 <include ../lib/gamma.glsl>
 <include ../lib/normalmapping.glsl>
 
+out vec4 outDiffuseColor;
+out vec4 outNormalColor;
+out vec4 outMaterialColor;
+
 void main()
 {
 	vec4 color = texture(diffuseTexture, texCoordPassed);
@@ -63,9 +67,9 @@ void main()
 	//gl_FragDepth = gl_FragCoord.z - 0.001;
 	
 	//Diffuse G-Buffer
-	gl_FragData[0] = vec4(color.rgb, color.a);
+	outDiffuseColor = vec4(color.rgb, color.a);
 	//Normal G-Buffer + reflections
-	gl_FragData[1] = vec4(encodeNormal(normalMatrix * normal).xy, 0.0 * dynamicFresnelTerm, color.a * 0.0);
+	outNormalColor = vec4(encodeNormal(normalMatrix * normal).xy, 0.0 * dynamicFresnelTerm, color.a * 0.0);
 	//Light color G-buffer
-	gl_FragData[2] = vec4(vec2(0.0, 1.0), 0.0, 0.0);
+	outMaterialColor = vec4(vec2(0.0, 1.0), 0.0, 0.0);
 }

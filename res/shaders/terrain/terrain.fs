@@ -92,7 +92,7 @@ uint access(usampler2DArray tex, vec2 coords) {
 		}
 	}
 	
-	return 250;
+	return 250u;
 }
 
 void main()
@@ -108,7 +108,7 @@ void main()
 	//arrayIndex
 	uint voxelId = access(topVoxels, textureCoord);//texture(topVoxels, vec3(textureCoord, indexPassed)).r;
 	
-	if(voxelId == 250)
+	if(voxelId == 250u)
 	{
 		shadedFramebufferOut = vec4(1.0, 1.0, 0.0, 1.0);
 		return;
@@ -130,7 +130,7 @@ void main()
 	vec3 normal = normalPassed;
 	
 	//Water case
-	if(voxelId == 512)
+	if(voxelId == 512u)
 	{
 		diffuseColor.rgb = pow(vec3(51 / 255.0, 105 / 255.0, 110 / 255.0), vec3(gamma));
 	

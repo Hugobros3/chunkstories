@@ -19,7 +19,7 @@ out vec2 textureCoord;
 out vec3 eyeDirection;
 out float fogIntensity;
 out float fresnelTerm;
-out ivec4 indexPassed;
+flat out ivec4 indexPassed;
 
 //Complements vertexIn
 uniform vec2 visualOffset;

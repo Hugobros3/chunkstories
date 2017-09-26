@@ -2,8 +2,8 @@
 // Copyright 2015 XolioWare Interactive
 
 //General data
-varying vec4 texcoord; // Coordinate
-varying vec3 eye; // eye-position
+in vec4 texcoord; // Coordinate
+in vec3 eye; // eye-position
 
 //Diffuse colors
 uniform sampler2D diffuseTexture; // diffuse texture
@@ -13,13 +13,13 @@ uniform vec3 blockColor;
 uniform sampler2D normalMap; // Blocks normal texture atlas
 
 //Block and sun Lightning
-varying vec2 lightMapCoords; //Computed in vertex shader
+in vec2 lightMapCoords; //Computed in vertex shader
 uniform float sunIntensity; // Adjusts the lightmap coordinates
 uniform sampler2D lightColors; // Sampler to lightmap
 
 //Normal mapping
-varying vec3 varyingNormal;
-varying vec4 varyingVertex;
+in vec3 inNormal;
+in vec4 inVertex;
 
 uniform sampler2D diffuseGBuffer;
 
@@ -36,9 +36,13 @@ vec4 gammaOutput(vec4 inputValue)
 	return pow(inputValue, vec4(gammaInv));
 }
 
-<include ../lib/normalmapping.glsl>
+in float back;
 
-varying float back;
+out vec4 outDiffuseColor;
+out vec4 outNormalColor;
+out vec4 outMaterialColor;
+
+<include ../lib/normalmapping.glsl>
 
 void main(){
 	//Basic texture color
@@ -61,14 +65,14 @@ void main(){
 		discard;
 	
 	//Diffuse G-Buffer
-	gl_FragData[0] = vec4(baseColor,alpha);
+	outDiffuseColor = vec4(baseColor,alpha);
 	//Normal G-Buffer + reflections
 	
 	vec3 normalMapped = texture(normalTexture, texcoord.st).xyz;
     normalMapped = normalMapped * 2.0 - 1.0;
 	normalMapped.x = normalMapped.x;
 	
-	gl_FragData[1] = vec4(encodeNormal(normalMapped).xy, 0.0, 1.0);
+	outNormalColor = vec4(encodeNormal(normalMapped).xy, 0.0, 1.0);
 	//Light color G-buffer
-	gl_FragData[2] = vec4(lightMapCoords, 0.0,1.0);
+	outMaterialColor = vec4(lightMapCoords, 0.0,1.0);
 }
