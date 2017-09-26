@@ -23,7 +23,6 @@ server-icon.png
 _Don't include build stuff_
 bin/
 */build/
-/gradle/
 *.class
 scripts/
 *.bat
@@ -61,3 +60,4 @@ dogez_content.zip
 server-icon - Copie.png
 gradle.properties
 /Renderdoc-client.cap
+namalsk-map/
