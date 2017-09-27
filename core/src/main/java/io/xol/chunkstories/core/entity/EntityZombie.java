@@ -24,6 +24,8 @@ import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.serialization.StreamSource;
 import io.xol.chunkstories.api.serialization.StreamTarget;
 import io.xol.chunkstories.api.sound.SoundSource.Mode;
+import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.core.entity.ai.ZombieAI;
@@ -165,6 +167,13 @@ public class EntityZombie extends EntityHumanoid
 				if (renderingContext.getWorldRenderer().getCurrentRenderingPass() == RenderingPass.SHADOW && location.distance(renderingContext.getCamera().getCameraPosition()) > 15f)
 					continue;
 
+				VoxelContext context = entity.getWorld().peek(entity.getLocation());
+				int modelBlockData = context.getData();
+
+				int lightSky = VoxelFormat.sunlight(modelBlockData);
+				int lightBlock = VoxelFormat.blocklight(modelBlockData);
+				renderingContext.currentShader().setUniform2f("worldLightIn", lightBlock, lightSky );
+				
 				entity.cachedSkeleton.lodUpdate(renderingContext);
 
 				Matrix4f matrix = new Matrix4f();

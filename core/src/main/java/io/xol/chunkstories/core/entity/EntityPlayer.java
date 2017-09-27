@@ -538,6 +538,13 @@ public class EntityPlayer extends EntityHumanoid implements EntityControllable, 
 					matrix.translate(loc3f);
 					renderingContext.setObjectMatrix(matrix);
 
+					VoxelContext context = entity.getWorld().peek(entity.getLocation());
+					int modelBlockData = context.getData();
+
+					int lightSky = VoxelFormat.sunlight(modelBlockData);
+					int lightBlock = VoxelFormat.blocklight(modelBlockData);
+					renderingContext.currentShader().setUniform2f("worldLightIn", lightBlock, lightSky );
+					
 					variant = ColorsTools.getUniqueColorCode(entity.getName()) % 6;
 
 					//Player textures
