@@ -10,6 +10,8 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
+import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -74,19 +76,24 @@ public class EntityGroundItem extends EntityBase implements EntityRenderable
 				ItemPile within = e.itemPileWithin.getItemPile();
 				if(within != null)
 				{
+					VoxelContext context = e.getWorld().peek(e.getLocation());
+					int modelBlockData = context.getData();
+
+					int lightSky = VoxelFormat.sunlight(modelBlockData);
+					int lightBlock = VoxelFormat.blocklight(modelBlockData);
+					renderingInterface.currentShader().setUniform2f("worldLightIn", lightBlock, lightSky );
+					
 					Matrix4f matrix = new Matrix4f();
 					
 					Vector3d loc = e.getLocation().add(0.0, 0.25, 0.0);
 					matrix.translate((float)loc.x, (float)loc.y, (float)loc.z);
-					//matrix.translate(e.getLocation().add(0.0, 0.25, 0.0));
 					matrix.rotate((float)Math.PI/2, new Vector3f(1,0 ,0));
-					//System.out.println("Rendering ItemPileOnGround "+e+"IS:"+within);
 					within.getItem().getType().getRenderer().renderItemInWorld(renderingInterface, within, e.getWorld(), e.getLocation(), matrix);
-					renderingInterface.flush();
+					//renderingInterface.flush();
 				}
 				else
 				{
-					System.out.println("ded");
+					System.out.println("EntityGroundItem: Not within any inventory ???");
 				}
 				
 				i++;

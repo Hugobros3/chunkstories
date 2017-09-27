@@ -149,7 +149,7 @@ public class EntitiesRenderer
 				
 				//renderingContext.currentShader().setUniform3f("objectPosition", currentEntity.getLocation());
 				
-				Location loc = currentEntity.getLocation();
+				/*Location loc = currentEntity.getLocation();
 				Region r = currentEntity.getRegion();
 				int wrx = ((int)loc.x()) - (r.getRegionX() << 8);
 				int wry = ((int)loc.y()) - (r.getRegionY() << 8);
@@ -174,7 +174,7 @@ public class EntitiesRenderer
 					data = (world.getRegionsSummariesHolder().getHeightAtWorldCoordinates((int)loc.x(), (int)loc.z()) <= loc.z()) ? 0 : VoxelFormat.format(1, 0, 15, 0);
 				}
 				
-				renderingContext.currentShader().setUniform2f("worldLightIn", blockLight, sunLight);
+				renderingContext.currentShader().setUniform2f("worldLightIn", blockLight, sunLight);*/
 				//renderingContext.currentShader().setUniform2f("worldLightIn", world.getBlocklightLevelLocation(currentEntity.getLocation()), world.getSunlightLevelLocation(currentEntity.getLocation()));
 			}
 

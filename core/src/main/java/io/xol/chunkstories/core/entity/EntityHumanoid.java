@@ -26,6 +26,8 @@ import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.sound.SoundSource.Mode;
 import io.xol.chunkstories.api.voxel.Voxel;
+import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
@@ -255,6 +257,13 @@ public abstract class EntityHumanoid extends EntityLivingImplementation
 				if (renderingContext.getWorldRenderer().getCurrentRenderingPass() == RenderingPass.SHADOW && location.distance(renderingContext.getCamera().getCameraPosition()) > 15f)
 					continue;
 
+				VoxelContext context = entity.getWorld().peek(entity.getLocation());
+				int modelBlockData = context.getData();
+
+				int lightSky = VoxelFormat.sunlight(modelBlockData);
+				int lightBlock = VoxelFormat.blocklight(modelBlockData);
+				renderingContext.currentShader().setUniform2f("worldLightIn", lightBlock, lightSky );
+				
 				entity.cachedSkeleton.lodUpdate(renderingContext);
 
 				Matrix4f matrix = new Matrix4f();

@@ -61,8 +61,6 @@ void main(){
 									texelFetch(instancedDataSampler, ivec2(mod(gl_InstanceID * 8 + 3, 32), (gl_InstanceID * 8 + 3) / 32), 0)
 									);
 	
-		
-	
 		v = matrixInstanced * vec4(vertexIn.xyz, 1.0);
 		
 		inVertex = v;

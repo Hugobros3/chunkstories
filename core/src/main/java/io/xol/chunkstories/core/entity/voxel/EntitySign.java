@@ -76,7 +76,6 @@ public class EntitySign extends EntityBase implements EntityVoxel, EntityRendera
 
 			for (EntitySign entitySign : renderableEntitiesIterator.getElementsInFrustrumOnly())
 			{
-				
 				if (renderingContext.getCamera().getCameraPosition().distance(entitySign.getLocation()) > 32)
 					continue;
 				
@@ -86,19 +85,15 @@ public class EntitySign extends EntityBase implements EntityVoxel, EntityRendera
 				diffuse.setLinearFiltering(false);
 				renderingContext.bindAlbedoTexture(diffuse);
 				renderingContext.bindNormalTexture(renderingContext.textures().getTexture("./textures/normalnormal.png"));
-				//renderingContext.currentShader().setUniform3f("objectPosition", new Vector3f(0));
-
-				//int modelBlockData = entitySign.getWorld().getVoxelData(entitySign.getLocation());
+				
 				VoxelContext context = entitySign.getWorld().peek(entitySign.getLocation());
 				int modelBlockData = context.getData();
-				
-				//Voxel voxel = VoxelsStore.get().getVoxelById(modelBlockData);
-				
-				boolean isPost = context.getVoxel().getName().endsWith("_post");
 
 				int lightSky = VoxelFormat.sunlight(modelBlockData);
 				int lightBlock = VoxelFormat.blocklight(modelBlockData);
-				renderingContext.currentShader().setUniform3f("givenLightmapCoords", lightBlock / 15f, lightSky / 15f, 0f);
+				renderingContext.currentShader().setUniform2f("worldLightIn", lightBlock, lightSky );
+				
+				boolean isPost = context.getVoxel().getName().endsWith("_post");
 
 				int facing = VoxelFormat.meta(modelBlockData);
 
@@ -127,7 +122,6 @@ public class EntitySign extends EntityBase implements EntityVoxel, EntityRendera
 					entitySign.renderData = renderingContext.getFontRenderer().newTextMeshObject(renderingContext.getFontRenderer().defaultFont(), entitySign.cachedText);
 				}
 				
-				//System.out.println(entitySign.cachedText);
 				// Display it
 				mutrix.translate(new Vector3f(0.0f, 1.15f, 0.055f));
 				renderingContext.setObjectMatrix(mutrix);
