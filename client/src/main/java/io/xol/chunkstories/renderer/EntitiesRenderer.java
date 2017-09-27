@@ -6,6 +6,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityType;
 import io.xol.chunkstories.api.physics.CollisionBox;
@@ -14,7 +16,11 @@ import io.xol.chunkstories.api.rendering.WorldRenderer.RenderingPass;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
+import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.api.world.chunk.Chunk;
+import io.xol.chunkstories.api.world.chunk.ChunkHolder;
+import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.world.WorldImplementation;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -142,7 +148,34 @@ public class EntitiesRenderer
 				//TODO instancing friendly way of providing those
 				
 				//renderingContext.currentShader().setUniform3f("objectPosition", currentEntity.getLocation());
-				renderingContext.currentShader().setUniform2f("worldLightIn", world.getBlocklightLevelLocation(currentEntity.getLocation()), world.getSunlightLevelLocation(currentEntity.getLocation()));
+				
+				Location loc = currentEntity.getLocation();
+				Region r = currentEntity.getRegion();
+				int wrx = ((int)loc.x()) - (r.getRegionX() << 8);
+				int wry = ((int)loc.y()) - (r.getRegionY() << 8);
+				int wrz = ((int)loc.z()) - (r.getRegionZ() << 8);
+				
+				ChunkHolder ch = r.getChunkHolder(wrx / 8, wry / 8, wrz / 8);
+				Chunk chunk = ch.getChunk();
+				
+				int sunLight = -1, blockLight = 0;
+				int data;
+				if(chunk != null) {
+					int wcx = wrx & 0x1F;
+					int wcy = wry & 0x1F;
+					int wcz = wrz & 0x1F;
+					
+					data = chunk.getVoxelData(wcx, wcy, wcz);
+					
+					sunLight = VoxelFormat.sunlight(data);
+					blockLight = VoxelFormat.blocklight(data);
+				}
+				else {
+					data = (world.getRegionsSummariesHolder().getHeightAtWorldCoordinates((int)loc.x(), (int)loc.z()) <= loc.z()) ? 0 : VoxelFormat.format(1, 0, 15, 0);
+				}
+				
+				renderingContext.currentShader().setUniform2f("worldLightIn", blockLight, sunLight);
+				//renderingContext.currentShader().setUniform2f("worldLightIn", world.getBlocklightLevelLocation(currentEntity.getLocation()), world.getSunlightLevelLocation(currentEntity.getLocation()));
 			}
 
 			currentEntity = null;
