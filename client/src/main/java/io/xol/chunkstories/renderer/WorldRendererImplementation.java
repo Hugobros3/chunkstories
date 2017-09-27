@@ -624,7 +624,7 @@ public class WorldRendererImplementation implements WorldRenderer
 			
 			//environmentMapFBO = new FrameBufferObjectGL(null, rbEnvironmentMap.getFace(0));
 			for(int i = 0; i < 6; i++) {
-				fbosEnvMap[i] = new FrameBufferObjectGL(null, rbEnvironmentMap.getFace(i));
+				fbosEnvMap[i] = new FrameBufferObjectGL(rbEnvMapZBuffer, rbEnvironmentMap.getFace(i));
 			}
 		}
 

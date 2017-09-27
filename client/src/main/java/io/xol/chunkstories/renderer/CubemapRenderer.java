@@ -103,14 +103,17 @@ public class CubemapRenderer {
 			
 			int f = t[z];
 
-			if (onlyTerrain)
+			if(onlyTerrain && cubemap != null)
+			{
+				renderingContext.getRenderTargetManager().setConfiguration(buffers.fbosEnvMap[f]);
+			}
+			else if (onlyTerrain)
 				renderingContext.getRenderTargetManager().setConfiguration(buffers.fboTempBufferEnvMap);
 			else
 				renderingContext.getRenderTargetManager().setConfiguration(buffers.fboShadedBuffer);
-			//this.fboShadedBuffer.bind();
 
-			renderingContext.getRenderTargetManager().clearBoundRenderTargetAll();
-			//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			//renderingContext.getRenderTargetManager().clearBoundRenderTargetAll();
+			renderingContext.getRenderTargetManager().clearBoundRenderTargetZ(0f);
 
 			camera.setupUsingScreenSize(scrW, scrH);
 			
@@ -119,7 +122,6 @@ public class CubemapRenderer {
 			{
 				//Draw sky
 				worldRenderer.getSky().render(renderingContext);
-
 				worldRenderer.getFarTerrainRenderer().renderTerrain(renderingContext, null);
 			}
 			else
@@ -127,7 +129,8 @@ public class CubemapRenderer {
 
 			if (cubemap != null)
 			{
-
+				//Stupid useless step!
+				/*
 				renderingContext.useShader("blit");
 
 				renderingContext.getRenderTargetManager().setConfiguration(buffers.fbosEnvMap[f]);
@@ -139,7 +142,7 @@ public class CubemapRenderer {
 
 				renderingContext.currentShader().setUniform2f("screenSize", resolution, resolution);
 
-				renderingContext.drawFSQuad();
+				renderingContext.drawFSQuad();*/
 			}
 			else
 			{
@@ -158,10 +161,6 @@ public class CubemapRenderer {
 				for (int x = 0; x < scrW; x++)
 					for (int y = 0; y < scrH; y++)
 					{
-						/*bbuf.getFloat();
-						if(x % 500 == 0)
-							System.out.println(bbuf.getFloat());*/
-						
 						int i = 4 * (x + scrW * y);
 						int r = (int) Math2.clamp(Math.pow((bbuf.getFloat(i * 4)) / 1d, 1d / 2.2d) * 255d, 0.0, 255.0);
 						int g = (int) Math2.clamp(Math.pow((bbuf.getFloat(i * 4 + 4)) / 1d, 1d / 2.2d) * 255d, 0.0, 255.0);
@@ -198,5 +197,4 @@ public class CubemapRenderer {
 			scrH = oldH;
 		}
 	}
-
 }
