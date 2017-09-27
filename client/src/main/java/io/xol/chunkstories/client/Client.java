@@ -89,6 +89,10 @@ public class Client implements ClientInterface
 			{
 				GameDirectory.set(s.replace("--dir=", ""));
 			}
+			else if(s.contains("-gldebug")) {
+				RenderingConfig.DEBUG_OPENGL = true;
+				System.out.println("OpenGL debug output ENABLED");
+			}
 			else
 			{
 				String helpText = "Chunk Stories "+VersionInfo.version+"\n";
@@ -100,7 +104,8 @@ public class Client implements ClientInterface
 				
 				helpText += "-forceobsolete Forces the game to run even if requirements aren't met. !NO SUPPORT! \n";
 				helpText += "-mods=xxx,yyy | -mods=* Tells the game to start with those mods enabled\n";
-				helpText += "-dir=whatever Tells the game not to look for .chunkstories at it's normal location and instead use the argument";
+				helpText += "-dir=whatever Tells the game not to look for .chunkstories at it's normal location and instead use the argument\n";
+				helpText += "-gldebug Enables OpenGL debug output to the console";
 			
 				System.out.println(helpText);
 				return;

@@ -21,9 +21,9 @@ public class ArrayTextureGL extends TextureGL implements ArrayTexture {
 	final int layers;
 	final int size;
 	
-	boolean wrapping = true;
+	boolean wrapping = false;
 	boolean mipmapping = false;
-	boolean linearFiltering = true;
+	boolean linearFiltering = false;
 	int baseMipmapLevel = 0;
 	int maxMipmapLevel = 1000;
 	

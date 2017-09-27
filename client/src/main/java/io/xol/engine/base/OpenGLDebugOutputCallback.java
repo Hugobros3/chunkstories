@@ -41,6 +41,7 @@ public class OpenGLDebugOutputCallback implements GLDebugMessageARBCallbackI
 	public OpenGLDebugOutputCallback(Thread mainGLThread)
 	{
 		this.mainGLThread = mainGLThread;
+		System.out.println("Callback initialized.");
 	}
 
 	@Override

@@ -19,7 +19,7 @@ public class RenderingConfig implements ClientRenderingConfig
 	public static boolean gl_fbExtCapable = false;
 	public static boolean gl_InstancedArrays;
 
-	public static boolean DEBUG_OPENGL = true;
+	public static boolean DEBUG_OPENGL = false;
 
 	// RENDERING
 	public static float viewDistance = 150;

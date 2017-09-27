@@ -5,6 +5,8 @@ package io.xol.engine.base;
 // http://xol.io
 
 import static org.lwjgl.opengl.GL11.*;
+
+import static org.lwjgl.opengl.ARBDebugOutput.*;
 import static org.lwjgl.opengl.GL12.*;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
@@ -141,6 +143,9 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 			glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); 
 			
+			if(RenderingConfig.DEBUG_OPENGL)
+				glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+			
 			glfwWindowHandle = glfwCreateWindow(windowWidth, windowHeight, windowName, 0, 0);
 			
 			if(glfwWindowHandle == 0) 
@@ -154,6 +159,10 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 			
 			switchResolution();
 			glfwShowWindow(glfwWindowHandle);
+			
+			//Enable error callback
+			if(RenderingConfig.DEBUG_OPENGL)
+				glDebugMessageCallbackARB(new OpenGLDebugOutputCallback(Thread.currentThread()), 0);
 			
 			//Oops.. Didn't use any VAOs anywhere so we put this there to be GL 3.2 core compliant
 			int vao = glGenVertexArrays();
