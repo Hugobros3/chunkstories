@@ -1,4 +1,4 @@
-#version 150 core
+#version 330
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io

@@ -1,4 +1,4 @@
-#version 150
+#version 330
 //Entry attributes
 attribute vec3 vertexIn;
 attribute vec2 texCoordIn;

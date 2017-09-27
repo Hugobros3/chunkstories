@@ -1,4 +1,4 @@
-#version 150
+#version 330
 // Copyright 2015 XolioWare Interactive
 
 uniform float currentTiming;

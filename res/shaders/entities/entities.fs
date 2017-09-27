@@ -1,5 +1,5 @@
-#version 150 core
-// Copyright 2015 XolioWare Interactive
+#version 330
+/** Very general-purpose shader whoose job is to render (user-defined) entities, both gbuffer and shadow pass */
 
 //General data
 in vec2 texcoord; // Coordinate
@@ -22,7 +22,6 @@ uniform sampler2D diffuseTexture; // Blocks diffuse texture atlas
 uniform sampler2D normalTexture; // Blocks normal texture atlas
 uniform sampler2D materialTexture; // Blocks normal texture atlas
 uniform vec3 blockColor;
-
 
 //Chunk fading into view
 uniform float chunkTransparency;
@@ -66,7 +65,6 @@ void main(){
 		
 	vec3 normalMapped = texture(normalTexture, texcoord).xyz;
     normalMapped = normalMapped * 2.0 - 1.0;
-	//normalMapped.x = -normalMapped.x;
 	
 	normal = perturb_normal(normal, eye, texcoord, normalMapped);
 	normal = normalize(normalMatrix * normal);

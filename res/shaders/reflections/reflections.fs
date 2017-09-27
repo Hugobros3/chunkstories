@@ -1,4 +1,4 @@
-#version 150 core
+#version 330
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
@@ -41,6 +41,10 @@ uniform float shadowVisiblity; // Used for night transitions, hides shadows
 uniform sampler2DShadow shadowMap;
 uniform mat4 shadowMatrix;
 
+//Sunlight data
+uniform vec3 shadowColor;
+uniform vec3 sunColor;
+
 uniform float dayTime;
 
 //Fog
@@ -50,16 +54,13 @@ uniform float fogEndDistance;
 //Gamma constants
 <include ../lib/gamma.glsl>
 
-uniform vec3 shadowColor;
-uniform vec3 sunColor;
-
-out vec4 fragColor;
-
-<include ../sky/sky.glsl>
-<include ../lib/transformations.glsl>
+<include ../sky/sky.glsl> //Sky-drawing stuff
+<include ../lib/transformations.glsl> 
 <include ../lib/shadowTricks.glsl>
 <include ../lib/normalmapping.glsl>
 <include ../lib/ssr.glsl>
+
+out vec4 fragColor;
 
 void main() {
     vec4 cameraSpacePosition = convertScreenSpaceToCameraSpace(screenCoord, depthBuffer);
@@ -79,7 +80,8 @@ void main() {
 	else
 		discard;
 	
-	// Apply fog
+	// Apply fog - unused because this time SSR is ran AFTER deffered shading.
+	
 	/*vec3 sum = (cameraSpacePosition.xyz);
 	float dist = length(sum)-fogStartDistance;
 	float fogFactor = (dist) / (fogEndDistance-fogStartDistance);

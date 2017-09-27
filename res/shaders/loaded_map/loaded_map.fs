@@ -1,4 +1,4 @@
-#version 150 core
+#version 330
 // Copyright 2015 XolioWare Interactive
 
 in float height;

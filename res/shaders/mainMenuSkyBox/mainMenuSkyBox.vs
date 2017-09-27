@@ -1,4 +1,4 @@
-#version 150
+#version 330
 in vec2 vertexIn;
 
 out vec2 vertex;

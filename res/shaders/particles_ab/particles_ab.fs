@@ -1,9 +1,9 @@
-#version 150
+#version 330
 // Copyright 2015 XolioWare Interactive
 
 //General data
-varying vec4 texcoord; // Coordinate
-varying vec3 eye; // eye-position
+in vec4 texcoord; // Coordinate
+in vec3 eye; // eye-position
 
 //Diffuse colors
 uniform sampler2D diffuseTexture; // diffuse texture
@@ -13,13 +13,13 @@ uniform vec3 blockColor;
 uniform sampler2D normalMap; // Blocks normal texture atlas
 
 //Block and sun Lightning
-varying vec2 lightMapCoords; //Computed in vertex shader
+in vec2 lightMapCoords; //Computed in vertex shader
 uniform float sunIntensity; // Adjusts the lightmap coordinates
 uniform sampler2D lightColors; // Sampler to lightmap
 
 //Normal mapping
-varying vec3 varyingNormal;
-varying vec4 varyingVertex;
+in vec3 inNormal;
+in vec4 inVertex;
 
 uniform sampler2D diffuseGBuffer;
 

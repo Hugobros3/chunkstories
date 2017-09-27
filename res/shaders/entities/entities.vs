@@ -1,4 +1,4 @@
-#version 150 core
+#version 330
 //Entry attributes
 in vec4 vertexIn;
 in vec2 texCoordIn;
@@ -79,7 +79,7 @@ void main(){
 	colorPassed = colorIn;
 	
 	//Compute lightmap coords
-	rainWetness = wetness;//wetness*clamp((colorIn.g-15.0/16.0)*16,0,0.5);
+	rainWetness = wetness;
 	
 	if(isUsingInstancedData > 0)
 	{
@@ -87,7 +87,6 @@ void main(){
 	}
 	else
 		worldLight = vec2(worldLightIn / 15.0);
-	//worldLight.y *= sunIntensity;
 	
 	//Translate vertex
 	modelview = modelViewMatrix * v;
@@ -96,20 +95,4 @@ void main(){
 	
 	//Eye transform
 	eye = v.xyz-camPos;
-	
-	//Fog calculation
-	
-	//Chunk-aligned linear fog
-	vec3 camPosChunk = camPos;
-	camPosChunk.x = floor((camPosChunk.x+16)/32)*32;
-	camPosChunk.z = floor((camPosChunk.z+16)/32)*32;
-	
-	vec3 eyeChunk = v.xyz-camPosChunk;
-	
-	float fogStartDistance = clamp(floor(viewDistance/32)*32-12,32,512);
-	
-	chunkFade = clamp((abs(eyeChunk.x)-fogStartDistance)/12,0,1)+
-	clamp((abs(eyeChunk.z)-fogStartDistance)/12,0,1);
-	
-	chunkFade = 1-clamp(chunkFade,0,1);
 }

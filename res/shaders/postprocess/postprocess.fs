@@ -1,4 +1,4 @@
-#version 150 core
+#version 330
 uniform sampler2D shadedBuffer;
 
 uniform sampler2D albedoBuffer;
@@ -107,7 +107,7 @@ void main() {
 	
 	//Applies bloom
 	<ifdef doBloom>
-	compositeColor.rgb += texture2D(bloomBuffer, finalCoords).rgb;
+	compositeColor.rgb += texture(bloomBuffer, finalCoords).rgb;
 	<endif doBloom>
 	
 	//Gamma-corrects stuff
@@ -126,7 +126,7 @@ void main() {
     compositeColor.rgb = its2 + rnd2.xyz;
 	
 	//Applies pause overlay
-	vec3 overlayColor = texture2D(pauseOverlayTexture, pauseOverlayCoords).rgb;
+	vec3 overlayColor = texture(pauseOverlayTexture, pauseOverlayCoords).rgb;
 	overlayColor = vec3(
 	
 	( mod(gl_FragCoord.x + gl_FragCoord.y, 2.0) * 0.45 + 0.55 )
@@ -157,28 +157,28 @@ vec4 getDebugShit(vec2 coords)
 	if(coords.x > 0.5)
 	{
 		if(coords.y > 0.5)
-			shit = pow(texture2D(shadedBuffer, sampleCoords, 0.0), vec4(gammaInv));
+			shit = pow(texture(shadedBuffer, sampleCoords, 0.0), vec4(gammaInv));
 		else
-			shit = texture2D(normalBuffer, sampleCoords);
+			shit = texture(normalBuffer, sampleCoords);
 	}
 	else
 	{
 		if(coords.y > 0.5)
 		{
-			shit = texture2D(albedoBuffer, sampleCoords);
+			shit = texture(albedoBuffer, sampleCoords);
 			//if(shit.a == 0)
 			shit += (1.0-shit.a) * vec4(1.0, 0.0, 1.0, 1.0);
 		}
 		else
 		{
-			shit = texture2D(metaBuffer, sampleCoords).xyzw;
-			//shit = vec4(1.0, 0.5, 0.0, 1.0) * texture2D(normalBuffer, sampleCoords).w;
-			//shit.yz += texture2D(metaBuffer, sampleCoords).xy;
+			shit = texture(metaBuffer, sampleCoords).xyzw;
+			//shit = vec4(1.0, 0.5, 0.0, 1.0) * texture(normalBuffer, sampleCoords).w;
+			//shit.yz += texture(metaBuffer, sampleCoords).xy;
 			<ifdef dynamicGrass>
 			
-			//shit = vec4(1.0, 1.0, 1.0, 1.0) * texture2D(bloomBuffer, sampleCoords).x * 1.0;
-			shit = texture2D(debugBuffer, sampleCoords, 80.0);
-			shit = pow(texture2D(debugBuffer, sampleCoords, 0.0), vec4(gammaInv));
+			//shit = vec4(1.0, 1.0, 1.0, 1.0) * texture(bloomBuffer, sampleCoords).x * 1.0;
+			shit = texture(debugBuffer, sampleCoords, 80.0);
+			shit = pow(texture(debugBuffer, sampleCoords, 0.0), vec4(gammaInv));
 			<endif dynamicGrass>
 		}
 	}

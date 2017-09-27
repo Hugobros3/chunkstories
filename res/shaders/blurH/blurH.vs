@@ -1,4 +1,4 @@
-#version 150
+#version 330
 uniform vec2 screenSize;
 
 in vec2 vertexIn;

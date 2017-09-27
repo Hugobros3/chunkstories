@@ -1,7 +1,8 @@
-#version 150
-//(c) 2015-2016 XolioWare Interactive
-// http://chunkstories.xyz
-// http://xol.io
+#version 330
+/*
+	Deffered shading (cone)light shader
+	Something I wrote ages ago and that is probably terribly optimised
+*/
 
 //G-buffer samplers
 uniform sampler2D diffuseBuffer;
@@ -24,6 +25,7 @@ uniform vec3 camPos;
 uniform float lightDecay[64];
 uniform vec3 lightPos[64];
 uniform vec3 lightColor[64];
+
 //Cone lights
 uniform vec3 lightDir[64];
 uniform float lightAngle[64];
@@ -49,13 +51,14 @@ void main() {
 	float spec = texture(normalBuffer, screenCoord).z;
 	
 	vec3 pixelPositionCamera = convertScreenSpaceToCameraSpace(screenCoord, depthBuffer).xyz;
+	
 	//Discard if too far from camera
-	if(length(pixelPositionCamera) > 500.0)
-		discard;
+	//if(length(pixelPositionCamera) > 512.0)
+	//	discard;
 		
 	vec3 pixelPositionWorld = ( modelViewMatrixInv * vec4(pixelPositionCamera, 1.0) ).xyz;
 	
-	//Iterate over every light
+	//We batch multiple lights per fullscreen pass ( another strategy: cull lights more appropriately to save fillrate )
 	for(int i = 0; i < lightsToRender; i++)
 	{
 		vec3 lightPositionWorld = lightPos[i];
@@ -81,6 +84,7 @@ void main() {
 		}
 		if(spec > 0.0)
 		{
+			//Additional speculars reflecting off materials ( computationally heavy-ass and require FS pass )
 			//lightAmount.rgb += pow(lightColor[i], vec3(gamma)) * 20 * clamp(pow(clamp(dot(reflect(lightRay, normalWorld), normalize(pixelPositionWorld-camPos)), 0.0, 10.0), 1000), 0.0, 10.0);
 		}
 		totalLight += max(lightAmount, 0.0);

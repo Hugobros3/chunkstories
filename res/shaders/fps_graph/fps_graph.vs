@@ -1,4 +1,4 @@
-#version 150
+#version 330
 //Entry attributes
 in vec2 vertexIn;
 
@@ -21,6 +21,4 @@ void main(){
 	pos = (vertexIn.x * 0.5 + 0.5) * sizeInPixels;
 	height = (vertexIn.y * 0.5 + 0.5) * heightInPixels;
 	gl_Position = vec4(vec2((pos + xPosition) / screenSize.x, (height + yPosition) / screenSize.y) * 2.0 - vec2(1.0), 0.0, 1.0);
-	
-
 }

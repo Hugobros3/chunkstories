@@ -1,4 +1,4 @@
-#version 150
+#version 330
 // Copyright 2015 XolioWare Interactive
 
 in vec4 interpolatedColor;
@@ -16,6 +16,5 @@ out vec4 fragColor;
 
 void main()
 {
-	//Diffuse G-Buffer
 	fragColor = interpolatedColor;
 }

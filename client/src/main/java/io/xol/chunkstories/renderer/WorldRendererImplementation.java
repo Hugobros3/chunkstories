@@ -9,10 +9,7 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityOverlay;
 import io.xol.chunkstories.api.gui.Layer;
-import io.xol.chunkstories.api.math.Math2;
 import org.joml.Matrix4f;
-import org.joml.Vector3dc;
-import org.joml.Vector3f;
 import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
@@ -561,8 +558,8 @@ public class WorldRendererImplementation implements WorldRenderer
 		public final RenderTargetAttachementsConfiguration fboBlur;
 
 		// 64x64 texture used to cull distant mesh
-		public final Texture2DRenderTargetGL rbLoadedChunksHeightmapTop, rbLoadedChunksHeightmapBot;
-		public final RenderTargetAttachementsConfiguration fboLoadedChunksTop, fboLoadedChunksBot;
+		//public final Texture2DRenderTargetGL rbLoadedChunksHeightmapTop, rbLoadedChunksHeightmapBot;
+		//public final RenderTargetAttachementsConfiguration fboLoadedChunksTop, fboLoadedChunksBot;
 
 		// Shadow maps
 		public int shadowMapResolution = 0;
@@ -608,10 +605,10 @@ public class WorldRendererImplementation implements WorldRenderer
 			fboBlur = new FrameBufferObjectGL(null, rbBlurTemp);
 
 			// 64x64 texture used to cull distant mesh
-			rbLoadedChunksHeightmapTop = new Texture2DRenderTargetGL(DEPTH_RENDERBUFFER, 64, 64);
-			fboLoadedChunksTop = new FrameBufferObjectGL(rbLoadedChunksHeightmapTop);
-			rbLoadedChunksHeightmapBot = new Texture2DRenderTargetGL(DEPTH_RENDERBUFFER, 64, 64);
-			fboLoadedChunksBot = new FrameBufferObjectGL(rbLoadedChunksHeightmapBot);
+			//rbLoadedChunksHeightmapTop = new Texture2DRenderTargetGL(DEPTH_RENDERBUFFER, 64, 64);
+			//fboLoadedChunksTop = new FrameBufferObjectGL(rbLoadedChunksHeightmapTop);
+			//rbLoadedChunksHeightmapBot = new Texture2DRenderTargetGL(DEPTH_RENDERBUFFER, 64, 64);
+			//fboLoadedChunksBot = new FrameBufferObjectGL(rbLoadedChunksHeightmapBot);
 
 			// Shadow maps
 			rbShadowMap = new Texture2DRenderTargetGL(DEPTH_SHADOWMAP, RenderingConfig.shadowMapResolutions, RenderingConfig.shadowMapResolutions);
@@ -660,8 +657,8 @@ public class WorldRendererImplementation implements WorldRenderer
 			this.fboShadedBuffer.destroy(false);
 			this.fboBloom.destroy(false);
 			this.fboBlur.destroy(false);
-			this.fboLoadedChunksBot.destroy(false);
-			this.fboLoadedChunksTop.destroy(false);
+			//this.fboLoadedChunksBot.destroy(false);
+			//this.fboLoadedChunksTop.destroy(false);
 			this.fboSSAO.destroy(false);
 			this.fboSSR.destroy(false);
 			this.fboTempBufferEnvMap.destroy(false);
@@ -677,8 +674,8 @@ public class WorldRendererImplementation implements WorldRenderer
 			this.rbEnvironmentMap.destroy();
 			this.rbEnvMapTemp.destroy();
 			this.rbEnvMapZBuffer.destroy();
-			this.rbLoadedChunksHeightmapBot.destroy();
-			this.rbLoadedChunksHeightmapTop.destroy();
+			//this.rbLoadedChunksHeightmapBot.destroy();
+			//this.rbLoadedChunksHeightmapTop.destroy();
 			this.rbMaterial.destroy();
 			this.rbNormals.destroy();
 			this.rbReflections.destroy();

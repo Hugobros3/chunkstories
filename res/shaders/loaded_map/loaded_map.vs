@@ -1,4 +1,4 @@
-#version 150 core
+#version 330
 //Entry attributes
 in vec3 vertexIn;
 

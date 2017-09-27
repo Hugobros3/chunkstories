@@ -1,4 +1,4 @@
-#version 150 core
+#version 330
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
@@ -48,33 +48,30 @@ void main(){
 	//Usual variable passing
 	texCoordPassed = texCoordIn;
 	
-	vec4 v = objectMatrix * vec4(vertexIn.xyz, 1.0);
+	vec4 vertex = objectMatrix * vec4(vertexIn.xyz, 1.0);
 	
 	<ifdef dynamicGrass>
-	float movingness = normalIn.w;
-	if(movingness > 0)
-	{
-		v.x += sin(time + v.z + v.y / 2.0) * 0.1;
-		v.z += cos(time + v.x*1.5 + 0.3) * 0.1;
-	}
+		float movingness = normalIn.w;
+		if(movingness > 0)
+		{
+			vertex.x += sin(time + vertex.z + vertex.y / 2.0) * 0.1;
+			vertex.z += cos(time + vertex.x*1.5 + 0.3) * 0.1;
+		}
 	<endif dynamicGrass>
 	
-	vertexPassed = v;
-	normalPassed =  (normalIn.xyz-0.5)*2.0;//normalIn;
+	vertexPassed = vertex;
+	normalPassed =  (normalIn.xyz-0.5)*2.0;
 	
-	fresnelTerm = 0.2 + 0.8 * clamp(0.7 + dot(normalize(v.xyz - camPos), vec3(normalPassed)), 0.0, 1.0);
+	fresnelTerm = 0.2 + 0.8 * clamp(0.7 + dot(normalize(vertex.xyz - camPos), vec3(normalPassed)), 0.0, 1.0);
 	
 	texCoordPassed /= 32768.0;
 	
 	//Compute lightmap coords
 	rainWetness = wetness*clamp((colorIn.g * 16.0 - 0.85)*16,0,1.0);
-	worldLight = vec2(colorIn.r * 17, colorIn.g * 17)*(1.0 - colorIn.b * 65.75 * 0.25);
+	worldLight = vec2(colorIn.r * 17.0, colorIn.g * 17.0)*(1.0 - colorIn.b * 65.75 * 0.25);
 	
-	//worldLight = vec3(colorIn.rgb);
-	//worldLight.y *= sunIntensity;
-	
-	gl_Position = modelViewProjectionMatrix * v;
+	gl_Position = modelViewProjectionMatrix * vertex;
 	
 	//eyeDirection transform
-	eyeDirection = v.xyz - camPos;
+	eyeDirection = vertex.xyz - camPos;
 }

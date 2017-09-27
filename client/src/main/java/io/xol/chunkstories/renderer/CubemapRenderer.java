@@ -59,7 +59,7 @@ public class CubemapRenderer {
 		scrW = resolution;
 		scrH = resolution;
 		
-
+		int t[] = new int[] { 4, 5, 3, 2, 0, 1 };
 		String[] names = { "front", "back", "top", "bottom", "right", "left" };
 
 		String time = null;
@@ -100,10 +100,11 @@ public class CubemapRenderer {
 				camera.rotationY = 270;
 				break;
 			}
+			
+			int f = t[z];
 
 			if (onlyTerrain)
 				renderingContext.getRenderTargetManager().setConfiguration(buffers.fboTempBufferEnvMap);
-			//environmentMapFastFbo.bind();
 			else
 				renderingContext.getRenderTargetManager().setConfiguration(buffers.fboShadedBuffer);
 			//this.fboShadedBuffer.bind();
@@ -126,8 +127,6 @@ public class CubemapRenderer {
 
 			if (cubemap != null)
 			{
-				int t[] = new int[] { 4, 5, 3, 2, 0, 1 };
-				int f = t[z];
 
 				renderingContext.useShader("blit");
 
@@ -144,8 +143,6 @@ public class CubemapRenderer {
 			}
 			else
 			{
-				// GL access
-				
 				glBindTexture(GL_TEXTURE_2D, buffers.rbShaded.getId());
 				//glBindTexture(GL_TEXTURE_2D, environmentMapBufferHDR.getId());
 

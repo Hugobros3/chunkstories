@@ -1,4 +1,4 @@
-#version 150 core
+#version 330
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
@@ -45,16 +45,13 @@ out vec4 outNormalColor;
 out vec4 outMaterialColor;
 
 void main(){
-	
+	//Check some normal component was made available
 	vec3 normal = normalPassed;
+	float normalGiven = length(normalPassed); //Expected to be ~1
 	
-	//Check normal was given
-	float normalGiven = length(normalPassed);
-	
-	//Grabs normal from texture and corrects the format
+	//Grabs normal from texture and corrects the format (stored as unsigned int texture)
 	vec3 normalMapped = texture(normalTexture, texCoordPassed).xyz;
     normalMapped = normalMapped * 2.0 - 1.0;
-	normalMapped.x = normalMapped.x;
 	
 	//Apply it
 	normal = perturb_normal(normal, eyeDirection, texCoordPassed, normalMapped);
@@ -62,34 +59,28 @@ void main(){
 	
 	//If no normal given, face camera
 	normal = mix(vec3(0,0,1), normal, normalGiven);
+	
 	//Basic texture color
 	vec3 surfaceDiffuseColor = texture(diffuseTexture, texCoordPassed).rgb;
 	
 	//Texture transparency
 	float alpha = texture(diffuseTexture, texCoordPassed).a;
 	
-	//alpha = 1;
-	//baseColor = vec3(1, 0.5, 0.5);
-	
+	//Discard pixels too faint
 	if(alpha <= 0.1)
 		discard;
-	
+	//Color pixels with some alpha component with the vegetation color
 	else if(alpha < 1)
 		surfaceDiffuseColor *= texture(vegetationColorTexture, vertexPassed.xz / vec2(mapSize)).rgb;
-	
-	//Rain makes shit glint
-	float specularity = 0;
-	
+		
 	vec4 material = texture(materialTexture, texCoordPassed);
-	
-	specularity = (material.g + rainWetness) * fresnelTerm;
+
+	float specularity = (material.g + rainWetness) * fresnelTerm;
+	//We use a fancier equation if enabled
 	<ifdef perPixelFresnel>
-	float dynamicFresnelTerm = 0.0 + 1.0 * clamp(0.7 + dot(normalMatrix * normalize(eyeDirection), vec3(normal)), 0.0, 1.0);
-	specularity = (material.g + rainWetness) * dynamicFresnelTerm;
+		float dynamicFresnelTerm = 0.0 + 1.0 * clamp(0.7 + dot(normalMatrix * normalize(eyeDirection), vec3(normal)), 0.0, 1.0);
+		specularity = (material.g + rainWetness) * dynamicFresnelTerm;
 	<endif perPixelFresnel>
-	
-	//surfaceDiffuseColor = normalize(surfaceDiffuseColor) * 0.75;
-	//surfaceDiffuseColor = vec3(1.0);
 	
 	//Diffuse G-Buffer
 	outDiffuseColor = vec4(surfaceDiffuseColor, 1.0);

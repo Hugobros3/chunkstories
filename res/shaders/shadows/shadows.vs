@@ -1,4 +1,4 @@
-#version 140
+#version 330
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
@@ -56,7 +56,7 @@ void main(){
 	}
 	else
 	{
-		//v.xyz += objectPosition;
+		
 	}
 		
 	gl_Position = accuratizeShadowIn(depthMVP * v);

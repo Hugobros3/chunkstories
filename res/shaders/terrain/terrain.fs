@@ -1,10 +1,7 @@
-#version 150 core
+#version 330
 //(c) 2015-2016 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
-
-// Disabled int textures for Intel IGP compatibility, instead it's floats in GL_NEAREST interpolation, works everywhere including nvidia if you add a few tricks
-//#extension GL_EXT_gpu_shader4 : require
 
 //Passed variables
 in vec3 vertexPassed;
@@ -68,8 +65,6 @@ uniform float overcastFactor;
 <include ../lib/gamma.glsl>
 
 //World mesh culling
-//uniform sampler2D loadedChunksMapTop;
-//uniform sampler2D loadedChunksMapBot;
 uniform float ignoreWorldCulling;
 
 <include ../sky/sky.glsl>
@@ -97,15 +92,6 @@ uint access(usampler2DArray tex, vec2 coords) {
 
 void main()
 {
-	//Computes the zone covered by actual chunks
-	/*float heightCoveredStart = texture(loadedChunksMapBot,  ( ( floor( ( vertexPassed.xz - floor(camPos.xz/32.0)*32.0) / 32.0) )/ 32.0) * 0.5 + 0.5 ).r * 1024.0 - 1.0;
-	float heightCoveredEnd = texture(loadedChunksMapTop,  ( ( floor( ( vertexPassed.xz - floor(camPos.xz/32.0)*32.0) / 32.0) )/ 32.0) * 0.5 + 0.5 ).r * 1024.0 + 33.0;
-	
-	//Discards the fragment if it is within
-	if(vertexPassed.y-1.5 > heightCoveredStart && vertexPassed.y-0.0-32.0 < heightCoveredEnd && ignoreWorldCulling < 1.0)
-		discard;*/
-
-	//arrayIndex
 	uint voxelId = access(topVoxels, textureCoord);//texture(topVoxels, vec3(textureCoord, indexPassed)).r;
 	
 	if(voxelId == 250u)
@@ -116,8 +102,6 @@ void main()
 	
 	//512-voxel types summary... not best
 	vec4 diffuseColor = texture(blocksTexturesSummary, (float(voxelId))/512.0);
-	
-	//vec4 diffuseColor = vec4(0.5, float(voxelId) / 50, mod(float(voxelId), 1.0), 1.0);
 	
 	//Apply plants color if alpha is < 1.0
 	if(diffuseColor.a < 1.0)
@@ -204,6 +188,5 @@ void main()
 	
 	//Mix in fog
 	shadedFramebufferOut = mix(vec4(finalColor, 1.0),vec4(fogColor,1.0), fogIntensity);
-	shadedFramebufferOut.w = 0.5;
-	//shadedFramebufferOut = vec4(1.0, 0.0, 0.0, 1.0);
+	//shadedFramebufferOut.a = 0.5;
 }

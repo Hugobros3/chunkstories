@@ -1,4 +1,4 @@
-#version 150 core
+#version 330
 //(c) 2015 XolioWare Interactive
 
 uniform sampler2D sampler;
