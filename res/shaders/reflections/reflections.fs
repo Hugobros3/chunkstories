@@ -54,7 +54,7 @@ uniform float fogEndDistance;
 //Gamma constants
 <include ../lib/gamma.glsl>
 
-<include ../sky/sky.glsl> //Sky-drawing stuff
+<include ../sky/sky.glsl>
 <include ../lib/transformations.glsl> 
 <include ../lib/shadowTricks.glsl>
 <include ../lib/normalmapping.glsl>
