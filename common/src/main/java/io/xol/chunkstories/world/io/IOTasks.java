@@ -502,7 +502,7 @@ public class IOTasks extends Thread implements TaskExecutor
 	}
 
 	//Irrelevant. We unload first actually
-	@Deprecated
+	/*@Deprecated
 	private void requestRegionSaveAndUnload(RegionImplementation holder)
 	{
 		if (!holder.isDiskDataLoaded())
@@ -523,7 +523,7 @@ public class IOTasks extends Thread implements TaskExecutor
 		};
 
 		scheduleTask(task);
-	}
+	}*/
 
 	public class IOTaskLoadSummary extends IOTask
 	{

@@ -53,6 +53,8 @@ public class ClientConnection extends Thread implements RemoteServer
 	boolean die = false;
 	boolean closeMethodAlreadyCalled = false;
 	
+	String[] prout = {"lel"};
+	
 	public ClientConnection(ClientSideConnectionSequence connectionSequence, String ip, int port)
 	{
 		this.connectionSequence = connectionSequence;

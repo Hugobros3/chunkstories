@@ -2,7 +2,6 @@ package io.xol.chunkstories.anvil.nbt;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;

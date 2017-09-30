@@ -1,7 +1,6 @@
 package io.xol.chunkstories.input;
 
 import io.xol.chunkstories.api.input.Input;
-import io.xol.chunkstories.api.input.KeyboardKeyInput;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

@@ -2,7 +2,6 @@ package io.xol.chunkstories.anvil.nbt;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz

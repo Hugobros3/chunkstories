@@ -13,6 +13,8 @@ import io.xol.chunkstories.api.serialization.StreamTarget;
 //http://chunkstories.xyz
 //http://xol.io
 
+@SuppressWarnings("unused")
+/** Wip class to implement some sort of medical component */
 public class AdvancedMedicalComponent extends EntityComponent
 {
 	//Flashbang timer

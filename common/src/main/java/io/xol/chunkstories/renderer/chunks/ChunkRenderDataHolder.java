@@ -1,9 +1,6 @@
 package io.xol.chunkstories.renderer.chunks;
 
-import java.util.Iterator;
-import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
@@ -47,6 +44,10 @@ public class ChunkRenderDataHolder
 	{
 		this.chunk = chunk;
 		this.worldRenderer = worldRenderer;
+	}
+	
+	public CubicChunk getChunk() {
+		return chunk;
 	}
 	
 	/**

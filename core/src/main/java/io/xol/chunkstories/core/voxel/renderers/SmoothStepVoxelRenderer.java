@@ -19,6 +19,7 @@ import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.core.voxel.Voxel8Steps;
 
+/** Experiment attempting to make a smooth terrain system */
 public class SmoothStepVoxelRenderer implements VoxelRenderer {
 
 	private final Voxel8Steps voxel;
@@ -72,7 +73,7 @@ public class SmoothStepVoxelRenderer implements VoxelRenderer {
 		//int textureS = texture.getAtlasS() + (x % texture.getTextureScale()) * offset;
 		//int textureT = texture.getAtlasT() + (z % texture.getTextureScale()) * offset;
 		
-		final int max_step = 8;
+		//final int max_step = 8;
 		int goodID = voxel.getId();
 		
 		float height[] = new float[9];

@@ -23,6 +23,7 @@ import io.xol.chunkstories.api.net.PacketsProcessor;
 
 public abstract class PacketsProcessorCommon implements PacketsProcessorActual
 {
+	@SuppressWarnings("unused")
 	private final GameContext gameContext;
 	protected final Content.PacketTypes store;
 	
@@ -36,15 +37,11 @@ public abstract class PacketsProcessorCommon implements PacketsProcessorActual
 	/**
 	 * Read 1 or 2 bytes to get the next packet ID and returns a packet of this type if it exists
 	 * 
-	 * @param in
-	 *            The InputStream of the connection
+	 * @param in The InputStream of the connection
 	 * @return A valid Packet
-	 * @throws IOException
-	 *             If the stream dies when we process it
-	 * @throws UnknowPacketException
-	 *             If the packet id we obtain is invalid
-	 * @throws IllegalPacketException
-	 *             If the packet we obtain is illegal ( if we're not supposed to receive or send it )
+	 * @throws IOException If the stream dies when we process it
+	 * @throws UnknowPacketException If the packet id we obtain is invalid
+	 * @throws IllegalPacketException If the packet we obtain is illegal ( if we're not supposed to receive or send it )
 	 */
 	public Packet getPacket(DataInputStream in) throws IOException, UnknowPacketException, IllegalPacketException
 	{

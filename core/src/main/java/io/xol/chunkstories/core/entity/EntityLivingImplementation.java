@@ -96,9 +96,6 @@ public abstract class EntityLivingImplementation extends EntityBase implements E
 
 			Matrix4f boneTransormation = new Matrix4f(EntityLivingImplementation.this.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix(skeletonPart, System.currentTimeMillis() % 1000000));
 			
-			if (boneTransormation == null)
-				return;
-
 			Matrix4f worldPositionTransformation = new Matrix4f();
 			
 			Location loc = EntityLivingImplementation.this.getLocation();
@@ -133,10 +130,6 @@ public abstract class EntityLivingImplementation extends EntityBase implements E
 		public Vector3dc lineIntersection(Vector3dc lineStart, Vector3dc lineDirection)
 		{
 			Matrix4f fromAABBToWorld = new Matrix4f(EntityLivingImplementation.this.getAnimatedSkeleton().getBoneHierarchyTransformationMatrix(skeletonPart, System.currentTimeMillis() % 1000000));
-
-			//Fuck off if this has issues
-			if (fromAABBToWorld == null)
-				return null;
 
 			Matrix4f worldPositionTransformation = new Matrix4f();
 			

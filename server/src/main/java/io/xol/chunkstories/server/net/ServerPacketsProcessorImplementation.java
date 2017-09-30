@@ -11,7 +11,6 @@ import io.xol.chunkstories.api.exceptions.net.IllegalPacketException;
 import io.xol.chunkstories.api.exceptions.net.UnknowPacketException;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.PacketSynch;
-import io.xol.chunkstories.api.net.PacketsProcessor;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.api.server.ServerPacketsProcessor;
@@ -19,7 +18,6 @@ import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.net.PacketTypeDeclared;
 import io.xol.chunkstories.net.PacketsProcessorActual;
 import io.xol.chunkstories.net.PacketsProcessorCommon;
-import io.xol.chunkstories.net.PacketsProcessorCommon.PendingSynchPacket;
 import io.xol.chunkstories.server.DedicatedServer;
 import io.xol.chunkstories.server.ServerPlayer;
 

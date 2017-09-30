@@ -38,6 +38,10 @@ public class AABBVoxelIterator implements IterableIterator<VoxelContext>, VoxelC
 		this.k = minz;
 	}
 	
+	public CollisionBox getCollisionBox() {
+		return collisionBox;
+	}
+	
 	@Override
 	public boolean hasNext() {
 		return k <= maxz;
