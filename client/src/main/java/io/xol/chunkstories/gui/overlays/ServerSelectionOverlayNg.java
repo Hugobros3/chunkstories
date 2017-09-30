@@ -6,11 +6,14 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.net.Socket;
 
+import org.joml.Vector4f;
+
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse.MouseButton;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.gui.ng.LargeButtonIcon;
@@ -19,7 +22,6 @@ import io.xol.chunkstories.gui.ng.ScrollableContainer.ContainerElement;
 import io.xol.chunkstories.gui.overlays.ServerSelectionOverlayNg.ServerSelectionZone.ServerGuiItem;
 import io.xol.chunkstories.gui.overlays.ingame.ConnectionOverlay;
 import io.xol.engine.graphics.fonts.BitmapFont;
-import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.gui.elements.Button;
 import io.xol.engine.gui.elements.InputText;
 import io.xol.engine.net.HttpRequestThread;
@@ -85,34 +87,37 @@ public class ServerSelectionOverlayNg extends Layer implements HttpRequester
 	}
 
 	@Override
-	public void render(RenderingInterface renderingContext)
+	public void render(RenderingInterface renderer)
 	{
-		parentLayer.getRootLayer().render(renderingContext);
+		parentLayer.getRootLayer().render(renderer);
 		
 		if (autologin && !ipForm.text.equals(""))
 			login();
 
-		// title
-		FontRenderer2.drawTextUsingSpecificFontRVBA(32, renderingContext.getWindow().getHeight() - 32 * (1 + 1), 0, 32 + 1 * 16, "Select a server from the list or type in the address directly", BitmapFont.SMALLFONTS, 1f, 1f, 1f, 1f);
+		String instructions = "Select a server from the list or type in the address directly";
+		Font font = renderer.getFontRenderer().getFont("arial", 11);
+		renderer.getFontRenderer().drawStringWithShadow(font, 32, renderer.getWindow().getHeight() - 32 * 2, instructions, 3, 3, new Vector4f(1));
+		//FontRenderer2.drawTextUsingSpecificFontRVBA(32, renderer.getWindow().getHeight() - 32 * (1 + 1), 0, 32 + 1 * 16, , BitmapFont.SMALLFONTS, 1f, 1f, 1f, 1f);
+		
 		// gui
-		float txtbox = renderingContext.getWindow().getWidth() - connectButton.getWidth();
-		ipForm.setPosition(25, renderingContext.getWindow().getHeight() - 50 * (1 + 1));
+		float txtbox = renderer.getWindow().getWidth() - connectButton.getWidth();
+		ipForm.setPosition(25, renderer.getWindow().getHeight() - 50 * (1 + 1));
 		ipForm.setWidth(txtbox);
-		ipForm.drawWithBackGround();
+		ipForm.drawWithBackGround(renderer);
 		
-		connectButton.setPosition(txtbox + 96 + 12, renderingContext.getWindow().getHeight() - 50 - 16 - 18);
+		connectButton.setPosition(txtbox + 96 + 12, renderer.getWindow().getHeight() - 50 - 16 - 18);
 		
-		connectButton.render(renderingContext);
+		connectButton.render(renderer);
 
 		backOption.setPosition(8, 8);
-		backOption.render(renderingContext);
+		backOption.render(renderer);
 
 		updateServers();
 		int s = Client.getInstance().getGameWindow().getGuiScale();
 		
 		serverSelectionZone.setPosition((width - 480 * s) / 2, 32);
 		serverSelectionZone.setDimensions(480 * s, height - 32 - 128);
-		serverSelectionZone.render(renderingContext);
+		serverSelectionZone.render(renderer);
 	}
 
 	// Controls handling
@@ -195,13 +200,6 @@ public class ServerSelectionOverlayNg extends Layer implements HttpRequester
 		//Client.world = null;
 		
 		gameWindow.setLayer(new ConnectionOverlay(gameWindow, this, ip, port));
-		//this.mainScene.changeOverlay(new ConnectionOverlay(mainScene, mainScene.currentOverlay, ip, port));
-		//this.mainScene.gameWindow.changeScene(new ConnectScene(mainScene.gameWindow, ip, port));
-	}
-
-	void drawRightedText(RenderingInterface renderingContext, String t, float decx, float height, int basesize, float r, float v, float b, float a)
-	{
-		FontRenderer2.drawTextUsingSpecificFontRVBA(renderingContext.getWindow().getWidth() - decx - FontRenderer2.getTextLengthUsingFont(basesize, t, BitmapFont.SMALLFONTS), height, 0, basesize, t, BitmapFont.SMALLFONTS, a, r, v, b);
 	}
 
 	int currentServer = 0;

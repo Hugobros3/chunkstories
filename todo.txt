@@ -11,7 +11,13 @@ Bugs TBF:
 
 Todo:
 
-RC3
+	Log4j
+	JUnit
+	res/ folder part of core
+	data/ folder for implem config.
+
+Gameplay TODO:
+
 Remaining recoil
 Feature parity XolioZ
 Fix local sounds in 3d

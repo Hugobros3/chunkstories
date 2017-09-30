@@ -1,12 +1,13 @@
 package io.xol.chunkstories.gui.overlays.ingame;
 
+import org.joml.Vector4f;
+
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ClientSideConnectionSequence;
-import io.xol.engine.graphics.fonts.BitmapFont;
-import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.gui.elements.Button;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -39,19 +40,23 @@ public class ConnectionOverlay extends Layer
 	{
 		parentLayer.getRootLayer().render(renderingContext);
 		
-		String color = "606060";
+		String color = "#606060";
 		//color += HexTools.intToHex((int) (Math.random() * 255));
 		//color += HexTools.intToHex((int) (Math.random() * 255));
 		//color += HexTools.intToHex((int) (Math.random() * 255));
+		
+		Font font = renderingContext.getFontRenderer().getFont("arial", 11);
 		
 		String connection = "Connecting, please wait";
-		FontRenderer2.drawTextUsingSpecificFont(renderingContext.getWindow().getWidth() / 2 - FontRenderer2.getTextLengthUsingFont(96, connection, BitmapFont.SMALLFONTS) / 2, 
-				renderingContext.getWindow().getHeight() / 2 + 48 * 3, 0, 96, connection, BitmapFont.SMALLFONTS);
+		
+		renderingContext.getFontRenderer().drawStringWithShadow(font, renderingContext.getWindow().getWidth() / 2 - font.getWidth(connection) * 1.5f, 
+				renderingContext.getWindow().getHeight() / 2 + 48 * 3, connection, 3, 3, new Vector4f(1));
 		
 		String currentConnectionStep = connectionSequence.getStatus().getStepText();
-		FontRenderer2.drawTextUsingSpecificFont(renderingContext.getWindow().getWidth() / 2 - FontRenderer2.getTextLengthUsingFont(48, currentConnectionStep, BitmapFont.SMALLFONTS) / 2, renderingContext.getWindow().getHeight() / 2 + 36 * 3, 0, 48,
-				"#"+color+currentConnectionStep, BitmapFont.SMALLFONTS);
 
+		renderingContext.getFontRenderer().drawStringWithShadow(font, renderingContext.getWindow().getWidth() / 2 - font.getWidth(currentConnectionStep) * 1.5f, 
+				renderingContext.getWindow().getHeight() / 2 + 32 * 3, color + currentConnectionStep, 3, 3, new Vector4f(1));
+		
 		exitButton.setPosition(renderingContext.getWindow().getWidth()/2, renderingContext.getWindow().getHeight()/2 - 24);
 		
 		exitButton.render(renderingContext);

@@ -22,8 +22,6 @@ import io.xol.chunkstories.gui.Ingame;
 import io.xol.chunkstories.gui.ng.BaseNgButton;
 import io.xol.chunkstories.gui.ng.LargeButtonIcon;
 import io.xol.chunkstories.input.lwjgl3.Lwjgl3KeyBind;
-import io.xol.engine.graphics.fonts.BitmapFont;
-import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.graphics.util.CorneredBoxDrawer;
 import io.xol.engine.graphics.util.ObjectRenderer;
@@ -208,7 +206,7 @@ public class OptionsOverlay extends Layer
 		public void render(RenderingInterface renderer)
 		{
 			String localizedText = Client.getInstance().getContent().localization().localize(text);
-			int textWidth = Client.getInstance().getContent().fonts().defaultFont().getWidth(localizedText) * scale();//FontRenderer2.getTextLengthUsingFont(size * 16, text, font);
+			int textWidth = Client.getInstance().getContent().fonts().defaultFont().getWidth(localizedText) * scale();
 			if (width < 0)
 			{
 				width = textWidth;
@@ -424,7 +422,6 @@ public class OptionsOverlay extends Layer
 				elements.add(f);
 			
 			//String txt = tab.name;
-			//int txtlen = FontRenderer2.getTextLengthUsingFont(32, txt, BitmapFont.SMALLFONTS);
 			TabButton tabButton = new TabButton(this, tab);
 			
 			//Make the action of the tab buttons switching tab effectively
@@ -505,13 +502,10 @@ public class OptionsOverlay extends Layer
 			b = a % 2;
 		}
 
-		FontRenderer2.drawTextUsingSpecificFont(renderer.getWindow().getWidth() / 2 - optionsPanelSize / 2 + 16 * this.getGuiScale(), renderer.getWindow().getHeight() - 32 * this.getGuiScale(), 0, 32 * this.getGuiScale(), "Options menu", BitmapFont.SMALLFONTS);
-
+		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().getFont("arial", 11), renderer.getWindow().getWidth() / 2 - optionsPanelSize / 2 + 16 * this.getGuiScale(), renderer.getWindow().getHeight() - 32 * this.getGuiScale(), Client.getInstance().getContent().localization().getLocalizedString("options.title"), 3, 3, new Vector4f(1));
+		
 		exitButton.setPosition(8, 8);
 		exitButton.render(renderer);
-
-		//if(currentConfigTab.name.contains("Rendering") || currentConfigTab.name.equals("") || currentConfigTab.name.contains("Debug"))
-		//	shouldReload = true;
 	}
 	
 	@Override

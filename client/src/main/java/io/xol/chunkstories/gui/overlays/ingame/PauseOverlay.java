@@ -1,14 +1,15 @@
 package io.xol.chunkstories.gui.overlays.ingame;
 
+import org.joml.Vector4f;
+
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.overlays.config.ModsSelectionOverlay;
 import io.xol.chunkstories.gui.overlays.config.OptionsOverlay;
-import io.xol.engine.graphics.fonts.BitmapFont;
-import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.gui.elements.Button;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -65,16 +66,16 @@ public class PauseOverlay extends Layer
 	{
 		parentLayer.render(renderer);
 		
-		FontRenderer2.drawTextUsingSpecificFont(renderer.getWindow().getWidth() / 2 - FontRenderer2.getTextLengthUsingFont(48, "#{ingame.pause}", BitmapFont.SMALLFONTS) / 2, renderer.getWindow().getHeight() / 2 + 48 * 3, 0, 48, "In-game menu", BitmapFont.SMALLFONTS);
-
+		Font font = renderer.getFontRenderer().getFont("arial", 11);
+		String pauseText = renderer.getClient().getContent().localization().getLocalizedString("ingame.pause");
+		renderer.getFontRenderer().drawStringWithShadow(font, renderer.getWindow().getWidth() / 2 - font.getWidth(pauseText) *1.5f, renderer.getWindow().getHeight() / 2 + 48 * 3, pauseText, 3, 3, new Vector4f(1));
+		
 		resumeButton.setPosition(renderer.getWindow().getWidth()/2, renderer.getWindow().getHeight()/2 + 48 * 2);
 		optionsButton.setPosition(renderer.getWindow().getWidth()/2, renderer.getWindow().getHeight()/2 + 48 * 1);
-		//modsButton.setPosition(renderingContext.getWindow().getWidth()/2, renderingContext.getWindow().getHeight()/2 + 48 * 0);
 		exitButton.setPosition(renderer.getWindow().getWidth()/2, renderer.getWindow().getHeight()/2 - 48);
 		
 		resumeButton.render(renderer);
 		optionsButton.render(renderer);
-		//modsButton.draw();
 		exitButton.render(renderer);
 	}
 	

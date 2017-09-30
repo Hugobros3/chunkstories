@@ -109,7 +109,7 @@ public class LevelCreateOverlay extends Layer
 		
 		levelName.setPosition(x + lvlnm_l + 20, positionStartY + height - 64 - 96);
 		levelName.setWidth(width - (x + lvlnm_l + 20) - 20);
-		levelName.drawWithBackGround();
+		levelName.drawWithBackGround(renderingContext);
 		
 		String wg_string = "World generator to use";
 		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("arial", 12), x, positionStartY + height - 64 - 148 - 4, wg_string, 2, 2, width, new Vector4f(1));
@@ -117,7 +117,7 @@ public class LevelCreateOverlay extends Layer
 		
 		worldGenName.setPosition(x + wg_sl + 20, positionStartY + height - 64 - 148);
 		worldGenName.setWidth(width - (x + wg_sl + 20) - 20);
-		worldGenName.drawWithBackGround();
+		worldGenName.drawWithBackGround(renderingContext);
 		
 		WorldGeneratorType wg = Client.getInstance().getContent().generators().getWorldGeneratorUnsafe(worldGenName.text);
 		String wg_validity_string;
@@ -140,8 +140,6 @@ public class LevelCreateOverlay extends Layer
 		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("arial", 12), x, positionStartY + height - 64 - 196 - 4, wg_validity_string, 2, 2, width, new Vector4f(1));
 		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("arial", 12), x, positionStartY + height - 64 - 196 - 4 - 32, wg_list, 2, 2, width, new Vector4f(1));
 		
-		//FontRenderer2.drawTextUsingSpecificFont(20, height - 64, 0, 48, "Create a new World", BitmapFont.SMALLFONTS);
-
 		cancelOption.setPosition(x + 75, positionStartY + 20 + 16);
 		cancelOption.render(renderingContext);
 

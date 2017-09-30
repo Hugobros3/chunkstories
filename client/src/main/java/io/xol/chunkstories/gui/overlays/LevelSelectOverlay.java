@@ -9,30 +9,27 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.joml.Vector4f;
+
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.input.Mouse.MouseScroll;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.gui.ng.LargeButtonIcon;
 import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.chunkstories.world.WorldInfoFile;
-import io.xol.engine.graphics.fonts.BitmapFont;
-import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.graphics.util.CorneredBoxDrawer;
 import io.xol.engine.graphics.util.ObjectRenderer;
 import io.xol.engine.gui.elements.Button;
 
 public class LevelSelectOverlay extends Layer
 {
-	//GuiElementsHandler guiHandler = new GuiElementsHandler();
-	
-
 	LargeButtonIcon backOption = new LargeButtonIcon(this, "back");
-	//Button backOption = new Button(this, 0, 0, 300, "#{menu.back}");
 	LargeButtonIcon newWorldOption = new LargeButtonIcon(this, "new");
 	List<WorldInfoFile> localWorlds = new ArrayList<WorldInfoFile>();
 	List<LocalWorldButton> worldsButtons = new ArrayList<LocalWorldButton>();
@@ -104,16 +101,20 @@ public class LevelSelectOverlay extends Layer
 	int scroll = 0;
 
 	@Override
-	public void render(RenderingInterface renderingContext)
+	public void render(RenderingInterface renderer)
 	{
-		parentLayer.getRootLayer().render(renderingContext);
+		parentLayer.getRootLayer().render(renderer);
 		
 		if (scroll < 0)
 			scroll = 0;
 
-		int posY = renderingContext.getWindow().getHeight() - 128;
-		FontRenderer2.drawTextUsingSpecificFont(64, posY + 64, 0, 48, "Select a level ...", BitmapFont.SMALLFONTS);
-		int remainingSpace = (int)Math.floor(renderingContext.getWindow().getHeight()/96 - 2);
+		int posY = renderer.getWindow().getHeight() - 128;
+		
+		Font font = renderer.getFontRenderer().getFont("arial", 11);
+		
+		renderer.getFontRenderer().drawStringWithShadow(font, 64, posY + 64, "Select a level...", 3, 3, new Vector4f(1));
+		
+		int remainingSpace = (int)Math.floor(renderer.getWindow().getHeight()/96 - 2);
 		
 		while(scroll + remainingSpace > worldsButtons.size())
 			scroll--;
@@ -126,19 +127,19 @@ public class LevelSelectOverlay extends Layer
 			if(remainingSpace-- <= 0)
 				break;
 			
-			int maxWidth = renderingContext.getWindow().getWidth() - 64 * 2;
+			int maxWidth = renderer.getWindow().getWidth() - 64 * 2;
 			worldButton.setWidth(maxWidth);
 			worldButton.setPosition(64 + worldButton.getWidth() / 2, posY);
-			worldButton.render(renderingContext);
+			worldButton.render(renderer);
 			
 			posY -= 96;
 		}
 
 		backOption.setPosition(8, 8);
-		backOption.render(renderingContext);
+		backOption.render(renderer);
 		
-		newWorldOption.setPosition(renderingContext.getWindow().getWidth() - newWorldOption.getWidth() - 8, 8);
-		newWorldOption.render(renderingContext);
+		newWorldOption.setPosition(renderer.getWindow().getWidth() - newWorldOption.getWidth() - 8, 8);
+		newWorldOption.render(renderer);
 	}
 	
 	@Override
@@ -184,16 +185,13 @@ public class LevelSelectOverlay extends Layer
 				CorneredBoxDrawer.drawCorneredBoxTiled(xPosition, yPosition, width, height, 8, "./textures/gui/scalableButton.png", 32, 2);
 			}
 			
-			//System.out.println(GameDirectory.getGameFolderPath()+"/worlds/" + info.getInternalName() + "/info.png");
 			ObjectRenderer.renderTexturedRect(xPosition - width / 2 + 32 + 4, yPosition, 64, 64, GameDirectory.getGameFolderPath()+"/worlds/" + info.getInternalName() + "/info.png");
 
-			//System.out.println("a+"+GameDirectory.getGameFolderPath()+"/worlds/" + info.getInternalName() + "/info.png");
+			Font font = renderer.getFontRenderer().getFont("arial", 11);
 			
-			FontRenderer2.setLengthCutoff(true, (int) (width - 72));
-			FontRenderer2.drawTextUsingSpecificFont(xPosition - width / 2 + 72, yPosition, 0, 1 * 32, info.getName() + "#CCCCCC    Size : " + info.getSize().toString() + " ( " + info.getSize().sizeInChunks / 32 + "x" + info.getSize().sizeInChunks / 32 + " km )", BitmapFont.SMALLFONTS);
-			FontRenderer2.drawTextUsingSpecificFontRVBA(xPosition - width / 2 + 72, yPosition - 32, 0, 1 * 32, info.getDescription(), BitmapFont.SMALLFONTS, 1.0f, 0.8f, 0.8f, 0.8f);
-			FontRenderer2.setLengthCutoff(false, -1);
-			//return width * 2 - 12;
+			renderer.getFontRenderer().drawStringWithShadow(font, xPosition - width / 2 + 72, yPosition, info.getName() + "#CCCCCC    Size : " + info.getSize().toString() + " ( " + info.getSize().sizeInChunks / 32 + "x" + info.getSize().sizeInChunks / 32 + " km )", 2, 2, width - 72, new Vector4f(1.0f));
+			renderer.getFontRenderer().drawStringWithShadow(font, xPosition - width / 2 + 72, yPosition - 32, info.getDescription(), 2, 2, -1, new Vector4f(1.0f));
+			
 		}
 
 		@Override

@@ -6,11 +6,10 @@ import io.xol.chunkstories.api.math.HexTools;
 import org.joml.Vector4f;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.chunkstories.world.WorldClientRemote;
-import io.xol.engine.graphics.fonts.BitmapFont;
-import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.gui.elements.Button;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -62,14 +61,19 @@ public class DeathOverlay extends Layer
 		
 		renderer.getGuiRenderer().drawBoxWindowsSpace(0, 0, renderer.getWindow().getWidth(), renderer.getWindow().getHeight(), 0, 0, 0, 0, null, false, true, new Vector4f(0.0f, 0.0f, 0.0f, 0.5f));
 		
-		String color = "";
+		String color = "#";
 		color += HexTools.intToHex((int) (Math.random() * 255));
 		color += HexTools.intToHex((int) (Math.random() * 255));
 		color += HexTools.intToHex((int) (Math.random() * 255));
-		
-		FontRenderer2.drawTextUsingSpecificFont(renderer.getWindow().getWidth() / 2 - FontRenderer2.getTextLengthUsingFont(96, "YOU DIEDED", BitmapFont.SMALLFONTS) / 2, renderer.getWindow().getHeight() / 2 + 48 * 3, 0, 96, "#FF0000YOU DIEDED", BitmapFont.SMALLFONTS);
-		FontRenderer2.drawTextUsingSpecificFont(renderer.getWindow().getWidth() / 2 - FontRenderer2.getTextLengthUsingFont(48, "git gud scrub", BitmapFont.SMALLFONTS) / 2, renderer.getWindow().getHeight() / 2 + 36 * 3, 0, 48, "#"+color+"git gud scrub", BitmapFont.SMALLFONTS);
 
+		Font font = renderer.getFontRenderer().getFont("arial", 11);
+		/*
+		renderer.getFontRenderer().drawStringWithShadow(font, , , , 3, 3, new Vector4f(1));
+		*/
+
+		renderer.getFontRenderer().drawStringWithShadow(font, renderer.getWindow().getWidth() / 2 - font.getWidth("YOU DIEDED") * 3f, renderer.getWindow().getHeight() / 2 + 48 * 3, "#FF0000YOU DIEDED" , 6, 6, new Vector4f(1));
+		renderer.getFontRenderer().drawStringWithShadow(font, renderer.getWindow().getWidth() / 2 - font.getWidth("git gud scrub") * 1.5f, renderer.getWindow().getHeight() / 2 + 36 * 3 , color + "git gud scrub", 3, 3, new Vector4f(1));
+		
 		respawnButton.setPosition(renderer.getWindow().getWidth()/2, renderer.getWindow().getHeight()/2 + 48);
 		exitButton.setPosition(renderer.getWindow().getWidth()/2, renderer.getWindow().getHeight()/2 - 24);
 		
@@ -78,10 +82,7 @@ public class DeathOverlay extends Layer
 		
 		//When the new entity arrives
 		if(Client.getInstance().getPlayer().getControlledEntity() != null)
-		{
 			gameWindow.setLayer(parentLayer);
-			//mainScene.changeOverlay(parent);
-		}
 		
 		//Make sure to ungrab the mouse
 		Mouse mouse = gameWindow.getInputsManager().getMouse();

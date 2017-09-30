@@ -4,9 +4,8 @@ import io.xol.chunkstories.api.gui.Layer;
 import org.joml.Vector4f;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.gui.overlays.config.OptionsOverlay.ConfigButtonKey;
-import io.xol.engine.graphics.fonts.BitmapFont;
-import io.xol.engine.graphics.fonts.FontRenderer2;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -23,29 +22,20 @@ public class KeyBindSelectionOverlay extends Layer
 	}
 
 	@Override
-	public void render(RenderingInterface renderingContext)
+	public void render(RenderingInterface renderer)
 	{
-		this.parentLayer.render(renderingContext);
+		this.parentLayer.render(renderer);
 		
-		//ObjectRenderer.renderColoredRect(renderingContext.getWindow().getWidth() / 2, renderingContext.getWindow().getHeight() / 2, renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight(), 0, "000000", 0.5f);
-		//renderingContext.getGuiRenderer().renderColoredRect(renderingContext.getWindow().getWidth() / 2, renderingContext.getWindow().getHeight() / 2, renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight(), 0, "000000", 0.5f);
+		renderer.getGuiRenderer().drawBoxWindowsSpace(0, 0, renderer.getWindow().getWidth(), renderer.getWindow().getHeight(), 0, 0, 0, 0, null, false, true, new Vector4f(0.0f, 0.0f, 0.0f, 0.5f));
 		
-		renderingContext.getGuiRenderer().drawBoxWindowsSpace(0, 0, renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight(), 0, 0, 0, 0, null, false, true, new Vector4f(0.0f, 0.0f, 0.0f, 0.5f));
-		
-		int dekal = FontRenderer2.getTextLengthUsingFont(48, "Please press a key", BitmapFont.SMALLFONTS);
-		FontRenderer2.drawTextUsingSpecificFont(renderingContext.getWindow().getWidth() / 2 - dekal/2, renderingContext.getWindow().getHeight() /2, 0, 48, "Please press a key", BitmapFont.SMALLFONTS);
+		String plz = "Please press a key";
+
+		Font font = renderer.getFontRenderer().getFont("arial", 11);
+		renderer.getFontRenderer().drawStringWithShadow(font, renderer.getWindow().getWidth() / 2 - font.getWidth(plz) * 1.5f, renderer.getWindow().getHeight() /2, plz, 3, 3, new Vector4f(1));
 	}
 	
 	public void setKeyTo(int k) {
 		callback.callBack(k);
 		gameWindow.setLayer(parentLayer);
 	}
-	
-	/*@Override
-	public boolean handleKeypress(int k)
-	{
-		callback.callBack(k);
-		parent.mainScene.changeOverlay(parent);
-		return true;
-	}*/
 }

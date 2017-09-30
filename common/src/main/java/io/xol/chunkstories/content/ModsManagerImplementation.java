@@ -395,9 +395,6 @@ public class ModsManagerImplementation implements ModsManager
 		};
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.content.ModsManager#getAllUniqueFilesLocations()
-	 */
 	@Override
 	public Iterator<Asset> getAllUniqueFilesLocations()
 	{
@@ -420,9 +417,6 @@ public class ModsManagerImplementation implements ModsManager
 		};
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.content.ModsManager#getAsset(java.lang.String)
-	 */
 	@Override
 	public Asset getAsset(String assetName)
 	{
@@ -433,18 +427,12 @@ public class ModsManagerImplementation implements ModsManager
 		return asset.topInstance();
 	}
 	
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.content.ModsManager#getAssetInstances(java.lang.String)
-	 */
 	@Override
 	public ModsAssetHierarchy getAssetInstances(String assetName)
 	{
 		return avaibleAssets.get(assetName);
 	}
 	
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.content.ModsManager#getAllAssetsByExtension(java.lang.String)
-	 */
 	@Override
 	public Iterator<Asset> getAllAssetsByExtension(String extension)
 	{
@@ -531,9 +519,6 @@ public class ModsManagerImplementation implements ModsManager
 		};
 	}
 	
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.content.ModsManager#getClassByName(java.lang.String)
-	 */
 	@Override
 	public Class<?> getClassByName(String className)
 	{

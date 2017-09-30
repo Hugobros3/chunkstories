@@ -94,7 +94,7 @@ public class Chat
 			parentLayer.render(renderer);
 
 			inputBox.setPosition(12, 192);
-			inputBox.drawWithBackGroundTransparent();
+			inputBox.drawWithBackGroundTransparent(renderer);
 		}
 
 		@Override

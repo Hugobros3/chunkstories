@@ -1,13 +1,16 @@
 package io.xol.engine.gui.elements;
 
+import org.joml.Vector4f;
+
 import io.xol.chunkstories.api.gui.FocusableGuiElement;
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.gui.TextInputGuiElement;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
+import io.xol.chunkstories.client.Client;
 import io.xol.engine.graphics.fonts.BitmapFont;
-import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.graphics.util.CorneredBoxDrawer;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -19,8 +22,8 @@ public class InputText extends FocusableGuiElement implements TextInputGuiElemen
 	public String text = "";
 	public int fontSize = 32;
 
+	private Font ttfFont = Client.getInstance().getContent().fonts().defaultFont();
 	public BitmapFont font;
-	//public float maxlen = 128;
 
 	public InputText(Layer layer, int x, int y, int width, int fontSize, BitmapFont f)
 	{
@@ -57,44 +60,45 @@ public class InputText extends FocusableGuiElement implements TextInputGuiElemen
 		return true;
 	}
 
-	public void drawWithBackGround()
+	public void drawWithBackGround(RenderingInterface renderer)
 	{
 		float len = width;
-		int txtlen = FontRenderer2.getTextLengthUsingFont(fontSize, text+" ", font);
+		int txtlen = ttfFont.getWidth(text) * scale();
 		if(txtlen > len)
 			len = txtlen;
 		if (isFocused())
 			CorneredBoxDrawer.drawCorneredBox(xPosition + len / 2, yPosition + fontSize / 2, len, 32, 8, "./textures/gui/textbox.png");
 		else
 			CorneredBoxDrawer.drawCorneredBox(xPosition + len / 2, yPosition + fontSize / 2, len, 32, 8, "./textures/gui/textboxnofocus.png");
-		FontRenderer2.drawTextUsingSpecificFont(xPosition, yPosition, 0, fontSize, text + ((isFocused() && System.currentTimeMillis() % 1000 > 500) ? "|" : ""), font, 1f);
-		// System.out.println(text);
+		
+		
+		renderer.getFontRenderer().drawStringWithShadow(ttfFont, xPosition + scale(), yPosition - scale(), text + ((isFocused() && System.currentTimeMillis() % 1000 > 500) ? "|" : ""), scale(), scale(), new Vector4f(1.0f));
 	}
 
-	public void drawWithBackGroundTransparent()
+	public void drawWithBackGroundTransparent(RenderingInterface renderer)
 	{
 		float len = width;
-		int txtlen = FontRenderer2.getTextLengthUsingFont(fontSize, text+" ", font);
+		int txtlen = ttfFont.getWidth(text) * scale();
 		if(txtlen > len)
 			len = txtlen;
 		if (isFocused())
 			CorneredBoxDrawer.drawCorneredBox(xPosition + len / 2, yPosition + fontSize / 2, len, 32, 8, "./textures/gui/textboxtransp.png");
 		else
 			CorneredBoxDrawer.drawCorneredBox(xPosition + len / 2, yPosition + fontSize / 2, len, 32, 8, "./textures/gui/textboxnofocustransp.png");
-		FontRenderer2.drawTextUsingSpecificFont(xPosition, yPosition, 0, fontSize, text + ((isFocused() && System.currentTimeMillis() % 1000 > 500) ? "|" : ""), font, 1f);
-		// System.out.println(text);
+		
+		renderer.getFontRenderer().drawStringWithShadow(ttfFont, xPosition + scale(), yPosition - scale(), text + ((isFocused() && System.currentTimeMillis() % 1000 > 500) ? "|" : ""), scale(), scale(), new Vector4f(1.0f));
 	}
 	
 	public float getWidth() {
 		float len = width;
-		int txtlen = FontRenderer2.getTextLengthUsingFont(fontSize, text+" ", font);
+		int txtlen = ttfFont.getWidth(text) * scale();
 		if(txtlen > len)
 			len = txtlen;
 		
 		return len;
 	}
 
-	public void drawWithBackGroundPassworded()
+	public void drawWithBackGroundPassworded(RenderingInterface renderer)
 	{
 		String passworded = "";
 		for (@SuppressWarnings("unused")
@@ -104,8 +108,8 @@ public class InputText extends FocusableGuiElement implements TextInputGuiElemen
 			CorneredBoxDrawer.drawCorneredBox(xPosition + getWidth() / 2, yPosition + fontSize / 2, getWidth(), 32, 8, "./textures/gui/textbox.png");
 		else
 			CorneredBoxDrawer.drawCorneredBox(xPosition + getWidth() / 2, yPosition + fontSize / 2, getWidth(), 32, 8, "./textures/gui/textboxnofocus.png");
-		FontRenderer2.drawTextUsingSpecificFont(xPosition, yPosition, 0, fontSize, passworded + ((isFocused() && System.currentTimeMillis() % 1000 > 500) ? "|" : ""), font, 1f);
-
+		
+		renderer.getFontRenderer().drawStringWithShadow(ttfFont, xPosition + scale(), yPosition - scale(), passworded + ((isFocused() && System.currentTimeMillis() % 1000 > 500) ? "|" : ""), scale(), scale(), new Vector4f(1.0f));
 	}
 
 	public void setText(String t)

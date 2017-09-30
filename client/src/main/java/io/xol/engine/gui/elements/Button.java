@@ -46,7 +46,6 @@ public class Button extends FocusableGuiElement implements ClickableGuiElement
 	{
 		String localizedText = Client.getInstance().getContent().localization().localize(text);
 		int width = Client.getInstance().getContent().fonts().defaultFont().getWidth(localizedText) * scale();
-				//FontRenderer2.getTextLengthUsingFont(size * 16, localizedText, font);
 		
 		//Can have a predefined with
 		if(this.width > width)
@@ -66,7 +65,7 @@ public class Button extends FocusableGuiElement implements ClickableGuiElement
 
 	public void render(RenderingInterface renderer) {
 		String localizedText = Client.getInstance().getContent().localization().localize(text);
-		float textWidth = Client.getInstance().getContent().fonts().defaultFont().getWidth(localizedText) * scale();//FontRenderer2.getTextLengthUsingFont(size * 16, localizedText, font);
+		float textWidth = Client.getInstance().getContent().fonts().defaultFont().getWidth(localizedText) * scale();
 		if (width < 0)
 		{
 			width = textWidth;
@@ -84,8 +83,6 @@ public class Button extends FocusableGuiElement implements ClickableGuiElement
 		}
 		
 		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), xPosition + textDekal, yPosition - height / 2, localizedText, scale(), scale(), new Vector4f(1.0f));
-		//FontRenderer2.drawTextUsingSpecificFont(xPosition + textDekal, yPosition - height / 2, 0, size * 32, localizedText, font);
-		//return width * 2 * size - 12;
 	}
 
 	@Override

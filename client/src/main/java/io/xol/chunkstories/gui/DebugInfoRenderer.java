@@ -1,5 +1,7 @@
 package io.xol.chunkstories.gui;
 
+import org.joml.Vector4f;
+
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.entity.Entity;
@@ -8,6 +10,7 @@ import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.WorldRenderer;
+import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.api.rendering.world.ChunkRenderable;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
@@ -20,8 +23,6 @@ import io.xol.chunkstories.renderer.chunks.RenderableChunk;
 import io.xol.chunkstories.renderer.particles.ClientParticlesRenderer;
 import io.xol.chunkstories.world.WorldClientCommon;
 import io.xol.engine.graphics.GLCalls;
-import io.xol.engine.graphics.fonts.BitmapFont;
-import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.graphics.geometry.VertexBufferGL;
 import io.xol.engine.graphics.textures.Texture2DGL;
 
@@ -109,44 +110,81 @@ public class DebugInfoRenderer {
 
 		Chunk current = world.getChunk(cx, cy, cz);
 		int x_top = renderingInterface.getWindow().getHeight() - 16;
-		FontRenderer2.drawTextUsingSpecificFont(20,
-				x_top - 1 * 16, 0, 16, GLCalls.getStatistics() + " Chunks in view : " + formatBigAssNumber("" + world.getWorldRenderer().getChunkMeshesRenderer().getChunksVisibleForPass(WorldRenderer.RenderingPass.NORMAL_OPAQUE)) + " Entities " + ec + " Particles :" + ((ClientParticlesRenderer) world.getParticlesManager()).count()
-						+ " #FF0000Render FPS: " + Client.getInstance().getGameWindow().getFPS() + " avg: " + Math.floor(10000.0 / Client.getInstance().getGameWindow().getFPS()) / 10.0 + " #00FFFFSimulation FPS: " + world.getWorldRenderer().getWorld().getGameLogic().getSimulationFps(),
-				BitmapFont.SMALLFONTS);
+		
+		Font font = null;
+		
+		//font = renderingInterface.getFontRenderer().getFont("pixel_arial", 8);
+		//font = renderingInterface.getFontRenderer().getFont("haettenschweiler", 15);
+		
+		if(font == null)
+			font = renderingInterface.getFontRenderer().getFont("arial", 12);
+		
+		int lineHeight = font.getLineHeight();
+		
+		int posx, posy;
+		String text;
+		
+		posx = 8;
+		posy = x_top - posx;
+		text = GLCalls.getStatistics() + " Chunks in view : " + formatBigAssNumber("" + world.getWorldRenderer().getChunkMeshesRenderer().getChunksVisibleForPass(WorldRenderer.RenderingPass.NORMAL_OPAQUE)) + " Entities " + ec + " Particles :" + ((ClientParticlesRenderer) world.getParticlesManager()).count()
+				+ " #FF0000Render FPS: " + Client.getInstance().getGameWindow().getFPS() + " avg: " + Math.floor(10000.0 / Client.getInstance().getGameWindow().getFPS()) / 10.0 + " #00FFFFSimulation FPS: " + world.getWorldRenderer().getWorld().getGameLogic().getSimulationFps();
+		
+		renderingInterface.getFontRenderer().drawStringWithShadow(font, posx, posy, text, 1, 1, new Vector4f(1));
 
-		//FontRenderer2.drawTextUsingSpecificFont(20, x_top - 2 * 16, 0, 16, "Frame timings : " + debugInfo, BitmapFont.SMALLFONTS);
-		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 3 * 16, 0, 16, "RAM usage : " + used / 1024 / 1024 + " / " + total / 1024 / 1024 + " mb used, chunks loaded in ram: " + world.getRegionsHolder().countChunksWithData() + "/"
-				+ world.getRegionsHolder().countChunks() + " " + Math.floor(world.getRegionsHolder().countChunksWithData() * 4 * 32 * 32 * 32 / (1024L * 1024 / 100f)) / 100f + "Mb used by chunks"
+		posy -= lineHeight;
+		text = "RAM usage : " + used / 1024 / 1024 + " / " + total / 1024 / 1024 + " mb used, chunks loaded in ram: " + world.getRegionsHolder().countChunksWithData() + "/"
+				+ world.getRegionsHolder().countChunks() + " " + Math.floor(world.getRegionsHolder().countChunksWithData() * 4 * 32 * 32 * 32 / (1024L * 1024 / 100f)) / 100f + "Mb used by chunks";
 
-		, BitmapFont.SMALLFONTS);
-
+		renderingInterface.getFontRenderer().drawStringWithShadow(font, posx, posy, text, 1, 1, new Vector4f(1));
 		
 		long totalVram = (renderingInterface.getTotalVramUsage()) / 1024 / 1024;
 		
-		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 4 * 16, 0, 16, "VRAM usage : " + totalVram + "Mb as " + Texture2DGL.getTotalNumberOfTextureObjects() + " textures using " + Texture2DGL.getTotalVramUsage() / 1024 / 1024 + "Mb + "
-				+ VertexBufferGL.getTotalNumberOfVerticesObjects() + " Vertices objects using " + renderingInterface.getVertexDataVramUsage() / 1024 / 1024 + " Mb", BitmapFont.SMALLFONTS);
-
-		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 5 * 16, 0, 16, "Chunks to bake : " + world.getWorldRenderer().getChunkMeshesRenderer().getBaker() + " - " + world.ioHandler.toString(), BitmapFont.SMALLFONTS);
-		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 6 * 16, 0, 16,
-				"Position : x:" + bx + " y:" + by + " z:" + bz + " dir: " + angleX + " side: " + side + " #FF0000Block looking at#FFFFFF : pos: "+lx + ": " + ly + ": " + lz +" data: "+data+" id: "+id+" meta: "+meta+" bl:" + bl + " sl:" + sl + " csh:" + csh, BitmapFont.SMALLFONTS);
-
-		if (current == null)
-			FontRenderer2.drawTextUsingSpecificFont(20, x_top - 7 * 16, 0, 16, "Current Chunk null", BitmapFont.SMALLFONTS);
+		posy -= lineHeight;
+		text = "VRAM usage : " + totalVram + "Mb as " + Texture2DGL.getTotalNumberOfTextureObjects() + " textures using " + Texture2DGL.getTotalVramUsage() / 1024 / 1024 + "Mb + "
+				+ VertexBufferGL.getTotalNumberOfVerticesObjects() + " Vertices objects using " + renderingInterface.getVertexDataVramUsage() / 1024 / 1024 + " Mb";
+				
+		renderingInterface.getFontRenderer().drawStringWithShadow(font, posx, posy, text, 1, 1, new Vector4f(1));
+		
+		posy -= lineHeight;
+		text = "Chunks to bake : " + world.getWorldRenderer().getChunkMeshesRenderer().getBaker() + " - " + world.ioHandler.toString();
+		renderingInterface.getFontRenderer().drawStringWithShadow(font, posx, posy, text, 1, 1, new Vector4f(1));
+		
+		posy -= lineHeight;
+		text = "Position : x:" + bx + " y:" + by + " z:" + bz + " dir: " + angleX + " side: " + side + " #FF0000Block looking at#FFFFFF : pos: "+lx + ": " + ly + ": " + lz +" data: "+data+" id: "+id+" meta: "+meta+" bl:" + bl + " sl:" + sl + " csh:" + csh;
+		renderingInterface.getFontRenderer().drawStringWithShadow(font, posx, posy, text, 1, 1, new Vector4f(1));
+		
+		if (current == null) {
+			
+			posy -= lineHeight;
+			text = "Current chunk null";
+			renderingInterface.getFontRenderer().drawStringWithShadow(font, posx, posy, text, 1, 1, new Vector4f(1));
+		}
 		else if (current instanceof ChunkRenderable)
 		{
 			ChunkRenderDataHolder chunkRenderData = ((RenderableChunk) current).getChunkRenderData();
 			if (chunkRenderData != null)
 			{
-				FontRenderer2.drawTextUsingSpecificFont(20, x_top - 7 * 16, 0, 16, "Current Chunk : " + current + " - " + chunkRenderData.toString(), BitmapFont.SMALLFONTS);
+				posy -= lineHeight;
+				text = "Current Chunk : " + current + " - " + chunkRenderData.toString();
+				renderingInterface.getFontRenderer().drawStringWithShadow(font, posx, posy, text, 1, 1, new Vector4f(1));
 			}
-			else
-				FontRenderer2.drawTextUsingSpecificFont(20, x_top - 7 * 16, 0, 16, "Current Chunk : " + current + " - No rendering data", BitmapFont.SMALLFONTS);
+			else {
+
+				posy -= lineHeight;
+				text = "Current Chunk : " + current + " - No rendering data";
+				renderingInterface.getFontRenderer().drawStringWithShadow(font, posx, posy, text, 1, 1, new Vector4f(1));
+			}
 		}
 
-		if (playerEntity != null && playerEntity instanceof EntityLiving)
+		if (playerEntity != null && playerEntity instanceof Entity)
 		{
-			FontRenderer2.drawTextUsingSpecificFont(20, x_top - 8 * 16, 0, 16, "Current Region : " + playerEntity.getWorld().getRegionChunkCoordinates(cx, cy, cz), BitmapFont.SMALLFONTS);
-			FontRenderer2.drawTextUsingSpecificFont(20, x_top - 9 * 16, 0, 16, "Controlled Entity : " + playerEntity, BitmapFont.SMALLFONTS);
+			posy -= lineHeight;
+			text = "Current Region : " + playerEntity.getWorld().getRegionChunkCoordinates(cx, cy, cz);
+			renderingInterface.getFontRenderer().drawStringWithShadow(font, posx, posy, text, 1, 1, new Vector4f(1));
+			
+			posy -= lineHeight;
+			text = "Controlled Entity : " + playerEntity;
+			renderingInterface.getFontRenderer().drawStringWithShadow(font, posx, posy, text, 1, 1, new Vector4f(1));
 		}
 	}
 

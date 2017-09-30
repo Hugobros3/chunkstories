@@ -12,6 +12,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.joml.Vector4f;
 import org.lwjgl.glfw.GLFW;
 
 import io.xol.chunkstories.api.gui.Layer;
@@ -21,8 +22,6 @@ import io.xol.chunkstories.api.input.Mouse.MouseScroll;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.client.Client;
-import io.xol.engine.graphics.fonts.BitmapFont;
-import io.xol.engine.graphics.fonts.FontRenderer2;
 import io.xol.engine.graphics.util.CorneredBoxDrawer;
 import io.xol.engine.graphics.util.ObjectRenderer;
 import io.xol.engine.gui.elements.Button;
@@ -88,8 +87,12 @@ public class LanguageSelectionScreen extends Layer
 		if (scroll < 0)
 			scroll = 0;
 
+		this.parentLayer.getRootLayer().render(renderingContext);
+		
 		int posY = renderingContext.getWindow().getHeight() - 128;
-		FontRenderer2.drawTextUsingSpecificFont(64, posY + 64, 0, 48, "Welcome - Bienvenue - Wilkomen - Etc", BitmapFont.SMALLFONTS);
+		
+		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("arial", 11), 64, posY + 64, "Welcome - Bienvenue - Wilkomen - Etc", 3, 3, new Vector4f(1));
+		
 		int remainingSpace = (int) Math.floor(renderingContext.getWindow().getHeight() / 96 - 2);
 
 		while (scroll + remainingSpace > languages.size())
@@ -169,17 +172,8 @@ public class LanguageSelectionScreen extends Layer
 				CorneredBoxDrawer.drawCorneredBoxTiled(posx, posy, width, 128, 8, "./textures/gui/scalableButton.png", 32, 2);
 			}
 
-			//System.out.println(GameDirectory.getGameFolderPath()+"/worlds/" + info.getInternalName() + "/info.png");
 			ObjectRenderer.renderTexturedRect(posx - width / 2 + 80, posy, 128, 96, "./lang/" + translationCode + "/lang.png");
-
-			//System.out.println("a+"+GameDirectory.getGameFolderPath()+"/worlds/" + info.getInternalName() + "/info.png");
-
-			FontRenderer2.setLengthCutoff(true, width - 72);
-			FontRenderer2.drawTextUsingSpecificFont(posx - width / 2 + 150, posy, 0, 2 * 32, translationName, BitmapFont.SMALLFONTS);
-			//FontRenderer2.drawTextUsingSpecificFontRVBA(posx - width / 2 + 72, posy - 32, 0, 1 * 32, info.getDescription(), BitmapFont.SMALLFONTS, 1.0f, 0.8f, 0.8f, 0.8f);
-			FontRenderer2.setLengthCutoff(false, -1);
-			
-			//return width * 2 - 12;
+			renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().getFont("arial", 11), posx - width / 2 + 150, posy, translationName, 3, 3, new Vector4f(1));
 		}
 
 		@Override
@@ -203,24 +197,4 @@ public class LanguageSelectionScreen extends Layer
 		
 		return super.handleInput(input);
 	}
-
-	/*@Override
-	public boolean onScroll(int dx)
-	{
-		if (dx < 0)
-			scroll++;
-		else
-			scroll--;
-		return true;
-	}*/
-
-	
-	
-	/*@Override
-	public boolean onClick(int posx, int posy, int button)
-	{
-		if (button == 0)
-			guiHandler.handleClick(posx, posy);
-		return true;
-	}*/
 }
