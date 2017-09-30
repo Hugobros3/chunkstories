@@ -88,7 +88,7 @@ public class LevelCreateOverlay extends Layer
 		
 		renderingContext.getGuiRenderer().drawBox(-1.0f, -1.0f, 1.0f, 1.0f, 0, 0, 0, 0, null, true, false, new Vector4f(0.0f, 0.0f, 0.0f, 0.25f));
 		
-		int frame_border_size = 64;
+		//int frame_border_size = 64;
 		
 		float positionStartX = xPosition;// + frame_border_size;
 		float positionStartY = yPosition;// + frame_border_size;

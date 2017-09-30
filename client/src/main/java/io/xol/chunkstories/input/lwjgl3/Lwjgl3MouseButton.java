@@ -4,7 +4,6 @@ import static org.lwjgl.glfw.GLFW.*;
 
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.input.Input;
-import io.xol.chunkstories.api.input.KeyboardKeyInput;
 import io.xol.chunkstories.api.input.Mouse.MouseButton;
 import io.xol.chunkstories.client.Client;
 

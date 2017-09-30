@@ -8,7 +8,6 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.ng.LargeButton;
 import io.xol.chunkstories.gui.ng.LargeButtonIcon;
-import io.xol.chunkstories.gui.ng.ThinButton;
 import io.xol.chunkstories.gui.overlays.config.LogPolicyAsk;
 import io.xol.chunkstories.gui.overlays.config.ModsSelectionOverlay;
 import io.xol.chunkstories.gui.overlays.config.OptionsOverlay;

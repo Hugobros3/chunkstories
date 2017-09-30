@@ -12,7 +12,6 @@ import io.xol.chunkstories.api.rendering.world.ChunkRenderable;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
-import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunksIterator;
 import io.xol.chunkstories.client.Client;

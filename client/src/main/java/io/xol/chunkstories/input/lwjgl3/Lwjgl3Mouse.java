@@ -15,7 +15,6 @@ import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse;
 
 import org.joml.Vector2d;
-import org.joml.Vector2f;
 import io.xol.chunkstories.client.Client;
 
 public class Lwjgl3Mouse implements Mouse {
