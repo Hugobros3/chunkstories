@@ -1,13 +1,15 @@
 package io.xol.engine.graphics.shaders;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import io.xol.chunkstories.api.mods.Asset;
+import io.xol.chunkstories.api.mods.ModsManager;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
@@ -15,17 +17,18 @@ import java.util.Set;
 
 public class CustomGLSLReader
 {
-
-	
-	
-	public static StringBuilder loadRecursivly(File file, StringBuilder into, String[] parameters, boolean type, Set<String> alreadyIncluded) throws IOException
+	public static StringBuilder loadRecursivly(ModsManager modsManager, Asset asset, StringBuilder into, String[] parameters, boolean type, Set<String> alreadyIncluded) throws IOException
 	{
 		if(alreadyIncluded == null)
 			alreadyIncluded = new HashSet<String>();
 		
 		//type : false = vertex, true = frag
-		FileReader fileReader = new FileReader(file);
+		//FileReader fileReader = new FileReader(file);
+		//BufferedReader reader = new BufferedReader(fileReader);
+		
+		Reader fileReader = asset.reader();
 		BufferedReader reader = new BufferedReader(fileReader);
+		
 		List<String> blockingDef = new ArrayList<String>();
 		String l;
 		while ((l = reader.readLine()) != null)
@@ -39,13 +42,44 @@ public class CustomGLSLReader
 					if (line[0].equals("include"))
 					{
 						String fn = line[1];
-						File file2include = new File(file.getParentFile().getAbsoluteFile() + "/" + fn);
+						String shaderInclude = asset.getName().substring(0, asset.getName().lastIndexOf("/") + 1) + fn;
+						
+						//System.out.println(shaderInclude);
+						
+						while(shaderInclude.indexOf("..") != -1) {
+							int indexOf = shaderInclude.indexOf("..");
+							
+							if(indexOf <= 0) {
+								System.out.println("Irresolvable path; going too far back in parents folder; "+shaderInclude);
+								break;
+							}
+							
+							String lowerHalf = shaderInclude.substring(0, indexOf - 1);
+							String upperHalf = shaderInclude.substring(indexOf + 2);
+
+							//System.out.println("lh0:"+lowerHalf);
+							
+							lowerHalf = lowerHalf.substring(0, lowerHalf.lastIndexOf("/"));
+							
+							//System.out.println("lh1:"+lowerHalf);
+							
+							shaderInclude = lowerHalf + upperHalf;
+						}
+						
+						//System.out.println("done: "+shaderInclude);
+						
+						Asset asset2include = modsManager.getAsset(shaderInclude);
+						
+						if(asset2include == null) {
+							System.out.println("Couldn't find shader include: " + shaderInclude);
+							continue;
+						}
 						
 						//Prevents including same file twice and retarded loops
-						if(alreadyIncluded.add(file2include.getName()))
-							loadRecursivly(file2include, into, parameters, type, alreadyIncluded);
+						if(alreadyIncluded.add(asset2include.getName()))
+							loadRecursivly(modsManager, asset2include, into, parameters, type, alreadyIncluded);
 						else
-							System.out.println("file : "+file2include.getAbsolutePath()+" already included, skipping");
+							System.out.println("Shader include : "+asset2include.getName()+" already included, skipping");
 					}
 					else if (line[0].equals("ifdef"))
 					{

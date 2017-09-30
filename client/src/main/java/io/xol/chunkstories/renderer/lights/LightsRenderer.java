@@ -6,9 +6,8 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.RenderingInterface.LightsAccumulator;
 import io.xol.chunkstories.api.rendering.lightning.Light;
 import io.xol.chunkstories.api.rendering.lightning.SpotLight;
+import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.engine.graphics.RenderingContext;
-import io.xol.engine.graphics.shaders.ShaderProgram;
-import io.xol.engine.graphics.shaders.ShadersLibrary;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -23,7 +22,7 @@ public class LightsRenderer implements LightsAccumulator
 	//private final RenderingContext renderingContext;
 	
 	int lightsBuffer = 0;
-	ShaderProgram lightShader;
+	ShaderInterface lightShader;
 	private List<Light> lights = new LinkedList<Light>();
 
 	public LightsRenderer(RenderingContext renderingContext)
@@ -39,6 +38,27 @@ public class LightsRenderer implements LightsAccumulator
 	public Iterator<Light> getAllLights()
 	{
 		return lights.iterator();
+	}
+	
+	public void renderPendingLights(RenderingInterface renderingContext)
+	{
+		lightShader = renderingContext.useShader("light");
+		lightsBuffer = 0;
+		//Render entities lights
+		Iterator<Light> lightsIterator = lights.iterator();
+		while(lightsIterator.hasNext())
+		{
+			renderDefferedLight(renderingContext, lightsIterator.next());
+			lightsIterator.remove();
+		}
+		//Render particles's lights
+		//Client.world.particlesHolder.renderLights(this);
+		// Render remaining lights
+		if (lightsBuffer > 0)
+		{
+			lightShader.setUniform1i("lightsToRender", lightsBuffer);
+			renderingContext.drawFSQuad();
+		}
 	}
 	
 	private void renderDefferedLight(RenderingInterface renderingContext, Light light)
@@ -77,26 +97,5 @@ public class LightsRenderer implements LightsAccumulator
 			return true;
 		
 		return renderingContext.getCamera().isBoxInFrustrum(new Vector3f(light.getPosition().x() - light.getDecay(), light.getPosition().y() - light.getDecay(), light.getPosition().z() - light.getDecay()), new Vector3f(light.getDecay() * 2f, light.getDecay() * 2f, light.getDecay() * 2f));
-	}
-	
-	public void renderPendingLights(RenderingInterface renderingContext)
-	{
-		lightShader = ShadersLibrary.getShaderProgram("light");
-		lightsBuffer = 0;
-		//Render entities lights
-		Iterator<Light> lightsIterator = lights.iterator();
-		while(lightsIterator.hasNext())
-		{
-			renderDefferedLight(renderingContext, lightsIterator.next());
-			lightsIterator.remove();
-		}
-		//Render particles's lights
-		//Client.world.particlesHolder.renderLights(this);
-		// Render remaining lights
-		if (lightsBuffer > 0)
-		{
-			lightShader.setUniform1i("lightsToRender", lightsBuffer);
-			renderingContext.drawFSQuad();
-		}
 	}
 }

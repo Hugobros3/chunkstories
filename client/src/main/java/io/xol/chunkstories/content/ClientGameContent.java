@@ -5,7 +5,7 @@ import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.mesh.ClientMeshStore;
-import io.xol.engine.graphics.shaders.ShadersLibrary;
+import io.xol.engine.graphics.shaders.ShadersStore;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.sound.library.SoundsLibrary;
 
@@ -19,6 +19,7 @@ public class ClientGameContent extends GameContentStore implements ClientContent
 	
 	private final ClientMeshStore meshes;
 	private final TexturesLibrary textures;
+	private final ShadersStore shaders;
 	
 	public ClientGameContent(ClientInterface client, String modsStringArgument)
 	{
@@ -28,6 +29,7 @@ public class ClientGameContent extends GameContentStore implements ClientContent
 		this.meshes = new ClientMeshStore(this, super.meshes);
 		
 		this.textures = new ClientTexturesLibrary(this);
+		this.shaders = new ShadersStore(this);
 	}
 
 	@Override
@@ -37,10 +39,9 @@ public class ClientGameContent extends GameContentStore implements ClientContent
 		
 		TexturesHandler.reloadAll();
 		SoundsLibrary.clean();
-		//ModelLibrary.reloadAllModels();
-		this.meshes.reload();
 		
-		ShadersLibrary.reloadAllShaders();
+		this.meshes.reload();
+		this.shaders.reloadAllShaders();
 	}
 
 	public ClientMeshStore meshes()
@@ -60,5 +61,10 @@ public class ClientGameContent extends GameContentStore implements ClientContent
 	@Override
 	public ClientInterface getClient() {
 		return client;
+	}
+
+	@Override
+	public ShadersStore shaders() {
+		return shaders;
 	}
 }

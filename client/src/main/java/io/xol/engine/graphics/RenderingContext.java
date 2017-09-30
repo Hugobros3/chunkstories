@@ -1,7 +1,6 @@
 package io.xol.engine.graphics;
 
 import io.xol.chunkstories.api.client.ClientContent.TexturesLibrary;
-import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.client.ClientRenderingConfig;
 import io.xol.chunkstories.api.exceptions.rendering.AttributeNotPresentException;
 import io.xol.chunkstories.api.exceptions.rendering.RenderingException;
@@ -37,7 +36,7 @@ import io.xol.engine.graphics.fbo.OpenGLRenderTargetManager;
 import io.xol.engine.graphics.fonts.TrueTypeFontRenderer;
 import io.xol.engine.graphics.geometry.VertexBufferGL;
 import io.xol.engine.graphics.shaders.ShaderProgram;
-import io.xol.engine.graphics.shaders.ShadersLibrary;
+import io.xol.engine.graphics.shaders.ShadersStore;
 import io.xol.engine.graphics.textures.TextureGL;
 import io.xol.engine.graphics.textures.Texture2DRenderTargetGL;
 import io.xol.engine.graphics.textures.TexturingConfigurationImplementation;
@@ -54,6 +53,7 @@ import org.lwjgl.BufferUtils;
 public class RenderingContext implements RenderingInterface
 {
 	private GameWindowOpenGL_LWJGL3 gameWindow;
+	
 	private ShaderProgram currentlyBoundShader = null;
 
 	private final Camera mainCamera = new Camera();
@@ -113,7 +113,7 @@ public class RenderingContext implements RenderingInterface
 	
 	public ShaderInterface useShader(String shaderName)
 	{
-		return setCurrentShader(ShadersLibrary.getShaderProgram(shaderName));
+		return setCurrentShader(shaders().getShaderProgram(shaderName));
 	}
 
 	private ShaderInterface setCurrentShader(ShaderProgram shaderProgram)
@@ -435,7 +435,7 @@ public class RenderingContext implements RenderingInterface
 	}
 
 	@Override
-	public final ClientInterface getClient() {
+	public final Client getClient() {
 		return Client.getInstance();
 	}
 
@@ -452,5 +452,10 @@ public class RenderingContext implements RenderingInterface
 	@Override
 	public final ClientMeshLibrary meshes() {
 		return getClient().getContent().meshes();
+	}
+
+	@Override
+	public ShadersStore shaders() {
+		return getClient().getContent().shaders();
 	}
 }

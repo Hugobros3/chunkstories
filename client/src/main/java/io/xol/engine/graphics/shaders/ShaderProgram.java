@@ -12,12 +12,13 @@ import org.joml.Vector4dc;
 import org.joml.Vector4f;
 import org.joml.Vector4fc;
 
+import io.xol.chunkstories.api.mods.Asset;
+import io.xol.chunkstories.api.mods.ModsManager;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.rendering.pipeline.UniformsConfiguration;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.util.HashMap;
@@ -40,8 +41,9 @@ import static org.lwjgl.opengl.GL30.*;
  */
 public class ShaderProgram implements ShaderInterface
 {
-	private String filename;
-	String shaderName = filename;
+	private final ModsManager modsManager;
+	
+	private final String shaderName;
 
 	private int shaderProgramId;
 	private int vertexShaderId;
@@ -59,15 +61,15 @@ public class ShaderProgram implements ShaderInterface
 	private HashMap<String, Object> uncommitedUniforms = new HashMap<String, Object>();
 	private HashMap<String, Object> commitedUniforms = new HashMap<String, Object>();
 
-	protected ShaderProgram(String filename)
+	protected ShaderProgram(ModsManager modsManager, String shaderName)
 	{
-		this.filename = filename;
-		load(null);
+		this(modsManager, shaderName, new String[] {});
 	}
 
-	protected ShaderProgram(String filename, String[] parameters)
+	protected ShaderProgram(ModsManager modsManager, String shaderName, String[] parameters)
 	{
-		this.filename = filename;
+		this.modsManager = modsManager;
+		this.shaderName = shaderName;
 		load(parameters);
 	}
 
@@ -78,10 +80,6 @@ public class ShaderProgram implements ShaderInterface
 
 	private void load(String[] parameters)
 	{
-		shaderName = filename;
-		if (filename.lastIndexOf("/") != -1)
-			shaderName = filename.substring(filename.lastIndexOf("/"), filename.length());
-
 		shaderProgramId = glCreateProgram();
 		vertexShaderId = glCreateShader(GL_VERTEX_SHADER);
 		fragShaderId = glCreateShader(GL_FRAGMENT_SHADER);
@@ -90,12 +88,15 @@ public class ShaderProgram implements ShaderInterface
 		StringBuilder fragSource = new StringBuilder();
 		try
 		{
-			vertexSource = CustomGLSLReader.loadRecursivly(new File(filename + "/" + shaderName + ".vs"), vertexSource, parameters, false, null);
-			fragSource = CustomGLSLReader.loadRecursivly(new File(filename + "/" + shaderName + ".fs"), fragSource, parameters, true, null);
+			Asset vertexShader = modsManager.getAsset("./shaders/" + shaderName + "/" + shaderName + ".vs");
+			Asset fragmentShader = modsManager.getAsset("./shaders/" + shaderName + "/" + shaderName + ".fs");
+			
+			vertexSource = CustomGLSLReader.loadRecursivly(modsManager, vertexShader, vertexSource, parameters, false, null);
+			fragSource = CustomGLSLReader.loadRecursivly(modsManager, fragmentShader, fragSource, parameters, true, null);
 		}
 		catch (IOException e)
 		{
-			ChunkStoriesLoggerImplementation.getInstance().log("Failed to load shader program " + filename, ChunkStoriesLoggerImplementation.LogType.RENDERING, ChunkStoriesLoggerImplementation.LogLevel.ERROR);
+			ChunkStoriesLoggerImplementation.getInstance().log("Failed to load shader program " + shaderName, ChunkStoriesLoggerImplementation.LogType.RENDERING, ChunkStoriesLoggerImplementation.LogLevel.ERROR);
 			e.printStackTrace();
 			return;
 		}
@@ -139,7 +140,7 @@ public class ShaderProgram implements ShaderInterface
 
 		if (glGetShaderi(fragShaderId, GL_COMPILE_STATUS) == GL_FALSE)
 		{
-			ChunkStoriesLoggerImplementation.getInstance().log("Failed to compile shader program " + filename + " (fragment)", ChunkStoriesLoggerImplementation.LogType.RENDERING, ChunkStoriesLoggerImplementation.LogLevel.ERROR);
+			ChunkStoriesLoggerImplementation.getInstance().log("Failed to compile shader program " + shaderName + " (fragment)", ChunkStoriesLoggerImplementation.LogType.RENDERING, ChunkStoriesLoggerImplementation.LogLevel.ERROR);
 
 			String errorsSource = glGetShaderInfoLog(fragShaderId, 5000);
 
@@ -165,7 +166,7 @@ public class ShaderProgram implements ShaderInterface
 		}
 		if (glGetShaderi(vertexShaderId, GL_COMPILE_STATUS) == GL_FALSE)
 		{
-			ChunkStoriesLoggerImplementation.getInstance().log("Failed to compile shader program " + filename + " (vertex)", ChunkStoriesLoggerImplementation.LogType.RENDERING, ChunkStoriesLoggerImplementation.LogLevel.ERROR);
+			ChunkStoriesLoggerImplementation.getInstance().log("Failed to compile shader program " + shaderName + " (vertex)", ChunkStoriesLoggerImplementation.LogType.RENDERING, ChunkStoriesLoggerImplementation.LogLevel.ERROR);
 
 			String errorsSource = glGetShaderInfoLog(vertexShaderId, 5000);
 
@@ -196,7 +197,7 @@ public class ShaderProgram implements ShaderInterface
 
 		if (glGetProgrami(shaderProgramId, GL_LINK_STATUS) == GL_FALSE)
 		{
-			ChunkStoriesLoggerImplementation.getInstance().log("Failed to link program " + filename + "", ChunkStoriesLoggerImplementation.LogType.RENDERING, ChunkStoriesLoggerImplementation.LogLevel.ERROR);
+			ChunkStoriesLoggerImplementation.getInstance().log("Failed to link program " + shaderName + "", ChunkStoriesLoggerImplementation.LogType.RENDERING, ChunkStoriesLoggerImplementation.LogLevel.ERROR);
 
 			String errorsSource = glGetProgramInfoLog(shaderProgramId, 5000);
 
@@ -456,7 +457,7 @@ public class ShaderProgram implements ShaderInterface
 			int location = glGetAttribLocation(shaderProgramId, name);
 			if (location == -1)
 			{
-				ChunkStoriesLoggerImplementation.getInstance().warning("Warning, -1 location for VertexAttrib " + name + " in shader " + this.filename);
+				ChunkStoriesLoggerImplementation.getInstance().warning("Warning, -1 location for VertexAttrib " + name + " in shader " + this.shaderName);
 				//location = 0;
 			}
 			attributesLocations.put(name, location);
@@ -485,7 +486,7 @@ public class ShaderProgram implements ShaderInterface
 
 			if (glGetProgrami(shaderProgramId, GL_VALIDATE_STATUS) == GL_FALSE)
 			{
-				ChunkStoriesLoggerImplementation.getInstance().log("Failed to validate program " + filename + "", ChunkStoriesLoggerImplementation.LogType.RENDERING, ChunkStoriesLoggerImplementation.LogLevel.ERROR);
+				ChunkStoriesLoggerImplementation.getInstance().log("Failed to validate program " + shaderName + "", ChunkStoriesLoggerImplementation.LogType.RENDERING, ChunkStoriesLoggerImplementation.LogLevel.ERROR);
 
 				String errorsSource = glGetProgramInfoLog(shaderProgramId, 5000);
 
@@ -536,7 +537,7 @@ public class ShaderProgram implements ShaderInterface
 	@Override
 	public String toString()
 	{
-		return "[ShaderProgram : " + this.filename + "]";
+		return "[ShaderProgram : " + this.shaderName + "]";
 	}
 
 	static boolean check(HashMap<String, Object> setUniforms2, Object o)

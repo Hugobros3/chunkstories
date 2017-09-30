@@ -24,11 +24,9 @@ import io.xol.chunkstories.gui.ng.LargeButtonIcon;
 import io.xol.chunkstories.input.lwjgl3.Lwjgl3KeyBind;
 import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.fonts.FontRenderer2;
-import io.xol.engine.graphics.shaders.ShadersLibrary;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.graphics.util.CorneredBoxDrawer;
 import io.xol.engine.graphics.util.ObjectRenderer;
-//import io.xol.engine.gui.elements.Button;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -38,6 +36,12 @@ public class OptionsOverlay extends Layer
 {
 	LargeButtonIcon exitButton = new LargeButtonIcon(this, "back");
 	List<ConfigTab> configTabs = new ArrayList<ConfigTab>();
+
+	List<TabButton> tabsButtons = new ArrayList<TabButton>();
+	int selectedConfigTab = 0;
+	private final LocalizationManager locMgr;
+	
+	private RenderingInterface renderer;
 
 	abstract class ConfigButton extends BaseNgButton
 	{
@@ -231,11 +235,7 @@ public class OptionsOverlay extends Layer
 			this.configButtons = buttons;
 		}
 	}
-
-	List<TabButton> tabsButtons = new ArrayList<TabButton>();
-	int selectedConfigTab = 0;
-	private final LocalizationManager locMgr;
-
+	
 	public OptionsOverlay(GameWindow scene, Layer parent)
 	{
 		super(scene, parent);
@@ -260,25 +260,25 @@ public class OptionsOverlay extends Layer
 					@Override
 					public void run()
 					{
-						ShadersLibrary.getShaderProgram("reflections").reload(RenderingConfig.getShaderConfig());
-						ShadersLibrary.getShaderProgram("postprocess").reload(RenderingConfig.getShaderConfig());
+						renderer.shaders().reloadShader("reflections");
+						renderer.shaders().reloadShader("postprocess");
 					}
 				}),
 				new ConfigButtonToggle("doDynamicCubemaps").setApplyAction(new Runnable(){
 					@Override
 					public void run()
 					{
-						ShadersLibrary.getShaderProgram("shadows_apply").reload(RenderingConfig.getShaderConfig());
-						ShadersLibrary.getShaderProgram("terrain").reload(RenderingConfig.getShaderConfig());
-						ShadersLibrary.getShaderProgram("postprocess").reload(RenderingConfig.getShaderConfig());
+						renderer.shaders().reloadShader("shadows_apply");
+						renderer.shaders().reloadShader("terrain");
+						renderer.shaders().reloadShader("postprocess");
 					}
 				}),
 				new ConfigButtonToggle("doShadows").setApplyAction(new Runnable(){
 					@Override
 					public void run()
 					{
-						ShadersLibrary.getShaderProgram("shadows_apply").reload(RenderingConfig.getShaderConfig());
-						ShadersLibrary.getShaderProgram("terrain").reload(RenderingConfig.getShaderConfig());
+						renderer.shaders().reloadShader("shadows_apply");
+						renderer.shaders().reloadShader("terrain");
 					}
 				}),
 				new ConfigButtonMultiChoice("shadowMapResolutions", new String[] { "512", "1024", "2048", "4096" }).setApplyAction(new Runnable(){
@@ -294,16 +294,16 @@ public class OptionsOverlay extends Layer
 					@Override
 					public void run()
 					{
-						ShadersLibrary.getShaderProgram("blocks_opaque").reload(RenderingConfig.getShaderConfig());
-						ShadersLibrary.getShaderProgram("postprocess").reload(RenderingConfig.getShaderConfig());
-						ShadersLibrary.getShaderProgram("shadows").reload(RenderingConfig.getShaderConfig());
+						renderer.shaders().reloadShader("blocks_opaque");
+						renderer.shaders().reloadShader("postprocess");
+						renderer.shaders().reloadShader("shadows");
 					}
 				}),
 				new ConfigButtonToggle("hqTerrain").setApplyAction(new Runnable(){
 					@Override
 					public void run()
 					{
-						ShadersLibrary.getShaderProgram("terrain").reload(RenderingConfig.getShaderConfig());
+						renderer.shaders().reloadShader("terrain");
 					}
 				}),
 				/*new ConfigButtonMultiChoice("ssaoQuality", new String[] { "0", "1", "2"}).setApplyAction(new Runnable(){
@@ -320,7 +320,7 @@ public class OptionsOverlay extends Layer
 						{
 							if (parentLayer.getRootLayer() instanceof Ingame){
 								Client.getInstance().getWorld().getWorldRenderer().setupRenderSize();
-							ShadersLibrary.getShaderProgram("postprocess").reload(RenderingConfig.getShaderConfig());
+							renderer.shaders().reloadShader("postprocess");
 						}
 					}
 				}),
@@ -396,7 +396,7 @@ public class OptionsOverlay extends Layer
 						@Override
 						public void run()
 						{
-							ShadersLibrary.getShaderProgram("postprocess").reload(RenderingConfig.getShaderConfig());
+							renderer.shaders().reloadShader("postprocess");
 						}
 					}),
 					new ConfigButtonToggle("physicsVisualization"),
@@ -459,6 +459,8 @@ public class OptionsOverlay extends Layer
 	@Override
 	public void render(RenderingInterface renderer)
 	{
+		this.renderer = renderer;
+		
 		parentLayer.getRootLayer().render(renderer);
 		
 		int optionsPanelSize = (160 * 2 + 16 + 32) * this.getGuiScale();
@@ -514,7 +516,7 @@ public class OptionsOverlay extends Layer
 	
 	@Override
 	public boolean handleInput(Input input) {
-		if(input.equals("exit"))
+		if(input.getName().equals("exit"))
 		{
 			Client.getInstance().getConfig().save();
 			gameWindow.setLayer(parentLayer);
@@ -535,6 +537,4 @@ public class OptionsOverlay extends Layer
 		
 		return true;
 	}
-
-	//boolean shouldReload = false;
 }

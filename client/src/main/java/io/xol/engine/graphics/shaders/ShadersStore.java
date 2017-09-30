@@ -4,34 +4,38 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.xol.chunkstories.api.client.ClientContent;
+import io.xol.chunkstories.api.client.ClientContent.ShadersLibrary;
 import io.xol.chunkstories.client.RenderingConfig;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ShadersLibrary
+public class ShadersStore implements ShadersLibrary
 {
-	static Map<String, ShaderProgram> loadedShaders = new HashMap<String, ShaderProgram>();
+	final ClientContent clientContent;
+	final Map<String, ShaderProgram> loadedShaders = new HashMap<String, ShaderProgram>();
 	
-	public static ShaderProgram getShaderProgram(String name)
+	public ShadersStore(ClientContent clientContent) {
+		this.clientContent = clientContent;
+	}
+	
+	public ShaderProgram getShaderProgram(String name)
 	{
 		if(!loadedShaders.containsKey(name))
 			loadShader(name);
 		return loadedShaders.get(name);
 	}
 	
-	static boolean loadShader(String name)
+	boolean loadShader(String name)
 	{
-		//TODO support for external shaders !
-		String shaderPath = "res/shaders/"+name;
-		ShaderProgram subject = new ShaderProgram(shaderPath, RenderingConfig.getShaderConfig());
-		//if(subject.loadOK)
+		ShaderProgram subject = new ShaderProgram(clientContent.modsManager(), name, RenderingConfig.getShaderConfig());
 		loadedShaders.put(name, subject);
 		return subject.loadOK;
 	}
 	
-	public static void preloadShaders()
+	public void preloadShaders()
 	{
 		//TODO support for external shaders !
 		File shadersDir = new File("res/shaders/");
@@ -39,26 +43,30 @@ public class ShadersLibrary
 			for(File f : shadersDir.listFiles())
 				if(f.isDirectory())
 					loadShader(f.getName());
-				
 	}
 	
-	public static void reloadShader(String shaderName)
+	public void reloadShader(String shaderName)
 	{
 		ShaderProgram s = loadedShaders.get(shaderName);
 		if(s != null)
 			s.reload(RenderingConfig.getShaderConfig());
 	}
 	
-	public static void reloadAllShaders()
+	public void reloadAllShaders()
 	{
 		for(ShaderProgram s : loadedShaders.values())
 			s.reload(RenderingConfig.getShaderConfig());
 	}
 	
-	public static void cleanup()
+	public void destroy()
 	{
 		for(ShaderProgram s : loadedShaders.values())
 			s.free();
 		loadedShaders.clear();
+	}
+
+	@Override
+	public ClientContent parent() {
+		return clientContent;
 	}
 }
