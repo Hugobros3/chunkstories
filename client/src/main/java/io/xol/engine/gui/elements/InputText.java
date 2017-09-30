@@ -10,7 +10,6 @@ import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.client.Client;
-import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.util.CorneredBoxDrawer;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -20,21 +19,24 @@ import io.xol.engine.graphics.util.CorneredBoxDrawer;
 public class InputText extends FocusableGuiElement implements TextInputGuiElement
 {
 	public String text = "";
-	public int fontSize = 32;
+	public int padding = 32;
 
-	private Font ttfFont = Client.getInstance().getContent().fonts().defaultFont();
-	public BitmapFont font;
+	private Font ttfFont;
 
-	public InputText(Layer layer, int x, int y, int width, int fontSize, BitmapFont f)
+	public InputText(Layer layer, int x, int y, int width) {
+		this(layer, x, y, width, Client.getInstance().getContent().fonts().defaultFont());
+	}
+	
+	public InputText(Layer layer, int x, int y, int width, Font font)
 	{
 		super(layer);
 		xPosition = x;
 		yPosition = y;
-		font = f;
-		this.fontSize = fontSize;
-		//this.maxlen = maxlen;
+		this.padding = 32;
 		this.width = width;
 		this.height = 32;
+		
+		this.ttfFont = font;
 	}
 	
 	protected int scale() {
@@ -67,9 +69,9 @@ public class InputText extends FocusableGuiElement implements TextInputGuiElemen
 		if(txtlen > len)
 			len = txtlen;
 		if (isFocused())
-			CorneredBoxDrawer.drawCorneredBox(xPosition + len / 2, yPosition + fontSize / 2, len, 32, 8, "./textures/gui/textbox.png");
+			CorneredBoxDrawer.drawCorneredBox(xPosition + len / 2, yPosition + padding / 2, len, 32, 8, "./textures/gui/textbox.png");
 		else
-			CorneredBoxDrawer.drawCorneredBox(xPosition + len / 2, yPosition + fontSize / 2, len, 32, 8, "./textures/gui/textboxnofocus.png");
+			CorneredBoxDrawer.drawCorneredBox(xPosition + len / 2, yPosition + padding / 2, len, 32, 8, "./textures/gui/textboxnofocus.png");
 		
 		
 		renderer.getFontRenderer().drawStringWithShadow(ttfFont, xPosition + scale(), yPosition - scale(), text + ((isFocused() && System.currentTimeMillis() % 1000 > 500) ? "|" : ""), scale(), scale(), new Vector4f(1.0f));
@@ -82,9 +84,9 @@ public class InputText extends FocusableGuiElement implements TextInputGuiElemen
 		if(txtlen > len)
 			len = txtlen;
 		if (isFocused())
-			CorneredBoxDrawer.drawCorneredBox(xPosition + len / 2, yPosition + fontSize / 2, len, 32, 8, "./textures/gui/textboxtransp.png");
+			CorneredBoxDrawer.drawCorneredBox(xPosition + len / 2, yPosition + padding / 2, len, 32, 8, "./textures/gui/textboxtransp.png");
 		else
-			CorneredBoxDrawer.drawCorneredBox(xPosition + len / 2, yPosition + fontSize / 2, len, 32, 8, "./textures/gui/textboxnofocustransp.png");
+			CorneredBoxDrawer.drawCorneredBox(xPosition + len / 2, yPosition + padding / 2, len, 32, 8, "./textures/gui/textboxnofocustransp.png");
 		
 		renderer.getFontRenderer().drawStringWithShadow(ttfFont, xPosition + scale(), yPosition - scale(), text + ((isFocused() && System.currentTimeMillis() % 1000 > 500) ? "|" : ""), scale(), scale(), new Vector4f(1.0f));
 	}
@@ -105,9 +107,9 @@ public class InputText extends FocusableGuiElement implements TextInputGuiElemen
 		char c : text.toCharArray())
 			passworded += "*";
 		if (isFocused())
-			CorneredBoxDrawer.drawCorneredBox(xPosition + getWidth() / 2, yPosition + fontSize / 2, getWidth(), 32, 8, "./textures/gui/textbox.png");
+			CorneredBoxDrawer.drawCorneredBox(xPosition + getWidth() / 2, yPosition + padding / 2, getWidth(), 32, 8, "./textures/gui/textbox.png");
 		else
-			CorneredBoxDrawer.drawCorneredBox(xPosition + getWidth() / 2, yPosition + fontSize / 2, getWidth(), 32, 8, "./textures/gui/textboxnofocus.png");
+			CorneredBoxDrawer.drawCorneredBox(xPosition + getWidth() / 2, yPosition + padding / 2, getWidth(), 32, 8, "./textures/gui/textboxnofocus.png");
 		
 		renderer.getFontRenderer().drawStringWithShadow(ttfFont, xPosition + scale(), yPosition - scale(), passworded + ((isFocused() && System.currentTimeMillis() % 1000 > 500) ? "|" : ""), scale(), scale(), new Vector4f(1.0f));
 	}
@@ -119,7 +121,7 @@ public class InputText extends FocusableGuiElement implements TextInputGuiElemen
 	
 	public boolean isMouseOver(Mouse mouse)
 	{
-		return (mouse.getCursorX() >= xPosition - 4 && mouse.getCursorX() < xPosition + getWidth() + 4 && mouse.getCursorY() >= yPosition - 4 && mouse.getCursorY() <= yPosition + fontSize + 4);
+		return (mouse.getCursorX() >= xPosition - 4 && mouse.getCursorX() < xPosition + getWidth() + 4 && mouse.getCursorY() >= yPosition - 4 && mouse.getCursorY() <= yPosition + padding + 4);
 	}
 
 	@Override

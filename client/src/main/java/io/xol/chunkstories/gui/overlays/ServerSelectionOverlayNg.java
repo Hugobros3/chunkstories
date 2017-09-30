@@ -21,7 +21,6 @@ import io.xol.chunkstories.gui.ng.ScrollableContainer;
 import io.xol.chunkstories.gui.ng.ScrollableContainer.ContainerElement;
 import io.xol.chunkstories.gui.overlays.ServerSelectionOverlayNg.ServerSelectionZone.ServerGuiItem;
 import io.xol.chunkstories.gui.overlays.ingame.ConnectionOverlay;
-import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.gui.elements.Button;
 import io.xol.engine.gui.elements.InputText;
 import io.xol.engine.net.HttpRequestThread;
@@ -33,10 +32,9 @@ import io.xol.engine.net.HttpRequester;
 
 public class ServerSelectionOverlayNg extends Layer implements HttpRequester
 {
-	InputText ipForm = new InputText(this, 0, 0, 500, 32, BitmapFont.SMALLFONTS);
+	InputText ipForm = new InputText(this, 0, 0, 500);
 
 	LargeButtonIcon backOption = new LargeButtonIcon(this, "back");
-	//Button backOption = new Button(this, 0, 0, 300, "#{menu.back}");
 	Button connectButton = new Button(this, 0, 0, 128, "#{connection.connect}");
 	
 	ServerSelectionZone serverSelectionZone = new ServerSelectionZone(this);

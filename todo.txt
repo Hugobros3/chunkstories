@@ -14,7 +14,7 @@ Todo:
 	Log4j
 	JUnit
 	res/ folder part of core
-	data/ folder for implem config.
+	data/ folder for implem config
 
 Gameplay TODO:
 

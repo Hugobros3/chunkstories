@@ -1,6 +1,5 @@
 package io.xol.chunkstories.gui;
 
-import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.gui.elements.InputText;
 
 import java.util.ArrayDeque;
@@ -78,7 +77,7 @@ public class Chat
 			super(scene, parent);
 
 			//Add the inputBox
-			this.inputBox = new InputText(this, 0, 0, 500, 32, BitmapFont.SMALLFONTS);
+			this.inputBox = new InputText(this, 0, 0, 500);
 			this.elements.add(inputBox);
 			this.setFocusedElement(inputBox);
 			

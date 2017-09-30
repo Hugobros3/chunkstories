@@ -15,7 +15,6 @@ import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.world.WorldInfoImplementation;
 import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.chunkstories.world.WorldInfoFile;
-import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.util.CorneredBoxDrawer;
 import io.xol.engine.gui.elements.Button;
 import io.xol.engine.gui.elements.InputText;
@@ -29,8 +28,8 @@ public class LevelCreateOverlay extends Layer
 	Button cancelOption = new Button(this, 0, 0, 150, "Cancel");
 	Button createOption = new Button(this, 0, 0, 150, "Create");
 	
-	InputText levelName = new InputText(this, 0, 0, 500, 32, BitmapFont.SMALLFONTS);
-	InputText worldGenName = new InputText(this, 0, 0, 500, 32, BitmapFont.SMALLFONTS);
+	InputText levelName = new InputText(this, 0, 0, 500);
+	InputText worldGenName = new InputText(this, 0, 0, 500);
 	
 	public LevelCreateOverlay(GameWindow scene, Layer parent)
 	{

@@ -11,7 +11,6 @@ import io.xol.chunkstories.bugsreporter.JavaCrashesUploader;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.gui.overlays.config.LanguageSelectionScreen;
-import io.xol.engine.graphics.fonts.BitmapFont;
 import io.xol.engine.graphics.util.ObjectRenderer;
 import io.xol.engine.gui.elements.Button;
 import io.xol.engine.gui.elements.InputText;
@@ -24,8 +23,8 @@ import io.xol.engine.net.HttpRequester;
 
 public class LoginOverlay extends Layer implements HttpRequester
 {
-	InputText usernameForm = new InputText(this, 0, 0, 500, 32, BitmapFont.SMALLFONTS);
-	InputText passwordForm = new InputText(this, 0, 0, 500, 32, BitmapFont.SMALLFONTS);
+	InputText usernameForm = new InputText(this, 0, 0, 500);
+	InputText passwordForm = new InputText(this, 0, 0, 500);
 	
 	Button loginButton = new Button(this, 0, 0, 128, "#{login.login}");
 	
