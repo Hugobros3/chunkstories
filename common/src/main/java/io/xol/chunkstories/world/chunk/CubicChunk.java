@@ -44,7 +44,8 @@ public abstract class CubicChunk implements Chunk
 	public int[] chunkVoxelData = null;
 	
 	//Count unsaved edits atomically, fancy :]
-	public AtomicInteger unsavedBlockModifications = new AtomicInteger();
+	public AtomicInteger compr_uncomittedBlockModifications = new AtomicInteger();
+	public AtomicInteger occl_compr_uncomittedBlockModifications = new AtomicInteger();
 	
 	public AtomicBoolean needRelightning = new AtomicBoolean(true);
 
@@ -133,6 +134,16 @@ public abstract class CubicChunk implements Chunk
 		}
 	};
 
+	/** Checks the occlusion table is up-to-date, and updates it else */
+	public void checkOcclusionTableUpToDate() {
+		int uncom = this.occl_compr_uncomittedBlockModifications.get();
+		
+		if(uncom > 0) {
+			this.computeOcclusionTable();
+			this.occl_compr_uncomittedBlockModifications.addAndGet(-uncom);
+		}
+	}
+	
 	private void computeOcclusionTable()
 	{
 		//System.out.println("Computing occlusion table ...");
@@ -285,7 +296,8 @@ public abstract class CubicChunk implements Chunk
 		chunkVoxelData[x * 32 * 32 + y * 32 + z] = data;
 		computeLightSpread(x, y, z, dataBefore, data);
 		
-		unsavedBlockModifications.incrementAndGet();
+		compr_uncomittedBlockModifications.incrementAndGet();
+		occl_compr_uncomittedBlockModifications.incrementAndGet();
 		//lastModification.set(System.currentTimeMillis());
 
 		if (dataBefore != data && this instanceof ChunkRenderable)
@@ -315,13 +327,15 @@ public abstract class CubicChunk implements Chunk
 
 		chunkVoxelData[x * 32 * 32 + y * 32 + z] = data;
 		
-		unsavedBlockModifications.incrementAndGet();
+		compr_uncomittedBlockModifications.incrementAndGet();
+		occl_compr_uncomittedBlockModifications.incrementAndGet();
 	}
 
 	public void setChunkData(int[] data) {
 		this.chunkVoxelData = data;
 		
-		unsavedBlockModifications.incrementAndGet();
+		compr_uncomittedBlockModifications.incrementAndGet();
+		occl_compr_uncomittedBlockModifications.incrementAndGet();
 		
 		if (this instanceof ChunkRenderable)
 			((ChunkRenderable)this).markForReRender();

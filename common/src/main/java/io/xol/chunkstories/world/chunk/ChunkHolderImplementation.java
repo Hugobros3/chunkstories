@@ -77,7 +77,7 @@ public class ChunkHolderImplementation implements ChunkHolder
 			return;
 		
 		final CubicChunk chunk = this.chunk;
-		final int changesTakenIntoAccount = chunk.unsavedBlockModifications.get();
+		final int changesTakenIntoAccount = chunk.compr_uncomittedBlockModifications.get();
 		
 		if (!chunk.isAirChunk())
 		{
@@ -121,7 +121,7 @@ public class ChunkHolderImplementation implements ChunkHolder
 		}
 		
 		//Remove whatever modifications existed when the method started, this is for avoiding concurrent modifications not being taken into account
-		chunk.unsavedBlockModifications.addAndGet(-changesTakenIntoAccount);
+		chunk.compr_uncomittedBlockModifications.addAndGet(-changesTakenIntoAccount);
 		//chunk.lastModificationSaved.set(System.currentTimeMillis());
 	}
 	
@@ -166,7 +166,7 @@ public class ChunkHolderImplementation implements ChunkHolder
 		}
 		
 		//Compress chunk if it changed
-		if(chunk != null && region.getWorld() instanceof WorldMaster && chunk.unsavedBlockModifications.get() > 0)//chunk.lastModification.get() > chunk.lastModificationSaved.get())
+		if(chunk != null && region.getWorld() instanceof WorldMaster && chunk.compr_uncomittedBlockModifications.get() > 0)//chunk.lastModification.get() > chunk.lastModificationSaved.get())
 			compressChunkData();
 
 		//Unlist it and destroy it

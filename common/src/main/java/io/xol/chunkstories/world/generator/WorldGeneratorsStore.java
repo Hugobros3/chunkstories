@@ -261,7 +261,7 @@ public class WorldGeneratorsStore implements Content.WorldGenerators
 	@Override
 	public Iterator<WorldGeneratorType> all()
 	{
-		return null;
+		return generators.values().iterator();
 	}
 
 	@Override

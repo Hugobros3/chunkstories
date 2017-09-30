@@ -151,7 +151,9 @@ public class ChunkMeshesRenderer
 
 			if (chunk != null)
 			{
-				if (chunk == null || chunk.isAirChunk())
+				((CubicChunk)chunk).checkOcclusionTableUpToDate();
+				
+				if(chunk.isAirChunk())
 					sideFrom = -1;
 
 				floodFillSet.add(chunk);

@@ -56,17 +56,19 @@ public class DebugInfoRenderer {
 		int by = ((int)camera.getCameraPosition().y());
 		int bz = ((int)camera.getCameraPosition().z());
 		
+		int lx = bx, ly = by, lz = bz;
+		
 		//If the player can look use that
 		if(playerEntity != null && playerEntity instanceof EntityControllable) {
 			Location loc = ((EntityControllable) playerEntity).getBlockLookingAt(true);
 			if(loc != null) {
-				bx = (int)loc.x();
-				by = (int)loc.y();
-				bz = (int)loc.z();
+				lx = (int)loc.x();
+				ly = (int)loc.y();
+				lz = (int)loc.z();
 			}
 		}
 		
-		int data = world.getVoxelData(bx, by, bz);
+		int data = world.getVoxelData(lx, ly, lz);
 		int id = VoxelFormat.id(data);
 		int meta = VoxelFormat.meta(data);
 		int bl = VoxelFormat.blocklight(data);
@@ -127,7 +129,7 @@ public class DebugInfoRenderer {
 
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 5 * 16, 0, 16, "Chunks to bake : " + world.getWorldRenderer().getChunkMeshesRenderer().getBaker() + " - " + world.ioHandler.toString(), BitmapFont.SMALLFONTS);
 		FontRenderer2.drawTextUsingSpecificFont(20, x_top - 6 * 16, 0, 16,
-				"Position : x:" + bx + " y:" + by + " z:" + bz + " dir: " + angleX + " side: " + side + " #FF0000Block looking at#FFFFFF : pos: "+bx + ": " + by + ": " + bz +" data: "+data+" id: "+id+" meta: "+meta+" bl:" + bl + " sl:" + sl + " csh:" + csh, BitmapFont.SMALLFONTS);
+				"Position : x:" + bx + " y:" + by + " z:" + bz + " dir: " + angleX + " side: " + side + " #FF0000Block looking at#FFFFFF : pos: "+lx + ": " + ly + ": " + lz +" data: "+data+" id: "+id+" meta: "+meta+" bl:" + bl + " sl:" + sl + " csh:" + csh, BitmapFont.SMALLFONTS);
 
 		if (current == null)
 			FontRenderer2.drawTextUsingSpecificFont(20, x_top - 7 * 16, 0, 16, "Current Chunk null", BitmapFont.SMALLFONTS);

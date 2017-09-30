@@ -2,6 +2,7 @@ package io.xol.chunkstories.gui.overlays;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
 
 import io.xol.chunkstories.api.Content.WorldGenerators.WorldGeneratorType;
 import io.xol.chunkstories.api.gui.Layer;
@@ -85,7 +86,7 @@ public class LevelCreateOverlay extends Layer
 		if(parentLayer != null)
 			this.parentLayer.render(renderingContext);
 		
-		renderingContext.getGuiRenderer().drawBox(0.0f, 0.0f, 1.0f, 1.0f, 0, 0, 0, 0, null, true, false, new Vector4f(0.0f, 0.0f, 0.0f, 0.75f));
+		renderingContext.getGuiRenderer().drawBox(-1.0f, -1.0f, 1.0f, 1.0f, 0, 0, 0, 0, null, true, false, new Vector4f(0.0f, 0.0f, 0.0f, 0.25f));
 		
 		int frame_border_size = 64;
 		
@@ -127,7 +128,17 @@ public class LevelCreateOverlay extends Layer
 			wg_validity_string = "#00FF00'" + worldGenName.text + "' is a valid world generator !";
 		}
 		
+		String wg_list = "Available world generators: ";
+		Iterator<WorldGeneratorType> iwg = Client.getInstance().getContent().generators().all();
+		while(iwg != null && iwg.hasNext()) {
+			WorldGeneratorType wgt = iwg.next();
+			wg_list += wgt.getName();
+			if(iwg.hasNext())
+				wg_list+=", ";
+		}
+		
 		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("arial", 12), x, positionStartY + height - 64 - 196 - 4, wg_validity_string, 2, 2, width, new Vector4f(1));
+		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("arial", 12), x, positionStartY + height - 64 - 196 - 4 - 32, wg_list, 2, 2, width, new Vector4f(1));
 		
 		//FontRenderer2.drawTextUsingSpecificFont(20, height - 64, 0, 48, "Create a new World", BitmapFont.SMALLFONTS);
 
