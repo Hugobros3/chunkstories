@@ -42,9 +42,8 @@ public class FlatIconItemRenderer extends DefaultItemRenderer
 		textures.getTexture(pile.getTextureName()).setLinearFiltering(false);
 		Texture2D texture = textures.getTexture(pile.getTextureName());
 		if(texture == null)
-			texture = textures.getTexture("res/items/icons/notex.png");
+			texture = textures.getTexture("items/icons/notex.png");
 		
-		//texture = TexturesHandler.getTexture("res/textures/notex.png");
 		texture.setLinearFiltering(false);
 		renderingInterface.bindAlbedoTexture(texture);
 		

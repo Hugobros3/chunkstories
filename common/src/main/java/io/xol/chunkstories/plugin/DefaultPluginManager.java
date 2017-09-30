@@ -35,7 +35,7 @@ import io.xol.chunkstories.api.plugin.commands.CommandHandler;
 import io.xol.chunkstories.api.plugin.commands.SystemCommand;
 import io.xol.chunkstories.api.util.ChunkStoriesLogger;
 import io.xol.chunkstories.api.util.IterableIterator;
-import io.xol.chunkstories.content.DefaultModsManager;
+import io.xol.chunkstories.content.ModsManagerImplementation;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 
@@ -121,7 +121,7 @@ public abstract class DefaultPluginManager implements PluginManager
 		}
 
 		//Mods too can bundle plugins
-		for (PluginInformationImplementation pluginInformation : ((DefaultModsManager)this.pluginExecutionContext.getContent().modsManager()).getAllModsPlugins())
+		for (PluginInformationImplementation pluginInformation : ((ModsManagerImplementation)this.pluginExecutionContext.getContent().modsManager()).getAllModsPlugins())
 		{
 			//Client only plugins require actually being a client
 			if (pluginInformation.getPluginType() == PluginType.CLIENT_ONLY && !(this instanceof ClientPluginManager))

@@ -55,7 +55,7 @@ public class DefaultItemRenderer extends ItemRenderer
 		textures.getTexture(pile.getTextureName()).setLinearFiltering(false);
 		Texture2D texture = textures.getTexture(pile.getTextureName());
 		if(texture == null)
-			texture = textures.getTexture("res/items/icons/notex.png");
+			texture = textures.getTexture("items/icons/notex.png");
 		
 		int width = slotSize * pile.getItem().getType().getSlotsWidth();
 		int height = slotSize * pile.getItem().getType().getSlotsHeight();
@@ -76,7 +76,7 @@ public class DefaultItemRenderer extends ItemRenderer
 		textures.getTexture(pile.getTextureName()).setLinearFiltering(false);
 		Texture2D texture = textures.getTexture(pile.getTextureName());
 		if(texture == null)
-			texture = textures.getTexture("res/items/icons/notex.png");
+			texture = textures.getTexture("items/icons/notex.png");
 		
 		texture.setLinearFiltering(false);
 		renderingInterface.bindAlbedoTexture(texture);

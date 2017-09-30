@@ -43,7 +43,7 @@ public class GameContentStore implements Content
 	public GameContentStore(GameContext context, String enabledModsLaunchArguments)
 	{
 		this.context = context;
-		this.modsManager = new DefaultModsManager(enabledModsLaunchArguments);
+		this.modsManager = new ModsManagerImplementation(enabledModsLaunchArguments);
 
 		// ! LOADS MODS
 		/*try

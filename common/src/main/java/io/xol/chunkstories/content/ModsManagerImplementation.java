@@ -38,7 +38,7 @@ import io.xol.engine.misc.FoldersUtils;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class DefaultModsManager implements ModsManager
+public class ModsManagerImplementation implements ModsManager
 {
 	private Mod baseAssets;
 	private String[] modsEnabled = new String[0];
@@ -49,12 +49,12 @@ public class DefaultModsManager implements ModsManager
 	private File cacheFolder = null;
 	private List<PluginInformationImplementation> pluginsWithinEnabledMods = new ArrayList<PluginInformationImplementation>();
 
-	public DefaultModsManager()
+	public ModsManagerImplementation()
 	{
 		this(null);
 	}
 	
-	public DefaultModsManager(String enabledModsAtStart)
+	public ModsManagerImplementation(String enabledModsAtStart)
 	{
 		if(enabledModsAtStart != null)
 			modsEnabled = enabledModsAtStart.split(",");
@@ -62,7 +62,7 @@ public class DefaultModsManager implements ModsManager
 
 	public static void main(String a[])
 	{
-		ModsManager mm = new DefaultModsManager();
+		ModsManager mm = new ModsManagerImplementation();
 		
 		try
 		{

@@ -79,8 +79,6 @@ public class LightsRenderer implements LightsAccumulator
 		else
 			lightShader.setUniform1f("lightAngle[" + lightsBuffer + "]", 0f);
 
-		//TexturesHandler.nowrap("res/textures/flashlight.png");
-
 		lightsBuffer++;
 		if (lightsBuffer == 64)
 		{
