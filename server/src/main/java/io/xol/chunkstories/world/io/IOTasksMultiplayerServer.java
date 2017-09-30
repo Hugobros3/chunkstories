@@ -8,6 +8,7 @@ import io.xol.chunkstories.net.packets.PacketRegionSummary;
 import io.xol.chunkstories.server.net.UserConnection;
 import io.xol.chunkstories.workers.TaskExecutor;
 import io.xol.chunkstories.world.WorldImplementation;
+import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
 import io.xol.chunkstories.world.region.RegionImplementation;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
 
@@ -49,29 +50,30 @@ public class IOTasksMultiplayerServer extends IOTasks
 		{
 			try
 			{
-				//Don't bother if the client died.
+				//Cancel the task if the client disconnected
 				if(!client.isAlive())
 					return true;
 				
 				RegionImplementation holder = world.getRegionsHolder().getRegionChunkCoordinates(chunkX, chunkY, chunkZ);
-				if(holder == null) {
-				
-					//System.out.println("world.getRegionsHolder().getRegionChunkCoordinates("+chunkX+", "+chunkY+", "+chunkZ+")");
+				if(holder == null)
 					return false;
-				}
-				
-				if(holder.isDiskDataLoaded())
+
+				//Wait until the disk data loads
+				if(!holder.isDiskDataLoaded())
+					return false;
+				else
 				{
 					PacketChunkCompressedData packet = new PacketChunkCompressedData();
 					packet.setPosition(chunkX, chunkY, chunkZ);
-					packet.data = holder.getCompressedData(chunkX, chunkY, chunkZ);
+					
+					//We make SURE not to push the fake placeholder byte[] tag AIR_CHUNK_NO_DATA_SAVED is.
+					byte[] compressedData = holder.getCompressedData(chunkX, chunkY, chunkZ);
+					if(compressedData != ChunkHolderImplementation.AIR_CHUNK_NO_DATA_SAVED)
+						packet.data = compressedData;
+					
 					client.pushPacket(packet);
 					
 					return true;
-				}
-				else
-				{
-					return false;
 				}
 			}
 			catch(Exception e)
@@ -123,9 +125,11 @@ public class IOTasksMultiplayerServer extends IOTasks
 		{
 			try
 			{
-				//Don't bother if the client died.
+				//Cancel the task if the client disconnected
 				if(!client.isAlive())
 					return true;
+				
+				//TODO check he's near enough to ask for these
 				
 				//Player player = client.getProfile();
 				//int x = rx * 256;

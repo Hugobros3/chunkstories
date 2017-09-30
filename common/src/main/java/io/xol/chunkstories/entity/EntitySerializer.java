@@ -22,8 +22,6 @@ import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
  */
 public class EntitySerializer
 {
-	
-	
 	public static void writeEntityToStream(DataOutputStream dos, OfflineSerializedData destination, Entity entity)
 	{
 		try

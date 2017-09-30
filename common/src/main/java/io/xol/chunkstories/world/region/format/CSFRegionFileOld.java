@@ -1,46 +1,31 @@
-package io.xol.chunkstories.world.region;
+package io.xol.chunkstories.world.region.format;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityUnsaveable;
-import io.xol.chunkstories.api.serialization.OfflineSerializedData;
 import io.xol.chunkstories.entity.EntitySerializer;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
+import io.xol.chunkstories.world.region.RegionImplementation;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class CSFRegionFile implements OfflineSerializedData
+/** Older version of the CSF format, without a version tag */
+public class CSFRegionFileOld extends CSFRegionFile
 {
-	private RegionImplementation owner;
-	private File file;
-
-	//Locks modifications to the region untils it finishes saving.
-	public AtomicInteger savingOperations = new AtomicInteger();
-
-	public CSFRegionFile(RegionImplementation holder)
-	{
-		this.owner = holder;
-
-		this.file = new File(holder.world.getFolderPath() + "/regions/" + holder.regionX + "." + holder.regionY + "." + holder.regionZ + ".csf");
+	public CSFRegionFileOld(RegionImplementation holder) {
+		super(holder);
 	}
 
-	public boolean exists()
-	{
-		return file.exists();
-	}
-
-	public void load() throws IOException
-	{
+	@Override
+	public void load() throws IOException {
 		FileInputStream fis = new FileInputStream(file);
 		DataInputStream in = new DataInputStream(fis);
 		
@@ -54,7 +39,7 @@ public class CSFRegionFile implements OfflineSerializedData
 			size += in.read();
 			chunksSizes[a] = size;
 		}
-
+	
 		//Load in the compressed chunks
 		for (int a = 0; a < 8; a++)
 			for (int b = 0; b < 8; b++)
@@ -70,24 +55,24 @@ public class CSFRegionFile implements OfflineSerializedData
 						// i++;
 					}
 				}
-
+	
 		//We pretend it's loaded sooner so we can add the entities and they will load their chunks data if needed
 		owner.setDiskDataLoaded(true);
-
+	
 		//don't tick the world entities until we get this straight
 		owner.world.entitiesLock.writeLock().lock();
-
+	
 		//Older version case
 		if (in.available() <= 0)
 		{
 			//System.out.println("Old version file, no entities to be found anyway");
 			in.close();
-
+	
 			owner.world.entitiesLock.writeLock().unlock();
 			//holder.world.entitiesLock.unlock();
 			return;
 		}
-
+	
 		try
 		{
 			//Read entities until we hit -1
@@ -99,7 +84,7 @@ public class CSFRegionFile implements OfflineSerializedData
 					owner.world.addEntity(entity);
 			}
 			while (entity != null);
-
+	
 		}
 		catch (Exception e)
 		{
@@ -107,12 +92,13 @@ public class CSFRegionFile implements OfflineSerializedData
 			e.printStackTrace(ChunkStoriesLoggerImplementation.getInstance().getPrintWriter());
 			e.printStackTrace();
 		}
-
+	
 		owner.world.entitiesLock.writeLock().unlock();
 		
 		in.close();
 	}
 
+	@Override
 	public void save() throws IOException
 	{
 		file.getParentFile().mkdirs();
@@ -172,24 +158,6 @@ public class CSFRegionFile implements OfflineSerializedData
 		owner.world.entitiesLock.readLock().unlock();
 
 		out.close();
-	}
-
-	public void finishSavingOperations()
-	{
-		//Waits out saving operations.
-		while (savingOperations.get() > 0)
-			//System.out.println(savingOperations.get());
-			synchronized (this)
-			{
-				try
-				{
-					wait(20L);
-				}
-				catch (InterruptedException e)
-				{
-					e.printStackTrace();
-				}
-			}
 	}
 
 }

@@ -53,7 +53,7 @@ public class LevelCreateOverlay extends Layer
 					WorldInfoImplementation info = new WorldInfoImplementation(internalName, levelName.text, ""+System.currentTimeMillis(), "", WorldInfo.WorldSize.MEDIUM, worldGenName.text);
 					
 					try {
-						Client.getInstance().changeWorld(new WorldClientLocal(Client.getInstance(), WorldInfoFile.createNewWorld(new File(GameDirectory.getGameFolderPath() + "/worlds"), info)));
+						Client.getInstance().changeWorld(new WorldClientLocal(Client.getInstance(), WorldInfoFile.createNewWorld(new File(GameDirectory.getGameFolderPath() + "/worlds/" + internalName), info)));
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();

@@ -25,10 +25,22 @@ import io.xol.chunkstories.renderer.chunks.RenderableChunk;
 
 public class ChunkHolderImplementation implements ChunkHolder
 {
-	private RegionImplementation region;
-	Collection<CubicChunk> regionLoadedChunks;
-	private int x, y, z;
-	private int uuid;
+	//Position stuff
+	private final RegionImplementation region;
+	private final int x, y, z;
+	private final int uuid;
+	
+	private final Collection<CubicChunk> regionLoadedChunks; //To update the parent object's collection (used in iterator)
+	private Set<WeakReference<WorldUser>> users = ConcurrentHashMap.newKeySet(); //Keep tracks of who needs this data loaded
+	
+	//The compressed version of the chunk data
+	private SafeWriteLock compressedDataLock = new SafeWriteLock();
+	private byte[] compressedData;
+	public final static byte[] AIR_CHUNK_NO_DATA_SAVED = new byte[] {}; //Symbolic reference indicating there is nothing worth saving in this chunk, but data was generated
+	
+	private IOTask loadChunkTask;
+	
+	private CubicChunk chunk;
 
 	public ChunkHolderImplementation(RegionImplementation region, Collection<CubicChunk> loadedChunks, int x, int y, int z)
 	{
@@ -45,15 +57,6 @@ public class ChunkHolderImplementation implements ChunkHolder
 		
 		uuid = ((x << region.getWorld().getWorldInfo().getSize().bitlengthOfVerticalChunksCoordinates) | y ) << region.getWorld().getWorldInfo().getSize().bitlengthOfHorizontalChunksCoordinates | z;
 	}
-
-	private Set<WeakReference<WorldUser>> users = ConcurrentHashMap.newKeySet();//<WeakReference<WorldUser>>();
-	
-	private SafeWriteLock compressedDataLock = new SafeWriteLock();
-	private byte[] compressedData;
-	
-	private IOTask loadChunkTask;
-	//private WeakReference<IOTask> loadChunkTask;
-	private CubicChunk chunk;
 
 	// LZ4 compressors & decompressors stuff
 	private static LZ4Factory factory = LZ4Factory.fastestInstance();
@@ -112,7 +115,7 @@ public class ChunkHolderImplementation implements ChunkHolder
 			compressedDataLock.beginWrite();
 			
 			//Nulls out the chunk's content
-			compressedData = null;
+			compressedData = AIR_CHUNK_NO_DATA_SAVED;
 			compressedDataLock.endWrite();
 
 		}
@@ -127,6 +130,7 @@ public class ChunkHolderImplementation implements ChunkHolder
 		return compressedData;
 	}
 
+	/** Used by IO operations only */
 	public void setCompressedData(byte[] compressedData)
 	{
 		if(this.compressedData == null && this.chunk == null)

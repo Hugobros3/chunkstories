@@ -3,6 +3,7 @@ package io.xol.chunkstories.world.io;
 import io.xol.chunkstories.Constants;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.world.WorldMaster;
+import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.chunkstories.tools.WorldTool;
 import io.xol.chunkstories.workers.Task;
@@ -234,16 +235,18 @@ public class IOTasks extends Thread implements TaskExecutor
 			int cy = region.getRegionY() * 8 + chunkSlot.getInRegionY();
 			int cz = region.getRegionZ() * 8 + chunkSlot.getInRegionZ();
 
-			//CubicChunk result;
-
 			byte[] compressedData = chunkSlot.getCompressedData();
-			if (compressedData == null || compressedData.length == 0)
-			{
-				chunkSlot.createChunk();
-				//result = new CubicChunk(region, cx, cy, cz);
+			//Not yet generated chunk; call the generator
+			if (compressedData == null) {
+				Chunk chunk = chunkSlot.createChunk();
+				world.getGenerator().generateChunk(chunk);
 			}
-			else
-			{
+			//This was already generated but nothing was actually placed in that chunk
+			else if(compressedData == ChunkHolderImplementation.AIR_CHUNK_NO_DATA_SAVED) {
+				chunkSlot.createChunk();
+			}
+			//Normal voxel data is present, uncompressed it then load it to the chunk
+			else {
 				int data[] = new int[32 * 32 * 32];
 				try
 				{
@@ -261,7 +264,6 @@ public class IOTasks extends Thread implements TaskExecutor
 				}
 				
 				chunkSlot.createChunk(data);
-				//result = new CubicChunk(region, cx, cy, cz, data);
 				
 				//TODO Look into this properly
 				//We never want to mess with that when we are the world

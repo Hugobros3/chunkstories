@@ -3,8 +3,6 @@ package io.xol.chunkstories.world.region;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityVoxel;
 import io.xol.chunkstories.api.entity.interfaces.EntityUnsaveable;
-import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogLevel;
-import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogType;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunksIterator;
@@ -14,6 +12,8 @@ import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.io.IOTasks.IOTask;
+import io.xol.chunkstories.world.region.format.CSFRegionFile;
+import io.xol.chunkstories.world.region.format.CSFRegionFile0x2C;
 import io.xol.engine.concurrency.SafeWriteLock;
 
 import java.lang.ref.WeakReference;
@@ -87,7 +87,7 @@ public class RegionImplementation implements Region
 		//Only the WorldMaster has a concept of files
 		if (world instanceof WorldMaster)
 		{
-			handler = new CSFRegionFile(this);
+			handler = new CSFRegionFile0x2C(this);
 			world.ioHandler.requestRegionLoad(this);
 		}
 		else
@@ -301,11 +301,13 @@ public class RegionImplementation implements Region
 		this.getWorld().getRegionsHolder().removeRegion(this);
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.world.chunk.Region#generateAll()
-	 */
+	/*
 	public void generateAll()
 	{
+		WorldUser generatorUser = new WorldUser() {
+			
+		};
+		
 		// Generate terrain for the chunk holder !
 		for (int a = 0; a < 8; a++)
 			for (int b = 0; b < 8; b++)
@@ -316,12 +318,18 @@ public class RegionImplementation implements Region
 					int cy = this.regionY * 8 + b;
 					int cz = this.regionZ * 8 + c;
 					
-					CubicChunk chunk = this.chunkHolders[a * 64 + b * 8 + c].getChunk();
+					ChunkHolder ch = this.chunkHolders[a * 64 + b * 8 + c];
+					ch.registerUser(generatorUser);
+					ch.waitForLoading().traverse();
+					
+					Chunk chunk = ch.getChunk();
 					
 					if(chunk != null)
 						world.getGenerator().generateChunk(chunk);
 					else
 						world.getGameContext().logger().log("generateAll() got called but chunk ["+cx+", "+cy+", "+cz+"] is not aquired/loaded. Skipping.", LogType.WORLD_GENERATION, LogLevel.WARN);
+					
+					ch.unregisterUser(generatorUser);
 					
 					//chunk = world.getGenerator().generateChunk(this, cx, cy, cz);
 
@@ -334,7 +342,7 @@ public class RegionImplementation implements Region
 
 		compressAll();
 	}
-
+	 */
 	@Override
 	public IOTask save()
 	{
