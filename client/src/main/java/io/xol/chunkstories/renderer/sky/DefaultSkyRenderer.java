@@ -1,6 +1,6 @@
 package io.xol.chunkstories.renderer.sky;
 
-import io.xol.engine.graphics.geometry.FloatBufferAttributeSource;
+//import io.xol.engine.graphics.geometry.FloatBufferAttributeSource;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.chunkstories.api.math.Math2;
 import org.joml.Vector3f;
@@ -12,6 +12,8 @@ import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMod
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
+import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
+import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
 import io.xol.chunkstories.api.world.World;
 import java.nio.FloatBuffer;
 
@@ -29,6 +31,7 @@ public class DefaultSkyRenderer implements SkyboxRenderer
 
 	World world;
 	CloudsRenderer cloudsRenderer;
+	VertexBuffer starsVertexBuffer;
 	
 	public DefaultSkyRenderer(World world)
 	{
@@ -95,9 +98,10 @@ public class DefaultSkyRenderer implements SkyboxRenderer
 		starsShader.setUniform3f("color", 1f, 1f, 1f);
 		renderingContext.getCamera().setupShader(starsShader);
 		int NB_STARS = 500;
-		if (stars == null)
+		if (starsVertexBuffer == null)
 		{
-			stars = BufferUtils.createFloatBuffer(NB_STARS * 3);
+			starsVertexBuffer = renderingContext.newVertexBuffer();
+			FloatBuffer stars = BufferUtils.createFloatBuffer(NB_STARS * 3);
 			for (int i = 0; i < NB_STARS; i++)
 			{
 				Vector3f star = new Vector3f((float) Math.random() * 2f - 1f, (float) Math.random(), (float) Math.random() * 2f - 1f);
@@ -105,12 +109,12 @@ public class DefaultSkyRenderer implements SkyboxRenderer
 				star.mul(100f);
 				stars.put(new float[] { star.x(), star.y(), star.z() });
 			}
+			stars.flip();
+			starsVertexBuffer.uploadData(stars);
 		}
-		stars.rewind();
-		{
-			renderingContext.bindAttribute("vertexIn", new FloatBufferAttributeSource(stars, 3));
-			renderingContext.draw(Primitive.POINT, 0, NB_STARS);
-		}
+		
+		renderingContext.bindAttribute("vertexIn", starsVertexBuffer.asAttributeSource(VertexFormat.FLOAT, 3));
+		renderingContext.draw(Primitive.POINT, 0, NB_STARS);
 		
 		renderingContext.getRenderTargetManager().setDepthMask(true);
 		renderingContext.flush();
@@ -120,9 +124,6 @@ public class DefaultSkyRenderer implements SkyboxRenderer
 		
 		cloudsRenderer.renderClouds(renderingContext);
 	}
-
-	private FloatBuffer stars = null;
-
 	private double rad(float h)
 	{
 		return h / 180 * Math.PI;

@@ -29,7 +29,7 @@ public class MemUsageRenderer
 	{
 		lel++;
 		lel%=1024;
-		long elapsedTime = (System.nanoTime() - lastTime);
+		//long elapsedTime = (System.nanoTime() - lastTime);
 		lastTime = System.nanoTime();
 		
 		float totalMemoryMB = Runtime.getRuntime().totalMemory() / 1024 / 1024;

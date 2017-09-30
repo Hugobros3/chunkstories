@@ -14,9 +14,9 @@ import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMod
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
+import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
 import io.xol.chunkstories.client.Client;
 import io.xol.engine.graphics.RenderingContext;
-import io.xol.engine.graphics.geometry.FloatBufferAttributeSource;
 import io.xol.engine.graphics.geometry.VertexBufferGL;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -84,6 +84,8 @@ public class FakeImmediateModeDebugRenderer
 	static int size = 0;
 	static int mode = 0;
 
+	static VertexBufferGL vertexBuffer = new VertexBufferGL();
+	
 	public static void glEnd()
 	{
 		RenderingContext renderingContext = Client.getInstance().getGameWindow().getRenderingContext();
@@ -98,7 +100,10 @@ public class FakeImmediateModeDebugRenderer
 		
 		data.flip();
 		
-		renderingContext.bindAttribute("vertexIn", new FloatBufferAttributeSource(data, 3));
+		vertexBuffer.uploadData(data);
+		
+		renderingContext.bindAttribute("vertexIn", vertexBuffer.asAttributeSource(VertexFormat.FLOAT, 3));
+		//renderingContext.bindAttribute("vertexIn", new FloatBufferAttributeSource(data, 3));
 		
 		renderingContext.draw(mode == GL_TRIANGLES ? Primitive.TRIANGLE : Primitive.LINE, 0, size);
 		renderingContext.setBlendMode(BlendMode.DISABLED);
