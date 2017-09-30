@@ -84,7 +84,7 @@ public class TexturesHandler
 				else
 				{
 					texture.destroy();
-					loadedTextures.remove(texture);
+					loadedTextures.remove(((Texture2DAsset) texture).getName());
 				}
 			}
 			else if(texture instanceof Texture2DFile)

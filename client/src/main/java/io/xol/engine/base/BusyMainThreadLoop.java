@@ -3,9 +3,6 @@ package io.xol.engine.base;
 import io.xol.engine.concurrency.SimpleFence;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL12.*;
-import static org.lwjgl.opengl.GL20.*;
-import static org.lwjgl.opengl.GL30.*;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 

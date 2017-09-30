@@ -32,6 +32,8 @@ public class DefaultWeatherEffectsRenderer implements WorldEffectsRenderer
 {
 	private Random random = new Random();
 	private WorldClientCommon world;
+	
+	@SuppressWarnings("unused")
 	private WorldRenderer worldRenderer;
 
 	public DefaultWeatherEffectsRenderer(WorldClientCommon world, WorldRenderer worldRenderer)
@@ -214,9 +216,6 @@ public class DefaultWeatherEffectsRenderer implements WorldEffectsRenderer
 		renderingContext.setCullingMode(CullingMode.COUNTERCLOCKWISE);
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.renderer.WeatherEffectsRenderer#destroy()
-	 */
 	@Override
 	public void destroy()
 	{
@@ -261,7 +260,6 @@ public class DefaultWeatherEffectsRenderer implements WorldEffectsRenderer
 						int worldZ = random.nextInt(world.getSizeInChunks() * 32);
 						
 						//Spawn the strike
-						System.out.println("clac");
 						world.getParticlesManager().spawnParticleAtPosition("lightning_strike_illumination", new Location(world, worldX, 0, worldZ));
 					}
 					

@@ -27,6 +27,7 @@ public class ArrayTextureGL extends TextureGL implements ArrayTexture {
 	int baseMipmapLevel = 0;
 	int maxMipmapLevel = 1000;
 	
+	@SuppressWarnings("unused")
 	private boolean mipmapsUpToDate = true;
 	
 	public ArrayTextureGL(TextureFormat type, int size, int layers) {

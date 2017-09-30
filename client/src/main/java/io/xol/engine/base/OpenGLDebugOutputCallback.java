@@ -34,6 +34,7 @@ public class OpenGLDebugOutputCallback implements GLDebugMessageARBCallbackI
 		GL_DEBUG_TYPE_PERFORMANCE_ARB = 0x8250,
 		GL_DEBUG_TYPE_OTHER_ARB = 0x8251;
 	
+	@SuppressWarnings("unused")
 	private final Thread mainGLThread;
 	
 	private static boolean errorHappened = false;
@@ -127,7 +128,7 @@ public class OpenGLDebugOutputCallback implements GLDebugMessageARBCallbackI
 		
 		if(type == GL_DEBUG_TYPE_ERROR_ARB)
 		{
-			mainGLThread.dumpStack();
+			Thread.dumpStack();
 			
 			errorHappened = true;
 		}

@@ -125,7 +125,6 @@ public class TaskBakeChunk extends Task {
 			return true;
 		}
 		
-		long cr_start = System.nanoTime();
 
 		//Don't waste time rendering void chunks m8
 		if (chunk.isAirChunk())
@@ -148,7 +147,6 @@ public class TaskBakeChunk extends Task {
 				}
 
 
-		long cr_iter = System.nanoTime();
 		Voxels store = world.getGameContext().getContent().voxels();
 		
 		//Make sure we clear each sub-buffer type.

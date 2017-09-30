@@ -62,6 +62,7 @@ public class ChunkMeshesRenderer
 		this.wrapChunksDistance = worldSizeInChunks / 2;
 	}
 
+	@SuppressWarnings("unused")
 	private final WorldRenderer worldRenderer;
 	private final WorldClient world;
 

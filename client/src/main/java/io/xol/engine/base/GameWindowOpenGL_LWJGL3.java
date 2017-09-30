@@ -106,6 +106,7 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 	@SuppressWarnings("unused")
 	private GLFWFramebufferSizeCallback framebufferSizeCallback;
 
+	@SuppressWarnings("unused")
 	private BusyMainThreadLoop pleaseWait = null;
 	protected GLCapabilities capabilities;
 	
@@ -182,6 +183,7 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 		}
 	}
 
+	@SuppressWarnings("unused")
 	private void displaySplashScreen() throws IOException {
 		int texture = glGenTextures();
 		
@@ -534,7 +536,7 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 			while(videoModes.remaining() > 0) {
 				GLFWVidMode videoMode = videoModes.get();
 				
-				String videoModeString = videoMode.width() + "x" + videoMode.height() + " @" + videoMode.refreshRate()+"Hz ";
+				//String videoModeString = videoMode.width() + "x" + videoMode.height() + " @" + videoMode.refreshRate()+"Hz ";
 				
 				//System.out.println(videoModeString+(videoMode.blueBits()+videoMode.redBits()+videoMode.greenBits()) + "bpp");
 				VideoMode vm = new VideoMode(monitorCount, videoMode);

@@ -61,12 +61,12 @@ public class FarTerrainBaker
 					//Clear shit
 					regionMeshBuffer.clear();
 
-					int rx = currentChunkX / 8;
+					/*int rx = currentChunkX / 8;
 					int rz = currentChunkZ / 8;
 					if (currentChunkZ < 0 && currentChunkZ % 8 != 0)
 						rz--;
 					if (currentChunkX < 0 && currentChunkX % 8 != 0)
-						rx--;
+						rx--;*/
 
 					RegionSummaryImplementation summary = world.getRegionsSummariesHolder().getRegionSummaryWorldCoordinates(currentChunkX * 32, currentChunkZ * 32);
 

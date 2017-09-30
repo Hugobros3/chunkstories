@@ -43,6 +43,7 @@ public class ClientConnection extends Thread implements RemoteServer
 	boolean failed = false;
 	private String latestErrorMessage = "";
 
+	@SuppressWarnings("unused")
 	private ClientSideConnectionSequence connectionSequence;
 	
 	// Receiving buffers

@@ -37,10 +37,7 @@ public class Texture2DRenderTargetGL extends Texture2DGL
 		{
 			scheduledForLoad = false;
 			//TODO defer to asynch thread
-			long ms = System.currentTimeMillis();
-			//System.out.print("main thread called, actually creating the texture ... ");
 			resize(scheduledW, scheduledH);
-			//System.out.print(" took "+(System.currentTimeMillis()-ms) + "ms \n");
 		}
 	}
 }

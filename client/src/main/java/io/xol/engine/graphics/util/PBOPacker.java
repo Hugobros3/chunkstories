@@ -46,9 +46,7 @@ public class PBOPacker
 			throw new RuntimeException("You asked this PBO downloader to download a texture but you did not finish the last read.");
 		
 		alreadyReading = true;
-		
-		long startT = System.nanoTime();
-		
+	
 		glBindBuffer(GL_PIXEL_PACK_BUFFER, bufferId);
 		//glBindTexture(GL_TEXTURE_2D, texture.getId());
 		
@@ -87,7 +85,6 @@ public class PBOPacker
 		glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 		rtm.setConfiguration(previousFB);
 		
-		long endT = System.nanoTime();
 		
 		//System.out.println((endT-startT)/1000+"µs");
 		
@@ -147,14 +144,10 @@ public class PBOPacker
 			glBindBuffer(GL_PIXEL_PACK_BUFFER, bufferId);
 			
 			//Map the buffer and read it
-			long startT = System.nanoTime();
 			ByteBuffer gpuBuffer = glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY, null);
-			long endT = System.nanoTime();
 			
 			ByteBuffer freeBuffer = BufferUtils.createByteBuffer(gpuBuffer.capacity());
-			int free = freeBuffer.remaining();
 			freeBuffer.put(gpuBuffer);
-			int freeNow = freeBuffer.remaining();
 			//System.out.println("Read "+(free - freeNow)+" bytes from the PBO in "+(endT-startT)/1000+" µs");
 			
 			//Unmpapps the buffer 
