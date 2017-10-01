@@ -18,7 +18,7 @@ public class IconLoader
 	public IconLoader(GameWindowOpenGL_LWJGL3 gameWindow)
 	{
 		try (GLFWImage.Buffer icons = GLFWImage.malloc(2)) {
-            ByteBuffer pixels16 = getByteBufferData("/textures/icon16.png");//stbi_load_from_memory(icon16, w, h, comp, 4);
+            ByteBuffer pixels16 = getByteBufferData("/textures/icon16.png");
             icons
                 .position(0)
                 .width(16)
