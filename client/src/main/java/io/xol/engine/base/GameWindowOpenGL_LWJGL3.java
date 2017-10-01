@@ -356,7 +356,7 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 		try
 		{
 			//Client.onStart();
-			IconLoader.load(this);
+			new IconLoader(this);
 
 			//Resize window logic
 			glfwSetFramebufferSizeCallback(glfwWindowHandle, (framebufferSizeCallback = new GLFWFramebufferSizeCallback() {

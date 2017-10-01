@@ -135,15 +135,15 @@ public class VoxelTexturesStoreAndAtlaser implements ClientContent.ClientVoxels.
 			//ChunkStoriesLogger.getInstance().info("At least " + sizeRequired + " by " + sizeRequired + " for TextureAtlas (surfacedNeeded : " + totalSurfacedNeeded + ")");
 
 			// Delete previous atlases
-			File diffuseTextureFile = new File(GameDirectory.getGameFolderPath()+"/res/textures/tiles_merged_albedo.png");
+			File diffuseTextureFile = new File(GameDirectory.getGameFolderPath()+"/cache/tiles_merged_albedo.png");
 			if (diffuseTextureFile.exists())
 				diffuseTextureFile.delete();
 
-			File normalTextureFile = new File(GameDirectory.getGameFolderPath()+"/res/textures/tiles_merged_normal.png");
+			File normalTextureFile = new File(GameDirectory.getGameFolderPath()+"/cache/tiles_merged_normal.png");
 			if (normalTextureFile.exists())
 				normalTextureFile.delete();
 
-			File materialTextureFile = new File(GameDirectory.getGameFolderPath()+"/res/textures/tiles_merged_material.png");
+			File materialTextureFile = new File(GameDirectory.getGameFolderPath()+"/cache/tiles_merged_material.png");
 			if (materialTextureFile.exists())
 				materialTextureFile.delete();
 			// Build the new one
