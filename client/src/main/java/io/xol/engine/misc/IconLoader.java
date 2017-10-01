@@ -1,6 +1,5 @@
 package io.xol.engine.misc;
 
-import java.io.File;
 import java.nio.ByteBuffer;
 
 import org.lwjgl.glfw.GLFWImage;
