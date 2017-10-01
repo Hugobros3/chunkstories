@@ -25,7 +25,7 @@ public class IconLoader
                 .height(16)
                 .pixels(pixels16);
 
-            ByteBuffer pixels32 = getByteBufferData("/textures/icon.png");//stbi_load_from_memory(icon32, w, h, comp, 4);
+            ByteBuffer pixels32 = getByteBufferData("/textures/icon.png");
             icons
                 .position(1)
                 .width(32)
