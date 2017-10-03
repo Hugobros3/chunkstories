@@ -82,7 +82,6 @@ public class ModZip extends ModImplementation
 
 	class ModZipAsset implements Asset
 	{
-
 		String assetName;
 		ZipEntry entry;
 
