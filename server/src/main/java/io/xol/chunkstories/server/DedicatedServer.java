@@ -50,6 +50,8 @@ public class DedicatedServer implements Runnable, ServerInterface
 	
 	public static void main(String args[])
 	{
+		File coreContentLocation = new File("res/");
+		
 		String modsString = null;
 		for (String s : args) // Debug arguments
 		{
@@ -61,16 +63,31 @@ public class DedicatedServer implements Runnable, ServerInterface
 			{
 				GameDirectory.set(s.replace("--dir=", ""));
 			}
+			else if (s.contains("--core")) {
+				String coreContentLocationPath = s.replace("--core=", "");
+				coreContentLocation = new File(coreContentLocationPath);
+			}
 			else
 			{
-				System.out.println("Chunk Stories server arguments : \n" + "-mods=xxx,yyy | -mods=* Tells the game to start with those mods enabled\n"
-						+ "-dir=whatever Tells the game not to look for .chunkstories at it's normal location and instead use the argument" + "" + "");
+				String helpText = "Chunk Stories server "+VersionInfo.version+"\n";
+				
+				if(s.equals("-h") || s.equals("--help"))
+					helpText += "Command line help: \n";
+				else
+					helpText += "Unrecognized command: "+s + "\n";
+				
+				helpText += "--mods=xxx,yyy | -mods=* Tells the game to start with those mods enabled\n";
+				helpText += "--dir=whatever Tells the game not to look for .chunkstories at it's normal location and instead use the argument\n";
+				helpText += "--core=whaterverfolder/ or --core=whatever.zip Tells the game to use some specific folder or archive as it's base content.\n";
+			
+				System.out.println(helpText);
+				return;
 
 				//Runtime.getRuntime().exit(0);
 			}
 		}
 
-		server = new DedicatedServer(modsString);
+		server = new DedicatedServer(coreContentLocation, modsString);
 
 		server.run();
 	}
@@ -98,7 +115,7 @@ public class DedicatedServer implements Runnable, ServerInterface
 
 	private GameContentStore gameContent;
 	
-	public DedicatedServer(String modsString)
+	DedicatedServer(File coreContentLocation, String modsString)
 	{
 		server = this;
 		// Start server services
@@ -114,7 +131,7 @@ public class DedicatedServer implements Runnable, ServerInterface
 			log.info("Starting Chunkstories server " + VersionInfo.version + " network protocol v" + VersionInfo.networkProtocolVersion);
 
 			//Loads the mods/build filesystem
-			gameContent = new GameContentStore(this, modsString);
+			gameContent = new GameContentStore(this, coreContentLocation, modsString);
 			gameContent.reload();
 			
 			//TODO why isn't this below ?

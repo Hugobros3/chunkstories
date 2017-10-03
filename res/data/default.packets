@@ -1,6 +1,14 @@
+# Default packets from the core game engine/content.
+# Modify/overload these at your own discretion; some reference stuff that only exists
+# in the actual implementation (io.xol.chunkstories.foo, instead of io.xol.chunkstories.api or io.xol.chunkstories.core)
 
+# commonClass defines a class used for both client & server
+# It is overridable for both client & servers with clientClass & serverClass
+# If both are overidden, commonClass is effectively useless
+# Such instances serve an educational/semantic purpose
 
-#Leave this one alone for proper login/serverlist protocol things
+# This packet handles basic text communication using UTF-8.
+# This is used for various internal misc purpose, I recommand not touching this at all
 packet text 0
 	allowedFrom: all
 	commonClass: io.xol.chunkstories.api.net.packets.PacketText
@@ -8,27 +16,32 @@ packet text 0
 	serverClass: io.xol.chunkstories.server.net.packets.PacketReceiveText
 end
 
+# Sends the world.info data for a world to the client connecting to a server
 packet world_info 1
 	allowedFrom: server
 	commonClass: io.xol.chunkstories.net.packets.PacketSendWorldInfo
 	clientClass: io.xol.chunkstories.client.net.packets.PacketInitializeRemoteWorld
 end
 
+# Sends compressed chunk data to a client who requested it
 packet chunk_data 2
 	allowedFrom: server
 	commonClass: io.xol.chunkstories.net.packets.PacketChunkCompressedData
 end
 
+# Sends compressed summary data (heightmap stuff) to a client who requested it
 packet region_summary 3
 	allowedFrom: server
 	commonClass: io.xol.chunkstories.net.packets.PacketRegionSummary
 end
 
+# General-purpose entity update packet (slow!)
 packet entity_tracking 4
 	allowedFrom: all
 	commonClass: io.xol.chunkstories.api.net.packets.PacketEntity
 end
 
+# Clientside request to move some shit in the inventory
 packet move_item 6
 	allowedFrom: client
 	commonClass: io.xol.chunkstories.core.net.packets.PacketInventoryMoveItemPile
@@ -59,22 +72,26 @@ packet input 11
 	commonClass: io.xol.chunkstories.net.packets.PacketInput
 end
 
+# Spawns a particle from the server
 packet particle 12
 	allowedFrom: server
 	commonClass: io.xol.chunkstories.api.net.packets.PacketParticle
 end
 
+# Spawns a decal from the server
 packet decal 13
 	allowedFrom: server
 	commonClass: io.xol.chunkstories.api.net.packets.PacketDecal
 end
 
+# Sends an entire file over the wire
 packet file 14
 	allowedFrom: server
 	commonClass: io.xol.chunkstories.net.packets.PacketSendFile
 	clientClass: io.xol.chunkstories.client.net.packets.PacketReceiveFile
 end
 
+# Applies a velocity delta to the player
 packet velocity_delta 15
 	allowedFrom: server
 	commonClass: io.xol.chunkstories.api.net.packets.PacketVelocityDelta
@@ -91,5 +108,4 @@ packet fx_explosion 17
 	commonClass: io.xol.chunkstories.core.net.packets.PacketExplosionEffect
 end
 
-#Be sensible and add your own ones after The game has an hardlimit of arround 32768 packet types possible
-
+#Be sensible and add your own ones after The game has an hardlimit of arround 32768 packet types possible.

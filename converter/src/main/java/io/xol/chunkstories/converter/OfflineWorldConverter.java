@@ -19,7 +19,6 @@ import io.xol.chunkstories.api.plugin.PluginManager;
 import io.xol.chunkstories.api.util.ChunkStoriesLogger;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.voxel.Voxel;
-import io.xol.chunkstories.api.voxel.VoxelLogic;
 import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.api.world.WorldInfo.WorldSize;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
@@ -30,7 +29,6 @@ import io.xol.chunkstories.converter.ConverterMapping.Mapper;
 import io.xol.chunkstories.converter.ConverterMapping.NonTrivialMapper;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.chunkstories.tools.WorldTool;
-import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.WorldInfoFile;
 import io.xol.chunkstories.world.WorldInfoImplementation;
@@ -49,15 +47,25 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 		//Parse arguments first
 		if (arguments.length < 5)
 		{
-			System.out.println("Usage : anvil-export anvilWorldDir csWorldDir <size> <x-start> <z-start> [void-fill] [-vr]");
-			System.out.println("anvilWorldDir is the directory containing the Minecraft level ( the one with level.dat inside )");
-			System.out.println("csWorldDir is the export destination.");
-			System.out.println("Target size for chunk stories world, avaible sizes : " + WorldInfo.WorldSize.getAllSizes());
-			System.out.println("<x-start> and <z-start> are the two coordinates (in mc world) from where we will take the data, " + "going up in the coordinates to fill the world size.\n Exemple : anvil-export mc cs TINY -512 -512 will take the"
-					+ "minecraft portion between X:-512 and Z:-512 to fill a 1024x1024 cs level.");
-			System.out.println("void-fill designates how you want the void chunks ( : not generated in minecraft) to be filled. default : air");
-			System.out.println("-v : verbose mode");
-			System.out.println("-r : delete and rewrite destination if already present");
+			String helpText = "Chunk stories Minecraft map importer(converter) cmd line.\n";
+			
+			helpText += "Usage : anvil-export anvilWorldDir csWorldDir <size> <x-start> <z-start> [void-fill] [-vr]\n";
+			helpText += "anvilWorldDir is the directory containing the Minecraft level ( the one with level.dat inside )\n";
+			helpText += "csWorldDir is the export destination.\n";
+			helpText += "Target size for chunk stories world, avaible sizes : " + WorldInfo.WorldSize.getAllSizes() + "\n";
+			helpText += "<x-start> and <z-start> are the two coordinates (in mc world) from where we will take the data, " + "going up in the coordinates to fill the world size.\n Exemple : anvil-export mc cs TINY -512 -512 will take the"
+					+ "minecraft portion between X:-512 and Z:-512 to fill a 1024x1024 cs level.\n";
+			helpText += "void-fill designates how you want the void chunks ( : not generated in minecraft) to be filled. default : air\n";
+			
+			helpText += "-v : verbose mode\n";
+			helpText += "-r : delete and rewrite destination if already present\n";
+			
+			//TODO implement these for real
+			helpText += "--core=whaterverfolder/ or --core=whatever.zip Tells the game to use some specific folder or archive as it's base content.";
+			helpText += "--mods=xxx,yyy | -mods=* Tells the converter to start with those mods enabled\n";
+			helpText += "--dir=whatever Tells the game not to look for .chunkstories at it's normal location and instead use the argument\n";
+			
+			System.out.println(helpText);
 			return;
 		}
 
@@ -172,7 +180,7 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 		String time = sdf.format(cal.getTime());
 		logger = new ChunkStoriesLoggerImplementation(this, ChunkStoriesLoggerImplementation.LogLevel.ALL, ChunkStoriesLoggerImplementation.LogLevel.ALL, new File("./logs/converter_" + time + ".log"));
 
-		content = new GameContentStore(this, null);
+		content = new GameContentStore(this, new File("res/"), null);
 		content.reload();
 
 

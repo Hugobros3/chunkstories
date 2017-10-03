@@ -1,5 +1,7 @@
 package io.xol.chunkstories.content;
 
+import java.io.File;
+
 import io.xol.chunkstories.api.client.ClientContent;
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer;
@@ -21,9 +23,9 @@ public class ClientGameContent extends GameContentStore implements ClientContent
 	private final TexturesLibrary textures;
 	private final ShadersStore shaders;
 	
-	public ClientGameContent(ClientInterface client, String modsStringArgument)
+	public ClientGameContent(ClientInterface client, File coreContentLocation, String modsStringArgument)
 	{
-		super(client, modsStringArgument);
+		super(client, coreContentLocation, modsStringArgument);
 		this.client = client;
 		
 		this.meshes = new ClientMeshStore(this, super.meshes);

@@ -40,6 +40,8 @@ import io.xol.engine.misc.FoldersUtils;
 
 public class ModsManagerImplementation implements ModsManager
 {
+	private final File coreContentLocation;
+	
 	private Mod baseAssets;
 	private String[] modsEnabled = new String[0];
 	private UniqueList<Mod> enabledMods = new UniqueList<Mod>();
@@ -49,78 +51,32 @@ public class ModsManagerImplementation implements ModsManager
 	private File cacheFolder = null;
 	private List<PluginInformationImplementation> pluginsWithinEnabledMods = new ArrayList<PluginInformationImplementation>();
 
-	public ModsManagerImplementation()
+	public ModsManagerImplementation(File coreContentLocation) throws NonExistentCoreContent
 	{
-		this(null);
+		this(coreContentLocation, null);
 	}
 	
-	public ModsManagerImplementation(String enabledModsAtStart)
+	public ModsManagerImplementation(File coreContentLocation, String enabledModsAtStart) throws NonExistentCoreContent
 	{
+		if(!coreContentLocation.exists())
+			throw new NonExistentCoreContent();
+		
+		this.coreContentLocation = coreContentLocation;
+		
 		if(enabledModsAtStart != null)
 			modsEnabled = enabledModsAtStart.split(",");
 	}
-
-	public static void main(String a[])
-	{
-		ModsManager mm = new ModsManagerImplementation();
-		
-		try
-		{
-			mm.setEnabledMods("dogez_content");
-			//setEnabledMods("C:\\Users\\Hugo\\workspace2\\Dogez-Plugin for CS\\mods\\dogez_content", "modInZip", "OveriddenModInZip", "md5:df9f7c813fdc72029b41758ef8dbb528", "md5:7f46165474d11ee5836777d85df2cdab:http://xol.io");
-			mm.loadEnabledMods();
-		}
-		catch (NotAllModsLoadedException e)
-		{
-			System.out.print(e.getMessage());
-		}
-				
-		for(Mod mod : mm.getCurrentlyLoadedMods())
-			System.out.println(mod.getMD5Hash());
-			
-		try
-		{
-			mm.setEnabledMods("dogez_content2");
-			//setEnabledMods("C:\\Users\\Hugo\\workspace2\\Dogez-Plugin for CS\\mods\\dogez_content", "modInZip", "OveriddenModInZip", "md5:df9f7c813fdc72029b41758ef8dbb528", "md5:7f46165474d11ee5836777d85df2cdab:http://xol.io");
-			mm.loadEnabledMods();
-		}
-		catch (NotAllModsLoadedException e)
-		{
-			System.out.print(e.getMessage());
-		}
-				
-		for(Mod mod : mm.getCurrentlyLoadedMods())
-			System.out.println(mod.getMD5Hash());
-		
-		try
-		{
-			mm.setEnabledMods("dogez_content");
-			//setEnabledMods("C:\\Users\\Hugo\\workspace2\\Dogez-Plugin for CS\\mods\\dogez_content", "modInZip", "OveriddenModInZip", "md5:df9f7c813fdc72029b41758ef8dbb528", "md5:7f46165474d11ee5836777d85df2cdab:http://xol.io");
-			mm.loadEnabledMods();
-		}
-		catch (NotAllModsLoadedException e)
-		{
-			System.out.print(e.getMessage());
-		}
-				
-		for(Mod mod : mm.getCurrentlyLoadedMods())
-			System.out.println(mod.getMD5Hash());
-		
-		System.out.println("Done");
+	
+	class NonExistentCoreContent extends Exception {
+		private static final long serialVersionUID = 8127068941907724484L;
 	}
-
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.content.ModsManager#setEnabledMods(java.lang.String)
-	 */
+	
 	@Override
 	public void setEnabledMods(String... modsEnabled)
 	{
 		this.modsEnabled = modsEnabled;
 	}
-
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.content.ModsManager#loadEnabledMods()
-	 */
+	
 	@Override
 	public void loadEnabledMods() throws NotAllModsLoadedException
 	{
@@ -270,7 +226,10 @@ public class ModsManagerImplementation implements ModsManager
 		// Checks for the base assets folder presence and sanity
 		try
 		{
-			baseAssets = new ModFolder(new File(GameDirectory.getGameFolderPath() + "/res/"));
+			if(coreContentLocation.isDirectory())
+				baseAssets = new ModFolder(coreContentLocation);
+			else
+				baseAssets = new ModZip(coreContentLocation);
 		}
 		catch (ModLoadFailureException e)
 		{

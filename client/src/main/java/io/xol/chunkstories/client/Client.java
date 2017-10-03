@@ -72,53 +72,56 @@ public class Client implements ClientInterface
 		GameDirectory.check();
 		GameDirectory.initClientPath();
 
+		File coreContentLocation = new File("res/");
+		
 		String modsStringArgument = null;
 		for (String s : args) // Debug arguments
 		{
-			if (s.equals("-forceobsolete"))
-			{
+			if (s.equals("--forceobsolete")) {
 				RenderingConfig.ignoreObsoleteHardware = false;
 				System.out.println("Ignoring OpenGL detection. This is absolutely definitely not going to make the game run, proceed at your own risk of imminent failure."
 						+ "You are stripped of any tech support rights when running the game using this.");
 			}
-			else if (s.contains("--mods"))
-			{
+			else if (s.contains("--mods")) {
 				modsStringArgument = s.replace("--mods=", "");
 			}
-			else if (s.contains("--dir"))
-			{
+			else if (s.contains("--dir")) {
 				GameDirectory.set(s.replace("--dir=", ""));
 			}
-			else if(s.contains("-gldebug")) {
+			else if (s.contains("--core")) {
+				String coreContentLocationPath = s.replace("--core=", "");
+				coreContentLocation = new File(coreContentLocationPath);
+			}
+			else if(s.contains("--gldebug")) {
 				RenderingConfig.DEBUG_OPENGL = true;
 				System.out.println("OpenGL debug output ENABLED");
 			}
-			else
-			{
-				String helpText = "Chunk Stories "+VersionInfo.version+"\n";
+			else {
+				String helpText = "Chunk Stories client "+VersionInfo.version+"\n";
 				
 				if(s.equals("-h") || s.equals("--help"))
 					helpText += "Command line help: \n";
 				else
 					helpText += "Unrecognized command: "+s + "\n";
 				
-				helpText += "-forceobsolete Forces the game to run even if requirements aren't met. !NO SUPPORT! \n";
-				helpText += "-mods=xxx,yyy | -mods=* Tells the game to start with those mods enabled\n";
-				helpText += "-dir=whatever Tells the game not to look for .chunkstories at it's normal location and instead use the argument\n";
-				helpText += "-gldebug Enables OpenGL debug output to the console";
+				helpText += "--forceobsolete Forces the game to run even if requirements aren't met. !NO SUPPORT! \n";
+				helpText += "--mods=xxx,yyy | -mods=* Tells the game to start with those mods enabled\n";
+				helpText += "--dir=whatever Tells the game not to look for .chunkstories at it's normal location and instead use the argument\n";
+				helpText += "--gldebug Enables OpenGL debug output to the console\n";
+				helpText += "--core=whaterverfolder/ or --core=whatever.zip Tells the game to use some specific folder or archive as it's base content.\n";
 			
 				System.out.println(helpText);
 				return;
 			}
 		}
 		
-		new Client(modsStringArgument);
+		new Client(coreContentLocation, modsStringArgument);
 
 		//Not supposed to happen, gets there when Client crashes badly.
 		System.exit(-1);
 	}
 
-	public Client(String modsStringArgument)
+	Client(File coreContentLocation, String modsStringArgument)
 	{
 		staticClientReference = this;
 		
@@ -140,10 +143,8 @@ public class Client implements ClientInterface
 		RenderingConfig.define();
 		
 		// Create game content manager
-		gameContent = new ClientGameContent(this, modsStringArgument);
+		gameContent = new ClientGameContent(this, coreContentLocation, modsStringArgument);
 		gameContent.reload();
-
-		//new VoxelTexturesArrays(gameContent.voxels());
 		
 		gameWindow.stage_2_init();
 		

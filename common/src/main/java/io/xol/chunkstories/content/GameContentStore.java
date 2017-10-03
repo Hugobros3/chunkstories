@@ -1,5 +1,7 @@
 package io.xol.chunkstories.content;
 
+import java.io.File;
+
 import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.exceptions.content.mods.NotAllModsLoadedException;
@@ -7,12 +9,15 @@ import io.xol.chunkstories.api.mesh.MeshLibrary;
 import io.xol.chunkstories.api.mods.Asset;
 import io.xol.chunkstories.api.mods.ModsManager;
 import io.xol.chunkstories.api.util.ChunkStoriesLogger;
+import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogLevel;
+import io.xol.chunkstories.content.ModsManagerImplementation.NonExistentCoreContent;
 import io.xol.chunkstories.entity.EntityTypesStore;
 import io.xol.chunkstories.item.ItemTypesStore;
 import io.xol.chunkstories.materials.MaterialsStore;
 import io.xol.chunkstories.mesh.MeshStore;
 import io.xol.chunkstories.net.PacketsStore;
 import io.xol.chunkstories.particles.ParticlesTypesStore;
+import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.generator.WorldGeneratorsStore;
 import io.xol.engine.animation.BVHLibrary;
@@ -40,22 +45,15 @@ public class GameContentStore implements Content
 	
 	private final LocalizationManagerActual localizationManager;
 
-	public GameContentStore(GameContext context, String enabledModsLaunchArguments)
+	public GameContentStore(GameContext context, File coreContentLocation, String enabledModsLaunchArguments)
 	{
 		this.context = context;
-		this.modsManager = new ModsManagerImplementation(enabledModsLaunchArguments);
-
-		// ! LOADS MODS
-		/*try
-		{
-			modsManager.loadEnabledMods();
+		try {
+			this.modsManager = new ModsManagerImplementation(coreContentLocation, enabledModsLaunchArguments);
+		} catch (NonExistentCoreContent e) {
+			ChunkStoriesLoggerImplementation.getInstance().log("Could not find core content at the location: "+coreContentLocation.getAbsolutePath(), LogLevel.CRITICAL);
+			throw new RuntimeException("Throwing a RuntimeException to make the process crash and burn");
 		}
-		catch (NotAllModsLoadedException e)
-		{
-			e.printStackTrace();
-		}*/
-
-		// ! TO REFACTOR
 
 		materials = new MaterialsStore(this);
 		items = new ItemTypesStore(this);
