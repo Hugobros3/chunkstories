@@ -19,7 +19,7 @@ public class ModsManagerTest {
 	@Test public void testModsManager()
 	{
 		try {
-			ModsManager modsManager = new ModsManagerImplementation(new File("res/"));
+			ModsManager modsManager = new ModsManagerImplementation(new File("core_content.zip"));
 			modsManager.loadEnabledMods();
 		} catch (NonExistentCoreContent e) {
 			e.printStackTrace();

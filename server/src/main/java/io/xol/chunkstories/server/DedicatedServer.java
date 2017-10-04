@@ -50,7 +50,7 @@ public class DedicatedServer implements Runnable, ServerInterface
 	
 	public static void main(String args[])
 	{
-		File coreContentLocation = new File("res/");
+		File coreContentLocation = new File("core_content.zip");
 		
 		String modsString = null;
 		for (String s : args) // Debug arguments

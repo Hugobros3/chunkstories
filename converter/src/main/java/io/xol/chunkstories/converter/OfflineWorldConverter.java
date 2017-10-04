@@ -180,14 +180,14 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 		String time = sdf.format(cal.getTime());
 		logger = new ChunkStoriesLoggerImplementation(this, ChunkStoriesLoggerImplementation.LogLevel.ALL, ChunkStoriesLoggerImplementation.LogLevel.ALL, new File("./logs/converter_" + time + ".log"));
 
-		content = new GameContentStore(this, new File("res/"), null);
+		content = new GameContentStore(this, new File("core_content.zip"), null);
 		content.reload();
 
 
 		verbose("Loading converter_mapping.txt");
 		File file = new File("converter_mapping.txt");
 		mappers = new ConverterMapping(this, file);
-		verbose("Done, took " + (System.nanoTime() - System.nanoTime()) / 1000 + " µs");
+		verbose("Done, took " + (System.nanoTime() - System.nanoTime()) / 1000 + " ï¿½s");
 		
 		//Loads the Minecraft World
 		mcWorld = new MinecraftWorld(mcFolder);

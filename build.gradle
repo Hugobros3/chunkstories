@@ -15,6 +15,10 @@ version = 'Alpha1.0rc5_03'
 description = 'A voxel game and game engine designed for modders'
 group = 'io.xol.chunkstories'
 
+ext {
+	csApiBuiltAgainst = '113'
+}
+
 task buildAll {
 	dependsOn ':client:shadowJar'
 	dependsOn ':server:shadowJar'
@@ -22,6 +26,8 @@ task buildAll {
 	
 	dependsOn ':core:jar'
 	dependsOn ':common:jar'
+
+	dependsOn ':launcher:createExe'
 }
 
 task uploadAll {
@@ -33,19 +39,17 @@ task uploadAll {
 	dependsOn ':common:uploadArchives'
 }
 
+//For all subprojects...
 subprojects {
-
+	//Put them all in the io.xol.chunkstories group.
 	group = rootProject.group
 
-	//We add those dependencies to any Java subproject
 	plugins.withType(JavaPlugin) {
-		//println name + ' has java'
-		//println sourceCompatibility
-		
+		//Setups compilation args
 		compileJava.options.compilerArgs << '-Xlint:-deprecation'
 		compileJava.options.compilerArgs << '-Xlint:none'
 		
-		//TODO: Split these even more, the server likely doesn't have an use for jorbis.
+		//Global dependencies
 		dependencies {
 			compile group: 'org.fusesource.jansi', name: 'jansi', version: '1.15'
 			compile group: 'org.l33tlabs.twl', name: 'pngdecoder', version: '1.0'
@@ -53,12 +57,18 @@ subprojects {
 			compile group: 'com.googlecode.soundlibs', name: 'jorbis', version: '0.0.17.4'
 			compile group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'
 			
-			compile group: 'io.xol.chunkstories', name: 'api', version: '113'
+			compile group: 'io.xol.chunkstories', name: 'api', version: csApiBuiltAgainst
 			
 			testCompile 'junit:junit:4.12'
 		}
 	}
+
+	//Makes this available everywhere
+	ext {
+		csApiBuiltAgainst = rootProject.csApiBuiltAgainst
+	}
 	
+	//Adds this debug task
 	task artifacts {
 		group = "Help"
 			description = "Displays the artifacts associated with each configuration of " + project
@@ -70,4 +80,13 @@ subprojects {
 			}
 		}
 	}
+
+	configurations {
+		deployerJars
+	}
+
+	dependencies {
+		deployerJars "org.apache.maven.wagon:wagon-ssh:2.12" //<-- fuck this fuck this fuck this
+	}
 }
+

@@ -72,7 +72,7 @@ public class Client implements ClientInterface
 		GameDirectory.check();
 		GameDirectory.initClientPath();
 
-		File coreContentLocation = new File("res/");
+		File coreContentLocation = new File("core_content.zip");
 		
 		String modsStringArgument = null;
 		for (String s : args) // Debug arguments
