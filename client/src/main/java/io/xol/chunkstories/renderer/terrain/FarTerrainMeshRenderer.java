@@ -259,7 +259,7 @@ public class FarTerrainMeshRenderer implements FarTerrainRenderer
 		
 		//Sort to draw near first
 		
-		//µ-opt
+		//Âµ-opt
 		//List<FarTerrainBaker.RegionMesh> regionsMeshesToRenderSorted = new ArrayList<FarTerrainBaker.RegionMesh>(renderedRegions);
 		regionsMeshesToRenderSorted.clear();
 		regionsMeshesToRenderSorted.addAll(renderedRegions);
@@ -276,7 +276,7 @@ public class FarTerrainMeshRenderer implements FarTerrainRenderer
 
 		});
 
-		//µ-opt
+		//Âµ-opt
 		/*List<Integer> temp = new ArrayList<Integer>();
 		List<Integer> temp2 = new ArrayList<Integer>();*/
 		temp.clear();

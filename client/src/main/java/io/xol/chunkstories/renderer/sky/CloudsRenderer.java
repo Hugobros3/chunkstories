@@ -59,7 +59,7 @@ public class CloudsRenderer
 		
 		lastBaked = System.currentTimeMillis();
 		
-		// 64² patches of 2 triangles of 3 points of 3 coordinates of 4 byte floats + 3x4 bytes floats + float
+		// 64Â² patches of 2 triangles of 3 points of 3 coordinates of 4 byte floats + 3x4 bytes floats + float
 		ByteBuffer bbuf = BufferUtils.createByteBuffer(width * width * 2 * 3 * ( 4 * 3 + 4 * 3 + 4));
 		
 		int octaves = 6;

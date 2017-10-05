@@ -86,7 +86,7 @@ public class PBOPacker
 		rtm.setConfiguration(previousFB);
 		
 		
-		//System.out.println((endT-startT)/1000+"µs");
+		//System.out.println((endT-startT)/1000+"Âµs");
 		
 		return new PBOPackerResult(fence);
 	}
@@ -106,7 +106,7 @@ public class PBOPacker
 		{
 			while(!isTraversable)
 			{
-				//Asks for wether the sync completed and timeouts in 1000ns or 1µs
+				//Asks for wether the sync completed and timeouts in 1000ns or 1Âµs
 				int waitReturnValue = glClientWaitSync(fence, GL_SYNC_FLUSH_COMMANDS_BIT, 1);
 				
 				//System.out.println("Waiting on GL fence");
@@ -148,7 +148,7 @@ public class PBOPacker
 			
 			ByteBuffer freeBuffer = BufferUtils.createByteBuffer(gpuBuffer.capacity());
 			freeBuffer.put(gpuBuffer);
-			//System.out.println("Read "+(free - freeNow)+" bytes from the PBO in "+(endT-startT)/1000+" µs");
+			//System.out.println("Read "+(free - freeNow)+" bytes from the PBO in "+(endT-startT)/1000+" Âµs");
 			
 			//Unmpapps the buffer 
 		    glUnmapBuffer(GL_PIXEL_PACK_BUFFER);

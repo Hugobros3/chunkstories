@@ -51,7 +51,7 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 		long ict = System.nanoTime();
 		/*verbose("Creating ids conversion cache");
 		int[] quickConversion = IDsConverter.generateQuickConversionTable();
-		verbose("Done, took " + (System.nanoTime() - ict) / 1000 + " µs");*/
+		verbose("Done, took " + (System.nanoTime() - ict) / 1000 + " Âµs");*/
 
 		//Prepares the loops
 		WorldSize size = csWorld.getWorldInfo().getSize();

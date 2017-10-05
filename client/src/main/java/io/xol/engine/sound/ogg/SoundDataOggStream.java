@@ -111,7 +111,7 @@ public class SoundDataOggStream extends SoundDataBuffered
 
 	long length = -1;
 
-	public String name = "undefined ta mère la globachienasse galactique";
+	public String name = "undefined ta mÃ¨re la globachienasse galactique";
 
 	@Override
 	public long getLengthMs()

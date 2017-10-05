@@ -187,7 +187,7 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 		verbose("Loading converter_mapping.txt");
 		File file = new File("converter_mapping.txt");
 		mappers = new ConverterMapping(this, file);
-		verbose("Done, took " + (System.nanoTime() - System.nanoTime()) / 1000 + " �s");
+		verbose("Done, took " + (System.nanoTime() - System.nanoTime()) / 1000 + " ï¿½s");
 		
 		//Loads the Minecraft World
 		mcWorld = new MinecraftWorld(mcFolder);

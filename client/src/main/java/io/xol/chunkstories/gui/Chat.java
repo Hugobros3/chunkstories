@@ -219,7 +219,7 @@ public class Chat
 				insert(m);
 		
 		//if (!chatting)
-		//	inputBox.text = "<Press T to chat> lol no one can ever see dis!!!!��";
+		//	inputBox.text = "<Press T to chat> lol no one can ever see dis!!!!ï¿½ï¿½";
 		
 		//inputBox.setFocus(true);
 	}

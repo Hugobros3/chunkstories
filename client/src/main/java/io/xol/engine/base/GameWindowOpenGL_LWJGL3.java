@@ -324,7 +324,7 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 			}
 			else*/
 			{
-				// bien le moyen-âge ?
+				// bien le moyen-Ã¢ge ?
 				ChunkStoriesLoggerImplementation.getInstance().log("Pre-OpenGL 3.3 Hardware detected.");
 				ChunkStoriesLoggerImplementation.getInstance().log("This game isn't made to run in those conditions, please update your drivers or upgrade your graphics card.");
 				JOptionPane.showMessageDialog(null, "Pre-OpenGL 3.0 Hardware without needed extensions support detected.\n" + "This game isn't made to run in those conditions, please update your drivers or upgrade your graphics card.");

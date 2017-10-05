@@ -107,7 +107,7 @@ public class MainMenu extends Layer
 			Random rnd = new Random();
 			return splashes.get(rnd.nextInt(splashes.size()));
 		}
-		return "en vrai j'ai jamais trop joué à pokémon";
+		return "en vrai j'ai jamais trop jouÃ© Ã Â pokÃ©mon";
 	}
 
 	@Override

@@ -54,7 +54,9 @@ subprojects {
 		//Setups compilation args
 		compileJava.options.compilerArgs << '-Xlint:-deprecation'
 		compileJava.options.compilerArgs << '-Xlint:none'
-		
+			
+		options.encoding = 'UTF-8'
+
 		//Global dependencies
 		dependencies {
 			compile group: 'org.fusesource.jansi', name: 'jansi', version: '1.15'
