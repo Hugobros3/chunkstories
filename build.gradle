@@ -7,6 +7,9 @@ allprojects {
 		mavenLocal()
 		mavenCentral()
 		jcenter()
+		maven {
+			url "http://maven.xol.io/repository/public/"
+		}
 	}
 }
 
@@ -16,7 +19,10 @@ description = 'A voxel game and game engine designed for modders'
 group = 'io.xol.chunkstories'
 
 ext {
-	csApiBuiltAgainst = '113'
+	apiRevisionBuiltAgainst = '113'
+	contentRevisionBuiltAgainst = '120'
+	
+	actualContentLocation = "core_content.zip"
 }
 
 task buildAll {
@@ -57,7 +63,7 @@ subprojects {
 			compile group: 'com.googlecode.soundlibs', name: 'jorbis', version: '0.0.17.4'
 			compile group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'
 			
-			compile group: 'io.xol.chunkstories', name: 'api', version: csApiBuiltAgainst
+			compile group: 'io.xol.chunkstories', name: 'api', version: apiRevisionBuiltAgainst
 			
 			testCompile 'junit:junit:4.12'
 		}
@@ -65,7 +71,7 @@ subprojects {
 
 	//Makes this available everywhere
 	ext {
-		csApiBuiltAgainst = rootProject.csApiBuiltAgainst
+		apiRevisionBuiltAgainst = rootProject.apiRevisionBuiltAgainst
 	}
 	
 	//Adds this debug task

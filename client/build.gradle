@@ -101,6 +101,11 @@ shadowJar {
 	classifier = null
 	version = null
 	configurations = [project.configurations.multiplatform]
+	
+	dependencies {
+		exclude(dependency(group: 'io.xol.chunkstories', name: 'core', version: contentRevisionBuiltAgainst, ext: 'jar'))
+    }
+
 }
 
 run { 
@@ -108,12 +113,13 @@ run {
 		/* Need to split the space-delimited value in the exec.args */
 		println "Running client; Setting project dir : " + rootProject.projectDir
 		workingDir = rootProject.projectDir
-		args new String("--dir="+rootProject.projectDir).split()
+		args = [new String("--dir="+rootProject.projectDir), new String("--core=" + rootProject.ext.actualContentLocation)]
+		println args
 	}
 
 	//Depends on the core content being present.
 	afterEvaluate {
-		dependsOn(':core:mod')
+		dependsOn(':common:setupContentLocation')
 	}
 }
 

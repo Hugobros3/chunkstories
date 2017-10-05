@@ -22,8 +22,6 @@ apply plugin: 'com.github.johnrengelman.shadow'
 mainClassName = 'io.xol.chunkstories.converter.OfflineWorldConverter'
 
 dependencies {
-	//compile project(':api')
-	compile project(':core')
 	compile project(':common')
 }
 
@@ -35,6 +33,10 @@ shadowJar {
 	baseName = 'converter'
 	classifier = null
 	version = null
+	
+	dependencies {
+		exclude(dependency(group: 'io.xol.chunkstories', name: 'core', version: contentRevisionBuiltAgainst, ext: 'jar'))
+    }
 }
 
 run {
@@ -49,6 +51,6 @@ run {
 
 	//Depends on the core content being present.
 	afterEvaluate {
-		dependsOn(':core:mod')
+		dependsOn(':common:setupContentLocation')
 	}
 }

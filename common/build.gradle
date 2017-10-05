@@ -4,13 +4,42 @@ apply plugin: 'java'
 apply plugin: 'java-library'
 apply plugin: 'maven'
 
-dependencies {
-	api project(':core')
-}
-
-
 version = rootProject.version
 description = 'Common implementation code'
+
+configurations {
+	coreContent
+}
+
+dependencies {
+	//api project(':core')
+	//No longer dependant on that, instead see below
+}
+
+dependencies {
+	coreContent group: 'io.xol.chunkstories', name: 'core', version: contentRevisionBuiltAgainst, ext: 'zip'
+	compile group: 'io.xol.chunkstories', name: 'core', version: contentRevisionBuiltAgainst, ext: 'jar'
+}
+
+task setupContentLocation() {
+	String actualContentLocation;
+	
+	if(project.hasProperty('contentLocation')) {
+		actualContentLocation = contentLocation
+	} else {
+		actualContentLocation = "${configurations.coreContent.singleFile}";
+	}
+	
+	rootProject.ext.actualContentLocation = actualContentLocation
+	
+	doFirst {
+		
+		println "Setting up content location: " + actualContentLocation
+		
+		//args [args, [new String("--core="+actualContentLocation)]].flatten()
+		//println "New args: " + args
+	}
+}
 
 //Create a properties.gradle with login credentials to use this.
 //Watch out: wagon-ssh is an old mess and WILL NOT TAKE EdDSA host keys

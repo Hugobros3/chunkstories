@@ -8,11 +8,11 @@ dependencies {
 	//api project(':api')
 }
 
-version = rootProject.version
-description = 'The free base content chunkstories is built arround.'
+version = '120'
+description = 'The free base content chunkstories is built on.'
 
 /** Goes ahead & makes a content distribution */
-task contentPack(type: Zip) {
+task buildContentPack(type: Zip) {
 	//Include all resources, but don't bundle any project file from content authoring tools
 	//Keeping those in the repo is fine, but users don't need it!
 	//If anyone wants them, just grab it from github :)
@@ -29,13 +29,23 @@ task contentPack(type: Zip) {
 	archiveName = "core_content.zip"
 }
 
-task mod(type: Copy) {
-	dependsOn contentPack
+task installContentPack(type: Copy) {
+	dependsOn buildContentPack
 
 	include '**/*.zip'
 
 	from 'build/distributions/'
 	into rootProject.projectDir;
+}
+
+configurations {
+	contentPack
+	onlyCode
+}
+
+artifacts {
+	contentPack buildContentPack
+	onlyCode jar
 }
 
 //Create a properties.gradle with login credentials to use this.
