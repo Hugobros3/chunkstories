@@ -55,7 +55,7 @@ subprojects {
 		compileJava.options.compilerArgs << '-Xlint:-deprecation'
 		compileJava.options.compilerArgs << '-Xlint:none'
 			
-		options.encoding = 'UTF-8'
+		compileJava.options.encoding = 'UTF-8'
 
 		//Global dependencies
 		dependencies {
