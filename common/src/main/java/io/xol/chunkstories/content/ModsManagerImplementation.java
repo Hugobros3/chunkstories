@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -51,6 +52,8 @@ public class ModsManagerImplementation implements ModsManager
 	private File cacheFolder = null;
 	private List<PluginInformationImplementation> pluginsWithinEnabledMods = new ArrayList<PluginInformationImplementation>();
 
+	private ClassLoader finalClassLoader = null;
+	
 	public ModsManagerImplementation(File coreContentLocation) throws NonExistentCoreContent
 	{
 		this(coreContentLocation, null);
@@ -237,17 +240,20 @@ public class ModsManagerImplementation implements ModsManager
 			e.printStackTrace(ChunkStoriesLoggerImplementation.getInstance().getPrintWriter());
 		}
 
-		//Iterates over mods, in order of priority
+		ClassLoader childClassLoader = loadModAssets(baseAssets, Thread.currentThread().getContextClassLoader());
+		//Iterates over mods, in order of priority (lowest to highest)
 		for (Mod mod : enabledMods)
 		{
-			loadModAssets(mod);
+			childClassLoader = loadModAssets(mod, childClassLoader);
 		}
-		//Just loads the rest
-		loadModAssets(baseAssets);
+		
+		finalClassLoader = childClassLoader;
 	}
 
-	private void loadModAssets(Mod mod)
+	private ClassLoader loadModAssets(Mod mod, ClassLoader parentClassLoader)
 	{
+		List<File> jarFiles = new LinkedList<File>();
+		
 		//For each asset in the said mod
 		for (Asset asset : mod.assets())
 		{
@@ -258,7 +264,9 @@ public class ModsManagerImplementation implements ModsManager
 			//Special case for .jar files : we extract them in the cache/ folder and make them avaible through secure ClassLoaders
 			if (asset.getName().endsWith(".jar"))
 			{
-				loadJarFile(asset);
+				File jarFile = loadJarFile(asset);
+				if(jarFile != null)
+					jarFiles.add(jarFile);
 				continue;
 			}
 
@@ -271,13 +279,53 @@ public class ModsManagerImplementation implements ModsManager
 			}
 			else
 			{
-				System.out.println("Adding asset " + asset + " but it's already overriden ! (top=" + entry.topInstance() + ")");
+				System.out.println("Adding asset " + asset + ", overriding previous stuff (top=" + entry.topInstance() + ")");
 				entry.addAssetInstance(asset);
 			}
 		}
+		
+		//No jar files ? Just return the parent class loader.
+		if(jarFiles.size() == 0)
+			return parentClassLoader;
+		
+		//Build a specialized class loader based on the parent one and the jars found within the mod
+		ForeignCodeClassLoader classLoader;
+		try {
+			classLoader = new ForeignCodeClassLoader(mod, parentClassLoader, jarFiles);
+		} catch (IOException e1) {
+			e1.printStackTrace();
+			System.out.println("Error whilst creating a ForeignCodeClassLoader for " + mod);
+			return parentClassLoader;
+		}
+		
+		for(String className : classLoader.classes())
+		{
+			avaibleForeignClasses.put(className, classLoader);
+		}
+		
+		//Load any plugins those jar files might be
+		for(File jarFile : jarFiles) {
+			try
+			{
+				PluginInformationImplementation pluginInformation = new PluginInformationImplementation(jarFile, classLoader);
+				System.out.println("Found plugin "+pluginInformation+" from within "+mod);
+				pluginsWithinEnabledMods.add(pluginInformation);
+			}
+			catch (NotAPluginException nap)
+			{
+				//Discard silently
+			}
+			catch (PluginLoadException | IOException e)
+			{
+				System.out.println("Something went wrong loading the plugin "+jarFile + " from " + mod);
+				e.printStackTrace();
+			}
+		}
+		
+		return classLoader;
 	}
 
-	private void loadJarFile(Asset asset)
+	private File loadJarFile(Asset asset)
 	{
 		System.out.println("Handling jar file " + asset);
 		try
@@ -302,35 +350,12 @@ public class ModsManagerImplementation implements ModsManager
 			bos.close();
 			System.out.println("Done writing file");
 
-			//Create a fancy class loader for this temp jar
-			ForeignCodeClassLoader classLoader = new ForeignCodeClassLoader(asset.getSource(), cachedJarLocation, Thread.currentThread().getContextClassLoader());
-			
-			for(String className : classLoader.classes())
-			{
-				//System.out.println("class "+className+" found in jar "+asset);
-				avaibleForeignClasses.put(className, classLoader);
-			}
-			
-			//Checks if it may load as a plugin
-			try
-			{
-				PluginInformationImplementation pluginInformation = new PluginInformationImplementation(cachedJarLocation, PluginInformationImplementation.class.getClassLoader());
-				System.out.println("Found plugin "+pluginInformation+" from within "+asset.getSource());
-				pluginsWithinEnabledMods.add(pluginInformation);
-			}
-			catch (NotAPluginException nap)
-			{
-				//Discard silently
-			}
-			catch (PluginLoadException e)
-			{
-				System.out.println("Something went wrong loading the plugin @ "+asset);
-				e.printStackTrace();
-			}
+			return cachedJarLocation;
 		}
 		catch (IOException e)
 		{
 			e.printStackTrace();
+			return null;
 		}
 	}
 
@@ -493,8 +518,9 @@ public class ModsManagerImplementation implements ModsManager
 			//We don't really care about this
 			//e.printStackTrace();
 		}
+		
 		//If this fails, try to obtain it from one of the loaded mods
-		ChunkStoriesLoggerImplementation.getInstance().log("Looking for class "+className+" in loaded mods", LogLevel.DEBUG);
+		//ChunkStoriesLoggerImplementation.getInstance().log("Looking for class "+className+" in loaded mods", LogLevel.DEBUG);
 		
 		ForeignCodeClassLoader loader = avaibleForeignClasses.get(className);
 		
@@ -545,7 +571,7 @@ public class ModsManagerImplementation implements ModsManager
 
 		public void addAssetInstance(Asset asset)
 		{
-			instances.addLast(asset);
+			instances.addFirst(asset);
 		}
 
 		@Override
@@ -613,6 +639,10 @@ public class ModsManagerImplementation implements ModsManager
 			}
 			
 		};
+	}
+
+	public ClassLoader getFinalClassLoader() {
+		return finalClassLoader;
 	}
 	
 }

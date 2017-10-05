@@ -6,11 +6,13 @@ package io.xol.chunkstories.content.mods;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
@@ -26,56 +28,70 @@ public class ForeignCodeClassLoader extends URLClassLoader
 	Mod responsibleMod;
 	Map<String, Class<?>> classes = new HashMap<String, Class<?>>();
 
-	public ForeignCodeClassLoader(Mod responsibleMod, File file, ClassLoader parentLoader) throws IOException
+	public ForeignCodeClassLoader(Mod responsibleMod, ClassLoader parentLoader, Collection<File> files) throws IOException
 	{
-		super(new URL[] { file.toURI().toURL() }, parentLoader);
+		super(urlHelper(files), parentLoader);
+		
 		assert parentLoader != null;
 
 		this.responsibleMod = responsibleMod;
 
-		JarFile jar = new JarFile(file);
-
-		//Lists classes to be found in that jarFile
-		Enumeration<? extends ZipEntry> e = jar.entries();
-		while (e.hasMoreElements())
-		{
-			ZipEntry entry = e.nextElement();
-			if (!entry.isDirectory())
+		for(File file : files) {
+			JarFile jar = new JarFile(file);
+	
+			//Lists classes to be found in that jarFile
+			Enumeration<? extends ZipEntry> e = jar.entries();
+			while (e.hasMoreElements())
 			{
-				if (entry.getName().endsWith(".class"))
+				ZipEntry entry = e.nextElement();
+				if (!entry.isDirectory())
 				{
-					String className = entry.getName().replace('/', '.');
-					className = className.substring(0, className.length() - 6);
-					
-					//Skip subclasses
-					if(className.contains("$"))
-						continue;
-					
-					System.out.println("Found class " + className + " in jarfile, loading it...");
-					
-					try
+					if (entry.getName().endsWith(".class"))
 					{
-						Class<?> loadedClass = this.findClass(className);
+						String className = entry.getName().replace('/', '.');
+						className = className.substring(0, className.length() - 6);
 						
-						classes.put(className, loadedClass);
-					}
-					catch (ClassNotFoundException e1)
-					{
-						ChunkStoriesLoggerImplementation.getInstance().error("Class "+className+" was to be found in .jar file but classloader could not load it.");
-						e1.printStackTrace();
+						//Skip subclasses
+						if(className.contains("$"))
+							continue;
 						
-						continue;
+						System.out.println("Found class " + className + " in jarfile, loading it...");
+						
+						try
+						{
+							Class<?> loadedClass = this.findClass(className);
+							classes.put(className, loadedClass);
+						}
+						catch (ClassNotFoundException e1)
+						{
+							ChunkStoriesLoggerImplementation.getInstance().error("Class "+className+" was to be found in .jar file but classloader could not load it.");
+							e1.printStackTrace();
+							
+							continue;
+						}
+						catch(LinkageError le)
+						{
+							//Don't care
+						}
+						//classes.add(className);
 					}
-					catch(LinkageError le)
-					{
-						//Don't care
-					}
-					//classes.add(className);
 				}
 			}
+	
+			jar.close();
 		}
+	}
 
-		jar.close();
+	private static URL[] urlHelper(Collection<File> files) throws MalformedURLException {
+		URL[] urls = new URL[files.size()];
+		Iterator<File> i = files.iterator();
+		int j = 0;
+		while(i.hasNext()) {
+			File file = i.next();
+			urls[j] = file.toURI().toURL();
+			j++;
+		}
+		return urls;
 	}
 
 	public Collection<String> classes()

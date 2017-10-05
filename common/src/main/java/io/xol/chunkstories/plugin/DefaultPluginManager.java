@@ -100,7 +100,7 @@ public abstract class DefaultPluginManager implements PluginManager
 			{
 				try
 				{
-					PluginInformationImplementation pluginInformation = new PluginInformationImplementation(file, this.getClass().getClassLoader());
+					PluginInformationImplementation pluginInformation = new PluginInformationImplementation(file, ((ModsManagerImplementation)pluginExecutionContext.getContent().modsManager()).getFinalClassLoader());
 					//Checks type is appropriate
 
 					//Client only plugins require actually being a client

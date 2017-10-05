@@ -48,9 +48,9 @@ run {
 	doFirst {
 		/* Need to split the space-delimited value in the exec.args */
 		println "Running server; Setting project dir : " + rootProject.projectDir
-	
 		workingDir = rootProject.projectDir
-		args new String("--dir="+rootProject.projectDir).split()
+		args = [new String("--dir="+rootProject.projectDir), new String("--core=" + rootProject.ext.actualContentLocation)]
+		println args
 	}
 
 	//Depends on the core content being present.
