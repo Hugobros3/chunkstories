@@ -1,3 +1,0 @@
-internalName: core
-name: Chunk Stories default content
-version: fuck.off

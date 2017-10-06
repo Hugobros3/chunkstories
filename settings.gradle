@@ -4,4 +4,4 @@
 
 rootProject.name = 'chunkstories'
 
-include 'core', 'common', 'client', 'server', 'converter', 'launcher'
+include 'common', 'client', 'server', 'converter', 'launcher'

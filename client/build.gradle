@@ -79,7 +79,7 @@ dependencies {
 
 // Dependencies from subprojects
 dependencies {
-	compile project(':core')
+	//compile project(':core')
 	compile project(':common')
 	compile project(':server')
 }

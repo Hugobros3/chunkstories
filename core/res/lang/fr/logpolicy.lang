@@ -1,4 +1,0 @@
-logpolicy.title Politique d'envoi de rapports d'erreur
-logpolicy.asktext Bienvenue sur l'alpha de Chunk Stories ! \nTout l'intérêt d'une version early access est de trouver et résoudre les bugs et crashs, et ceci requiert souvent de nous envoyer des informations sur votre ordinateur et sur comment le jeu fonctionne dessus.\nNous avons un système d'envoi de logs automatique qui s'active une fois le jeu fermé. Ces fichiers contiennent des informations sur le répertoire d'installation du jeu ( reflétant votre username ), votre système d'exploitation, votre configuration matérielle, votre addresse IP ( on l'a déjà ) et quelquonque erreur/crash lié aux drivers que le jeu peut recontrer pendant son exécution.\nEvidement la seule utilisation que nous auront pour ces fichiers sera le débbugage et vous pouvez choisir de désactiver cette fonctionalité.
-logpolicy.accept Je suis d'accord.
-logpolicy.deny Non merci.

@@ -1,4 +1,0 @@
-logpolicy.title Policy on sending logs and crash reports
-logpolicy.asktext Welcome to the indev version of Chunk Stories !\nThe whole point of having an early access title is finding and fixing bugs and crashes, and this often requires you sending us informations about your computer and how the game runs on it.\nWe have an automatic log uploading system that uploads your .log file after you're done playing. This file can contain information about your game path ( reflecting likely your username ), your operation system, your CPU/RAM/GPU combo,your IP address (we have that one already think about it) and whatever driver/crashes related stuff it may encounter during runtime.\nObviously the only thing we'll ever use these files for is debuging purposes and you can chose wether you are ok with that or not.
-logpolicy.accept I'm ok with this.
-logpolicy.deny No thanks.

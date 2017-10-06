@@ -30,7 +30,7 @@ task buildAll {
 	dependsOn ':server:shadowJar'
 	dependsOn ':converter:shadowJar'
 	
-	dependsOn ':core:jar'
+	//dependsOn ':core:jar'
 	dependsOn ':common:jar'
 
 	dependsOn ':launcher:createExe'

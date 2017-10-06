@@ -24,9 +24,11 @@ dependencies {
 task setupContentLocation() {
 	String actualContentLocation;
 	
+	//Supplied content location
 	if(project.hasProperty('contentLocation')) {
 		actualContentLocation = contentLocation
 	} else {
+		//Automagically grab the location within the maven local repo
 		actualContentLocation = "${configurations.coreContent.singleFile}";
 	}
 	
