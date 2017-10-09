@@ -20,7 +20,7 @@ group = 'io.xol.chunkstories'
 
 ext {
 	apiRevisionBuiltAgainst = '113'
-	contentRevisionBuiltAgainst = '120'
+	contentRevisionBuiltAgainst = '121'
 	
 	actualContentLocation = "core_content.zip"
 }

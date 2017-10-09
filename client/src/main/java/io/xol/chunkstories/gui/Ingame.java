@@ -1,10 +1,5 @@
 package io.xol.chunkstories.gui;
 
-/*import org.lwjgl.input.Keyboard;
-import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.Display;*/
-
-import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.base.GameWindowOpenGL_LWJGL3;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
@@ -18,8 +13,6 @@ import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse.MouseScroll;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
-import io.xol.chunkstories.api.math.Math2;
-import org.joml.Vector4f;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.plugin.ClientPluginManager;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
@@ -154,9 +147,6 @@ public class Ingame extends Layer
 		Location selectedBlock = null;
 		if (playerEntity instanceof EntityPlayer)
 			selectedBlock = ((EntityPlayer) playerEntity).getBlockLookingAt(true);
-
-		/*if (playerEntity != null)
-			playerEntity.setupCamera(camera);*/
 		
 		pluginManager.fireEvent(new CameraSetupEvent(renderingContext.getCamera()));
 
@@ -210,48 +200,14 @@ public class Ingame extends Layer
 			if (playerEntity != null && inventoryBarDrawer != null)
 				inventoryBarDrawer.drawPlayerInventorySummary(renderingContext, renderingContext.getWindow().getWidth() / 2 - 7, 64 + 64);
 
-			//TODO : move this crap into the EntityOverlays shit
-			//Draw health
-			if (playerEntity != null && playerEntity instanceof EntityLiving)
-			{
-				EntityLiving livingPlayer = (EntityLiving) playerEntity;
-
-				float scale = 2.0f;
-
-				TexturesHandler.getTexture("./textures/gui/hud/hud_survival.png").setLinearFiltering(false);
-				renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(renderingContext.getWindow().getWidth() / 2 - 256 * 0.5f * scale, 64 + 64 + 16 - 32 * 0.5f * scale, 256 * scale, 32 * scale, 0, 32f / 256f, 1, 0,
-						TexturesHandler.getTexture("./textures/gui/hud/hud_survival.png"), false, true, null);
-
-				//Health
-				int horizontalBitsToDraw = (int) (8 + 118 * Math2.clamp(livingPlayer.getHealth() / livingPlayer.getMaxHealth(), 0.0, 1.0));
-				renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(renderingContext.getWindow().getWidth() / 2 - 128 * scale, 64 + 64 + 16 - 32 * 0.5f * scale, horizontalBitsToDraw * scale, 32 * scale, 0, 64f / 256f, horizontalBitsToDraw / 256f,
-						32f / 256f, TexturesHandler.getTexture("./textures/gui/hud/hud_survival.png"), false, true, new Vector4f(1.0f, 1.0f, 1.0f, 0.75f));
-
-				//Food
-				if (livingPlayer instanceof EntityPlayer)
-				{
-					EntityPlayer playerPlayer = (EntityPlayer)livingPlayer;
-					
-					horizontalBitsToDraw = (int) (0 + 126 * Math2.clamp(playerPlayer.getFoodLevel() / 100f, 0.0, 1.0));
-					renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(
-							renderingContext.getWindow().getWidth() / 2 + 0 * 128 * scale + 0, 64 + 64 + 16 - 32 * 0.5f * scale, horizontalBitsToDraw * scale, 32 * scale, 0.5f , 64f / 256f, 0.5f + horizontalBitsToDraw / 256f,
-							32f / 256f, TexturesHandler.getTexture("./textures/gui/hud/hud_survival.png"), false, true, new Vector4f(1.0f, 1.0f, 1.0f, 0.75f));
-				}
-			}
-			
-			// draw cursor
-			renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(renderingContext.getWindow().getWidth() / 2 - 8, renderingContext.getWindow().getHeight() / 2 - 8, 16, 16, 0, 1, 1, 0, renderingContext.textures().getTexture("./textures/gui/cursor.png"), false, true, null);
-
 			//Draw debug info
 			if (RenderingConfig.showDebugInfo)
 				debugInfoRenderer.drawF3debugMenu(renderingContext);;
 		}
 		
 		//Lack of overlay should infer autofocus
-		if (!isCovered())// && !chat.chatting)
+		if (!isCovered())
 			focus(true);
-			
-		//Client.profiler.reset("gui");
 
 		// Check connection didn't died and change scene if it has
 		if (world instanceof WorldClientRemote)

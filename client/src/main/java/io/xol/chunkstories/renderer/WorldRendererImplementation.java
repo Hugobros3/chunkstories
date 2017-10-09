@@ -520,8 +520,10 @@ public class WorldRendererImplementation implements WorldRenderer
 		while (ei.hasNext())
 		{
 			e = ei.next();
-			if (e instanceof EntityOverlay)
+			if (e instanceof EntityOverlay) {
 				((EntityOverlay) e).drawEntityOverlay(renderingContext);
+				//System.out.println("cuck: " + e);
+			}
 		}
 		world.entitiesLock.readLock().unlock();
 	}
