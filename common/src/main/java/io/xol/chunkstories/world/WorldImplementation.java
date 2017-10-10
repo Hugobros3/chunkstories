@@ -750,29 +750,6 @@ public abstract class WorldImplementation implements World
 		return regionsAndSummaries;
 	}
 
-	/**
-	 * Legacy crap for particle system
-	 */
-	public boolean checkCollisionPoint(double posX, double posY, double posZ)
-	{
-		int data = this.getVoxelData((int) posX, (int) posY, (int) posZ);
-		int id = VoxelFormat.id(data);
-		if (id > 0)
-		{
-			Voxel v = VoxelsStore.get().getVoxelById(id);
-
-			CollisionBox[] boxes = v.getTranslatedCollisionBoxes(this, (int) posX, (int) posY, (int) posZ);
-			if (boxes != null)
-				for (CollisionBox box : boxes)
-					if (box.isPointInside(posX, posY, posZ))
-						return true;
-
-			if (v.getType().isSolid())
-				return true;
-		}
-		return false;
-	}
-
 	@Override
 	public float getWeather()
 	{

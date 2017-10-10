@@ -572,6 +572,7 @@ public class ModsManagerImplementation implements ModsManager
 		public void addAssetInstance(Asset asset)
 		{
 			instances.addFirst(asset);
+			topInstance = asset;
 		}
 
 		@Override

@@ -202,7 +202,10 @@ public class Ingame extends Layer
 
 			//Draw debug info
 			if (RenderingConfig.showDebugInfo)
-				debugInfoRenderer.drawF3debugMenu(renderingContext);;
+				debugInfoRenderer.drawF3debugMenu(renderingContext);
+			
+			renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(getGameWindow().getWidth() / 2 - 8, getGameWindow().getHeight() / 2 - 8, 16, 16, 0, 1, 1, 0,
+					renderingContext.textures().getTexture("./textures/gui/cursor.png"), false, true, null);
 		}
 		
 		//Lack of overlay should infer autofocus
@@ -312,17 +315,6 @@ public class Ingame extends Layer
 				return true;
 			}
 		}
-		/*else if (!guiHidden && input.equals("inventory"))
-		{
-			if (playerEntity != null)
-			{
-				focus(false);
-				if (playerEntity instanceof EntityCreative && ((EntityCreative) playerEntity).getCreativeModeComponent().get())
-					gameWindow.setLayer(new InventoryOverlay(gameWindow, this, new Inventory[] { ((EntityWithInventory) playerEntity).getInventory(), new InventoryLocalCreativeMenu() }));
-				else
-					gameWindow.setLayer(new InventoryOverlay(gameWindow, this, new Inventory[] { ((EntityWithInventory) playerEntity).getInventory() }));
-			}
-		}*/
 		//Exit brings up the pause menu
 		else if (input.equals("exit"))
 		{
