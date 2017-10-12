@@ -10,6 +10,7 @@ import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.GameLogic;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.EntityBase;
 import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityNameable;
@@ -37,6 +38,7 @@ import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldCollisionsManager;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.Chunk;
+import io.xol.chunkstories.api.world.chunk.Chunk.ChunkVoxelContext;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.api.world.dummy.DummyContext;
@@ -270,15 +272,17 @@ public abstract class WorldImplementation implements World
 	{
 		if (entity != null)
 		{
+			EntityBase ent = (EntityBase)entity;
+			
 			//Only once
-			if (entity.getComponentExistence().exists())
+			if (ent.getComponentExistence().exists())
 			{
 				//Destroys it
-				entity.getComponentExistence().destroyEntity();
+				ent.getComponentExistence().destroyEntity();
 
 				//Removes it's reference within the region
-				if (entity.getEntityComponentPosition().getRegionWithin() != null)
-					entity.getEntityComponentPosition().getRegionWithin().removeEntityFromRegion(entity);
+				if (ent.positionComponent.getChunkWithin() != null)
+					ent.positionComponent.getChunkWithin().removeEntity(entity);
 
 				//Actually removes it from the world list
 				removeEntityFromList(entity);
@@ -325,12 +329,12 @@ public abstract class WorldImplementation implements World
 				entity = iter.next();
 
 				//Check entity's region is loaded
-				if (entity.getRegion() != null && entity.getRegion().isDiskDataLoaded())// && entity.getChunkHolder().isChunkLoaded((int) entityLocation.getX() / 32, (int) entityLocation.getY() / 32, (int) entityLocation.getZ() / 32))
+				if (entity.getChunk() != null)
 					entity.tick();
 				
 				//Tries to snap the entity to the region if it ends up being loaded
-				else if (entity.getRegion() == null)
-					entity.getEntityComponentPosition().trySnappingToRegion();
+				else
+					((EntityBase)entity).positionComponent.trySnappingToChunk();
 
 			}
 		}
@@ -898,10 +902,18 @@ public abstract class WorldImplementation implements World
 		if (voxelLocation == null)
 			return false;
 
-		VoxelContext peek = this.peekSafely(voxelLocation);
+		VoxelContext peek;
+		try {
+			peek = this.peek(voxelLocation);
+		} catch (WorldException e) {
+			
+			// Will not accept interacting with unloaded blocks
+			return false;
+		}
+		
 		Voxel voxel = peek.getVoxel();
 		if (voxel != null && voxel instanceof VoxelInteractive)
-			return ((VoxelInteractive) voxel).handleInteraction(entity, peekSafely(voxelLocation), input);
+			return ((VoxelInteractive) voxel).handleInteraction(entity, (ChunkVoxelContext) peek, input);
 		return false;
 	}
 

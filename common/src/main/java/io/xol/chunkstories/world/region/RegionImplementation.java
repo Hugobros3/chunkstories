@@ -2,6 +2,8 @@ package io.xol.chunkstories.world.region;
 
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityUnsaveable;
+import io.xol.chunkstories.api.util.CompoundIterator;
+import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunksIterator;
@@ -17,9 +19,11 @@ import io.xol.chunkstories.world.region.format.CSFRegionFile0x2D;
 import io.xol.engine.concurrency.SafeWriteLock;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -420,9 +424,18 @@ public class RegionImplementation implements Region
 	}
 
 	@Override
-	public Iterator<Entity> getEntitiesWithinRegion()
+	public IterableIterator<Entity> getEntitiesWithinRegion()
 	{
-		return localEntities.iterator();
+		List<Iterator<Entity>> listOfIterators = new ArrayList<Iterator<Entity>>();
+		for(int a = 0; a < 8; a++)
+			for(int b = 0; b < 8; b++)
+				for(int c = 0; c < 8; c++) {
+					Chunk chunk = this.getChunk(a, b, c);
+					if(chunk != null)
+						listOfIterators.add(chunk.getEntitiesWithinChunk());
+				}
+		
+		return new CompoundIterator<Entity>(listOfIterators);
 	}
 
 	/*@Override

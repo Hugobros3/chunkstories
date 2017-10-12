@@ -8,8 +8,11 @@ import io.xol.chunkstories.anvil.nbt.NBTString;
 import io.xol.chunkstories.anvil.nbt.NBTInt;
 import io.xol.chunkstories.anvil.nbt.NBTag;
 import io.xol.chunkstories.api.voxel.Voxel;
-import io.xol.chunkstories.core.entity.voxel.EntitySign;
+import io.xol.chunkstories.api.voxel.components.VoxelComponent;
+import io.xol.chunkstories.api.world.chunk.Chunk;
+import io.xol.chunkstories.api.world.chunk.Chunk.ChunkVoxelContext;
 import io.xol.chunkstories.core.voxel.VoxelSign;
+import io.xol.chunkstories.core.voxel.components.VoxelComponentSignText;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldImplementation;
 
@@ -29,10 +32,8 @@ public class SpecialBlocksHandler {
 		NBTList entitiesList = (NBTList) root.getTag("Level.TileEntities");
 		if (entitiesList != null)
 		{
-			//System.out.println("TileEntities:");
 			for (NBTag element : entitiesList.elements)
 			{
-				//System.out.println("Found TileEntity" + element);
 				NBTCompound entity = (NBTCompound) element;
 				NBTString entityId = (NBTString) entity.getTag("id");
 				
@@ -44,30 +45,41 @@ public class SpecialBlocksHandler {
 				int csCoordinatesY = tileY;
 				int csCoordinatesZ = (tileZ % 16 + 16) % 16 + csBaseZ;
 				
-				//System.out.println(entityId.data);
 				if (entityId.data.toLowerCase().equals("chest"))
 				{
-					//System.out.println("Found "+entityId.data+" at "+tileX+": "+tileY+" "+tileZ);
+					//Actually we don't bother converting the items
 				}
 				else if (entityId.data.toLowerCase().equals("sign") || entityId.data.toLowerCase().equals("minecraft:sign"))
 				{
-					//System.out.println("Found "+entityId.data+" at "+tileX+": "+tileY+" "+tileZ);
-					//System.out.println("aka "+" at "+csCoordinatesX+": "+csCoordinatesY+" "+csCoordinatesZ);
 					String text1 = SignParseUtil.parseSignData(((NBTString)entity.getTag("Text1")).data);
 					String text2 = SignParseUtil.parseSignData(((NBTString)entity.getTag("Text2")).data);
 					String text3 = SignParseUtil.parseSignData(((NBTString)entity.getTag("Text3")).data);
 					String text4 = SignParseUtil.parseSignData(((NBTString)entity.getTag("Text4")).data);
 					
+					// Chunkstories use a single string instead of 4.
 					String textComplete = text1 + "\n" + text2 + "\n" + text3 + "\n" + text4;
 					
-					Voxel voxel = VoxelsStore.get().getVoxelById(exported.peekSimple(csCoordinatesX, csCoordinatesY, csCoordinatesZ));
-					//System.out.println("int dataAt sign : "+exported.getVoxelData(csCoordinatesX, csCoordinatesY, csCoordinatesZ));
-					if(voxel instanceof VoxelSign)
-					{
-						//System.out.println("Found a voxel sign matching, setting it's data");
-						((EntitySign) ((VoxelSign) voxel).getEntity(exported.peekSafely(csCoordinatesX, csCoordinatesY, csCoordinatesZ))).setText(textComplete);
-						//System.out.println(textComplete);
+					Chunk chunk = exported.getChunkWorldCoordinates(csCoordinatesX, csCoordinatesY, csCoordinatesZ);
+					
+					assert chunk != null; // Chunk should really be loaded at this point !!!
+					
+					ChunkVoxelContext context = chunk.peek(csCoordinatesX, csCoordinatesY, csCoordinatesZ);
+					
+					assert context.getVoxel() instanceof VoxelSign; // We expect this too
+					
+					//We grab the component that should have been created while placing the block
+					VoxelComponent component = context.components().get("signData");
+					
+					//Check it exists and is of the right kind
+					if(component != null && component instanceof VoxelComponentSignText) {
+						VoxelComponentSignText signTextComponent = (VoxelComponentSignText)component;
+						signTextComponent.setSignText(textComplete);
 					}
+					else
+						assert false; // or die
+					
+					//((EntitySign) ((VoxelSign) voxel).getEntity(exported.peekSafely(csCoordinatesX, csCoordinatesY, csCoordinatesZ))).setText(textComplete);
+					
 				}
 				//else
 				//	System.out.println("Found "+entityId.data);

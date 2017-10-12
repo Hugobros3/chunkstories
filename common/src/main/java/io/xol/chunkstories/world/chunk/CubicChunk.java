@@ -2,7 +2,6 @@ package io.xol.chunkstories.world.chunk;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.EntityVoxel;
 import io.xol.chunkstories.api.events.voxel.WorldModificationCause;
 import io.xol.chunkstories.api.exceptions.world.WorldException;
 import io.xol.chunkstories.api.math.LoopingMathHelper;
@@ -13,10 +12,12 @@ import org.joml.Vector3dc;
 
 import io.xol.chunkstories.api.rendering.world.ChunkRenderable;
 import io.xol.chunkstories.api.util.IterableIterator;
+import io.xol.chunkstories.api.util.IterableIteratorWrapper;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelLogic;
 import io.xol.chunkstories.api.voxel.VoxelSides;
+import io.xol.chunkstories.api.voxel.components.VoxelComponents;
 import io.xol.chunkstories.api.world.EditableVoxelContext;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClient;
@@ -24,6 +25,7 @@ import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.voxel.VoxelsStore;
+import io.xol.chunkstories.voxel.components.VoxelComponentsHolder;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.region.RegionImplementation;
 
@@ -34,6 +36,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -42,12 +45,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 // http://chunkstories.xyz
 // http://xol.io
 
+/**
+ * Essential class that holds actual chunk voxel data, entities and voxel component !
+ */
+//TODO Move ALL the lightning crap away !!!
 public class CubicChunk implements Chunk
 {
 	final protected WorldImplementation world;
-	final protected ChunkHolderImplementation chunkHolder;
-	
 	final protected RegionImplementation holdingRegion;
+	final protected ChunkHolderImplementation chunkHolder;
 	
 	final protected int chunkX;
 	final protected int chunkY;
@@ -63,10 +69,8 @@ public class CubicChunk implements Chunk
 	
 	public AtomicBoolean needRelightning = new AtomicBoolean(true);
 	
-	private final Map<Integer, EntityVoxel> voxelEntities = new HashMap<Integer, EntityVoxel>();
-
-	// Terrain Generation
-	// public List<GenerableStructure> structures = new ArrayList<GenerableStructure>();
+	private final Map<Integer, VoxelComponentsHolder> voxelComponents = new HashMap<Integer, VoxelComponentsHolder>();
+	private final Set<Entity> localEntities = ConcurrentHashMap.newKeySet();
 
 	// Occlusion lookup, there are 6 sides you can enter a chunk by and 5 sides you can exit it by. we use 6 coz it's easier and who the fuck cares about a six-heights of a byte
 	public boolean occlusionSides[][] = new boolean[6][6];
@@ -330,19 +334,19 @@ public class CubicChunk implements Chunk
 	}
 
 	@Override
-	public EntityVoxel getEntityVoxelAt(int worldX, int worldY, int worldZ) {
+	public VoxelComponentsHolder components(int worldX, int worldY, int worldZ) {
 		int index = worldX * 1024 + worldY * 32 + worldZ;
-		return voxelEntities.get(index);
+		
+		VoxelComponentsHolder components = voxelComponents.get(index);
+		if(components == null) {
+			components = new VoxelComponentsHolder(this, index);
+			voxelComponents.put(index, components);
+		}
+		return components;
 	}
 
-	@Override
-	public void setEntityVoxelAt(int worldX, int worldY, int worldZ, EntityVoxel entityVoxel) {
-		int index = worldX * 1024 + worldY * 32 + worldZ;
-		if(entityVoxel == null) {
-			voxelEntities.remove(index);
-		} else {
-			voxelEntities.put(index, entityVoxel);
-		}
+	public void removeComponents(int index) {
+		voxelComponents.remove(index);
 	}
 	
 	/** 
@@ -434,11 +438,11 @@ public class CubicChunk implements Chunk
 			{
 				int blocksViewDistance = 256;
 				int sizeInBlocks = world.getWorldInfo().getSize().sizeInChunks * 32;
-				PacketVoxelUpdate packet = new PacketVoxelUpdate();
-				packet.x = x;
-				packet.y = y;
-				packet.z = z;
-				packet.data = newData;
+				PacketVoxelUpdate packet = new PacketVoxelUpdate(new ActualChunkVoxelContext(chunkX * 32 + x, chunkY * 32 + y, chunkZ * 32 + z, newData));
+				//packet.x = x;
+				//packet.y = y;
+				//packet.z = z;
+				//packet.data = newData;
 				
 				Player ignoreLocalPlayer = null;
 				if(world instanceof WorldClient) {
@@ -2125,13 +2129,6 @@ public class CubicChunk implements Chunk
 	{
 		this.needRelightning.set(true);
 	}
-	
-	@Override
-	public IterableIterator<Entity> getEntitiesWithinChunk()
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	@Override
 	public int hashCode()
@@ -2146,9 +2143,9 @@ public class CubicChunk implements Chunk
 		
 		public ActualChunkVoxelContext(int x, int y, int z, int data)
 		{
-			this.x = x;
-			this.y = y;
-			this.z = z;
+			this.x = x & 0x1F;
+			this.y = y & 0x1F;
+			this.z = z & 0x1F;
 			
 			this.data = data;
 		}
@@ -2243,10 +2240,31 @@ public class CubicChunk implements Chunk
 		public void pokeSimpleSilently(int newVoxelData) {
 			CubicChunk.this.pokeSimpleSilently(x, y, z, newVoxelData);
 		}
+
+		@Override
+		public VoxelComponents components() {
+			return CubicChunk.this.components(x, y, z);
+		}
 	}
 
 	@Override
 	public void destroy() {
 		//Nothing to do
+	}
+
+	@Override
+	public void addEntity(Entity entity) {
+		localEntities.add(entity);
+	}
+
+	@Override
+	public void removeEntity(Entity entity) {
+		localEntities.remove(entity);
+	}
+	
+	@Override
+	public IterableIterator<Entity> getEntitiesWithinChunk()
+	{
+		return new IterableIteratorWrapper<Entity>(localEntities.iterator());
 	}
 }

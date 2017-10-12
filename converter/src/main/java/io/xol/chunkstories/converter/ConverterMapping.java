@@ -12,6 +12,7 @@ import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.core.voxel.VoxelChest;
 import io.xol.chunkstories.core.voxel.VoxelDoor;
 import io.xol.chunkstories.core.voxel.VoxelSign;
@@ -181,6 +182,9 @@ public class ConverterMapping {
 		void output(World csWorld, int csX, int csY, int csZ, int minecraftBlockId, int minecraftMetaData, MinecraftRegion region,
 				int minecraftCuurrentChunkXinsideRegion, int minecraftCuurrentChunkZinsideRegion, int x, int y, int z) {
 			
+			Chunk chunk = csWorld.getChunkWorldCoordinates(csX, csY, csZ);
+			assert chunk != null;
+			
 			int upper = (minecraftMetaData & 0x8) >> 3;
 			int open = (minecraftMetaData & 0x4) >> 2;
 			
@@ -196,7 +200,7 @@ public class ConverterMapping {
 				
 				if (voxel instanceof VoxelDoor)
 					try {
-						baked = ((VoxelDoor) voxel).onPlace(csWorld.peek(csX, csY, csZ), baked, null);
+						baked = ((VoxelDoor) voxel).onPlace(chunk.peek(csX, csY, csZ), baked, null);
 					} catch (WorldException e) {
 						
 						e.printStackTrace();
@@ -225,11 +229,14 @@ public class ConverterMapping {
 				MinecraftRegion region, int minecraftCuurrentChunkXinsideRegion,
 				int minecraftCuurrentChunkZinsideRegion, int x, int y, int z) {
 
+			Chunk chunk = csWorld.getChunkWorldCoordinates(csX, csY, csZ);
+			assert chunk != null;
+			
 			int baked = voxelID;
 			
 			if (voxel instanceof VoxelChest)
 				try {
-					baked = ((VoxelChest) voxel).onPlace(csWorld.peek(csX, csY, csZ), baked, null);
+					baked = ((VoxelChest) voxel).onPlace(chunk.peek(csX, csY, csZ), baked, null);
 				} catch (WorldException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -253,6 +260,9 @@ public class ConverterMapping {
 				MinecraftRegion region, int minecraftCuurrentChunkXinsideRegion,
 				int minecraftCuurrentChunkZinsideRegion, int x, int y, int z) {
 
+			Chunk chunk = csWorld.getChunkWorldCoordinates(csX, csY, csZ);
+			assert chunk != null;
+			
 			int baked = voxelID;
 			
 			if (voxel instanceof VoxelSign) {
@@ -271,7 +281,7 @@ public class ConverterMapping {
 				baked = VoxelFormat.changeMeta(baked, minecraftMetaData);
 				
 				try {
-					baked = ((VoxelSign) voxel).onPlace(csWorld.peek(csX, csY, csZ), baked, null);
+					baked = ((VoxelSign) voxel).onPlace(chunk.peek(csX, csY, csZ), baked, null);
 				} catch (WorldException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
