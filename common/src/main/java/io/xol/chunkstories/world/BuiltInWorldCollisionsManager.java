@@ -18,6 +18,7 @@ import io.xol.chunkstories.world.iterators.EntityRayIterator;
 //http://chunkstories.xyz
 //http://xol.io
 
+//TODO eliminate redundant peek() calls (2x)
 public class BuiltInWorldCollisionsManager implements WorldCollisionsManager
 {
 	private final WorldImplementation world;
@@ -114,7 +115,7 @@ public class BuiltInWorldCollisionsManager implements WorldCollisionsManager
 			x = voxelCoords[0];
 			y = voxelCoords[1];
 			z = voxelCoords[2];
-			vox = VoxelsStore.get().getVoxelById(world.getVoxelData(x, y, z));
+			vox = VoxelsStore.get().getVoxelById(world.peekSimple(x, y, z));
 			if (vox.getType().isSolid() || (selectable && vox.isVoxelSelectable()))
 			{
 				boolean collides = false;
@@ -242,12 +243,12 @@ public class BuiltInWorldCollisionsManager implements WorldCollisionsManager
 					for(int j = (int)Math.floor(pos.y()) - 1; j < (int)Math.ceil(pos.y() + checkerX.h); j++)
 						for(int k = (int)Math.floor(pos.z()) - 1; k < (int)Math.ceil(pos.z() + checkerX.zw); k++)
 						{
-							data = this.world.getVoxelData(i, j, k);
+							data = this.world.peekSimple(i, j, k);
 							id = VoxelFormat.id(data);
 							vox = VoxelsStore.get().getVoxelById(id);
 							if (vox.getType().isSolid())
 							{
-								CollisionBox[] boxes = vox.getCollisionBoxes(world.peek(i, j, k));//new VoxelContextOlder(world, i, j, k));
+								CollisionBox[] boxes = vox.getCollisionBoxes(world.peekSafely(i, j, k));//new VoxelContextOlder(world, i, j, k));
 								if (boxes != null)
 									for (CollisionBox box : boxes)
 									{
@@ -289,12 +290,12 @@ public class BuiltInWorldCollisionsManager implements WorldCollisionsManager
 					for(int j = (int)Math.floor(pos.y()) - 1; j < (int)Math.ceil(pos.y() + checkerY.h); j++)
 						for(int k = (int)Math.floor(pos.z()) - 1; k < (int)Math.ceil(pos.z() + checkerY.zw); k++)
 						{
-							data = this.world.getVoxelData(i, j, k);
+							data = this.world.peekSimple(i, j, k);
 							id = VoxelFormat.id(data);
 							vox = VoxelsStore.get().getVoxelById(id);
 							if (vox.getType().isSolid())
 							{
-								CollisionBox[] boxes = vox.getCollisionBoxes(world.peek(i, j, k));//new VoxelContextOlder(world, i, j, k));
+								CollisionBox[] boxes = vox.getCollisionBoxes(world.peekSafely(i, j, k));//new VoxelContextOlder(world, i, j, k));
 								if (boxes != null)
 									for (CollisionBox box : boxes)
 									{
@@ -336,12 +337,12 @@ public class BuiltInWorldCollisionsManager implements WorldCollisionsManager
 					for(int j = (int)Math.floor(pos.y()) - 1; j < (int)Math.ceil(pos.y() + checkerZ.h) + 1; j++)
 						for(int k = (int)Math.floor(pos.z()) - 1; k < (int)Math.ceil(pos.z() + checkerZ.zw); k++)
 						{
-							data = this.world.getVoxelData(i, j, k);
+							data = this.world.peekSimple(i, j, k);
 							id = VoxelFormat.id(data);
 							vox = VoxelsStore.get().getVoxelById(id);
 							if (vox.getType().isSolid())
 							{
-								CollisionBox[] boxes = vox.getCollisionBoxes(world.peek(i, j, k));//new VoxelContextOlder(world, i, j, k));
+								CollisionBox[] boxes = vox.getCollisionBoxes(world.peekSafely(i, j, k));//new VoxelContextOlder(world, i, j, k));
 								if (boxes != null)
 									for (CollisionBox box : boxes)
 									{

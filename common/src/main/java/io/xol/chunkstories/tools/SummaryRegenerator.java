@@ -13,6 +13,7 @@ import io.xol.chunkstories.world.WorldInfoFile;
 // http://chunkstories.xyz
 // http://xol.io
 
+//TODO remake.
 public class SummaryRegenerator
 {
 
@@ -58,7 +59,7 @@ public class SummaryRegenerator
 							int rZ = j * 256 + z;
 							while (!hit && y > 0)
 							{
-								int id = VoxelFormat.id(world.getVoxelData(rX, y, rZ));
+								int id = VoxelFormat.id(world.peekSimple(rX, y, rZ));
 								Chunk chunk = world.getChunk(rX / 32, y / 32, rZ / 32);
 								if (chunk != null && chunk.isAirChunk())
 								{
@@ -77,7 +78,7 @@ public class SummaryRegenerator
 							//System.out.println(world.chunksData.free());
 							world.saveEverything();
 							//world.getRegionsHolder().clearAll();
-							world.unloadEverything();
+							//world.unloadEverything();
 						}
 					}
 				}

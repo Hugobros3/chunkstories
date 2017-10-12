@@ -38,17 +38,17 @@ public class VoxelContextOlder implements VoxelContext
 
 	public VoxelContextOlder(World world, int x, int y, int z)
 	{
-		this.data = world.getVoxelData(x, y, z);
+		this.data = world.peekSimple(x, y, z);
 		voxelType = VoxelsStore.get().getVoxelById(data);
 		if (world != null)
 		{
 			/** @see VoxelSides */
-			neightborhood[0] = world.getVoxelData(x - 1, y, z);
-			neightborhood[1] = world.getVoxelData(x, y, z + 1);
-			neightborhood[2] = world.getVoxelData(x + 1, y, z);
-			neightborhood[3] = world.getVoxelData(x, y, z - 1);
-			neightborhood[4] = world.getVoxelData(x, y + 1, z);
-			neightborhood[5] = world.getVoxelData(x, y - 1, z);
+			neightborhood[0] = world.peekSimple(x - 1, y, z);
+			neightborhood[1] = world.peekSimple(x, y, z + 1);
+			neightborhood[2] = world.peekSimple(x + 1, y, z);
+			neightborhood[3] = world.peekSimple(x, y, z - 1);
+			neightborhood[4] = world.peekSimple(x, y + 1, z);
+			neightborhood[5] = world.peekSimple(x, y - 1, z);
 		}
 		
 		this.x = x;

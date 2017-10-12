@@ -367,7 +367,7 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 															//Directly set trivial blocks
 															int trivial = mapper.output(mcId, meta);
 															if(trivial != 0x0) {
-																csWorld.setVoxelDataWithoutUpdates(chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, trivial);
+																csWorld.pokeSimpleSilently(chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, trivial);
 															}
 														}
 													}
@@ -486,7 +486,7 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 					{
 						for (int h = maxHeightPossible; h > 0; h--)
 						{
-							int data = csWorld.getVoxelData(regionX * 256 + i, h, regionZ * 256 + j);
+							int data = csWorld.peekSimple(regionX * 256 + i, h, regionZ * 256 + j);
 							if (data != 0)
 							{
 								Voxel vox = this.getContent().voxels().getVoxelById(data);

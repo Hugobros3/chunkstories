@@ -80,7 +80,7 @@ public class AABBVoxelIterator implements IterableIterator<VoxelContext>, VoxelC
 
 	@Override
 	public int getData() {
-		return world.getVoxelData(i2, j2, k2);
+		return world.peekSimple(i2, j2, k2);
 	}
 
 	@Override
@@ -101,17 +101,17 @@ public class AABBVoxelIterator implements IterableIterator<VoxelContext>, VoxelC
 	public int getNeightborData(int side) {
 		switch(side) {
 		case 0:
-			return world.getVoxelData(i2 - 1, j2, k2);
+			return world.peekSimple(i2 - 1, j2, k2);
 		case 1:
-			return world.getVoxelData(i2, j2, k2 + 1);
+			return world.peekSimple(i2, j2, k2 + 1);
 		case 2:
-			return world.getVoxelData(i2 + 1, j2, k2);
+			return world.peekSimple(i2 + 1, j2, k2);
 		case 3:
-			return world.getVoxelData(i2, j2, k2 - 1);
+			return world.peekSimple(i2, j2, k2 - 1);
 		case 4:
-			return world.getVoxelData(i2, j2 + 1, k2);
+			return world.peekSimple(i2, j2 + 1, k2);
 		case 5: 
-			return world.getVoxelData(i2, j2 - 1, k2);
+			return world.peekSimple(i2, j2 - 1, k2);
 		}
 		
 		throw new UnsupportedOperationException("getNeighborData(side): Side must be comprised between [0:5]");

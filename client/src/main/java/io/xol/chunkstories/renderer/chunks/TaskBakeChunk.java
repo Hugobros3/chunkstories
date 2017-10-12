@@ -249,7 +249,7 @@ public class TaskBakeChunk extends Task {
 			{
 				for (k = 0; k < 32; k++)
 				{
-					int src = chunk.getVoxelData(i, k, j);
+					int src = chunk.peekSimple(i, k, j);
 					int blockID = VoxelFormat.id(src);
 
 					if (blockID == 0)

@@ -56,7 +56,7 @@ public class TaskBuildRegionSummary extends Task {
 			{
 				for (int h = OfflineWorldConverter.mcWorldHeight; h > 0; h--)
 				{
-					int data = csWorld.getVoxelData(regionX * 256 + i, h, regionZ * 256 + j);
+					int data = csWorld.peekSimple(regionX * 256 + i, h, regionZ * 256 + j);
 					if (data != 0)
 					{
 						Voxel vox = cwt.converter().getContent().voxels().getVoxelById(data);

@@ -40,7 +40,7 @@ public class PhysicsWireframeDebugger {
 			for (int j = ((int)(double) cameraPosition.y()) - drawDebugDist; j <= ((int)(double) cameraPosition.y()) + drawDebugDist; j++)
 				for (int k = ((int)(double) cameraPosition.z()) - drawDebugDist; k <= ((int)(double) cameraPosition.z()) + drawDebugDist; k++)
 				{
-					data = world.getVoxelData(i, j, k);
+					data = world.peekSimple(i, j, k);
 					id = VoxelFormat.id(data);
 					
 					CollisionBox[] tboxes = VoxelsStore.get().getVoxelById(id).getTranslatedCollisionBoxes(world, i, j, k);

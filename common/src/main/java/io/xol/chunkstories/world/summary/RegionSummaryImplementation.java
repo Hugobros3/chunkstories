@@ -266,7 +266,7 @@ public class RegionSummaryImplementation implements RegionSummary
 					height--;
 					loaded = world.isChunkLoaded(worldX / 32, height / 32, worldZ / 32);
 
-					voxelData = world.getVoxelData(worldX, height, worldZ);
+					voxelData = world.peekSimple(worldX, height, worldZ);
 					solid = VoxelsStore.get().getVoxelById(voxelData).getType().isSolid();
 					liquid = VoxelsStore.get().getVoxelById(voxelData).getType().isLiquid();
 				}

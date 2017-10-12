@@ -2,14 +2,25 @@ package io.xol.chunkstories.world.chunk;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.EntityVoxel;
+import io.xol.chunkstories.api.events.voxel.WorldModificationCause;
+import io.xol.chunkstories.api.exceptions.world.WorldException;
+import io.xol.chunkstories.api.math.LoopingMathHelper;
+import io.xol.chunkstories.api.net.packets.PacketVoxelUpdate;
+import io.xol.chunkstories.api.player.Player;
+
 import org.joml.Vector3dc;
 
 import io.xol.chunkstories.api.rendering.world.ChunkRenderable;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.voxel.VoxelLogic;
 import io.xol.chunkstories.api.voxel.VoxelSides;
+import io.xol.chunkstories.api.world.EditableVoxelContext;
 import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.api.world.WorldClient;
+import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.voxel.VoxelsStore;
@@ -18,7 +29,10 @@ import io.xol.chunkstories.world.region.RegionImplementation;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -28,7 +42,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 // http://chunkstories.xyz
 // http://xol.io
 
-public abstract class CubicChunk implements Chunk
+public class CubicChunk implements Chunk
 {
 	final protected WorldImplementation world;
 	final protected ChunkHolderImplementation chunkHolder;
@@ -44,10 +58,12 @@ public abstract class CubicChunk implements Chunk
 	public int[] chunkVoxelData = null;
 	
 	//Count unsaved edits atomically, fancy :]
-	public AtomicInteger compr_uncomittedBlockModifications = new AtomicInteger();
-	public AtomicInteger occl_compr_uncomittedBlockModifications = new AtomicInteger();
+	public final AtomicInteger compr_uncomittedBlockModifications = new AtomicInteger();
+	public final AtomicInteger occl_compr_uncomittedBlockModifications = new AtomicInteger();
 	
 	public AtomicBoolean needRelightning = new AtomicBoolean(true);
+	
+	private final Map<Integer, EntityVoxel> voxelEntities = new HashMap<Integer, EntityVoxel>();
 
 	// Terrain Generation
 	// public List<GenerableStructure> structures = new ArrayList<GenerableStructure>();
@@ -199,7 +215,7 @@ public abstract class CubicChunk implements Chunk
 				mask[x * 1024 + y * 32 + z] = true;
 				completion++;
 				
-				if (!VoxelsStore.get().getVoxelById(this.getVoxelData(x, y, z)).getType().isOpaque())
+				if (!VoxelsStore.get().getVoxelById(this.peekSimple(x, y, z)).getType().isOpaque())
 				{
 					//Adds touched sides to set
 					
@@ -267,12 +283,10 @@ public abstract class CubicChunk implements Chunk
 	}
 
 	@Override
-	public int getVoxelData(int x, int y, int z)
+	public int peekSimple(int x, int y, int z)
 	{
 		if (chunkVoxelData == null)
-		{
 			return 0;
-		}
 		else
 		{
 			x = sanitizeCoordinate(x);
@@ -283,25 +297,192 @@ public abstract class CubicChunk implements Chunk
 	}
 	
 	@Override
-	public void setVoxelDataWithUpdates(int x, int y, int z, int data)
+	public ActualChunkVoxelContext peek(Vector3dc location)
 	{
-		x = sanitizeCoordinate(x);
-		y = sanitizeCoordinate(y);
-		z = sanitizeCoordinate(z);
-		//Allocate if it makes sense
-		if (chunkVoxelData == null)
-			chunkVoxelData = atomicalyCreateInternalData();
+		return peek((int)(double)location.x(), (int)(double)location.y(), (int)(double)location.z());
+	}
 
-		int dataBefore = chunkVoxelData[x * 32 * 32 + y * 32 + z];
-		chunkVoxelData[x * 32 * 32 + y * 32 + z] = data;
-		computeLightSpread(x, y, z, dataBefore, data);
+	@Override
+	public ActualChunkVoxelContext peek(int x, int y, int z)
+	{
+		return new ActualChunkVoxelContext(x, y, z, peekSimple(x, y, z));
+	}
+
+	@Override
+	public ChunkVoxelContext poke(int x, int y, int z, int newVoxelData, WorldModificationCause cause)
+			throws WorldException {
+		return pokeInternal(x, y, z, newVoxelData, true, true, cause);
+	}
+
+	@Override
+	public ChunkVoxelContext pokeSilently(int x, int y, int z, int newVoxelData) throws WorldException {
+		return pokeInternal(x, y, z, newVoxelData, false, true, null);
+	}
+
+	@Override
+	public void pokeSimple(int x, int y, int z, int newVoxelData) {
+		pokeInternal(x, y, z, newVoxelData, true, false, null);
+	}
+
+	@Override
+	public void pokeSimpleSilently(int x, int y, int z, int newVoxelData) {
+		pokeInternal(x, y, z, newVoxelData, false, false, null);
+	}
+
+	@Override
+	public EntityVoxel getEntityVoxelAt(int worldX, int worldY, int worldZ) {
+		int index = worldX * 1024 + worldY * 32 + worldZ;
+		return voxelEntities.get(index);
+	}
+
+	@Override
+	public void setEntityVoxelAt(int worldX, int worldY, int worldZ, EntityVoxel entityVoxel) {
+		int index = worldX * 1024 + worldY * 32 + worldZ;
+		if(entityVoxel == null) {
+			voxelEntities.remove(index);
+		} else {
+			voxelEntities.put(index, entityVoxel);
+		}
+	}
+	
+	/** 
+	 * The 'core' of the core, this private function is responsible for placing and keeping everyone up to snuff on block modifications.
+	 *  It all comes back to this really. 
+	 */
+	private ActualChunkVoxelContext pokeInternal(int worldX, int worldY, int worldZ, int newData, boolean update, boolean returnContext, WorldModificationCause cause)
+	{
+		int x = sanitizeCoordinate(worldX);
+		int y = sanitizeCoordinate(worldY);
+		int z = sanitizeCoordinate(worldZ);
 		
-		compr_uncomittedBlockModifications.incrementAndGet();
-		occl_compr_uncomittedBlockModifications.incrementAndGet();
-		//lastModification.set(System.currentTimeMillis());
+		ActualChunkVoxelContext peek = peek(x, y, z);
+		int formerData = peek.data;
+		Voxel formerVoxel = peek.getVoxel();
+		Voxel newVoxel = VoxelsStore.get().getVoxelById(newData);
 
-		if (dataBefore != data && this instanceof ChunkRenderable)
-			((ChunkRenderable)this).markForReRender();
+		try
+		{
+			//If we're merely changing the voxel meta 
+			if (formerVoxel != null && newVoxel != null && formerVoxel.equals(newVoxel))
+			{
+				//Optionally runs whatever the voxel requires to run when modified
+				if (formerVoxel instanceof VoxelLogic)
+					newData = ((VoxelLogic) formerVoxel).onModification(peek, newData, cause);
+			}
+			else
+			{
+				//Optionally runs whatever the voxel requires to run when removed
+				if (formerVoxel instanceof VoxelLogic)
+					((VoxelLogic) formerVoxel).onRemove(peek, formerData, cause);
+
+				//Optionally runs whatever the voxel requires to run when placed
+				if (newVoxel instanceof VoxelLogic)
+					newData = ((VoxelLogic) newVoxel).onPlace(peek, newData, cause);
+			}
+			
+			//Allocate if it makes sense
+			if (chunkVoxelData == null)
+				chunkVoxelData = atomicalyCreateInternalData();
+	
+			int dataBefore = chunkVoxelData[x * 32 * 32 + y * 32 + z];
+			chunkVoxelData[x * 32 * 32 + y * 32 + z] = newData;
+			
+			//Update lightning
+			if(update)
+				computeLightSpread(x, y, z, dataBefore, newData);
+			
+			//Increment the modifications counter
+			compr_uncomittedBlockModifications.incrementAndGet();
+			occl_compr_uncomittedBlockModifications.incrementAndGet();
+			
+			//Update related summary
+			if(update)
+				world.getRegionsSummariesHolder().updateOnBlockPlaced(x, y, z, newData);
+	
+			//Mark the nearby chunks to be re-rendered
+			if (update && dataBefore != newData) {
+				int sx = chunkX; int ex = sx;
+				int sy = chunkY; int ey = sy;
+				int sz = chunkZ; int ez = sz;
+				
+				if(x == 0)
+					sx--;
+				else if(x == 31)
+					ex++;
+				
+				if(y == 0)
+					sy--;
+				else if(y == 31)
+					ey++;
+				
+				if(z == 0)
+					sz--;
+				else if(z == 31)
+					ez++;
+				
+				for(int ix = sx; ix <= ex; ix++)
+					for(int iy = sy; iy <= ey; iy++)
+						for(int iz = sz; iz <= ez; iz++)
+						{
+							Chunk chunk = world.getChunk(ix, iy, iz);
+							((ChunkRenderable) chunk).markForReRender();
+						}
+			}
+			
+			// If this is a 'master' world.
+			if(update && world instanceof WorldMaster)
+			{
+				int blocksViewDistance = 256;
+				int sizeInBlocks = world.getWorldInfo().getSize().sizeInChunks * 32;
+				PacketVoxelUpdate packet = new PacketVoxelUpdate();
+				packet.x = x;
+				packet.y = y;
+				packet.z = z;
+				packet.data = newData;
+				
+				Player ignoreLocalPlayer = null;
+				if(world instanceof WorldClient) {
+					ignoreLocalPlayer = ((WorldClient)world).getClient().getPlayer();
+				}
+				
+				Iterator<Player> pi = ((WorldMaster) world).getPlayers();
+				while (pi.hasNext())
+				{
+					Player player = pi.next();
+					
+					//Ignore local players, they don't need anything pushed to them
+					if(player == ignoreLocalPlayer || player.equals(ignoreLocalPlayer) ||
+							(ignoreLocalPlayer != null && player.getName().equals(ignoreLocalPlayer.getName())) )
+						continue;
+
+					Entity clientEntity = player.getControlledEntity();
+					if (clientEntity == null)
+						continue;
+					Location loc = clientEntity.getLocation();
+					int plocx = (int)(double) loc.x();
+					int plocy = (int)(double) loc.y();
+					int plocz = (int)(double) loc.z();
+					//TODO use proper configurable values for this
+					if (!((LoopingMathHelper.moduloDistance(x, plocx, sizeInBlocks) > blocksViewDistance + 2) || (LoopingMathHelper.moduloDistance(z, plocz, sizeInBlocks) > blocksViewDistance + 2) || (y - plocy) > 4 * 32))
+					{
+						player.pushPacket(packet);
+					}
+
+				}
+			}
+
+		}
+		//If it is stopped, don't try to go further
+		catch (WorldException illegal)
+		{
+			if(returnContext)
+				return peek;
+		}
+		
+		if(returnContext)
+			return new ActualChunkVoxelContext(chunkX * 32 + x, chunkY * 32 + y, chunkZ * 32 + z, newData);
+		else
+			return null;
 	}
 
 	private int[] atomicalyCreateInternalData() {
@@ -314,33 +495,6 @@ public abstract class CubicChunk implements Chunk
 		chunkDataArrayCreation.release();
 		
 		return chunkVoxelData;
-	}
-	
-	public void setVoxelDataWithoutUpdates(int x, int y, int z, int data)
-	{
-		x = sanitizeCoordinate(x);
-		y = sanitizeCoordinate(y);
-		z = sanitizeCoordinate(z);
-		//Allocate if it makes sense
-		if (chunkVoxelData == null)
-			chunkVoxelData = atomicalyCreateInternalData();
-
-		chunkVoxelData[x * 32 * 32 + y * 32 + z] = data;
-		
-		compr_uncomittedBlockModifications.incrementAndGet();
-		occl_compr_uncomittedBlockModifications.incrementAndGet();
-	}
-
-	public void setChunkData(int[] data) {
-		this.chunkVoxelData = data;
-		
-		compr_uncomittedBlockModifications.incrementAndGet();
-		occl_compr_uncomittedBlockModifications.incrementAndGet();
-		
-		if (this instanceof ChunkRenderable)
-			((ChunkRenderable)this).markForReRender();
-		
-		this.markInNeedForLightningUpdate();
 	}
 
 	@Override
@@ -436,7 +590,7 @@ public abstract class CubicChunk implements Chunk
 				}
 				else if (checkRightBleeding)
 				{
-					int adjacentBlocklight = (adjacentChunkRight.getVoxelData(0, y, z) & blockAntiMask) << blockBitshift;
+					int adjacentBlocklight = (adjacentChunkRight.peekSimple(0, y, z) & blockAntiMask) << blockBitshift;
 					if (ll > adjacentBlocklight + 1)
 					{
 						adjacentChunkRight.markInNeedForLightningUpdate();
@@ -458,7 +612,7 @@ public abstract class CubicChunk implements Chunk
 				}
 				else if (checkLeftBleeding)
 				{
-					int adjacentBlocklight = (adjacentChunkLeft.getVoxelData(31, y, z) & blockAntiMask) << blockBitshift;
+					int adjacentBlocklight = (adjacentChunkLeft.peekSimple(31, y, z) & blockAntiMask) << blockBitshift;
 					if (ll > adjacentBlocklight + 1)
 					{
 						adjacentChunkLeft.markInNeedForLightningUpdate();
@@ -481,7 +635,7 @@ public abstract class CubicChunk implements Chunk
 				}
 				else if (checkFrontBleeding)
 				{
-					int adjacentBlocklight = (adjacentChunkFront.getVoxelData(x, y, 0) & blockAntiMask) << blockBitshift;
+					int adjacentBlocklight = (adjacentChunkFront.peekSimple(x, y, 0) & blockAntiMask) << blockBitshift;
 					if (ll > adjacentBlocklight + 1)
 					{
 						adjacentChunkFront.markInNeedForLightningUpdate();
@@ -503,7 +657,7 @@ public abstract class CubicChunk implements Chunk
 				}
 				else if (checkBackBleeding)
 				{
-					int adjacentBlocklight = (adjacentChunkBack.getVoxelData(x, y, 31) & blockAntiMask) << blockBitshift;
+					int adjacentBlocklight = (adjacentChunkBack.peekSimple(x, y, 31) & blockAntiMask) << blockBitshift;
 					if (ll > adjacentBlocklight + 1)
 					{
 						adjacentChunkBack.markInNeedForLightningUpdate();
@@ -526,7 +680,7 @@ public abstract class CubicChunk implements Chunk
 				}
 				else if (checkTopBleeding)
 				{
-					int adjacentBlocklight = (adjacentChunkTop.getVoxelData(x, 0, z) & blockAntiMask) << blockBitshift;
+					int adjacentBlocklight = (adjacentChunkTop.peekSimple(x, 0, z) & blockAntiMask) << blockBitshift;
 					if (ll > adjacentBlocklight + 1)
 					{
 						adjacentChunkTop.markInNeedForLightningUpdate();
@@ -548,7 +702,7 @@ public abstract class CubicChunk implements Chunk
 				}
 				else if (checkBottomBleeding)
 				{
-					int adjacentBlocklight = (adjacentChunkBottom.getVoxelData(x, 31, z) & blockAntiMask) << blockBitshift;
+					int adjacentBlocklight = (adjacentChunkBottom.peekSimple(x, 31, z) & blockAntiMask) << blockBitshift;
 					if (ll > adjacentBlocklight + 1)
 					{
 						adjacentChunkBottom.markInNeedForLightningUpdate();
@@ -592,7 +746,7 @@ public abstract class CubicChunk implements Chunk
 				}
 				else if (checkRightBleeding)
 				{
-					int adj = adjacentChunkRight.getVoxelData(0, y, z);
+					int adj = adjacentChunkRight.peekSimple(0, y, z);
 					int llRight = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.RIGHT);
 
 					//int adjacentSunlight = (adjacentChunkRight.getDataAt(0, y, z) & sunAntiMask) << sunBitshift;
@@ -623,7 +777,7 @@ public abstract class CubicChunk implements Chunk
 				}
 				else if (checkLeftBleeding)
 				{
-					int adj = adjacentChunkLeft.getVoxelData(31, y, z);
+					int adj = adjacentChunkLeft.peekSimple(31, y, z);
 					//int adjacentSunlight = (adjacentChunkLeft.getDataAt(31, y, z) & sunAntiMask) << sunBitshift;
 					int llLeft = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.LEFT);
 					if (((adj & sunlightMask) >> sunBitshift) < llLeft - 1)
@@ -649,7 +803,7 @@ public abstract class CubicChunk implements Chunk
 				}
 				else if (checkFrontBleeding)
 				{
-					int adj = adjacentChunkFront.getVoxelData(x, y, 0);
+					int adj = adjacentChunkFront.peekSimple(x, y, 0);
 					int llFront = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.FRONT);
 					//int adjacentSunlight = (adjacentChunkFront.getDataAt(x, y, 0) & sunAntiMask) << sunBitshift;
 					if (((adj & sunlightMask) >> sunBitshift) < llFront - 1)
@@ -675,7 +829,7 @@ public abstract class CubicChunk implements Chunk
 				else if (checkBackBleeding)
 				{
 					//int adjacentSunlight = (adjacentChunkBack.getDataAt(x, y, 31) & sunAntiMask) << sunBitshift;
-					int adj = adjacentChunkBack.getVoxelData(x, y, 31);
+					int adj = adjacentChunkBack.peekSimple(x, y, 31);
 					int llBack = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.BACK);
 					if (((adj & sunlightMask) >> sunBitshift) < llBack - 1)
 					{
@@ -700,7 +854,7 @@ public abstract class CubicChunk implements Chunk
 				}
 				else if (checkTopBleeding)
 				{
-					int adj = adjacentChunkTop.getVoxelData(x, 0, z);
+					int adj = adjacentChunkTop.peekSimple(x, 0, z);
 					int llTop = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.TOP);
 					//int adjacentSunlight = (adj & sunAntiMask) << sunBitshift;
 					if (((adj & sunlightMask) >> sunBitshift) < llTop - 1)
@@ -726,7 +880,7 @@ public abstract class CubicChunk implements Chunk
 				}
 				else if (checkBottomBleeding)
 				{
-					int adj = adjacentChunkBottom.getVoxelData(x, 31, z);
+					int adj = adjacentChunkBottom.peekSimple(x, 31, z);
 					int llBottm = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.BOTTOM);
 					//int adjacentSunlight = (adj & sunAntiMask) << sunBitshift;
 					if (((adj & sunlightMask) >> sunBitshift) < llBottm - 1)
@@ -794,8 +948,8 @@ public abstract class CubicChunk implements Chunk
 				for (int b = 0; b < 32; b++)
 					for (int c = 0; c < 32; c++)
 					{
-						int adjacent_data = cc.getVoxelData(0, c, b);
-						int current_data = getVoxelData(31, c, b);
+						int adjacent_data = cc.peekSimple(0, c, b);
+						int current_data = peekSimple(31, c, b);
 
 						int adjacent_blo = ((adjacent_data & blocklightMask) >>> blockBitshift);
 						int current_blo = ((current_data & blocklightMask) >>> blockBitshift);
@@ -804,7 +958,7 @@ public abstract class CubicChunk implements Chunk
 						if (adjacent_blo > 1 && adjacent_blo > current_blo)
 						{
 							int ndata = current_data & blockAntiMask | (adjacent_blo - 1) << blockBitshift;
-							setVoxelDataWithoutUpdates(31, c, b, ndata);
+							pokeSimple(31, c, b, ndata);
 							blockSources.push(31);
 							blockSources.push(b);
 							blockSources.push(c);
@@ -813,7 +967,7 @@ public abstract class CubicChunk implements Chunk
 						if (adjacent_sun > 1 && adjacent_sun > current_sun)
 						{
 							int ndata = current_data & sunAntiMask | (adjacent_sun - 1) << sunBitshift;
-							setVoxelDataWithoutUpdates(31, c, b, ndata);
+							pokeSimple(31, c, b, ndata);
 
 							sunSources.push(31);
 							sunSources.push(b);
@@ -828,8 +982,8 @@ public abstract class CubicChunk implements Chunk
 				for (int b = 0; b < 32; b++)
 					for (int c = 0; c < 32; c++)
 					{
-						int adjacent_data = cc.getVoxelData(31, c, b);
-						int current_data = getVoxelData(0, c, b);
+						int adjacent_data = cc.peekSimple(31, c, b);
+						int current_data = peekSimple(0, c, b);
 
 						int adjacent_blo = ((adjacent_data & blocklightMask) >>> blockBitshift);
 						int current_blo = ((current_data & blocklightMask) >>> blockBitshift);
@@ -838,7 +992,7 @@ public abstract class CubicChunk implements Chunk
 						if (adjacent_blo > 1 && adjacent_blo > current_blo)
 						{
 							int ndata = current_data & blockAntiMask | (adjacent_blo - 1) << blockBitshift;
-							setVoxelDataWithoutUpdates(0, c, b, ndata);
+							pokeSimple(0, c, b, ndata);
 
 							blockSources.push(0);
 							blockSources.push(b);
@@ -848,7 +1002,7 @@ public abstract class CubicChunk implements Chunk
 						if (adjacent_sun > 1 && adjacent_sun > current_sun)
 						{
 							int ndata = current_data & sunAntiMask | (adjacent_sun - 1) << sunBitshift;
-							setVoxelDataWithoutUpdates(0, c, b, ndata);
+							pokeSimple(0, c, b, ndata);
 
 							sunSources.push(0);
 							sunSources.push(b);
@@ -864,8 +1018,8 @@ public abstract class CubicChunk implements Chunk
 				for (int b = 0; b < 32; b++)
 					for (int c = 0; c < 32; c++)
 					{
-						int adjacent_data = cc.getVoxelData(c, 0, b);
-						int current_data = getVoxelData(c, 31, b);
+						int adjacent_data = cc.peekSimple(c, 0, b);
+						int current_data = peekSimple(c, 31, b);
 
 						int adjacent_blo = ((adjacent_data & blocklightMask) >>> blockBitshift);
 						int current_blo = ((current_data & blocklightMask) >>> blockBitshift);
@@ -874,7 +1028,7 @@ public abstract class CubicChunk implements Chunk
 						if (adjacent_blo > 1 && adjacent_blo > current_blo)
 						{
 							int ndata = current_data & blockAntiMask | (adjacent_blo - 1) << blockBitshift;
-							setVoxelDataWithoutUpdates(c, 31, b, ndata);
+							pokeSimple(c, 31, b, ndata);
 							if (adjacent_blo > 2)
 							{
 								blockSources.push(c);
@@ -886,7 +1040,7 @@ public abstract class CubicChunk implements Chunk
 						if (adjacent_sun > 1 && adjacent_sun > current_sun)
 						{
 							int ndata = current_data & sunAntiMask | (adjacent_sun - 1) << sunBitshift;
-							setVoxelDataWithoutUpdates(c, 31, b, ndata);
+							pokeSimple(c, 31, b, ndata);
 							//System.out.println(cc + " : "+adjacent_sun);
 							if (adjacent_sun > 2)
 							{
@@ -908,8 +1062,8 @@ public abstract class CubicChunk implements Chunk
 						//If the top chunk is air
 						if(heightInSummary <= this.chunkY * 32 + 32)
 						{
-							//int adjacent_data = cc.getVoxelData(c, 0, b);
-							int current_data = getVoxelData(c, 31, b);
+							//int adjacent_data = cc.peekSimple(c, 0, b);
+							int current_data = peekSimple(c, 31, b);
 	
 							int adjacent_blo = 0;//((adjacent_data & blocklightMask) >>> blockBitshift);
 							int current_blo = ((current_data & blocklightMask) >>> blockBitshift);
@@ -918,7 +1072,7 @@ public abstract class CubicChunk implements Chunk
 							if (adjacent_blo > 1 && adjacent_blo > current_blo)
 							{
 								int ndata = current_data & blockAntiMask | (adjacent_blo - 1) << blockBitshift;
-								setVoxelDataWithoutUpdates(c, 31, b, ndata);
+								pokeSimple(c, 31, b, ndata);
 								if (adjacent_blo > 2)
 								{
 									blockSources.push(c);
@@ -930,7 +1084,7 @@ public abstract class CubicChunk implements Chunk
 							if (adjacent_sun > 1 && adjacent_sun > current_sun)
 							{
 								int ndata = current_data & sunAntiMask | (adjacent_sun - 1) << sunBitshift;
-								setVoxelDataWithoutUpdates(c, 31, b, ndata);
+								pokeSimple(c, 31, b, ndata);
 								//System.out.println(cc + " : "+adjacent_sun);
 								if (adjacent_sun > 2)
 								{
@@ -952,10 +1106,10 @@ public abstract class CubicChunk implements Chunk
 						{
 							int sourceAt = chunkY * 32 - heightInSummary;
 							sourceAt = Math.min(31, sourceAt);
-							int current_data = getVoxelData(b, sourceAt, c);
+							int current_data = peekSimple(b, sourceAt, c);
 
 							int ndata = current_data & sunAntiMask | (15) << sunBitshift;
-							setVoxelDataWithoutUpdates(b, sourceAt, c, ndata);
+							pokeSimple(b, sourceAt, c, ndata);
 
 							sunSources.push(b);
 							sunSources.push(c);
@@ -972,8 +1126,8 @@ public abstract class CubicChunk implements Chunk
 				for (int b = 0; b < 32; b++)
 					for (int c = 0; c < 32; c++)
 					{
-						int adjacent_data = cc.getVoxelData(c, 31, b);
-						int current_data = getVoxelData(c, 0, b);
+						int adjacent_data = cc.peekSimple(c, 31, b);
+						int current_data = peekSimple(c, 0, b);
 
 						int adjacent_blo = ((adjacent_data & blocklightMask) >>> blockBitshift);
 						int current_blo = ((current_data & blocklightMask) >>> blockBitshift);
@@ -982,7 +1136,7 @@ public abstract class CubicChunk implements Chunk
 						if (adjacent_blo > 1 && adjacent_blo > current_blo)
 						{
 							int ndata = current_data & blockAntiMask | (adjacent_blo - 1) << blockBitshift;
-							setVoxelDataWithoutUpdates(c, 0, b, ndata);
+							pokeSimple(c, 0, b, ndata);
 							if (adjacent_blo > 2)
 							{
 								blockSources.push(c);
@@ -994,7 +1148,7 @@ public abstract class CubicChunk implements Chunk
 						if (adjacent_sun > 1 && adjacent_sun > current_sun)
 						{
 							int ndata = current_data & sunAntiMask | (adjacent_sun - 1) << sunBitshift;
-							setVoxelDataWithoutUpdates(c, 0, b, ndata);
+							pokeSimple(c, 0, b, ndata);
 							if (adjacent_sun > 2)
 							{
 								sunSources.push(c);
@@ -1012,8 +1166,8 @@ public abstract class CubicChunk implements Chunk
 				for (int b = 0; b < 32; b++)
 					for (int c = 0; c < 32; c++)
 					{
-						int adjacent_data = cc.getVoxelData(c, b, 0);
-						int current_data = getVoxelData(c, b, 31);
+						int adjacent_data = cc.peekSimple(c, b, 0);
+						int current_data = peekSimple(c, b, 31);
 
 						int adjacent_blo = ((adjacent_data & blocklightMask) >>> blockBitshift);
 						int current_blo = ((current_data & blocklightMask) >>> blockBitshift);
@@ -1022,7 +1176,7 @@ public abstract class CubicChunk implements Chunk
 						if (adjacent_blo > 1 && adjacent_blo > current_blo)
 						{
 							int ndata = current_data & blockAntiMask | (adjacent_blo - 1) << blockBitshift;
-							setVoxelDataWithoutUpdates(c, b, 31, ndata);
+							pokeSimple(c, b, 31, ndata);
 							blockSources.push(c);
 							blockSources.push(31);
 							blockSources.push(b);
@@ -1031,7 +1185,7 @@ public abstract class CubicChunk implements Chunk
 						if (adjacent_sun > 1 && adjacent_sun > current_sun)
 						{
 							int ndata = current_data & sunAntiMask | (adjacent_sun - 1) << sunBitshift;
-							setVoxelDataWithoutUpdates(c, b, 31, ndata);
+							pokeSimple(c, b, 31, ndata);
 							sunSources.push(c);
 							sunSources.push(31);
 							sunSources.push(b);
@@ -1045,8 +1199,8 @@ public abstract class CubicChunk implements Chunk
 				for (int b = 0; b < 32; b++)
 					for (int c = 0; c < 32; c++)
 					{
-						int adjacent_data = cc.getVoxelData(c, b, 31);
-						int current_data = getVoxelData(c, b, 0);
+						int adjacent_data = cc.peekSimple(c, b, 31);
+						int current_data = peekSimple(c, b, 0);
 
 						int adjacent_blo = ((adjacent_data & blocklightMask) >>> blockBitshift);
 						int current_blo = ((current_data & blocklightMask) >>> blockBitshift);
@@ -1055,7 +1209,7 @@ public abstract class CubicChunk implements Chunk
 						if (adjacent_blo > 1 && adjacent_blo > current_blo)
 						{
 							int ndata = current_data & blockAntiMask | (adjacent_blo - 1) << blockBitshift;
-							setVoxelDataWithoutUpdates(c, b, 0, ndata);
+							pokeSimple(c, b, 0, ndata);
 							blockSources.push(c);
 							blockSources.push(0);
 							blockSources.push(b);
@@ -1064,7 +1218,7 @@ public abstract class CubicChunk implements Chunk
 						if (adjacent_sun > 1 && adjacent_sun > current_sun)
 						{
 							int ndata = current_data & sunAntiMask | (adjacent_sun - 1) << sunBitshift;
-							setVoxelDataWithoutUpdates(c, b, 0, ndata);
+							pokeSimple(c, b, 0, ndata);
 							sunSources.push(c);
 							sunSources.push(0);
 							sunSources.push(b);
@@ -1867,8 +2021,8 @@ public abstract class CubicChunk implements Chunk
 		if (x > 0 && x < 31)
 			if (y > 0 && y < 31)
 				if (z > 0 && z < 31)
-					this.getVoxelData(x, y, z);
-		return world.getVoxelData(x + chunkX * 32, y + chunkY * 32, z + chunkZ * 32);
+					this.peekSimple(x, y, z);
+		return world.peekSimple(x + chunkX * 32, y + chunkY * 32, z + chunkZ * 32);
 	}
 
 	private void setWorldDataOnlyForLightningUpdatesFunctions(int x, int y, int z, int data)
@@ -1877,20 +2031,19 @@ public abstract class CubicChunk implements Chunk
 			if (y > 0 && y < 31)
 				if (z > 0 && z < 31)
 				{
-					this.setVoxelDataWithoutUpdates(x, y, z, data);
+					this.pokeSimple(x, y, z, data);
 					return;
 				}
 
-		int oldData = world.getVoxelData(x, y, z);
-		world.setVoxelDataWithoutUpdates(x + chunkX * 32, y + chunkY * 32, z + chunkZ * 32, data);
+		int oldData = world.peekSimple(x, y, z);
+		world.pokeSimple(x + chunkX * 32, y + chunkY * 32, z + chunkZ * 32, data);
 		
 		Chunk c = world.getChunk((x + chunkX * 32) / 32, (y + chunkY * 32) / 32, (z + chunkZ * 32) / 32);
 		if (c != null && oldData != data)
 			c.markInNeedForLightningUpdate();
 	}
 
-	@Override
-	public int getSunLight(int x, int y, int z)
+	private int getSunLight(int x, int y, int z)
 	{
 		//if(this.dataPointer == -1)
 		//	return y <= world.getRegionSummaries().getHeightAt(chunkX * 32 + x, chunkZ * 32 + z) ? 0 : 15;
@@ -1898,53 +2051,50 @@ public abstract class CubicChunk implements Chunk
 		if (x > 0 && x < 31)
 			if (y > 0 && y < 31)
 				if (z > 0 && z < 31)
-					return VoxelFormat.sunlight(this.getVoxelData(x, y, z));
+					return VoxelFormat.sunlight(this.peekSimple(x, y, z));
 		// Stronger implementation for unbound spread functions
 		return VoxelFormat.sunlight(this.getWorldDataOnlyForLightningUpdatesFuncitons(x, y, z));
 	}
 
-	@Override
-	public int getBlockLight(int x, int y, int z)
+	private int getBlockLight(int x, int y, int z)
 	{
 		if (x > 0 && x < 31)
 			if (y > 0 && y < 31)
 				if (z > 0 && z < 31)
-					return VoxelFormat.blocklight(this.getVoxelData(x, y, z));
+					return VoxelFormat.blocklight(this.peekSimple(x, y, z));
 		// Stronger implementation for unbound spread functions
 		return VoxelFormat.blocklight(this.getWorldDataOnlyForLightningUpdatesFuncitons(x, y, z));
 	}
 
-	public boolean isAirChunk()
-	{
-		return chunkVoxelData == null;
-	}
-
-	@Override
-	public void setSunLight(int x, int y, int z, int level)
+	private void setSunLight(int x, int y, int z, int level)
 	{
 		if (x > 0 && x < 31)
 			if (y > 0 && y < 31)
 				if (z > 0 && z < 31)
 				{
-					this.setVoxelDataWithoutUpdates(x, y, z, VoxelFormat.changeSunlight(this.getVoxelData(x, y, z), level));
+					this.pokeSimple(x, y, z, VoxelFormat.changeSunlight(this.peekSimple(x, y, z), level));
 					return;
 				}
 		// Stronger implementation for unbound spread functions
 		this.setWorldDataOnlyForLightningUpdatesFunctions(x, y, z, VoxelFormat.changeSunlight(this.getWorldDataOnlyForLightningUpdatesFuncitons(x, y, z), level));
 	}
-
-	@Override
-	public void setBlockLight(int x, int y, int z, int level)
+	
+	private void setBlockLight(int x, int y, int z, int level)
 	{
 		if (x > 0 && x < 31)
 			if (y > 0 && y < 31)
 				if (z > 0 && z < 31)
 				{
-					this.setVoxelDataWithoutUpdates(x, y, z, VoxelFormat.changeBlocklight(this.getVoxelData(x, y, z), level));
+					this.pokeSimple(x, y, z, VoxelFormat.changeBlocklight(this.peekSimple(x, y, z), level));
 					return;
 				}
 		// Stronger implementation for unbound spread functions
 		this.setWorldDataOnlyForLightningUpdatesFunctions(x, y, z, VoxelFormat.changeBlocklight(this.getWorldDataOnlyForLightningUpdatesFuncitons(x, y, z), level));
+	}
+
+	public boolean isAirChunk()
+	{
+		return chunkVoxelData == null;
 	}
 
 	@Override
@@ -1988,34 +2138,19 @@ public abstract class CubicChunk implements Chunk
 	{
 		return uuid;
 	}
-
-	@Override
-	public ChunkVoxelContext peek(Vector3dc location)
-	{
-		return peek((int)(double)location.x(), (int)(double)location.y(), (int)(double)location.z());
-	}
-
-	@Override
-	public ChunkVoxelContext peek(int x, int y, int z)
-	{
-		x &= 0xf;
-		y &= 0xf;
-		z &= 0xf;
-		return new ActualChunkVoxelContext(x, y, z);
-	}
 	
 	class ActualChunkVoxelContext implements ChunkVoxelContext {
 		
 		final int x, y, z;
 		final int data;
 		
-		public ActualChunkVoxelContext(int x, int y, int z)
+		public ActualChunkVoxelContext(int x, int y, int z, int data)
 		{
 			this.x = x;
 			this.y = y;
 			this.z = z;
 			
-			this.data = CubicChunk.this.getVoxelData(x, y, z);
+			this.data = data;
 		}
 
 		@Override
@@ -2066,17 +2201,17 @@ public abstract class CubicChunk implements Chunk
 			switch (side)
 			{
 			case (0):
-				return world.getVoxelData(getX() - 1, getY(), getZ());
+				return world.peekSimple(getX() - 1, getY(), getZ());
 			case (1):
-				return world.getVoxelData(getX(), getY(), getZ() + 1);
+				return world.peekSimple(getX(), getY(), getZ() + 1);
 			case (2):
-				return world.getVoxelData(getX() + 1, getY(), getZ());
+				return world.peekSimple(getX() + 1, getY(), getZ());
 			case (3):
-				return world.getVoxelData(getX(), getY(), getZ() - 1);
+				return world.peekSimple(getX(), getY(), getZ() - 1);
 			case (4):
-				return world.getVoxelData(getX(), getY() + 1, getZ());
+				return world.peekSimple(getX(), getY() + 1, getZ());
 			case (5):
-				return world.getVoxelData(getX(), getY() - 1, getZ());
+				return world.peekSimple(getX(), getY() - 1, getZ());
 			}
 			throw new RuntimeException("Fuck off");
 		}
@@ -2085,6 +2220,28 @@ public abstract class CubicChunk implements Chunk
 		public Chunk getChunk()
 		{
 			return CubicChunk.this;
+		}
+
+		@Override
+		public EditableVoxelContext poke(int newVoxelData, WorldModificationCause cause)
+				throws WorldException {
+			return CubicChunk.this.poke(x, y, z, newVoxelData, cause);
+		}
+
+		@Override
+		public EditableVoxelContext pokeSilently(int newVoxelData) throws WorldException {
+
+			return CubicChunk.this.pokeSilently(x, y, z, newVoxelData);
+		}
+
+		@Override
+		public void pokeSimple(int newVoxelData) {
+			CubicChunk.this.pokeSimple(x, y, z, newVoxelData);
+		}
+
+		@Override
+		public void pokeSimpleSilently(int newVoxelData) {
+			CubicChunk.this.pokeSimpleSilently(x, y, z, newVoxelData);
 		}
 	}
 

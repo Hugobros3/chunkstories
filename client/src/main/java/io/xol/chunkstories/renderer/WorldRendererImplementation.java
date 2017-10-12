@@ -275,7 +275,9 @@ public class WorldRendererImplementation implements WorldRenderer
 			renderingInterface.getCamera().setupShader(liquidBlocksShader);
 
 			//Underwater flag
-			Voxel vox = VoxelsStore.get().getVoxelById(world.getVoxelData((int) (double) renderingInterface.getCamera().getCameraPosition().x(), (int) (double) renderingInterface.getCamera().getCameraPosition().y(), (int) (double) renderingInterface.getCamera().getCameraPosition().z()));
+			
+			Voxel vox = world.peekSafely(renderingInterface.getCamera().getCameraPosition()).getVoxel();
+			//Voxel vox = VoxelsStore.get().getVoxelById(world.getVoxelData((int) (double) renderingInterface.getCamera().getCameraPosition().x(), (int) (double) renderingInterface.getCamera().getCameraPosition().y(), (int) (double) renderingInterface.getCamera().getCameraPosition().z()));
 			liquidBlocksShader.setUniform1f("underwater", vox.getType().isLiquid() ? 1 : 0);
 
 			if (pass == 1)
@@ -494,8 +496,9 @@ public class WorldRendererImplementation implements WorldRenderer
 		//renderingContext.bindTexture2D("debugBuffer", (System.currentTimeMillis() % 1000 < 500) ? this.loadedChunksMapTop : this.loadedChunksMapBot);
 		renderingContext.bindTexture2D("debugBuffer", renderBuffers.rbReflections);
 
-		Voxel vox = VoxelsStore.get().getVoxelById(world.getVoxelData((int)(double)renderingContext.getCamera().getCameraPosition().x(),
-				(int)(double)renderingContext.getCamera().getCameraPosition().y(), (int)(double)renderingContext.getCamera().getCameraPosition().z()));
+		Voxel vox = world.peekSafely(renderingContext.getCamera().getCameraPosition()).getVoxel();
+		//Voxel vox = VoxelsStore.get().getVoxelById(world.peekSimple((int)(double)renderingContext.getCamera().getCameraPosition().x(),
+		//		(int)(double)renderingContext.getCamera().getCameraPosition().y(), (int)(double)renderingContext.getCamera().getCameraPosition().z()));
 		
 		postProcess.setUniform1f("underwater", vox.getType().isLiquid() ? 1 : 0);
 		postProcess.setUniform1f("animationTimer", animationTimer);

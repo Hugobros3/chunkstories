@@ -19,8 +19,8 @@ description = 'A voxel game and game engine designed for modders'
 group = 'io.xol.chunkstories'
 
 ext {
-	apiRevisionBuiltAgainst = '113'
-	contentRevisionBuiltAgainst = '121'
+	apiRevisionBuiltAgainst = '114'
+	contentRevisionBuiltAgainst = '122'
 	
 	actualContentLocation = "core_content.zip"
 }

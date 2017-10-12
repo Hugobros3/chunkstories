@@ -153,7 +153,8 @@ public class DefaultWeatherEffectsRenderer implements WorldEffectsRenderer
 
 			if (Client.getInstance().getPlayer().getControlledEntity() != null)
 			{
-				int interiour = world.getSunlightLevelLocation(Client.getInstance().getPlayer().getControlledEntity().getLocation());
+				int interiour = world.peekSafely(Client.getInstance().getPlayer().getControlledEntity().getLocation()).getSunlight();
+				//world.getSunlightLevelLocation(Client.getInstance().getPlayer().getControlledEntity().getLocation());
 				rainIntensity *= 0.2f + 0.8f * (interiour / 15f);
 
 				rainIntensity *= 0.5;

@@ -2,12 +2,8 @@ package io.xol.chunkstories.world;
 
 import java.util.Iterator;
 
-import io.xol.chunkstories.api.Location;
-import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityLiving;
-import io.xol.chunkstories.api.math.LoopingMathHelper;
 import io.xol.chunkstories.api.net.packets.PacketTime;
-import io.xol.chunkstories.api.net.packets.PacketVoxelUpdate;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.world.WorldMaster;
@@ -38,7 +34,7 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 
 	public WorldServer(DedicatedServer server, WorldInfoFile worldInfo)
 	{
-		super(server, worldInfo); //new WorldInfoImplementation(new File(worldDir + "/info.world"), new File(worldDir).getName()));
+		super(server, worldInfo);
 
 		this.server = server;
 		this.virtualServerSoundManager = new VirtualSoundManager(this);
@@ -97,7 +93,6 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 			PacketSendWorldInfo packet = new PacketSendWorldInfo(worldInfo);
 			sender.pushPacket(packet);
 			
-			
 			//TODO only spawn the player when he asks to
 			spawnPlayer(sender.getProfile());
 		}
@@ -138,63 +133,11 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 			((IOTasksMultiplayerServer) ioHandler).requestRegionSummary(x, z, sender);
 		}
 	}
-	
-	//TODO move into implem
-	@Override
-	protected int actuallySetsDataAt(int x, int y, int z, int newData, Entity entity)
-	{
-		newData = super.actuallySetsDataAt(x, y, z, newData, entity);
-		if (newData != -1)
-		{
-			int blocksViewDistance = 256;
-			int sizeInBlocks = getWorldInfo().getSize().sizeInChunks * 32;
-			PacketVoxelUpdate packet = new PacketVoxelUpdate();
-			packet.x = x;
-			packet.y = y;
-			packet.z = z;
-			packet.data = newData;
-			Iterator<Player> pi = server.getConnectedPlayers();
-			while (pi.hasNext())
-			{
-				Player player = pi.next();
-
-				Entity clientEntity = player.getControlledEntity();
-				if (clientEntity == null)
-					continue;
-				Location loc = clientEntity.getLocation();
-				int plocx = (int)(double) loc.x();
-				int plocy = (int)(double) loc.y();
-				int plocz = (int)(double) loc.z();
-				//TODO use proper configurable values for this
-				if (!((LoopingMathHelper.moduloDistance(x, plocx, sizeInBlocks) > blocksViewDistance + 2) || (LoopingMathHelper.moduloDistance(z, plocz, sizeInBlocks) > blocksViewDistance + 2) || (y - plocy) > 4 * 32))
-				{
-					player.pushPacket(packet);
-				}
-
-			}
-		}
-		return newData;
-	}
 
 	@Override
 	public void processIncommingPackets()
 	{
 		entitiesLock.writeLock().lock();
-		
-		/*Iterator<ServerToClientConnection> clientsIterator = server.getHandler().getAuthentificatedClients();
-		while (clientsIterator.hasNext())
-		{
-			ServerToClientConnection client = clientsIterator.next();
-
-			//Get buffered packets from this player
-			PendingSynchPacket packet = client.getPacketsProcessor().getPendingSynchPacket();
-			while (packet != null)
-			{
-				packet.process(client, client.getPacketsProcessor());
-				packet = client.getPacketsProcessor().getPendingSynchPacket();
-			}
-
-		}*/
 		
 		Iterator<Player> clientsIterator = this.getPlayers();
 		while (clientsIterator.hasNext())

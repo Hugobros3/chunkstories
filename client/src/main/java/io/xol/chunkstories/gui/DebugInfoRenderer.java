@@ -68,7 +68,7 @@ public class DebugInfoRenderer {
 			}
 		}
 		
-		int data = world.getVoxelData(lx, ly, lz);
+		int data = world.peekSimple(lx, ly, lz);
 		int id = VoxelFormat.id(data);
 		int meta = VoxelFormat.meta(data);
 		int bl = VoxelFormat.blocklight(data);

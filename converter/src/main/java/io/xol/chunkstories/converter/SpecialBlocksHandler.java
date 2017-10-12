@@ -60,12 +60,12 @@ public class SpecialBlocksHandler {
 					
 					String textComplete = text1 + "\n" + text2 + "\n" + text3 + "\n" + text4;
 					
-					Voxel voxel = VoxelsStore.get().getVoxelById(exported.getVoxelData(csCoordinatesX, csCoordinatesY, csCoordinatesZ));
+					Voxel voxel = VoxelsStore.get().getVoxelById(exported.peekSimple(csCoordinatesX, csCoordinatesY, csCoordinatesZ));
 					//System.out.println("int dataAt sign : "+exported.getVoxelData(csCoordinatesX, csCoordinatesY, csCoordinatesZ));
 					if(voxel instanceof VoxelSign)
 					{
 						//System.out.println("Found a voxel sign matching, setting it's data");
-						((EntitySign) ((VoxelSign) voxel).getVoxelEntity(exported, csCoordinatesX, csCoordinatesY, csCoordinatesZ)).setText(textComplete);
+						((EntitySign) ((VoxelSign) voxel).getEntity(exported.peekSafely(csCoordinatesX, csCoordinatesY, csCoordinatesZ))).setText(textComplete);
 						//System.out.println(textComplete);
 					}
 				}

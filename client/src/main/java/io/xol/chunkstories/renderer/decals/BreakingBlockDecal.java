@@ -42,7 +42,7 @@ public class BreakingBlockDecal {
 	
 	public BreakingBlockDecal(MiningProgress miningProgress) {
 		this.miningProgress = miningProgress;
-		VoxelContext ctx = miningProgress.loc.getWorld().peek(miningProgress.loc);
+		VoxelContext ctx = miningProgress.loc.getWorld().peekSafely(miningProgress.loc);
 		
 		BreakingBlockDecalVoxelBaker bbdvb = new BreakingBlockDecalVoxelBaker(((WorldClient) ctx.getWorld()).getClient().getContent(), miningProgress.loc);
 		

@@ -1,7 +1,6 @@
 package io.xol.chunkstories.world.region;
 
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.EntityVoxel;
 import io.xol.chunkstories.api.entity.interfaces.EntityUnsaveable;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.Chunk;
@@ -13,7 +12,8 @@ import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.io.IOTasks.IOTask;
 import io.xol.chunkstories.world.region.format.CSFRegionFile;
-import io.xol.chunkstories.world.region.format.CSFRegionFile0x2C;
+import io.xol.chunkstories.world.region.format.CSFRegionFile0x2D;
+//import io.xol.chunkstories.world.region.format.CSFRegionFile0x2C;
 import io.xol.engine.concurrency.SafeWriteLock;
 
 import java.lang.ref.WeakReference;
@@ -54,7 +54,7 @@ public class RegionImplementation implements Region
 	private AtomicBoolean isDiskDataLoaded = new AtomicBoolean(false);
 
 	//Local entities
-	private Set<Entity> localEntities = ConcurrentHashMap.newKeySet();
+	//private Set<Entity> localEntities = ConcurrentHashMap.newKeySet();
 
 	private static Random random = new Random();
 
@@ -87,7 +87,7 @@ public class RegionImplementation implements Region
 		//Only the WorldMaster has a concept of files
 		if (world instanceof WorldMaster)
 		{
-			handler = new CSFRegionFile0x2C(this);
+			handler = new CSFRegionFile0x2D(this);
 			world.ioHandler.requestRegionLoad(this);
 		}
 		else
@@ -359,7 +359,7 @@ public class RegionImplementation implements Region
 	@Override
 	public String toString()
 	{
-		return "[Region rx:" + regionX + " ry:" + regionY + " rz:" + regionZ + " uuid: " + uuid + "loaded?:" + isDiskDataLoaded.get() + " u:" + unloadedFlag + " chunks: " + "NULL" + " entities:" + this.localEntities.size() + "]";
+		return "[Region rx:" + regionX + " ry:" + regionY + " rz:" + regionZ + " uuid: " + uuid + "loaded?:" + isDiskDataLoaded.get() + " u:" + unloadedFlag + " chunks: " + "NULL" + " entities:" + "tbf" + "]";
 	}
 
 	public void compressAll()
@@ -425,7 +425,7 @@ public class RegionImplementation implements Region
 		return localEntities.iterator();
 	}
 
-	@Override
+	/*@Override
 	public boolean removeEntityFromRegion(Entity entity)
 	{
 		return localEntities.remove(entity);
@@ -435,7 +435,7 @@ public class RegionImplementation implements Region
 	public boolean addEntityToRegion(Entity entity)
 	{
 		return localEntities.add(entity);
-	}
+	}*/
 
 	public void resetUnloadCooldown()
 	{
@@ -453,7 +453,7 @@ public class RegionImplementation implements Region
 		return world;
 	}
 
-	@Override
+	/*@Override
 	public EntityVoxel getEntityVoxelAt(int worldX, int worldY, int worldZ)
 	{
 		Iterator<Entity> entities = this.getEntitiesWithinRegion();
@@ -464,7 +464,7 @@ public class RegionImplementation implements Region
 				return (EntityVoxel) entity;
 		}
 		return null;
-	}
+	}*/
 
 	/**
 	 * Unloads unused chunks, returns true if all chunks were unloaded

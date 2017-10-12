@@ -214,7 +214,7 @@ public class ClientTasksPool extends TasksPool<Task> implements ChunkMeshesBaker
 				{
 					System.out.println("Warning ! Chunk " + c + " rendering process asked information about a block more than 32 blocks away from the chunk itself");
 					System.out.println("This should not happen when rendering normal blocks and may be caused by a weird or buggy mod.");
-					data = world.getVoxelData(c.getChunkX() * 32 + x, c.getChunkY() * 32 + y, c.getChunkZ() * 32 + z);
+					data = world.peekSimple(c.getChunkX() * 32 + x, c.getChunkY() * 32 + y, c.getChunkZ() * 32 + z);
 				}
 				/*if (x > 0 && z > 0 && y > 0 && y < 32 && x < 32 && z < 32)
 				{
@@ -260,7 +260,7 @@ public class ClientTasksPool extends TasksPool<Task> implements ChunkMeshesBaker
 				Chunk cached = world.getChunk(x / 32, y / 32, z / 32);
 				if (cached != null && !cached.isAirChunk())
 				{
-					data = cached.getVoxelData(x, y, z);
+					data = cached.peekSimple(x, y, z);
 
 					int blockID = VoxelFormat.id(data);
 					return VoxelsStore.get().getVoxelById(blockID).getType().isOpaque() ? -1 : VoxelFormat.sunlight(data);
@@ -291,7 +291,7 @@ public class ClientTasksPool extends TasksPool<Task> implements ChunkMeshesBaker
 				{
 					System.out.println("Warning ! Chunk " + c + " rendering process asked information about a block more than 32 blocks away from the chunk itself");
 					System.out.println("This should not happen when rendering normal blocks and may be caused by a weird or buggy mod.");
-					data = world.getVoxelData(c.getChunkX() * 32 + x, c.getChunkY() * 32 + y, c.getChunkZ() * 32 + z);
+					data = world.peekSimple(c.getChunkX() * 32 + x, c.getChunkY() * 32 + y, c.getChunkZ() * 32 + z);
 				}
 
 				int blockID = VoxelFormat.id(data);

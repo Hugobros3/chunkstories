@@ -23,7 +23,6 @@ import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.voxel.Voxel;
-import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides.Corners;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.LodLevel;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
@@ -36,7 +35,6 @@ import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.renderer.WorldRendererImplementation;
 import io.xol.chunkstories.voxel.VoxelContextOlder;
-import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.engine.graphics.geometry.VertexBufferGL;
 import io.xol.engine.graphics.textures.Texture2DGL;
 import io.xol.engine.graphics.textures.TexturesHandler;
@@ -130,10 +128,11 @@ public class DecalsRendererImplementation implements DecalsRenderer
 						location.add(new Vector3d(rotateMe.x(), rotateMe.y(), rotateMe.z()));
 						location.add(new Vector3d(0.5));
 
-						int idThere = VoxelFormat.id(world.getVoxelData(location));
+						VoxelContext peek = world.peekSafely(location);
+						//int idThere = VoxelFormat.id(world.peekSimple(location));
 
-						Voxel voxel = VoxelsStore.get().getVoxelById(idThere);
-						if (voxel != null && idThere > 0 && !voxel.getType().isLiquid() && voxel.getType().isSolid())
+						Voxel voxel = peek.getVoxel();
+						if (voxel != null && peek.getId() > 0 && !voxel.getType().isLiquid() && voxel.getType().isSolid())
 						{
 							VoxelContext bri = new VoxelContextOlder(location);
 							VoxelRenderer model = voxel.getVoxelRenderer(bri);
@@ -264,7 +263,7 @@ public class DecalsRendererImplementation implements DecalsRenderer
 							Chunk chunk = world.getChunkWorldCoordinates(location);
 							virtualRenderBytebuffer.setChunk(chunk);
 							
-							model.renderInto(chunkRenderer, o2, chunk, world.peek(location));
+							model.renderInto(chunkRenderer, o2, chunk, peek);
 						}
 
 					}

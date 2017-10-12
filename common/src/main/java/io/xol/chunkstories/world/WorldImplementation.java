@@ -14,7 +14,10 @@ import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityNameable;
 import io.xol.chunkstories.api.events.player.PlayerSpawnEvent;
-import io.xol.chunkstories.api.exceptions.IllegalBlockModificationException;
+import io.xol.chunkstories.api.events.voxel.WorldModificationCause;
+import io.xol.chunkstories.api.exceptions.world.ChunkNotLoadedException;
+import io.xol.chunkstories.api.exceptions.world.RegionNotLoadedException;
+import io.xol.chunkstories.api.exceptions.world.WorldException;
 import io.xol.chunkstories.api.input.Input;
 import org.joml.Vector3dc;
 
@@ -26,9 +29,7 @@ import io.xol.chunkstories.api.util.ConfigDeprecated;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.voxel.Voxel;
-import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelInteractive;
-import io.xol.chunkstories.api.voxel.VoxelLogic;
 import io.xol.chunkstories.api.world.generator.WorldGenerator;
 import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.api.world.VoxelContext;
@@ -38,13 +39,15 @@ import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
+import io.xol.chunkstories.api.world.dummy.DummyContext;
 import io.xol.chunkstories.api.world.chunk.ChunksIterator;
+import io.xol.chunkstories.api.world.chunk.DummyChunk;
+import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.content.sandbox.WorldLogicThread;
 import io.xol.chunkstories.content.sandbox.UnthrustedUserContentSecurityManager;
 import io.xol.chunkstories.entity.EntityWorldIterator;
 import io.xol.chunkstories.entity.SerializedEntityFile;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
-import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.io.IOTasks;
 import io.xol.chunkstories.world.iterators.AABBVoxelIterator;
@@ -82,16 +85,10 @@ public abstract class WorldImplementation implements World
 	public IOTasks ioHandler;
 	private WorldLogicThread worldThread;
 
-	// RAM-eating depreacated monster
-	// public ChunksData chunksData;
-
 	private HashMapWorldRegionsHolder regions;
 
 	// Heightmap management
 	private WorldRegionSummariesHolder regionSummaries;
-
-	// World-renderer backcall
-	// protected WorldRendererImplementation renderer;
 
 	// Temporary entity list
 	protected final EntitiesHolder entities;
@@ -234,7 +231,7 @@ public abstract class WorldImplementation implements World
 				System.out.println("Error : entity is not controllable");
 		}
 	}
-	
+
 	@Override
 	public void addEntity(final Entity entity)
 	{
@@ -257,9 +254,11 @@ public abstract class WorldImplementation implements World
 
 		//Add it to the world
 		entity.markHasSpawned();
-		Location updatedLocation = entity.getLocation();
-		updatedLocation.setWorld(this);
-		entity.setLocation(updatedLocation);
+		//Location updatedLocation = entity.getLocation();
+		
+		assert entity.getWorld() == this;
+		//updatedLocation.setWorld(this);
+		//entity.setLocation(updatedLocation);
 
 		this.entities.insertEntity(entity);
 
@@ -381,7 +380,7 @@ public abstract class WorldImplementation implements World
 		return regionSummaries;
 	}
 
-	@Override
+	/*@Override
 	public int getVoxelData(Vector3dc location)
 	{
 		return getVoxelData((int) (double) location.x(), (int) (double) location.y(), (int) (double) location.z());
@@ -399,15 +398,117 @@ public abstract class WorldImplementation implements World
 		if (c != null)
 			return c.getVoxelData(x, y, z);
 		return 0;
-	}
+	}*/
 	
 	@Override
-	public WorldVoxelContext peek(Vector3dc location)
+	public WorldVoxelContext peek(Vector3dc location) throws WorldException
 	{
 		return peek((int) (double) location.x(), (int) (double) location.y(), (int) (double) location.z());
 	}
+	
+	@Override
+	/** Fancy get method that throws exceptions when the world isn't loaded */
+	public WorldVoxelContext peek(int x, int y, int z) throws WorldException {
+		x = sanitizeHorizontalCoordinate(x);
+		y = sanitizeVerticalCoordinate(y);
+		z = sanitizeHorizontalCoordinate(z);
+		
+		Region region = this.getRegionWorldCoordinates(x, y, z);
+		if(region == null)
+			throw new RegionNotLoadedException(this, x / 256, y / 256, z / 256);
+			
+		Chunk chunk = region.getChunk((x / 32) % 8, (y / 32) % 8, (z / 32) % 8);
+		if(chunk == null)
+			throw new ChunkNotLoadedException(region, (x / 32) % 8, (y / 32) % 8, (z / 32) % 8);
+		
+		return chunk.peek(x, y, z);
+	}
 
 	@Override
+	public WorldVoxelContext peekSafely(int x, int y, int z) {
+		try {
+			return peek(x, y, z);
+		} catch (WorldException e) {
+			return new DummyContext(new DummyChunk(), x, y, z, 0);
+		}
+	}
+
+	@Override
+	public WorldVoxelContext peekSafely(Vector3dc location) {
+		return peekSafely((int) (double) location.x(), (int) (double) location.y(), (int) (double) location.z());
+	}
+
+	@Override
+	public int peekSimple(int x, int y, int z) {
+		x = sanitizeHorizontalCoordinate(x);
+		y = sanitizeVerticalCoordinate(y);
+		z = sanitizeHorizontalCoordinate(z);
+		
+		Chunk chunk = this.getChunkWorldCoordinates(x, y, z);
+		if(chunk == null)
+			return 0;
+		else
+			return chunk.peekSimple(x, y, z);
+	}
+
+	@Override
+	public WorldVoxelContext poke(int x, int y, int z, int newVoxelData, WorldModificationCause cause)
+			throws WorldException {
+		x = sanitizeHorizontalCoordinate(x);
+		y = sanitizeVerticalCoordinate(y);
+		z = sanitizeHorizontalCoordinate(z);
+		
+		Region region = this.getRegionWorldCoordinates(x, y, z);
+		if(region == null)
+			throw new RegionNotLoadedException(this, x / 256, y / 256, z / 256);
+			
+		Chunk chunk = region.getChunk((x / 32) % 8, (y / 32) % 8, (z / 32) % 8);
+		if(chunk == null)
+			throw new ChunkNotLoadedException(region, (x / 32) % 8, (y / 32) % 8, (z / 32) % 8);
+		
+		return chunk.poke(x, y, z, newVoxelData, cause);
+	}
+
+	@Override
+	public WorldVoxelContext pokeSilently(int x, int y, int z, int newVoxelData) throws WorldException {
+		x = sanitizeHorizontalCoordinate(x);
+		y = sanitizeVerticalCoordinate(y);
+		z = sanitizeHorizontalCoordinate(z);
+		
+		Region region = this.getRegionWorldCoordinates(x, y, z);
+		if(region == null)
+			throw new RegionNotLoadedException(this, x / 256, y / 256, z / 256);
+			
+		Chunk chunk = region.getChunk((x / 32) % 8, (y / 32) % 8, (z / 32) % 8);
+		if(chunk == null)
+			throw new ChunkNotLoadedException(region, (x / 32) % 8, (y / 32) % 8, (z / 32) % 8);
+		
+		return chunk.pokeSilently(x, y, z, newVoxelData);
+	}
+
+	@Override
+	public void pokeSimple(int x, int y, int z, int newVoxelData) {
+		x = sanitizeHorizontalCoordinate(x);
+		y = sanitizeVerticalCoordinate(y);
+		z = sanitizeHorizontalCoordinate(z);
+		
+		Chunk chunk = this.getChunkWorldCoordinates(x, y, z);
+		if(chunk != null)
+			chunk.pokeSimple(x, y, z, newVoxelData);
+	}
+
+	@Override
+	public void pokeSimpleSilently(int x, int y, int z, int newVoxelData) {
+		x = sanitizeHorizontalCoordinate(x);
+		y = sanitizeVerticalCoordinate(y);
+		z = sanitizeHorizontalCoordinate(z);
+		
+		Chunk chunk = this.getChunkWorldCoordinates(x, y, z);
+		if(chunk != null)
+			chunk.pokeSimpleSilently(x, y, z, newVoxelData);
+	}
+
+	/*@Override
 	public WorldVoxelContext peek(int x, int y, int z)
 	{
 		return new WorldVoxelContext() {
@@ -478,10 +579,11 @@ public abstract class WorldImplementation implements World
 			}
 			
 		};
+		
 		//return new VoxelContextOlder(this, x, y, z);
-	}
+	}*/
 
-	@Override
+	/*@Override
 	public void setVoxelData(Location location, int data)
 	{
 		setVoxelData((int) (double) location.x(), (int) (double) location.y(), (int) (double) location.z(), data);
@@ -503,15 +605,17 @@ public abstract class WorldImplementation implements World
 	public void setVoxelData(int x, int y, int z, int data, Entity entity)
 	{
 		actuallySetsDataAt(x, y, z, data, entity);
-	}
+	}*/
 
 	/**
 	 * Internal method that accesses the data
 	 * 
 	 * @return -1 if fails, the data of the new block if succeeds
 	 */
-	protected int actuallySetsDataAt(int x, int y, int z, int newData, Entity entity)
+	/*protected int actuallySetsDataAt(int x, int y, int z, int newData, Entity entity)
 	{
+		//TODO should VoxelModificationEvent be a part of the world implem poke() method ?
+		
 		x = sanitizeHorizontalCoordinate(x);
 		y = sanitizeVerticalCoordinate(y);
 		z = sanitizeHorizontalCoordinate(z);
@@ -697,7 +801,7 @@ public abstract class WorldImplementation implements World
 	public int getBlocklightLevelLocation(Location location)
 	{
 		return getBlocklightLevelWorldCoordinates((int) (double) location.x(), (int) (double) location.y(), (int) (double) location.z());
-	}
+	}*/
 	
 	@Override
 	public IterableIterator<VoxelContext> getVoxelsWithin(CollisionBox boundingBox) {
@@ -720,15 +824,6 @@ public abstract class WorldImplementation implements World
 				c2.markForReRender();
 			}
 		}
-	}
-
-	//@Override
-	public void unloadEverything()
-	{
-		throw new UnsupportedOperationException();
-		//TODO exterminate this
-		//regions.clearAll();
-		//getRegionSummaries().clearAll();
 	}
 
 	@Override
@@ -803,10 +898,10 @@ public abstract class WorldImplementation implements World
 		if (voxelLocation == null)
 			return false;
 
-		int dataAtLocation = this.getVoxelData(voxelLocation);
-		Voxel voxel = VoxelsStore.get().getVoxelById(dataAtLocation);
+		VoxelContext peek = this.peekSafely(voxelLocation);
+		Voxel voxel = peek.getVoxel();
 		if (voxel != null && voxel instanceof VoxelInteractive)
-			return ((VoxelInteractive) voxel).handleInteraction(entity, peek(voxelLocation), input);
+			return ((VoxelInteractive) voxel).handleInteraction(entity, peekSafely(voxelLocation), input);
 		return false;
 	}
 

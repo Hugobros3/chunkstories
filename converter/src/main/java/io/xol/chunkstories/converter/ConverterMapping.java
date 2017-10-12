@@ -7,7 +7,7 @@ import java.io.IOException;
 
 import io.xol.chunkstories.anvil.MinecraftRegion;
 import io.xol.chunkstories.api.GameContext;
-import io.xol.chunkstories.api.exceptions.IllegalBlockModificationException;
+import io.xol.chunkstories.api.exceptions.world.WorldException;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
@@ -196,8 +196,8 @@ public class ConverterMapping {
 				
 				if (voxel instanceof VoxelDoor)
 					try {
-						baked = ((VoxelDoor) voxel).onPlace(csWorld, csX, csY, csZ, baked, null);
-					} catch (IllegalBlockModificationException e) {
+						baked = ((VoxelDoor) voxel).onPlace(csWorld.peek(csX, csY, csZ), baked, null);
+					} catch (WorldException e) {
 						
 						e.printStackTrace();
 						return;
@@ -205,7 +205,7 @@ public class ConverterMapping {
 				else
 					System.out.println("fuck you 666");
 				
-				csWorld.setVoxelDataWithoutUpdates(csX, csY, csZ, baked);
+				csWorld.pokeSimpleSilently(csX, csY, csZ, baked);
 
 			}
 			else
@@ -229,15 +229,15 @@ public class ConverterMapping {
 			
 			if (voxel instanceof VoxelChest)
 				try {
-					baked = ((VoxelChest) voxel).onPlace(csWorld, csX, csY, csZ, baked, null);
-				} catch (IllegalBlockModificationException e) {
+					baked = ((VoxelChest) voxel).onPlace(csWorld.peek(csX, csY, csZ), baked, null);
+				} catch (WorldException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			else
 				System.out.println("fuck you 666");
 			
-			csWorld.setVoxelDataWithoutUpdates(csX, csY, csZ, baked);
+			csWorld.pokeSimpleSilently(csX, csY, csZ, baked);
 		}
 		
 	}
@@ -271,13 +271,13 @@ public class ConverterMapping {
 				baked = VoxelFormat.changeMeta(baked, minecraftMetaData);
 				
 				try {
-					baked = ((VoxelSign) voxel).onPlace(csWorld, csX, csY, csZ, baked, null);
-				} catch (IllegalBlockModificationException e) {
+					baked = ((VoxelSign) voxel).onPlace(csWorld.peek(csX, csY, csZ), baked, null);
+				} catch (WorldException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				
-				csWorld.setVoxelDataWithoutUpdates(csX, csY, csZ, baked);
+				csWorld.pokeSimpleSilently(csX, csY, csZ, baked);
 				
 				//TODO Move Sign text getting here ?
 				//EntityChest chestEntity = ((VoxelChest)voxel).getVoxelEntity(csWorld, csX, csY, csZ);

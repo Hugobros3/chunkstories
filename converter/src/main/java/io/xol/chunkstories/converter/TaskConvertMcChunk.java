@@ -109,7 +109,7 @@ public class TaskConvertMcChunk extends Task {
 										//Directly set trivial blocks
 										int trivial = mapper.output(mcId, meta);
 										if(trivial != 0x0) {
-											csWorld.setVoxelDataWithoutUpdates(chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, trivial);
+											csWorld.pokeSimpleSilently(chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, trivial);
 										}
 									}
 									
