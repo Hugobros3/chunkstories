@@ -2,8 +2,7 @@ package io.xol.chunkstories.world.region.format;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 
@@ -21,18 +20,15 @@ import io.xol.chunkstories.world.region.RegionImplementation;
 /** This version adds support for distinguishing between generated empty and ungenerated chunks */
 public class CSFRegionFile0x2C extends CSFRegionFile
 {
-	public CSFRegionFile0x2C(RegionImplementation holder)
+	public CSFRegionFile0x2C(RegionImplementation holder, File file)
 	{
-		super(holder);
+		super(holder, file);
 	}
 
 	static final int air_chunk_magic_number = 0xFFFFFFFF;
 	
-	public void load() throws IOException
+	public void load(DataInputStream in) throws IOException
 	{
-		FileInputStream fist = new FileInputStream(file);
-		DataInputStream in = new DataInputStream(fist);
-		
 		try {
 			// First load the compressed chunk data sizes
 			int[] chunksSizes = new int[8 * 8 * 8];
@@ -106,15 +102,15 @@ public class CSFRegionFile0x2C extends CSFRegionFile
 		}
 	}
 
-	public void save() throws IOException
+	public void save(DataOutputStream dos) throws IOException
 	{
 		//Create the necessary directory structure if needed
-		file.getParentFile().mkdirs();
+		/*file.getParentFile().mkdirs();
 		//if (!file.exists())
 		//	file.createNewFile();
 		
 		FileOutputStream oute = new FileOutputStream(file);
-		DataOutputStream dos = new DataOutputStream(oute);
+		DataOutputStream dos = new DataOutputStream(oute);*/
 		
 		try {
 			byte[][][][] compressedVersions = new byte[8][8][8][];

@@ -2,6 +2,7 @@ package io.xol.chunkstories.world.region.format;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -21,19 +22,24 @@ import io.xol.chunkstories.world.region.RegionImplementation;
 /** This version adds support for distinguishing between generated empty and ungenerated chunks */
 public class CSFRegionFile0x2D extends CSFRegionFile
 {
-	public CSFRegionFile0x2D(RegionImplementation holder)
+	public CSFRegionFile0x2D(RegionImplementation holder, File file)
 	{
-		super(holder);
+		super(holder, file);
 	}
 
 	static final int air_chunk_magic_number = 0xFFFFFFFF;
 	
-	public void load() throws IOException
-	{
-		FileInputStream fist = new FileInputStream(file);
-		DataInputStream in = new DataInputStream(fist);
-		
+	public void load(DataInputStream in) throws IOException
+	{	
 		try {
+			
+			long magicNumber = in.readLong();
+			
+			assert magicNumber == 6003953969960732739L;
+			
+			int versionNumber = in.readInt();
+			int writeTimestamp = in.readInt();
+			
 			// First load the compressed chunk data sizes
 			int[] chunksSizes = new int[8 * 8 * 8];
 			for (int a = 0; a < 8 * 8 * 8; a++)
@@ -71,13 +77,6 @@ public class CSFRegionFile0x2D extends CSFRegionFile
 			//don't tick the world entities until we get this straight
 			owner.world.entitiesLock.writeLock().lock();
 	
-			//Older version case - TODO write a version mechanism that prevents from checking this
-			if (in.available() <= 0)
-			{
-				owner.world.entitiesLock.writeLock().unlock();
-				return;
-			}
-	
 			try
 			{
 				//Read entities until we hit -1
@@ -100,24 +99,18 @@ public class CSFRegionFile0x2D extends CSFRegionFile
 	
 			owner.world.entitiesLock.writeLock().unlock();
 			
+			// Load in the voxel components yay
+			
 		}
 		finally {
 			in.close();
 		}
 	}
 
-	public void save() throws IOException
-	{
-		//Create the necessary directory structure if needed
-		file.getParentFile().mkdirs();
-		//if (!file.exists())
-		//	file.createNewFile();
-		
-		FileOutputStream oute = new FileOutputStream(file);
-		DataOutputStream dos = new DataOutputStream(oute);
-		
+	public void save(DataOutputStream dos) throws IOException
+	{	
 		try {
-			byte[][][][] compressedVersions = new byte[8][8][8][];
+			byte[][][][] compressedChunks = new byte[8][8][8][];
 			
 			//First we write the header
 			for (int a = 0; a < 8; a++)
@@ -125,26 +118,27 @@ public class CSFRegionFile0x2D extends CSFRegionFile
 					for (int c = 0; c < 8; c++)
 					{
 						byte[] chunkCompressedVersion = owner.getChunkHolder(a, b, c).getCompressedData();
-						int chunkSize = 0;
+						int chunkSizeCompressed = 0;
 						
 						if(chunkCompressedVersion == ChunkHolderImplementation.AIR_CHUNK_NO_DATA_SAVED) {
-							chunkSize = air_chunk_magic_number;
+							chunkSizeCompressed = air_chunk_magic_number;
 						}
 						else if (chunkCompressedVersion != null)
 						{
 							//Save the reference to ensure coherence with later part (in case chunk gets re-compressed in the meantime)
-							compressedVersions[a][b][c] = chunkCompressedVersion;
-							chunkSize = chunkCompressedVersion.length;
+							compressedChunks[a][b][c] = chunkCompressedVersion;
+							chunkSizeCompressed = chunkCompressedVersion.length;
 						}
 						
-						dos.writeInt(chunkSize);
+						// Write the compressed chunk size once we obtain it
+						dos.writeInt(chunkSizeCompressed);
 					}
 			
 			for (int a = 0; a < 8; a++)
 				for (int b = 0; b < 8; b++)
 					for (int c = 0; c < 8; c++)
-						if (compressedVersions[a][b][c] != null)
-							dos.write(compressedVersions[a][b][c]);
+						if (compressedChunks[a][b][c] != null)
+							dos.write(compressedChunks[a][b][c]);
 						
 			//don't tick the world entities until we get this straight - this is about not duplicating entities
 			owner.world.entitiesLock.readLock().lock();

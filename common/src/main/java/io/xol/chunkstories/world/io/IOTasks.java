@@ -14,6 +14,8 @@ import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
 import io.xol.engine.concurrency.UniqueQueue;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -343,7 +345,10 @@ public class IOTasks extends Thread implements TaskExecutor
 			{
 				try
 				{
-					region.handler.load();
+					FileInputStream fist = new FileInputStream(region.handler.file);
+					DataInputStream in = new DataInputStream(fist);
+					
+					region.handler.load(in);
 				}
 				catch (FileNotFoundException e)
 				{
@@ -420,23 +425,31 @@ public class IOTasks extends Thread implements TaskExecutor
 
 	public class IOTaskSaveRegion extends IOTask
 	{
-		RegionImplementation holder;
+		RegionImplementation region;
 
 		public IOTaskSaveRegion(RegionImplementation holder)
 		{
-			this.holder = holder;
+			this.region = holder;
 		}
 
 		@Override
 		public boolean task(TaskExecutor taskExecutor)
 		{
-			holder.handler.savingOperations.incrementAndGet();
+			region.handler.savingOperations.incrementAndGet();
+			
 			// First compress all loaded chunks !
-			holder.compressAll();
-			// Then write the file.
+			region.compressAll();
+			
 			try
 			{
-				holder.handler.save();
+				//Create the necessary directory structure if needed
+				region.handler.file.getParentFile().mkdirs();
+				
+				//Create the output stream
+				FileOutputStream outputFileStream = new FileOutputStream(region.handler.file);
+				DataOutputStream dos = new DataOutputStream(outputFileStream);
+				
+				region.handler.save(dos);
 			}
 			catch (FileNotFoundException e)
 			{
@@ -448,12 +461,11 @@ public class IOTasks extends Thread implements TaskExecutor
 			}
 
 			//Let go
-			//System.out.println("op b4"+this.holder.handler.savingOperations.get());
-			this.holder.handler.savingOperations.decrementAndGet();
-			//System.out.println("op aft"+this.holder.handler.savingOperations.get());
-			synchronized (holder.handler)
+			this.region.handler.savingOperations.decrementAndGet();
+			
+			synchronized (region.handler)
 			{
-				holder.handler.notifyAll();
+				region.handler.notifyAll();
 			}
 			return true;
 		}
@@ -464,7 +476,7 @@ public class IOTasks extends Thread implements TaskExecutor
 			if (o != null && o instanceof IOTaskSaveRegion)
 			{
 				IOTaskSaveRegion comp = ((IOTaskSaveRegion) o);
-				if (comp.holder.regionX == holder.regionX && comp.holder.regionY == this.holder.regionY && comp.holder.regionZ == this.holder.regionZ)
+				if (comp.region.regionX == region.regionX && comp.region.regionY == this.region.regionY && comp.region.regionZ == this.region.regionZ)
 					return true;
 			}
 			return false;
@@ -473,7 +485,7 @@ public class IOTasks extends Thread implements TaskExecutor
 		@Override
 		public int hashCode()
 		{
-			return (666778 + 64 * holder.regionX + 22 * holder.regionY + 999 * holder.regionZ) % 2147483647;
+			return (666778 + 64 * region.regionX + 22 * region.regionY + 999 * region.regionZ) % 2147483647;
 		}
 	}
 

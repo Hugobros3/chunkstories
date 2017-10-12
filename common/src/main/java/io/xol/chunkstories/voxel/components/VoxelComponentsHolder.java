@@ -1,8 +1,11 @@
 package io.xol.chunkstories.voxel.components;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import io.xol.chunkstories.api.util.IterableIterator;
+import io.xol.chunkstories.api.util.IterableIteratorWrapper;
 import io.xol.chunkstories.api.voxel.components.VoxelComponent;
 import io.xol.chunkstories.api.voxel.components.VoxelComponents;
 import io.xol.chunkstories.api.world.chunk.Chunk;
@@ -12,6 +15,8 @@ public class VoxelComponentsHolder implements VoxelComponents {
 
 	final CubicChunk chunk;
 	final int index;
+	
+	Map<String, VoxelComponent> map = new HashMap<String, VoxelComponent>();
 	
 	public VoxelComponentsHolder(CubicChunk chunk, int index) {
 		this.chunk = chunk;
@@ -45,20 +50,17 @@ public class VoxelComponentsHolder implements VoxelComponents {
 
 	@Override
 	public void put(String name, VoxelComponent component) {
-		// TODO Auto-generated method stub
-		
+		map.put(name, component);
 	}
 
 	@Override
 	public VoxelComponent get(String name) {
-		// TODO Auto-generated method stub
-		return null;
+		return map.get(name);
 	}
 
 	@Override
 	public IterableIterator<Entry<String, VoxelComponent>> all() {
-		// TODO Auto-generated method stub
-		return null;
+		return new IterableIteratorWrapper<Entry<String, VoxelComponent>>(map.entrySet().iterator());
 	}
 
 }

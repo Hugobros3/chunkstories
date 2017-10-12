@@ -91,7 +91,7 @@ public class RegionImplementation implements Region
 		//Only the WorldMaster has a concept of files
 		if (world instanceof WorldMaster)
 		{
-			handler = new CSFRegionFile0x2D(this);
+			handler = CSFRegionFile.determineVersionAndCreate(this);//new CSFRegionFile0x2D(this);
 			world.ioHandler.requestRegionLoad(this);
 		}
 		else
