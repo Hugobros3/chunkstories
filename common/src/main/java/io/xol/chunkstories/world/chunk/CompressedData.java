@@ -37,10 +37,17 @@ public class CompressedData {
 		f4st.put(voxelCompressedData);
 		f4st.flip();
 		
+		//System.out.println(f4st);
+		
 		ByteBuffer t3mp = MemoryUtil.memAlloc(32 * 32 * 32 * 4);
 		try
 		{
 			localDecompressor.get().decompress(f4st, t3mp);
+			
+			//System.out.println(t3mp);
+			
+			t3mp.flip();
+			
 			MemoryUtil.memFree(f4st);
 
 			int data[] = new int[32 * 32 * 32];
@@ -52,6 +59,8 @@ public class CompressedData {
 		}
 		catch (LZ4Exception e)
 		{
+			System.out.println(e.getMessage());
+			e.printStackTrace();
 			MemoryUtil.memFree(f4st);
 			MemoryUtil.memFree(t3mp);
 			throw new UnloadableChunkDataException("LZ4 decompression failed.");

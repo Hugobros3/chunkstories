@@ -73,6 +73,8 @@ public class CSFRegionFile0x2D extends CSFRegionFile
 								in.readFully(entitiesData);
 							}
 							
+							System.out.println(compressedDataSize + "vs : " + (voxel_data_size + voxel_components_size + entities_size + 4));
+							
 							owner.getChunkHolder(a, b, c).setCompressedData(new CompressedData(voxelData, voxelComponentsData, entitiesData));
 						}
 						//No data exists here
@@ -138,6 +140,8 @@ public class CSFRegionFile0x2D extends CSFRegionFile
 						//For each chunk within the region, grab the compressed data version
 						CompressedData compressedData = owner.getChunkHolder(a, b, c).getCompressedData();
 						
+						allCompressedData[a][b][c] = compressedData;
+						
 						if(compressedData != null)
 							dos.writeInt(compressedData.getTotalCompressedSize());
 						else // No data found (==> meaning this is an ungenerated chunk)
@@ -152,12 +156,23 @@ public class CSFRegionFile0x2D extends CSFRegionFile
 							CompressedData data = allCompressedData[a][b][c];
 							
 							//Write each section length then data
-							dos.writeInt(data.voxelCompressedData.length);
-							dos.write(data.voxelCompressedData);
-							dos.writeInt(data.voxelComponentsCompressedData.length);
-							dos.write(data.voxelComponentsCompressedData);
-							dos.writeInt(data.entitiesCompressedData.length);
-							dos.write(data.entitiesCompressedData);
+							if(data.voxelCompressedData != null) {
+								dos.writeInt(data.voxelCompressedData.length);
+								dos.write(data.voxelCompressedData);
+							} else
+								dos.writeInt(0);
+							
+							if(data.voxelComponentsCompressedData != null) {
+								dos.writeInt(data.voxelComponentsCompressedData.length);
+								dos.write(data.voxelComponentsCompressedData);
+							} else
+								dos.writeInt(0);
+							
+							if(data.entitiesCompressedData != null) {
+								dos.writeInt(data.entitiesCompressedData.length);
+								dos.write(data.entitiesCompressedData);
+							} else
+								dos.writeInt(0);
 						}
 						
 			//don't tick the world entities until we get this straight - this is about not duplicating entities

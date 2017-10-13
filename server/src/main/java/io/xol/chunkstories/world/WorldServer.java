@@ -119,11 +119,12 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 		if (message.startsWith("getChunkCompressed"))
 		{
 			//System.out.println(message);
-			String[] split = message.split(":");
+			
+			/*String[] split = message.split(":");
 			int x = Integer.parseInt(split[1]);
 			int y = Integer.parseInt(split[2]);
 			int z = Integer.parseInt(split[3]);
-			((IOTasksMultiplayerServer) ioHandler).requestCompressedChunkSend(x, y, z, sender);
+			((IOTasksMultiplayerServer) ioHandler).requestCompressedChunkSend(x, y, z, sender);*/
 		}
 		if (message.startsWith("getChunkSummary") || message.startsWith("getRegionSummary"))
 		{

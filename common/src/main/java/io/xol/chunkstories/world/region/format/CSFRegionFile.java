@@ -85,6 +85,8 @@ public abstract class CSFRegionFile implements OfflineSerializedData {
 				
 			}
 		}
+		else
+			return new CSFRegionFile0x2D(holder, file);
 		
 		return new CSFRegionFile0x2C(holder, file);
 	}

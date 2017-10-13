@@ -4,6 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.exceptions.UnknownComponentException;
 import io.xol.chunkstories.api.serialization.OfflineSerializedData;
@@ -82,7 +83,7 @@ public class EntitySerializer
 			System.out.println("world.getGameContext().getContent().entities()"+world.getGameContext().getContent().entities());
 			System.out.println("world.getGameContext().getContent().entities().getEntityTypeById(entityTypeID)"+world.getGameContext().getContent().entities().getEntityTypeById(entityTypeID));
 			*/
-			Entity entity = world.getGameContext().getContent().entities().getEntityTypeById(entityTypeID).create(world);
+			Entity entity = world.getGameContext().getContent().entities().getEntityTypeById(entityTypeID).create(new Location(world, 0d, 0d, 0d));
 			entity.setUUID(entityUUID);
 			
 			int componentId = in.readInt();

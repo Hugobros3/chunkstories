@@ -56,7 +56,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 		}
 	};
 
-	public class IOTaskProcessCompressedChunkArrival extends IOTask
+	/*public class IOTaskProcessCompressedChunkArrival extends IOTask
 	{
 		int chunkX, chunkY, chunkZ;
 		byte[] data;
@@ -85,15 +85,6 @@ public class IOTasksMultiplayerClient extends IOTasks
 			
 			
 			//Irrelevant because we made the IO handler create the chunks
-			
-			/*
-			//Should never happen but sanity check doesn't hurt
-			if(chunk == null)
-			{
-				System.out.println("Notice: received chunk data for an unloaded/unaquired chunk within a loaded region ("+chunkX+","+chunkY+","+chunkZ+"). Ignoring.");
-				return true;
-			}*/
-			
 			
 			if (data != null)
 			{
@@ -141,7 +132,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 	{
 		IOTaskProcessCompressedChunkArrival task = new IOTaskProcessCompressedChunkArrival(data.x, data.y, data.z, data.data);
 		scheduleTask(task);
-	}
+	}*/
 
 	/*public void requestChunkCompressedDataProcess(int x, int y, int z, byte[] data)
 	{
@@ -265,8 +256,12 @@ public class IOTasksMultiplayerClient extends IOTasks
 			this.requestRegionSummaryProcess((PacketRegionSummary) packet);
 		
 		//Chunk data
-		else if(packet instanceof PacketChunkCompressedData)
-			this.requestChunkCompressedDataProcess((PacketChunkCompressedData) packet);
+		else if(packet instanceof PacketChunkCompressedData) {
+			RegionImplementation region = world.getRegionChunkCoordinates(((PacketChunkCompressedData) packet).x, ((PacketChunkCompressedData) packet).y, ((PacketChunkCompressedData) packet).z);
+			assert region != null;
+			region.getChunkHolder(((PacketChunkCompressedData) packet).x, ((PacketChunkCompressedData) packet).y, ((PacketChunkCompressedData) packet).z).createChunk(((PacketChunkCompressedData) packet).data);
+			//this.requestChunkCompressedDataProcess((PacketChunkCompressedData) packet);
+		}
 		
 		//Else
 		else throw new IllegalPacketException(packet) {

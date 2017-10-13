@@ -44,13 +44,15 @@ public class PacketChunkCompressedData extends PacketWorldStreaming
 		out.writeInt(x);
 		out.writeInt(y);
 		out.writeInt(z);
-		if (data == null || data.length == 0)
-			out.writeInt(0);
-		else
-		{
-			out.writeInt(data.length);
-			out.write(data);
-		}
+	
+		out.writeInt(data.voxelCompressedData.length);
+		out.write(data.voxelCompressedData);
+		
+		out.writeInt(data.voxelComponentsCompressedData.length);
+		out.write(data.voxelComponentsCompressedData);
+		
+		out.writeInt(data.entitiesCompressedData.length);
+		out.write(data.entitiesCompressedData);
 	}
 
 	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException
@@ -60,25 +62,28 @@ public class PacketChunkCompressedData extends PacketWorldStreaming
 		x = in.readInt();
 		y = in.readInt();
 		z = in.readInt();
-		//Thread.dumpStack();
 		
-		int length = in.readInt();
+		int voxelCompressedDataLength = in.readInt();
+		byte[] voxelCompressedData;
+		assert (voxelCompressedDataLength > 0);
+		voxelCompressedData = new byte[voxelCompressedDataLength];
+		in.readFully(voxelCompressedData, 0, voxelCompressedDataLength);
 		
-		if(length > 0)
-		{
-			data = new byte[length];
-			in.readFully(data, 0, length);
-		}
-		else
-			data = null;
+		int voxelComponentsCompressedDataLength = in.readInt();
+		byte[] voxelComponentsCompressedData;
+		assert (voxelComponentsCompressedDataLength > 0);
+		voxelComponentsCompressedData = new byte[voxelComponentsCompressedDataLength];
+		in.readFully(voxelComponentsCompressedData, 0, voxelComponentsCompressedDataLength);
 		
+		int entitiesCompressedDataLength = in.readInt();
+		byte[] entitiesCompressedData;
+		assert (entitiesCompressedDataLength > 0);
+		entitiesCompressedData = new byte[entitiesCompressedDataLength];
+		in.readFully(entitiesCompressedData, 0, entitiesCompressedDataLength);
+		
+		
+		data = new CompressedData(voxelCompressedData, voxelComponentsCompressedData, entitiesCompressedData);
 		//No fancy processing here, these packets are handled automatically by the IO controller on the client due to their 
 		//PacketWorldStreaming nature
-	}
-
-	public void setPosition(int x, int y, int z) {
-		this.x = x;
-		this.y = y;
-		this.z = z;
 	}
 }

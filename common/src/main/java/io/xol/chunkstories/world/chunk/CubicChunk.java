@@ -5,6 +5,7 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.events.voxel.WorldModificationCause;
 import io.xol.chunkstories.api.exceptions.world.WorldException;
 import io.xol.chunkstories.api.math.LoopingMathHelper;
+import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.packets.PacketVoxelUpdate;
 import io.xol.chunkstories.api.player.Player;
 
@@ -25,7 +26,9 @@ import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.Region;
+import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.entity.EntitySerializer;
+import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.voxel.components.VoxelComponentsHolder;
 import io.xol.chunkstories.world.WorldImplementation;
@@ -35,7 +38,6 @@ import io.xol.engine.concurrency.SimpleLock;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashMap;
@@ -133,6 +135,11 @@ public class CubicChunk implements Chunk
 
 	public CubicChunk(ChunkHolderImplementation holder, int chunkX, int chunkY, int chunkZ)
 	{
+		this(holder, chunkX, chunkY, chunkZ, null);
+	}
+
+	public CubicChunk(ChunkHolderImplementation holder, int chunkX, int chunkY, int chunkZ, CompressedData data)
+	{
 		this.chunkHolder = holder;
 		
 		this.holdingRegion = holder.getRegion();
@@ -143,76 +150,83 @@ public class CubicChunk implements Chunk
 		this.chunkZ = chunkZ;
 		
 		this.uuid = ((chunkX << world.getWorldInfo().getSize().bitlengthOfVerticalChunksCoordinates) | chunkY ) << world.getWorldInfo().getSize().bitlengthOfHorizontalChunksCoordinates | chunkZ;
-	}
 
-	public CubicChunk(ChunkHolderImplementation holder, int chunkX, int chunkY, int chunkZ, CompressedData data)
-	{
-		this(holder, chunkX, chunkY, chunkZ);
-
-		try {
-			this.chunkVoxelData = data.getVoxelData();
-			
-			if(data.voxelComponentsCompressedData != null) {
-				ByteArrayInputStream bais = new ByteArrayInputStream(data.voxelComponentsCompressedData);
-				DataInputStream dis = new DataInputStream(bais);
-
-				byte[] smallArray = new byte[4096];
-				ByteArrayInputStream bias = new ByteArrayInputStream(smallArray);
-				DataInputStream dias = new DataInputStream(bias);
+		if(data != null ) {
+			try {
+				this.chunkVoxelData = data.getVoxelData();
 				
-				byte keepGoing = dis.readByte();
-				while(keepGoing != 0x00) {
-					int index = dis.readInt();
-					VoxelComponentsHolder components = new VoxelComponentsHolder(this, index);
-					voxelComponents.put(index, components);
+				if(data.voxelComponentsCompressedData != null) {
+					ByteArrayInputStream bais = new ByteArrayInputStream(data.voxelComponentsCompressedData);
+					DataInputStream dis = new DataInputStream(bais);
+	
+					byte[] smallArray = new byte[4096];
+					ByteArrayInputStream bias = new ByteArrayInputStream(smallArray);
+					DataInputStream dias = new DataInputStream(bias);
 					
-					String componentName = dis.readUTF();
-					while(!componentName.equals("\n")) {
-						//Read however many bytes this component wrote
-						int bytes = dis.readShort();
-						dis.readFully(smallArray, 0, bytes);
+					byte keepGoing = dis.readByte();
+					while(keepGoing != 0x00) {
+						int index = dis.readInt();
+						VoxelComponentsHolder components = new VoxelComponentsHolder(this, index);
+						voxelComponents.put(index, components);
 						
-						//Call the block's onPlace method as to make it spawn the necessary components
-						ChunkVoxelContext peek = peek(components.getX(), components.getY(), components.getZ());
-						if(peek.getVoxel() instanceof VoxelLogic) {
-							((VoxelLogic)peek.getVoxel()).onPlace(peek, peek.getData(), null);
+						String componentName = dis.readUTF();
+						while(!componentName.equals("\n")) {
+							//Read however many bytes this component wrote
+							int bytes = dis.readShort();
+							dis.readFully(smallArray, 0, bytes);
 							
-							VoxelComponent component = components.get(componentName);
-							if(component == null) {
-								System.out.println("Error, a component named " + componentName + " was saved, but it was not recreated by the voxel onPlace() method.");
-							}
-							else {
-								//Hope for the best
-								component.pull(holder.getRegion().handler, dias);
+							//Call the block's onPlace method as to make it spawn the necessary components
+							ChunkVoxelContext peek = peek(components.getX(), components.getY(), components.getZ());
+							if(peek.getVoxel() instanceof VoxelLogic) {
+								((VoxelLogic)peek.getVoxel()).onPlace(peek, peek.getData(), null);
+								
+								VoxelComponent component = components.get(componentName);
+								if(component == null) {
+									System.out.println("Error, a component named " + componentName + " was saved, but it was not recreated by the voxel onPlace() method.");
+								}
+								else {
+									//Hope for the best
+									component.pull(holder.getRegion().handler, dias);
+								}
 							}
 						}
 					}
 				}
+				
+				if(data.entitiesCompressedData != null) {
+					ByteArrayInputStream bais = new ByteArrayInputStream(data.entitiesCompressedData);
+					DataInputStream dis = new DataInputStream(bais);
+	
+					//Read entities until we hit -1
+					Entity entity = null;
+					do
+					{
+						entity = EntitySerializer.readEntityFromStream(dis, holder.getRegion().handler, world);
+						if (entity != null) {
+							this.addEntity(entity);
+							world.addEntity(entity);
+						}
+					}
+					while (entity != null);
+				}
+			} catch (UnloadableChunkDataException | IOException | WorldException e) {
+		
+				System.out.println(e.getMessage());
+				e.printStackTrace();
 			}
 			
-			if(data.entitiesCompressedData != null) {
-				ByteArrayInputStream bais = new ByteArrayInputStream(data.entitiesCompressedData);
-				DataInputStream dis = new DataInputStream(bais);
-
-				//Read entities until we hit -1
-				Entity entity = null;
-				do
-				{
-					entity = EntitySerializer.readEntityFromStream(dis, holder.getRegion().handler, world);
-					if (entity != null) {
-						this.addEntity(entity);
-						world.addEntity(entity);
-					}
-				}
-				while (entity != null);
-			}
-		} catch (UnloadableChunkDataException | IOException | WorldException e) {
-	
-			System.out.println(e.getMessage());
-			e.printStackTrace();
+			computeOcclusionTable();
 		}
 		
-		computeOcclusionTable();
+		// Send chunk to whoever already subscribed
+		if(data == null) 
+			data = new CompressedData(null, null, null);
+		Packet packet = new PacketChunkCompressedData(this, data);
+		for(WorldUser user : chunkHolder.users) {
+			if(user instanceof Player) {
+				((Player)user).pushPacket(packet);
+			}
+		}
 	}
 
 	static ThreadLocal<Deque<Integer>> occlusionFaces = new ThreadLocal<Deque<Integer>>()
@@ -499,7 +513,8 @@ public class CubicChunk implements Chunk
 						for(int iz = sz; iz <= ez; iz++)
 						{
 							Chunk chunk = world.getChunk(ix, iy, iz);
-							((ChunkRenderable) chunk).markForReRender();
+							if(chunk != null)
+								((ChunkRenderable) chunk).markForReRender();
 						}
 			}
 			
@@ -2110,7 +2125,7 @@ public class CubicChunk implements Chunk
 				}
 
 		int oldData = world.peekSimple(x, y, z);
-		world.pokeSimple(x + chunkX * 32, y + chunkY * 32, z + chunkZ * 32, data);
+		world.pokeSimpleSilently(x + chunkX * 32, y + chunkY * 32, z + chunkZ * 32, data);
 		
 		Chunk c = world.getChunk((x + chunkX * 32) / 32, (y + chunkY * 32) / 32, (z + chunkZ * 32) / 32);
 		if (c != null && oldData != data)
@@ -2235,7 +2250,8 @@ public class CubicChunk implements Chunk
 		@Override
 		public Voxel getVoxel()
 		{
-			return world.getGameContext().getContent().voxels().getVoxelById(data);
+			Voxel voxel = world.getGameContext().getContent().voxels().getVoxelById(data);
+			return voxel == null ? world.getGameContext().getContent().voxels().getVoxelById(0) : voxel;
 		}
 
 		@Override
@@ -2326,7 +2342,7 @@ public class CubicChunk implements Chunk
 	public void addEntity(Entity entity) {
 		entitiesLock.lock();
 		localEntities.add(entity);
-		entitiesLock.lock();
+		entitiesLock.unlock();
 	}
 
 	@Override

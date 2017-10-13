@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
+import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.Content.EntityTypes;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityType;
@@ -49,7 +50,7 @@ public class EntityTypeImpl extends GenericNamedConfigurable implements EntityTy
 			else
 			{
 				@SuppressWarnings("rawtypes")
-				Class[] types = { EntityType.class, World.class, Double.TYPE, Double.TYPE , Double.TYPE  };
+				Class[] types = { EntityType.class, Location.class  };
 				
 				this.constructor = (Constructor<? extends Entity>) entityClass.getConstructor(types);
 				
@@ -75,8 +76,8 @@ public class EntityTypeImpl extends GenericNamedConfigurable implements EntityTy
 	}
 
 	@Override
-	public Entity create(World world) {
-		Object[] parameters = { this, world, 0d, 0d, 0d };
+	public Entity create(Location location) {
+		Object[] parameters = { this, location };
 		try
 		{
 			return constructor.newInstance(parameters);
@@ -84,7 +85,7 @@ public class EntityTypeImpl extends GenericNamedConfigurable implements EntityTy
 		catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
 		{
 			//This is bad
-			ChunkStoriesLoggerImplementation.getInstance().log("Couldn't instanciate entity "+this+" in world "+world);
+			ChunkStoriesLoggerImplementation.getInstance().log("Couldn't instanciate entity "+this+" at " + location);
 			e.printStackTrace();
 			e.printStackTrace(ChunkStoriesLoggerImplementation.getInstance().getPrintWriter());
 			return null;

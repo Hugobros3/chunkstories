@@ -3,7 +3,6 @@ package io.xol.chunkstories.world.chunk;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Iterator;
@@ -17,6 +16,7 @@ import org.lwjgl.system.MemoryUtil;
 
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityUnsaveable;
+import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.voxel.components.VoxelComponent;
 import io.xol.chunkstories.api.world.WorldClient;
@@ -29,6 +29,7 @@ import net.jpountz.lz4.LZ4Compressor;
 import net.jpountz.lz4.LZ4Factory;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.entity.EntitySerializer;
+import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
 import io.xol.chunkstories.renderer.chunks.RenderableChunk;
 import io.xol.chunkstories.voxel.components.VoxelComponentsHolder;
 
@@ -44,7 +45,7 @@ public class ChunkHolderImplementation implements ChunkHolder
 	private final int uuid;
 	
 	private final Collection<CubicChunk> regionLoadedChunks; //To update the parent object's collection (used in iterator)
-	private Set<WeakReference<WorldUser>> users = ConcurrentHashMap.newKeySet(); //Keep tracks of who needs this data loaded
+	protected final Set<WorldUser> users = ConcurrentHashMap.newKeySet(); //Keep tracks of who needs this data loaded
 	
 	//The compressed version of the chunk data
 	private SafeWriteLock compressedDataLock = new SafeWriteLock();
@@ -71,7 +72,7 @@ public class ChunkHolderImplementation implements ChunkHolder
 
 	// LZ4 compressors & decompressors stuff
 	private static LZ4Factory factory = LZ4Factory.fastestInstance();
-	private static LZ4Compressor compressor = factory.fastCompressor();
+	//private static LZ4Compressor compressor = factory.fastCompressor();
 	
 	@Override
 	/** Publically exposed compressChunkData method */
@@ -101,10 +102,14 @@ public class ChunkHolderImplementation implements ChunkHolder
 			ByteBuffer uncompressedStuff = MemoryUtil.memAlloc(uncompressedStuffBufferSize);
 			
 			uncompressedStuff.asIntBuffer().put(chunk.chunkVoxelData);
-			uncompressedStuff.flip();
+			//uncompressedStuff.flip();
 			
 			ByteBuffer compressedStuff = MemoryUtil.memAlloc(uncompressedStuffBufferSize + 2048);
+			
+			LZ4Compressor compressor = factory.fastCompressor();
 			compressor.compress(uncompressedStuff, compressedStuff);
+			
+			System.out.println(compressedStuff.position() + ": "+compressedStuff.limit());
 			
 			//No longer need that buffer
 			MemoryUtil.memFree(uncompressedStuff);
@@ -264,9 +269,9 @@ public class ChunkHolderImplementation implements ChunkHolder
 	@Override
 	public Iterator<WorldUser> getChunkUsers()
 	{
-		return new Iterator<WorldUser>()
+		/*return new Iterator<WorldUser>()
 		{
-			Iterator<WeakReference<WorldUser>> i = users.iterator();
+			Iterator<WorldUser> i = users.iterator();
 			WorldUser user;
 
 			@Override
@@ -288,13 +293,14 @@ public class ChunkHolderImplementation implements ChunkHolder
 				return u;
 			}
 
-		};
+		};*/
+		return users.iterator();
 	}
 
 	@Override
 	public boolean registerUser(WorldUser user)
 	{
-		Iterator<WeakReference<WorldUser>> i = users.iterator();
+		/*Iterator<WorldUser> i = users.iterator();
 		while (i.hasNext())
 		{
 			WeakReference<WorldUser> w = i.next();
@@ -303,12 +309,24 @@ public class ChunkHolderImplementation implements ChunkHolder
 				i.remove();
 			else if (u != null && u.equals(user))
 				return false;
-		}
+		}*/
 		
 		//if(users.size() == 1)
 		//	System.out.println("red flag");
 		
-		users.add(new WeakReference<WorldUser>(user));
+		users.add(user);
+		
+		//TODO lock
+		CubicChunk chunk = this.chunk;
+		
+		//Chunk already loaded ? Compress and send it immediately
+		if(chunk != null) {
+			if(user instanceof Player) {
+				Player player = (Player)user;
+				//TODO recompress chunk data each tick it's needed
+				player.pushPacket(new PacketChunkCompressedData(chunk, this.getCompressedData()));
+			}
+		}
 		
 		//This runs under a lock so we can afford to be lazy about thread safety
 		if(chunk == null && loadChunkTask == null) {
@@ -325,14 +343,11 @@ public class ChunkHolderImplementation implements ChunkHolder
 	 */
 	public boolean unregisterUser(WorldUser user)
 	{
-		Iterator<WeakReference<WorldUser>> i = users.iterator();
+		Iterator<WorldUser> i = users.iterator();
 		while (i.hasNext())
 		{
-			WeakReference<WorldUser> w = i.next();
-			WorldUser u = w.get();
-			if (u == null)
-				i.remove();
-			else if (u != null && u.equals(user))
+			WorldUser u = i.next();;
+			if (u.equals(user))
 				i.remove();
 		}
 		
@@ -349,18 +364,7 @@ public class ChunkHolderImplementation implements ChunkHolder
 	 * Iterates over users references, cleans null ones and if the result is an empty list it promptly unloads the chunk.
 	 */
 	public boolean unloadsIfUnused()
-	{
-		Iterator<WeakReference<WorldUser>> i = users.iterator();
-		while (i.hasNext())
-		{
-			WeakReference<WorldUser> w = i.next();
-			WorldUser u = w.get();
-			if (u == null)
-				i.remove();
-			
-			//System.out.println("chunk used by "+u);
-		}
-		
+	{	
 		if(users.isEmpty())
 		{
 			unloadChunk();
@@ -372,7 +376,7 @@ public class ChunkHolderImplementation implements ChunkHolder
 
 	public int countUsers()
 	{
-		int c = 0;
+		/*int c = 0;
 		
 		Iterator<WeakReference<WorldUser>> i = users.iterator();
 		while (i.hasNext())
@@ -385,7 +389,8 @@ public class ChunkHolderImplementation implements ChunkHolder
 				c++;
 		}
 		
-		return c;
+		return c;*/
+		return users.size();
 	}
 
 	@Override

@@ -215,7 +215,7 @@ public abstract class WorldImplementation implements World
 			
 			//TODO EntitySimplePlayer ?
 			if(entity == null || ((entity instanceof EntityLiving) && (((EntityLiving) entity).isDead())))
-				entity = this.gameContext.getContent().entities().getEntityTypeByName("player").create(this);
+				entity = this.gameContext.getContent().entities().getEntityTypeByName("player").create(actualSpawnLocation);
 				//entity = new EntityPlayer(this, 0d, 0d, 0d, player.getName()); //Default entity
 			else
 				entity.setUUID(-1);
@@ -434,7 +434,12 @@ public abstract class WorldImplementation implements World
 		try {
 			return peek(x, y, z);
 		} catch (WorldException e) {
-			return new DummyContext(new DummyChunk(), x, y, z, 0);
+			return new DummyContext(new DummyChunk(), x, y, z, 0) {
+				@Override
+				public Voxel getVoxel() {
+					return getGameContext().getContent().voxels().getVoxelById(0);
+				}
+			};
 		}
 	}
 

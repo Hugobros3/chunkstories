@@ -3,13 +3,10 @@ package io.xol.chunkstories.world.io;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
 import io.xol.chunkstories.net.packets.PacketRegionSummary;
 import io.xol.chunkstories.server.net.UserConnection;
 import io.xol.chunkstories.workers.TaskExecutor;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
-import io.xol.chunkstories.world.region.RegionImplementation;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -32,7 +29,7 @@ public class IOTasksMultiplayerServer extends IOTasks
 	}
 	MessageDigest md = null;
 	
-	class IOTaskSendCompressedChunk extends IOTask
+	/*class IOTaskSendCompressedChunk extends IOTask
 	{
 		UserConnection client;
 		int chunkX, chunkY, chunkZ;
@@ -102,11 +99,11 @@ public class IOTasksMultiplayerServer extends IOTasks
 		}
 	}
 
-	public void requestCompressedChunkSend(int x, int y, int z, UserConnection sender)
+	public void requestCompressedChunkSend_(int x, int y, int z, UserConnection sender)
 	{
 		IOTaskSendCompressedChunk task = new IOTaskSendCompressedChunk(x, y, z, sender);
 		scheduleTask(task);
-	}
+	}*/
 	
 	class IOTaskSendRegionSummary extends IOTask
 	{
