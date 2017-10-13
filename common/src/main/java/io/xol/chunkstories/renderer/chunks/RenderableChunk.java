@@ -8,6 +8,7 @@ import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderDataHolder.RenderLodLevel;
 import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
+import io.xol.chunkstories.world.chunk.CompressedData;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 
 public class RenderableChunk extends CubicChunk implements ChunkRenderable {
@@ -28,7 +29,7 @@ public class RenderableChunk extends CubicChunk implements ChunkRenderable {
 			this.chunkRenderData = null;
 	}
 
-	public RenderableChunk(ChunkHolderImplementation holder, int chunkX, int chunkY, int chunkZ, int[] data) {
+	public RenderableChunk(ChunkHolderImplementation holder, int chunkX, int chunkY, int chunkZ, CompressedData data) {
 		super(holder, chunkX, chunkY, chunkZ, data);
 		
 		if(world instanceof WorldClient)

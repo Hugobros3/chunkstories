@@ -4,13 +4,11 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
 
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.interfaces.EntityUnsaveable;
 import io.xol.chunkstories.entity.EntitySerializer;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
-import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
+import io.xol.chunkstories.world.chunk.CompressedData;
 import io.xol.chunkstories.world.region.RegionImplementation;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -48,10 +46,11 @@ public class CSFRegionFile0x2C extends CSFRegionFile
 						if (compressedDataSize > 0) {
 							byte[] buffer = new byte[compressedDataSize];
 							in.readFully(buffer, 0, compressedDataSize);
-							owner.getChunkHolder(a, b, c).setCompressedData(buffer);
+							
+							owner.getChunkHolder(a, b, c).setCompressedData(new CompressedData(buffer, null, null));
 						}
 						else if(compressedDataSize == air_chunk_magic_number) {
-							owner.getChunkHolder(a, b, c).setCompressedData(ChunkHolderImplementation.AIR_CHUNK_NO_DATA_SAVED);
+							owner.getChunkHolder(a, b, c).setCompressedData(new CompressedData(null, null, null));
 						}
 						else if(compressedDataSize == 0x00000000){
 							owner.getChunkHolder(a, b, c).setCompressedData(null);
@@ -104,66 +103,7 @@ public class CSFRegionFile0x2C extends CSFRegionFile
 
 	public void save(DataOutputStream dos) throws IOException
 	{
-		//Create the necessary directory structure if needed
-		/*file.getParentFile().mkdirs();
-		//if (!file.exists())
-		//	file.createNewFile();
-		
-		FileOutputStream oute = new FileOutputStream(file);
-		DataOutputStream dos = new DataOutputStream(oute);*/
-		
-		try {
-			byte[][][][] compressedVersions = new byte[8][8][8][];
-			
-			//First we write the header
-			for (int a = 0; a < 8; a++)
-				for (int b = 0; b < 8; b++)
-					for (int c = 0; c < 8; c++)
-					{
-						byte[] chunkCompressedVersion = owner.getChunkHolder(a, b, c).getCompressedData();
-						int chunkSize = 0;
-						
-						if(chunkCompressedVersion == ChunkHolderImplementation.AIR_CHUNK_NO_DATA_SAVED) {
-							chunkSize = air_chunk_magic_number;
-						}
-						else if (chunkCompressedVersion != null)
-						{
-							//Save the reference to ensure coherence with later part (in case chunk gets re-compressed in the meantime)
-							compressedVersions[a][b][c] = chunkCompressedVersion;
-							chunkSize = chunkCompressedVersion.length;
-						}
-						
-						dos.writeInt(chunkSize);
-					}
-			
-			for (int a = 0; a < 8; a++)
-				for (int b = 0; b < 8; b++)
-					for (int c = 0; c < 8; c++)
-						if (compressedVersions[a][b][c] != null)
-							dos.write(compressedVersions[a][b][c]);
-						
-			//don't tick the world entities until we get this straight - this is about not duplicating entities
-			owner.world.entitiesLock.readLock().lock();
-	
-			Iterator<Entity> holderEntities = owner.getEntitiesWithinRegion();
-			while (holderEntities.hasNext())
-			{
-				Entity entity = holderEntities.next();
-				//Don't save controllable entities
-				if (entity.exists() && !(entity instanceof EntityUnsaveable && !((EntityUnsaveable) entity).shouldSaveIntoRegion()))
-				{
-					EntitySerializer.writeEntityToStream(dos, this, entity);
-				}
-			}
-			//dos.writeLong(-1);
-			EntitySerializer.writeEntityToStream(dos, this, null);
-			
-			owner.world.entitiesLock.readLock().unlock();
-
-		}
-		finally {
-			dos.close();
-		}
+		throw new UnsupportedOperationException("Saving in older formats isn't supported.");
 	}
 
 	public void finishSavingOperations()

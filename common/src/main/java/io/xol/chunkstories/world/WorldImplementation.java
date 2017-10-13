@@ -242,7 +242,6 @@ public abstract class WorldImplementation implements World
 		{
 			long nextUUID = nextEntityId();
 			entity.setUUID(nextUUID);
-			//System.out.println("Attributed UUID " + nextUUID + " to " + entity);
 		}
 
 		Entity check = this.getEntityByUUID(entity.getUUID());
@@ -256,12 +255,14 @@ public abstract class WorldImplementation implements World
 
 		//Add it to the world
 		entity.markHasSpawned();
-		//Location updatedLocation = entity.getLocation();
 		
 		assert entity.getWorld() == this;
-		//updatedLocation.setWorld(this);
-		//entity.setLocation(updatedLocation);
 
+		Chunk chunk = this.getChunkWorldCoordinates(entity.getLocation());
+		if(chunk != null) {
+			((EntityBase)entity).positionComponent.trySnappingToChunk();
+		}
+		
 		this.entities.insertEntity(entity);
 
 		//System.out.println("added " + entity + "to the worlde");

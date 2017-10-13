@@ -1,7 +1,6 @@
 package io.xol.chunkstories.world.region;
 
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.interfaces.EntityUnsaveable;
 import io.xol.chunkstories.api.util.CompoundIterator;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.world.WorldMaster;
@@ -11,10 +10,10 @@ import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
+import io.xol.chunkstories.world.chunk.CompressedData;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.io.IOTasks.IOTask;
 import io.xol.chunkstories.world.region.format.CSFRegionFile;
-import io.xol.chunkstories.world.region.format.CSFRegionFile0x2D;
 //import io.xol.chunkstories.world.region.format.CSFRegionFile0x2C;
 import io.xol.engine.concurrency.SafeWriteLock;
 
@@ -178,7 +177,7 @@ public class RegionImplementation implements Region
 
 	public int countUsers()
 	{
-		int c = 0;
+		int count = 0;
 		
 		Iterator<WeakReference<WorldUser>> i = users.iterator();
 		while (i.hasNext())
@@ -188,23 +187,13 @@ public class RegionImplementation implements Region
 			if (u == null)
 				i.remove();
 			else
-			{
-				//System.out.println(u);
-				//Remainings of a very long and drawn out garbage collection debugging session :/
-				/*if(u instanceof ServerPlayer)
-				{
-					ServerPlayer p = (ServerPlayer)u;
-					System.out.println("Region used by "+p);
-				}*/
-				//System.out.println(u);
-				c++;
-			}
+				count++;
 		}
 		
-		return c;
+		return count;
 	}
 	
-	public byte[] getCompressedData(int chunkX, int chunkY, int chunkZ)
+	public CompressedData getCompressedData(int chunkX, int chunkY, int chunkZ)
 	{
 		return chunkHolders[(chunkX & 7) * 64 + (chunkY & 7) * 8 + (chunkZ & 7)].getCompressedData();
 	}
@@ -277,76 +266,12 @@ public class RegionImplementation implements Region
 		//No need to unload chunks, this is assumed when we unload the holder
 		//unloadAllChunks();
 
-		world.entitiesLock.writeLock().lock();
-
-		//int countRemovedEntities = 0;
-
-		Iterator<Entity> i = this.getEntitiesWithinRegion();
-		while (i.hasNext())
-		{
-			Entity entity = i.next();
-			//i.remove();
-
-			//Skip entities that shouldn't be saved
-			if ((entity instanceof EntityUnsaveable && !((EntityUnsaveable) entity).shouldSaveIntoRegion()))
-				continue;
-
-			//System.out.println("Unloading entity"+entity+" currently in chunk holder "+this);
-
-			//We keep the inner reference so serialization can still write entities contained within
-			world.removeEntityFromList(entity);
-			//countRemovedEntities++;
-		}
-
-		world.entitiesLock.writeLock().unlock();
 		//world.entitiesLock.unlock();
 
 		//Remove the reference in the world to this
 		this.getWorld().getRegionsHolder().removeRegion(this);
 	}
 
-	/*
-	public void generateAll()
-	{
-		WorldUser generatorUser = new WorldUser() {
-			
-		};
-		
-		// Generate terrain for the chunk holder !
-		for (int a = 0; a < 8; a++)
-			for (int b = 0; b < 8; b++)
-				for (int c = 0; c < 8; c++)
-				{
-					//CubicChunk chunk = data[a][b][c];
-					int cx = this.regionX * 8 + a;
-					int cy = this.regionY * 8 + b;
-					int cz = this.regionZ * 8 + c;
-					
-					ChunkHolder ch = this.chunkHolders[a * 64 + b * 8 + c];
-					ch.registerUser(generatorUser);
-					ch.waitForLoading().traverse();
-					
-					Chunk chunk = ch.getChunk();
-					
-					if(chunk != null)
-						world.getGenerator().generateChunk(chunk);
-					else
-						world.getGameContext().logger().log("generateAll() got called but chunk ["+cx+", "+cy+", "+cz+"] is not aquired/loaded. Skipping.", LogType.WORLD_GENERATION, LogLevel.WARN);
-					
-					ch.unregisterUser(generatorUser);
-					
-					//chunk = world.getGenerator().generateChunk(this, cx, cy, cz);
-
-					//if (chunk == null)
-					//	System.out.println("Notice : generator " + world.getGenerator() + " produced a null chunk.");
-
-					//this.chunkHolders[a * 64 + b * 8 + c].setChunk((CubicChunk) chunk);
-					//compressChunkData(data[a][b][c]);
-				}
-
-		compressAll();
-	}
-	 */
 	@Override
 	public IOTask save()
 	{

@@ -9,6 +9,7 @@ import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketWorldStreaming;
 import io.xol.chunkstories.api.net.PacketsProcessor;
 import io.xol.chunkstories.api.world.WorldMaster;
+import io.xol.chunkstories.world.chunk.CompressedData;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -22,7 +23,7 @@ public class PacketChunkCompressedData extends PacketWorldStreaming
 		
 	}
 	
-	public PacketChunkCompressedData(CubicChunk c)
+	public PacketChunkCompressedData(CubicChunk c, CompressedData data)
 	{
 		super((WorldMaster)c.getWorld());
 		
@@ -30,11 +31,11 @@ public class PacketChunkCompressedData extends PacketWorldStreaming
 		this.y = c.getChunkY();
 		this.z = c.getChunkZ();
 		
-		this.data = c.holder().getCompressedData();
+		this.data = data;
 	}
 
 	public int x, y, z;
-	public byte[] data = null;
+	public CompressedData data = null;
 
 	@Override
 	public void send(PacketDestinator destinator, DataOutputStream out) throws IOException

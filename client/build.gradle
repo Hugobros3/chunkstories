@@ -23,6 +23,7 @@ description = 'Multiplatform PC Client using LWJGL3'
 
 /* LWJGL3 deps */
 
+/*
 import org.gradle.internal.os.OperatingSystem
 
 switch ( OperatingSystem.current() ) {
@@ -35,41 +36,40 @@ switch ( OperatingSystem.current() ) {
 	case OperatingSystem.MAC_OS:
 		project.ext.lwjglNatives = "natives-macos"
 		break
-}
+}*/
 
-project.ext.natives = ["natives-windows", "natives-linux", "natives-macos"];
-
+/*project.ext.natives = ["natives-windows", "natives-linux", "natives-macos"];
 project.ext.lwjglVersion = "3.1.1"
 
 configurations {
 	multiplatform {
 		extendsFrom runtime
 	}
-}
+}*/
 
 dependencies {
 
 	//LWJGL3 masterrace
-	compile "org.lwjgl:lwjgl:${lwjglVersion}"
+	//compile "org.lwjgl:lwjgl:${lwjglVersion}"
 	compile "org.lwjgl:lwjgl-glfw:${lwjglVersion}"
-	compile "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}"
+	//compile "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}"
 	compile "org.lwjgl:lwjgl-openal:${lwjglVersion}"
 	compile "org.lwjgl:lwjgl-opengl:${lwjglVersion}"
 	compile "org.lwjgl:lwjgl-stb:${lwjglVersion}"
 	compile "org.lwjgl:lwjgl-tinyfd:${lwjglVersion}"
 	//When running on our debug computer, it's safe to assume the OS that will run the game is the same than the one who'll compile it.
-	runtime "org.lwjgl:lwjgl:${lwjglVersion}:${lwjglNatives}"
+	//runtime "org.lwjgl:lwjgl:${lwjglVersion}:${lwjglNatives}"
 	runtime "org.lwjgl:lwjgl-glfw:${lwjglVersion}:${lwjglNatives}"
-	runtime "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}:${lwjglNatives}"
+	//runtime "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}:${lwjglNatives}"
 	runtime "org.lwjgl:lwjgl-openal:${lwjglVersion}:${lwjglNatives}"
 	runtime "org.lwjgl:lwjgl-opengl:${lwjglVersion}:${lwjglNatives}"
 	runtime "org.lwjgl:lwjgl-stb:${lwjglVersion}:${lwjglNatives}"
 	runtime "org.lwjgl:lwjgl-tinyfd:${lwjglVersion}:${lwjglNatives}"
 	//When compiling a redistribuable jar, we need ALL natives in it!
 	project.ext.natives.each {
-		multiplatform ("org.lwjgl:lwjgl:${lwjglVersion}:" + it)
+		//multiplatform ("org.lwjgl:lwjgl:${lwjglVersion}:" + it)
 		multiplatform "org.lwjgl:lwjgl-glfw:${lwjglVersion}:" + it
-		multiplatform "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}:" + it
+		//multiplatform "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}:" + it
 		multiplatform "org.lwjgl:lwjgl-openal:${lwjglVersion}:" + it
 		multiplatform "org.lwjgl:lwjgl-opengl:${lwjglVersion}:" + it
 		multiplatform "org.lwjgl:lwjgl-stb:${lwjglVersion}:" + it

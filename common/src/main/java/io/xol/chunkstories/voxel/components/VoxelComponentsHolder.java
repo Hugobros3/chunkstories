@@ -42,6 +42,10 @@ public class VoxelComponentsHolder implements VoxelComponents {
 	public int getZ() {
 		return chunk.getChunkZ() * 32 + (index % 32);
 	}
+	
+	public int getIndex() {
+		return index;
+	}
 
 	@Override
 	public void erase() {

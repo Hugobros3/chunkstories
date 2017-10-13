@@ -17,6 +17,7 @@ import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelLogic;
 import io.xol.chunkstories.api.voxel.VoxelSides;
+import io.xol.chunkstories.api.voxel.components.VoxelComponent;
 import io.xol.chunkstories.api.voxel.components.VoxelComponents;
 import io.xol.chunkstories.api.world.EditableVoxelContext;
 import io.xol.chunkstories.api.world.World;
@@ -24,11 +25,17 @@ import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.Region;
+import io.xol.chunkstories.entity.EntitySerializer;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.voxel.components.VoxelComponentsHolder;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.region.RegionImplementation;
+import io.xol.engine.concurrency.SimpleLock;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashMap;
@@ -69,8 +76,11 @@ public class CubicChunk implements Chunk
 	
 	public AtomicBoolean needRelightning = new AtomicBoolean(true);
 	
-	private final Map<Integer, VoxelComponentsHolder> voxelComponents = new HashMap<Integer, VoxelComponentsHolder>();
-	private final Set<Entity> localEntities = ConcurrentHashMap.newKeySet();
+	protected final Map<Integer, VoxelComponentsHolder> voxelComponents = new HashMap<Integer, VoxelComponentsHolder>();
+	protected final Set<Entity> localEntities = ConcurrentHashMap.newKeySet();
+
+	protected final SimpleLock componentsLock = new SimpleLock();
+	protected final SimpleLock entitiesLock = new SimpleLock();
 
 	// Occlusion lookup, there are 6 sides you can enter a chunk by and 5 sides you can exit it by. we use 6 coz it's easier and who the fuck cares about a six-heights of a byte
 	public boolean occlusionSides[][] = new boolean[6][6];
@@ -135,13 +145,73 @@ public class CubicChunk implements Chunk
 		this.uuid = ((chunkX << world.getWorldInfo().getSize().bitlengthOfVerticalChunksCoordinates) | chunkY ) << world.getWorldInfo().getSize().bitlengthOfHorizontalChunksCoordinates | chunkZ;
 	}
 
-	public CubicChunk(ChunkHolderImplementation holder, int chunkX, int chunkY, int chunkZ, int[] data)
+	public CubicChunk(ChunkHolderImplementation holder, int chunkX, int chunkY, int chunkZ, CompressedData data)
 	{
 		this(holder, chunkX, chunkY, chunkZ);
 
-		assert data.length == 32 * 32 * 32;
+		try {
+			this.chunkVoxelData = data.getVoxelData();
+			
+			if(data.voxelComponentsCompressedData != null) {
+				ByteArrayInputStream bais = new ByteArrayInputStream(data.voxelComponentsCompressedData);
+				DataInputStream dis = new DataInputStream(bais);
 
-		this.chunkVoxelData = data;
+				byte[] smallArray = new byte[4096];
+				ByteArrayInputStream bias = new ByteArrayInputStream(smallArray);
+				DataInputStream dias = new DataInputStream(bias);
+				
+				byte keepGoing = dis.readByte();
+				while(keepGoing != 0x00) {
+					int index = dis.readInt();
+					VoxelComponentsHolder components = new VoxelComponentsHolder(this, index);
+					voxelComponents.put(index, components);
+					
+					String componentName = dis.readUTF();
+					while(!componentName.equals("\n")) {
+						//Read however many bytes this component wrote
+						int bytes = dis.readShort();
+						dis.readFully(smallArray, 0, bytes);
+						
+						//Call the block's onPlace method as to make it spawn the necessary components
+						ChunkVoxelContext peek = peek(components.getX(), components.getY(), components.getZ());
+						if(peek.getVoxel() instanceof VoxelLogic) {
+							((VoxelLogic)peek.getVoxel()).onPlace(peek, peek.getData(), null);
+							
+							VoxelComponent component = components.get(componentName);
+							if(component == null) {
+								System.out.println("Error, a component named " + componentName + " was saved, but it was not recreated by the voxel onPlace() method.");
+							}
+							else {
+								//Hope for the best
+								component.pull(holder.getRegion().handler, dias);
+							}
+						}
+					}
+				}
+			}
+			
+			if(data.entitiesCompressedData != null) {
+				ByteArrayInputStream bais = new ByteArrayInputStream(data.entitiesCompressedData);
+				DataInputStream dis = new DataInputStream(bais);
+
+				//Read entities until we hit -1
+				Entity entity = null;
+				do
+				{
+					entity = EntitySerializer.readEntityFromStream(dis, holder.getRegion().handler, world);
+					if (entity != null) {
+						this.addEntity(entity);
+						world.addEntity(entity);
+					}
+				}
+				while (entity != null);
+			}
+		} catch (UnloadableChunkDataException | IOException | WorldException e) {
+	
+			System.out.println(e.getMessage());
+			e.printStackTrace();
+		}
+		
 		computeOcclusionTable();
 	}
 
@@ -2254,17 +2324,31 @@ public class CubicChunk implements Chunk
 
 	@Override
 	public void addEntity(Entity entity) {
+		entitiesLock.lock();
 		localEntities.add(entity);
+		entitiesLock.lock();
 	}
 
 	@Override
 	public void removeEntity(Entity entity) {
+		entitiesLock.lock();
 		localEntities.remove(entity);
+		entitiesLock.unlock();
 	}
 	
 	@Override
 	public IterableIterator<Entity> getEntitiesWithinChunk()
 	{
-		return new IterableIteratorWrapper<Entity>(localEntities.iterator());
+		return new IterableIteratorWrapper<Entity>(localEntities.iterator()) {
+
+			@Override
+			public void remove() {
+
+				entitiesLock.lock();
+				super.remove();
+				entitiesLock.unlock();
+			}
+			
+		};
 	}
 }

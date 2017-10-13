@@ -3,16 +3,8 @@ package io.xol.chunkstories.world.region.format;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Iterator;
-
-import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.interfaces.EntityUnsaveable;
-import io.xol.chunkstories.entity.EntitySerializer;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
-import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
+import io.xol.chunkstories.world.chunk.CompressedData;
 import io.xol.chunkstories.world.region.RegionImplementation;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -56,13 +48,34 @@ public class CSFRegionFile0x2D extends CSFRegionFile
 						
 						//Compressed data was found, load it
 						if (compressedDataSize > 0) {
-							byte[] buffer = new byte[compressedDataSize];
-							in.readFully(buffer, 0, compressedDataSize);
-							owner.getChunkHolder(a, b, c).setCompressedData(buffer);
+							
+							//Load voxels section if it exists
+							int voxel_data_size = in.readInt();
+							byte[] voxelData = null;
+							if(voxel_data_size > 0) {
+								voxelData = new byte[voxel_data_size];
+								in.readFully(voxelData);
+							}
+
+							//Load voxels components section if it exists
+							int voxel_components_size = in.readInt();
+							byte[] voxelComponentsData = null;
+							if(voxel_components_size > 0) {
+								voxelComponentsData = new byte[voxel_components_size];
+								in.readFully(voxelComponentsData);
+							}
+
+							//Load entity section if it exists
+							int entities_size = in.readInt();
+							byte[] entitiesData = null;
+							if(entities_size > 0) {
+								entitiesData = new byte[entities_size];
+								in.readFully(entitiesData);
+							}
+							
+							owner.getChunkHolder(a, b, c).setCompressedData(new CompressedData(voxelData, voxelComponentsData, entitiesData));
 						}
-						else if(compressedDataSize == air_chunk_magic_number) {
-							owner.getChunkHolder(a, b, c).setCompressedData(ChunkHolderImplementation.AIR_CHUNK_NO_DATA_SAVED);
-						}
+						//No data exists here
 						else if(compressedDataSize == 0x00000000){
 							owner.getChunkHolder(a, b, c).setCompressedData(null);
 						}
@@ -75,7 +88,7 @@ public class CSFRegionFile0x2D extends CSFRegionFile
 			owner.setDiskDataLoaded(true);
 	
 			//don't tick the world entities until we get this straight
-			owner.world.entitiesLock.writeLock().lock();
+			/*owner.world.entitiesLock.writeLock().lock();
 	
 			try
 			{
@@ -97,7 +110,7 @@ public class CSFRegionFile0x2D extends CSFRegionFile
 				e.printStackTrace();
 			}
 	
-			owner.world.entitiesLock.writeLock().unlock();
+			owner.world.entitiesLock.writeLock().unlock();*/
 			
 			// Load in the voxel components yay
 			
@@ -110,38 +123,45 @@ public class CSFRegionFile0x2D extends CSFRegionFile
 	public void save(DataOutputStream dos) throws IOException
 	{	
 		try {
-			byte[][][][] compressedChunks = new byte[8][8][8][];
+			//Write the 16-byte header
+			dos.writeLong(6003953969960732739L);
+			dos.writeInt(0x2D);
+			dos.writeInt(2017); //TODO proper timestamp
 			
-			//First we write the header
+			CompressedData[][][] allCompressedData = new CompressedData[8][8][8];
+
+			//we write the index header
 			for (int a = 0; a < 8; a++)
 				for (int b = 0; b < 8; b++)
 					for (int c = 0; c < 8; c++)
 					{
-						byte[] chunkCompressedVersion = owner.getChunkHolder(a, b, c).getCompressedData();
-						int chunkSizeCompressed = 0;
+						//For each chunk within the region, grab the compressed data version
+						CompressedData compressedData = owner.getChunkHolder(a, b, c).getCompressedData();
 						
-						if(chunkCompressedVersion == ChunkHolderImplementation.AIR_CHUNK_NO_DATA_SAVED) {
-							chunkSizeCompressed = air_chunk_magic_number;
-						}
-						else if (chunkCompressedVersion != null)
-						{
-							//Save the reference to ensure coherence with later part (in case chunk gets re-compressed in the meantime)
-							compressedChunks[a][b][c] = chunkCompressedVersion;
-							chunkSizeCompressed = chunkCompressedVersion.length;
-						}
-						
-						// Write the compressed chunk size once we obtain it
-						dos.writeInt(chunkSizeCompressed);
+						if(compressedData != null)
+							dos.writeInt(compressedData.getTotalCompressedSize());
+						else // No data found (==> meaning this is an ungenerated chunk)
+							dos.writeInt(0);
 					}
 			
+			//Then write the relevant info where it exists
 			for (int a = 0; a < 8; a++)
 				for (int b = 0; b < 8; b++)
 					for (int c = 0; c < 8; c++)
-						if (compressedChunks[a][b][c] != null)
-							dos.write(compressedChunks[a][b][c]);
+						if (allCompressedData[a][b][c] != null) {
+							CompressedData data = allCompressedData[a][b][c];
+							
+							//Write each section length then data
+							dos.writeInt(data.voxelCompressedData.length);
+							dos.write(data.voxelCompressedData);
+							dos.writeInt(data.voxelComponentsCompressedData.length);
+							dos.write(data.voxelComponentsCompressedData);
+							dos.writeInt(data.entitiesCompressedData.length);
+							dos.write(data.entitiesCompressedData);
+						}
 						
 			//don't tick the world entities until we get this straight - this is about not duplicating entities
-			owner.world.entitiesLock.readLock().lock();
+			/*owner.world.entitiesLock.readLock().lock();
 	
 			Iterator<Entity> holderEntities = owner.getEntitiesWithinRegion();
 			while (holderEntities.hasNext())
@@ -154,12 +174,10 @@ public class CSFRegionFile0x2D extends CSFRegionFile
 				}
 			}
 			
-			
-			
 			//dos.writeLong(-1);
 			EntitySerializer.writeEntityToStream(dos, this, null);
 			
-			owner.world.entitiesLock.readLock().unlock();
+			owner.world.entitiesLock.readLock().unlock();*/
 
 		}
 		finally {

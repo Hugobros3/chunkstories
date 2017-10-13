@@ -45,6 +45,8 @@ task uploadAll {
 	dependsOn ':common:uploadArchives'
 }
 
+import org.gradle.internal.os.OperatingSystem
+		
 //For all subprojects...
 subprojects {
 	//Put them all in the io.xol.chunkstories group.
@@ -57,6 +59,40 @@ subprojects {
 			
 		compileJava.options.encoding = 'UTF-8'
 
+		switch ( OperatingSystem.current() ) {
+			case OperatingSystem.WINDOWS:
+				project.ext.lwjglNatives = "natives-windows"
+				break
+			case OperatingSystem.LINUX:
+				project.ext.lwjglNatives = "natives-linux"
+			break
+			case OperatingSystem.MAC_OS:
+				project.ext.lwjglNatives = "natives-macos"
+				break
+		}
+
+		project.ext.natives = ["natives-windows", "natives-linux", "natives-macos"];
+		project.ext.lwjglVersion = "3.1.1"
+
+		configurations {
+			multiplatform {
+				extendsFrom runtime
+			}
+		}
+
+		dependencies {
+			compile "org.lwjgl:lwjgl:${lwjglVersion}"
+			compile "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}"
+			//When running on our debug computer, it's safe to assume the OS that will run the game is the same than the one who'll compile it.
+			runtime "org.lwjgl:lwjgl:${lwjglVersion}:${lwjglNatives}"
+			runtime "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}:${lwjglNatives}"
+			//When compiling a redistribuable jar, we need ALL natives in it!
+			project.ext.natives.each {
+				multiplatform ("org.lwjgl:lwjgl:${lwjglVersion}:" + it)
+				multiplatform "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}:" + it
+			}
+		}
+		
 		//Global dependencies
 		dependencies {
 			compile group: 'org.fusesource.jansi', name: 'jansi', version: '1.15'

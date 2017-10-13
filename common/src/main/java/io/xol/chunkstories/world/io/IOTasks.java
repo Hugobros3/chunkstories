@@ -11,6 +11,7 @@ import io.xol.chunkstories.workers.TaskExecutor;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.region.RegionImplementation;
 import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
+import io.xol.chunkstories.world.chunk.CompressedData;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
 import io.xol.engine.concurrency.UniqueQueue;
 
@@ -237,19 +238,20 @@ public class IOTasks extends Thread implements TaskExecutor
 			int cy = region.getRegionY() * 8 + chunkSlot.getInRegionY();
 			int cz = region.getRegionZ() * 8 + chunkSlot.getInRegionZ();
 
-			byte[] compressedData = chunkSlot.getCompressedData();
+			CompressedData compressedData = chunkSlot.getCompressedData();
 			//Not yet generated chunk; call the generator
 			if (compressedData == null) {
 				Chunk chunk = chunkSlot.createChunk();
 				world.getGenerator().generateChunk(chunk);
 			}
 			//This was already generated but nothing was actually placed in that chunk
-			else if(compressedData == ChunkHolderImplementation.AIR_CHUNK_NO_DATA_SAVED) {
+			/*else if(compressedData == ChunkHolderImplementation.AIR_CHUNK_NO_DATA_SAVED) {
 				chunkSlot.createChunk();
-			}
+			}*/
 			//Normal voxel data is present, uncompressed it then load it to the chunk
 			else {
-				int data[] = new int[32 * 32 * 32];
+				
+				/*int data[] = new int[32 * 32 * 32];
 				try
 				{
 					decompressor.decompress(compressedData, unCompressedDataBuffer.get());
@@ -263,9 +265,9 @@ public class IOTasks extends Thread implements TaskExecutor
 				{
 					data[i] = ((unCompressedDataBuffer.get()[i * 4] & 0xFF) << 24) | ((unCompressedDataBuffer.get()[i * 4 + 1] & 0xFF) << 16) | ((unCompressedDataBuffer.get()[i * 4 + 2] & 0xFF) << 8)
 							| (unCompressedDataBuffer.get()[i * 4 + 3] & 0xFF);
-				}
+				}*/
 				
-				chunkSlot.createChunk(data);
+				chunkSlot.createChunk(compressedData);
 				
 				//TODO Look into this properly
 				//We never want to mess with that when we are the world
