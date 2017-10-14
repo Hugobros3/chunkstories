@@ -1,7 +1,8 @@
-//(c) 2015-2017 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
-
+/*
+ * Chunkstories main Gradle Build script
+ *
+ * Messy file, lots of plugins used. Applies a few of those to the subprojects
+ */
 allprojects {
 	repositories {
 		mavenLocal()
@@ -11,48 +12,76 @@ allprojects {
 			url "http://maven.xol.io/repository/public/"
 		}
 	}
+	
+	buildscript {
+			repositories {
+				mavenCentral()
+				maven { url 'https://jitpack.io' }
+			}
+
+			dependencies {
+				classpath 'com.github.johni0702:gradle-ecj-plugin:master-SNAPSHOT'
+			}
+	}
 }
 
 //version = '2017.09.23'
-version = 'Alpha1.0rc5_03'
-description = 'A voxel game and game engine designed for modders'
+version = 'Alpha1.0rc6'
+description = 'A voxel game engine'
 group = 'io.xol.chunkstories'
 
 ext {
 	apiRevisionBuiltAgainst = '114'
-	contentRevisionBuiltAgainst = '122'
+	contentRevisionBuiltAgainst = '123'
 	
-	actualContentLocation = "core_content.zip"
+	useEclipseCompiler = true
+	
+	actualContentLocation = "core_content.zip" // Changed by the setupContentLocation task in common/ !!! Do not remove.
 }
 
+// Build every single artifact the project has
 task buildAll {
 	dependsOn ':client:shadowJar'
 	dependsOn ':server:shadowJar'
 	dependsOn ':converter:shadowJar'
 	
-	//dependsOn ':core:jar'
 	dependsOn ':common:jar'
 
 	dependsOn ':launcher:createExe'
 }
 
+// Uploads all of the relevant artifacts to the Maven repo
 task uploadAll {
 	dependsOn ':client:uploadShadow'
 	dependsOn ':server:uploadShadow'
-	//dependsOn ':converter:shadowJar'
 	
-	dependsOn ':core:uploadArchives'
 	dependsOn ':common:uploadArchives'
+}
+
+repositories {
+	mavenLocal()
+	mavenCentral()
+}
+
+//Print it to the console
+if(ext.useEclipseCompiler) {
+	println "Using ECJ compiler"
 }
 
 import org.gradle.internal.os.OperatingSystem
 		
 //For all subprojects...
-subprojects {
+subprojects { subproject ->
 	//Put them all in the io.xol.chunkstories group.
 	group = rootProject.group
 
-	plugins.withType(JavaPlugin) {
+	plugins.withType(JavaPlugin) 
+	{
+		//Use the ECJ compiler if requested
+		if(rootProject.ext.useEclipseCompiler) {
+			subproject.apply plugin: 'de.johni0702.ecj'
+		}
+	
 		//Setups compilation args
 		compileJava.options.compilerArgs << '-Xlint:-deprecation'
 		compileJava.options.compilerArgs << '-Xlint:none'
@@ -125,6 +154,7 @@ subprojects {
 		}
 	}
 
+	// SSH artifact uploading nonsense
 	configurations {
 		deployerJars
 	}
