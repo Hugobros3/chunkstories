@@ -73,7 +73,9 @@ public class CSFRegionFile0x2D extends CSFRegionFile
 								in.readFully(entitiesData);
 							}
 							
-							System.out.println(compressedDataSize + "vs : " + (voxel_data_size + voxel_components_size + entities_size + 4));
+							int supposedSize = (voxel_data_size + voxel_components_size + entities_size + 4 + 4 + 4);
+							if(supposedSize != compressedDataSize)
+								System.out.println("Error! Index said there was "+compressedDataSize + " bytes of data but the total suggests it should be " + supposedSize);
 							
 							owner.getChunkHolder(a, b, c).setCompressedData(new CompressedData(voxelData, voxelComponentsData, entitiesData));
 						}

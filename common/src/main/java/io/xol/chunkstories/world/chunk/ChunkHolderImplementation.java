@@ -109,8 +109,6 @@ public class ChunkHolderImplementation implements ChunkHolder
 			LZ4Compressor compressor = factory.fastCompressor();
 			compressor.compress(uncompressedStuff, compressedStuff);
 			
-			System.out.println(compressedStuff.position() + ": "+compressedStuff.limit());
-			
 			//No longer need that buffer
 			MemoryUtil.memFree(uncompressedStuff);
 			
@@ -134,10 +132,11 @@ public class ChunkHolderImplementation implements ChunkHolder
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		DataOutputStream daos = new DataOutputStream(baos);
 		
-		ByteBuffer smallBuffer = MemoryUtil.memAlloc(4096);
-		byte[] smallArray = new byte[4096];
+		//ByteBuffer smallBuffer = MemoryUtil.memAlloc(4096);
+		//byte[] smallArray = new byte[4096];
 				
-		ByteBufferOutputStream bbos = new ByteBufferOutputStream(smallBuffer);
+		//ByteBufferOutputStream bbos = new ByteBufferOutputStream(smallBuffer);
+		ByteArrayOutputStream bbos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(bbos);
 		
 		try {
@@ -154,18 +153,21 @@ public class ChunkHolderImplementation implements ChunkHolder
 					
 					//Push the component in the temporary buffer
 					entry.getValue().push(region.handler, dos);
-					smallBuffer.flip();
+					//smallBuffer.flip();
+					
+					byte[] bytesPushed = bbos.toByteArray();
+					bbos.reset();
 					
 					//Write how many bytes the temporary buffer now contains
-					int bytesPushed = smallBuffer.limit();
-					daos.writeShort(bytesPushed);
+					//int bytesPushed = smallBuffer.limit();
+					daos.writeShort(bytesPushed.length);
 					
 					//Get those bytes as an array then write it in the compressed stuff
-					smallBuffer.get(smallArray);
-					daos.write(smallArray, 0, bytesPushed);
+					//smallBuffer.get(smallArray);
+					daos.write(bytesPushed, 0, bytesPushed.length);
 					
 					//Reset the temporary buffer
-					smallBuffer.clear();
+					//smallBuffer.clear();
 				}
 				
 				daos.writeUTF("\n");
@@ -182,7 +184,7 @@ public class ChunkHolderImplementation implements ChunkHolder
 		//Extract the byte array from the baos
 		byte[] voxelComponentsData = baos.toByteArray();
 
-		MemoryUtil.memFree(smallBuffer);
+		//MemoryUtil.memFree(smallBuffer);
 		
 		//Stage 3: Compress entities
 		baos.reset();

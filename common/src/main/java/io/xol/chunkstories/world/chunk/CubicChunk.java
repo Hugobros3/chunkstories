@@ -169,8 +169,12 @@ public class CubicChunk implements Chunk
 						VoxelComponentsHolder components = new VoxelComponentsHolder(this, index);
 						voxelComponents.put(index, components);
 						
+						System.out.println("at index: " + index + " coords: (" + components.getX() + ", " + components.getY() + ", " + components.getZ() + ")");
+						
 						String componentName = dis.readUTF();
 						while(!componentName.equals("\n")) {
+							System.out.println("componentName: "+componentName);
+							
 							//Read however many bytes this component wrote
 							int bytes = dis.readShort();
 							dis.readFully(smallArray, 0, bytes);
@@ -189,7 +193,12 @@ public class CubicChunk implements Chunk
 									component.pull(holder.getRegion().handler, dias);
 								}
 							}
+							
+							dias.reset();
+							
+							componentName = dis.readUTF();
 						}
+						keepGoing = dis.readByte();
 					}
 				}
 				
