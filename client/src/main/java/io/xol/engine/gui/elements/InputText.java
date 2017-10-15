@@ -25,6 +25,7 @@ public class InputText extends FocusableGuiElement implements TextInputGuiElemen
 
 	public InputText(Layer layer, int x, int y, int width) {
 		this(layer, x, y, width, Client.getInstance().getContent().fonts().defaultFont());
+		//this(layer, x, y, width, Client.getInstance().getContent().fonts().defaultFont());
 	}
 	
 	public InputText(Layer layer, int x, int y, int width, Font font)
@@ -64,8 +65,14 @@ public class InputText extends FocusableGuiElement implements TextInputGuiElemen
 
 	public void drawWithBackGround(RenderingInterface renderer)
 	{
+		Font font = ttfFont;
+		float scale = scale();
+		
+		//scale = 1;
+		//font = Client.getInstance().getGameWindow().getRenderingContext().getFontRenderer().getFont("LiberationSans-Regular__aa", 24);
+		
 		float len = width;
-		int txtlen = ttfFont.getWidth(text) * scale();
+		int txtlen = font.getWidth(text) * scale();
 		if(txtlen > len)
 			len = txtlen;
 		if (isFocused())
@@ -74,7 +81,7 @@ public class InputText extends FocusableGuiElement implements TextInputGuiElemen
 			CorneredBoxDrawer.drawCorneredBox(xPosition + len / 2, yPosition + padding / 2, len, 32, 8, "./textures/gui/textboxnofocus.png");
 		
 		
-		renderer.getFontRenderer().drawStringWithShadow(ttfFont, xPosition + scale(), yPosition - scale(), text + ((isFocused() && System.currentTimeMillis() % 1000 > 500) ? "|" : ""), scale(), scale(), new Vector4f(1.0f));
+		renderer.getFontRenderer().drawStringWithShadow(font, xPosition + scale, yPosition - scale, text + ((isFocused() && System.currentTimeMillis() % 1000 > 500) ? "|" : ""), scale, scale, new Vector4f(1.0f));
 	}
 
 	public void drawWithBackGroundTransparent(RenderingInterface renderer)

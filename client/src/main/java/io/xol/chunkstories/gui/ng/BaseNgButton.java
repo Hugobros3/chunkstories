@@ -20,13 +20,13 @@ import io.xol.engine.graphics.util.CorneredBoxDrawer;
 public class BaseNgButton extends FocusableGuiElement implements ClickableGuiElement
 {
 	public String text;
-	public final Font font;
+	public Font font;
 	
 	private Runnable action;
 	
 	public BaseNgButton(Layer layer, int x, int y, String text)
 	{
-		this(layer, Client.getInstance().getGameWindow().getRenderingContext().getFontRenderer().getFont("arial", 12), x, y, text);
+		this(layer, Client.getInstance().getGameWindow().getRenderingContext().getFontRenderer().getFont("LiberationSans-Regular", 12), x, y, text);
 	}
 	
 	public BaseNgButton(Layer layer, Font font, int x, int y, String text)

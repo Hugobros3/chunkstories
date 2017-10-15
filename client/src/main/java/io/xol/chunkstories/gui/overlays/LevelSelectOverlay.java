@@ -110,7 +110,7 @@ public class LevelSelectOverlay extends Layer
 
 		int posY = renderer.getWindow().getHeight() - 128;
 		
-		Font font = renderer.getFontRenderer().getFont("arial", 11);
+		Font font = renderer.getFontRenderer().getFont("LiberationSans-Regular", 11);
 		
 		renderer.getFontRenderer().drawStringWithShadow(font, 64, posY + 64, "Select a level...", 3, 3, new Vector4f(1));
 		
@@ -187,7 +187,7 @@ public class LevelSelectOverlay extends Layer
 			
 			ObjectRenderer.renderTexturedRect(xPosition - width / 2 + 32 + 4, yPosition, 64, 64, GameDirectory.getGameFolderPath()+"/worlds/" + info.getInternalName() + "/info.png");
 
-			Font font = renderer.getFontRenderer().getFont("arial", 11);
+			Font font = renderer.getFontRenderer().getFont("LiberationSans-Regular", 11);
 			
 			renderer.getFontRenderer().drawStringWithShadow(font, xPosition - width / 2 + 72, yPosition, info.getName() + "#CCCCCC    Size : " + info.getSize().toString() + " ( " + info.getSize().sizeInChunks / 32 + "x" + info.getSize().sizeInChunks / 32 + " km )", 2, 2, width - 72, new Vector4f(1.0f));
 			renderer.getFontRenderer().drawStringWithShadow(font, xPosition - width / 2 + 72, yPosition - 32, info.getDescription(), 2, 2, -1, new Vector4f(1.0f));

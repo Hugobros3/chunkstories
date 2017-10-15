@@ -17,6 +17,7 @@ import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.player.Player;
+import io.xol.chunkstories.api.server.DedicatedServerInterface;
 import io.xol.chunkstories.api.server.PermissionsManager;
 import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.api.server.UserPrivileges;
@@ -44,7 +45,7 @@ import io.xol.chunkstories.world.WorldServer;
  * It also takes care of the command line input as it's the main thread,
  * thought the processing of command lines is handled by ServerConsole.java
  */
-public class DedicatedServer implements Runnable, ServerInterface
+public class DedicatedServer implements Runnable, DedicatedServerInterface
 {
 	static DedicatedServer server;
 	

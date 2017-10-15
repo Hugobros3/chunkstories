@@ -50,6 +50,7 @@ public class ModerationCommands extends ServerCommandBasic {
 			}
 			else {
 				emitter.sendMessage("Syntax: /kick <playerName> [reason]");
+				return true;
 			}
 		}
 		//TODO ban/unban commands

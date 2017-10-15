@@ -17,6 +17,7 @@ import io.xol.chunkstories.api.mods.Mod;
 import io.xol.chunkstories.api.plugin.ChunkStoriesPlugin;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.api.util.ColorsTools;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
@@ -179,7 +180,7 @@ public class Chat
 			scroll = chatHistorySize;
 		int scrollLinesSkip = scroll;
 		int linesDrew = 0;
-		int maxLines = 14;
+		int maxLines = 18;
 		Iterator<ChatLine> i = chat.iterator();
 		while (linesDrew < maxLines && i.hasNext())
 		{
@@ -191,18 +192,25 @@ public class Chat
 				continue;
 			}
 
-			int chatWidth = Math.max(750, Client.getInstance().getGameWindow().getWidth() / 2 - 10);
+			Font font = renderer.getFontRenderer().getFont("LiberationSans-Regular", 12);
+			float scale = 2f;
+			
+			font = renderer.getFontRenderer().getFont("LiberationSans-Regular__aa", 18);
+			scale = 1.0f;
+			
+			int chatWidth = Math.max(750, Client.getInstance().getGameWindow().getWidth() / 4 * 3);
 
 			String localizedLine = Client.getInstance().getContent().localization().localize(line.text);
 			
-			int actualLines = renderer.getFontRenderer().defaultFont().getLinesHeight(localizedLine, chatWidth / 2);
+			int actualLines = font.getLinesHeight(localizedLine, chatWidth / scale);
 			linesDrew += actualLines;
 			float alpha = (line.time + 10000L - System.currentTimeMillis()) / 1000f;
 			if (alpha < 0)
 				alpha = 0;
 			if (alpha > 1 || ingame.getGameWindow().getLayer() instanceof ChatPanelOverlay)
 				alpha = 1;
-			renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), 9, (linesDrew - 1) * renderer.getFontRenderer().defaultFont().getLineHeight() * 2 + 180 + (50), localizedLine, 2, 2, chatWidth, new Vector4f(1, 1, 1, alpha));
+			
+			renderer.getFontRenderer().drawStringWithShadow(font, 9, (linesDrew - 1) * font.getLineHeight() * scale + 180 + (50), localizedLine, scale, scale, chatWidth, new Vector4f(1, 1, 1, alpha));
 		}
 		
 	}

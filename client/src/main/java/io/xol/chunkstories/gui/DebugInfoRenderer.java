@@ -113,11 +113,11 @@ public class DebugInfoRenderer {
 		
 		Font font = null;
 		
-		//font = renderingInterface.getFontRenderer().getFont("pixel_arial", 8);
+		font = renderingInterface.getFontRenderer().getFont("LiberationSans-Regular", 12);
 		//font = renderingInterface.getFontRenderer().getFont("haettenschweiler", 15);
 		
 		if(font == null)
-			font = renderingInterface.getFontRenderer().getFont("arial", 12);
+			font = renderingInterface.getFontRenderer().getFont("LiberationSans-Regular", 12);
 		
 		int lineHeight = font.getLineHeight();
 		

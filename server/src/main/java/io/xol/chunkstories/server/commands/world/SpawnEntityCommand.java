@@ -18,7 +18,7 @@ public class SpawnEntityCommand extends ServerCommandBasic {
 
 	public SpawnEntityCommand(ServerInterface serverConsole) {
 		super(serverConsole);
-		server.getPluginManager().registerCommand("spawnEntity").setHandler(this);
+		server.getPluginManager().registerCommand("spawnentity").setHandler(this);
 	}
 	
 	// Lazy, why does Java standard lib doesn't have a clean way to do this tho

@@ -502,7 +502,7 @@ public class OptionsOverlay extends Layer
 			b = a % 2;
 		}
 
-		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().getFont("arial", 11), renderer.getWindow().getWidth() / 2 - optionsPanelSize / 2 + 16 * this.getGuiScale(), renderer.getWindow().getHeight() - 32 * this.getGuiScale(), Client.getInstance().getContent().localization().getLocalizedString("options.title"), 3, 3, new Vector4f(1));
+		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().getFont("LiberationSans-Regular", 11), renderer.getWindow().getWidth() / 2 - optionsPanelSize / 2 + 16 * this.getGuiScale(), renderer.getWindow().getHeight() - 32 * this.getGuiScale(), Client.getInstance().getContent().localization().getLocalizedString("options.title"), 3, 3, new Vector4f(1));
 		
 		exitButton.setPosition(8, 8);
 		exitButton.render(renderer);

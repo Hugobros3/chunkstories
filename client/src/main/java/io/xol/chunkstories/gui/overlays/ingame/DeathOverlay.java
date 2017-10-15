@@ -66,7 +66,7 @@ public class DeathOverlay extends Layer
 		color += HexTools.intToHex((int) (Math.random() * 255));
 		color += HexTools.intToHex((int) (Math.random() * 255));
 
-		Font font = renderer.getFontRenderer().getFont("arial", 11);
+		Font font = renderer.getFontRenderer().getFont("LiberationSans-Regular", 11);
 		/*
 		renderer.getFontRenderer().drawStringWithShadow(font, , , , 3, 3, new Vector4f(1));
 		*/

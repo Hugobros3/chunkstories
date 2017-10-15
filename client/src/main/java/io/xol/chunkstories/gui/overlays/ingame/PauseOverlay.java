@@ -66,7 +66,7 @@ public class PauseOverlay extends Layer
 	{
 		parentLayer.render(renderer);
 		
-		Font font = renderer.getFontRenderer().getFont("arial", 11);
+		Font font = renderer.getFontRenderer().getFont("LiberationSans-Regular", 11);
 		String pauseText = renderer.getClient().getContent().localization().getLocalizedString("ingame.pause");
 		renderer.getFontRenderer().drawStringWithShadow(font, renderer.getWindow().getWidth() / 2 - font.getWidth(pauseText) *1.5f, renderer.getWindow().getHeight() / 2 + 48 * 3, pauseText, 3, 3, new Vector4f(1));
 		

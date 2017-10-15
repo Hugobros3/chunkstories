@@ -76,7 +76,7 @@ public class TrueTypeFont implements FontRenderer.Font
 		glyphs = new Glyph[65536];
 	}
 
-	public TrueTypeFont(Asset fontAsset, float sizeInPX) throws FontFormatException, IOException
+	public TrueTypeFont(Asset fontAsset, float sizeInPX, boolean antiAlias) throws FontFormatException, IOException
 	{
 		this();
 		ChunkStoriesLoggerImplementation.getInstance().info("Loading font " + fontAsset);
@@ -86,7 +86,7 @@ public class TrueTypeFont implements FontRenderer.Font
 		this.fontSize = font.getSize();
 		System.out.println(font.getFontName() + "fontSize: " + fontSize);
 
-		this.antiAlias = false;
+		this.antiAlias = antiAlias;
 
 		createPage(0);
 
@@ -119,7 +119,7 @@ public class TrueTypeFont implements FontRenderer.Font
 			charheight = fontSize;
 		}
 
-		//if(font.getFontName().contains("Arial"))
+		//if(font.getFontName().contains("LiberationSans-Regular"))
 		//	System.out.println("Glyph "+ch+" width:" + charwidth + " height:"+(charheight));
 
 		// Create another image holding the character we are creating

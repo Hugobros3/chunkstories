@@ -78,10 +78,11 @@ public class Ingame extends Layer
 		this.wireframeDebugger = new PhysicsWireframeDebugger(window.getClient(), world);
 		this.debugInfoRenderer = new DebugInfoRenderer(window.getClient(), world);
 		
+		//Start a mini server
 		if(world instanceof WorldMaster)
 		{
 			localServer = new LocalServerContext(Client.getInstance());
-			pluginManager = new ClientMasterPluginManager(localServer);
+			pluginManager = localServer.getPluginManager();
 		}
 		else
 		{
@@ -90,8 +91,8 @@ public class Ingame extends Layer
 		}
 		
 		//Hacky job because the client is a global state and the ingame scene is per-world
-		Client.getInstance().setClientPluginManager(pluginManager);
-		pluginManager.reloadPlugins();
+		//Client.getInstance().setClientPluginManager(pluginManager);
+		//pluginManager.reloadPlugins();
 		
 		//Spawn manually the player if we're in Singleplayer
 		if (world instanceof WorldMaster)

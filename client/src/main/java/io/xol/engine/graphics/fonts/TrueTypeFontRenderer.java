@@ -208,11 +208,16 @@ public class TrueTypeFontRenderer implements FontRenderer
 	
 	@Override
 	public Font getFont(String fontName, float sizeInPX) {
-		String combinedName = fontName + ":" + sizeInPX;
+		boolean aa = false;
+		if(fontName.endsWith("__aa")) {
+			fontName = fontName.substring(0, fontName.length() - 4);
+			aa = true;
+		}
+		String combinedName = fontName + ":" + sizeInPX + (aa ? "__aa" : "");
 		TrueTypeFont font = this.loadedFonts.get(combinedName);
 		if(font == null) {
 			try {
-				font = new TrueTypeFont(this.renderingContext.getClient().getContent().getAsset("./font/"+fontName+".ttf"), sizeInPX);
+				font = new TrueTypeFont(this.renderingContext.getClient().getContent().getAsset("./font/"+fontName+".ttf"), sizeInPX, aa);
 			}
 			catch(IOException | FontFormatException e) {
 				return defaultFont();
@@ -224,7 +229,7 @@ public class TrueTypeFontRenderer implements FontRenderer
 
 	@Override
 	public Font defaultFont() {
-		return getFont("arial", 11.0F);
+		return getFont("LiberationSans-Regular", 11.0F);
 	}
 
 	public void reloadFonts() {

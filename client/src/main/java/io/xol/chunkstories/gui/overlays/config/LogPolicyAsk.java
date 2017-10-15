@@ -56,7 +56,7 @@ public class LogPolicyAsk extends Layer
 		
 		renderingContext.getGuiRenderer().drawBoxWindowsSpace(0, 0, renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight(), 0, 0, 0, 0, null, false, true, new Vector4f(0.0f, 0.0f, 0.0f, 0.5f));
 		
-		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("arial", 11), 30, renderingContext.getWindow().getHeight()-64, Client.getInstance().getContent().localization().getLocalizedString("logpolicy.title"), 3, 3, new Vector4f(1));
+		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("LiberationSans-Regular", 11), 30, renderingContext.getWindow().getHeight()-64, Client.getInstance().getContent().localization().getLocalizedString("logpolicy.title"), 3, 3, new Vector4f(1));
 		
 		int linesTaken = renderingContext.getFontRenderer().defaultFont().getLinesHeight(message, (width-128) / 2 );
 		float scaling = 2;

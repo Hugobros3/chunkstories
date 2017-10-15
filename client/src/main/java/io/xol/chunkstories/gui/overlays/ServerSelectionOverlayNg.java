@@ -93,7 +93,7 @@ public class ServerSelectionOverlayNg extends Layer implements HttpRequester
 			login();
 
 		String instructions = "Select a server from the list or type in the address directly";
-		Font font = renderer.getFontRenderer().getFont("arial", 11);
+		Font font = renderer.getFontRenderer().getFont("LiberationSans-Regular", 11);
 		renderer.getFontRenderer().drawStringWithShadow(font, 32, renderer.getWindow().getHeight() - 32 * 2, instructions, 3, 3, new Vector4f(1));
 		//FontRenderer2.drawTextUsingSpecificFontRVBA(32, renderer.getWindow().getHeight() - 32 * (1 + 1), 0, 32 + 1 * 16, , BitmapFont.SMALLFONTS, 1f, 1f, 1f, 1f);
 		

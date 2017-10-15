@@ -30,7 +30,7 @@ public class KeyBindSelectionOverlay extends Layer
 		
 		String plz = "Please press a key";
 
-		Font font = renderer.getFontRenderer().getFont("arial", 11);
+		Font font = renderer.getFontRenderer().getFont("LiberationSans-Regular", 11);
 		renderer.getFontRenderer().drawStringWithShadow(font, renderer.getWindow().getWidth() / 2 - font.getWidth(plz) * 1.5f, renderer.getWindow().getHeight() /2, plz, 3, 3, new Vector4f(1));
 	}
 	

@@ -99,20 +99,20 @@ public class LevelCreateOverlay extends Layer
 		// int y = 48;
 		CorneredBoxDrawer.drawCorneredBoxTiled(positionStartX + width/2, positionStartY + height/2, width, height, 8, "./textures/gui/scalableButton.png", 32, 2);
 		
-		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("arial", 12), x, positionStartY + height - 64, "Create a new World", 3, 3, new Vector4f(1));
-		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("arial", 12), x, positionStartY + height - 64 - 32, "For use in singleplayer", 2, 2, width, new Vector4f(1));
+		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("LiberationSans-Regular", 12), x, positionStartY + height - 64, "Create a new World", 3, 3, new Vector4f(1));
+		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("LiberationSans-Regular", 12), x, positionStartY + height - 64 - 32, "For use in singleplayer", 2, 2, width, new Vector4f(1));
 		
 		
-		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("arial", 12), x, positionStartY + height - 64 - 96 - 4, "Level name", 2, 2, width, new Vector4f(1));
-		int lvlnm_l = renderingContext.getFontRenderer().getFont("arial", 12).getWidth("Level name") * 2;
+		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("LiberationSans-Regular", 12), x, positionStartY + height - 64 - 96 - 4, "Level name", 2, 2, width, new Vector4f(1));
+		int lvlnm_l = renderingContext.getFontRenderer().getFont("LiberationSans-Regular", 12).getWidth("Level name") * 2;
 		
 		levelName.setPosition(x + lvlnm_l + 20, positionStartY + height - 64 - 96);
 		levelName.setWidth(width - (x + lvlnm_l + 20) - 20);
 		levelName.drawWithBackGround(renderingContext);
 		
 		String wg_string = "World generator to use";
-		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("arial", 12), x, positionStartY + height - 64 - 148 - 4, wg_string, 2, 2, width, new Vector4f(1));
-		int wg_sl = renderingContext.getFontRenderer().getFont("arial", 12).getWidth(wg_string) * 2;
+		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("LiberationSans-Regular", 12), x, positionStartY + height - 64 - 148 - 4, wg_string, 2, 2, width, new Vector4f(1));
+		int wg_sl = renderingContext.getFontRenderer().getFont("LiberationSans-Regular", 12).getWidth(wg_string) * 2;
 		
 		worldGenName.setPosition(x + wg_sl + 20, positionStartY + height - 64 - 148);
 		worldGenName.setWidth(width - (x + wg_sl + 20) - 20);
@@ -136,8 +136,8 @@ public class LevelCreateOverlay extends Layer
 				wg_list+=", ";
 		}
 		
-		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("arial", 12), x, positionStartY + height - 64 - 196 - 4, wg_validity_string, 2, 2, width, new Vector4f(1));
-		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("arial", 12), x, positionStartY + height - 64 - 196 - 4 - 32, wg_list, 2, 2, width, new Vector4f(1));
+		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("LiberationSans-Regular", 12), x, positionStartY + height - 64 - 196 - 4, wg_validity_string, 2, 2, width, new Vector4f(1));
+		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("LiberationSans-Regular", 12), x, positionStartY + height - 64 - 196 - 4 - 32, wg_list, 2, 2, width, new Vector4f(1));
 		
 		cancelOption.setPosition(x + 75, positionStartY + 20 + 16);
 		cancelOption.render(renderingContext);

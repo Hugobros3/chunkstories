@@ -3,6 +3,7 @@ package io.xol.chunkstories.gui.ng;
 import io.xol.chunkstories.api.gui.Layer;
 import org.joml.Vector4f;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.client.Client;
 import io.xol.engine.graphics.textures.TexturesHandler;
@@ -33,10 +34,13 @@ public class LargeButton extends BaseNgButton{
 		buttonTexture.setLinearFiltering(false);
 		CorneredBoxDrawer.drawCorneredBoxTiled(xPosition + getWidth() / 2, yPosition + getHeight() / 2, getWidth(), getHeight(), 4 * scale(), buttonTexture, 32, scale());
 		
-		float yPositionText = yPosition + 2 * scale() / 2;
-		float centering = getWidth() / 2 - font.getWidth(localizedText) * scale() / 2;
-		renderer.getFontRenderer().drawString(font, xPosition + centering + scale(), yPositionText - scale(), localizedText, scale(), new Vector4f(161/255f, 161/255f, 161/255f, 1));
-		renderer.getFontRenderer().drawString(font, xPosition + centering, yPositionText, localizedText, scale(), new Vector4f(38/255f, 38/255f, 38/255f, 1));
+		Font font = Client.getInstance().getGameWindow().getRenderingContext().getFontRenderer().getFont("LiberationSansNarrow-Bold__aa", 16f * scale());
+		float a = 1f / scale();
+		
+		float yPositionText = yPosition + 2.5f * scale();
+		float centering = getWidth() / 2 - font.getWidth(localizedText) * a * scale() / 2;
+		renderer.getFontRenderer().drawString(font, xPosition + centering + scale(), yPositionText - scale(), localizedText, a*scale(), new Vector4f(161/255f, 161/255f, 161/255f, 1));
+		renderer.getFontRenderer().drawString(font, xPosition + centering, yPositionText, localizedText, a*scale(), new Vector4f(38/255f, 38/255f, 38/255f, 1));
 	}
 
 }

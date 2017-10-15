@@ -45,7 +45,7 @@ public class ConnectionOverlay extends Layer
 		//color += HexTools.intToHex((int) (Math.random() * 255));
 		//color += HexTools.intToHex((int) (Math.random() * 255));
 		
-		Font font = renderingContext.getFontRenderer().getFont("arial", 11);
+		Font font = renderingContext.getFontRenderer().getFont("LiberationSans-Regular", 11);
 		
 		String connection = "Connecting, please wait";
 		

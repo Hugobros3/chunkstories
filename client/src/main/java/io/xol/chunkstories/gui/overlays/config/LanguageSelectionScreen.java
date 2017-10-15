@@ -91,7 +91,7 @@ public class LanguageSelectionScreen extends Layer
 		
 		int posY = renderingContext.getWindow().getHeight() - 128;
 		
-		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("arial", 11), 64, posY + 64, "Welcome - Bienvenue - Wilkomen - Etc", 3, 3, new Vector4f(1));
+		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("LiberationSans-Regular", 11), 64, posY + 64, "Welcome - Bienvenue - Wilkomen - Etc", 3, 3, new Vector4f(1));
 		
 		int remainingSpace = (int) Math.floor(renderingContext.getWindow().getHeight() / 96 - 2);
 
@@ -173,7 +173,7 @@ public class LanguageSelectionScreen extends Layer
 			}
 
 			ObjectRenderer.renderTexturedRect(posx - width / 2 + 80, posy, 128, 96, "./lang/" + translationCode + "/lang.png");
-			renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().getFont("arial", 11), posx - width / 2 + 150, posy, translationName, 3, 3, new Vector4f(1));
+			renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().getFont("LiberationSans-Regular", 11), posx - width / 2 + 150, posy, translationName, 3, 3, new Vector4f(1));
 		}
 
 		@Override
