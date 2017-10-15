@@ -2,11 +2,11 @@ package io.xol.chunkstories.converter;
 
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.voxel.Voxel;
+import io.xol.chunkstories.api.workers.Task;
+import io.xol.chunkstories.api.workers.TaskExecutor;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.converter.ConverterWorkers.ConverterWorkerThread;
 import io.xol.chunkstories.tools.WorldTool;
-import io.xol.chunkstories.workers.Task;
-import io.xol.chunkstories.workers.TaskExecutor;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
 import io.xol.engine.concurrency.CompoundFence;
 

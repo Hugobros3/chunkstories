@@ -20,7 +20,6 @@ import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.client.ClientMasterPluginManager;
 import io.xol.chunkstories.client.ClientSlavePluginManager;
 import io.xol.chunkstories.client.LocalServerContext;
 import io.xol.chunkstories.client.RenderingConfig;

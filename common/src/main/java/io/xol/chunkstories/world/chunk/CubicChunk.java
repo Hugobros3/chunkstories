@@ -29,6 +29,7 @@ import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.entity.EntitySerializer;
 import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
+import io.xol.chunkstories.renderer.chunks.ChunkLightBaker;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.voxel.components.VoxelComponentsHolder;
 import io.xol.chunkstories.world.WorldImplementation;
@@ -76,7 +77,8 @@ public class CubicChunk implements Chunk
 	public final AtomicInteger compr_uncomittedBlockModifications = new AtomicInteger();
 	public final AtomicInteger occl_compr_uncomittedBlockModifications = new AtomicInteger();
 	
-	public AtomicBoolean needRelightning = new AtomicBoolean(true);
+	public final ChunkLightBaker lightBakingStatus = new ChunkLightBaker(this);
+	//public AtomicBoolean needRelightning = new AtomicBoolean(true);
 	
 	protected final Map<Integer, VoxelComponentsHolder> voxelComponents = new HashMap<Integer, VoxelComponentsHolder>();
 	protected final Set<Entity> localEntities = ConcurrentHashMap.newKeySet();

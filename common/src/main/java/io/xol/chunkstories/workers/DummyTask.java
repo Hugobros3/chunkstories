@@ -1,5 +1,8 @@
 package io.xol.chunkstories.workers;
 
+import io.xol.chunkstories.api.workers.Task;
+import io.xol.chunkstories.api.workers.TaskExecutor;
+
 public class DummyTask extends Task
 {
 	

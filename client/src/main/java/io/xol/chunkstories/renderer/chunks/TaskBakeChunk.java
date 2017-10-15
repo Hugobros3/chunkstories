@@ -20,14 +20,14 @@ import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.LodLevel;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.VertexLayout;
 import io.xol.chunkstories.api.voxel.models.ChunkRenderer.ChunkRenderContext;
+import io.xol.chunkstories.api.workers.Task;
+import io.xol.chunkstories.api.workers.TaskExecutor;
 import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.renderer.chunks.ClientTasksPool.ClientWorkerThread.ChunkMeshingBuffers;
 import io.xol.chunkstories.voxel.VoxelsStore;
-import io.xol.chunkstories.workers.Task;
-import io.xol.chunkstories.workers.TaskExecutor;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.engine.base.MemFreeByteBuffer;
 
@@ -75,12 +75,6 @@ public class TaskBakeChunk extends Task {
 		if(chunk == null) {
 			throw new RuntimeException("Fuck off no");
 		}
-		
-		//If the chunk was unloaded then replaced with another one
-		/*if(chunkWithinWorld != chunk) {
-			chunk.markRenderInProgress(false);
-			return true;
-		}*/
 		
 		//Second part is most likely redundant
 		if (chunkWithinWorld != null && (chunkWithinWorld.isMarkedForReRender() || chunkWithinWorld.needsLightningUpdates()))
@@ -661,6 +655,4 @@ public class TaskBakeChunk extends Task {
 			return voxelLighter;
 		}
 	}
-	
-
 }

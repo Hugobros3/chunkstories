@@ -1,7 +1,7 @@
 package io.xol.chunkstories.converter;
 
-import io.xol.chunkstories.workers.Task;
-import io.xol.chunkstories.workers.TaskExecutor;
+import io.xol.chunkstories.api.workers.Task;
+import io.xol.chunkstories.api.workers.TaskExecutor;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 
 public class TaskLightChunk extends Task {

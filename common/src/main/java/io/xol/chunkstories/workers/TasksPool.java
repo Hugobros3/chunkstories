@@ -5,6 +5,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import io.xol.chunkstories.api.workers.Task;
+
 /**
  * A task pool receives tasks and dispatches them
  */

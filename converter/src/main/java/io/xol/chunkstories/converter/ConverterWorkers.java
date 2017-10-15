@@ -4,13 +4,13 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import io.xol.chunkstories.api.workers.Task;
+import io.xol.chunkstories.api.workers.TaskExecutor;
 import io.xol.chunkstories.api.world.WorldInfo.WorldSize;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
 import io.xol.chunkstories.tools.WorldTool;
-import io.xol.chunkstories.workers.Task;
-import io.xol.chunkstories.workers.TaskExecutor;
 import io.xol.chunkstories.workers.TasksPool;
 import io.xol.engine.concurrency.CompoundFence;
 import io.xol.engine.concurrency.SimpleFence;
