@@ -15,9 +15,9 @@ import io.xol.chunkstories.server.commands.ServerCommandBasic;
 //http://xol.io
 
 /** Handles /uptime, /info commands */
-public class InfoCommandsHandler extends ServerCommandBasic{
+public class InfoCommands extends ServerCommandBasic{
 
-	public InfoCommandsHandler(ServerInterface serverConsole) {
+	public InfoCommands(ServerInterface serverConsole) {
 		super(serverConsole);
 		
 		server.getPluginManager().registerCommand("uptime").setHandler(this);

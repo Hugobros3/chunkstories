@@ -12,10 +12,13 @@ public class ClientSlavePluginManager extends DefaultPluginManager implements Cl
 {
 	ClientInterface client;
 	
-	public ClientSlavePluginManager(ClientInterface client)
+	public ClientSlavePluginManager(Client client)
 	{
 		super(client);
 		this.client = client;
+		
+		client.setClientPluginManager(this);
+		this.reloadPlugins();
 	}
 
 	@Override

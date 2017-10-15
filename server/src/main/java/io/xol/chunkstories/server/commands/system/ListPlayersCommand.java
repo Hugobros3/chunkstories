@@ -12,9 +12,9 @@ import io.xol.chunkstories.server.commands.ServerCommandBasic;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class ListPlayersCommandHandler extends ServerCommandBasic {
+public class ListPlayersCommand extends ServerCommandBasic {
 
-	public ListPlayersCommandHandler(ServerInterface serverConsole) {
+	public ListPlayersCommand(ServerInterface serverConsole) {
 		super(serverConsole);
 		server.getPluginManager().registerCommand("list").setHandler(this);
 	}

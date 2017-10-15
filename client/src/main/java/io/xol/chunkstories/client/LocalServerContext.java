@@ -23,6 +23,7 @@ import io.xol.chunkstories.api.util.ChunkStoriesLogger;
 import io.xol.chunkstories.api.util.ConfigDeprecated;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.server.UsersPrivilegesFile;
+import io.xol.chunkstories.server.commands.InstallServerCommands;
 import io.xol.chunkstories.world.WorldClientLocal;
 
 /**
@@ -33,6 +34,7 @@ public class LocalServerContext implements ClientInterface, ServerInterface
 {
 	private final Client client;
 	private final WorldClientLocal world;
+	private final ClientMasterPluginManager pluginsManager;
 	
 	//TODO SAVE IT
 	private UsersPrivilegesFile usersPrivilege = new UsersPrivilegesFile();
@@ -42,6 +44,9 @@ public class LocalServerContext implements ClientInterface, ServerInterface
 	{
 		this.client = client;
 		this.world = (WorldClientLocal) client.getWorld();
+		
+		this.pluginsManager = new ClientMasterPluginManager(this);
+		client.setClientPluginManager(this.pluginsManager);
 		
 		this.permissionsManager = new PermissionsManager() {
 
@@ -54,6 +59,9 @@ public class LocalServerContext implements ClientInterface, ServerInterface
 			}
 			
 		};
+		
+		//Install vanilla server commands
+		new InstallServerCommands(this);
 	}
 	
 	@Override
