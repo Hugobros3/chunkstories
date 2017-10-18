@@ -15,6 +15,8 @@ import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.LodLevel;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.VertexLayout;
+import io.xol.chunkstories.api.workers.Task;
+import io.xol.chunkstories.world.chunk.ClientChunk;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.engine.concurrency.SimpleLock;
 
@@ -246,19 +248,40 @@ public class ChunkRenderDataHolder implements ChunkMeshUpdater
 
 	@Override
 	public Fence requestMeshUpdate() {
-		// TODO Auto-generated method stub
-		return null;
+		unbakedUpdates.incrementAndGet();
+		
+		Task fence;
+		
+		taskLock.lock();
+		
+		if(task == null || task.isDone() || task.isCancelled()) {
+			task = new TaskBakeChunk((ClientChunk) chunk);
+			chunk.getWorld().getGameContext().tasks().scheduleTask(task);
+		}
+
+		fence = task;
+		
+		taskLock.unlock();
+		
+		return fence;
 	}
 
 	@Override
 	public void spawnUpdateTaskIfNeeded() {
-		// TODO Auto-generated method stub
-		
+		if(unbakedUpdates.get() > 0) {
+			taskLock.lock();
+			
+			if(task == null || task.isDone() || task.isCancelled()) {
+				task = new TaskBakeChunk((ClientChunk) chunk);
+				chunk.getWorld().getGameContext().tasks().scheduleTask(task);
+			}
+			
+			taskLock.unlock();
+		}
 	}
 
 	@Override
 	public int pendingUpdates() {
-		// TODO Auto-generated method stub
-		return 0;
+		return this.unbakedUpdates.get();
 	}
 }

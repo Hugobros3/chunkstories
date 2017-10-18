@@ -44,7 +44,7 @@ public class ClientTasksPool extends WorkerThreadPool {
 	
 	@Override
 	protected WorkerThread spawnWorkerThread(int id) {
-		return  new ClientWorkerThread(this, id);
+		return new ClientWorkerThread(this, id);
 	}
 
 	/*long tasksRan = 0;

@@ -23,6 +23,7 @@ import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.api.server.UserPrivileges;
 import io.xol.chunkstories.api.util.ChunkStoriesLogger;
 import io.xol.chunkstories.api.util.IterableIterator;
+import io.xol.chunkstories.api.workers.Tasks;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.plugin.DefaultPluginManager;
 import io.xol.chunkstories.content.GameContentStore;
@@ -33,6 +34,7 @@ import io.xol.chunkstories.server.net.UserConnection;
 import io.xol.chunkstories.server.net.ServerConnectionsManager;
 import io.xol.chunkstories.server.propagation.ServerModsProvider;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
+import io.xol.chunkstories.workers.WorkerThreadPool;
 import io.xol.chunkstories.world.WorldInfoFile;
 import io.xol.chunkstories.world.WorldServer;
 
@@ -115,6 +117,7 @@ public class DedicatedServer implements Runnable, DedicatedServerInterface
 	private ServerModsProvider modsProvider;
 
 	private GameContentStore gameContent;
+	private WorkerThreadPool workers;
 	
 	DedicatedServer(File coreContentLocation, String modsString)
 	{
@@ -134,6 +137,27 @@ public class DedicatedServer implements Runnable, DedicatedServerInterface
 			//Loads the mods/build filesystem
 			gameContent = new GameContentStore(this, coreContentLocation, modsString);
 			gameContent.reload();
+			
+			// Spawns worker threads
+			int nbThreads = -1;
+			String configThreads = this.serverConfig.getString("workersThreads", "auto");
+			if(!configThreads.equals("auto")) {
+				try {
+					nbThreads = Integer.parseInt(configThreads);
+				}
+				catch(NumberFormatException e) {}
+			}
+			
+			if(nbThreads <= 0) {
+				nbThreads = Runtime.getRuntime().availableProcessors() - 2;
+				
+				//Fail-safe
+				if(nbThreads < 1)
+					nbThreads = 1;
+			}
+			
+			workers = new WorkerThreadPool(nbThreads);
+			workers.start();
 			
 			//TODO why isn't this below ?
 			connectionsManager = new ServerConnectionsManager(this);
@@ -332,8 +356,10 @@ public class DedicatedServer implements Runnable, DedicatedServerInterface
 
 	public void stop()
 	{
-		// When stopped, close sockets and save config.
 		announcer.stopAnnouncer();
+		workers.destroy();
+		
+		// When stopped, close sockets and save config.
 		running.set(false);
 	}
 
@@ -475,5 +501,10 @@ public class DedicatedServer implements Runnable, DedicatedServerInterface
 	@Override
 	public UserPrivileges getUserPrivileges() {
 		return userPrivileges;
+	}
+
+	@Override
+	public Tasks tasks() {
+		return workers;
 	}
 }

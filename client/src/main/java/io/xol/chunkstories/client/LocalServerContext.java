@@ -21,6 +21,7 @@ import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.api.server.UserPrivileges;
 import io.xol.chunkstories.api.util.ChunkStoriesLogger;
 import io.xol.chunkstories.api.util.ConfigDeprecated;
+import io.xol.chunkstories.api.workers.Tasks;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.server.UsersPrivilegesFile;
 import io.xol.chunkstories.server.commands.InstallServerCommands;
@@ -276,6 +277,11 @@ public class LocalServerContext implements ClientInterface, ServerInterface
 	@Override
 	public void reloadConfig() {
 		usersPrivilege.load();
+	}
+
+	@Override
+	public Tasks tasks() {
+		return client.tasks();
 	}
 
 }

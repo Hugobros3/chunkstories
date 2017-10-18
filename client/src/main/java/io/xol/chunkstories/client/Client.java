@@ -144,7 +144,7 @@ public class Client implements ClientInterface
 		
 		// Spawns worker threads
 		int nbThreads = -1;
-		String configThreads = Client.getInstance().configDeprecated().getString("workersThreads", "auto");
+		String configThreads = configDeprecated().getString("workersThreads", "auto");
 		if(!configThreads.equals("auto")) {
 			try {
 				nbThreads = Integer.parseInt(configThreads);
@@ -169,6 +169,7 @@ public class Client implements ClientInterface
 		gameContent.reload();
 		
 		workers = new ClientTasksPool(this, nbThreads);
+		workers.start();
 		
 		gameWindow.stage_2_init();
 		

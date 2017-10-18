@@ -12,7 +12,9 @@ public class WorkerThreadPool extends TasksPool<Task> implements Tasks
 	public WorkerThreadPool(int threadsCount)
 	{
 		this.threadsCount = threadsCount;
-		
+	}
+	
+	public void start() {
 		workers = new WorkerThread[threadsCount];
 		for(int id = 0; id < threadsCount; id++)
 			workers[id] = spawnWorkerThread(id);

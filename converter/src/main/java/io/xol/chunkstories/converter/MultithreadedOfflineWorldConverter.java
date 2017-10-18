@@ -8,6 +8,7 @@ import java.util.Set;
 import io.xol.chunkstories.anvil.MinecraftChunk;
 import io.xol.chunkstories.anvil.MinecraftRegion;
 import io.xol.chunkstories.anvil.MinecraftWorld;
+import io.xol.chunkstories.api.workers.Tasks;
 import io.xol.chunkstories.api.world.WorldInfo.WorldSize;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
@@ -345,6 +346,11 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 			holder.unregisterUser(worldUser);
 
 		csWorld.unloadUselessData().traverse();*/
+	}
+
+	@Override
+	public Tasks tasks() {
+		return workers;
 	}
 
 }

@@ -40,7 +40,7 @@ import io.xol.engine.misc.FoldersUtils;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class OfflineWorldConverter implements GameContext, WorldUser
+public abstract class OfflineWorldConverter implements GameContext, WorldUser
 {
 	public static void main(String arguments[]) throws IOException
 	{
@@ -138,9 +138,9 @@ public class OfflineWorldConverter implements GameContext, WorldUser
 		
 		System.out.println("threadCount: "+threadCount);
 		
-		if(threadCount <= 1)
-			converter = new OfflineWorldConverter(verboseMode, mcWorldDir, csWorldDir, mcWorldName, csWorldName, size, minecraftOffsetX, minecraftOffsetZ);
-		else
+		//if(threadCount <= 1)
+		//	converter = new OfflineWorldConverter(verboseMode, mcWorldDir, csWorldDir, mcWorldName, csWorldName, size, minecraftOffsetX, minecraftOffsetZ);
+		//else
 			converter = new MultithreadedOfflineWorldConverter(verboseMode, mcWorldDir, csWorldDir, mcWorldName, csWorldName, size, minecraftOffsetX, minecraftOffsetZ, threadCount);
 		
 		

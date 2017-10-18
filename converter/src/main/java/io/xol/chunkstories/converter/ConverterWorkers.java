@@ -6,6 +6,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.xol.chunkstories.api.workers.Task;
 import io.xol.chunkstories.api.workers.TaskExecutor;
+import io.xol.chunkstories.api.workers.Tasks;
 import io.xol.chunkstories.api.world.WorldInfo.WorldSize;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
@@ -15,7 +16,8 @@ import io.xol.chunkstories.workers.TasksPool;
 import io.xol.engine.concurrency.CompoundFence;
 import io.xol.engine.concurrency.SimpleFence;
 
-public class ConverterWorkers extends TasksPool<Task>
+/** Map converter-specialized workers pool, assumes only one world ever used and provides extra handy for the execution */
+public class ConverterWorkers extends TasksPool<Task> implements Tasks
 {
 	private final MultithreadedOfflineWorldConverter converter;
 	
@@ -209,5 +211,10 @@ public class ConverterWorkers extends TasksPool<Task>
 		atSignal.signal();
 		
 		doneAll.traverse();
+	}
+
+	@Override
+	public int submittedTasks() {
+		return this.tasksQueueSize.get();
 	}
 }

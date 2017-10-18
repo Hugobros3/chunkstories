@@ -39,7 +39,7 @@ import io.xol.engine.base.MemFreeByteBuffer;
 
 public class TaskBakeChunk extends Task {
 
-	private final ClientTasksPool baker;
+	//private final ClientTasksPool baker;
 	protected final ClientChunk chunk;
 	
 	private final WorldClient world;
@@ -50,9 +50,9 @@ public class TaskBakeChunk extends Task {
 	
 	protected ChunkMeshingBuffers cmd;
 	
-	public TaskBakeChunk(ClientTasksPool baker, ClientChunk chunk) {
+	public TaskBakeChunk(ClientChunk chunk) {
 		super();
-		this.baker = baker;
+		//this.baker = baker;
 		this.chunk = chunk;
 		
 		//Degenerate case for DIE object 
@@ -329,7 +329,7 @@ public class TaskBakeChunk extends Task {
 		ChunkMeshDataSections newRenderData = new ChunkMeshDataSections(wrappedBuffer, sizes, offsets);
 		chunk.getChunkRenderData().setData(newRenderData);
 		
-		baker.totalChunksRendered.incrementAndGet();
+		//baker.totalChunksRendered.incrementAndGet();
 
 		chunk.chunkRenderData.unbakedUpdates.addAndGet(-updatesToConsider);
 		
@@ -340,6 +340,8 @@ public class TaskBakeChunk extends Task {
 		//Wait until data is actually uploaded to not accidentally OOM while it struggles uploading it
 		if(Client.getInstance().configDeprecated().getBoolean("waitForChunkMeshDataUploadBeforeStartingTheNext", true))
 			newRenderData.fence.traverse();
+		
+		//System.out.println(wrappedBuffer);
 		
 		return true;
 	}

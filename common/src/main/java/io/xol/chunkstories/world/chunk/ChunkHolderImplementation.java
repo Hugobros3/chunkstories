@@ -442,11 +442,12 @@ public class ChunkHolderImplementation implements ChunkHolder
 		try {
 			//We don't use mod loading code on purpose
 			Class<? extends CubicChunk> clientChunkClass = (Class<? extends CubicChunk>) Class.forName("io.xol.chunkstories.world.chunk.ClientChunk");
-			clientChunkConstructor = clientChunkClass.getConstructor(ChunkHolderImplementation.class, int.class, int.class, CompressedData.class);
+			clientChunkConstructor = clientChunkClass.getConstructor(ChunkHolderImplementation.class, int.class, int.class, int.class, CompressedData.class);
 			clientChunkConstructorNoData = clientChunkClass.getConstructor(ChunkHolderImplementation.class, int.class, int.class, int.class);
 		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			System.exit(-800);
 		}
 	}
 	
@@ -458,13 +459,14 @@ public class ChunkHolderImplementation implements ChunkHolder
 				return clientChunkConstructorNoData.newInstance(chunkHolder, x, y, z);
 			}
 			else {
-				return clientChunkConstructorNoData.newInstance(chunkHolder, x, y, z, data);
+				return clientChunkConstructor.newInstance(chunkHolder, x, y, z, data);
 			}
 				
 		} catch (SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 			e.printStackTrace();
 			assert false;
-			throw new RuntimeException("Could not create client chunk: "+e.getMessage());
+			System.exit(-800);
+			return null;
 		}
 	}
 	
@@ -485,9 +487,9 @@ public class ChunkHolderImplementation implements ChunkHolder
 		else
 			chunk = data == null ? new CubicChunk(this, x, y, z) : new CubicChunk(this, x, y, z, data);
 		
-		this.chunk = chunk;
 		if(this.chunk == null && chunk != null)
 			regionLoadedChunks.add(chunk);
+		this.chunk = chunk;
 		
 		if(region.getWorld() instanceof WorldClient)
 			((WorldClient)region.getWorld()).getWorldRenderer().flagChunksModified();

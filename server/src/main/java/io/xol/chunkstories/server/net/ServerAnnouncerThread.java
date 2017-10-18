@@ -1,5 +1,6 @@
 package io.xol.chunkstories.server.net;
 
+import java.net.Inet4Address;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -11,6 +12,11 @@ import io.xol.engine.net.HttpRequests;
 // http://chunkstories.xyz
 // http://xol.io
 
+//TODO Use proper way to http stuff instead of this ugly ass hack
+/**
+ * Small background thread that is tasked with putting and keeping up to date 
+ * the server's entry in the global list
+ */
 public class ServerAnnouncerThread extends Thread
 {
 	AtomicBoolean run = new AtomicBoolean(true);
@@ -30,13 +36,12 @@ public class ServerAnnouncerThread extends Thread
 		lolcode = server.getServerConfig().getInteger("lolcode", 0);
 		if (lolcode == 0L)
 		{
-			// System.out.println("lolcode = 0");
 			Random rnd = new Random();
-			lolcode = rnd.nextInt(100000);
+			lolcode = rnd.nextInt(Integer.MAX_VALUE);
 			server.getServerConfig().setInteger("lolcode", lolcode);
 		}
 		updatedelay = server.getServerConfig().getLong("update-delay", 10000L);
-		String hostname = HttpRequests.sendPost("http://chunkstories.xyz/api/sayMyName.php?host=1", "");
+		String hostname = HttpRequests.sendPost("https://chunkstories.xyz/api/sayMyName.php?host=1", "");
 		srv_name = server.getServerConfig().getString("server-name", "unnamedserver@" + hostname);
 		srv_desc = server.getServerConfig().getString("server-desc", "Default description.");
 		setName("Multiverse thread");
@@ -52,13 +57,15 @@ public class ServerAnnouncerThread extends Thread
 	{
 		try
 		{
-			String ip = HttpRequests.sendPost("http://chunkstories.xyz/api/sayMyName.php?ip=1", "");
+			String internalIp = Inet4Address.getLocalHost().getHostAddress();
+			String externalIp = HttpRequests.sendPost("httpss://chunkstories.xyz/api/sayMyName.php?ip=1", "");
+			
 			while (run.get())
 			{
 				// System.out.println("Updating server data on Multiverse.");
 				if (server.getServerConfig().getString("enable-multiverse", "false").equals("true"))
 				{
-					HttpRequests.sendPost("http://chunkstories.xyz/api/serverAnnounce.php", "srvname=" + srv_name + "&desc=" + srv_desc + "&ip=" + ip + "&mu=" + server.getHandler().getMaxClients() + "&u="
+					HttpRequests.sendPost("https://chunkstories.xyz/api/serverAnnounce.php", "srvname=" + srv_name + "&desc=" + srv_desc + "&ip=" + externalIp + "&iip=" + internalIp + "&mu=" + server.getHandler().getMaxClients() + "&u="
 							+ server.getHandler().getNumberOfAuthentificatedClients() + "&n=0&w=default&p=1&v=" + VersionInfo.version + "&lolcode=" + lolcode);
 					sleep(updatedelay);
 				}
