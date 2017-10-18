@@ -25,12 +25,26 @@ import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
-import io.xol.chunkstories.renderer.chunks.RenderableChunk;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderDataHolder.RenderLodLevel;
+import io.xol.chunkstories.world.chunk.ClientChunk;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 
 public class ChunkMeshesRenderer
 {
+	@SuppressWarnings("unused")
+	private final WorldRenderer worldRenderer;
+	private final WorldClient world;
+
+	//private final ChunkMeshUpdater chunksBaker;
+
+	private final int worldSizeInChunks;
+	private final int wrapChunksDistance;
+
+	private List<ChunkRenderCommand> culledChunksShadow;
+	private List<ChunkRenderCommand> culledChunksNormal = new ArrayList<ChunkRenderCommand>();
+
+	int cameraChunkX, cameraChunkY, cameraChunkZ;
+	
 	public ChunkMeshesRenderer(WorldRenderer worldRenderer)
 	{
 		this.worldRenderer = worldRenderer;
@@ -55,26 +69,12 @@ public class ChunkMeshesRenderer
 				nbThreads = 1;
 		}
 		
-		this.chunksBaker = new ClientTasksPool(world, nbThreads);
+		//this.chunksBaker = new ClientTasksPool(world, nbThreads);
 
 		this.worldSizeInChunks = world.getWorldInfo().getSize().sizeInChunks;
 
 		this.wrapChunksDistance = worldSizeInChunks / 2;
 	}
-
-	@SuppressWarnings("unused")
-	private final WorldRenderer worldRenderer;
-	private final WorldClient world;
-
-	private final ChunkMeshesBaker chunksBaker;
-
-	private final int worldSizeInChunks;
-	private final int wrapChunksDistance;
-
-	private List<ChunkRenderCommand> culledChunksShadow;
-	private List<ChunkRenderCommand> culledChunksNormal = new ArrayList<ChunkRenderCommand>();
-
-	int cameraChunkX, cameraChunkY, cameraChunkZ;
 
 	/** Computes wich parts of the world could be seen by said entity */
 	public void updatePVSSet(CameraInterface camera)
@@ -87,11 +87,11 @@ public class ChunkMeshesRenderer
 		Vector3fc cameraFloatPosition = new Vector3f((float)camera.getCameraPosition().x(), (float)camera.getCameraPosition().y(), (float)camera.getCameraPosition().z());
 		
 		//Do a floodfill arround the entity
-		List<Chunk> floodFillResults = floodFillArround(cameraFloatPosition, (int) RenderingConfig.viewDistance / 32);
+		List<ClientChunk> floodFillResults = floodFillArround(cameraFloatPosition, (int) RenderingConfig.viewDistance / 32);
 
 		culledChunksNormal.clear();
 		//Check they have render data & submit them if they don't
-		for (Chunk chunk : floodFillResults)
+		for (ClientChunk chunk : floodFillResults)
 		{
 			ChunkRenderCommand command = new ChunkRenderCommand(chunk);
 
@@ -112,12 +112,12 @@ public class ChunkMeshesRenderer
 
 	private final int verticalDistance = 8;
 
-	private final List<Chunk> floodFillSet = new ArrayList<Chunk>();
+	private final List<ClientChunk> floodFillSet = new ArrayList<ClientChunk>();
 	private final Set<Vector3d> floodFillMask = new HashSet<Vector3d>();
 
 	private final Deque<Integer> floodFillDeque = new ArrayDeque<Integer>();
 	
-	private List<Chunk> floodFillArround(Vector3fc vector3, int maxDistance)
+	private List<ClientChunk> floodFillArround(Vector3fc vector3, int maxDistance)
 	{
 		floodFillSet.clear();
 		floodFillMask.clear();
@@ -144,7 +144,8 @@ public class ChunkMeshesRenderer
 			int ajustedChunkX = chunkX;
 			int ajustedChunkZ = chunkZ;
 
-			Chunk chunk = world.getChunk(chunkX, chunkY, chunkZ);
+			//TODO made forced cast irrelevant
+			ClientChunk chunk = (ClientChunk) world.getChunk(chunkX, chunkY, chunkZ);
 
 			if (floodFillMask.contains(new Vector3d(chunkX, chunkY, chunkZ)))
 				continue;
@@ -227,7 +228,8 @@ public class ChunkMeshesRenderer
 			for (int y = cameraChunkY - maxVerticalShadowDistance; y < cameraChunkY + maxVerticalShadowDistance; y++)
 				for (int z = cameraChunkZ - maxShadowDistance; z < cameraChunkZ + maxShadowDistance; z++)
 				{
-					Chunk chunk = world.getChunk(x, y, z);
+					//TODO have this cast made irrelevant
+					ClientChunk chunk = (ClientChunk) world.getChunk(x, y, z);
 					if (chunk != null)
 						shadowChunks.add(new ChunkRenderCommand(chunk));
 				}
@@ -278,7 +280,7 @@ public class ChunkMeshesRenderer
 			else*/
 				lodToUse = distance < Math.max(64, RenderingConfig.viewDistance / 4.0) ? RenderLodLevel.HIGH : RenderLodLevel.LOW;
 			
-			((RenderableChunk) command.chunk).getChunkRenderData().renderPass(renderingInterface, lodToUse, shadingType);
+			((ClientChunk) command.chunk).getChunkRenderData().renderPass(renderingInterface, lodToUse, shadingType);
 		}
 
 		if(chunkMeshesPass == RenderingPass.SHADOW)
@@ -293,14 +295,16 @@ public class ChunkMeshesRenderer
 
 	private class ChunkRenderCommand
 	{
-		public ChunkRenderCommand(Chunk chunk)
+		public ChunkRenderCommand(ClientChunk chunk)
 		{
 			this.chunk = (ChunkRenderable) chunk;
 
 			//Request rendering them if they aren't already present
-			if ((this.chunk.isMarkedForReRender() /*|| chunk.needsLightningUpdates()*/) && !chunk.isAirChunk())
-				chunksBaker.requestChunkRender(this.chunk);
-
+			//if ((this.chunk.isMarkedForReRender() /*|| chunk.needsLightningUpdates()*/) && !chunk.isAirChunk())
+			//	chunksBaker.requestChunkRender(this.chunk);
+			if(!this.chunk.isAirChunk() && this.chunk.meshUpdater().pendingUpdates() > 0)
+				this.chunk.meshUpdater().spawnUpdateTaskIfNeeded();
+			
 			this.displayWorldY = chunk.getChunkY() << 5;
 
 			int displayWorldX = chunk.getChunkX() << 5;
@@ -329,12 +333,6 @@ public class ChunkMeshesRenderer
 
 	public void destroy()
 	{
-		this.chunksBaker.destroy();
-	}
-
-	public ChunkMeshesBaker getBaker()
-	{
-		return this.chunksBaker;
 	}
 	
 	public RenderedChunksMask getRenderedChunksMask(CameraInterface camera) {
@@ -365,7 +363,7 @@ public class ChunkMeshesRenderer
 					{
 						Chunk chunk = world.getChunk(a, b, c);
 						//If the chunk is loaded & it either empty or has rendering data, we add it to the mask
-						if(chunk != null && (chunk.isAirChunk() || ((RenderableChunk)chunk).getChunkRenderData().isDataAvailable()))
+						if(chunk != null && (chunk.isAirChunk() || ((ClientChunk)chunk).getChunkRenderData().isDataAvailable()))
 						{
 							int dx = a - centerChunkX + xz_dimension;
 							int dy = b - centerChunkY + y_dimension;

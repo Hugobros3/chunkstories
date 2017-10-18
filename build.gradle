@@ -20,7 +20,7 @@ allprojects {
 			}
 
 			dependencies {
-				classpath 'com.github.johni0702:gradle-ecj-plugin:master-SNAPSHOT'
+				classpath 'com.github.johni0702:gradle-ecj-plugin:795736c7bd085c6ff3a5fbd3f5d2913c94fe589e'
 			}
 	}
 }

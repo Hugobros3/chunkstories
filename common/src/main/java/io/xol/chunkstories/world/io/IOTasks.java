@@ -271,8 +271,10 @@ public class IOTasks extends Thread implements TaskExecutor
 				
 				//TODO Look into this properly
 				//We never want to mess with that when we are the world
-				if(!(world instanceof WorldTool))
-					chunkSlot.getChunk().computeVoxelLightning(false);
+				if(!(world instanceof WorldTool)) {
+					//chunkSlot.getChunk().computeVoxelLightning(false);
+					chunkSlot.getChunk().lightBaker().requestLightningUpdate();
+				}
 			}
 
 			//chunkSlot.setChunk(result);

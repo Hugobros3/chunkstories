@@ -19,9 +19,9 @@ import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunksIterator;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderDataHolder;
-import io.xol.chunkstories.renderer.chunks.RenderableChunk;
 import io.xol.chunkstories.renderer.particles.ClientParticlesRenderer;
 import io.xol.chunkstories.world.WorldClientCommon;
+import io.xol.chunkstories.world.chunk.ClientChunk;
 import io.xol.engine.graphics.GLCalls;
 import io.xol.engine.graphics.geometry.VertexBufferGL;
 import io.xol.engine.graphics.textures.Texture2DGL;
@@ -146,7 +146,7 @@ public class DebugInfoRenderer {
 		renderingInterface.getFontRenderer().drawStringWithShadow(font, posx, posy, text, 1, 1, new Vector4f(1));
 		
 		posy -= lineHeight;
-		text = "Chunks to bake : " + world.getWorldRenderer().getChunkMeshesRenderer().getBaker() + " - " + world.ioHandler.toString();
+		text = "Chunks to bake : " + world.getGameContext().tasks() + " - " + world.ioHandler.toString();
 		renderingInterface.getFontRenderer().drawStringWithShadow(font, posx, posy, text, 1, 1, new Vector4f(1));
 		
 		posy -= lineHeight;
@@ -161,7 +161,7 @@ public class DebugInfoRenderer {
 		}
 		else if (current instanceof ChunkRenderable)
 		{
-			ChunkRenderDataHolder chunkRenderData = ((RenderableChunk) current).getChunkRenderData();
+			ChunkRenderDataHolder chunkRenderData = ((ClientChunk) current).getChunkRenderData();
 			if (chunkRenderData != null)
 			{
 				posy -= lineHeight;
@@ -203,7 +203,7 @@ public class DebugInfoRenderer {
 				continue;
 			if (c instanceof ChunkRenderable)
 			{
-				ChunkRenderDataHolder chunkRenderData = ((RenderableChunk) c).getChunkRenderData();
+				ChunkRenderDataHolder chunkRenderData = ((ClientChunk) c).getChunkRenderData();
 				if (chunkRenderData != null)
 				{
 					nbChunks++;

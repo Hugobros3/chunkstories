@@ -3,6 +3,8 @@ package io.xol.chunkstories.world.chunk;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Iterator;
@@ -30,7 +32,6 @@ import net.jpountz.lz4.LZ4Factory;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.entity.EntitySerializer;
 import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
-import io.xol.chunkstories.renderer.chunks.RenderableChunk;
 import io.xol.chunkstories.voxel.components.VoxelComponentsHolder;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -430,6 +431,43 @@ public class ChunkHolderImplementation implements ChunkHolder
 		return this.createChunk(null);
 	}
 	
+	static Constructor<? extends CubicChunk> clientChunkConstructor;
+	static Constructor<? extends CubicChunk> clientChunkConstructorNoData;
+	
+	static {
+		loadConstructors();
+	}
+	
+	private static void loadConstructors() {
+		try {
+			//We don't use mod loading code on purpose
+			Class<? extends CubicChunk> clientChunkClass = (Class<? extends CubicChunk>) Class.forName("io.xol.chunkstories.world.chunk.ClientChunk");
+			clientChunkConstructor = clientChunkClass.getConstructor(ChunkHolderImplementation.class, int.class, int.class, CompressedData.class);
+			clientChunkConstructorNoData = clientChunkClass.getConstructor(ChunkHolderImplementation.class, int.class, int.class, int.class);
+		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	//TODO have a cleaner way to make this
+	private static CubicChunk createClientChunk(ChunkHolderImplementation chunkHolder, int x, int y, int z, final CompressedData data) {
+		
+		try {
+			if(data == null) {
+				return clientChunkConstructorNoData.newInstance(chunkHolder, x, y, z);
+			}
+			else {
+				return clientChunkConstructorNoData.newInstance(chunkHolder, x, y, z, data);
+			}
+				
+		} catch (SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			e.printStackTrace();
+			assert false;
+			throw new RuntimeException("Could not create client chunk: "+e.getMessage());
+		}
+	}
+	
 	public CubicChunk createChunk(CompressedData data)
 	{
 		this.chunkLock.writeLock().lock();
@@ -439,7 +477,13 @@ public class ChunkHolderImplementation implements ChunkHolder
 			return this.chunk;
 		}
 		
-		CubicChunk chunk = data == null ? new RenderableChunk(this, x, y, z) : new RenderableChunk(this, x, y, z, data);
+		CubicChunk chunk;
+		if(region.world instanceof WorldClient) {
+			chunk = createClientChunk(this, x, y, z, data);
+			//chunk = data == null ? new ClientChunk(this, x, y, z) : new ClientChunk(this, x, y, z, data);
+		}
+		else
+			chunk = data == null ? new CubicChunk(this, x, y, z) : new CubicChunk(this, x, y, z, data);
 		
 		this.chunk = chunk;
 		if(this.chunk == null && chunk != null)

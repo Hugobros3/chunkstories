@@ -830,8 +830,9 @@ public abstract class WorldImplementation implements World
 			{
 				ChunkRenderable c2 = (ChunkRenderable) c;
 
-				c2.markRenderInProgress(false);
-				c2.markForReRender();
+				c2.meshUpdater().requestMeshUpdate();
+				//c2.markRenderInProgress(false);
+				//c2.markForReRender();
 			}
 		}
 	}

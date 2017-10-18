@@ -1,18 +1,22 @@
 package io.xol.chunkstories.renderer.chunks;
 
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.WorldRenderer;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
+import io.xol.chunkstories.api.rendering.world.ChunkRenderable.ChunkMeshUpdater;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.LodLevel;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.VertexLayout;
 import io.xol.chunkstories.world.chunk.CubicChunk;
-import io.xol.engine.concurrency.SimpleFence;
+import io.xol.engine.concurrency.SimpleLock;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -22,23 +26,23 @@ import io.xol.engine.concurrency.SimpleFence;
  * Responsible of holding all rendering information about one chunk
  * ie : VBO creation, uploading and deletion, as well as decals
  */
-public class ChunkRenderDataHolder
+public class ChunkRenderDataHolder implements ChunkMeshUpdater
 {
 	private final CubicChunk chunk;
 	private final WorldRenderer worldRenderer;
 	
-	private ChunkMeshDataSections currentData;
+	final AtomicInteger unbakedUpdates = new AtomicInteger(1);
+	public final SimpleLock onlyOneUpdateAtATime = new SimpleLock();
 	
-	//ConcurrentLinkedDeque<ChunkMeshDataSections> pendingUpload = new ConcurrentLinkedDeque<ChunkMeshDataSections>();
+	protected TaskBakeChunk task = null;
+	final Lock taskLock = new ReentrantLock();
 	
 	boolean isDestroyed = false;
 	
-	private Semaphore noDrawDeleteConflicts = new Semaphore(1);
-	private Semaphore oneUploadAtATime = new Semaphore(1);
+	private Semaphore noDrawDeleteConflicts = new Semaphore(1); // Prevents deleting the object we're drawing from
+	private Semaphore oneUploadAtATime = new Semaphore(1); // Enforces one update at a time
+	private ChunkMeshDataSections currentData = null;
 	protected VertexBuffer verticesObject = null;
-	
-	protected ChunkMeshDataSections pleaseUploadMe = null;
-	protected SimpleFence pleaseUploadMeFence = null;
 	
 	public ChunkRenderDataHolder(CubicChunk chunk, WorldRenderer worldRenderer)
 	{
@@ -148,16 +152,7 @@ public class ChunkRenderDataHolder
 			if(currentData == null)
 				return 0;
 			
-			/*switch(renderLodLevel) {
-			case HIGH:
-				return renderSections(renderingInterface, LodLevel.ANY, shadingType) + renderSections(renderingInterface, LodLevel.HIGH, shadingType);
-			case LOW:
-				return renderSections(renderingInterface, LodLevel.ANY, shadingType) + renderSections(renderingInterface, LodLevel.LOW, shadingType);
-			}*/
-			
 			return renderSections(renderingInterface, renderLodLevel, shadingType);
-			
-			//throw new RuntimeException("Undefined switch() case for RenderLodLevel "+renderLodLevel);
 		}
 		finally {
 			noDrawDeleteConflicts.release();
@@ -247,5 +242,23 @@ public class ChunkRenderDataHolder
 	public enum RenderLodLevel {
 		HIGH,
 		LOW
+	}
+
+	@Override
+	public Fence requestMeshUpdate() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void spawnUpdateTaskIfNeeded() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public int pendingUpdates() {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }

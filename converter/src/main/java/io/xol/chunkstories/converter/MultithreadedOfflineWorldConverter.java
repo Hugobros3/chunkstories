@@ -8,18 +8,14 @@ import java.util.Set;
 import io.xol.chunkstories.anvil.MinecraftChunk;
 import io.xol.chunkstories.anvil.MinecraftRegion;
 import io.xol.chunkstories.anvil.MinecraftWorld;
-import io.xol.chunkstories.api.util.concurrency.Fence;
-import io.xol.chunkstories.api.voxel.Voxel;
-import io.xol.chunkstories.api.voxel.VoxelLogic;
 import io.xol.chunkstories.api.world.WorldInfo.WorldSize;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
+import io.xol.chunkstories.renderer.chunks.TaskLightChunk;
 import io.xol.chunkstories.tools.WorldTool;
-import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.CubicChunk;
-import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
 import io.xol.engine.concurrency.CompoundFence;
 
 public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {

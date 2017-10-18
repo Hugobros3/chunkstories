@@ -2,23 +2,28 @@ package io.xol.chunkstories.workers;
 
 import io.xol.chunkstories.api.workers.Task;
 import io.xol.chunkstories.api.workers.TaskExecutor;
+import io.xol.chunkstories.api.workers.Tasks;
 
-public class WorkerThreadPool extends TasksPool<Task>
+public class WorkerThreadPool extends TasksPool<Task> implements Tasks
 {
-	private int threadsCount;
-	private WorkerThread[] workers;
+	protected int threadsCount;
+	protected WorkerThread[] workers;
 	
 	public WorkerThreadPool(int threadsCount)
 	{
 		this.threadsCount = threadsCount;
 		
 		workers = new WorkerThread[threadsCount];
-		for(int i = 0; i < threadsCount; i++)
-			workers[i] = new WorkerThread(i);
+		for(int id = 0; id < threadsCount; id++)
+			workers[id] = spawnWorkerThread(id);
+	}
+	
+	protected WorkerThread spawnWorkerThread(int id) {
+		return new WorkerThread(this, id);
 	}
 	
 	//Virtual task the reference is used to signal threads to end.
-	Task DIE = new Task() {
+	protected Task DIE = new Task() {
 
 		@Override
 		protected boolean task(TaskExecutor whoCares)
@@ -27,42 +32,6 @@ public class WorkerThreadPool extends TasksPool<Task>
 		}
 		
 	};
-	
-	class WorkerThread extends Thread implements TaskExecutor {
-		
-		WorkerThread(int id)
-		{
-			this.setName("Worker thread #"+id);
-			this.start();
-		}
-		
-		public void run()
-		{
-			while(true)
-			{
-				//Aquire a work permit
-				tasksCounter.acquireUninterruptibly();
-				
-				//If one such permit was found to exist, assert a task is readily avaible
-				Task task = tasksQueue.poll();
-				
-				assert task != null;
-				
-				//Only die task can break the loop
-				if(task == DIE)
-					break;
-				
-				boolean result = task.run(this);
-				tasksRan++;
-				
-				//Depending on the result we either reschedule the task or decrement the counter
-				if(result == false)
-					rescheduleTask(task);
-				else
-					tasksQueueSize.decrementAndGet();
-			}
-		}
-	}
 	
 	long tasksRan = 0;
 	long tasksRescheduled = 0;
@@ -84,5 +53,10 @@ public class WorkerThreadPool extends TasksPool<Task>
 		//Send threadsCount DIE orders
 		for(int i = 0; i < threadsCount; i++)
 			this.scheduleTask(DIE);
+	}
+
+	@Override
+	public int submittedTasks() {
+		return this.tasksQueueSize.get();
 	}
 }

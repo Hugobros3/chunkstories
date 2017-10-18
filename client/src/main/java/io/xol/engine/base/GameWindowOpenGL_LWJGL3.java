@@ -344,9 +344,9 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 		RenderingConfig.gl_InstancedArrays = GL.getCapabilities().GL_ARB_instanced_arrays;
 	}
 
+	// what is stage 2 ?
 	public void stage_2_init() {
 		//pleaseWait.takeControl();
-		
 		this.soundManager = new ALSoundManager();
 		this.inputsManager = new Lwjgl3ClientInputsManager(this);
 	}

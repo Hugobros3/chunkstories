@@ -25,6 +25,7 @@ import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.util.ChunkStoriesLogger;
 import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogLevel;
 import io.xol.chunkstories.api.util.concurrency.Fence;
+import io.xol.chunkstories.api.workers.Tasks;
 import io.xol.chunkstories.api.util.ConfigDeprecated;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.content.GameDirectory;
@@ -37,6 +38,7 @@ import io.xol.chunkstories.gui.overlays.general.MessageBoxOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.ConnectionOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.InventoryOverlay;
 import io.xol.chunkstories.input.lwjgl3.Lwjgl3ClientInputsManager;
+import io.xol.chunkstories.renderer.chunks.ClientTasksPool;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.chunkstories.tools.DebugProfiler;
 import io.xol.chunkstories.world.WorldClientCommon;
@@ -62,6 +64,8 @@ public class Client implements ClientInterface
 	//Gameplay data
 	private WorldClientCommon world;
 	private PlayerClient clientSideController;
+
+	private final ClientTasksPool workers;
 
 	//Debug
 	public static DebugProfiler profiler = new DebugProfiler();
@@ -138,6 +142,24 @@ public class Client implements ClientInterface
 		//Get configuration right
 		clientConfig = new ConfigFile("./config/client.cfg");
 		
+		// Spawns worker threads
+		int nbThreads = -1;
+		String configThreads = Client.getInstance().configDeprecated().getString("workersThreads", "auto");
+		if(!configThreads.equals("auto")) {
+			try {
+				nbThreads = Integer.parseInt(configThreads);
+			}
+			catch(NumberFormatException e) {}
+		}
+		
+		if(nbThreads <= 0) {
+			nbThreads = Runtime.getRuntime().availableProcessors() / 2;
+			
+			//Fail-safe
+			if(nbThreads < 1)
+				nbThreads = 1;
+		}
+		
 		// Creates game window, no use of any user content up to this point
 		gameWindow = new GameWindowOpenGL_LWJGL3(this, "Chunk Stories " + VersionInfo.version);
 		RenderingConfig.define();
@@ -145,6 +167,8 @@ public class Client implements ClientInterface
 		// Create game content manager
 		gameContent = new ClientGameContent(this, coreContentLocation, modsStringArgument);
 		gameContent.reload();
+		
+		workers = new ClientTasksPool(this, nbThreads);
 		
 		gameWindow.stage_2_init();
 		
@@ -185,6 +209,8 @@ public class Client implements ClientInterface
 
 	public void onClose()
 	{
+		workers.destroy();
+		
 		clientConfig.save();
 	}
 
@@ -420,5 +446,10 @@ public class Client implements ClientInterface
 	@Override
 	public ClientRenderingConfig renderingConfig() {
 		return renderingConfig;
+	}
+
+	@Override
+	public Tasks tasks() {
+		return workers;
 	}
 }

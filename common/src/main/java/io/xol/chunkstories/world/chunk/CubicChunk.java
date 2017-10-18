@@ -25,11 +25,12 @@ import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.Chunk;
+import io.xol.chunkstories.api.world.chunk.ChunkLightUpdater;
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.entity.EntitySerializer;
 import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
-import io.xol.chunkstories.renderer.chunks.ChunkLightBaker;
+import io.xol.chunkstories.renderer.chunks.ClientChunkLightBaker;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.voxel.components.VoxelComponentsHolder;
 import io.xol.chunkstories.world.WorldImplementation;
@@ -48,7 +49,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -77,8 +77,7 @@ public class CubicChunk implements Chunk
 	public final AtomicInteger compr_uncomittedBlockModifications = new AtomicInteger();
 	public final AtomicInteger occl_compr_uncomittedBlockModifications = new AtomicInteger();
 	
-	public final ChunkLightBaker lightBakingStatus = new ChunkLightBaker(this);
-	//public AtomicBoolean needRelightning = new AtomicBoolean(true);
+	public final ClientChunkLightBaker lightBakingStatus = new ClientChunkLightBaker(this);
 	
 	protected final Map<Integer, VoxelComponentsHolder> voxelComponents = new HashMap<Integer, VoxelComponentsHolder>();
 	protected final Set<Entity> localEntities = ConcurrentHashMap.newKeySet();
@@ -524,8 +523,8 @@ public class CubicChunk implements Chunk
 						for(int iz = sz; iz <= ez; iz++)
 						{
 							Chunk chunk = world.getChunk(ix, iy, iz);
-							if(chunk != null)
-								((ChunkRenderable) chunk).markForReRender();
+							if(chunk != null && chunk instanceof ChunkRenderable)
+								((ChunkRenderable) chunk).meshUpdater().requestMeshUpdate();
 						}
 			}
 			
@@ -600,11 +599,10 @@ public class CubicChunk implements Chunk
 	@Override
 	public String toString()
 	{
-		return "[CubicChunk x:" + this.chunkX + " y:" + this.chunkY + " z:" + this.chunkZ + " air:" + isAirChunk() + " nl:" + this.needRelightning + "]";
+		return "[CubicChunk x:" + this.chunkX + " y:" + this.chunkY + " z:" + this.chunkZ + " air:" + isAirChunk() + " lS:" + this.lightBakingStatus + "]";
 	}
-
-	@Override
-	public void computeVoxelLightning(boolean adjacent)
+	
+	public void computeVoxelLightningInternal(boolean adjacent)
 	{
 		// Checks first if chunk contains blocks
 		if (chunkVoxelData == null)
@@ -628,14 +626,10 @@ public class CubicChunk implements Chunk
 		//Propagates the light
 		int c = propagateLightning(blockSources, sunSources);
 
-		if (c > 0 && this instanceof ChunkRenderable)
+		/*if (c > 0 && this instanceof ChunkRenderable)
 			((ChunkRenderable)this).markForReRender();
 
-		needRelightning.set(false);
-		//Return the queues after that
-		//world.dequesPool.back(blockSources);
-		//world.dequesPool.back(sunSources);
-		//Not really jk
+		needRelightning.set(false);*/
 	}
 
 	// Now entering lightning code part, brace yourselves
@@ -650,13 +644,22 @@ public class CubicChunk implements Chunk
 		Chunk adjacentChunkBack = world.getChunk(chunkX, chunkY, chunkZ - 1);
 		Chunk adjacentChunkLeft = world.getChunk(chunkX - 1, chunkY, chunkZ);
 		Chunk adjacentChunkRight = world.getChunk(chunkX + 1, chunkY, chunkZ);
+		
 		//Don't spam the requeue requests
-		boolean checkTopBleeding = (adjacentChunkTop != null) && !adjacentChunkTop.needsLightningUpdates();
-		boolean checkBottomBleeding = (adjacentChunkBottom != null) && !adjacentChunkBottom.needsLightningUpdates();
-		boolean checkFrontBleeding = (adjacentChunkFront != null) && !adjacentChunkFront.needsLightningUpdates();
-		boolean checkBackBleeding = (adjacentChunkBack != null) && !adjacentChunkBack.needsLightningUpdates();
-		boolean checkLeftBleeding = (adjacentChunkLeft != null) && !adjacentChunkLeft.needsLightningUpdates();
-		boolean checkRightBleeding = (adjacentChunkRight != null) && !adjacentChunkRight.needsLightningUpdates();
+		boolean checkTopBleeding = (adjacentChunkTop != null);// && !adjacentChunkTop.needsLightningUpdates();
+		boolean checkBottomBleeding = (adjacentChunkBottom != null);// && !adjacentChunkBottom.needsLightningUpdates();
+		boolean checkFrontBleeding = (adjacentChunkFront != null);// && !adjacentChunkFront.needsLightningUpdates();
+		boolean checkBackBleeding = (adjacentChunkBack != null);// && !adjacentChunkBack.needsLightningUpdates();
+		boolean checkLeftBleeding = (adjacentChunkLeft != null);// && !adjacentChunkLeft.needsLightningUpdates();
+		boolean checkRightBleeding = (adjacentChunkRight != null);// && !adjacentChunkRight.needsLightningUpdates();
+		
+		boolean requestTop = false;
+		boolean requestBot = false;
+		boolean requestFront = false;
+		boolean requestBack = false;
+		boolean requestLeft = false;
+		boolean requestRight = false;
+		
 		Voxel in;
 		while (blockSources.size() > 0)
 		{
@@ -693,7 +696,8 @@ public class CubicChunk implements Chunk
 					int adjacentBlocklight = (adjacentChunkRight.peekSimple(0, y, z) & blockAntiMask) << blockBitshift;
 					if (ll > adjacentBlocklight + 1)
 					{
-						adjacentChunkRight.markInNeedForLightningUpdate();
+						requestRight = true;
+						//adjacentChunkRight.markInNeedForLightningUpdate();
 						checkRightBleeding = false;
 					}
 				}
@@ -715,7 +719,8 @@ public class CubicChunk implements Chunk
 					int adjacentBlocklight = (adjacentChunkLeft.peekSimple(31, y, z) & blockAntiMask) << blockBitshift;
 					if (ll > adjacentBlocklight + 1)
 					{
-						adjacentChunkLeft.markInNeedForLightningUpdate();
+						requestLeft = true;
+						//adjacentChunkLeft.markInNeedForLightningUpdate();
 						checkLeftBleeding = false;
 					}
 				}
@@ -738,7 +743,8 @@ public class CubicChunk implements Chunk
 					int adjacentBlocklight = (adjacentChunkFront.peekSimple(x, y, 0) & blockAntiMask) << blockBitshift;
 					if (ll > adjacentBlocklight + 1)
 					{
-						adjacentChunkFront.markInNeedForLightningUpdate();
+						requestFront = true;
+						//adjacentChunkFront.markInNeedForLightningUpdate();
 						checkFrontBleeding = false;
 					}
 				}
@@ -760,7 +766,8 @@ public class CubicChunk implements Chunk
 					int adjacentBlocklight = (adjacentChunkBack.peekSimple(x, y, 31) & blockAntiMask) << blockBitshift;
 					if (ll > adjacentBlocklight + 1)
 					{
-						adjacentChunkBack.markInNeedForLightningUpdate();
+						requestBack = true;
+						//adjacentChunkBack.markInNeedForLightningUpdate();
 						checkBackBleeding = false;
 					}
 				}
@@ -783,7 +790,8 @@ public class CubicChunk implements Chunk
 					int adjacentBlocklight = (adjacentChunkTop.peekSimple(x, 0, z) & blockAntiMask) << blockBitshift;
 					if (ll > adjacentBlocklight + 1)
 					{
-						adjacentChunkTop.markInNeedForLightningUpdate();
+						requestTop = true;
+						//adjacentChunkTop.markInNeedForLightningUpdate();
 						checkTopBleeding = false;
 					}
 				}
@@ -805,7 +813,8 @@ public class CubicChunk implements Chunk
 					int adjacentBlocklight = (adjacentChunkBottom.peekSimple(x, 31, z) & blockAntiMask) << blockBitshift;
 					if (ll > adjacentBlocklight + 1)
 					{
-						adjacentChunkBottom.markInNeedForLightningUpdate();
+						requestBot = true;
+						//adjacentChunkBottom.markInNeedForLightningUpdate();
 						checkBottomBleeding = false;
 					}
 				}
@@ -852,7 +861,8 @@ public class CubicChunk implements Chunk
 					//int adjacentSunlight = (adjacentChunkRight.getDataAt(0, y, z) & sunAntiMask) << sunBitshift;
 					if (((adj & sunlightMask) >> sunBitshift) < llRight - 1)
 					{
-						adjacentChunkRight.markInNeedForLightningUpdate();
+						requestRight = true;
+						//adjacentChunkRight.markInNeedForLightningUpdate();
 						checkRightBleeding = false;
 					}
 				}
@@ -882,7 +892,8 @@ public class CubicChunk implements Chunk
 					int llLeft = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.LEFT);
 					if (((adj & sunlightMask) >> sunBitshift) < llLeft - 1)
 					{
-						adjacentChunkLeft.markInNeedForLightningUpdate();
+						requestLeft = true;
+						//adjacentChunkLeft.markInNeedForLightningUpdate();
 						checkLeftBleeding = false;
 					}
 				}
@@ -908,7 +919,8 @@ public class CubicChunk implements Chunk
 					//int adjacentSunlight = (adjacentChunkFront.getDataAt(x, y, 0) & sunAntiMask) << sunBitshift;
 					if (((adj & sunlightMask) >> sunBitshift) < llFront - 1)
 					{
-						adjacentChunkFront.markInNeedForLightningUpdate();
+						requestFront = true;
+						//adjacentChunkFront.markInNeedForLightningUpdate();
 						checkFrontBleeding = false;
 					}
 				}
@@ -933,7 +945,8 @@ public class CubicChunk implements Chunk
 					int llBack = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.BACK);
 					if (((adj & sunlightMask) >> sunBitshift) < llBack - 1)
 					{
-						adjacentChunkBack.markInNeedForLightningUpdate();
+						requestBack = true;
+						//adjacentChunkBack.markInNeedForLightningUpdate();
 						checkBackBleeding = false;
 					}
 				}
@@ -959,7 +972,8 @@ public class CubicChunk implements Chunk
 					//int adjacentSunlight = (adj & sunAntiMask) << sunBitshift;
 					if (((adj & sunlightMask) >> sunBitshift) < llTop - 1)
 					{
-						adjacentChunkTop.markInNeedForLightningUpdate();
+						requestTop = true;
+						//adjacentChunkTop.markInNeedForLightningUpdate();
 						checkTopBleeding = false;
 					}
 				}
@@ -985,12 +999,26 @@ public class CubicChunk implements Chunk
 					//int adjacentSunlight = (adj & sunAntiMask) << sunBitshift;
 					if (((adj & sunlightMask) >> sunBitshift) < llBottm - 1)
 					{
-						adjacentChunkBottom.markInNeedForLightningUpdate();
+						requestBot = true;
+						//adjacentChunkBottom.markInNeedForLightningUpdate();
 						checkBottomBleeding = false;
 					}
 				}
 			}
 		}
+		
+		if(requestTop)
+			adjacentChunkTop.lightBaker().requestLightningUpdate();
+		if(requestBot)
+			adjacentChunkBottom.lightBaker().requestLightningUpdate();
+		if(requestLeft)
+			adjacentChunkLeft.lightBaker().requestLightningUpdate();
+		if(requestRight)
+			adjacentChunkRight.lightBaker().requestLightningUpdate();
+		if(requestBack)
+			adjacentChunkBack.lightBaker().requestLightningUpdate();
+		if(requestFront)
+			adjacentChunkFront.lightBaker().requestLightningUpdate();
 
 		return modifiedBlocks;
 	}
@@ -2127,6 +2155,7 @@ public class CubicChunk implements Chunk
 
 	private void setWorldDataOnlyForLightningUpdatesFunctions(int x, int y, int z, int data)
 	{
+		//Still within bounds !
 		if (x > 0 && x < 31)
 			if (y > 0 && y < 31)
 				if (z > 0 && z < 31)
@@ -2140,7 +2169,8 @@ public class CubicChunk implements Chunk
 		
 		Chunk c = world.getChunk((x + chunkX * 32) / 32, (y + chunkY * 32) / 32, (z + chunkZ * 32) / 32);
 		if (c != null && oldData != data)
-			c.markInNeedForLightningUpdate();
+			c.lightBaker().requestLightningUpdate();
+			//c.markInNeedForLightningUpdate();
 	}
 
 	private int getSunLight(int x, int y, int z)
@@ -2212,18 +2242,6 @@ public class CubicChunk implements Chunk
 	public ChunkHolderImplementation holder()
 	{
 		return chunkHolder;
-	}
-
-	@Override
-	public boolean needsLightningUpdates()
-	{
-		return needRelightning.get();
-	}
-
-	@Override
-	public void markInNeedForLightningUpdate()
-	{
-		this.needRelightning.set(true);
 	}
 
 	@Override
@@ -2377,5 +2395,10 @@ public class CubicChunk implements Chunk
 			}
 			
 		};
+	}
+
+	@Override
+	public ChunkLightUpdater lightBaker() {
+		return lightBakingStatus;
 	}
 }

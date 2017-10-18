@@ -19,13 +19,13 @@ public class TaskLightChunk extends Task {
 		
 		try {
 			//Lock this
-			chunk.lightBakingStatus.onlyOneLightUpdateAtATime.lock();
+			chunk.lightBakingStatus.onlyOneUpdateAtATime.lock();
 			int updatesNeeded = chunk.lightBakingStatus.unbakedUpdates.get();
 			if(updatesNeeded == 0)
 				return true;
 			
 			//Actual computation takes place here
-			chunk.computeVoxelLightning(updateAdjacentChunks);
+			chunk.computeVoxelLightningInternal(updateAdjacentChunks);
 			
 			//Remove however many updates were pending
 			chunk.lightBakingStatus.unbakedUpdates.addAndGet(-updatesNeeded);
@@ -35,7 +35,7 @@ public class TaskLightChunk extends Task {
 			//chunk.lightBakingStatus.task = null;
 			//chunk.lightBakingStatus.taskLock.writeLock().unlock();
 			
-			chunk.lightBakingStatus.onlyOneLightUpdateAtATime.unlock();
+			chunk.lightBakingStatus.onlyOneUpdateAtATime.unlock();
 		}
 		return true;
 	}

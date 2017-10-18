@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import org.lwjgl.system.MemoryUtil;
 
 import io.xol.chunkstories.api.Content.Voxels;
+import io.xol.chunkstories.api.exceptions.tasks.UnexecutableTaskException;
 import io.xol.chunkstories.api.math.Math2;
 import io.xol.chunkstories.api.rendering.world.ChunkRenderable;
 import io.xol.chunkstories.api.voxel.Voxel;
@@ -26,8 +27,9 @@ import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.renderer.chunks.ClientTasksPool.ClientWorkerThread.ChunkMeshingBuffers;
+import io.xol.chunkstories.renderer.chunks.ClientWorkerThread.ChunkMeshingBuffers;
 import io.xol.chunkstories.voxel.VoxelsStore;
+import io.xol.chunkstories.world.chunk.ClientChunk;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.engine.base.MemFreeByteBuffer;
 
@@ -38,7 +40,7 @@ import io.xol.engine.base.MemFreeByteBuffer;
 public class TaskBakeChunk extends Task {
 
 	private final ClientTasksPool baker;
-	protected final RenderableChunk chunk;
+	protected final ClientChunk chunk;
 	
 	private final WorldClient world;
 	
@@ -48,7 +50,7 @@ public class TaskBakeChunk extends Task {
 	
 	protected ChunkMeshingBuffers cmd;
 	
-	public TaskBakeChunk(ClientTasksPool baker, RenderableChunk chunk) {
+	public TaskBakeChunk(ClientTasksPool baker, ClientChunk chunk) {
 		super();
 		this.baker = baker;
 		this.chunk = chunk;
@@ -66,7 +68,7 @@ public class TaskBakeChunk extends Task {
 	protected boolean task(TaskExecutor taskExecutor) {
 		
 		if(!(taskExecutor instanceof BakeChunkTaskExecutor))
-			return false;
+			throw new UnexecutableTaskException(this, "This class requires to be executed by a BakeChunkTaskExecutor");
 		
 		this.cmd = ((BakeChunkTaskExecutor)taskExecutor).getBuffers();
 		
@@ -76,9 +78,10 @@ public class TaskBakeChunk extends Task {
 			throw new RuntimeException("Fuck off no");
 		}
 		
-		//Second part is most likely redundant
-		if (chunkWithinWorld != null && (chunkWithinWorld.isMarkedForReRender() || chunkWithinWorld.needsLightningUpdates()))
+		//Require the chunk to be already loaded in the world
+		if (chunkWithinWorld != null)
 		{
+			//Require the chunks ARROUND it to be already loaded in the world
 			int nearChunks = 0;
 			if (world.isChunkLoaded(chunk.getChunkX() + 1, chunk.getChunkY(), chunk.getChunkZ()))
 				nearChunks++;
@@ -93,31 +96,35 @@ public class TaskBakeChunk extends Task {
 			if (world.isChunkLoaded(chunk.getChunkX(), chunk.getChunkY() - 1, chunk.getChunkZ()) || chunk.getChunkY() == 0)
 				nearChunks++;
 
-			if (nearChunks == 6) {
-				//Let task exec
-			}
-			else {
-				//Fail
-				chunk.markRenderInProgress(false);
-				return true;
+			if (nearChunks != 6) {
+				
+				//We wait until that's the case
+				return false;
 			}
 		}
 		else {
-			//Fast-fail
-
-			chunk.markRenderInProgress(false);
-			return true;
+			
+			//We wait until the chunk is loaded in the world ( or destroyed, then the task is cancelled )
+			return false;
 		}
 
-		if (chunk.needRelightning.getAndSet(false))
-			chunk.computeVoxelLightning(true);
+		// If the chunk has pending light updates, wait until THOSE are done
+		if(chunk.lightBakingStatus.pendingUpdates() > 0) {
+			chunk.lightBakingStatus.spawnUpdateTaskIfNeeded();
+			return false;
+		}
+		
+		int updatesToConsider = chunk.chunkRenderData.unbakedUpdates.get();
+		
+		//if (chunk.needRelightning.getAndSet(false))
+		//	chunk.computeVoxelLightning(true);
 
 		// Don't bother
-		if (!chunk.need_render.get())
-		{
-			chunk.markRenderInProgress(false);
-			return true;
-		}
+		//if (!chunk.need_render.get())
+		//{
+		//	chunk.markRenderInProgress(false);
+		//	return true;
+		//}
 		
 
 		//Don't waste time rendering void chunks m8
@@ -324,9 +331,11 @@ public class TaskBakeChunk extends Task {
 		
 		baker.totalChunksRendered.incrementAndGet();
 
-		chunk.need_render.set(false);
-		chunk.requestable.set(true);
-		chunk.markRenderInProgress(false);
+		chunk.chunkRenderData.unbakedUpdates.addAndGet(-updatesToConsider);
+		
+		//chunk.need_render.set(false);
+		//chunk.requestable.set(true);
+		//chunk.markRenderInProgress(false);
 		
 		//Wait until data is actually uploaded to not accidentally OOM while it struggles uploading it
 		if(Client.getInstance().configDeprecated().getBoolean("waitForChunkMeshDataUploadBeforeStartingTheNext", true))

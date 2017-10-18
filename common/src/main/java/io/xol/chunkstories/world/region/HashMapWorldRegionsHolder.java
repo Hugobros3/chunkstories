@@ -158,7 +158,7 @@ public class HashMapWorldRegionsHolder
 		
 		Chunk c = getChunk(chunkX, chunkY, chunkZ);
 		if (c != null && c instanceof ChunkRenderable)
-			((ChunkRenderable) c).markForReRender();
+			((ChunkRenderable) c).meshUpdater().requestMeshUpdate();
 	}
 
 	public void destroy()
