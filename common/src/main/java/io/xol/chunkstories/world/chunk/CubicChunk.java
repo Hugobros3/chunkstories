@@ -602,34 +602,33 @@ public class CubicChunk implements Chunk
 		return "[CubicChunk x:" + this.chunkX + " y:" + this.chunkY + " z:" + this.chunkZ + " air:" + isAirChunk() + " lS:" + this.lightBakingStatus + "]";
 	}
 	
-	public void computeVoxelLightningInternal(boolean adjacent)
+	public int computeVoxelLightningInternal(boolean adjacent)
 	{
 		// Checks first if chunk contains blocks
 		if (chunkVoxelData == null)
-			return; // Nothing to do
+			return 0; // Nothing to do
 
 		//Lock the chunk & grab 2 queues
 		Deque<Integer> blockSources = CubicChunk.blockSources.get();
 		Deque<Integer> sunSources = CubicChunk.sunSources.get();
 
-		// Reset any prospective residual data
+		// Reset any remnant data
 		blockSources.clear();
 		sunSources.clear();
 
 		// Find our own light sources, add them
 		this.addChunkLightSources(blockSources, sunSources);
 
-		// Load nearby chunks and check if they contain bright spots
+		int mods = 0;
+		
+		// Load nearby chunks and check if they contain bright spots we haven't accounted for yet
 		if (adjacent)
-			addAdjacentChunksLightSources(blockSources, sunSources);
+			mods += addAdjacentChunksLightSources(blockSources, sunSources);
 
 		//Propagates the light
-		int c = propagateLightning(blockSources, sunSources);
+		mods += propagateLightning(blockSources, sunSources);
 
-		/*if (c > 0 && this instanceof ChunkRenderable)
-			((ChunkRenderable)this).markForReRender();
-
-		needRelightning.set(false);*/
+		return mods;
 	}
 
 	// Now entering lightning code part, brace yourselves
@@ -1065,8 +1064,9 @@ public class CubicChunk implements Chunk
 			}
 	}
 
-	private void addAdjacentChunksLightSources(Deque<Integer> blockSources, Deque<Integer> sunSources)
+	private int addAdjacentChunksLightSources(Deque<Integer> blockSources, Deque<Integer> sunSources)
 	{
+		int mods = 0;
 		if (world != null)
 		{
 			Chunk cc;
@@ -1086,7 +1086,8 @@ public class CubicChunk implements Chunk
 						if (adjacent_blo > 1 && adjacent_blo > current_blo)
 						{
 							int ndata = current_data & blockAntiMask | (adjacent_blo - 1) << blockBitshift;
-							pokeSimple(31, c, b, ndata);
+							pokeSimpleSilently(31, c, b, ndata);
+							mods++;
 							blockSources.push(31);
 							blockSources.push(b);
 							blockSources.push(c);
@@ -1095,8 +1096,8 @@ public class CubicChunk implements Chunk
 						if (adjacent_sun > 1 && adjacent_sun > current_sun)
 						{
 							int ndata = current_data & sunAntiMask | (adjacent_sun - 1) << sunBitshift;
-							pokeSimple(31, c, b, ndata);
-
+							pokeSimpleSilently(31, c, b, ndata);
+							mods++;
 							sunSources.push(31);
 							sunSources.push(b);
 							sunSources.push(c);
@@ -1120,8 +1121,8 @@ public class CubicChunk implements Chunk
 						if (adjacent_blo > 1 && adjacent_blo > current_blo)
 						{
 							int ndata = current_data & blockAntiMask | (adjacent_blo - 1) << blockBitshift;
-							pokeSimple(0, c, b, ndata);
-
+							pokeSimpleSilently(0, c, b, ndata);
+							mods++;
 							blockSources.push(0);
 							blockSources.push(b);
 							blockSources.push(c);
@@ -1130,8 +1131,8 @@ public class CubicChunk implements Chunk
 						if (adjacent_sun > 1 && adjacent_sun > current_sun)
 						{
 							int ndata = current_data & sunAntiMask | (adjacent_sun - 1) << sunBitshift;
-							pokeSimple(0, c, b, ndata);
-
+							pokeSimpleSilently(0, c, b, ndata);
+							mods++;
 							sunSources.push(0);
 							sunSources.push(b);
 							sunSources.push(c);
@@ -1156,7 +1157,8 @@ public class CubicChunk implements Chunk
 						if (adjacent_blo > 1 && adjacent_blo > current_blo)
 						{
 							int ndata = current_data & blockAntiMask | (adjacent_blo - 1) << blockBitshift;
-							pokeSimple(c, 31, b, ndata);
+							pokeSimpleSilently(c, 31, b, ndata);
+							mods++;
 							if (adjacent_blo > 2)
 							{
 								blockSources.push(c);
@@ -1168,7 +1170,8 @@ public class CubicChunk implements Chunk
 						if (adjacent_sun > 1 && adjacent_sun > current_sun)
 						{
 							int ndata = current_data & sunAntiMask | (adjacent_sun - 1) << sunBitshift;
-							pokeSimple(c, 31, b, ndata);
+							pokeSimpleSilently(c, 31, b, ndata);
+							mods++;
 							//System.out.println(cc + " : "+adjacent_sun);
 							if (adjacent_sun > 2)
 							{
@@ -1200,7 +1203,8 @@ public class CubicChunk implements Chunk
 							if (adjacent_blo > 1 && adjacent_blo > current_blo)
 							{
 								int ndata = current_data & blockAntiMask | (adjacent_blo - 1) << blockBitshift;
-								pokeSimple(c, 31, b, ndata);
+								pokeSimpleSilently(c, 31, b, ndata);
+								mods++;
 								if (adjacent_blo > 2)
 								{
 									blockSources.push(c);
@@ -1212,7 +1216,8 @@ public class CubicChunk implements Chunk
 							if (adjacent_sun > 1 && adjacent_sun > current_sun)
 							{
 								int ndata = current_data & sunAntiMask | (adjacent_sun - 1) << sunBitshift;
-								pokeSimple(c, 31, b, ndata);
+								pokeSimpleSilently(c, 31, b, ndata);
+								mods++;
 								//System.out.println(cc + " : "+adjacent_sun);
 								if (adjacent_sun > 2)
 								{
@@ -1264,7 +1269,8 @@ public class CubicChunk implements Chunk
 						if (adjacent_blo > 1 && adjacent_blo > current_blo)
 						{
 							int ndata = current_data & blockAntiMask | (adjacent_blo - 1) << blockBitshift;
-							pokeSimple(c, 0, b, ndata);
+							pokeSimpleSilently(c, 0, b, ndata);
+							mods++;
 							if (adjacent_blo > 2)
 							{
 								blockSources.push(c);
@@ -1276,7 +1282,8 @@ public class CubicChunk implements Chunk
 						if (adjacent_sun > 1 && adjacent_sun > current_sun)
 						{
 							int ndata = current_data & sunAntiMask | (adjacent_sun - 1) << sunBitshift;
-							pokeSimple(c, 0, b, ndata);
+							pokeSimpleSilently(c, 0, b, ndata);
+							mods++;
 							if (adjacent_sun > 2)
 							{
 								sunSources.push(c);
@@ -1304,7 +1311,8 @@ public class CubicChunk implements Chunk
 						if (adjacent_blo > 1 && adjacent_blo > current_blo)
 						{
 							int ndata = current_data & blockAntiMask | (adjacent_blo - 1) << blockBitshift;
-							pokeSimple(c, b, 31, ndata);
+							pokeSimpleSilently(c, b, 31, ndata);
+							mods++;
 							blockSources.push(c);
 							blockSources.push(31);
 							blockSources.push(b);
@@ -1313,7 +1321,8 @@ public class CubicChunk implements Chunk
 						if (adjacent_sun > 1 && adjacent_sun > current_sun)
 						{
 							int ndata = current_data & sunAntiMask | (adjacent_sun - 1) << sunBitshift;
-							pokeSimple(c, b, 31, ndata);
+							pokeSimpleSilently(c, b, 31, ndata);
+							mods++;
 							sunSources.push(c);
 							sunSources.push(31);
 							sunSources.push(b);
@@ -1337,7 +1346,8 @@ public class CubicChunk implements Chunk
 						if (adjacent_blo > 1 && adjacent_blo > current_blo)
 						{
 							int ndata = current_data & blockAntiMask | (adjacent_blo - 1) << blockBitshift;
-							pokeSimple(c, b, 0, ndata);
+							pokeSimpleSilently(c, b, 0, ndata);
+							mods++;
 							blockSources.push(c);
 							blockSources.push(0);
 							blockSources.push(b);
@@ -1346,7 +1356,8 @@ public class CubicChunk implements Chunk
 						if (adjacent_sun > 1 && adjacent_sun > current_sun)
 						{
 							int ndata = current_data & sunAntiMask | (adjacent_sun - 1) << sunBitshift;
-							pokeSimple(c, b, 0, ndata);
+							pokeSimpleSilently(c, b, 0, ndata);
+							mods++;
 							sunSources.push(c);
 							sunSources.push(0);
 							sunSources.push(b);
@@ -1355,6 +1366,8 @@ public class CubicChunk implements Chunk
 					}
 			}
 		}
+		
+		return mods;
 	}
 
 	private void computeLightSpread(int bx, int by, int bz, int dataBefore, int data)
@@ -2364,7 +2377,7 @@ public class CubicChunk implements Chunk
 
 	@Override
 	public void destroy() {
-		//Nothing to do
+		this.lightBakingStatus.destroy();
 	}
 
 	@Override

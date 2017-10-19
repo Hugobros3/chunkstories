@@ -71,6 +71,10 @@ public class ChunkRenderDataHolder implements ChunkMeshUpdater
 			verticesObject.destroy();
 		
 		noDrawDeleteConflicts.release();
+		
+		Task task = this.task;
+		if(task != null)
+			task.cancel();
 	}
 	
 	/*public void renderChunkBounds(RenderingContext renderingContext)
@@ -249,6 +253,9 @@ public class ChunkRenderDataHolder implements ChunkMeshUpdater
 	@Override
 	public Fence requestMeshUpdate() {
 		unbakedUpdates.incrementAndGet();
+		
+		//System.out.println("who did dis");
+		//Thread.dumpStack();
 		
 		Task fence;
 		

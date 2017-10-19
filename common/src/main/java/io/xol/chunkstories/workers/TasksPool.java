@@ -1,7 +1,7 @@
 package io.xol.chunkstories.workers;
 
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.Deque;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -12,7 +12,7 @@ import io.xol.chunkstories.api.workers.Task;
  */
 public abstract class TasksPool<T extends Task>
 {
-	protected Queue<T> tasksQueue = new ConcurrentLinkedQueue<T>();
+	protected Deque<T> tasksQueue = new ConcurrentLinkedDeque<T>();
 	protected Semaphore tasksCounter = new Semaphore(0);
 	protected AtomicInteger tasksQueueSize = new AtomicInteger(0);
 	

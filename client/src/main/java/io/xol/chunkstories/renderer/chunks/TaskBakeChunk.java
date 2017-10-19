@@ -2,10 +2,12 @@ package io.xol.chunkstories.renderer.chunks;
 
 import java.nio.ByteBuffer;
 
+import org.joml.Vector3dc;
 import org.lwjgl.system.MemoryUtil;
 
 import io.xol.chunkstories.api.Content.Voxels;
 import io.xol.chunkstories.api.exceptions.tasks.UnexecutableTaskException;
+import io.xol.chunkstories.api.math.LoopingMathHelper;
 import io.xol.chunkstories.api.math.Math2;
 import io.xol.chunkstories.api.rendering.world.ChunkRenderable;
 import io.xol.chunkstories.api.voxel.Voxel;
@@ -27,6 +29,7 @@ import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.renderer.chunks.ClientWorkerThread.ChunkMeshingBuffers;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.chunk.ClientChunk;
@@ -72,13 +75,30 @@ public class TaskBakeChunk extends Task {
 		
 		this.cmd = ((BakeChunkTaskExecutor)taskExecutor).getBuffers();
 		
-		ChunkRenderable chunkWithinWorld = (ChunkRenderable) world.getChunk(chunk.getChunkX(), chunk.getChunkY(), chunk.getChunkZ());
-		
 		if(chunk == null) {
 			throw new RuntimeException("Fuck off no");
 		}
 		
-		//Require the chunk to be already loaded in the world
+		Vector3dc camera = Client.getInstance().getWorld().getWorldRenderer().getRenderingInterface().getCamera().getCameraPosition();
+		//Check we aren't too far from the camera, and thus that our request hasn't been yet cancelled
+		int vx = Math2.floor(camera.x() / 32);
+		int vy = Math2.floor(camera.y() / 32);
+		int vz = Math2.floor(camera.z() / 32);
+		int dx = LoopingMathHelper.moduloDistance(chunk.getChunkX(), vx, chunk.getWorld().getSizeInChunks());
+		int dz = LoopingMathHelper.moduloDistance(chunk.getChunkZ(), vz, chunk.getWorld().getSizeInChunks());
+		int dy = Math.abs(chunk.getChunkY() - vy);
+		
+		int chunksViewDistance = (int) (RenderingConfig.viewDistance / 32);
+		
+		//System.out.println("heil" + chunk);
+		
+		if(dx > chunksViewDistance || dz > chunksViewDistance || dy > 2) {
+			//System.out.println("unscheduled chunk mesh render task for it being too far to be rendered anyway");
+			return true;
+		}
+
+		//Require the chunk and nearby ones to be already loaded in the world
+		ChunkRenderable chunkWithinWorld = (ChunkRenderable) world.getChunk(chunk.getChunkX(), chunk.getChunkY(), chunk.getChunkZ());
 		if (chunkWithinWorld != null)
 		{
 			//Require the chunks ARROUND it to be already loaded in the world
@@ -116,17 +136,6 @@ public class TaskBakeChunk extends Task {
 		
 		int updatesToConsider = chunk.chunkRenderData.unbakedUpdates.get();
 		
-		//if (chunk.needRelightning.getAndSet(false))
-		//	chunk.computeVoxelLightning(true);
-
-		// Don't bother
-		//if (!chunk.need_render.get())
-		//{
-		//	chunk.markRenderInProgress(false);
-		//	return true;
-		//}
-		
-
 		//Don't waste time rendering void chunks m8
 		if (chunk.isAirChunk())
 			i = 32;

@@ -1,5 +1,6 @@
 package io.xol.chunkstories.renderer.chunks;
 
+import io.xol.chunkstories.api.rendering.world.ChunkRenderable;
 import io.xol.chunkstories.api.workers.Task;
 import io.xol.chunkstories.api.workers.TaskExecutor;
 import io.xol.chunkstories.world.chunk.CubicChunk;
@@ -25,7 +26,11 @@ public class TaskLightChunk extends Task {
 				return true;
 			
 			//Actual computation takes place here
-			chunk.computeVoxelLightningInternal(updateAdjacentChunks);
+			int mods = chunk.computeVoxelLightningInternal(updateAdjacentChunks);
+			
+			//Blocks have changed ?
+			if(mods > 0 && chunk instanceof ChunkRenderable)
+				((ChunkRenderable)chunk).meshUpdater().requestMeshUpdate();
 			
 			//Remove however many updates were pending
 			chunk.lightBakingStatus.unbakedUpdates.addAndGet(-updatesNeeded);

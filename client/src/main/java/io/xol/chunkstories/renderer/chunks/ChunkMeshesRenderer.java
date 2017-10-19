@@ -11,6 +11,7 @@ import io.xol.chunkstories.api.math.LoopingMathHelper;
 import io.xol.chunkstories.api.math.Math2;
 import org.joml.Matrix4f;
 import org.joml.Vector3d;
+import org.joml.Vector3dc;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
@@ -93,7 +94,7 @@ public class ChunkMeshesRenderer
 		//Check they have render data & submit them if they don't
 		for (ClientChunk chunk : floodFillResults)
 		{
-			ChunkRenderCommand command = new ChunkRenderCommand(chunk);
+			ChunkRenderCommand command = new ChunkRenderCommand(chunk, camera.getCameraPosition());
 
 			//Cull against the camera, security to always render the chunk we're on
 			boolean shouldShowChunk = chunk.getChunkX() == cameraChunkX && chunk.getChunkY() == cameraChunkY && chunk.getChunkZ() == cameraChunkZ;
@@ -107,7 +108,7 @@ public class ChunkMeshesRenderer
 				culledChunksNormal.add(command);
 		}
 
-		culledChunksShadow = updateShadowPVS(cameraFloatPosition);
+		culledChunksShadow = updateShadowPVS(camera.getCameraPosition());
 	}
 
 	private final int verticalDistance = 8;
@@ -210,7 +211,7 @@ public class ChunkMeshesRenderer
 	}
 
 	private final List<ChunkRenderCommand> shadowChunks = new ArrayList<ChunkRenderCommand>();
-	private List<ChunkRenderCommand> updateShadowPVS(Vector3fc vector3)
+	private List<ChunkRenderCommand> updateShadowPVS(Vector3dc vector3)
 	{
 		//Micro-optimization: Moved to a field
 		//List<ChunkRenderCommand> shadowChunks = new ArrayList<ChunkRenderCommand>();
@@ -231,7 +232,7 @@ public class ChunkMeshesRenderer
 					//TODO have this cast made irrelevant
 					ClientChunk chunk = (ClientChunk) world.getChunk(x, y, z);
 					if (chunk != null)
-						shadowChunks.add(new ChunkRenderCommand(chunk));
+						shadowChunks.add(new ChunkRenderCommand(chunk, vector3));
 				}
 
 		return shadowChunks;
@@ -295,20 +296,32 @@ public class ChunkMeshesRenderer
 
 	private class ChunkRenderCommand
 	{
-		public ChunkRenderCommand(ClientChunk chunk)
+		public ChunkRenderCommand(ClientChunk chunk, Vector3dc camera)
 		{
 			this.chunk = (ChunkRenderable) chunk;
-
-			//Request rendering them if they aren't already present
-			//if ((this.chunk.isMarkedForReRender() /*|| chunk.needsLightningUpdates()*/) && !chunk.isAirChunk())
-			//	chunksBaker.requestChunkRender(this.chunk);
-			if(!this.chunk.isAirChunk() && this.chunk.meshUpdater().pendingUpdates() > 0)
-				this.chunk.meshUpdater().spawnUpdateTaskIfNeeded();
 			
 			this.displayWorldY = chunk.getChunkY() << 5;
 
 			int displayWorldX = chunk.getChunkX() << 5;
 			int displayWorldZ = chunk.getChunkZ() << 5;
+
+			//Request rendering them if they aren't already present
+			//if ((this.chunk.isMarkedForReRender() /*|| chunk.needsLightningUpdates()*/) && !chunk.isAirChunk())
+			//	chunksBaker.requestChunkRender(this.chunk);
+			if(!this.chunk.isAirChunk() && this.chunk.meshUpdater().pendingUpdates() > 0) {
+				//Check it's not too distant from the camera
+				int vx = Math2.floor(camera.x() / 32);
+				int vy = Math2.floor(camera.y() / 32);
+				int vz = Math2.floor(camera.z() / 32);
+				int dx = LoopingMathHelper.moduloDistance(chunk.getChunkX(), vx, chunk.getWorld().getSizeInChunks());
+				int dz = LoopingMathHelper.moduloDistance(chunk.getChunkZ(), vz, chunk.getWorld().getSizeInChunks());
+				int dy = Math.abs(chunk.getChunkY() - vy);
+				
+				int chunksViewDistance = (int) (RenderingConfig.viewDistance / 32);
+				
+				if(dx <= chunksViewDistance && dz <= chunksViewDistance && dy <= 2)
+					this.chunk.meshUpdater().spawnUpdateTaskIfNeeded();
+			}
 
 			//We wrap the chunks if they are too far
 			if (chunk.getChunkX() - cameraChunkX > wrapChunksDistance)

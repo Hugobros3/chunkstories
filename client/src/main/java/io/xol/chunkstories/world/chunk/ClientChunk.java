@@ -40,8 +40,7 @@ public class ClientChunk extends CubicChunk implements ChunkRenderable {
 	public void destroy()
 	{
 		super.destroy();
-		if(chunkRenderData != null)
-			chunkRenderData.destroy();
+		chunkRenderData.destroy();
 	}
 
 	@Override

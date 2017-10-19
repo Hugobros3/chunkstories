@@ -40,7 +40,7 @@ public class WorkerThreadPool extends TasksPool<Task> implements Tasks
 	
 	void rescheduleTask(Task task)
 	{
-		tasksQueue.add(task);
+		tasksQueue.addLast(task);
 		tasksCounter.release();
 		
 		tasksRescheduled++;

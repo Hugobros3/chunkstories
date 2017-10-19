@@ -23,9 +23,6 @@ public class ClientChunkLightBaker implements ChunkLightUpdater {
 		this.chunk = chunk;
 	}
 
-	/** (non-Javadoc)
-	 * @see io.xol.chunkstories.renderer.chunks.ChunkLightBaker#requestLightningUpdate()
-	 */
 	@Override
 	public Fence requestLightningUpdate() {
 		unbakedUpdates.incrementAndGet();
@@ -46,9 +43,6 @@ public class ClientChunkLightBaker implements ChunkLightUpdater {
 		return fence;
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.renderer.chunks.ChunkLightBaker#spawnUpdateTaskIfNeeded()
-	 */
 	@Override
 	public void spawnUpdateTaskIfNeeded() {
 		if(unbakedUpdates.get() > 0) {
@@ -63,11 +57,14 @@ public class ClientChunkLightBaker implements ChunkLightUpdater {
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.renderer.chunks.ChunkLightBaker#pendingUpdates()
-	 */
 	@Override
 	public int pendingUpdates() {
 		return this.unbakedUpdates.get();
+	}
+
+	public void destroy() {
+		Task task = this.task;
+		if(task != null)
+			task.cancel();
 	}
 }
