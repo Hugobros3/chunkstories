@@ -1,5 +1,8 @@
 package io.xol.chunkstories.renderer.chunks;
 
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
@@ -11,11 +14,17 @@ import io.xol.chunkstories.api.rendering.WorldRenderer;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
 import io.xol.chunkstories.api.rendering.world.ChunkRenderable.ChunkMeshUpdater;
+import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.util.concurrency.Fence;
+import io.xol.chunkstories.api.voxel.Voxel;
+import io.xol.chunkstories.api.voxel.components.VoxelComponentDynamicRenderer;
+import io.xol.chunkstories.api.voxel.components.VoxelComponentDynamicRenderer.VoxelDynamicRenderer;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.LodLevel;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.VertexLayout;
 import io.xol.chunkstories.api.workers.Task;
+import io.xol.chunkstories.api.world.chunk.Chunk.ChunkVoxelContext;
+import io.xol.chunkstories.renderer.chunks.ChunkMeshDataSections.DynamicallyRenderedVoxelClass;
 import io.xol.chunkstories.world.chunk.ClientChunk;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.engine.concurrency.SimpleLock;
@@ -27,6 +36,7 @@ import io.xol.engine.concurrency.SimpleLock;
 /**
  * Responsible of holding all rendering information about one chunk
  * ie : VBO creation, uploading and deletion, as well as decals
+ * TODO actually handle decals here retard
  */
 public class ChunkRenderDataHolder implements ChunkMeshUpdater
 {
@@ -248,6 +258,54 @@ public class ChunkRenderDataHolder implements ChunkMeshUpdater
 	public enum RenderLodLevel {
 		HIGH,
 		LOW
+	}
+	
+	public void renderExtras(RenderingInterface renderingInterface) {
+		noDrawDeleteConflicts.acquireUninterruptibly();
+		if(this.currentData != null) {
+			//System.out.println("data(ss)");
+			Map<Voxel, DynamicallyRenderedVoxelClass> shit = this.currentData.dynamicallyRenderedVoxels;
+			for(Entry<Voxel, DynamicallyRenderedVoxelClass> stuff : shit.entrySet()) {
+				
+				//System.out.println("extra");
+				
+				VoxelDynamicRenderer renderer = stuff.getValue().renderer;
+				renderer.renderVoxels(renderingInterface, new IterableIterator<ChunkVoxelContext>() {
+
+					Iterator<Integer> iindex = stuff.getValue().indexes.iterator();
+					ChunkVoxelContext cvc = null;
+					
+					@Override
+					public boolean hasNext() {
+						while(iindex.hasNext()) {
+							if(cvc != null)
+								return true;
+							
+							int index = iindex.next();
+							cvc = chunk.peek(index / 1024, (index / 32) % 32, index % 32);
+							//if(cvc.getVoxel() != stuff.getKey())
+							//	cvc = null;
+						}
+
+						if(cvc != null)
+							return true;
+						
+						return false;
+					}
+
+					@Override
+					public ChunkVoxelContext next() {
+						ChunkVoxelContext cvr = cvc;
+						cvc = null;
+						return cvr;
+						//int index = iindex.next();
+						//return chunk.peek(index / 1024, (index / 32) % 32, index % 32);
+					}
+					
+				});
+			}
+		}
+		noDrawDeleteConflicts.release();
 	}
 
 	@Override

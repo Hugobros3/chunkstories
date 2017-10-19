@@ -43,7 +43,6 @@ import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -75,7 +74,9 @@ public class CubicChunk implements Chunk
 	
 	//Count unsaved edits atomically, fancy :]
 	public final AtomicInteger compr_uncomittedBlockModifications = new AtomicInteger();
-	public final AtomicInteger occl_compr_uncomittedBlockModifications = new AtomicInteger();
+	
+	public final ChunkOcclusionUpdater occlusion = new ChunkOcclusionUpdater(this);
+	//public final AtomicInteger occl_compr_uncomittedBlockModifications = new AtomicInteger();
 	
 	public final ClientChunkLightBaker lightBakingStatus = new ClientChunkLightBaker(this);
 	
@@ -84,9 +85,6 @@ public class CubicChunk implements Chunk
 
 	protected final SimpleLock componentsLock = new SimpleLock();
 	protected final SimpleLock entitiesLock = new SimpleLock();
-
-	// Occlusion lookup, there are 6 sides you can enter a chunk by and 5 sides you can exit it by. we use 6 coz it's easier and who the fuck cares about a six-heights of a byte
-	public boolean occlusionSides[][] = new boolean[6][6];
 
 	static final int sunlightMask = 0x000F0000;
 	static final int blocklightMask = 0x00F00000;
@@ -224,8 +222,6 @@ public class CubicChunk implements Chunk
 				System.out.println(e.getMessage());
 				e.printStackTrace();
 			}
-			
-			computeOcclusionTable();
 		}
 		
 		// Send chunk to whoever already subscribed
@@ -238,128 +234,7 @@ public class CubicChunk implements Chunk
 			}
 		}
 	}
-
-	static ThreadLocal<Deque<Integer>> occlusionFaces = new ThreadLocal<Deque<Integer>>()
-	{
-		@Override
-		protected Deque<Integer> initialValue()
-		{
-			return new ArrayDeque<Integer>();
-		}
-	};
-
-	/** Checks the occlusion table is up-to-date, and updates it else */
-	public void checkOcclusionTableUpToDate() {
-		int uncom = this.occl_compr_uncomittedBlockModifications.get();
-		
-		if(uncom > 0) {
-			this.computeOcclusionTable();
-			this.occl_compr_uncomittedBlockModifications.addAndGet(-uncom);
-		}
-	}
 	
-	private void computeOcclusionTable()
-	{
-		//System.out.println("Computing occlusion table ...");
-		occlusionSides = new boolean[6][6];
-
-		Deque<Integer> deque = occlusionFaces.get();
-		deque.clear();
-		boolean[] mask = new boolean[32768];
-		int x = 0, y = 0, z = 0;
-		int completion = 0;
-		int p = 0;
-		
-		@SuppressWarnings("unused")
-		int bits = 0;
-		//Until all 32768 blocks have been processed
-		while (completion < 32768)
-		{
-			//If this face was already done, we find one that wasn't
-			while (mask[x * 1024 + y * 32 + z])
-			{
-				p++;
-				p %= 32768;
-
-				x = p / 1024;
-				y = (p / 32) % 32;
-				z = p % 32;
-			}
-
-			bits++;
-			
-			//We put this face on the deque
-			deque.push(x * 1024 + y * 32 + z);
-
-			/**
-			 * Conventions for space in Chunk Stories 1 FRONT z+ x- LEFT 0 X 2 RIGHT x+ 3 BACK z- 4 y+ top X 5 y- bottom
-			 */
-			Set<Integer> touchingSides = new HashSet<Integer>();
-			while (!deque.isEmpty())
-			{
-				//Pop the topmost element
-				int d = deque.pop();
-
-				//Don't iterate twice over one element
-				if(mask[d])
-					continue;
-				
-				//Separate coordinates
-				x = d / 1024;
-				y = (d / 32) % 32;
-				z = d % 32;
-				
-				//Mark the case as done
-				mask[x * 1024 + y * 32 + z] = true;
-				completion++;
-				
-				if (!VoxelsStore.get().getVoxelById(this.peekSimple(x, y, z)).getType().isOpaque())
-				{
-					//Adds touched sides to set
-					
-					if (x == 0)
-						touchingSides.add(0);
-					else if (x == 31)
-						touchingSides.add(2);
-
-					if (y == 0)
-						touchingSides.add(5);
-					else if (y == 31)
-						touchingSides.add(4);
-
-					if (z == 0)
-						touchingSides.add(3);
-					else if (z == 31)
-						touchingSides.add(1);
-					
-					//Flood fill
-					
-					if(x > 0)
-						deque.push((x - 1) * 1024 + (y) * 32 + (z));
-					if(y > 0)
-						deque.push((x) * 1024 + (y - 1) * 32 + (z));
-					if(z > 0)
-						deque.push((x) * 1024 + (y) * 32 + (z - 1));
-					
-					if(x < 31)
-						deque.push((x + 1) * 1024 + (y) * 32 + (z));
-					if(y < 31)
-						deque.push((x) * 1024 + (y + 1) * 32 + (z));
-					if(z < 31)
-						deque.push((x) * 1024 + (y) * 32 + (z + 1));
-				}
-			}
-			
-			for(int i : touchingSides)
-			{
-				for(int j : touchingSides)
-					occlusionSides[i][j] = true;
-			}
-		}
-		
-		//System.out.println("chunk "+this+" is made of "+bits+" bits");
-	}
-
 	public int getChunkX()
 	{
 		return chunkX;
@@ -491,7 +366,10 @@ public class CubicChunk implements Chunk
 			
 			//Increment the modifications counter
 			compr_uncomittedBlockModifications.incrementAndGet();
-			occl_compr_uncomittedBlockModifications.incrementAndGet();
+			
+			//Don't spam the thread creation spawn
+			occlusion.unbakedUpdates.incrementAndGet();
+			//occl_compr_uncomittedBlockModifications.incrementAndGet();
 			
 			//Update related summary
 			if(update)
@@ -2173,7 +2051,7 @@ public class CubicChunk implements Chunk
 			if (y > 0 && y < 31)
 				if (z > 0 && z < 31)
 				{
-					this.pokeSimple(x, y, z, data);
+					this.pokeSimpleSilently(x, y, z, data);
 					return;
 				}
 
@@ -2215,7 +2093,7 @@ public class CubicChunk implements Chunk
 			if (y > 0 && y < 31)
 				if (z > 0 && z < 31)
 				{
-					this.pokeSimple(x, y, z, VoxelFormat.changeSunlight(this.peekSimple(x, y, z), level));
+					this.pokeSimpleSilently(x, y, z, VoxelFormat.changeSunlight(this.peekSimple(x, y, z), level));
 					return;
 				}
 		// Stronger implementation for unbound spread functions
@@ -2228,7 +2106,7 @@ public class CubicChunk implements Chunk
 			if (y > 0 && y < 31)
 				if (z > 0 && z < 31)
 				{
-					this.pokeSimple(x, y, z, VoxelFormat.changeBlocklight(this.peekSimple(x, y, z), level));
+					this.pokeSimpleSilently(x, y, z, VoxelFormat.changeBlocklight(this.peekSimple(x, y, z), level));
 					return;
 				}
 		// Stronger implementation for unbound spread functions
@@ -2311,13 +2189,13 @@ public class CubicChunk implements Chunk
 		@Override
 		public int getY()
 		{
-			return CubicChunk.this.getChunkX() * 32 + y;
+			return CubicChunk.this.getChunkY() * 32 + y;
 		}
 
 		@Override
 		public int getZ()
 		{
-			return CubicChunk.this.getChunkX() * 32 + z;
+			return CubicChunk.this.getChunkZ() * 32 + z;
 		}
 
 		@Override

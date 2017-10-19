@@ -1,6 +1,8 @@
 package io.xol.chunkstories.renderer.chunks;
 
 import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.joml.Vector3dc;
 import org.lwjgl.system.MemoryUtil;
@@ -11,6 +13,7 @@ import io.xol.chunkstories.api.math.LoopingMathHelper;
 import io.xol.chunkstories.api.math.Math2;
 import io.xol.chunkstories.api.rendering.world.ChunkRenderable;
 import io.xol.chunkstories.api.voxel.Voxel;
+import io.xol.chunkstories.api.voxel.VoxelDynamicallyRendered;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.voxel.VoxelSides.Corners;
@@ -30,6 +33,7 @@ import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
+import io.xol.chunkstories.renderer.chunks.ChunkMeshDataSections.DynamicallyRenderedVoxelClass;
 import io.xol.chunkstories.renderer.chunks.ClientWorkerThread.ChunkMeshingBuffers;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.chunk.ClientChunk;
@@ -252,6 +256,8 @@ public class TaskBakeChunk extends Task {
 		
 		bakedBlockId = -1;
 		
+		Map<Voxel, DynamicallyRenderedVoxelClass> dynamicVoxels = new HashMap<>();
+		
 		//Render the fucking thing!
 		for (i = 0; i < 32; i++)
 		{
@@ -274,6 +280,19 @@ public class TaskBakeChunk extends Task {
 						voxelRenderer = cmd.defaultVoxelRenderer;
 					
 					voxelRenderer.renderInto(chunkRendererOutput, chunkRenderingContext, chunk, voxelRenderingContext);
+					
+					if(vox instanceof VoxelDynamicallyRendered) {
+						DynamicallyRenderedVoxelClass vClass = dynamicVoxels.get(vox);
+						if(vClass == null) {
+							vClass = new DynamicallyRenderedVoxelClass();
+							
+							//TODO cache it world-wide 
+							vClass.renderer = ((VoxelDynamicallyRendered)vox).getDynamicRendererComponent(chunk.peek(i, k, j)).getVoxelDynamicRenderer();
+							dynamicVoxels.put(vox, vClass);
+						}
+						vClass.indexes.add(i * 1024 + k * 32 + j);
+						//((VoxelDynamicallyRendered)vox).getDynamicRendererComponent(context)
+					}
 					
 					bakedBlockId++;
 				}
@@ -336,6 +355,8 @@ public class TaskBakeChunk extends Task {
 
 		//ChunkMeshDataSections parent = chunk.getChunkRenderData().getRenderData();
 		ChunkMeshDataSections newRenderData = new ChunkMeshDataSections(wrappedBuffer, sizes, offsets);
+		newRenderData.dynamicallyRenderedVoxels = dynamicVoxels;
+		
 		chunk.getChunkRenderData().setData(newRenderData);
 		
 		//baker.totalChunksRendered.incrementAndGet();
@@ -354,7 +375,7 @@ public class TaskBakeChunk extends Task {
 		
 		return true;
 	}
-
+	
 	class ChunkBakerRenderContext implements ChunkRenderContext {
 
 		// For map borders

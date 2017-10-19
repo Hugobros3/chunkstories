@@ -338,7 +338,7 @@ public class WorldRendererImplementation implements WorldRenderer
 	}
 
 	private void gbuffers_opaque_entities(RenderingInterface renderingContext) {
-
+		
 		// Select shader
 		ShaderInterface entitiesShader = renderingContext.useShader("entities");
 
@@ -360,6 +360,8 @@ public class WorldRendererImplementation implements WorldRenderer
 
 		renderingContext.getCamera().setupShader(entitiesShader);
 
+		chunksRenderer.renderChunksExtras(renderingContext, RenderingPass.NORMAL_OPAQUE);
+		
 		entitiesRenderer.renderEntities(renderingContext);
 	}
 	

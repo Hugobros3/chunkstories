@@ -74,6 +74,7 @@ public class ShadowMapRenderer
 		//We render the world from that perspective
 		shadowsPassShader.setUniform1f("allowForWavyStuff", 1); //Hackish way of enabling the shader input for the fake "wind" effect vegetation can have
 		worldRenderer.getChunkMeshesRenderer().renderChunks(renderingContext, WorldRenderer.RenderingPass.SHADOW);
+		
 		shadowsPassShader.setUniform1f("allowForWavyStuff", 0); //In tern, disabling it while we do the entities
 		worldRenderer.entitiesRenderer.renderEntities(renderingContext);
 		
