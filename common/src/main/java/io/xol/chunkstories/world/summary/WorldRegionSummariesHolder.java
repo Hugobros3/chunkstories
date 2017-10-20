@@ -123,16 +123,12 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 		worldZ = sanitizeHorizontalCoordinate(worldZ);
 
 		long i = index(worldX, worldZ);
-		if (summaries.containsKey(i))
-		{
-			RegionSummaryImplementation summary = summaries.get(i);
-			if(!summary.isLoaded())
-				return summary;
-			else
-				return summary;
-		}
-
-		return null;
+		
+		RegionSummaryImplementation summary = summaries.get(i);
+		if(summary == null || !summary.isLoaded())
+			return null;
+		else
+			return summary;
 	}
 
 	public int getHeightMipmapped(int x, int z, int level)

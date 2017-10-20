@@ -24,8 +24,8 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 	private final int threadsCount;
 	private final ConverterWorkers workers;
 	
-	public MultithreadedOfflineWorldConverter(boolean verboseMode, File mcFolder, File csFolder, String mcWorldName, String csWorldName, WorldSize size, int minecraftOffsetX, int minecraftOffsetZ, int threadsCount) throws IOException {
-		super(verboseMode, mcFolder, csFolder, mcWorldName, csWorldName, size, minecraftOffsetX, minecraftOffsetZ);
+	public MultithreadedOfflineWorldConverter(boolean verboseMode, File mcFolder, File csFolder, String mcWorldName, String csWorldName, WorldSize size, int minecraftOffsetX, int minecraftOffsetZ, File coreContentLocation, int threadsCount) throws IOException {
+		super(verboseMode, mcFolder, csFolder, mcWorldName, csWorldName, size, minecraftOffsetX, minecraftOffsetZ, coreContentLocation);
 		
 		this.threadsCount = threadsCount;
 		this.workers = new ConverterWorkers(this, this.csWorld, threadsCount);

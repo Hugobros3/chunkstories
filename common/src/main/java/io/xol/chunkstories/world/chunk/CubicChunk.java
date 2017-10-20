@@ -31,6 +31,7 @@ import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.entity.EntitySerializer;
 import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
 import io.xol.chunkstories.renderer.chunks.ClientChunkLightBaker;
+import io.xol.chunkstories.tools.WorldTool;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.voxel.components.VoxelComponentsHolder;
 import io.xol.chunkstories.world.WorldImplementation;
@@ -407,7 +408,7 @@ public class CubicChunk implements Chunk
 			}
 			
 			// If this is a 'master' world.
-			if(update && world instanceof WorldMaster)
+			if(update && world instanceof WorldMaster && !(world instanceof WorldTool))
 			{
 				int blocksViewDistance = 256;
 				int sizeInBlocks = world.getWorldInfo().getSize().sizeInChunks * 32;

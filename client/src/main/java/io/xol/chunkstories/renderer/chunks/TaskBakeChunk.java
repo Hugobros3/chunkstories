@@ -83,7 +83,8 @@ public class TaskBakeChunk extends Task {
 			throw new RuntimeException("Fuck off no");
 		}
 		
-		Vector3dc camera = Client.getInstance().getWorld().getWorldRenderer().getRenderingInterface().getCamera().getCameraPosition();
+		Vector3dc camera = ((WorldClient) chunk.getWorld()).getWorldRenderer().getRenderingInterface().getCamera().getCameraPosition();
+	
 		//Check we aren't too far from the camera, and thus that our request hasn't been yet cancelled
 		int vx = Math2.floor(camera.x() / 32);
 		int vy = Math2.floor(camera.y() / 32);

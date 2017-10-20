@@ -74,7 +74,8 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser
 		boolean deleteAndRewrite = false;
 		
 		int threadCount = -1;
-		
+
+		File coreContentLocation = new File("core_content.zip");
 		for (int i = 5; i < arguments.length; i++)
 		{
 			if (arguments[i].startsWith("-"))
@@ -93,7 +94,13 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser
 				else
 					threadCount = Runtime.getRuntime().availableProcessors();
 			}
+			else if (arguments[i].contains("--core")) {
+				String coreContentLocationPath = arguments[i].replace("--core=", "");
+				coreContentLocation = new File(coreContentLocationPath);
+			}
 		}
+		
+		
 
 		String mcWorldName = arguments[0];
 		File mcWorldDir = new File(mcWorldName);
@@ -141,7 +148,7 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser
 		//if(threadCount <= 1)
 		//	converter = new OfflineWorldConverter(verboseMode, mcWorldDir, csWorldDir, mcWorldName, csWorldName, size, minecraftOffsetX, minecraftOffsetZ);
 		//else
-			converter = new MultithreadedOfflineWorldConverter(verboseMode, mcWorldDir, csWorldDir, mcWorldName, csWorldName, size, minecraftOffsetX, minecraftOffsetZ, threadCount);
+			converter = new MultithreadedOfflineWorldConverter(verboseMode, mcWorldDir, csWorldDir, mcWorldName, csWorldName, size, minecraftOffsetX, minecraftOffsetZ, coreContentLocation, threadCount);
 		
 		
 		converter.run();
@@ -167,7 +174,7 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser
 	
 	protected final ConverterMapping mappers;
 	
-	public OfflineWorldConverter(boolean verboseMode, File mcFolder, File csFolder, String mcWorldName, String csWorldName, WorldSize size, int minecraftOffsetX, int minecraftOffsetZ) throws IOException
+	public OfflineWorldConverter(boolean verboseMode, File mcFolder, File csFolder, String mcWorldName, String csWorldName, WorldSize size, int minecraftOffsetX, int minecraftOffsetZ, File coreContentLocation) throws IOException
 	{
 		this.verboseMode = verboseMode;
 		this.minecraftOffsetX = minecraftOffsetX;
@@ -180,7 +187,7 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser
 		String time = sdf.format(cal.getTime());
 		logger = new ChunkStoriesLoggerImplementation(this, ChunkStoriesLoggerImplementation.LogLevel.ALL, ChunkStoriesLoggerImplementation.LogLevel.ALL, new File("./logs/converter_" + time + ".log"));
 
-		content = new GameContentStore(this, new File("core_content.zip"), null);
+		content = new GameContentStore(this, coreContentLocation, null);
 		content.reload();
 
 
