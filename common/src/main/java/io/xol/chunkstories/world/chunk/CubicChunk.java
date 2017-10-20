@@ -544,160 +544,165 @@ public class CubicChunk implements Chunk
 			int y = blockSources.pop();
 			int z = blockSources.pop();
 			int x = blockSources.pop();
+			
 			int voxelData = chunkVoxelData[x * 1024 + y * 32 + z];
-			int ll = (voxelData & blocklightMask) >> blockBitshift;
+			int cellLightLevel = (voxelData & blocklightMask) >> blockBitshift;
 			int cId = VoxelFormat.id(voxelData);
-
 			voxel = VoxelsStore.get().getVoxelById(cId);
 
 			if (VoxelsStore.get().getVoxelById(cId).getType().isOpaque())
-				ll = voxel.getLightLevel(voxelData);
-
-			if (ll > 1)
+				cellLightLevel = voxel.getLightLevel(voxelData);
+			if (cellLightLevel > 1)
 			{
-				// X-propagation
 				if (x < 31)
 				{
-					int adj = chunkVoxelData[(x + 1) * 1024 + y * 32 + z];
-					if (!VoxelsStore.get().getVoxelById((adj & 0xFFFF)).getType().isOpaque() && ((adj & blocklightMask) >> blockBitshift) < ll - 1)
+					int rightData = chunkVoxelData[(x + 1) * 1024 + y * 32 + z];
+					int llRight = cellLightLevel - voxel.getLightLevelModifier(voxelData, rightData, VoxelSides.RIGHT);
+					if (!VoxelsStore.get().getVoxelById((rightData & 0xFFFF)).getType().isOpaque() && ((rightData & blocklightMask) >> blockBitshift) < llRight - 1)
 					{
-						chunkVoxelData[(x + 1) * 1024 + y * 32 + z] = adj & blockAntiMask | (ll - 1) << blockBitshift;
+						chunkVoxelData[(x + 1) * 1024 + y * 32 + z] = rightData & blockAntiMask | (llRight - 1) << blockBitshift;
 						modifiedBlocks++;
 						blockSources.push(x + 1);
 						blockSources.push(z);
 						blockSources.push(y);
-						//blockSources.push(x + 1 << 16 | z << 8 | y);
 					}
 				}
 				else if (checkRightBleeding)
 				{
-					int adjacentBlocklight = (adjacentChunkRight.peekSimple(0, y, z) & blockAntiMask) << blockBitshift;
-					if (ll > adjacentBlocklight + 1)
+					int rightData = adjacentChunkRight.peekSimple(0, y, z);
+					int llRight = cellLightLevel - voxel.getLightLevelModifier(voxelData, rightData, VoxelSides.RIGHT);
+					if (((rightData & blocklightMask) >> blockBitshift) < llRight - 1)
 					{
 						requestRight = true;
-						//adjacentChunkRight.markInNeedForLightningUpdate();
 						checkRightBleeding = false;
 					}
 				}
 				if (x > 0)
 				{
-					int adj = chunkVoxelData[(x - 1) * 1024 + y * 32 + z];
-					if (!VoxelsStore.get().getVoxelById((adj & 0xFFFF)).getType().isOpaque() && ((adj & blocklightMask) >> blockBitshift) < ll - 1)
+					int leftData = chunkVoxelData[(x - 1) * 1024 + y * 32 + z];
+					int llLeft = cellLightLevel - voxel.getLightLevelModifier(voxelData, leftData, VoxelSides.LEFT);
+					if (!VoxelsStore.get().getVoxelById((leftData & 0xFFFF)).getType().isOpaque() && ((leftData & blocklightMask) >> blockBitshift) < llLeft - 1)
 					{
-						chunkVoxelData[(x - 1) * 1024 + y * 32 + z] = adj & blockAntiMask | (ll - 1) << blockBitshift;
+						chunkVoxelData[(x - 1) * 1024 + y * 32 + z] = leftData & blockAntiMask | (llLeft - 1) << blockBitshift;
 						modifiedBlocks++;
 						blockSources.push(x - 1);
 						blockSources.push(z);
 						blockSources.push(y);
-						//blockSources.push(x - 1 << 16 | z << 8 | y);
 					}
 				}
 				else if (checkLeftBleeding)
 				{
-					int adjacentBlocklight = (adjacentChunkLeft.peekSimple(31, y, z) & blockAntiMask) << blockBitshift;
-					if (ll > adjacentBlocklight + 1)
+					int leftData = adjacentChunkLeft.peekSimple(31, y, z);
+					int llLeft = cellLightLevel - voxel.getLightLevelModifier(voxelData, leftData, VoxelSides.LEFT);
+					if (((leftData & blocklightMask) >> blockBitshift) < llLeft - 1)
 					{
 						requestLeft = true;
-						//adjacentChunkLeft.markInNeedForLightningUpdate();
 						checkLeftBleeding = false;
 					}
 				}
-				// Z-propagation
+
 				if (z < 31)
 				{
-					int adj = chunkVoxelData[x * 1024 + y * 32 + z + 1];
-					if (!VoxelsStore.get().getVoxelById((adj & 0xFFFF)).getType().isOpaque() && ((adj & blocklightMask) >> blockBitshift) < ll - 1)
+					int frontData = chunkVoxelData[x * 1024 + y * 32 + z + 1];
+					int llFront = cellLightLevel - voxel.getLightLevelModifier(voxelData, frontData, VoxelSides.FRONT);
+					if (!VoxelsStore.get().getVoxelById((frontData & 0xFFFF)).getType().isOpaque() && ((frontData & blocklightMask) >> blockBitshift) < llFront - 1)
 					{
-						chunkVoxelData[x * 1024 + y * 32 + z + 1] = adj & blockAntiMask | (ll - 1) << blockBitshift;
+						chunkVoxelData[x * 1024 + y * 32 + z + 1] = frontData & blockAntiMask | (llFront - 1) << blockBitshift;
 						modifiedBlocks++;
 						blockSources.push(x);
 						blockSources.push(z + 1);
 						blockSources.push(y);
-						//blockSources.push(x << 16 | z + 1 << 8 | y);
 					}
 				}
 				else if (checkFrontBleeding)
 				{
-					int adjacentBlocklight = (adjacentChunkFront.peekSimple(x, y, 0) & blockAntiMask) << blockBitshift;
-					if (ll > adjacentBlocklight + 1)
+					int frontData = adjacentChunkFront.peekSimple(x, y, 0);
+					int llFront = cellLightLevel - voxel.getLightLevelModifier(voxelData, frontData, VoxelSides.FRONT);
+					if (((frontData & blocklightMask) >> blockBitshift) < llFront - 1)
 					{
 						requestFront = true;
-						//adjacentChunkFront.markInNeedForLightningUpdate();
 						checkFrontBleeding = false;
 					}
 				}
 				if (z > 0)
 				{
-					int adj = chunkVoxelData[x * 1024 + y * 32 + z - 1];
-					if (!VoxelsStore.get().getVoxelById((adj & 0xFFFF)).getType().isOpaque() && ((adj & blocklightMask) >> blockBitshift) < ll - 1)
+					int backData = chunkVoxelData[x * 1024 + y * 32 + z - 1];
+					int llBack = cellLightLevel - voxel.getLightLevelModifier(voxelData, backData, VoxelSides.BACK);
+					if (!VoxelsStore.get().getVoxelById((backData & 0xFFFF)).getType().isOpaque() && ((backData & blocklightMask) >> blockBitshift) < llBack - 1)
 					{
-						chunkVoxelData[x * 1024 + y * 32 + z - 1] = adj & blockAntiMask | (ll - 1) << blockBitshift;
+						chunkVoxelData[x * 1024 + y * 32 + z - 1] = backData & blockAntiMask | (llBack - 1) << blockBitshift;
 						modifiedBlocks++;
 						blockSources.push(x);
 						blockSources.push(z - 1);
 						blockSources.push(y);
-						//blockSources.push(x << 16 | z - 1 << 8 | y);
 					}
 				}
 				else if (checkBackBleeding)
 				{
-					int adjacentBlocklight = (adjacentChunkBack.peekSimple(x, y, 31) & blockAntiMask) << blockBitshift;
-					if (ll > adjacentBlocklight + 1)
+					int backData = adjacentChunkBack.peekSimple(x, y, 31);
+					int llBack = cellLightLevel - voxel.getLightLevelModifier(voxelData, backData, VoxelSides.BACK);
+					if (((backData & blocklightMask) >> blockBitshift) < llBack - 1)
 					{
 						requestBack = true;
-						//adjacentChunkBack.markInNeedForLightningUpdate();
 						checkBackBleeding = false;
 					}
 				}
-				// Y-propagation
-				if (y < 31) // y = 254+1
+
+				if (y < 31)
 				{
-					int adj = chunkVoxelData[x * 1024 + (y + 1) * 32 + z];
-					if (!VoxelsStore.get().getVoxelById((adj & 0xFFFF)).getType().isOpaque() && ((adj & blocklightMask) >> blockBitshift) < ll - 1)
+					int topData = chunkVoxelData[x * 1024 + (y + 1) * 32 + z];
+					int llTop = cellLightLevel - voxel.getLightLevelModifier(voxelData, topData, VoxelSides.TOP);
+					if (!VoxelsStore.get().getVoxelById((topData & 0xFFFF)).getType().isOpaque() && ((topData & blocklightMask) >> blockBitshift) < llTop - 1)
 					{
-						chunkVoxelData[x * 1024 + (y + 1) * 32 + z] = adj & blockAntiMask | (ll - 1) << blockBitshift;
+						chunkVoxelData[x * 1024 + (y + 1) * 32 + z] = topData & blockAntiMask | (llTop - 1) << blockBitshift;
 						modifiedBlocks++;
 						blockSources.push(x);
 						blockSources.push(z);
 						blockSources.push(y + 1);
-						//blockSources.push(x << 16 | z << 8 | y + 1);
 					}
 				}
 				else if (checkTopBleeding)
 				{
-					int adjacentBlocklight = (adjacentChunkTop.peekSimple(x, 0, z) & blockAntiMask) << blockBitshift;
-					if (ll > adjacentBlocklight + 1)
+					int topData = adjacentChunkTop.peekSimple(x, 0, z);
+					int llTop = cellLightLevel - voxel.getLightLevelModifier(voxelData, topData, VoxelSides.TOP);
+					if (((topData & blocklightMask) >> blockBitshift) < llTop - 1)
 					{
 						requestTop = true;
-						//adjacentChunkTop.markInNeedForLightningUpdate();
 						checkTopBleeding = false;
 					}
 				}
+				
 				if (y > 0)
 				{
-					int adj = chunkVoxelData[x * 1024 + (y - 1) * 32 + z];
-					if (!VoxelsStore.get().getVoxelById((adj & 0xFFFF)).getType().isOpaque() && ((adj & blocklightMask) >> blockBitshift) < ll - 1)
+					int belowData = chunkVoxelData[x * 1024 + (y - 1) * 32 + z];
+					int llTop = cellLightLevel - voxel.getLightLevelModifier(voxelData, belowData, VoxelSides.BOTTOM);
+					
+					if (!VoxelsStore.get().getVoxelById((belowData & 0xFFFF)).getType().isOpaque() && ((belowData & blocklightMask) >> blockBitshift) < llTop - 1)
+					//if (!VoxelsStore.get().getVoxelById((belowData & 0xFFFF)).getType().isOpaque() && ((belowData & blocklightMask) >> blockBitshift) < cellLightLevel - 1)
 					{
-						chunkVoxelData[x * 1024 + (y - 1) * 32 + z] = adj & blockAntiMask | (ll - 1) << blockBitshift;
+						chunkVoxelData[x * 1024 + (y - 1) * 32 + z] = belowData & blockAntiMask | (llTop - 1) << blockBitshift;
 						modifiedBlocks++;
 						blockSources.push(x);
 						blockSources.push(z);
 						blockSources.push(y - 1);
-						//blockSources.push(x << 16 | z << 8 | y - 1);
 					}
 				}
 				else if (checkBottomBleeding)
 				{
-					int adjacentBlocklight = (adjacentChunkBottom.peekSimple(x, 31, z) & blockAntiMask) << blockBitshift;
-					if (ll > adjacentBlocklight + 1)
+					int belowData = adjacentChunkBottom.peekSimple(x, 31, z);
+					int llBottom = cellLightLevel - voxel.getLightLevelModifier(voxelData, belowData, VoxelSides.BOTTOM);
+					
+					if(((belowData & blocklightMask) >> blockBitshift) < llBottom - 1)
+					//int adjacentBlocklight = ( & blockAntiMask) << blockBitshift;
+					//if (cellLightLevel - 1 > adjacentBlocklight)
 					{
 						requestBot = true;
-						//adjacentChunkBottom.markInNeedForLightningUpdate();
 						checkBottomBleeding = false;
 					}
 				}
 			}
 		}
+		
 		// Sunlight propagation
 		while (sunSources.size() > 0)
 		{
@@ -706,25 +711,22 @@ public class CubicChunk implements Chunk
 			int x = sunSources.pop();
 
 			int voxelData = chunkVoxelData[x * 1024 + y * 32 + z];
-			int ll = (voxelData & sunlightMask) >> sunBitshift;
+			int cellLightLevel = (voxelData & sunlightMask) >> sunBitshift;
 			int cId = VoxelFormat.id(voxelData);
-
 			voxel = VoxelsStore.get().getVoxelById(cId);
 
 			if (voxel.getType().isOpaque())
-				ll = 0;
-
-			if (ll > 1)
+				cellLightLevel = 0;
+			if (cellLightLevel > 1)
 			{
 				// X-propagation
 				if (x < 31)
 				{
-					int adj = chunkVoxelData[(x + 1) * 1024 + y * 32 + z];
-					int llRight = ll - voxel.getLightLevelModifier(voxelData, adj, VoxelSides.RIGHT);
-
-					if (!VoxelsStore.get().getVoxelById((adj & 0xFFFF)).getType().isOpaque() && ((adj & sunlightMask) >> sunBitshift) < llRight - 1)
+					int rightData = chunkVoxelData[(x + 1) * 1024 + y * 32 + z];
+					int llRight = cellLightLevel - voxel.getLightLevelModifier(voxelData, rightData, VoxelSides.RIGHT);
+					if (!VoxelsStore.get().getVoxelById((rightData & 0xFFFF)).getType().isOpaque() && ((rightData & sunlightMask) >> sunBitshift) < llRight - 1)
 					{
-						chunkVoxelData[(x + 1) * 1024 + y * 32 + z] = adj & sunAntiMask | (llRight - 1) << sunBitshift;
+						chunkVoxelData[(x + 1) * 1024 + y * 32 + z] = rightData & sunAntiMask | (llRight - 1) << sunBitshift;
 						modifiedBlocks++;
 						sunSources.push(x + 1);
 						sunSources.push(z);
@@ -733,152 +735,130 @@ public class CubicChunk implements Chunk
 				}
 				else if (checkRightBleeding)
 				{
-					int adj = adjacentChunkRight.peekSimple(0, y, z);
-					int llRight = ll - voxel.getLightLevelModifier(voxelData, adj, VoxelSides.RIGHT);
-
-					//int adjacentSunlight = (adjacentChunkRight.getDataAt(0, y, z) & sunAntiMask) << sunBitshift;
-					if (((adj & sunlightMask) >> sunBitshift) < llRight - 1)
+					int rightData = adjacentChunkRight.peekSimple(0, y, z);
+					int llRight = cellLightLevel - voxel.getLightLevelModifier(voxelData, rightData, VoxelSides.RIGHT);
+					if (((rightData & sunlightMask) >> sunBitshift) < llRight - 1)
 					{
 						requestRight = true;
-						//adjacentChunkRight.markInNeedForLightningUpdate();
 						checkRightBleeding = false;
 					}
 				}
 				if (x > 0)
 				{
-					int adj = chunkVoxelData[(x - 1) * 1024 + y * 32 + z];
-					int llLeft = ll - voxel.getLightLevelModifier(voxelData, adj, VoxelSides.LEFT);
-					//int id = (adj & 0xFFFF);
-					//if(id == 25)
-					//	System.out.println("topikek"+VoxelTypes.get((adj & 0xFFFF)).getType().isOpaque() + " -> " +((adj & sunlightMask) >> sunBitshift));
-					if (!VoxelsStore.get().getVoxelById((adj & 0xFFFF)).getType().isOpaque() && ((adj & sunlightMask) >> sunBitshift) < llLeft - 1)
+					int leftData = chunkVoxelData[(x - 1) * 1024 + y * 32 + z];
+					int llLeft = cellLightLevel - voxel.getLightLevelModifier(voxelData, leftData, VoxelSides.LEFT);
+					if (!VoxelsStore.get().getVoxelById((leftData & 0xFFFF)).getType().isOpaque() && ((leftData & sunlightMask) >> sunBitshift) < llLeft - 1)
 					{
-						//if(id == 25)
-						//	System.out.println("MAIS LEL TARACE"+VoxelTypes.get((adj & 0xFFFF)).getType().isOpaque() + " -> " +((adj & sunlightMask) >> sunBitshift));
-						chunkVoxelData[(x - 1) * 1024 + y * 32 + z] = adj & sunAntiMask | (llLeft - 1) << sunBitshift;
+						chunkVoxelData[(x - 1) * 1024 + y * 32 + z] = leftData & sunAntiMask | (llLeft - 1) << sunBitshift;
 						modifiedBlocks++;
 						sunSources.push(x - 1);
 						sunSources.push(z);
 						sunSources.push(y);
-						//sunSources.push(x - 1 << 16 | z << 8 | y);
 					}
 				}
 				else if (checkLeftBleeding)
 				{
-					int adj = adjacentChunkLeft.peekSimple(31, y, z);
-					//int adjacentSunlight = (adjacentChunkLeft.getDataAt(31, y, z) & sunAntiMask) << sunBitshift;
-					int llLeft = ll - voxel.getLightLevelModifier(voxelData, adj, VoxelSides.LEFT);
-					if (((adj & sunlightMask) >> sunBitshift) < llLeft - 1)
+					int leftData = adjacentChunkLeft.peekSimple(31, y, z);
+					int llLeft = cellLightLevel - voxel.getLightLevelModifier(voxelData, leftData, VoxelSides.LEFT);
+					if (((leftData & sunlightMask) >> sunBitshift) < llLeft - 1)
 					{
 						requestLeft = true;
-						//adjacentChunkLeft.markInNeedForLightningUpdate();
 						checkLeftBleeding = false;
 					}
 				}
-				// Z-propagation
+				
 				if (z < 31)
 				{
-					int adj = chunkVoxelData[x * 1024 + y * 32 + z + 1];
-					int llFront = ll - voxel.getLightLevelModifier(voxelData, adj, VoxelSides.FRONT);
-					if (!VoxelsStore.get().getVoxelById((adj & 0xFFFF)).getType().isOpaque() && ((adj & sunlightMask) >> sunBitshift) < llFront - 1)
+					int frontData = chunkVoxelData[x * 1024 + y * 32 + z + 1];
+					int llFront = cellLightLevel - voxel.getLightLevelModifier(voxelData, frontData, VoxelSides.FRONT);
+					if (!VoxelsStore.get().getVoxelById((frontData & 0xFFFF)).getType().isOpaque() && ((frontData & sunlightMask) >> sunBitshift) < llFront - 1)
 					{
-						chunkVoxelData[x * 1024 + y * 32 + z + 1] = adj & sunAntiMask | (llFront - 1) << sunBitshift;
+						chunkVoxelData[x * 1024 + y * 32 + z + 1] = frontData & sunAntiMask | (llFront - 1) << sunBitshift;
 						modifiedBlocks++;
 						sunSources.push(x);
 						sunSources.push(z + 1);
 						sunSources.push(y);
-						//sunSources.push(x << 16 | z + 1 << 8 | y);
 					}
 				}
 				else if (checkFrontBleeding)
 				{
-					int adj = adjacentChunkFront.peekSimple(x, y, 0);
-					int llFront = ll - voxel.getLightLevelModifier(voxelData, adj, VoxelSides.FRONT);
-					//int adjacentSunlight = (adjacentChunkFront.getDataAt(x, y, 0) & sunAntiMask) << sunBitshift;
-					if (((adj & sunlightMask) >> sunBitshift) < llFront - 1)
+					int frontData = adjacentChunkFront.peekSimple(x, y, 0);
+					int llFront = cellLightLevel - voxel.getLightLevelModifier(voxelData, frontData, VoxelSides.FRONT);
+					if (((frontData & sunlightMask) >> sunBitshift) < llFront - 1)
 					{
 						requestFront = true;
-						//adjacentChunkFront.markInNeedForLightningUpdate();
 						checkFrontBleeding = false;
 					}
 				}
 				if (z > 0)
 				{
-					int adj = chunkVoxelData[x * 1024 + y * 32 + z - 1];
-					int llBack = ll - voxel.getLightLevelModifier(voxelData, adj, VoxelSides.BACK);
-					if (!VoxelsStore.get().getVoxelById((adj & 0xFFFF)).getType().isOpaque() && ((adj & sunlightMask) >> sunBitshift) < llBack - 1)
+					int backData = chunkVoxelData[x * 1024 + y * 32 + z - 1];
+					int llBack = cellLightLevel - voxel.getLightLevelModifier(voxelData, backData, VoxelSides.BACK);
+					if (!VoxelsStore.get().getVoxelById((backData & 0xFFFF)).getType().isOpaque() && ((backData & sunlightMask) >> sunBitshift) < llBack - 1)
 					{
-						chunkVoxelData[x * 1024 + y * 32 + z - 1] = adj & sunAntiMask | (llBack - 1) << sunBitshift;
+						chunkVoxelData[x * 1024 + y * 32 + z - 1] = backData & sunAntiMask | (llBack - 1) << sunBitshift;
 						modifiedBlocks++;
 						sunSources.push(x);
 						sunSources.push(z - 1);
 						sunSources.push(y);
-						//sunSources.push(x << 16 | z - 1 << 8 | y);
 					}
 				}
 				else if (checkBackBleeding)
 				{
-					//int adjacentSunlight = (adjacentChunkBack.getDataAt(x, y, 31) & sunAntiMask) << sunBitshift;
-					int adj = adjacentChunkBack.peekSimple(x, y, 31);
-					int llBack = ll - voxel.getLightLevelModifier(voxelData, adj, VoxelSides.BACK);
-					if (((adj & sunlightMask) >> sunBitshift) < llBack - 1)
+					int backData = adjacentChunkBack.peekSimple(x, y, 31);
+					int llBack = cellLightLevel - voxel.getLightLevelModifier(voxelData, backData, VoxelSides.BACK);
+					if (((backData & sunlightMask) >> sunBitshift) < llBack - 1)
 					{
 						requestBack = true;
-						//adjacentChunkBack.markInNeedForLightningUpdate();
 						checkBackBleeding = false;
 					}
 				}
-				// Y-propagation
-				if (y < 31) // y = 254+1
+				
+				if (y < 31)
 				{
-					int adj = chunkVoxelData[x * 1024 + (y + 1) * 32 + z];
-					int llTop = ll - voxel.getLightLevelModifier(voxelData, adj, VoxelSides.TOP);
-					if (!VoxelsStore.get().getVoxelById((adj & 0xFFFF)).getType().isOpaque() && ((adj & sunlightMask) >> sunBitshift) < llTop - 1)
+					int topData = chunkVoxelData[x * 1024 + (y + 1) * 32 + z];
+					int llTop = cellLightLevel - voxel.getLightLevelModifier(voxelData, topData, VoxelSides.TOP);
+					if (!VoxelsStore.get().getVoxelById((topData & 0xFFFF)).getType().isOpaque() && ((topData & sunlightMask) >> sunBitshift) < llTop - 1)
 					{
-						chunkVoxelData[x * 1024 + (y + 1) * 32 + z] = adj & sunAntiMask | (llTop - 1) << sunBitshift;
+						chunkVoxelData[x * 1024 + (y + 1) * 32 + z] = topData & sunAntiMask | (llTop - 1) << sunBitshift;
 						modifiedBlocks++;
 						sunSources.push(x);
 						sunSources.push(z);
 						sunSources.push(y + 1);
-						//sunSources.push(x << 16 | z << 8 | y + 1);
 					}
 				}
 				else if (checkTopBleeding)
 				{
-					int adj = adjacentChunkTop.peekSimple(x, 0, z);
-					int llTop = ll - voxel.getLightLevelModifier(voxelData, adj, VoxelSides.TOP);
-					//int adjacentSunlight = (adj & sunAntiMask) << sunBitshift;
-					if (((adj & sunlightMask) >> sunBitshift) < llTop - 1)
+					int topData = adjacentChunkTop.peekSimple(x, 0, z);
+					int llTop = cellLightLevel - voxel.getLightLevelModifier(voxelData, topData, VoxelSides.TOP);
+					if (((topData & sunlightMask) >> sunBitshift) < llTop - 1)
 					{
 						requestTop = true;
-						//adjacentChunkTop.markInNeedForLightningUpdate();
 						checkTopBleeding = false;
 					}
 				}
+				
+				//Special case! This is the bottom computation for light spread, and thus we don't decrement automatially the light by one for each step !
 				if (y > 0)
 				{
-					int adj = chunkVoxelData[x * 1024 + (y - 1) * 32 + z];
-					int llBottm = ll - voxel.getLightLevelModifier(voxelData, adj, VoxelSides.BOTTOM);
-					if (!VoxelsStore.get().getVoxelById(adj).getType().isOpaque() && ((adj & sunlightMask) >> sunBitshift) < llBottm)
+					int belowData = chunkVoxelData[x * 1024 + (y - 1) * 32 + z];
+					int llBottom = cellLightLevel - voxel.getLightLevelModifier(voxelData, belowData, VoxelSides.BOTTOM);
+					if (!VoxelsStore.get().getVoxelById(belowData).getType().isOpaque() && ((belowData & sunlightMask) >> sunBitshift) < llBottom)
 					{
-						//removed = ((((data[x * 1024 + y * 32 + z] & 0x000000FF) == 128)) ? 1 : 0)
-						chunkVoxelData[x * 1024 + (y - 1) * 32 + z] = adj & sunAntiMask | (llBottm /* - removed */) << sunBitshift;
+						chunkVoxelData[x * 1024 + (y - 1) * 32 + z] = belowData & sunAntiMask | (llBottom) << sunBitshift;
 						modifiedBlocks++;
 						sunSources.push(x);
 						sunSources.push(z);
 						sunSources.push(y - 1);
-						//sunSources.push(x << 16 | z << 8 | y - 1);
 					}
 				}
 				else if (checkBottomBleeding)
 				{
-					int adj = adjacentChunkBottom.peekSimple(x, 31, z);
-					int llBottm = ll - voxel.getLightLevelModifier(voxelData, adj, VoxelSides.BOTTOM);
-					//int adjacentSunlight = (adj & sunAntiMask) << sunBitshift;
-					if (((adj & sunlightMask) >> sunBitshift) < llBottm - 1)
+					int belowData = adjacentChunkBottom.peekSimple(x, 31, z);
+					int llBottom = cellLightLevel - voxel.getLightLevelModifier(voxelData, belowData, VoxelSides.BOTTOM);
+					if (((belowData & sunlightMask) >> sunBitshift) < llBottom)
 					{
 						requestBot = true;
-						//adjacentChunkBottom.markInNeedForLightningUpdate();
 						checkBottomBleeding = false;
 					}
 				}

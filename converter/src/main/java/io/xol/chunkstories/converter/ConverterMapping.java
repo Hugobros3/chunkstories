@@ -198,16 +198,16 @@ public class ConverterMapping {
 				int direction = minecraftMetaData & 0x3;
 				int baked = VoxelFormat.format(voxelID, VoxelDoor.computeMeta(open == 1, hingeSide == 1, VoxelSides.getSideMcDoor(direction)), 0, 0);
 				
-				if (voxel instanceof VoxelDoor)
+				/*if (voxel instanceof VoxelDoor)
 					try {
-						baked = ((VoxelDoor) voxel).onPlace(chunk.peek(csX, csY, csZ), baked, null);
+						//baked = ((VoxelDoor) voxel).onPlace(chunk.peek(csX, csY, csZ), baked, null);
 					} catch (WorldException e) {
 						
 						e.printStackTrace();
 						return;
 					}
 				else
-					System.out.println("fuck you 666");
+					System.out.println("fuck you 666");*/
 				
 				csWorld.pokeSimpleSilently(csX, csY, csZ, baked);
 

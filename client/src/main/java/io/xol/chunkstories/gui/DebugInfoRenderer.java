@@ -132,25 +132,29 @@ public class DebugInfoRenderer {
 		renderingInterface.getFontRenderer().drawStringWithShadow(font, posx, posy, text, 1, 1, new Vector4f(1));
 
 		posy -= lineHeight;
-		text = "RAM usage : " + used / 1024 / 1024 + " / " + total / 1024 / 1024 + " mb used, chunks loaded in ram: " + world.getRegionsHolder().countChunksWithData() + "/"
-				+ world.getRegionsHolder().countChunks() + " " + Math.floor(world.getRegionsHolder().countChunksWithData() * 4 * 32 * 32 * 32 / (1024L * 1024 / 100f)) / 100f + "Mb used by chunks";
+		text = "RAM usage : " + used / 1024 / 1024 + " / " + total / 1024 / 1024 + " MB used, chunks loaded in ram: " + world.getRegionsHolder().countChunksWithData() + "/"
+				+ world.getRegionsHolder().countChunks() + " " + Math.floor(world.getRegionsHolder().countChunksWithData() * 4 * 32 * 32 * 32 / (1024L * 1024 / 100f)) / 100f + "MB used by chunks";
 
 		renderingInterface.getFontRenderer().drawStringWithShadow(font, posx, posy, text, 1, 1, new Vector4f(1));
 		
 		long totalVram = (renderingInterface.getTotalVramUsage()) / 1024 / 1024;
 		
 		posy -= lineHeight;
-		text = "VRAM usage : " + totalVram + "Mb as " + Texture2DGL.getTotalNumberOfTextureObjects() + " textures using " + Texture2DGL.getTotalVramUsage() / 1024 / 1024 + "Mb + "
-				+ VertexBufferGL.getTotalNumberOfVerticesObjects() + " Vertices objects using " + renderingInterface.getVertexDataVramUsage() / 1024 / 1024 + " Mb";
+		text = "VRAM usage : " + totalVram + "MB as " + Texture2DGL.getTotalNumberOfTextureObjects() + " textures using " + Texture2DGL.getTotalVramUsage() / 1024 / 1024 + "MB + "
+				+ VertexBufferGL.getTotalNumberOfVerticesObjects() + " vbos using " + renderingInterface.getVertexDataVramUsage() / 1024 / 1024 + " MB";
 				
 		renderingInterface.getFontRenderer().drawStringWithShadow(font, posx, posy, text, 1, 1, new Vector4f(1));
 		
 		posy -= lineHeight;
-		text = "Chunks to bake : " + world.getGameContext().tasks() + " - " + world.ioHandler.toString();
+		text = "Worker threads: " + world.getGameContext().tasks() + " - " + world.ioHandler.toString();
 		renderingInterface.getFontRenderer().drawStringWithShadow(font, posx, posy, text, 1, 1, new Vector4f(1));
 		
 		posy -= lineHeight;
 		text = "Position : x:" + bx + " y:" + by + " z:" + bz + " dir: " + angleX + " side: " + side + " #FF0000Block looking at#FFFFFF : pos: "+lx + ": " + ly + ": " + lz +" data: "+data+" id: "+id+" meta: "+meta+" bl:" + bl + " sl:" + sl + " csh:" + csh;
+		renderingInterface.getFontRenderer().drawStringWithShadow(font, posx, posy, text, 1, 1, new Vector4f(1));
+
+		posy -= lineHeight;
+		text = "Current Region : " + world.getRegionChunkCoordinates(cx, cy, cz);
 		renderingInterface.getFontRenderer().drawStringWithShadow(font, posx, posy, text, 1, 1, new Vector4f(1));
 		
 		if (current == null) {
@@ -178,10 +182,6 @@ public class DebugInfoRenderer {
 
 		if (playerEntity != null && playerEntity instanceof Entity)
 		{
-			posy -= lineHeight;
-			text = "Current Region : " + playerEntity.getWorld().getRegionChunkCoordinates(cx, cy, cz);
-			renderingInterface.getFontRenderer().drawStringWithShadow(font, posx, posy, text, 1, 1, new Vector4f(1));
-			
 			posy -= lineHeight;
 			text = "Controlled Entity : " + playerEntity;
 			renderingInterface.getFontRenderer().drawStringWithShadow(font, posx, posy, text, 1, 1, new Vector4f(1));

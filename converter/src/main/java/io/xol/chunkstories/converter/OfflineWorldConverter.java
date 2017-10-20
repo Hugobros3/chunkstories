@@ -148,8 +148,7 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser
 		//if(threadCount <= 1)
 		//	converter = new OfflineWorldConverter(verboseMode, mcWorldDir, csWorldDir, mcWorldName, csWorldName, size, minecraftOffsetX, minecraftOffsetZ);
 		//else
-			converter = new MultithreadedOfflineWorldConverter(verboseMode, mcWorldDir, csWorldDir, mcWorldName, csWorldName, size, minecraftOffsetX, minecraftOffsetZ, coreContentLocation, threadCount);
-		
+		converter = new MultithreadedOfflineWorldConverter(verboseMode, mcWorldDir, csWorldDir, mcWorldName, csWorldName, size, minecraftOffsetX, minecraftOffsetZ, coreContentLocation, threadCount);
 		
 		converter.run();
 	}

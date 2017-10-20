@@ -46,7 +46,7 @@ public class GLCalls
 	
 	public static String getStatistics()
 	{
-		return "Drawn "+formatBigAssNumber(verticesDrawn+"")+" verts, in "+drawCalls+" draw calls.";
+		return "Drew "+formatBigAssNumber(verticesDrawn+"")+" verts, in "+drawCalls+" draw calls.";
 	}
 
 	public static String formatBigAssNumber(String in)
