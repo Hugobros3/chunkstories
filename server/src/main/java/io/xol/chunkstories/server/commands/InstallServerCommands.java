@@ -24,6 +24,7 @@ public class InstallServerCommands {
 		
 		//Debug
 		new DebugIOCommand(server);
+		new DebugTasksCommand(server);
 		new DebugWorldDataCommands(server);
 		new EntitiesDebugCommands(server);
 		new MiscDebugCommands(server);

@@ -169,11 +169,11 @@ public class CubicChunk implements Chunk
 						VoxelComponentsHolder components = new VoxelComponentsHolder(this, index);
 						voxelComponents.put(index, components);
 						
-						System.out.println("at index: " + index + " coords: (" + components.getX() + ", " + components.getY() + ", " + components.getZ() + ")");
+						//System.out.println("at index: " + index + " coords: (" + components.getX() + ", " + components.getY() + ", " + components.getZ() + ")");
 						
 						String componentName = dis.readUTF();
 						while(!componentName.equals("\n")) {
-							System.out.println("componentName: "+componentName);
+							//System.out.println("componentName: "+componentName);
 							
 							//Read however many bytes this component wrote
 							int bytes = dis.readShort();
@@ -538,7 +538,7 @@ public class CubicChunk implements Chunk
 		boolean requestLeft = false;
 		boolean requestRight = false;
 		
-		Voxel in;
+		Voxel voxel;
 		while (blockSources.size() > 0)
 		{
 			int y = blockSources.pop();
@@ -548,10 +548,10 @@ public class CubicChunk implements Chunk
 			int ll = (voxelData & blocklightMask) >> blockBitshift;
 			int cId = VoxelFormat.id(voxelData);
 
-			in = VoxelsStore.get().getVoxelById(cId);
+			voxel = VoxelsStore.get().getVoxelById(cId);
 
 			if (VoxelsStore.get().getVoxelById(cId).getType().isOpaque())
-				ll = in.getLightLevel(voxelData);
+				ll = voxel.getLightLevel(voxelData);
 
 			if (ll > 1)
 			{
@@ -709,9 +709,9 @@ public class CubicChunk implements Chunk
 			int ll = (voxelData & sunlightMask) >> sunBitshift;
 			int cId = VoxelFormat.id(voxelData);
 
-			in = VoxelsStore.get().getVoxelById(cId);
+			voxel = VoxelsStore.get().getVoxelById(cId);
 
-			if (in.getType().isOpaque())
+			if (voxel.getType().isOpaque())
 				ll = 0;
 
 			if (ll > 1)
@@ -720,7 +720,7 @@ public class CubicChunk implements Chunk
 				if (x < 31)
 				{
 					int adj = chunkVoxelData[(x + 1) * 1024 + y * 32 + z];
-					int llRight = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.RIGHT);
+					int llRight = ll - voxel.getLightLevelModifier(voxelData, adj, VoxelSides.RIGHT);
 
 					if (!VoxelsStore.get().getVoxelById((adj & 0xFFFF)).getType().isOpaque() && ((adj & sunlightMask) >> sunBitshift) < llRight - 1)
 					{
@@ -734,7 +734,7 @@ public class CubicChunk implements Chunk
 				else if (checkRightBleeding)
 				{
 					int adj = adjacentChunkRight.peekSimple(0, y, z);
-					int llRight = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.RIGHT);
+					int llRight = ll - voxel.getLightLevelModifier(voxelData, adj, VoxelSides.RIGHT);
 
 					//int adjacentSunlight = (adjacentChunkRight.getDataAt(0, y, z) & sunAntiMask) << sunBitshift;
 					if (((adj & sunlightMask) >> sunBitshift) < llRight - 1)
@@ -747,7 +747,7 @@ public class CubicChunk implements Chunk
 				if (x > 0)
 				{
 					int adj = chunkVoxelData[(x - 1) * 1024 + y * 32 + z];
-					int llLeft = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.LEFT);
+					int llLeft = ll - voxel.getLightLevelModifier(voxelData, adj, VoxelSides.LEFT);
 					//int id = (adj & 0xFFFF);
 					//if(id == 25)
 					//	System.out.println("topikek"+VoxelTypes.get((adj & 0xFFFF)).getType().isOpaque() + " -> " +((adj & sunlightMask) >> sunBitshift));
@@ -767,7 +767,7 @@ public class CubicChunk implements Chunk
 				{
 					int adj = adjacentChunkLeft.peekSimple(31, y, z);
 					//int adjacentSunlight = (adjacentChunkLeft.getDataAt(31, y, z) & sunAntiMask) << sunBitshift;
-					int llLeft = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.LEFT);
+					int llLeft = ll - voxel.getLightLevelModifier(voxelData, adj, VoxelSides.LEFT);
 					if (((adj & sunlightMask) >> sunBitshift) < llLeft - 1)
 					{
 						requestLeft = true;
@@ -779,7 +779,7 @@ public class CubicChunk implements Chunk
 				if (z < 31)
 				{
 					int adj = chunkVoxelData[x * 1024 + y * 32 + z + 1];
-					int llFront = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.FRONT);
+					int llFront = ll - voxel.getLightLevelModifier(voxelData, adj, VoxelSides.FRONT);
 					if (!VoxelsStore.get().getVoxelById((adj & 0xFFFF)).getType().isOpaque() && ((adj & sunlightMask) >> sunBitshift) < llFront - 1)
 					{
 						chunkVoxelData[x * 1024 + y * 32 + z + 1] = adj & sunAntiMask | (llFront - 1) << sunBitshift;
@@ -793,7 +793,7 @@ public class CubicChunk implements Chunk
 				else if (checkFrontBleeding)
 				{
 					int adj = adjacentChunkFront.peekSimple(x, y, 0);
-					int llFront = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.FRONT);
+					int llFront = ll - voxel.getLightLevelModifier(voxelData, adj, VoxelSides.FRONT);
 					//int adjacentSunlight = (adjacentChunkFront.getDataAt(x, y, 0) & sunAntiMask) << sunBitshift;
 					if (((adj & sunlightMask) >> sunBitshift) < llFront - 1)
 					{
@@ -805,7 +805,7 @@ public class CubicChunk implements Chunk
 				if (z > 0)
 				{
 					int adj = chunkVoxelData[x * 1024 + y * 32 + z - 1];
-					int llBack = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.BACK);
+					int llBack = ll - voxel.getLightLevelModifier(voxelData, adj, VoxelSides.BACK);
 					if (!VoxelsStore.get().getVoxelById((adj & 0xFFFF)).getType().isOpaque() && ((adj & sunlightMask) >> sunBitshift) < llBack - 1)
 					{
 						chunkVoxelData[x * 1024 + y * 32 + z - 1] = adj & sunAntiMask | (llBack - 1) << sunBitshift;
@@ -820,7 +820,7 @@ public class CubicChunk implements Chunk
 				{
 					//int adjacentSunlight = (adjacentChunkBack.getDataAt(x, y, 31) & sunAntiMask) << sunBitshift;
 					int adj = adjacentChunkBack.peekSimple(x, y, 31);
-					int llBack = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.BACK);
+					int llBack = ll - voxel.getLightLevelModifier(voxelData, adj, VoxelSides.BACK);
 					if (((adj & sunlightMask) >> sunBitshift) < llBack - 1)
 					{
 						requestBack = true;
@@ -832,7 +832,7 @@ public class CubicChunk implements Chunk
 				if (y < 31) // y = 254+1
 				{
 					int adj = chunkVoxelData[x * 1024 + (y + 1) * 32 + z];
-					int llTop = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.TOP);
+					int llTop = ll - voxel.getLightLevelModifier(voxelData, adj, VoxelSides.TOP);
 					if (!VoxelsStore.get().getVoxelById((adj & 0xFFFF)).getType().isOpaque() && ((adj & sunlightMask) >> sunBitshift) < llTop - 1)
 					{
 						chunkVoxelData[x * 1024 + (y + 1) * 32 + z] = adj & sunAntiMask | (llTop - 1) << sunBitshift;
@@ -846,7 +846,7 @@ public class CubicChunk implements Chunk
 				else if (checkTopBleeding)
 				{
 					int adj = adjacentChunkTop.peekSimple(x, 0, z);
-					int llTop = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.TOP);
+					int llTop = ll - voxel.getLightLevelModifier(voxelData, adj, VoxelSides.TOP);
 					//int adjacentSunlight = (adj & sunAntiMask) << sunBitshift;
 					if (((adj & sunlightMask) >> sunBitshift) < llTop - 1)
 					{
@@ -858,7 +858,7 @@ public class CubicChunk implements Chunk
 				if (y > 0)
 				{
 					int adj = chunkVoxelData[x * 1024 + (y - 1) * 32 + z];
-					int llBottm = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.BOTTOM);
+					int llBottm = ll - voxel.getLightLevelModifier(voxelData, adj, VoxelSides.BOTTOM);
 					if (!VoxelsStore.get().getVoxelById(adj).getType().isOpaque() && ((adj & sunlightMask) >> sunBitshift) < llBottm)
 					{
 						//removed = ((((data[x * 1024 + y * 32 + z] & 0x000000FF) == 128)) ? 1 : 0)
@@ -873,7 +873,7 @@ public class CubicChunk implements Chunk
 				else if (checkBottomBleeding)
 				{
 					int adj = adjacentChunkBottom.peekSimple(x, 31, z);
-					int llBottm = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.BOTTOM);
+					int llBottm = ll - voxel.getLightLevelModifier(voxelData, adj, VoxelSides.BOTTOM);
 					//int adjacentSunlight = (adj & sunAntiMask) << sunBitshift;
 					if (((adj & sunlightMask) >> sunBitshift) < llBottm - 1)
 					{
@@ -1819,7 +1819,7 @@ public class CubicChunk implements Chunk
 
 		// The ints are composed as : 0x0BSMIIII
 		// Second pass : loop fill bfs algo
-		Voxel in;
+		Voxel voxel;
 		while (blockSources.size() > 0)
 		{
 			int y = blockSources.pop();
@@ -1829,10 +1829,10 @@ public class CubicChunk implements Chunk
 			int ll = (voxelData & blocklightMask) >> blockBitshift;
 			int cId = VoxelFormat.id(voxelData);
 
-			in = VoxelsStore.get().getVoxelById(cId);
+			voxel = VoxelsStore.get().getVoxelById(cId);
 
 			if (VoxelsStore.get().getVoxelById(cId).getType().isOpaque())
-				ll = in.getLightLevel(voxelData);
+				ll = voxel.getLightLevel(voxelData);
 
 			if (ll > 1)
 			{
@@ -1930,9 +1930,9 @@ public class CubicChunk implements Chunk
 			int ll = (voxelData & sunlightMask) >> sunBitshift;
 			int cId = VoxelFormat.id(voxelData);
 
-			in = VoxelsStore.get().getVoxelById(cId);
+			voxel = VoxelsStore.get().getVoxelById(cId);
 
-			if (in.getType().isOpaque())
+			if (voxel.getType().isOpaque())
 				ll = 0;
 
 			if (ll > 1)
@@ -1941,7 +1941,7 @@ public class CubicChunk implements Chunk
 				if (x < bounds)
 				{
 					int adj = this.getWorldDataOnlyForLightningUpdatesFuncitons(x + 1, y, z);
-					int llRight = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.RIGHT);
+					int llRight = ll - voxel.getLightLevelModifier(voxelData, adj, VoxelSides.RIGHT);
 
 					if (!VoxelsStore.get().getVoxelById((adj & 0xFFFF)).getType().isOpaque() && ((adj & sunlightMask) >> sunBitshift) < llRight - 1)
 					{
@@ -1955,7 +1955,7 @@ public class CubicChunk implements Chunk
 				if (x > -bounds)
 				{
 					int adj = this.getWorldDataOnlyForLightningUpdatesFuncitons(x - 1, y, z);
-					int llLeft = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.LEFT);
+					int llLeft = ll - voxel.getLightLevelModifier(voxelData, adj, VoxelSides.LEFT);
 					//int id = (adj & 0xFFFF);
 					//if(id == 25)
 					//	System.out.println("topikek"+VoxelTypes.get((adj & 0xFFFF)).getType().isOpaque() + " -> " +((adj & sunlightMask) >> sunBitshift));
@@ -1975,7 +1975,7 @@ public class CubicChunk implements Chunk
 				if (z < bounds)
 				{
 					int adj = this.getWorldDataOnlyForLightningUpdatesFuncitons(x, y, z + 1);
-					int llFront = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.FRONT);
+					int llFront = ll - voxel.getLightLevelModifier(voxelData, adj, VoxelSides.FRONT);
 					if (!VoxelsStore.get().getVoxelById((adj & 0xFFFF)).getType().isOpaque() && ((adj & sunlightMask) >> sunBitshift) < llFront - 1)
 					{
 						this.setWorldDataOnlyForLightningUpdatesFunctions(x, y, z + 1, adj & sunAntiMask | (llFront - 1) << sunBitshift);
@@ -1989,7 +1989,7 @@ public class CubicChunk implements Chunk
 				if (z > -bounds)
 				{
 					int adj = this.getWorldDataOnlyForLightningUpdatesFuncitons(x, y, z - 1);
-					int llBack = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.BACK);
+					int llBack = ll - voxel.getLightLevelModifier(voxelData, adj, VoxelSides.BACK);
 					if (!VoxelsStore.get().getVoxelById((adj & 0xFFFF)).getType().isOpaque() && ((adj & sunlightMask) >> sunBitshift) < llBack - 1)
 					{
 						this.setWorldDataOnlyForLightningUpdatesFunctions(x, y, z - 1, adj & sunAntiMask | (llBack - 1) << sunBitshift);
@@ -2004,7 +2004,7 @@ public class CubicChunk implements Chunk
 				if (y < bounds) // y = 254+1
 				{
 					int adj = this.getWorldDataOnlyForLightningUpdatesFuncitons(x, y + 1, z);
-					int llTop = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.TOP);
+					int llTop = ll - voxel.getLightLevelModifier(voxelData, adj, VoxelSides.TOP);
 					if (!VoxelsStore.get().getVoxelById((adj & 0xFFFF)).getType().isOpaque() && ((adj & sunlightMask) >> sunBitshift) < llTop - 1)
 					{
 						this.setWorldDataOnlyForLightningUpdatesFunctions(x, y + 1, z, adj & sunAntiMask | (llTop - 1) << sunBitshift);
@@ -2018,7 +2018,7 @@ public class CubicChunk implements Chunk
 				if (y > -bounds)
 				{
 					int adj = this.getWorldDataOnlyForLightningUpdatesFuncitons(x, y - 1, z);
-					int llBottm = ll - in.getLightLevelModifier(voxelData, adj, VoxelSides.BOTTOM);
+					int llBottm = ll - voxel.getLightLevelModifier(voxelData, adj, VoxelSides.BOTTOM);
 					if (!VoxelsStore.get().getVoxelById(adj).getType().isOpaque() && ((adj & sunlightMask) >> sunBitshift) < llBottm)
 					{
 						//removed = ((((data[x * 1024 + y * 32 + z] & 0x000000FF) == 128)) ? 1 : 0)

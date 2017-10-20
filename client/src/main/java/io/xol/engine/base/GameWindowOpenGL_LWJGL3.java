@@ -159,6 +159,7 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 			glInfo();
 			
 			switchResolution();
+			glfwSwapInterval(0);
 			glfwShowWindow(glfwWindowHandle);
 			
 			//Enable error callback
@@ -170,8 +171,6 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 			glBindVertexArray(vao);
 			
 			//displaySplashScreen();
-			
-			//Keyboard.enableRepeatEvents(true);
 
 			renderingContext = new RenderingContext(this);
 		}
@@ -427,7 +426,6 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 					//long time = System.currentTimeMillis();
 
 					sync(targetFPS);
-
 					//glFinish();
 					//long timeTook = System.currentTimeMillis() - time;
 					//timeTookLastTime = timeTook;

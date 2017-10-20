@@ -25,6 +25,8 @@ public class ClientChunkLightBaker implements ChunkLightUpdater {
 
 	@Override
 	public Fence requestLightningUpdate() {
+		//Thread.dumpStack();
+		
 		unbakedUpdates.incrementAndGet();
 		
 		Task fence;

@@ -1,5 +1,7 @@
 package io.xol.chunkstories.workers;
 
+import java.util.Iterator;
+
 import io.xol.chunkstories.api.workers.Task;
 import io.xol.chunkstories.api.workers.TaskExecutor;
 import io.xol.chunkstories.api.workers.Tasks;
@@ -60,5 +62,21 @@ public class WorkerThreadPool extends TasksPool<Task> implements Tasks
 	@Override
 	public int submittedTasks() {
 		return this.tasksQueueSize.get();
+	}
+
+	public void dumpTasks() {
+		System.out.println("dumping tasks");
+		
+		//Hardcoding a security because you can fill the queue faster than you can iterate it
+		int hardLimit = 500;
+		Iterator<Task> i = this.tasksQueue.iterator();
+		while (i.hasNext())
+		{
+			Task task = i.next();
+			hardLimit--;
+			if(hardLimit < 0)
+				return;
+			System.out.println(task);
+		}
 	}
 }

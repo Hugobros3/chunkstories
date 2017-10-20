@@ -12,6 +12,7 @@ import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.region.RegionImplementation;
 import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
 import io.xol.chunkstories.world.chunk.CompressedData;
+import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
 import io.xol.engine.concurrency.UniqueQueue;
 
@@ -26,7 +27,6 @@ import java.nio.IntBuffer;
 import java.util.Iterator;
 import java.util.concurrent.Semaphore;
 
-import net.jpountz.lz4.LZ4Exception;
 import net.jpountz.lz4.LZ4Factory;
 import net.jpountz.lz4.LZ4FastDecompressor;
 
@@ -56,7 +56,6 @@ public class IOTasks extends Thread implements TaskExecutor
 		protected boolean task(TaskExecutor taskExecutor) {
 			return false;
 		}
-		
 	};
 	
 	//Per-thread buffer
@@ -79,35 +78,27 @@ public class IOTasks extends Thread implements TaskExecutor
 
 	public boolean scheduleTask(IOTask task)
 	{
-		//TODO assert importance
-		//if (die.get())
-		//	return false;
-
 		boolean code = tasks.add(task);
 		if(code) {
 			tasksCounter.release();
 		}
-		/*synchronized (this)
-		{
-			notifyAll();
-		}*/
 		return code;
 	}
 
 	@Override
 	public String toString()
 	{
-		return "IO :" + getSize() + " in queue.";
+		return "[IO :" + getSize() + " in queue.]";
 	}
 
 	@Override
 	public void run()
 	{
-		System.out.println("IO Thread started.");
+		world.getGameContext().logger().log("IO Thread started for '"+this.world.getWorldInfo().getName()+"'");
 
 		this.setPriority(Constants.IO_THREAD_PRIOTITY);
-		this.setName("IO Tasks");
-		while (true)//(!die.get())
+		this.setName("IO thread for '"+this.world.getWorldInfo().getName()+"'");
+		while (true)
 		{
 			IOTask task = null;
 
@@ -187,22 +178,10 @@ public class IOTasks extends Thread implements TaskExecutor
 
 	public abstract class IOTask extends Task
 	{
-		/*Runnable postRunOperation = null;
-
-		public void setPostRunOperation(Runnable runnable)
-		{
-			postRunOperation = runnable;
-		}*/
-
-		//abstract public boolean run();
-
 		@Override
 		public void cancel()
 		{
 			super.cancel();
-			
-			//Kinf of redundant since it'll be skipped afterwards but meh
-			//tasks.remove(this);
 		}
 	}
 
@@ -233,47 +212,21 @@ public class IOTasks extends Thread implements TaskExecutor
 			if (chunkSlot.isChunkLoaded())
 				return true;
 
-			RegionImplementation region = chunkSlot.getRegion();
-			int cx = region.getRegionX() * 8 + chunkSlot.getInRegionX();
-			int cy = region.getRegionY() * 8 + chunkSlot.getInRegionY();
-			int cz = region.getRegionZ() * 8 + chunkSlot.getInRegionZ();
-
 			CompressedData compressedData = chunkSlot.getCompressedData();
 			//Not yet generated chunk; call the generator
 			if (compressedData == null) {
 				Chunk chunk = chunkSlot.createChunk();
 				world.getGenerator().generateChunk(chunk);
 			}
-			//This was already generated but nothing was actually placed in that chunk
-			/*else if(compressedData == ChunkHolderImplementation.AIR_CHUNK_NO_DATA_SAVED) {
-				chunkSlot.createChunk();
-			}*/
 			//Normal voxel data is present, uncompressed it then load it to the chunk
 			else {
-				
-				/*int data[] = new int[32 * 32 * 32];
-				try
-				{
-					decompressor.decompress(compressedData, unCompressedDataBuffer.get());
-				}
-				catch (LZ4Exception e)
-				{
-					System.out.println("Failed to decompress chunk data (corrupted?) region:" + region + " chunk:" + cx + ":" + cy + ":" + cz + "task: " + this);
-				}
-
-				for (int i = 0; i < 32 * 32 * 32; i++)
-				{
-					data[i] = ((unCompressedDataBuffer.get()[i * 4] & 0xFF) << 24) | ((unCompressedDataBuffer.get()[i * 4 + 1] & 0xFF) << 16) | ((unCompressedDataBuffer.get()[i * 4 + 2] & 0xFF) << 8)
-							| (unCompressedDataBuffer.get()[i * 4 + 3] & 0xFF);
-				}*/
-				
-				chunkSlot.createChunk(compressedData);
+				CubicChunk chunk = chunkSlot.createChunk(compressedData);
 				
 				//TODO Look into this properly
 				//We never want to mess with that when we are the world
 				if(!(world instanceof WorldTool)) {
 					//chunkSlot.getChunk().computeVoxelLightning(false);
-					chunkSlot.getChunk().lightBaker().requestLightningUpdate();
+					chunk.lightBaker().requestLightningUpdate();
 				}
 			}
 
