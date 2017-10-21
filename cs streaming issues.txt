@@ -1,0 +1,87 @@
+VoxelEntities:
+	int3 coordinates
+	components (=> different subsystem :/ ?)
+	no movement
+	auto-subscribed when loading chunk
+		-> subscribing to chunks ???
+			-> Voxel updates ???
+		-> fuck yeah that sounds like it
+		-> actually already kind of doing this...
+		-> make subscribe/unsubscribes networked like they should had been from the start
+		-> think about security, tell user who requests chunks wayy to far to fuck off politely
+			-> ack/nack chunk subscribing
+	push any updates to any user subscribed to the chunk
+	initial download sync strategy
+	compressed with chunk and send with it
+		-> lz4'ed every tick if changes were made
+		-> before ticking the chunk or reading inbound packets
+		-> make the io task wait for a regenerated lz4 to add the subscriber to the list
+	
+	move definition to .voxels file ?
+	
+	actually no
+	
+	make
+	the
+	components
+	a
+	thing
+	the voxel
+	owns
+	
+	ffs
+	
+	chunk.peek(x,y,z).components().get("inventory")
+	
+	on removal (block-id change):
+		(default behaviour): delete any component in the cell
+	on adding:
+		(default behaviour): clear any component then add the default ones
+
+	so
+	
+	ChunkVoxelContext {
+		// ... 
+		
+		components() <- evil trick, objet doesn't exist unless it does and is else created at method call
+	}
+	
+	VoxelComponents {
+		final ChunkVoxelContext context;
+		yada yada
+		
+		erase()
+		
+		put(name, component) //you already figured out what this is, a crude map
+		
+		get(name)
+	}
+	
+	VoxelComponent {
+		push()
+		
+		pull()
+	}
+	
+	//actually no need for a one superclass...
+	ComplexVoxel extends Voxel {
+		onPlace(ChunkVoxelContext context, int newDataBlah, Cause cause) {
+			context.components().erase()
+			
+			context.components().put("inventory", new VoxelInventoryComponent());
+		}
+		
+		onRemoval(ChunkVoxelContext context, int newDataBlah, Cause cause) {
+			context.components().erase()
+		}
+	}
+	
+ofc you want to push cleanly those components along with any block update
+	-> hack packetvoxelmodification to do so
+	
+this is the most non-retarded thing i could come up with
+pretty gud
+
+& Voxel => VoxelWithEntity as a base voxel class
+no again, actually none of this shit matters now haha
+	no need for stupid definitions, use the same technique as in entity components (index using name yada yada)
