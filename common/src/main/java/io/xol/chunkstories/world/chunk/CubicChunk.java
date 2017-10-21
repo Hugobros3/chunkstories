@@ -330,7 +330,6 @@ public class CubicChunk implements Chunk
 		int z = sanitizeCoordinate(worldZ);
 		
 		ActualChunkVoxelContext peek = peek(x, y, z);
-		int formerData = peek.data;
 		Voxel formerVoxel = peek.getVoxel();
 		Voxel newVoxel = VoxelsStore.get().getVoxelById(newData);
 
@@ -347,7 +346,7 @@ public class CubicChunk implements Chunk
 			{
 				//Optionally runs whatever the voxel requires to run when removed
 				if (formerVoxel instanceof VoxelLogic)
-					((VoxelLogic) formerVoxel).onRemove(peek, formerData, cause);
+					((VoxelLogic) formerVoxel).onRemove(peek, cause);
 
 				//Optionally runs whatever the voxel requires to run when placed
 				if (newVoxel instanceof VoxelLogic)
