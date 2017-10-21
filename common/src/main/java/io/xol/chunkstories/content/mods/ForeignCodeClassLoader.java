@@ -82,6 +82,11 @@ public class ForeignCodeClassLoader extends URLClassLoader
 		}
 	}
 
+	public Collection<String> classes()
+	{
+		return classes.keySet();
+	}
+
 	private static URL[] urlHelper(Collection<File> files) throws MalformedURLException {
 		URL[] urls = new URL[files.size()];
 		Iterator<File> i = files.iterator();
@@ -93,12 +98,12 @@ public class ForeignCodeClassLoader extends URLClassLoader
 		}
 		return urls;
 	}
-
-	public Collection<String> classes()
-	{
-		return classes.keySet();
-	}
 	
+	@Override
+	protected Class<?> findClass(String arg0) throws ClassNotFoundException {
+		return super.findClass(arg0);
+	}
+
 	public Class<?> obtainClass(String className)
 	{
 		return classes.get(className);

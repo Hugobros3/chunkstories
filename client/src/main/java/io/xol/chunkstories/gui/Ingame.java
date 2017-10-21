@@ -7,6 +7,7 @@ import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
+import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
 import io.xol.chunkstories.api.events.player.PlayerLogoutEvent;
 import io.xol.chunkstories.api.events.rendering.CameraSetupEvent;
 import io.xol.chunkstories.api.gui.Layer;
@@ -24,7 +25,6 @@ import io.xol.chunkstories.client.ClientSlavePluginManager;
 import io.xol.chunkstories.client.LocalServerContext;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.core.entity.EntityPlayer;
-import io.xol.chunkstories.core.entity.interfaces.EntityWithSelectedItem;
 import io.xol.chunkstories.entity.SerializedEntityFile;
 import io.xol.chunkstories.gui.Chat.ChatPanelOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.DeathOverlay;
@@ -309,7 +309,7 @@ public class Ingame extends Layer
 				ItemPile p = ((EntityWithInventory) playerEntity).getInventory().getItemPileAt(requestedInventorySlot, 0);
 				if (p != null)
 					requestedInventorySlot = p.getX();
-				((EntityWithSelectedItem) playerEntity).getSelectedItemComponent().setSelectedSlot(requestedInventorySlot);
+				((EntityWithSelectedItem) playerEntity).setSelectedItemIndex(requestedInventorySlot);
 
 				return true;
 			}
@@ -327,7 +327,7 @@ public class Ingame extends Layer
 			if (playerEntity != null && playerEntity instanceof EntityWithSelectedItem)
 			{
 				ItemPile selected = null;
-				int selectedInventorySlot = ((EntityWithSelectedItem) playerEntity).getSelectedItemComponent().getSelectedSlot();
+				int selectedInventorySlot = ((EntityWithSelectedItem) playerEntity).getSelectedItemIndex();
 				int originalSlot = selectedInventorySlot;
 				if (ms.amount() < 0)
 				{
@@ -349,7 +349,7 @@ public class Ingame extends Layer
 				}
 				//Switch slot
 				if (originalSlot != selectedInventorySlot)
-					((EntityWithSelectedItem) playerEntity).getSelectedItemComponent().setSelectedSlot(selectedInventorySlot);
+					((EntityWithSelectedItem) playerEntity).setSelectedItemIndex(selectedInventorySlot);
 			}
 		}
 		return false;

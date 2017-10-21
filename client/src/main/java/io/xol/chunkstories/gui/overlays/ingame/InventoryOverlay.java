@@ -16,8 +16,8 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.core.entity.EntityGroundItem;
-import io.xol.chunkstories.core.net.packets.PacketInventoryMoveItemPile;
 import io.xol.chunkstories.gui.InventoryDrawer;
+import io.xol.chunkstories.net.packets.PacketInventoryMoveItemPile;
 import io.xol.chunkstories.world.WorldClientRemote;
 import io.xol.chunkstories.world.WorldClientLocal;
 

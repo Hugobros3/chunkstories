@@ -1,12 +1,12 @@
 package io.xol.chunkstories.gui;
 
+import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
 import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
 import org.joml.Vector4f;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
-import io.xol.chunkstories.core.entity.interfaces.EntityWithSelectedItem;
 import io.xol.chunkstories.gui.overlays.ingame.InventoryOverlay;
 import io.xol.engine.graphics.textures.TexturesHandler;
 
@@ -52,7 +52,7 @@ public class InventoryDrawer
 		//Don't draw inventory only
 		if (entity == null)
 			return;
-		drawInventory(renderingContext, x - slotsWidth(getInventory().getWidth(), 2) / 2, y - slotsHeight(getInventory().getHeight(), 2, true, 0) / 2, 2, true, 0, entity.getSelectedItemComponent().getSelectedSlot());
+		drawInventory(renderingContext, x - slotsWidth(getInventory().getWidth(), 2) / 2, y - slotsHeight(getInventory().getHeight(), 2, true, 0) / 2, 2, true, 0, entity.getSelectedItemIndex());
 	}
 
 	public void drawInventory(RenderingInterface context, int x, int y, int scale, boolean summary, int blankLines, int highlightSlot)

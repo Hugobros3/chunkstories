@@ -17,6 +17,7 @@ import io.xol.chunkstories.api.voxel.VoxelDynamicallyRendered;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.voxel.VoxelSides.Corners;
+import io.xol.chunkstories.api.voxel.components.VoxelComponentDynamicRenderer;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes;
 import io.xol.chunkstories.api.voxel.models.ChunkRenderer;
 import io.xol.chunkstories.api.voxel.models.VoxelBakerCubic;
@@ -288,8 +289,13 @@ public class TaskBakeChunk extends Task {
 							vClass = new DynamicallyRenderedVoxelClass();
 							
 							//TODO cache it world-wide 
-							vClass.renderer = ((VoxelDynamicallyRendered)vox).getDynamicRendererComponent(chunk.peek(i, k, j)).getVoxelDynamicRenderer();
-							dynamicVoxels.put(vox, vClass);
+							VoxelComponentDynamicRenderer component = ((VoxelDynamicallyRendered)vox).getDynamicRendererComponent(chunk.peek(i, k, j));
+							
+							if(component != null) {
+								vClass.renderer = component.getVoxelDynamicRenderer();
+								if(vClass.renderer != null)
+									dynamicVoxels.put(vox, vClass);
+							}
 						}
 						vClass.indexes.add(i * 1024 + k * 32 + j);
 						//((VoxelDynamicallyRendered)vox).getDynamicRendererComponent(context)
