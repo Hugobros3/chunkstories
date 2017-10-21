@@ -99,7 +99,7 @@ public class ChunkMeshesRenderer
 			boolean shouldShowChunk = chunk.getChunkX() == cameraChunkX && chunk.getChunkY() == cameraChunkY && chunk.getChunkZ() == cameraChunkZ;
 			if (!shouldShowChunk)
 			{
-				Vector3f center = new Vector3f(command.displayWorldX + 16, command.displayWorldY + 15, command.displayWorldZ + 16);
+				Vector3f center = new Vector3f(command.displayWorldX + 16, command.displayWorldY + 16, command.displayWorldZ + 16);
 				shouldShowChunk = camera.isBoxInFrustrum(center, new Vector3f(32, 32, 32));
 			}
 			
