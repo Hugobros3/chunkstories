@@ -187,7 +187,7 @@ public class Ingame extends Layer
 		}
 		
 		//Blit the final 3d image
-		world.getWorldRenderer().blitFinalImage(renderingContext);
+		world.getWorldRenderer().blitFinalImage(renderingContext, guiHidden);
 
 		//Draw the GUI
 		if (!guiHidden)

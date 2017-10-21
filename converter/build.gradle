@@ -35,7 +35,7 @@ shadowJar {
 	version = null
 	
 	dependencies {
-		exclude(dependency(group: 'io.xol.chunkstories', name: 'core', version: contentRevisionBuiltAgainst, ext: 'jar'))
+		//exclude(dependency(group: 'io.xol.chunkstories', name: 'core', version: contentRevisionBuiltAgainst, ext: 'jar'))
     }
 }
 

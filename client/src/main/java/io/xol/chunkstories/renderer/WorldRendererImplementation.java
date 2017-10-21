@@ -464,7 +464,7 @@ public class WorldRendererImplementation implements WorldRenderer
 	}
 	
 	@Override
-	public void blitFinalImage(RenderingInterface renderingContext)
+	public void blitFinalImage(RenderingInterface renderingContext, boolean hideGui)
 	{
 		Texture2D bloomRendered = RenderingConfig.doBloom ? bloomRenderer.renderBloom(renderingContext) : null;
 		
@@ -518,18 +518,19 @@ public class WorldRendererImplementation implements WorldRenderer
 		renderingContext.drawFSQuad();
 
 		//Draw entities Huds
-		//TODO entitiesRenderer
-		world.entitiesLock.readLock().lock();
-		Iterator<Entity> ei = world.getAllLoadedEntities();
-		Entity e;
-		while (ei.hasNext())
-		{
-			e = ei.next();
-			if (e instanceof EntityOverlay) {
-				((EntityOverlay) e).drawEntityOverlay(renderingContext);
+		if(!hideGui) {
+			world.entitiesLock.readLock().lock();
+			Iterator<Entity> ei = world.getAllLoadedEntities();
+			Entity e;
+			while (ei.hasNext())
+			{
+				e = ei.next();
+				if (e instanceof EntityOverlay) {
+					((EntityOverlay) e).drawEntityOverlay(renderingContext);
+				}
 			}
+			world.entitiesLock.readLock().unlock();
 		}
-		world.entitiesLock.readLock().unlock();
 	}
 	
 	public void destroy()

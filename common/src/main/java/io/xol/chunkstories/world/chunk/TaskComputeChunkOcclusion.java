@@ -12,7 +12,7 @@ import io.xol.chunkstories.voxel.VoxelsStore;
 public class TaskComputeChunkOcclusion extends Task {
 
 	final CubicChunk chunk;
-	
+
 	public TaskComputeChunkOcclusion(CubicChunk chunk) {
 		this.chunk = chunk;
 	}
@@ -20,52 +20,75 @@ public class TaskComputeChunkOcclusion extends Task {
 	@Override
 	protected boolean task(TaskExecutor taskExecutor) {
 		try {
-			//Lock this
+			// Lock this
 			chunk.occlusion.onlyOneUpdateAtATime.lock();
 			int updatesNeeded = chunk.occlusion.unbakedUpdates.get();
-			if(updatesNeeded == 0)
+			if (updatesNeeded == 0)
 				return true;
-			
+
 			chunk.occlusion.occlusionSides = computeOcclusionTable();
-			
-			//Remove however many updates were pending
+
+			// Remove however many updates were pending
 			chunk.occlusion.unbakedUpdates.addAndGet(-updatesNeeded);
-		}
-		finally {
+		} finally {
 			chunk.occlusion.onlyOneUpdateAtATime.unlock();
 		}
 		return true;
 	}
 
-	static ThreadLocal<Deque<Integer>> occlusionFaces = new ThreadLocal<Deque<Integer>>()
-	{
+	static ThreadLocal<Deque<Integer>> occlusionFaces = new ThreadLocal<Deque<Integer>>() {
 		@Override
-		protected Deque<Integer> initialValue()
-		{
+		protected Deque<Integer> initialValue() {
 			return new ArrayDeque<Integer>();
 		}
 	};
-	
-	private boolean[][] computeOcclusionTable()
-	{
-		//System.out.println("Computing occlusion table ...");
+
+	static ThreadLocal<boolean[]> masks = new ThreadLocal<boolean[]>() {
+
+		@Override
+		protected boolean[] initialValue() {
+			return new boolean[32768];
+		}
+
+	};
+
+	/*
+	 * initialize a smaller piece of the array and use the System.arraycopy call to
+	 * fill in the rest of the array in an expanding binary fashion
+	 */
+	public static void boolfill(boolean[] array, boolean value) {
+		int len = array.length;
+
+		if (len > 0) {
+			array[0] = value;
+		}
+
+		for (int i = 1; i < len; i += i) {
+			System.arraycopy(array, 0, array, i, ((len - i) < i) ? (len - i) : i);
+		}
+	}
+
+	private boolean[][] computeOcclusionTable() {
+		// System.out.println("Computing occlusion table ...");
 		boolean[][] occlusionSides = new boolean[6][6];
 
 		Deque<Integer> deque = occlusionFaces.get();
 		deque.clear();
-		boolean[] mask = new boolean[32768];
+
+		boolean mask[] = masks.get();
+		boolfill(mask, false);
+
+		// boolean[] mask = new boolean[32768];
 		int x = 0, y = 0, z = 0;
 		int completion = 0;
 		int p = 0;
-		
+
 		@SuppressWarnings("unused")
 		int bits = 0;
-		//Until all 32768 blocks have been processed
-		while (completion < 32768)
-		{
-			//If this face was already done, we find one that wasn't
-			while (mask[x * 1024 + y * 32 + z])
-			{
+		// Until all 32768 blocks have been processed
+		while (completion < 32768) {
+			// If this face was already done, we find one that wasn't
+			while (mask[x * 1024 + y * 32 + z]) {
 				p++;
 				p %= 32768;
 
@@ -75,36 +98,35 @@ public class TaskComputeChunkOcclusion extends Task {
 			}
 
 			bits++;
-			
-			//We put this face on the deque
+
+			// We put this face on the deque
 			deque.push(x * 1024 + y * 32 + z);
 
 			/**
-			 * Conventions for space in Chunk Stories 1 FRONT z+ x- LEFT 0 X 2 RIGHT x+ 3 BACK z- 4 y+ top X 5 y- bottom
+			 * Conventions for space in Chunk Stories 1 FRONT z+ x- LEFT 0 X 2 RIGHT x+ 3
+			 * BACK z- 4 y+ top X 5 y- bottom
 			 */
 			Set<Integer> touchingSides = new HashSet<Integer>();
-			while (!deque.isEmpty())
-			{
-				//Pop the topmost element
+			while (!deque.isEmpty()) {
+				// Pop the topmost element
 				int d = deque.pop();
 
-				//Don't iterate twice over one element
-				if(mask[d])
+				// Don't iterate twice over one element
+				if (mask[d])
 					continue;
-				
-				//Separate coordinates
+
+				// Separate coordinates
 				x = d / 1024;
 				y = (d / 32) % 32;
 				z = d % 32;
-				
-				//Mark the case as done
+
+				// Mark the case as done
 				mask[x * 1024 + y * 32 + z] = true;
 				completion++;
-				
-				if (!VoxelsStore.get().getVoxelById(chunk.peekSimple(x, y, z)).getType().isOpaque())
-				{
-					//Adds touched sides to set
-					
+
+				if (!VoxelsStore.get().getVoxelById(chunk.peekSimple(x, y, z)).getType().isOpaque()) {
+					// Adds touched sides to set
+
 					if (x == 0)
 						touchingSides.add(0);
 					else if (x == 31)
@@ -119,34 +141,32 @@ public class TaskComputeChunkOcclusion extends Task {
 						touchingSides.add(3);
 					else if (z == 31)
 						touchingSides.add(1);
-					
-					//Flood fill
-					
-					if(x > 0)
+
+					// Flood fill
+
+					if (x > 0)
 						deque.push((x - 1) * 1024 + (y) * 32 + (z));
-					if(y > 0)
+					if (y > 0)
 						deque.push((x) * 1024 + (y - 1) * 32 + (z));
-					if(z > 0)
+					if (z > 0)
 						deque.push((x) * 1024 + (y) * 32 + (z - 1));
-					
-					if(x < 31)
+
+					if (x < 31)
 						deque.push((x + 1) * 1024 + (y) * 32 + (z));
-					if(y < 31)
+					if (y < 31)
 						deque.push((x) * 1024 + (y + 1) * 32 + (z));
-					if(z < 31)
+					if (z < 31)
 						deque.push((x) * 1024 + (y) * 32 + (z + 1));
 				}
 			}
-			
-			for(int i : touchingSides)
-			{
-				for(int j : touchingSides)
+
+			for (int i : touchingSides) {
+				for (int j : touchingSides)
 					occlusionSides[i][j] = true;
 			}
 		}
-		
+
 		return occlusionSides;
 	}
-	
 
 }

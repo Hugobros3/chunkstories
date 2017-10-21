@@ -346,27 +346,16 @@ public class TaskBakeChunk extends Task {
 					relevantByteBuffer.position(0);
 					finalData.put(relevantByteBuffer);
 					
-					//System.out.println("Doing chunk "+chunk+" -> "+vertexLayout+":"+lodLevel+":"+renderPass+" ; o="+offsets[vertexLayoutIndex][lodLevelIndex][renderPassIndex]+" s:"+sizes[vertexLayoutIndex][lodLevelIndex][renderPassIndex]);
 				}
 
 		finalData.flip();
 		
-		//VertexBuffer verticesObject = new VertexBufferGL();
-		//Fence fence = verticesObject.uploadData(wrappedBuffer);
-
-		//ChunkMeshDataSections parent = chunk.getChunkRenderData().getRenderData();
 		ChunkMeshDataSections newRenderData = new ChunkMeshDataSections(wrappedBuffer, sizes, offsets);
 		newRenderData.dynamicallyRenderedVoxels = dynamicVoxels;
 		
 		chunk.getChunkRenderData().setData(newRenderData);
 		
-		//baker.totalChunksRendered.incrementAndGet();
-
 		chunk.chunkRenderData.unbakedUpdates.addAndGet(-updatesToConsider);
-		
-		//chunk.need_render.set(false);
-		//chunk.requestable.set(true);
-		//chunk.markRenderInProgress(false);
 		
 		//Wait until data is actually uploaded to not accidentally OOM while it struggles uploading it
 		if(Client.getInstance().configDeprecated().getBoolean("waitForChunkMeshDataUploadBeforeStartingTheNext", true))
