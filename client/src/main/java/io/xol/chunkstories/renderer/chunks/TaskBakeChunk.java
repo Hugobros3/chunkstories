@@ -279,7 +279,7 @@ public class TaskBakeChunk extends Task {
 					
 					VoxelRenderer voxelRenderer = vox.getVoxelRenderer(voxelRenderingContext);
 					if(voxelRenderer == null)
-						voxelRenderer = cmd.defaultVoxelRenderer;
+						voxelRenderer = vox.store().getDefaultVoxelRenderer();//cmd.defaultVoxelRenderer;
 					
 					voxelRenderer.renderInto(chunkRendererOutput, chunkRenderingContext, chunk, voxelRenderingContext);
 					

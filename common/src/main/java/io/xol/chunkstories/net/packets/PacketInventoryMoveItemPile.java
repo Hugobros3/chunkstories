@@ -3,10 +3,12 @@ package io.xol.chunkstories.net.packets;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
+import io.xol.chunkstories.api.events.item.EventItemDroppedToWorld;
 import io.xol.chunkstories.api.events.player.PlayerMoveItemEvent;
 import io.xol.chunkstories.api.exceptions.NullItemException;
 import io.xol.chunkstories.api.exceptions.UndefinedItemTypeException;
 import io.xol.chunkstories.api.item.inventory.Inventory;
+import io.xol.chunkstories.api.item.inventory.InventoryTranslator;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSynchPrepared;
@@ -15,9 +17,6 @@ import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.server.ServerPacketsProcessor.ServerPlayerPacketsProcessor;
 import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogLevel;
 import io.xol.chunkstories.api.net.PacketSender;
-import io.xol.chunkstories.core.entity.EntityGroundItem;
-import io.xol.chunkstories.core.item.inventory.InventoryLocalCreativeMenu;
-import io.xol.chunkstories.core.item.inventory.InventoryTranslator;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -99,7 +98,7 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 		to = InventoryTranslator.obtainInventoryHandle(in, processor);
 		
 		//If this pile is spawned from the void
-		if(from == null || from == InventoryTranslator.INVENTORY_CREATIVE_TRASH)
+		if(from == null)// || from == InventoryTranslator.INVENTORY_CREATIVE_TRASH)
 		{
 			try
 			{
@@ -139,7 +138,7 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 		if(!moveItemEvent.isCancelled())
 		{
 			//Restrict item spawning
-			if(from == null || from instanceof InventoryLocalCreativeMenu)
+			if(from == null)// || from instanceof InventoryLocalCreativeMenu)
 			{
 				//player.sendMessage("Notice : dragging stuff from /dev/null to your inventory should be limited by permission.");
 				
@@ -167,11 +166,23 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 					return;
 				}
 				
+				//If we're pulling this out of an inventory ( and not /dev/null ), we need to remove it from that
+				Inventory sourceInventory = itemPile.getInventory();
+
 				Location loc = playerEntity.getLocation();
-				EntityGroundItem entity = new EntityGroundItem(player.getContext().getContent().entities().getEntityTypeByName("groundItem"), loc, itemPile);
-				loc.getWorld().addEntity(entity);
+				EventItemDroppedToWorld dropItemEvent = new EventItemDroppedToWorld(loc, sourceInventory, itemPile);
+				player.getContext().getPluginManager().fireEvent(dropItemEvent);
+			
+				if(!dropItemEvent.isCancelled()) {
+					
+					if(sourceInventory != null)
+						sourceInventory.setItemPileAt(itemPile.getX(), itemPile.getY(), null);
+					
+					if(dropItemEvent.getItemEntity() != null)
+						loc.getWorld().addEntity(dropItemEvent.getItemEntity());
+				}
 				
-				player.sendMessage("Notice : throwing stuff on ground is still glitchy and experimental.");
+				return;
 			}
 			
 			itemPile.moveItemPileTo(to, newX, newY, amount);

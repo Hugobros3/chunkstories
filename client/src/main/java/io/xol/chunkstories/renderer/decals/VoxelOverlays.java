@@ -1,6 +1,7 @@
 package io.xol.chunkstories.renderer.decals;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 import org.joml.Vector4f;
@@ -52,13 +53,15 @@ public class VoxelOverlays {
 		renderingInterface.getCamera().setupShader(overlayProgram);
 		overlayProgram.setUniform4f("colorIn", new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
 		
-		ByteBuffer data = ByteBuffer.allocateDirect(3 * 8 * 6 * boxes.length);
-		FloatBuffer fb = data.asFloatBuffer();
+		ByteBuffer data = ByteBuffer.allocateDirect(4 * 3 * 8 * 3 * boxes.length);
+		data.order(ByteOrder.nativeOrder());
+		//FloatBuffer fb = data.asFloatBuffer();
+		//fb.order(ByteOrder.nativeOrder());
 		//float[] data = new float[3 * 8 * 6 * boxes.length];
 		
 		int i = 0;
 		for(CollisionBox box : boxes) {
-			i = cubeVertices(fb, i, (float) box.xpos, (float) box.ypos, (float) box.zpos, (float) box.xw, (float) box.h, (float) box.zw);
+			i = cubeVertices(data, i, (float) box.xpos, (float) box.ypos, (float) box.zpos, (float) box.xw, (float) box.h, (float) box.zw);
 		}
 		
 		data.flip();
@@ -70,6 +73,8 @@ public class VoxelOverlays {
 		renderingInterface.draw(Primitive.LINE, 0, boxes.length * 6 * 8);
 		renderingInterface.setBlendMode(BlendMode.DISABLED);
 		renderingInterface.flush();
+		
+		//System.out.println("k");
 		/*
 		glColor4f(1, 1, 1, 1.0f);
 		//GL11.glBlendFunc(GL11.GL_ONE_MINUS_SRC_COLOR, GL11.GL_ZERO);
@@ -88,7 +93,7 @@ public class VoxelOverlays {
 		glColor4f(1, 1, 1, 1);*/
 	}
 
-	private int cubeVertices(FloatBuffer data, int i, float x, float y, float z, float xw, float h, float zw)
+	private int cubeVertices(ByteBuffer data, int i, float x, float y, float z, float xw, float h, float zw)
 	{
 		i += addPoints(data, i, + x, 0 + y, + z);
 		i += addPoints(data, i, xw + x, 0 + y, + z);
@@ -120,16 +125,17 @@ public class VoxelOverlays {
 		return i;
 	}
 
-	private int addPoints(FloatBuffer data, int i, float x, float y, float z) {
+	private int addPoints(ByteBuffer data, int i, float x, float y, float z) {
 		/*data[i] = x;
 		i++;
 		data[i] = y;
 		i++;
 		data[i] = z;
 		i++;*/
-		data.put(x);
-		data.put(y);
-		data.put(z);
+		data.putFloat(x);
+		data.putFloat(y);
+		data.putFloat(z);
+		//System.out.println("x:"+x+"y:"+y+"z:"+z);
 		i+=3;
 		return i;
 	}

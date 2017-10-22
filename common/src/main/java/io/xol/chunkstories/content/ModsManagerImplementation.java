@@ -506,6 +506,19 @@ public class ModsManagerImplementation implements ModsManager
 	@Override
 	public Class<?> getClassByName(String className)
 	{
+		//TODO: Make this absolutely unecessary
+		try
+		{
+			Class<?> inBaseClasspath = Class.forName(className);
+			if(inBaseClasspath != null)
+				return inBaseClasspath;
+		}
+		catch (ClassNotFoundException e)
+		{
+			//We don't really care about this
+			//e.printStackTrace();
+		}
+		
 		ForeignCodeClassLoader loader = avaibleForeignClasses.get(className);
 		
 		if(loader == null)
@@ -521,18 +534,6 @@ public class ModsManagerImplementation implements ModsManager
 		
 		ChunkStoriesLoggerImplementation.getInstance().log("WARNING: Failed to load class "+className, LogLevel.ERROR);
 		
-		//TODO: Make this absolutely unecessary
-		/*try
-		{
-			Class<?> inBaseClasspath = Class.forName(className);
-			if(inBaseClasspath != null)
-				return inBaseClasspath;
-		}
-		catch (ClassNotFoundException e)
-		{
-			//We don't really care about this
-			//e.printStackTrace();
-		}*/
 		
 		//If all fail, return null
 		return null;

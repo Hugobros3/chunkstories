@@ -1,5 +1,6 @@
 package io.xol.chunkstories.voxel;
 
+import io.xol.chunkstories.api.Content.Voxels;
 import io.xol.chunkstories.api.client.ClientContent;
 import io.xol.chunkstories.api.exceptions.content.IllegalVoxelDeclarationException;
 import io.xol.chunkstories.api.mods.Asset;
@@ -10,12 +11,14 @@ import io.xol.chunkstories.api.mods.Asset;
 
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.content.GameContentStore;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.chunkstories.voxel.models.VoxelModelsStore;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,13 +44,14 @@ public class VoxelsStore implements ClientContent.ClientVoxels
 		this.content = content;
 		this.textures = new VoxelTexturesStoreAndAtlaser(this);
 		this.models = new VoxelModelsStore(this);
-		
 		//this.reloadVoxelTypes();
 	}
 	
 	private final GameContentStore content;
 	private final VoxelTexturesStoreAndAtlaser textures;
 	private final VoxelModelsStore models;
+	
+	private VoxelRenderer defaultVoxelRenderer;
 	
 	public Voxel[] voxels = new Voxel[65536];
 	public Set<Integer> attributedIds = new HashSet<Integer>();
@@ -81,7 +85,18 @@ public class VoxelsStore implements ClientContent.ClientVoxels
 		Arrays.fill(voxels, null);
 		attributedIds.clear();
 		voxelsByName.clear();
-
+		
+		//First load the default voxel renderer
+		try {
+			Class<VoxelRenderer> defaultVoxelRendererClass = (Class<VoxelRenderer>) content.modsManager().getClassByName("io.xol.chunkstories.core.voxel.renderers.DefaultVoxelRenderer");
+			Constructor<VoxelRenderer> defaultVoxelRendererConstructor = defaultVoxelRendererClass.getConstructor(Voxels.class);
+			defaultVoxelRenderer = defaultVoxelRendererConstructor.newInstance(this);
+		}
+		catch(Exception e) {
+			System.out.println("could not instanciate the default voxel renderer");
+			System.exit(-900);
+		}
+		
 		Iterator<Asset> i = content.modsManager().getAllAssetsByExtension("voxels");
 		while (i.hasNext())
 		{
@@ -205,5 +220,10 @@ public class VoxelsStore implements ClientContent.ClientVoxels
 	public GameContentStore parent()
 	{
 		return content;
+	}
+
+	@Override
+	public VoxelRenderer getDefaultVoxelRenderer() {
+		return defaultVoxelRenderer;
 	}
 }

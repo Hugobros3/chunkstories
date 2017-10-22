@@ -18,7 +18,6 @@ public class ClientMasterPluginManager extends DefaultPluginManager implements C
 	{
 		super(localServerContext);
 		this.localServerContext = localServerContext;
-		this.reloadPlugins();
 	}
 
 	@Override

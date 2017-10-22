@@ -48,6 +48,7 @@ public class LocalServerContext implements ClientInterface, ServerInterface
 		
 		this.pluginsManager = new ClientMasterPluginManager(this);
 		client.setClientPluginManager(this.pluginsManager);
+		pluginsManager.reloadPlugins();
 		
 		this.permissionsManager = new PermissionsManager() {
 

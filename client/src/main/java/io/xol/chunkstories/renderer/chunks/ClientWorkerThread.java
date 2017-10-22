@@ -12,11 +12,11 @@ import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.LodLevel;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.VertexLayout;
+import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.api.voxel.models.layout.BaseLayoutBaker;
 import io.xol.chunkstories.api.voxel.models.layout.IntricateLayoutBaker;
 import io.xol.chunkstories.api.voxel.models.layout.WholeBlocksLayoutBaker;
 import io.xol.chunkstories.api.world.chunk.Chunk;
-import io.xol.chunkstories.core.voxel.renderers.DefaultVoxelRenderer;
 import io.xol.chunkstories.workers.WorkerThread;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 
@@ -51,7 +51,7 @@ public class ClientWorkerThread extends WorkerThread implements BakeChunkTaskExe
 		protected ByteBuffer[][][] byteBuffers;
 		protected BaseLayoutBaker[][][] byteBuffersWrappers;
 		
-		protected DefaultVoxelRenderer defaultVoxelRenderer;
+		//protected VoxelRenderer defaultVoxelRenderer;
 		
 		//Don't care if gc'd
 		protected final int[][] cache = new int[27][];
@@ -103,7 +103,7 @@ public class ClientWorkerThread extends WorkerThread implements BakeChunkTaskExe
 				}
 			}
 			
-			defaultVoxelRenderer = new DefaultVoxelRenderer(content.voxels());
+			//defaultVoxelRenderer = new DefaultVoxelRenderer(content.voxels());
 		}
 		
 		protected int getBlockData(CubicChunk c, int x, int y, int z)

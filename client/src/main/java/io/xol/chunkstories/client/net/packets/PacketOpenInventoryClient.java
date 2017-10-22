@@ -6,10 +6,10 @@ import java.io.IOException;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.exceptions.PacketProcessingException;
+import io.xol.chunkstories.api.item.inventory.InventoryTranslator;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketsProcessor;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.core.item.inventory.InventoryTranslator;
 import io.xol.chunkstories.net.packets.PacketOpenInventory;
 
 //(c) 2015-2017 XolioWare Interactive

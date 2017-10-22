@@ -2,6 +2,7 @@ package io.xol.chunkstories.gui.overlays.ingame;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.events.item.EventItemDroppedToWorld;
 import io.xol.chunkstories.api.events.player.PlayerMoveItemEvent;
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.input.Input;
@@ -15,7 +16,6 @@ import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.core.entity.EntityGroundItem;
 import io.xol.chunkstories.gui.InventoryDrawer;
 import io.xol.chunkstories.net.packets.PacketInventoryMoveItemPile;
 import io.xol.chunkstories.world.WorldClientRemote;
@@ -226,21 +226,26 @@ public class InventoryOverlay extends Layer
 				Entity playerEntity = player.getControlledEntity();
 				if(playerEntity != null)
 				{
-					PlayerMoveItemEvent dropItemEvent = new PlayerMoveItemEvent(player, selectedItem, selectedItem.getInventory(), null, selectedItem.getX(), selectedItem.getY(), 0, 0, selectedItemAmount);
-					player.getContext().getPluginManager().fireEvent(dropItemEvent);
+					PlayerMoveItemEvent moveItemEvent = new PlayerMoveItemEvent(player, selectedItem, selectedItem.getInventory(), null, selectedItem.getX(), selectedItem.getY(), 0, 0, selectedItemAmount);
+					player.getContext().getPluginManager().fireEvent(moveItemEvent);
 					
-					if(!dropItemEvent.isCancelled())
+					if(!moveItemEvent.isCancelled())
 					{
 						//If we're pulling this out of an inventory ( and not /dev/null ), we need to remove it from that
-						if(dropItemEvent.getSourceInventory() != null)
-							dropItemEvent.getSourceInventory().setItemPileAt(dropItemEvent.getFromX(), dropItemEvent.getFromY(), null);
-						
-						//Spawn a new ground item
+						Inventory sourceInventory = selectedItem.getInventory();
+
 						Location loc = playerEntity.getLocation();
-						EntityGroundItem entity = new EntityGroundItem(player.getContext().getContent().entities().getEntityTypeByName("groundItem"), loc, selectedItem);
-						loc.getWorld().addEntity(entity);
-						
-						player.sendMessage("Notice : throwing stuff on ground is still glitchy and experimental.");
+						EventItemDroppedToWorld dropItemEvent = new EventItemDroppedToWorld(loc, sourceInventory, selectedItem);
+						player.getContext().getPluginManager().fireEvent(dropItemEvent);
+					
+						if(!dropItemEvent.isCancelled()) {
+							
+							if(sourceInventory != null)
+								sourceInventory.setItemPileAt(selectedItem.getX(), selectedItem.getY(), null);
+							
+							if(dropItemEvent.getItemEntity() != null)
+								loc.getWorld().addEntity(dropItemEvent.getItemEntity());
+						}
 					}
 				}
 				selectedItem = null;
