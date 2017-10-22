@@ -18,7 +18,7 @@ dependencies {
 
 dependencies {
 	coreContent group: 'io.xol.chunkstories', name: 'core', version: contentRevisionBuiltAgainst, ext: 'zip'
-	compile group: 'io.xol.chunkstories', name: 'core', version: contentRevisionBuiltAgainst, ext: 'jar'
+	//compile group: 'io.xol.chunkstories', name: 'core', version: contentRevisionBuiltAgainst, ext: 'jar'
 }
 
 task setupContentLocation() {

@@ -23,6 +23,7 @@ mainClassName = 'io.xol.chunkstories.converter.OfflineWorldConverter'
 
 dependencies {
 	compile project(':common')
+	compile group: 'io.xol.chunkstories', name: 'core', version: contentRevisionBuiltAgainst, ext: 'jar'
 }
 
 jar {

@@ -24,7 +24,6 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.ClientSlavePluginManager;
 import io.xol.chunkstories.client.LocalServerContext;
 import io.xol.chunkstories.client.RenderingConfig;
-import io.xol.chunkstories.core.entity.EntityPlayer;
 import io.xol.chunkstories.entity.SerializedEntityFile;
 import io.xol.chunkstories.gui.Chat.ChatPanelOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.DeathOverlay;
@@ -73,7 +72,7 @@ public class Ingame extends Layer
 		this.chatManager = new Chat(this);
 
 		//Creates the rendering stuff
-		this.selectionRenderer = new VoxelOverlays(world);
+		this.selectionRenderer = new VoxelOverlays();
 		this.wireframeDebugger = new PhysicsWireframeDebugger(window.getClient(), world);
 		this.debugInfoRenderer = new DebugInfoRenderer(window.getClient(), world);
 		
@@ -145,8 +144,8 @@ public class Ingame extends Layer
 		
 
 		Location selectedBlock = null;
-		if (playerEntity instanceof EntityPlayer)
-			selectedBlock = ((EntityPlayer) playerEntity).getBlockLookingAt(true);
+		if (playerEntity instanceof EntityControllable)
+			selectedBlock = ((EntityControllable) playerEntity).getBlockLookingAt(true);
 		
 		pluginManager.fireEvent(new CameraSetupEvent(renderingContext.getCamera()));
 
@@ -159,9 +158,9 @@ public class Ingame extends Layer
 		}
 		
 		if (!guiHidden && selectedBlock != null && playerEntity instanceof EntityCreative && ((EntityCreative) playerEntity).getCreativeModeComponent().get())
-			selectionRenderer.drawSelectionBox(selectedBlock);
+			selectionRenderer.drawSelectionBox(renderingContext, selectedBlock);
 		
-		selectionRenderer.drawnCrackedBlocks(renderingContext);
+		//selectionRenderer.drawnCrackedBlocks(renderingContext);
 		
 		//Cubemap rendering trigger (can't run it while main render is occuring)
 		//TODO reimplement cubemaps screenshots
