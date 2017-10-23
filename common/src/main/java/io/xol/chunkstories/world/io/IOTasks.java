@@ -6,6 +6,7 @@ import io.xol.chunkstories.api.workers.Task;
 import io.xol.chunkstories.api.workers.TaskExecutor;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.Chunk;
+import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.chunkstories.tools.WorldTool;
 import io.xol.chunkstories.world.WorldImplementation;
@@ -200,10 +201,6 @@ public class IOTasks extends Thread implements TaskExecutor
 		@Override
 		public boolean task(TaskExecutor taskExecutor)
 		{
-			// If for some reasons the chunks holder's are still not loaded, we requeue the job
-			if (!chunkSlot.getRegion().isDiskDataLoaded())
-				return false;
-			
 			// When a loader was removed from the world, remaining operations on it are discarded
 			if (chunkSlot.getRegion().isUnloaded())
 				return true;
@@ -211,6 +208,19 @@ public class IOTasks extends Thread implements TaskExecutor
 			// And so are redudant operations
 			if (chunkSlot.isChunkLoaded())
 				return true;
+
+			Region region = chunkSlot.getRegion();
+			Region actualRegion = world.getRegion(region.getRegionX(), region.getRegionY(), region.getRegionZ());
+			
+			if(region != actualRegion) {
+				System.out.println("Some quircky race condition led to this region being discarded then loaded again but without raising the isUnloaded() flag !");
+				System.out.println(region + " vs: " + actualRegion);
+				return true;
+			}
+			
+			// If for some reasons the chunks holder's are still not loaded, we requeue the job
+			if (!chunkSlot.getRegion().isDiskDataLoaded())
+				return false;
 
 			CompressedData compressedData = chunkSlot.getCompressedData();
 			//Not yet generated chunk; call the generator
