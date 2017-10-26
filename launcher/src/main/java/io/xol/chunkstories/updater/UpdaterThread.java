@@ -5,13 +5,11 @@ package io.xol.chunkstories.updater;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.MessageDigest;
@@ -28,70 +26,68 @@ public class UpdaterThread extends Thread implements ActionListener {
 
 	public boolean done = false;
 
-	public Map<String, String> localMap = new HashMap<String, String>();
-	public Map<String, String> remoteMap = new HashMap<String, String>();
-
+	public Map<String, String> localHashes = new HashMap<String, String>();
+	public Map<String, String> remoteHashes = new HashMap<String, String>();
+	
 	public void checkVersion() {
-		File f = new File(GameDirectory.getGameFolderPath() + "/version.txt");
-		if (f.exists()) {
-			try {
-				InputStream ips = new FileInputStream(f);
-				InputStreamReader ipsr = new InputStreamReader(ips, "UTF-8");
-				BufferedReader br = new BufferedReader(ipsr);
-				String ligne;
-				while ((ligne = br.readLine()) != null) {
-					ChunkStoriesLauncher.version += ligne;
-				}
-				br.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		} else
-			ChunkStoriesLauncher.version = "unknow";
+		ChunkStoriesLauncher.localVersion = VersionFile.loadFromFile(new File(GameDirectory.getGameFolderPath()+"/version.txt"));
+			
+		try {
+			ChunkStoriesLauncher.latestVersion = VersionFile.loadFromOnline();
+		} catch (IOException e) {
+			ChunkStoriesLauncher.latestVersion = new VersionFile("offline");
+		}
+		
+		//System.out.println("Local version : " + ChunkStoriesLauncher.localVersion.version + " - Last version : " + ChunkStoriesLauncher.latestVersion.version);
+		ChunkStoriesLauncher.label.setText("Local version : " + ChunkStoriesLauncher.localVersion.version + " - Last version : " + ChunkStoriesLauncher.latestVersion.version);
 
-		ChunkStoriesLauncher.lastVersion = ChunkStoriesLauncher
-				.sendPost("http://chunkstories.xyz/api/updater/current/version.txt", "");
-		ChunkStoriesLauncher.label.setText("Local version : " + ChunkStoriesLauncher.version + " - Last version : "
-				+ ChunkStoriesLauncher.lastVersion);
-
-		if (ChunkStoriesLauncher.version.equals("unknow")) {
+		if (ChunkStoriesLauncher.localVersion.version.equals("unknown")) {
 			// Start DL immediately
 			startDownloadingUpdate();
 		}
-		else if (!ChunkStoriesLauncher.version.equals(ChunkStoriesLauncher.lastVersion)) {
+		else if (!ChunkStoriesLauncher.localVersion.equals(ChunkStoriesLauncher.latestVersion)) {
 
 			int dialogButton = JOptionPane.YES_NO_OPTION;
 			int dialogResult = JOptionPane.showConfirmDialog(null,
-					"New version avaible (" + ChunkStoriesLauncher.lastVersion + ") do you want to download it ?",
+					"New version avaible (" + ChunkStoriesLauncher.latestVersion.version + ") do you want to download it ?",
 					"Warning", dialogButton);
 			if (dialogResult == JOptionPane.YES_OPTION) {
 				startDownloadingUpdate();
 			}
 		}
 
-		if (ChunkStoriesLauncher.version.equals(ChunkStoriesLauncher.lastVersion))
+		if (ChunkStoriesLauncher.localVersion.equals(ChunkStoriesLauncher.latestVersion))
 			ChunkStoriesLauncher.update.setText("Force update");
 	}
 
 	public void computeMaps() {
 		ChunkStoriesLauncher.label.setText("Computing files hashes");
-		localMap.clear();
-		remoteMap.clear();
+		localHashes.clear();
+		remoteHashes.clear();
 		browseDirsSafe(GameDirectory.getGameFolderPath());
-		String rslt = ChunkStoriesLauncher.sendPost("http://chunkstories.xyz/api/updater/index.php", "");
-		for (String part : rslt.split(";")) {
+		String remoteHashesText = ChunkStoriesLauncher.sendPost("https://chunkstories.xyz/api/updater/index.php", "");
+		
+		here:
+		for (String part : remoteHashesText.split(";")) {
 			if (part.contains(":")) {
 				String data[] = part.split(":");
-				remoteMap.put(data[0], data[1]);
+				
+				for(String bannedWorld : banned) {
+					if(data[0].startsWith(bannedWorld))
+						continue here;
+				}
+				remoteHashes.put(data[0], data[1]);
 			}
 		}
-		ChunkStoriesLauncher.progress.setMaximum(remoteMap.size());
-		System.out.println(localMap.size() + " files in local map," + remoteMap.size() + " in remote one");
+		
+		//Scale the progress bar to the amount of shit we have to download
+		ChunkStoriesLauncher.progress.setMaximum(remoteHashes.size());
+		System.out.println(localHashes.size() + " local tracked files, " + remoteHashes.size() + " in remote one");
 	}
 
 	public UpdaterThread() {
 
-		String[] ban = { "worlds", "screenshots", "logs", "skyboxscreens" };
+		String[] ban = { "worlds", "screenshots", "logs", "skyboxscreens", "plugins", "mods", "servermods", "config", "res", "lib", "players", "cache" };
 		for (String s : ban)
 			banned.add(s);
 	}
@@ -108,11 +104,7 @@ public class UpdaterThread extends Thread implements ActionListener {
 					dir = "";
 				File f3 = new File(dir + "/" + f2.getName());
 				if (!f3.isDirectory())
-					localMap.put(dir.replace(GameDirectory.getGameFolderPath(), "") + "/" + f2.getName(), getMD5(f3));
-				/*
-				 * if(f2.getName().endsWith(".sector"))
-				 * System.out.println(dir+f2.getName()+":"+getMD5(f3)+":");
-				 */
+					localHashes.put(dir.replace(GameDirectory.getGameFolderPath(), "") + "/" + f2.getName(), getMD5(f3));
 			}
 		}
 	}
@@ -127,13 +119,7 @@ public class UpdaterThread extends Thread implements ActionListener {
 					dir = "";
 				File f3 = new File(dir + "/" + f2.getName());
 				if (!f3.isDirectory())
-					localMap.put(dir.replace(GameDirectory.getGameFolderPath(), "") + "/" + f2.getName(), getMD5(f3));
-				// System.out.println(dir.replace(GameDirectory.getGameFolderPath(),
-				// "")+"/"+f2.getName());
-				/*
-				 * if(f2.getName().endsWith(".sector"))
-				 * System.out.println(dir+f2.getName()+":"+getMD5(f3)+":");
-				 */
+					localHashes.put(dir.replace(GameDirectory.getGameFolderPath(), "") + "/" + f2.getName(), getMD5(f3));
 			}
 		}
 	}
@@ -141,35 +127,29 @@ public class UpdaterThread extends Thread implements ActionListener {
 	public void run() {
 		computeMaps();
 		int i = 0;
-		int initSize = remoteMap.size();
-		/*
-		 * for(String lel : remoteMap.keySet()) { System.out.println(lel+" -> "
-		 * +localMap.get(lel)); }
-		 */
+		int initSize = remoteHashes.size();
+		
 		while (!isDone()) {
-			if (remoteMap.size() == 0)
+			if (remoteHashes.size() == 0)
 				setDone();
 			else {
-				String currentFile = (String) remoteMap.keySet().toArray()[0];
-				ChunkStoriesLauncher.label
-						.setText("Doing " + currentFile + " ( file " + i + " out of " + initSize + " )");
-				// System.out.println(currentFile+":"+localMap.get(2));
-				if (localMap.containsKey("/" + currentFile)) {
-					if (!localMap.get("/" + currentFile).equals(remoteMap.get(currentFile))) {
-						// System.out.println(currentFile+" ->
-						// "+localMap.get("/"+currentFile)+" !=
-						// "+remoteMap.get(currentFile));
+				String currentFile = (String) remoteHashes.keySet().toArray()[0];
+				ChunkStoriesLauncher.label.setText("Doing " + currentFile + " ( file " + i + " out of " + initSize + " )");
+				
+				if (localHashes.containsKey("/" + currentFile)) {
+					if (!localHashes.get("/" + currentFile).equals(remoteHashes.get(currentFile))) {
+						
 						downloadFile(currentFile);
 					} else
 						ChunkStoriesLauncher.label.setText("File " + currentFile + " already ok.");
-					remoteMap.remove(currentFile);
+					remoteHashes.remove(currentFile);
 				} else
 					downloadFile(currentFile);
 				i++;
 				ChunkStoriesLauncher.progress.setValue(i);
 			}
 		}
-		ChunkStoriesLauncher.label.setText("Game updated to " + ChunkStoriesLauncher.lastVersion + " !");
+		ChunkStoriesLauncher.label.setText("Game updated to " + ChunkStoriesLauncher.latestVersion.version + " !");
 	}
 
 	private void downloadFile(String file) {
@@ -179,7 +159,7 @@ public class UpdaterThread extends Thread implements ActionListener {
 		try {
 			int size = 0;
 			int dled = 0;
-			URL url = new URL("http://chunkstories.xyz/api/updater/current/" + file.replace(" ", "%20"));
+			URL url = new URL("https://chunkstories.xyz/api/updater/current/" + file.replace(" ", "%20"));
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 			conn.setRequestMethod("HEAD");
 			conn.getInputStream();
@@ -205,7 +185,7 @@ public class UpdaterThread extends Thread implements ActionListener {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		remoteMap.remove(file);
+		remoteHashes.remove(file);
 	}
 
 	private synchronized boolean isDone() {

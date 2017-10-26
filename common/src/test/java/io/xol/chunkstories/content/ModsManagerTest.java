@@ -16,10 +16,13 @@ import io.xol.chunkstories.content.ModsManagerImplementation.NonExistentCoreCont
 
 public class ModsManagerTest {
 	
-	@Test public void testModsManager()
+	@Test 
+	public void testModsManager()
 	{
+		String coreContentLocation = System.getProperty("coreContentLocation", "../chunkstories-core/build/distributions/core_content.zip");
+		
 		try {
-			ModsManager modsManager = new ModsManagerImplementation(new File("core_content.zip"));
+			ModsManager modsManager = new ModsManagerImplementation(new File(coreContentLocation));
 			modsManager.loadEnabledMods();
 		} catch (NonExistentCoreContent e) {
 			e.printStackTrace();
@@ -27,7 +30,5 @@ public class ModsManagerTest {
 		} catch (NotAllModsLoadedException e) {
 			e.printStackTrace();
 		}
-		
-		
 	}
 }

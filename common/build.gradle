@@ -12,14 +12,24 @@ configurations {
 }
 
 dependencies {
-	//api project(':core')
-	//No longer dependant on that, instead see below
+	//We need the core content distribution zip to be able to run the game !!!
+	coreContent group: 'io.xol.chunkstories', name: 'core', version: contentRevisionBuiltAgainst, ext: 'zip'
 }
 
-dependencies {
-	coreContent group: 'io.xol.chunkstories', name: 'core', version: contentRevisionBuiltAgainst, ext: 'zip'
-	//compile group: 'io.xol.chunkstories', name: 'core', version: contentRevisionBuiltAgainst, ext: 'jar'
+test {
+	workingDir = rootProject.projectDir
+	testLogging {
+        events "passed", "skipped", "failed", "standardOut", "standardError"
+    }
+	
+	//We provide the tests the core content location !
+	dependsOn ':common:setupContentLocation'
+	doFirst {
+		systemProperty 'coreContentLocation', rootProject.ext.actualContentLocation
+		println rootProject.ext.actualContentLocation
+	}
 }
+
 
 task setupContentLocation() {
 	String actualContentLocation;

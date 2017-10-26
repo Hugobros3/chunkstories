@@ -439,6 +439,7 @@ public class ChunkHolderImplementation implements ChunkHolder
 		loadConstructors();
 	}
 	
+	@SuppressWarnings("unchecked")
 	private static void loadConstructors() {
 		try {
 			//We don't use mod loading code on purpose

@@ -10,7 +10,6 @@ import io.xol.chunkstories.api.Content.EntityTypes;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityType;
 import io.xol.chunkstories.api.exceptions.content.IllegalEntityDeclarationException;
-import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.entity.EntityTypesStore;
 import io.xol.chunkstories.materials.GenericNamedConfigurable;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;

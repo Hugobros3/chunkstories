@@ -35,10 +35,22 @@ public class ChunkStoriesLauncher{
 	public static JProgressBar progress = new JProgressBar();
 	static UpdaterThread thread = new UpdaterThread();
 	
-	public static String version = "";
-	public static String lastVersion = "";
+	public static VersionFile localVersion;
+	public static VersionFile latestVersion;
+	//public static String version = "";
+	//public static String lastVersion = "";
 	
 	public static JEditorPane browser = new JEditorPane();
+
+	private static String launcherVersion() {
+		
+		//If compiled jar, it has this
+		String ver = ChunkStoriesLauncher.class.getPackage().getImplementationVersion();
+		if(ver != null)
+			return ver;
+		
+		return "[local build]";
+	}
 	
 	public static void main(String[] args) {
 		panel = new JPanelBackground();
@@ -48,7 +60,7 @@ public class ChunkStoriesLauncher{
 		JFrame window = new JFrame();
 		//window.setUndecorated(true); // Remove title bar
 		window.setSize(720, 480);
-		window.setTitle("Chunk Stories Launcher 1.1");
+		window.setTitle("Chunk Stories Launcher " + launcherVersion());
 		window.setLocationRelativeTo(null);
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		window.setContentPane(panel);
@@ -75,8 +87,6 @@ public class ChunkStoriesLauncher{
         scrollPane.setBorder(null);
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setBounds(0, 0, 720-8, 360);
-		//browser.addHyperlinkListener(null);
-
 		
 		panel.add(update);
 		update.setBounds(590, 360+12+8, 112, 24);

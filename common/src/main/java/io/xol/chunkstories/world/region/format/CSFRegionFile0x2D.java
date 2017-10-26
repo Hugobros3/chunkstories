@@ -21,6 +21,7 @@ public class CSFRegionFile0x2D extends CSFRegionFile
 
 	static final int air_chunk_magic_number = 0xFFFFFFFF;
 	
+	@SuppressWarnings("unused")
 	public void load(DataInputStream in) throws IOException
 	{	
 		try {

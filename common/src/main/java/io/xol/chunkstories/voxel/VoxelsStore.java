@@ -79,6 +79,7 @@ public class VoxelsStore implements ClientContent.ClientVoxels
 		this.reloadVoxelTypes();
 	}
 	
+	@SuppressWarnings("unchecked")
 	private void reloadVoxelTypes()
 	{
 		//Discard previous voxels

@@ -57,7 +57,9 @@ public class GameLauncher implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent ee) {
 		try {
-			Process process = Runtime.getRuntime().exec("java -Xmx1200M -jar chunkstories.jar", null,
+			//TODO make it configurable
+			//TODO mod support
+			Process process = Runtime.getRuntime().exec("java -Xmx1500M -jar chunkstories.jar", null,
 					new File(GameDirectory.getGameFolderPath()));
 
 			Calendar cal = Calendar.getInstance();
@@ -99,12 +101,11 @@ public class GameLauncher implements ActionListener {
 			if (exitVal != 0) {
 				int dialogButton = JOptionPane.YES_NO_OPTION;
 				int dialogResult = JOptionPane.showConfirmDialog(null,
-						"The game crashed (exitval=" + exitVal
-								+ "), do you want to upload the log ? It surely will help us figure out where it went wrong.",
+						"The game crashed (exitval=" + exitVal + "), do you want to upload the log ? It surely will help us figure out where it went wrong.",
 						"The game crashed x_x", dialogButton);
 				if (dialogResult == JOptionPane.YES_OPTION) {
 
-					Thread thread = new ReportThread("launcher-crash", launcherLog, null, null);
+					Thread thread = new ReportThread("launcher-crash", launcherLog, null);
 					thread.start();
 
 					try {

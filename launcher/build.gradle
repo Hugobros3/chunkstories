@@ -6,7 +6,7 @@ apply plugin: 'java'
 // Apply the application plugin to add support for building an application
 apply plugin: 'application'
 
-version = '1.1'
+version = '1.2'
 description = 'Game launcher & updater'
 
 buildscript {
@@ -28,6 +28,16 @@ mainClassName = 'io.xol.chunkstories.updater.ChunkStoriesLauncher'
 dependencies {
     //compile project(':core')
     compile project(':common')
+    testCompile 'junit:junit:4.12'
+}
+
+test {
+	workingDir = rootProject.projectDir
+	testLogging {
+        events "passed", "skipped", "failed", "standardOut", "standardError"
+    }
+	
+	dependsOn ':versionTxt'
 }
 
 jar {

@@ -2,7 +2,6 @@ package io.xol.chunkstories.renderer.decals;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
 
 import org.joml.Vector4f;
 

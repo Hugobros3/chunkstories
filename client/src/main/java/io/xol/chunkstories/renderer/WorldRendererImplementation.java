@@ -39,7 +39,6 @@ import io.xol.chunkstories.renderer.sky.DefaultSkyRenderer;
 import io.xol.chunkstories.renderer.terrain.FarTerrainMeshRenderer;
 import io.xol.chunkstories.renderer.terrain.FarTerrainNoMeshRenderer;
 import io.xol.chunkstories.renderer.terrain.SummariesArrayTexture;
-import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldClientCommon;
 import io.xol.engine.graphics.fbo.FrameBufferObjectGL;
 import io.xol.engine.graphics.textures.CubemapGL;
