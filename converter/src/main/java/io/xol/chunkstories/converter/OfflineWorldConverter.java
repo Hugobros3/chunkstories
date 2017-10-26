@@ -379,8 +379,8 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser
 													}
 												}
 
-										//Converts external data such as signs
-										SpecialBlocksHandler.processAdditionalStuff(minecraftChunk, csWorld, chunkStoriesCurrentChunkX, 0, chunkStoriesCurrentChunkZ);
+										// Converts external data such as signs
+										// SpecialBlocksHandler.processAdditionalStuff(minecraftChunk, csWorld, chunkStoriesCurrentChunkX, 0, chunkStoriesCurrentChunkZ);
 									}
 								}
 								catch (Exception e)

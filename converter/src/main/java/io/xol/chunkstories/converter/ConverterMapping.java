@@ -13,9 +13,6 @@ import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.chunk.Chunk;
-import io.xol.chunkstories.core.voxel.VoxelChest;
-import io.xol.chunkstories.core.voxel.VoxelDoor;
-import io.xol.chunkstories.core.voxel.VoxelSign;
 
 /** Maps minecraft ids to chunkstories's */
 public class ConverterMapping {
@@ -68,7 +65,7 @@ public class ConverterMapping {
 					Mapper mapper;
 					if(special == null) {
 						mapper = new TrivialMapper(voxel, chunkStoriesMeta);
-					} else if(special.equals("keepmeta")) {
+					} /*else if(special.equals("keepmeta")) {
 						mapper = new KeepMeta(voxel);
 					} else if(special.equals("slab")) {
 						mapper = new Slab(voxel);
@@ -78,7 +75,7 @@ public class ConverterMapping {
 						mapper = new Sign(voxel);
 					} else if(special.equals("chest")) {
 						mapper = new Chest(voxel);
-					} else {
+					} */else {
 						System.out.println("Error: mapper '"+special+"' was not recognised.");
 						System.out.println("Skipping line : '"+line+"'.");
 						continue;
@@ -172,7 +169,7 @@ public class ConverterMapping {
 		abstract void output(World csWorld, int csX, int csY, int csZ, int minecraftBlockId, int minecraftMetaData, MinecraftRegion region, int minecraftCuurrentChunkXinsideRegion, int minecraftCuurrentChunkZinsideRegion, int x, int y, int z);
 	}
 	
-	class Door extends NonTrivialMapper {
+	/*class Door extends NonTrivialMapper {
 
 		Door(Voxel voxel) {
 			super(voxel);
@@ -197,17 +194,6 @@ public class ConverterMapping {
 				
 				int direction = minecraftMetaData & 0x3;
 				int baked = VoxelFormat.format(voxelID, VoxelDoor.computeMeta(open == 1, hingeSide == 1, VoxelSides.getSideMcDoor(direction)), 0, 0);
-				
-				/*if (voxel instanceof VoxelDoor)
-					try {
-						//baked = ((VoxelDoor) voxel).onPlace(chunk.peek(csX, csY, csZ), baked, null);
-					} catch (WorldException e) {
-						
-						e.printStackTrace();
-						return;
-					}
-				else
-					System.out.println("fuck you 666");*/
 				
 				csWorld.pokeSimpleSilently(csX, csY, csZ, baked);
 
@@ -297,5 +283,5 @@ public class ConverterMapping {
 				System.out.println("fuck you 666");
 		}
 		
-	}
+	}*/
 }

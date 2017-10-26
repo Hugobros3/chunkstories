@@ -7,13 +7,9 @@ import io.xol.chunkstories.anvil.nbt.NBTList;
 import io.xol.chunkstories.anvil.nbt.NBTString;
 import io.xol.chunkstories.anvil.nbt.NBTInt;
 import io.xol.chunkstories.anvil.nbt.NBTag;
-import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.components.VoxelComponent;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.Chunk.ChunkVoxelContext;
-import io.xol.chunkstories.core.voxel.VoxelSign;
-import io.xol.chunkstories.core.voxel.components.VoxelComponentSignText;
-import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldImplementation;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -22,7 +18,7 @@ import io.xol.chunkstories.world.WorldImplementation;
 
 public class SpecialBlocksHandler {
 
-	public static void processAdditionalStuff(MinecraftChunk minecraftChunk, WorldImplementation exported,
+	/*public static void processAdditionalStuff(MinecraftChunk minecraftChunk, WorldImplementation exported,
 			int csBaseX, int csBaseY, int csBaseZ) {
 		
 		NBTCompound root = minecraftChunk.getRootTag();
@@ -85,6 +81,6 @@ public class SpecialBlocksHandler {
 				//	System.out.println("Found "+entityId.data);
 			}
 		}
-	}
+	}*/
 
 }

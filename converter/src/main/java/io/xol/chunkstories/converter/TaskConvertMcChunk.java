@@ -113,28 +113,11 @@ public class TaskConvertMcChunk extends Task {
 										}
 									}
 									
-									
-									/*int dataToSet = quickConversion[mcId * 16 + meta];//IDsConverter.getChunkStoriesIdFromMinecraft(mcId, meta);
-									if (dataToSet == -2)
-										dataToSet = IDsConverter.getChunkStoriesIdFromMinecraftComplex(mcId, meta, minecraftRegion, minecraftCurrentChunkXinsideRegion, minecraftCuurrentChunkZinsideRegion, x, y, z);
-
-									if (dataToSet != -1)
-									{
-										Voxel voxel = VoxelsStore.get().getVoxelById(dataToSet);
-
-										//Optionally runs whatever the voxel requires to run when placed (kof kof .. doors )
-										if (voxel instanceof VoxelLogic)
-											dataToSet = ((VoxelLogic) voxel).onPlace(csWorld, chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, dataToSet, null);
-
-										//Don't bother for nothing
-										if (dataToSet != -1)
-											csWorld.setVoxelDataWithoutUpdates(chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, dataToSet);
-									}*/
 								}
 							}
 
 					//Converts external data such as signs
-					SpecialBlocksHandler.processAdditionalStuff(minecraftChunk, csWorld, chunkStoriesCurrentChunkX, 0, chunkStoriesCurrentChunkZ);
+					//SpecialBlocksHandler.processAdditionalStuff(minecraftChunk, csWorld, chunkStoriesCurrentChunkX, 0, chunkStoriesCurrentChunkZ);
 				}
 			}
 			catch (Exception e)
@@ -142,20 +125,6 @@ public class TaskConvertMcChunk extends Task {
 				cwt.converter().verbose("Issue with chunk " + minecraftCurrentChunkXinsideRegion + " " + minecraftCuurrentChunkZinsideRegion + " of region " + minecraftRegionX + " " + minecraftRegionZ + ".");
 				e.printStackTrace();
 			}
-
-			//Display progress
-			/*minecraftChunksImported++;
-			if (Math.floor(((double) minecraftChunksImported / (double) minecraftChunksToImport) * 100) > completion)
-			{
-				completion = Math.floor(((double) minecraftChunksImported / (double) minecraftChunksToImport) * 100);
-
-				if (completion >= 100.0 || (System.currentTimeMillis() - lastPercentageShow > 5000))
-				{
-					verbose(completion + "% ... (" + csWorld.getRegionsHolder().countChunks() + " chunks loaded ) using " + Runtime.getRuntime().freeMemory() / 1024 / 1024 + "/" + Runtime.getRuntime().maxMemory() / 1024 / 1024
-							+ "Mb ");
-					lastPercentageShow = System.currentTimeMillis();
-				}
-			}*/
 		}
 		
 		return true;
