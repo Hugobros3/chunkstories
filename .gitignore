@@ -26,6 +26,7 @@ bin/
 *.class
 scripts/
 *.bat
+version.txt
 
 _Random utility/built jars no one cares about_
 counter.jar

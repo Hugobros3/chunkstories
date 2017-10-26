@@ -3,7 +3,10 @@
  *
  * Messy file, lots of plugins used. Applies a few of those to the subprojects
  */
-allprojects {
+
+import java.text.SimpleDateFormat
+
+subprojects {
 	repositories {
 		mavenLocal()
 		mavenCentral()
@@ -24,6 +27,20 @@ allprojects {
 			}
 	}
 }
+
+buildscript {
+	repositories {
+		maven {
+			url "https://plugins.gradle.org/m2/"
+		}
+	}
+	dependencies {
+		classpath "org.ajoberstar:grgit:2.1.0"
+	}
+}
+
+apply plugin: "org.ajoberstar.grgit"
+import org.ajoberstar.grgit.Grgit
 
 //version = '2017.09.23'
 version = 'Alpha1.0rc6'
@@ -48,6 +65,8 @@ task buildAll {
 	dependsOn ':common:jar'
 
 	dependsOn ':launcher:createExe'
+	
+	dependsOn ':versionTxt'
 }
 
 // Uploads all of the relevant artifacts to the Maven repo
@@ -56,6 +75,15 @@ task uploadAll {
 	dependsOn ':server:uploadShadow'
 	
 	dependsOn ':common:uploadArchives'
+}
+
+task versionTxt() << {
+    def file = new File("$projectDir/version.txt")
+    file.createNewFile()
+    file.text = """version: $version
+commit: ${Grgit.open(dir: '.').head().id}
+buildtime: ${new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(new Date())}
+"""
 }
 
 repositories {
