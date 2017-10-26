@@ -15,6 +15,8 @@ import static org.lwjgl.opengl.GL13.*;
 
 import static org.lwjgl.glfw.GLFW.*;
 
+import static org.lwjgl.system.MemoryUtil.*;
+
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -149,7 +151,7 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 			
 			glfwWindowHandle = glfwCreateWindow(windowWidth, windowHeight, windowName, 0, 0);
 			
-			if(glfwWindowHandle == 0) 
+			if(glfwWindowHandle == NULL) 
 			    throw new RuntimeException("Failed to create window");
 			
 			glfwMakeContextCurrent(glfwWindowHandle);
@@ -316,21 +318,14 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 		if (glVersionf < 3.3f)
 		{
 			RenderingConfig.gl_openGL3Capable = false;
-			/*if (GL.getCapabilities().GL_EXT_framebuffer_object && GL.getCapabilities().GL_ARB_texture_rg)
-			{
-				RenderingConfig.gl_fbExtCapable = true;
-				ChunkStoriesLoggerImplementation.getInstance().log("Pre-OpenGL 3.0 Hardware with needed extensions support detected.");
-			}
-			else*/
-			{
-				// bien le moyen-Ã¢ge ?
-				ChunkStoriesLoggerImplementation.getInstance().log("Pre-OpenGL 3.3 Hardware detected.");
-				ChunkStoriesLoggerImplementation.getInstance().log("This game isn't made to run in those conditions, please update your drivers or upgrade your graphics card.");
-				JOptionPane.showMessageDialog(null, "Pre-OpenGL 3.0 Hardware without needed extensions support detected.\n" + "This game isn't made to run in those conditions, please update your drivers or upgrade your graphics card.");
-				// If you feel brave after all
-				if (!RenderingConfig.ignoreObsoleteHardware)
-					Runtime.getRuntime().exit(0);
-			}
+			
+			// bien le moyen-âge ?
+			ChunkStoriesLoggerImplementation.getInstance().log("Pre-OpenGL 3.3 Hardware detected.");
+			ChunkStoriesLoggerImplementation.getInstance().log("This game isn't made to run in those conditions, please update your drivers or upgrade your graphics card.");
+			JOptionPane.showMessageDialog(null, "Pre-OpenGL 3.0 Hardware without needed extensions support detected.\n" + "This game isn't made to run in those conditions, please update your drivers or upgrade your graphics card.");
+			// If you feel brave after all
+			if (!RenderingConfig.ignoreObsoleteHardware)
+				Runtime.getRuntime().exit(0);
 		}
 		else
 			ChunkStoriesLoggerImplementation.getInstance().log("OpenGL 3.3+ Hardware detected OK!");

@@ -1,9 +1,9 @@
 # Chunk Stories
-## A Moddable voxel game 
+## A Moddable voxel game  engine
 
-Chunk Stories is a fully-featured voxel game engine written in Java, aiming to replace Minecraft as a modding framework to build total conversions on. It features almost everything the original game could do, but is built in a modular and open fashion so as to accept modifications naturally and hassle-free.
+Chunk Stories is a fully-featured voxel game engine written in Java, aiming to replace Minecraft as a modding framework to build mods and total conversions on. It features almost everything the original game could do, but is built in a modular and open fashion so as to accept modifications naturally and hassle-free.
 
-It features an API, an implementation of that API in the form of client and server executables and everything else is merely mods loaded at runtime. For convinience, a base mod called "core_content" is provided to give content creators a solid base upon which to build the gamemode of their dreams.
+It features an API, an implementation of that API in the form of client and server executables and everything else is merely mods loaded at runtime. A base mod called "core" is bundled to give content creators a solid base upon which to build the gamemode of their dreams.
 
 #### Why yet another clone ?
 
@@ -15,25 +15,32 @@ For the author, Chunk Stories is and always has been a side project, made for fu
 
 Chunk Stories is written in Java 8, using LWJGL3 as it's OpenGL wrapper. It uses Gradle in it's wrapper fashion to automate the build process, JOML for mathematical functions, lz4 for chunk compression, jansi for console coloring, for the full list of librairies used, see CREDITS.
 
-Some of the things Chunk Stories is able to do:
+Here's a bullet points list:
 
- * Fully configurable Voxels, Entities, Items, Packets, Particles and GUI sub-systems
- * Mods can redefine basically any element of the game, and can include custom code that is hotloaded at runtime.
- * A bukkit-inspired plugin system
- * A modern OpenGL 3.3+ renderer, supporting custom shaders and looks like it was made this decade
- * Support for hot-downloading mods upon server connection
- * A Minecraft map importer
+ * Configuration files allow to redefine almost anything using a simplistic syntax
+ * Customizable network packets, world generation, inputs, GUI*, fonts, localization, ...
+ * Up to 65536 voxel types, with 8-bit metadata and support for [even more data](http://chunkstories.xyz/wiki)
+ * Support for items that take up more than 1 slot
+ * Component-based entity system
+ * Self-wrapping worlds built out of cubical 32³ chunks, (un)loaded explicitly by reference counting
+ * Heightmap summaries for far terrain rendering up to 1km
+ * Modern-ish renderer in GL3.3 core, supporting deffered rendering, hotloading shaders, instanced rendering, particles, SSR, bloom, you name it
+ * Skeleton-based animation system with hitboxes
+ * Support for basically loading everything at runtime, including downloading on server connection
+ * Works on Windows and Linux ( osx may work but unsupported )
+
+\* some stuff *might* not be quite done right now
 
 ### Building & Eclipse setup
 
-####Working on the core engine
+####Working on the core engine *(select contributors only)*
 Clone the `chunkstories` repo and run `gradlew buildAll` ( `./gradlew buildAll`on unixes ). 
-`gradlew client:run`and `gradlew server:run`respectively will compile and launch an up-to-date client or server.
+`gradlew client:run`and `gradlew server:run`respectively will compile and launch an up-to-date client or server. The build script takes care of setting up the right arguments for you.
 
 Using Eclipse, do `Import->Gradle Project` and select the directory where you cloned chunkstories in, wait for it to rebuild the project and then you can create a new launch configuration. For the game to work properly, you must set the work directory to the root 'chunkstories' project, use `--dir=.` to tell the game to use the local directory and not .chunkstories, and finally you must use `--core=path/to/core_content.zip` to point to the directory or zipfile containing the base content you wish to use.
 
 ####Modifying the core content
-Clone the `chunkstories-core` repo and run `gradlew install` ( `./gradlew install`on unixes ). This will build you a copy of the latest official content in `build/distributions/core_content.zip`as well as updating the `res/` folder in the root of the project to include the build .jars, meaning you can use that directory instead of the zipfile when working on your content to iterate quickly.
+Clone the `chunkstories-core` repo and run `gradlew install` ( `./gradlew install`on unixes ). This will build you a copy of the latest official content in `build/distributions/core_content.zip`as well as updating the `res/` folder in the root of the project to include the built .jars, meaning you can use that directory instead of the zipfile when working on your content to iterate quickly.
 
 #### Modifiying the API
 Clone the `chunkstories-api` repo and run `gradlew install` ( `./gradlew install`on unixes ). This will build you a copy of the latest API
@@ -46,6 +53,11 @@ Clone the `chunkstories-template`repo and check out the instructions. It comes w
 
 You did not quite come to the right place for this. If you're just interested in playing Chunk Stories, you should check out the [Official Website](https://chunkstories.xyz)
 
-### Licensing (wip, ignore)
+### Licensing
 
-This project was entirely developed by Hugo "Gobrosse" Devillers on his spare time. The API is licensed under -, meaning anyone can do whatever the fuck they want with it. The core content **code** is released under - too, under the assumption that people won't be morons about it and will learn from it. The core content **assets** that aren't specified otherwise in ATTRIBUTION.md are released under Creative Commons NON-COMMERCIAL ATTRIBUTION REDISTRIBUABLE, meaning you can use them with your mods, hack them up and have fun, but you can't use them in commercial projects nor claim you made them. The implementation code remains strictly private for the moment.
+This project was entirely developed by Hugo "Gobrosse" Devillers on his spare time. The API is licensed under -, meaning anyone can do whatever the fuck they want with it. 
+
+The core content **code** is released under - too, under the assumption that people won't be morons about it and will learn from it. 
+The core content **assets** that aren't specified otherwise in ATTRIBUTION.md are released under Creative Commons NON-COMMERCIAL ATTRIBUTION REDISTRIBUABLE, meaning you can use them with your mods, hack them up and have fun, but you can't use them in commercial projects nor claim you made them. 
+
+The implementation code remains private for the moment. It's not as clean, features angry french curse words, bloated build scripts and maybe even an evil bitcoin miner. Maybe not. I'm actually mostly cool with showing the code, but letting people lead my project in another direction isn't what I want, and publishing on github would distract me while not bringing anything to the table. This can of course change once I no longer work on this project "full-free-time"

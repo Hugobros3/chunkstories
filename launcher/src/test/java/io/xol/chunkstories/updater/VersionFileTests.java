@@ -30,7 +30,7 @@ public class VersionFileTests {
 		assertFalse(loaded.version.equals("unknown"));
 		
 		try {
-			VersionFile loadedFromOnline = VersionFile.loadFromOnline();
+			VersionFile.loadFromOnline();
 		} catch(IOException e) {
 			e.printStackTrace();
 			fail();

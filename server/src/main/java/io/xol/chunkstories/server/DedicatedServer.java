@@ -19,7 +19,6 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.server.DedicatedServerInterface;
 import io.xol.chunkstories.api.server.PermissionsManager;
-import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.api.server.UserPrivileges;
 import io.xol.chunkstories.api.util.ChunkStoriesLogger;
 import io.xol.chunkstories.api.util.IterableIterator;
