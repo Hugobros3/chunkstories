@@ -37,8 +37,6 @@ public class ChunkStoriesLauncher{
 	
 	public static VersionFile localVersion;
 	public static VersionFile latestVersion;
-	//public static String version = "";
-	//public static String lastVersion = "";
 	
 	public static JEditorPane browser = new JEditorPane();
 

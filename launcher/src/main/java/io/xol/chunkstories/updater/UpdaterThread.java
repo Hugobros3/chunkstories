@@ -86,7 +86,6 @@ public class UpdaterThread extends Thread implements ActionListener {
 	}
 
 	public UpdaterThread() {
-
 		String[] ban = { "worlds", "screenshots", "logs", "skyboxscreens", "plugins", "mods", "servermods", "config", "res", "lib", "players", "cache" };
 		for (String s : ban)
 			banned.add(s);
@@ -177,8 +176,7 @@ public class UpdaterThread extends Thread implements ActionListener {
 			while ((count = in.read(data, 0, 1024)) != -1) {
 				fout.write(data, 0, count);
 				dled += count;
-				ChunkStoriesLauncher.progress
-						.setString("Downloading " + file + " " + dled / 1000 + "/" + size / 1000 + "kb");
+				ChunkStoriesLauncher.progress.setString("Downloading " + file + " " + dled / 1000 + "/" + size / 1000 + "kb");
 			}
 			in.close();
 			fout.close();
