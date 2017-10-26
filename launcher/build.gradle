@@ -32,7 +32,10 @@ dependencies {
 
 jar {
 	archivesBaseName = 'launcher'
+	baseName = 'launcher'
 	
+	archiveName = "${jar.baseName}.${jar.extension}"
+
 	manifest {
 		attributes  'Implementation-Title': 'Chunk Stories Launcher',
 					'Implementation-Version': version,
