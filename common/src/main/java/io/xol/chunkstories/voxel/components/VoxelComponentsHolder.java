@@ -1,6 +1,7 @@
 package io.xol.chunkstories.voxel.components;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -65,6 +66,19 @@ public class VoxelComponentsHolder implements VoxelComponents {
 	@Override
 	public IterableIterator<Entry<String, VoxelComponent>> all() {
 		return new IterableIteratorWrapper<Entry<String, VoxelComponent>>(map.entrySet().iterator());
+	}
+
+	@Override
+	public String name(VoxelComponent component) {
+		//Reverse lookup
+		Iterator<Entry<String, VoxelComponent>> i = this.map.entrySet().iterator();
+		while(i.hasNext()) {
+			Entry<String, VoxelComponent> e = i.next();
+			if(e.getValue() == component)
+				return e.getKey();
+		}
+		
+		return null;
 	}
 
 }

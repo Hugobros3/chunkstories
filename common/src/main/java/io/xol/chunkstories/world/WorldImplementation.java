@@ -406,14 +406,14 @@ public abstract class WorldImplementation implements World
 	}*/
 	
 	@Override
-	public WorldVoxelContext peek(Vector3dc location) throws WorldException
+	public ChunkVoxelContext peek(Vector3dc location) throws WorldException
 	{
 		return peek((int) (double) location.x(), (int) (double) location.y(), (int) (double) location.z());
 	}
 	
 	@Override
 	/** Fancy get method that throws exceptions when the world isn't loaded */
-	public WorldVoxelContext peek(int x, int y, int z) throws WorldException {
+	public ChunkVoxelContext peek(int x, int y, int z) throws WorldException {
 		x = sanitizeHorizontalCoordinate(x);
 		y = sanitizeVerticalCoordinate(y);
 		z = sanitizeHorizontalCoordinate(z);
