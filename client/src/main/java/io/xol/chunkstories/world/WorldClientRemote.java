@@ -27,7 +27,7 @@ public class WorldClientRemote extends WorldClientCommon implements WorldClientN
 		this.connection = connection;
 		this.packetsProcessor = connection.getPacketsProcessor();
 
-		mpIOHandler = new IOTasksMultiplayerClient(this, connection);
+		mpIOHandler = new IOTasksMultiplayerClient(this);
 		
 		ioHandler = mpIOHandler;
 		ioHandler.start();
@@ -60,8 +60,6 @@ public class WorldClientRemote extends WorldClientCommon implements WorldClientN
 	public void tick() {
 		
 		//Specific MP stuff
-		getClient().getPlayer().updateUsedWorldBits();
-		
 		processIncommingPackets();
 		getConnection().flush();
 		

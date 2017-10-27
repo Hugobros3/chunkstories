@@ -59,9 +59,14 @@ public abstract class WorldClientCommon extends WorldImplementation implements W
 	{
 		super.tick();
 
+		//Update used map bits
+		getClient().getPlayer().loadingAgent.updateUsedWorldBits();
+		
+		//Update world timing graph
 		WorldLogicTimeRenderer.tickWorld();
 		
-		this.getWorldRenderer().getWorldEffectsRenderer().tick();
+		//Update world effects
+		getWorldRenderer().getWorldEffectsRenderer().tick();
 
 		//Update particles subsystem if it exists
 		if (getParticlesManager() != null && getParticlesManager() instanceof ClientParticlesRenderer)

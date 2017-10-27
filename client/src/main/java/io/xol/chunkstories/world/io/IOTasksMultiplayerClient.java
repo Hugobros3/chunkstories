@@ -7,13 +7,15 @@ import java.security.NoSuchAlgorithmException;
 
 import io.xol.chunkstories.api.exceptions.net.IllegalPacketException;
 import io.xol.chunkstories.api.net.PacketWorldStreaming;
+import io.xol.chunkstories.api.net.packets.PacketWorldUser;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.workers.TaskExecutor;
+import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ClientConnection;
 import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
 import io.xol.chunkstories.net.packets.PacketRegionSummary;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
-import io.xol.chunkstories.world.WorldImplementation;
+import io.xol.chunkstories.world.WorldClientRemote;
 import io.xol.chunkstories.world.region.RegionImplementation;
 import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
@@ -25,13 +27,14 @@ import io.xol.engine.concurrency.SimpleFence;
 
 public class IOTasksMultiplayerClient extends IOTasks
 {
+	Client client;
 	ClientConnection connection;
 	
-	public IOTasksMultiplayerClient(WorldImplementation world, ClientConnection connection)
+	public IOTasksMultiplayerClient(WorldClientRemote world)
 	{
 		super(world);
-		this.connection = connection;
-		
+		this.connection = world.getConnection();
+		this.client = world.getClient();
 		
 		try
 		{
@@ -251,15 +254,15 @@ public class IOTasksMultiplayerClient extends IOTasks
 	public void handlePacketWorldStreaming(PacketWorldStreaming packet) throws IllegalPacketException {
 		
 		//Region summaries
-		if(packet instanceof PacketRegionSummary)
+		if(packet instanceof PacketRegionSummary) {
 			this.requestRegionSummaryProcess((PacketRegionSummary) packet);
-		
 		//Chunk data
-		else if(packet instanceof PacketChunkCompressedData) {
+		} else if(packet instanceof PacketChunkCompressedData) {
 			RegionImplementation region = world.getRegionChunkCoordinates(((PacketChunkCompressedData) packet).x, ((PacketChunkCompressedData) packet).y, ((PacketChunkCompressedData) packet).z);
 			assert region != null;
 			region.getChunkHolder(((PacketChunkCompressedData) packet).x, ((PacketChunkCompressedData) packet).y, ((PacketChunkCompressedData) packet).z).createChunk(((PacketChunkCompressedData) packet).data);
-			//this.requestChunkCompressedDataProcess((PacketChunkCompressedData) packet);
+		} else if(packet instanceof PacketWorldUser) {
+			client.getPlayer().loadingAgent.handleServerResponse((PacketWorldUser) packet);
 		}
 		
 		//Else

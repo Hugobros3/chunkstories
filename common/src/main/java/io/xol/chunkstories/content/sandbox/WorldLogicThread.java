@@ -91,7 +91,8 @@ public class WorldLogicThread extends Thread implements GameLogic
 			lastTimeNs = System.nanoTime();
 			
 			//Updates controller/s views
-			if(world instanceof WorldMaster)
+			
+			/*if(world instanceof WorldMaster)
 			{
 				Iterator<Player> i = ((WorldMaster)world).getPlayers();
 				while(i.hasNext())
@@ -101,7 +102,8 @@ public class WorldLogicThread extends Thread implements GameLogic
 				}
 			}
 			else if(world instanceof WorldClient)
-				((WorldClient) world).getClient().getPlayer().updateUsedWorldBits();
+				((WorldClient) world).getClient().getPlayer().updateUsedWorldBits();*/
+			
 			//nanoCheckStep(1, "World bits");
 			
 			//Processes incomming pending packets in synch with game logic and flush outgoing ones

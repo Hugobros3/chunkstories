@@ -40,12 +40,6 @@ public class WorldClientLocal extends WorldClientCommon implements WorldMaster
 
 	@Override
 	public void tick() {
-		Iterator<Player> i = getPlayers();
-		while(i.hasNext())
-		{
-			Player p = i.next();
-			p.updateUsedWorldBits();
-		}
 		//TODO: processIncommingPackets();
 		//TODO: flush all
 		super.tick();

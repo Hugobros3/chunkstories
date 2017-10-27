@@ -19,7 +19,6 @@ import io.xol.chunkstories.api.client.ClientSoundManager;
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.particles.ParticlesManager;
-import io.xol.chunkstories.api.player.PlayerClient;
 import io.xol.chunkstories.api.plugin.ClientPluginManager;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.util.ChunkStoriesLogger;
@@ -63,7 +62,7 @@ public class Client implements ClientInterface
 	
 	//Gameplay data
 	private WorldClientCommon world;
-	private PlayerClient clientSideController;
+	private PlayerClientImplementation player;
 
 	private final ClientTasksPool workers;
 
@@ -284,9 +283,9 @@ public class Client implements ClientInterface
 	}
 
 	@Override
-	public PlayerClient getPlayer()
+	public PlayerClientImplementation getPlayer()
 	{
-		return clientSideController;
+		return player;
 	}
 
 	@Override
@@ -306,7 +305,7 @@ public class Client implements ClientInterface
 			{
 				//Setup the new world and make a controller for it
 				Client.this.world = world;
-				clientSideController = new ClientWorldController(Client.this, world);
+				player = new PlayerClientImplementation(Client.this, world);
 
 				//Change the scene
 				Ingame ingameScene = new Ingame(gameWindow, world);
@@ -358,7 +357,7 @@ public class Client implements ClientInterface
 					Client.this.world.destroy();
 					Client.this.world = null;
 				}
-				clientSideController = null;
+				player = null;
 				
 				Client.this.getSoundManager().stopAnySound();
 			}
@@ -379,7 +378,7 @@ public class Client implements ClientInterface
 					Client.this.world.destroy();
 					Client.this.world = null;
 				}
-				clientSideController = null;
+				player = null;
 				
 				Client.this.getSoundManager().stopAnySound();
 			}
@@ -411,16 +410,12 @@ public class Client implements ClientInterface
 	@Override
 	public ClientPluginManager getPluginManager()
 	{
-		//if (windows.getCurrentScene() instanceof Ingame)
-		//	return ((Ingame) windows.getCurrentScene()).getPluginManager();
 		return pluginManager;
 	}
 	
 	@Override
 	public Lwjgl3ClientInputsManager getInputsManager()
 	{
-		//if (windows.getCurrentScene() instanceof Ingame)
-		//	return ((Ingame) windows.getCurrentScene()).getInputsManager();
 		return gameWindow.getInputsManager();
 	}
 
