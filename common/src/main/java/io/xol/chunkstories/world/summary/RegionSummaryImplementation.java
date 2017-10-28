@@ -502,4 +502,11 @@ public class RegionSummaryImplementation implements RegionSummary
 	public Fence waitForLoading() {
 		return this.loadFence;
 	}
+
+	@Override
+	public String toString() {
+		return "[RegionSummary x:"+regionX+" z:"+regionZ+" users: "+this.countUsers()+" loaded: "+this.isLoaded()+" zombie: "+this.isUnloaded()+"]";
+	}
+	
+	
 }

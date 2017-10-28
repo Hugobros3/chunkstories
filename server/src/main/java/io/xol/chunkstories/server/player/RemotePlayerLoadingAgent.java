@@ -91,6 +91,15 @@ public class RemotePlayerLoadingAgent {
 			}
 			else if(packet.getType() == Type.REGISTER_SUMMARY) {
 				int handle = summaryHandle(packet.getX(), packet.getZ());
+				
+				int[] check = summary(handle);
+				if(check[0] != packet.getX() || check[1] != packet.getZ()) {
+					System.out.println("major fuck up with handle "+ handle);
+					System.out.println("should have been ("+packet.getX()+", "+packet.getZ()+")");
+					System.out.println("kys");
+					System.exit(-1);
+				}
+				
 				if(usedRegionHandles.add(handle)) {
 					RegionSummary regionSummary = player.getWorld().getRegionsSummariesHolder().aquireRegionSummary(player, packet.getX(), packet.getZ());
 					assert regionSummary != null; // assume it not being null because it's the supposed behaviour
@@ -144,7 +153,7 @@ public class RemotePlayerLoadingAgent {
 				if(regionSummary != null)
 					regionSummary.unregisterUser(player);
 				else
-					System.out.println("NULL FOR SOME REASON >:(");
+					System.out.println("unregistering summary failed because it return null for some reason : " + pos[0] + " :" + pos[1]);
 			}
 			this.usedRegionHandles.clear();
 			

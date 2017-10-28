@@ -139,6 +139,7 @@ public class LocalClientLoadingAgent {
 								
 								if(world instanceof WorldClientRemote) {
 									WorldClientRemote remote = (WorldClientRemote)world;
+									
 									remote.getConnection().pushPacket(PacketWorldUser.registerSummary(regionX, regionZ));
 								}
 							}

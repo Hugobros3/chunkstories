@@ -135,7 +135,7 @@ public class SendQueue extends Thread
 				{
 					//That's basically terminated connection exceptions
 					((Flush) packet).fence.signal();
-					destinator.disconnect("Broken pipe: Unable to flush: "+e.getMessage());
+					disconnect("Broken pipe: Unable to flush: "+e.getMessage());
 					break;
 				}
 			}
@@ -149,7 +149,7 @@ public class SendQueue extends Thread
 				catch (IOException e)
 				{
 					//We don't care about that, it's the motd thing mostly
-					destinator.disconnect("Broken pipe: Unable to send packet: "+e.getMessage());
+					disconnect("Broken pipe: Unable to send packet: "+e.getMessage());
 					break;
 				}
 				catch (UnknowPacketException e)
@@ -186,6 +186,14 @@ public class SendQueue extends Thread
 		{
 			//Really that's just disconnection
 		}
+	}
+
+	private void disconnect(String string) {
+		deathLock.lock();
+		dead = true;
+		deathLock.unlock();
+		
+		destinator.disconnect(string);
 	}
 
 	public void kill()

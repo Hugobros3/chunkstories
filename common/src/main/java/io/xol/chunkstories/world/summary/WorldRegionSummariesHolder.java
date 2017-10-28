@@ -1,5 +1,6 @@
 package io.xol.chunkstories.world.summary;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
@@ -38,8 +39,7 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 	{
 		x /= 256;
 		z /= 256;
-		int s = world.getSizeInChunks() / 8;
-		return x * s + z;
+		return x * worldSizeInRegions + z;
 	}
 
 	@Override
@@ -301,5 +301,9 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 		if (coordinate < 0)
 			coordinate += world.getSizeInChunks() * 32;
 		return coordinate;
+	}
+
+	public Collection<RegionSummaryImplementation> all() {
+		return this.summaries.values();
 	}
 }

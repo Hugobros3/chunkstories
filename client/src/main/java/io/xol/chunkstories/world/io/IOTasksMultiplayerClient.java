@@ -138,7 +138,10 @@ public class IOTasksMultiplayerClient extends IOTasks
 		//Chunk data
 		} else if(packet instanceof PacketChunkCompressedData) {
 			RegionImplementation region = world.getRegionChunkCoordinates(((PacketChunkCompressedData) packet).x, ((PacketChunkCompressedData) packet).y, ((PacketChunkCompressedData) packet).z);
-			assert region != null;
+			
+			//This *can* happen, ie if the player flies fucking fast and the server sends the chunk but he's already fucking gone
+			if(region == null)
+				return;
 			region.getChunkHolder(((PacketChunkCompressedData) packet).x, ((PacketChunkCompressedData) packet).y, ((PacketChunkCompressedData) packet).z).
 				createChunk(((PacketChunkCompressedData) packet).data);
 		} else if(packet instanceof PacketWorldUser) {
