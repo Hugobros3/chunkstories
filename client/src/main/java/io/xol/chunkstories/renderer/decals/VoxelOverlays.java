@@ -69,7 +69,7 @@ public class VoxelOverlays {
 		renderingInterface.bindAttribute("vertexIn", vertexBuffer.asAttributeSource(VertexFormat.FLOAT, 3));
 		//renderingContext.bindAttribute("vertexIn", new FloatBufferAttributeSource(data, 3));
 		
-		renderingInterface.draw(Primitive.LINE, 0, boxes.length * 6 * 8);
+		renderingInterface.draw(Primitive.LINE, 0, boxes.length * 3 * 8);
 		renderingInterface.setBlendMode(BlendMode.DISABLED);
 		renderingInterface.flush();
 		
