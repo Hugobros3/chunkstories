@@ -11,9 +11,9 @@ import io.xol.chunkstories.api.world.WorldNetworked;
 import io.xol.chunkstories.net.PacketsProcessorActual;
 import io.xol.chunkstories.net.PacketsProcessorCommon.PendingSynchPacket;
 import io.xol.chunkstories.net.packets.PacketSendWorldInfo;
-import io.xol.chunkstories.server.ServerPlayer;
 import io.xol.chunkstories.server.DedicatedServer;
 import io.xol.chunkstories.server.net.UserConnection;
+import io.xol.chunkstories.server.player.ServerPlayer;
 import io.xol.chunkstories.server.propagation.VirtualServerDecalsManager;
 import io.xol.chunkstories.server.propagation.VirtualServerParticlesManager;
 import io.xol.chunkstories.world.WorldImplementation;
@@ -54,16 +54,16 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 	public void tick()
 	{
 		//Update client tracking
-		Iterator<Player> pi = this.getPlayers();
-		while (pi.hasNext())
+		Iterator<Player> playersIterator = this.getPlayers();
+		while (playersIterator.hasNext())
 		{
-			Player player = pi.next();
+			Player player = playersIterator.next();
 
 			//System.out.println("client: "+client);
 			if (player.hasSpawned())
 			{
 				//Update whatever he sees
-				player.updateTrackedEntities();
+				((ServerPlayer) player).updateTrackedEntities();
 			}
 			
 			//Update time & weather
@@ -94,11 +94,11 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 			sender.pushPacket(packet);
 			
 			//TODO only spawn the player when he asks to
-			spawnPlayer(sender.getProfile());
+			spawnPlayer(sender.getLoggedInPlayer());
 		}
 		else if (message.equals("respawn"))
 		{
-			Player player = sender.getProfile();
+			Player player = sender.getLoggedInPlayer();
 			if(player == null)
 			{
 				sender.sendChat("Fuck off ?");
@@ -109,7 +109,7 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 				//Only allow to respawn if the current entity is null or dead
 				if(player.getControlledEntity() == null || (player.getControlledEntity() instanceof EntityLiving && ((EntityLiving)player.getControlledEntity()).isDead()))
 				{
-					spawnPlayer(sender.getProfile());
+					spawnPlayer(sender.getLoggedInPlayer());
 					sender.sendChat("Respawning ...");
 				}
 				else
@@ -125,13 +125,17 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 			int y = Integer.parseInt(split[2]);
 			int z = Integer.parseInt(split[3]);
 			((IOTasksMultiplayerServer) ioHandler).requestCompressedChunkSend(x, y, z, sender);*/
+			System.out.println("FUCK YOU FUCK YOU FUCK YOU FOREVER");
+			sender.disconnect("FUCK YOU FUCK YOU FUCK YOU FOREVER");
 		}
 		if (message.startsWith("getChunkSummary") || message.startsWith("getRegionSummary"))
 		{
-			String[] split = message.split(":");
+			/*String[] split = message.split(":");
 			int x = Integer.parseInt(split[1]);
 			int z = Integer.parseInt(split[2]);
-			((IOTasksMultiplayerServer) ioHandler).requestRegionSummary(x, z, sender);
+			((IOTasksMultiplayerServer) ioHandler).requestRegionSummary(x, z, sender);*/
+			System.out.println("FUCK YOU FUCK YOU FUCK YOU FOREVER");
+			sender.disconnect("FUCK YOU FUCK YOU FUCK YOU FOREVER");
 		}
 	}
 

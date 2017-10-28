@@ -7,18 +7,22 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.lwjgl.system.MemoryUtil;
 
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityUnsaveable;
-import io.xol.chunkstories.api.player.Player;
+import io.xol.chunkstories.api.server.RemotePlayer;
+import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.voxel.components.VoxelComponent;
 import io.xol.chunkstories.api.world.WorldClient;
@@ -47,7 +51,10 @@ public class ChunkHolderImplementation implements ChunkHolder
 	private final int uuid;
 	
 	private final Collection<CubicChunk> regionLoadedChunks; //To update the parent object's collection (used in iterator)
+	
 	protected final Set<WorldUser> users = ConcurrentHashMap.newKeySet(); //Keep tracks of who needs this data loaded
+	private final Set<RemotePlayer> usersWaitingForIntialData = new HashSet<RemotePlayer>();
+	protected final Lock usersLock = new ReentrantLock();
 	
 	//The compressed version of the chunk data
 	private SafeWriteLock compressedDataLock = new SafeWriteLock();
@@ -271,74 +278,61 @@ public class ChunkHolderImplementation implements ChunkHolder
 	}
 
 	@Override
-	public Iterator<WorldUser> getChunkUsers()
+	public IterableIterator<WorldUser> getChunkUsers()
 	{
-		/*return new Iterator<WorldUser>()
-		{
+		return new IterableIterator<WorldUser>() {
+
 			Iterator<WorldUser> i = users.iterator();
-			WorldUser user;
-
+			
 			@Override
-			public boolean hasNext()
-			{
-				while(user == null && i.hasNext())
-				{
-					user = i.next().get();
-				}
-				return user != null;
+			public boolean hasNext() {
+				return i.hasNext();
 			}
 
 			@Override
-			public WorldUser next()
-			{
-				hasNext();
-				WorldUser u = user;
-				user = null;
-				return u;
+			public WorldUser next() {
+				return i.next();
 			}
-
-		};*/
-		return users.iterator();
+			
+			//Let remove() throw UnsupportedOperationException; we don't want to enable this iterator to mutate shit
+		};
 	}
 
 	@Override
 	public boolean registerUser(WorldUser user)
 	{
-		/*Iterator<WorldUser> i = users.iterator();
-		while (i.hasNext())
-		{
-			WeakReference<WorldUser> w = i.next();
-			WorldUser u = w.get();
-			if (u == null)
-				i.remove();
-			else if (u != null && u.equals(user))
-				return false;
-		}*/
+		try {
+			usersLock.lock();
+			boolean ok = users.add(user);
+			
+			if(!ok)
+				System.out.println("warn: adding twice user to ch");
 		
-		//if(users.size() == 1)
-		//	System.out.println("red flag");
-		
-		users.add(user);
-		
-		//TODO lock
-		CubicChunk chunk = this.chunk;
-		
-		//Chunk already loaded ? Compress and send it immediately
-		if(chunk != null) {
-			if(user instanceof Player) {
-				Player player = (Player)user;
-				//TODO recompress chunk data each tick it's needed
-				player.pushPacket(new PacketChunkCompressedData(chunk, this.getCompressedData()));
+			//TODO lock
+			CubicChunk chunk = this.chunk;
+			
+			//Chunk already loaded ? Compress and send it immediately
+			if(user instanceof RemotePlayer) {
+				RemotePlayer player = (RemotePlayer)user;
+				if(chunk != null) {
+					//TODO recompress chunk data each tick it's needed
+					player.pushPacket(new PacketChunkCompressedData(chunk, this.getCompressedData()));
+				} else {
+					usersWaitingForIntialData.add(player);
+				}
 			}
+			
+			//This runs under a lock so we can afford to be lazy about thread safety
+			if(chunk == null && loadChunkTask == null) {
+				//We create a task only if one isn't already ongoing.
+				loadChunkTask = getRegion().getWorld().ioHandler.requestChunkLoad(this);
+			}
+			
+			return true;
 		}
-		
-		//This runs under a lock so we can afford to be lazy about thread safety
-		if(chunk == null && loadChunkTask == null) {
-			//We create a task only if one isn't already ongoing.
-			loadChunkTask = getRegion().getWorld().ioHandler.requestChunkLoad(this);
+		finally {
+			usersLock.unlock();
 		}
-		
-		return true;
 	}
 
 	@Override
@@ -347,21 +341,27 @@ public class ChunkHolderImplementation implements ChunkHolder
 	 */
 	public boolean unregisterUser(WorldUser user)
 	{
-		Iterator<WorldUser> i = users.iterator();
-		while (i.hasNext())
-		{
-			WorldUser u = i.next();;
-			if (u.equals(user))
-				i.remove();
+		try {
+			usersLock.lock();
+			Iterator<WorldUser> i = users.iterator();
+			while (i.hasNext())
+			{
+				WorldUser u = i.next();;
+				if (u.equals(user))
+					i.remove();
+			}
+			
+			if(users.isEmpty())
+			{
+				unloadChunk();
+				return true;
+			}
+			
+			return false;
 		}
-		
-		if(users.isEmpty())
-		{
-			unloadChunk();
-			return true;
+		finally {
+			usersLock.unlock();
 		}
-		
-		return false;
 	}
 
 	/**
@@ -369,31 +369,23 @@ public class ChunkHolderImplementation implements ChunkHolder
 	 */
 	public boolean unloadsIfUnused()
 	{	
-		if(users.isEmpty())
-		{
-			unloadChunk();
-			return true;
+		try {
+			usersLock.lock();
+			if(users.isEmpty())
+			{
+				unloadChunk();
+				return true;
+			}
+			
+			return false;
 		}
-		
-		return false;
+		finally {
+			usersLock.unlock();
+		}
 	}
 
 	public int countUsers()
 	{
-		/*int c = 0;
-		
-		Iterator<WeakReference<WorldUser>> i = users.iterator();
-		while (i.hasNext())
-		{
-			WeakReference<WorldUser> w = i.next();
-			WorldUser u = w.get();
-			if (u == null)
-				i.remove();
-			else
-				c++;
-		}
-		
-		return c;*/
 		return users.size();
 	}
 
@@ -479,6 +471,7 @@ public class ChunkHolderImplementation implements ChunkHolder
 		
 		if(this.chunk != null) {
 			System.out.println("Warning: creating a chunk but the chunkholder already had one, ignoring");
+			this.chunkLock.writeLock().unlock();
 			return this.chunk;
 		}
 		
@@ -498,6 +491,14 @@ public class ChunkHolderImplementation implements ChunkHolder
 			((WorldClient)region.getWorld()).getWorldRenderer().flagChunksModified();
 		
 		this.chunkLock.writeLock().unlock();
+		
+		// Already have clients waiting for it ? Satisfy these messieurs
+		usersLock.lock();
+		for(RemotePlayer user : usersWaitingForIntialData) {
+			user.pushPacket(new PacketChunkCompressedData(chunk, data));
+		}
+		usersWaitingForIntialData.clear();
+		usersLock.unlock();
 		
 		return chunk;
 	}
@@ -519,12 +520,6 @@ public class ChunkHolderImplementation implements ChunkHolder
 	{
 		return getInRegionZ() + region.getRegionZ() * 8;
 	}
-	
-	/*@Override
-	public int hashCode()
-	{
-		return uuid;
-	}*/
 	
 	@Override
 	public boolean equals(Object o)

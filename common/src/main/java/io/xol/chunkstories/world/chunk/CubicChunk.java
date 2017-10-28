@@ -228,12 +228,6 @@ public class CubicChunk implements Chunk
 		// Send chunk to whoever already subscribed
 		if(data == null) 
 			data = new CompressedData(null, null, null);
-		Packet packet = new PacketChunkCompressedData(this, data);
-		for(WorldUser user : chunkHolder.users) {
-			if(user instanceof Player) {
-				((Player)user).pushPacket(packet);
-			}
-		}
 	}
 	
 	public int getChunkX()

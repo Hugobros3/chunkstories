@@ -8,7 +8,6 @@ import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketWorldStreaming;
 import io.xol.chunkstories.api.net.PacketsProcessor;
-import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.world.chunk.CompressedData;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 
@@ -25,11 +24,15 @@ public class PacketChunkCompressedData extends PacketWorldStreaming
 	
 	public PacketChunkCompressedData(CubicChunk c, CompressedData data)
 	{
-		super((WorldMaster)c.getWorld());
+		super(c.getWorld());
 		
 		this.x = c.getChunkX();
 		this.y = c.getChunkY();
 		this.z = c.getChunkZ();
+		
+		if(data == null) {
+			data = new CompressedData(null, null, null);
+		}
 		
 		this.data = data;
 	}
@@ -45,14 +48,20 @@ public class PacketChunkCompressedData extends PacketWorldStreaming
 		out.writeInt(y);
 		out.writeInt(z);
 	
-		out.writeInt(data.voxelCompressedData.length);
-		out.write(data.voxelCompressedData);
-		
+		if(data.voxelCompressedData != null) {
+			out.writeInt(data.voxelCompressedData.length);
+			out.write(data.voxelCompressedData);
+		} else
+			out.writeInt(0);
+
+		if(data.voxelComponentsCompressedData != null) {
 		out.writeInt(data.voxelComponentsCompressedData.length);
 		out.write(data.voxelComponentsCompressedData);
+		} else
+			out.writeInt(0);
 		
-		out.writeInt(data.entitiesCompressedData.length);
-		out.write(data.entitiesCompressedData);
+		//out.writeInt(data.entitiesCompressedData.length);
+		//out.write(data.entitiesCompressedData);
 	}
 
 	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException
@@ -64,25 +73,30 @@ public class PacketChunkCompressedData extends PacketWorldStreaming
 		z = in.readInt();
 		
 		int voxelCompressedDataLength = in.readInt();
-		byte[] voxelCompressedData;
-		assert (voxelCompressedDataLength > 0);
+		byte[] voxelCompressedData = null;
+		
+		//assert (voxelCompressedDataLength > 0);
+		if(voxelCompressedDataLength > 0) {
 		voxelCompressedData = new byte[voxelCompressedDataLength];
 		in.readFully(voxelCompressedData, 0, voxelCompressedDataLength);
+		}
 		
 		int voxelComponentsCompressedDataLength = in.readInt();
-		byte[] voxelComponentsCompressedData;
-		assert (voxelComponentsCompressedDataLength > 0);
+		byte[] voxelComponentsCompressedData = null;
+		
+		//assert (voxelComponentsCompressedDataLength > 0);
+		if(voxelComponentsCompressedDataLength > 0) {
 		voxelComponentsCompressedData = new byte[voxelComponentsCompressedDataLength];
 		in.readFully(voxelComponentsCompressedData, 0, voxelComponentsCompressedDataLength);
+		}
 		
-		int entitiesCompressedDataLength = in.readInt();
+		/*int entitiesCompressedDataLength = in.readInt();
 		byte[] entitiesCompressedData;
 		assert (entitiesCompressedDataLength > 0);
 		entitiesCompressedData = new byte[entitiesCompressedDataLength];
-		in.readFully(entitiesCompressedData, 0, entitiesCompressedDataLength);
+		in.readFully(entitiesCompressedData, 0, entitiesCompressedDataLength);*/
 		
-		
-		data = new CompressedData(voxelCompressedData, voxelComponentsCompressedData, entitiesCompressedData);
+		data = new CompressedData(voxelCompressedData, voxelComponentsCompressedData, null);
 		//No fancy processing here, these packets are handled automatically by the IO controller on the client due to their 
 		//PacketWorldStreaming nature
 	}

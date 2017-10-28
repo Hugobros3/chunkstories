@@ -1,6 +1,5 @@
 package io.xol.chunkstories.world.summary;
 
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
@@ -25,7 +24,7 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 	private final int worldSizeInRegions;
 	
 	private Map<Long, RegionSummaryImplementation> summaries = new ConcurrentHashMap<Long, RegionSummaryImplementation>();
-	private Semaphore dontDeleteWhileCreating = new Semaphore(1);
+	protected Semaphore dontDeleteWhileCreating = new Semaphore(1);
 
 	public WorldRegionSummariesHolder(WorldImplementation world)
 	{
@@ -125,7 +124,7 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 		long i = index(worldX, worldZ);
 		
 		RegionSummaryImplementation summary = summaries.get(i);
-		if(summary == null || !summary.isLoaded())
+		if(summary == null)// || !summary.isLoaded())
 			return null;
 		else
 			return summary;
@@ -227,7 +226,7 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 		cs.setHeightAndId(x % 256, y, z % 256, id);
 	}
 
-	public void unloadsUselessData()
+	/*public void unloadsUselessData()
 	{
 		dontDeleteWhileCreating.acquireUninterruptibly();
 		
@@ -241,7 +240,7 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 		}
 		
 		dontDeleteWhileCreating.release();
-	}
+	}*/
 	
 	/*public void removeFurther(int pCX, int pCZ, int distanceInChunks)
 	{
@@ -288,7 +287,12 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 
 	boolean removeSummary(RegionSummaryImplementation regionSummary)
 	{
-		return summaries.remove(this.index(regionSummary.getRegionX() * 256, regionSummary.getRegionZ() * 256)) != null;
+		try {
+			dontDeleteWhileCreating.acquireUninterruptibly();
+			return summaries.remove(this.index(regionSummary.getRegionX() * 256, regionSummary.getRegionZ() * 256)) != null;
+		} finally {
+			dontDeleteWhileCreating.release();
+		}
 	}
 	
 	private int sanitizeHorizontalCoordinate(int coordinate)

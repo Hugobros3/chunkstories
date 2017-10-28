@@ -11,6 +11,7 @@ import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.InputsManager;
 import io.xol.chunkstories.input.InputVirtual;
 import io.xol.chunkstories.input.InputsManagerLoader;
+import io.xol.chunkstories.server.player.ServerPlayer;
 import io.xol.chunkstories.input.InputsLoaderHelper;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -58,14 +59,7 @@ public class ServerInputsManager implements InputsManager, InputsManagerLoader
 		inputsMap.clear();
 		
 		//Load all keys as virtual ones
-		/*Iterator<Input> i = KeyBindsLoader.loadKeyBindsIntoManager(this, player.getServer().getContent().modsManager());
-		while (i.hasNext())
-		{
-			Input input = i.next();
-			inputs.add(input);
-			inputsMap.put(input.getHash(), input);
-		}*/
-		InputsLoaderHelper.loadKeyBindsIntoManager(this, player.getServer().getContent().modsManager());
+		InputsLoaderHelper.loadKeyBindsIntoManager(this, player.getContext().getContent().modsManager());
 		
 		//Add virtual mouse buttons
 		InputVirtual mouseLeft = new InputVirtual("mouse.left", 0);
@@ -81,16 +75,8 @@ public class ServerInputsManager implements InputsManager, InputsManagerLoader
 
 	public void insertInput(String type, String name, String value, Collection<String> arguments) {
 		Input input;
-		/*if (type.equals("keyBind"))
-		{
-			KeyBindImplementation key = new KeyBindImplementation(name, value);
-			input = key;
-			if(arguments.contains("hidden"))
-				((KeyBindImplementation) key).setEditable(false);
-			keyboardInputs.add(key);
-		}
-		else */
-		//Server treats everything as a virtual bind, because everything is abstract for him
+		//Server treats everything as a virtual bind, because everything is abstract for him 
+		//2deep4me
 		if(type.equals("keyBind") || type.equals("virtual"))
 		{
 			input = new InputVirtual(name);

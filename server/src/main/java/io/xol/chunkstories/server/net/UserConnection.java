@@ -15,8 +15,8 @@ import io.xol.chunkstories.api.util.ChunkStoriesLogger;
 import io.xol.chunkstories.net.SendQueue;
 import io.xol.chunkstories.net.packets.PacketSendFile;
 import io.xol.chunkstories.server.DedicatedServer;
-import io.xol.chunkstories.server.ServerPlayer;
 import io.xol.chunkstories.server.net.ServerPacketsProcessorImplementation.UserPacketsProcessor;
+import io.xol.chunkstories.server.player.ServerPlayer;
 import io.xol.engine.net.HttpRequestThread;
 import io.xol.engine.net.HttpRequester;
 
@@ -48,8 +48,9 @@ public class UserConnection extends Thread implements HttpRequester, PacketDesti
 	//Streams.
 	Socket socket;
 	UserPacketsProcessor packetsProcessor;
-	DataInputStream inputDataStream = null;
-	SendQueue sendQueue;
+	
+	final DataInputStream inputDataStream;
+	final SendQueue sendQueue;
 
 	boolean validToken = false;
 	String token = "undefined";
@@ -78,36 +79,30 @@ public class UserConnection extends Thread implements HttpRequester, PacketDesti
 
 		try
 		{
-			this.openSocket();
-			this.start();
+			//We get exceptions early if this fails
+			InputStream socketInputStream = socket.getInputStream();
+			OutputStream socketOutputStream = socket.getOutputStream();
+
+			inputDataStream = new DataInputStream(new BufferedInputStream(socketInputStream));
+
+			//The sendQueue is initialized with 'this' as the destinator, 'this', the ServerClient class does not implement the Subscriber interface
+			//but provides the PacketDestinator interface so outgoing packets can know what kind of client they are talking to ( in this very case, an unauthentificated client )
+			//See : postTokenCheck() for more information
+			sendQueue = new SendQueue(this, new DataOutputStream(new BufferedOutputStream(socketOutputStream)), packetsProcessor);
+			sendQueue.start();
 		}
 		catch (IOException e)
 		{
 			System.out.println("Failed to open connection to " + this.getIp() + " - " + e.getMessage());
 			throw new FailedToConnectionException();
 		}
+		
+		this.start();
 	}
-
-	public void openSocket() throws IOException
-	{
-		//We get exceptions early if this fails
-		InputStream socketInputStream = socket.getInputStream();
-		OutputStream socketOutputStream = socket.getOutputStream();
-
-		inputDataStream = new DataInputStream(new BufferedInputStream(socketInputStream));
-
-		//The sendQueue is initialized with 'this' as the destinator, 'this', the ServerClient class does not implement the Subscriber interface
-		//but provides the PacketDestinator interface so outgoing packets can know what kind of client they are talking to ( in this very case, an unauthentificated client )
-		//See : postTokenCheck() for more information
-		sendQueue = new SendQueue(this, new DataOutputStream(new BufferedOutputStream(socketOutputStream)), packetsProcessor);
-		sendQueue.start();
-	}
-
+	
 	class FailedToConnectionException extends Exception
 	{
-
 		private static final long serialVersionUID = 3423402904369758447L;
-
 	}
 
 	// Here's the usefull things !
@@ -183,11 +178,11 @@ public class UserConnection extends Thread implements HttpRequester, PacketDesti
 				}
 
 				// Sa degage
-				connectionsManager.getServer().getConsole().dispatchCommand(this.getProfile(), cmdName, args);
+				connectionsManager.getServer().getConsole().dispatchCommand(this.getLoggedInPlayer(), cmdName, args);
 			}
 			else if (chatMessage.length() > 0)
 			{
-				PlayerChatEvent event = new PlayerChatEvent(this.getProfile(), chatMessage);
+				PlayerChatEvent event = new PlayerChatEvent(this.getLoggedInPlayer(), chatMessage);
 				connectionsManager.getServer().getPluginManager().fireEvent(event);
 				
 				if(!event.isCancelled())
@@ -277,7 +272,7 @@ public class UserConnection extends Thread implements HttpRequester, PacketDesti
 			catch (IOException e)
 			{
 				if (this.isAuthentificated())
-					logger.info("Connection lost to " + this.getProfile().getDisplayName() + " (" + this.getName() + ").");
+					logger.info("Connection lost to " + this.getLoggedInPlayer().getDisplayName() + " (" + this.getName() + ").");
 
 				disconnect("Broken socket");
 				return;
@@ -318,32 +313,27 @@ public class UserConnection extends Thread implements HttpRequester, PacketDesti
 
 	void closeSocket()
 	{
+		//Only close the socket once.
 		if (calledCloseSockedOnce.compareAndSet(false, true))
 		{
-			if (getProfile() != null)
+			this.flush();
+			
+			if (getLoggedInPlayer() != null)
 			{
-				PlayerLogoutEvent playerDisconnectionEvent = new PlayerLogoutEvent(getProfile());
+				PlayerLogoutEvent playerDisconnectionEvent = new PlayerLogoutEvent(getLoggedInPlayer());
 				connectionsManager.getServer().getPluginManager().fireEvent(playerDisconnectionEvent);
 
+				//Send disconnect message
 				connectionsManager.getServer().getHandler().broadcastChatMessage(playerDisconnectionEvent.getLogoutMessage());
-
-				//connectionsManager.getServer().handler.sendAllChat("#FFD000" + name + " (" + getIp() + ") left.");
-				assert getProfile() != null;
-				getProfile().save();
-				getProfile().removePlayerFromWorld();
+				
+				assert getLoggedInPlayer() != null;
+				getLoggedInPlayer().destroy();
 			}
 
 			try
 			{
-				if (inputDataStream != null)
-					inputDataStream.close();
-				
-				if (sendQueue != null)
-					sendQueue.kill();
-
-				//Null-out to help server gc faster ?
-				sendQueue = null;
-				inputDataStream = null;
+				inputDataStream.close();
+				sendQueue.kill();
 			}
 			catch (Exception e)
 			{
@@ -370,14 +360,12 @@ public class UserConnection extends Thread implements HttpRequester, PacketDesti
 
 	public void pushPacket(Packet packet)
 	{
-		if (sendQueue != null)
-			sendQueue.queue(packet);
+		sendQueue.queue(packet);
 	}
 
 	public void flush()
 	{
-		if (sendQueue != null)
-			sendQueue.flush();
+		sendQueue.flush().traverse();
 	}
 
 	/**
@@ -397,23 +385,22 @@ public class UserConnection extends Thread implements HttpRequester, PacketDesti
 
 		//Creates a player based on the thrusted login information
 		ServerPlayer player = new ServerPlayer(this);
-		setProfile(player);
+		this.player = player;
 
 		//This changes the destinator from a ServerClient to a ServerPlayer, letting know outgoing packets and especially entity components about all the
 		//specifics of the player : name, entity he subscribed to, etc
-		this.sendQueue.setDestinator(this.getProfile());
-		this.sender = this.getProfile();
+		this.sendQueue.setDestinator(this.getLoggedInPlayer());
+		this.sender = this.getLoggedInPlayer();
 		
 		//Change the packet processor to reflect that ( when receiving packets we have to consider that they are from a player )
 		this.packetsProcessor = this.packetsProcessor.toPlayer(player);
 
 		//Fire the login event
-		PlayerLoginEvent playerConnectionEvent = new PlayerLoginEvent(getProfile());
+		PlayerLoginEvent playerConnectionEvent = new PlayerLoginEvent(getLoggedInPlayer());
 		connectionsManager.getServer().getPluginManager().fireEvent(playerConnectionEvent);
 		boolean allowPlayerIn = !playerConnectionEvent.isCancelled();
 		//Do we allow him in ?
-		if (!allowPlayerIn)
-		{
+		if (!allowPlayerIn) {
 			disconnect(playerConnectionEvent.getRefusedConnectionMessage());
 			return;
 		}
@@ -453,10 +440,10 @@ public class UserConnection extends Thread implements HttpRequester, PacketDesti
 
 	public boolean isAuthentificated()
 	{
-		return getProfile() != null;
+		return getLoggedInPlayer() != null;
 	}
 
-	public ServerPlayer getProfile()
+	public ServerPlayer getLoggedInPlayer()
 	{
 		return player;
 	}
@@ -464,14 +451,6 @@ public class UserConnection extends Thread implements HttpRequester, PacketDesti
 	public PacketsProcessor getPacketsProcessor()
 	{
 		return packetsProcessor;
-	}
-
-	/**
-	 * Called once the user has providen valid authentification
-	 */
-	private final void setProfile(ServerPlayer profile)
-	{
-		this.player = profile;
 	}
 
 	public void disconnect()
@@ -492,7 +471,7 @@ public class UserConnection extends Thread implements HttpRequester, PacketDesti
 			return "[Zombie connection !]";
 
 		if (isAuthentificated())
-			return "[Connected user '" + getProfile().getName() + "' from " + this.getIp() + "]";
+			return "[Connected user '" + getLoggedInPlayer().getName() + "' from " + this.getIp() + "]";
 		else
 			return "[Unknown connection from " + this.getIp() + "]";
 	}

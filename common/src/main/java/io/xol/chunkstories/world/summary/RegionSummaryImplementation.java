@@ -1,22 +1,28 @@
 package io.xol.chunkstories.world.summary;
 
+import io.xol.chunkstories.api.server.RemotePlayer;
+import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
+import io.xol.chunkstories.net.packets.PacketRegionSummary;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.io.IOTasks.IOTask;
 import io.xol.engine.concurrency.SimpleFence;
+import io.xol.engine.concurrency.TrivialFence;
 
 import java.io.File;
-import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import net.jpountz.lz4.LZ4Compressor;
 import net.jpountz.lz4.LZ4Factory;
@@ -36,7 +42,9 @@ public class RegionSummaryImplementation implements RegionSummary
 	private final int regionX;
 	private final int regionZ;
 
-	private final Set<WeakReference<WorldUser>> users = new HashSet<WeakReference<WorldUser>>();
+	private final Set<WorldUser> users = ConcurrentHashMap.newKeySet();//new HashSet<WorldUser>();
+	private final Set<RemotePlayer> usersWaitingForIntialData = new HashSet<RemotePlayer>();
+	private final Lock usersLock = new ReentrantLock();
 
 	// LZ4 compressors & decompressors
 	static LZ4Factory factory = LZ4Factory.fastestInstance();
@@ -71,25 +79,14 @@ public class RegionSummaryImplementation implements RegionSummary
 		this.regionX = rx;
 		this.regionZ = rz;
 
-		if (world instanceof WorldMaster)
+		if (world instanceof WorldMaster) {
 			handler = new File(world.getFolderPath() + "/summaries/" + rx + "." + rz + ".sum");
-		else
-			handler = null;
-
-		//Create rendering stuff only if we're a client world
-		/*if (world instanceof WorldClient)
-		{
-			heightsTexture = ((ClientInterface)world.getGameContext()).getContent().textures().newTexture2D(TextureFormat.RED_32F, 256, 256);
-			voxelTypesTexture = ((ClientInterface)world.getGameContext()).getContent().textures().newTexture2D(TextureFormat.RED_32F, 256, 256);
+			loadFence = this.world.ioHandler.requestRegionSummaryLoad(this);
 		}
-		else
-		{
-			heightsTexture = null;
-			voxelTypesTexture = null;
-		}*/
-
-		//Add a fence to wait out loading
-		loadFence = this.world.ioHandler.requestRegionSummaryLoad(this);
+		else {
+			handler = null;
+			loadFence = new TrivialFence();
+		}
 	}
 
 	@Override
@@ -105,30 +102,22 @@ public class RegionSummaryImplementation implements RegionSummary
 	}
 
 	@Override
-	public Iterator<WorldUser> getSummaryUsers()
+	public IterableIterator<WorldUser> getSummaryUsers()
 	{
-		return new Iterator<WorldUser>()
+		return new IterableIterator<WorldUser>()
 		{
-			Iterator<WeakReference<WorldUser>> i = users.iterator();
-			WorldUser user;
+			Iterator<WorldUser> i = users.iterator();
 
 			@Override
 			public boolean hasNext()
 			{
-				while (user == null && i.hasNext())
-				{
-					user = i.next().get();
-				}
-				return user != null;
+				return i.hasNext();
 			}
 
 			@Override
 			public WorldUser next()
 			{
-				hasNext();
-				WorldUser u = user;
-				user = null;
-				return u;
+				return i.next();
 			}
 
 		};
@@ -137,23 +126,28 @@ public class RegionSummaryImplementation implements RegionSummary
 	@Override
 	public boolean registerUser(WorldUser user)
 	{
-		Iterator<WeakReference<WorldUser>> i = users.iterator();
-		while (i.hasNext())
-		{
-			WeakReference<WorldUser> w = i.next();
-			WorldUser u = w.get();
-			if (u == null)
-				i.remove();
-			else if (u != null && u.equals(user))
-				return false;
+		try {
+			usersLock.lock();
+			if(users.add(user)) {
+				
+				if(user instanceof RemotePlayer) {
+					RemotePlayer player = (RemotePlayer)user;
+					if(this.isLoaded()) {
+						player.pushPacket(new PacketRegionSummary(this));
+					} else {
+						this.usersWaitingForIntialData.add(player);
+					}
+						
+				}
+				
+				return true;
+			}
+			
+		} finally {
+			usersLock.unlock();
 		}
-
-		users.add(new WeakReference<WorldUser>(user));
-
-		//if(chunk == null)
-		//	loadChunk();
-
-		return true;
+		
+		return false;
 	}
 
 	@Override
@@ -162,65 +156,42 @@ public class RegionSummaryImplementation implements RegionSummary
 	 */
 	public boolean unregisterUser(WorldUser user)
 	{
-		Iterator<WeakReference<WorldUser>> i = users.iterator();
-		while (i.hasNext())
-		{
-			WeakReference<WorldUser> w = i.next();
-			WorldUser u = w.get();
-			if (u == null)
-				i.remove();
-			else if (u != null && u.equals(user))
-				i.remove();
+		try {
+			usersLock.lock();
+			users.remove(user);
+	
+			if (users.isEmpty()) {
+				unloadSummary();
+				return true;
+			}
+			return false;
+		} finally {
+			usersLock.unlock();
 		}
-
-		if (users.isEmpty())
-		{
-			unloadSummary();
-			return true;
-		}
-
-		return false;
 	}
 
 	/**
 	 * Iterates over users references, cleans null ones and if the result is an empty list it promptly unloads the chunk.
 	 */
-	public boolean unloadsIfUnused()
+	/*public boolean unloadsIfUnused()
 	{
-		Iterator<WeakReference<WorldUser>> i = users.iterator();
-		while (i.hasNext())
-		{
-			WeakReference<WorldUser> w = i.next();
-			WorldUser u = w.get();
-			if (u == null)
-				i.remove();
+		try {
+			usersLock.lock();
+	
+			if (users.isEmpty())
+			{
+				unloadSummary();
+				return true;
+			}
+			return false;
+		} finally {
+			usersLock.unlock();
 		}
-
-		if (users.isEmpty())
-		{
-			unloadSummary();
-			return true;
-		}
-
-		return false;
-	}
+	}*/
 
 	public int countUsers()
 	{
-		int c = 0;
-
-		Iterator<WeakReference<WorldUser>> i = users.iterator();
-		while (i.hasNext())
-		{
-			WeakReference<WorldUser> w = i.next();
-			WorldUser u = w.get();
-			if (u == null)
-				i.remove();
-			else
-				c++;
-		}
-
-		return c;
+		return users.size();
 	}
 
 	public IOTask saveSummary()
@@ -484,6 +455,14 @@ public class RegionSummaryImplementation implements RegionSummary
 		if(world instanceof WorldClient) {
 			((WorldClient)world).getWorldRenderer().getSummariesTexturesHolder().warnDataHasArrived(regionX, regionZ);
 		}
+		
+		// Already have clients waiting for it ? Satisfy these messieurs
+		usersLock.lock();
+		for(RemotePlayer user : usersWaitingForIntialData) {
+			user.pushPacket(new PacketRegionSummary(this));
+		}
+		usersWaitingForIntialData.clear();
+		usersLock.unlock();
 	}
 	
 	private void recomputeMetadata() {

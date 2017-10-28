@@ -17,16 +17,16 @@ import io.xol.chunkstories.world.WorldClientRemote;
 public class ClientPacketsProcessorImplementation extends PacketsProcessorCommon implements ClientPacketsProcessor {
 
 	final Client client;
-	final ClientConnection clientConnection;
+	final ClientConnectionToServer clientConnection;
 	
-	public ClientPacketsProcessorImplementation(Client gameContext, ClientConnection clientConnection) {
+	public ClientPacketsProcessorImplementation(Client gameContext, ClientConnectionToServer clientConnection) {
 		super(gameContext);
 		
 		this.client = gameContext;
 		this.clientConnection = clientConnection;
 	}
 	
-	public ClientConnection getConnection() {
+	public ClientConnectionToServer getConnection() {
 		return clientConnection;
 	}
 
@@ -58,7 +58,6 @@ public class ClientPacketsProcessorImplementation extends PacketsProcessorCommon
 				
 				//Pre-read it before doing anything with it
 				pws.process(getConnection(), in, this);
-				
 				
 				WorldClient world = getWorld();
 				if(world instanceof WorldClientRemote)

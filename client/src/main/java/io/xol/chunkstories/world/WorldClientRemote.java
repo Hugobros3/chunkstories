@@ -4,7 +4,7 @@ import io.xol.chunkstories.api.net.RemoteServer;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.world.WorldClientNetworkedRemote;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.client.net.ClientConnection;
+import io.xol.chunkstories.client.net.ClientConnectionToServer;
 import io.xol.chunkstories.net.PacketsProcessorCommon;
 import io.xol.chunkstories.net.PacketsProcessorCommon.PendingSynchPacket;
 import io.xol.chunkstories.world.io.IOTasksMultiplayerClient;
@@ -15,12 +15,12 @@ import io.xol.chunkstories.world.io.IOTasksMultiplayerClient;
 
 public class WorldClientRemote extends WorldClientCommon implements WorldClientNetworkedRemote
 {
-	private ClientConnection connection;
+	private ClientConnectionToServer connection;
 	private PacketsProcessorCommon packetsProcessor;
 
 	private IOTasksMultiplayerClient mpIOHandler;
 	
-	public WorldClientRemote(Client client, WorldInfoImplementation info, ClientConnection connection)
+	public WorldClientRemote(Client client, WorldInfoImplementation info, ClientConnectionToServer connection)
 	{
 		super(client, info);
 
@@ -38,7 +38,7 @@ public class WorldClientRemote extends WorldClientCommon implements WorldClientN
 		return connection;
 	}
 	
-	public ClientConnection getConnection()
+	public ClientConnectionToServer getConnection()
 	{
 		return connection;
 	}

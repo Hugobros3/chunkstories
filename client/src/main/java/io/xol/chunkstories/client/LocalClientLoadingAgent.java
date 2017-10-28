@@ -1,4 +1,4 @@
-package io.xol.chunkstories.world;
+package io.xol.chunkstories.client;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -13,20 +13,20 @@ import io.xol.chunkstories.api.math.LoopingMathHelper;
 import io.xol.chunkstories.api.math.Math2;
 import io.xol.chunkstories.api.net.packets.PacketWorldUser;
 import io.xol.chunkstories.api.net.packets.PacketWorldUser.Type;
-import io.xol.chunkstories.api.player.PlayerClient;
+import io.xol.chunkstories.api.player.LocalPlayer;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
-import io.xol.chunkstories.client.RenderingConfig;
+import io.xol.chunkstories.world.WorldClientRemote;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class ClientWorldLoadingAgent {
+public class LocalClientLoadingAgent {
 	final ClientInterface client;
-	final PlayerClient player;
+	final LocalPlayer player;
 	final WorldClient world;
 	
 	Set<Integer> fastChunksMask = new HashSet<Integer>();
@@ -35,7 +35,7 @@ public class ClientWorldLoadingAgent {
 	
 	Lock lock = new ReentrantLock();
 	
-	public ClientWorldLoadingAgent(ClientInterface client, PlayerClient player, WorldClient world) {
+	public LocalClientLoadingAgent(ClientInterface client, LocalPlayer player, WorldClient world) {
 		this.client = client;
 		this.player = player;
 		this.world = world;
@@ -75,6 +75,9 @@ public class ClientWorldLoadingAgent {
 							continue;
 						
 						ChunkHolder holder = world.aquireChunkHolder(player, chunkX, chunkY, chunkZ);
+						
+						assert holder != null;
+						
 						if(holder == null)
 							continue;
 						
@@ -128,14 +131,16 @@ public class ClientWorldLoadingAgent {
 						int regionX = chunkX / 8;
 						int regionZ = chunkZ / 8;
 						
+						//TODO bad to aquire each time!!!
 						RegionSummary regionSummary = world.getRegionsSummariesHolder().aquireRegionSummary(player, regionX, regionZ);
 					
 						if(regionSummary != null) {
-							usedRegionSummaries.add(regionSummary);
-							
-							if(world instanceof WorldClientRemote) {
-								WorldClientRemote remote = (WorldClientRemote)world;
-								remote.getConnection().pushPacket(PacketWorldUser.registerSummary(regionX, regionZ));
+							if(usedRegionSummaries.add(regionSummary)) {
+								
+								if(world instanceof WorldClientRemote) {
+									WorldClientRemote remote = (WorldClientRemote)world;
+									remote.getConnection().pushPacket(PacketWorldUser.registerSummary(regionX, regionZ));
+								}
 							}
 						}
 					}

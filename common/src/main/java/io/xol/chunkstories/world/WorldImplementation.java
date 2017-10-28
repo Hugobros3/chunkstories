@@ -254,7 +254,7 @@ public abstract class WorldImplementation implements World
 		}
 
 		//Add it to the world
-		entity.markHasSpawned();
+		((EntityBase) entity).markHasSpawned();
 		
 		assert entity.getWorld() == this;
 
@@ -1140,11 +1140,13 @@ public abstract class WorldImplementation implements World
 		ioHandler.kill();
 	}
 
+	//TODO remove completely ?
 	public Fence unloadUselessData()
 	{
 		Fence onlyThisHasAFence = this.getRegionsHolder().unloadsUselessData();
-		this.getRegionsSummariesHolder().unloadsUselessData();
+		//this.getRegionsSummariesHolder().unloadsUselessData();
 		
 		return onlyThisHasAFence;
+		//return new TrivialFence();
 	}
 }

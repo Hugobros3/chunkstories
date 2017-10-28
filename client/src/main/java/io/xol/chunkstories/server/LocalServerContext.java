@@ -1,4 +1,4 @@
-package io.xol.chunkstories.client;
+package io.xol.chunkstories.server;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -12,7 +12,7 @@ import io.xol.chunkstories.api.client.ClientSoundManager;
 import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.player.Player;
-import io.xol.chunkstories.api.player.PlayerClient;
+import io.xol.chunkstories.api.player.LocalPlayer;
 import io.xol.chunkstories.api.plugin.ClientPluginManager;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
@@ -21,8 +21,11 @@ import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.api.server.UserPrivileges;
 import io.xol.chunkstories.api.util.ChunkStoriesLogger;
 import io.xol.chunkstories.api.util.ConfigDeprecated;
+import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.workers.Tasks;
 import io.xol.chunkstories.api.world.WorldClient;
+import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.client.ClientMasterPluginManager;
 import io.xol.chunkstories.server.UsersPrivilegesFile;
 import io.xol.chunkstories.server.commands.InstallServerCommands;
 import io.xol.chunkstories.world.WorldClientLocal;
@@ -85,12 +88,12 @@ public class LocalServerContext implements ClientInterface, ServerInterface
 	}
 
 	@Override
-	public ConnectedPlayers getConnectedPlayers()
+	public IterableIterator<Player> getConnectedPlayers()
 	{
 		Set<Player> players = new HashSet<Player>();
 		players.add(Client.getInstance().getPlayer());
 			
-		return new ConnectedPlayers()
+		return new IterableIterator<Player>()
 				{
 					Iterator<Player> i = players.iterator();
 					@Override
@@ -108,14 +111,14 @@ public class LocalServerContext implements ClientInterface, ServerInterface
 					{
 						return this;
 					}
-					
-					@Override
-					public int count() {
-						// TODO Auto-generated method stub
-						return 1;
-					}
 			
 				};
+	}
+
+	@Override
+	public int getConnectedPlayersCount() {
+		// TODO
+		return 1;
 	}
 
 	@Override
@@ -147,7 +150,7 @@ public class LocalServerContext implements ClientInterface, ServerInterface
 	}
 
 	@Override
-	public PlayerClient getPlayer()
+	public LocalPlayer getPlayer()
 	{
 		return Client.getInstance().getPlayer();
 	}

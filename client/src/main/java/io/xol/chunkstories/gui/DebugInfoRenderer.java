@@ -154,6 +154,10 @@ public class DebugInfoRenderer {
 		renderingInterface.getFontRenderer().drawStringWithShadow(font, posx, posy, text, 1, 1, new Vector4f(1));
 
 		posy -= lineHeight;
+		text = "Current Summary : " + world.getRegionsSummariesHolder().getRegionSummaryChunkCoordinates(cx, cz);
+		renderingInterface.getFontRenderer().drawStringWithShadow(font, posx, posy, text, 1, 1, new Vector4f(1));
+		
+		posy -= lineHeight;
 		text = "Current Region : " + world.getRegionChunkCoordinates(cx, cy, cz);
 		renderingInterface.getFontRenderer().drawStringWithShadow(font, posx, posy, text, 1, 1, new Vector4f(1));
 		

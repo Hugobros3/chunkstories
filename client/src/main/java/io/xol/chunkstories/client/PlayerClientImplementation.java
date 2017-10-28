@@ -11,35 +11,34 @@ import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.particles.ParticlesManager;
-import io.xol.chunkstories.api.player.PlayerClient;
+import io.xol.chunkstories.api.player.LocalPlayer;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClientNetworkedRemote;
 import io.xol.chunkstories.api.world.WorldMaster;
-import io.xol.chunkstories.world.ClientWorldLoadingAgent;
 import io.xol.chunkstories.world.WorldClientCommon;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
-public class PlayerClientImplementation implements PlayerClient
+public class PlayerClientImplementation implements LocalPlayer
 {
 	final Client client;
 	final WorldClientCommon world;
 	
-	public final ClientWorldLoadingAgent loadingAgent;
-	
 	private EntityControllable controlledEntity;
+	
+	public final LocalClientLoadingAgent loadingAgent;
 	
 	PlayerClientImplementation(Client client, WorldClientCommon world)
 	{
 		this.client = client;
 		this.world = world;
 		
-		this.loadingAgent = new ClientWorldLoadingAgent(client, this, world);
+		this.loadingAgent = new LocalClientLoadingAgent(client, this, world);
 	}
 
 	@Override
@@ -214,13 +213,6 @@ public class PlayerClientImplementation implements PlayerClient
 	public boolean hasSpawned()
 	{
 		return controlledEntity != null;
-	}
-
-	@Override
-	public void updateTrackedEntities()
-	{
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override

@@ -28,6 +28,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
@@ -41,8 +43,10 @@ public class RegionImplementation implements Region
 	//private final HashMapWorldRegionsHolder worldChunksHolder;
 	
 	protected Collection<CubicChunk> loadedChunks = ConcurrentHashMap.newKeySet();//new LinkedBlockingQueue<CubicChunk>();
-	private Set<WeakReference<WorldUser>> users = new HashSet<WeakReference<WorldUser>>();
-
+	
+	private final Set<WorldUser> users = ConcurrentHashMap.newKeySet();//new HashSet<WorldUser>();
+	private final Lock usersLock = new ReentrantLock();
+	
 	//Only relevant on Master worlds
 	public final CSFRegionFile handler;
 
@@ -101,30 +105,22 @@ public class RegionImplementation implements Region
 	}
 
 	@Override
-	public Iterator<WorldUser> getChunkUsers()
+	public IterableIterator<WorldUser> getChunkUsers()
 	{
-		return new Iterator<WorldUser>()
+		return new IterableIterator<WorldUser>()
 		{
-			Iterator<WeakReference<WorldUser>> i = users.iterator();
-			WorldUser user;
+			Iterator<WorldUser> i = users.iterator();
 
 			@Override
 			public boolean hasNext()
 			{
-				while(user == null && i.hasNext())
-				{
-					user = i.next().get();
-				}
-				return user != null;
+				return i.hasNext();
 			}
 
 			@Override
 			public WorldUser next()
 			{
-				hasNext();
-				WorldUser u = user;
-				user = null;
-				return u;
+				return i.next();
 			}
 
 		};
@@ -133,20 +129,12 @@ public class RegionImplementation implements Region
 	@Override
 	public boolean registerUser(WorldUser user)
 	{
-		Iterator<WeakReference<WorldUser>> i = users.iterator();
-		while (i.hasNext())
-		{
-			WeakReference<WorldUser> w = i.next();
-			WorldUser u = w.get();
-			if (u == null)
-				i.remove();
-			else if (u != null && u.equals(user))
-				return false;
+		try {
+			usersLock.lock();
+			return users.add(user);
+		} finally {
+			usersLock.unlock();
 		}
-		
-		users.add(new WeakReference<WorldUser>(user));
-		
-		return true;
 	}
 
 	@Override
@@ -155,42 +143,26 @@ public class RegionImplementation implements Region
 	 */
 	public boolean unregisterUser(WorldUser user)
 	{
-		Iterator<WeakReference<WorldUser>> i = users.iterator();
-		while (i.hasNext())
-		{
-			WeakReference<WorldUser> w = i.next();
-			WorldUser u = w.get();
-			if (u == null)
-				i.remove();
-			else if (u != null && u.equals(user))
-				i.remove();
+		try {
+			usersLock.lock();
+			users.remove(user);
+		
+			if(users.isEmpty())
+			{
+				//unloadChunk();
+				return true;
+			}
+			
+			return false;
+		} finally {
+			usersLock.unlock();
 		}
 		
-		if(users.isEmpty())
-		{
-			//unloadChunk();
-			return true;
-		}
-		
-		return false;
 	}
 
 	public int countUsers()
 	{
-		int count = 0;
-		
-		Iterator<WeakReference<WorldUser>> i = users.iterator();
-		while (i.hasNext())
-		{
-			WeakReference<WorldUser> w = i.next();
-			WorldUser u = w.get();
-			if (u == null)
-				i.remove();
-			else
-				count++;
-		}
-		
-		return count;
+		return users.size();
 	}
 	
 	public CompressedData getCompressedData(int chunkX, int chunkY, int chunkZ)
@@ -362,19 +334,7 @@ public class RegionImplementation implements Region
 		
 		return new CompoundIterator<Entity>(listOfIterators);
 	}
-
-	/*@Override
-	public boolean removeEntityFromRegion(Entity entity)
-	{
-		return localEntities.remove(entity);
-	}
-
-	@Override
-	public boolean addEntityToRegion(Entity entity)
-	{
-		return localEntities.add(entity);
-	}*/
-
+	
 	public void resetUnloadCooldown()
 	{
 		unloadCooldown.set(System.currentTimeMillis());
@@ -390,19 +350,6 @@ public class RegionImplementation implements Region
 	{
 		return world;
 	}
-
-	/*@Override
-	public EntityVoxel getEntityVoxelAt(int worldX, int worldY, int worldZ)
-	{
-		Iterator<Entity> entities = this.getEntitiesWithinRegion();
-		while (entities.hasNext())
-		{
-			Entity entity = entities.next();
-			if (entity != null && entity instanceof EntityVoxel && ((int)(double) entity.getLocation().x() == worldX) && ((int)(double) entity.getLocation().y() == worldY) && ((int)(double) entity.getLocation().z() == worldZ))
-				return (EntityVoxel) entity;
-		}
-		return null;
-	}*/
 
 	/**
 	 * Unloads unused chunks, returns true if all chunks were unloaded

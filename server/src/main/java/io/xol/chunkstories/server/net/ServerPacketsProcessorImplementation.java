@@ -19,7 +19,7 @@ import io.xol.chunkstories.net.PacketTypeDeclared;
 import io.xol.chunkstories.net.PacketsProcessorActual;
 import io.xol.chunkstories.net.PacketsProcessorCommon;
 import io.xol.chunkstories.server.DedicatedServer;
-import io.xol.chunkstories.server.ServerPlayer;
+import io.xol.chunkstories.server.player.ServerPlayer;
 
 public class ServerPacketsProcessorImplementation extends PacketsProcessorCommon implements ServerPacketsProcessor {
 

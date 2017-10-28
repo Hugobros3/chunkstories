@@ -8,8 +8,8 @@ import io.xol.chunkstories.api.net.packets.PacketParticle;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.server.DedicatedServer;
+import io.xol.chunkstories.server.player.ServerPlayer;
 import io.xol.chunkstories.world.WorldServer;
-import io.xol.chunkstories.server.ServerPlayer;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

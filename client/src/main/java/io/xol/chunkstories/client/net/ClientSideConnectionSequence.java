@@ -19,14 +19,14 @@ import io.xol.engine.net.HttpRequester;
 
 public class ClientSideConnectionSequence extends Thread implements HttpRequester
 {
-	ClientConnection connection;
+	ClientConnectionToServer connection;
 	boolean isDone = false;
 	
 	ConnectionStep status;
 	
 	public ClientSideConnectionSequence(String ip, int port)
 	{
-		this.connection = new ClientConnection(this, ip, port);
+		this.connection = new ClientConnectionToServer(this, ip, port);
 		
 		this.status = new ConnectionStep("Establishing connection to "+ip+":"+port);
 		this.start();

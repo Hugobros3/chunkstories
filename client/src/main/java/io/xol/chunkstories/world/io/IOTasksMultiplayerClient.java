@@ -11,7 +11,7 @@ import io.xol.chunkstories.api.net.packets.PacketWorldUser;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.workers.TaskExecutor;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.client.net.ClientConnection;
+import io.xol.chunkstories.client.net.ClientConnectionToServer;
 import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
 import io.xol.chunkstories.net.packets.PacketRegionSummary;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
@@ -28,7 +28,7 @@ import io.xol.engine.concurrency.SimpleFence;
 public class IOTasksMultiplayerClient extends IOTasks
 {
 	Client client;
-	ClientConnection connection;
+	ClientConnectionToServer connection;
 	
 	public IOTasksMultiplayerClient(WorldClientRemote world)
 	{
@@ -57,125 +57,11 @@ public class IOTasksMultiplayerClient extends IOTasks
 			return new byte[256 * 256 * 4 * 2];
 		}
 	};
-
-	/*public class IOTaskProcessCompressedChunkArrival extends IOTask
-	{
-		int chunkX, chunkY, chunkZ;
-		byte[] data;
-
-		public IOTaskProcessCompressedChunkArrival(int x, int y, int z, byte[] packetData)
-		{
-			this.chunkX = x;
-			this.chunkY = y;
-			this.chunkZ = z;
-			this.data = packetData;
-		}
-
-		@Override
-		public boolean task(TaskExecutor taskExecutor)
-		{
-			RegionImplementation region = world.getRegionChunkCoordinates(chunkX, chunkY, chunkZ);
-
-			if(region == null)
-			{
-				System.out.println("Notice: received chunk data for a chunk within an unloaded region ("+chunkX+","+chunkY+","+chunkZ+"). Ignoring.");
-				return true;
-			}
-			
-			ChunkHolderImplementation holder = region.getChunkHolder(chunkX, chunkY, chunkZ);
-			//CubicChunk chunk = holder.getChunk();
-			
-			
-			//Irrelevant because we made the IO handler create the chunks
-			
-			if (data != null)
-			{
-				try
-				{
-					decompressor.decompress(data, unCompressedDataBuffer.get());
-					int[] data = new int[32 * 32 * 32];
-					for (int i = 0; i < 32 * 32 * 32; i++)
-					{
-						data[i] = ((unCompressedDataBuffer.get()[i * 4] & 0xFF) << 24) | ((unCompressedDataBuffer.get()[i * 4 + 1] & 0xFF) << 16) | ((unCompressedDataBuffer.get()[i * 4 + 2] & 0xFF) << 8) | (unCompressedDataBuffer.get()[i * 4 + 3] & 0xFF);
-					}
-					
-					holder.createChunk(data);
-					//chunk.setChunkData(data);
-					//chunk = new CubicChunk(region, chunkX, chunkY, chunkZ, data);
-				}
-				catch (LZ4Exception exception)
-				{
-					//chunk = new CubicChunk(region, chunkX, chunkY, chunkZ);
-					ChunkStoriesLoggerImplementation.getInstance().warning("Invalid chunk data received for Chunk ("+chunkX+","+chunkY+","+chunkZ+")");
-				}
-			}
-			else
-				holder.createChunk();
-				//chunk.setChunkData(null);
-
-			//TODO make that a task ?
-			holder.getChunk().computeVoxelLightning(true);
-
-			//Remove any object preventing us from asking it again
-			//ChunkLocation loc = new ChunkLocation(chunkX, chunkY, chunkZ);
-
-			//world.getRegionsHolder().getRegionChunkCoordinates(chunkX, chunkY, chunkZ).getChunkHolder(chunkX, chunkY, chunkZ).setChunk(chunk);
-			return true;
-		}
-
-		@Override
-		public int hashCode()
-		{
-			return 324028;
-		}
-	}
-
-	public void requestChunkCompressedDataProcess(PacketChunkCompressedData data)
-	{
-		IOTaskProcessCompressedChunkArrival task = new IOTaskProcessCompressedChunkArrival(data.x, data.y, data.z, data.data);
-		scheduleTask(task);
-	}*/
-
-	/*public void requestChunkCompressedDataProcess(int x, int y, int z, byte[] data)
-	{
-		IOTaskProcessCompressedChunkArrival task = new IOTaskProcessCompressedChunkArrival(x, y, z, data);
-		scheduleTask(task);
-	}*/
-
-	class ChunkLocation
-	{
-		int chunkX, chunkY, chunkZ;
-
-		public ChunkLocation(int x, int y, int z)
-		{
-			chunkX = x;
-			chunkY = y;
-			chunkZ = z;
-		}
-
-		@Override
-		public boolean equals(Object o)
-		{
-			if (o instanceof ChunkLocation)
-			{
-				ChunkLocation loc = ((ChunkLocation) o);
-				if (loc.chunkX == chunkX && loc.chunkY == chunkY && loc.chunkZ == chunkZ)
-					return true;
-			}
-			return false;
-		}
-
-		@Override
-		public int hashCode()
-		{
-			return (chunkX * 65536 * 256 + chunkY * 65536 + chunkZ) % 21000000;
-		}
-	}
-
+	
 	@Override
 	public IOTask requestChunkLoad(ChunkHolderImplementation slot)
 	{
-		connection.sendTextMessage("world/getChunkCompressed:" + slot.getChunkCoordinateX() + ":" + slot.getChunkCoordinateY() + ":" + slot.getChunkCoordinateZ());
+		//connection.sendTextMessage("world/getChunkCompressed:" + slot.getChunkCoordinateX() + ":" + slot.getChunkCoordinateY() + ":" + slot.getChunkCoordinateZ());
 		return null;
 	}
 	
@@ -198,7 +84,6 @@ public class IOTasksMultiplayerClient extends IOTasks
 		public boolean task(TaskExecutor taskExecutor)
 		{
 			RegionSummaryImplementation summary = world.getRegionsSummariesHolder().getRegionSummaryWorldCoordinates(packet.rx * 256, packet.rz * 256);
-			
 			if(summary == null)
 			{
 				ChunkStoriesLoggerImplementation.getInstance().error("Summary data arrived for "+packet.rx+ ": "+packet.rz + "but there was no region summary waiting for it ?");
@@ -242,13 +127,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 	@Override
 	public Fence requestRegionSummaryLoad(RegionSummaryImplementation summary)
 	{
-		// don't spam packets !
-		int rx = summary.getRegionX();
-		int rz = summary.getRegionZ();
-		
-		connection.sendTextMessage("world/getChunkSummary:" + rx + ":" + rz);
-		
-		return new SimpleFence();
+		return null;
 	}
 
 	public void handlePacketWorldStreaming(PacketWorldStreaming packet) throws IllegalPacketException {
@@ -260,7 +139,8 @@ public class IOTasksMultiplayerClient extends IOTasks
 		} else if(packet instanceof PacketChunkCompressedData) {
 			RegionImplementation region = world.getRegionChunkCoordinates(((PacketChunkCompressedData) packet).x, ((PacketChunkCompressedData) packet).y, ((PacketChunkCompressedData) packet).z);
 			assert region != null;
-			region.getChunkHolder(((PacketChunkCompressedData) packet).x, ((PacketChunkCompressedData) packet).y, ((PacketChunkCompressedData) packet).z).createChunk(((PacketChunkCompressedData) packet).data);
+			region.getChunkHolder(((PacketChunkCompressedData) packet).x, ((PacketChunkCompressedData) packet).y, ((PacketChunkCompressedData) packet).z).
+				createChunk(((PacketChunkCompressedData) packet).data);
 		} else if(packet instanceof PacketWorldUser) {
 			client.getPlayer().loadingAgent.handleServerResponse((PacketWorldUser) packet);
 		}

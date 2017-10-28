@@ -24,11 +24,11 @@ import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.input.Mouse.MouseButton;
 import io.xol.chunkstories.api.input.Mouse.MouseScroll;
-import io.xol.chunkstories.api.player.PlayerClient;
+import io.xol.chunkstories.api.player.LocalPlayer;
 import io.xol.chunkstories.api.plugin.ClientPluginManager;
 import io.xol.chunkstories.api.util.ConfigDeprecated;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.client.net.ClientConnection;
+import io.xol.chunkstories.client.net.ClientConnectionToServer;
 import io.xol.chunkstories.gui.overlays.config.KeyBindSelectionOverlay;
 import io.xol.chunkstories.input.InputVirtual;
 import io.xol.chunkstories.input.InputsManagerLoader;
@@ -365,7 +365,7 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 		
 		//System.out.println("wasn't handled");
 		
-		final PlayerClient player = Client.getInstance().getPlayer();
+		final LocalPlayer player = Client.getInstance().getPlayer();
 		if(player == null)
 			return false;
 		
@@ -381,7 +381,7 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 			//MouseScroll inputs are strictly client-side
 			if(!(input instanceof MouseScroll))
 			{
-				ClientConnection connection = ((WorldClientRemote) entityControlled.getWorld()).getConnection();
+				ClientConnectionToServer connection = ((WorldClientRemote) entityControlled.getWorld()).getConnection();
 				PacketInput packet = new PacketInput();
 				packet.input = input;
 				packet.isPressed = true;
@@ -413,7 +413,7 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 			cpm.fireEvent(event);
 		}
 		
-		final PlayerClient player = Client.getInstance().getPlayer();
+		final LocalPlayer player = Client.getInstance().getPlayer();
 		if(player == null)
 			return false;
 		
@@ -426,7 +426,7 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 		//Send input to server
 		if (entityControlled.getWorld() instanceof WorldClientRemote)
 		{
-			ClientConnection connection = ((WorldClientRemote) entityControlled.getWorld()).getConnection();
+			ClientConnectionToServer connection = ((WorldClientRemote) entityControlled.getWorld()).getConnection();
 			PacketInput packet = new PacketInput();
 			packet.input = input;
 			packet.isPressed = false;

@@ -24,6 +24,13 @@ public class PacketRegionSummary extends PacketWorldStreaming
 	public int rx, rz;
 	public byte[] compressedData;
 
+	public PacketRegionSummary() {
+	}
+	
+	public PacketRegionSummary(RegionSummaryImplementation summary) {
+		this.summary = summary;
+	}
+
 	@Override
 	public void send(PacketDestinator destinator, DataOutputStream out) throws IOException
 	{

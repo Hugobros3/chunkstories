@@ -30,6 +30,7 @@ import io.xol.chunkstories.server.commands.DedicatedServerConsole;
 import io.xol.chunkstories.server.commands.InstallServerCommands;
 import io.xol.chunkstories.server.net.ServerAnnouncerThread;
 import io.xol.chunkstories.server.net.UserConnection;
+import io.xol.chunkstories.server.player.ServerPlayer;
 import io.xol.chunkstories.server.net.ServerConnectionsManager;
 import io.xol.chunkstories.server.propagation.ServerModsProvider;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
@@ -374,9 +375,9 @@ public class DedicatedServer implements Runnable, DedicatedServerInterface
 	}
 
 	@Override
-	public ConnectedPlayers getConnectedPlayers()
+	public IterableIterator<Player> getConnectedPlayers()
 	{
-		return new ConnectedPlayers()
+		return new IterableIterator<Player>()
 		{
 			Iterator<UserConnection> authClients = connectionsManager.getAuthentificatedClients();
 
@@ -387,17 +388,16 @@ public class DedicatedServer implements Runnable, DedicatedServerInterface
 			}
 
 			@Override
-			public Player next()
+			public ServerPlayer next()
 			{
-				return authClients.next().getProfile();
+				return authClients.next().getLoggedInPlayer();
 			}
-
-			@Override
-			public int count() {
-				return connectionsManager.getNumberOfAuthentificatedClients();
-			}
-
 		};
+	}
+
+	@Override
+	public int getConnectedPlayersCount() {
+		return connectionsManager.getNumberOfAuthentificatedClients();
 	}
 
 	@Override
@@ -411,7 +411,7 @@ public class DedicatedServer implements Runnable, DedicatedServerInterface
 	{
 		UserConnection clientByThatName = connectionsManager.getAuthentificatedClientByName(playerName);
 		if (clientByThatName != null)
-			return clientByThatName.getProfile();
+			return clientByThatName.getLoggedInPlayer();
 		return null;
 	}
 

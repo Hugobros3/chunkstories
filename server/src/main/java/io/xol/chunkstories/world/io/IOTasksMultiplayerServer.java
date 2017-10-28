@@ -126,22 +126,6 @@ public class IOTasksMultiplayerServer extends IOTasks
 				if(!client.isAlive())
 					return true;
 				
-				//TODO check he's near enough to ask for these
-				
-				//Player player = client.getProfile();
-				//int x = rx * 256;
-				//int z = rz * 256;
-				
-				//int px = (int)(double)player.getLocation().getX();
-				//int pz = (int)(double)player.getLocation().getY();
-				
-				//double dx = LoopingMathHelper.moduloDistance(x, px, player.getWorld().getWorldSize());
-				//double dz = LoopingMathHelper.moduloDistance(z, pz, player.getWorld().getWorldSize());
-				
-				//System.out.println("dx"+dx+"dz"+dz);
-				//if(dx > 1024 || dz > 1024)
-				//	return true;
-				
 				RegionSummaryImplementation summary = world.getRegionsSummariesHolder().getRegionSummaryWorldCoordinates(rx * 256, rz * 256);
 				
 				//Don't send the data until we have the summary loaded in

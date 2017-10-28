@@ -1,6 +1,7 @@
 package io.xol.chunkstories.client.net;
 
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.EntityBase;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.RemoteServer;
 import io.xol.chunkstories.api.net.packets.PacketText;
@@ -26,11 +27,16 @@ import java.util.Set;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ClientConnection extends Thread implements RemoteServer
+/**
+ * Represents the client connection to the server, from the client's point of view
+ * Exposes the server as a subscriber to the client's own controlled entity, allowing
+ * the replication mechanisms in {@link EntityComponent} to make their effects.
+ */
+public class ClientConnectionToServer extends Thread implements RemoteServer
 {
 	//This objects connects to a server
-	private String ip = "";
-	private int port = 30410;
+	private final String ip;
+	private final int port;
 
 	//Network stuff
 	private Socket socket;
@@ -55,7 +61,7 @@ public class ClientConnection extends Thread implements RemoteServer
 	
 	String[] prout = {"lel"};
 	
-	public ClientConnection(ClientSideConnectionSequence connectionSequence, String ip, int port)
+	public ClientConnectionToServer(ClientSideConnectionSequence connectionSequence, String ip, int port)
 	{
 		this.connectionSequence = connectionSequence;
 		this.ip = ip;
@@ -73,7 +79,7 @@ public class ClientConnection extends Thread implements RemoteServer
 	}
 
 	// Connect on/off
-	public boolean openSocket()
+	private boolean openSocket()
 	{
 		ChunkStoriesLoggerImplementation.getInstance().info("Connecting to " + ip + ":" + port + ".");
 		try
@@ -264,7 +270,7 @@ public class ClientConnection extends Thread implements RemoteServer
 	public boolean subscribe(Entity entity)
 	{
 		assert controlledEntity.size() == 0;
-		entity.subscribe(this);
+		((EntityBase) entity).subscribe(this);
 		return controlledEntity.add(entity);
 	}
 
@@ -272,7 +278,7 @@ public class ClientConnection extends Thread implements RemoteServer
 	public boolean unsubscribe(Entity entity)
 	{
 		assert controlledEntity.size() == 1;
-		entity.unsubscribe(this);
+		((EntityBase) entity).unsubscribe(this);
 		return controlledEntity.remove(entity);
 	}
 
