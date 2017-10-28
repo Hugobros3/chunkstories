@@ -6,6 +6,8 @@ import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.carrotsearch.hppc.IntHashSet;
+
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.exceptions.net.IllegalPacketException;
@@ -29,7 +31,8 @@ public class LocalClientLoadingAgent {
 	final LocalPlayer player;
 	final WorldClient world;
 	
-	Set<Integer> fastChunksMask = new HashSet<Integer>();
+	IntHashSet fastChunksMask = new IntHashSet();
+	//Set<Integer> fastChunksMask = new HashSet<Integer>();
 	Set<ChunkHolder> usedChunks = new HashSet<ChunkHolder>();
 	Set<RegionSummary> usedRegionSummaries = new HashSet<RegionSummary>();
 	

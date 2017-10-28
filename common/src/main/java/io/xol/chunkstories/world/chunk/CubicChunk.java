@@ -5,11 +5,13 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.events.voxel.WorldModificationCause;
 import io.xol.chunkstories.api.exceptions.world.WorldException;
 import io.xol.chunkstories.api.math.LoopingMathHelper;
-import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.packets.PacketVoxelUpdate;
 import io.xol.chunkstories.api.player.Player;
 
 import org.joml.Vector3dc;
+
+import com.carrotsearch.hppc.IntArrayDeque;
+import com.carrotsearch.hppc.IntDeque;
 
 import io.xol.chunkstories.api.rendering.world.ChunkRenderable;
 import io.xol.chunkstories.api.util.IterableIterator;
@@ -27,9 +29,7 @@ import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunkLightUpdater;
 import io.xol.chunkstories.api.world.chunk.Region;
-import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.entity.EntitySerializer;
-import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
 import io.xol.chunkstories.renderer.chunks.ClientChunkLightBaker;
 import io.xol.chunkstories.tools.WorldTool;
 import io.xol.chunkstories.voxel.VoxelsStore;
@@ -41,8 +41,6 @@ import io.xol.engine.concurrency.SimpleLock;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -100,36 +98,36 @@ public class CubicChunk implements Chunk
 	
 	//These wonderfull things does magic for us, they are unique per-thread so they won't ever clog memory neither will they have contigency issues
 	//Seriously awesome
-	static ThreadLocal<Deque<Integer>> blockSources = new ThreadLocal<Deque<Integer>>()
+	static ThreadLocal<IntDeque> blockSources = new ThreadLocal<IntDeque>()
 	{
 		@Override
-		protected Deque<Integer> initialValue()
+		protected IntDeque initialValue()
 		{
-			return new ArrayDeque<Integer>();
+			return new IntArrayDeque();
 		}
 	};
-	static ThreadLocal<Deque<Integer>> sunSources = new ThreadLocal<Deque<Integer>>()
+	static ThreadLocal<IntDeque> sunSources = new ThreadLocal<IntDeque>()
 	{
 		@Override
-		protected Deque<Integer> initialValue()
+		protected IntDeque initialValue()
 		{
-			return new ArrayDeque<Integer>();
+			return new IntArrayDeque();
 		}
 	};
-	static ThreadLocal<Deque<Integer>> blockSourcesRemoval = new ThreadLocal<Deque<Integer>>()
+	static ThreadLocal<IntDeque> blockSourcesRemoval = new ThreadLocal<IntDeque>()
 	{
 		@Override
-		protected Deque<Integer> initialValue()
+		protected IntDeque initialValue()
 		{
-			return new ArrayDeque<Integer>();
+			return new IntArrayDeque();
 		}
 	};
-	static ThreadLocal<Deque<Integer>> sunSourcesRemoval = new ThreadLocal<Deque<Integer>>()
+	static ThreadLocal<IntDeque> sunSourcesRemoval = new ThreadLocal<IntDeque>()
 	{
 		@Override
-		protected Deque<Integer> initialValue()
+		protected IntDeque initialValue()
 		{
-			return new ArrayDeque<Integer>();
+			return new IntArrayDeque();
 		}
 	};
 
@@ -421,7 +419,7 @@ public class CubicChunk implements Chunk
 				{
 					Player player = pi.next();
 					
-					//Ignore local players, they don't need anything pushed to them
+					//Ignore local players, they don't need anything addLasted to them
 					if(player == ignoreLocalPlayer || player.equals(ignoreLocalPlayer) ||
 							(ignoreLocalPlayer != null && player.getName().equals(ignoreLocalPlayer.getName())) )
 						continue;
@@ -481,8 +479,8 @@ public class CubicChunk implements Chunk
 			return 0; // Nothing to do
 
 		//Lock the chunk & grab 2 queues
-		Deque<Integer> blockSources = CubicChunk.blockSources.get();
-		Deque<Integer> sunSources = CubicChunk.sunSources.get();
+		IntDeque blockSources = CubicChunk.blockSources.get();
+		IntDeque sunSources = CubicChunk.sunSources.get();
 
 		// Reset any remnant data
 		blockSources.clear();
@@ -504,7 +502,7 @@ public class CubicChunk implements Chunk
 	}
 
 	// Now entering lightning code part, brace yourselves
-	private int propagateLightning(Deque<Integer> blockSources, Deque<Integer> sunSources)
+	private int propagateLightning(IntDeque blockSources, IntDeque sunSources)
 	{
 		int modifiedBlocks = 0;
 
@@ -534,9 +532,9 @@ public class CubicChunk implements Chunk
 		Voxel voxel;
 		while (blockSources.size() > 0)
 		{
-			int y = blockSources.pop();
-			int z = blockSources.pop();
-			int x = blockSources.pop();
+			int y = blockSources.removeLast();
+			int z = blockSources.removeLast();
+			int x = blockSources.removeLast();
 			
 			int voxelData = chunkVoxelData[x * 1024 + y * 32 + z];
 			int cellLightLevel = (voxelData & blocklightMask) >> blockBitshift;
@@ -555,9 +553,9 @@ public class CubicChunk implements Chunk
 					{
 						chunkVoxelData[(x + 1) * 1024 + y * 32 + z] = rightData & blockAntiMask | (llRight - 1) << blockBitshift;
 						modifiedBlocks++;
-						blockSources.push(x + 1);
-						blockSources.push(z);
-						blockSources.push(y);
+						blockSources.addLast(x + 1);
+						blockSources.addLast(z);
+						blockSources.addLast(y);
 					}
 				}
 				else if (checkRightBleeding)
@@ -578,9 +576,9 @@ public class CubicChunk implements Chunk
 					{
 						chunkVoxelData[(x - 1) * 1024 + y * 32 + z] = leftData & blockAntiMask | (llLeft - 1) << blockBitshift;
 						modifiedBlocks++;
-						blockSources.push(x - 1);
-						blockSources.push(z);
-						blockSources.push(y);
+						blockSources.addLast(x - 1);
+						blockSources.addLast(z);
+						blockSources.addLast(y);
 					}
 				}
 				else if (checkLeftBleeding)
@@ -602,9 +600,9 @@ public class CubicChunk implements Chunk
 					{
 						chunkVoxelData[x * 1024 + y * 32 + z + 1] = frontData & blockAntiMask | (llFront - 1) << blockBitshift;
 						modifiedBlocks++;
-						blockSources.push(x);
-						blockSources.push(z + 1);
-						blockSources.push(y);
+						blockSources.addLast(x);
+						blockSources.addLast(z + 1);
+						blockSources.addLast(y);
 					}
 				}
 				else if (checkFrontBleeding)
@@ -625,9 +623,9 @@ public class CubicChunk implements Chunk
 					{
 						chunkVoxelData[x * 1024 + y * 32 + z - 1] = backData & blockAntiMask | (llBack - 1) << blockBitshift;
 						modifiedBlocks++;
-						blockSources.push(x);
-						blockSources.push(z - 1);
-						blockSources.push(y);
+						blockSources.addLast(x);
+						blockSources.addLast(z - 1);
+						blockSources.addLast(y);
 					}
 				}
 				else if (checkBackBleeding)
@@ -649,9 +647,9 @@ public class CubicChunk implements Chunk
 					{
 						chunkVoxelData[x * 1024 + (y + 1) * 32 + z] = topData & blockAntiMask | (llTop - 1) << blockBitshift;
 						modifiedBlocks++;
-						blockSources.push(x);
-						blockSources.push(z);
-						blockSources.push(y + 1);
+						blockSources.addLast(x);
+						blockSources.addLast(z);
+						blockSources.addLast(y + 1);
 					}
 				}
 				else if (checkTopBleeding)
@@ -675,9 +673,9 @@ public class CubicChunk implements Chunk
 					{
 						chunkVoxelData[x * 1024 + (y - 1) * 32 + z] = belowData & blockAntiMask | (llTop - 1) << blockBitshift;
 						modifiedBlocks++;
-						blockSources.push(x);
-						blockSources.push(z);
-						blockSources.push(y - 1);
+						blockSources.addLast(x);
+						blockSources.addLast(z);
+						blockSources.addLast(y - 1);
 					}
 				}
 				else if (checkBottomBleeding)
@@ -699,9 +697,9 @@ public class CubicChunk implements Chunk
 		// Sunlight propagation
 		while (sunSources.size() > 0)
 		{
-			int y = sunSources.pop();
-			int z = sunSources.pop();
-			int x = sunSources.pop();
+			int y = sunSources.removeLast();
+			int z = sunSources.removeLast();
+			int x = sunSources.removeLast();
 
 			int voxelData = chunkVoxelData[x * 1024 + y * 32 + z];
 			int cellLightLevel = (voxelData & sunlightMask) >> sunBitshift;
@@ -721,9 +719,9 @@ public class CubicChunk implements Chunk
 					{
 						chunkVoxelData[(x + 1) * 1024 + y * 32 + z] = rightData & sunAntiMask | (llRight - 1) << sunBitshift;
 						modifiedBlocks++;
-						sunSources.push(x + 1);
-						sunSources.push(z);
-						sunSources.push(y);
+						sunSources.addLast(x + 1);
+						sunSources.addLast(z);
+						sunSources.addLast(y);
 					}
 				}
 				else if (checkRightBleeding)
@@ -744,9 +742,9 @@ public class CubicChunk implements Chunk
 					{
 						chunkVoxelData[(x - 1) * 1024 + y * 32 + z] = leftData & sunAntiMask | (llLeft - 1) << sunBitshift;
 						modifiedBlocks++;
-						sunSources.push(x - 1);
-						sunSources.push(z);
-						sunSources.push(y);
+						sunSources.addLast(x - 1);
+						sunSources.addLast(z);
+						sunSources.addLast(y);
 					}
 				}
 				else if (checkLeftBleeding)
@@ -768,9 +766,9 @@ public class CubicChunk implements Chunk
 					{
 						chunkVoxelData[x * 1024 + y * 32 + z + 1] = frontData & sunAntiMask | (llFront - 1) << sunBitshift;
 						modifiedBlocks++;
-						sunSources.push(x);
-						sunSources.push(z + 1);
-						sunSources.push(y);
+						sunSources.addLast(x);
+						sunSources.addLast(z + 1);
+						sunSources.addLast(y);
 					}
 				}
 				else if (checkFrontBleeding)
@@ -791,9 +789,9 @@ public class CubicChunk implements Chunk
 					{
 						chunkVoxelData[x * 1024 + y * 32 + z - 1] = backData & sunAntiMask | (llBack - 1) << sunBitshift;
 						modifiedBlocks++;
-						sunSources.push(x);
-						sunSources.push(z - 1);
-						sunSources.push(y);
+						sunSources.addLast(x);
+						sunSources.addLast(z - 1);
+						sunSources.addLast(y);
 					}
 				}
 				else if (checkBackBleeding)
@@ -815,9 +813,9 @@ public class CubicChunk implements Chunk
 					{
 						chunkVoxelData[x * 1024 + (y + 1) * 32 + z] = topData & sunAntiMask | (llTop - 1) << sunBitshift;
 						modifiedBlocks++;
-						sunSources.push(x);
-						sunSources.push(z);
-						sunSources.push(y + 1);
+						sunSources.addLast(x);
+						sunSources.addLast(z);
+						sunSources.addLast(y + 1);
 					}
 				}
 				else if (checkTopBleeding)
@@ -840,9 +838,9 @@ public class CubicChunk implements Chunk
 					{
 						chunkVoxelData[x * 1024 + (y - 1) * 32 + z] = belowData & sunAntiMask | (llBottom) << sunBitshift;
 						modifiedBlocks++;
-						sunSources.push(x);
-						sunSources.push(z);
-						sunSources.push(y - 1);
+						sunSources.addLast(x);
+						sunSources.addLast(z);
+						sunSources.addLast(y - 1);
 					}
 				}
 				else if (checkBottomBleeding)
@@ -874,7 +872,7 @@ public class CubicChunk implements Chunk
 		return modifiedBlocks;
 	}
 
-	private void addChunkLightSources(Deque<Integer> blockSources, Deque<Integer> sunSources)
+	private void addChunkLightSources(IntDeque blockSources, IntDeque sunSources)
 	{
 		for (int a = 0; a < 32; a++)
 			for (int b = 0; b < 32; b++)
@@ -890,20 +888,20 @@ public class CubicChunk implements Chunk
 					if (ll > 0)
 					{
 						chunkVoxelData[a * 1024 + z * 32 + b] = chunkVoxelData[a * 1024 + z * 32 + b] & blockAntiMask | ((ll & 0xF) << blockBitshift);
-						//blockSources.push(a << 16 | b << 8 | z);
-						blockSources.push(a);
-						blockSources.push(b);
-						blockSources.push(z);
+						//blockSources.addLast(a << 16 | b << 8 | z);
+						blockSources.addLast(a);
+						blockSources.addLast(b);
+						blockSources.addLast(z);
 					}
 					if (!hit)
 					{
 						if (chunkY * 32 + z >= csh)
 						{
 							chunkVoxelData[a * 1024 + (z) * 32 + b] = chunkVoxelData[a * 1024 + (z) * 32 + b] & sunAntiMask | (15 << sunBitshift);
-							//sunSources.push(a << 16 | b << 8 | z);
-							sunSources.push(a);
-							sunSources.push(b);
-							sunSources.push(z);
+							//sunSources.addLast(a << 16 | b << 8 | z);
+							sunSources.addLast(a);
+							sunSources.addLast(b);
+							sunSources.addLast(z);
 							if (chunkY * 32 + z < csh || VoxelsStore.get().getVoxelById(VoxelFormat.id(chunkVoxelData[a * 1024 + (z) * 32 + b])).getId() != 0)
 							{
 								hit = true;
@@ -916,7 +914,7 @@ public class CubicChunk implements Chunk
 			}
 	}
 
-	private int addAdjacentChunksLightSources(Deque<Integer> blockSources, Deque<Integer> sunSources)
+	private int addAdjacentChunksLightSources(IntDeque blockSources, IntDeque sunSources)
 	{
 		int mods = 0;
 		if (world != null)
@@ -940,20 +938,20 @@ public class CubicChunk implements Chunk
 							int ndata = current_data & blockAntiMask | (adjacent_blo - 1) << blockBitshift;
 							pokeSimpleSilently(31, c, b, ndata);
 							mods++;
-							blockSources.push(31);
-							blockSources.push(b);
-							blockSources.push(c);
-							//blockSources.push(31 << 16 | b << 8 | c);
+							blockSources.addLast(31);
+							blockSources.addLast(b);
+							blockSources.addLast(c);
+							//blockSources.addLast(31 << 16 | b << 8 | c);
 						}
 						if (adjacent_sun > 1 && adjacent_sun > current_sun)
 						{
 							int ndata = current_data & sunAntiMask | (adjacent_sun - 1) << sunBitshift;
 							pokeSimpleSilently(31, c, b, ndata);
 							mods++;
-							sunSources.push(31);
-							sunSources.push(b);
-							sunSources.push(c);
-							//sunSources.push(31 << 16 | b << 8 | c);
+							sunSources.addLast(31);
+							sunSources.addLast(b);
+							sunSources.addLast(c);
+							//sunSources.addLast(31 << 16 | b << 8 | c);
 						}
 					}
 			}
@@ -975,20 +973,20 @@ public class CubicChunk implements Chunk
 							int ndata = current_data & blockAntiMask | (adjacent_blo - 1) << blockBitshift;
 							pokeSimpleSilently(0, c, b, ndata);
 							mods++;
-							blockSources.push(0);
-							blockSources.push(b);
-							blockSources.push(c);
-							//blockSources.push(0 << 16 | b << 8 | c);
+							blockSources.addLast(0);
+							blockSources.addLast(b);
+							blockSources.addLast(c);
+							//blockSources.addLast(0 << 16 | b << 8 | c);
 						}
 						if (adjacent_sun > 1 && adjacent_sun > current_sun)
 						{
 							int ndata = current_data & sunAntiMask | (adjacent_sun - 1) << sunBitshift;
 							pokeSimpleSilently(0, c, b, ndata);
 							mods++;
-							sunSources.push(0);
-							sunSources.push(b);
-							sunSources.push(c);
-							//sunSources.push(0 << 16 | b << 8 | c);
+							sunSources.addLast(0);
+							sunSources.addLast(b);
+							sunSources.addLast(c);
+							//sunSources.addLast(0 << 16 | b << 8 | c);
 						}
 					}
 			}
@@ -1013,10 +1011,10 @@ public class CubicChunk implements Chunk
 							mods++;
 							if (adjacent_blo > 2)
 							{
-								blockSources.push(c);
-								blockSources.push(b);
-								blockSources.push(31);
-								//blockSources.push(c << 16 | b << 8 | 31);
+								blockSources.addLast(c);
+								blockSources.addLast(b);
+								blockSources.addLast(31);
+								//blockSources.addLast(c << 16 | b << 8 | 31);
 							}
 						}
 						if (adjacent_sun > 1 && adjacent_sun > current_sun)
@@ -1027,10 +1025,10 @@ public class CubicChunk implements Chunk
 							//System.out.println(cc + " : "+adjacent_sun);
 							if (adjacent_sun > 2)
 							{
-								sunSources.push(c);
-								sunSources.push(b);
-								sunSources.push(31);
-								//sunSources.push(c << 16 | b << 8 | 31);
+								sunSources.addLast(c);
+								sunSources.addLast(b);
+								sunSources.addLast(31);
+								//sunSources.addLast(c << 16 | b << 8 | 31);
 							}
 						}
 					}
@@ -1059,10 +1057,10 @@ public class CubicChunk implements Chunk
 								mods++;
 								if (adjacent_blo > 2)
 								{
-									blockSources.push(c);
-									blockSources.push(b);
-									blockSources.push(31);
-									//blockSources.push(c << 16 | b << 8 | 31);
+									blockSources.addLast(c);
+									blockSources.addLast(b);
+									blockSources.addLast(31);
+									//blockSources.addLast(c << 16 | b << 8 | 31);
 								}
 							}
 							if (adjacent_sun > 1 && adjacent_sun > current_sun)
@@ -1073,10 +1071,10 @@ public class CubicChunk implements Chunk
 								//System.out.println(cc + " : "+adjacent_sun);
 								if (adjacent_sun > 2)
 								{
-									sunSources.push(c);
-									sunSources.push(b);
-									sunSources.push(31);
-									//sunSources.push(c << 16 | b << 8 | 31);
+									sunSources.addLast(c);
+									sunSources.addLast(b);
+									sunSources.addLast(31);
+									//sunSources.addLast(c << 16 | b << 8 | 31);
 								}
 							}
 						}
@@ -1096,10 +1094,10 @@ public class CubicChunk implements Chunk
 							int ndata = current_data & sunAntiMask | (15) << sunBitshift;
 							pokeSimple(b, sourceAt, c, ndata);
 
-							sunSources.push(b);
-							sunSources.push(c);
-							sunSources.push(sourceAt);
-							//sunSources.push(b << 16 | c << 8 | sourceAt);
+							sunSources.addLast(b);
+							sunSources.addLast(c);
+							sunSources.addLast(sourceAt);
+							//sunSources.addLast(b << 16 | c << 8 | sourceAt);
 							// System.out.println("Added sunsource cause summary etc");
 						}
 					}*/
@@ -1125,10 +1123,10 @@ public class CubicChunk implements Chunk
 							mods++;
 							if (adjacent_blo > 2)
 							{
-								blockSources.push(c);
-								blockSources.push(b);
-								blockSources.push(0);
-								//blockSources.push(c << 16 | b << 8 | 0);
+								blockSources.addLast(c);
+								blockSources.addLast(b);
+								blockSources.addLast(0);
+								//blockSources.addLast(c << 16 | b << 8 | 0);
 							}
 						}
 						if (adjacent_sun > 1 && adjacent_sun > current_sun)
@@ -1138,10 +1136,10 @@ public class CubicChunk implements Chunk
 							mods++;
 							if (adjacent_sun > 2)
 							{
-								sunSources.push(c);
-								sunSources.push(b);
-								sunSources.push(0);
-								//sunSources.push(c << 16 | b << 8 | 0);
+								sunSources.addLast(c);
+								sunSources.addLast(b);
+								sunSources.addLast(0);
+								//sunSources.addLast(c << 16 | b << 8 | 0);
 							}
 						}
 					}
@@ -1165,20 +1163,20 @@ public class CubicChunk implements Chunk
 							int ndata = current_data & blockAntiMask | (adjacent_blo - 1) << blockBitshift;
 							pokeSimpleSilently(c, b, 31, ndata);
 							mods++;
-							blockSources.push(c);
-							blockSources.push(31);
-							blockSources.push(b);
-							//blockSources.push(c << 16 | 31 << 8 | b);
+							blockSources.addLast(c);
+							blockSources.addLast(31);
+							blockSources.addLast(b);
+							//blockSources.addLast(c << 16 | 31 << 8 | b);
 						}
 						if (adjacent_sun > 1 && adjacent_sun > current_sun)
 						{
 							int ndata = current_data & sunAntiMask | (adjacent_sun - 1) << sunBitshift;
 							pokeSimpleSilently(c, b, 31, ndata);
 							mods++;
-							sunSources.push(c);
-							sunSources.push(31);
-							sunSources.push(b);
-							//sunSources.push(c << 16 | 31 << 8 | b);
+							sunSources.addLast(c);
+							sunSources.addLast(31);
+							sunSources.addLast(b);
+							//sunSources.addLast(c << 16 | 31 << 8 | b);
 						}
 					}
 			}
@@ -1200,20 +1198,20 @@ public class CubicChunk implements Chunk
 							int ndata = current_data & blockAntiMask | (adjacent_blo - 1) << blockBitshift;
 							pokeSimpleSilently(c, b, 0, ndata);
 							mods++;
-							blockSources.push(c);
-							blockSources.push(0);
-							blockSources.push(b);
-							//blockSources.push(c << 16 | 0 << 8 | b);
+							blockSources.addLast(c);
+							blockSources.addLast(0);
+							blockSources.addLast(b);
+							//blockSources.addLast(c << 16 | 0 << 8 | b);
 						}
 						if (adjacent_sun > 1 && adjacent_sun > current_sun)
 						{
 							int ndata = current_data & sunAntiMask | (adjacent_sun - 1) << sunBitshift;
 							pokeSimpleSilently(c, b, 0, ndata);
 							mods++;
-							sunSources.push(c);
-							sunSources.push(0);
-							sunSources.push(b);
-							//sunSources.push(c << 16 | 0 << 8 | b);
+							sunSources.addLast(c);
+							sunSources.addLast(0);
+							sunSources.addLast(b);
+							//sunSources.addLast(c << 16 | 0 << 8 | b);
 						}
 					}
 			}
@@ -1237,50 +1235,50 @@ public class CubicChunk implements Chunk
 		if (block_height >= csh)
 			sunLightAfter = 15;
 
-		Deque<Integer> blockSourcesRemoval = CubicChunk.blockSourcesRemoval.get();
-		Deque<Integer> sunSourcesRemoval = CubicChunk.sunSourcesRemoval.get();
-		Deque<Integer> blockSources = CubicChunk.blockSources.get();
-		Deque<Integer> sunSources = CubicChunk.sunSources.get();
+		IntDeque blockSourcesRemoval = CubicChunk.blockSourcesRemoval.get();
+		IntDeque sunSourcesRemoval = CubicChunk.sunSourcesRemoval.get();
+		IntDeque blockSources = CubicChunk.blockSources.get();
+		IntDeque sunSources = CubicChunk.sunSources.get();
 
-		blockSourcesRemoval.push(bx);
-		blockSourcesRemoval.push(by);
-		blockSourcesRemoval.push(bz);
-		blockSourcesRemoval.push(blockLightBefore);
+		blockSourcesRemoval.addLast(bx);
+		blockSourcesRemoval.addLast(by);
+		blockSourcesRemoval.addLast(bz);
+		blockSourcesRemoval.addLast(blockLightBefore);
 
-		sunSourcesRemoval.push(bx);
-		sunSourcesRemoval.push(by);
-		sunSourcesRemoval.push(bz);
-		sunSourcesRemoval.push(sunLightBefore);
+		sunSourcesRemoval.addLast(bx);
+		sunSourcesRemoval.addLast(by);
+		sunSourcesRemoval.addLast(bz);
+		sunSourcesRemoval.addLast(sunLightBefore);
 
 		propagateLightRemovalBeyondChunks(blockSources, sunSources, blockSourcesRemoval, sunSourcesRemoval);
 
 		//Add light sources if relevant
 		if (sunLightAfter > 0)
 		{
-			sunSources.push(bx);
-			sunSources.push(bz);
-			sunSources.push(by);
+			sunSources.addLast(bx);
+			sunSources.addLast(bz);
+			sunSources.addLast(by);
 		}
 		if (blockLightAfter > 0)
 		{
-			blockSources.push(bx);
-			blockSources.push(bz);
-			blockSources.push(by);
+			blockSources.addLast(bx);
+			blockSources.addLast(bz);
+			blockSources.addLast(by);
 		}
 
 		//Propagate remaining light
 		this.propagateLightningBeyondChunk(blockSources, sunSources);
 	}
 
-	private void propagateLightRemovalBeyondChunks(Deque<Integer> blockSources, Deque<Integer> sunSources, Deque<Integer> blockSourcesRemoval, Deque<Integer> sunSourcesRemoval)
+	private void propagateLightRemovalBeyondChunks(IntDeque blockSources, IntDeque sunSources, IntDeque blockSourcesRemoval, IntDeque sunSourcesRemoval)
 	{
 		int bounds = 64;
 		while (sunSourcesRemoval.size() > 0)
 		{
-			int sunLightLevel = sunSourcesRemoval.pop();
-			int z = sunSourcesRemoval.pop();
-			int y = sunSourcesRemoval.pop();
-			int x = sunSourcesRemoval.pop();
+			int sunLightLevel = sunSourcesRemoval.removeLast();
+			int z = sunSourcesRemoval.removeLast();
+			int y = sunSourcesRemoval.removeLast();
+			int x = sunSourcesRemoval.removeLast();
 
 			int neighborSunLightLevel;
 
@@ -1291,16 +1289,16 @@ public class CubicChunk implements Chunk
 				if (neighborSunLightLevel > 0 && neighborSunLightLevel < sunLightLevel)
 				{
 					this.setSunLight(x - 1, y, z, 0);
-					sunSourcesRemoval.push(x - 1);
-					sunSourcesRemoval.push(y);
-					sunSourcesRemoval.push(z);
-					sunSourcesRemoval.push(neighborSunLightLevel);
+					sunSourcesRemoval.addLast(x - 1);
+					sunSourcesRemoval.addLast(y);
+					sunSourcesRemoval.addLast(z);
+					sunSourcesRemoval.addLast(neighborSunLightLevel);
 				}
 				else if (neighborSunLightLevel >= sunLightLevel)
 				{
-					sunSources.push(x - 1);
-					sunSources.push(z);
-					sunSources.push(y);
+					sunSources.addLast(x - 1);
+					sunSources.addLast(z);
+					sunSources.addLast(y);
 				}
 			}
 			if (x < bounds)
@@ -1309,16 +1307,16 @@ public class CubicChunk implements Chunk
 				if (neighborSunLightLevel > 0 && neighborSunLightLevel < sunLightLevel)
 				{
 					this.setSunLight(x + 1, y, z, 0);
-					sunSourcesRemoval.push(x + 1);
-					sunSourcesRemoval.push(y);
-					sunSourcesRemoval.push(z);
-					sunSourcesRemoval.push(neighborSunLightLevel);
+					sunSourcesRemoval.addLast(x + 1);
+					sunSourcesRemoval.addLast(y);
+					sunSourcesRemoval.addLast(z);
+					sunSourcesRemoval.addLast(neighborSunLightLevel);
 				}
 				else if (neighborSunLightLevel >= sunLightLevel)
 				{
-					sunSources.push(x + 1);
-					sunSources.push(z);
-					sunSources.push(y);
+					sunSources.addLast(x + 1);
+					sunSources.addLast(z);
+					sunSources.addLast(y);
 				}
 			}
 			// Y axis
@@ -1328,16 +1326,16 @@ public class CubicChunk implements Chunk
 				if (neighborSunLightLevel > 0 && neighborSunLightLevel <= sunLightLevel)
 				{
 					this.setSunLight(x, y - 1, z, 0);
-					sunSourcesRemoval.push(x);
-					sunSourcesRemoval.push(y - 1);
-					sunSourcesRemoval.push(z);
-					sunSourcesRemoval.push(neighborSunLightLevel);
+					sunSourcesRemoval.addLast(x);
+					sunSourcesRemoval.addLast(y - 1);
+					sunSourcesRemoval.addLast(z);
+					sunSourcesRemoval.addLast(neighborSunLightLevel);
 				}
 				else if (neighborSunLightLevel >= sunLightLevel)
 				{
-					sunSources.push(x);
-					sunSources.push(z);
-					sunSources.push(y - 1);
+					sunSources.addLast(x);
+					sunSources.addLast(z);
+					sunSources.addLast(y - 1);
 				}
 			}
 			if (y < bounds)
@@ -1347,16 +1345,16 @@ public class CubicChunk implements Chunk
 				if (neighborSunLightLevel > 0 && neighborSunLightLevel < sunLightLevel)
 				{
 					this.setSunLight(x, y + 1, z, 0);
-					sunSourcesRemoval.push(x);
-					sunSourcesRemoval.push(y + 1);
-					sunSourcesRemoval.push(z);
-					sunSourcesRemoval.push(neighborSunLightLevel);
+					sunSourcesRemoval.addLast(x);
+					sunSourcesRemoval.addLast(y + 1);
+					sunSourcesRemoval.addLast(z);
+					sunSourcesRemoval.addLast(neighborSunLightLevel);
 				}
 				else if (neighborSunLightLevel >= sunLightLevel)
 				{
-					sunSources.push(x);
-					sunSources.push(z);
-					sunSources.push(y + 1);
+					sunSources.addLast(x);
+					sunSources.addLast(z);
+					sunSources.addLast(y + 1);
 				}
 			}
 			// Z Axis
@@ -1366,16 +1364,16 @@ public class CubicChunk implements Chunk
 				if (neighborSunLightLevel > 0 && neighborSunLightLevel < sunLightLevel)
 				{
 					this.setSunLight(x, y, z - 1, 0);
-					sunSourcesRemoval.push(x);
-					sunSourcesRemoval.push(y);
-					sunSourcesRemoval.push(z - 1);
-					sunSourcesRemoval.push(neighborSunLightLevel);
+					sunSourcesRemoval.addLast(x);
+					sunSourcesRemoval.addLast(y);
+					sunSourcesRemoval.addLast(z - 1);
+					sunSourcesRemoval.addLast(neighborSunLightLevel);
 				}
 				else if (neighborSunLightLevel >= sunLightLevel)
 				{
-					sunSources.push(x);
-					sunSources.push(z - 1);
-					sunSources.push(y);
+					sunSources.addLast(x);
+					sunSources.addLast(z - 1);
+					sunSources.addLast(y);
 				}
 			}
 			if (z < bounds)
@@ -1384,26 +1382,26 @@ public class CubicChunk implements Chunk
 				if (neighborSunLightLevel > 0 && neighborSunLightLevel < sunLightLevel)
 				{
 					this.setSunLight(x, y, z + 1, 0);
-					sunSourcesRemoval.push(x);
-					sunSourcesRemoval.push(y);
-					sunSourcesRemoval.push(z + 1);
-					sunSourcesRemoval.push(neighborSunLightLevel);
+					sunSourcesRemoval.addLast(x);
+					sunSourcesRemoval.addLast(y);
+					sunSourcesRemoval.addLast(z + 1);
+					sunSourcesRemoval.addLast(neighborSunLightLevel);
 				}
 				else if (neighborSunLightLevel >= sunLightLevel)
 				{
-					sunSources.push(x);
-					sunSources.push(z + 1);
-					sunSources.push(y);
+					sunSources.addLast(x);
+					sunSources.addLast(z + 1);
+					sunSources.addLast(y);
 				}
 			}
 		}
 
 		while (blockSourcesRemoval.size() > 0)
 		{
-			int blockLightLevel = blockSourcesRemoval.pop();
-			int z = blockSourcesRemoval.pop();
-			int y = blockSourcesRemoval.pop();
-			int x = blockSourcesRemoval.pop();
+			int blockLightLevel = blockSourcesRemoval.removeLast();
+			int z = blockSourcesRemoval.removeLast();
+			int y = blockSourcesRemoval.removeLast();
+			int x = blockSourcesRemoval.removeLast();
 
 			int neighborBlockLightLevel;
 
@@ -1415,16 +1413,16 @@ public class CubicChunk implements Chunk
 				if (neighborBlockLightLevel > 0 && neighborBlockLightLevel < blockLightLevel)
 				{
 					this.setBlockLight(x - 1, y, z, 0);
-					blockSourcesRemoval.push(x - 1);
-					blockSourcesRemoval.push(y);
-					blockSourcesRemoval.push(z);
-					blockSourcesRemoval.push(neighborBlockLightLevel);
+					blockSourcesRemoval.addLast(x - 1);
+					blockSourcesRemoval.addLast(y);
+					blockSourcesRemoval.addLast(z);
+					blockSourcesRemoval.addLast(neighborBlockLightLevel);
 				}
 				else if (neighborBlockLightLevel >= blockLightLevel)
 				{
-					blockSources.push(x - 1);
-					blockSources.push(z);
-					blockSources.push(y);
+					blockSources.addLast(x - 1);
+					blockSources.addLast(z);
+					blockSources.addLast(y);
 				}
 			}
 			if (x < bounds)
@@ -1433,16 +1431,16 @@ public class CubicChunk implements Chunk
 				if (neighborBlockLightLevel > 0 && neighborBlockLightLevel < blockLightLevel)
 				{
 					this.setBlockLight(x + 1, y, z, 0);
-					blockSourcesRemoval.push(x + 1);
-					blockSourcesRemoval.push(y);
-					blockSourcesRemoval.push(z);
-					blockSourcesRemoval.push(neighborBlockLightLevel);
+					blockSourcesRemoval.addLast(x + 1);
+					blockSourcesRemoval.addLast(y);
+					blockSourcesRemoval.addLast(z);
+					blockSourcesRemoval.addLast(neighborBlockLightLevel);
 				}
 				else if (neighborBlockLightLevel >= blockLightLevel)
 				{
-					blockSources.push(x + 1);
-					blockSources.push(z);
-					blockSources.push(y);
+					blockSources.addLast(x + 1);
+					blockSources.addLast(z);
+					blockSources.addLast(y);
 				}
 			}
 			// Y axis
@@ -1452,16 +1450,16 @@ public class CubicChunk implements Chunk
 				if (neighborBlockLightLevel > 0 && neighborBlockLightLevel < blockLightLevel)
 				{
 					this.setBlockLight(x, y - 1, z, 0);
-					blockSourcesRemoval.push(x);
-					blockSourcesRemoval.push(y - 1);
-					blockSourcesRemoval.push(z);
-					blockSourcesRemoval.push(neighborBlockLightLevel);
+					blockSourcesRemoval.addLast(x);
+					blockSourcesRemoval.addLast(y - 1);
+					blockSourcesRemoval.addLast(z);
+					blockSourcesRemoval.addLast(neighborBlockLightLevel);
 				}
 				else if (neighborBlockLightLevel >= blockLightLevel)
 				{
-					blockSources.push(x);
-					blockSources.push(z);
-					blockSources.push(y - 1);
+					blockSources.addLast(x);
+					blockSources.addLast(z);
+					blockSources.addLast(y - 1);
 				}
 			}
 			if (y < bounds)
@@ -1470,16 +1468,16 @@ public class CubicChunk implements Chunk
 				if (neighborBlockLightLevel > 0 && neighborBlockLightLevel < blockLightLevel)
 				{
 					this.setBlockLight(x, y + 1, z, 0);
-					blockSourcesRemoval.push(x);
-					blockSourcesRemoval.push(y + 1);
-					blockSourcesRemoval.push(z);
-					blockSourcesRemoval.push(neighborBlockLightLevel);
+					blockSourcesRemoval.addLast(x);
+					blockSourcesRemoval.addLast(y + 1);
+					blockSourcesRemoval.addLast(z);
+					blockSourcesRemoval.addLast(neighborBlockLightLevel);
 				}
 				else if (neighborBlockLightLevel >= blockLightLevel)
 				{
-					blockSources.push(x);
-					blockSources.push(z);
-					blockSources.push(y + 1);
+					blockSources.addLast(x);
+					blockSources.addLast(z);
+					blockSources.addLast(y + 1);
 				}
 			}
 			// Z Axis
@@ -1489,16 +1487,16 @@ public class CubicChunk implements Chunk
 				if (neighborBlockLightLevel > 0 && neighborBlockLightLevel < blockLightLevel)
 				{
 					this.setBlockLight(x, y, z - 1, 0);
-					blockSourcesRemoval.push(x);
-					blockSourcesRemoval.push(y);
-					blockSourcesRemoval.push(z - 1);
-					blockSourcesRemoval.push(neighborBlockLightLevel);
+					blockSourcesRemoval.addLast(x);
+					blockSourcesRemoval.addLast(y);
+					blockSourcesRemoval.addLast(z - 1);
+					blockSourcesRemoval.addLast(neighborBlockLightLevel);
 				}
 				else if (neighborBlockLightLevel >= blockLightLevel)
 				{
-					blockSources.push(x);
-					blockSources.push(z - 1);
-					blockSources.push(y);
+					blockSources.addLast(x);
+					blockSources.addLast(z - 1);
+					blockSources.addLast(y);
 				}
 			}
 			if (z < bounds)
@@ -1507,22 +1505,22 @@ public class CubicChunk implements Chunk
 				if (neighborBlockLightLevel > 0 && neighborBlockLightLevel < blockLightLevel)
 				{
 					this.setBlockLight(x, y, z + 1, 0);
-					blockSourcesRemoval.push(x);
-					blockSourcesRemoval.push(y);
-					blockSourcesRemoval.push(z + 1);
-					blockSourcesRemoval.push(neighborBlockLightLevel);
+					blockSourcesRemoval.addLast(x);
+					blockSourcesRemoval.addLast(y);
+					blockSourcesRemoval.addLast(z + 1);
+					blockSourcesRemoval.addLast(neighborBlockLightLevel);
 				}
 				else if (neighborBlockLightLevel >= blockLightLevel)
 				{
-					blockSources.push(x);
-					blockSources.push(z + 1);
-					blockSources.push(y);
+					blockSources.addLast(x);
+					blockSources.addLast(z + 1);
+					blockSources.addLast(y);
 				}
 			}
 		}
 	}
 
-	private int propagateLightningBeyondChunk(Deque<Integer> blockSources, Deque<Integer> sunSources)
+	private int propagateLightningBeyondChunk(IntDeque blockSources, IntDeque sunSources)
 	{
 		//int data[] = world.chunksData.grab(dataPointer);
 		int modifiedBlocks = 0;
@@ -1533,9 +1531,9 @@ public class CubicChunk implements Chunk
 		Voxel voxel;
 		while (blockSources.size() > 0)
 		{
-			int y = blockSources.pop();
-			int z = blockSources.pop();
-			int x = blockSources.pop();
+			int y = blockSources.removeLast();
+			int z = blockSources.removeLast();
+			int x = blockSources.removeLast();
 			int voxelData = getWorldDataOnlyForLightningUpdatesFuncitons(x, y, z);
 			int ll = (voxelData & blocklightMask) >> blockBitshift;
 			int cId = VoxelFormat.id(voxelData);
@@ -1555,10 +1553,10 @@ public class CubicChunk implements Chunk
 					{
 						this.setWorldDataOnlyForLightningUpdatesFunctions(x + 1, y, z, adj & blockAntiMask | (ll - 1) << blockBitshift);
 						modifiedBlocks++;
-						blockSources.push(x + 1);
-						blockSources.push(z);
-						blockSources.push(y);
-						//blockSources.push(x + 1 << 16 | z << 8 | y);
+						blockSources.addLast(x + 1);
+						blockSources.addLast(z);
+						blockSources.addLast(y);
+						//blockSources.addLast(x + 1 << 16 | z << 8 | y);
 					}
 				}
 				if (x > -bounds)
@@ -1568,10 +1566,10 @@ public class CubicChunk implements Chunk
 					{
 						this.setWorldDataOnlyForLightningUpdatesFunctions(x - 1, y, z, adj & blockAntiMask | (ll - 1) << blockBitshift);
 						modifiedBlocks++;
-						blockSources.push(x - 1);
-						blockSources.push(z);
-						blockSources.push(y);
-						//blockSources.push(x - 1 << 16 | z << 8 | y);
+						blockSources.addLast(x - 1);
+						blockSources.addLast(z);
+						blockSources.addLast(y);
+						//blockSources.addLast(x - 1 << 16 | z << 8 | y);
 					}
 				}
 				// Z-propagation
@@ -1582,10 +1580,10 @@ public class CubicChunk implements Chunk
 					{
 						this.setWorldDataOnlyForLightningUpdatesFunctions(x, y, z + 1, adj & blockAntiMask | (ll - 1) << blockBitshift);
 						modifiedBlocks++;
-						blockSources.push(x);
-						blockSources.push(z + 1);
-						blockSources.push(y);
-						//blockSources.push(x << 16 | z + 1 << 8 | y);
+						blockSources.addLast(x);
+						blockSources.addLast(z + 1);
+						blockSources.addLast(y);
+						//blockSources.addLast(x << 16 | z + 1 << 8 | y);
 					}
 				}
 				if (z > -bounds)
@@ -1595,10 +1593,10 @@ public class CubicChunk implements Chunk
 					{
 						this.setWorldDataOnlyForLightningUpdatesFunctions(x, y, z - 1, adj & blockAntiMask | (ll - 1) << blockBitshift);
 						modifiedBlocks++;
-						blockSources.push(x);
-						blockSources.push(z - 1);
-						blockSources.push(y);
-						//blockSources.push(x << 16 | z - 1 << 8 | y);
+						blockSources.addLast(x);
+						blockSources.addLast(z - 1);
+						blockSources.addLast(y);
+						//blockSources.addLast(x << 16 | z - 1 << 8 | y);
 					}
 				}
 				// Y-propagation
@@ -1609,10 +1607,10 @@ public class CubicChunk implements Chunk
 					{
 						this.setWorldDataOnlyForLightningUpdatesFunctions(x, y + 1, z, adj & blockAntiMask | (ll - 1) << blockBitshift);
 						modifiedBlocks++;
-						blockSources.push(x);
-						blockSources.push(z);
-						blockSources.push(y + 1);
-						//blockSources.push(x << 16 | z << 8 | y + 1);
+						blockSources.addLast(x);
+						blockSources.addLast(z);
+						blockSources.addLast(y + 1);
+						//blockSources.addLast(x << 16 | z << 8 | y + 1);
 					}
 				}
 				if (y > -bounds)
@@ -1622,10 +1620,10 @@ public class CubicChunk implements Chunk
 					{
 						this.setWorldDataOnlyForLightningUpdatesFunctions(x, y - 1, z, adj & blockAntiMask | (ll - 1) << blockBitshift);
 						modifiedBlocks++;
-						blockSources.push(x);
-						blockSources.push(z);
-						blockSources.push(y - 1);
-						//blockSources.push(x << 16 | z << 8 | y - 1);
+						blockSources.addLast(x);
+						blockSources.addLast(z);
+						blockSources.addLast(y - 1);
+						//blockSources.addLast(x << 16 | z << 8 | y - 1);
 					}
 				}
 			}
@@ -1633,9 +1631,9 @@ public class CubicChunk implements Chunk
 		// Sunlight propagation
 		while (sunSources.size() > 0)
 		{
-			int y = sunSources.pop();
-			int z = sunSources.pop();
-			int x = sunSources.pop();
+			int y = sunSources.removeLast();
+			int z = sunSources.removeLast();
+			int x = sunSources.removeLast();
 
 			int voxelData = this.getWorldDataOnlyForLightningUpdatesFuncitons(x, y, z);
 			int ll = (voxelData & sunlightMask) >> sunBitshift;
@@ -1658,9 +1656,9 @@ public class CubicChunk implements Chunk
 					{
 						this.setWorldDataOnlyForLightningUpdatesFunctions(x + 1, y, z, adj & sunAntiMask | (llRight - 1) << sunBitshift);
 						modifiedBlocks++;
-						sunSources.push(x + 1);
-						sunSources.push(z);
-						sunSources.push(y);
+						sunSources.addLast(x + 1);
+						sunSources.addLast(z);
+						sunSources.addLast(y);
 					}
 				}
 				if (x > -bounds)
@@ -1676,10 +1674,10 @@ public class CubicChunk implements Chunk
 						//	System.out.println("MAIS LEL TARACE"+VoxelTypes.get((adj & 0xFFFF)).getType().isOpaque() + " -> " +((adj & sunlightMask) >> sunBitshift));
 						this.setWorldDataOnlyForLightningUpdatesFunctions(x - 1, y, z, adj & sunAntiMask | (llLeft - 1) << sunBitshift);
 						modifiedBlocks++;
-						sunSources.push(x - 1);
-						sunSources.push(z);
-						sunSources.push(y);
-						//sunSources.push(x - 1 << 16 | z << 8 | y);
+						sunSources.addLast(x - 1);
+						sunSources.addLast(z);
+						sunSources.addLast(y);
+						//sunSources.addLast(x - 1 << 16 | z << 8 | y);
 					}
 				}
 				// Z-propagation
@@ -1691,10 +1689,10 @@ public class CubicChunk implements Chunk
 					{
 						this.setWorldDataOnlyForLightningUpdatesFunctions(x, y, z + 1, adj & sunAntiMask | (llFront - 1) << sunBitshift);
 						modifiedBlocks++;
-						sunSources.push(x);
-						sunSources.push(z + 1);
-						sunSources.push(y);
-						//sunSources.push(x << 16 | z + 1 << 8 | y);
+						sunSources.addLast(x);
+						sunSources.addLast(z + 1);
+						sunSources.addLast(y);
+						//sunSources.addLast(x << 16 | z + 1 << 8 | y);
 					}
 				}
 				if (z > -bounds)
@@ -1705,10 +1703,10 @@ public class CubicChunk implements Chunk
 					{
 						this.setWorldDataOnlyForLightningUpdatesFunctions(x, y, z - 1, adj & sunAntiMask | (llBack - 1) << sunBitshift);
 						modifiedBlocks++;
-						sunSources.push(x);
-						sunSources.push(z - 1);
-						sunSources.push(y);
-						//sunSources.push(x << 16 | z - 1 << 8 | y);
+						sunSources.addLast(x);
+						sunSources.addLast(z - 1);
+						sunSources.addLast(y);
+						//sunSources.addLast(x << 16 | z - 1 << 8 | y);
 					}
 				}
 				// Y-propagation
@@ -1720,10 +1718,10 @@ public class CubicChunk implements Chunk
 					{
 						this.setWorldDataOnlyForLightningUpdatesFunctions(x, y + 1, z, adj & sunAntiMask | (llTop - 1) << sunBitshift);
 						modifiedBlocks++;
-						sunSources.push(x);
-						sunSources.push(z);
-						sunSources.push(y + 1);
-						//sunSources.push(x << 16 | z << 8 | y + 1);
+						sunSources.addLast(x);
+						sunSources.addLast(z);
+						sunSources.addLast(y + 1);
+						//sunSources.addLast(x << 16 | z << 8 | y + 1);
 					}
 				}
 				if (y > -bounds)
@@ -1735,10 +1733,10 @@ public class CubicChunk implements Chunk
 						//removed = ((((data[x * 1024 + y * 32 + z] & 0x000000FF) == 128)) ? 1 : 0)
 						this.setWorldDataOnlyForLightningUpdatesFunctions(x, y - 1, z, adj & sunAntiMask | (llBottm /* - removed */) << sunBitshift);
 						modifiedBlocks++;
-						sunSources.push(x);
-						sunSources.push(z);
-						sunSources.push(y - 1);
-						//sunSources.push(x << 16 | z << 8 | y - 1);
+						sunSources.addLast(x);
+						sunSources.addLast(z);
+						sunSources.addLast(y - 1);
+						//sunSources.addLast(x << 16 | z << 8 | y - 1);
 					}
 				}
 			}

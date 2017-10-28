@@ -19,7 +19,6 @@ import io.xol.chunkstories.world.WorldClientRemote;
 import io.xol.chunkstories.world.region.RegionImplementation;
 import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
-import io.xol.engine.concurrency.SimpleFence;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz

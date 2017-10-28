@@ -5,6 +5,9 @@ import java.util.Deque;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.carrotsearch.hppc.IntArrayDeque;
+import com.carrotsearch.hppc.IntDeque;
+
 import io.xol.chunkstories.api.workers.Task;
 import io.xol.chunkstories.api.workers.TaskExecutor;
 import io.xol.chunkstories.voxel.VoxelsStore;
@@ -36,10 +39,10 @@ public class TaskComputeChunkOcclusion extends Task {
 		return true;
 	}
 
-	static ThreadLocal<Deque<Integer>> occlusionFaces = new ThreadLocal<Deque<Integer>>() {
+	static ThreadLocal<IntDeque> occlusionFaces = new ThreadLocal<IntDeque>() {
 		@Override
-		protected Deque<Integer> initialValue() {
-			return new ArrayDeque<Integer>();
+		protected IntDeque initialValue() {
+			return new IntArrayDeque();
 		}
 	};
 
@@ -72,7 +75,7 @@ public class TaskComputeChunkOcclusion extends Task {
 		// System.out.println("Computing occlusion table ...");
 		boolean[][] occlusionSides = new boolean[6][6];
 
-		Deque<Integer> deque = occlusionFaces.get();
+		IntDeque deque = occlusionFaces.get();
 		deque.clear();
 
 		boolean mask[] = masks.get();
@@ -100,7 +103,7 @@ public class TaskComputeChunkOcclusion extends Task {
 			bits++;
 
 			// We put this face on the deque
-			deque.push(x * 1024 + y * 32 + z);
+			deque.addLast(x * 1024 + y * 32 + z);
 
 			/**
 			 * Conventions for space in Chunk Stories 1 FRONT z+ x- LEFT 0 X 2 RIGHT x+ 3
@@ -109,7 +112,7 @@ public class TaskComputeChunkOcclusion extends Task {
 			Set<Integer> touchingSides = new HashSet<Integer>();
 			while (!deque.isEmpty()) {
 				// Pop the topmost element
-				int d = deque.pop();
+				int d = deque.removeLast();
 
 				// Don't iterate twice over one element
 				if (mask[d])
@@ -145,18 +148,18 @@ public class TaskComputeChunkOcclusion extends Task {
 					// Flood fill
 
 					if (x > 0)
-						deque.push((x - 1) * 1024 + (y) * 32 + (z));
+						deque.addLast((x - 1) * 1024 + (y) * 32 + (z));
 					if (y > 0)
-						deque.push((x) * 1024 + (y - 1) * 32 + (z));
+						deque.addLast((x) * 1024 + (y - 1) * 32 + (z));
 					if (z > 0)
-						deque.push((x) * 1024 + (y) * 32 + (z - 1));
+						deque.addLast((x) * 1024 + (y) * 32 + (z - 1));
 
 					if (x < 31)
-						deque.push((x + 1) * 1024 + (y) * 32 + (z));
+						deque.addLast((x + 1) * 1024 + (y) * 32 + (z));
 					if (y < 31)
-						deque.push((x) * 1024 + (y + 1) * 32 + (z));
+						deque.addLast((x) * 1024 + (y + 1) * 32 + (z));
 					if (z < 31)
-						deque.push((x) * 1024 + (y) * 32 + (z + 1));
+						deque.addLast((x) * 1024 + (y) * 32 + (z + 1));
 				}
 			}
 

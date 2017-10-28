@@ -13,6 +13,9 @@ import org.joml.Vector3dc;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
+import com.carrotsearch.hppc.IntArrayDeque;
+import com.carrotsearch.hppc.IntDeque;
+
 import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.WorldRenderer;
@@ -114,7 +117,8 @@ public class ChunkMeshesRenderer
 	//private final Set<Vector3d> floodFillMask = new HashSet<Vector3d>();
 	private boolean[] floodFillMask = null;
 
-	private final Deque<Integer> floodFillDeque = new ArrayDeque<Integer>();
+	//private final Deque<Integer> floodFillDeque = new ArrayDeque<Integer>();
+	private final IntDeque floodFillDeque = new IntArrayDeque();
 	
 	private int indexInto(int x, int y, int z, int maxDistance) {
 		int horizontalSize = maxDistance * 2 + 3;
@@ -149,17 +153,17 @@ public class ChunkMeshesRenderer
 				floodFillMask[i] = false;
 		}
 
-		floodFillDeque.push(cameraChunkX);
-		floodFillDeque.push(cameraChunkY);
-		floodFillDeque.push(cameraChunkZ);
-		floodFillDeque.push(-1);
+		floodFillDeque.addLast(cameraChunkX);
+		floodFillDeque.addLast(cameraChunkY);
+		floodFillDeque.addLast(cameraChunkZ);
+		floodFillDeque.addLast(-1);
 
 		while (!floodFillDeque.isEmpty())
 		{
-			int sideFrom = floodFillDeque.pop();
-			int chunkZ = floodFillDeque.pop();
-			int chunkY = floodFillDeque.pop();
-			int chunkX = floodFillDeque.pop();
+			int sideFrom = floodFillDeque.removeLast();
+			int chunkZ = floodFillDeque.removeLast();
+			int chunkY = floodFillDeque.removeLast();
+			int chunkX = floodFillDeque.removeLast();
 			//sideFrom = -1;
 
 			int ajustedChunkX = chunkX;
@@ -188,47 +192,47 @@ public class ChunkMeshesRenderer
 				floodFillSet.add(chunk);
 				if ((sideFrom == -1 || occlusionSides[sideFrom][2]) && LoopingMathHelper.moduloDistance(chunkX, cameraChunkX, worldSizeInChunks) < maxDistance && !floodFillMask[indexInto(chunkX + 1, chunkY, chunkZ, maxDistance)])// && !floodFillMask.contains(new Vector3d(chunkX + 1, chunkY, chunkZ)))
 				{
-					floodFillDeque.push(ajustedChunkX + 1);
-					floodFillDeque.push(chunkY);
-					floodFillDeque.push(ajustedChunkZ);
-					floodFillDeque.push(0);
+					floodFillDeque.addLast(ajustedChunkX + 1);
+					floodFillDeque.addLast(chunkY);
+					floodFillDeque.addLast(ajustedChunkZ);
+					floodFillDeque.addLast(0);
 				}
 				if ((sideFrom == -1 || occlusionSides[sideFrom][0]) && LoopingMathHelper.moduloDistance(chunkX, cameraChunkX, worldSizeInChunks) < maxDistance && !floodFillMask[indexInto(chunkX - 1, chunkY, chunkZ, maxDistance)])//&& !floodFillMask.contains(new Vector3d(chunkX - 1, chunkY, chunkZ)))
 				{
-					floodFillDeque.push(ajustedChunkX - 1);
-					floodFillDeque.push(chunkY);
-					floodFillDeque.push(ajustedChunkZ);
-					floodFillDeque.push(2);
+					floodFillDeque.addLast(ajustedChunkX - 1);
+					floodFillDeque.addLast(chunkY);
+					floodFillDeque.addLast(ajustedChunkZ);
+					floodFillDeque.addLast(2);
 				}
 
 				if ((sideFrom == -1 || occlusionSides[sideFrom][4]) && chunkY < world.getMaxHeight() / 32 && (chunkY - cameraChunkY) < verticalDistance && !floodFillMask[indexInto(chunkX, chunkY + 1, chunkZ, maxDistance)])//&& !floodFillMask.contains(new Vector3d(chunkX, chunkY + 1, chunkZ)))
 				{
-					floodFillDeque.push(ajustedChunkX);
-					floodFillDeque.push(chunkY + 1);
-					floodFillDeque.push(ajustedChunkZ);
-					floodFillDeque.push(5);
+					floodFillDeque.addLast(ajustedChunkX);
+					floodFillDeque.addLast(chunkY + 1);
+					floodFillDeque.addLast(ajustedChunkZ);
+					floodFillDeque.addLast(5);
 				}
 				if ((sideFrom == -1 || occlusionSides[sideFrom][5]) && chunkY > 0 && (cameraChunkY - chunkY) < verticalDistance && !floodFillMask[indexInto(chunkX, chunkY - 1, chunkZ, maxDistance)])//&& !floodFillMask.contains(new Vector3d(chunkX, chunkY - 1, chunkZ)))
 				{
-					floodFillDeque.push(ajustedChunkX);
-					floodFillDeque.push(chunkY - 1);
-					floodFillDeque.push(ajustedChunkZ);
-					floodFillDeque.push(4);
+					floodFillDeque.addLast(ajustedChunkX);
+					floodFillDeque.addLast(chunkY - 1);
+					floodFillDeque.addLast(ajustedChunkZ);
+					floodFillDeque.addLast(4);
 				}
 
 				if ((sideFrom == -1 || occlusionSides[sideFrom][1]) && LoopingMathHelper.moduloDistance(chunkZ, cameraChunkZ, worldSizeInChunks) < maxDistance && !floodFillMask[indexInto(chunkX, chunkY, chunkZ + 1, maxDistance)])//&& !floodFillMask.contains(new Vector3d(chunkX, chunkY, chunkZ + 1)))
 				{
-					floodFillDeque.push(ajustedChunkX);
-					floodFillDeque.push(chunkY);
-					floodFillDeque.push(ajustedChunkZ + 1);
-					floodFillDeque.push(3);
+					floodFillDeque.addLast(ajustedChunkX);
+					floodFillDeque.addLast(chunkY);
+					floodFillDeque.addLast(ajustedChunkZ + 1);
+					floodFillDeque.addLast(3);
 				}
 				if ((sideFrom == -1 || occlusionSides[sideFrom][3]) && LoopingMathHelper.moduloDistance(chunkZ, cameraChunkZ, worldSizeInChunks) < maxDistance && !floodFillMask[indexInto(chunkX, chunkY, chunkZ - 1, maxDistance)])//&& !floodFillMask.contains(new Vector3d(chunkX, chunkY, chunkZ - 1)))
 				{
-					floodFillDeque.push(ajustedChunkX);
-					floodFillDeque.push(chunkY);
-					floodFillDeque.push(ajustedChunkZ - 1);
-					floodFillDeque.push(1);
+					floodFillDeque.addLast(ajustedChunkX);
+					floodFillDeque.addLast(chunkY);
+					floodFillDeque.addLast(ajustedChunkZ - 1);
+					floodFillDeque.addLast(1);
 				}
 			}
 		}
