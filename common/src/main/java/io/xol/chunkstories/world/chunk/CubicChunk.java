@@ -14,6 +14,7 @@ import com.carrotsearch.hppc.IntArrayDeque;
 import com.carrotsearch.hppc.IntDeque;
 
 import io.xol.chunkstories.api.rendering.world.ChunkRenderable;
+import io.xol.chunkstories.api.server.RemotePlayer;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.util.IterableIteratorWrapper;
 import io.xol.chunkstories.api.voxel.Voxel;
@@ -29,6 +30,7 @@ import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunkLightUpdater;
 import io.xol.chunkstories.api.world.chunk.Region;
+import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.entity.EntitySerializer;
 import io.xol.chunkstories.renderer.chunks.ClientChunkLightBaker;
 import io.xol.chunkstories.tools.WorldTool;
@@ -398,44 +400,25 @@ public class CubicChunk implements Chunk
 						}
 			}
 			
-			// If this is a 'master' world.
+			// If this is a 'master' world, notify remote users of the change !
 			if(update && world instanceof WorldMaster && !(world instanceof WorldTool))
 			{
-				int blocksViewDistance = 256;
-				int sizeInBlocks = world.getWorldInfo().getSize().sizeInChunks * 32;
 				PacketVoxelUpdate packet = new PacketVoxelUpdate(new ActualChunkVoxelContext(chunkX * 32 + x, chunkY * 32 + y, chunkZ * 32 + z, newData));
-				//packet.x = x;
-				//packet.y = y;
-				//packet.z = z;
-				//packet.data = newData;
 				
-				Player ignoreLocalPlayer = null;
-				if(world instanceof WorldClient) {
-					ignoreLocalPlayer = ((WorldClient)world).getClient().getPlayer();
-				}
-				
-				Iterator<Player> pi = ((WorldMaster) world).getPlayers();
+				Iterator<WorldUser> pi = this.chunkHolder.users.iterator();
 				while (pi.hasNext())
 				{
-					Player player = pi.next();
-					
-					//Ignore local players, they don't need anything addLasted to them
-					if(player == ignoreLocalPlayer || player.equals(ignoreLocalPlayer) ||
-							(ignoreLocalPlayer != null && player.getName().equals(ignoreLocalPlayer.getName())) )
+					WorldUser user = pi.next();
+					if(!(user instanceof RemotePlayer))
 						continue;
+					
+					RemotePlayer player = (RemotePlayer)user;
 
 					Entity clientEntity = player.getControlledEntity();
 					if (clientEntity == null)
 						continue;
-					Location loc = clientEntity.getLocation();
-					int plocx = (int)(double) loc.x();
-					int plocy = (int)(double) loc.y();
-					int plocz = (int)(double) loc.z();
-					//TODO use proper configurable values for this
-					if (!((LoopingMathHelper.moduloDistance(x, plocx, sizeInBlocks) > blocksViewDistance + 2) || (LoopingMathHelper.moduloDistance(z, plocz, sizeInBlocks) > blocksViewDistance + 2) || (y - plocy) > 4 * 32))
-					{
-						player.pushPacket(packet);
-					}
+					
+					player.pushPacket(packet);
 
 				}
 			}

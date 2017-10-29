@@ -465,6 +465,7 @@ public class WorldRendererImplementation implements WorldRenderer
 	@Override
 	public void blitFinalImage(RenderingInterface renderingContext, boolean hideGui)
 	{
+		//TODO mix in the reflections earlier ?
 		Texture2D bloomRendered = RenderingConfig.doBloom ? bloomRenderer.renderBloom(renderingContext) : null;
 		
 		Layer layer = renderingContext.getWindow().getLayer().getRootLayer();
