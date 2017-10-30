@@ -18,6 +18,7 @@ public class MessageBoxOverlay extends Layer
 	public MessageBoxOverlay(GameWindow scene, Layer parent, String message)
 	{
 		super(scene, parent);
+		//Thread.dumpStack();
 		// Gui buttons
 		this.message = message;
 		

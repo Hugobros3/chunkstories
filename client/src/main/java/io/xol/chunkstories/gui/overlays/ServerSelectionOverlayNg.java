@@ -373,7 +373,7 @@ public class ServerSelectionOverlayNg extends Layer implements HttpRequester
 			}
 			catch (Exception e)
 			{
-				e.printStackTrace();
+				//e.printStackTrace();
 				description = "Couldn't update.";
 				gameMode = "Couldn't update.";
 				version = "Unkwnow version";

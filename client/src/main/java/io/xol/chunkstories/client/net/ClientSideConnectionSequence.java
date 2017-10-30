@@ -215,7 +215,8 @@ public class ClientSideConnectionSequence extends Thread implements HttpRequeste
 			{
 				//status = "Could not obtain token from XolioWare Interactive servers ( " + result + " ).";
 				status = new ConnectionStep("Could not obtain token from XolioWare Interactive servers ( " + result + " ).");
-				connection.close();
+				connection.disconnect("Could not obtain token from XolioWare Interactive servers ( " + result + " ).");
+				//connection.close();
 			}
 		}
 	}

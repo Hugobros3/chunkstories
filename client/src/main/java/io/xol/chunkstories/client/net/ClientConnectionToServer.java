@@ -47,7 +47,7 @@ public class ClientConnectionToServer extends Thread implements RemoteServer
 	// Status check
 	private SimpleFence authFence = new SimpleFence();
 	boolean failed = false;
-	private String latestErrorMessage = "";
+	private String latestErrorMessage = "Unknown error";
 
 	@SuppressWarnings("unused")
 	private ClientSideConnectionSequence connectionSequence;
@@ -73,6 +73,7 @@ public class ClientConnectionToServer extends Thread implements RemoteServer
 		//Don't even try if we fail to open the socket.
 		if(!openSocket())
 			return;
+		System.out.println("cucked");
 		
 		//Start the connection
 		this.start();
@@ -101,9 +102,9 @@ public class ClientConnectionToServer extends Thread implements RemoteServer
 		}
 		catch (Exception e)
 		{
-			failed = true;
 			latestErrorMessage = "Failed to connect to " + ip + ":" + port + ". (" + e.getClass().getName() + ")";
 			System.out.println(latestErrorMessage);
+			failed = true;
 			// e.printStackTrace();
 			return false;
 		}
@@ -141,10 +142,9 @@ public class ClientConnectionToServer extends Thread implements RemoteServer
 	// @SuppressWarnings("deprecation")
 	public void close()
 	{
-		//Thread.dumpStack();
-		
 		if (closeMethodAlreadyCalled)
 			return;
+		
 		closeMethodAlreadyCalled = true;
 		try
 		{
