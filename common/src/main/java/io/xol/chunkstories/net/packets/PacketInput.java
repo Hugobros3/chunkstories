@@ -27,7 +27,7 @@ public class PacketInput extends PacketSynchPrepared {
 	public boolean isPressed;
 
 	@Override
-	public void sendIntoBuffer(PacketDestinator destinator, DataOutputStream out) throws IOException {
+	public void fillInternalBuffer(PacketDestinator destinator, DataOutputStream out) throws IOException {
 		out.writeLong(input.getHash());
 		
 		out.writeBoolean(isPressed);

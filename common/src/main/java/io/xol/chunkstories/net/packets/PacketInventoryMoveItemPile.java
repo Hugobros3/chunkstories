@@ -53,7 +53,7 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 	}
 
 	@Override
-	public void sendIntoBuffer(PacketDestinator destinator, DataOutputStream out) throws IOException
+	public void fillInternalBuffer(PacketDestinator destinator, DataOutputStream out) throws IOException
 	{
 		//Describe the move
 		out.writeInt(oldX);

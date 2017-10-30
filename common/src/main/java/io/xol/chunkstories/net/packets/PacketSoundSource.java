@@ -36,7 +36,7 @@ public class PacketSoundSource extends PacketSynchPrepared
 	}
 
 	@Override
-	public void sendIntoBuffer(PacketDestinator destinator, DataOutputStream out) throws IOException
+	public void fillInternalBuffer(PacketDestinator destinator, DataOutputStream out) throws IOException
 	{
 		out.writeUTF(soundSourceToSend.getSoundName());
 		out.writeLong(soundSourceToSend.getUUID());
