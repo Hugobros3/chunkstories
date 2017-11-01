@@ -171,7 +171,7 @@ public class SummariesArrayTexture implements SummariesTexturesHolder {
 		int heights[] = sum.getHeightData();
 		for (int i = 0; i < size[lod] * size[lod]; i++)
 		{
-			int j = RegionSummaryImplementation.offsets[lod] + i;
+			int j = RegionSummaryImplementation.mainMimpmapOffsets[lod] + i;
 			bb.putInt(heights[j]);
 		}
 		bb.flip();
@@ -182,7 +182,7 @@ public class SummariesArrayTexture implements SummariesTexturesHolder {
 		int ids[] = sum.getVoxelData();
 		for (int i = 0; i < size[lod] * size[lod]; i++)
 		{
-			int j = RegionSummaryImplementation.offsets[lod] + i;
+			int j = RegionSummaryImplementation.mainMimpmapOffsets[lod] + i;
 			//bb.putInt(ids[i]);
 			int id = ids[j];
 			Voxel v = VoxelsStore.get().getVoxelById(id);

@@ -55,7 +55,7 @@ public class RegionSummaryImplementation implements RegionSummary
 	//TODO a cleaner way
 	public final File handler;
 	private final AtomicBoolean summaryLoaded = new AtomicBoolean(false);
-	private AtomicBoolean summaryUnloaded = new AtomicBoolean(false);
+	private final AtomicBoolean summaryUnloaded = new AtomicBoolean(false);
 
 	private int[] heights = null;
 	private int[] ids = null;
@@ -70,7 +70,11 @@ public class RegionSummaryImplementation implements RegionSummary
 	
 	protected final Fence loadFence;
 
-	public final static int[] offsets = { 0, 65536, 81920, 86016, 87040, 87296, 87360, 87376, 87380, 87381 };
+	/** The offsets in an array containing sequentially each mipmaps of a square texture of base size 256 */
+	public final static int[] mainMimpmapOffsets = { 0, 65536, 81920, 86016, 87040, 87296, 87360, 87376, 87380, 87381 };
+	
+	/** The offsets in an array containing sequentially each mipmaps of a square texture of base size 128 */
+	public final static int[] minHeightMipmapOffsets = {0, 16384, 20480, 21504, 21760, 21824, 21840, 21844, 21845};
 
 	RegionSummaryImplementation(WorldRegionSummariesHolder worldSummariesHolder, int rx, int rz)
 	{
@@ -410,7 +414,7 @@ public class RegionSummaryImplementation implements RegionSummary
 		int resolution = 256 >> level;
 		x >>= level;
 		z >>= level;
-		int offset = offsets[level];
+		int offset = mainMimpmapOffsets[level];
 		return heights[offset + resolution * x + z];
 	}
 
@@ -423,7 +427,7 @@ public class RegionSummaryImplementation implements RegionSummary
 		int resolution = 256 >> level;
 		x >>= level;
 		z >>= level;
-		int offset = offsets[level];
+		int offset = mainMimpmapOffsets[level];
 		return ids[offset + resolution * x + z];
 	}
 
