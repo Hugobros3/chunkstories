@@ -431,16 +431,30 @@ public abstract class WorldImplementation implements World
 
 	@Override
 	public WorldVoxelContext peekSafely(int x, int y, int z) {
-		try {
-			return peek(x, y, z);
-		} catch (WorldException e) {
+		
+		x = sanitizeHorizontalCoordinate(x);
+		y = sanitizeVerticalCoordinate(y);
+		z = sanitizeHorizontalCoordinate(z);
+		
+		Region region = this.getRegionWorldCoordinates(x, y, z);
+		if(region == null)
 			return new DummyContext(new DummyChunk(), x, y, z, 0) {
-				@Override
-				public Voxel getVoxel() {
-					return getGameContext().getContent().voxels().getVoxelById(0);
-				}
-			};
-		}
+			@Override
+			public Voxel getVoxel() {
+				return getGameContext().getContent().voxels().getVoxelById(0);
+			}
+		};
+			
+		Chunk chunk = region.getChunk((x / 32) % 8, (y / 32) % 8, (z / 32) % 8);
+		if(chunk == null)
+			return new DummyContext(new DummyChunk(), x, y, z, 0) {
+			@Override
+			public Voxel getVoxel() {
+				return getGameContext().getContent().voxels().getVoxelById(0);
+			}
+		};
+		
+		return chunk.peek(x, y, z);
 	}
 
 	@Override
