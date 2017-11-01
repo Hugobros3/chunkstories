@@ -162,7 +162,7 @@ public class DefaultWeatherEffectsRenderer implements WorldEffectsRenderer
 				//Plays the rain loop
 
 				if (rainSoundSource == null || rainSoundSource.isDonePlaying())
-					rainSoundSource = world.getSoundManager().playSoundEffect("sounds/sfx/rainloop.ogg", Mode.STREAMED, null, 1f, rainIntensity, 15f, 15f);
+					rainSoundSource = world.getSoundManager().playSoundEffect("sounds/environment/rainloop.ogg", Mode.STREAMED, null, 1f, rainIntensity, 15f, 15f);
 
 				if (rainSoundSource != null)
 					rainSoundSource.setGain(rainIntensity);
@@ -179,6 +179,7 @@ public class DefaultWeatherEffectsRenderer implements WorldEffectsRenderer
 		}
 	}
 
+	//TODO configure
 	private float getSnowPresence()
 	{
 		Entity e = Client.getInstance().getPlayer().getControlledEntity();

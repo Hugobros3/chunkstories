@@ -73,7 +73,6 @@ public class ClientConnectionToServer extends Thread implements RemoteServer
 		//Don't even try if we fail to open the socket.
 		if(!openSocket())
 			return;
-		System.out.println("cucked");
 		
 		//Start the connection
 		this.start();
@@ -92,12 +91,6 @@ public class ClientConnectionToServer extends Thread implements RemoteServer
 			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 			sendQueue = new SendQueue(this, out, packetsProcessor);
 			sendQueue.start();
-			
-			/*
-			connectionStatus = "Established, waiting for login token...";
-			
-			sendTextMessage("info");
-			login();*/
 			return true;
 		}
 		catch (Exception e)

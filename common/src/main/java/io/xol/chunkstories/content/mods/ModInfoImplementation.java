@@ -61,44 +61,13 @@ public class ModInfoImplementation extends GenericConfigurable implements ModInf
 		}
 		
 		this.internalName = this.resolveProperty("internalName", null);
-		this.name = this.resolveProperty("name", "<internalName");
+		this.name = this.resolveProperty("name", "<internalName>");
 		this.version = this.resolveProperty("version", "1.0");
 		this.description = this.resolveProperty("description", "Please provide a description in your mod.txt");
 
 		//Requires a name to be set, at least
 		if(this.internalName == null)
 			throw new MalformedModTxtException(this);
-		
-		//Try to read the ressource
-		/*try
-		{
-			BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
-			
-			String line;
-			while((line = reader.readLine()) != null)
-			{
-				if(line.contains("="))
-				{
-					String left = line.substring(0, line.indexOf('='));
-					String right = line.substring(line.indexOf('=') + 1, line.length());
-					//System.out.println(left+"="+right);
-					
-					if(left.equals("name"))
-						this.name = right;
-					else if(left.equals("version"))
-						this.version = right;
-					else if(left.equals("description"))
-						this.description = right.replace("\\n", "\n");
-				}
-			}
-			reader.close();
-		}
-		catch (IOException e)
-		{
-			throw new MalformedModTxtException(this);
-		}*/
-		
-		
 	}
 
 	@Override
