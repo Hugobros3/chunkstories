@@ -31,6 +31,7 @@ import org.lwjgl.BufferUtils;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.opengl.GL32.*;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
@@ -48,6 +49,7 @@ public class ShaderProgram implements ShaderInterface
 	private int shaderProgramId;
 	private int vertexShaderId;
 	private int fragShaderId;
+	private int geometryShaderId = -1;
 
 	boolean needValidation = false;
 	boolean loadOK = false;
@@ -81,18 +83,26 @@ public class ShaderProgram implements ShaderInterface
 	private void load(String[] parameters)
 	{
 		shaderProgramId = glCreateProgram();
-		vertexShaderId = glCreateShader(GL_VERTEX_SHADER);
-		fragShaderId = glCreateShader(GL_FRAGMENT_SHADER);
 
 		StringBuilder vertexSource = new StringBuilder();
 		StringBuilder fragSource = new StringBuilder();
+		StringBuilder geometrySource = null;
 		try
 		{
 			Asset vertexShader = modsManager.getAsset("./shaders/" + shaderName + "/" + shaderName + ".vs");
 			Asset fragmentShader = modsManager.getAsset("./shaders/" + shaderName + "/" + shaderName + ".fs");
 			
-			vertexSource = CustomGLSLReader.loadRecursivly(modsManager, vertexShader, vertexSource, parameters, false, null);
-			fragSource = CustomGLSLReader.loadRecursivly(modsManager, fragmentShader, fragSource, parameters, true, null);
+			//This might not exist !
+			Asset geometryShader = modsManager.getAsset("./shaders/" + shaderName + "/" + shaderName + ".gs");
+			
+			CustomGLSLReader.loadRecursivly(modsManager, vertexShader, vertexSource, parameters, false, null);
+			CustomGLSLReader.loadRecursivly(modsManager, fragmentShader, fragSource, parameters, true, null);
+			
+			//If a geometry shader asset was found
+			if(geometryShader != null) {
+				geometrySource = new StringBuilder();
+				CustomGLSLReader.loadRecursivly(modsManager, geometryShader, geometrySource, parameters, true, null);
+			}
 		}
 		catch (IOException e)
 		{
@@ -100,6 +110,12 @@ public class ShaderProgram implements ShaderInterface
 			e.printStackTrace();
 			return;
 		}
+		
+		vertexShaderId = glCreateShader(GL_VERTEX_SHADER);
+		fragShaderId = glCreateShader(GL_FRAGMENT_SHADER);
+		
+		if(geometrySource != null)
+			geometryShaderId = glCreateShader(GL_GEOMETRY_SHADER);
 
 		//Anti-AMD bullshit : AMD drivers have this stupid design decision of attributing vertex attributes by lexicographical order instead of
 		//order of apparition, leading to these annoying issues where an optional attribute is in index zero and disabling it screws the drawcalls
@@ -137,6 +153,11 @@ public class ShaderProgram implements ShaderInterface
 		
 		glShaderSource(fragShaderId, fragSource);
 		glCompileShader(fragShaderId);
+		
+		if(geometrySource != null) {
+			glShaderSource(geometryShaderId, geometrySource);
+			glCompileShader(geometryShaderId);
+		}
 
 		if (glGetShaderi(fragShaderId, GL_COMPILE_STATUS) == GL_FALSE)
 		{
@@ -190,8 +211,39 @@ public class ShaderProgram implements ShaderInterface
 			}
 			return;
 		}
+		
+		if (geometrySource != null && glGetShaderi(geometryShaderId, GL_COMPILE_STATUS) == GL_FALSE)
+		{
+			ChunkStoriesLoggerImplementation.getInstance().log("Failed to compile shader program " + shaderName + " (geometry)", ChunkStoriesLoggerImplementation.LogType.RENDERING, ChunkStoriesLoggerImplementation.LogLevel.ERROR);
+
+			String errorsSource = glGetShaderInfoLog(geometryShaderId, 5000);
+
+			String[] errorsLines = errorsSource.split("\n");
+			String[] sourceLines = geometrySource.toString().split("\n");
+			for (String line : errorsLines)
+			{
+				ChunkStoriesLoggerImplementation.getInstance().log(line, ChunkStoriesLoggerImplementation.LogType.RENDERING, ChunkStoriesLoggerImplementation.LogLevel.WARN);
+				if (line.toLowerCase().startsWith("error: "))
+				{
+					String[] parsed = line.split(":");
+					if (parsed.length >= 3)
+					{
+						int lineNumber = Integer.parseInt(parsed[2]);
+						if (sourceLines.length > lineNumber)
+						{
+							System.out.println("@line: " + lineNumber + ": " + sourceLines[lineNumber]);
+						}
+					}
+				}
+			}
+			return;
+		}
+		
 		glAttachShader(shaderProgramId, vertexShaderId);
 		glAttachShader(shaderProgramId, fragShaderId);
+		
+		if(geometrySource != null)
+			glAttachShader(shaderProgramId, geometryShaderId);
 
 		glLinkProgram(shaderProgramId);
 
@@ -248,7 +300,6 @@ public class ShaderProgram implements ShaderInterface
 	public void setUniform1i(String uniformName, int uniformData)
 	{
 		uncommitedUniforms.put(uniformName, uniformData);
-		//uniformsAttributesIntegers.put(uniformName, uniformData);
 	}
 
 	@Override
@@ -523,6 +574,10 @@ public class ShaderProgram implements ShaderInterface
 		glDeleteProgram(shaderProgramId);
 		glDeleteShader(vertexShaderId);
 		glDeleteShader(fragShaderId);
+		if(geometryShaderId != -1) {
+			glDeleteShader(geometryShaderId);
+			geometryShaderId = -1;
+		}
 
 		uniformsLocations.clear();
 		attributesLocations.clear();

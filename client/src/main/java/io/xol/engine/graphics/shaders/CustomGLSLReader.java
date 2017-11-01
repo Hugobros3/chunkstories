@@ -17,7 +17,7 @@ import io.xol.chunkstories.api.mods.ModsManager;
 
 public class CustomGLSLReader
 {
-	public static StringBuilder loadRecursivly(ModsManager modsManager, Asset asset, StringBuilder into, String[] parameters, boolean type, Set<String> alreadyIncluded) throws IOException
+	public static void loadRecursivly(ModsManager modsManager, Asset asset, StringBuilder into, String[] parameters, boolean type, Set<String> alreadyIncluded) throws IOException
 	{
 		if(alreadyIncluded == null)
 			alreadyIncluded = new HashSet<String>();
@@ -125,6 +125,6 @@ public class CustomGLSLReader
 			}
 		}
 		reader.close();
-		return into;
+		//return into;
 	}
 }
