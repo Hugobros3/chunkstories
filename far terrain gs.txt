@@ -19,11 +19,8 @@ Subdivide each chunk into 4x4 points covering each 8x8 blocks
  = 1152 almost there ...
  
 8x8 points covering each 4x4 blocks
-4*8*(2+1)*2 = 96 MAX substris
-288 vertices !
-
-With 8x4 sublabs to do = 32
-Fits in GS instanciation
+4*4*(2+1)*2 = 96 MAX substris
+288 vertices/point !
 
 Suuuw : Render a region = 
 

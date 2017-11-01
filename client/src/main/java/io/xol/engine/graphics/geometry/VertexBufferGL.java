@@ -230,7 +230,7 @@ public class VertexBufferGL implements VertexBuffer
 			waitingToUploadMainThread = dataToUpload;
 			if(replacing != null && replacing != dataToUpload && replacing instanceof RecyclableByteBuffer)
 			{
-				System.out.println("Watch out, uploading two RecyclableByteBuffer in a row, the first one is getting recycled early to prevent locks");
+				//System.out.println("Watch out, uploading two RecyclableByteBuffer in a row, the first one is getting recycled early to prevent locks");
 				RecyclableByteBuffer rcb = (RecyclableByteBuffer)replacing;
 				rcb.recycle();
 			}
