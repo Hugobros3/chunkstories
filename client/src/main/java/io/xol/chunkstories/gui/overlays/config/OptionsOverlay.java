@@ -268,6 +268,7 @@ public class OptionsOverlay extends Layer
 					{
 						renderer.shaders().reloadShader("shadows_apply");
 						renderer.shaders().reloadShader("terrain");
+						renderer.shaders().reloadShader("terrain_blocky");
 						renderer.shaders().reloadShader("postprocess");
 					}
 				}),
@@ -277,6 +278,7 @@ public class OptionsOverlay extends Layer
 					{
 						renderer.shaders().reloadShader("shadows_apply");
 						renderer.shaders().reloadShader("terrain");
+						renderer.shaders().reloadShader("terrain_blocky");
 					}
 				}),
 				new ConfigButtonMultiChoice("shadowMapResolutions", new String[] { "512", "1024", "2048", "4096" }).setApplyAction(new Runnable(){
@@ -302,6 +304,7 @@ public class OptionsOverlay extends Layer
 					public void run()
 					{
 						renderer.shaders().reloadShader("terrain");
+						renderer.shaders().reloadShader("terrain_blocky");
 					}
 				}),
 				/*new ConfigButtonMultiChoice("ssaoQuality", new String[] { "0", "1", "2"}).setApplyAction(new Runnable(){
