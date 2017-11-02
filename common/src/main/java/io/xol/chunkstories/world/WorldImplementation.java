@@ -30,6 +30,7 @@ import io.xol.chunkstories.api.util.ConfigDeprecated;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.voxel.Voxel;
+import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelInteractive;
 import io.xol.chunkstories.api.world.generator.WorldGenerator;
 import io.xol.chunkstories.api.world.WorldInfo;
@@ -438,7 +439,7 @@ public abstract class WorldImplementation implements World
 		
 		Region region = this.getRegionWorldCoordinates(x, y, z);
 		if(region == null)
-			return new DummyContext(new DummyChunk(), x, y, z, 0) {
+			return new DummyContext(new DummyChunk(), x, y, z, VoxelFormat.format(01, 0, this.getRegionsSummariesHolder().getHeightAtWorldCoordinates(x, z) >= y ? 0: 15, 0)) {
 			@Override
 			public Voxel getVoxel() {
 				return getGameContext().getContent().voxels().getVoxelById(0);
@@ -447,7 +448,8 @@ public abstract class WorldImplementation implements World
 			
 		Chunk chunk = region.getChunk((x / 32) % 8, (y / 32) % 8, (z / 32) % 8);
 		if(chunk == null)
-			return new DummyContext(new DummyChunk(), x, y, z, 0) {
+			return new DummyContext(new DummyChunk(), x, y, z, VoxelFormat.format(01, 0, this.getRegionsSummariesHolder().getHeightAtWorldCoordinates(x, z) >= y ? 0: 15, 0)) {
+			
 			@Override
 			public Voxel getVoxel() {
 				return getGameContext().getContent().voxels().getVoxelById(0);

@@ -251,7 +251,7 @@ public class CubicChunk implements Chunk
 	public int peekSimple(int x, int y, int z)
 	{
 		if (chunkVoxelData == null)
-			return 0;
+			return VoxelFormat.format(0, 0, world.getRegionsSummariesHolder().getHeightAtWorldCoordinates(x, z) >= y ? 0: 15, 0);
 		else
 		{
 			x = sanitizeCoordinate(x);
