@@ -1,8 +1,6 @@
 package io.xol.chunkstories.renderer.chunks;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.List;
 
 import io.xol.chunkstories.api.math.LoopingMathHelper;

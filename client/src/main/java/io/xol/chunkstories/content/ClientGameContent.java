@@ -39,11 +39,12 @@ public class ClientGameContent extends GameContentStore implements ClientContent
 	{
 		super.reload();
 		
-		TexturesHandler.reloadAll();
+		//TexturesHandler.reloadAll();
 		SoundsLibrary.clean();
 		
 		this.meshes.reload();
-		this.shaders.reloadAllShaders();
+		this.shaders.reloadAll();
+		this.textures.reloadAll();
 	}
 
 	public ClientMeshStore meshes()

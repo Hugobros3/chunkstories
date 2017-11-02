@@ -72,15 +72,12 @@ public class GameContentStore implements Content
 	
 	public void reload()
 	{
-		// ! LOADS MODS
-
 		try
 		{
 			modsManager.loadEnabledMods();
 		}
 		catch (NotAllModsLoadedException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 

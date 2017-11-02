@@ -30,6 +30,7 @@ import io.xol.chunkstories.gui.overlays.ingame.PauseOverlay;
 import io.xol.chunkstories.renderer.decals.VoxelOverlays;
 import io.xol.chunkstories.renderer.particles.ClientParticlesRenderer;
 import io.xol.chunkstories.server.LocalServerContext;
+import io.xol.chunkstories.server.commands.content.ReloadContentCommand;
 import io.xol.chunkstories.world.WorldClientCommon;
 import io.xol.chunkstories.world.WorldClientRemote;
 
@@ -81,11 +82,13 @@ public class Ingame extends Layer
 		{
 			localServer = new LocalServerContext(Client.getInstance());
 			pluginManager = localServer.getPluginManager();
+			new ReloadContentCommand(Client.getInstance());
 		}
 		else
 		{
 			localServer = null;
 			pluginManager = new ClientSlavePluginManager(Client.getInstance());
+			new ReloadContentCommand(Client.getInstance());
 		}
 		
 		//Hacky job because the client is a global state and the ingame scene is per-world

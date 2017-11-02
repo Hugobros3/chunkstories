@@ -52,7 +52,7 @@ public class ShadersStore implements ShadersLibrary
 			s.reload(RenderingConfig.getShaderConfig());
 	}
 	
-	public void reloadAllShaders()
+	public void reloadAll()
 	{
 		for(ShaderProgram s : loadedShaders.values())
 			s.reload(RenderingConfig.getShaderConfig());

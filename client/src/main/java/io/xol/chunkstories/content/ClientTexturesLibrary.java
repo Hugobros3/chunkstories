@@ -12,6 +12,7 @@ import io.xol.engine.graphics.textures.TexturesHandler;
 //http://chunkstories.xyz
 //http://xol.io
 
+//TODO merge this & TexturesHandler
 public class ClientTexturesLibrary implements TexturesLibrary {
 
 	private final ClientGameContent clientGameContent;
@@ -43,6 +44,11 @@ public class ClientTexturesLibrary implements TexturesLibrary {
 	@Override
 	public ClientContent parent() {
 		return clientGameContent;
+	}
+
+	@Override
+	public void reloadAll() {
+		TexturesHandler.reloadAll();
 	}
 
 }

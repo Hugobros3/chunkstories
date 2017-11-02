@@ -325,14 +325,14 @@ public class Chat
 			
 			insert("No fuck you"+((WorldImplementation)Client.getInstance().getWorld()).getRegionsHolder().getRegionChunkCoordinates(cx, cy, cz));
 		}
-		else if(input.equals("/reloadLocalContent"))
+		/*else if(input.equals("/reloadLocalContent"))
 		{
 			//Rebuild the mod FS
 			Client.getInstance().reloadAssets();
 			//Mark some caches dirty
 			((WorldRendererImplementation) Client.getInstance().getWorld().getWorldRenderer()).reloadContentSpecificStuff();
 		}
-		else if (ingame.getWorld() instanceof WorldClientRemote)
+		else */if (ingame.getWorld() instanceof WorldClientRemote)
 			((WorldClientRemote) ingame.getWorld()).getConnection().sendTextMessage("chat/" + input);
 		else
 			insert(ColorsTools.getUniqueColorPrefix(username) + username + "#FFFFFF > " + input);
