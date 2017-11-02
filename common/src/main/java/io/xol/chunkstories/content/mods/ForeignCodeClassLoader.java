@@ -59,7 +59,12 @@ public class ForeignCodeClassLoader extends URLClassLoader
 						
 						try
 						{
-							Class<?> loadedClass = this.findClass(className);
+							//OpenJDK weirdness: Unlike Oracle's implementation, OpenJDK loads the referenced classes when it loads one
+							//meaning when I call findClass() on every .class I end up with duplicate findClass() calls, and it doesn't like it very much
+							
+							//The fix is easy: call findLoadedClass() first and check we're not duplicating the request
+							Class<?> alreadyLoadedClass = this.findLoadedClass(className);
+							Class<?> loadedClass = alreadyLoadedClass != null ? alreadyLoadedClass : this.findClass(className);
 							classes.put(className, loadedClass);
 						}
 						catch (ClassNotFoundException e1)
@@ -71,6 +76,7 @@ public class ForeignCodeClassLoader extends URLClassLoader
 						}
 						catch(LinkageError le)
 						{
+							System.out.println("This should not happen!");
 							//Don't care
 						}
 						//classes.add(className);
