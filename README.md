@@ -57,7 +57,7 @@ You did not quite come to the right place for this. If you're just interested in
 
 This project was entirely developed by Hugo "Gobrosse" Devillers on his spare time. The API is licensed under -, meaning anyone can do whatever the fuck they want with it. 
 
-The core content **code** is released under - too, under the assumption that people won't be morons about it and will learn from it. 
+The core content **code** is released under
 The core content **assets** that aren't specified otherwise in ATTRIBUTION.md are released under Creative Commons NON-COMMERCIAL ATTRIBUTION REDISTRIBUABLE, meaning you can use them with your mods, hack them up and have fun, but you can't use them in commercial projects nor claim you made them. 
 
 The implementation code remains private for the moment. It's not as clean, features angry french curse words, bloated build scripts and maybe even an evil bitcoin miner. Maybe not. I'm actually mostly cool with showing the code, but letting people lead my project in another direction isn't what I want, and publishing on github would distract me while not bringing anything to the table. This can of course change once I no longer work on this project "full-free-time"
