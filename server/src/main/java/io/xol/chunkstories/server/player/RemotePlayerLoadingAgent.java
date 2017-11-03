@@ -11,6 +11,7 @@ import io.xol.chunkstories.api.net.packets.PacketWorldUser.Type;
 import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
+import io.xol.chunkstories.world.region.RegionImplementation;
 
 /** 
  * Receives the requests from the remote player & decides wether to accept them or not
@@ -137,7 +138,9 @@ public class RemotePlayerLoadingAgent {
 			for(int handle : this.usedChunksHandles) {
 				int[] pos = chunk(handle);
 				
-				ChunkHolder holder = player.getWorld().getRegionChunkCoordinates(pos[0], pos[1], pos[2]).getChunkHolder(pos[0], pos[1], pos[2]);
+				RegionImplementation region = player.getWorld().getRegionChunkCoordinates(pos[0], pos[1], pos[2]);
+				assert region != null;
+				ChunkHolder holder = region.getChunkHolder(pos[0], pos[1], pos[2]);
 				assert holder != null; // We can assert the chunk holder exists because at this point it MUST be held by this very loading agent !
 				holder.unregisterUser(player);
 			}
