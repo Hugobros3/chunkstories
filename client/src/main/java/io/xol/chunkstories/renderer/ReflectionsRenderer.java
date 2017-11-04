@@ -15,44 +15,45 @@ public class ReflectionsRenderer {
 	}
 
 	/** Only ran if realtime screen-space reflections are enabled, otherwise a flag is raised and a baked envmap is used. */
-	public void renderRealtimeScreenSpaceReflections(RenderingInterface renderingContext) {
-		ShaderInterface reflectionsShader = renderingContext.useShader("reflections");
+	public void renderRealtimeScreenSpaceReflections(RenderingInterface renderer) {
+		ShaderInterface reflectionsShader = renderer.useShader("reflections");
 
 		//This isn't a depth-buffered pass.
-		renderingContext.setDepthTestMode(DepthTestMode.DISABLED);
-		renderingContext.setBlendMode(BlendMode.DISABLED);
+		renderer.setDepthTestMode(DepthTestMode.DISABLED);
+		renderer.setBlendMode(BlendMode.DISABLED);
 
-		renderingContext.getRenderTargetManager().setConfiguration(worldRenderer.renderBuffers.fboSSR);
-		renderingContext.getRenderTargetManager().clearBoundRenderTargetAll();
+		renderer.getRenderTargetManager().setConfiguration(worldRenderer.renderBuffers.fboSSR);
+		renderer.getRenderTargetManager().clearBoundRenderTargetAll();
 
 		//Required to execute SSR
-		renderingContext.bindTexture2D("shadedBuffer", worldRenderer.renderBuffers.rbShaded);
-		renderingContext.bindTexture2D("depthBuffer", worldRenderer.renderBuffers.rbZBuffer);
-		renderingContext.bindTexture2D("normalBuffer", worldRenderer.renderBuffers.rbNormals);
-		renderingContext.bindTexture2D("metaBuffer", worldRenderer.renderBuffers.rbMaterial);
+		renderer.bindTexture2D("shadedBuffer", worldRenderer.renderBuffers.rbShaded);
+		renderer.bindTexture2D("depthBuffer", worldRenderer.renderBuffers.rbZBuffer);
+		renderer.bindTexture2D("normalBuffer", worldRenderer.renderBuffers.rbNormal);
+		renderer.bindTexture2D("specularityBuffer", worldRenderer.renderBuffers.rbSpecularity);
+		renderer.bindTexture2D("voxelLightBuffer", worldRenderer.renderBuffers.rbVoxelLight);
 
 		//Required to shade the sky
-		renderingContext.bindTexture2D("sunSetRiseTexture", worldRenderer.worldTextures.sunGlowTexture);
-		renderingContext.bindTexture2D("skyTextureSunny", worldRenderer.worldTextures.skyTextureSunny);
-		renderingContext.bindTexture2D("skyTextureRaining", worldRenderer.worldTextures.skyTextureRaining);
+		renderer.bindTexture2D("sunSetRiseTexture", worldRenderer.worldTextures.sunGlowTexture);
+		renderer.bindTexture2D("skyTextureSunny", worldRenderer.worldTextures.skyTextureSunny);
+		renderer.bindTexture2D("skyTextureRaining", worldRenderer.worldTextures.skyTextureRaining);
 		reflectionsShader.setUniform1f("dayTime", worldRenderer.skyRenderer.time);
 
 		//Texture2D lightColors = TexturesHandler.getTexture("./textures/environement/lightcolors.png");
 		//renderingContext.bindTexture2D("lightColors", lightColors);
 
-		renderingContext.bindCubemap("environmentCubemap", worldRenderer.renderBuffers.rbEnvironmentMap);
+		renderer.bindCubemap("environmentCubemap", worldRenderer.renderBuffers.rbEnvironmentMap);
 
 		// Matrices for screen-space transformations
-		renderingContext.getCamera().setupShader(reflectionsShader);
+		renderer.getCamera().setupShader(reflectionsShader);
 		worldRenderer.skyRenderer.setupShader(reflectionsShader);
 
 		//Disable depth writing and run the deal
-		renderingContext.getRenderTargetManager().setDepthMask(false);
-		renderingContext.drawFSQuad();
-		renderingContext.getRenderTargetManager().setDepthMask(true);
+		renderer.getRenderTargetManager().setDepthMask(false);
+		renderer.drawFSQuad();
+		renderer.getRenderTargetManager().setDepthMask(true);
 
-		renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
+		renderer.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
 		
-		renderingContext.getRenderTargetManager().setConfiguration(worldRenderer.renderBuffers.fboShadedBuffer);
+		renderer.getRenderTargetManager().setConfiguration(worldRenderer.renderBuffers.fboShadedBuffer);
 	}
 }
