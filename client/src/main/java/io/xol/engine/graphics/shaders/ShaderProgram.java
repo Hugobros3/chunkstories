@@ -201,10 +201,15 @@ public class ShaderProgram implements ShaderInterface
 					String[] parsed = line.split(":");
 					if (parsed.length >= 3)
 					{
-						int lineNumber = Integer.parseInt(parsed[2]);
-						if (sourceLines.length > lineNumber)
-						{
-							System.out.println("@line: " + lineNumber + ": " + sourceLines[lineNumber]);
+						try {
+							int lineNumber = Integer.parseInt(parsed[2]);
+							if (sourceLines.length > lineNumber)
+							{
+								System.out.println("@line: " + lineNumber + ": " + sourceLines[lineNumber]);
+							}
+						}
+						catch(Exception e) {
+							System.out.println(parsed);
 						}
 					}
 				}
@@ -228,10 +233,15 @@ public class ShaderProgram implements ShaderInterface
 					String[] parsed = line.split(":");
 					if (parsed.length >= 3)
 					{
-						int lineNumber = Integer.parseInt(parsed[2]);
-						if (sourceLines.length > lineNumber)
-						{
-							System.out.println("@line: " + lineNumber + ": " + sourceLines[lineNumber]);
+						try {
+							int lineNumber = Integer.parseInt(parsed[2]);
+							if (sourceLines.length > lineNumber)
+							{
+								System.out.println("@line: " + lineNumber + ": " + sourceLines[lineNumber]);
+							}
+						}
+						catch(Exception e) {
+							System.out.println(parsed);
 						}
 					}
 				}
@@ -263,10 +273,15 @@ public class ShaderProgram implements ShaderInterface
 					String[] parsed = line.split(":");
 					if (parsed.length >= 3)
 					{
-						int lineNumber = Integer.parseInt(parsed[2]);
-						if (sourceLines.length > lineNumber)
-						{
-							System.out.println("@line: " + lineNumber + ": " + sourceLines[lineNumber]);
+						try {
+							int lineNumber = Integer.parseInt(parsed[2]);
+							if (sourceLines.length > lineNumber)
+							{
+								System.out.println("@line: " + lineNumber + ": " + sourceLines[lineNumber]);
+							}
+						}
+						catch(Exception e) {
+							System.out.println(parsed);
 						}
 					}
 				}
