@@ -305,8 +305,8 @@ public class ChunkHolderImplementation implements ChunkHolder
 			usersLock.lock();
 			boolean ok = users.add(user);
 			
-			if(!ok)
-				System.out.println("warn: adding twice user to ch");
+			//if(!ok)
+			//	System.out.println("warn: adding twice user to ch");
 		
 			//TODO lock
 			CubicChunk chunk = this.chunk;

@@ -9,6 +9,8 @@ import java.util.Random;
 import java.util.Set;
 
 import io.xol.chunkstories.api.content.Content;
+import io.xol.chunkstories.api.converter.mappings.Mapper;
+import io.xol.chunkstories.api.converter.mappings.NonTrivialMapper;
 import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.plugin.PluginManager;
@@ -21,8 +23,6 @@ import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
 import io.xol.chunkstories.content.GameContentStore;
-import io.xol.chunkstories.converter.ConverterMapping.Mapper;
-import io.xol.chunkstories.converter.ConverterMapping.NonTrivialMapper;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.chunkstories.tools.WorldTool;
 import io.xol.chunkstories.world.WorldImplementation;
@@ -193,7 +193,7 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser
 		verbose("Loading converter_mapping.txt");
 		File file = new File("converter_mapping.txt");
 		mappers = new ConverterMapping(this, file);
-		verbose("Done, took " + (System.nanoTime() - System.nanoTime()) / 1000 + " ï¿½s");
+		verbose("Done, took " + (System.nanoTime() - System.nanoTime()) / 1000 + " �s");
 		
 		//Loads the Minecraft World
 		mcWorld = new MinecraftWorld(mcFolder);

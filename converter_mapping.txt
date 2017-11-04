@@ -1,6 +1,17 @@
 #Minecraft -> Chunk stories IDs maps
 #Most of the blocks from Minecraft 1.12 are here
+
+#Mappers section: Custom mappers that translate a specific block type with more complex information
+_mappers
+chest io.xol.chunkstories.core.converter.mappings.Chest
+door io.xol.chunkstories.core.converter.mappings.Door
+keepmeta io.xol.chunkstories.core.converter.mappings.KeepMeta
+sign io.xol.chunkstories.core.converter.mappings.Sign
+slab io.xol.chunkstories.core.converter.mappings.Slab
+
+#Mappings section: what to do with each block type
 #Syntax: <minecraftId>[:meta] chunkStoriesBlockName[:meta (8-bit)] [special mapper]
+_mappings
 0 air
 1 stone
 1:1 granite
