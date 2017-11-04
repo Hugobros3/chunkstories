@@ -8,10 +8,6 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
-import io.xol.chunkstories.anvil.MinecraftChunk;
-import io.xol.chunkstories.anvil.MinecraftRegion;
-import io.xol.chunkstories.anvil.MinecraftWorld;
-import io.xol.chunkstories.anvil.nbt.NBTInt;
 import io.xol.chunkstories.api.Content;
 import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.Location;
@@ -35,6 +31,10 @@ import io.xol.chunkstories.world.WorldInfoImplementation;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
 import io.xol.engine.concurrency.CompoundFence;
 import io.xol.engine.misc.FoldersUtils;
+import io.xol.enklume.MinecraftChunk;
+import io.xol.enklume.MinecraftRegion;
+import io.xol.enklume.MinecraftWorld;
+import io.xol.enklume.nbt.NBTInt;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

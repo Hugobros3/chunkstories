@@ -160,6 +160,7 @@ subprojects { subproject ->
 			compile group: 'com.carrotsearch', name: 'hppc', version: '0.7.2'
 			
 			compile group: 'io.xol.chunkstories', name: 'api', version: apiRevisionBuiltAgainst
+			compile group: 'io.xol.enklume', name: 'enklume', version: 100
 			
 			testCompile 'junit:junit:4.12'
 		}

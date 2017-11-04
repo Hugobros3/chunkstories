@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
-import io.xol.chunkstories.anvil.MinecraftRegion;
 import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.exceptions.world.WorldException;
 import io.xol.chunkstories.api.voxel.Voxel;
@@ -13,6 +12,7 @@ import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.chunk.Chunk;
+import io.xol.enklume.MinecraftRegion;
 
 /** Maps minecraft ids to chunkstories's */
 public class ConverterMapping {

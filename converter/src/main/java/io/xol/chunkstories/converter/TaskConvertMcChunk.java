@@ -1,7 +1,5 @@
 package io.xol.chunkstories.converter;
 
-import io.xol.chunkstories.anvil.MinecraftChunk;
-import io.xol.chunkstories.anvil.MinecraftRegion;
 import io.xol.chunkstories.api.workers.Task;
 import io.xol.chunkstories.api.workers.TaskExecutor;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
@@ -10,6 +8,8 @@ import io.xol.chunkstories.converter.ConverterMapping.NonTrivialMapper;
 import io.xol.chunkstories.converter.ConverterWorkers.ConverterWorkerThread;
 import io.xol.chunkstories.tools.WorldTool;
 import io.xol.engine.concurrency.CompoundFence;
+import io.xol.enklume.MinecraftChunk;
+import io.xol.enklume.MinecraftRegion;
 
 public class TaskConvertMcChunk extends Task {
 

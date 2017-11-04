@@ -5,9 +5,6 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import io.xol.chunkstories.anvil.MinecraftChunk;
-import io.xol.chunkstories.anvil.MinecraftRegion;
-import io.xol.chunkstories.anvil.MinecraftWorld;
 import io.xol.chunkstories.api.workers.Tasks;
 import io.xol.chunkstories.api.world.WorldInfo.WorldSize;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
@@ -18,6 +15,9 @@ import io.xol.chunkstories.tools.WorldTool;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.engine.concurrency.CompoundFence;
+import io.xol.enklume.MinecraftChunk;
+import io.xol.enklume.MinecraftRegion;
+import io.xol.enklume.MinecraftWorld;
 
 public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 

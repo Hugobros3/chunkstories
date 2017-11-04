@@ -1,16 +1,16 @@
 package io.xol.chunkstories.converter;
 
-import io.xol.chunkstories.anvil.MinecraftChunk;
-import io.xol.chunkstories.anvil.SignParseUtil;
-import io.xol.chunkstories.anvil.nbt.NBTCompound;
-import io.xol.chunkstories.anvil.nbt.NBTList;
-import io.xol.chunkstories.anvil.nbt.NBTString;
-import io.xol.chunkstories.anvil.nbt.NBTInt;
-import io.xol.chunkstories.anvil.nbt.NBTag;
 import io.xol.chunkstories.api.voxel.components.VoxelComponent;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.Chunk.ChunkVoxelContext;
 import io.xol.chunkstories.world.WorldImplementation;
+import io.xol.enklume.MinecraftChunk;
+import io.xol.enklume.util.SignParseUtil;
+import io.xol.enklume.nbt.NBTCompound;
+import io.xol.enklume.nbt.NBTInt;
+import io.xol.enklume.nbt.NBTList;
+import io.xol.enklume.nbt.NBTString;
+import io.xol.enklume.nbt.NBTag;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
