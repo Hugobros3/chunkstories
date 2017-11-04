@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.xol.engine.misc.ConfigFile;
 import io.xol.chunkstories.VersionInfo;
-import io.xol.chunkstories.api.Content;
+import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.server.DedicatedServerInterface;

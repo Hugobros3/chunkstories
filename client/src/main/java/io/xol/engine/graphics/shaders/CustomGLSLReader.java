@@ -8,8 +8,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import io.xol.chunkstories.api.mods.Asset;
-import io.xol.chunkstories.api.mods.ModsManager;
+import io.xol.chunkstories.api.content.Asset;
+import io.xol.chunkstories.api.content.mods.ModsManager;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz

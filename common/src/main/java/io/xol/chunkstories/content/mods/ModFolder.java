@@ -14,8 +14,8 @@ import java.util.Iterator;
 import java.util.Map;
 
 import io.xol.chunkstories.api.exceptions.content.mods.ModLoadFailureException;
-import io.xol.chunkstories.api.mods.Asset;
-import io.xol.chunkstories.api.mods.Mod;
+import io.xol.chunkstories.api.content.Asset;
+import io.xol.chunkstories.api.content.mods.Mod;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 

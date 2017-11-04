@@ -9,8 +9,8 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import io.xol.chunkstories.api.mods.Asset;
-import io.xol.chunkstories.api.mods.Mod;
+import io.xol.chunkstories.api.content.Asset;
+import io.xol.chunkstories.api.content.mods.Mod;
 import io.xol.chunkstories.content.mods.ModFolder;
 import io.xol.chunkstories.content.mods.ModZip;
 import io.xol.chunkstories.server.DedicatedServer;

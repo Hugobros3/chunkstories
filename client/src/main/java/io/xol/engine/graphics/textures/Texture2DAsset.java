@@ -9,7 +9,7 @@ import static org.lwjgl.opengl.GL11.*;
 
 import de.matthiasmann.twl.utils.PNGDecoder;
 import de.matthiasmann.twl.utils.PNGDecoder.Format;
-import io.xol.chunkstories.api.mods.Asset;
+import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;

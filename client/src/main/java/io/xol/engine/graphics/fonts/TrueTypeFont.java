@@ -1,7 +1,7 @@
 package io.xol.engine.graphics.fonts;
 
 import io.xol.chunkstories.api.math.HexTools;
-import io.xol.chunkstories.api.mods.Asset;
+import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.rendering.text.FontRenderer;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;

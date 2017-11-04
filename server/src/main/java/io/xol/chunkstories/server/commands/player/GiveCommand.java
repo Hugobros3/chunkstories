@@ -1,6 +1,6 @@
 package io.xol.chunkstories.server.commands.player;
 
-import io.xol.chunkstories.api.Content;
+import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemType;

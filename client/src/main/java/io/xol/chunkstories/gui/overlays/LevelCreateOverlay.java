@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 
-import io.xol.chunkstories.api.Content.WorldGenerators.WorldGeneratorType;
+import io.xol.chunkstories.api.content.Content.WorldGenerators.WorldGeneratorType;
 import io.xol.chunkstories.api.gui.Layer;
 import org.joml.Vector4f;
 import io.xol.chunkstories.api.rendering.GameWindow;

@@ -15,7 +15,7 @@ import io.xol.chunkstories.api.math.LoopingMathHelper;
 import io.xol.chunkstories.api.math.Math2;
 import io.xol.chunkstories.api.net.packets.PacketWorldUser;
 import io.xol.chunkstories.api.net.packets.PacketWorldUser.Type;
-import io.xol.chunkstories.api.player.LocalPlayer;
+import io.xol.chunkstories.api.client.LocalPlayer;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;

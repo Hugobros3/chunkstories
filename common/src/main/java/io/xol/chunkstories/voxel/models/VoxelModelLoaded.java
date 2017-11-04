@@ -1,7 +1,7 @@
 package io.xol.chunkstories.voxel.models;
 
-import io.xol.chunkstories.api.Content;
-import io.xol.chunkstories.api.Content.Voxels.VoxelModels;
+import io.xol.chunkstories.api.content.Content;
+import io.xol.chunkstories.api.content.Content.Voxels.VoxelModels;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;

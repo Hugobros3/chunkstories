@@ -7,7 +7,7 @@ import java.io.File;
 import org.junit.Test;
 
 import io.xol.chunkstories.api.exceptions.content.mods.NotAllModsLoadedException;
-import io.xol.chunkstories.api.mods.ModsManager;
+import io.xol.chunkstories.api.content.mods.ModsManager;
 import io.xol.chunkstories.content.ModsManagerImplementation.NonExistentCoreContent;
 
 //(c) 2015-2017 XolioWare Interactive

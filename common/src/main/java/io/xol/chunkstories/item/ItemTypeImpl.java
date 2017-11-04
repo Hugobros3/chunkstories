@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-import io.xol.chunkstories.api.Content.ItemsTypes;
+import io.xol.chunkstories.api.content.Content.ItemsTypes;
 import io.xol.chunkstories.api.client.ClientContent;
 import io.xol.chunkstories.api.exceptions.content.IllegalItemDeclarationException;
 import io.xol.chunkstories.api.item.Item;

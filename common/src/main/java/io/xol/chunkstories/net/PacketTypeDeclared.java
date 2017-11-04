@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-import io.xol.chunkstories.api.Content.PacketTypes.PacketType;
+import io.xol.chunkstories.api.content.Content.PacketTypes.PacketType;
 import io.xol.chunkstories.api.exceptions.content.IllegalPacketDeclarationException;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.content.GameContentStore;

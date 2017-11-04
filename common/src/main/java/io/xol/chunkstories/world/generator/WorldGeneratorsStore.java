@@ -1,9 +1,9 @@
 package io.xol.chunkstories.world.generator;
 
-import io.xol.chunkstories.api.Content;
+import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.exceptions.content.IllegalWorldGeneratorDeclarationException;
-import io.xol.chunkstories.api.mods.Asset;
-import io.xol.chunkstories.api.mods.ModsManager;
+import io.xol.chunkstories.api.content.Asset;
+import io.xol.chunkstories.api.content.mods.ModsManager;
 import io.xol.chunkstories.api.world.generator.BlankWorldGenerator;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.generator.WorldGenerator;

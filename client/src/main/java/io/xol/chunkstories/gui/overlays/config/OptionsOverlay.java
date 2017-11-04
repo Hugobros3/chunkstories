@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import io.xol.chunkstories.api.Content.LocalizationManager;
+import io.xol.chunkstories.api.content.Content.LocalizationManager;
 import io.xol.chunkstories.api.gui.GuiElement;
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.input.Input;

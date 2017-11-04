@@ -5,9 +5,9 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-import io.xol.chunkstories.api.Content.Voxels;
+import io.xol.chunkstories.api.content.Content.Voxels;
 import io.xol.chunkstories.api.exceptions.content.IllegalVoxelDeclarationException;
-import io.xol.chunkstories.api.material.Material;
+import io.xol.chunkstories.api.voxel.materials.Material;
 import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelSides;

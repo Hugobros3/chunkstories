@@ -3,7 +3,7 @@ package io.xol.chunkstories.materials;
 import java.io.BufferedReader;
 import java.io.IOException;
 
-import io.xol.chunkstories.api.material.Material;
+import io.xol.chunkstories.api.voxel.materials.Material;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
-import io.xol.chunkstories.api.mods.Mod;
+import io.xol.chunkstories.api.content.mods.Mod;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 
 /**

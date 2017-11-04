@@ -3,14 +3,14 @@ package io.xol.chunkstories.mesh;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.xol.chunkstories.api.Content;
+import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.exceptions.content.MeshLoadException;
 import io.xol.chunkstories.api.mesh.Mesh;
 import io.xol.chunkstories.api.mesh.MeshLibrary;
 import io.xol.chunkstories.api.mesh.MeshLoader;
 import io.xol.chunkstories.api.mesh.MultiPartMesh;
-import io.xol.chunkstories.api.mods.Asset;
-import io.xol.chunkstories.api.mods.ModsManager;
+import io.xol.chunkstories.api.content.Asset;
+import io.xol.chunkstories.api.content.mods.ModsManager;
 import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogLevel;
 import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogType;
 import io.xol.chunkstories.content.GameContentStore;

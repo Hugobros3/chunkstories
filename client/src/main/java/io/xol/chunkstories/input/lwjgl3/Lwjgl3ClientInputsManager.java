@@ -24,7 +24,7 @@ import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.input.Mouse.MouseButton;
 import io.xol.chunkstories.api.input.Mouse.MouseScroll;
-import io.xol.chunkstories.api.player.LocalPlayer;
+import io.xol.chunkstories.api.client.LocalPlayer;
 import io.xol.chunkstories.api.plugin.ClientPluginManager;
 import io.xol.chunkstories.api.util.ConfigDeprecated;
 import io.xol.chunkstories.client.Client;

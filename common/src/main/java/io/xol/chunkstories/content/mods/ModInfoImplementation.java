@@ -6,8 +6,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import io.xol.chunkstories.api.exceptions.content.mods.MalformedModTxtException;
-import io.xol.chunkstories.api.mods.Mod;
-import io.xol.chunkstories.api.mods.ModInfo;
+import io.xol.chunkstories.api.content.mods.Mod;
+import io.xol.chunkstories.api.content.mods.ModInfo;
 import io.xol.chunkstories.materials.GenericConfigurable;
 
 //(c) 2015-2017 XolioWare Interactive

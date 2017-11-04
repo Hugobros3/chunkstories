@@ -13,7 +13,7 @@ import io.xol.chunkstories.api.exceptions.content.MeshLoadException;
 import io.xol.chunkstories.api.mesh.Mesh;
 import io.xol.chunkstories.api.mesh.MeshLoader;
 import io.xol.chunkstories.api.mesh.MultiPartMesh;
-import io.xol.chunkstories.api.mods.Asset;
+import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 
 //(c) 2015-2017 XolioWare Interactive

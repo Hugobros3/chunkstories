@@ -48,7 +48,7 @@ description = 'A voxel game engine'
 group = 'io.xol.chunkstories'
 
 ext {
-	apiRevisionBuiltAgainst = '114'
+	apiRevisionBuiltAgainst = '115'
 	contentRevisionBuiltAgainst = '123'
 	
 	useEclipseCompiler = true

@@ -7,7 +7,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import io.xol.chunkstories.api.serialization.OfflineSerializedData;
+import io.xol.chunkstories.api.world.serialization.OfflineSerializedData;
 import io.xol.chunkstories.world.region.RegionImplementation;
 
 //(c) 2015-2017 XolioWare Interactive

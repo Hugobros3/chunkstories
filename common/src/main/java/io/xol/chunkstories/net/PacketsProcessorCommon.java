@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import io.xol.chunkstories.api.Content;
+import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.client.net.ClientPacketsProcessor;
 import io.xol.chunkstories.api.exceptions.net.IllegalPacketException;

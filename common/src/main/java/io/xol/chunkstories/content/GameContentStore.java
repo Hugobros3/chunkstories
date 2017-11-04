@@ -2,12 +2,12 @@ package io.xol.chunkstories.content;
 
 import java.io.File;
 
-import io.xol.chunkstories.api.Content;
+import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.exceptions.content.mods.NotAllModsLoadedException;
 import io.xol.chunkstories.api.mesh.MeshLibrary;
-import io.xol.chunkstories.api.mods.Asset;
-import io.xol.chunkstories.api.mods.ModsManager;
+import io.xol.chunkstories.api.content.Asset;
+import io.xol.chunkstories.api.content.mods.ModsManager;
 import io.xol.chunkstories.api.util.ChunkStoriesLogger;
 import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogLevel;
 import io.xol.chunkstories.content.ModsManagerImplementation.NonExistentCoreContent;

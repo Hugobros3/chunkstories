@@ -12,8 +12,8 @@ import org.joml.Vector4dc;
 import org.joml.Vector4f;
 import org.joml.Vector4fc;
 
-import io.xol.chunkstories.api.mods.Asset;
-import io.xol.chunkstories.api.mods.ModsManager;
+import io.xol.chunkstories.api.content.Asset;
+import io.xol.chunkstories.api.content.mods.ModsManager;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.rendering.pipeline.UniformsConfiguration;

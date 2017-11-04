@@ -8,7 +8,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.serialization.OfflineSerializedData;
+import io.xol.chunkstories.api.world.serialization.OfflineSerializedData;
 import io.xol.chunkstories.api.world.World;
 
 //(c) 2015-2017 XolioWare Interactive

@@ -12,7 +12,7 @@ import io.xol.chunkstories.api.client.ClientSoundManager;
 import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.player.Player;
-import io.xol.chunkstories.api.player.LocalPlayer;
+import io.xol.chunkstories.api.client.LocalPlayer;
 import io.xol.chunkstories.api.plugin.ClientPluginManager;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;

@@ -7,7 +7,7 @@ import java.util.Map;
 import org.joml.Vector3dc;
 import org.lwjgl.system.MemoryUtil;
 
-import io.xol.chunkstories.api.Content.Voxels;
+import io.xol.chunkstories.api.content.Content.Voxels;
 import io.xol.chunkstories.api.exceptions.tasks.UnexecutableTaskException;
 import io.xol.chunkstories.api.math.LoopingMathHelper;
 import io.xol.chunkstories.api.math.Math2;

@@ -1,6 +1,6 @@
 package io.xol.chunkstories.renderer.particles;
 
-import io.xol.chunkstories.api.Content;
+import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.client.ClientContent;
 import io.xol.chunkstories.api.client.ClientInterface;
 import org.joml.Vector3dc;

@@ -8,11 +8,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import io.xol.chunkstories.api.Content;
-import io.xol.chunkstories.api.Content.LocalizationManager;
-import io.xol.chunkstories.api.Content.Translation;
-import io.xol.chunkstories.api.mods.Asset;
-import io.xol.chunkstories.api.mods.ModsManager;
+import io.xol.chunkstories.api.content.Content;
+import io.xol.chunkstories.api.content.Content.LocalizationManager;
+import io.xol.chunkstories.api.content.Content.Translation;
+import io.xol.chunkstories.api.content.Asset;
+import io.xol.chunkstories.api.content.mods.ModsManager;
 import io.xol.chunkstories.content.GameContentStore;
 
 //(c) 2015-2017 XolioWare Interactive

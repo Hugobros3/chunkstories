@@ -6,7 +6,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 import io.xol.chunkstories.api.Location;
-import io.xol.chunkstories.api.Content.EntityTypes;
+import io.xol.chunkstories.api.content.Content.EntityTypes;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityType;
 import io.xol.chunkstories.api.exceptions.content.IllegalEntityDeclarationException;

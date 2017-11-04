@@ -7,7 +7,7 @@ import java.io.IOException;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.exceptions.UnknownComponentException;
-import io.xol.chunkstories.api.serialization.OfflineSerializedData;
+import io.xol.chunkstories.api.world.serialization.OfflineSerializedData;
 import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogLevel;
 import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogType;
 import io.xol.chunkstories.api.world.World;

@@ -1,10 +1,10 @@
 package io.xol.chunkstories.voxel.models;
 
-import io.xol.chunkstories.api.Content;
-import io.xol.chunkstories.api.Content.Voxels;
+import io.xol.chunkstories.api.content.Content;
+import io.xol.chunkstories.api.content.Content.Voxels;
 import org.joml.Vector3f;
-import io.xol.chunkstories.api.mods.Asset;
-import io.xol.chunkstories.api.mods.AssetHierarchy;
+import io.xol.chunkstories.api.content.Asset;
+import io.xol.chunkstories.api.content.mods.AssetHierarchy;
 import io.xol.chunkstories.api.voxel.models.VoxelModel;
 import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.chunkstories.voxel.VoxelsStore;

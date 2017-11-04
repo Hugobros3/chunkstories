@@ -3,7 +3,7 @@ package io.xol.engine.graphics.textures;
 import java.io.File;
 import java.util.concurrent.ConcurrentHashMap;
 
-import io.xol.chunkstories.api.mods.Asset;
+import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.rendering.textures.Cubemap;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.client.Client;

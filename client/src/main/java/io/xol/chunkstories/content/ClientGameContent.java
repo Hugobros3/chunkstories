@@ -8,7 +8,6 @@ import io.xol.chunkstories.api.rendering.text.FontRenderer;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.mesh.ClientMeshStore;
 import io.xol.engine.graphics.shaders.ShadersStore;
-import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.sound.library.SoundsLibrary;
 
 //(c) 2015-2017 XolioWare Interactive

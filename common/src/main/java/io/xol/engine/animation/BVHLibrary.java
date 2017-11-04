@@ -3,8 +3,8 @@ package io.xol.engine.animation;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.xol.chunkstories.api.Content;
-import io.xol.chunkstories.api.Content.AnimationsLibrary;
+import io.xol.chunkstories.api.content.Content;
+import io.xol.chunkstories.api.content.Content.AnimationsLibrary;
 import io.xol.chunkstories.content.GameContentStore;
 import io.xol.engine.animation.BVHAnimation;
 

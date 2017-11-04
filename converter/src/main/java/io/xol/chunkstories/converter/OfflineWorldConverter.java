@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
-import io.xol.chunkstories.api.Content;
+import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.plugin.PluginManager;

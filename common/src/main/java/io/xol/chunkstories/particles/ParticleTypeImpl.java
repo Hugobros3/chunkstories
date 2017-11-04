@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-import io.xol.chunkstories.api.Content.ParticlesTypes;
+import io.xol.chunkstories.api.content.Content.ParticlesTypes;
 import io.xol.chunkstories.api.exceptions.content.IllegalParticleDeclarationException;
 import io.xol.chunkstories.api.particles.ParticleType;
 import io.xol.chunkstories.api.particles.ParticleTypeHandler;

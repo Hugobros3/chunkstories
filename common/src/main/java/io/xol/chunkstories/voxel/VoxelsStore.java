@@ -1,9 +1,9 @@
 package io.xol.chunkstories.voxel;
 
-import io.xol.chunkstories.api.Content.Voxels;
+import io.xol.chunkstories.api.content.Content.Voxels;
 import io.xol.chunkstories.api.client.ClientContent;
 import io.xol.chunkstories.api.exceptions.content.IllegalVoxelDeclarationException;
-import io.xol.chunkstories.api.mods.Asset;
+import io.xol.chunkstories.api.content.Asset;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

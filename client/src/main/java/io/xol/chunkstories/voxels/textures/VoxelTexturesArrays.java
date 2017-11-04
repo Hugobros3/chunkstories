@@ -15,8 +15,8 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import javax.swing.JOptionPane;
 
-import io.xol.chunkstories.api.mods.Asset;
-import io.xol.chunkstories.api.mods.AssetHierarchy;
+import io.xol.chunkstories.api.content.Asset;
+import io.xol.chunkstories.api.content.mods.AssetHierarchy;
 import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogLevel;
 import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogType;
 import io.xol.chunkstories.content.GameContentStore;
