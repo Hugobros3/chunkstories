@@ -9,7 +9,6 @@ import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.generator.WorldGenerator;
 import io.xol.chunkstories.content.GameContentStore;
 import io.xol.chunkstories.materials.GenericNamedConfigurable;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,6 +18,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
@@ -27,6 +29,11 @@ public class WorldGeneratorsStore implements Content.WorldGenerators
 {
 	private final GameContentStore store;
 	private final ModsManager modsManager;
+	
+	private static final Logger logger = LoggerFactory.getLogger("content.generators");
+	public Logger logger() {
+		return logger;
+	}
 	
 	public WorldGeneratorsStore(GameContentStore store)
 	{
@@ -93,7 +100,7 @@ public class WorldGeneratorsStore implements Content.WorldGenerators
 				e.printStackTrace();
 			}
 			
-			ChunkStoriesLoggerImplementation.getInstance().warning("Couldn't instanciate generator \"" + name + "\"; Instanciating BlankWorldGenerator instead.");
+			logger().warn("Couldn't instanciate generator \"" + name + "\"; Instanciating BlankWorldGenerator instead.");
 			
 			//Return blank WG as a failover
 			return new BlankWorldGenerator(this, world);
@@ -155,7 +162,7 @@ public class WorldGeneratorsStore implements Content.WorldGenerators
 		while (i.hasNext())
 		{
 			Asset f = i.next();
-			ChunkStoriesLoggerImplementation.getInstance().log("Reading WorldGenerators declarations in : " + f);
+			logger().debug("Reading WorldGenerators declarations in : " + f);
 			loadWorldGeneratorsFile(f);
 		}
 	}
@@ -225,7 +232,7 @@ public class WorldGeneratorsStore implements Content.WorldGenerators
 		}
 		catch (IOException e)
 		{
-			ChunkStoriesLoggerImplementation.getInstance().warning(e.getMessage());
+			logger().warn(e.getMessage());
 		}
 	}
 
@@ -235,7 +242,7 @@ public class WorldGeneratorsStore implements Content.WorldGenerators
 		if(generator != null)
 			return generator;
 
-		ChunkStoriesLoggerImplementation.getInstance().warning("Couldn't find generator \"" + name + "\"; Providing BlankWorldGenerator instead.");
+		logger().warn("Couldn't find generator \"" + name + "\"; Providing BlankWorldGenerator instead.");
 		return blank;
 	}
 	

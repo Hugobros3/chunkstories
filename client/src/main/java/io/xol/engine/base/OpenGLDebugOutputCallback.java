@@ -1,8 +1,8 @@
 package io.xol.engine.base;
 
 import org.lwjgl.opengl.GLDebugMessageARBCallbackI;
-
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -124,7 +124,7 @@ public class OpenGLDebugOutputCallback implements GLDebugMessageARBCallbackI
 		
 		debugString += ":"+message;
 
-		ChunkStoriesLoggerImplementation.getInstance().info(debugString);
+		logger().info(debugString);
 		
 		if(type == GL_DEBUG_TYPE_ERROR_ARB)
 		{
@@ -133,6 +133,11 @@ public class OpenGLDebugOutputCallback implements GLDebugMessageARBCallbackI
 			errorHappened = true;
 		}
 
+	}
+	
+	private static final Logger logger = LoggerFactory.getLogger("rendering.opengl.debug");
+	public Logger logger() {
+		return logger;
 	}
 	
 	public static boolean didErrorHappen()

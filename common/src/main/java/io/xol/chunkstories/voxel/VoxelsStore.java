@@ -13,7 +13,6 @@ import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.content.GameContentStore;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.chunkstories.voxel.models.VoxelModelsStore;
 
 import java.io.BufferedReader;
@@ -25,6 +24,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -102,7 +104,7 @@ public class VoxelsStore implements ClientContent.ClientVoxels
 		while (i.hasNext())
 		{
 			Asset f = i.next();
-			ChunkStoriesLoggerImplementation.getInstance().log("Reading voxels definitions in : " + f);
+			logger().debug("Reading voxels definitions in : " + f);
 			readVoxelsDefinitions(f);
 		}
 	}
@@ -137,7 +139,7 @@ public class VoxelsStore implements ClientContent.ClientVoxels
 						
 						if(splitted.length < 3)
 						{
-							ChunkStoriesLoggerImplementation.getInstance().log("Parse error in file " + f + ", line " + ln + ", malformed voxel tag. Aborting read.", ChunkStoriesLoggerImplementation.LogType.CONTENT_LOADING, ChunkStoriesLoggerImplementation.LogLevel.WARN);
+							logger().warn("Parse error in file " + f + ", line " + ln + ", malformed voxel tag. Aborting read.");
 							break;
 						}
 						
@@ -145,7 +147,7 @@ public class VoxelsStore implements ClientContent.ClientVoxels
 						String name = splitted[1];
 						
 						if (voxels[id] != null)
-							ChunkStoriesLoggerImplementation.getInstance().log("Voxel redefinition in file " + f + ", line " + ln + ", overriding id " + id + " with " + name, ChunkStoriesLoggerImplementation.LogType.CONTENT_LOADING, ChunkStoriesLoggerImplementation.LogLevel.WARN);
+							logger().warn("Voxel redefinition in file " + f + ", line " + ln + ", overriding id " + id + " with " + name);
 
 						try
 						{
@@ -164,12 +166,12 @@ public class VoxelsStore implements ClientContent.ClientVoxels
 					}
 					else if (line.startsWith("end"))
 					{
-						ChunkStoriesLoggerImplementation.getInstance().log("Parse error in file " + f + ", line " + ln + ", unexpected 'end' token.", ChunkStoriesLoggerImplementation.LogType.CONTENT_LOADING, ChunkStoriesLoggerImplementation.LogLevel.WARN);
+						logger().warn("Parse error in file " + f + ", line " + ln + ", unexpected 'end' token.");
 					}
 				}
 				ln++;
 			}
-			ChunkStoriesLoggerImplementation.getInstance().log("Debug : Parsed file " + f + " correctly, loading " + loadedVoxels + " voxels.", ChunkStoriesLoggerImplementation.LogType.CONTENT_LOADING, ChunkStoriesLoggerImplementation.LogLevel.DEBUG);
+			logger().debug("Parsed file " + f + " correctly, loading " + loadedVoxels + " voxels.");
 
 			reader.close();
 		}
@@ -226,5 +228,10 @@ public class VoxelsStore implements ClientContent.ClientVoxels
 	@Override
 	public VoxelRenderer getDefaultVoxelRenderer() {
 		return defaultVoxelRenderer;
+	}
+	
+	private static final Logger logger = LoggerFactory.getLogger("content.voxels");
+	public Logger logger() {
+		return logger;
 	}
 }

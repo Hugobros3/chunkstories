@@ -13,11 +13,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.slf4j.LoggerFactory;
+
 import io.xol.chunkstories.api.exceptions.content.mods.ModLoadFailureException;
 import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.content.mods.Mod;
 import io.xol.chunkstories.api.util.IterableIterator;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 
 public class ModFolder extends ModImplementation
 {
@@ -50,6 +51,7 @@ public class ModFolder extends ModImplementation
 		
 		this.modInfo = new ModInfoImplementation(this, getAssetByName("./mod.txt").read());
 		//loadModInformation();
+		logger = LoggerFactory.getLogger("mod."+this.modInfo.getInternalName());
 	}
 	
 	private void recursiveFolderRead(File file)
@@ -102,7 +104,7 @@ public class ModFolder extends ModImplementation
 			}
 			catch (IOException e)
 			{
-				ChunkStoriesLoggerImplementation.getInstance().warning("Failed to read asset : " + assetName + " from " + ModFolder.this);
+				logger().warn("Failed to read asset : " + assetName + " from " + ModFolder.this);
 				e.printStackTrace();
 				return null;
 			}

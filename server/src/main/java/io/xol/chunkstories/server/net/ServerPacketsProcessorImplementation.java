@@ -6,6 +6,9 @@ import java.io.IOException;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.xol.chunkstories.api.client.net.ClientPacketsProcessor;
 import io.xol.chunkstories.api.exceptions.net.IllegalPacketException;
 import io.xol.chunkstories.api.exceptions.net.UnknowPacketException;
@@ -54,6 +57,10 @@ public class ServerPacketsProcessorImplementation extends PacketsProcessorCommon
 		
 		final UserConnection connection;
 		final Queue<PendingSynchPacket> pendingSynchPackets = new ConcurrentLinkedQueue<PendingSynchPacket>();
+		
+		public Logger logger() {
+			return logger;
+		}
 		
 		public UserPacketsProcessor(UserConnection connection) {
 			this.connection = connection;

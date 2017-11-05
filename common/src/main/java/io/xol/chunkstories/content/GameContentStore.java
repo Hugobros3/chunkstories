@@ -2,14 +2,15 @@ package io.xol.chunkstories.content;
 
 import java.io.File;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.exceptions.content.mods.NotAllModsLoadedException;
 import io.xol.chunkstories.api.mesh.MeshLibrary;
 import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.content.mods.ModsManager;
-import io.xol.chunkstories.api.util.ChunkStoriesLogger;
-import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogLevel;
 import io.xol.chunkstories.content.ModsManagerImplementation.NonExistentCoreContent;
 import io.xol.chunkstories.entity.EntityTypesStore;
 import io.xol.chunkstories.item.ItemTypesStore;
@@ -17,7 +18,6 @@ import io.xol.chunkstories.materials.MaterialsStore;
 import io.xol.chunkstories.mesh.MeshStore;
 import io.xol.chunkstories.net.PacketsStore;
 import io.xol.chunkstories.particles.ParticlesTypesStore;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.generator.WorldGeneratorsStore;
 import io.xol.engine.animation.BVHLibrary;
@@ -44,6 +44,7 @@ public class GameContentStore implements Content
 	protected final MeshStore meshes;
 	
 	private final LocalizationManagerActual localizationManager;
+	private final static Logger contentLogger = LoggerFactory.getLogger("content");
 
 	public GameContentStore(GameContext context, File coreContentLocation, String enabledModsLaunchArguments)
 	{
@@ -51,7 +52,7 @@ public class GameContentStore implements Content
 		try {
 			this.modsManager = new ModsManagerImplementation(coreContentLocation, enabledModsLaunchArguments);
 		} catch (NonExistentCoreContent e) {
-			ChunkStoriesLoggerImplementation.getInstance().log("Could not find core content at the location: "+coreContentLocation.getAbsolutePath(), LogLevel.CRITICAL);
+			logger().error("Could not find core content at the location: "+coreContentLocation.getAbsolutePath());
 			throw new RuntimeException("Throwing a RuntimeException to make the process crash and burn");
 		}
 
@@ -173,7 +174,7 @@ public class GameContentStore implements Content
 	}
 
 	@Override
-	public ChunkStoriesLogger logger() {
-		return context.logger();
+	public Logger logger() {
+		return contentLogger;
 	}
 }

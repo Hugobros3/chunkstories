@@ -15,6 +15,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingDeque;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.events.Event;
 import io.xol.chunkstories.api.events.EventExecutor;
@@ -33,11 +36,9 @@ import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
 import io.xol.chunkstories.api.plugin.commands.CommandHandler;
 import io.xol.chunkstories.api.plugin.commands.SystemCommand;
-import io.xol.chunkstories.api.util.ChunkStoriesLogger;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.content.ModsManagerImplementation;
 import io.xol.chunkstories.content.GameDirectory;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -53,6 +54,8 @@ public abstract class DefaultPluginManager implements PluginManager
 
 	public Map<String, Command> commandsAliases = new HashMap<String, Command>();
 	public Set<Command> commands = new HashSet<Command>();
+
+	private final static Logger pluginsLogger = LoggerFactory.getLogger("plugins");
 
 	public DefaultPluginManager(GameContext pluginExecutionContext)
 	{
@@ -114,7 +117,7 @@ public abstract class DefaultPluginManager implements PluginManager
 				}
 				catch (PluginLoadException | IOException e)
 				{
-					ChunkStoriesLoggerImplementation.getInstance().error("Failed to load plugin file " + file + e.getMessage());
+					logger().error("Failed to load plugin file " + file + e.getMessage());
 					e.printStackTrace();
 				}
 			}
@@ -139,7 +142,7 @@ public abstract class DefaultPluginManager implements PluginManager
 
 	private void enablePlugins(LinkedList<PluginInformationImplementation> pluginsToInitialize)
 	{
-		ChunkStoriesLoggerImplementation.getInstance().info(pluginsToInitialize.size() + " plugins to initialize");
+		logger().info(pluginsToInitialize.size() + " plugins to initialize");
 
 		Deque<PluginInformationImplementation> order = new LinkedBlockingDeque<PluginInformationImplementation>();
 
@@ -160,7 +163,7 @@ public abstract class DefaultPluginManager implements PluginManager
 					//Checks the command isn't already defined
 					if (commands.contains(command))
 					{
-						ChunkStoriesLoggerImplementation.getInstance().warning("Plugin " + pluginInformation.getName() + " can't define the command " + command.getName() + " as it's already defined by another plugin.");
+						logger().warn("Plugin " + pluginInformation.getName() + " can't define the command " + command.getName() + " as it's already defined by another plugin.");
 						continue;
 					}
 
@@ -168,7 +171,7 @@ public abstract class DefaultPluginManager implements PluginManager
 
 					for (String alias : command.aliases())
 						if (commandsAliases.put(alias, command) != null)
-							ChunkStoriesLoggerImplementation.getInstance().warning("Plugin " + pluginInformation + " tried to register alias " + alias + " for command " + command + ".");
+							logger().warn("Plugin " + pluginInformation + " tried to register alias " + alias + " for command " + command + ".");
 
 				}
 				
@@ -180,7 +183,7 @@ public abstract class DefaultPluginManager implements PluginManager
 			}
 			catch (PluginCreationException pce)
 			{
-				ChunkStoriesLoggerImplementation.getInstance().error("Couldn't create plugin " + pluginInformation + " : " + pce.getMessage());
+				logger().error("Couldn't create plugin " + pluginInformation + " : " + pce.getMessage());
 				pce.printStackTrace();
 			}
 		}
@@ -214,7 +217,7 @@ public abstract class DefaultPluginManager implements PluginManager
 		Command command = findCommandUsingAlias(commandName);
 		if (command == null)
 		{
-			ChunkStoriesLoggerImplementation.getInstance().warning("Can't register CommandHandler " + commandHandler + " for command " + commandName + " : Command isn't defined.");
+			logger().warn("Can't register CommandHandler " + commandHandler + " for command " + commandName + " : Command isn't defined.");
 			return;
 		}
 
@@ -297,7 +300,7 @@ public abstract class DefaultPluginManager implements PluginManager
 				//TODO something about priority
 				if (method.getParameterTypes().length != 1 || !Event.class.isAssignableFrom(method.getParameterTypes()[0]))
 				{
-					ChunkStoriesLoggerImplementation.getInstance().warning("Plugin " + plugin + " attempted to register an invalid EventHandler");
+					logger().warn("Plugin " + plugin + " attempted to register an invalid EventHandler");
 					continue;
 				}
 				Class<? extends Event> parameter = method.getParameterTypes()[0].asSubclass(Event.class);
@@ -326,7 +329,7 @@ public abstract class DefaultPluginManager implements PluginManager
 					addRegisteredListenerToEventChildren(thisEventKindOfListeners, registeredListener, eventHandlerAnnotation.listenToChildEvents() == EventHandler.ListenToChildEvents.RECURSIVE);
 				
 				
-				ChunkStoriesLoggerImplementation.getInstance().info("Successuflly added EventHandler for " + parameter.getName() + "in " + listener + " of plugin " + plugin);
+				logger().info("Successuflly added EventHandler for " + parameter.getName() + "in " + listener + " of plugin " + plugin);
 			}
 		}
 		catch (Exception e)
@@ -358,13 +361,13 @@ public abstract class DefaultPluginManager implements PluginManager
 			}
 			catch (InvocationTargetException e)
 			{
-				logger().warning("Exception while invoking event, in event handling body : "+e.getTargetException().getMessage());
+				logger().warn("Exception while invoking event, in event handling body : "+e.getTargetException().getMessage());
 				//e.printStackTrace();
 				e.getTargetException().printStackTrace();
 			}
 			catch (Exception e)
 			{
-				logger().warning("Exception while invoking event : "+e.getMessage());
+				logger().warn("Exception while invoking event : "+e.getMessage());
 				e.printStackTrace();
 			}
 		}
@@ -374,8 +377,8 @@ public abstract class DefaultPluginManager implements PluginManager
 		//event.defaultBehaviour();
 	}
 
-	public ChunkStoriesLogger logger() {
-		return this.pluginExecutionContext.logger();
+	public Logger logger() {
+		return pluginsLogger;
 	}
 
 	@Override

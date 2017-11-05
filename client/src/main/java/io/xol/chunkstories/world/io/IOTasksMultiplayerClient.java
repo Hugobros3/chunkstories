@@ -14,7 +14,6 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ClientConnectionToServer;
 import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
 import io.xol.chunkstories.net.packets.PacketRegionSummary;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.chunkstories.world.WorldClientRemote;
 import io.xol.chunkstories.world.region.RegionImplementation;
 import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
@@ -85,7 +84,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 			RegionSummaryImplementation summary = world.getRegionsSummariesHolder().getRegionSummaryWorldCoordinates(packet.rx * 256, packet.rz * 256);
 			if(summary == null)
 			{
-				ChunkStoriesLoggerImplementation.getInstance().error("Summary data arrived for "+packet.rx+ ": "+packet.rz + "but there was no region summary waiting for it ?");
+				logger().error("Summary data arrived for "+packet.rx+ ": "+packet.rz + "but there was no region summary waiting for it ?");
 				return true;
 			}
 			

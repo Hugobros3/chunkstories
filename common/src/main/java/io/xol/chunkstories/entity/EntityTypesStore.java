@@ -7,7 +7,6 @@ import io.xol.chunkstories.api.exceptions.content.IllegalEntityDeclarationExcept
 import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.content.GameContentStore;
 import io.xol.chunkstories.item.EntityTypeImpl;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,41 +14,39 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
 // http://xol.io
 
 public class EntityTypesStore implements EntityTypes
 {
-	//private final GameContext context;
 	private final Content content;
-	//private final EntityComponentsStore entityComponents;
 	
 	private Map<Short, EntityType> entityTypesById = new HashMap<Short, EntityType>();
 	private Map<String, EntityType> entityTypesByName = new HashMap<String, EntityType>();
-	//private Map<String, EntityType> entityTypesByClassname = new HashMap<String, EntityType>();
 
+	private static final Logger logger = LoggerFactory.getLogger("content.entities");
+	public Logger logger() {
+		return logger;
+	}
+	
 	public EntityTypesStore(GameContentStore content)
 	{
 		this.content = content;
-		//this.context = content.getContext();
-		
-		//this.entityComponents = new EntityComponentsStore(context, this);
-		
-		//this.reload();
 	}
 	
 	public void reload()
 	{
 		entityTypesById.clear();
 		entityTypesByName.clear();
-		//entityTypesByClassname.clear();
 		
 		Iterator<Asset> i = content.modsManager().getAllAssetsByExtension("entities");
 		while(i.hasNext())
 		{
 			Asset f = i.next();
-			ChunkStoriesLoggerImplementation.getInstance().log("Reading entities definitions in : " + f);
 			readEntitiesDefinitions(f);
 		}
 		
@@ -60,6 +57,8 @@ public class EntityTypesStore implements EntityTypes
 	{
 		if (f == null)
 			return;
+
+		logger().debug("Reading entities definitions in : " + f);
 		try
 		{
 			BufferedReader reader = new BufferedReader(f.reader());
@@ -146,9 +145,9 @@ public class EntityTypesStore implements EntityTypes
 			catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
 			{
 				//This is bad
-				ChunkStoriesLoggerImplementation.getInstance().log("Couldn't instanciate entity "+this+" in world "+world);
+				logger().log("Couldn't instanciate entity "+this+" in world "+world);
 				e.printStackTrace();
-				e.printStackTrace(ChunkStoriesLoggerImplementation.getInstance().getPrintWriter());
+				e.printStackTrace(logger().getPrintWriter());
 				return null;
 			}
 		}

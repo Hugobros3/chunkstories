@@ -1,11 +1,14 @@
 package io.xol.chunkstories.content;
 
+import org.slf4j.Logger;
+
 import io.xol.chunkstories.api.client.ClientContent;
 import io.xol.chunkstories.api.client.ClientContent.TexturesLibrary;
 import io.xol.chunkstories.api.rendering.textures.Cubemap;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
 import io.xol.engine.graphics.textures.Texture2DRenderTargetGL;
+import io.xol.engine.graphics.textures.TextureGL;
 import io.xol.engine.graphics.textures.TexturesHandler;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -49,6 +52,11 @@ public class ClientTexturesLibrary implements TexturesLibrary {
 	@Override
 	public void reloadAll() {
 		TexturesHandler.reloadAll();
+	}
+
+	@Override
+	public Logger logger() {
+		return TextureGL.logger();
 	}
 
 }

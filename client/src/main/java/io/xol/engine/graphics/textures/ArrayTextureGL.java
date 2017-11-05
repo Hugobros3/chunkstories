@@ -11,10 +11,7 @@ import org.lwjgl.opengl.GL30;
 
 import io.xol.chunkstories.api.rendering.textures.ArrayTexture;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
-import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogLevel;
-import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogType;
 import io.xol.chunkstories.client.RenderingConfig;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 
 public class ArrayTextureGL extends TextureGL implements ArrayTexture {
 	
@@ -203,7 +200,7 @@ public class ArrayTextureGL extends TextureGL implements ArrayTexture {
 		int actualMaxMipLevelPossible = getMaxMipmapLevel();
 		if(maxLevel > actualMaxMipLevelPossible)
 		{
-			ChunkStoriesLoggerImplementation.getInstance().log("Warning, tried setting mipLevel > max permitted by texture size. Correcting.", LogType.RENDERING, LogLevel.WARN);
+			logger().warn("Warning, tried setting mipLevel > max permitted by texture size. Correcting.");
 			Thread.dumpStack();
 			maxLevel = actualMaxMipLevelPossible;
 		}

@@ -15,10 +15,11 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import javax.swing.JOptionPane;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.content.mods.AssetHierarchy;
-import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogLevel;
-import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogType;
 import io.xol.chunkstories.content.GameContentStore;
 import io.xol.chunkstories.voxel.VoxelsStore;
 
@@ -27,6 +28,11 @@ public class VoxelTexturesArrays {
 	private final GameContentStore content;
 	@SuppressWarnings("unused")
 	private final VoxelsStore voxels;
+	
+	private static final Logger logger = LoggerFactory.getLogger("content.voxels.textures");
+	public Logger logger() {
+		return logger;
+	}
 	
 	public VoxelTexturesArrays(VoxelsStore voxels)
 	{
@@ -53,10 +59,10 @@ public class VoxelTexturesArrays {
 			int gl_MaxTextureArraySize = glGetInteger(GL_MAX_ARRAY_TEXTURE_LAYERS);
 			
 			if(gl_MaxTextureArraySize < 2048) {
-				content.logger().log("Max texture array size < 2048. For ideal results please use a GPU from this geological era.", LogType.RENDERING, LogLevel.WARN);
+				logger().warn("Max texture array size < 2048. For ideal results please use a GPU from this geological era.");
 			}
 			if(gl_MaxTextureUnits < 32) {
-				content.logger().log("Max texture units < 32. This means your GPU is ancient and you'll run into a lot of issues!", LogType.RENDERING, LogLevel.WARN);
+				logger().warn("Max texture units < 32. This means your GPU is ancient and you'll run into a lot of issues!");
 			}
 
 			//We'll reserve 8 texture units for all the other fluff
@@ -107,21 +113,21 @@ public class VoxelTexturesArrays {
 						}
 						catch (Exception e)
 						{
-							content.logger().log("Could not obtain the size of the asset: "+f.getName(), LogType.CONTENT_LOADING, LogLevel.WARN);
-							e.printStackTrace(content.logger().getPrintWriter());
-							e.printStackTrace();
+							logger().warn("Could not obtain the size of the asset: "+f.getName());
+							//e.printStackTrace(logger().getPrintWriter());
+							//e.printStackTrace();
 							continue;
 						}
 						
 						//We want nice powers of two
 						if((width & (width - 1)) != 0 || (height & (height - 1)) != 0) {
-							content.logger().log("Non pow2 texture size ("+width+":"+height+") for: "+f.getName()+", skipping.", LogType.CONTENT_LOADING, LogLevel.WARN);
+							logger().warn("Non pow2 texture size ("+width+":"+height+") for: "+f.getName()+", skipping.");
 							continue;
 						}
 						
 						//Width >= 16
 						if(width < 16 || height < 16) {
-							content.logger().log("Too small (<16px) texture ("+width+":"+height+") for: "+f.getName()+", skipping.", LogType.CONTENT_LOADING, LogLevel.WARN);
+							logger().warn("Too small (<16px) texture ("+width+":"+height+") for: "+f.getName()+", skipping.");
 							continue;
 						}
 						
@@ -150,7 +156,7 @@ public class VoxelTexturesArrays {
 						//System.out.println("Added: "+texture);
 
 					} else if(f.getName().endsWith(".jpg") || f.getName().endsWith(".tiff") || f.getName().endsWith(".bmp") || f.getName().endsWith(".gif")) {
-						content.logger().log("Found image file of unsupported format in voxels folder: "+f.getName()+", ignoring.", LogType.CONTENT_LOADING, LogLevel.WARN);
+						logger().warn("Found image file of unsupported format in voxels folder: "+f.getName()+", ignoring.");
 						continue;
 					}
 				}
@@ -158,7 +164,7 @@ public class VoxelTexturesArrays {
 			
 			//Check we DID obtain default textures
 			if(defaultAlbedo == null || defaultNormal == null || defaultMaterial == null) {
-				content.logger().log("Missing 'notex.png' for one of the 3 texture types (albedo, normal, material), exiting !", LogType.CONTENT_LOADING, LogLevel.CRITICAL);
+				logger().error("Missing 'notex.png' for one of the 3 texture types (albedo, normal, material), exiting !");
 				System.exit(-602);
 			}
 			
@@ -265,8 +271,8 @@ public class VoxelTexturesArrays {
 		}
 		catch (Exception e)
 		{
-			content.logger().log("Exception during loading of voxel textures: "+e.getMessage(), LogType.CONTENT_LOADING, LogLevel.WARN);
-			e.printStackTrace(content.logger().getPrintWriter());
+			logger().error("Exception during loading of voxel textures: "+e.getMessage());
+			//e.printStackTrace(logger().getPrintWriter());
 			e.printStackTrace();
 		}
 		

@@ -8,6 +8,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.content.Content.LocalizationManager;
 import io.xol.chunkstories.api.content.Content.Translation;
@@ -30,6 +33,8 @@ public class LocalizationManagerActual implements LocalizationManager
 	private Translation activeTranslation;
 	
 	private String defaultTranslation;
+	
+	private final static Logger logger = LoggerFactory.getLogger("content.localization");
 	
 	public LocalizationManagerActual(GameContentStore store, String defaultTranslation)
 	{
@@ -176,5 +181,10 @@ public class LocalizationManagerActual implements LocalizationManager
 	public Collection<String> listTranslations()
 	{
 		return translations.keySet();
+	}
+
+	@Override
+	public Logger logger() {
+		return logger;
 	}
 }

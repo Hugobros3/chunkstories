@@ -10,7 +10,6 @@ import io.xol.chunkstories.api.net.PacketsProcessor;
 import io.xol.chunkstories.api.net.packets.PacketDummy;
 import io.xol.chunkstories.api.net.packets.PacketText;
 import io.xol.chunkstories.api.util.concurrency.Fence;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.engine.concurrency.SimpleFence;
 import io.xol.engine.concurrency.TrivialFence;
 
@@ -21,6 +20,9 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
@@ -36,6 +38,11 @@ public class SendQueue extends Thread
 	//Reference to what we are sending stuff to, used in packet creation logic to look for implemented interfaces ( remote server, unlogged in client, logged in client etc )
 	private PacketDestinator destinator;
 
+	private static final Logger logger = LoggerFactory.getLogger("net");
+	public Logger logger() {
+		return logger;
+	}
+	
 	public SendQueue(PacketDestinator destinator, DataOutputStream out, PacketsProcessorActual processor)
 	{
 		this.destinator = destinator;
@@ -73,8 +80,9 @@ public class SendQueue extends Thread
 		}
 		catch (IOException e)
 		{
-			ChunkStoriesLoggerImplementation.getInstance().error("Error : unable to buffer PacketPrepared " + packet);
-			e.printStackTrace(ChunkStoriesLoggerImplementation.getInstance().getPrintWriter());
+			logger().error("Error : unable to buffer PacketPrepared " + packet);
+			logger().error("{}", e);
+			//e.printStackTrace(logger().getPrintWriter());
 		}
 		
 		sendQueue.add(packet);
@@ -155,8 +163,9 @@ public class SendQueue extends Thread
 				catch (UnknowPacketException e)
 				{
 					//We care about that
-					ChunkStoriesLoggerImplementation.getInstance().error("Error : Unknown packet exception : "+packet.getClass().getName());
-					e.printStackTrace(ChunkStoriesLoggerImplementation.getInstance().getPrintWriter());
+					logger().error("Error : Unknown packet exception : "+packet.getClass().getName());
+					logger().error("{}", e);
+					//e.printStackTrace(logger().getPrintWriter());
 				}
 		}
 

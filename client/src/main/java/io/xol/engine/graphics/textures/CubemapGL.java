@@ -10,9 +10,7 @@ import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.rendering.target.RenderTarget;
 import io.xol.chunkstories.api.rendering.textures.Cubemap;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
-import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogLevel;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.*;
@@ -63,8 +61,8 @@ public class CubemapGL extends TextureGL implements Cubemap
 		//Don't bother
 		if (glId == -2)
 		{
-			ChunkStoriesLoggerImplementation.getInstance().log("Critical mess-up: Tried to bind a destroyed Cubemap "+this+". Terminating process immediately.", LogLevel.CRITICAL);
-			ChunkStoriesLoggerImplementation.getInstance().save();
+			logger().error("Critical mess-up: Tried to bind a destroyed Cubemap "+this+". Terminating process immediately.");
+			//logger().save();
 			Thread.dumpStack();
 			System.exit(-803);
 			//throw new RuntimeException("Tryed to bind a destroyed VerticesBuffer");
@@ -81,7 +79,7 @@ public class CubemapGL extends TextureGL implements Cubemap
 		String[] names = { "right", "left", "top", "bottom", "front", "back" };
 		if (Client.getInstance().getContent().getAsset((name + "/front.png")) == null)
 		{
-			ChunkStoriesLoggerImplementation.getInstance().log("Can't find front.png from CS-format skybox, trying MC format.", ChunkStoriesLoggerImplementation.LogType.RENDERING, ChunkStoriesLoggerImplementation.LogLevel.WARN);
+			logger().info("Can't find front.png from CS-format skybox, trying MC format.");
 			names = new String[] { "panorama_1", "panorama_3", "panorama_4", "panorama_5", "panorama_0", "panorama_2" };
 		}
 		try
@@ -108,11 +106,11 @@ public class CubemapGL extends TextureGL implements Cubemap
 		}
 		catch(FileNotFoundException e)
 		{
-			ChunkStoriesLoggerImplementation.getInstance().info("Clouldn't find file : "+e.getMessage());
+			logger().warn("Couldn't find file : "+e.getMessage());
 		}
 		catch (IOException e)
 		{
-			ChunkStoriesLoggerImplementation.getInstance().log("Failed to load properly cubemap : " + name, ChunkStoriesLoggerImplementation.LogType.RENDERING, ChunkStoriesLoggerImplementation.LogLevel.WARN);
+			logger().error("Failed to load properly cubemap : " + name);
 		}
 		return glId;
 	}

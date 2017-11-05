@@ -110,8 +110,8 @@ public class CSFRegionFile0x2D extends CSFRegionFile
 			}
 			catch (Exception e)
 			{
-				ChunkStoriesLoggerImplementation.getInstance().info("Error while loading "+file);
-				e.printStackTrace(ChunkStoriesLoggerImplementation.getInstance().getPrintWriter());
+				logger().info("Error while loading "+file);
+				e.printStackTrace(logger().getPrintWriter());
 				e.printStackTrace();
 			}
 	

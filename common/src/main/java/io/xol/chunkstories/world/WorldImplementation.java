@@ -21,6 +21,8 @@ import io.xol.chunkstories.api.exceptions.world.RegionNotLoadedException;
 import io.xol.chunkstories.api.exceptions.world.WorldException;
 import io.xol.chunkstories.api.input.Input;
 import org.joml.Vector3dc;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.physics.CollisionBox;
@@ -50,7 +52,6 @@ import io.xol.chunkstories.content.sandbox.WorldLogicThread;
 import io.xol.chunkstories.content.sandbox.UnthrustedUserContentSecurityManager;
 import io.xol.chunkstories.entity.EntityWorldIterator;
 import io.xol.chunkstories.entity.SerializedEntityFile;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.io.IOTasks;
 import io.xol.chunkstories.world.iterators.AABBVoxelIterator;
@@ -248,8 +249,8 @@ public abstract class WorldImplementation implements World
 		Entity check = this.getEntityByUUID(entity.getUUID());
 		if (check != null)
 		{
-			ChunkStoriesLoggerImplementation.getInstance().log("Added an entity twice "+check+" conflits with "+entity + " UUID: "+entity.getUUID());
-			ChunkStoriesLoggerImplementation.getInstance().save();
+			logger().error("Added an entity twice "+check+" conflits with "+entity + " UUID: "+entity.getUUID());
+			//logger().save();
 			Thread.dumpStack();
 			System.exit(-1);
 		}
@@ -1164,5 +1165,10 @@ public abstract class WorldImplementation implements World
 		
 		return onlyThisHasAFence;
 		//return new TrivialFence();
+	}
+
+	private static final Logger logger = LoggerFactory.getLogger("world");
+	public Logger logger() {
+		return logger;
 	}
 }

@@ -18,17 +18,16 @@ import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
 import io.xol.chunkstories.api.content.mods.Mod;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 
 /**
  * Foreign content is anything found inside a jar and loaded by the game engine. Security measures applies unless configured otherwise
  */
 public class ForeignCodeClassLoader extends URLClassLoader
 {
-	Mod responsibleMod;
+	ModImplementation responsibleMod;
 	Map<String, Class<?>> classes = new HashMap<String, Class<?>>();
 
-	public ForeignCodeClassLoader(Mod responsibleMod, ClassLoader parentLoader, Collection<File> files) throws IOException
+	public ForeignCodeClassLoader(ModImplementation responsibleMod, ClassLoader parentLoader, Collection<File> files) throws IOException
 	{
 		super(urlHelper(files), parentLoader);
 		
@@ -69,7 +68,7 @@ public class ForeignCodeClassLoader extends URLClassLoader
 						}
 						catch (ClassNotFoundException e1)
 						{
-							ChunkStoriesLoggerImplementation.getInstance().error("Class "+className+" was to be found in .jar file but classloader could not load it.");
+							responsibleMod.logger().error("Class "+className+" was to be found in .jar file but classloader could not load it.");
 							e1.printStackTrace();
 							
 							continue;

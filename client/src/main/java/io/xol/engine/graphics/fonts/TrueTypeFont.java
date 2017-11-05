@@ -5,7 +5,6 @@ import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.rendering.text.FontRenderer;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.engine.graphics.textures.Texture2DGL;
 import io.xol.engine.graphics.textures.Texture2DRenderTargetGL;
 
@@ -22,6 +21,9 @@ import java.awt.image.DataBufferInt;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.GraphicsEnvironment;
 
@@ -75,11 +77,16 @@ public class TrueTypeFont implements FontRenderer.Font
 		glTextures = new Texture2DGL[256];
 		glyphs = new Glyph[65536];
 	}
+	
+	private static final Logger logger = LoggerFactory.getLogger("rendering.fonts");
+	public Logger logger() {
+		return logger;
+	}
 
 	public TrueTypeFont(Asset fontAsset, float sizeInPX, boolean antiAlias) throws FontFormatException, IOException
 	{
 		this();
-		ChunkStoriesLoggerImplementation.getInstance().info("Loading font " + fontAsset);
+		logger().info("Loading font " + fontAsset);
 		font = Font.createFont(Font.TRUETYPE_FONT, fontAsset.read()).deriveFont(sizeInPX);
 		
 		//font = Font.createFont(Font.TRUETYPE_FONT, new FileInputStream(string)).deriveFont(sizeInPX);

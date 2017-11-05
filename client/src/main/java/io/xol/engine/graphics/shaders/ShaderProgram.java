@@ -17,7 +17,6 @@ import io.xol.chunkstories.api.content.mods.ModsManager;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.rendering.pipeline.UniformsConfiguration;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 
 import java.io.IOException;
 import java.nio.FloatBuffer;
@@ -27,6 +26,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.lwjgl.BufferUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.*;
@@ -106,8 +107,9 @@ public class ShaderProgram implements ShaderInterface
 		}
 		catch (IOException e)
 		{
-			ChunkStoriesLoggerImplementation.getInstance().log("Failed to load shader program " + shaderName, ChunkStoriesLoggerImplementation.LogType.RENDERING, ChunkStoriesLoggerImplementation.LogLevel.ERROR);
-			e.printStackTrace();
+			logger().error("Failed to load shader program " + shaderName);
+			logger().error("Exception: {}", e);
+			//e.printStackTrace();
 			return;
 		}
 		
@@ -161,7 +163,7 @@ public class ShaderProgram implements ShaderInterface
 
 		if (glGetShaderi(fragShaderId, GL_COMPILE_STATUS) == GL_FALSE)
 		{
-			ChunkStoriesLoggerImplementation.getInstance().log("Failed to compile shader program " + shaderName + " (fragment)", ChunkStoriesLoggerImplementation.LogType.RENDERING, ChunkStoriesLoggerImplementation.LogLevel.ERROR);
+			logger().error("Failed to compile shader program " + shaderName + " (fragment)");
 
 			String errorsSource = glGetShaderInfoLog(fragShaderId, 5000);
 
@@ -169,33 +171,7 @@ public class ShaderProgram implements ShaderInterface
 			String[] sourceLines = fragSource.toString().split("\n");
 			for (String line : errorsLines)
 			{
-				ChunkStoriesLoggerImplementation.getInstance().log(line, ChunkStoriesLoggerImplementation.LogType.RENDERING, ChunkStoriesLoggerImplementation.LogLevel.WARN);
-				if (line.toLowerCase().startsWith("error: "))
-				{
-					String[] parsed = line.split(":");
-					if (parsed.length >= 3)
-					{
-						int lineNumber = Integer.parseInt(parsed[2]);
-						if (sourceLines.length > lineNumber)
-						{
-							System.out.println("@line: " + lineNumber + ": " + sourceLines[lineNumber]);
-						}
-					}
-				}
-			}
-			return;
-		}
-		if (glGetShaderi(vertexShaderId, GL_COMPILE_STATUS) == GL_FALSE)
-		{
-			ChunkStoriesLoggerImplementation.getInstance().log("Failed to compile shader program " + shaderName + " (vertex)", ChunkStoriesLoggerImplementation.LogType.RENDERING, ChunkStoriesLoggerImplementation.LogLevel.ERROR);
-
-			String errorsSource = glGetShaderInfoLog(vertexShaderId, 5000);
-
-			String[] errorsLines = errorsSource.split("\n");
-			String[] sourceLines = vertexSource.toString().split("\n");
-			for (String line : errorsLines)
-			{
-				ChunkStoriesLoggerImplementation.getInstance().log(line, ChunkStoriesLoggerImplementation.LogType.RENDERING, ChunkStoriesLoggerImplementation.LogLevel.WARN);
+				logger().debug(line);
 				if (line.toLowerCase().startsWith("error: "))
 				{
 					String[] parsed = line.split(":");
@@ -205,11 +181,42 @@ public class ShaderProgram implements ShaderInterface
 							int lineNumber = Integer.parseInt(parsed[2]);
 							if (sourceLines.length > lineNumber)
 							{
-								System.out.println("@line: " + lineNumber + ": " + sourceLines[lineNumber]);
+								logger.debug("@line: " + lineNumber + ": " + sourceLines[lineNumber]);
 							}
 						}
 						catch(Exception e) {
-							System.out.println(parsed);
+							logger.debug(line);
+						}
+					}
+				}
+			}
+			return;
+		}
+		if (glGetShaderi(vertexShaderId, GL_COMPILE_STATUS) == GL_FALSE)
+		{
+			logger().error("Failed to compile shader program " + shaderName + " (vertex)");
+
+			String errorsSource = glGetShaderInfoLog(vertexShaderId, 5000);
+
+			String[] errorsLines = errorsSource.split("\n");
+			String[] sourceLines = vertexSource.toString().split("\n");
+			for (String line : errorsLines)
+			{
+				logger().debug(line);
+				if (line.toLowerCase().startsWith("error: "))
+				{
+					String[] parsed = line.split(":");
+					if (parsed.length >= 3)
+					{
+						try {
+							int lineNumber = Integer.parseInt(parsed[2]);
+							if (sourceLines.length > lineNumber)
+							{
+								logger.debug("@line: " + lineNumber + ": " + sourceLines[lineNumber]);
+							}
+						}
+						catch(Exception e) {
+							logger.debug(line);
 						}
 					}
 				}
@@ -219,7 +226,7 @@ public class ShaderProgram implements ShaderInterface
 		
 		if (geometrySource != null && glGetShaderi(geometryShaderId, GL_COMPILE_STATUS) == GL_FALSE)
 		{
-			ChunkStoriesLoggerImplementation.getInstance().log("Failed to compile shader program " + shaderName + " (geometry)", ChunkStoriesLoggerImplementation.LogType.RENDERING, ChunkStoriesLoggerImplementation.LogLevel.ERROR);
+			logger().error("Failed to compile shader program " + shaderName + " (geometry)");
 
 			String errorsSource = glGetShaderInfoLog(geometryShaderId, 5000);
 
@@ -227,7 +234,7 @@ public class ShaderProgram implements ShaderInterface
 			String[] sourceLines = geometrySource.toString().split("\n");
 			for (String line : errorsLines)
 			{
-				ChunkStoriesLoggerImplementation.getInstance().log(line, ChunkStoriesLoggerImplementation.LogType.RENDERING, ChunkStoriesLoggerImplementation.LogLevel.WARN);
+				logger().debug(line);
 				if (line.toLowerCase().startsWith("error: "))
 				{
 					String[] parsed = line.split(":");
@@ -237,11 +244,11 @@ public class ShaderProgram implements ShaderInterface
 							int lineNumber = Integer.parseInt(parsed[2]);
 							if (sourceLines.length > lineNumber)
 							{
-								System.out.println("@line: " + lineNumber + ": " + sourceLines[lineNumber]);
+								logger.debug("@line: " + lineNumber + ": " + sourceLines[lineNumber]);
 							}
 						}
 						catch(Exception e) {
-							System.out.println(parsed);
+							logger.debug(line);
 						}
 					}
 				}
@@ -259,32 +266,14 @@ public class ShaderProgram implements ShaderInterface
 
 		if (glGetProgrami(shaderProgramId, GL_LINK_STATUS) == GL_FALSE)
 		{
-			ChunkStoriesLoggerImplementation.getInstance().log("Failed to link program " + shaderName + "", ChunkStoriesLoggerImplementation.LogType.RENDERING, ChunkStoriesLoggerImplementation.LogLevel.ERROR);
+			logger().error("Failed to link program " + shaderName + "");
 
 			String errorsSource = glGetProgramInfoLog(shaderProgramId, 5000);
 
 			String[] errorsLines = errorsSource.split("\n");
-			String[] sourceLines = fragSource.toString().split("\n");
 			for (String line : errorsLines)
 			{
-				ChunkStoriesLoggerImplementation.getInstance().log(line, ChunkStoriesLoggerImplementation.LogType.RENDERING, ChunkStoriesLoggerImplementation.LogLevel.WARN);
-				if (line.toLowerCase().startsWith("error: "))
-				{
-					String[] parsed = line.split(":");
-					if (parsed.length >= 3)
-					{
-						try {
-							int lineNumber = Integer.parseInt(parsed[2]);
-							if (sourceLines.length > lineNumber)
-							{
-								System.out.println("@line: " + lineNumber + ": " + sourceLines[lineNumber]);
-							}
-						}
-						catch(Exception e) {
-							System.out.println(parsed);
-						}
-					}
-				}
+				logger().debug(line);
 			}
 
 			return;
@@ -293,6 +282,11 @@ public class ShaderProgram implements ShaderInterface
 		needValidation = true;
 
 		loadOK = true;
+	}
+
+	private static final Logger logger = LoggerFactory.getLogger("rendering.shaders");
+	static Logger logger() {
+		return logger;
 	}
 
 	public int getUniformLocation(String name)
@@ -523,7 +517,7 @@ public class ShaderProgram implements ShaderInterface
 			int location = glGetAttribLocation(shaderProgramId, name);
 			if (location == -1)
 			{
-				ChunkStoriesLoggerImplementation.getInstance().warning("Warning, -1 location for VertexAttrib " + name + " in shader " + this.shaderName);
+				logger().warn("Warning, -1 location for VertexAttrib " + name + " in shader " + this.shaderName);
 				//location = 0;
 			}
 			attributesLocations.put(name, location);
@@ -552,27 +546,14 @@ public class ShaderProgram implements ShaderInterface
 
 			if (glGetProgrami(shaderProgramId, GL_VALIDATE_STATUS) == GL_FALSE)
 			{
-				ChunkStoriesLoggerImplementation.getInstance().log("Failed to validate program " + shaderName + "", ChunkStoriesLoggerImplementation.LogType.RENDERING, ChunkStoriesLoggerImplementation.LogLevel.ERROR);
+				logger().error("Failed to validate program " + shaderName + "");
 
 				String errorsSource = glGetProgramInfoLog(shaderProgramId, 5000);
 
 				String[] errorsLines = errorsSource.split("\n");
-				//String[] sourceLines = fragSource.toString().split("\n");
 				for (String line : errorsLines)
 				{
-					ChunkStoriesLoggerImplementation.getInstance().log(line, ChunkStoriesLoggerImplementation.LogType.RENDERING, ChunkStoriesLoggerImplementation.LogLevel.WARN);
-					if (line.toLowerCase().startsWith("error: "))
-					{
-						String[] parsed = line.split(":");
-						if (parsed.length >= 3)
-						{
-							//int lineNumber = Integer.parseInt(parsed[2]);
-							/*if (sourceLines.length > lineNumber)
-							{
-								System.out.println("@line: " + lineNumber + ": " + sourceLines[lineNumber]);
-							}*/
-						}
-					}
+					logger().debug(line);
 				}
 
 				//return;

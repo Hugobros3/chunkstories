@@ -41,6 +41,8 @@ import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLCapabilities;
 import org.lwjgl.system.MemoryUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.matthiasmann.twl.utils.PNGDecoder;
 import de.matthiasmann.twl.utils.PNGDecoder.Format;
@@ -55,7 +57,6 @@ import io.xol.chunkstories.input.lwjgl3.Lwjgl3ClientInputsManager;
 import io.xol.chunkstories.renderer.debug.FrametimeRenderer;
 import io.xol.chunkstories.renderer.debug.MemUsageRenderer;
 import io.xol.chunkstories.renderer.debug.WorldLogicTimeRenderer;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.engine.concurrency.SimpleFence;
 import io.xol.engine.graphics.GLCalls;
 import io.xol.engine.graphics.RenderingContext;
@@ -133,7 +134,7 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 
 	private void createOpenGLContext()
 	{
-		ChunkStoriesLoggerImplementation.getInstance().log("Creating an OpenGL Windows [title:" + windowName + ", width:" + windowWidth + ", height:" + windowHeight + "]");
+		logger().info("Creating an OpenGL Windows [title:" + windowName + ", width:" + windowWidth + ", height:" + windowHeight + "]");
 		try
 		{
 			computeDisplayModes();
@@ -178,9 +179,9 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 		}
 		catch (Exception e)
 		{
-			ChunkStoriesLoggerImplementation.getInstance().log("A fatal error occured ! If you see the dev, show him this message !");
-			e.printStackTrace();
-			e.printStackTrace(ChunkStoriesLoggerImplementation.getInstance().getPrintWriter());
+			logger().info("A fatal error occured ! If you see the dev, show him this message !", e);
+			//e.printStackTrace();
+			//e.printStackTrace(logger().getPrintWriter());
 		}
 	}
 
@@ -289,15 +290,15 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 	private void systemInfo()
 	{
 		// Will print some debug information on the general context
-		ChunkStoriesLoggerImplementation.getInstance().log("Running on " + System.getProperty("os.name"));
-		ChunkStoriesLoggerImplementation.getInstance().log(Runtime.getRuntime().availableProcessors() + " avaible CPU cores");
-		ChunkStoriesLoggerImplementation.getInstance().log("Trying cpu detection :" + CPUModelDetection.detectModel());
+		logger().info("Running on " + System.getProperty("os.name"));
+		logger().info(Runtime.getRuntime().availableProcessors() + " avaible CPU cores");
+		logger().info("Trying cpu detection :" + CPUModelDetection.detectModel());
 		long allocatedRam = Runtime.getRuntime().maxMemory();
-		ChunkStoriesLoggerImplementation.getInstance().log("Allocated ram : " + allocatedRam);
+		logger().info("Allocated ram : " + allocatedRam);
 		if (allocatedRam < 1024*1024*1024L)
 		{
 			//Warn user if he gave the game too few ram
-			ChunkStoriesLoggerImplementation.getInstance().log("Less than 1Gib of ram detected");
+			logger().info("Less than 1Gib of ram detected");
 			JOptionPane.showMessageDialog(null, "Not enought ram, we will offer NO support for crashes and issues when launching the game with less than 1Gb of ram allocated to it."
 					+ "\n Use the official launcher to launch the game properly, or add -Xmx1G to the java command.");
 		}
@@ -307,12 +308,12 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 	{
 		// Will print some debug information on the openGL context
 		String glVersion = glGetString(GL_VERSION);
-		ChunkStoriesLoggerImplementation.getInstance().log("Render device :" + glGetString(GL_RENDERER) + " vendor:" + glGetString(GL_VENDOR) + " version:" + glVersion);
+		logger().info("Render device :" + glGetString(GL_RENDERER) + " vendor:" + glGetString(GL_VENDOR) + " version:" + glVersion);
 		// Check OpenGL 3.3 capacity
 		glVersion = glVersion.split(" ")[0];
 		float glVersionf = Float.parseFloat(glVersion.split("\\.")[0] + "." + glVersion.split("\\.")[1]);
-		ChunkStoriesLoggerImplementation.getInstance().log("OpenGL parsed version :" + glGetString(GL_VERSION) + " parsed: " + glVersionf);
-		ChunkStoriesLoggerImplementation.getInstance().log("OpenGL Extensions avaible :" + glGetString(GL_EXTENSIONS));
+		logger().info("OpenGL parsed version :" + glGetString(GL_VERSION) + " parsed: " + glVersionf);
+		logger().info("OpenGL Extensions avaible :" + glGetString(GL_EXTENSIONS));
 		
 		//Kill the game early if not fit
 		if (glVersionf < 3.3f)
@@ -320,15 +321,15 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 			RenderingConfig.gl_openGL3Capable = false;
 			
 			// bien le moyen-âge ?
-			ChunkStoriesLoggerImplementation.getInstance().log("Pre-OpenGL 3.3 Hardware detected.");
-			ChunkStoriesLoggerImplementation.getInstance().log("This game isn't made to run in those conditions, please update your drivers or upgrade your graphics card.");
+			logger().warn("Pre-OpenGL 3.3 Hardware detected.");
+			logger().warn("This game isn't made to run in those conditions, please update your drivers or upgrade your graphics card.");
 			JOptionPane.showMessageDialog(null, "Pre-OpenGL 3.0 Hardware without needed extensions support detected.\n" + "This game isn't made to run in those conditions, please update your drivers or upgrade your graphics card.");
 			// If you feel brave after all
 			if (!RenderingConfig.ignoreObsoleteHardware)
 				Runtime.getRuntime().exit(0);
 		}
 		else
-			ChunkStoriesLoggerImplementation.getInstance().log("OpenGL 3.3+ Hardware detected OK!");
+			logger().info("OpenGL 3.3+ Hardware detected OK!");
 
 		//Check for various limitations
 		RenderingConfig.gl_MaxTextureUnits = glGetInteger(GL_MAX_TEXTURE_IMAGE_UNITS);
@@ -455,9 +456,9 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 		}
 		catch (Throwable e)
 		{
-			ChunkStoriesLoggerImplementation.getInstance().log("A fatal error occured ! If you see the dev, show him this message !");
-			e.printStackTrace();
-			e.printStackTrace(ChunkStoriesLoggerImplementation.getInstance().getPrintWriter());
+			logger().error("A fatal error occured ! If you see the dev, show him this message !", e);
+			//e.printStackTrace();
+			//e.printStackTrace(logger().getPrintWriter());
 		}
 	}
 
@@ -510,7 +511,7 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 	private void computeDisplayModes()
 	{
 		enumeratedVideoModes.clear();
-		ChunkStoriesLoggerImplementation.getInstance().log("Retriving monitors and available display modes...");
+		logger().info("Retriving monitors and available display modes...");
 		
 		List<Long> monitorsHandles = new ArrayList<Long>();
 		
@@ -524,7 +525,7 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 			monitorsHandles.add(monitorHandle);
 			String monitorName = "" + monitorCount + ": " + (mainMonitor==monitorHandle ? " (Main)" : "" ) + " " + glfwGetMonitorName(monitorHandle);
 			
-			ChunkStoriesLoggerImplementation.getInstance().log("Found monitor handle: "+monitorHandle + " " + monitorName);
+			logger().info("Found monitor handle: "+monitorHandle + " " + monitorName);
 			GLFWVidMode.Buffer videoModes = glfwGetVideoModes(monitorHandle);
 			while(videoModes.remaining() > 0) {
 				GLFWVidMode videoMode = videoModes.get();
@@ -547,6 +548,11 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 		for(int i = 0; i < monitorsHandles.size(); i++) {
 			monitors[i] = monitorsHandles.get(i);
 		}
+	}
+
+	private final static Logger logger = LoggerFactory.getLogger("window");
+	private Logger logger() {
+		return logger;
 	}
 
 	public String[] getDisplayModes()

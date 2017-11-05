@@ -12,6 +12,14 @@ import java.util.Calendar;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.ConsoleAppender;
+import ch.qos.logback.core.FileAppender;
 import io.xol.engine.misc.ConfigFile;
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.content.Content;
@@ -20,7 +28,6 @@ import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.server.DedicatedServerInterface;
 import io.xol.chunkstories.api.server.PermissionsManager;
 import io.xol.chunkstories.api.server.UserPrivileges;
-import io.xol.chunkstories.api.util.ChunkStoriesLogger;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.workers.Tasks;
 import io.xol.chunkstories.content.GameDirectory;
@@ -33,7 +40,6 @@ import io.xol.chunkstories.server.net.UserConnection;
 import io.xol.chunkstories.server.player.ServerPlayer;
 import io.xol.chunkstories.server.net.ServerConnectionsManager;
 import io.xol.chunkstories.server.propagation.ServerModsProvider;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.chunkstories.workers.WorkerThreadPool;
 import io.xol.chunkstories.world.WorldInfoFile;
 import io.xol.chunkstories.world.WorldServer;
@@ -95,7 +101,7 @@ public class DedicatedServer implements Runnable, DedicatedServerInterface
 		server.run();
 	}
 
-	private ChunkStoriesLoggerImplementation log = null;
+	private Logger logger = null;
 	private ConfigFile serverConfig = new ConfigFile("./config/server.cfg");
 	private UsersPrivilegesFile userPrivileges = new UsersPrivilegesFile();
 
@@ -129,10 +135,39 @@ public class DedicatedServer implements Runnable, DedicatedServerInterface
 			Calendar cal = Calendar.getInstance();
 			SimpleDateFormat sdf = new SimpleDateFormat("YYYY.MM.dd HH.mm.ss");
 			String time = sdf.format(cal.getTime());
-			log = new ChunkStoriesLoggerImplementation(this, ChunkStoriesLogger.LogLevel.ALL, ChunkStoriesLogger.LogLevel.ALL, 
-					new File(GameDirectory.getGameFolderPath() + "/serverlogs/" + time + ".log"));
 
-			log.info("Starting Chunkstories server " + VersionInfo.version + " network protocol v" + VersionInfo.networkProtocolVersion);
+			logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+			
+			String loggingFilename = GameDirectory.getGameFolderPath() + "/serverlogs/" + time + ".log";
+			
+			LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+	        PatternLayoutEncoder ple = new PatternLayoutEncoder();
+
+	        String pattern = "%date %level [%logger] [%-3thread] %msg%n";
+	        String fancyPattern = "%date %level [%logger] [%thread] [%file:%line] %msg%n";
+	        
+	        ple.setPattern(pattern);
+	        ple.setContext(lc);
+	        ple.start();
+	        FileAppender<ILoggingEvent> fileAppender = new FileAppender<ILoggingEvent>();
+	        fileAppender.setFile(loggingFilename);
+	        fileAppender.setEncoder(ple);
+	        fileAppender.setContext(lc);
+	        fileAppender.start();
+	        
+	        ConsoleAppender<ILoggingEvent> logConsoleAppender = new ConsoleAppender<>();
+		    logConsoleAppender.setContext(lc);
+		    logConsoleAppender.setName("console");
+		    logConsoleAppender.setEncoder(ple);
+		    logConsoleAppender.start();
+
+	        ch.qos.logback.classic.Logger rootLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+	        rootLogger.addAppender(fileAppender);
+	        rootLogger.addAppender(logConsoleAppender);
+	        
+	        rootLogger.info("Started logging under: "+loggingFilename);
+			
+			logger.info("Starting Chunkstories server " + VersionInfo.version + " network protocol v" + VersionInfo.networkProtocolVersion);
 
 			//Loads the mods/build filesystem
 			gameContent = new GameContentStore(this, coreContentLocation, modsString);
@@ -209,7 +244,7 @@ public class DedicatedServer implements Runnable, DedicatedServerInterface
 		}
 		catch (Exception e)
 		{ // Exceptions stuff
-			log.error("Could not initalize server. Stacktrace below");
+			logger.error("Could not initalize server. Stacktrace below");
 			e.printStackTrace();
 			System.exit(-1);
 		}
@@ -279,7 +314,6 @@ public class DedicatedServer implements Runnable, DedicatedServerInterface
 			e.printStackTrace();
 		}
 		closeServer();
-		log.save();
 	}
 
 	private void printTopScreenDebug()
@@ -331,26 +365,26 @@ public class DedicatedServer implements Runnable, DedicatedServerInterface
 	private void closeServer()
 	{
 		// When stopped, close sockets and save config.
-		log.info("Stopping world logic");
+		logger.info("Stopping world logic");
 		
-		log.info("Killing all connections");
+		logger.info("Killing all connections");
 		connectionsManager.closeAll();
 		connectionsManager.closeConnectionsManager();
 		
-		log.info("Shutting down plugins ...");
+		logger.info("Shutting down plugins ...");
 		pluginsManager.disablePlugins();
 		
-		log.info("Saving map and waiting for IO to finish");
+		logger.info("Saving map and waiting for IO to finish");
 		world.saveEverything();
 		world.ioHandler.waitThenKill();
 		
-		log.info("Done");
+		logger.info("Done");
 		world.destroy();
 
-		log.info("Saving configuration");
+		logger.info("Saving configuration");
 		serverConfig.save();
 		userPrivileges.save();
-		log.info("Good night sweet prince");
+		logger.info("Good night sweet prince");
 		Runtime.getRuntime().exit(0);
 	}
 
@@ -438,9 +472,9 @@ public class DedicatedServer implements Runnable, DedicatedServerInterface
 		return connectionsManager;
 	}
 
-	public ChunkStoriesLogger getLogger()
+	public Logger getLogger()
 	{
-		return log;
+		return logger;
 	}
 
 	public long getUptime()
@@ -465,7 +499,7 @@ public class DedicatedServer implements Runnable, DedicatedServerInterface
 	@Override
 	public void print(String message)
 	{
-		log.info(message);
+		logger.info(message);
 	}
 
 	@Override
@@ -487,8 +521,8 @@ public class DedicatedServer implements Runnable, DedicatedServerInterface
 	}
 
 	@Override
-	public ChunkStoriesLogger logger() {
-		return log;
+	public Logger logger() {
+		return logger;
 	}
 
 	@Override

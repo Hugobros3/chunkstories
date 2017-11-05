@@ -3,10 +3,12 @@ package io.xol.chunkstories.voxel.models;
 import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.content.Content.Voxels;
 import org.joml.Vector3f;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.content.mods.AssetHierarchy;
 import io.xol.chunkstories.api.voxel.models.VoxelModel;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.chunkstories.voxel.VoxelsStore;
 
 import java.io.BufferedReader;
@@ -27,6 +29,8 @@ public class VoxelModelsStore implements Content.Voxels.VoxelModels
 	private final VoxelsStore voxels;
 
 	private Map<String, VoxelModel> models = new HashMap<String, VoxelModel>();
+	
+	private final static Logger logger = LoggerFactory.getLogger("content.voxels.models");
 
 	public VoxelModelsStore(VoxelsStore voxelsLoader)
 	{
@@ -64,9 +68,9 @@ public class VoxelModelsStore implements Content.Voxels.VoxelModels
 
 	private void readBlockModel(Asset asset)
 	{
-		ChunkStoriesLoggerImplementation.getInstance().log("Loading custom models file : " + asset, ChunkStoriesLoggerImplementation.LogType.CONTENT_LOADING, ChunkStoriesLoggerImplementation.LogLevel.INFO);
+		logger().debug("Loading custom models file : " + asset);
 		
-		//ChunkStoriesLoggerImplementation.getInstance().log("Loading custom models file : " + f.getAbsolutePath(), ChunkStoriesLoggerImplementation.LogType.GAMEMODE, ChunkStoriesLoggerImplementation.LogLevel.INFO);
+		//logger().log("Loading custom models file : " + f.getAbsolutePath(), ChunkStoriesLoggerImplementation.LogType.GAMEMODE, ChunkStoriesLoggerImplementation.LogLevel.INFO);
 	
 		/*if (!voxelModelFile.exists())
 			return;*/
@@ -199,7 +203,7 @@ public class VoxelModelsStore implements Content.Voxels.VoxelModels
 							jitterZ = 0;
 						}
 						else
-							ChunkStoriesLoggerImplementation.getInstance().log("Warning ! Parse error in asset " + asset + ", line " + ln + ", unexpected 'end' token.", ChunkStoriesLoggerImplementation.LogType.CONTENT_LOADING, ChunkStoriesLoggerImplementation.LogLevel.WARN);
+							logger().warn("Parse error in asset " + asset + ", line " + ln + ", unexpected 'end' token.");
 
 						voxelModelName = null;
 					}
@@ -258,7 +262,7 @@ public class VoxelModelsStore implements Content.Voxels.VoxelModels
 							}
 						}
 						else
-							ChunkStoriesLoggerImplementation.getInstance().log("Warning ! Parse error in asset " + asset + ", line " + ln + ", unexpected parameter.", ChunkStoriesLoggerImplementation.LogType.CONTENT_LOADING, ChunkStoriesLoggerImplementation.LogLevel.WARN);
+							logger().warn("Parse error in asset " + asset + ", line " + ln + ", unexpected parameter.");
 					}
 					else if (line.startsWith("cull"))
 					{
@@ -314,12 +318,12 @@ public class VoxelModelsStore implements Content.Voxels.VoxelModels
 										cullingTemp.add(cul);
 								}
 								else
-									ChunkStoriesLoggerImplementation.getInstance().log("Warning ! Can't require '" + toInclude + "'", ChunkStoriesLoggerImplementation.LogType.CONTENT_LOADING, ChunkStoriesLoggerImplementation.LogLevel.WARN);
+									logger().warn("Can't require '" + toInclude + "'");
 
 							}
 						}
 						else
-							ChunkStoriesLoggerImplementation.getInstance().log("Warning ! Parse error in asset " + asset + ", line " + ln + ", unexpected parameter.", ChunkStoriesLoggerImplementation.LogType.CONTENT_LOADING, ChunkStoriesLoggerImplementation.LogLevel.WARN);
+							logger().warn("Parse error in asset " + asset + ", line " + ln + ", unexpected parameter.");
 					}
 				}
 				ln++;
@@ -340,7 +344,7 @@ public class VoxelModelsStore implements Content.Voxels.VoxelModels
 			name = name.substring(0, name.length() - 8);
 		if (models.containsKey(name))
 			return (VoxelModelLoaded)models.get(name);
-		ChunkStoriesLoggerImplementation.getInstance().log("Couldn't serve voxel model : " + name, ChunkStoriesLoggerImplementation.LogType.CONTENT_LOADING, ChunkStoriesLoggerImplementation.LogLevel.ERROR);
+		logger().warn("Couldn't serve voxel model : " + name);
 		return null;
 	}
 
@@ -354,5 +358,10 @@ public class VoxelModelsStore implements Content.Voxels.VoxelModels
 	public Voxels parent()
 	{
 		return voxels;
+	}
+
+	@Override
+	public Logger logger() {
+		return logger;
 	}
 }

@@ -9,7 +9,6 @@ import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.net.PacketsProcessorCommon;
 import io.xol.chunkstories.net.SendQueue;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.engine.concurrency.SimpleFence;
 import io.xol.engine.misc.ConnectionStep;
 
@@ -22,6 +21,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
@@ -59,7 +61,12 @@ public class ClientConnectionToServer extends Thread implements RemoteServer
 	boolean die = false;
 	boolean closeMethodAlreadyCalled = false;
 	
-	String[] prout = {"lel"};
+	//String[] prout = {"lel"};
+	
+	private static final Logger logger = LoggerFactory.getLogger("client.net.connection");
+	private Logger logger() {
+		return logger;
+	}
 	
 	public ClientConnectionToServer(ClientSideConnectionSequence connectionSequence, String ip, int port)
 	{
@@ -81,7 +88,7 @@ public class ClientConnectionToServer extends Thread implements RemoteServer
 	// Connect on/off
 	private boolean openSocket()
 	{
-		ChunkStoriesLoggerImplementation.getInstance().info("Connecting to " + ip + ":" + port + ".");
+		logger().info("Connecting to " + ip + ":" + port + ".");
 		try
 		{
 			//Opens the socket

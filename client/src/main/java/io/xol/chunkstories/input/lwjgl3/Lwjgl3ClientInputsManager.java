@@ -70,7 +70,7 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 		ConfigDeprecated clientConfig = gameWindow.getClient().configDeprecated();
 		if(clientConfig.getString("lwjgl-version", "lwjgl2").equals("lwjgl2")) {
 			
-			gameWindow.getClient().logger().warning("Game was last ran on LWJGL2.x, input codes are messed up, resetting all of them.");
+			gameWindow.getClient().logger().warn("Game was last ran on LWJGL2.x, input codes are messed up, resetting all of them.");
 			
 			//Removes ALL inputs declared using the old inputs codes of LWJGL2
 			Iterator<String> i = clientConfig.getFieldsSet();

@@ -3,6 +3,9 @@ package io.xol.engine.animation;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.content.Content.AnimationsLibrary;
 import io.xol.chunkstories.content.GameContentStore;
@@ -14,10 +17,12 @@ import io.xol.engine.animation.BVHAnimation;
 
 public class BVHLibrary implements AnimationsLibrary
 {
-	// This class holds static model info
-
 	private final GameContentStore store;
-	//private final ModsManager modsManager;
+	
+	private static final Logger logger = LoggerFactory.getLogger("content.animations");
+	public Logger logger() {
+		return logger;
+	}
 	
 	public BVHLibrary(GameContentStore store)
 	{

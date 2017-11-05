@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.client.net.ClientPacketsProcessor;
@@ -154,5 +157,10 @@ public abstract class PacketsProcessorCommon implements PacketsProcessorActual
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	public static final Logger logger = LoggerFactory.getLogger("net.packetsProcessor");
+	public Logger logger() {
+		return logger;
 	}
 }

@@ -12,10 +12,7 @@ import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.api.item.renderer.ItemRenderer;
 import io.xol.chunkstories.api.item.renderer.NullItemRenderer;
-import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogLevel;
-import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogType;
 import io.xol.chunkstories.materials.GenericNamedConfigurable;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -103,10 +100,10 @@ public class ItemTypeImpl extends GenericNamedConfigurable implements ItemType
 			}
 			catch(Exception e) {
 				//TODO obtain the constructor once ?
-				store().parent().logger().log("Could not instanciate DefaultItemRenderer: "+e, LogType.CONTENT_LOADING, LogLevel.ERROR);
-				e.printStackTrace();
-				e.printStackTrace(store().parent().logger().getPrintWriter());
-				store().parent().logger().log("Using NullItemRenderer(). "+e, LogType.CONTENT_LOADING, LogLevel.WARN);
+				store().parent().logger().error("Could not instanciate DefaultItemRenderer: "+e);
+				//e.printStackTrace();
+				//e.printStackTrace(store().parent().logger().getPrintWriter());
+				store().parent().logger().warn("Using NullItemRenderer(). "+e);
 				defaultItemRenderer = new NullItemRenderer(null);
 			}
 			
@@ -184,8 +181,8 @@ public class ItemTypeImpl extends GenericNamedConfigurable implements ItemType
 		}
 		catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
 		{
-			ChunkStoriesLoggerImplementation.getInstance().warning("Could not spawn : " + this);
-			e.printStackTrace();
+			store().logger().warn("Could not spawn : " + this);
+			store.logger().warn("{}", e);
 			return null;
 		}
 	}

@@ -3,6 +3,9 @@ package io.xol.chunkstories.mesh;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.exceptions.content.MeshLoadException;
 import io.xol.chunkstories.api.mesh.Mesh;
@@ -11,8 +14,6 @@ import io.xol.chunkstories.api.mesh.MeshLoader;
 import io.xol.chunkstories.api.mesh.MultiPartMesh;
 import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.content.mods.ModsManager;
-import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogLevel;
-import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogType;
 import io.xol.chunkstories.content.GameContentStore;
 import io.xol.engine.model.WavefrontLoader;
 
@@ -58,7 +59,7 @@ public class MeshStore implements MeshLibrary {
 			
 			if(s.length <= 1)
 			{
-				parent().logger().log("Mesh "+meshName+" did not come with a valid suffix to lookup a loader from.", LogType.CONTENT_LOADING, LogLevel.ERROR);
+				logger().warn("Mesh "+meshName+" did not come with a valid suffix to lookup a loader from.");
 				return null;
 			}
 			
@@ -67,7 +68,7 @@ public class MeshStore implements MeshLibrary {
 			
 			if(loader == null)
 			{
-				parent().logger().log("There is no MeshLoader to load mesh "+meshName+" using extension "+suffix+ ".", LogType.CONTENT_LOADING, LogLevel.ERROR);
+				logger().warn("There is no MeshLoader to load mesh "+meshName+" using extension "+suffix+ ".");
 				return null;
 			}
 
@@ -75,7 +76,7 @@ public class MeshStore implements MeshLibrary {
 				mesh = loader.loadMeshFromAsset(a);
 			} catch (MeshLoadException e) {
 				e.printStackTrace();
-				parent().logger().log("Mesh "+meshName+" couldn't be load using MeshLoader "+loader.getClass().getName()+ " ,stack trace above.", LogType.CONTENT_LOADING, LogLevel.ERROR);
+				logger().error("Mesh "+meshName+" couldn't be load using MeshLoader "+loader.getClass().getName()+ " ,stack trace above.");
 				return null;
 			}
 			
@@ -102,4 +103,8 @@ public class MeshStore implements MeshLibrary {
 		return content;
 	}
 
+	private static final Logger logger = LoggerFactory.getLogger("content.meshes");
+	public Logger logger() {
+		return logger;
+	}
 }

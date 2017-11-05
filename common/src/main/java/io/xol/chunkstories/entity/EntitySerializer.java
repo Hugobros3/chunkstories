@@ -4,15 +4,15 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.exceptions.UnknownComponentException;
 import io.xol.chunkstories.api.world.serialization.OfflineSerializedData;
-import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogLevel;
-import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogType;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.entity.LengthAwareBufferedIOHelper.LengthAwareOutputStream;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -100,8 +100,8 @@ public class EntitySerializer
 						entity.getComponents().tryPullComponentInStream(componentName, source, in);
 					}
 					catch(UnknownComponentException e) {
-						ChunkStoriesLoggerImplementation.getInstance().log("Failure reading component "+componentName + " from "+source, LogType.INTERNAL, LogLevel.WARN);
-						ChunkStoriesLoggerImplementation.getInstance().log(e.getMessage(), LogType.INTERNAL, LogLevel.WARN);
+						logger().warn("Failure reading component "+componentName + " from "+source);
+						logger().warn(e.getMessage());
 					}
 				}
 				else
@@ -111,7 +111,7 @@ public class EntitySerializer
 						entity.getComponents().tryPullComponentInStream(componentId, source, in);
 					}
 					catch(UnknownComponentException e) {
-						ChunkStoriesLoggerImplementation.getInstance().log(e.getMessage(), LogType.INTERNAL, LogLevel.WARN);
+						logger().warn(e.getMessage());
 					}
 				}
 				componentId = in.readInt();
@@ -124,5 +124,10 @@ public class EntitySerializer
 			e.printStackTrace();
 		}
 		return null;
+	}
+	
+	private static final Logger logger = LoggerFactory.getLogger("world.serialization.entity");
+	public static Logger logger() {
+		return logger;
 	}
 }

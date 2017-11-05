@@ -6,14 +6,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.exceptions.content.IllegalPacketDeclarationException;
 import io.xol.chunkstories.api.exceptions.net.UnknowPacketException;
 import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.content.GameContentStore;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
-
 public class PacketsStore implements Content.PacketTypes {
 
 	private final GameContentStore store;
@@ -22,7 +23,12 @@ public class PacketsStore implements Content.PacketTypes {
 	private final PacketTypeDeclared[] byIDs = new PacketTypeDeclared[32768];
 
 	private final Map<Class<? extends Packet>, PacketTypeDeclared> byClasses = new HashMap<Class<? extends Packet>, PacketTypeDeclared>();
-
+	
+	private static final Logger logger = LoggerFactory.getLogger("content.packets");
+	public Logger logger() {
+		return logger;
+	}
+	
 	public PacketsStore(GameContentStore store) {
 		this.store = store;
 
@@ -59,8 +65,8 @@ public class PacketsStore implements Content.PacketTypes {
 				// We shouldn't come accross end tags by ourselves, this is
 				// dealt with in the constructors
 				else if (line.startsWith("end")) {
-					ChunkStoriesLoggerImplementation.getInstance()
-							.warning("Syntax error in file : " + f + " : Unexpected 'end' tag.");
+					logger()
+							.warn("Syntax error in file : " + f + " : Unexpected 'end' tag.");
 					continue;
 				} else if (line.startsWith("packet")) {
 					if (line.contains(" ")) {

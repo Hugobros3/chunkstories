@@ -7,7 +7,6 @@ import java.io.IOException;
 
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.entity.EntitySerializer;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.chunkstories.world.chunk.CompressedData;
 import io.xol.chunkstories.world.region.RegionImplementation;
 
@@ -88,9 +87,10 @@ public class CSFRegionFile0x2C extends CSFRegionFile
 			}
 			catch (Exception e)
 			{
-				ChunkStoriesLoggerImplementation.getInstance().info("Error while loading "+file);
-				e.printStackTrace(ChunkStoriesLoggerImplementation.getInstance().getPrintWriter());
-				e.printStackTrace();
+				logger().error("Error while loading "+file);
+				logger().error("Exception: {}", e);
+				//e.printStackTrace(logger().getPrintWriter());
+				//e.printStackTrace();
 			}
 	
 			owner.world.entitiesLock.writeLock().unlock();

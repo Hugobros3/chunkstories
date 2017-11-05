@@ -12,7 +12,6 @@ import io.xol.chunkstories.api.entity.EntityType;
 import io.xol.chunkstories.api.exceptions.content.IllegalEntityDeclarationException;
 import io.xol.chunkstories.entity.EntityTypesStore;
 import io.xol.chunkstories.materials.GenericNamedConfigurable;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 
 public class EntityTypeImpl extends GenericNamedConfigurable implements EntityType {
 	
@@ -63,7 +62,7 @@ public class EntityTypeImpl extends GenericNamedConfigurable implements EntityTy
 		catch (NoSuchMethodException | SecurityException | IllegalArgumentException e)
 		{
 			e.printStackTrace();
-			e.printStackTrace(store.parent().logger().getPrintWriter());
+			//e.printStackTrace(store.parent().logger().getPrintWriter());
 
 			throw new IllegalEntityDeclarationException("Entity "+name+" failed to provide an acceptable constructor, exception="+e.getMessage());
 		}
@@ -84,9 +83,10 @@ public class EntityTypeImpl extends GenericNamedConfigurable implements EntityTy
 		catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
 		{
 			//This is bad
-			ChunkStoriesLoggerImplementation.getInstance().log("Couldn't instanciate entity "+this+" at " + location);
-			e.printStackTrace();
-			e.printStackTrace(ChunkStoriesLoggerImplementation.getInstance().getPrintWriter());
+			store().logger().error("Couldn't instanciate entity "+this+" at " + location);
+			store().logger().error("{}",e.getMessage());
+			//e.printStackTrace();
+			//e.printStackTrace(logger().getPrintWriter());
 			return null;
 		}
 	}

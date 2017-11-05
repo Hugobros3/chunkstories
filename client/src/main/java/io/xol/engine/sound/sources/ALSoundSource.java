@@ -10,7 +10,7 @@ import org.lwjgl.openal.AL10;
 
 import io.xol.chunkstories.api.exceptions.SoundEffectNotFoundException;
 import io.xol.chunkstories.api.sound.SoundManager;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
+import io.xol.engine.sound.ALSoundManager;
 import io.xol.engine.sound.SoundData;
 import io.xol.engine.sound.SoundDataBuffered;
 import io.xol.engine.sound.library.SoundsLibrary;
@@ -50,7 +50,7 @@ public class ALSoundSource extends SoundSourceAbstract
 	{
 		openAlSourceId = alGenSources();
 		if (soundData == null)
-			ChunkStoriesLoggerImplementation.getInstance().warning("A sound source was asked to play a null soundData !");
+			ALSoundManager.logger.warn("A sound source was asked to play a null soundData !");
 		else
 		{
 			if (soundData instanceof SoundDataBuffered)

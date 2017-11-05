@@ -22,6 +22,8 @@ import org.lwjgl.openal.ALC;
 import org.lwjgl.openal.ALCCapabilities;
 import org.lwjgl.openal.ALUtil;
 import org.lwjgl.system.MemoryUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.xol.chunkstories.api.client.ClientSoundManager;
 import io.xol.chunkstories.api.exceptions.SoundEffectNotFoundException;
@@ -31,7 +33,6 @@ import org.joml.Vector3fc;
 
 import io.xol.chunkstories.api.sound.SoundSource;
 import io.xol.chunkstories.api.sound.SoundSource.Mode;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.engine.sound.ogg.SoundDataOggSample;
 import io.xol.engine.sound.sources.ALBufferedSoundSource;
 import io.xol.engine.sound.sources.ALSoundSource;
@@ -56,6 +57,8 @@ public class ALSoundManager implements ClientSoundManager
 	
 	private long device;
 	private long context;
+	
+	public final static Logger logger = LoggerFactory.getLogger("sound");
 
 	public ALSoundManager()
 	{
@@ -98,10 +101,10 @@ public class ALSoundManager implements ClientSoundManager
 			String alVersion = alGetString(AL_VERSION);
 			String alExtensions = alGetString(AL_EXTENSIONS);
 			contextThread = Thread.currentThread();
-			ChunkStoriesLoggerImplementation.getInstance().info("OpenAL context successfully created, version = " + alVersion);
-			ChunkStoriesLoggerImplementation.getInstance().info("OpenAL Extensions avaible : " + alExtensions);
+			logger().info("OpenAL context successfully created, version = " + alVersion);
+			logger().info("OpenAL Extensions avaible : " + alExtensions);
 			efxOn = false;//EFXUtil.isEfxSupported();
-			ChunkStoriesLoggerImplementation.getInstance().info("EFX extension support : " + (efxOn ? "yes" : "no"));
+			logger().info("EFX extension support : " + (efxOn ? "yes" : "no"));
 			if (efxOn)
 			{
 				//Reset error
@@ -123,7 +126,7 @@ public class ALSoundManager implements ClientSoundManager
 					j++;
 				}
 				//auxEffectsSlots = new SoundEffect[auxSlotsIds.size()];
-				//ChunkStoriesLoggerImplementation.getInstance().info(auxEffectsSlots.length + " avaible auxiliary effects slots.");
+				//logger().info(auxEffectsSlots.length + " avaible auxiliary effects slots.");
 			}
 
 			Runtime.getRuntime().addShutdownHook(new Thread()
@@ -140,6 +143,10 @@ public class ALSoundManager implements ClientSoundManager
 			System.out.println("Failed to start sound system !");
 			e.printStackTrace();
 		}
+	}
+
+	private Logger logger() {
+		return logger;
 	}
 
 	public void destroy()

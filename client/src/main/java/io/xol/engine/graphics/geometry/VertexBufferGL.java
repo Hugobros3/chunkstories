@@ -4,10 +4,8 @@ import io.xol.chunkstories.api.rendering.vertex.AttributeSource;
 import io.xol.chunkstories.api.rendering.vertex.RecyclableByteBuffer;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
-import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogLevel;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.engine.base.GameWindowOpenGL_LWJGL3;
 import io.xol.engine.concurrency.SimpleFence;
 import io.xol.engine.concurrency.TrivialFence;
@@ -30,6 +28,9 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Semaphore;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -103,8 +104,8 @@ public class VertexBufferGL implements VertexBuffer
 	{
 		if (openGLID == -2)
 		{
-			ChunkStoriesLoggerImplementation.getInstance().log("Critical mess-up: Tried to bind a destroyed VerticesObject. Terminating process immediately.", LogLevel.CRITICAL);
-			ChunkStoriesLoggerImplementation.getInstance().save();
+			logger().error("Critical mess-up: Tried to bind a destroyed VerticesObject. Terminating process immediately.");
+			//logger().save();
 			Thread.dumpStack();
 			System.exit(-800);
 			//throw new RuntimeException("Tryed to bind a destroyed VerticesBuffer");
@@ -557,32 +558,13 @@ public class VertexBufferGL implements VertexBuffer
 		return totalVerticesObjects;
 	}
 
-	/*
-	public static long updateVerticesObjects()
-	{
-		long vram = 0;
-	
-		//Iterates over every instance reference, removes null ones and add up valid ones
-		Iterator<WeakReference<VerticesObject>> i = allVerticesObjects.iterator();
-		while (i.hasNext())
-		{
-			WeakReference<VerticesObject> reference = i.next();
-	
-			VerticesObject object = reference.get();
-			if (object != null)
-			{
-				vram += object.getVramUsage();
-			}
-			//Remove null objects from the list
-			else
-				i.remove();
-		}
-	
-		return vram;
-	}*/
-
 	private static int totalVerticesObjects = 0;
 	private static Queue<WeakReference<VertexBufferGL>> allVerticesObjects = new ConcurrentLinkedQueue<WeakReference<VertexBufferGL>>();
 
 	protected static Map<Integer, WeakReference<VertexBufferGL>> allocatedIds = new ConcurrentHashMap<Integer, WeakReference<VertexBufferGL>>();
+	
+	private static final Logger logger = LoggerFactory.getLogger("rendering.vertexBuffers");
+	public Logger logger() {
+		return logger;
+	}
 }

@@ -1,0 +1,2 @@
+2017-11-05 10:42:48,338 INFO [content] [main] [Log4jTest.java:40] Hello World
+2017-11-05 10:42:48,344 DEBUG [content.voxels] [main] [Log4jTest.java:42] Failed to load

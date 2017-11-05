@@ -4,6 +4,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.slf4j.Logger;
+
 import io.xol.chunkstories.api.client.ClientContent;
 import io.xol.chunkstories.api.client.ClientInputsManager;
 import io.xol.chunkstories.api.client.ClientInterface;
@@ -19,7 +21,6 @@ import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.server.PermissionsManager;
 import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.api.server.UserPrivileges;
-import io.xol.chunkstories.api.util.ChunkStoriesLogger;
 import io.xol.chunkstories.api.util.ConfigDeprecated;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.workers.Tasks;
@@ -242,7 +243,7 @@ public class LocalServerContext implements ClientInterface, ServerInterface
 	}
 
 	@Override
-	public ChunkStoriesLogger logger() {
+	public Logger logger() {
 		return client.logger();
 	}
 

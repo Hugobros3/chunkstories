@@ -10,6 +10,9 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.xol.chunkstories.api.rendering.textures.Texture;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
 import io.xol.chunkstories.client.Client;
@@ -25,6 +28,11 @@ public abstract class TextureGL implements Texture
 	protected final TextureFormat type;
 	protected int glId = -1;
 
+	private static final Logger logger = LoggerFactory.getLogger("rendering.textures");
+	public static Logger logger() {
+		return logger;
+	}
+	
 	public TextureGL(TextureFormat type)
 	{
 		this.type = type;

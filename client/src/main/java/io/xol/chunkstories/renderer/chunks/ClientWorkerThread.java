@@ -5,8 +5,6 @@ import java.nio.ByteBuffer;
 import org.lwjgl.system.MemoryUtil;
 
 import io.xol.chunkstories.api.client.ClientContent;
-import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogLevel;
-import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogType;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.LodLevel;
@@ -94,7 +92,7 @@ public class ClientWorkerThread extends WorkerThread implements BakeChunkTaskExe
 							byteBuffersWrappers[i][j][k] = new WholeBlocksLayoutBaker(content, byteBuffers[i][j][k]);
 							break;
 						default:
-								pool.client.logger().log("NO SPECIFIC LAYOUT BAKER FOR : " + ChunkMeshDataSubtypes.VertexLayout.values()[i], LogType.INTERNAL, LogLevel.CRITICAL);
+								pool.logger().error("NO SPECIFIC LAYOUT BAKER FOR : " + ChunkMeshDataSubtypes.VertexLayout.values()[i]);
 								System.exit(-400);
 						}
 						//byteBuffersWrappers[i][j][k] = new RenderByteBuffer(byteBuffers[i][j][k]);

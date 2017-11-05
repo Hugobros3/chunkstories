@@ -15,7 +15,6 @@ import io.xol.chunkstories.api.net.PacketSynchPrepared;
 import io.xol.chunkstories.api.net.PacketsProcessor;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.server.ServerPacketsProcessor.ServerPlayerPacketsProcessor;
-import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogLevel;
 import io.xol.chunkstories.api.net.PacketSender;
 
 import java.io.DataInputStream;
@@ -26,7 +25,6 @@ import java.io.IOException;
 //http://chunkstories.xyz
 //http://xol.io
 
-/** TODO: I'd rather see this in common/ */
 public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 {
 	public ItemPile itemPile;
@@ -79,7 +77,7 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 	{
 		if(!(processor instanceof ServerPlayerPacketsProcessor))
 		{
-			processor.getContext().logger().warning("Received a "+this.getClass().getSimpleName()+" but this GameContext isn't providen with a packet processor made to deal with it");
+			processor.logger().warn("Received a "+this.getClass().getSimpleName()+" but this GameContext isn't providen with a packet processor made to deal with it");
 			return;
 		}
 		
@@ -107,13 +105,13 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 			catch (NullItemException e)
 			{
 				//This ... isn't supposed to happen
-				processor.getContext().logger().log("User "+sender+" is trying to spawn a null ItemPile for some reason.", LogLevel.WARN);
+				processor.logger().info("User "+sender+" is trying to spawn a null ItemPile for some reason.");
 			}
 			catch (UndefinedItemTypeException e)
 			{
 				//This is slightly more problematic
-				processor.getContext().logger().log(e.getMessage(), LogLevel.WARN);
-				e.printStackTrace(processor.getContext().logger().getPrintWriter());
+				processor.logger().warn(e.getMessage());
+				//e.printStackTrace(processor.getLogger().getPrintWriter());
 			}
 		}
 		else

@@ -15,6 +15,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.xol.chunkstories.api.exceptions.content.mods.ModLoadFailureException;
 import io.xol.chunkstories.api.exceptions.content.mods.ModNotFoundException;
 import io.xol.chunkstories.api.exceptions.content.mods.NotAllModsLoadedException;
@@ -24,14 +27,12 @@ import io.xol.chunkstories.api.content.mods.AssetHierarchy;
 import io.xol.chunkstories.api.content.mods.Mod;
 import io.xol.chunkstories.api.content.mods.ModsManager;
 import io.xol.chunkstories.api.util.IterableIterator;
-import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogLevel;
 import io.xol.chunkstories.content.mods.ForeignCodeClassLoader;
 import io.xol.chunkstories.content.mods.ModImplementation;
 import io.xol.chunkstories.content.mods.ModFolder;
 import io.xol.chunkstories.content.mods.ModZip;
 import io.xol.chunkstories.plugin.NotAPluginException;
 import io.xol.chunkstories.plugin.PluginInformationImplementation;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.engine.concurrency.UniqueList;
 import io.xol.engine.misc.FoldersUtils;
 
@@ -43,7 +44,7 @@ public class ModsManagerImplementation implements ModsManager
 {
 	private final File coreContentLocation;
 	
-	private Mod baseAssets;
+	private ModImplementation baseAssets;
 	private String[] modsEnabled = new String[0];
 	private UniqueList<Mod> enabledMods = new UniqueList<Mod>();
 	private Map<String, ModsAssetHierarchy> avaibleAssets = new HashMap<String, ModsAssetHierarchy>();
@@ -236,21 +237,21 @@ public class ModsManagerImplementation implements ModsManager
 		}
 		catch (ModLoadFailureException e)
 		{
-			ChunkStoriesLoggerImplementation.getInstance().error("Fatal : failed to load in the base assets folder. Exception :");
-			e.printStackTrace(ChunkStoriesLoggerImplementation.getInstance().getPrintWriter());
+			logger().error("Fatal : failed to load in the base assets folder. Exception : {}", e);
+			//e.printStackTrace(logger().getPrintWriter());
 		}
 
 		ClassLoader childClassLoader = loadModAssets(baseAssets, Thread.currentThread().getContextClassLoader());
 		//Iterates over mods, in order of priority (lowest to highest)
 		for (Mod mod : enabledMods)
 		{
-			childClassLoader = loadModAssets(mod, childClassLoader);
+			childClassLoader = loadModAssets((ModImplementation) mod, childClassLoader);
 		}
 		
 		finalClassLoader = childClassLoader;
 	}
 
-	private ClassLoader loadModAssets(Mod mod, ClassLoader parentClassLoader)
+	private ClassLoader loadModAssets(ModImplementation mod, ClassLoader parentClassLoader)
 	{
 		List<File> jarFiles = new LinkedList<File>();
 		
@@ -523,7 +524,7 @@ public class ModsManagerImplementation implements ModsManager
 		
 		if(loader == null)
 		{
-			ChunkStoriesLoggerImplementation.getInstance().log("Class "+className + " was not found in any loaded mod.", LogLevel.WARN);
+			logger().warn("Class "+className + " was not found in any loaded mod.");
 			return null;
 		}
 		
@@ -532,7 +533,7 @@ public class ModsManagerImplementation implements ModsManager
 		if(loadedClass != null)
 			return loadedClass;
 		
-		ChunkStoriesLoggerImplementation.getInstance().log("WARNING: Failed to load class "+className, LogLevel.ERROR);
+		logger().error("Failed to load class "+className);
 		
 		
 		//If all fail, return null
@@ -638,6 +639,11 @@ public class ModsManagerImplementation implements ModsManager
 			}
 			
 		};
+	}
+	
+	private static final Logger logger = LoggerFactory.getLogger("content.modsManager");
+	public Logger logger() {
+		return logger;
 	}
 
 	public ClassLoader getFinalClassLoader() {

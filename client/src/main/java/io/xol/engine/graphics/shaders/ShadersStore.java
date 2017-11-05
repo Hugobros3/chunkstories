@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+
 import io.xol.chunkstories.api.client.ClientContent;
 import io.xol.chunkstories.api.client.ClientContent.ShadersLibrary;
 import io.xol.chunkstories.client.RenderingConfig;
@@ -68,5 +70,10 @@ public class ShadersStore implements ShadersLibrary
 	@Override
 	public ClientContent parent() {
 		return clientContent;
+	}
+
+	@Override
+	public Logger logger() {
+		return ShaderProgram.logger();
 	}
 }

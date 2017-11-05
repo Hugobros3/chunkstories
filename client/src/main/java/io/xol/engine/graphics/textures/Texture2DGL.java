@@ -15,11 +15,8 @@ import io.xol.chunkstories.api.exceptions.rendering.IllegalRenderingThreadExcept
 import io.xol.chunkstories.api.rendering.target.RenderTarget;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
-import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogLevel;
-import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogType;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.engine.base.OpenGLDebugOutputCallback;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -149,8 +146,7 @@ public abstract class Texture2DGL extends TextureGL implements RenderTarget, Tex
 		//Don't bother
 		if (glId == -2)
 		{
-			ChunkStoriesLoggerImplementation.getInstance().log("Critical mess-up: Tried to bind a destroyed Texture2D "+this+". Terminating process immediately.", LogLevel.CRITICAL);
-			ChunkStoriesLoggerImplementation.getInstance().save();
+			logger().error("Critical mess-up: Tried to bind a destroyed Texture2D "+this+". Terminating process immediately.");
 			Thread.dumpStack();
 			System.exit(-801);
 			//throw new RuntimeException("Tryed to bind a destroyed VerticesBuffer");
@@ -318,7 +314,7 @@ public abstract class Texture2DGL extends TextureGL implements RenderTarget, Tex
 		int actualMaxMipLevelPossible = getMaxMipmapLevel();
 		if(maxLevel > actualMaxMipLevelPossible)
 		{
-			ChunkStoriesLoggerImplementation.getInstance().log("Warning, tried setting mipLevel > max permitted by texture size. Correcting.", LogType.RENDERING, LogLevel.WARN);
+			logger().warn("Warning, tried setting mipLevel > max permitted by texture size. Correcting.");
 			Thread.dumpStack();
 			maxLevel = actualMaxMipLevelPossible;
 		}

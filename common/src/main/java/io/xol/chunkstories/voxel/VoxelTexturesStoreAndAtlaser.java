@@ -25,6 +25,9 @@ import io.xol.chunkstories.api.client.ClientContent;
 import io.xol.chunkstories.api.client.ClientInterface;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.content.mods.AssetHierarchy;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
@@ -52,6 +55,11 @@ public class VoxelTexturesStoreAndAtlaser implements ClientContent.ClientVoxels.
 	BufferedImage diffuseTextureImage = null;
 	BufferedImage normalTextureImage = null;
 	BufferedImage materialTextureImage = null;
+	
+	public static final Logger logger = LoggerFactory.getLogger("content.voxels.textures");
+	public Logger logger() {
+		return logger;
+	}
 	
 	public VoxelTexturesStoreAndAtlaser(VoxelsStore voxels)
 	{

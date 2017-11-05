@@ -7,7 +7,6 @@ import io.xol.chunkstories.api.workers.TaskExecutor;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.Region;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.chunkstories.tools.WorldTool;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.region.RegionImplementation;
@@ -27,6 +26,9 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.Iterator;
 import java.util.concurrent.Semaphore;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.jpountz.lz4.LZ4Factory;
 import net.jpountz.lz4.LZ4FastDecompressor;
@@ -95,7 +97,7 @@ public class IOTasks extends Thread implements TaskExecutor
 	@Override
 	public void run()
 	{
-		world.getGameContext().logger().log("IO Thread started for '"+this.world.getWorldInfo().getName()+"'");
+		logger().info("IO Thread started for '"+this.world.getWorldInfo().getName()+"'");
 
 		this.setPriority(Constants.IO_THREAD_PRIOTITY);
 		this.setName("IO thread for '"+this.world.getWorldInfo().getName()+"'");
@@ -151,7 +153,7 @@ public class IOTasks extends Thread implements TaskExecutor
 				}
 				catch (Exception e)
 				{
-					ChunkStoriesLoggerImplementation.getInstance().warning("Exception occured when processing task : " + task);
+					logger().warn("Exception occured when processing task : " + task);
 					e.printStackTrace();
 				}
 			}
@@ -555,7 +557,7 @@ public class IOTasks extends Thread implements TaskExecutor
 					}
 					catch (Exception e)
 					{
-						ChunkStoriesLoggerImplementation.getInstance().error("Could not load load chunk summary at " + summary + " cause: " + e.getMessage());
+						logger().error("Could not load load chunk summary at " + summary + " cause: " + e.getMessage());
 					}
 
 					summary.setSummaryData(heights, ids);
@@ -762,5 +764,10 @@ public class IOTasks extends Thread implements TaskExecutor
 		}
 		
 		scheduleTask(DIE);
+	}
+	
+	private static final Logger logger = LoggerFactory.getLogger("world.io");
+	public Logger logger() {
+		return logger;
 	}
 }

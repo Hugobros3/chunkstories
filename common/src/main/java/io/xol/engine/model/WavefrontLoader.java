@@ -9,12 +9,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.xol.chunkstories.api.exceptions.content.MeshLoadException;
 import io.xol.chunkstories.api.mesh.Mesh;
 import io.xol.chunkstories.api.mesh.MeshLoader;
 import io.xol.chunkstories.api.mesh.MultiPartMesh;
 import io.xol.chunkstories.api.content.Asset;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -43,6 +45,11 @@ public class WavefrontLoader implements MeshLoader
 		OBJ_MESH, OBJ_MESH_ONLY_RENDERABLE, VOXEL_MODEL, FLOAT_BUFFER
 	}*/
 
+	private static final Logger logger = LoggerFactory.getLogger("content.meshes.obj");
+	public Logger logger() {
+		return logger;
+	}
+	
 	public Mesh loadMeshFromAsset(Asset asset) throws MeshLoadException
 	{
 		List<float[]> vertices = new ArrayList<float[]>();
@@ -228,7 +235,7 @@ public class WavefrontLoader implements MeshLoader
 		catch (Exception e)
 		{
 			//God damnit
-			ChunkStoriesLoggerImplementation.getInstance().error("Error loading model at line " + line);
+			logger().error("Error loading model at line " + line);
 			e.printStackTrace();
 		}
 

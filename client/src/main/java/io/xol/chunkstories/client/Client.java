@@ -8,6 +8,14 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.ConsoleAppender;
+import ch.qos.logback.core.FileAppender;
 import io.xol.engine.base.GameWindowOpenGL_LWJGL3;
 import io.xol.engine.concurrency.SimpleFence;
 import io.xol.engine.misc.ConfigFile;
@@ -21,8 +29,6 @@ import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.plugin.ClientPluginManager;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
-import io.xol.chunkstories.api.util.ChunkStoriesLogger;
-import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogLevel;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.workers.Tasks;
 import io.xol.chunkstories.api.util.ConfigDeprecated;
@@ -38,7 +44,6 @@ import io.xol.chunkstories.gui.overlays.ingame.ConnectionOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.InventoryOverlay;
 import io.xol.chunkstories.input.lwjgl3.Lwjgl3ClientInputsManager;
 import io.xol.chunkstories.renderer.chunks.ClientTasksPool;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.chunkstories.tools.DebugProfiler;
 import io.xol.chunkstories.world.WorldClientCommon;
 
@@ -48,7 +53,7 @@ public class Client implements ClientInterface
 	
 	//Base client data
 	private final ConfigDeprecated clientConfig;
-	private final ChunkStoriesLoggerImplementation logger;
+	private final Logger logger;
 	private final ClientGameContent gameContent;
 
 	//Windowing/Rendering
@@ -65,6 +70,8 @@ public class Client implements ClientInterface
 	private PlayerClientImplementation player;
 
 	private final ClientTasksPool workers;
+
+	private Logger chatLogger = LoggerFactory.getLogger("game.chat");
 
 	//Debug
 	public static DebugProfiler profiler = new DebugProfiler();
@@ -136,7 +143,39 @@ public class Client implements ClientInterface
 		Calendar cal = Calendar.getInstance();
 		SimpleDateFormat sdf = new SimpleDateFormat("YYYY.MM.dd HH.mm.ss");
 		String time = sdf.format(cal.getTime());
-		logger = new ChunkStoriesLoggerImplementation(this, LogLevel.ALL, LogLevel.ALL, new File(GameDirectory.getGameFolderPath() + "/logs/" + time + ".log"));
+		
+		logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+		
+		String loggingFilename = GameDirectory.getGameFolderPath() + "/logs/" + time + ".log";
+		
+		LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+        PatternLayoutEncoder ple = new PatternLayoutEncoder();
+
+        String pattern = "%date %level [%logger] [%-3thread] %msg%n";
+        String fancyPattern = "%date %level [%logger] [%thread] [%file:%line] %msg%n";
+        
+        ple.setPattern(pattern);
+        ple.setContext(lc);
+        ple.start();
+        FileAppender<ILoggingEvent> fileAppender = new FileAppender<ILoggingEvent>();
+        fileAppender.setFile(loggingFilename);
+        fileAppender.setEncoder(ple);
+        fileAppender.setContext(lc);
+        fileAppender.start();
+        
+        ConsoleAppender<ILoggingEvent> logConsoleAppender = new ConsoleAppender<>();
+	    logConsoleAppender.setContext(lc);
+	    logConsoleAppender.setName("console");
+	    logConsoleAppender.setEncoder(ple);
+	    logConsoleAppender.start();
+
+        ch.qos.logback.classic.Logger rootLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        rootLogger.addAppender(fileAppender);
+        rootLogger.addAppender(logConsoleAppender);
+        
+        rootLogger.info("Started logging under: "+loggingFilename);
+		
+		//new ChunkStoriesLoggerImplementation(this, LogLevel.ALL, LogLevel.ALL, new File(GameDirectory.getGameFolderPath() + "/logs/" + time + ".log"));
 		
 		//Get configuration right
 		clientConfig = new ConfigFile("./config/client.cfg");
@@ -388,7 +427,7 @@ public class Client implements ClientInterface
 	@Override
 	public void print(String message)
 	{
-		ChunkStoriesLoggerImplementation.getInstance().info(message);
+		chatLogger.info(message);
 		printChat(message);
 	}
 
@@ -425,7 +464,7 @@ public class Client implements ClientInterface
 	}
 
 	@Override
-	public ChunkStoriesLogger logger() {
+	public Logger logger() {
 		return this.logger;
 	}
 

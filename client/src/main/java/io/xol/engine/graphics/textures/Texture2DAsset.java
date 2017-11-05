@@ -12,7 +12,6 @@ import de.matthiasmann.twl.utils.PNGDecoder.Format;
 import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -81,11 +80,11 @@ public class Texture2DAsset extends Texture2DGL
 		}
 		catch (FileNotFoundException e)
 		{
-			ChunkStoriesLoggerImplementation.getInstance().info("Clouldn't find file : " + e.getMessage());
+			logger().warn("Couldn't find file : " + e.getMessage());
 		}
 		catch (IOException e)
 		{
-			ChunkStoriesLoggerImplementation.getInstance().warning("Error loading file : " + e.getMessage());
+			logger().error("Error loading file : " + e.getMessage());
 			e.printStackTrace();
 		}
 		mipmapsUpToDate = false;

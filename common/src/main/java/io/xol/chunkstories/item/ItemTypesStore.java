@@ -7,7 +7,6 @@ import io.xol.chunkstories.api.item.ItemType;
 import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.content.mods.ModsManager;
 import io.xol.chunkstories.content.GameContentStore;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -16,6 +15,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
@@ -32,6 +34,11 @@ public class ItemTypesStore implements Content.ItemsTypes
 	private final Content content;
 	private final ModsManager modsManager;
 
+	private static final Logger logger = LoggerFactory.getLogger("content.items");
+	public Logger logger() {
+		return logger;
+	}
+	
 	public ItemTypesStore(GameContentStore gameContentStore)
 	{
 		this.content = gameContentStore;
@@ -49,7 +56,7 @@ public class ItemTypesStore implements Content.ItemsTypes
 		while (i.hasNext())
 		{
 			Asset f = i.next();
-			ChunkStoriesLoggerImplementation.getInstance().log("Reading items definitions in : " + f);
+			logger().debug("Reading items definitions in : " + f);
 			readitemsDefinitions(f);
 		}
 	}
@@ -75,7 +82,7 @@ public class ItemTypesStore implements Content.ItemsTypes
 				{
 					//if (currentItemType == null)
 					{
-						ChunkStoriesLoggerImplementation.getInstance().warning("Syntax error in file : " + f + " : ");
+						logger().warn("Syntax error in file : " + f + " : ");
 						continue;
 					}
 

@@ -1,20 +1,15 @@
 package io.xol.chunkstories.content.sandbox;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.xol.chunkstories.Constants;
 import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.GameLogic;
 import io.xol.chunkstories.api.events.world.WorldTickEvent;
-import io.xol.chunkstories.api.plugin.ChunkStoriesPlugin;
 import io.xol.chunkstories.api.plugin.PluginManager;
 import io.xol.chunkstories.api.plugin.Scheduler;
-import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogLevel;
 import io.xol.chunkstories.api.util.concurrency.Fence;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.region.RegionImplementation;
 import io.xol.engine.concurrency.SimpleFence;
@@ -126,9 +121,9 @@ public class WorldLogicThread extends Thread implements GameLogic
 			}
 			catch (Exception e)
 			{
-				ChunkStoriesLoggerImplementation.getInstance().log("Exception occured while ticking the world : "+e.getMessage(), LogLevel.CRITICAL);
-				e.printStackTrace();
-				e.printStackTrace(ChunkStoriesLoggerImplementation.getInstance().getPrintWriter());
+				world.logger().error("Exception occured while ticking the world : " + e.getMessage());
+				//e.printStackTrace();
+				//e.printStackTrace(logger().getPrintWriter());
 			}
 			
 			//nanoCheckStep(5, "Tick");
@@ -261,65 +256,5 @@ public class WorldLogicThread extends Thread implements GameLogic
 	public Scheduler getScheduler()
 	{
 		return gameLogicScheduler;
-	}
-	
-	class GameLogicScheduler implements Scheduler {
-
-		List<ScheduledTask> scheduledTasks = new ArrayList<ScheduledTask>();
-		
-		public void runScheduledTasks()
-		{
-			try{
-			Iterator<ScheduledTask> i = scheduledTasks.iterator();
-			while(i.hasNext())
-			{
-				ScheduledTask task = i.next();
-				if(task.etc())
-					i.remove();
-			}
-			}
-			catch(Throwable t)
-			{
-				ChunkStoriesLoggerImplementation.getInstance().error(t.getMessage());
-				t.printStackTrace();
-			}
-		}
-		
-		@Override
-		public void scheduleSyncRepeatingTask(ChunkStoriesPlugin p, Runnable runnable, long delay, long period)
-		{
-			scheduledTasks.add(new ScheduledTask(runnable, delay, period));
-		}
-		
-		class ScheduledTask {
-			
-			public ScheduledTask(Runnable runnable, long delay, long period)
-			{
-				this.runnable = runnable;
-				this.delay = delay;
-				this.period = period;
-			}
-
-			Runnable runnable;
-			long delay;
-			long period;
-			
-			//Returns true when it's no longer going to run
-			boolean etc()
-			{
-				if(--delay > 0)
-					return false;
-				
-				runnable.run();
-				
-				if(period > 0)
-					delay = period;
-				else
-					return true;
-				
-				return false;
-			}
-		}
-		
 	}
 }

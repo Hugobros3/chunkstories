@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import org.slf4j.Logger;
+
 import io.xol.chunkstories.api.exceptions.content.mods.ModLoadFailureException;
 import io.xol.chunkstories.api.math.HexTools;
 import io.xol.chunkstories.api.content.Asset;
@@ -119,4 +121,9 @@ public abstract class ModImplementation implements Mod
 	public abstract void close();
 
 	public abstract String getLoadString();
+
+	protected Logger logger;
+	public Logger logger() {
+		return logger;
+	}
 }

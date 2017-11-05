@@ -2,6 +2,9 @@ package io.xol.chunkstories.workers;
 
 import java.util.Iterator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.xol.chunkstories.api.workers.Task;
 import io.xol.chunkstories.api.workers.TaskExecutor;
 import io.xol.chunkstories.api.workers.Tasks;
@@ -78,5 +81,10 @@ public class WorkerThreadPool extends TasksPool<Task> implements Tasks
 				return;
 			System.out.println(task);
 		}
+	}
+	
+	private static final Logger logger = LoggerFactory.getLogger("workers");
+	public Logger logger() {
+		return logger;
 	}
 }

@@ -11,7 +11,6 @@ import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketsProcessor;
 import io.xol.chunkstories.api.net.packets.PacketText;
-import io.xol.chunkstories.api.util.ChunkStoriesLogger;
 import io.xol.chunkstories.net.SendQueue;
 import io.xol.chunkstories.net.packets.PacketSendFile;
 import io.xol.chunkstories.server.DedicatedServer;
@@ -33,6 +32,10 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
@@ -41,7 +44,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class UserConnection extends Thread implements HttpRequester, PacketDestinator, PacketSender
 {
 	private final ServerConnectionsManager connectionsManager;
-	private final ChunkStoriesLogger logger;
+	private final Logger logger;
 
 	int socketPort = 0;
 
@@ -65,11 +68,16 @@ public class UserConnection extends Thread implements HttpRequester, PacketDesti
 	private ServerPlayer player;
 
 	private PacketSender sender = this;
+	
+	private static final AtomicInteger usersCount = new AtomicInteger();
 
 	UserConnection(ServerConnectionsManager connectionsManager, Socket socket) throws FailedToConnectionException
 	{
 		this.connectionsManager = connectionsManager;
-		this.logger = connectionsManager.getServer().logger();
+		
+		//One logger / user for clarity
+		this.logger = LoggerFactory.getLogger("server.net.users."+usersCount.getAndIncrement());
+		//connectionsManager.getServer().logger();
 
 		this.socket = socket;
 		this.socketPort = socket.getPort();

@@ -36,7 +36,6 @@ import net.jpountz.lz4.LZ4Factory;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.entity.EntitySerializer;
 import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 import io.xol.chunkstories.voxel.components.VoxelComponentsHolder;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -442,7 +441,7 @@ public class ChunkHolderImplementation implements ChunkHolder
 			// TODO Auto-generated catch block
 			//e.printStackTrace();
 			//System.exit(-800);
-			ChunkStoriesLoggerImplementation.getInstance().log("ClientChunk class not found, assumming this is not a client game");
+			//logger().log("ClientChunk class not found, assumming this is not a client game");
 		}
 	}
 	

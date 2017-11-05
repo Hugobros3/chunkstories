@@ -10,6 +10,9 @@ import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityOverlay;
 import io.xol.chunkstories.api.gui.Layer;
 import org.joml.Matrix4f;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
@@ -21,9 +24,6 @@ import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTes
 import io.xol.chunkstories.api.rendering.target.RenderTargetAttachementsConfiguration;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
-import io.xol.chunkstories.api.util.ChunkStoriesLogger;
-import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogLevel;
-import io.xol.chunkstories.api.util.ChunkStoriesLogger.LogType;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.world.WorldClient;
@@ -49,7 +49,7 @@ import io.xol.engine.graphics.textures.TexturesHandler;
 /** A tragically huge behemoth, held responsible of actually displaying all that mess */
 public class WorldRendererImplementation implements WorldRenderer
 {
-	protected final ChunkStoriesLogger logger;
+	protected final Logger logger = LoggerFactory.getLogger("renderer.world");
 	
 	private final GameWindow gameWindow;
 	private final WorldClientCommon world;
@@ -81,7 +81,7 @@ public class WorldRendererImplementation implements WorldRenderer
 		this.world = world;
 		this.gameWindow = client.getGameWindow();
 		
-		this.logger = client.logger();
+		//this.logger = client.logger();
 		
 		//Creates all these fancy render buffers
 		renderBuffers = new RenderBuffers();
@@ -660,7 +660,7 @@ public class WorldRendererImplementation implements WorldRenderer
 			if (shadowMapResolution == RenderingConfig.shadowMapResolutions)
 				return;
 
-			logger.log("Resizing shadow maps to "+RenderingConfig.shadowMapResolutions, LogType.RENDERING, LogLevel.INFO);
+			logger.debug("Resizing shadow maps to "+RenderingConfig.shadowMapResolutions);
 			shadowMapResolution = RenderingConfig.shadowMapResolutions;
 			rbShadowMap.resize(shadowMapResolution, shadowMapResolution);
 		}

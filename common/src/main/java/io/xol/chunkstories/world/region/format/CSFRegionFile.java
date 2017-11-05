@@ -7,6 +7,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.xol.chunkstories.api.world.serialization.OfflineSerializedData;
 import io.xol.chunkstories.world.region.RegionImplementation;
 
@@ -19,6 +22,11 @@ public abstract class CSFRegionFile implements OfflineSerializedData {
 
 	public final RegionImplementation owner;
 	public final File file;
+	
+	private static final Logger logger = LoggerFactory.getLogger("world.serialization.region");
+	public static Logger logger() {
+		return logger;
+	}
 	
 	public CSFRegionFile(RegionImplementation holder, File file)
 	{

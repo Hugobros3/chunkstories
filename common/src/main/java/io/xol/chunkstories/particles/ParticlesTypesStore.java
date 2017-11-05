@@ -6,13 +6,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.exceptions.content.IllegalParticleDeclarationException;
 import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.content.mods.ModsManager;
 import io.xol.chunkstories.api.particles.ParticleTypeHandler;
 import io.xol.chunkstories.content.GameContentStore;
-import io.xol.chunkstories.tools.ChunkStoriesLoggerImplementation;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -22,6 +24,11 @@ public class ParticlesTypesStore implements Content.ParticlesTypes
 {
 	private final GameContentStore store;
 	private final ModsManager modsManager;
+	
+	private static final Logger logger = LoggerFactory.getLogger("content.particles");
+	public Logger logger() {
+		return logger;
+	}
 	
 	public ParticlesTypesStore(GameContentStore store)
 	{
@@ -64,7 +71,7 @@ public class ParticlesTypesStore implements Content.ParticlesTypes
 				{
 					if (line.startsWith("end"))
 					{
-						ChunkStoriesLoggerImplementation.getInstance().warning("Syntax error in file : " + f + " : ");
+						logger().warn("Syntax error in file : " + f + " : ");
 						continue;
 					}
 					String splitted[] = line.split(" ");
@@ -90,7 +97,7 @@ public class ParticlesTypesStore implements Content.ParticlesTypes
 		}
 		catch (IOException e)
 		{
-			ChunkStoriesLoggerImplementation.getInstance().warning(e.getMessage());
+			logger().warn(e.getMessage());
 		}
 	}
 
