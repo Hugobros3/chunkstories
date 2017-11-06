@@ -1,6 +1,5 @@
 Bugs TBF:
 
-+ No light prepass on loaded chunks
 + No AO on blocks (sorta fixed)
 + Slow chunks rebuild time (Multithreaded now)
 + Gui scale/Server window
@@ -11,10 +10,7 @@ Bugs TBF:
 
 Todo:
 
-	Log4j
-	JUnit
-	res/ folder part of core
-	data/ folder for implem config
+	more JUnit tests
 
 Gameplay TODO:
 
@@ -29,7 +25,5 @@ Content has to progress.
  + Animals ?
  + Vehicles
  + Mining tools
- 
-
 
 Make FakeCraft ?

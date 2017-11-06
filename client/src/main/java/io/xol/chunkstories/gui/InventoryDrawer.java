@@ -168,7 +168,9 @@ public class InventoryDrawer
 
 			context.getGuiRenderer().drawBoxWindowsSpaceWithSize(x + cornerSize + (getInventory().getWidth() - 1) * slotSize, y + cornerSize + internalHeight - slotSize, slotSize, slotSize, 224f / 256f, 32f / 256f, 248f / 256f, 8f / 256f,
 					inventoryTexture, true, true, color);
-		}
+	        
+			context.getFontRenderer().drawStringWithShadow(context.getFontRenderer().getFont("LiberationSans-Bold", 12), x + cornerSize + 6, y + cornerSize + internalHeight - slotSize + 2 * scale, getInventory().getInventoryName(), scale, scale, new Vector4f(1, 1, 1, 1));
+        }
 
 		//Get rid of any remaining GUI elements or else they will draw on top of the items
 		context.getGuiRenderer().drawBuffer();

@@ -37,14 +37,9 @@ import java.awt.GraphicsEnvironment;
  * @new version edited by David Aaron Muhar (bobjob)
  * @new version edited by Hugo Devillers (gobrosse)
  */
+//TODO: rip out this bullshit and just use STB like every other cool kid
 public class TrueTypeFont implements FontRenderer.Font
 {
-	/*public static TrueTypeFont arial8px = new TrueTypeFont("res/font/pixel_arial.ttf", 8F);
-	public static TrueTypeFont arial12px9pt = new TrueTypeFont("res/font/arial.ttf", 12f);
-	public static TrueTypeFont arial24px18pt = new TrueTypeFont("res/font/arial.ttf", 24f);
-	public static TrueTypeFont arial11px8pt = new TrueTypeFont("res/font/arial.ttf", 11f);
-	public static TrueTypeFont haettenschweiler = new TrueTypeFont("res/font/haettenschweiler.ttf", 16f);*/
-
 	public final static int ALIGN_LEFT = 0, ALIGN_RIGHT = 1, ALIGN_CENTER = 2;
 	/** Array that holds necessary information about the font characters */
 
@@ -86,12 +81,10 @@ public class TrueTypeFont implements FontRenderer.Font
 	public TrueTypeFont(Asset fontAsset, float sizeInPX, boolean antiAlias) throws FontFormatException, IOException
 	{
 		this();
-		logger().info("Loading font " + fontAsset);
+		logger().debug("Loading font:"+ fontAsset + "fontSize: " + sizeInPX);
 		font = Font.createFont(Font.TRUETYPE_FONT, fontAsset.read()).deriveFont(sizeInPX);
 		
-		//font = Font.createFont(Font.TRUETYPE_FONT, new FileInputStream(string)).deriveFont(sizeInPX);
 		this.fontSize = font.getSize();
-		System.out.println(font.getFontName() + "fontSize: " + fontSize);
 
 		this.antiAlias = antiAlias;
 

@@ -16,7 +16,7 @@ import io.xol.engine.graphics.util.CorneredBoxDrawer;
 public class LargeButton extends BaseNgButton{
 	
 	public LargeButton(Layer layer, String text) {
-		super(layer, Client.getInstance().getGameWindow().getRenderingContext().getFontRenderer().getFont("haettenschweiler", 18.666f), 0, 0, text);
+		super(layer, Client.getInstance().getGameWindow().getRenderingContext().getFontRenderer().getFont("LiberationSansNarrow-Bold__aa", 18.666f), 0, 0, text);
 		this.width = 96;
 		this.height = 24;
 

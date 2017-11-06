@@ -69,7 +69,7 @@ public class InventoryOverlay extends Layer
 					float mx = (float)mouse.getCursorX();
 					float my = (float)mouse.getCursorY();
 					
-					renderer.getFontRenderer().drawString(renderer.getFontRenderer().defaultFont(), mx, my, pileHighlighted.getItem().getName(), 2);
+					renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), mx, my, pileHighlighted.getItem().getName(), 2, 2, new Vector4f(1.0f));
 					//System.out.println(pileHighlighted);
 				}
 			}
