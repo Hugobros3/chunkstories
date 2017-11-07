@@ -315,7 +315,12 @@ public abstract class WorldImplementation implements World
 	 */
 	public boolean removeEntityFromList(Entity entity)
 	{
-		return entities.removeEntity(entity);
+		//Remove the entity from the world first
+		boolean result = entities.removeEntity(entity);
+		
+		//Tell anyone still subscribed to this entity to sod off
+		((EntityBase)entity).getAllSubscribers().forEach(subscriber -> {System.out.println("unsub: "+subscriber.unsubscribe(entity)); });
+		return result;
 	}
 
 	@Override

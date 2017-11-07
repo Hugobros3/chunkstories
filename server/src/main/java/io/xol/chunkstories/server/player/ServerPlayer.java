@@ -14,6 +14,7 @@ import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.util.ColorsTools;
 import io.xol.chunkstories.api.world.WorldMaster;
+import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.input.InputsManager;
 import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.math.LoopingMathHelper;
@@ -222,7 +223,11 @@ public class ServerPlayer implements RemotePlayer
 		{
 			Entity e = inRangeEntitiesIterator.next();
 			
-			boolean shouldTrack = e.shouldBeTrackedBy(this);
+			Chunk chunk = e.getChunk();
+			if(chunk == null)
+				System.out.println("chunk == null");
+			
+			boolean shouldTrack = e.shouldBeTrackedBy(this) && chunk != null;
 			boolean contains = subscribedEntities.contains(e);
 			
 			if (shouldTrack && !contains)
@@ -276,7 +281,7 @@ public class ServerPlayer implements RemotePlayer
 	@Override
 	public boolean unsubscribe(Entity entity)
 	{
-		if (((EntityBase) entity).unsubscribe(this))
+		if (((EntityBase) entity).unsubscribe(this)) //TODO REMOVE ENTITY EXISTENCE COMPONENT IT'S STUPID AND WRONG
 		{
 			subscribedEntities.remove(entity);
 			return true;

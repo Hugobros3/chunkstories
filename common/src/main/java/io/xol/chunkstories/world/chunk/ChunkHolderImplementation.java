@@ -20,6 +20,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.lwjgl.system.MemoryUtil;
 
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityUnsaveable;
 import io.xol.chunkstories.api.server.RemotePlayer;
 import io.xol.chunkstories.api.util.IterableIterator;
@@ -248,7 +249,11 @@ public class ChunkHolderImplementation implements ChunkHolder
 		while (i.hasNext())
 		{
 			Entity entity = i.next();
-			region.world.removeEntityFromList(entity);
+			if(entity instanceof EntityControllable && ((EntityControllable) entity).getController() != null) {
+				continue; // give grace to controlled entities
+			} else {
+				region.world.removeEntityFromList(entity);
+			}
 		}
 		region.world.entitiesLock.writeLock().unlock();
 
