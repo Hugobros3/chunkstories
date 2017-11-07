@@ -218,16 +218,16 @@ public class ServerPlayer implements RemotePlayer
 		
 		double ENTITY_VISIBILITY_SIZE = 192;
 		
-		Iterator<Entity> inRangeEntitiesIterator = controlledEntity.getWorld().getEntitiesInBox(controlledEntityLocation, new Vector3d(ENTITY_VISIBILITY_SIZE * 2, ENTITY_VISIBILITY_SIZE * 2, ENTITY_VISIBILITY_SIZE * 2));
+		Iterator<Entity> inRangeEntitiesIterator = controlledEntity.getWorld().getEntitiesInBox(controlledEntityLocation, new Vector3d(ENTITY_VISIBILITY_SIZE, ENTITY_VISIBILITY_SIZE, ENTITY_VISIBILITY_SIZE ));
 		while (inRangeEntitiesIterator.hasNext())
 		{
 			Entity e = inRangeEntitiesIterator.next();
 			
 			Chunk chunk = e.getChunk();
-			if(chunk == null)
-				System.out.println("chunk == null");
+			//if(chunk == null)
+			//	System.out.println("chunk == null");
 			
-			boolean shouldTrack = e.shouldBeTrackedBy(this) && chunk != null;
+			boolean shouldTrack = e.shouldBeTrackedBy(this);// && chunk != null;
 			boolean contains = subscribedEntities.contains(e);
 			
 			if (shouldTrack && !contains)
@@ -250,6 +250,8 @@ public class ServerPlayer implements RemotePlayer
 			double dz = LoopingMathHelper.moduloDistance(controlledEntityLocation.z(), loc.z(), world_size);
 			boolean inRange = (dx < ENTITY_VISIBILITY_SIZE && dz < ENTITY_VISIBILITY_SIZE && dy < ENTITY_VISIBILITY_SIZE);
 
+			//System.out.println(inRange);
+			
 			//Reasons other than distance to stop tracking this entity
 			if (!e.shouldBeTrackedBy(this) || !inRange)
 				this.unsubscribe(e);
@@ -281,6 +283,8 @@ public class ServerPlayer implements RemotePlayer
 	@Override
 	public boolean unsubscribe(Entity entity)
 	{
+		//Thread.dumpStack();
+		//System.out.println("sub4sub");
 		if (((EntityBase) entity).unsubscribe(this)) //TODO REMOVE ENTITY EXISTENCE COMPONENT IT'S STUPID AND WRONG
 		{
 			subscribedEntities.remove(entity);
@@ -313,7 +317,6 @@ public class ServerPlayer implements RemotePlayer
 		}
 	}
 
-	@Override
 	public boolean isSubscribedTo(Entity entity)
 	{
 		return subscribedEntities.contains(entity);

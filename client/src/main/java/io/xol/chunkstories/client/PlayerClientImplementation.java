@@ -155,7 +155,6 @@ public class PlayerClientImplementation implements LocalPlayer
 		
 	}
 
-	@Override
 	public boolean isSubscribedTo(Entity entity)
 	{
 		// TODO Auto-generated method stub

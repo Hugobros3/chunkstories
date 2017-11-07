@@ -294,7 +294,6 @@ public class ClientConnectionToServer extends Thread implements RemoteServer
 		this.sendQueue.queue(packet);
 	}
 
-	@Override
 	public boolean isSubscribedTo(Entity entity)
 	{
 		return controlledEntity.contains(entity);
