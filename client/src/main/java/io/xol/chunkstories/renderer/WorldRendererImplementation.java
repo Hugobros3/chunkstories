@@ -180,6 +180,9 @@ public class WorldRendererImplementation implements WorldRenderer
 		renderingInterface.setBlendMode(BlendMode.MIX);
 		decalsRenderer.renderDecals(renderingInterface);
 		
+		//System.out.println("h");
+		renderingInterface.getRenderTargetManager().setConfiguration(renderBuffers.fboGBuffers);
+		renderBuffers.fboGBuffers.setEnabledRenderTargets();
 		gbuffers_water_chunk_meshes(renderingInterface);
 		
 		currentPass = RenderingPass.INTERNAL;
@@ -303,6 +306,7 @@ public class WorldRendererImplementation implements WorldRenderer
 				renderingInterface.getRenderTargetManager().setConfiguration(this.renderBuffers.fboGBuffers);
 				//fboGBuffers.bind();
 				this.renderBuffers.fboGBuffers.setEnabledRenderTargets();
+				renderingInterface.setBlendMode(BlendMode.DISABLED);
 				renderingInterface.bindTexture2D("readbackShadedBufferTemp", this.renderBuffers.rbShaded);
 				renderingInterface.bindTexture2D("readbackDepthBufferTemp", this.renderBuffers.rbZBuffer);
 

@@ -133,7 +133,7 @@ public class DefaultSkyRenderer implements SkyboxRenderer
 	{
 		float fogFactor = Math.min(Math.max(0.0f, world.getWeather() - 0.4f) / 0.1f, 1.0f);
 		
-		shaderInterface.setUniform1f("fogStartDistance", Math2.mix(512, 32, fogFactor));
+		shaderInterface.setUniform1f("fogStartDistance", Math2.mix(192, 32, fogFactor));
 		shaderInterface.setUniform1f("fogEndDistance", Math2.mix(1024, 384, fogFactor));
 		
 		Vector3f sunPos = this.getSunPosition();
