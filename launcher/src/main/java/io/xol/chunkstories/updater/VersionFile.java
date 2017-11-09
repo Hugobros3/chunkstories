@@ -19,6 +19,7 @@ public class VersionFile {
 	final Map<String, String> informations = new HashMap<>();
 	
 	public VersionFile(String string) {
+		string.replace("\r", "");
 		if(string.startsWith("version:")) {
 			for(String line : string.split("\n")) {
 				if(line.contains(": ")) {
@@ -33,6 +34,7 @@ public class VersionFile {
 			
 		} else {
 			version = string.replace("\n", "");
+			System.out.println("fail"+version);
 		}
 	}
 	
@@ -77,6 +79,7 @@ public class VersionFile {
 		while((line = in.readLine()) != null)
 		{
 			rslt.append(line);
+			rslt.append("\n");
 		}
 		in.close();
 		
@@ -86,7 +89,13 @@ public class VersionFile {
 	@Override
 	public boolean equals(Object obj) {
 		if(obj instanceof VersionFile) {
-			return ((VersionFile)obj).version.equals(version);
+			VersionFile ver = (VersionFile)obj;
+			if(ver.informations.get("commit") != null) {
+				if(!ver.informations.get("commit").equals(this.informations.get("commit")))
+					return false;
+			}
+			
+			return ver.version.equals(version);
 		}
 		return false;
 	}
