@@ -12,6 +12,7 @@ import java.util.Calendar;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.fusesource.jansi.AnsiConsole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -127,6 +128,8 @@ public class DedicatedServer implements Runnable, DedicatedServerInterface
 	
 	DedicatedServer(File coreContentLocation, String modsString)
 	{
+		AnsiConsole.systemInstall();
+		
 		server = this;
 		// Start server services
 		try
@@ -141,24 +144,30 @@ public class DedicatedServer implements Runnable, DedicatedServerInterface
 			String loggingFilename = GameDirectory.getGameFolderPath() + "/serverlogs/" + time + ".log";
 			
 			LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-	        PatternLayoutEncoder ple = new PatternLayoutEncoder();
 
-	        String pattern = "%date %level [%logger] [%-3thread] %msg%n";
+	        String pattern = "%date %level [%logger] %msg%n";
 	        String fancyPattern = "%date %level [%logger] [%thread] [%file:%line] %msg%n";
+
+	        PatternLayoutEncoder fileLayoutEncoder = new PatternLayoutEncoder();
+	        fileLayoutEncoder.setPattern(fancyPattern);
+	        fileLayoutEncoder.setContext(lc);
+	        fileLayoutEncoder.start();
 	        
-	        ple.setPattern(pattern);
-	        ple.setContext(lc);
-	        ple.start();
+	        PatternLayoutEncoder consoleLayoutEncoder = new PatternLayoutEncoder();
+	        consoleLayoutEncoder.setPattern(pattern);
+	        consoleLayoutEncoder.setContext(lc);
+	        consoleLayoutEncoder.start();
+	        
 	        FileAppender<ILoggingEvent> fileAppender = new FileAppender<ILoggingEvent>();
 	        fileAppender.setFile(loggingFilename);
-	        fileAppender.setEncoder(ple);
+	        fileAppender.setEncoder(fileLayoutEncoder);
 	        fileAppender.setContext(lc);
 	        fileAppender.start();
 	        
 	        ConsoleAppender<ILoggingEvent> logConsoleAppender = new ConsoleAppender<>();
 		    logConsoleAppender.setContext(lc);
 		    logConsoleAppender.setName("console");
-		    logConsoleAppender.setEncoder(ple);
+		    logConsoleAppender.setEncoder(consoleLayoutEncoder);
 		    logConsoleAppender.start();
 
 	        ch.qos.logback.classic.Logger rootLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
@@ -334,11 +343,12 @@ public class DedicatedServer implements Runnable, DedicatedServerInterface
 		
 		txt += "ChunkStories server " + VersionInfo.version;
 		txt += " | fps:" + world.getGameLogic().getSimulationFps();
-		txt += " | entities:" + ec;
+		txt += " | ent:" + ec;
 		txt += " | players:" + this.connectionsManager.getNumberOfAuthentificatedClients() + "/" + this.connectionsManager.getMaxClients();
-		txt += " | lr:" + this.world.getRegionsHolder().getStats() + " ls:" + this.world.getRegionsSummariesHolder().countSummaries();
+		txt += " | lc:" + this.world.getRegionsHolder().getStats() + " ls:" + this.world.getRegionsSummariesHolder().countSummaries();
 		txt += " | ram:" + usedRam + "/" + maxRam;
-		txt += " | ioq:" + this.world.ioHandler.toString();
+		txt += " | " + this.workers.toShortString();
+		txt += " | ioq:" + this.world.ioHandler.getSize();
 
 		txt += ansi().bg(BLACK).fg(WHITE);
 

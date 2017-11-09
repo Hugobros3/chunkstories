@@ -55,6 +55,10 @@ public class WorkerThreadPool extends TasksPool<Task> implements Tasks
 		return "[WorkerThreadPool threadCount="+this.threadsCount+", tasksRan="+tasksRan+", tasksRescheduled="+tasksRescheduled+"]";
 	}
 	
+	public String toShortString() {
+		return "workers tc: "+this.threadsCount+", todo: "+submittedTasks()+"";
+	}
+	
 	public void destroy()
 	{
 		//Send threadsCount DIE orders

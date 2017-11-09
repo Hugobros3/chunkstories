@@ -174,7 +174,7 @@ public class HashMapWorldRegionsHolder
 	
 	public String getStats()
 	{
-		return countChunks() + " chunks loaded in " + regions.size() + " regions";
+		return countChunks() + " (lr: " + regions.size() + " )";
 	}
 
 	public int countChunks()

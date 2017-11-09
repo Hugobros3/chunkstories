@@ -139,28 +139,39 @@ public class RemotePlayerLoadingAgent {
 				int[] pos = chunk(handle);
 				
 				RegionImplementation region = player.getWorld().getRegionChunkCoordinates(pos[0], pos[1], pos[2]);
-				assert region != null;
-				ChunkHolder holder = region.getChunkHolder(pos[0], pos[1], pos[2]);
-				assert holder != null; // We can assert the chunk holder exists because at this point it MUST be held by this very loading agent !
-				holder.unregisterUser(player);
+				//assert region != null;
+				if(region != null) {
+					ChunkHolder holder = region.getChunkHolder(pos[0], pos[1], pos[2]);
+					//assert holder != null; // We can assert the chunk holder exists because at this point it MUST be held by this very loading agent !
+					if(holder != null) {
+						holder.unregisterUser(player);
+						continue;
+					}
+				}
+				
+				player.getContext().logger().error("Error while disconnecting player: "+player+", chunkholder at [" + pos[0] + ":" + pos[1] + ":" + pos[2] +
+						"] wasn't loaded even thought it was part of that player's subscriptions list");
 			}
 			this.usedChunksHandles.clear();
 
 			for(int handle : this.usedRegionHandles) {
 				int pos[] = summary(handle);
-				
-				//System.out.println("unregistering summary @ " + handle + " : " + pos[0] + " :" + pos[1]);
-				
 				RegionSummary regionSummary = player.getWorld().getRegionsSummariesHolder().getRegionSummary(pos[0], pos[1]);
-				assert regionSummary != null; // We can assert the region summary exists because at this point it MUST be held by this very loading agent !
+				//assert regionSummary != null; // We can assert the region summary exists because at this point it MUST be held by this very loading agent !
 				if(regionSummary != null)
 					regionSummary.unregisterUser(player);
-				else
-					System.out.println("unregistering summary failed because it return null for some reason : " + pos[0] + " :" + pos[1]);
+				else {
+					player.getContext().logger().error("Error while disconnecting player: "+player+", region at [" + pos[0] + " :" + pos[1]+
+							"] wasn't loaded even thought it was part of that player's subscriptions list");
+				}
 			}
 			this.usedRegionHandles.clear();
 			
 			destroyed = true;
+		}
+		catch(Exception e) {
+			player.getContext().logger().error("Error while disconnecting player: "+player+", exception thrown while freeing his held world data.");
+			player.getContext().logger().error(e.getMessage());
 		}
 		finally {
 			lock.unlock();
