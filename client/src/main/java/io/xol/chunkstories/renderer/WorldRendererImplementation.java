@@ -76,6 +76,8 @@ public class WorldRendererImplementation implements WorldRenderer
 	
 	RenderingPass currentPass = null;
 
+	private ComputedShadowMap sun_shadowMap;
+
 	public WorldRendererImplementation(WorldClientCommon world, ClientInterface client)
 	{
 		this.world = world;
@@ -153,7 +155,8 @@ public class WorldRendererImplementation implements WorldRenderer
 		
 		//Generate a shadowmap for the sun if such an option is enabled
 		currentPass = RenderingPass.SHADOW;
-		ComputedShadowMap sun_shadowMap = RenderingConfig.doShadows ? shadower.generateSunShadowMap(renderingInterface, skyRenderer) : null;
+		
+		sun_shadowMap = RenderingConfig.doShadows ? shadower.generateSunShadowMap(renderingInterface, skyRenderer) : null;
 		currentPass = RenderingPass.INTERNAL;
 		
 		// Clear G-Buffers and bind shaded HDR rendertarget
@@ -523,6 +526,12 @@ public class WorldRendererImplementation implements WorldRenderer
 		postProcess.setUniform1f("animationTimer", animationTimer);
 		postProcess.setUniform1f("pauseOverlayFade", pauseFade);
 
+		postProcess.setUniform1f("shadowVisiblity", shadower.getShadowVisibility());
+
+		if(sun_shadowMap != null) {
+			postProcess.setUniformMatrix4f("shadowMatrix", sun_shadowMap.getShadowTransformationMatrix());
+		}
+			
 		renderingContext.getCamera().setupShader(postProcess);
 		skyRenderer.setupShader(postProcess);
 		
