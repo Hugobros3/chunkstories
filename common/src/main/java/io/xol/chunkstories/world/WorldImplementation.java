@@ -319,7 +319,7 @@ public abstract class WorldImplementation implements World
 		boolean result = entities.removeEntity(entity);
 		
 		//Tell anyone still subscribed to this entity to sod off
-		((EntityBase)entity).getAllSubscribers().forEach(subscriber -> {System.out.println("auto-unsub bc chunk unloading: "+subscriber.unsubscribe(entity)); });
+		((EntityBase)entity).getAllSubscribers().forEach(subscriber -> { subscriber.unsubscribe(entity); });
 		return result;
 	}
 

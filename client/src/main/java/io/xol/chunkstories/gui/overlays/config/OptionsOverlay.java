@@ -270,6 +270,7 @@ public class OptionsOverlay extends Layer
 						renderer.shaders().reloadShader("terrain");
 						renderer.shaders().reloadShader("terrain_blocky");
 						renderer.shaders().reloadShader("postprocess");
+						renderer.shaders().reloadShader("reflections");
 					}
 				}),
 				new ConfigButtonToggle("doShadows").setApplyAction(new Runnable(){

@@ -201,8 +201,8 @@ public class WorldRendererImplementation implements WorldRenderer
 		particlesRenderer.render(renderingInterface, false);
 		
 		//Render SSR if enabled
-		if(RenderingConfig.doRealtimeReflections)
-			reflectionsRenderer.renderRealtimeScreenSpaceReflections(renderingInterface);
+		//if(RenderingConfig.doRealtimeReflections)
+		reflectionsRenderer.renderReflections(renderingInterface);
 		
 		weatherEffectsRenderer.renderEffects(renderingInterface);
 	}

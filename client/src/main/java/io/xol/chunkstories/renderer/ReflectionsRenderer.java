@@ -15,13 +15,14 @@ public class ReflectionsRenderer {
 	}
 
 	/** Only ran if realtime screen-space reflections are enabled, otherwise a flag is raised and a baked envmap is used. */
-	public void renderRealtimeScreenSpaceReflections(RenderingInterface renderer) {
+	public void renderReflections(RenderingInterface renderer) {
 		ShaderInterface reflectionsShader = renderer.useShader("reflections");
 
 		//This isn't a depth-buffered pass.
 		renderer.setDepthTestMode(DepthTestMode.DISABLED);
 		renderer.setBlendMode(BlendMode.DISABLED);
 
+		//renderer.getRenderTargetManager().setConfiguration(worldRenderer.renderBuffers.fboShadedBuffer);
 		renderer.getRenderTargetManager().setConfiguration(worldRenderer.renderBuffers.fboSSR);
 		renderer.getRenderTargetManager().clearBoundRenderTargetAll();
 
@@ -53,6 +54,7 @@ public class ReflectionsRenderer {
 		renderer.getRenderTargetManager().setDepthMask(true);
 
 		renderer.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
+		renderer.setBlendMode(BlendMode.DISABLED);
 		
 		renderer.getRenderTargetManager().setConfiguration(worldRenderer.renderBuffers.fboShadedBuffer);
 	}
