@@ -6,7 +6,7 @@ apply plugin: 'java'
 // Apply the application plugin to add support for building an application
 apply plugin: 'application'
 
-version = '1.2'
+version = '1.2.1'
 description = 'Game launcher & updater'
 
 buildscript {

@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.concurrent.Semaphore;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -22,11 +23,15 @@ import io.xol.chunkstories.content.GameDirectory;
 
 public class GameLauncher implements ActionListener {
 
+	Semaphore noLineCrosstalk = new Semaphore(1);
+	
 	class StreamGobbler extends Thread {
 		InputStream in;
 		DataOutputStream out;
 		String type;
 
+		final long t = System.currentTimeMillis();
+		
 		StreamGobbler(InputStream is, DataOutputStream out, String type) {
 			this.in = is;
 			this.out = out;
@@ -40,7 +45,21 @@ public class GameLauncher implements ActionListener {
 				String line = null;
 				while ((line = br.readLine()) != null) {
 					System.out.println(type + line);
-					out.writeUTF(type + line + "\n\r");
+					
+					//If we get this error less than 5s after starting the game, it's fucked !
+					if(line.contains("This Java instance does not support a 64-bit JVM") && (System.currentTimeMillis() - t) < 5000 ) {
+						JOptionPane.showMessageDialog(null, "Non 64 bit JVM detected. Please install 64-bit Java to run Chunk Stories.");
+					}
+					
+					noLineCrosstalk.acquireUninterruptibly();
+					
+					try {
+						out.write((type + line + "\n").getBytes("UTF-8"));
+					} catch (IOException ioe) {
+						ioe.printStackTrace();
+					}
+					
+					noLineCrosstalk.release();
 				}
 			} catch (IOException ioe) {
 				ioe.printStackTrace();
@@ -59,7 +78,7 @@ public class GameLauncher implements ActionListener {
 		try {
 			//TODO make it configurable
 			//TODO mod support
-			Process process = Runtime.getRuntime().exec("java -Xmx1500M -jar chunkstories.jar", null,
+			Process process = Runtime.getRuntime().exec("java -d64 -Xmx2048M -jar chunkstories.jar", null,
 					new File(GameDirectory.getGameFolderPath()));
 
 			Calendar cal = Calendar.getInstance();
@@ -73,7 +92,7 @@ public class GameLauncher implements ActionListener {
 
 			// any error message?
 			StreamGobbler errorGobbler = new StreamGobbler(process.getErrorStream(), dos, "ERROR:");
-
+			
 			// any output?
 			StreamGobbler outputGobbler = new StreamGobbler(process.getInputStream(), dos, "");
 
