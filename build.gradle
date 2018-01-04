@@ -49,7 +49,7 @@ group = 'io.xol.chunkstories'
 
 ext {
 	apiRevisionBuiltAgainst = '115'
-	contentRevisionBuiltAgainst = '123'
+	contentRevisionBuiltAgainst = '124'
 	
 	useEclipseCompiler = true
 	

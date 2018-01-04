@@ -252,7 +252,7 @@ public abstract class WorldImplementation implements World
 			logger().error("Added an entity twice "+check+" conflits with "+entity + " UUID: "+entity.getUUID());
 			//logger().save();
 			Thread.dumpStack();
-			System.exit(-1);
+			return;//System.exit(-1);
 		}
 
 		//Add it to the world
@@ -273,28 +273,34 @@ public abstract class WorldImplementation implements World
 	@Override
 	public boolean removeEntity(Entity entity)
 	{
-		if (entity != null)
-		{
-			EntityBase ent = (EntityBase)entity;
-			
-			//Only once
-			if (ent.getComponentExistence().exists())
+		try {
+			entitiesLock.writeLock().lock();
+			if (entity != null)
 			{
-				//Destroys it
-				ent.getComponentExistence().destroyEntity();
+				EntityBase ent = (EntityBase)entity;
 
-				//Removes it's reference within the region
-				if (ent.positionComponent.getChunkWithin() != null)
-					ent.positionComponent.getChunkWithin().removeEntity(entity);
+				//Only once
+				if (ent.getComponentExistence().exists())
+				{
+					//Destroys it
+					ent.getComponentExistence().destroyEntity();
 
-				//Actually removes it from the world list
-				removeEntityFromList(entity);
+					//Removes it's reference within the region
+					if (ent.positionComponent.getChunkWithin() != null)
+						ent.positionComponent.getChunkWithin().removeEntity(entity);
 
-				return true;
+					//Actually removes it from the world list
+					removeEntityFromList(entity);
+
+					return true;
+				}
 			}
-		}
 
-		return false;
+			return false;
+		}
+		finally {
+			entitiesLock.writeLock().unlock();
+		}
 	}
 
 	@Override
