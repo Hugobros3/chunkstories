@@ -14,15 +14,16 @@ import io.xol.chunkstories.api.exceptions.content.IllegalPacketDeclarationExcept
 import io.xol.chunkstories.api.exceptions.net.UnknowPacketException;
 import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.net.Packet;
+import io.xol.chunkstories.api.net.PacketDefinition;
 import io.xol.chunkstories.content.GameContentStore;
 public class PacketsStore implements Content.PacketTypes {
 
 	private final GameContentStore store;
 
-	private final Map<String, PacketTypeDeclared> byNames = new HashMap<String, PacketTypeDeclared>();
-	private final PacketTypeDeclared[] byIDs = new PacketTypeDeclared[32768];
+	private final Map<String, PacketDefinitionImpl> byNames = new HashMap<String, PacketDefinitionImpl>();
+	//private final PacketDefinitionImpl[] byIDs = new PacketDefinitionImpl[32768];
 
-	private final Map<Class<? extends Packet>, PacketTypeDeclared> byClasses = new HashMap<Class<? extends Packet>, PacketTypeDeclared>();
+	private final Map<Class<? extends Packet>, PacketDefinitionImpl> byClasses = new HashMap<Class<? extends Packet>, PacketDefinitionImpl>();
 	
 	private static final Logger logger = LoggerFactory.getLogger("content.packets");
 	public Logger logger() {
@@ -39,8 +40,8 @@ public class PacketsStore implements Content.PacketTypes {
 
 		byNames.clear();
 		byClasses.clear();
-		for (int i = 0; i < byIDs.length; i++)
-			byIDs[i] = null;
+		//for (int i = 0; i < byIDs.length; i++)
+		//	byIDs[i] = null;
 
 		Iterator<Asset> i = store.modsManager().getAllAssetsByExtension("packets");
 		while (i.hasNext()) {
@@ -56,7 +57,7 @@ public class PacketsStore implements Content.PacketTypes {
 			BufferedReader reader = new BufferedReader(f.reader());
 			String line = "";
 
-			PacketTypeDeclared packetType = null;
+			PacketDefinitionImpl packetType = null;
 			while ((line = reader.readLine()) != null) {
 				line = line.replace("\t", "");
 				if (line.startsWith("#")) {
@@ -75,7 +76,7 @@ public class PacketsStore implements Content.PacketTypes {
 						int id = Integer.parseInt(split[2]);
 
 						try {
-							packetType = new PacketTypeDeclared(store, materialName, id, reader);
+							packetType = new PacketDefinitionImpl(store, materialName, id, reader);
 						} catch (IllegalPacketDeclarationException e) {
 							store.logger().error(e.getMessage());
 							continue;
@@ -83,7 +84,7 @@ public class PacketsStore implements Content.PacketTypes {
 
 						// Eventually add the packet type
 						byNames.put(packetType.getName(), packetType);
-						byIDs[packetType.getID()] = packetType;
+						//byIDs[packetType.getID()] = packetType;
 						
 						//Add quick-resolve hashmap entries
 						if(packetType.clientClass != null)
@@ -101,21 +102,21 @@ public class PacketsStore implements Content.PacketTypes {
 		}
 	}
 
-	@Override
+	/*@Override
 	public PacketType getPacketTypeById(int packetID) {
 		return byIDs[packetID];
-	}
+	}*/
 
 	@Override
-	public PacketType getPacketTypeByName(String name) {
+	public PacketDefinition getPacketTypeByName(String name) {
 		return byNames.get(name);
 	}
 
 	@Override
-	public PacketType getPacketType(Packet packet) throws UnknowPacketException {
+	public PacketDefinition getPacketType(Packet packet) throws UnknowPacketException {
 		Class<? extends Packet> pclass = packet.getClass();
 		
-		PacketTypeDeclared ptd = this.byClasses.get(pclass);
+		PacketDefinitionImpl ptd = this.byClasses.get(pclass);
 		if(ptd != null)
 			return ptd;
 		

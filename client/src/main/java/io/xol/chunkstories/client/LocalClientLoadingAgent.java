@@ -89,7 +89,7 @@ public class LocalClientLoadingAgent {
 						
 						if(world instanceof WorldClientRemote) {
 							WorldClientRemote remote = (WorldClientRemote)world;
-							remote.getConnection().pushPacket(PacketWorldUser.registerChunkPacket(filteredChunkX, filteredChunkY, filteredChunkZ));
+							remote.getConnection().pushPacket(PacketWorldUser.registerChunkPacket(world, filteredChunkX, filteredChunkY, filteredChunkZ));
 						}
 					}
 			}
@@ -119,7 +119,7 @@ public class LocalClientLoadingAgent {
 					
 					if(world instanceof WorldClientRemote) {
 						WorldClientRemote remote = (WorldClientRemote)world;
-						remote.getConnection().pushPacket(PacketWorldUser.unregisterChunkPacket(filteredChunkX, filteredChunkY, filteredChunkZ));
+						remote.getConnection().pushPacket(PacketWorldUser.unregisterChunkPacket(world, filteredChunkX, filteredChunkY, filteredChunkZ));
 					}
 				}
 			}
@@ -143,7 +143,7 @@ public class LocalClientLoadingAgent {
 								if(world instanceof WorldClientRemote) {
 									WorldClientRemote remote = (WorldClientRemote)world;
 									
-									remote.getConnection().pushPacket(PacketWorldUser.registerSummary(regionX, regionZ));
+									remote.getConnection().pushPacket(PacketWorldUser.registerSummary(world, regionX, regionZ));
 								}
 							}
 						}
@@ -173,7 +173,7 @@ public class LocalClientLoadingAgent {
 					
 					if(world instanceof WorldClientRemote) {
 						WorldClientRemote remote = (WorldClientRemote)world;
-						remote.getConnection().pushPacket(PacketWorldUser.unregisterSummary(regionX, regionZ));
+						remote.getConnection().pushPacket(PacketWorldUser.unregisterSummary(world, regionX, regionZ));
 					}
 				}
 			}

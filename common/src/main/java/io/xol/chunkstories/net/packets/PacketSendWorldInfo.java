@@ -3,7 +3,8 @@ package io.xol.chunkstories.net.packets;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSender;
-import io.xol.chunkstories.api.net.PacketsProcessor;
+import io.xol.chunkstories.api.net.PacketSendingContext;
+import io.xol.chunkstories.api.net.PacketReceptionContext;
 import io.xol.chunkstories.world.WorldInfoImplementation;
 
 import java.io.ByteArrayOutputStream;
@@ -28,7 +29,7 @@ public class PacketSendWorldInfo extends Packet
 	}
 
 	@Override
-	public void send(PacketDestinator destinator, DataOutputStream out) throws IOException
+	public void send(PacketDestinator destinator, DataOutputStream out, PacketSendingContext ctx) throws IOException
 	{
 		//This is moronic
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -47,11 +48,9 @@ public class PacketSendWorldInfo extends Packet
 		
 		//Wasted half an afternoon trying to figure out this mess, moral of the story is to NEVER bother hacking arround with utf-8 and ALWAYS send the length before, because fuck
 		//you that's why.
-		
-		//System.out.println("Sent "+fuckthis.length +" bytes of world data to "+destinator);
 	}
 
-	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException
+	public void process(PacketSender sender, DataInputStream in, PacketReceptionContext processor) throws IOException
 	{
 		
 	}

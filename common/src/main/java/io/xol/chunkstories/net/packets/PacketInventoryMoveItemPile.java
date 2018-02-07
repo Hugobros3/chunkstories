@@ -11,11 +11,13 @@ import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.item.inventory.InventoryTranslator;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.net.PacketDestinator;
-import io.xol.chunkstories.api.net.PacketSynchPrepared;
-import io.xol.chunkstories.api.net.PacketsProcessor;
+import io.xol.chunkstories.api.net.PacketReceptionContext;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.server.ServerPacketsProcessor.ServerPlayerPacketsProcessor;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.net.PacketSender;
+import io.xol.chunkstories.api.net.PacketSendingContext;
+import io.xol.chunkstories.api.net.PacketWorld;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -25,21 +27,17 @@ import java.io.IOException;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class PacketInventoryMoveItemPile extends PacketSynchPrepared
+public class PacketInventoryMoveItemPile extends PacketWorld
 {
 	public ItemPile itemPile;
 	public Inventory from, to;
 	public int oldX, oldY, newX, newY;
 	public int amount;
 	
-	public PacketInventoryMoveItemPile()
-	{
-		
-	}
 	
-	public PacketInventoryMoveItemPile(ItemPile itemPile, Inventory from, Inventory to, int oldX, int oldY, int newX, int newY, int amount)
+	public PacketInventoryMoveItemPile(World world, ItemPile itemPile, Inventory from, Inventory to, int oldX, int oldY, int newX, int newY, int amount)
 	{
-		super();
+		super(world);
 		this.itemPile = itemPile;
 		this.from = from;
 		this.to = to;
@@ -51,7 +49,7 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 	}
 
 	@Override
-	public void fillInternalBuffer(PacketDestinator destinator, DataOutputStream out) throws IOException
+	public void send(PacketDestinator destinator, DataOutputStream out, PacketSendingContext context) throws IOException
 	{
 		//Describe the move
 		out.writeInt(oldX);
@@ -68,12 +66,11 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 		//Describe the itemPile if we are trying to spawn an item from nowhere
 		if(from == null || from.getHolder() == null)
 		{
-			//out.writeInt(itemPile.getItem().getID());
-			itemPile.saveItemIntoStream(out);
+			itemPile.saveIntoStream(context.getWorld().getContentTranslator(), out);
 		}
 	}
 
-	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException
+	public void process(PacketSender sender, DataInputStream in, PacketReceptionContext processor) throws IOException
 	{
 		if(!(processor instanceof ServerPlayerPacketsProcessor))
 		{
@@ -100,7 +97,7 @@ public class PacketInventoryMoveItemPile extends PacketSynchPrepared
 		{
 			try
 			{
-				itemPile = ItemPile.obtainItemPileFromStream(player.getWorld().getGameContext().getContent().items(), in);
+				itemPile = ItemPile.obtainItemPileFromStream(player.getWorld().getContentTranslator(), in);
 			}
 			catch (NullItemException e)
 			{

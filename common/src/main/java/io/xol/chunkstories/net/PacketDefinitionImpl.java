@@ -5,16 +5,17 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-import io.xol.chunkstories.api.content.Content.PacketTypes.PacketType;
 import io.xol.chunkstories.api.exceptions.content.IllegalPacketDeclarationException;
 import io.xol.chunkstories.api.net.Packet;
+import io.xol.chunkstories.api.net.PacketDefinition;
 import io.xol.chunkstories.content.GameContentStore;
 import io.xol.chunkstories.materials.GenericNamedConfigurable;
 
-public class PacketTypeDeclared extends GenericNamedConfigurable implements PacketType {
+public class PacketDefinitionImpl extends GenericNamedConfigurable implements PacketDefinition {
 
 	final int id;
 	final AllowedFrom allowedFrom;
+	final PacketType type;
 
 	final Class<? extends Packet> clientClass;
 	final Class<? extends Packet> serverClass;
@@ -24,7 +25,7 @@ public class PacketTypeDeclared extends GenericNamedConfigurable implements Pack
 	final Constructor<? extends Packet> serverClassConstructor;
 	final Constructor<? extends Packet> commonClassConstructor;
 
-	public PacketTypeDeclared(GameContentStore store, String name, int ID, BufferedReader reader)
+	public PacketDefinitionImpl(GameContentStore store, String name, int ID, BufferedReader reader)
 			throws IllegalPacketDeclarationException, IOException {
 		super(name, reader);
 		this.id = ID;
@@ -39,6 +40,18 @@ public class PacketTypeDeclared extends GenericNamedConfigurable implements Pack
 		else
 			throw new IllegalPacketDeclarationException("allowedFrom can only take one of {all, client, server}.");
 
+		String tys = this.resolveProperty("type", "general");
+		if(tys.equals("general"))
+			type = PacketType.GENERAL_PURPOSE;
+		else if(tys.equals("system"))
+			type = PacketType.SYSTEM;
+		else if(tys.equals("world"))
+			type = PacketType.WORLD;
+		else if(tys.equals("world_streaming")) 
+			type = PacketType.WORLD_STREAMING;
+		else 
+			throw new IllegalPacketDeclarationException("type can only take one of {general, systme, world, world_streaming}.");
+		
 		// First obtain the classes dedicated to a specific side
 		String clientClass = this.resolveProperty("clientClass");
 		if (clientClass != null)
@@ -138,7 +151,6 @@ public class PacketTypeDeclared extends GenericNamedConfigurable implements Pack
 		}
 	}
 
-	@Override
 	public int getID() {
 		return id;
 	}
@@ -146,5 +158,10 @@ public class PacketTypeDeclared extends GenericNamedConfigurable implements Pack
 	@Override
 	public AllowedFrom allowedFrom() {
 		return allowedFrom;
+	}
+
+	@Override
+	public PacketType getType() {
+		return type;
 	}
 }

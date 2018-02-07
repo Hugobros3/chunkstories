@@ -1,6 +1,7 @@
 package io.xol.chunkstories.world;
 
 import java.util.Iterator;
+import java.util.Queue;
 
 import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.api.net.packets.PacketTime;
@@ -8,8 +9,7 @@ import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.WorldNetworked;
-import io.xol.chunkstories.net.PacketsProcessorActual;
-import io.xol.chunkstories.net.PacketsProcessorCommon.PendingSynchPacket;
+import io.xol.chunkstories.net.PacketIngoingBuffered;
 import io.xol.chunkstories.net.packets.PacketSendWorldInfo;
 import io.xol.chunkstories.server.DedicatedServer;
 import io.xol.chunkstories.server.net.UserConnection;
@@ -67,7 +67,7 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 			}
 			
 			//Update time & weather
-			PacketTime packetTime = new PacketTime();
+			PacketTime packetTime = new PacketTime(this);
 			packetTime.time = this.getTime();
 			packetTime.overcastFactor = this.getWeather();
 			
@@ -144,23 +144,27 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 	{
 		entitiesLock.writeLock().lock();
 		
-		Iterator<Player> clientsIterator = this.getPlayers();
-		while (clientsIterator.hasNext())
+		Iterator<PacketIngoingBuffered> iterator = incommingPacketsQueue.iterator();
+		while (iterator.hasNext())
 		{
-			UserConnection playerConnection = ((ServerPlayer)clientsIterator.next()).getPlayerConnection();
+			PacketIngoingBuffered incomming = iterator.next();
+			iterator.remove();
+			/*UserConnection playerConnection = ((ServerPlayer)iterator.next()).getPlayerConnection();
 
 			//Get buffered packets from this player
-			PendingSynchPacket packet = ((PacketsProcessorActual)playerConnection.getPacketsProcessor()).getPendingSynchPacket();
+			PendingSynchPacket packet = (playerConnection.getPacketsProcessor()).getPendingSynchPacket();
 			while (packet != null)
 			{
 				packet.process(playerConnection, playerConnection.getPacketsProcessor());
 				packet = ((PacketsProcessorActual)playerConnection.getPacketsProcessor()).getPendingSynchPacket();
-			}
+			}*/
 		}
 		
 		entitiesLock.writeLock().unlock();
 	}
 
+	Queue<PacketIngoingBuffered> incommingPacketsQueue;
+	
 	@Override
 	public VirtualSoundManager getSoundManager()
 	{

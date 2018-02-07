@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 
-import io.xol.chunkstories.api.content.Content.WorldGenerators.WorldGeneratorType;
+import io.xol.chunkstories.api.content.Content.WorldGenerators.WorldGeneratorDefinition;
 import io.xol.chunkstories.api.gui.Layer;
 import org.joml.Vector4f;
 import io.xol.chunkstories.api.rendering.GameWindow;
@@ -45,7 +45,7 @@ public class LevelCreateOverlay extends Layer
 		this.createOption.setAction(new Runnable() {
 			@Override
 			public void run() {
-				WorldGeneratorType worldGenerator = Client.getInstance().getContent().generators().getWorldGeneratorUnsafe(worldGenName.text);
+				WorldGeneratorDefinition worldGenerator = Client.getInstance().getContent().generators().getWorldGeneratorUnsafe(worldGenName.text);
 				if (worldGenerator != null)
 				{
 					//String generator = "flat";
@@ -118,7 +118,7 @@ public class LevelCreateOverlay extends Layer
 		worldGenName.setWidth(width - (x + wg_sl + 20) - 20);
 		worldGenName.drawWithBackGround(renderingContext);
 		
-		WorldGeneratorType wg = Client.getInstance().getContent().generators().getWorldGeneratorUnsafe(worldGenName.text);
+		WorldGeneratorDefinition wg = Client.getInstance().getContent().generators().getWorldGeneratorUnsafe(worldGenName.text);
 		String wg_validity_string;
 		if(wg == null) {
 			wg_validity_string = "#FF0000'" + worldGenName.text + "' wasnt found in the list of loaded world generators.";
@@ -128,9 +128,9 @@ public class LevelCreateOverlay extends Layer
 		}
 		
 		String wg_list = "Available world generators: ";
-		Iterator<WorldGeneratorType> iwg = Client.getInstance().getContent().generators().all();
+		Iterator<WorldGeneratorDefinition> iwg = Client.getInstance().getContent().generators().all();
 		while(iwg != null && iwg.hasNext()) {
-			WorldGeneratorType wgt = iwg.next();
+			WorldGeneratorDefinition wgt = iwg.next();
 			wg_list += wgt.getName();
 			if(iwg.hasNext())
 				wg_list+=", ";

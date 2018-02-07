@@ -9,7 +9,6 @@ import io.xol.chunkstories.api.exceptions.net.UnknowPacketException;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSender;
-import io.xol.chunkstories.api.net.PacketsProcessor;
 import io.xol.chunkstories.api.net.packets.PacketText;
 import io.xol.chunkstories.net.SendQueue;
 import io.xol.chunkstories.net.packets.PacketSendFile;
@@ -67,7 +66,7 @@ public class UserConnection extends Thread implements HttpRequester, PacketDesti
 	//Assertion : if the player is authentificated it has a profile
 	private ServerPlayer player;
 
-	private PacketSender sender = this;
+	//private PacketSender sender = this;
 	
 	private static final AtomicInteger usersCount = new AtomicInteger();
 
@@ -267,8 +266,9 @@ public class UserConnection extends Thread implements HttpRequester, PacketDesti
 		{
 			try
 			{
-				Packet packet = packetsProcessor.getPacket(inputDataStream);
-				packet.process(sender, inputDataStream, packetsProcessor);
+				packetsProcessor.handleIncommingPacket(inputDataStream);
+				//Packet packet = packetsProcessor.getPacket(inputDataStream);
+				//packet.process(sender, inputDataStream, packetsProcessor);
 			}
 			catch (IllegalPacketException | UnknowPacketException e)
 			{
@@ -397,8 +397,9 @@ public class UserConnection extends Thread implements HttpRequester, PacketDesti
 
 		//This changes the destinator from a ServerClient to a ServerPlayer, letting know outgoing packets and especially entity components about all the
 		//specifics of the player : name, entity he subscribed to, etc
-		this.sendQueue.setDestinator(this.getLoggedInPlayer());
-		this.sender = this.getLoggedInPlayer();
+		this.sendQueue.setDestinator(player);
+		
+		//this.packetsProcessor.setCorrespondant(player);
 		
 		//Change the packet processor to reflect that ( when receiving packets we have to consider that they are from a player )
 		this.packetsProcessor = this.packetsProcessor.toPlayer(player);
@@ -456,7 +457,7 @@ public class UserConnection extends Thread implements HttpRequester, PacketDesti
 		return player;
 	}
 
-	public PacketsProcessor getPacketsProcessor()
+	public UserPacketsProcessor getPacketsProcessor()
 	{
 		return packetsProcessor;
 	}

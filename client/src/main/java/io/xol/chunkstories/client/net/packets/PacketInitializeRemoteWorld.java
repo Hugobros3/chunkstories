@@ -8,7 +8,7 @@ import java.io.InputStreamReader;
 
 import io.xol.chunkstories.api.client.net.ClientPacketsProcessor;
 import io.xol.chunkstories.api.net.PacketSender;
-import io.xol.chunkstories.api.net.PacketsProcessor;
+import io.xol.chunkstories.api.net.PacketReceptionContext;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ClientPacketsProcessorImplementation;
@@ -22,7 +22,7 @@ import io.xol.chunkstories.world.WorldInfoImplementation;
 
 public class PacketInitializeRemoteWorld extends PacketSendWorldInfo {
 
-	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException
+	public void process(PacketSender sender, DataInputStream in, PacketReceptionContext processor) throws IOException
 	{
 		//This is messy slow and all, but I rather this than dealing with the insane bullshit of UTF-8/16 wizzardry required to bypass the convience of a BufferedReader
 		//And I can be Unicode-correct so fancy pants bloggers don't get mad at me

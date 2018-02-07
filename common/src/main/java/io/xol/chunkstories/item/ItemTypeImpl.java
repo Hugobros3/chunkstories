@@ -9,7 +9,7 @@ import io.xol.chunkstories.api.content.Content.ItemsTypes;
 import io.xol.chunkstories.api.client.ClientContent;
 import io.xol.chunkstories.api.exceptions.content.IllegalItemDeclarationException;
 import io.xol.chunkstories.api.item.Item;
-import io.xol.chunkstories.api.item.ItemType;
+import io.xol.chunkstories.api.item.ItemDefinition;
 import io.xol.chunkstories.api.item.renderer.ItemRenderer;
 import io.xol.chunkstories.api.item.renderer.NullItemRenderer;
 import io.xol.chunkstories.materials.GenericNamedConfigurable;
@@ -18,7 +18,7 @@ import io.xol.chunkstories.materials.GenericNamedConfigurable;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class ItemTypeImpl extends GenericNamedConfigurable implements ItemType
+public class ItemTypeImpl extends GenericNamedConfigurable implements ItemDefinition
 {
 	private final int id;
 	private final ItemTypesStore store;
@@ -73,7 +73,7 @@ public class ItemTypeImpl extends GenericNamedConfigurable implements ItemType
 			{
 				@SuppressWarnings("unchecked")
 				Class<? extends Item> itemClass = (Class<? extends Item>) rawClass;
-				Class<?>[] types = { ItemType.class };
+				Class<?>[] types = { ItemDefinition.class };
 				Constructor<? extends Item> constructor = itemClass.getConstructor(types);
 
 				if (constructor == null)
@@ -95,7 +95,7 @@ public class ItemTypeImpl extends GenericNamedConfigurable implements ItemType
 			ItemRenderer defaultItemRenderer;
 			try {
 				Class<?> defaultItemRendererClass = store.parent().modsManager().getClassByName("io.xol.chunkstories.core.item.renderer.DefaultItemRenderer");
-				Constructor<?> defaultItemRendererConstructor = defaultItemRendererClass.getConstructor(ItemType.class, ClientContent.class);
+				Constructor<?> defaultItemRendererConstructor = defaultItemRendererClass.getConstructor(ItemDefinition.class, ClientContent.class);
 				defaultItemRenderer = (ItemRenderer)defaultItemRendererConstructor.newInstance(this, (ClientContent)store.parent());
 			}
 			catch(Exception e) {
@@ -126,7 +126,6 @@ public class ItemTypeImpl extends GenericNamedConfigurable implements ItemType
 		return itemRenderer;
 	}
 
-	@Override
 	public int getID()
 	{
 		return id;
@@ -187,25 +186,10 @@ public class ItemTypeImpl extends GenericNamedConfigurable implements ItemType
 		}
 	}
 
-	/*public final void setConstructor(Constructor<? extends Item> constructor)
-	{
-		this.itemConstructor = constructor;
-	}*/
-
 	public String toString()
 	{
-		return "[ItemType id:" + id + " name:" + getInternalName() + " w:" + this.getSlotsWidth() + " h:" + this.getSlotsHeight() + " max:" + this.getMaxStackSize() + "]";
+		return "[ItemDefinition id:" + id + " name:" + getInternalName() + " w:" + this.getSlotsWidth() + " h:" + this.getSlotsHeight() + " max:" + this.getMaxStackSize() + "]";
 	}
-
-	public boolean equals(ItemType type)
-	{
-		return type.getID() == this.getID();
-	}
-
-	/*public void setup(String propertyName, String value)
-	{
-		customProperties.put(propertyName, value);
-	}*/
 
 	@Override
 	public ItemsTypes store()

@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.EntityType;
+import io.xol.chunkstories.api.entity.EntityDefinition;
 import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.WorldRenderer.RenderingPass;
@@ -24,7 +24,7 @@ import io.xol.chunkstories.world.WorldImplementation;
 
 public class EntitiesRenderer
 {
-	Map<EntityType, EntityRenderer<? extends EntityRenderable>> entityRenderers = new HashMap<EntityType, EntityRenderer<? extends EntityRenderable>>();
+	Map<EntityDefinition, EntityRenderer<? extends EntityRenderable>> entityRenderers = new HashMap<EntityDefinition, EntityRenderer<? extends EntityRenderable>>();
 
 	World world;
 
@@ -47,7 +47,7 @@ public class EntitiesRenderer
 		((WorldImplementation) world).entitiesLock.readLock().lock();
 
 		//Sort them by type
-		Map<EntityType, List<EntityRenderable>> renderableEntitiesTypes = new HashMap<EntityType, List<EntityRenderable>>();
+		Map<EntityDefinition, List<EntityRenderable>> renderableEntitiesTypes = new HashMap<EntityDefinition, List<EntityRenderable>>();
 		for (Entity entity : world.getAllLoadedEntities())
 		{
 			if (entity instanceof EntityRenderable)
@@ -65,7 +65,7 @@ public class EntitiesRenderer
 
 		int entitiesRendered = 0;
 
-		for (Entry<EntityType, List<EntityRenderable>> entry : renderableEntitiesTypes.entrySet())
+		for (Entry<EntityDefinition, List<EntityRenderable>> entry : renderableEntitiesTypes.entrySet())
 		{
 			List<EntityRenderable> entities = entry.getValue();
 

@@ -6,7 +6,7 @@ import java.io.IOException;
 
 import io.xol.chunkstories.api.exceptions.PacketProcessingException;
 import io.xol.chunkstories.api.net.PacketSender;
-import io.xol.chunkstories.api.net.PacketsProcessor;
+import io.xol.chunkstories.api.net.PacketReceptionContext;
 import io.xol.chunkstories.client.net.ClientPacketsProcessorImplementation;
 import io.xol.chunkstories.net.packets.PacketSendFile;
 
@@ -17,7 +17,7 @@ import io.xol.chunkstories.net.packets.PacketSendFile;
 public class PacketReceiveFile extends PacketSendFile
 {
 	@Override
-	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException, PacketProcessingException
+	public void process(PacketSender sender, DataInputStream in, PacketReceptionContext processor) throws IOException, PacketProcessingException
 	{
 		if(!(processor instanceof ClientPacketsProcessorImplementation))
 			return;

@@ -3,13 +3,14 @@ package io.xol.chunkstories.materials;
 import java.io.BufferedReader;
 import java.io.IOException;
 
-import io.xol.chunkstories.api.content.NamedWithProperties;
+import io.xol.chunkstories.api.content.Definition;
+
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class GenericNamedConfigurable extends GenericConfigurable implements NamedWithProperties
+public class GenericNamedConfigurable extends GenericConfigurable implements Definition
 {
 	protected final String name;
 	

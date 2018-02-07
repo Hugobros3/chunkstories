@@ -4,15 +4,18 @@ import io.xol.chunkstories.api.exceptions.PacketProcessingException;
 import io.xol.chunkstories.api.exceptions.net.UnknowPacketException;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.PacketDestinator;
-import io.xol.chunkstories.api.net.PacketPrepared;
+import io.xol.chunkstories.api.net.PacketReceptionContext;
 import io.xol.chunkstories.api.net.PacketSender;
-import io.xol.chunkstories.api.net.PacketsProcessor;
+import io.xol.chunkstories.api.net.PacketSendingContext;
+import io.xol.chunkstories.api.net.PacketWorld;
+import io.xol.chunkstories.api.net.PacketWorldStreaming;
 import io.xol.chunkstories.api.net.packets.PacketDummy;
 import io.xol.chunkstories.api.net.packets.PacketText;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.engine.concurrency.SimpleFence;
 import io.xol.engine.concurrency.TrivialFence;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -32,7 +35,7 @@ public class SendQueue extends Thread
 {
 	private final BlockingQueue<Packet> sendQueue = new LinkedBlockingQueue<Packet>();
 
-	private final PacketsProcessor processor;
+	private final PacketsProcessorCommon processor;
 	private final DataOutputStream outputStream;
 
 	//Reference to what we are sending stuff to, used in packet creation logic to look for implemented interfaces ( remote server, unlogged in client, logged in client etc )
@@ -43,7 +46,7 @@ public class SendQueue extends Thread
 		return logger;
 	}
 	
-	public SendQueue(PacketDestinator destinator, DataOutputStream out, PacketsProcessorActual processor)
+	public SendQueue(PacketDestinator destinator, DataOutputStream out, PacketsProcessorCommon processor)
 	{
 		this.destinator = destinator;
 		this.outputStream = out;
@@ -62,8 +65,8 @@ public class SendQueue extends Thread
 	class Flush extends Packet {
 		SimpleFence fence = new SimpleFence();
 
-		public void send(PacketDestinator destinator, DataOutputStream out) throws IOException {}
-		public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException, PacketProcessingException {}
+		public void send(PacketDestinator destinator, DataOutputStream out, PacketSendingContext context) throws IOException {}
+		public void process(PacketSender sender, DataInputStream in, PacketReceptionContext context) throws IOException, PacketProcessingException {}
 	}
 	//Packet FLUSH = new PacketText();
 
@@ -73,16 +76,30 @@ public class SendQueue extends Thread
 	public void queue(Packet packet)
 	{
 		//Prepare packets when queuing them
-		try
-		{
-			if (packet instanceof PacketPrepared)
-				((PacketPrepared) packet).prepare(destinator);
-		}
-		catch (IOException e)
-		{
-			logger().error("Error : unable to buffer PacketPrepared " + packet);
-			logger().error("{}", e);
-			//e.printStackTrace(logger().getPrintWriter());
+		if (packet instanceof PacketWorld || packet instanceof PacketWorldStreaming) {
+			//TODO make datagram immediately
+			try
+			{
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				DataOutputStream dos = new DataOutputStream(baos);
+				
+				processor.sendPacketHeader(dos, packet);
+				
+				int header_size = baos.size();
+				
+				packet.send(destinator, dos, processor);
+				
+				int total_size = baos.size();
+				int payload_size = total_size - header_size;
+				
+				PacketOutgoingBuffered buffered = new PacketOutgoingBuffered(baos.toByteArray(), payload_size);
+			}
+			catch (IOException | UnknowPacketException e)
+			{
+				logger().error("Error : unable to buffer Packet " + packet);
+				logger().error("{}", e);
+				//e.printStackTrace(logger().getPrintWriter());
+			}
 		}
 		
 		sendQueue.add(packet);
@@ -150,9 +167,8 @@ public class SendQueue extends Thread
 			else
 				try
 				{
-					if (!(packet instanceof PacketDummy))
-						processor.sendPacketHeader(outputStream, packet);
-					packet.send(destinator, outputStream);
+					processor.sendPacket(outputStream, packet);
+					//packet.send(destinator, outputStream);
 				}
 				catch (IOException e)
 				{

@@ -7,11 +7,11 @@ import java.lang.reflect.InvocationTargetException;
 
 import io.xol.chunkstories.api.content.Content.ParticlesTypes;
 import io.xol.chunkstories.api.exceptions.content.IllegalParticleDeclarationException;
-import io.xol.chunkstories.api.particles.ParticleType;
+import io.xol.chunkstories.api.particles.ParticleTypeDefinition;
 import io.xol.chunkstories.api.particles.ParticleTypeHandler;
 import io.xol.chunkstories.materials.GenericNamedConfigurable;
 
-public class ParticleTypeImpl extends GenericNamedConfigurable implements ParticleType {
+public class ParticleTypeImpl extends GenericNamedConfigurable implements ParticleTypeDefinition {
 
 	private final int id;
 	private final ParticlesTypesStore store;
@@ -62,7 +62,7 @@ public class ParticleTypeImpl extends GenericNamedConfigurable implements Partic
 			{
 				@SuppressWarnings("unchecked")
 				Class<? extends ParticleTypeHandler> handlerClass = (Class<? extends ParticleTypeHandler>) rawClass;
-				Class<?>[] types = { ParticleType.class };
+				Class<?>[] types = { ParticleTypeDefinition.class };
 				Constructor<? extends ParticleTypeHandler> constructor = handlerClass.getConstructor(types);
 
 				if (constructor == null)

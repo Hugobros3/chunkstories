@@ -8,12 +8,12 @@ import java.lang.reflect.InvocationTargetException;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.content.Content.EntityTypes;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.EntityType;
+import io.xol.chunkstories.api.entity.EntityDefinition;
 import io.xol.chunkstories.api.exceptions.content.IllegalEntityDeclarationException;
 import io.xol.chunkstories.entity.EntityTypesStore;
 import io.xol.chunkstories.materials.GenericNamedConfigurable;
 
-public class EntityTypeImpl extends GenericNamedConfigurable implements EntityType {
+public class EntityTypeImpl extends GenericNamedConfigurable implements EntityDefinition {
 	
 	//final String name;
 	//final String className;
@@ -48,7 +48,7 @@ public class EntityTypeImpl extends GenericNamedConfigurable implements EntityTy
 			else
 			{
 				@SuppressWarnings("rawtypes")
-				Class[] types = { EntityType.class, Location.class  };
+				Class[] types = { EntityDefinition.class, Location.class  };
 				
 				this.constructor = (Constructor<? extends Entity>) entityClass.getConstructor(types);
 				
@@ -68,7 +68,6 @@ public class EntityTypeImpl extends GenericNamedConfigurable implements EntityTy
 		}
 	}
 
-	@Override
 	public short getId() {
 		return id;
 	}

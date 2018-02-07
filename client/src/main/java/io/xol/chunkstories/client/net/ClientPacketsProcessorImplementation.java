@@ -7,7 +7,6 @@ import io.xol.chunkstories.api.client.net.ClientPacketsProcessor;
 import io.xol.chunkstories.api.exceptions.net.IllegalPacketException;
 import io.xol.chunkstories.api.exceptions.net.UnknowPacketException;
 import io.xol.chunkstories.api.net.Packet;
-import io.xol.chunkstories.api.net.PacketWorldStreaming;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
@@ -46,9 +45,9 @@ public class ClientPacketsProcessorImplementation extends PacketsProcessorCommon
 	}
 
 	@Override
-	public Packet getPacket(DataInputStream in) throws IOException, UnknowPacketException, IllegalPacketException
+	public Packet getPacket_(DataInputStream in) throws IOException, UnknowPacketException, IllegalPacketException
 	{
-		while(true)
+		/*while(true)
 		{
 			Packet packet = super.getPacket(in);
 			
@@ -81,6 +80,6 @@ public class ClientPacketsProcessorImplementation extends PacketsProcessorCommon
 			}
 			
 			return packet;
-		}
+		}*/
 	}
 }

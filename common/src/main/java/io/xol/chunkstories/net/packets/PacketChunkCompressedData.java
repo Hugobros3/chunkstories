@@ -5,9 +5,12 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import io.xol.chunkstories.api.net.PacketDestinator;
+import io.xol.chunkstories.api.net.PacketReceptionContext;
 import io.xol.chunkstories.api.net.PacketSender;
+import io.xol.chunkstories.api.net.PacketSendingContext;
+import io.xol.chunkstories.api.net.PacketWorld;
 import io.xol.chunkstories.api.net.PacketWorldStreaming;
-import io.xol.chunkstories.api.net.PacketsProcessor;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.world.chunk.CompressedData;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 
@@ -17,9 +20,9 @@ import io.xol.chunkstories.world.chunk.CubicChunk;
 
 public class PacketChunkCompressedData extends PacketWorldStreaming
 {
-	public PacketChunkCompressedData()
+	public PacketChunkCompressedData(World world)
 	{
-		
+		super(world);
 	}
 	
 	public PacketChunkCompressedData(CubicChunk c, CompressedData data)
@@ -41,9 +44,8 @@ public class PacketChunkCompressedData extends PacketWorldStreaming
 	public CompressedData data = null;
 
 	@Override
-	public void send(PacketDestinator destinator, DataOutputStream out) throws IOException
+	public void send(PacketDestinator destinator, DataOutputStream out, PacketSendingContext ctx) throws IOException
 	{
-		super.send(destinator, out);
 		out.writeInt(x);
 		out.writeInt(y);
 		out.writeInt(z);
@@ -59,15 +61,10 @@ public class PacketChunkCompressedData extends PacketWorldStreaming
 		out.write(data.voxelComponentsCompressedData);
 		} else
 			out.writeInt(0);
-		
-		//out.writeInt(data.entitiesCompressedData.length);
-		//out.write(data.entitiesCompressedData);
 	}
 
-	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException
+	public void process(PacketSender sender, DataInputStream in, PacketReceptionContext processor) throws IOException
 	{
-		super.process(sender, in, processor);
-		
 		x = in.readInt();
 		y = in.readInt();
 		z = in.readInt();
@@ -77,8 +74,8 @@ public class PacketChunkCompressedData extends PacketWorldStreaming
 		
 		//assert (voxelCompressedDataLength > 0);
 		if(voxelCompressedDataLength > 0) {
-		voxelCompressedData = new byte[voxelCompressedDataLength];
-		in.readFully(voxelCompressedData, 0, voxelCompressedDataLength);
+			voxelCompressedData = new byte[voxelCompressedDataLength];
+			in.readFully(voxelCompressedData, 0, voxelCompressedDataLength);
 		}
 		
 		int voxelComponentsCompressedDataLength = in.readInt();
@@ -86,15 +83,9 @@ public class PacketChunkCompressedData extends PacketWorldStreaming
 		
 		//assert (voxelComponentsCompressedDataLength > 0);
 		if(voxelComponentsCompressedDataLength > 0) {
-		voxelComponentsCompressedData = new byte[voxelComponentsCompressedDataLength];
-		in.readFully(voxelComponentsCompressedData, 0, voxelComponentsCompressedDataLength);
+			voxelComponentsCompressedData = new byte[voxelComponentsCompressedDataLength];
+			in.readFully(voxelComponentsCompressedData, 0, voxelComponentsCompressedDataLength);
 		}
-		
-		/*int entitiesCompressedDataLength = in.readInt();
-		byte[] entitiesCompressedData;
-		assert (entitiesCompressedDataLength > 0);
-		entitiesCompressedData = new byte[entitiesCompressedDataLength];
-		in.readFully(entitiesCompressedData, 0, entitiesCompressedDataLength);*/
 		
 		data = new CompressedData(voxelCompressedData, voxelComponentsCompressedData, null);
 		//No fancy processing here, these packets are handled automatically by the IO controller on the client due to their 

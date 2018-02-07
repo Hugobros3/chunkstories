@@ -3,7 +3,7 @@ package io.xol.chunkstories.server.commands.player;
 import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.item.Item;
-import io.xol.chunkstories.api.item.ItemType;
+import io.xol.chunkstories.api.item.ItemDefinition;
 import io.xol.chunkstories.api.item.ItemVoxel;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.player.Player;
@@ -51,7 +51,7 @@ public class GiveCommand extends ServerCommandBasic {
 		String itemName = arguments[0];
 
 		// Look for the item first
-		ItemType type = gameContent.items().getItemTypeByName(itemName);
+		ItemDefinition type = gameContent.items().getItemTypeByName(itemName);
 		if (type == null) {
 			// Try me bitch
 			try {

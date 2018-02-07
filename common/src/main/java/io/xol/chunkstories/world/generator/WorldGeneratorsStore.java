@@ -43,10 +43,10 @@ public class WorldGeneratorsStore implements Content.WorldGenerators
 		//reload();
 	}
 	
-	public Map<String, WorldGeneratorType> generators = new HashMap<String, WorldGeneratorType>();
-	public Map<String, WorldGeneratorType> generatorsClasses = new HashMap<String, WorldGeneratorType>();
+	public Map<String, WorldGeneratorDefinition> generators = new HashMap<String, WorldGeneratorDefinition>();
+	public Map<String, WorldGeneratorDefinition> generatorsClasses = new HashMap<String, WorldGeneratorDefinition>();
 	
-	public class ActualWorldGeneratorType extends GenericNamedConfigurable implements WorldGeneratorType {
+	public class ActualWorldGeneratorType extends GenericNamedConfigurable implements WorldGeneratorDefinition {
 		
 		public ActualWorldGeneratorType(String name, BufferedReader reader) throws IOException, IllegalWorldGeneratorDeclarationException
 		{
@@ -66,7 +66,7 @@ public class WorldGeneratorsStore implements Content.WorldGenerators
 				@SuppressWarnings("unchecked")
 				Class<? extends WorldGenerator> generatorClass = (Class<? extends WorldGenerator>) untypedClass;
 
-				Class<?>[] types = {WorldGeneratorType.class, World.class};
+				Class<?>[] types = {WorldGeneratorDefinition.class, World.class};
 				
 				constructor = generatorClass.getConstructor(types);
 			}
@@ -116,7 +116,7 @@ public class WorldGeneratorsStore implements Content.WorldGenerators
 	//public Map<Class<? extends WorldGenerator>, String> generatorsClasses = new HashMap<Class<? extends WorldGenerator>, String>();
 
 	/** Vanilla blank (void) world generator */
-	WorldGeneratorType blank = new WorldGeneratorType() {
+	WorldGeneratorDefinition blank = new WorldGeneratorDefinition() {
 
 		@Override
 		public String getName()
@@ -236,9 +236,9 @@ public class WorldGeneratorsStore implements Content.WorldGenerators
 		}
 	}
 
-	public WorldGeneratorType getWorldGenerator(String name)
+	public WorldGeneratorDefinition getWorldGenerator(String name)
 	{
-		WorldGeneratorType generator = generators.get(name);
+		WorldGeneratorDefinition generator = generators.get(name);
 		if(generator != null)
 			return generator;
 
@@ -246,9 +246,9 @@ public class WorldGeneratorsStore implements Content.WorldGenerators
 		return blank;
 	}
 	
-	public WorldGeneratorType getWorldGeneratorUnsafe(String name)
+	public WorldGeneratorDefinition getWorldGeneratorUnsafe(String name)
 	{
-		WorldGeneratorType generator = generators.get(name);
+		WorldGeneratorDefinition generator = generators.get(name);
 		if(generator != null)
 			return generator;
 		
@@ -266,7 +266,7 @@ public class WorldGeneratorsStore implements Content.WorldGenerators
 	}
 
 	@Override
-	public Iterator<WorldGeneratorType> all()
+	public Iterator<WorldGeneratorDefinition> all()
 	{
 		return generators.values().iterator();
 	}

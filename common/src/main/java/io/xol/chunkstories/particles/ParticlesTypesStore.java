@@ -38,12 +38,12 @@ public class ParticlesTypesStore implements Content.ParticlesTypes
 		//reload();
 	}
 	
-	private Map<Integer, ParticleTypeHandler> particleTypesById = new HashMap<Integer, ParticleTypeHandler>();
+	//private Map<Integer, ParticleTypeHandler> particleTypesById = new HashMap<Integer, ParticleTypeHandler>();
 	private Map<String, ParticleTypeHandler> particleTypesByName = new HashMap<String, ParticleTypeHandler>();
 	
 	public void reload()
 	{
-		particleTypesById.clear();
+		//particleTypesById.clear();
 		particleTypesByName.clear();
 		
 		Iterator<Asset> i = modsManager.getAllAssetsByExtension("particles");
@@ -85,7 +85,7 @@ public class ParticlesTypesStore implements Content.ParticlesTypes
 							ParticleTypeHandler handler = type.handler();
 							
 							particleTypesByName.put(particleName, handler);
-							particleTypesById.put(id, handler);
+							//particleTypesById.put(id, handler);
 							
 						} catch (IllegalParticleDeclarationException e) {
 							this.store.getContext().logger().error("Could not load particle type "+particleName+" : \n"+e.getMessage());
@@ -107,16 +107,16 @@ public class ParticlesTypesStore implements Content.ParticlesTypes
 		return particleTypesByName.get(string);
 	}
 	
-	@Override
+	/*@Override
 	public ParticleTypeHandler getParticleTypeHandlerById(int id)
 	{
 		return particleTypesById.get(id);
-	}
+	}*/
 	
 	@Override
 	public Iterator<ParticleTypeHandler> all()
 	{
-		return this.particleTypesById.values().iterator();
+		return this.particleTypesByName.values().iterator();
 	}
 
 	@Override

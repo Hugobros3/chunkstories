@@ -7,8 +7,9 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.exceptions.PacketProcessingException;
 import io.xol.chunkstories.api.item.inventory.InventoryTranslator;
+import io.xol.chunkstories.api.net.PacketReceptionContext;
 import io.xol.chunkstories.api.net.PacketSender;
-import io.xol.chunkstories.api.net.PacketsProcessor;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.net.packets.PacketOpenInventory;
 
@@ -18,8 +19,12 @@ import io.xol.chunkstories.net.packets.PacketOpenInventory;
 
 public class PacketOpenInventoryClient extends PacketOpenInventory
 {
+	public PacketOpenInventoryClient(World world) {
+		super(world);
+	}
+
 	@Override
-	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException, PacketProcessingException
+	public void process(PacketSender sender, DataInputStream in, PacketReceptionContext processor) throws IOException, PacketProcessingException
 	{
 		inventory = InventoryTranslator.obtainInventoryHandle(in, processor);
 		

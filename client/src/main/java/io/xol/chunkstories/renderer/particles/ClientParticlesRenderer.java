@@ -8,7 +8,7 @@ import org.joml.Vector3f;
 
 import io.xol.chunkstories.api.particles.ParticleDataWithTextureCoordinates;
 import io.xol.chunkstories.api.particles.ParticleDataWithVelocity;
-import io.xol.chunkstories.api.particles.ParticleType.RenderTime;
+import io.xol.chunkstories.api.particles.ParticleTypeDefinition.RenderTime;
 import io.xol.chunkstories.api.particles.ParticleTypeHandler;
 import io.xol.chunkstories.api.particles.ParticleTypeHandler.ParticleData;
 import io.xol.chunkstories.api.particles.ParticleTypeHandler.ParticleTypeRenderer;

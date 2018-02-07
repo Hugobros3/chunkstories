@@ -3,7 +3,7 @@ package io.xol.chunkstories.server.net.packets;
 import java.io.DataInputStream;
 import java.io.IOException;
 import io.xol.chunkstories.api.net.PacketSender;
-import io.xol.chunkstories.api.net.PacketsProcessor;
+import io.xol.chunkstories.api.net.PacketReceptionContext;
 import io.xol.chunkstories.api.net.packets.PacketText;
 import io.xol.chunkstories.server.net.ServerPacketsProcessorImplementation.UserPacketsProcessor;
 
@@ -13,7 +13,7 @@ import io.xol.chunkstories.server.net.ServerPacketsProcessorImplementation.UserP
 
 public class PacketReceiveText extends PacketText
 {
-	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException
+	public void process(PacketSender sender, DataInputStream in, PacketReceptionContext processor) throws IOException
 	{
 		super.process(sender, in, processor);
 		((UserPacketsProcessor)processor).getConnection().handle(text);

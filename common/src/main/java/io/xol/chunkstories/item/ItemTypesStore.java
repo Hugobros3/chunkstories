@@ -3,7 +3,7 @@ package io.xol.chunkstories.item;
 import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.exceptions.content.IllegalItemDeclarationException;
 import io.xol.chunkstories.api.item.Item;
-import io.xol.chunkstories.api.item.ItemType;
+import io.xol.chunkstories.api.item.ItemDefinition;
 import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.content.mods.ModsManager;
 import io.xol.chunkstories.content.GameContentStore;
@@ -25,9 +25,9 @@ import org.slf4j.LoggerFactory;
 
 public class ItemTypesStore implements Content.ItemsTypes
 {
-	public ItemType[] items = new ItemType[65536];
+	public ItemDefinition[] items = new ItemDefinition[65536];
 	Map<Short, Constructor<? extends Item>> itemsTypes = new HashMap<Short, Constructor<? extends Item>>();
-	public Map<String, ItemType> dictionary = new HashMap<String, ItemType>();
+	public Map<String, ItemDefinition> dictionary = new HashMap<String, ItemDefinition>();
 	public int itemTypes = 0;
 	public int lastAllocatedId;
 
@@ -137,7 +137,7 @@ public class ItemTypesStore implements Content.ItemsTypes
 							{
 								@SuppressWarnings("unchecked")
 								Class<? extends Item> itemClass = (Class<? extends Item>) rawClass;
-								Class<?>[] types = { ItemType.class };
+								Class<?>[] types = { ItemDefinition.class };
 								Constructor<? extends Item> constructor = itemClass.getConstructor(types);
 								
 								if (constructor == null)
@@ -187,14 +187,14 @@ public class ItemTypesStore implements Content.ItemsTypes
 		}
 	}
 
-	public ItemType getItemTypeById(int id)// throws UndefinedItemTypeException
+	public ItemDefinition getItemTypeById(int id)// throws UndefinedItemTypeException
 	{
 		//Quick & dirty sanitization
 		id = id & 0x00FFFFFF;
 		return items[id];
 	}
 
-	public ItemType getItemTypeByName(String itemName)// throws UndefinedItemTypeException
+	public ItemDefinition getItemTypeByName(String itemName)// throws UndefinedItemTypeException
 	{
 		if (dictionary.containsKey(itemName))
 			return dictionary.get(itemName);
@@ -202,7 +202,7 @@ public class ItemTypesStore implements Content.ItemsTypes
 	}
 
 	@Override
-	public Iterator<ItemType> all()
+	public Iterator<ItemDefinition> all()
 	{
 		return dictionary.values().iterator();
 	}

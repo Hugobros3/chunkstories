@@ -23,7 +23,6 @@ import io.xol.chunkstories.net.packets.PacketSoundSource;
 public class VirtualSoundManager implements SoundManager
 {
 	WorldMaster worldServer;
-	//Server server;
 
 	//We weakly keep track of playing sounds, the server has no idea of the actual sound data and this does not keeps track of played sounds !
 	Set<WeakReference<SoundSourceVirtual>> allPlayingSoundSources = ConcurrentHashMap.newKeySet();
@@ -195,7 +194,7 @@ public class VirtualSoundManager implements SoundManager
 	private void addSourceToEveryone(SoundSourceVirtual soundSource, ServerPlayerVirtualSoundManager exceptHim)
 	{
 		//Create the sound creation packet
-		PacketSoundSource packet = new PacketSoundSource(soundSource);
+		PacketSoundSource packet = new PacketSoundSource(worldServer, soundSource);
 		
 		Iterator<ServerPlayerVirtualSoundManager> i = playersSoundManagers.iterator();
 		while (i.hasNext())
@@ -220,7 +219,7 @@ public class VirtualSoundManager implements SoundManager
 	public void updateSourceForEveryone(SoundSourceVirtual soundSource, ServerPlayerVirtualSoundManager exceptHim)
 	{
 		//Create the update packet
-		PacketSoundSource packet = new PacketSoundSource(soundSource);
+		PacketSoundSource packet = new PacketSoundSource(worldServer, soundSource);
 		
 		Iterator<ServerPlayerVirtualSoundManager> i = playersSoundManagers.iterator();
 		while (i.hasNext())

@@ -8,34 +8,37 @@ import io.xol.chunkstories.api.exceptions.PacketProcessingException;
 import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.item.inventory.InventoryTranslator;
 import io.xol.chunkstories.api.net.PacketDestinator;
+import io.xol.chunkstories.api.net.PacketReceptionContext;
 import io.xol.chunkstories.api.net.PacketSender;
-import io.xol.chunkstories.api.net.PacketSynchPrepared;
-import io.xol.chunkstories.api.net.PacketsProcessor;
+import io.xol.chunkstories.api.net.PacketSendingContext;
+import io.xol.chunkstories.api.net.PacketWorld;
+import io.xol.chunkstories.api.world.World;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class PacketOpenInventory extends PacketSynchPrepared
+public class PacketOpenInventory extends PacketWorld
 {
 	protected Inventory inventory;
 	
-	public PacketOpenInventory() {
-		
+	public PacketOpenInventory(World world) {
+		super(world);
 	}
 	
-	public PacketOpenInventory(Inventory inventory) {
+	public PacketOpenInventory(World world, Inventory inventory) {
+		super(world);
 		this.inventory = inventory;
 	}
 
 	@Override
-	public void fillInternalBuffer(PacketDestinator destinator, DataOutputStream out) throws IOException
+	public void send(PacketDestinator destinator, DataOutputStream out, PacketSendingContext context) throws IOException
 	{
 		InventoryTranslator.writeInventoryHandle(out, inventory);
 	}
 
 	@Override
-	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException, PacketProcessingException
+	public void process(PacketSender sender, DataInputStream in, PacketReceptionContext processor) throws IOException, PacketProcessingException
 	{
 		//Does nothing, the actual handler is in PacketOpenInventoryClient
 	}

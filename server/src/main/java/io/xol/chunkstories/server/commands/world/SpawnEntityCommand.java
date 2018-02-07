@@ -2,7 +2,7 @@ package io.xol.chunkstories.server.commands.world;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.EntityType;
+import io.xol.chunkstories.api.entity.EntityDefinition;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
@@ -60,7 +60,7 @@ public class SpawnEntityCommand extends ServerCommandBasic {
 			loc = new Location(player.getWorld(), Double.parseDouble(arguments[1]), Double.parseDouble(arguments[2]), Double.parseDouble(arguments[3]));
 		}
 		
-		EntityType entityType;
+		EntityDefinition entityType;
 		
 		if(isNumeric(arguments[0]))
 		{

@@ -10,33 +10,36 @@ import org.joml.Vector3dc;
 import io.xol.chunkstories.api.client.net.ClientPacketsProcessor;
 import io.xol.chunkstories.api.exceptions.PacketProcessingException;
 import io.xol.chunkstories.api.net.PacketDestinator;
-import io.xol.chunkstories.api.net.PacketSynchPrepared;
-import io.xol.chunkstories.api.net.PacketsProcessor;
+import io.xol.chunkstories.api.net.PacketReceptionContext;
 import io.xol.chunkstories.api.sound.SoundSource;
 import io.xol.chunkstories.api.sound.SoundSource.Mode;
+import io.xol.chunkstories.api.world.World;
 import io.xol.engine.sound.sources.SoundSourceVirtual;
 import io.xol.chunkstories.api.net.PacketSender;
+import io.xol.chunkstories.api.net.PacketSendingContext;
+import io.xol.chunkstories.api.net.PacketWorld;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-public class PacketSoundSource extends PacketSynchPrepared
+public class PacketSoundSource extends PacketWorld
 {
 	public SoundSourceVirtual soundSourceToSend;
 
-	public PacketSoundSource()
+	public PacketSoundSource(World world)
 	{
-		
+		super(world);
 	}
 	
-	public PacketSoundSource(SoundSourceVirtual soundSource)
+	public PacketSoundSource(World world, SoundSourceVirtual soundSource)
 	{
+		this(world);
 		this.soundSourceToSend = soundSource;
 	}
 
 	@Override
-	public void fillInternalBuffer(PacketDestinator destinator, DataOutputStream out) throws IOException
+	public void send(PacketDestinator destinator, DataOutputStream out, PacketSendingContext ctx) throws IOException
 	{
 		out.writeUTF(soundSourceToSend.getSoundName());
 		out.writeLong(soundSourceToSend.getUUID());
@@ -61,7 +64,7 @@ public class PacketSoundSource extends PacketSynchPrepared
 	}
 
 	@Override
-	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException, PacketProcessingException
+	public void process(PacketSender sender, DataInputStream in, PacketReceptionContext processor) throws IOException, PacketProcessingException
 	{
 		String soundName = in.readUTF();
 		long UUID = in.readLong();

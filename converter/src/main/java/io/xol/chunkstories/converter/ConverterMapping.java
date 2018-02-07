@@ -12,7 +12,7 @@ import java.util.Map;
 import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.converter.mappings.Mapper;
 import io.xol.chunkstories.api.voxel.Voxel;
-import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.world.FutureVoxelContext;
 
 /** Maps minecraft ids to chunkstories's */
 public class ConverterMapping {
@@ -157,15 +157,17 @@ public class ConverterMapping {
 	
 	class TrivialMapper extends Mapper {
 		
-		int baked;
+		int meta;
 		
 		TrivialMapper(Voxel voxel, int meta) {
 			super(voxel);
-			baked = VoxelFormat.changeMeta(voxelID, meta);
+			this.meta = meta;
 		}
 		
-		public int output(int mcId, byte mcMeta) {
-			return baked;
+		@Override
+		public void output(int minecraftId, byte minecraftMeta, FutureVoxelContext fvc) {
+			fvc.setVoxel(voxel);
+			fvc.setMetaData(meta);
 		}
 	}
 }

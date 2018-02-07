@@ -2,8 +2,10 @@ package io.xol.chunkstories.net.packets;
 
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketSender;
+import io.xol.chunkstories.api.net.PacketSendingContext;
 import io.xol.chunkstories.api.net.PacketWorldStreaming;
-import io.xol.chunkstories.api.net.PacketsProcessor;
+import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.api.net.PacketReceptionContext;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
 
 import java.io.DataInputStream;
@@ -24,18 +26,18 @@ public class PacketRegionSummary extends PacketWorldStreaming
 	public int rx, rz;
 	public byte[] compressedData;
 
-	public PacketRegionSummary() {
+	public PacketRegionSummary(World world) {
+		super(world);
 	}
 	
 	public PacketRegionSummary(RegionSummaryImplementation summary) {
+		super(summary.world);
 		this.summary = summary;
 	}
 
 	@Override
-	public void send(PacketDestinator destinator, DataOutputStream out) throws IOException
+	public void send(PacketDestinator destinator, DataOutputStream out, PacketSendingContext ctx) throws IOException
 	{
-		super.send(destinator, out);
-		
 		out.writeInt(summary.getRegionX());
 		out.writeInt(summary.getRegionZ());
 		
@@ -56,10 +58,8 @@ public class PacketRegionSummary extends PacketWorldStreaming
 		out.write(compressedData);
 	}
 	
-	public void process(PacketSender sender, DataInputStream in, PacketsProcessor processor) throws IOException
+	public void process(PacketSender sender, DataInputStream in, PacketReceptionContext processor) throws IOException
 	{
-		super.process(sender, in, processor);
-		
 		rx = in.readInt();
 		rz = in.readInt();
 		//System.out.println("read "+rx+":"+rz);

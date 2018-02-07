@@ -2,7 +2,7 @@ package io.xol.chunkstories.entity;
 
 import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.content.Content.EntityTypes;
-import io.xol.chunkstories.api.entity.EntityType;
+import io.xol.chunkstories.api.entity.EntityDefinition;
 import io.xol.chunkstories.api.exceptions.content.IllegalEntityDeclarationException;
 import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.content.GameContentStore;
@@ -25,8 +25,8 @@ public class EntityTypesStore implements EntityTypes
 {
 	private final Content content;
 	
-	private Map<Short, EntityType> entityTypesById = new HashMap<Short, EntityType>();
-	private Map<String, EntityType> entityTypesByName = new HashMap<String, EntityType>();
+	private Map<Short, EntityDefinition> entityTypesById = new HashMap<Short, EntityDefinition>();
+	private Map<String, EntityDefinition> entityTypesByName = new HashMap<String, EntityDefinition>();
 
 	private static final Logger logger = LoggerFactory.getLogger("content.entities");
 	public Logger logger() {
@@ -100,7 +100,7 @@ public class EntityTypesStore implements EntityTypes
 		}
 	}
 
-	/*class EntityTypeLoaded implements EntityType {
+	/*class EntityTypeLoaded implements EntityDefinition {
 
 		public EntityTypeLoaded(String name, String className, Constructor<? extends Entity> constructor, short id)
 		{
@@ -155,19 +155,19 @@ public class EntityTypesStore implements EntityTypes
 	}*/
 
 	@Override
-	public EntityType getEntityTypeById(short entityId)
+	public EntityDefinition getEntityTypeById(short entityId)
 	{
 		return entityTypesById.get(entityId);
 	}
 
 	@Override
-	public EntityType getEntityTypeByName(String entityName)
+	public EntityDefinition getEntityTypeByName(String entityName)
 	{
 		return entityTypesByName.get(entityName);
 	}
 
 	@Deprecated
-	public EntityType getEntityTypeByClassname(String className)
+	public EntityDefinition getEntityTypeByClassname(String className)
 	{
 		throw new UnsupportedOperationException();
 		//return entityTypesByClassname.get(className);
@@ -178,14 +178,14 @@ public class EntityTypesStore implements EntityTypes
 	{
 		throw new UnsupportedOperationException();
 		/*
-		EntityType type = entityTypesByClassname.get(className);
+		EntityDefinition type = entityTypesByClassname.get(className);
 		if(type == null)
 			return -1;
 		return type.getId();*/
 	}
 
 	@Override
-	public Iterator<EntityType> all()
+	public Iterator<EntityDefinition> all()
 	{
 		return this.entityTypesById.values().iterator();
 	}
