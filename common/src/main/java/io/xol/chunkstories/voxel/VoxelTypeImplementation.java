@@ -10,17 +10,16 @@ import io.xol.chunkstories.api.exceptions.content.IllegalVoxelDeclarationExcepti
 import io.xol.chunkstories.api.voxel.materials.Material;
 import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.voxel.Voxel;
+import io.xol.chunkstories.api.voxel.VoxelDefinition;
 import io.xol.chunkstories.api.voxel.VoxelSides;
-import io.xol.chunkstories.api.voxel.VoxelType;
 import io.xol.chunkstories.api.voxel.models.VoxelModel;
 import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.materials.GenericNamedConfigurable;
 
-public class VoxelTypeImplementation extends GenericNamedConfigurable implements VoxelType
+public class VoxelTypeImplementation extends GenericNamedConfigurable implements VoxelDefinition
 {
 	private final VoxelsStore store;
 	
-	private final int id;
 	private final Material material;
 	private final VoxelModel model;
 	private final VoxelTexture[] textures = new VoxelTexture[6];
@@ -37,13 +36,13 @@ public class VoxelTypeImplementation extends GenericNamedConfigurable implements
 	
 	private final Voxel voxel;
 	
-	public VoxelTypeImplementation(VoxelsStore store, String name, int id, BufferedReader reader) throws IOException, IllegalVoxelDeclarationException
+	public VoxelTypeImplementation(VoxelsStore store, String name, BufferedReader reader) throws IOException, IllegalVoxelDeclarationException
 	{
 		super(name, reader);
 		
 		this.store = store;
 		
-		this.id = id;
+		//this.id = id;
 		
 		//If a specific material was given, use that one, else use the voxel name
 		String matResolved = this.resolveProperty("material");
@@ -111,7 +110,7 @@ public class VoxelTypeImplementation extends GenericNamedConfigurable implements
 			{
 				@SuppressWarnings("unchecked")
 				Class<? extends Voxel> voxelClass = (Class<? extends Voxel>) rawClass;
-				Class<?>[] types = { VoxelType.class };
+				Class<?>[] types = { VoxelDefinition.class };
 				Constructor<? extends Voxel> constructor = voxelClass.getConstructor(types);
 
 				if (constructor == null)
@@ -138,12 +137,6 @@ public class VoxelTypeImplementation extends GenericNamedConfigurable implements
 	{
 		String resolved = this.resolveProperty(propertyName);
 		return resolved == null ? defaultValue : Byte.parseByte(resolved);
-	}
-	
-	@Override
-	public int getId()
-	{
-		return id;
 	}
 
 	@Override

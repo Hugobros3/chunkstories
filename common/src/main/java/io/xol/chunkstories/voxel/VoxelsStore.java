@@ -10,7 +10,6 @@ import io.xol.chunkstories.api.content.Asset;
 //http://xol.io
 
 import io.xol.chunkstories.api.voxel.Voxel;
-import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.content.GameContentStore;
 import io.xol.chunkstories.voxel.models.VoxelModelsStore;
@@ -18,13 +17,9 @@ import io.xol.chunkstories.voxel.models.VoxelModelsStore;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,13 +29,6 @@ import org.slf4j.LoggerFactory;
 
 public class VoxelsStore implements ClientContent.ClientVoxels
 {
-	private static VoxelsStore self;
-	
-	public static VoxelsStore get()
-	{
-		return self;
-	}
-	
 	public VoxelsStore(GameContentStore content)
 	{
 		this.content = content;
@@ -55,11 +43,13 @@ public class VoxelsStore implements ClientContent.ClientVoxels
 	
 	private VoxelRenderer defaultVoxelRenderer;
 	
-	public Voxel[] voxels = new Voxel[65536];
-	public Set<Integer> attributedIds = new HashSet<Integer>();
+	//public Voxel[] voxels = new Voxel[65536];
+	//public Set<Integer> attributedIds = new HashSet<Integer>();
 	public Map<String, Voxel> voxelsByName = new HashMap<String, Voxel>();
 	public int voxelTypes = 0;
 	public int lastAllocatedId;
+
+	private Voxel air;
 
 	@Override
 	public VoxelTexturesStoreAndAtlaser textures()
@@ -85,8 +75,8 @@ public class VoxelsStore implements ClientContent.ClientVoxels
 	private void reloadVoxelTypes()
 	{
 		//Discard previous voxels
-		Arrays.fill(voxels, null);
-		attributedIds.clear();
+		//Arrays.fill(voxels, null);
+		//attributedIds.clear();
 		voxelsByName.clear();
 		
 		//First load the default voxel renderer
@@ -111,8 +101,6 @@ public class VoxelsStore implements ClientContent.ClientVoxels
 	
 	private void readVoxelsDefinitions(Asset f)
 	{
-		self = this;
-		
 		if (f == null)
 			return;
 		try
@@ -137,27 +125,30 @@ public class VoxelsStore implements ClientContent.ClientVoxels
 					{
 						String splitted[] = line.split(" ");
 						
-						if(splitted.length < 3)
+						if(splitted.length < 2)
 						{
 							logger().warn("Parse error in file " + f + ", line " + ln + ", malformed voxel tag. Aborting read.");
 							break;
 						}
 						
-						int id = Integer.parseInt(splitted[2]);
+						//int id = Integer.parseInt(splitted[2]);
 						String name = splitted[1];
 						
-						if (voxels[id] != null)
-							logger().warn("Voxel redefinition in file " + f + ", line " + ln + ", overriding id " + id + " with " + name);
+						//if (voxels[id] != null)
+						//	logger().warn("Voxel redefinition in file " + f + ", line " + ln + ", overriding id " + id + " with " + name);
 
 						try
 						{
-							VoxelTypeImplementation voxelType = new VoxelTypeImplementation(this, name, id, reader);
+							VoxelTypeImplementation voxelType = new VoxelTypeImplementation(this, name, reader);
 							Voxel voxel = voxelType.getVoxelObject();
 							
-							voxels[voxel.getId()] = voxel;
-							attributedIds.add(voxel.getId());
+							//voxels[voxel.getId()] = voxel;
+							//attributedIds.add(voxel.getId());
 							voxelsByName.put(voxel.getName(), voxel);
 							loadedVoxels++;
+							
+							if(name.equals("air"))
+								air = voxel;
 						}
 						catch (IllegalVoxelDeclarationException e)
 						{
@@ -186,7 +177,7 @@ public class VoxelsStore implements ClientContent.ClientVoxels
 	 * @param voxelId The id of the voxel
 	 * @return
 	 */
-	public Voxel getVoxelById(int voxelId)
+	/*public Voxel getVoxelById(int voxelId)
 	{
 		//Sanitize
 		voxelId = VoxelFormat.id(voxelId);
@@ -201,17 +192,17 @@ public class VoxelsStore implements ClientContent.ClientVoxels
 			return voxels[0];
 		}
 		return v;
-	}
+	}*/
 
 	public Voxel getVoxelByName(String voxelName)
 	{
 		return voxelsByName.get(voxelName);
 	}
 
-	public Set<Integer> getAllLoadedVoxelIds()
+	/*public Set<Integer> getAllLoadedVoxelIds()
 	{
 		return attributedIds;
-	}
+	}*/
 
 	@Override
 	public Iterator<Voxel> all()
@@ -233,5 +224,10 @@ public class VoxelsStore implements ClientContent.ClientVoxels
 	private static final Logger logger = LoggerFactory.getLogger("content.voxels");
 	public Logger logger() {
 		return logger;
+	}
+
+	@Override
+	public Voxel air() {
+		return air;
 	}
 }

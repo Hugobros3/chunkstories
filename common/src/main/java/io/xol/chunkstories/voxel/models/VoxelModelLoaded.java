@@ -98,8 +98,8 @@ public class VoxelModelLoaded implements VoxelRenderer, VoxelModel
 			int meta = VoxelFormat.meta(info.getNeightborData(j));
 			occlusionTestedVoxel = VoxelsStore.get().getVoxelById(id);
 			// If it is, don't draw it.
-			cullingCache[j] = (occlusionTestedVoxel.getType().isOpaque() || occlusionTestedVoxel.isFaceOpaque(VoxelSides.values()[j], info.getNeightborData(j))) || occlusionTestedVoxel.isFaceOpaque(VoxelSides.values()[j], info.getNeightborData(j))
-					|| (info.getVoxel().getType().isSelfOpaque() && id == VoxelFormat.id(info.getData()) && meta == info.getMetaData());
+			cullingCache[j] = (occlusionTestedVoxel.getDefinition().isOpaque() || occlusionTestedVoxel.isFaceOpaque(VoxelSides.values()[j], info.getNeightborData(j))) || occlusionTestedVoxel.isFaceOpaque(VoxelSides.values()[j], info.getNeightborData(j))
+					|| (info.getVoxel().getDefinition().isSelfOpaque() && id == VoxelFormat.id(info.getData()) && meta == info.getMetaData());
 		}
 
 		//Generate some jitter if it is enabled

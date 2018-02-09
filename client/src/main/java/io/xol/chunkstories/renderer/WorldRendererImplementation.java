@@ -289,7 +289,7 @@ public class WorldRendererImplementation implements WorldRenderer
 			
 			Voxel vox = world.peekSafely(renderingInterface.getCamera().getCameraPosition()).getVoxel();
 			//Voxel vox = VoxelsStore.get().getVoxelById(world.getVoxelData((int) (double) renderingInterface.getCamera().getCameraPosition().x(), (int) (double) renderingInterface.getCamera().getCameraPosition().y(), (int) (double) renderingInterface.getCamera().getCameraPosition().z()));
-			liquidBlocksShader.setUniform1f("underwater", vox.getType().isLiquid() ? 1 : 0);
+			liquidBlocksShader.setUniform1f("underwater", vox.getDefinition().isLiquid() ? 1 : 0);
 
 			if (pass == 1)
 			{
@@ -522,7 +522,7 @@ public class WorldRendererImplementation implements WorldRenderer
 		//Voxel vox = VoxelsStore.get().getVoxelById(world.peekSimple((int)(double)renderingContext.getCamera().getCameraPosition().x(),
 		//		(int)(double)renderingContext.getCamera().getCameraPosition().y(), (int)(double)renderingContext.getCamera().getCameraPosition().z()));
 		
-		postProcess.setUniform1f("underwater", vox.getType().isLiquid() ? 1 : 0);
+		postProcess.setUniform1f("underwater", vox.getDefinition().isLiquid() ? 1 : 0);
 		postProcess.setUniform1f("animationTimer", animationTimer);
 		postProcess.setUniform1f("pauseOverlayFade", pauseFade);
 

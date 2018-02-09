@@ -220,7 +220,7 @@ public class RegionSummaryImplementation implements RegionSummary
 		Voxel voxel = VoxelsStore.get().getVoxelById(voxelData);
 		int h = getHeight(worldX, worldZ);
 		//If we place something solid over the last solid thing
-		if ((voxel.getType().isSolid() || voxel.getType().isLiquid()) && height >= h)
+		if ((voxel.getDefinition().isSolid() || voxel.getDefinition().isLiquid()) && height >= h)
 		{
 			if (height >= h)
 			{

@@ -1,0 +1,7 @@
+WORLD FORMAT REFACTORING REEEE
+
+	EntityVoxel now NOT part of normal entities pool
+	Bundled with chunk data ?
+	Rather than add complexity, modify EntityPacket ?
+	
+	Move entities to chunks

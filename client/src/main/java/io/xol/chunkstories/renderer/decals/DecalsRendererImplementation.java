@@ -132,7 +132,7 @@ public class DecalsRendererImplementation implements DecalsRenderer
 						//int idThere = VoxelFormat.id(world.peekSimple(location));
 
 						Voxel voxel = peek.getVoxel();
-						if (voxel != null && peek.getId() > 0 && !voxel.getType().isLiquid() && voxel.getType().isSolid())
+						if (voxel != null && !peek.getVoxel().isAir() && !voxel.getDefinition().isLiquid() && voxel.getDefinition().isSolid())
 						{
 							VoxelContext bri = new VoxelContextOlder(location);
 							VoxelRenderer model = voxel.getVoxelRenderer(bri);
