@@ -46,7 +46,7 @@ public class ClientChunk extends CubicChunk implements ChunkRenderable {
 	@Override
 	public String toString()
 	{
-		return "[ClientChunk x:" + this.chunkX + " y:" + this.chunkY + " z:" + this.chunkZ + " air:" + isAirChunk() + " ls:" + this.lightBakingStatus + "]";
+		return "[ClientChunk x:" + this.chunkX + " y:" + this.chunkY + " z:" + this.chunkZ + " air:" + isAirChunk() + " ls:" + this.lightBaker + "]";
 	}
 	
 	public ChunkRenderDataHolder getChunkRenderData()
@@ -61,7 +61,7 @@ public class ClientChunk extends CubicChunk implements ChunkRenderable {
 
 	@Override
 	public ChunkLightUpdater lightBaker() {
-		return this.lightBakingStatus;
+		return this.lightBaker;
 	}
 
 	@Override

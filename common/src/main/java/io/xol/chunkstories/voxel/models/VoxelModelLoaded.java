@@ -13,7 +13,7 @@ import io.xol.chunkstories.api.voxel.models.VoxelBakerHighPoly;
 import io.xol.chunkstories.api.voxel.models.VoxelModel;
 import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
-import io.xol.chunkstories.api.world.VoxelContext;
+import io.xol.chunkstories.api.world.cell.CellData;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.voxel.VoxelsStore;
 
@@ -66,7 +66,7 @@ public class VoxelModelLoaded implements VoxelRenderer, VoxelModel
 		return name;
 	}
 	
-	public int renderInto(VoxelBakerHighPoly baker, ChunkRenderContext bakingContext, VoxelContext info, Chunk chunk, int x, int y, int z)
+	public int renderInto(VoxelBakerHighPoly baker, ChunkRenderContext bakingContext, CellData info, Chunk chunk, int x, int y, int z)
 	{
 		//int lightLevelSun = chunk.getSunLight(x, y, z);
 		//int lightLevelVoxel = chunk.getBlockLight(x, y, z);
@@ -186,7 +186,7 @@ public class VoxelModelLoaded implements VoxelRenderer, VoxelModel
 		return (int) ((n + 1) * 511.5f);
 	}
 
-	private VoxelTexture selectsTextureFromIndex(VoxelContext info, int modelTextureIndex)
+	private VoxelTexture selectsTextureFromIndex(CellData info, int modelTextureIndex)
 	{
 		if(this.texturesNames[modelTextureIndex].equals("_top"))
 			return info.getTexture(VoxelSides.TOP);
@@ -288,9 +288,9 @@ public class VoxelModelLoaded implements VoxelRenderer, VoxelModel
 	}
 
 	@Override
-	public int renderInto(ChunkRenderer chunkRenderer, ChunkRenderContext bakingContext, Chunk chunk, VoxelContext info)
+	public int renderInto(ChunkRenderer chunkRenderer, ChunkRenderContext bakingContext, Chunk chunk, CellData cell)
 	{
 		VoxelBakerHighPoly renderByteBuffer = chunkRenderer.getHighpolyBakerFor(LodLevel.ANY, ShadingType.OPAQUE);
-		return this.renderInto(renderByteBuffer, bakingContext, info, chunk, info.getX() & 0x1F, info.getY() & 0x1F, info.getZ() & 0x1F);
+		return this.renderInto(renderByteBuffer, bakingContext, cell, chunk, cell.getX() & 0x1F, cell.getY() & 0x1F, cell.getZ() & 0x1F);
 	}
 }

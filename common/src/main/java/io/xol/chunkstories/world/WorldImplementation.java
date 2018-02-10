@@ -34,17 +34,19 @@ import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelInteractive;
+import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.world.generator.WorldGenerator;
 import io.xol.chunkstories.api.world.WorldInfo;
-import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldCollisionsManager;
 import io.xol.chunkstories.api.world.WorldMaster;
+import io.xol.chunkstories.api.world.cell.Cell;
+import io.xol.chunkstories.api.world.cell.CellData;
+import io.xol.chunkstories.api.world.cell.FutureCell;
 import io.xol.chunkstories.api.world.chunk.Chunk;
-import io.xol.chunkstories.api.world.chunk.Chunk.ChunkVoxelContext;
+import io.xol.chunkstories.api.world.chunk.Chunk.ChunkCell;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
-import io.xol.chunkstories.api.world.dummy.DummyContext;
 import io.xol.chunkstories.api.world.chunk.ChunksIterator;
 import io.xol.chunkstories.api.world.chunk.DummyChunk;
 import io.xol.chunkstories.api.world.chunk.Region;
@@ -419,14 +421,14 @@ public abstract class WorldImplementation implements World
 	}*/
 	
 	@Override
-	public ChunkVoxelContext peek(Vector3dc location) throws WorldException
+	public ChunkCell peek(Vector3dc location) throws WorldException
 	{
 		return peek((int) (double) location.x(), (int) (double) location.y(), (int) (double) location.z());
 	}
 	
 	@Override
 	/** Fancy get method that throws exceptions when the world isn't loaded */
-	public ChunkVoxelContext peek(int x, int y, int z) throws WorldException {
+	public ChunkCell peek(int x, int y, int z) throws WorldException {
 		x = sanitizeHorizontalCoordinate(x);
 		y = sanitizeVerticalCoordinate(y);
 		z = sanitizeHorizontalCoordinate(z);
@@ -443,7 +445,7 @@ public abstract class WorldImplementation implements World
 	}
 
 	@Override
-	public WorldVoxelContext peekSafely(int x, int y, int z) {
+	public WorldCell peekSafely(int x, int y, int z) {
 		
 		x = sanitizeHorizontalCoordinate(x);
 		y = sanitizeVerticalCoordinate(y);
@@ -451,46 +453,87 @@ public abstract class WorldImplementation implements World
 		
 		Region region = this.getRegionWorldCoordinates(x, y, z);
 		if(region == null)
-			return new DummyContext(new DummyChunk(), x, y, z, VoxelFormat.format(01, 0, this.getRegionsSummariesHolder().getHeightAtWorldCoordinates(x, z) >= y ? 0: 15, 0)) {
-			@Override
-			public Voxel getVoxel() {
-				return getGameContext().getContent().voxels().getVoxelById(0);
-			}
-		};
+			return new UnloadedWorldCell(x, y, z, this.getGameContext().getContent().voxels().air(), 0, 0, (this.getRegionsSummariesHolder().getHeightAtWorldCoordinates(x, z) >= y ? 0: 15));
 			
 		Chunk chunk = region.getChunk((x / 32) % 8, (y / 32) % 8, (z / 32) % 8);
 		if(chunk == null)
-			return new DummyContext(new DummyChunk(), x, y, z, VoxelFormat.format(01, 0, this.getRegionsSummariesHolder().getHeightAtWorldCoordinates(x, z) >= y ? 0: 15, 0)) {
-			
-			@Override
-			public Voxel getVoxel() {
-				return getGameContext().getContent().voxels().getVoxelById(0);
-			}
-		};
+			return new UnloadedWorldCell(x, y, z, this.getGameContext().getContent().voxels().air(), 0, 0, (this.getRegionsSummariesHolder().getHeightAtWorldCoordinates(x, z) >= y ? 0: 15));
 		
 		return chunk.peek(x, y, z);
 	}
 
+	/** Safety: provide an alternative 'fake' cell if the proper one isn't loaded */
+	class UnloadedWorldCell extends Cell implements WorldCell {
+
+		public UnloadedWorldCell(int x, int y, int z, Voxel voxel, int meta, int blocklight, int sunlight) {
+			super(x, y, z, voxel, meta, blocklight, sunlight);
+		}
+
+		@Override
+		public CellData getNeightbor(int side_int) {
+			VoxelSides side = VoxelSides.values()[side_int];
+			return peekSafely(getX() + side.dx, getY() + side.dy, getZ() + side.dz);
+		}
+
+		@Override
+		public World getWorld() {
+			return WorldImplementation.this;
+		}
+
+		@Override
+		public void setVoxel(Voxel voxel) {
+			logger.warn("Trying to edit a UnloadedWorldCell." + this);
+		}
+
+		@Override
+		public void setMetaData(int metadata) {
+			logger.warn("Trying to edit a UnloadedWorldCell." + this);
+		}
+
+		@Override
+		public void setSunlight(int sunlight) {
+			logger.warn("Trying to edit a UnloadedWorldCell." + this);
+		}
+
+		@Override
+		public void setBlocklight(int blocklight) {
+			logger.warn("Trying to edit a UnloadedWorldCell." + this);
+		}
+	}
+	
 	@Override
-	public WorldVoxelContext peekSafely(Vector3dc location) {
+	public WorldCell peekSafely(Vector3dc location) {
 		return peekSafely((int) (double) location.x(), (int) (double) location.y(), (int) (double) location.z());
 	}
 
 	@Override
-	public int peekSimple(int x, int y, int z) {
+	public Voxel peekSimple(int x, int y, int z) {
 		x = sanitizeHorizontalCoordinate(x);
 		y = sanitizeVerticalCoordinate(y);
 		z = sanitizeHorizontalCoordinate(z);
 		
 		Chunk chunk = this.getChunkWorldCoordinates(x, y, z);
 		if(chunk == null)
-			return 0;
+			return gameContext.getContent().voxels().air();
 		else
 			return chunk.peekSimple(x, y, z);
 	}
+	
+	@Override
+	public int peekRaw(int x, int y, int z) {
+		x = sanitizeHorizontalCoordinate(x);
+		y = sanitizeVerticalCoordinate(y);
+		z = sanitizeHorizontalCoordinate(z);
+		
+		Chunk chunk = this.getChunkWorldCoordinates(x, y, z);
+		if(chunk == null)
+			return 0x00000000;
+		else
+			return chunk.peekRaw(x, y, z);
+	}
 
 	@Override
-	public WorldVoxelContext poke(int x, int y, int z, int newVoxelData, WorldModificationCause cause)
+	public ChunkCell poke(int x, int y, int z, Voxel voxel, int sunlight, int blocklight, int metadata, WorldModificationCause cause)
 			throws WorldException {
 		x = sanitizeHorizontalCoordinate(x);
 		y = sanitizeVerticalCoordinate(y);
@@ -504,345 +547,70 @@ public abstract class WorldImplementation implements World
 		if(chunk == null)
 			throw new ChunkNotLoadedException(region, (x / 32) % 8, (y / 32) % 8, (z / 32) % 8);
 		
-		return chunk.poke(x, y, z, newVoxelData, cause);
+		return chunk.poke(x, y, z, voxel, sunlight, blocklight, metadata, cause);
 	}
-
-	@Override
-	public WorldVoxelContext pokeSilently(int x, int y, int z, int newVoxelData) throws WorldException {
-		x = sanitizeHorizontalCoordinate(x);
-		y = sanitizeVerticalCoordinate(y);
-		z = sanitizeHorizontalCoordinate(z);
-		
-		Region region = this.getRegionWorldCoordinates(x, y, z);
-		if(region == null)
-			throw new RegionNotLoadedException(this, x / 256, y / 256, z / 256);
-			
-		Chunk chunk = region.getChunk((x / 32) % 8, (y / 32) % 8, (z / 32) % 8);
-		if(chunk == null)
-			throw new ChunkNotLoadedException(region, (x / 32) % 8, (y / 32) % 8, (z / 32) % 8);
-		
-		return chunk.pokeSilently(x, y, z, newVoxelData);
-	}
-
-	@Override
-	public void pokeSimple(int x, int y, int z, int newVoxelData) {
-		x = sanitizeHorizontalCoordinate(x);
-		y = sanitizeVerticalCoordinate(y);
-		z = sanitizeHorizontalCoordinate(z);
-		
-		Chunk chunk = this.getChunkWorldCoordinates(x, y, z);
-		if(chunk != null)
-			chunk.pokeSimple(x, y, z, newVoxelData);
-	}
-
-	@Override
-	public void pokeSimpleSilently(int x, int y, int z, int newVoxelData) {
-		x = sanitizeHorizontalCoordinate(x);
-		y = sanitizeVerticalCoordinate(y);
-		z = sanitizeHorizontalCoordinate(z);
-		
-		Chunk chunk = this.getChunkWorldCoordinates(x, y, z);
-		if(chunk != null)
-			chunk.pokeSimpleSilently(x, y, z, newVoxelData);
-	}
-
-	/*@Override
-	public WorldVoxelContext peek(int x, int y, int z)
-	{
-		return new WorldVoxelContext() {
-			
-			int data = getVoxelData(x, y, z);
-			
-			@Override
-			public Voxel getVoxel()
-			{
-				return getGameContext().getContent().voxels().getVoxelById(data);
-			}
-
-			@Override
-			public int getData()
-			{
-				return data;
-			}
-
-			@Override
-			public int getX()
-			{
-				return x;
-			}
-
-			@Override
-			public int getY()
-			{
-				return y;
-			}
-
-			@Override
-			public int getZ()
-			{
-				return z;
-			}
-
-			@Override
-			public int getNeightborData(int side)
-			{
-				switch (side)
-				{
-				case (0):
-					return getVoxelData(x - 1, y, z);
-				case (1):
-					return getVoxelData(x, y, z + 1);
-				case (2):
-					return getVoxelData(x + 1, y, z);
-				case (3):
-					return getVoxelData(x, y, z - 1);
-				case (4):
-					return getVoxelData(x, y + 1, z);
-				case (5):
-					return getVoxelData(x, y - 1, z);
-				}
-				throw new RuntimeException("Fuck off");
-			}
-
-			@Override
-			public World getWorld()
-			{
-				return WorldImplementation.this;
-			}
-
-			@Override
-			public Location getLocation()
-			{
-				return new Location(WorldImplementation.this, x, y, z);
-			}
-			
-		};
-		
-		//return new VoxelContextOlder(this, x, y, z);
-	}*/
-
-	/*@Override
-	public void setVoxelData(Location location, int data)
-	{
-		setVoxelData((int) (double) location.x(), (int) (double) location.y(), (int) (double) location.z(), data);
-	}
-
-	@Override
-	public void setVoxelData(int x, int y, int z, int data)
-	{
-		actuallySetsDataAt(x, y, z, data, null);
-	}
-
-	@Override
-	public void setVoxelData(Location location, int data, Entity entity)
-	{
-		actuallySetsDataAt((int) (double) location.x(), (int) (double) location.y(), (int) (double) location.z(), data, entity);
-	}
-
-	@Override
-	public void setVoxelData(int x, int y, int z, int data, Entity entity)
-	{
-		actuallySetsDataAt(x, y, z, data, entity);
-	}*/
-
-	/**
-	 * Internal method that accesses the data
-	 * 
-	 * @return -1 if fails, the data of the new block if succeeds
-	 */
-	/*protected int actuallySetsDataAt(int x, int y, int z, int newData, Entity entity)
-	{
-		//TODO should VoxelModificationEvent be a part of the world implem poke() method ?
-		
-		x = sanitizeHorizontalCoordinate(x);
-		y = sanitizeVerticalCoordinate(y);
-		z = sanitizeHorizontalCoordinate(z);
-
-		Chunk chunk = regions.getChunk(x / 32, y / 32, z / 32);
-		
-		if (chunk != null)
-		{
-			int formerData = chunk.getVoxelData(x % 32, y % 32, z % 32);
-			Voxel formerVoxel = VoxelsStore.get().getVoxelById(formerData);
-			Voxel newVoxel = VoxelsStore.get().getVoxelById(newData);
-
-			try
-			{
-				//If we're merely changing the voxel meta 
-				if (formerVoxel != null && newVoxel != null && formerVoxel.equals(newVoxel))
-				{
-					//Optionally runs whatever the voxel requires to run when modified
-					if (formerVoxel instanceof VoxelLogic)
-						newData = ((VoxelLogic) formerVoxel).onModification(this, x, y, z, formerData, newData, entity);
-				}
-				else
-				{
-					//Optionally runs whatever the voxel requires to run when removed
-					if (formerVoxel instanceof VoxelLogic)
-						((VoxelLogic) formerVoxel).onRemove(this, x, y, z, formerData, entity);
-
-					//Optionally runs whatever the voxel requires to run when placed
-					if (newVoxel instanceof VoxelLogic)
-						newData = ((VoxelLogic) newVoxel).onPlace(this, x, y, z, newData, entity);
-				}
-
-			}
-			//If it is stopped, don't try to go further
-			catch (IllegalBlockModificationException illegal)
-			{
-				return -1;
-			}
-
-			chunk.setVoxelDataWithUpdates(x % 32, y % 32, z % 32, newData);
-			
-			getRegionsSummariesHolder().updateOnBlockPlaced(x, y, z, newData);
-
-			//Neighbour chunks updates
-			if (x % 32 == 0)
-			{
-				if (y % 32 == 0)
-				{
-					if (z % 32 == 0)
-						regions.markChunkForReRender((x - 1) / 32, (y - 1) / 32, (z - 1) / 32);
-					else if (z % 32 == 31)
-						regions.markChunkForReRender((x - 1) / 32, (y - 1) / 32, (z + 1) / 32);
-					regions.markChunkForReRender((x - 1) / 32, (y - 1) / 32, (z) / 32);
-				}
-				else if (y % 32 == 31)
-				{
-					if (z % 32 == 0)
-						regions.markChunkForReRender((x - 1) / 32, (y + 1) / 32, (z - 1) / 32);
-					else if (z % 32 == 31)
-						regions.markChunkForReRender((x - 1) / 32, (y + 1) / 32, (z + 1) / 32);
-					regions.markChunkForReRender((x - 1) / 32, (y + 1) / 32, (z) / 32);
-				}
-				else
-				{
-					if (z % 32 == 0)
-						regions.markChunkForReRender((x - 1) / 32, (y) / 32, (z - 1) / 32);
-					else if (z % 32 == 31)
-						regions.markChunkForReRender((x - 1) / 32, (y) / 32, (z + 1) / 32);
-					regions.markChunkForReRender((x - 1) / 32, (y) / 32, (z) / 32);
-				}
-			}
-			else if (x % 32 == 31)
-			{
-				if (y % 32 == 0)
-				{
-					if (z % 32 == 0)
-						regions.markChunkForReRender((x + 1) / 32, (y - 1) / 32, (z - 1) / 32);
-					else if (z % 32 == 31)
-						regions.markChunkForReRender((x + 1) / 32, (y - 1) / 32, (z + 1) / 32);
-					regions.markChunkForReRender((x + 1) / 32, (y - 1) / 32, (z) / 32);
-				}
-				else if (y % 32 == 31)
-				{
-					if (z % 32 == 0)
-						regions.markChunkForReRender((x + 1) / 32, (y + 1) / 32, (z - 1) / 32);
-					else if (z % 32 == 31)
-						regions.markChunkForReRender((x + 1) / 32, (y + 1) / 32, (z + 1) / 32);
-					regions.markChunkForReRender((x + 1) / 32, (y + 1) / 32, (z) / 32);
-				}
-				else
-				{
-					if (z % 32 == 0)
-						regions.markChunkForReRender((x + 1) / 32, (y) / 32, (z - 1) / 32);
-					else if (z % 32 == 31)
-						regions.markChunkForReRender((x + 1) / 32, (y) / 32, (z + 1) / 32);
-					regions.markChunkForReRender((x + 1) / 32, (y) / 32, (z) / 32);
-				}
-			}
-			if (y % 32 == 0)
-			{
-				if (z % 32 == 0)
-					regions.markChunkForReRender((x) / 32, (y - 1) / 32, (z - 1) / 32);
-				else if (z % 32 == 31)
-					regions.markChunkForReRender((x) / 32, (y - 1) / 32, (z + 1) / 32);
-				regions.markChunkForReRender((x) / 32, (y - 1) / 32, (z) / 32);
-			}
-			else if (y % 32 == 31)
-			{
-				if (z % 32 == 0)
-					regions.markChunkForReRender((x) / 32, (y + 1) / 32, (z - 1) / 32);
-				else if (z % 32 == 31)
-					regions.markChunkForReRender((x) / 32, (y + 1) / 32, (z + 1) / 32);
-				regions.markChunkForReRender((x) / 32, (y + 1) / 32, (z) / 32);
-			}
-			else
-			{
-				if (z % 32 == 0)
-					regions.markChunkForReRender((x) / 32, (y) / 32, (z - 1) / 32);
-				else if (z % 32 == 31)
-					regions.markChunkForReRender((x) / 32, (y) / 32, (z + 1) / 32);
-				regions.markChunkForReRender((x) / 32, (y) / 32, (z) / 32);
-			}
-			return newData;
-		}
-		else {
-			//Chunk is null.REEE
-			//throw new RuntimeException("Chunk wasn't loaded properly in fact :[ "+ x / 32 + " : " + y / 32 + " : " + z / 32);
-		}
-		return -1;
-	}
-
-	@Override
-	public void setVoxelDataWithoutUpdates(int x, int y, int z, int i)
-	{
-		x = sanitizeHorizontalCoordinate(x);
-		y = sanitizeVerticalCoordinate(y);
-		z = sanitizeHorizontalCoordinate(z);
-
-		//getRegionsSummariesHolder().updateOnBlockPlaced(x, y, z, i);
-
-		Chunk c = regions.getChunk(x / 32, y / 32, z / 32);
-		if (c != null)
-		{
-			c.setVoxelDataWithoutUpdates(x % 32, y % 32, z % 32, i);
-		}
-		else {
-			//Chunk is null.REEE
-			//throw new RuntimeException("Chunk wasn't loaded properly in fact :[ "+ x / 32 + " : " + y / 32 + " : " + z / 32);
-		}
-	}
-
-	@Override
-	public int getSunlightLevelWorldCoordinates(int x, int y, int z)
-	{
-		x = sanitizeHorizontalCoordinate(x);
-		y = sanitizeVerticalCoordinate(y);
-		z = sanitizeHorizontalCoordinate(z);
-		if (this.isChunkLoaded(x / 32, y / 32, z / 32) && !this.getChunk(x / 32, y / 32, z / 32).isAirChunk())
-			return VoxelFormat.sunlight(this.getVoxelData(x, y, z));
-		else
-			return y <= this.getRegionsSummariesHolder().getHeightAtWorldCoordinates(x, z) ? 0 : 15;
-	}
-
-	@Override
-	public int getSunlightLevelLocation(Location location)
-	{
-		return getSunlightLevelWorldCoordinates((int) (double) location.x(), (int) (double) location.y(), (int) (double) location.z());
-	}
-
-	@Override
-	public int getBlocklightLevelWorldCoordinates(int x, int y, int z)
-	{
-		x = sanitizeHorizontalCoordinate(x);
-		y = sanitizeVerticalCoordinate(y);
-		z = sanitizeHorizontalCoordinate(z);
-		if (this.isChunkLoaded(x / 32, y / 32, z / 32))
-			return VoxelFormat.blocklight(this.getVoxelData(x, y, z));
-		else
-			return 0;
-	}
-
-	@Override
-	public int getBlocklightLevelLocation(Location location)
-	{
-		return getBlocklightLevelWorldCoordinates((int) (double) location.x(), (int) (double) location.y(), (int) (double) location.z());
-	}*/
 	
 	@Override
-	public IterableIterator<VoxelContext> getVoxelsWithin(CollisionBox boundingBox) {
+	public ChunkCell poke(FutureCell future, WorldModificationCause cause) throws WorldException {
+		return poke(future.getX(), future.getY(), future.getZ(), future.getVoxel(), future.getSunlight(), future.getBlocklight(), future.getMetaData(), cause);
+	}
+
+	@Override
+	public void pokeSimple(int x, int y, int z, Voxel voxel, int sunlight, int blocklight, int metadata) {
+		x = sanitizeHorizontalCoordinate(x);
+		y = sanitizeVerticalCoordinate(y);
+		z = sanitizeHorizontalCoordinate(z);
+		
+		Chunk chunk = this.getChunkWorldCoordinates(x, y, z);
+		if(chunk != null)
+			chunk.pokeSimple(x, y, z, voxel, sunlight, blocklight, metadata);
+	}
+	
+	@Override
+	public void pokeSimple(FutureCell future) {
+		pokeSimple(future.getX(), future.getY(), future.getZ(), future.getVoxel(), future.getSunlight(), future.getBlocklight(), future.getMetaData());
+	}
+
+	@Override
+	public void pokeSimpleSilently(int x, int y, int z, Voxel voxel, int sunlight, int blocklight, int metadata) {
+		x = sanitizeHorizontalCoordinate(x);
+		y = sanitizeVerticalCoordinate(y);
+		z = sanitizeHorizontalCoordinate(z);
+		
+		Chunk chunk = this.getChunkWorldCoordinates(x, y, z);
+		if(chunk != null)
+			chunk.pokeSimpleSilently(x, y, z, voxel, sunlight, blocklight, metadata);
+	}
+	
+	@Override
+	public void pokeSimpleSilently(FutureCell future) {
+		pokeSimpleSilently(future.getX(), future.getY(), future.getZ(), future.getVoxel(), future.getSunlight(), future.getBlocklight(), future.getMetaData());
+	}
+	
+	@Override
+	public void pokeRaw(int x, int y, int z, int raw_data) {
+		x = sanitizeHorizontalCoordinate(x);
+		y = sanitizeVerticalCoordinate(y);
+		z = sanitizeHorizontalCoordinate(z);
+		
+		Chunk chunk = this.getChunkWorldCoordinates(x, y, z);
+		if(chunk != null)
+			chunk.pokeRaw(x, y, z, raw_data);
+	}
+	
+	@Override
+	public void pokeRawSilently(int x, int y, int z, int raw_data) {
+		x = sanitizeHorizontalCoordinate(x);
+		y = sanitizeVerticalCoordinate(y);
+		z = sanitizeHorizontalCoordinate(z);
+		
+		Chunk chunk = this.getChunkWorldCoordinates(x, y, z);
+		if(chunk != null)
+			chunk.pokeRawSilently(x, y, z, raw_data);
+	}
+	
+	@Override
+	public IterableIterator<CellData> getVoxelsWithin(CollisionBox boundingBox) {
 		return new AABBVoxelIterator(this, boundingBox);
 	}
 
@@ -937,18 +705,17 @@ public abstract class WorldImplementation implements World
 		if (voxelLocation == null)
 			return false;
 
-		VoxelContext peek;
+		CellData peek;
 		try {
 			peek = this.peek(voxelLocation);
 		} catch (WorldException e) {
-			
 			// Will not accept interacting with unloaded blocks
 			return false;
 		}
 		
 		Voxel voxel = peek.getVoxel();
 		if (voxel != null && voxel instanceof VoxelInteractive)
-			return ((VoxelInteractive) voxel).handleInteraction(entity, (ChunkVoxelContext) peek, input);
+			return ((VoxelInteractive) voxel).handleInteraction(entity, (ChunkCell) peek, input);
 		return false;
 	}
 

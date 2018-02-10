@@ -4,10 +4,12 @@ import io.xol.chunkstories.api.content.Content.Voxels;
 import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.voxel.Voxel;
-import io.xol.chunkstories.api.world.VoxelContext;
+import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.api.world.cell.CellData;
 
-public class AABBVoxelIterator implements IterableIterator<VoxelContext>, VoxelContext{
+public class AABBVoxelIterator implements IterableIterator<CellData>, CellData{
 	private final World world;
 	private final CollisionBox collisionBox;
 	
@@ -18,6 +20,9 @@ public class AABBVoxelIterator implements IterableIterator<VoxelContext>, VoxelC
 	
 	private int minx, miny, minz;
 	private int maxx, maxy, maxz;
+	
+	Voxel voxel;
+	int sunlight, blocklight, metadata;
 	
 	public AABBVoxelIterator(World world, CollisionBox collisionBox) {
 		this.world = world;
@@ -51,7 +56,7 @@ public class AABBVoxelIterator implements IterableIterator<VoxelContext>, VoxelC
 		//return k <= (int)Math.ceil(collisionBox.zpos + collisionBox.zw);
 	}
 	@Override
-	public VoxelContext next() {
+	public CellData next() {
 		
 		i2 = i;
 		j2 = j;
@@ -70,17 +75,15 @@ public class AABBVoxelIterator implements IterableIterator<VoxelContext>, VoxelC
 			
 		}	//throw new UnsupportedOperationException("Out of bounds iterator. Called when hasNext() returned false.");
 		
+		//Optimisation here:
+		//Instead of making a new CellData object for each iteration we just change this one by pulling the properties
+		int raw_data = world.peekRaw(i2, j2, k2);
+		voxel = world.getContentTranslator().getVoxelForId(VoxelFormat.id(raw_data));
+		sunlight = VoxelFormat.sunlight(raw_data);
+		blocklight = VoxelFormat.blocklight(raw_data);
+		metadata = VoxelFormat.meta(raw_data);
+		
 		return this;
-	}
-
-	@Override
-	public Voxel getVoxel() {
-		return voxels.getVoxelById(getData());
-	}
-
-	@Override
-	public int getData() {
-		return world.peekSimple(i2, j2, k2);
 	}
 
 	@Override
@@ -97,28 +100,35 @@ public class AABBVoxelIterator implements IterableIterator<VoxelContext>, VoxelC
 	public int getZ() {
 		return k2;
 	}
-
-	public int getNeightborData(int side) {
-		switch(side) {
-		case 0:
-			return world.peekSimple(i2 - 1, j2, k2);
-		case 1:
-			return world.peekSimple(i2, j2, k2 + 1);
-		case 2:
-			return world.peekSimple(i2 + 1, j2, k2);
-		case 3:
-			return world.peekSimple(i2, j2, k2 - 1);
-		case 4:
-			return world.peekSimple(i2, j2 + 1, k2);
-		case 5: 
-			return world.peekSimple(i2, j2 - 1, k2);
-		}
-		
-		throw new UnsupportedOperationException("getNeighborData(side): Side must be comprised between [0:5]");
-	}
-
+	
 	@Override
 	public World getWorld() {
 		return world;
+	}
+
+	@Override
+	public Voxel getVoxel() {
+		return voxel;
+	}
+
+	@Override
+	public int getMetaData() {
+		return metadata;
+	}
+
+	@Override
+	public int getSunlight() {
+		return sunlight;
+	}
+
+	@Override
+	public int getBlocklight() {
+		return blocklight;
+	}
+
+	@Override
+	public CellData getNeightbor(int side_int) {
+		VoxelSides side = VoxelSides.values()[side_int];
+		return world.peekSafely(getX() + side.dx, getY() + side.dy, getZ() + side.dz);
 	}
 }

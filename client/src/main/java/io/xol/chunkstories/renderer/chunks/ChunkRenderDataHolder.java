@@ -22,7 +22,7 @@ import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.LodLevel;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.VertexLayout;
 import io.xol.chunkstories.api.workers.Task;
-import io.xol.chunkstories.api.world.chunk.Chunk.ChunkVoxelContext;
+import io.xol.chunkstories.api.world.chunk.Chunk.ChunkCell;
 import io.xol.chunkstories.renderer.chunks.ChunkMeshDataSections.DynamicallyRenderedVoxelClass;
 import io.xol.chunkstories.world.chunk.ClientChunk;
 import io.xol.chunkstories.world.chunk.CubicChunk;
@@ -269,10 +269,10 @@ public class ChunkRenderDataHolder implements ChunkMeshUpdater
 				//System.out.println("extra");
 				
 				VoxelDynamicRenderer renderer = stuff.getValue().renderer;
-				renderer.renderVoxels(renderingInterface, new IterableIterator<ChunkVoxelContext>() {
+				renderer.renderVoxels(renderingInterface, new IterableIterator<ChunkCell>() {
 
 					Iterator<Integer> iindex = stuff.getValue().indexes.iterator();
-					ChunkVoxelContext cvc = null;
+					ChunkCell cvc = null;
 					
 					@Override
 					public boolean hasNext() {
@@ -293,8 +293,8 @@ public class ChunkRenderDataHolder implements ChunkMeshUpdater
 					}
 
 					@Override
-					public ChunkVoxelContext next() {
-						ChunkVoxelContext cvr = cvc;
+					public ChunkCell next() {
+						ChunkCell cvr = cvc;
 						cvc = null;
 						return cvr;
 						//int index = iindex.next();

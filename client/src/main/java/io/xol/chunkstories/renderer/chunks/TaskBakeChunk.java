@@ -135,8 +135,8 @@ public class TaskBakeChunk extends Task {
 		}
 
 		// If the chunk has pending light updates, wait until THOSE are done
-		if(chunk.lightBakingStatus.pendingUpdates() > 0) {
-			chunk.lightBakingStatus.spawnUpdateTaskIfNeeded();
+		if(chunk.lightBaker.pendingUpdates() > 0) {
+			chunk.lightBaker.spawnUpdateTaskIfNeeded();
 			return false;
 		}
 		

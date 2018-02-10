@@ -26,6 +26,7 @@ import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.api.world.WorldInfo.WorldSize;
+import io.xol.chunkstories.api.world.cell.CellData;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
@@ -529,11 +530,12 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser
 					{
 						for (int h = maxHeightPossible; h > 0; h--)
 						{
-							int data = csWorld.peekSimple(regionX * 256 + i, h, regionZ * 256 + j);
+							int data = csWorld.peekRaw(regionX * 256 + i, h, regionZ * 256 + j);
+							CellData cell = csWorld.peekSafely(regionX * 256 + i, h, regionZ * 256 + j);
 							if (data != 0)
 							{
-								Voxel vox = this.getContent().voxels().getVoxelById(data);
-								if (vox.getType().isSolid() || vox.getType().isLiquid())
+								Voxel vox = cell.getVoxel();
+								if (vox.getDefinition().isSolid() || vox.getDefinition().isLiquid())
 								{
 									summary.setHeightAndId(regionX * 256 + i, h, regionZ * 256 + j, data & 0x0000FFFF);
 									break;
@@ -632,7 +634,7 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser
 				for (int chunkY = maxHeightPossible / 32; chunkY >= 0; chunkY--)
 				{
 					//TODO BAD
-					csWorld.getChunk(chunkX, chunkY, chunkZ).computeVoxelLightningInternal(true);
+					csWorld.getChunk(chunkX, chunkY, chunkZ).lightBaker.computeVoxelLightningInternal(true);
 				}
 
 				//Show progress

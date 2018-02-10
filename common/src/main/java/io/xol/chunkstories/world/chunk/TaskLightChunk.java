@@ -1,9 +1,8 @@
-package io.xol.chunkstories.renderer.chunks;
+package io.xol.chunkstories.world.chunk;
 
 import io.xol.chunkstories.api.rendering.world.ChunkRenderable;
 import io.xol.chunkstories.api.workers.Task;
 import io.xol.chunkstories.api.workers.TaskExecutor;
-import io.xol.chunkstories.world.chunk.CubicChunk;
 
 public class TaskLightChunk extends Task {
 
@@ -20,27 +19,27 @@ public class TaskLightChunk extends Task {
 		
 		try {
 			//Lock this
-			chunk.lightBakingStatus.onlyOneUpdateAtATime.lock();
-			int updatesNeeded = chunk.lightBakingStatus.unbakedUpdates.get();
+			chunk.lightBaker.onlyOneUpdateAtATime.lock();
+			int updatesNeeded = chunk.lightBaker.unbakedUpdates.get();
 			if(updatesNeeded == 0)
 				return true;
 			
 			//Actual computation takes place here
-			int mods = chunk.computeVoxelLightningInternal(updateAdjacentChunks);
+			int mods = chunk.lightBaker.computeVoxelLightningInternal(updateAdjacentChunks);
 			
 			//Blocks have changed ?
 			if(mods > 0 && chunk instanceof ChunkRenderable)
 				((ChunkRenderable)chunk).meshUpdater().requestMeshUpdate();
 			
 			//Remove however many updates were pending
-			chunk.lightBakingStatus.unbakedUpdates.addAndGet(-updatesNeeded);
+			chunk.lightBaker.unbakedUpdates.addAndGet(-updatesNeeded);
 		}
 		finally {
 			//chunk.lightBakingStatus.taskLock.writeLock().lock();
 			//chunk.lightBakingStatus.task = null;
 			//chunk.lightBakingStatus.taskLock.writeLock().unlock();
 			
-			chunk.lightBakingStatus.onlyOneUpdateAtATime.unlock();
+			chunk.lightBaker.onlyOneUpdateAtATime.unlock();
 		}
 		return true;
 	}

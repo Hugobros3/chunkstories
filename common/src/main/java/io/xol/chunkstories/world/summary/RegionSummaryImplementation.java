@@ -253,6 +253,7 @@ public class RegionSummaryImplementation implements RegionSummary
 		}
 	}
 
+	//TODO don't use ids use VOXEL types !
 	@Override
 	public void setHeightAndId(int worldX, int height, int worldZ, int voxelData)
 	{

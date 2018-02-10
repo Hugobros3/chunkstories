@@ -25,7 +25,7 @@ public class EntityTypesStore implements EntityTypes
 {
 	private final Content content;
 	
-	private Map<Short, EntityDefinition> entityTypesById = new HashMap<Short, EntityDefinition>();
+	//private Map<Short, EntityDefinition> entityTypesById = new HashMap<Short, EntityDefinition>();
 	private Map<String, EntityDefinition> entityTypesByName = new HashMap<String, EntityDefinition>();
 
 	private static final Logger logger = LoggerFactory.getLogger("content.entities");
@@ -40,7 +40,7 @@ public class EntityTypesStore implements EntityTypes
 	
 	public void reload()
 	{
-		entityTypesById.clear();
+		//entityTypesById.clear();
 		entityTypesByName.clear();
 		
 		Iterator<Asset> i = content.modsManager().getAllAssetsByExtension("entities");
@@ -76,13 +76,13 @@ public class EntityTypesStore implements EntityTypes
 					{
 						String[] split = line.split(" ");
 						String name = split[1];
-						short id = Short.parseShort(split[2]);
+						//short id = Short.parseShort(split[2]);
 						
 						try
 						{
-							EntityTypeImpl entityType = new EntityTypeImpl(this, name, id, reader);
+							EntityTypeImpl entityType = new EntityTypeImpl(this, name, reader);
 
-							this.entityTypesById.put(entityType.getId(), entityType);
+							//this.entityTypesById.put(entityType.getId(), entityType);
 							this.entityTypesByName.put(entityType.getName(), entityType);
 						}
 						catch (IllegalEntityDeclarationException e)
@@ -154,12 +154,12 @@ public class EntityTypesStore implements EntityTypes
 		
 	}*/
 
-	@Override
+	/*@Override
 	public EntityDefinition getEntityTypeById(short entityId)
 	{
 		return entityTypesById.get(entityId);
-	}
-
+	}*/
+	
 	@Override
 	public EntityDefinition getEntityTypeByName(String entityName)
 	{
@@ -187,7 +187,7 @@ public class EntityTypesStore implements EntityTypes
 	@Override
 	public Iterator<EntityDefinition> all()
 	{
-		return this.entityTypesById.values().iterator();
+		return this.entityTypesByName.values().iterator();
 	}
 
 	@Override

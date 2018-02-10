@@ -8,7 +8,6 @@ import com.carrotsearch.hppc.IntDeque;
 
 import io.xol.chunkstories.api.workers.Task;
 import io.xol.chunkstories.api.workers.TaskExecutor;
-import io.xol.chunkstories.voxel.VoxelsStore;
 
 public class TaskComputeChunkOcclusion extends Task {
 
@@ -125,7 +124,7 @@ public class TaskComputeChunkOcclusion extends Task {
 				mask[x * 1024 + y * 32 + z] = true;
 				completion++;
 
-				if (!VoxelsStore.get().getVoxelById(chunk.peekSimple(x, y, z)).getType().isOpaque()) {
+				if (!chunk.peekSimple(x, y, z).getDefinition().isOpaque()) {
 					// Adds touched sides to set
 
 					if (x == 0)

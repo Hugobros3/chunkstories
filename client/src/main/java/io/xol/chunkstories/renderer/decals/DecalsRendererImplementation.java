@@ -30,11 +30,10 @@ import io.xol.chunkstories.api.voxel.models.ChunkRenderer;
 import io.xol.chunkstories.api.voxel.models.VoxelBakerCubic;
 import io.xol.chunkstories.api.voxel.models.VoxelBakerHighPoly;
 import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
-import io.xol.chunkstories.api.world.VoxelContext;
 import io.xol.chunkstories.api.world.WorldClient;
+import io.xol.chunkstories.api.world.cell.CellData;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.renderer.WorldRendererImplementation;
-import io.xol.chunkstories.voxel.VoxelContextOlder;
 import io.xol.engine.graphics.geometry.VertexBufferGL;
 import io.xol.engine.graphics.textures.Texture2DGL;
 import io.xol.engine.graphics.textures.TexturesHandler;
@@ -128,14 +127,13 @@ public class DecalsRendererImplementation implements DecalsRenderer
 						location.add(new Vector3d(rotateMe.x(), rotateMe.y(), rotateMe.z()));
 						location.add(new Vector3d(0.5));
 
-						VoxelContext peek = world.peekSafely(location);
+						CellData cell = world.peekSafely(location);
 						//int idThere = VoxelFormat.id(world.peekSimple(location));
 
-						Voxel voxel = peek.getVoxel();
-						if (voxel != null && !peek.getVoxel().isAir() && !voxel.getDefinition().isLiquid() && voxel.getDefinition().isSolid())
+						Voxel voxel = cell.getVoxel();
+						if (voxel != null && !cell.getVoxel().isAir() && !voxel.getDefinition().isLiquid() && voxel.getDefinition().isSolid())
 						{
-							VoxelContext bri = new VoxelContextOlder(location);
-							VoxelRenderer model = voxel.getVoxelRenderer(bri);
+							VoxelRenderer model = voxel.getVoxelRenderer(cell);
 
 							if (model == null)
 								model = voxel.store().models().getVoxelModelByName("default");
@@ -238,19 +236,19 @@ public class DecalsRendererImplementation implements DecalsRenderer
 								@Override
 								public int getRenderedVoxelPositionInChunkX()
 								{
-									return bri.getX() & 0x1f;
+									return cell.getX() & 0x1f;
 								}
 
 								@Override
 								public int getRenderedVoxelPositionInChunkY()
 								{
-									return bri.getY() & 0x1f;
+									return cell.getY() & 0x1f;
 								}
 
 								@Override
 								public int getRenderedVoxelPositionInChunkZ()
 								{
-									return bri.getZ() & 0x1f;
+									return cell.getZ() & 0x1f;
 								}
 
 								@Override
@@ -263,7 +261,7 @@ public class DecalsRendererImplementation implements DecalsRenderer
 							Chunk chunk = world.getChunkWorldCoordinates(location);
 							virtualRenderBytebuffer.setChunk(chunk);
 							
-							model.renderInto(chunkRenderer, o2, chunk, peek);
+							model.renderInto(chunkRenderer, o2, chunk, cell);
 						}
 
 					}

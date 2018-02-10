@@ -9,6 +9,7 @@ import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.util.IterableIteratorWrapper;
 import io.xol.chunkstories.api.voxel.components.VoxelComponent;
 import io.xol.chunkstories.api.voxel.components.VoxelComponents;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 
@@ -79,6 +80,11 @@ public class VoxelComponentsHolder implements VoxelComponents {
 		}
 		
 		return null;
+	}
+
+	@Override
+	public World getWorld() {
+		return chunk.getWorld();
 	}
 
 }

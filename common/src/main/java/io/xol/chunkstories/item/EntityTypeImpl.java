@@ -20,14 +20,11 @@ public class EntityTypeImpl extends GenericNamedConfigurable implements EntityDe
 	final EntityTypesStore store;
 	
 	final Constructor<? extends Entity> constructor;
-	final short id;
 
 	@SuppressWarnings("unchecked")
-	public EntityTypeImpl(EntityTypesStore store, String name, short id, BufferedReader reader) throws IllegalEntityDeclarationException, IOException
+	public EntityTypeImpl(EntityTypesStore store, String name, BufferedReader reader) throws IllegalEntityDeclarationException, IOException
 	{
 		super(name, reader);
-		
-		this.id = id;
 		this.store = store;
 		
 		String className = this.resolveProperty("class", null);
@@ -67,11 +64,7 @@ public class EntityTypeImpl extends GenericNamedConfigurable implements EntityDe
 			throw new IllegalEntityDeclarationException("Entity "+name+" failed to provide an acceptable constructor, exception="+e.getMessage());
 		}
 	}
-
-	public short getId() {
-		return id;
-	}
-
+	
 	@Override
 	public Entity create(Location location) {
 		Object[] parameters = { this, location };
