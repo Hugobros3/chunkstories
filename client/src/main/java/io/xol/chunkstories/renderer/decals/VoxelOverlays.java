@@ -15,7 +15,7 @@ import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingM
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
-import io.xol.chunkstories.api.world.VoxelContext;
+import io.xol.chunkstories.api.world.cell.CellData;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -35,11 +35,11 @@ public class VoxelOverlays {
 		int y = (int)(double) location.y();
 		int z = (int)(double) location.z();
 		
-		VoxelContext peek = location.getWorld().peekSafely(x, y, z);
-		if(peek.getVoxel() == null)
+		CellData peek = location.getWorld().peekSafely(x, y, z);
+		if(peek.getVoxel() == null || peek.getVoxel().isAir())
 			return;
 		
-		CollisionBox[] boxes = peek.getVoxel().getTranslatedCollisionBoxes(location.getWorld(), x, y, z);
+		CollisionBox[] boxes = peek.getTranslatedCollisionBoxes();
 		//TODO: getTranslatedCollisionBoxes(voxelContext)
 		if(boxes == null)
 			return;

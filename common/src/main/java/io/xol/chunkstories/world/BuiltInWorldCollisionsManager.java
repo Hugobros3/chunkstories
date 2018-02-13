@@ -8,17 +8,15 @@ import org.joml.Vector3d;
 import org.joml.Vector3dc;
 
 import io.xol.chunkstories.api.physics.CollisionBox;
-import io.xol.chunkstories.api.voxel.Voxel;
-import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.WorldCollisionsManager;
-import io.xol.chunkstories.voxel.VoxelsStore;
+import io.xol.chunkstories.api.world.cell.CellData;
 import io.xol.chunkstories.world.iterators.EntityRayIterator;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
 //http://xol.io
 
-//TODO eliminate redundant peek() calls (2x)
+/** Responsible for handling the 'pixel-perfect' AABB collisions */
 public class BuiltInWorldCollisionsManager implements WorldCollisionsManager
 {
 	private final WorldImplementation world;
@@ -53,7 +51,8 @@ public class BuiltInWorldCollisionsManager implements WorldCollisionsManager
 		//direction.scale(0.02);
 
 		//float distance = 0f;
-		Voxel vox;
+		CellData cell;
+		//Voxel vox;
 		int x, y, z;
 		x = (int) Math.floor(initialPosition.x());
 		y = (int) Math.floor(initialPosition.y());
@@ -115,11 +114,12 @@ public class BuiltInWorldCollisionsManager implements WorldCollisionsManager
 			x = voxelCoords[0];
 			y = voxelCoords[1];
 			z = voxelCoords[2];
-			vox = VoxelsStore.get().getVoxelById(world.peekSimple(x, y, z));
-			if (vox.getDefinition().isSolid() || (selectable && vox.isVoxelSelectable()))
+			cell = world.peekSafely(x, y, z);
+			//vox = translator.getVoxelForId(world.peekSimple(x, y, z));
+			if (cell.getVoxel().getDefinition().isSolid() || (selectable && cell.getVoxel().isVoxelSelectable()))
 			{
 				boolean collides = false;
-				for (CollisionBox box : vox.getTranslatedCollisionBoxes(world, x, y, z))
+				for (CollisionBox box : cell.getTranslatedCollisionBoxes())
 				{
 					//System.out.println(box);
 					Vector3dc collisionPoint = box.lineIntersection(initialPosition, direction);
@@ -185,9 +185,7 @@ public class BuiltInWorldCollisionsManager implements WorldCollisionsManager
 	 */
 	public Vector3d runEntityAgainstWorldVoxels(Entity entity, Vector3dc from, Vector3dc delta)
 	{
-		int id, data;
-
-		boolean collision = false;
+		CellData cell;
 		
 		//Extract the current position
 		Vector3d pos = new Vector3d(from);
@@ -235,20 +233,19 @@ public class BuiltInWorldCollisionsManager implements WorldCollisionsManager
 				stepDistanceY = vec.y();
 				stepDistanceZ = vec.z();
 
-				Voxel vox;
-
 				// Z part
 				checkerZ = entity.getCollisionBoxes()[r].translate(pos.x(), pos.y(), pos.z() + stepDistanceZ);
 				for(int i = (int)Math.floor(pos.x()) - 1; i < (int)Math.ceil(pos.x() + checkerX.xw); i++)
 					for(int j = (int)Math.floor(pos.y()) - 1; j < (int)Math.ceil(pos.y() + checkerX.h); j++)
 						for(int k = (int)Math.floor(pos.z()) - 1; k < (int)Math.ceil(pos.z() + checkerX.zw); k++)
 						{
-							data = this.world.peekSimple(i, j, k);
-							id = VoxelFormat.id(data);
-							vox = VoxelsStore.get().getVoxelById(id);
-							if (vox.getDefinition().isSolid())
+							cell = world.peekSafely(i, j, k);
+							//data = this.world.peekSimple(i, j, k);
+							//id = VoxelFormat.id(data);
+							//vox = voxelsStore.getVoxelById(id);
+							if (cell.getVoxel().getDefinition().isSolid())
 							{
-								CollisionBox[] boxes = vox.getCollisionBoxes(world.peekSafely(i, j, k));//new VoxelContextOlder(world, i, j, k));
+								CollisionBox[] boxes = cell.getTranslatedCollisionBoxes();
 								if (boxes != null)
 									for (CollisionBox box : boxes)
 									{
@@ -257,9 +254,6 @@ public class BuiltInWorldCollisionsManager implements WorldCollisionsManager
 										{
 											if (checkerZ.collidesWith(box))
 											{
-												collision = true;
-												if (collision == false)
-													break;
 												stepDistanceZ = 0;
 												if (delta.z() < 0)
 												{
@@ -290,12 +284,13 @@ public class BuiltInWorldCollisionsManager implements WorldCollisionsManager
 					for(int j = (int)Math.floor(pos.y()) - 1; j < (int)Math.ceil(pos.y() + checkerY.h); j++)
 						for(int k = (int)Math.floor(pos.z()) - 1; k < (int)Math.ceil(pos.z() + checkerY.zw); k++)
 						{
-							data = this.world.peekSimple(i, j, k);
+							cell = world.peekSafely(i, j, k);
+							/*data = this.world.peekSimple(i, j, k);
 							id = VoxelFormat.id(data);
-							vox = VoxelsStore.get().getVoxelById(id);
-							if (vox.getDefinition().isSolid())
+							vox = voxelsStore.getVoxelById(id);*/
+							if (cell.getVoxel().getDefinition().isSolid())
 							{
-								CollisionBox[] boxes = vox.getCollisionBoxes(world.peekSafely(i, j, k));//new VoxelContextOlder(world, i, j, k));
+								CollisionBox[] boxes = cell.getTranslatedCollisionBoxes();
 								if (boxes != null)
 									for (CollisionBox box : boxes)
 									{
@@ -305,9 +300,6 @@ public class BuiltInWorldCollisionsManager implements WorldCollisionsManager
 										{
 											if (checkerX.collidesWith(box))
 											{
-												collision = true;
-												if (collision == false)
-													break;
 												stepDistanceX = 0;
 												if (delta.x() < 0)
 												{
@@ -337,12 +329,13 @@ public class BuiltInWorldCollisionsManager implements WorldCollisionsManager
 					for(int j = (int)Math.floor(pos.y()) - 1; j < (int)Math.ceil(pos.y() + checkerZ.h) + 1; j++)
 						for(int k = (int)Math.floor(pos.z()) - 1; k < (int)Math.ceil(pos.z() + checkerZ.zw); k++)
 						{
-							data = this.world.peekSimple(i, j, k);
+							cell = world.peekSafely(i, j, k);
+							/*data = this.world.peekSimple(i, j, k);
 							id = VoxelFormat.id(data);
-							vox = VoxelsStore.get().getVoxelById(id);
-							if (vox.getDefinition().isSolid())
+							vox = voxelsStore.voxelForId(id);*/
+							if (cell.getVoxel().getDefinition().isSolid())
 							{
-								CollisionBox[] boxes = vox.getCollisionBoxes(world.peekSafely(i, j, k));//new VoxelContextOlder(world, i, j, k));
+								CollisionBox[] boxes = cell.getTranslatedCollisionBoxes();
 								if (boxes != null)
 									for (CollisionBox box : boxes)
 									{
@@ -351,7 +344,6 @@ public class BuiltInWorldCollisionsManager implements WorldCollisionsManager
 										{
 											if (checkerY.collidesWith(box))
 											{
-												collision = true;
 												stepDistanceY = 0;
 												if (delta.y() < 0)
 												{

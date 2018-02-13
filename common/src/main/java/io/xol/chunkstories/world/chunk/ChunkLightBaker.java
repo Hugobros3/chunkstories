@@ -8,19 +8,21 @@ import com.carrotsearch.hppc.IntArrayDeque;
 import com.carrotsearch.hppc.IntDeque;
 
 import io.xol.chunkstories.api.util.concurrency.Fence;
-import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.workers.Task;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunkLightUpdater;
+import io.xol.chunkstories.world.cell.ScratchCell;
 import io.xol.engine.concurrency.SimpleLock;
 
+//TODO use custom propagation for ALL propagation functions & cleanup this whole darn mess
+/** Responsible for propagating voxel volumetric light */
 public class ChunkLightBaker implements ChunkLightUpdater {
-	final CubicChunk chunk;
 	final World world;
 	final int chunkX, chunkY, chunkZ;
+	final CubicChunk chunk;
 	
 	final AtomicInteger unbakedUpdates = new AtomicInteger(1);
 	public final SimpleLock onlyOneUpdateAtATime = new SimpleLock();
@@ -148,7 +150,6 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 		return mods;
 	}
 	
-
 	// Now entering lightning code part, brace yourselves
 	private int propagateLightning(IntDeque blockSources, IntDeque sunSources)
 	{
@@ -177,30 +178,30 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 		boolean requestLeft = false;
 		boolean requestRight = false;
 		
-		Voxel voxel;
+		ScratchCell cell = new ScratchCell(world);
+		ScratchCell adj = new ScratchCell(world);
 		while (blockSources.size() > 0)
 		{
 			int y = blockSources.removeLast();
 			int z = blockSources.removeLast();
 			int x = blockSources.removeLast();
 			
-			int voxelData = chunk.chunkVoxelData[x * 1024 + y * 32 + z];
-			int cellLightLevel = (voxelData & blocklightMask) >> blockBitshift;
-			int cId = VoxelFormat.id(voxelData);
-			voxel = world.getContentTranslator().getVoxelForId(cId);
+			peek(x, y, z, cell);
+			int cellLightLevel = cell.blocklight;
 
-			if (world.getContentTranslator().getVoxelForId(cId).getDefinition().isOpaque())
-				cellLightLevel = voxel.getLightLevel(voxelData);
+			if (cell.voxel.getDefinition().isOpaque())
+				cellLightLevel = cell.voxel.getLightLevel(cell);
 			
 			if (cellLightLevel > 1)
 			{
 				if (x < 31)
 				{
-					int rightData = chunk.chunkVoxelData[(x + 1) * 1024 + y * 32 + z];
-					int llRight = cellLightLevel - voxel.getLightLevelModifier(voxelData, rightData, VoxelSides.RIGHT);
-					if (!world.getContentTranslator().getVoxelForId((rightData & 0xFFFF)).getDefinition().isOpaque() && ((rightData & blocklightMask) >> blockBitshift) < llRight - 1)
+					peek(x + 1, y, z, adj);
+					int llRight = cellLightLevel - cell.voxel.getLightLevelModifier(cell, adj, VoxelSides.RIGHT);
+					if (!adj.voxel.getDefinition().isOpaque() && adj.blocklight < llRight - 1)
 					{
-						chunk.chunkVoxelData[(x + 1) * 1024 + y * 32 + z] = rightData & blockAntiMask | (llRight - 1) << blockBitshift;
+						adj.blocklight = llRight - 1;
+						poke(adj);
 						modifiedBlocks++;
 						blockSources.addLast(x + 1);
 						blockSources.addLast(z);
@@ -209,9 +210,9 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				}
 				else if (checkRightBleeding)
 				{
-					int rightData = adjacentChunkRight.peekRaw(0, y, z);
-					int llRight = cellLightLevel - voxel.getLightLevelModifier(voxelData, rightData, VoxelSides.RIGHT);
-					if (((rightData & blocklightMask) >> blockBitshift) < llRight - 1)
+					peek(32, y, z, adj);
+					int llRight = cellLightLevel - cell.voxel.getLightLevelModifier(cell, adj, VoxelSides.RIGHT);
+					if (adj.blocklight < llRight - 1)
 					{
 						requestRight = true;
 						checkRightBleeding = false;
@@ -219,11 +220,12 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				}
 				if (x > 0)
 				{
-					int leftData = chunk.chunkVoxelData[(x - 1) * 1024 + y * 32 + z];
-					int llLeft = cellLightLevel - voxel.getLightLevelModifier(voxelData, leftData, VoxelSides.LEFT);
-					if (!world.getContentTranslator().getVoxelForId((leftData & 0xFFFF)).getDefinition().isOpaque() && ((leftData & blocklightMask) >> blockBitshift) < llLeft - 1)
+					peek(x - 1, y, z, adj);
+					int llLeft = cellLightLevel - cell.voxel.getLightLevelModifier(cell, adj, VoxelSides.LEFT);
+					if (!adj.voxel.getDefinition().isOpaque() && adj.blocklight < llLeft - 1)
 					{
-						chunk.chunkVoxelData[(x - 1) * 1024 + y * 32 + z] = leftData & blockAntiMask | (llLeft - 1) << blockBitshift;
+						adj.blocklight = llLeft - 1;
+						poke(adj);
 						modifiedBlocks++;
 						blockSources.addLast(x - 1);
 						blockSources.addLast(z);
@@ -232,9 +234,9 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				}
 				else if (checkLeftBleeding)
 				{
-					int leftData = adjacentChunkLeft.peekRaw(31, y, z);
-					int llLeft = cellLightLevel - voxel.getLightLevelModifier(voxelData, leftData, VoxelSides.LEFT);
-					if (((leftData & blocklightMask) >> blockBitshift) < llLeft - 1)
+					peek(-1, y, z, adj);
+					int llLeft = cellLightLevel - cell.voxel.getLightLevelModifier(cell, adj, VoxelSides.LEFT);
+					if (adj.blocklight < llLeft - 1)
 					{
 						requestLeft = true;
 						checkLeftBleeding = false;
@@ -243,11 +245,12 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 
 				if (z < 31)
 				{
-					int frontData = chunk.chunkVoxelData[x * 1024 + y * 32 + z + 1];
-					int llFront = cellLightLevel - voxel.getLightLevelModifier(voxelData, frontData, VoxelSides.FRONT);
-					if (!world.getContentTranslator().getVoxelForId((frontData & 0xFFFF)).getDefinition().isOpaque() && ((frontData & blocklightMask) >> blockBitshift) < llFront - 1)
+					peek(x, y, z + 1, adj);
+					int llFront = cellLightLevel - cell.voxel.getLightLevelModifier(cell, adj, VoxelSides.FRONT);
+					if (!adj.voxel.getDefinition().isOpaque() && adj.blocklight < llFront - 1)
 					{
-						chunk.chunkVoxelData[x * 1024 + y * 32 + z + 1] = frontData & blockAntiMask | (llFront - 1) << blockBitshift;
+						adj.blocklight = llFront - 1;
+						poke(adj);
 						modifiedBlocks++;
 						blockSources.addLast(x);
 						blockSources.addLast(z + 1);
@@ -256,9 +259,9 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				}
 				else if (checkFrontBleeding)
 				{
-					int frontData = adjacentChunkFront.peekRaw(x, y, 0);
-					int llFront = cellLightLevel - voxel.getLightLevelModifier(voxelData, frontData, VoxelSides.FRONT);
-					if (((frontData & blocklightMask) >> blockBitshift) < llFront - 1)
+					peek(x, y, 32, adj);
+					int llFront = cellLightLevel - cell.voxel.getLightLevelModifier(cell, adj, VoxelSides.FRONT);
+					if (adj.blocklight < llFront - 1)
 					{
 						requestFront = true;
 						checkFrontBleeding = false;
@@ -266,11 +269,12 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				}
 				if (z > 0)
 				{
-					int backData = chunk.chunkVoxelData[x * 1024 + y * 32 + z - 1];
-					int llBack = cellLightLevel - voxel.getLightLevelModifier(voxelData, backData, VoxelSides.BACK);
-					if (!world.getContentTranslator().getVoxelForId((backData & 0xFFFF)).getDefinition().isOpaque() && ((backData & blocklightMask) >> blockBitshift) < llBack - 1)
+					peek(x, y, z - 1, adj);
+					int llBack = cellLightLevel - cell.voxel.getLightLevelModifier(cell, adj, VoxelSides.BACK);
+					if (!adj.voxel.getDefinition().isOpaque() && adj.blocklight < llBack - 1)
 					{
-						chunk.chunkVoxelData[x * 1024 + y * 32 + z - 1] = backData & blockAntiMask | (llBack - 1) << blockBitshift;
+						adj.blocklight = llBack - 1;
+						poke(adj);
 						modifiedBlocks++;
 						blockSources.addLast(x);
 						blockSources.addLast(z - 1);
@@ -279,9 +283,9 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				}
 				else if (checkBackBleeding)
 				{
-					int backData = adjacentChunkBack.peekRaw(x, y, 31);
-					int llBack = cellLightLevel - voxel.getLightLevelModifier(voxelData, backData, VoxelSides.BACK);
-					if (((backData & blocklightMask) >> blockBitshift) < llBack - 1)
+					peek(x, y, -1, adj);
+					int llBack = cellLightLevel - cell.voxel.getLightLevelModifier(cell, adj, VoxelSides.BACK);
+					if (adj.blocklight < llBack - 1)
 					{
 						requestBack = true;
 						checkBackBleeding = false;
@@ -290,11 +294,12 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 
 				if (y < 31)
 				{
-					int topData = chunk.chunkVoxelData[x * 1024 + (y + 1) * 32 + z];
-					int llTop = cellLightLevel - voxel.getLightLevelModifier(voxelData, topData, VoxelSides.TOP);
-					if (!world.getContentTranslator().getVoxelForId((topData & 0xFFFF)).getDefinition().isOpaque() && ((topData & blocklightMask) >> blockBitshift) < llTop - 1)
+					peek(x, y + 1, z, adj);
+					int llTop = cellLightLevel - cell.voxel.getLightLevelModifier(cell, adj, VoxelSides.TOP);
+					if (!adj.voxel.getDefinition().isOpaque() && adj.blocklight < llTop - 1)
 					{
-						chunk.chunkVoxelData[x * 1024 + (y + 1) * 32 + z] = topData & blockAntiMask | (llTop - 1) << blockBitshift;
+						adj.blocklight = llTop - 1;
+						poke(adj);
 						modifiedBlocks++;
 						blockSources.addLast(x);
 						blockSources.addLast(z);
@@ -303,9 +308,9 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				}
 				else if (checkTopBleeding)
 				{
-					int topData = adjacentChunkTop.peekRaw(x, 0, z);
-					int llTop = cellLightLevel - voxel.getLightLevelModifier(voxelData, topData, VoxelSides.TOP);
-					if (((topData & blocklightMask) >> blockBitshift) < llTop - 1)
+					peek(x, 32, z, adj);
+					int llTop = cellLightLevel - cell.voxel.getLightLevelModifier(cell, adj, VoxelSides.TOP);
+					if (adj.blocklight < llTop - 1)
 					{
 						requestTop = true;
 						checkTopBleeding = false;
@@ -314,12 +319,12 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				
 				if (y > 0)
 				{
-					int belowData = chunk.chunkVoxelData[x * 1024 + (y - 1) * 32 + z];
-					int llTop = cellLightLevel - voxel.getLightLevelModifier(voxelData, belowData, VoxelSides.BOTTOM);
-					
-					if (!world.getContentTranslator().getVoxelForId((belowData & 0xFFFF)).getDefinition().isOpaque() && ((belowData & blocklightMask) >> blockBitshift) < llTop - 1)
+					peek(x, y - 1, z, adj);
+					int llBottom = cellLightLevel - cell.voxel.getLightLevelModifier(cell, adj, VoxelSides.BOTTOM);
+					if (!adj.voxel.getDefinition().isOpaque() && adj.blocklight < llBottom - 1)
 					{
-						chunk.chunkVoxelData[x * 1024 + (y - 1) * 32 + z] = belowData & blockAntiMask | (llTop - 1) << blockBitshift;
+						adj.blocklight = llBottom - 1;
+						poke(adj);
 						modifiedBlocks++;
 						blockSources.addLast(x);
 						blockSources.addLast(z);
@@ -328,10 +333,9 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				}
 				else if (checkBottomBleeding)
 				{
-					int belowData = adjacentChunkBottom.peekRaw(x, 31, z);
-					int llBottom = cellLightLevel - voxel.getLightLevelModifier(voxelData, belowData, VoxelSides.BOTTOM);
-					
-					if(((belowData & blocklightMask) >> blockBitshift) < llBottom - 1)
+					peek(x, -1, z, adj);
+					int llBottom = cellLightLevel - cell.voxel.getLightLevelModifier(cell, adj, VoxelSides.BOTTOM);
+					if(adj.blocklight < llBottom - 1)
 					{
 						requestBot = true;
 						checkBottomBleeding = false;
@@ -340,30 +344,28 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 			}
 		}
 		
-		// Sunlight propagation
 		while (sunSources.size() > 0)
 		{
 			int y = sunSources.removeLast();
 			int z = sunSources.removeLast();
 			int x = sunSources.removeLast();
+			
+			peek(x, y, z, cell);
+			int cellLightLevel = cell.sunlight;
 
-			int voxelData = chunk.chunkVoxelData[x * 1024 + y * 32 + z];
-			int cellLightLevel = (voxelData & sunlightMask) >> sunBitshift;
-			int cId = VoxelFormat.id(voxelData);
-			voxel = world.getContentTranslator().getVoxelForId(cId);
-
-			if (voxel.getDefinition().isOpaque())
-				cellLightLevel = 0;
+			if (cell.voxel.getDefinition().isOpaque())
+				cellLightLevel = cell.voxel.getLightLevel(cell);
+			
 			if (cellLightLevel > 1)
 			{
-				// X-propagation
 				if (x < 31)
 				{
-					int rightData = chunk.chunkVoxelData[(x + 1) * 1024 + y * 32 + z];
-					int llRight = cellLightLevel - voxel.getLightLevelModifier(voxelData, rightData, VoxelSides.RIGHT);
-					if (!world.getContentTranslator().getVoxelForId((rightData & 0xFFFF)).getDefinition().isOpaque() && ((rightData & sunlightMask) >> sunBitshift) < llRight - 1)
+					peek(x + 1, y, z, adj);
+					int llRight = cellLightLevel - cell.voxel.getLightLevelModifier(cell, adj, VoxelSides.RIGHT);
+					if (!adj.voxel.getDefinition().isOpaque() && adj.sunlight < llRight - 1)
 					{
-						chunk.chunkVoxelData[(x + 1) * 1024 + y * 32 + z] = rightData & sunAntiMask | (llRight - 1) << sunBitshift;
+						adj.sunlight = llRight - 1;
+						poke(adj);
 						modifiedBlocks++;
 						sunSources.addLast(x + 1);
 						sunSources.addLast(z);
@@ -372,9 +374,9 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				}
 				else if (checkRightBleeding)
 				{
-					int rightData = adjacentChunkRight.peekRaw(0, y, z);
-					int llRight = cellLightLevel - voxel.getLightLevelModifier(voxelData, rightData, VoxelSides.RIGHT);
-					if (((rightData & sunlightMask) >> sunBitshift) < llRight - 1)
+					peek(32, y, z, adj);
+					int llRight = cellLightLevel - cell.voxel.getLightLevelModifier(cell, adj, VoxelSides.RIGHT);
+					if (adj.sunlight < llRight - 1)
 					{
 						requestRight = true;
 						checkRightBleeding = false;
@@ -382,11 +384,12 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				}
 				if (x > 0)
 				{
-					int leftData = chunk.chunkVoxelData[(x - 1) * 1024 + y * 32 + z];
-					int llLeft = cellLightLevel - voxel.getLightLevelModifier(voxelData, leftData, VoxelSides.LEFT);
-					if (!world.getContentTranslator().getVoxelForId((leftData & 0xFFFF)).getDefinition().isOpaque() && ((leftData & sunlightMask) >> sunBitshift) < llLeft - 1)
+					peek(x - 1, y, z, adj);
+					int llLeft = cellLightLevel - cell.voxel.getLightLevelModifier(cell, adj, VoxelSides.LEFT);
+					if (!adj.voxel.getDefinition().isOpaque() && adj.sunlight < llLeft - 1)
 					{
-						chunk.chunkVoxelData[(x - 1) * 1024 + y * 32 + z] = leftData & sunAntiMask | (llLeft - 1) << sunBitshift;
+						adj.sunlight = llLeft - 1;
+						poke(adj);
 						modifiedBlocks++;
 						sunSources.addLast(x - 1);
 						sunSources.addLast(z);
@@ -395,22 +398,23 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				}
 				else if (checkLeftBleeding)
 				{
-					int leftData = adjacentChunkLeft.peekRaw(31, y, z);
-					int llLeft = cellLightLevel - voxel.getLightLevelModifier(voxelData, leftData, VoxelSides.LEFT);
-					if (((leftData & sunlightMask) >> sunBitshift) < llLeft - 1)
+					peek(-1, y, z, adj);
+					int llLeft = cellLightLevel - cell.voxel.getLightLevelModifier(cell, adj, VoxelSides.LEFT);
+					if (adj.sunlight < llLeft - 1)
 					{
 						requestLeft = true;
 						checkLeftBleeding = false;
 					}
 				}
-				
+
 				if (z < 31)
 				{
-					int frontData = chunk.chunkVoxelData[x * 1024 + y * 32 + z + 1];
-					int llFront = cellLightLevel - voxel.getLightLevelModifier(voxelData, frontData, VoxelSides.FRONT);
-					if (!world.getContentTranslator().getVoxelForId((frontData & 0xFFFF)).getDefinition().isOpaque() && ((frontData & sunlightMask) >> sunBitshift) < llFront - 1)
+					peek(x, y, z + 1, adj);
+					int llFront = cellLightLevel - cell.voxel.getLightLevelModifier(cell, adj, VoxelSides.FRONT);
+					if (!adj.voxel.getDefinition().isOpaque() && adj.sunlight < llFront - 1)
 					{
-						chunk.chunkVoxelData[x * 1024 + y * 32 + z + 1] = frontData & sunAntiMask | (llFront - 1) << sunBitshift;
+						adj.sunlight = llFront - 1;
+						poke(adj);
 						modifiedBlocks++;
 						sunSources.addLast(x);
 						sunSources.addLast(z + 1);
@@ -419,9 +423,9 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				}
 				else if (checkFrontBleeding)
 				{
-					int frontData = adjacentChunkFront.peekRaw(x, y, 0);
-					int llFront = cellLightLevel - voxel.getLightLevelModifier(voxelData, frontData, VoxelSides.FRONT);
-					if (((frontData & sunlightMask) >> sunBitshift) < llFront - 1)
+					peek(x, y, 32, adj);
+					int llFront = cellLightLevel - cell.voxel.getLightLevelModifier(cell, adj, VoxelSides.FRONT);
+					if (adj.sunlight < llFront - 1)
 					{
 						requestFront = true;
 						checkFrontBleeding = false;
@@ -429,11 +433,12 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				}
 				if (z > 0)
 				{
-					int backData = chunk.chunkVoxelData[x * 1024 + y * 32 + z - 1];
-					int llBack = cellLightLevel - voxel.getLightLevelModifier(voxelData, backData, VoxelSides.BACK);
-					if (!world.getContentTranslator().getVoxelForId((backData & 0xFFFF)).getDefinition().isOpaque() && ((backData & sunlightMask) >> sunBitshift) < llBack - 1)
+					peek(x, y, z - 1, adj);
+					int llBack = cellLightLevel - cell.voxel.getLightLevelModifier(cell, adj, VoxelSides.BACK);
+					if (!adj.voxel.getDefinition().isOpaque() && adj.sunlight < llBack - 1)
 					{
-						chunk.chunkVoxelData[x * 1024 + y * 32 + z - 1] = backData & sunAntiMask | (llBack - 1) << sunBitshift;
+						adj.sunlight = llBack - 1;
+						poke(adj);
 						modifiedBlocks++;
 						sunSources.addLast(x);
 						sunSources.addLast(z - 1);
@@ -442,22 +447,23 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				}
 				else if (checkBackBleeding)
 				{
-					int backData = adjacentChunkBack.peekRaw(x, y, 31);
-					int llBack = cellLightLevel - voxel.getLightLevelModifier(voxelData, backData, VoxelSides.BACK);
-					if (((backData & sunlightMask) >> sunBitshift) < llBack - 1)
+					peek(x, y, -1, adj);
+					int llBack = cellLightLevel - cell.voxel.getLightLevelModifier(cell, adj, VoxelSides.BACK);
+					if (adj.sunlight < llBack - 1)
 					{
 						requestBack = true;
 						checkBackBleeding = false;
 					}
 				}
-				
+
 				if (y < 31)
 				{
-					int topData = chunk.chunkVoxelData[x * 1024 + (y + 1) * 32 + z];
-					int llTop = cellLightLevel - voxel.getLightLevelModifier(voxelData, topData, VoxelSides.TOP);
-					if (!world.getContentTranslator().getVoxelForId((topData & 0xFFFF)).getDefinition().isOpaque() && ((topData & sunlightMask) >> sunBitshift) < llTop - 1)
+					peek(x, y + 1, z, adj);
+					int llTop = cellLightLevel - cell.voxel.getLightLevelModifier(cell, adj, VoxelSides.TOP);
+					if (!adj.voxel.getDefinition().isOpaque() && adj.sunlight < llTop - 1)
 					{
-						chunk.chunkVoxelData[x * 1024 + (y + 1) * 32 + z] = topData & sunAntiMask | (llTop - 1) << sunBitshift;
+						adj.sunlight = llTop - 1;
+						poke(adj);
 						modifiedBlocks++;
 						sunSources.addLast(x);
 						sunSources.addLast(z);
@@ -466,23 +472,25 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				}
 				else if (checkTopBleeding)
 				{
-					int topData = adjacentChunkTop.peekRaw(x, 0, z);
-					int llTop = cellLightLevel - voxel.getLightLevelModifier(voxelData, topData, VoxelSides.TOP);
-					if (((topData & sunlightMask) >> sunBitshift) < llTop - 1)
+					peek(x, 32, z, adj);
+					int llTop = cellLightLevel - cell.voxel.getLightLevelModifier(cell, adj, VoxelSides.TOP);
+					if (adj.sunlight < llTop - 1)
 					{
 						requestTop = true;
 						checkTopBleeding = false;
 					}
 				}
 				
-				//Special case! This is the bottom computation for light spread, and thus we don't decrement automatially the light by one for each step !
+				//Special case! This is the bottom computation for light spread, light doesn't fade
+				//when travalling backwards so we do not decrement llBottom !
 				if (y > 0)
 				{
-					int belowData = chunk.chunkVoxelData[x * 1024 + (y - 1) * 32 + z];
-					int llBottom = cellLightLevel - voxel.getLightLevelModifier(voxelData, belowData, VoxelSides.BOTTOM);
-					if (!world.getContentTranslator().getVoxelForId(belowData).getDefinition().isOpaque() && ((belowData & sunlightMask) >> sunBitshift) < llBottom)
+					peek(x, y - 1, z, adj);
+					int llBottom = cellLightLevel - cell.voxel.getLightLevelModifier(cell, adj, VoxelSides.BOTTOM);
+					if (!adj.voxel.getDefinition().isOpaque() && adj.sunlight < llBottom )
 					{
-						chunk.chunkVoxelData[x * 1024 + (y - 1) * 32 + z] = belowData & sunAntiMask | (llBottom) << sunBitshift;
+						adj.sunlight = llBottom;
+						poke(adj);
 						modifiedBlocks++;
 						sunSources.addLast(x);
 						sunSources.addLast(z);
@@ -491,9 +499,9 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				}
 				else if (checkBottomBleeding)
 				{
-					int belowData = adjacentChunkBottom.peekRaw(x, 31, z);
-					int llBottom = cellLightLevel - voxel.getLightLevelModifier(voxelData, belowData, VoxelSides.BOTTOM);
-					if (((belowData & sunlightMask) >> sunBitshift) < llBottom)
+					peek(x, -1, z, adj);
+					int llBottom = cellLightLevel - cell.voxel.getLightLevelModifier(cell, adj, VoxelSides.BOTTOM);
+					if(adj.sunlight < llBottom)
 					{
 						requestBot = true;
 						checkBottomBleeding = false;
@@ -520,6 +528,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 
 	private void addChunkLightSources(IntDeque blockSources, IntDeque sunSources)
 	{
+		ScratchCell cell = new ScratchCell(world);
 		for (int a = 0; a < 32; a++)
 			for (int b = 0; b < 32; b++)
 			{
@@ -528,9 +537,9 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				int csh = world.getRegionsSummariesHolder().getHeightAtWorldCoordinates(chunkX * 32 + a, chunkZ * 32 + b) + 1;
 				while (z >= 0)
 				{
-					int block = chunk.chunkVoxelData[a * 1024 + z * 32 + b];
-					int id = VoxelFormat.id(block);
-					short ll = world.getContentTranslator().getVoxelForId(id).getLightLevel(block);
+					peek(a, z, b, cell);
+					int ll = cell.voxel.getLightLevel(cell);
+					
 					if (ll > 0)
 					{
 						chunk.chunkVoxelData[a * 1024 + z * 32 + b] = chunk.chunkVoxelData[a * 1024 + z * 32 + b] & blockAntiMask | ((ll & 0xF) << blockBitshift);
@@ -1124,36 +1133,31 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 
 	private int propagateLightningBeyondChunk(IntDeque blockSources, IntDeque sunSources)
 	{
-		//int data[] = world.chunksData.grab(dataPointer);
 		int modifiedBlocks = 0;
 		int bounds = 64;
 
-		// The ints are composed as : 0x0BSMIIII
-		// Second pass : loop fill bfs algo
-		Voxel voxel;
+		ScratchCell cell = new ScratchCell(world);
+		ScratchCell sideCell = new ScratchCell(world);
 		while (blockSources.size() > 0)
 		{
 			int y = blockSources.removeLast();
 			int z = blockSources.removeLast();
 			int x = blockSources.removeLast();
-			int voxelData = getWorldDataOnlyForLightningUpdatesFunctions(x, y, z);
-			int ll = (voxelData & blocklightMask) >> blockBitshift;
-			int cId = VoxelFormat.id(voxelData);
+			peek(x, y, z, cell);
+			int ll = cell.getBlocklight();
 
-			voxel = world.getContentTranslator().getVoxelForId(cId);
-
-			if (world.getContentTranslator().getVoxelForId(cId).getDefinition().isOpaque())
-				ll = voxel.getLightLevel(voxelData);
+			if (cell.getVoxel().getDefinition().isOpaque())
+				ll = cell.getVoxel().getLightLevel(cell);
 
 			if (ll > 1)
 			{
 				// X-propagation
 				if (x < bounds)
 				{
-					int adj = this.getWorldDataOnlyForLightningUpdatesFunctions(x + 1, y, z);
+					int adj = this.peekRawFast(x + 1, y, z);
 					if (!world.getContentTranslator().getVoxelForId((adj & 0xFFFF)).getDefinition().isOpaque() && ((adj & blocklightMask) >> blockBitshift) < ll - 1)
 					{
-						this.setWorldDataOnlyForLightningUpdatesFunctions(x + 1, y, z, adj & blockAntiMask | (ll - 1) << blockBitshift);
+						this.pokeRawFast(x + 1, y, z, adj & blockAntiMask | (ll - 1) << blockBitshift);
 						modifiedBlocks++;
 						blockSources.addLast(x + 1);
 						blockSources.addLast(z);
@@ -1162,10 +1166,10 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				}
 				if (x > -bounds)
 				{
-					int adj = this.getWorldDataOnlyForLightningUpdatesFunctions(x - 1, y, z);
+					int adj = this.peekRawFast(x - 1, y, z);
 					if (!world.getContentTranslator().getVoxelForId((adj & 0xFFFF)).getDefinition().isOpaque() && ((adj & blocklightMask) >> blockBitshift) < ll - 1)
 					{
-						this.setWorldDataOnlyForLightningUpdatesFunctions(x - 1, y, z, adj & blockAntiMask | (ll - 1) << blockBitshift);
+						this.pokeRawFast(x - 1, y, z, adj & blockAntiMask | (ll - 1) << blockBitshift);
 						modifiedBlocks++;
 						blockSources.addLast(x - 1);
 						blockSources.addLast(z);
@@ -1175,10 +1179,10 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				// Z-propagation
 				if (z < bounds)
 				{
-					int adj = this.getWorldDataOnlyForLightningUpdatesFunctions(x, y, z + 1);
+					int adj = this.peekRawFast(x, y, z + 1);
 					if (!world.getContentTranslator().getVoxelForId((adj & 0xFFFF)).getDefinition().isOpaque() && ((adj & blocklightMask) >> blockBitshift) < ll - 1)
 					{
-						this.setWorldDataOnlyForLightningUpdatesFunctions(x, y, z + 1, adj & blockAntiMask | (ll - 1) << blockBitshift);
+						this.pokeRawFast(x, y, z + 1, adj & blockAntiMask | (ll - 1) << blockBitshift);
 						modifiedBlocks++;
 						blockSources.addLast(x);
 						blockSources.addLast(z + 1);
@@ -1187,10 +1191,10 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				}
 				if (z > -bounds)
 				{
-					int adj = this.getWorldDataOnlyForLightningUpdatesFunctions(x, y, z - 1);
+					int adj = this.peekRawFast(x, y, z - 1);
 					if (!world.getContentTranslator().getVoxelForId((adj & 0xFFFF)).getDefinition().isOpaque() && ((adj & blocklightMask) >> blockBitshift) < ll - 1)
 					{
-						this.setWorldDataOnlyForLightningUpdatesFunctions(x, y, z - 1, adj & blockAntiMask | (ll - 1) << blockBitshift);
+						this.pokeRawFast(x, y, z - 1, adj & blockAntiMask | (ll - 1) << blockBitshift);
 						modifiedBlocks++;
 						blockSources.addLast(x);
 						blockSources.addLast(z - 1);
@@ -1200,10 +1204,10 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				// Y-propagation
 				if (y < bounds) // y = 254+1
 				{
-					int adj = this.getWorldDataOnlyForLightningUpdatesFunctions(x, y + 1, z);
+					int adj = this.peekRawFast(x, y + 1, z);
 					if (!world.getContentTranslator().getVoxelForId((adj & 0xFFFF)).getDefinition().isOpaque() && ((adj & blocklightMask) >> blockBitshift) < ll - 1)
 					{
-						this.setWorldDataOnlyForLightningUpdatesFunctions(x, y + 1, z, adj & blockAntiMask | (ll - 1) << blockBitshift);
+						this.pokeRawFast(x, y + 1, z, adj & blockAntiMask | (ll - 1) << blockBitshift);
 						modifiedBlocks++;
 						blockSources.addLast(x);
 						blockSources.addLast(z);
@@ -1212,10 +1216,10 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				}
 				if (y > -bounds)
 				{
-					int adj = this.getWorldDataOnlyForLightningUpdatesFunctions(x, y - 1, z);
+					int adj = this.peekRawFast(x, y - 1, z);
 					if (!world.getContentTranslator().getVoxelForId((adj & 0xFFFF)).getDefinition().isOpaque() && ((adj & blocklightMask) >> blockBitshift) < ll - 1)
 					{
-						this.setWorldDataOnlyForLightningUpdatesFunctions(x, y - 1, z, adj & blockAntiMask | (ll - 1) << blockBitshift);
+						this.pokeRawFast(x, y - 1, z, adj & blockAntiMask | (ll - 1) << blockBitshift);
 						modifiedBlocks++;
 						blockSources.addLast(x);
 						blockSources.addLast(z);
@@ -1230,14 +1234,10 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 			int y = sunSources.removeLast();
 			int z = sunSources.removeLast();
 			int x = sunSources.removeLast();
+			peek(x, y, z, cell);
+			int ll = cell.sunlight;
 
-			int voxelData = this.getWorldDataOnlyForLightningUpdatesFunctions(x, y, z);
-			int ll = (voxelData & sunlightMask) >> sunBitshift;
-			int cId = VoxelFormat.id(voxelData);
-
-			voxel = world.getContentTranslator().getVoxelForId(cId);
-
-			if (voxel.getDefinition().isOpaque())
+			if (cell.getVoxel().getDefinition().isOpaque())
 				ll = 0;
 
 			if (ll > 1)
@@ -1245,12 +1245,12 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				// X-propagation
 				if (x < bounds)
 				{
-					int adj = this.getWorldDataOnlyForLightningUpdatesFunctions(x + 1, y, z);
-					int llRight = ll - voxel.getLightLevelModifier(voxelData, adj, VoxelSides.RIGHT);
-
-					if (!world.getContentTranslator().getVoxelForId((adj & 0xFFFF)).getDefinition().isOpaque() && ((adj & sunlightMask) >> sunBitshift) < llRight - 1)
+					peek(x + 1, y, z, sideCell);
+					int llRight = ll - cell.voxel.getLightLevelModifier(cell, sideCell, VoxelSides.RIGHT);
+					if (!sideCell.getVoxel().getDefinition().isOpaque() && sideCell.sunlight < llRight - 1)
 					{
-						this.setWorldDataOnlyForLightningUpdatesFunctions(x + 1, y, z, adj & sunAntiMask | (llRight - 1) << sunBitshift);
+						sideCell.sunlight = llRight - 1;
+						poke(sideCell);
 						modifiedBlocks++;
 						sunSources.addLast(x + 1);
 						sunSources.addLast(z);
@@ -1259,12 +1259,12 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				}
 				if (x > -bounds)
 				{
-					int adj = this.getWorldDataOnlyForLightningUpdatesFunctions(x - 1, y, z);
-					int llLeft = ll - voxel.getLightLevelModifier(voxelData, adj, VoxelSides.LEFT);
-					
-					if (!world.getContentTranslator().getVoxelForId((adj & 0xFFFF)).getDefinition().isOpaque() && ((adj & sunlightMask) >> sunBitshift) < llLeft - 1)
+					peek(x - 1, y, z, sideCell);
+					int llLeft = ll - cell.voxel.getLightLevelModifier(cell, sideCell, VoxelSides.LEFT);
+					if (!sideCell.voxel.getDefinition().isOpaque() && sideCell.sunlight < llLeft - 1)
 					{
-						this.setWorldDataOnlyForLightningUpdatesFunctions(x - 1, y, z, adj & sunAntiMask | (llLeft - 1) << sunBitshift);
+						sideCell.sunlight = llLeft - 1;
+						poke(sideCell);
 						modifiedBlocks++;
 						sunSources.addLast(x - 1);
 						sunSources.addLast(z);
@@ -1274,11 +1274,12 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				// Z-propagation
 				if (z < bounds)
 				{
-					int adj = this.getWorldDataOnlyForLightningUpdatesFunctions(x, y, z + 1);
-					int llFront = ll - voxel.getLightLevelModifier(voxelData, adj, VoxelSides.FRONT);
-					if (!world.getContentTranslator().getVoxelForId((adj & 0xFFFF)).getDefinition().isOpaque() && ((adj & sunlightMask) >> sunBitshift) < llFront - 1)
+					peek(x, y, z + 1, sideCell);
+					int llFront = ll - cell.voxel.getLightLevelModifier(cell, sideCell, VoxelSides.FRONT);
+					if (!sideCell.voxel.getDefinition().isOpaque() && sideCell.sunlight < llFront - 1)
 					{
-						this.setWorldDataOnlyForLightningUpdatesFunctions(x, y, z + 1, adj & sunAntiMask | (llFront - 1) << sunBitshift);
+						sideCell.sunlight = llFront - 1;
+						poke(sideCell);
 						modifiedBlocks++;
 						sunSources.addLast(x);
 						sunSources.addLast(z + 1);
@@ -1287,11 +1288,12 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				}
 				if (z > -bounds)
 				{
-					int adj = this.getWorldDataOnlyForLightningUpdatesFunctions(x, y, z - 1);
-					int llBack = ll - voxel.getLightLevelModifier(voxelData, adj, VoxelSides.BACK);
-					if (!world.getContentTranslator().getVoxelForId((adj & 0xFFFF)).getDefinition().isOpaque() && ((adj & sunlightMask) >> sunBitshift) < llBack - 1)
+					peek(x, y, z - 1, sideCell);
+					int llBack = ll - cell.voxel.getLightLevelModifier(cell, sideCell, VoxelSides.BACK);
+					if (!sideCell.voxel.getDefinition().isOpaque() && sideCell.sunlight < llBack - 1)
 					{
-						this.setWorldDataOnlyForLightningUpdatesFunctions(x, y, z - 1, adj & sunAntiMask | (llBack - 1) << sunBitshift);
+						sideCell.sunlight = llBack - 1;
+						poke(sideCell);
 						modifiedBlocks++;
 						sunSources.addLast(x);
 						sunSources.addLast(z - 1);
@@ -1299,13 +1301,14 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 					}
 				}
 				// Y-propagation
-				if (y < bounds) // y = 254+1
+				if (y < bounds)
 				{
-					int adj = this.getWorldDataOnlyForLightningUpdatesFunctions(x, y + 1, z);
-					int llTop = ll - voxel.getLightLevelModifier(voxelData, adj, VoxelSides.TOP);
-					if (!world.getContentTranslator().getVoxelForId((adj & 0xFFFF)).getDefinition().isOpaque() && ((adj & sunlightMask) >> sunBitshift) < llTop - 1)
+					peek(x, y + 1, z, sideCell);
+					int llTop = ll - cell.voxel.getLightLevelModifier(cell, sideCell, VoxelSides.TOP);
+					if (!sideCell.voxel.getDefinition().isOpaque() && sideCell.sunlight < llTop - 1)
 					{
-						this.setWorldDataOnlyForLightningUpdatesFunctions(x, y + 1, z, adj & sunAntiMask | (llTop - 1) << sunBitshift);
+						sideCell.sunlight = llTop - 1;
+						poke(sideCell);
 						modifiedBlocks++;
 						sunSources.addLast(x);
 						sunSources.addLast(z);
@@ -1314,12 +1317,12 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				}
 				if (y > -bounds)
 				{
-					int adj = this.getWorldDataOnlyForLightningUpdatesFunctions(x, y - 1, z);
-					int llBottm = ll - voxel.getLightLevelModifier(voxelData, adj, VoxelSides.BOTTOM);
-					if (!world.getContentTranslator().getVoxelForId(adj).getDefinition().isOpaque() && ((adj & sunlightMask) >> sunBitshift) < llBottm)
+					peek(x, y - 1, z, sideCell);
+					int llBottom = ll - cell.voxel.getLightLevelModifier(cell, sideCell, VoxelSides.BOTTOM);
+					if (!sideCell.voxel.getDefinition().isOpaque() && sideCell.sunlight < llBottom)
 					{
-						//removed = ((((data[x * 1024 + y * 32 + z] & 0x000000FF) == 128)) ? 1 : 0)
-						this.setWorldDataOnlyForLightningUpdatesFunctions(x, y - 1, z, adj & sunAntiMask | (llBottm /* - removed */) << sunBitshift);
+						sideCell.sunlight = llBottom;
+						poke(sideCell);
 						modifiedBlocks++;
 						sunSources.addLast(x);
 						sunSources.addLast(z);
@@ -1328,11 +1331,10 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				}
 			}
 		}
-
 		return modifiedBlocks;
 	}
 
-	private int getWorldDataOnlyForLightningUpdatesFunctions(int x, int y, int z)
+	private int peekRawFast(int x, int y, int z)
 	{
 		if (x > 0 && x < 31)
 			if (y > 0 && y < 31)
@@ -1340,8 +1342,19 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 					chunk.peekRaw(x, y, z);
 		return world.peekRaw(x + chunkX * 32, y + chunkY * 32, z + chunkZ * 32);
 	}
+	
+	private void peek(int x, int y, int z, ScratchCell cell) {
+		cell.x = x;
+		cell.y = y;
+		cell.z = z;
+		int rawData = peekRawFast(x, y, z);
+		cell.voxel = world.getContentTranslator().getVoxelForId(VoxelFormat.id(rawData));
+		cell.sunlight = VoxelFormat.sunlight(rawData);
+		cell.blocklight = VoxelFormat.blocklight(rawData);
+		cell.metadata = VoxelFormat.meta(rawData);
+	}
 
-	private void setWorldDataOnlyForLightningUpdatesFunctions(int x, int y, int z, int data)
+	private void pokeRawFast(int x, int y, int z, int data)
 	{
 		//Still within bounds !
 		if (x > 0 && x < 31)
@@ -1359,6 +1372,11 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 		if (c != null && oldData != data)
 			c.lightBaker().requestLightningUpdate();
 	}
+	
+	private void poke(ScratchCell cell) {
+		int data = VoxelFormat.format(world.getContentTranslator().getIdForVoxel(cell.voxel), cell.metadata, cell.sunlight, cell.blocklight);
+		pokeRawFast(cell.x, cell.y, cell.z, data);
+	}
 
 	private int getSunLight(int x, int y, int z)
 	{
@@ -1367,7 +1385,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				if (z > 0 && z < 31)
 					return VoxelFormat.sunlight(chunk.peekRaw(x, y, z));
 		// Stronger implementation for unbound spread functions
-		return VoxelFormat.sunlight(this.getWorldDataOnlyForLightningUpdatesFunctions(x, y, z));
+		return VoxelFormat.sunlight(this.peekRawFast(x, y, z));
 	}
 
 	private int getBlockLight(int x, int y, int z)
@@ -1377,7 +1395,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				if (z > 0 && z < 31)
 					return VoxelFormat.blocklight(chunk.peekRaw(x, y, z));
 		// Stronger implementation for unbound spread functions
-		return VoxelFormat.blocklight(this.getWorldDataOnlyForLightningUpdatesFunctions(x, y, z));
+		return VoxelFormat.blocklight(this.peekRawFast(x, y, z));
 	}
 
 	private void setSunLight(int x, int y, int z, int level)
@@ -1390,7 +1408,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 					return;
 				}
 		// Stronger implementation for unbound spread functions
-		this.setWorldDataOnlyForLightningUpdatesFunctions(x, y, z, VoxelFormat.changeSunlight(this.getWorldDataOnlyForLightningUpdatesFunctions(x, y, z), level));
+		this.pokeRawFast(x, y, z, VoxelFormat.changeSunlight(this.peekRawFast(x, y, z), level));
 	}
 	
 	private void setBlockLight(int x, int y, int z, int level)
@@ -1403,7 +1421,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 					return;
 				}
 		// Stronger implementation for unbound spread functions
-		this.setWorldDataOnlyForLightningUpdatesFunctions(x, y, z, VoxelFormat.changeBlocklight(this.getWorldDataOnlyForLightningUpdatesFunctions(x, y, z), level));
+		this.pokeRawFast(x, y, z, VoxelFormat.changeBlocklight(this.peekRawFast(x, y, z), level));
 	}
 
 	
