@@ -262,7 +262,7 @@ public class TaskBakeChunk extends Task {
 			{
 				for (k = 0; k < 32; k++)
 				{
-					peek(i, j, k, cell);
+					peek(i, k, j, cell);
 					
 					if (cell.voxel.isAir())
 						continue;

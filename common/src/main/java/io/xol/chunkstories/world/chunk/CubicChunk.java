@@ -261,7 +261,7 @@ public class CubicChunk implements Chunk {
 		ActualChunkVoxelContext cell_pre = peek(x, y, z);
 		Voxel formerVoxel = cell_pre.getVoxel();
 		assert formerVoxel != null;
-
+		
 		FutureCell future = new FutureCell(cell_pre);
 
 		if (use_raw_data) {

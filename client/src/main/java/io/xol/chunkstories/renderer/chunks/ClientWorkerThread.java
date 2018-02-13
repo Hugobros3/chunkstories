@@ -116,7 +116,7 @@ public class ClientWorkerThread extends WorkerThread implements BakeChunkTaskExe
 					z &= 0x1F;
 					data = target[x * 1024 + y * 32 + z];
 					int blockID = VoxelFormat.id(data);
-					return c.getWorld().getContentTranslator().getVoxelForId(blockID).getDefinition().isOpaque() ? -1 : VoxelFormat.sunlight(data);
+					return c.getWorld().getContentTranslator().getVoxelForId(blockID).getDefinition().isOpaque() ? 0 : VoxelFormat.sunlight(data);
 				}
 			}
 			else
@@ -131,14 +131,13 @@ public class ClientWorkerThread extends WorkerThread implements BakeChunkTaskExe
 			z += c.getChunkZ() * 32;
 
 			// Look for a chunk with relevant lightning data
-			Chunk cached = c.getWorld().getChunk(x / 32, y / 32, z / 32);
+			/*Chunk cached = c.getWorld().getChunk(x / 32, y / 32, z / 32);
 			if (cached != null && !cached.isAirChunk())
 			{
 				data = cached.peekRaw(x, y, z);
-
 				int blockID = VoxelFormat.id(data);
-				return c.getWorld().getContentTranslator().getVoxelForId(blockID).getDefinition().isOpaque() ? -1 : VoxelFormat.sunlight(data);
-			}
+				return c.getWorld().getContentTranslator().getVoxelForId(blockID).getDefinition().isOpaque() ? 0 : VoxelFormat.sunlight(data);
+			}*/
 
 			// If all else fails, just use the heightmap information
 			return c.getWorld().getRegionsSummariesHolder().getHeightAtWorldCoordinates(x, z) <= y ? 15 : 0;

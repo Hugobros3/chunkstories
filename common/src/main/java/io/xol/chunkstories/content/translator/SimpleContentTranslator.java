@@ -113,7 +113,7 @@ public class SimpleContentTranslator implements ContentTranslator {
 	@Override
 	public Voxel getVoxelForId(int id) {
 		if(id < 0 || id >= voxelsArray.length)
-			return null;
+			return content.voxels().air();
 		return voxelsArray[id];
 	}
 
