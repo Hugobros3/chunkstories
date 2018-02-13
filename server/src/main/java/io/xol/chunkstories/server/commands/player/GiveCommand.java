@@ -52,13 +52,6 @@ public class GiveCommand extends ServerCommandBasic {
 
 		// Look for the item first
 		ItemDefinition type = gameContent.items().getItemTypeByName(itemName);
-		if (type == null) {
-			// Try me bitch
-			try {
-				type = gameContent.items().getItemTypeById(Integer.parseInt(itemName));
-			} catch (NumberFormatException ex) {
-			}
-		}
 
 		// If the type was found we are simply trying to spawn an item
 		Item item = null;
@@ -74,13 +67,6 @@ public class GiveCommand extends ServerCommandBasic {
 
 			// Try to find a matching voxel
 			Voxel voxel = gameContent.voxels().getVoxelByName(itemName);
-			if (voxel == null) {
-				// Try me bitch
-				try {
-					voxel = gameContent.voxels().getVoxelById(Integer.parseInt(itemName));
-				} catch (NumberFormatException ex) {
-				}
-			}
 
 			if (voxel != null) {
 				// Spawn new itemPile in his inventory

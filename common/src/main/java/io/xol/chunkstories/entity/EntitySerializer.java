@@ -49,7 +49,7 @@ public class EntitySerializer
 		catch(NullPointerException e)
 		{
 			System.out.println(entity.getClass().getName());
-			System.out.println(entity.getType());
+			System.out.println(entity.getDefinition());
 			e.printStackTrace();
 		}
 		catch (IOException e)

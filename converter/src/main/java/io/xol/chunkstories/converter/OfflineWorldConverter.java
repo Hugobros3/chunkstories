@@ -27,6 +27,7 @@ import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.api.world.WorldInfo.WorldSize;
 import io.xol.chunkstories.api.world.cell.CellData;
+import io.xol.chunkstories.api.world.cell.FutureCell;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
@@ -408,11 +409,17 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser
 															((NonTrivialMapper)mapper).output(csWorld, chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, mcId, meta, minecraftRegion, minecraftCurrentChunkXinsideRegion, minecraftCuurrentChunkZinsideRegion, x, y, z);
 														} else {
 															
+															FutureCell future = new FutureCell(csWorld, chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, csWorld.getContent().voxels().air());
+															
 															//Directly set trivial blocks
-															int trivial = mapper.output(mcId, meta);
+															mapper.output(mcId, meta, future);
+															if(!future.getVoxel().isAir())
+																csWorld.pokeSimpleSilently(future);
+															
+															/*int trivial = mapper.output(mcId, meta);
 															if(trivial != 0x0) {
 																csWorld.pokeSimpleSilently(chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, trivial);
-															}
+															}*/
 														}
 													}
 												}

@@ -4,12 +4,18 @@ import io.xol.chunkstories.api.server.RemotePlayer;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.voxel.Voxel;
+import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.voxel.VoxelSides;
+import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.api.world.World.WorldCell;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldMaster;
+import io.xol.chunkstories.api.world.cell.Cell;
+import io.xol.chunkstories.api.world.cell.CellData;
+import io.xol.chunkstories.api.world.cell.FutureCell;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
 import io.xol.chunkstories.net.packets.PacketRegionSummary;
-import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.io.IOTasks.IOTask;
 import io.xol.engine.concurrency.SimpleFence;
@@ -208,8 +214,8 @@ public class RegionSummaryImplementation implements RegionSummary
 		return x * 256 + z;
 	}
 
-	@Override
-	public void updateOnBlockModification(int worldX, int height, int worldZ, int voxelData)
+	@SuppressWarnings("deprecation")
+	public void updateOnBlockModification(int worldX, int height, int worldZ, FutureCell cell)
 	{
 		if(!this.isLoaded())
 			return;
@@ -217,15 +223,15 @@ public class RegionSummaryImplementation implements RegionSummary
 		worldX &= 0xFF;
 		worldZ &= 0xFF;
 
-		Voxel voxel = VoxelsStore.get().getVoxelById(voxelData);
 		int h = getHeight(worldX, worldZ);
+		
 		//If we place something solid over the last solid thing
-		if ((voxel.getDefinition().isSolid() || voxel.getDefinition().isLiquid()) && height >= h)
+		if ((cell.getVoxel().getDefinition().isSolid() || cell.getVoxel().getDefinition().isLiquid()) && height >= h)
 		{
 			if (height >= h)
 			{
 				heights[index(worldX, worldZ)] = height;
-				ids[index(worldX, worldZ)] = voxelData;
+				ids[index(worldX, worldZ)] = cell.getData();
 			}
 		}
 		else
@@ -233,6 +239,8 @@ public class RegionSummaryImplementation implements RegionSummary
 			// If removing the top block, start a loop to find bottom.
 			if (height == h)
 			{
+				int raw_data = cell.getData();
+				
 				boolean loaded = false;
 				boolean solid = false;
 				boolean liquid = false;
@@ -241,14 +249,18 @@ public class RegionSummaryImplementation implements RegionSummary
 					height--;
 					loaded = world.isChunkLoaded(worldX / 32, height / 32, worldZ / 32);
 
-					voxelData = world.peekSimple(worldX, height, worldZ);
-					solid = VoxelsStore.get().getVoxelById(voxelData).getType().isSolid();
-					liquid = VoxelsStore.get().getVoxelById(voxelData).getType().isLiquid();
+					WorldCell celli = world.peekSafely(worldX, height, worldZ);
+					solid = celli.getVoxel().getDefinition().isSolid();
+					liquid = celli.getVoxel().getDefinition().isLiquid();
+					
+					raw_data = world.peekRaw(worldX, height, worldZ);
 				}
 				while (height >= 0 && loaded && !solid && !liquid);
 
-				heights[index(worldX, worldZ)] = height;
-				ids[index(worldX, worldZ)] = voxelData;
+				if(loaded) {
+					heights[index(worldX, worldZ)] = height;
+					ids[index(worldX, worldZ)] = raw_data;
+				}
 			}
 		}
 	}
@@ -277,58 +289,38 @@ public class RegionSummaryImplementation implements RegionSummary
 		return heights[index(x, z)];
 	}
 
-	@Override
-	public int getVoxelData(int x, int z)
+	public int getRawVoxelData(int x, int z)
 	{
 		x &= 0xFF;
 		z &= 0xFF;
 		return ids[index(x, z)];
 	}
+
+	@Override
+	public CellData getTopCell(int x, int z) {
+		int raw_data = getRawVoxelData(x, z);
+		return new SummaryCell(x, getHeight(x, z), z, world.getContentTranslator().getVoxelForId(VoxelFormat.id(raw_data)), VoxelFormat.sunlight(raw_data), VoxelFormat.blocklight(raw_data), VoxelFormat.meta(raw_data));
+	}
 	
-	/*private boolean uploadTextures_()
-	{
-		if (heights == null)
-			return false;
+	class SummaryCell extends Cell {
+
+		public SummaryCell(int x, int y, int z, Voxel voxel, int meta, int blocklight, int sunlight) {
+			super(x, y, z, voxel, meta, blocklight, sunlight);
+		}
+
+		@Override
+		public World getWorld() {
+			return world;
+		}
+
+		@Override
+		public CellData getNeightbor(int side_int) {
+			VoxelSides side = VoxelSides.values()[side_int];
+			return getTopCell(x + side.dx, z + side.dz);
+		}
 		
-		if (texturesUpToDate.get())
-			return false;
-
-		//Upload stuff
-		ByteBuffer bb = ByteBuffer.allocateDirect(4 * 256 * 256);
-		bb.order(ByteOrder.LITTLE_ENDIAN);
-		for (int i = 0; i < 256 * 256; i++)
-		{
-			bb.putFloat(heights[i]);
-		}
-
-		bb.flip(); // 0x822e is GL_R32F, 0x8235 is GL_R32I
-
-		heightsTexture.uploadTextureData(256, 256, bb);
-
-		//Upload stuff
-		bb = ByteBuffer.allocateDirect(4 * 256 * 256);
-		bb.order(ByteOrder.LITTLE_ENDIAN);
-		for (int i = 0; i < 256 * 256; i++)
-		{
-			int id = ids[i];
-			Voxel v = VoxelsStore.get().getVoxelById(id);
-			if (v.getType().isLiquid())
-				bb.putFloat(512f);
-			else
-				bb.putFloat(((VoxelTextureAtlased)v.getVoxelTexture(id, VoxelSides.TOP, null)).positionInColorIndex);
-		}
-		bb.rewind();
-
-		voxelTypesTexture.uploadTextureData(256, 256, bb);
-
-		//Tell world renderer
-		((WorldClient) this.world).getWorldRenderer().getFarTerrainRenderer().markFarTerrainMeshDirty();
-
-		//Flag it
-		texturesUpToDate.set(true);
-		return true;
-	}*/
-
+	}
+	
 	void unloadSummary()
 	{
 		if (summaryUnloaded.compareAndSet(false, true))
@@ -336,12 +328,6 @@ public class RegionSummaryImplementation implements RegionSummary
 			//Signal the loading fence if it's haven't been already
 			if(loadFence instanceof SimpleFence)
 				((SimpleFence) loadFence).signal();
-			
-			/*if (world instanceof WorldClient)
-			{
-				heightsTexture.destroy();
-				voxelTypesTexture.destroy();
-			}*/
 
 			if (!worldSummariesHolder.removeSummary(this))
 			{
@@ -512,6 +498,4 @@ public class RegionSummaryImplementation implements RegionSummary
 	public String toString() {
 		return "[RegionSummary x:"+regionX+" z:"+regionZ+" users: "+this.countUsers()+" loaded: "+this.isLoaded()+" zombie: "+this.isUnloaded()+"]";
 	}
-	
-	
 }

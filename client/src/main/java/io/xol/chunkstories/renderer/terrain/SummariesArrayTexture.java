@@ -20,11 +20,12 @@ import io.xol.chunkstories.api.rendering.WorldRenderer.SummariesTexturesHolder;
 import io.xol.chunkstories.api.rendering.textures.ArrayTexture;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
 import io.xol.chunkstories.api.voxel.Voxel;
+import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
 import io.xol.chunkstories.voxel.VoxelTextureAtlased;
-import io.xol.chunkstories.voxel.VoxelsStore;
+import io.xol.chunkstories.world.cell.ScratchCell;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
 import io.xol.engine.graphics.textures.ArrayTextureGL;
 
@@ -32,9 +33,11 @@ public class SummariesArrayTexture implements SummariesTexturesHolder {
 	final ArrayTextureGL heights;
 	final ArrayTextureGL topVoxels;
 	final ClientInterface client;
+	final World world;
 	
-	public SummariesArrayTexture(ClientInterface client) {
+	public SummariesArrayTexture(ClientInterface client, World world) {
 		this.client = client;
+		this.world = world;
 		
 		this.heights = new ArrayTextureGL(TextureFormat.RED_16I, 256, 9 * 9);
 		this.topVoxels = new ArrayTextureGL(TextureFormat.RED_16I, 256, 9 * 9);
@@ -179,17 +182,21 @@ public class SummariesArrayTexture implements SummariesTexturesHolder {
 	
 	private void loadTopVoxels(RegionSummaryImplementation sum, ByteBuffer bb, int lod) {
 		bb.clear();
-		int ids[] = sum.getVoxelData();
+		int data[] = sum.getVoxelData();
+		ScratchCell cell = new ScratchCell(world);
+		cell.sunlight = 15;
 		for (int i = 0; i < size[lod] * size[lod]; i++)
 		{
 			int j = RegionSummaryImplementation.mainMimpmapOffsets[lod] + i;
-			//bb.putInt(ids[i]);
-			int id = ids[j];
-			Voxel v = VoxelsStore.get().getVoxelById(id);
+			
+			int raw_data = data[j];
+			Voxel v = world.getContentTranslator().getVoxelForId(VoxelFormat.id(raw_data));
+			
+			cell.voxel = v;
 			if (v.getDefinition().isLiquid())
 				bb.putInt(512);
 			else
-				bb.putInt(((VoxelTextureAtlased)v.getVoxelTexture(id, VoxelSides.TOP, null)).positionInColorIndex);
+				bb.putInt(((VoxelTextureAtlased)v.getVoxelTexture(VoxelSides.TOP, cell)).positionInColorIndex);
 		}
 		bb.flip();
 	}

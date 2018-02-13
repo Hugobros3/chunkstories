@@ -7,15 +7,15 @@ import java.util.Iterator;
 import io.xol.chunkstories.api.rendering.textures.Texture1D;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
 import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.voxel.VoxelTextureAtlased;
-import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.engine.graphics.textures.Texture1DGL;
 
 public class VoxelTexturesColours {
 
 	private Texture1DGL blockTexturesSummary;
 	
-	public VoxelTexturesColours() {
+	public VoxelTexturesColours(World world) {
 		blockTexturesSummary = new Texture1DGL(TextureFormat.RGBA_8BPP);
 		
 		int size = 512;
@@ -23,7 +23,7 @@ public class VoxelTexturesColours {
 		bb.order(ByteOrder.LITTLE_ENDIAN);
 
 		int counter = 0;
-		Iterator<VoxelTexture> i = VoxelsStore.get().textures().all();
+		Iterator<VoxelTexture> i = world.getContent().voxels().textures().all();
 		while (i.hasNext() && counter < size)
 		{
 			VoxelTextureAtlased voxelTexture = (VoxelTextureAtlased)i.next();

@@ -35,7 +35,6 @@ import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.renderer.WorldRendererImplementation;
 import io.xol.chunkstories.renderer.terrain.FarTerrainBaker.RegionMesh;
 import io.xol.chunkstories.voxel.VoxelTextureAtlased;
-import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.WorldClientCommon;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
 
@@ -108,7 +107,7 @@ public class FarTerrainMeshRenderer implements FarTerrainRenderer
 			bb.order(ByteOrder.LITTLE_ENDIAN);
 
 			int counter = 0;
-			Iterator<VoxelTexture> i = VoxelsStore.get().textures().all();
+			Iterator<VoxelTexture> i = world.getContent().voxels().textures().all();
 			while (i.hasNext() && counter < size)
 			{
 				VoxelTextureAtlased voxelTexture = (VoxelTextureAtlased)i.next();

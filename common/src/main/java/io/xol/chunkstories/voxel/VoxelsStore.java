@@ -142,8 +142,6 @@ public class VoxelsStore implements ClientContent.ClientVoxels
 							VoxelTypeImplementation voxelType = new VoxelTypeImplementation(this, name, reader);
 							Voxel voxel = voxelType.getVoxelObject();
 							
-							//voxels[voxel.getId()] = voxel;
-							//attributedIds.add(voxel.getId());
 							voxelsByName.put(voxel.getName(), voxel);
 							loadedVoxels++;
 							

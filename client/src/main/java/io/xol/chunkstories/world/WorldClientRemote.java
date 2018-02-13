@@ -6,7 +6,6 @@ import io.xol.chunkstories.api.world.WorldClientNetworkedRemote;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ClientConnectionToServer;
 import io.xol.chunkstories.net.PacketsProcessorCommon;
-import io.xol.chunkstories.net.PacketsProcessorCommon.PendingSynchPacket;
 import io.xol.chunkstories.world.io.IOTasksMultiplayerClient;
 
 //(c) 2015-2017 XolioWare Interactive

@@ -27,6 +27,7 @@ import io.xol.chunkstories.api.input.Mouse.MouseScroll;
 import io.xol.chunkstories.api.client.LocalPlayer;
 import io.xol.chunkstories.api.plugin.ClientPluginManager;
 import io.xol.chunkstories.api.util.ConfigDeprecated;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ClientConnectionToServer;
 import io.xol.chunkstories.gui.overlays.config.KeyBindSelectionOverlay;
@@ -376,13 +377,14 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 			return false;
 		
 		//Send input to server
-		if (entityControlled.getWorld() instanceof WorldClientRemote)
+		World world = entityControlled.getWorld();
+		if (world instanceof WorldClientRemote)
 		{
 			//MouseScroll inputs are strictly client-side
 			if(!(input instanceof MouseScroll))
 			{
 				ClientConnectionToServer connection = ((WorldClientRemote) entityControlled.getWorld()).getConnection();
-				PacketInput packet = new PacketInput();
+				PacketInput packet = new PacketInput(world);
 				packet.input = input;
 				packet.isPressed = true;
 				connection.sendPacket(packet);
@@ -424,10 +426,11 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 			return false;
 		
 		//Send input to server
-		if (entityControlled.getWorld() instanceof WorldClientRemote)
+		World world = entityControlled.getWorld();
+		if (world instanceof WorldClientRemote)
 		{
 			ClientConnectionToServer connection = ((WorldClientRemote) entityControlled.getWorld()).getConnection();
-			PacketInput packet = new PacketInput();
+			PacketInput packet = new PacketInput(world);
 			packet.input = input;
 			packet.isPressed = false;
 			connection.sendPacket(packet);

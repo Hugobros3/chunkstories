@@ -15,7 +15,6 @@ import io.xol.chunkstories.api.voxel.models.layout.IntricateLayoutBaker;
 import io.xol.chunkstories.api.voxel.models.layout.WholeBlocksLayoutBaker;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.workers.WorkerThread;
-import io.xol.chunkstories.world.chunk.CubicChunk;
 
 /** Client worker threads, with the added facility that they can do the chunk rendering ( they have more buffers ) */
 public class ClientWorkerThread extends WorkerThread implements BakeChunkTaskExecutor {
@@ -99,40 +98,6 @@ public class ClientWorkerThread extends WorkerThread implements BakeChunkTaskExe
 					}
 				}
 			}
-			
-			//defaultVoxelRenderer = new DefaultVoxelRenderer(content.voxels());
-		}
-		
-		protected int getBlockData(CubicChunk c, int x, int y, int z)
-		{
-			int data = 0;
-
-			if (x >= -32 && z >= -32 && y >= -32 && y < 64 && x < 64 && z < 64)
-			{
-				int relx = x < 0 ? 0 : (x >= 32 ? 2 : 1);
-				int rely = y < 0 ? 0 : (y >= 32 ? 2 : 1);
-				int relz = z < 0 ? 0 : (z >= 32 ? 2 : 1);
-				int[] target = cache[((relx) * 3 + (rely)) * 3 + (relz)];
-				x &= 0x1F;
-				y &= 0x1F;
-				z &= 0x1F;
-				if (target != null)
-					data = target[x * 1024 + y * 32 + z];
-			}
-			else
-			{
-				System.out.println("Warning ! Chunk " + c + " rendering process asked information about a block more than 32 blocks away from the chunk itself");
-				System.out.println("This should not happen when rendering normal blocks and may be caused by a weird or buggy mod.");
-				data = c.getWorld().peekSimple(c.getChunkX() * 32 + x, c.getChunkY() * 32 + y, c.getChunkZ() * 32 + z);
-			}
-			/*if (x > 0 && z > 0 && y > 0 && y < 32 && x < 32 && z < 32)
-			{
-				data = c.getDataAt(x, y, z);
-			}
-			else
-				data = Client.world.getDataAt(c.chunkX * 32 + x, c.chunkY * 32 + y, c.chunkZ * 32 + z);
-			*/
-			return data;
 		}
 
 		protected final int getSunlight(Chunk c, int x, int y, int z)
@@ -151,7 +116,7 @@ public class ClientWorkerThread extends WorkerThread implements BakeChunkTaskExe
 					z &= 0x1F;
 					data = target[x * 1024 + y * 32 + z];
 					int blockID = VoxelFormat.id(data);
-					return content.voxels().getVoxelById(blockID).getType().isOpaque() ? -1 : VoxelFormat.sunlight(data);
+					return c.getWorld().getContentTranslator().getVoxelForId(blockID).getDefinition().isOpaque() ? -1 : VoxelFormat.sunlight(data);
 				}
 			}
 			else
@@ -169,10 +134,10 @@ public class ClientWorkerThread extends WorkerThread implements BakeChunkTaskExe
 			Chunk cached = c.getWorld().getChunk(x / 32, y / 32, z / 32);
 			if (cached != null && !cached.isAirChunk())
 			{
-				data = cached.peekSimple(x, y, z);
+				data = cached.peekRaw(x, y, z);
 
 				int blockID = VoxelFormat.id(data);
-				return content.voxels().getVoxelById(blockID).getType().isOpaque() ? -1 : VoxelFormat.sunlight(data);
+				return c.getWorld().getContentTranslator().getVoxelForId(blockID).getDefinition().isOpaque() ? -1 : VoxelFormat.sunlight(data);
 			}
 
 			// If all else fails, just use the heightmap information
@@ -200,11 +165,11 @@ public class ClientWorkerThread extends WorkerThread implements BakeChunkTaskExe
 			{
 				System.out.println("Warning ! Chunk " + c + " rendering process asked information about a block more than 32 blocks away from the chunk itself");
 				System.out.println("This should not happen when rendering normal blocks and may be caused by a weird or buggy mod.");
-				data = c.getWorld().peekSimple(c.getChunkX() * 32 + x, c.getChunkY() * 32 + y, c.getChunkZ() * 32 + z);
+				data = c.getWorld().peekRaw(c.getChunkX() * 32 + x, c.getChunkY() * 32 + y, c.getChunkZ() * 32 + z);
 			}
 
 			int blockID = VoxelFormat.id(data);
-			return content.voxels().getVoxelById(blockID).getType().isOpaque() ? 0 : VoxelFormat.blocklight(data);
+			return c.getWorld().getContentTranslator().getVoxelForId(blockID).getDefinition().isOpaque() ? 0 : VoxelFormat.blocklight(data);
 		}
 		
 		private final void cleanup() {

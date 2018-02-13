@@ -97,7 +97,7 @@ public class WorldRendererImplementation implements WorldRenderer
 		this.entitiesRenderer = new EntitiesRenderer(world);
 		this.particlesRenderer = new ClientParticlesRenderer(world);
 		this.farTerrainRenderer = new FarTerrainGSMeshRenderer(this);
-		this.summariesTexturesHolder = new SummariesArrayTexture(client);
+		this.summariesTexturesHolder = new SummariesArrayTexture(client, world);
 		this.weatherEffectsRenderer = new DefaultWeatherEffectsRenderer(world, this);
 		this.skyRenderer = new DefaultSkyRenderer(world);
 		this.decalsRenderer = new DecalsRendererImplementation(this);

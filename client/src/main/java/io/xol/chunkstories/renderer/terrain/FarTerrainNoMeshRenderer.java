@@ -51,7 +51,7 @@ public class FarTerrainNoMeshRenderer implements FarTerrainRenderer {
 			grids[i] = generateGrid(detailLevels[i]);
 		}
 		
-		colours = new VoxelTexturesColours();
+		colours = new VoxelTexturesColours(worldRenderer.getWorld());
 	}
 	
 	@Override

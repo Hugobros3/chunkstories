@@ -6,8 +6,9 @@ import java.util.Map;
 
 import org.joml.Vector3dc;
 import org.lwjgl.system.MemoryUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import io.xol.chunkstories.api.content.Content.Voxels;
 import io.xol.chunkstories.api.exceptions.tasks.UnexecutableTaskException;
 import io.xol.chunkstories.api.math.LoopingMathHelper;
 import io.xol.chunkstories.api.math.Math2;
@@ -29,14 +30,12 @@ import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.VertexLayout;
 import io.xol.chunkstories.api.voxel.models.ChunkRenderer.ChunkRenderContext;
 import io.xol.chunkstories.api.workers.Task;
 import io.xol.chunkstories.api.workers.TaskExecutor;
-import io.xol.chunkstories.api.world.VoxelContext;
-import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.renderer.chunks.ChunkMeshDataSections.DynamicallyRenderedVoxelClass;
 import io.xol.chunkstories.renderer.chunks.ClientWorkerThread.ChunkMeshingBuffers;
-import io.xol.chunkstories.voxel.VoxelsStore;
+import io.xol.chunkstories.world.cell.ScratchCell;
 import io.xol.chunkstories.world.chunk.ClientChunk;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.engine.base.MemFreeByteBuffer;
@@ -47,7 +46,7 @@ import io.xol.engine.base.MemFreeByteBuffer;
 
 public class TaskBakeChunk extends Task {
 
-	//private final ClientTasksPool baker;
+	protected final Logger logger = LoggerFactory.getLogger("renderer.chunksbaker");
 	protected final ClientChunk chunk;
 	
 	private final WorldClient world;
@@ -99,7 +98,7 @@ public class TaskBakeChunk extends Task {
 		//System.out.println("heil" + chunk);
 		
 		if(dx > chunksViewDistance || dz > chunksViewDistance || dy > 2) {
-			//System.out.println("unscheduled chunk mesh render task for it being too far to be rendered anyway");
+			logger.info("unscheduled chunk mesh render task for it being too far to be rendered anyway");
 			return true;
 		}
 
@@ -162,9 +161,6 @@ public class TaskBakeChunk extends Task {
 						cmd.cache[((relx + 1) * 3 + (rely + 1)) * 3 + (relz + 1)] = null;
 				}
 
-
-		Voxels store = world.getGameContext().getContent().voxels();
-		
 		//Make sure we clear each sub-buffer type.
 		for(int i = 0; i < ChunkMeshDataSubtypes.VertexLayout.values().length; i++)
 		{
@@ -194,7 +190,7 @@ public class TaskBakeChunk extends Task {
 			
 		};
 		
-		VoxelContext voxelRenderingContext = new VoxelContext()
+		/*CellData voxelRenderingContext = new CellData()
 		{
 			@Override
 			public Voxel getVoxel()
@@ -202,13 +198,11 @@ public class TaskBakeChunk extends Task {
 				return store.getVoxelById(getData());
 			}
 
-			@Override
 			public int getData()
 			{
 				return cmd.getBlockData(chunk, i, k, j);
 			}
 
-			@Override
 			public int getNeightborData(int side)
 			{
 				switch (side)
@@ -252,7 +246,7 @@ public class TaskBakeChunk extends Task {
 				return world;
 			}
 
-		};
+		};*/
 
 		ChunkBakerRenderContext chunkRenderingContext = new ChunkBakerRenderContext(chunk, cx, cy, cz);
 		
@@ -260,6 +254,7 @@ public class TaskBakeChunk extends Task {
 		
 		Map<Voxel, DynamicallyRenderedVoxelClass> dynamicVoxels = new HashMap<>();
 		
+		ScratchCell cell = new ScratchCell(world);
 		//Render the fucking thing!
 		for (i = 0; i < 32; i++)
 		{
@@ -267,38 +262,37 @@ public class TaskBakeChunk extends Task {
 			{
 				for (k = 0; k < 32; k++)
 				{
-					int src = chunk.peekSimple(i, k, j);
-					int blockID = VoxelFormat.id(src);
-
-					if (blockID == 0)
+					peek(i, j, k, cell);
+					
+					if (cell.voxel.isAir())
 						continue;
 					
-					Voxel vox = VoxelsStore.get().getVoxelById(blockID);
 					// Fill near-blocks info
-					// chunkRenderingContext.prepareVoxelLight();
+					// chunkRenderingContext.prepareVoxelLight(); // lol nope
 					
-					VoxelRenderer voxelRenderer = vox.getVoxelRenderer(voxelRenderingContext);
+					VoxelRenderer voxelRenderer = cell.getVoxelRenderer();
 					if(voxelRenderer == null)
-						voxelRenderer = vox.store().getDefaultVoxelRenderer();//cmd.defaultVoxelRenderer;
+						voxelRenderer = world.getContent().voxels().getDefaultVoxelRenderer();
 					
-					voxelRenderer.renderInto(chunkRendererOutput, chunkRenderingContext, chunk, voxelRenderingContext);
+					// Run the VoxelRenderer
+					voxelRenderer.renderInto(chunkRendererOutput, chunkRenderingContext, chunk, cell);
 					
-					if(vox instanceof VoxelDynamicallyRendered) {
-						DynamicallyRenderedVoxelClass vClass = dynamicVoxels.get(vox);
+					// We handle voxels with a dynamic renderer here too - we just add them to a list !
+					if(cell.voxel instanceof VoxelDynamicallyRendered) {
+						DynamicallyRenderedVoxelClass vClass = dynamicVoxels.get(cell.voxel);
 						if(vClass == null) {
 							vClass = new DynamicallyRenderedVoxelClass();
 							
 							//TODO cache it world-wide 
-							VoxelComponentDynamicRenderer component = ((VoxelDynamicallyRendered)vox).getDynamicRendererComponent(chunk.peek(i, k, j));
+							VoxelComponentDynamicRenderer component = ((VoxelDynamicallyRendered)cell.voxel).getDynamicRendererComponent(chunk.peek(i, k, j));
 							
 							if(component != null) {
 								vClass.renderer = component.getVoxelDynamicRenderer();
 								if(vClass.renderer != null)
-									dynamicVoxels.put(vox, vClass);
+									dynamicVoxels.put(cell.voxel, vClass);
 							}
 						}
 						vClass.indexes.add(i * 1024 + k * 32 + j);
-						//((VoxelDynamicallyRendered)vox).getDynamicRendererComponent(context)
 					}
 					
 					bakedBlockId++;
@@ -312,7 +306,7 @@ public class TaskBakeChunk extends Task {
 		
 		int currentOffset = 0;
 		
-		//Compute total size
+		//Compute total size to create final bytebuffer
 		int sizeInBytes = 0;
 		for(VertexLayout vertexLayout : VertexLayout.values())
 			for(LodLevel lodLevel : LodLevel.values())
@@ -347,11 +341,10 @@ public class TaskBakeChunk extends Task {
 					//Move the offset accordingly
 					currentOffset += relevantByteBuffer.position();
 					
-					//Limit the temporary byte buffer and put it's content inside
+					//Limit the temporary byte buffer and fill the main buffer with it
 					relevantByteBuffer.limit(relevantByteBuffer.position());
 					relevantByteBuffer.position(0);
 					finalData.put(relevantByteBuffer);
-					
 				}
 
 		finalData.flip();
@@ -370,6 +363,17 @@ public class TaskBakeChunk extends Task {
 		//System.out.println(wrappedBuffer);
 		
 		return true;
+	}
+	
+	private void peek(int x, int y, int z, ScratchCell cell) {
+		cell.x = x;
+		cell.y = y;
+		cell.z = z;
+		int rawData = world.peekRaw(x, y, z);
+		cell.voxel = world.getContentTranslator().getVoxelForId(VoxelFormat.id(rawData));
+		cell.sunlight = VoxelFormat.sunlight(rawData);
+		cell.blocklight = VoxelFormat.blocklight(rawData);
+		cell.metadata = VoxelFormat.meta(rawData);
 	}
 	
 	class ChunkBakerRenderContext implements ChunkRenderContext {

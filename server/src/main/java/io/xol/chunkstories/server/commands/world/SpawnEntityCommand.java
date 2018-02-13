@@ -62,16 +62,8 @@ public class SpawnEntityCommand extends ServerCommandBasic {
 		
 		EntityDefinition entityType;
 		
-		if(isNumeric(arguments[0]))
-		{
-			short entityId = Short.parseShort(arguments[0]);
-			entityType = server.getContent().entities().getEntityTypeById(entityId);
-		}
-		else
-		{
-			String entityName = arguments[0];
-			entityType = server.getContent().entities().getEntityTypeByName(entityName);
-		}
+		String entityName = arguments[0];
+		entityType = server.getContent().entities().getEntityTypeByName(entityName);
 		
 		if(entityType == null)
 		{

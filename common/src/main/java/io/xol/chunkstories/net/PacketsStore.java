@@ -73,10 +73,9 @@ public class PacketsStore implements Content.PacketTypes {
 					if (line.contains(" ")) {
 						String[] split = line.split(" ");
 						String materialName = split[1];
-						int id = Integer.parseInt(split[2]);
 
 						try {
-							packetType = new PacketDefinitionImpl(store, materialName, id, reader);
+							packetType = new PacketDefinitionImpl(store, materialName, reader);
 						} catch (IllegalPacketDeclarationException e) {
 							store.logger().error(e.getMessage());
 							continue;
@@ -84,7 +83,6 @@ public class PacketsStore implements Content.PacketTypes {
 
 						// Eventually add the packet type
 						byNames.put(packetType.getName(), packetType);
-						//byIDs[packetType.getID()] = packetType;
 						
 						//Add quick-resolve hashmap entries
 						if(packetType.clientClass != null)
@@ -101,11 +99,6 @@ public class PacketsStore implements Content.PacketTypes {
 			e.printStackTrace();
 		}
 	}
-
-	/*@Override
-	public PacketType getPacketTypeById(int packetID) {
-		return byIDs[packetID];
-	}*/
 
 	@Override
 	public PacketDefinition getPacketTypeByName(String name) {
@@ -126,6 +119,24 @@ public class PacketsStore implements Content.PacketTypes {
 	@Override
 	public Content parent() {
 		return this.store;
+	}
+
+	@Override
+	public Iterator<PacketDefinition> all() {
+		Iterator<PacketDefinitionImpl> i = byNames.values().iterator();
+		return new Iterator<PacketDefinition>() {
+
+			@Override
+			public boolean hasNext() {
+				return i.hasNext();
+			}
+
+			@Override
+			public PacketDefinition next() {
+				return i.next();
+			}
+			
+		};
 	}
 
 }

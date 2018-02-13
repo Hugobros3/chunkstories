@@ -11,7 +11,6 @@ import io.xol.chunkstories.content.GameContentStore;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -25,7 +24,6 @@ import org.slf4j.LoggerFactory;
 
 public class ItemTypesStore implements Content.ItemsTypes
 {
-	public ItemDefinition[] items = new ItemDefinition[65536];
 	Map<Short, Constructor<? extends Item>> itemsTypes = new HashMap<Short, Constructor<? extends Item>>();
 	public Map<String, ItemDefinition> dictionary = new HashMap<String, ItemDefinition>();
 	public int itemTypes = 0;
@@ -49,7 +47,6 @@ public class ItemTypesStore implements Content.ItemsTypes
 
 	public void reload()
 	{
-		Arrays.fill(items, null);
 		dictionary.clear();
 
 		Iterator<Asset> i = modsManager.getAllAssetsByExtension("items");
@@ -85,81 +82,18 @@ public class ItemTypesStore implements Content.ItemsTypes
 						logger().warn("Syntax error in file : " + f + " : ");
 						continue;
 					}
-
-					//Eventually add the item
-					/*items[currentItemType.getID()] = currentItemType;
-					dictionary.put(currentItemType.getInternalName(), currentItemType);*/
 				}
-				/*else if (line.startsWith("maxStackSize"))
-				{
-					String[] split = line.replaceAll(" ", "").split(":");
-					int value = Integer.parseInt(split[1]);
-					if (currentItemType != null)
-						currentItemType.setMaxStackSize(value);
-				}
-				else if (line.startsWith("width"))
-				{
-					String[] split = line.replaceAll(" ", "").split(":");
-					int value = Integer.parseInt(split[1]);
-					if (currentItemType != null)
-						currentItemType.setSlotsWidth(value);
-				}
-				else if (line.startsWith("height"))
-				{
-					String[] split = line.replaceAll(" ", "").split(":");
-					int value = Integer.parseInt(split[1]);
-					if (currentItemType != null)
-						currentItemType.setSlotsHeight(value);
-				}*/
 				else if (line.startsWith("item"))
 				{
 					if (line.contains(" "))
 					{
 						String[] split = line.split(" ");
-						int id = Integer.parseInt(split[1]);
-						String itemName = split[2];
-						/*String className = "io.xol.chunkstories.api.item.Item";
-						
-						if(split.length > 3)
-							className = split[3];
-						try
-						{
-							Class<?> rawClass = modsManager.getClassByName(className);
-							if (rawClass == null)
-							{
-								ChunkStoriesLogger.getInstance().warning("Item class " + className + " does not exist in codebase.");
-							}
-							else if (!(Item.class.isAssignableFrom(rawClass)))
-							{
-								ChunkStoriesLogger.getInstance().warning("Item class " + className + " is not extending the Item class.");
-							}
-							else
-							{
-								@SuppressWarnings("unchecked")
-								Class<? extends Item> itemClass = (Class<? extends Item>) rawClass;
-								Class<?>[] types = { ItemDefinition.class };
-								Constructor<? extends Item> constructor = itemClass.getConstructor(types);
-								
-								if (constructor == null)
-								{
-									System.out.println("item " + className + " does not provide a valid constructor.");
-									continue;
-								}
-								currentItemType = new ItemTypeImpl(this, itemName, id);
-								currentItemType.setConstructor(constructor);
-							}
-						
-						}
-						catch (NoSuchMethodException | SecurityException | IllegalArgumentException e)
-						{
-							e.printStackTrace();
-						}*/
+						String itemName = split[1];
 
 						try
 						{
-							ItemTypeImpl itemType = new ItemTypeImpl(this, itemName, id, reader);
+							ItemTypeImpl itemType = new ItemTypeImpl(this, itemName, reader);
 
-							items[itemType.getID()] = itemType;
 							dictionary.put(itemType.getInternalName(), itemType);
 						}
 						catch (IllegalItemDeclarationException e)
@@ -168,16 +102,6 @@ public class ItemTypesStore implements Content.ItemsTypes
 						}
 					}
 				}
-				/*else
-				{
-					//Unknown property ? add it to the unknown ones !
-					if(line.contains(": "))
-					{
-						String propertyName = line.split(": ")[0];
-						String value = line.split(": ")[1];
-						currentItemType.setup(propertyName, value);
-					}
-				}*/
 			}
 			reader.close();
 		}
@@ -185,13 +109,6 @@ public class ItemTypesStore implements Content.ItemsTypes
 		{
 			e.printStackTrace();
 		}
-	}
-
-	public ItemDefinition getItemTypeById(int id)// throws UndefinedItemTypeException
-	{
-		//Quick & dirty sanitization
-		id = id & 0x00FFFFFF;
-		return items[id];
 	}
 
 	public ItemDefinition getItemTypeByName(String itemName)// throws UndefinedItemTypeException

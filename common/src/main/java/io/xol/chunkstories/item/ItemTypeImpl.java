@@ -20,7 +20,6 @@ import io.xol.chunkstories.materials.GenericNamedConfigurable;
 
 public class ItemTypeImpl extends GenericNamedConfigurable implements ItemDefinition
 {
-	private final int id;
 	private final ItemTypesStore store;
 
 	private final int slotsWidth;
@@ -30,11 +29,10 @@ public class ItemTypeImpl extends GenericNamedConfigurable implements ItemDefini
 	private final Constructor<? extends Item> itemConstructor;
 	private final ItemRenderer itemRenderer;
 
-	public ItemTypeImpl(ItemTypesStore store, String name, int id, BufferedReader reader) throws IllegalItemDeclarationException, IOException
+	public ItemTypeImpl(ItemTypesStore store, String name, BufferedReader reader) throws IllegalItemDeclarationException, IOException
 	{
 		super(name, reader);
 		this.store = store;
-		this.id = id;
 
 		//Loads the items properties
 		try
@@ -126,11 +124,6 @@ public class ItemTypeImpl extends GenericNamedConfigurable implements ItemDefini
 		return itemRenderer;
 	}
 
-	public int getID()
-	{
-		return id;
-	}
-
 	@Override
 	public String getInternalName()
 	{
@@ -188,7 +181,7 @@ public class ItemTypeImpl extends GenericNamedConfigurable implements ItemDefini
 
 	public String toString()
 	{
-		return "[ItemDefinition id:" + id + " name:" + getInternalName() + " w:" + this.getSlotsWidth() + " h:" + this.getSlotsHeight() + " max:" + this.getMaxStackSize() + "]";
+		return "[ItemDefinition" + " name:" + getInternalName() + " w:" + this.getSlotsWidth() + " h:" + this.getSlotsHeight() + " max:" + this.getMaxStackSize() + "]";
 	}
 
 	@Override

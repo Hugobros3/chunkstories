@@ -7,6 +7,8 @@ import java.util.concurrent.Semaphore;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.util.concurrency.Fence;
+import io.xol.chunkstories.api.world.cell.CellData;
+import io.xol.chunkstories.api.world.cell.FutureCell;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.api.world.heightmap.RegionSummaries;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
@@ -172,7 +174,7 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 		return cs.getHeight(x % 256, z % 256);
 	}
 
-	public int getDataAtWorldCoordinates(int x, int z)
+	public int getRawDataAtWorldCoordinates(int x, int z)
 	{
 		x %= worldSize;
 		z %= worldSize;
@@ -181,10 +183,26 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 		if (z < 0)
 			z += worldSize;
 		RegionSummaryImplementation cs = getRegionSummaryWorldCoordinates(x, z);
-		return cs.getVoxelData(x % 256, z % 256);
+		if(cs == null)
+			return 0;
+		return cs.getRawVoxelData(x % 256, z % 256);
+	}
+	
+	@Override
+	public CellData getTopCellAtWorldCoordinates(int x, int z) {
+		x %= worldSize;
+		z %= worldSize;
+		if (x < 0)
+			x += worldSize;
+		if (z < 0)
+			z += worldSize;
+		RegionSummaryImplementation cs = getRegionSummaryWorldCoordinates(x, z);
+		if(cs == null)
+			return null;
+		return cs.getTopCell(x, z);
 	}
 
-	public void updateOnBlockPlaced(int x, int y, int z, int id)
+	public void updateOnBlockPlaced(int x, int y, int z, FutureCell future)
 	{
 		x %= worldSize;
 		z %= worldSize;
@@ -192,10 +210,10 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 			x += worldSize;
 		if (z < 0)
 			z += worldSize;
-		RegionSummary summary = getRegionSummaryWorldCoordinates(x, z);
+		RegionSummaryImplementation summary = getRegionSummaryWorldCoordinates(x, z);
 		
 		if(summary != null)
-			summary.updateOnBlockModification(x % 256, y, z % 256, id);
+			summary.updateOnBlockModification(x % 256, y, z % 256, future);
 	}
 
 	public int countSummaries()
@@ -225,51 +243,6 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 		RegionSummaryImplementation cs = getRegionSummaryWorldCoordinates(x, z);
 		cs.setHeightAndId(x % 256, y, z % 256, id);
 	}
-
-	/*public void unloadsUselessData()
-	{
-		dontDeleteWhileCreating.acquireUninterruptibly();
-		
-		Iterator<RegionSummaryImplementation> i = summaries.values().iterator();
-		while(i.hasNext())
-		{
-			RegionSummaryImplementation summary = i.next();
-			summary.unloadsIfUnused();
-			//if(summary.unloadsIfUnused())
-			//	System.out.println("unloaded unused summary "+summary);
-		}
-		
-		dontDeleteWhileCreating.release();
-	}*/
-	
-	/*public void removeFurther(int pCX, int pCZ, int distanceInChunks)
-	{
-		int rx = pCX / 8;
-		int rz = pCZ / 8;
-
-		int distInRegions = distanceInChunks / 8;
-		int s = world.getSizeInChunks() / 8;
-		synchronized(summaries)
-		{
-			Iterator<Entry<Long, RegionSummaryImplementation>> iterator = summaries.entrySet().iterator();
-			while (iterator.hasNext())
-			{
-				Entry<Long, RegionSummaryImplementation> entry = iterator.next();
-				long l = entry.getKey();
-				int lx = (int) (l / s);
-				int lz = (int) (l % s);
-
-				int dx = LoopingMathHelper.moduloDistance(rx, lx, s);
-				int dz = LoopingMathHelper.moduloDistance(rz, lz, s);
-				// System.out.println("Chunk Summary "+lx+":"+lz+" is "+dx+":"+dz+" away from camera max:"+distInRegions+" total:"+summaries.size());
-				if (dx > distInRegions || dz > distInRegions)
-				{
-					summaries.get(l).unloadSummary();
-					iterator.remove();
-				}
-			}
-		}
-	}*/
 	
 	public void destroy()
 	{

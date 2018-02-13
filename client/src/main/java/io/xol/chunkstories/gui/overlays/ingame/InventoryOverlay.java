@@ -201,7 +201,7 @@ public class InventoryOverlay extends Layer
 						else if (world instanceof WorldClientRemote)
 						{
 							//When in a remote MP scenario, send a packet
-							PacketInventoryMoveItemPile packetMove = new PacketInventoryMoveItemPile(selectedItem, selectedItem.getInventory(), inventories[i], selectedItem.getX(), selectedItem.getY(), x, y, selectedItemAmount);
+							PacketInventoryMoveItemPile packetMove = new PacketInventoryMoveItemPile(world, selectedItem, selectedItem.getInventory(), inventories[i], selectedItem.getX(), selectedItem.getY(), x, y, selectedItemAmount);
 							((WorldClientRemote) world).getConnection().pushPacket(packetMove);
 							
 							//And unsellect item
@@ -253,7 +253,7 @@ public class InventoryOverlay extends Layer
 			//In MP scenario, move into /dev/null
 			else if (world instanceof WorldClientRemote)
 			{
-				PacketInventoryMoveItemPile packetMove = new PacketInventoryMoveItemPile(selectedItem, selectedItem.getInventory(), null, selectedItem.getX(), selectedItem.getY(), 0, 0, selectedItemAmount);
+				PacketInventoryMoveItemPile packetMove = new PacketInventoryMoveItemPile(world, selectedItem, selectedItem.getInventory(), null, selectedItem.getX(), selectedItem.getY(), 0, 0, selectedItemAmount);
 				((WorldClientRemote) world).getConnection().pushPacket(packetMove);
 				
 				selectedItem = null;

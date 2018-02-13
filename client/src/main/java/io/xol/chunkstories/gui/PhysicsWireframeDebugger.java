@@ -12,10 +12,9 @@ import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.api.entity.EntityLiving.HitBox;
 import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.WorldClient;
+import io.xol.chunkstories.api.world.cell.CellData;
 import io.xol.chunkstories.renderer.debug.FakeImmediateModeDebugRenderer;
-import io.xol.chunkstories.voxel.VoxelsStore;
 
 public class PhysicsWireframeDebugger {
 	
@@ -32,22 +31,22 @@ public class PhysicsWireframeDebugger {
 		
 		Vector3dc cameraPosition = renderer.getCamera().getCameraPosition();
 		
-		int id, data;
+		//int id, data;
 		int drawDebugDist = 6;
 
 		//Iterate over nearby voxels
 		for (int i = ((int)(double) cameraPosition.x()) - drawDebugDist; i <= ((int)(double) cameraPosition.x()) + drawDebugDist; i++)
 			for (int j = ((int)(double) cameraPosition.y()) - drawDebugDist; j <= ((int)(double) cameraPosition.y()) + drawDebugDist; j++)
-				for (int k = ((int)(double) cameraPosition.z()) - drawDebugDist; k <= ((int)(double) cameraPosition.z()) + drawDebugDist; k++)
-				{
-					data = world.peekSimple(i, j, k);
-					id = VoxelFormat.id(data);
+				for (int k = ((int)(double) cameraPosition.z()) - drawDebugDist; k <= ((int)(double) cameraPosition.z()) + drawDebugDist; k++) {
+					//data = world.peekSimple(i, j, k);
+					//id = VoxelFormat.id(data);
+					CellData cell = world.peekSafely(i, j, k);
 					
-					CollisionBox[] tboxes = VoxelsStore.get().getVoxelById(id).getTranslatedCollisionBoxes(world, i, j, k);
+					CollisionBox[] tboxes = cell.getTranslatedCollisionBoxes();
 					if (tboxes != null) {
 						//Draw all their collision boxes
 						for (CollisionBox box : tboxes) {
-							if (VoxelsStore.get().getVoxelById(id).getType().isSolid())
+							if (cell.getVoxel().getDefinition().isSolid())
 								//Red if solid
 								FakeImmediateModeDebugRenderer.renderCollisionBox(box, new Vector4f(1, 0, 0, 1.0f));
 							else
@@ -59,13 +58,11 @@ public class PhysicsWireframeDebugger {
 
 		//Iterate over each entity
 		Iterator<Entity> ie = world.getAllLoadedEntities();
-		while (ie.hasNext())
-		{
+		while (ie.hasNext()) {
 			Entity e = ie.next();
 			
 			//Entities with hitboxes see all of those being drawn
-			if(e instanceof EntityLiving)
-			{
+			if(e instanceof EntityLiving) {
 				EntityLiving eli = (EntityLiving)e;
 				for(HitBox hitbox: eli.getHitBoxes()) {
 					hitbox.draw(renderer);
@@ -79,8 +76,7 @@ public class PhysicsWireframeDebugger {
 				FakeImmediateModeDebugRenderer.renderCollisionBox(e.getTranslatedBoundingBox(), new Vector4f(0, 1f, 1f, 1.0f));
 			
 			//And the collision box
-			for(CollisionBox box : e.getCollisionBoxes())
-			{
+			for(CollisionBox box : e.getCollisionBoxes()) {
 				box.translate(e.getLocation());
 				FakeImmediateModeDebugRenderer.renderCollisionBox(box, new Vector4f(0, 1, 0.5f, 1.0f));
 			}

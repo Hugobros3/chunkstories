@@ -13,9 +13,8 @@ import io.xol.chunkstories.materials.GenericNamedConfigurable;
 
 public class PacketDefinitionImpl extends GenericNamedConfigurable implements PacketDefinition {
 
-	final int id;
 	final AllowedFrom allowedFrom;
-	final PacketType type;
+	final PacketGenre type;
 
 	final Class<? extends Packet> clientClass;
 	final Class<? extends Packet> serverClass;
@@ -25,10 +24,9 @@ public class PacketDefinitionImpl extends GenericNamedConfigurable implements Pa
 	final Constructor<? extends Packet> serverClassConstructor;
 	final Constructor<? extends Packet> commonClassConstructor;
 
-	public PacketDefinitionImpl(GameContentStore store, String name, int ID, BufferedReader reader)
+	public PacketDefinitionImpl(GameContentStore store, String name, BufferedReader reader)
 			throws IllegalPacketDeclarationException, IOException {
 		super(name, reader);
-		this.id = ID;
 
 		String afs = this.resolveProperty("allowedFrom", "all");
 		if (afs.equals("all"))
@@ -42,13 +40,13 @@ public class PacketDefinitionImpl extends GenericNamedConfigurable implements Pa
 
 		String tys = this.resolveProperty("type", "general");
 		if(tys.equals("general"))
-			type = PacketType.GENERAL_PURPOSE;
+			type = PacketGenre.GENERAL_PURPOSE;
 		else if(tys.equals("system"))
-			type = PacketType.SYSTEM;
+			type = PacketGenre.SYSTEM;
 		else if(tys.equals("world"))
-			type = PacketType.WORLD;
+			type = PacketGenre.WORLD;
 		else if(tys.equals("world_streaming")) 
-			type = PacketType.WORLD_STREAMING;
+			type = PacketGenre.WORLD_STREAMING;
 		else 
 			throw new IllegalPacketDeclarationException("type can only take one of {general, systme, world, world_streaming}.");
 		
@@ -151,17 +149,13 @@ public class PacketDefinitionImpl extends GenericNamedConfigurable implements Pa
 		}
 	}
 
-	public int getID() {
-		return id;
-	}
-
 	@Override
 	public AllowedFrom allowedFrom() {
 		return allowedFrom;
 	}
 
 	@Override
-	public PacketType getType() {
+	public PacketGenre getType() {
 		return type;
 	}
 }

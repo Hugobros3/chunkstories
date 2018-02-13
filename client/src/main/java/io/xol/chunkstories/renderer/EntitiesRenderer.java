@@ -53,11 +53,11 @@ public class EntitiesRenderer
 			if (entity instanceof EntityRenderable)
 			{
 				EntityRenderable entityRenderable = (EntityRenderable) entity;
-				List<EntityRenderable> entitiesOfThisType = renderableEntitiesTypes.get(entityRenderable.getType());
+				List<EntityRenderable> entitiesOfThisType = renderableEntitiesTypes.get(entityRenderable.getDefinition());
 				if (entitiesOfThisType == null)
 				{
-					renderableEntitiesTypes.put(entityRenderable.getType(), new ArrayList<EntityRenderable>());
-					entitiesOfThisType = renderableEntitiesTypes.get(entityRenderable.getType());
+					renderableEntitiesTypes.put(entityRenderable.getDefinition(), new ArrayList<EntityRenderable>());
+					entitiesOfThisType = renderableEntitiesTypes.get(entityRenderable.getDefinition());
 				}
 				entitiesOfThisType.add(entityRenderable);
 			}

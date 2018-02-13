@@ -2,8 +2,6 @@ package io.xol.chunkstories.voxel.models;
 
 import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.content.Content.Voxels.VoxelModels;
-import io.xol.chunkstories.api.voxel.Voxel;
-import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.LodLevel;
 import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
@@ -15,7 +13,6 @@ import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.api.world.cell.CellData;
 import io.xol.chunkstories.api.world.chunk.Chunk;
-import io.xol.chunkstories.voxel.VoxelsStore;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
@@ -90,16 +87,15 @@ public class VoxelModelLoaded implements VoxelRenderer, VoxelModel
 		//int textureT = currentVoxelTexture.getAtlasT();
 
 		//We look the 6 adjacent faces to determine wether or not we should consider them culled
-		Voxel occlusionTestedVoxel;
 		boolean[] cullingCache = new boolean[6];
 		for (int j = 0; j < 6; j++)
 		{
-			int id = VoxelFormat.id(info.getSideId(j));
-			int meta = VoxelFormat.meta(info.getNeightborData(j));
-			occlusionTestedVoxel = VoxelsStore.get().getVoxelById(id);
+			CellData adj = info.getNeightbor(j);
+			
 			// If it is, don't draw it.
-			cullingCache[j] = (occlusionTestedVoxel.getDefinition().isOpaque() || occlusionTestedVoxel.isFaceOpaque(VoxelSides.values()[j], info.getNeightborData(j))) || occlusionTestedVoxel.isFaceOpaque(VoxelSides.values()[j], info.getNeightborData(j))
-					|| (info.getVoxel().getDefinition().isSelfOpaque() && id == VoxelFormat.id(info.getData()) && meta == info.getMetaData());
+			cullingCache[j] = adj.getVoxel().getDefinition().isOpaque() || 
+					adj.getVoxel().isFaceOpaque(VoxelSides.values()[j], adj.getMetaData()) || 
+					info.getVoxel().getDefinition().isSelfOpaque() && adj.getVoxel().sameKind(info.getVoxel()) && adj.getMetaData() == info.getMetaData();
 		}
 
 		//Generate some jitter if it is enabled

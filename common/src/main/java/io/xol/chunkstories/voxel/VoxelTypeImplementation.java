@@ -30,6 +30,7 @@ public class VoxelTypeImplementation extends GenericNamedConfigurable implements
 	private final boolean selfOpaque;
 	private final boolean liquid;
 	private final boolean billboard;
+	private final boolean isSelectable;
 	
 	private final byte emittingLightLevel;
 	private final byte shadingLightLevel;
@@ -41,8 +42,6 @@ public class VoxelTypeImplementation extends GenericNamedConfigurable implements
 		super(name, reader);
 		
 		this.store = store;
-		
-		//this.id = id;
 		
 		//If a specific material was given, use that one, else use the voxel name
 		String matResolved = this.resolveProperty("material");
@@ -93,6 +92,7 @@ public class VoxelTypeImplementation extends GenericNamedConfigurable implements
 		selfOpaque = getBoolean("selfOpaque", false);
 		liquid = getBoolean("liquid", false);
 		billboard = getBoolean("billboard", false);
+		isSelectable = getBoolean("isSelectable", solid && !liquid);
 		
 		emittingLightLevel = getByte("emitting", (byte)0);
 		shadingLightLevel = getByte("shading", (byte)0);
@@ -214,5 +214,10 @@ public class VoxelTypeImplementation extends GenericNamedConfigurable implements
 	public Voxel getVoxelObject()
 	{
 		return voxel;
+	}
+
+	@Override
+	public boolean isSelectable() {
+		return isSelectable;
 	}
 }

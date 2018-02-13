@@ -72,7 +72,7 @@ public class CubicChunk implements Chunk {
 	// public final AtomicInteger occl_compr_uncomittedBlockModifications = new
 	// AtomicInteger();
 
-	public final ChunkLightBaker lightBaker = new ChunkLightBaker(this);
+	public final ChunkLightBaker lightBaker;
 
 	protected final Map<Integer, VoxelComponentsHolder> voxelComponents = new HashMap<Integer, VoxelComponentsHolder>();
 	protected final Set<Entity> localEntities = ConcurrentHashMap.newKeySet();
@@ -99,6 +99,8 @@ public class CubicChunk implements Chunk {
 		this.uuid = ((chunkX << world.getWorldInfo().getSize().bitlengthOfVerticalChunksCoordinates) | chunkY) << world
 				.getWorldInfo().getSize().bitlengthOfHorizontalChunksCoordinates | chunkZ;
 
+		lightBaker = new ChunkLightBaker(this);
+		
 		if (data != null) {
 			try {
 				this.chunkVoxelData = data.getVoxelData();
@@ -206,7 +208,7 @@ public class CubicChunk implements Chunk {
 
 	@Override
 	public Voxel peekSimple(int x, int y, int z) {
-		return world.getContentTranslator().getVoxelForId(peekRaw(x, y, z));
+		return world.getContentTranslator().getVoxelForId(VoxelFormat.id(peekRaw(x, y, z)));
 	}
 
 	@Override
@@ -325,7 +327,7 @@ public class CubicChunk implements Chunk {
 
 		// Update related summary
 		if (update)
-			world.getRegionsSummariesHolder().updateOnBlockPlaced(x, y, z, raw_data);
+			world.getRegionsSummariesHolder().updateOnBlockPlaced(x, y, z, future);
 
 		// Mark the nearby chunks to be re-rendered
 		if (update) {
@@ -446,12 +448,11 @@ public class CubicChunk implements Chunk {
 
 	class ActualChunkVoxelContext extends Cell implements ChunkCell {
 
-		//final int x, y, z;
 		int raw_data;
 
 		public ActualChunkVoxelContext(int x, int y, int z, int data) {
 			super(x & 0x1F + chunkX << 5, y & 0x1F + chunkY << 5, z & 0x1F + chunkZ << 5, 
-					world.getContentTranslator().getVoxelForId(data), 
+					world.getContentTranslator().getVoxelForId(VoxelFormat.id(data)), 
 					VoxelFormat.meta(data), VoxelFormat.blocklight(data), VoxelFormat.sunlight(data));
 			
 			this.raw_data = data;

@@ -41,8 +41,6 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 
 	@Override
 	public Fence requestLightningUpdate() {
-		//Thread.dumpStack();
-		
 		unbakedUpdates.incrementAndGet();
 		
 		Task fence;
@@ -534,7 +532,9 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 			{
 				int z = 31; // This is basically wrong since we work with cubic chunks
 				boolean hitGroundYet = false;
-				int csh = world.getRegionsSummariesHolder().getHeightAtWorldCoordinates(chunkX * 32 + a, chunkZ * 32 + b) + 1;
+				int csh = world.
+						getRegionsSummariesHolder().
+						getHeightAtWorldCoordinates(chunkX * 32 + a, chunkZ * 32 + b) + 1;
 				while (z >= 0)
 				{
 					peek(a, z, b, cell);

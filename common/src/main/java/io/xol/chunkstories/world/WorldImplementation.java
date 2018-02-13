@@ -9,6 +9,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.GameLogic;
 import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.content.Content;
+import io.xol.chunkstories.api.content.ContentTranslator;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityBase;
 import io.xol.chunkstories.api.entity.EntityLiving;
@@ -32,7 +34,6 @@ import io.xol.chunkstories.api.util.ConfigDeprecated;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.voxel.Voxel;
-import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelInteractive;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.world.generator.WorldGenerator;
@@ -48,9 +49,9 @@ import io.xol.chunkstories.api.world.chunk.Chunk.ChunkCell;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.api.world.chunk.ChunksIterator;
-import io.xol.chunkstories.api.world.chunk.DummyChunk;
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.content.sandbox.WorldLogicThread;
+import io.xol.chunkstories.content.translator.SimpleContentTranslator;
 import io.xol.chunkstories.content.sandbox.UnthrustedUserContentSecurityManager;
 import io.xol.chunkstories.entity.EntityWorldIterator;
 import io.xol.chunkstories.entity.SerializedEntityFile;
@@ -110,10 +111,14 @@ public abstract class WorldImplementation implements World
 
 	protected final GameContext gameContext;
 	
+	private final ContentTranslator contentTranslator;
+	
 	public WorldImplementation(GameContext gameContext, WorldInfoImplementation info)
 	{
 		this.gameContext = gameContext;
 		this.worldInfo = info;
+		
+		this.contentTranslator = new SimpleContentTranslator(gameContext.getContent());
 		
 		//Creates world generator
 		this.generator = gameContext.getContent().generators().getWorldGenerator(info.getGeneratorName()).createForWorld(this);
@@ -399,26 +404,6 @@ public abstract class WorldImplementation implements World
 	{
 		return regionSummaries;
 	}
-
-	/*@Override
-	public int getVoxelData(Vector3dc location)
-	{
-		return getVoxelData((int) (double) location.x(), (int) (double) location.y(), (int) (double) location.z());
-	}
-
-	@Override
-	public int getVoxelData(int x, int y, int z)
-	{
-		x = sanitizeHorizontalCoordinate(x);
-		y = sanitizeVerticalCoordinate(y);
-		z = sanitizeHorizontalCoordinate(z);
-
-		Chunk c = regions.getChunk(x / 32, y / 32, z / 32);
-
-		if (c != null)
-			return c.getVoxelData(x, y, z);
-		return 0;
-	}*/
 	
 	@Override
 	public ChunkCell peek(Vector3dc location) throws WorldException
@@ -913,6 +898,16 @@ public abstract class WorldImplementation implements World
 	public GameContext getGameContext()
 	{
 		return gameContext;
+	}
+	
+	@Override
+	public Content getContent() {
+		return gameContext.getContent();
+	}
+
+	@Override
+	public ContentTranslator getContentTranslator() {
+		return contentTranslator;
 	}
 
 	@Override
