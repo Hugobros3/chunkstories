@@ -13,6 +13,7 @@ import io.xol.chunkstories.api.rendering.WorldRenderer;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.api.rendering.world.ChunkRenderable;
 import io.xol.chunkstories.api.util.IterableIterator;
+import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.world.cell.CellData;
 import io.xol.chunkstories.api.world.chunk.Chunk;
@@ -70,6 +71,8 @@ public class DebugInfoRenderer {
 		
 		int raw_data = world.peekRaw(lx, ly, lz);
 		CellData cell = world.peekSafely(lx, ly, lz);
+		
+		//System.out.println(VoxelFormat.id(raw_data));
 		
 		int cx = bx / 32;
 		int cy = by / 32;
@@ -148,7 +151,7 @@ public class DebugInfoRenderer {
 		
 		posy -= lineHeight;
 		text = "Position : x:" + bx + " y:" + by + " z:" + bz + " dir: " + angleX + " side: " + side + " #FF0000Block looking at#FFFFFF : pos: "+lx + ": " + ly + ": " + lz +
-				" data: "+raw_data+" voxel_type: "+cell.getVoxel() + " sl:" + cell.getSunlight()+" bl: "+cell.getBlocklight()+" meta:" + cell.getMetaData() + " csh:" + csh;
+				" data: "+raw_data+" voxel_type: "+cell.getVoxel().getName() + " sl:" + cell.getSunlight()+" bl: "+cell.getBlocklight()+" meta:" + cell.getMetaData() + " csh:" + csh;
 		renderingInterface.getFontRenderer().drawStringWithShadow(font, posx, posy, text, 1, 1, new Vector4f(1));
 
 		posy -= lineHeight;

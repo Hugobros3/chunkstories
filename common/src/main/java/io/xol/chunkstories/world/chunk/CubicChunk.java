@@ -215,9 +215,10 @@ public class CubicChunk implements Chunk {
 	public int peekRaw(int x, int y, int z) {
 		if (chunkVoxelData == null) // Empty chunk ? Use the heightmap to figure out wether or not that cell should
 									// be skylit.
-			return VoxelFormat.format(0, 0,
-					world.getRegionsSummariesHolder().getHeightAtWorldCoordinates(x, z) >= y ? 0 : 15, 0);
+			return VoxelFormat.format(0, 0, world.getRegionsSummariesHolder().getHeightAtWorldCoordinates(x, z) >= y ? 0 : 15, 0);
 		else {
+			//Thread.dumpStack();
+			//System.out.println(x+":"+y+":"+z);
 			x = sanitizeCoordinate(x);
 			y = sanitizeCoordinate(y);
 			z = sanitizeCoordinate(z);
@@ -451,11 +452,15 @@ public class CubicChunk implements Chunk {
 		int raw_data;
 
 		public ActualChunkVoxelContext(int x, int y, int z, int data) {
-			super(x & 0x1F + chunkX << 5, y & 0x1F + chunkY << 5, z & 0x1F + chunkZ << 5, 
+			super((x & 0x1F) + (chunkX << 5), (y & 0x1F) + (chunkY << 5), (z & 0x1F) + (chunkZ << 5), 
 					world.getContentTranslator().getVoxelForId(VoxelFormat.id(data)), 
 					VoxelFormat.meta(data), VoxelFormat.blocklight(data), VoxelFormat.sunlight(data));
 			
 			this.raw_data = data;
+			
+			//System.out.println(chunkX << 5);
+			//System.out.println(x+":"+y+":"+z);
+			//System.out.println(this.getZ() - z);
 			/*this.x = x & 0x1F;
 			this.y = y & 0x1F;
 			this.z = z & 0x1F;

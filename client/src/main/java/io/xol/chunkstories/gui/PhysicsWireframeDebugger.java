@@ -41,11 +41,15 @@ public class PhysicsWireframeDebugger {
 					//data = world.peekSimple(i, j, k);
 					//id = VoxelFormat.id(data);
 					CellData cell = world.peekSafely(i, j, k);
-					
+					//System.out.println(i+":"+j+":"+k);
+					//System.out.println(cell.getX() + ":"+cell.getY()+":"+cell.getZ());
 					CollisionBox[] tboxes = cell.getTranslatedCollisionBoxes();
+					//System.out.println(tboxes.length);
 					if (tboxes != null) {
 						//Draw all their collision boxes
 						for (CollisionBox box : tboxes) {
+							//System.out.println(cell.getX() + ":"+cell.getY()+":"+cell.getZ());
+							
 							if (cell.getVoxel().getDefinition().isSolid())
 								//Red if solid
 								FakeImmediateModeDebugRenderer.renderCollisionBox(box, new Vector4f(1, 0, 0, 1.0f));

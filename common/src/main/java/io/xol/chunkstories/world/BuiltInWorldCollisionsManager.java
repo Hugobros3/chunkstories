@@ -239,16 +239,12 @@ public class BuiltInWorldCollisionsManager implements WorldCollisionsManager
 						for(int k = (int)Math.floor(pos.z()) - 1; k < (int)Math.ceil(pos.z() + checkerX.zw); k++)
 						{
 							cell = world.peekSafely(i, j, k);
-							//data = this.world.peekSimple(i, j, k);
-							//id = VoxelFormat.id(data);
-							//vox = voxelsStore.getVoxelById(id);
 							if (cell.getVoxel().getDefinition().isSolid())
 							{
 								CollisionBox[] boxes = cell.getTranslatedCollisionBoxes();
 								if (boxes != null)
 									for (CollisionBox box : boxes)
 									{
-										box.translate(i, j, k);
 										if (delta.z() != 0.0)
 										{
 											if (checkerZ.collidesWith(box))
@@ -257,14 +253,11 @@ public class BuiltInWorldCollisionsManager implements WorldCollisionsManager
 												if (delta.z() < 0)
 												{
 													double south = Math.min((box.zpos + box.zw + checkerZ.zw) - (pos.z()), 0.0d);
-													// System.out.println(left+" : "+(b.xpos+b.xw/2.0+checkerX.xw/2.0)+" : "+((b.xpos+b.xw/2.0+checkerX.xw/2.0)-(checkerX.xpos)));
-													//System.out.println("south:"+south);
 													stepDistanceZ = south;
 												}
 												else
 												{
 													double north = Math.max((box.zpos) - (pos.z() + checkerZ.zw), 0.0d);
-													//System.out.println("north:"+north);
 													stepDistanceZ = north;
 												}
 												vec.z = (0d);
@@ -284,17 +277,12 @@ public class BuiltInWorldCollisionsManager implements WorldCollisionsManager
 						for(int k = (int)Math.floor(pos.z()) - 1; k < (int)Math.ceil(pos.z() + checkerY.zw); k++)
 						{
 							cell = world.peekSafely(i, j, k);
-							/*data = this.world.peekSimple(i, j, k);
-							id = VoxelFormat.id(data);
-							vox = voxelsStore.getVoxelById(id);*/
 							if (cell.getVoxel().getDefinition().isSolid())
 							{
 								CollisionBox[] boxes = cell.getTranslatedCollisionBoxes();
 								if (boxes != null)
 									for (CollisionBox box : boxes)
 									{
-										box.translate(i, j, k);
-
 										if (delta.x() != 0.0)
 										{
 											if (checkerX.collidesWith(box))
@@ -329,16 +317,12 @@ public class BuiltInWorldCollisionsManager implements WorldCollisionsManager
 						for(int k = (int)Math.floor(pos.z()) - 1; k < (int)Math.ceil(pos.z() + checkerZ.zw); k++)
 						{
 							cell = world.peekSafely(i, j, k);
-							/*data = this.world.peekSimple(i, j, k);
-							id = VoxelFormat.id(data);
-							vox = voxelsStore.voxelForId(id);*/
 							if (cell.getVoxel().getDefinition().isSolid())
 							{
 								CollisionBox[] boxes = cell.getTranslatedCollisionBoxes();
 								if (boxes != null)
 									for (CollisionBox box : boxes)
 									{
-										box.translate(i, j, k);
 										if (delta.y() != 0.0)
 										{
 											if (checkerY.collidesWith(box))
@@ -377,12 +361,6 @@ public class BuiltInWorldCollisionsManager implements WorldCollisionsManager
 			if (Math.abs(distanceToTravel.z()) > Math.abs(maxDistanceToTravel.z()))
 				maxDistanceToTravel.z = (distanceToTravel.z());
 		}
-		//Set the new position after computations have been done
-
-		//if (!onlyTest)
-		//	this.moveWithoutCollisionRestrain(delta.x() - maxDistanceToTravel.x(), delta.y() - maxDistanceToTravel.y(), delta.z() - maxDistanceToTravel.z());
-		
-		//return new Vector3d(delta.x() - maxDistanceToTravel.x(), delta.y() - maxDistanceToTravel.y(), delta.z() - maxDistanceToTravel.z());
 		return maxDistanceToTravel;
 	}
 }

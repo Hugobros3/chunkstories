@@ -366,10 +366,11 @@ public class TaskBakeChunk extends Task {
 	}
 	
 	private void peek(int x, int y, int z, ScratchCell cell) {
-		cell.x = x;
-		cell.y = y;
-		cell.z = z;
-		int rawData = world.peekRaw(x, y, z);
+		cell.x = (x & 0x1F) + (chunk.getChunkX() << 5);
+		cell.y = (y & 0x1F) + (chunk.getChunkY() << 5);
+		cell.z = (z & 0x1F) + (chunk.getChunkZ() << 5);
+		
+		int rawData = world.peekRaw(cell.x, cell.y, cell.z);
 		cell.voxel = world.getContentTranslator().getVoxelForId(VoxelFormat.id(rawData));
 		cell.sunlight = VoxelFormat.sunlight(rawData);
 		cell.blocklight = VoxelFormat.blocklight(rawData);
