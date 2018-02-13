@@ -34,7 +34,7 @@ public class VersionFile {
 			
 		} else {
 			version = string.replace("\n", "");
-			System.out.println("fail"+version);
+			System.out.println("Oldstyle version file"+version);
 		}
 	}
 	
