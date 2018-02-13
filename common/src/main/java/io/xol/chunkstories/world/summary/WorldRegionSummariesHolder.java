@@ -232,7 +232,7 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 		return allSummariesSaves;
 	}
 
-	public void setHeightAndId(int x, int z, int y, int id)
+	/*public void setHeightAndId(int x, int z, int y, int id)
 	{
 		x %= worldSize;
 		z %= worldSize;
@@ -242,7 +242,7 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 			z += worldSize;
 		RegionSummaryImplementation cs = getRegionSummaryWorldCoordinates(x, z);
 		cs.setHeightAndId(x % 256, y, z % 256, id);
-	}
+	}*/
 	
 	public void destroy()
 	{

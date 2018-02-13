@@ -423,7 +423,6 @@ public class TaskBakeChunk extends Task {
 				{
 					return aoLevel[corner.ordinal()];
 				}
-
 				
 				private byte interp(byte[] array, float x, float y, float z)
 				{

@@ -114,7 +114,9 @@ public class ClientConnectionToServer extends Thread implements RemoteServer
 	@Override
 	public void run()
 	{
-		while (!die)
+		throw new UnsupportedOperationException("TODO");
+		
+		/*while (!die)
 		{
 			// Just wait for the goddamn packets to come !
 			try
@@ -136,7 +138,7 @@ public class ClientConnectionToServer extends Thread implements RemoteServer
 				}
 			}
 		}
-		System.out.println("Connection to host closed.");
+		System.out.println("Connection to host closed.");*/
 	}
 
 	// @SuppressWarnings("deprecation")

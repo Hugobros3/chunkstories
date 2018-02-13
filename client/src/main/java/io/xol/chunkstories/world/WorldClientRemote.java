@@ -1,5 +1,7 @@
 package io.xol.chunkstories.world;
 
+import io.xol.chunkstories.api.net.PacketWorld;
+import io.xol.chunkstories.api.net.PacketWorldStreaming;
 import io.xol.chunkstories.api.net.RemoteServer;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.world.WorldClientNetworkedRemote;
@@ -69,7 +71,9 @@ public class WorldClientRemote extends WorldClientCommon implements WorldClientN
 	public void processIncommingPackets()
 	{
 		//Accepts and processes synched packets
-		entitiesLock.writeLock().lock();
+		
+		throw new UnsupportedOperationException("TODO");
+		/*entitiesLock.writeLock().lock();
 		
 		@SuppressWarnings("unused")
 		int packetsThisTick = 0;
@@ -82,7 +86,7 @@ public class WorldClientRemote extends WorldClientCommon implements WorldClientN
 			packetsThisTick++;
 		}
 
-		entitiesLock.writeLock().unlock();
+		entitiesLock.writeLock().unlock();*/
 		//if(packetsThisTick > 0)
 		//	System.out.println(packetsThisTick+"packets for "+this.entities.size()+ " entities");
 	}
@@ -90,5 +94,15 @@ public class WorldClientRemote extends WorldClientCommon implements WorldClientN
 	public IOTasksMultiplayerClient ioHandler()
 	{
 		return mpIOHandler;
+	}
+
+	@Override
+	public void queueWorldPacket(PacketWorld packet) {
+		throw new UnsupportedOperationException("TODO");
+	}
+
+	@Override
+	public void queueWorldStreamingPacket(PacketWorldStreaming packet) {
+		throw new UnsupportedOperationException("TODO");
 	}
 }

@@ -3,6 +3,8 @@ package io.xol.chunkstories.server.net;
 import org.slf4j.Logger;
 
 import io.xol.chunkstories.api.GameContext;
+import io.xol.chunkstories.api.net.PacketDestinator;
+import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.api.server.ServerPacketsProcessor;
@@ -50,7 +52,7 @@ public class ServerPacketsProcessorImplementation implements ServerPacketsProces
 		}
 		
 		public UserPacketsProcessor(GameContext gameContext, UserConnection connection) {
-			super(gameContext, connection);
+			super(gameContext);
 			this.connection = connection;
 		}
 		
@@ -115,6 +117,18 @@ public class ServerPacketsProcessorImplementation implements ServerPacketsProces
 		@Override
 		public boolean isServer() {
 			return true;
+		}
+
+		@Override
+		public PacketSender getSender() {
+			// TODO Auto-generated method stub
+			throw new UnsupportedOperationException("TODO");
+		}
+
+		@Override
+		public PacketDestinator getDestinator() {
+			// TODO Auto-generated method stub
+			throw new UnsupportedOperationException("TODO");
 		}
 	}
 	

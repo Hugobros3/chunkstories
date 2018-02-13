@@ -1,23 +1,18 @@
 package io.xol.chunkstories.net;
 
-import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.GameContext;
-import io.xol.chunkstories.api.client.net.ClientPacketsProcessor;
 import io.xol.chunkstories.api.exceptions.PacketProcessingException;
 import io.xol.chunkstories.api.exceptions.net.IllegalPacketException;
 import io.xol.chunkstories.api.exceptions.net.UnknowPacketException;
 import io.xol.chunkstories.api.net.Packet;
-import io.xol.chunkstories.api.net.PacketDefinition;
 import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketReceptionContext;
 import io.xol.chunkstories.api.net.PacketSender;
@@ -145,7 +140,7 @@ public abstract class PacketsProcessorCommon implements PacketReceptionContext, 
 				throw new UnknowPacketException(0xFF);
 		} else {
 			// PacketId header
-			short id = (short) world.getContentTranslator().getIdForPacket(packet);
+			short id = (short) world.getContentTranslator().getIdForPacket(world.getContent().packets().getPacketType(packet));
 			if (id < 127)
 				out.writeByte((byte) id);
 			else

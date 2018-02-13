@@ -132,7 +132,7 @@ public class IOTasksMultiplayerServer extends IOTasks
 				if(summary == null || !summary.isLoaded())
 					return false;
 				
-				PacketRegionSummary packet = new PacketRegionSummary();
+				PacketRegionSummary packet = new PacketRegionSummary(world);
 				packet.summary = summary;
 				client.pushPacket(packet);
 				return true;

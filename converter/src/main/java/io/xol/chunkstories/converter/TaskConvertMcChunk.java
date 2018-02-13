@@ -4,6 +4,7 @@ import io.xol.chunkstories.api.converter.mappings.Mapper;
 import io.xol.chunkstories.api.converter.mappings.NonTrivialMapper;
 import io.xol.chunkstories.api.workers.Task;
 import io.xol.chunkstories.api.workers.TaskExecutor;
+import io.xol.chunkstories.api.world.cell.FutureCell;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.converter.ConverterWorkers.ConverterWorkerThread;
 import io.xol.chunkstories.tools.WorldTool;
@@ -106,11 +107,12 @@ public class TaskConvertMcChunk extends Task {
 										((NonTrivialMapper)mapper).output(csWorld, chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, mcId, meta, minecraftRegion, minecraftCurrentChunkXinsideRegion, minecraftCuurrentChunkZinsideRegion, x, y, z);
 									} else {
 										
+										FutureCell future = new FutureCell(csWorld, chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, csWorld.getContent().voxels().air());
+										
 										//Directly set trivial blocks
-										int trivial = mapper.output(mcId, meta);
-										if(trivial != 0x0) {
-											csWorld.pokeSimpleSilently(chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, trivial);
-										}
+										mapper.output(mcId, meta, future);
+										if(!future.getVoxel().isAir())
+											csWorld.pokeSimpleSilently(future);
 									}
 									
 								}

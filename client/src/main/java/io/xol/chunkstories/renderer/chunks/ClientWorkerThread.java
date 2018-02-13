@@ -99,6 +99,8 @@ public class ClientWorkerThread extends WorkerThread implements BakeChunkTaskExe
 				}
 			}
 		}
+		
+		final static int IGNORE = -1;
 
 		protected final int getSunlight(Chunk c, int x, int y, int z)
 		{
@@ -116,7 +118,7 @@ public class ClientWorkerThread extends WorkerThread implements BakeChunkTaskExe
 					z &= 0x1F;
 					data = target[x * 1024 + y * 32 + z];
 					int blockID = VoxelFormat.id(data);
-					return c.getWorld().getContentTranslator().getVoxelForId(blockID).getDefinition().isOpaque() ? 0 : VoxelFormat.sunlight(data);
+					return c.getWorld().getContentTranslator().getVoxelForId(blockID).getDefinition().isOpaque() ? IGNORE : VoxelFormat.sunlight(data);
 				}
 			}
 			else
@@ -136,7 +138,7 @@ public class ClientWorkerThread extends WorkerThread implements BakeChunkTaskExe
 			{
 				data = cached.peekRaw(x, y, z);
 				int blockID = VoxelFormat.id(data);
-				return c.getWorld().getContentTranslator().getVoxelForId(blockID).getDefinition().isOpaque() ? 0 : VoxelFormat.sunlight(data);
+				return c.getWorld().getContentTranslator().getVoxelForId(blockID).getDefinition().isOpaque() ? -1 : VoxelFormat.sunlight(data);
 			}*/
 
 			// If all else fails, just use the heightmap information
@@ -168,7 +170,7 @@ public class ClientWorkerThread extends WorkerThread implements BakeChunkTaskExe
 			}
 
 			int blockID = VoxelFormat.id(data);
-			return c.getWorld().getContentTranslator().getVoxelForId(blockID).getDefinition().isOpaque() ? 0 : VoxelFormat.blocklight(data);
+			return c.getWorld().getContentTranslator().getVoxelForId(blockID).getDefinition().isOpaque() ? IGNORE : VoxelFormat.blocklight(data);
 		}
 		
 		private final void cleanup() {

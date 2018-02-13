@@ -149,9 +149,7 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser
 
 		//Finally start the conversion
 		
-		OfflineWorldConverter converter;
-		
-		System.out.println("threadCount: "+threadCount);
+		MultithreadedOfflineWorldConverter converter;
 		
 		//if(threadCount <= 1)
 		//	converter = new OfflineWorldConverter(verboseMode, mcWorldDir, csWorldDir, mcWorldName, csWorldName, size, minecraftOffsetX, minecraftOffsetZ);
@@ -266,7 +264,7 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser
 		csWorld = new WorldTool(this, worldInfoFile, false);
 	}
 	
-	public void run() {
+	/*public void run() {
 		long benchmarkingStart = System.currentTimeMillis();
 		
 		//Step one: copy the entire world data
@@ -282,8 +280,9 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser
 		double timeTookSeconds = timeTook / 1000.0;
 		
 		System.out.println("Done converting "+mcWorldName + ", took "+timeTookSeconds + " seconds.");
-	}
+	}*/
 
+	/*
 	protected void stepOneCopyWorldData(MinecraftWorld mcWorld, WorldImplementation csWorld, int minecraftOffsetX, int minecraftOffsetZ)
 	{
 		verbose("Entering step one: converting raw block data");
@@ -352,11 +351,6 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser
 
 										//Ignore the summaries for now
 										
-										/*RegionSummary summary = csWorld.getRegionsSummariesHolder().aquireRegionSummaryWorldCoordinates(this, chunkStoriesCurrentChunkX, chunkStoriesCurrentChunkZ);
-										if(summary != null)
-											registeredCS_Summaries.add(summary);*/
-
-
 										CompoundFence loadRelevantData = new CompoundFence();
 										
 										//Then the chunks
@@ -384,23 +378,6 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser
 													//Ignore air blocks
 													if (mcId != 0)
 													{
-														/*int dataToSet = quickConversion[mcId * 16 + meta];//IDsConverter.getChunkStoriesIdFromMinecraft(mcId, meta);
-														if (dataToSet == -2)
-															dataToSet = IDsConverter.getChunkStoriesIdFromMinecraftComplex(mcId, meta, minecraftRegion, minecraftCurrentChunkXinsideRegion, minecraftCuurrentChunkZinsideRegion, x, y, z);
-
-														if (dataToSet != -1)
-														{
-															Voxel voxel = VoxelsStore.get().getVoxelById(dataToSet);
-
-															//Optionally runs whatever the voxel requires to run when placed (kof kof .. doors )
-															if (voxel instanceof VoxelLogic)
-																dataToSet = ((VoxelLogic) voxel).onPlace(csWorld, chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, dataToSet, null);
-
-															//Don't bother for nothing
-															if (dataToSet != -1)
-																csWorld.setVoxelDataWithoutUpdates(chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, dataToSet);
-														}*/
-														
 														Mapper mapper = this.mappers.getMapper(mcId, meta);
 														if(mapper == null)
 															continue;
@@ -416,10 +393,7 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser
 															if(!future.getVoxel().isAir())
 																csWorld.pokeSimpleSilently(future);
 															
-															/*int trivial = mapper.output(mcId, meta);
-															if(trivial != 0x0) {
-																csWorld.pokeSimpleSilently(chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, trivial);
-															}*/
+															
 														}
 													}
 												}
@@ -688,21 +662,7 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser
 			holder.unregisterUser(worldUser);
 
 		csWorld.unloadUselessData().traverse();
-	}
-
-	protected void stetFourTidbits(MinecraftWorld mcWorld, WorldImplementation csWorld)
-	{
-		verbose("Entering step four: tidbits");
-		
-		int spawnX = ((NBTInt) mcWorld.getLevelDotDat().getRoot().getTag("Data.SpawnX")).getData();
-		int spawnY = ((NBTInt) mcWorld.getLevelDotDat().getRoot().getTag("Data.SpawnY")).getData();
-		int spawnZ = ((NBTInt) mcWorld.getLevelDotDat().getRoot().getTag("Data.SpawnZ")).getData();
-		
-		csWorld.setDefaultSpawnLocation(new Location(csWorld, spawnX, spawnY, spawnZ));
-		csWorld.saveEverything().traverse();
-		
-		csWorld.destroy();
-	}
+	}*/
 	
 	protected void verbose(String s)
 	{

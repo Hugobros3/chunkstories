@@ -198,7 +198,7 @@ public class ServerPlayer implements RemotePlayer
 			}
 
 			//this.sendMessage("Sending you the open inventory request.");
-			PacketOpenInventory open = new PacketOpenInventory(inventory);
+			PacketOpenInventory open = new PacketOpenInventory(getWorld(), inventory);
 			this.pushPacket(open);
 		}
 		//else
@@ -222,10 +222,6 @@ public class ServerPlayer implements RemotePlayer
 		while (inRangeEntitiesIterator.hasNext())
 		{
 			Entity e = inRangeEntitiesIterator.next();
-			
-			Chunk chunk = e.getChunk();
-			//if(chunk == null)
-			//	System.out.println("chunk == null");
 			
 			boolean shouldTrack = e.shouldBeTrackedBy(this);// && chunk != null;
 			boolean contains = subscribedEntities.contains(e);

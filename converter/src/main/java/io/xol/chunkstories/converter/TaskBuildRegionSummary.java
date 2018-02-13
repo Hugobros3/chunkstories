@@ -4,6 +4,7 @@ import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.workers.Task;
 import io.xol.chunkstories.api.workers.TaskExecutor;
+import io.xol.chunkstories.api.world.cell.CellData;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.converter.ConverterWorkers.ConverterWorkerThread;
 import io.xol.chunkstories.tools.WorldTool;
@@ -56,13 +57,13 @@ public class TaskBuildRegionSummary extends Task {
 			{
 				for (int h = OfflineWorldConverter.mcWorldHeight; h > 0; h--)
 				{
-					int data = csWorld.peekSimple(regionX * 256 + i, h, regionZ * 256 + j);
-					if (data != 0)
+					CellData data = csWorld.peekSafely(regionX * 256 + i, h, regionZ * 256 + j);
+					if (!data.getVoxel().isAir())
 					{
-						Voxel vox = cwt.converter().getContent().voxels().getVoxelById(data);
-						if (vox.getType().isSolid() || vox.getType().isLiquid())
+						Voxel vox = data.getVoxel();
+						if (vox.getDefinition().isSolid() || vox.getDefinition().isLiquid())
 						{
-							summary.setHeightAndId(regionX * 256 + i, h, regionZ * 256 + j, data & 0x0000FFFF);
+							summary.setTopCell(data);
 							break;
 						}
 					}

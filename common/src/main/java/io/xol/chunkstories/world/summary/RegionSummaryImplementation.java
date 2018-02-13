@@ -265,17 +265,20 @@ public class RegionSummaryImplementation implements RegionSummary
 		}
 	}
 
-	//TODO don't use ids use VOXEL types !
 	@Override
-	public void setHeightAndId(int worldX, int height, int worldZ, int voxelData)
+	public void setTopCell(CellData cell)
 	{
 		if(!this.isLoaded())
 			return;
 		
+		int worldX = cell.getX();
+		int worldZ = cell.getZ();
+		int height = cell.getY();
+		
 		worldX &= 0xFF;
 		worldZ &= 0xFF;
 		heights[index(worldX, worldZ)] = height;
-		ids[index(worldX, worldZ)] = voxelData;
+		ids[index(worldX, worldZ)] = world.getContentTranslator().getIdForVoxel(cell.getVoxel());
 	}
 
 	@Override

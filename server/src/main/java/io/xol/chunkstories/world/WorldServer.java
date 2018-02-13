@@ -4,6 +4,8 @@ import java.util.Iterator;
 import java.util.Queue;
 
 import io.xol.chunkstories.api.entity.EntityLiving;
+import io.xol.chunkstories.api.net.PacketWorld;
+import io.xol.chunkstories.api.net.PacketWorldStreaming;
 import io.xol.chunkstories.api.net.packets.PacketTime;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.util.IterableIterator;
@@ -229,5 +231,15 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 			return null;
 		
 		return player;
+	}
+
+	@Override
+	public void queueWorldPacket(PacketWorld packet) {
+		throw new UnsupportedOperationException("TODO");
+	}
+
+	@Override
+	public void queueWorldStreamingPacket(PacketWorldStreaming packet) {
+		throw new UnsupportedOperationException("TODO");
 	}
 }

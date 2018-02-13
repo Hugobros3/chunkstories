@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.workers.Tasks;
 import io.xol.chunkstories.api.world.WorldInfo.WorldSize;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
@@ -18,6 +19,7 @@ import io.xol.engine.concurrency.CompoundFence;
 import io.xol.enklume.MinecraftChunk;
 import io.xol.enklume.MinecraftRegion;
 import io.xol.enklume.MinecraftWorld;
+import io.xol.enklume.nbt.NBTInt;
 
 public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 
@@ -31,15 +33,28 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 		this.workers = new ConverterWorkers(this, this.csWorld, threadsCount);
 	}
 
-	@Override
 	public void run() {
-		super.run();
+		long benchmarkingStart = System.currentTimeMillis();
+		
+		//Step one: copy the entire world data
+		stepOneCopyWorldData(mcWorld, csWorld, minecraftOffsetX, minecraftOffsetZ);
+		//Step two: make the summary data for chunk stories
+		stepTwoCreateSummaryData(csWorld);
+		//Step three: redo the lightning of the entire map
+		stepThreeSpreadLightning(csWorld);
+		//Step four: fluff
+		stetFourTidbits(mcWorld, csWorld);
+		
+		long timeTook = System.currentTimeMillis() - benchmarkingStart;
+		double timeTookSeconds = timeTook / 1000.0;
 		
 		//Destroy the workers or it won't do shit
 		this.workers.destroy();
+		
+		System.out.println("Done converting "+mcWorldName + ", took "+timeTookSeconds + " seconds.");
 	}
+	
 
-	@Override
 	protected void stepOneCopyWorldData(MinecraftWorld mcWorld, WorldImplementation csWorld, int minecraftOffsetX,
 			int minecraftOffsetZ) {
 
@@ -142,7 +157,6 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 		csWorld.unloadUselessData();
 	}
 
-	@Override
 	protected void stepTwoCreateSummaryData(WorldTool csWorld) {
 		verbose("Entering step two: making summary data");
 
@@ -207,7 +221,6 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 		verbose("Done.");
 	}
 
-	@Override
 	protected void stepThreeSpreadLightning(WorldImplementation csWorld) {
 		verbose("Entering step three: spreading light");
 
@@ -348,6 +361,20 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 		csWorld.unloadUselessData().traverse();*/
 	}
 
+	protected void stetFourTidbits(MinecraftWorld mcWorld, WorldImplementation csWorld)
+	{
+		verbose("Entering step four: tidbits");
+		
+		int spawnX = ((NBTInt) mcWorld.getLevelDotDat().getRoot().getTag("Data.SpawnX")).getData();
+		int spawnY = ((NBTInt) mcWorld.getLevelDotDat().getRoot().getTag("Data.SpawnY")).getData();
+		int spawnZ = ((NBTInt) mcWorld.getLevelDotDat().getRoot().getTag("Data.SpawnZ")).getData();
+		
+		csWorld.setDefaultSpawnLocation(new Location(csWorld, spawnX, spawnY, spawnZ));
+		csWorld.saveEverything().traverse();
+		
+		csWorld.destroy();
+	}
+	
 	@Override
 	public Tasks tasks() {
 		return workers;

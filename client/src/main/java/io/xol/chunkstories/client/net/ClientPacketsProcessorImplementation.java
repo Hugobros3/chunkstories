@@ -7,6 +7,8 @@ import io.xol.chunkstories.api.client.net.ClientPacketsProcessor;
 import io.xol.chunkstories.api.exceptions.net.IllegalPacketException;
 import io.xol.chunkstories.api.exceptions.net.UnknowPacketException;
 import io.xol.chunkstories.api.net.Packet;
+import io.xol.chunkstories.api.net.PacketDestinator;
+import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
@@ -44,9 +46,10 @@ public class ClientPacketsProcessorImplementation extends PacketsProcessorCommon
 		return client.getPlayer();
 	}
 
-	@Override
 	public Packet getPacket_(DataInputStream in) throws IOException, UnknowPacketException, IllegalPacketException
 	{
+
+		throw new UnsupportedOperationException("TODO");
 		/*while(true)
 		{
 			Packet packet = super.getPacket(in);
@@ -81,5 +84,22 @@ public class ClientPacketsProcessorImplementation extends PacketsProcessorCommon
 			
 			return packet;
 		}*/
+	}
+
+	@Override
+	public boolean isServer() {
+		return false;
+	}
+
+	@Override
+	public PacketSender getSender() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public PacketDestinator getDestinator() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

@@ -55,7 +55,7 @@ public class VirtualServerParticlesManager implements ParticlesManager
 	
 	void tellPlayer(Player player, String particleTypeName, Vector3dc location, Vector3dc velocity)
 	{
-		PacketParticle packet = new PacketParticle(particleTypeName, location, velocity);
+		PacketParticle packet = new PacketParticle(worldServer, particleTypeName, location, velocity);
 		/*packet.particleName = particleTypeName;
 		packet.position = location;
 		packet.velocity = velocity;*/
