@@ -75,25 +75,6 @@ public class WorldInfoImplementation extends GenericConfigurable implements Worl
 		
 	}
 	
-	public void save(File file)
-	{
-		try
-		{
-			if(!file.getParentFile().exists())
-				file.getParentFile().mkdirs();
-			
-			FileOutputStream output = new FileOutputStream(file);
-			
-			saveInStream(output);
-			
-			output.close();
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
-	}
-
 	public void saveInStream(OutputStream output) throws IOException {
 		Writer out = new BufferedWriter(new OutputStreamWriter(output, "UTF-8"));
 		

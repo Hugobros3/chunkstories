@@ -14,7 +14,6 @@ import io.xol.chunkstories.api.math.LoopingMathHelper;
 import io.xol.chunkstories.api.math.Math2;
 import io.xol.chunkstories.api.rendering.world.ChunkRenderable;
 import io.xol.chunkstories.api.voxel.Voxel;
-import io.xol.chunkstories.api.voxel.VoxelDynamicallyRendered;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.voxel.VoxelSides.Corners;
@@ -278,7 +277,8 @@ public class TaskBakeChunk extends Task {
 					voxelRenderer.renderInto(chunkRendererOutput, chunkRenderingContext, chunk, cell);
 					
 					// We handle voxels with a dynamic renderer here too - we just add them to a list !
-					if(cell.voxel instanceof VoxelDynamicallyRendered) {
+					//TODO
+					/*if(cell.voxel instanceof VoxelDynamicallyRendered) {
 						DynamicallyRenderedVoxelClass vClass = dynamicVoxels.get(cell.voxel);
 						if(vClass == null) {
 							vClass = new DynamicallyRenderedVoxelClass();
@@ -293,7 +293,7 @@ public class TaskBakeChunk extends Task {
 							}
 						}
 						vClass.indexes.add(i * 1024 + k * 32 + j);
-					}
+					}*/
 					
 					bakedBlockId++;
 				}

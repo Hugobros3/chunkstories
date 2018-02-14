@@ -34,7 +34,8 @@ import io.xol.chunkstories.api.world.heightmap.RegionSummary;
 import io.xol.chunkstories.content.GameContentStore;
 import io.xol.chunkstories.tools.WorldTool;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.chunkstories.world.WorldInfoFile;
+import io.xol.chunkstories.world.WorldInfoMaster;
+import io.xol.chunkstories.world.WorldLoadingException;
 import io.xol.chunkstories.world.WorldInfoImplementation;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
 import io.xol.engine.concurrency.CompoundFence;
@@ -108,8 +109,6 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser
 			}
 		}
 		
-		
-
 		String mcWorldName = arguments[0];
 		File mcWorldDir = new File(mcWorldName);
 		if (!mcWorldDir.exists() || !mcWorldDir.isDirectory())
@@ -234,13 +233,6 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser
 		
 		//Loads the Minecraft World
 		mcWorld = new MinecraftWorld(mcFolder);
-
-		//Creates the ChunkStories world data file
-		/*csFolder.mkdirs();
-		WorldInfoImplementation info = new WorldInfoImplementation("name: Converted_" + mcFolder + "\n" + "seed: null\n" + "worldgen: blank\n" + "size: " + size.name(), csFolder.getName());
-
-		//Save it and creates the ChunkStories world
-		info.save(new File(csFolder.getAbsolutePath() + "/info.world"));*/
 		
 		String worldGenerator = "blank";
 		
@@ -251,17 +243,12 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser
 		
 		Random random = new Random();
 		
-		WorldInfoImplementation worldInfo = new WorldInfoImplementation(internalName, csWorldName, random.nextLong() + "", description, size, worldGenerator );
-		WorldInfoFile worldInfoFile = null;
-		try {
-			worldInfoFile = WorldInfoFile.createNewWorld(csFolder, worldInfo);
-		} catch (IOException e) {
-			e.printStackTrace();
-			logger.error("Brownout lel");
-		}
-		
 		//IO is NOT blocking here, good luck.
-		csWorld = new WorldTool(this, worldInfoFile, false);
+		try {
+			csWorld = new WorldTool(this, new WorldInfoImplementation(internalName, csWorldName, random.nextLong() + "", description, size, worldGenerator), false);
+		} catch (WorldLoadingException e) {
+			throw new RuntimeException("Error creating world", e);
+		}
 	}
 	
 	/*public void run() {

@@ -21,7 +21,7 @@ public class WorldClientRemote extends WorldClientCommon implements WorldClientN
 
 	private IOTasksMultiplayerClient mpIOHandler;
 	
-	public WorldClientRemote(Client client, WorldInfoImplementation info, ClientConnectionToServer connection)
+	public WorldClientRemote(Client client, WorldInfoImplementation info,  ClientConnectionToServer connection) throws WorldLoadingException
 	{
 		super(client, info);
 

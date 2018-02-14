@@ -42,7 +42,7 @@ import io.xol.chunkstories.server.player.ServerPlayer;
 import io.xol.chunkstories.server.net.ServerConnectionsManager;
 import io.xol.chunkstories.server.propagation.ServerModsProvider;
 import io.xol.chunkstories.workers.WorkerThreadPool;
-import io.xol.chunkstories.world.WorldInfoFile;
+import io.xol.chunkstories.world.WorldInfoMaster;
 import io.xol.chunkstories.world.WorldServer;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -217,7 +217,7 @@ public class DedicatedServer implements Runnable, DedicatedServerInterface
 			String worldDir = GameDirectory.getGameFolderPath() + "/worlds/" + worldName;
 			if (new File(worldDir).exists())
 			{
-				world = new WorldServer(this, new WorldInfoFile(new File(worldDir + "/info.world")));
+				world = new WorldServer(this, new WorldInfoMaster(new File(worldDir + "/info.world")));
 			}
 			else
 			{

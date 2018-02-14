@@ -17,7 +17,7 @@ import io.xol.chunkstories.world.io.IOTasks;
 
 public class WorldClientLocal extends WorldClientCommon implements WorldMaster
 {
-	public WorldClientLocal(Client client, WorldInfoFile info)
+	public WorldClientLocal(Client client, WorldInfoImplementation info) throws WorldLoadingException
 	{
 		super(client, info);
 		

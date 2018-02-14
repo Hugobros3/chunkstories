@@ -37,7 +37,7 @@ import net.jpountz.lz4.LZ4Factory;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.entity.EntitySerializer;
 import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
-import io.xol.chunkstories.voxel.components.VoxelComponentsHolder;
+import io.xol.chunkstories.voxel.components.CellComponentsHolder;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -150,7 +150,7 @@ public class ChunkHolderImplementation implements ChunkHolder
 		
 		try {
 			//For all cells that have components
-			for(VoxelComponentsHolder voxelComponents : chunk.voxelComponents.values()) {
+			for(CellComponentsHolder voxelComponents : chunk.allCellComponents.values()) {
 				
 				//Write a 1 then their in-chunk index
 				daos.writeByte((byte) 0x01);

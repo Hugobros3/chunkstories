@@ -188,7 +188,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 			int cellLightLevel = cell.blocklight;
 
 			if (cell.voxel.getDefinition().isOpaque())
-				cellLightLevel = cell.voxel.getLightLevel(cell);
+				cellLightLevel = cell.voxel.getEmittedLightLevel(cell);
 			
 			if (cellLightLevel > 1)
 			{
@@ -352,7 +352,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 			int cellLightLevel = cell.sunlight;
 
 			if (cell.voxel.getDefinition().isOpaque())
-				cellLightLevel = cell.voxel.getLightLevel(cell);
+				cellLightLevel = cell.voxel.getEmittedLightLevel(cell);
 			
 			if (cellLightLevel > 1)
 			{
@@ -538,7 +538,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				while (z >= 0)
 				{
 					peek(a, z, b, cell);
-					int ll = cell.voxel.getLightLevel(cell);
+					int ll = cell.voxel.getEmittedLightLevel(cell);
 					
 					if (ll > 0)
 					{
@@ -1147,7 +1147,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 			int ll = cell.getBlocklight();
 
 			if (cell.getVoxel().getDefinition().isOpaque())
-				ll = cell.getVoxel().getLightLevel(cell);
+				ll = cell.getVoxel().getEmittedLightLevel(cell);
 
 			if (ll > 1)
 			{

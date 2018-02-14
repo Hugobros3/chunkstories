@@ -115,7 +115,7 @@ public class BuiltInWorldCollisionsManager implements WorldCollisionsManager
 			y = voxelCoords[1];
 			z = voxelCoords[2];
 			cell = world.peekSafely(x, y, z);
-			if (cell.getVoxel().getDefinition().isSolid() || (selectable && cell.getVoxel().isVoxelSelectable()))
+			if (cell.getVoxel().getDefinition().isSolid() || (selectable && cell.getVoxel().getDefinition().isSelectable()))
 			{
 				boolean collides = false;
 				for (CollisionBox box : cell.getTranslatedCollisionBoxes())

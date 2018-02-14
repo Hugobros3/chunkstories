@@ -16,7 +16,6 @@ import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.voxel.components.VoxelComponent;
-import io.xol.chunkstories.api.voxel.components.VoxelComponents;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.cell.Cell;
@@ -28,7 +27,7 @@ import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.entity.EntitySerializer;
 import io.xol.chunkstories.tools.WorldTool;
-import io.xol.chunkstories.voxel.components.VoxelComponentsHolder;
+import io.xol.chunkstories.voxel.components.CellComponentsHolder;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.region.RegionImplementation;
 import io.xol.engine.concurrency.SimpleLock;
@@ -74,7 +73,7 @@ public class CubicChunk implements Chunk {
 
 	public final ChunkLightBaker lightBaker;
 
-	protected final Map<Integer, VoxelComponentsHolder> voxelComponents = new HashMap<Integer, VoxelComponentsHolder>();
+	protected final Map<Integer, CellComponentsHolder> allCellComponents = new HashMap<Integer, CellComponentsHolder>();
 	protected final Set<Entity> localEntities = ConcurrentHashMap.newKeySet();
 
 	protected final SimpleLock componentsLock = new SimpleLock();
@@ -116,12 +115,11 @@ public class CubicChunk implements Chunk {
 					byte keepGoing = dis.readByte();
 					while (keepGoing != 0x00) {
 						int index = dis.readInt();
-						VoxelComponentsHolder components = new VoxelComponentsHolder(this, index);
-						voxelComponents.put(index, components);
+						CellComponentsHolder components = new CellComponentsHolder(this, index);
+						allCellComponents.put(index, components);
 
-						// System.out.println("at index: " + index + " coords: (" + components.getX() +
-						// ", " + components.getY() + ", " + components.getZ() + ")");
-
+						boolean once = true;
+						
 						String componentName = dis.readUTF();
 						while (!componentName.equals("\n")) {
 							// System.out.println("componentName: "+componentName);
@@ -130,24 +128,25 @@ public class CubicChunk implements Chunk {
 							int bytes = dis.readShort();
 							dis.readFully(smallArray, 0, bytes);
 
-							// Call the block's onPlace method as to make it spawn the necessary components
-							ChunkCell peek = peek(components.getX(), components.getY(), components.getZ());
-							FutureCell future = new FutureCell(peek);
-							
-							peek.getVoxel().onPlace(future, null);
+							if(once) {
+								// Call the block's onPlace method as to make it spawn the necessary components
+								FreshChunkCell peek = peek(components.getX(), components.getY(), components.getZ());
+								FreshFutureCell future = new FreshFutureCell(peek);
+								
+								//peek.getVoxel().onPlace(future, null);
+								peek.getVoxel().whenPlaced(future);
+								once = false;
+							}
 
 							VoxelComponent component = components.get(componentName);
 							if (component == null) {
-								System.out.println("Error, a component named " + componentName
-										+ " was saved, but it was not recreated by the voxel onPlace() method.");
+								System.out.println("Error, a component named " + componentName + " was saved, but it was not recreated by the voxel whenPlaced() method.");
 							} else {
 								// Hope for the best
 								component.pull(holder.getRegion().handler, dias);
 							}
 							
-
 							dias.reset();
-
 							componentName = dis.readUTF();
 						}
 						keepGoing = dis.readByte();
@@ -168,7 +167,7 @@ public class CubicChunk implements Chunk {
 						}
 					} while (entity != null);
 				}
-			} catch (UnloadableChunkDataException | IOException | WorldException e) {
+			} catch (UnloadableChunkDataException | IOException e) {
 
 				System.out.println(e.getMessage());
 				e.printStackTrace();
@@ -247,6 +246,29 @@ public class CubicChunk implements Chunk {
 		pokeInternal(x, y, z, null, 0, 0, 0, raw_data_bits, true, false, false, null);
 	}
 
+	class FreshFutureCell extends FutureCell implements FreshChunkCell {
+
+		public FreshFutureCell(CellData ogContext) {
+			super(ogContext);
+		}
+
+		@Override
+		public Chunk getChunk() {
+			return CubicChunk.this;
+		}
+
+		@Override
+		public CellComponentsHolder components() {
+			return CubicChunk.this.components(x, y, z);
+		}
+
+		@Override
+		public void registerComponent(String name, VoxelComponent component) {
+			components().put(name, component);
+		}
+		
+	}
+	
 	/**
 	 * The 'core' of the core, this private function is responsible for placing and
 	 * keeping everyone up to snuff on block modifications. It all comes back to this really.
@@ -262,7 +284,7 @@ public class CubicChunk implements Chunk {
 		Voxel formerVoxel = cell_pre.getVoxel();
 		assert formerVoxel != null;
 		
-		FutureCell future = new FutureCell(cell_pre);
+		FreshFutureCell future = new FreshFutureCell(cell_pre);
 
 		if (use_raw_data) {
 			// We need this for voxel placement logic
@@ -315,6 +337,8 @@ public class CubicChunk implements Chunk {
 			chunkVoxelData = atomicalyCreateInternalData();
 
 		chunkVoxelData[x * 32 * 32 + y * 32 + z] = raw_data;
+		
+		newVoxel.whenPlaced(future);
 
 		// Update lightning
 		if (update)
@@ -391,19 +415,24 @@ public class CubicChunk implements Chunk {
 	}
 
 	@Override
-	public VoxelComponentsHolder components(int worldX, int worldY, int worldZ) {
-		int index = worldX * 1024 + worldY * 32 + worldZ;
+	public CellComponentsHolder components(int x, int y, int z) {
+		x &= 0x1f;
+		y &= 0x1f;
+		z &= 0x1f;
+		
+		int index = x * 1024 + y * 32 + z;
+		//System.out.println(index);
 
-		VoxelComponentsHolder components = voxelComponents.get(index);
+		CellComponentsHolder components = allCellComponents.get(index);
 		if (components == null) {
-			components = new VoxelComponentsHolder(this, index);
-			voxelComponents.put(index, components);
+			components = new CellComponentsHolder(this, index);
+			allCellComponents.put(index, components);
 		}
 		return components;
 	}
 
 	public void removeComponents(int index) {
-		voxelComponents.remove(index);
+		allCellComponents.remove(index);
 	}
 
 	private int[] atomicalyCreateInternalData() {
@@ -447,7 +476,7 @@ public class CubicChunk implements Chunk {
 		return uuid;
 	}
 
-	class ActualChunkVoxelContext extends Cell implements ChunkCell {
+	class ActualChunkVoxelContext extends Cell implements ChunkCell, FreshChunkCell {
 
 		int raw_data;
 
@@ -507,7 +536,7 @@ public class CubicChunk implements Chunk {
 		}
 
 		@Override
-		public VoxelComponents components() {
+		public CellComponentsHolder components() {
 			return CubicChunk.this.components(x, y, z);
 		}
 
@@ -552,6 +581,11 @@ public class CubicChunk implements Chunk {
 		
 		private void poke() {
 			CubicChunk.this.pokeSimple(x, y, z, voxel, sunlight, blocklight, metadata);
+		}
+
+		@Override
+		public void registerComponent(String name, VoxelComponent component) {
+			components().put(name, component);
 		}
 	}
 

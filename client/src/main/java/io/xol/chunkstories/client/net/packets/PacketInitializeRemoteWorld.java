@@ -15,6 +15,7 @@ import io.xol.chunkstories.client.net.ClientPacketsProcessorImplementation;
 import io.xol.chunkstories.net.packets.PacketSendWorldInfo;
 import io.xol.chunkstories.world.WorldClientRemote;
 import io.xol.chunkstories.world.WorldInfoImplementation;
+import io.xol.chunkstories.world.WorldLoadingException;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -48,8 +49,13 @@ public class PacketInitializeRemoteWorld extends PacketSendWorldInfo {
 				@Override
 				public void run()
 				{
-					WorldClientRemote world = new WorldClientRemote(client, info, ((ClientPacketsProcessorImplementation)cpp).getConnection());
-					Client.getInstance().changeWorld(world);
+					WorldClientRemote world;
+					try {
+						world = new WorldClientRemote(client, info, ((ClientPacketsProcessorImplementation)cpp).getConnection());
+						Client.getInstance().changeWorld(world);
+					} catch (WorldLoadingException e) {
+						client.exitToMainMenu(e.getMessage());
+					}
 				}
 			});
 			

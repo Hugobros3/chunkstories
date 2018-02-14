@@ -1,6 +1,10 @@
 package io.xol.chunkstories.world;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -34,7 +38,6 @@ import io.xol.chunkstories.api.util.ConfigDeprecated;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.voxel.Voxel;
-import io.xol.chunkstories.api.voxel.VoxelInteractive;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.world.generator.WorldGenerator;
 import io.xol.chunkstories.api.world.WorldInfo;
@@ -51,7 +54,10 @@ import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.api.world.chunk.ChunksIterator;
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.content.sandbox.WorldLogicThread;
-import io.xol.chunkstories.content.translator.SimpleContentTranslator;
+import io.xol.chunkstories.content.translator.AbstractContentTranslator;
+import io.xol.chunkstories.content.translator.IncompatibleContentException;
+import io.xol.chunkstories.content.translator.InitialContentTranslator;
+import io.xol.chunkstories.content.translator.LoadedContentTranslator;
 import io.xol.chunkstories.content.sandbox.UnthrustedUserContentSecurityManager;
 import io.xol.chunkstories.entity.EntityWorldIterator;
 import io.xol.chunkstories.entity.SerializedEntityFile;
@@ -71,7 +77,14 @@ import io.xol.engine.misc.ConfigFile;
 
 public abstract class WorldImplementation implements World
 {
-	protected WorldInfoImplementation worldInfo;
+	protected final GameContext gameContext;
+	
+	private final ContentTranslator contentTranslator;
+	private final AbstractContentTranslator masterContentTranslator;
+	
+	protected final WorldInfoImplementation worldInfo;
+	private final WorldInfoMaster worldInfoMaster;
+	
 	private final File folder;
 
 	//protected final boolean client;
@@ -108,60 +121,94 @@ public abstract class WorldImplementation implements World
 
 	//Entity IDS counter
 	AtomicLong entitiesUUIDGenerator = new AtomicLong();
-
-	protected final GameContext gameContext;
 	
-	private final ContentTranslator contentTranslator;
+	public WorldImplementation(GameContext gameContext, WorldInfoImplementation info) throws WorldLoadingException {
+		this(gameContext, info, null);
+	}
 	
-	public WorldImplementation(GameContext gameContext, WorldInfoImplementation info)
-	{
-		this.gameContext = gameContext;
-		this.worldInfo = info;
-		
-		this.contentTranslator = new SimpleContentTranslator(gameContext.getContent());
-		
-		//Creates world generator
-		this.generator = gameContext.getContent().generators().getWorldGenerator(info.getGeneratorName()).createForWorld(this);
+	public WorldImplementation(GameContext gameContext, WorldInfoImplementation info, ContentTranslator initialContentTranslator) throws WorldLoadingException {
+		try {
+			this.gameContext = gameContext;
+			this.worldInfo = info;
+	
+			//Create holders for the world data
+			this.regions = new HashMapWorldRegionsHolder(this);
+			this.regionSummaries = new WorldRegionSummariesHolder(this);
+			
+			//And for the citizens
+			this.entities = new EntitiesHolder(this);
+	
+			if (this instanceof WorldMaster) // Master world initialization
+			{
+				boolean new_world = false;
+				// WorldInfoMaster are backed by a file. If we pass the World constructor a
+				// simple WorldInfo, we consider being asked to create a new world
+				if(worldInfo instanceof WorldInfoMaster) {
+					worldInfoMaster = (WorldInfoMaster)worldInfo;
+				} else {
+					worldInfoMaster = new WorldInfoMaster(worldInfo);
+					worldInfoMaster.save();
+					new_world = true;
+				}
+				
+				//Obtain the parent folder
+				this.folder = worldInfoMaster.getFile().getParentFile();
+				
+				//Check for an existing content translator
+				File contentTranslatorFile = new File(folder.getPath()+"/content_mappings.dat");
+				if(contentTranslatorFile.exists()) {
+					this.masterContentTranslator = LoadedContentTranslator.loadFromFile(gameContext.getContent(), contentTranslatorFile);
+				} else {
+					if(!new_world) {
+						//Legacy world! Use the default mappings from when ids where dynamically allocated.
+						logger.warn("Loading a legacy (pre-automagic ids allocation), trying default mappings...");
+						InputStream is = getClass().getResourceAsStream("/legacy_mappings.dat");
+						this.masterContentTranslator = new LoadedContentTranslator(gameContext.getContent(), new BufferedReader(new InputStreamReader(is)));
+						this.masterContentTranslator.test();
+					} else {
+						//Build a new content translator
+						this.masterContentTranslator = new InitialContentTranslator(gameContext.getContent());
+					}
+				}
+				
+				//Copy the reference of the loaded content translator and save it immediately
+				this.contentTranslator = this.masterContentTranslator;
+				this.masterContentTranslator.save(new File(this.getFolderPath() + "/content_mappings.dat"));
 
-		//Create holders for the world data
-		this.regions = new HashMapWorldRegionsHolder(this);
-		this.regionSummaries = new WorldRegionSummariesHolder(this);
-		
-		//And for the citizens
-		this.entities = new EntitiesHolder(this);
-
-		if (this instanceof WorldMaster)
-		{
-			if(!(worldInfo instanceof WorldInfoFile)) {
-				throw new RuntimeException("Master worlds can only run off WorldInfoFiles.");
+				File internalDatFile = new File(folder.getPath()+"/internal.dat");
+				this.internalData = new ConfigFile(internalDatFile.getAbsolutePath());
+				this.internalData.load();
+	
+				this.entitiesUUIDGenerator.set(internalData.getLong("entities-ids-counter", 0));
+				this.worldTime = internalData.getLong("worldTime", 5000);
+				this.worldTicksCounter = internalData.getLong("worldTimeInternal", 0);
+				this.overcastFactor = internalData.getFloat("overcastFactor", 0.2f);
+			}
+			// Slave world initialization
+			else {
+				if(initialContentTranslator == null) {
+					throw new WorldLoadingException("No ContentTranslator providen and none could be found on disk since this is a Slave World.");
+				} else {
+					this.contentTranslator = initialContentTranslator;
+				}
+				
+				//Null-out final fields meant for master worlds
+				this.worldInfoMaster = null;
+				this.folder = null;
+				this.internalData = null;
+				this.masterContentTranslator = null;
 			}
 			
-			WorldInfoFile worldInfoFile = (WorldInfoFile)worldInfo;
+			this.generator = gameContext.getContent().generators().getWorldGenerator(info.getGeneratorName()).createForWorld(this);
+			this.collisionsManager = new BuiltInWorldCollisionsManager(this);
 			
-			this.folder = worldInfoFile.getFile().getParentFile();//new File(GameDirectory.getGameFolderPath() + "/worlds/" + worldInfo.getInternalName());
-
-			System.out.println(folder.getPath());
-			System.out.println(folder.getAbsolutePath());
-			System.out.println(folder);
-			
-			this.internalData = new ConfigFile(this.folder.getPath()+"/internal.dat");//GameDirectory.getGameFolderPath() + "/worlds/" + worldInfo.getInternalName() + "/internal.dat");
-			this.internalData.load();
-
-			this.entitiesUUIDGenerator.set(internalData.getLong("entities-ids-counter", 0));
-			this.worldTime = internalData.getLong("worldTime", 5000);
-			this.worldTicksCounter = internalData.getLong("worldTimeInternal", 0);
-			this.overcastFactor = internalData.getFloat("overcastFactor", 0.2f);
+			//Start the world logic thread
+			this.worldThread = new WorldLogicThread(this, new UnthrustedUserContentSecurityManager());
+		} catch(IOException e) {
+			throw new WorldLoadingException("Couldn't load world ", e);
+		} catch (IncompatibleContentException e) {
+			throw new WorldLoadingException("Couldn't load world ", e);
 		}
-		else
-		{
-			this.folder = null;
-			this.internalData = null;
-		}
-
-		collisionsManager = new BuiltInWorldCollisionsManager(this);
-		
-		//Start the world logic thread
-		worldThread = new WorldLogicThread(this, new UnthrustedUserContentSecurityManager());
 	}
 
 	public void startLogic()
@@ -273,8 +320,6 @@ public abstract class WorldImplementation implements World
 		}
 		
 		this.entities.insertEntity(entity);
-
-		//System.out.println("added " + entity + "to the worlde");
 	}
 
 	@Override
@@ -600,6 +645,7 @@ public abstract class WorldImplementation implements World
 	}
 
 	@Override
+	//TODO move to client
 	public synchronized void redrawEverything()
 	{
 		ChunksIterator i = this.getAllLoadedChunks();
@@ -612,8 +658,6 @@ public abstract class WorldImplementation implements World
 				ChunkRenderable c2 = (ChunkRenderable) c;
 
 				c2.meshUpdater().requestMeshUpdate();
-				//c2.markRenderInProgress(false);
-				//c2.markForReRender();
 			}
 		}
 	}
@@ -621,20 +665,25 @@ public abstract class WorldImplementation implements World
 	@Override
 	public Fence saveEverything()
 	{
-		CompoundFence regionsAndSummaries = new CompoundFence();
+		CompoundFence ioOperationsFence = new CompoundFence();
 		
-		//System.out.println("Saving all parts of world "+worldInfo.getName());
-		regionsAndSummaries.add(regions.saveAll());
-		regionsAndSummaries.add(getRegionsSummariesHolder().saveAllLoadedSummaries());
+		logger.info("Saving all parts of world "+worldInfo.getName());
+		ioOperationsFence.add(regions.saveAll());
+		ioOperationsFence.add(getRegionsSummariesHolder().saveAllLoadedSummaries());
 
-		this.worldInfo.save(new File(this.getFolderPath() + "/info.world"));
+		if(worldInfoMaster != null)
+			this.worldInfoMaster.save();
+		
 		this.internalData.setLong("entities-ids-counter", entitiesUUIDGenerator.get());
 		this.internalData.setLong("worldTime", worldTime);
 		this.internalData.setLong("worldTimeInternal", worldTicksCounter);
 		this.internalData.setFloat("overcastFactor", overcastFactor);
 		this.internalData.save();
 		
-		return regionsAndSummaries;
+		if(masterContentTranslator != null)
+			this.masterContentTranslator.save(new File(this.getFolderPath() + "/content_mappings.dat"));
+		
+		return ioOperationsFence;
 	}
 
 	@Override
@@ -698,10 +747,7 @@ public abstract class WorldImplementation implements World
 			return false;
 		}
 		
-		Voxel voxel = peek.getVoxel();
-		if (voxel != null && voxel instanceof VoxelInteractive)
-			return ((VoxelInteractive) voxel).handleInteraction(entity, (ChunkCell) peek, input);
-		return false;
+		return peek.getVoxel().handleInteraction(entity, (ChunkCell) peek, input);
 	}
 
 	private int sanitizeHorizontalCoordinate(int coordinate)

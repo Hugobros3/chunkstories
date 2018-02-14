@@ -194,7 +194,7 @@ public class VoxelTypeImplementation extends GenericNamedConfigurable implements
 	}
 
 	@Override
-	public byte getEmittingLightLevel()
+	public byte getEmittedLightLevel()
 	{
 		return emittingLightLevel;
 	}

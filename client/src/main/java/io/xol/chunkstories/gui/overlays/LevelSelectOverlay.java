@@ -22,7 +22,8 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.gui.ng.LargeButtonIcon;
 import io.xol.chunkstories.world.WorldClientLocal;
-import io.xol.chunkstories.world.WorldInfoFile;
+import io.xol.chunkstories.world.WorldInfoMaster;
+import io.xol.chunkstories.world.WorldLoadingException;
 import io.xol.engine.graphics.util.CorneredBoxDrawer;
 import io.xol.engine.graphics.util.ObjectRenderer;
 import io.xol.engine.gui.elements.Button;
@@ -31,7 +32,7 @@ public class LevelSelectOverlay extends Layer
 {
 	LargeButtonIcon backOption = new LargeButtonIcon(this, "back");
 	LargeButtonIcon newWorldOption = new LargeButtonIcon(this, "new");
-	List<WorldInfoFile> localWorlds = new ArrayList<WorldInfoFile>();
+	List<WorldInfoMaster> localWorlds = new ArrayList<WorldInfoMaster>();
 	List<LocalWorldButton> worldsButtons = new ArrayList<LocalWorldButton>();
 
 	public LevelSelectOverlay(GameWindow scene, Layer parent)
@@ -67,7 +68,7 @@ public class LevelSelectOverlay extends Layer
 			if (infoTxt.exists())
 			{
 				try {
-					localWorlds.add(new WorldInfoFile(infoTxt));
+					localWorlds.add(new WorldInfoMaster(infoTxt));
 					
 					/*BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(infoTxt), "UTF-8"));
 	
@@ -80,13 +81,17 @@ public class LevelSelectOverlay extends Layer
 				}
 			}
 		}
-		for (WorldInfoFile wi : localWorlds)
+		for (WorldInfoMaster wi : localWorlds)
 		{
 			LocalWorldButton worldButton = new LocalWorldButton(0, 0, wi);
 			worldButton.setAction(new Runnable() {
 				@Override
 				public void run() {
-					Client.getInstance().changeWorld(new WorldClientLocal(Client.getInstance(), worldButton.info));
+					try {
+						Client.getInstance().changeWorld(new WorldClientLocal(Client.getInstance(), worldButton.info));
+					} catch (WorldLoadingException e) {
+						gameWindow.getClient().exitToMainMenu(e.getMessage());
+					}
 				}
 			});
 			
@@ -158,9 +163,9 @@ public class LevelSelectOverlay extends Layer
 	
 	public class LocalWorldButton extends Button
 	{
-		public WorldInfoFile info;
+		public WorldInfoMaster info;
 
-		public LocalWorldButton(int x, int y, WorldInfoFile info)
+		public LocalWorldButton(int x, int y, WorldInfoMaster info)
 		{
 			super(LevelSelectOverlay.this, x, y, 0, "");
 			this.height = 64 + 8;

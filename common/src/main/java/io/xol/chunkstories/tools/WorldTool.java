@@ -15,7 +15,8 @@ import io.xol.chunkstories.api.sound.SoundSource.Mode;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.chunkstories.world.WorldInfoFile;
+import io.xol.chunkstories.world.WorldInfoImplementation;
+import io.xol.chunkstories.world.WorldLoadingException;
 import io.xol.chunkstories.world.io.IOTasks;
 import io.xol.chunkstories.world.io.IOTasksImmediate;
 import io.xol.engine.sound.sources.DummySoundSource;
@@ -28,13 +29,13 @@ public class WorldTool extends WorldImplementation implements WorldMaster
 {
 	private final GameContext toolContext;
 	
-	public WorldTool(GameContext toolContext, WorldInfoFile info) {
+	public WorldTool(GameContext toolContext, WorldInfoImplementation info) throws WorldLoadingException {
 		this(toolContext, info, true);
 	}
 	
-	public WorldTool(GameContext toolContext, WorldInfoFile info, boolean immediateIO)
+	public WorldTool(GameContext toolContext, WorldInfoImplementation info, boolean immediateIO) throws WorldLoadingException
 	{
-		super(toolContext, info);//new WorldInfoImplementation(new File(worldDir + "/info.world"), new File(worldDir).getName()));
+		super(toolContext, info);
 
 		this.toolContext = toolContext;
 		

@@ -12,9 +12,11 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.GameDirectory;
+import io.xol.chunkstories.content.translator.InitialContentTranslator;
 import io.xol.chunkstories.world.WorldInfoImplementation;
+import io.xol.chunkstories.world.WorldLoadingException;
 import io.xol.chunkstories.world.WorldClientLocal;
-import io.xol.chunkstories.world.WorldInfoFile;
+import io.xol.chunkstories.world.WorldInfoMaster;
 import io.xol.engine.graphics.util.CorneredBoxDrawer;
 import io.xol.engine.gui.elements.Button;
 import io.xol.engine.gui.elements.InputText;
@@ -53,10 +55,10 @@ public class LevelCreateOverlay extends Layer
 					WorldInfoImplementation info = new WorldInfoImplementation(internalName, levelName.text, ""+System.currentTimeMillis(), "", WorldInfo.WorldSize.MEDIUM, worldGenName.text);
 					
 					try {
-						Client.getInstance().changeWorld(new WorldClientLocal(Client.getInstance(), WorldInfoFile.createNewWorld(new File(GameDirectory.getGameFolderPath() + "/worlds/" + internalName), info)));
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+						//WorldInfoFile.createNewWorld(new File(GameDirectory.getGameFolderPath() + "/worlds/" + internalName), 
+						Client.getInstance().changeWorld(new WorldClientLocal(Client.getInstance(), info));
+					} catch (WorldLoadingException e) {
+						gameWindow.getClient().exitToMainMenu(e.getMessage());
 					}
 				}
 			}

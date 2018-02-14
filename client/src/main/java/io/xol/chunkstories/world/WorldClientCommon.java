@@ -18,7 +18,7 @@ public abstract class WorldClientCommon extends WorldImplementation implements W
 {
 	protected WorldRendererImplementation renderer;
 	
-	public WorldClientCommon(Client client, WorldInfoImplementation info)
+	public WorldClientCommon(Client client, WorldInfoImplementation info) throws WorldLoadingException
 	{
 		super(client, info);
 		

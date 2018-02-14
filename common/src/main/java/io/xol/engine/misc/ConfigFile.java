@@ -25,6 +25,7 @@ import io.xol.chunkstories.api.util.ConfigDeprecated;
 //http://chunkstories.xyz
 //http://xol.io
 
+/** TODO this is shit and should die */
 public class ConfigFile implements ConfigDeprecated
 {
 	String path;
@@ -56,9 +57,6 @@ public class ConfigFile implements ConfigDeprecated
 			}
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.engine.misc.ConfigDeprecated#load()
-	 */
 	@Override
 	public void load()
 	{
@@ -86,9 +84,6 @@ public class ConfigFile implements ConfigDeprecated
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.engine.misc.ConfigDeprecated#save()
-	 */
 	@Override
 	public void save()
 	{

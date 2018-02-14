@@ -34,7 +34,7 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 	private VirtualServerParticlesManager virtualServerParticlesManager;
 	private VirtualServerDecalsManager virtualServerDecalsManager;
 
-	public WorldServer(DedicatedServer server, WorldInfoFile worldInfo)
+	public WorldServer(DedicatedServer server, WorldInfoImplementation worldInfo) throws WorldLoadingException
 	{
 		super(server, worldInfo);
 
