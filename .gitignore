@@ -20,6 +20,9 @@ converter_ids_cache.csv
 converter.jar
 server-icon.png
 
+_Logs_
+*.log
+
 _Don't include build stuff_
 bin/
 */build/

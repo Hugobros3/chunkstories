@@ -7,6 +7,7 @@ package io.xol.chunkstories.client;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Iterator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.ConsoleAppender;
 import ch.qos.logback.core.FileAppender;
 import io.xol.engine.base.GameWindowOpenGL_LWJGL3;
@@ -45,6 +47,7 @@ import io.xol.chunkstories.gui.overlays.ingame.InventoryOverlay;
 import io.xol.chunkstories.input.lwjgl3.Lwjgl3ClientInputsManager;
 import io.xol.chunkstories.renderer.chunks.ClientTasksPool;
 import io.xol.chunkstories.tools.DebugProfiler;
+import io.xol.chunkstories.util.LogbackSetupHelper;
 import io.xol.chunkstories.world.WorldClientCommon;
 
 public class Client implements ClientInterface
@@ -147,36 +150,8 @@ public class Client implements ClientInterface
 		logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 		
 		String loggingFilename = GameDirectory.getGameFolderPath() + "/logs/" + time + ".log";
-		
-		LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-        PatternLayoutEncoder ple = new PatternLayoutEncoder();
 
-        String pattern = "%date %level [%logger] [%-3thread] %msg%n";
-        String fancyPattern = "%date %level [%logger] [%thread] [%file:%line] %msg%n";
-        
-        ple.setPattern(pattern);
-        ple.setContext(lc);
-        ple.start();
-        FileAppender<ILoggingEvent> fileAppender = new FileAppender<ILoggingEvent>();
-        fileAppender.setFile(loggingFilename);
-        fileAppender.setEncoder(ple);
-        fileAppender.setContext(lc);
-        fileAppender.start();
-        
-        ConsoleAppender<ILoggingEvent> logConsoleAppender = new ConsoleAppender<>();
-	    logConsoleAppender.setContext(lc);
-	    logConsoleAppender.setName("console");
-	    logConsoleAppender.setEncoder(ple);
-	    logConsoleAppender.start();
-
-        ch.qos.logback.classic.Logger rootLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-        rootLogger.addAppender(fileAppender);
-        rootLogger.addAppender(logConsoleAppender);
-        rootLogger.setLevel(ch.qos.logback.classic.Level.DEBUG);
-        
-        rootLogger.info("Started logging under: "+loggingFilename);
-		
-		//new ChunkStoriesLoggerImplementation(this, LogLevel.ALL, LogLevel.ALL, new File(GameDirectory.getGameFolderPath() + "/logs/" + time + ".log"));
+        new LogbackSetupHelper(loggingFilename);
 		
 		//Get configuration right
 		clientConfig = new ConfigFile("./config/client.cfg");
