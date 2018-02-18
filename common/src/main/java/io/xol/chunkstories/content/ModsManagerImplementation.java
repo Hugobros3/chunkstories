@@ -309,7 +309,7 @@ public class ModsManagerImplementation implements ModsManager
 			try
 			{
 				PluginInformationImplementation pluginInformation = new PluginInformationImplementation(jarFile, classLoader);
-				System.out.println("Found plugin "+pluginInformation+" from within "+mod);
+				logger.info("Found plugin "+pluginInformation+" in "+mod);
 				pluginsWithinEnabledMods.add(pluginInformation);
 			}
 			catch (NotAPluginException nap)
@@ -328,7 +328,7 @@ public class ModsManagerImplementation implements ModsManager
 
 	private File loadJarFile(Asset asset)
 	{
-		System.out.println("Handling jar file " + asset);
+		logger.info("Handling jar file " + asset);
 		try
 		{
 			//Read the jar file contents and extract it somewhere on cache
@@ -338,7 +338,7 @@ public class ModsManagerImplementation implements ModsManager
 			FileOutputStream fos = new FileOutputStream(cachedJarLocation);
 			BufferedOutputStream bos = new BufferedOutputStream(fos);
 			InputStream is = asset.read();
-			System.out.println("Writing to " + cachedJarLocation);
+			logger.debug("Writing to " + cachedJarLocation);
 			byte[] buf = new byte[4096];
 			while (is.available() > 0)
 			{
@@ -349,7 +349,7 @@ public class ModsManagerImplementation implements ModsManager
 			}
 			bos.flush();
 			bos.close();
-			System.out.println("Done writing file");
+			logger.debug("Done writing file");
 
 			return cachedJarLocation;
 		}

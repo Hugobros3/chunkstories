@@ -17,6 +17,9 @@ import java.util.Map;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.xol.chunkstories.api.content.mods.Mod;
 
 /**
@@ -26,6 +29,8 @@ public class ForeignCodeClassLoader extends URLClassLoader
 {
 	ModImplementation responsibleMod;
 	Map<String, Class<?>> classes = new HashMap<String, Class<?>>();
+	
+	private static final Logger logger = LoggerFactory.getLogger("mods.classloader");
 
 	public ForeignCodeClassLoader(ModImplementation responsibleMod, ClassLoader parentLoader, Collection<File> files) throws IOException
 	{
@@ -54,7 +59,7 @@ public class ForeignCodeClassLoader extends URLClassLoader
 						if(className.contains("$"))
 							continue;
 						
-						System.out.println("Found class " + className + " in jarfile, loading it...");
+						logger.debug("Found class " + className + " in jarfile, loading it...");
 						
 						try
 						{
@@ -75,7 +80,7 @@ public class ForeignCodeClassLoader extends URLClassLoader
 						}
 						catch(LinkageError le)
 						{
-							System.out.println("This should not happen!");
+							logger.error("This should not happen!", le);
 							//Don't care
 						}
 						//classes.add(className);

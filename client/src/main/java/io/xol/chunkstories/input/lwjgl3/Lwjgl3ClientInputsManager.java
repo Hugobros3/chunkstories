@@ -6,6 +6,8 @@ import org.lwjgl.glfw.GLFWCharCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
 import org.lwjgl.glfw.GLFWScrollCallback;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -62,6 +64,8 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 	private final GLFWMouseButtonCallback mouseButtonCallback;
 	private final GLFWScrollCallback scrollCallback;
 	private final GLFWCharCallback characterCallback;
+	
+	private static final Logger logger = LoggerFactory.getLogger("client.workers");
 	
 	//private final Ingame scene;
 	public Lwjgl3ClientInputsManager(GameWindowOpenGL_LWJGL3 gameWindow)
@@ -447,5 +451,9 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 		this.mouseButtonCallback.free();
 		this.scrollCallback.free();
 		this.characterCallback.free();
+	}
+	
+	public Logger logger() {
+		return logger;
 	}
 }

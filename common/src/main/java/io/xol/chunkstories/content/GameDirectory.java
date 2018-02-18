@@ -32,7 +32,7 @@ public class GameDirectory
 	public static void set(String string)
 	{
 		chunkStoriesFolder = new File(string);
-		System.out.println("Game dir = "+ chunkStoriesFolder.getAbsolutePath());
+		//System.out.println("Game dir = "+ chunkStoriesFolder.getAbsolutePath());
 	}
 
 	public static void check()

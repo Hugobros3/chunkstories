@@ -177,7 +177,7 @@ public class VoxelTexturesStoreAndAtlaser implements ClientContent.ClientVoxels.
 					normalTextureImage = new BufferedImage(sizeRequired, sizeRequired, Transparency.TRANSLUCENT);
 					materialTextureImage = new BufferedImage(sizeRequired, sizeRequired, Transparency.TRANSLUCENT);
 					
-					System.out.println("This is a client so we'll make the texture atlas");
+					logger.debug("This is a client so we'll make the texture atlas");
 				}
 
 				BufferedImage imageBuffer;
@@ -337,7 +337,7 @@ public class VoxelTexturesStoreAndAtlaser implements ClientContent.ClientVoxels.
 					if (line.startsWith("texture"))
 					{
 						if (vt != null)
-							System.out.println("Warning ! Parse error in file " + asset + ", line " + ln + ", unexpected 'texture' token.");
+							logger.warn("Parse error in file " + asset + ", line " + ln + ", unexpected 'texture' token.");
 						String splitted[] = line.split(" ");
 						String name = splitted[1];
 
@@ -350,7 +350,7 @@ public class VoxelTexturesStoreAndAtlaser implements ClientContent.ClientVoxels.
 							vt = null;
 						}
 						else
-							System.out.println("Warning ! Parse error in file " + asset + ", line " + ln + ", unexpected 'end' token.");
+							logger.warn("Parse error in file " + asset + ", line " + ln + ", unexpected 'end' token.");
 					}
 					else if (line.startsWith("\t"))
 					{
@@ -366,12 +366,12 @@ public class VoxelTexturesStoreAndAtlaser implements ClientContent.ClientVoxels.
 								vt.setTextureScale(Integer.parseInt(parameterValue));
 								break;
 							default:
-								System.out.println("Warning ! Parse error in file " + asset + ", line " + ln + ", unknown parameter '" + parameterName + "'");
+								logger.warn("Parse error in file " + asset + ", line " + ln + ", unknown parameter '" + parameterName + "'");
 								break;
 							}
 						}
 						else
-							System.out.println("Warning ! Parse error in file " + asset + ", line " + ln + ", unexpected parameter.");
+							logger.warn("Parse error in file " + asset + ", line " + ln + ", unexpected parameter.");
 					}
 				}
 				ln++;

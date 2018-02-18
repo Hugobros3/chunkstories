@@ -3,6 +3,8 @@ package io.xol.chunkstories.renderer.chunks;
 import java.nio.ByteBuffer;
 
 import org.lwjgl.system.MemoryUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.xol.chunkstories.api.client.ClientContent;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
@@ -23,12 +25,15 @@ public class ClientWorkerThread extends WorkerThread implements BakeChunkTaskExe
 	final ClientContent content;
 	final ChunkMeshingBuffers cmd;
 	
+	private static final Logger logger = LoggerFactory.getLogger("client.workers");
+	
 	protected ClientWorkerThread(ClientTasksPool pool, int id)
 	{	
 		super(pool, id);
 		this.pool = pool;
 		this.content = pool.client.getContent();
 		this.setName("Worker thread #"+id);
+		logger.info("Initialized "+this.getName());
 		
 		//Init CMD
 		this.cmd = new ChunkMeshingBuffers();
@@ -78,8 +83,8 @@ public class ClientWorkerThread extends WorkerThread implements BakeChunkTaskExe
 						
 						if(byteBuffers[i][j][k] == null)
 						{
-							System.out.println("Fucking out of memory");
-							System.out.println("MemoryUtil: "+ " A:"+MemoryUtil.getAllocator());
+							logger.error("Failed to allocate memory for client worker");
+							logger.error("MemoryUtil: "+ " A:"+MemoryUtil.getAllocator());
 							System.exit(-1);
 						}
 						
@@ -164,8 +169,8 @@ public class ClientWorkerThread extends WorkerThread implements BakeChunkTaskExe
 			}
 			else
 			{
-				System.out.println("Warning ! Chunk " + c + " rendering process asked information about a block more than 32 blocks away from the chunk itself");
-				System.out.println("This should not happen when rendering normal blocks and may be caused by a weird or buggy mod.");
+				logger.warn("Warning ! Chunk " + c + " rendering process asked information about a block more than 32 blocks away from the chunk itself");
+				logger.warn("This should not happen when rendering normal blocks and may be caused by a weird or buggy mod.");
 				data = c.getWorld().peekRaw(c.getChunkX() * 32 + x, c.getChunkY() * 32 + y, c.getChunkZ() * 32 + z);
 			}
 
@@ -181,7 +186,7 @@ public class ClientWorkerThread extends WorkerThread implements BakeChunkTaskExe
 					for(int k = 0; k < ChunkMeshDataSubtypes.ShadingType.values().length; k++)
 						MemoryUtil.memFree(byteBuffers[i][j][k]);
 			
-			System.out.println("Freed ChunkMeshingBuffers memory");				
+			logger.info("Freed ChunkMeshingBuffers memory");				
 		}
 	}
 	

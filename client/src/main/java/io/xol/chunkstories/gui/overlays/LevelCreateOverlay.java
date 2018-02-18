@@ -1,7 +1,5 @@
 package io.xol.chunkstories.gui.overlays;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Iterator;
 
 import io.xol.chunkstories.api.content.Content.WorldGenerators.WorldGeneratorDefinition;
@@ -11,12 +9,9 @@ import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.content.GameDirectory;
-import io.xol.chunkstories.content.translator.InitialContentTranslator;
 import io.xol.chunkstories.world.WorldInfoImplementation;
 import io.xol.chunkstories.world.WorldLoadingException;
 import io.xol.chunkstories.world.WorldClientLocal;
-import io.xol.chunkstories.world.WorldInfoMaster;
 import io.xol.engine.graphics.util.CorneredBoxDrawer;
 import io.xol.engine.gui.elements.Button;
 import io.xol.engine.gui.elements.InputText;

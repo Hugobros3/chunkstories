@@ -72,9 +72,9 @@ public class ALSoundManager implements ClientSoundManager
 
 	        ALCCapabilities deviceCaps = ALC.createCapabilities(device);
 
-	        System.out.println("OpenALC10: " + deviceCaps.OpenALC10);
-	        System.out.println("OpenALC11: " + deviceCaps.OpenALC11);
-	        System.out.println("caps.ALC_EXT_EFX = " + deviceCaps.ALC_EXT_EFX);
+	        logger.info("OpenALC10: " + deviceCaps.OpenALC10);
+	        logger.info("OpenALC11: " + deviceCaps.OpenALC11);
+	        logger.info("caps.ALC_EXT_EFX = " + deviceCaps.ALC_EXT_EFX);
 
 	        if (deviceCaps.OpenALC11) {
 	            List<String> devices = ALUtil.getStringList(MemoryUtil.NULL, ALC_ALL_DEVICES_SPECIFIER);
@@ -82,13 +82,13 @@ public class ALSoundManager implements ClientSoundManager
 	                //checkALCError(MemoryUtil.NULL);
 	            } else {
 	                for (int i = 0; i < devices.size(); i++) {
-	                    System.out.println(i + ": " + devices.get(i));
+	                 	logger.debug(i + ": " + devices.get(i));
 	                }
 	            }
 	        }
 
 	        String defaultDeviceSpecifier = alcGetString(MemoryUtil.NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
-	        System.out.println("Default device: " + defaultDeviceSpecifier);
+	        logger.info("Default device: " + defaultDeviceSpecifier);
 
 	        context = alcCreateContext(device, (IntBuffer)null);
 	        alcMakeContextCurrent(context);
@@ -140,7 +140,7 @@ public class ALSoundManager implements ClientSoundManager
 		}
 		catch (Exception e)
 		{
-			System.out.println("Failed to start sound system !");
+			logger.error("Failed to start sound system !");
 			e.printStackTrace();
 		}
 	}
@@ -161,7 +161,7 @@ public class ALSoundManager implements ClientSoundManager
 		if(shutdownState.compareAndSet(false, true)) {
 	        alcDestroyContext(context);
 	        alcCloseDevice(device);
-			System.out.println("OpenAL properly shut down.");
+			logger.info("OpenAL properly shut down.");
 		}
 	}
 
@@ -169,7 +169,7 @@ public class ALSoundManager implements ClientSoundManager
 	{
 		int result;
 		if ((result = alGetError()) != AL_NO_ERROR)
-			System.out.println("error at iter :" + SoundDataOggSample.getALErrorString(result));
+			logger.error("error at iter :" + SoundDataOggSample.getALErrorString(result));
 		removeUnplayingSources();
 		Iterator<ALSoundSource> i = playingSoundSources.iterator();
 		while (i.hasNext())
@@ -221,7 +221,7 @@ public class ALSoundManager implements ClientSoundManager
 		}
 		catch (SoundEffectNotFoundException e)
 		{
-			System.out.println("Sound not found "+soundEffect);
+			logger.warn("Sound not found "+soundEffect);
 		}
 		return new DummySoundSource();
 	}
@@ -266,28 +266,6 @@ public class ALSoundManager implements ClientSoundManager
 		return j;
 	}
 
-	/*@Override
-	public SoundSource playSoundEffect(String soundEffect)
-	{
-		return playSoundEffect(soundEffect, 0, 0, 0, 1, 1);
-	}
-
-	@Override
-	public SoundSource playMusic(String musicName, float x, float y, float z, float pitch, float gain, boolean ambient, float attStart, float attEnd)
-	{
-		try
-		{
-			ALSoundSource ss = new ALBufferedSoundSource(musicName, x, y, z, false, ambient, pitch, gain, attStart, attEnd);
-			addSoundSource(ss);
-			return ss;
-		}
-		catch (SoundEffectNotFoundException e)
-		{
-			System.out.println("Music not found "+musicName);
-		}
-		return null;
-	}*/
-
 	@Override
 	public Iterator<SoundSource> getAllPlayingSounds()
 	{
@@ -327,7 +305,7 @@ public class ALSoundManager implements ClientSoundManager
 		}
 		catch (SoundEffectNotFoundException e)
 		{
-			System.out.println("Sound not found "+soundName);
+			logger.warn("Sound not found "+soundName);
 			return null;
 		}
 	}

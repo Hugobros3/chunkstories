@@ -84,7 +84,7 @@ public class LocalizationManagerActual implements LocalizationManager
 		public ActualTranslation(Asset a)
 		{
 			this.a = a;
-			System.out.println("Loading translation from asset asset: "+a);
+			logger.info("Loading translation from asset asset: "+a);
 			
 			String prefix = a.getName().substring(0, a.getName().length() - 9);
 			Iterator<Asset> i = modsManager.getAllAssetsByPrefix(prefix);

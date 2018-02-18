@@ -35,10 +35,10 @@ public class Lwjgl3KeyBindCompound extends Lwjgl3Input {
 			
 			int glfwKey = GLFWKeyIndexHelper.getGlfwKeyByName(keyName);
 			glfwKeys[i] = glfwKey;
-			System.out.println(keyName+":"+glfwKey);
+			//System.out.println(keyName+":"+glfwKey);
 		}
 		
-		System.out.println("Initialized keyBindCompound "+name+" for "+glfwKeys.length+" keys.");
+		this.im.logger().debug("Initialized keyBindCompound "+name+" for "+glfwKeys.length+" keys.");
 	}
 
 }
