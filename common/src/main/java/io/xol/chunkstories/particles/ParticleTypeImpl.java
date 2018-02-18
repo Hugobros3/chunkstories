@@ -13,7 +13,6 @@ import io.xol.chunkstories.materials.GenericNamedConfigurable;
 
 public class ParticleTypeImpl extends GenericNamedConfigurable implements ParticleTypeDefinition {
 
-	private final int id;
 	private final ParticlesTypesStore store;
 
 	private final float billBoardSize;
@@ -26,10 +25,9 @@ public class ParticleTypeImpl extends GenericNamedConfigurable implements Partic
 		return this.resolveProperty("shaderName", "particles");
 	}
 
-	public ParticleTypeImpl(ParticlesTypesStore store, String particleName, int id, BufferedReader reader)
+	public ParticleTypeImpl(ParticlesTypesStore store, String particleName, BufferedReader reader)
 			throws IllegalParticleDeclarationException, IOException {
 		super(particleName, reader);
-		this.id = id;
 		this.store = store;
 		
 		String rt = this.resolveProperty("renderTime", "forward");
@@ -82,11 +80,6 @@ public class ParticleTypeImpl extends GenericNamedConfigurable implements Partic
 
 	ParticleTypeHandler handler() {
 		return handler;
-	}
-	
-	@Override
-	public int getID() {
-		return id;
 	}
 
 	@Override

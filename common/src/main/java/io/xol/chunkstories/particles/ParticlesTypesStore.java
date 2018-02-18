@@ -75,13 +75,13 @@ public class ParticlesTypesStore implements Content.ParticlesTypes
 						continue;
 					}
 					String splitted[] = line.split(" ");
-					if (splitted.length == 3 && splitted[0].startsWith("particle"))
+					if (splitted.length == 2 && splitted[0].startsWith("particle"))
 					{
-						int id = Integer.parseInt(splitted[2]);
+						//int id = Integer.parseInt(splitted[2]);
 						String particleName = splitted[1];
 						
 						try {
-							ParticleTypeImpl type = new ParticleTypeImpl(this, particleName, id, reader);
+							ParticleTypeImpl type = new ParticleTypeImpl(this, particleName, reader);
 							ParticleTypeHandler handler = type.handler();
 							
 							particleTypesByName.put(particleName, handler);
