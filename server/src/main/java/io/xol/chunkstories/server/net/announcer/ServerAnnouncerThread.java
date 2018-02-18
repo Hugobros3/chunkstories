@@ -1,4 +1,4 @@
-package io.xol.chunkstories.server.net;
+package io.xol.chunkstories.server.net.announcer;
 
 import java.net.Inet4Address;
 import java.util.Random;
