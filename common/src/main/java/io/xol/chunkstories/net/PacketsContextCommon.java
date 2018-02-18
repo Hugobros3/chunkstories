@@ -30,7 +30,7 @@ import io.xol.chunkstories.net.packets.PacketSendFile;
 public abstract class PacketsContextCommon implements PacketReceptionContext, PacketSendingContext
 {
 	protected final GameContext gameContext;
-	protected final Content.PacketTypes store;
+	protected final Content.PacketDefinitions store;
 	protected final Connection connection;
 	
 	protected OnlineContentTranslator contentTranslator;

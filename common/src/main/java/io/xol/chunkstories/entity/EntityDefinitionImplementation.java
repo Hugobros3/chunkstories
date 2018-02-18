@@ -1,4 +1,4 @@
-package io.xol.chunkstories.item;
+package io.xol.chunkstories.entity;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -6,23 +6,22 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 import io.xol.chunkstories.api.Location;
-import io.xol.chunkstories.api.content.Content.EntityTypes;
+import io.xol.chunkstories.api.content.Content.EntityDefinitions;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityDefinition;
 import io.xol.chunkstories.api.exceptions.content.IllegalEntityDeclarationException;
-import io.xol.chunkstories.entity.EntityTypesStore;
 import io.xol.chunkstories.materials.GenericNamedConfigurable;
 
-public class EntityTypeImpl extends GenericNamedConfigurable implements EntityDefinition {
+public class EntityDefinitionImplementation extends GenericNamedConfigurable implements EntityDefinition {
 	
 	//final String name;
 	//final String className;
-	final EntityTypesStore store;
+	final EntityDefinitionsStore store;
 	
 	final Constructor<? extends Entity> constructor;
 
 	@SuppressWarnings("unchecked")
-	public EntityTypeImpl(EntityTypesStore store, String name, BufferedReader reader) throws IllegalEntityDeclarationException, IOException
+	public EntityDefinitionImplementation(EntityDefinitionsStore store, String name, BufferedReader reader) throws IllegalEntityDeclarationException, IOException
 	{
 		super(name, reader);
 		this.store = store;
@@ -84,7 +83,7 @@ public class EntityTypeImpl extends GenericNamedConfigurable implements EntityDe
 	}
 
 	@Override
-	public EntityTypes store() {
+	public EntityDefinitions store() {
 		return store;
 	}
 }

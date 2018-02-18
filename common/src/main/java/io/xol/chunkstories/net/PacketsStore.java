@@ -19,7 +19,7 @@ import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.PacketDefinition;
 import io.xol.chunkstories.content.GameContentStore;
 
-public class PacketsStore implements Content.PacketTypes {
+public class PacketsStore implements Content.PacketDefinitions {
 
 	private final GameContentStore store;
 	private final Map<String, PacketDefinitionImpl> byNames = new HashMap<String, PacketDefinitionImpl>();

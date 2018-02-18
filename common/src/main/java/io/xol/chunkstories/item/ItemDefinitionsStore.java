@@ -1,6 +1,7 @@
 package io.xol.chunkstories.item;
 
 import io.xol.chunkstories.api.content.Content;
+import io.xol.chunkstories.api.content.Content.ItemsDefinitions;
 import io.xol.chunkstories.api.exceptions.content.IllegalItemDeclarationException;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemDefinition;
@@ -22,9 +23,9 @@ import org.slf4j.LoggerFactory;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class ItemTypesStore implements Content.ItemsTypes
+public class ItemDefinitionsStore implements ItemsDefinitions
 {
-	Map<Short, Constructor<? extends Item>> itemsTypes = new HashMap<Short, Constructor<? extends Item>>();
+	Map<Short, Constructor<? extends Item>> ItemDefinitions = new HashMap<Short, Constructor<? extends Item>>();
 	public Map<String, ItemDefinition> dictionary = new HashMap<String, ItemDefinition>();
 	public int itemTypes = 0;
 	public int lastAllocatedId;
@@ -37,7 +38,7 @@ public class ItemTypesStore implements Content.ItemsTypes
 		return logger;
 	}
 	
-	public ItemTypesStore(GameContentStore gameContentStore)
+	public ItemDefinitionsStore(GameContentStore gameContentStore)
 	{
 		this.content = gameContentStore;
 		this.modsManager = gameContentStore.modsManager();
@@ -92,7 +93,7 @@ public class ItemTypesStore implements Content.ItemsTypes
 
 						try
 						{
-							ItemTypeImpl itemType = new ItemTypeImpl(this, itemName, reader);
+							ItemDefinitionImplementation itemType = new ItemDefinitionImplementation(this, itemName, reader);
 
 							dictionary.put(itemType.getInternalName(), itemType);
 						}

@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-import io.xol.chunkstories.api.content.Content.ItemsTypes;
+import io.xol.chunkstories.api.content.Content.ItemsDefinitions;
 import io.xol.chunkstories.api.client.ClientContent;
 import io.xol.chunkstories.api.exceptions.content.IllegalItemDeclarationException;
 import io.xol.chunkstories.api.item.Item;
@@ -18,9 +18,9 @@ import io.xol.chunkstories.materials.GenericNamedConfigurable;
 //http://chunkstories.xyz
 //http://xol.io
 
-public class ItemTypeImpl extends GenericNamedConfigurable implements ItemDefinition
+public class ItemDefinitionImplementation extends GenericNamedConfigurable implements ItemDefinition
 {
-	private final ItemTypesStore store;
+	private final ItemDefinitionsStore store;
 
 	private final int slotsWidth;
 	private final int slotsHeight;
@@ -29,7 +29,7 @@ public class ItemTypeImpl extends GenericNamedConfigurable implements ItemDefini
 	private final Constructor<? extends Item> itemConstructor;
 	private final ItemRenderer itemRenderer;
 
-	public ItemTypeImpl(ItemTypesStore store, String name, BufferedReader reader) throws IllegalItemDeclarationException, IOException
+	public ItemDefinitionImplementation(ItemDefinitionsStore store, String name, BufferedReader reader) throws IllegalItemDeclarationException, IOException
 	{
 		super(name, reader);
 		this.store = store;
@@ -185,7 +185,7 @@ public class ItemTypeImpl extends GenericNamedConfigurable implements ItemDefini
 	}
 
 	@Override
-	public ItemsTypes store()
+	public ItemsDefinitions store()
 	{
 		return store;
 	}

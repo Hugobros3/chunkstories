@@ -12,8 +12,8 @@ import io.xol.chunkstories.api.mesh.MeshLibrary;
 import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.content.mods.ModsManager;
 import io.xol.chunkstories.content.ModsManagerImplementation.NonExistentCoreContent;
-import io.xol.chunkstories.entity.EntityTypesStore;
-import io.xol.chunkstories.item.ItemTypesStore;
+import io.xol.chunkstories.entity.EntityDefinitionsStore;
+import io.xol.chunkstories.item.ItemDefinitionsStore;
 import io.xol.chunkstories.materials.MaterialsStore;
 import io.xol.chunkstories.mesh.MeshStore;
 import io.xol.chunkstories.net.PacketsStore;
@@ -32,9 +32,9 @@ public class GameContentStore implements Content
 	private final ModsManager modsManager;
 
 	private final MaterialsStore materials;
-	private final ItemTypesStore items;
+	private final ItemDefinitionsStore items;
 	private final VoxelsStore voxels;
-	private final EntityTypesStore entities;
+	private final EntityDefinitionsStore entities;
 	private final PacketsStore packets;
 	private final ParticlesTypesStore particles;
 	private final WorldGeneratorsStore generators;
@@ -57,9 +57,9 @@ public class GameContentStore implements Content
 		}
 
 		materials = new MaterialsStore(this);
-		items = new ItemTypesStore(this);
+		items = new ItemDefinitionsStore(this);
 		voxels = new VoxelsStore(this);
-		entities = new EntityTypesStore(this);
+		entities = new EntityDefinitionsStore(this);
 		packets = new PacketsStore(this);
 		particles = new ParticlesTypesStore(this);
 		generators = new WorldGeneratorsStore(this);
@@ -110,13 +110,13 @@ public class GameContentStore implements Content
 	}
 
 	@Override
-	public ItemTypesStore items()
+	public ItemDefinitionsStore items()
 	{
 		return items;
 	}
 
 	@Override
-	public EntityTypesStore entities()
+	public EntityDefinitionsStore entities()
 	{
 		return entities;
 	}

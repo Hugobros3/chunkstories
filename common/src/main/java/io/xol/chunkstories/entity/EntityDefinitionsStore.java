@@ -1,12 +1,11 @@
 package io.xol.chunkstories.entity;
 
 import io.xol.chunkstories.api.content.Content;
-import io.xol.chunkstories.api.content.Content.EntityTypes;
+import io.xol.chunkstories.api.content.Content.EntityDefinitions;
 import io.xol.chunkstories.api.entity.EntityDefinition;
 import io.xol.chunkstories.api.exceptions.content.IllegalEntityDeclarationException;
 import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.content.GameContentStore;
-import io.xol.chunkstories.item.EntityTypeImpl;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,27 +20,26 @@ import org.slf4j.LoggerFactory;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class EntityTypesStore implements EntityTypes
+public class EntityDefinitionsStore implements EntityDefinitions
 {
 	private final Content content;
 	
-	//private Map<Short, EntityDefinition> entityTypesById = new HashMap<Short, EntityDefinition>();
-	private Map<String, EntityDefinition> entityTypesByName = new HashMap<String, EntityDefinition>();
+	private Map<String, EntityDefinition> EntityDefinitionsByName = new HashMap<String, EntityDefinition>();
 
 	private static final Logger logger = LoggerFactory.getLogger("content.entities");
 	public Logger logger() {
 		return logger;
 	}
 	
-	public EntityTypesStore(GameContentStore content)
+	public EntityDefinitionsStore(GameContentStore content)
 	{
 		this.content = content;
 	}
 	
 	public void reload()
 	{
-		//entityTypesById.clear();
-		entityTypesByName.clear();
+		//EntityDefinitionsById.clear();
+		EntityDefinitionsByName.clear();
 		
 		Iterator<Asset> i = content.modsManager().getAllAssetsByExtension("entities");
 		while(i.hasNext())
@@ -80,10 +78,10 @@ public class EntityTypesStore implements EntityTypes
 						
 						try
 						{
-							EntityTypeImpl entityType = new EntityTypeImpl(this, name, reader);
+							EntityDefinitionImplementation entityType = new EntityDefinitionImplementation(this, name, reader);
 
-							//this.entityTypesById.put(entityType.getId(), entityType);
-							this.entityTypesByName.put(entityType.getName(), entityType);
+							//this.EntityDefinitionsById.put(entityType.getId(), entityType);
+							this.EntityDefinitionsByName.put(entityType.getName(), entityType);
 						}
 						catch (IllegalEntityDeclarationException e)
 						{
@@ -157,20 +155,20 @@ public class EntityTypesStore implements EntityTypes
 	/*@Override
 	public EntityDefinition getEntityTypeById(short entityId)
 	{
-		return entityTypesById.get(entityId);
+		return EntityDefinitionsById.get(entityId);
 	}*/
 	
 	@Override
 	public EntityDefinition getEntityTypeByName(String entityName)
 	{
-		return entityTypesByName.get(entityName);
+		return EntityDefinitionsByName.get(entityName);
 	}
 
 	@Deprecated
 	public EntityDefinition getEntityTypeByClassname(String className)
 	{
 		throw new UnsupportedOperationException();
-		//return entityTypesByClassname.get(className);
+		//return EntityDefinitionsByClassname.get(className);
 	}
 
 	@Deprecated
@@ -178,7 +176,7 @@ public class EntityTypesStore implements EntityTypes
 	{
 		throw new UnsupportedOperationException();
 		/*
-		EntityDefinition type = entityTypesByClassname.get(className);
+		EntityDefinition type = EntityDefinitionsByClassname.get(className);
 		if(type == null)
 			return -1;
 		return type.getId();*/
@@ -187,7 +185,7 @@ public class EntityTypesStore implements EntityTypes
 	@Override
 	public Iterator<EntityDefinition> all()
 	{
-		return this.entityTypesByName.values().iterator();
+		return this.EntityDefinitionsByName.values().iterator();
 	}
 
 	@Override
