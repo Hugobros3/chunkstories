@@ -34,8 +34,11 @@ public class ConnectionSequence extends Thread
 	
 	private String modsString;
 	private Semaphore modsSemaphore = new Semaphore(0);
+
+	private Semaphore translatorSemaphore = new Semaphore(0);
 	
 	private Semaphore worldSemaphore = new Semaphore(0);
+	
 	private String aborted;
 	
 	private static final Logger logger = LoggerFactory.getLogger("net");
@@ -56,6 +59,9 @@ public class ConnectionSequence extends Thread
 				} else if (msg.equals("world/ok")) {
 					worldSemaphore.release();
 					return true;
+				} else if (msg.equals("world/translator_ok")) {
+					translatorSemaphore.release();
+					return true;
 				}
 				return super.handleSystemRequest(msg);
 			}
@@ -69,7 +75,11 @@ public class ConnectionSequence extends Thread
 	@Override
 	public void run()
 	{
+		logger.info("Connection sequence initialized.");
 		try {
+			if(!connection.connect())
+				abort("Failed to establish connection");
+			
 			if (Client.offline) {
 				connection.sendTextMessage("login/start");
 				connection.sendTextMessage("login/username:" + Client.username);
@@ -172,11 +182,16 @@ public class ConnectionSequence extends Thread
 			
 			status = new ConnectionStep("Reloading mods...");
 			Client.getInstance().reloadAssets();
+
+			status = new ConnectionStep("Loading ContentTranslator...");
+			connection.sendTextMessage("world/translator");
+			if(!translatorSemaphore.tryAcquire(5, TimeUnit.SECONDS))
+				abort("Timed out waiting for content translator");
 			
 			//Ask the server world info and if allowed where to spawn and preload chunks
-			connection.sendTextMessage("world/info");
-			if(!worldSemaphore.tryAcquire(5, TimeUnit.SECONDS))
-				abort("Failed to obtain mods list from server");
+			connection.sendTextMessage("world/enter");
+			if(!worldSemaphore.tryAcquire(15, TimeUnit.SECONDS))
+				abort("Timed out waiting for world");
 			
 			status = new ConnectionStep("Loading world...");
 			

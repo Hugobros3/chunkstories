@@ -4,6 +4,7 @@ import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.client.net.ClientPacketsProcessor;
 import io.xol.chunkstories.api.net.Interlocutor;
 import io.xol.chunkstories.api.player.Player;
+import io.xol.chunkstories.content.translator.InitialContentTranslator;
 import io.xol.chunkstories.net.PacketsContextCommon;
 import io.xol.chunkstories.world.WorldClientRemote;
 
@@ -17,6 +18,11 @@ public class ClientPacketsContext extends PacketsContextCommon implements Client
 		
 		this.client = gameContext;
 		this.clientConnection = clientConnection;
+		
+		InitialContentTranslator translator = new InitialContentTranslator(gameContext.getContent());
+		translator.assignPacketIds();
+		translator.buildArrays();
+		this.contentTranslator = translator;
 	}
 	
 	public ServerConnection getConnection() {

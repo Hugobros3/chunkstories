@@ -19,7 +19,10 @@ import org.slf4j.LoggerFactory;
 // http://chunkstories.xyz
 // http://xol.io
 
-/** The job of this thread is to write datagrams to an output stream. Not much in the way of complexity there */
+/**
+ * The job of this thread is to write datagrams to an output stream. Not much in
+ * the way of complexity there
+ */
 public class SendQueue extends Thread {
 	private final BlockingQueue<PacketOutgoing> sendQueue = new LinkedBlockingQueue<PacketOutgoing>();
 	private final DataOutputStream outputStream;
@@ -35,15 +38,16 @@ public class SendQueue extends Thread {
 		this.setName("Send queue thread");
 	}
 
-	//Those two aren't going anywhere
+	// Those two aren't going anywhere
 	PacketOutgoing DIE = new PacketOutgoing() {
 		@Override
 		public void write(DataOutputStream out) throws IOException {
 			throw new UnsupportedOperationException();
 		}
 	};
+
 	class Flush implements PacketOutgoing {
-		
+
 		@Override
 		public void write(DataOutputStream out) throws IOException {
 			throw new UnsupportedOperationException();
@@ -99,7 +103,7 @@ public class SendQueue extends Thread {
 				} catch (IOException e) {
 					// That's basically terminated connection exceptions
 					((Flush) packet).fence.signal();
-					disconnect("Broken pipe: Unable to flush: " + e.getMessage());
+					disconnect("Unable to flush: " + e.getMessage());
 					break;
 				}
 			} else
@@ -107,7 +111,7 @@ public class SendQueue extends Thread {
 					packet.write(outputStream);
 				} catch (IOException e) {
 					// We don't care about that, it's the motd thing mostly
-					disconnect("Broken pipe: Unable to send packet: " + e.getMessage());
+					disconnect("Unable to send packet: " + e.getMessage());
 					break;
 				}
 		}
@@ -139,9 +143,17 @@ public class SendQueue extends Thread {
 
 	private void disconnect(String string) {
 		deathLock.lock();
-		dead = true;
+		if (!dead) {
+			logger.error("Error in send queue: " + string);
+			dead = true;
+			try {
+				outputStream.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 		deathLock.unlock();
-		//connection.disconnect(string);
+		// connection.disconnect(string);
 	}
 
 	public void kill() {

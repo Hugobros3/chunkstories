@@ -16,10 +16,12 @@ import io.xol.chunkstories.api.exceptions.net.IllegalPacketException;
 import io.xol.chunkstories.api.exceptions.net.UnknowPacketException;
 import io.xol.chunkstories.api.net.Interlocutor;
 import io.xol.chunkstories.api.net.Packet;
+import io.xol.chunkstories.api.net.PacketDefinition;
 import io.xol.chunkstories.api.net.PacketReceptionContext;
 import io.xol.chunkstories.api.net.PacketSendingContext;
 import io.xol.chunkstories.api.net.packets.PacketText;
 import io.xol.chunkstories.api.world.WorldNetworked;
+import io.xol.chunkstories.content.translator.AbstractContentTranslator;
 import io.xol.chunkstories.net.packets.PacketSendFile;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -88,34 +90,6 @@ public abstract class PacketsContextCommon implements PacketReceptionContext, Pa
 		in.read(bitme);
 		
 		return new PacketIngoingBuffered(packetTypeId, packetLength, bitme);
-		
-		//PacketDefinitionImpl packetDefinition = (PacketDefinitionImpl) getWorld().getContentTranslator().getPacketForId(packetTypeId);
-
-		/*if(packetDefinition == null) {
-			throw new UnknowPacketException(packetTypeId);
-		}*/
-
-		/*Packet packet = packetDefinition.createNew(!isServer());
-
-		if (packet == null)
-			throw new UnknowPacketException(packetTypeId);
-		
-		return packet;*/
-		
-		/*switch(packetDefinition.getType()) {
-			case GENERAL_PURPOSE:
-				packet.process(this.getSender(), in, this);
-				break;
-			case SYSTEM:
-				packet.process(this.getSender(), in, this);
-				break;
-			case WORLD:
-				//TODO: READ COMPLETE PACKET AND FORWARD IT
-				break;
-			case WORLD_STREAMING:
-				//TODO: READ COMPLETE PACKET AND FORWARD IT
-				break;
-		}*/
 	}
 
 	public PacketOutgoingBuffered buildOutgoingPacket(Packet packet) throws UnknowPacketException, IOException {
@@ -129,8 +103,7 @@ public abstract class PacketsContextCommon implements PacketReceptionContext, Pa
 			PacketOutgoingBuffered buffered = new PacketOutgoingBuffered(this, packet_id, baos.size(), baos.toByteArray());
 			return buffered;
 		} catch (IOException | UnknowPacketException e) {
-			logger().error("Error : unable to buffer Packet " + packet);
-			logger().error("{}", e);
+			logger().error("Error : unable to buffer Packet " + packet, e);
 			//e.printStackTrace(logger().getPrintWriter());
 		}
 		return null;
@@ -145,8 +118,18 @@ public abstract class PacketsContextCommon implements PacketReceptionContext, Pa
 				return 0x01;
 			else // Throw an error if sending a packet while not within a world
 				throw new UnknowPacketException(0xFF);
-		} else
-			return (short) world.getContentTranslator().getIdForPacket(world.getContent().packets().getPacketFromInstance(packet));
+		} else {
+			PacketDefinition def = world.getContent().packets().getPacketFromInstance(packet);
+			if(def == null)
+				logger.error("Could not find the definition of packet "+packet);
+			short id = (short) world.getContentTranslator().getIdForPacket(def);
+			if(id == -1) {
+				logger.error("Could not find the id of packet definition "+def.getName());
+				((AbstractContentTranslator)world.getContentTranslator()).test();
+				throw new UnknowPacketException(packet);
+			}
+			return id;
+		}
 	}
 
 	public static final Logger logger = LoggerFactory.getLogger("net.packetsProcessor");

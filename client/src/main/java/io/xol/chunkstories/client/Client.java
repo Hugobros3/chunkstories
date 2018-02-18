@@ -142,7 +142,6 @@ public class Client implements ClientInterface
 		logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 		
 		String loggingFilename = GameDirectory.getGameFolderPath() + "/logs/" + time + ".log";
-
         new LogbackSetupHelper(loggingFilename);
 		
 		//Get configuration right

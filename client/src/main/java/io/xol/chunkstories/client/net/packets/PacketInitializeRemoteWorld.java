@@ -33,6 +33,7 @@ public class PacketInitializeRemoteWorld extends PacketSendWorldInfo {
 		
 		if (processor instanceof ClientPacketsContext)
 		{
+			processor.logger().info("Received World initialization packet");
 			ClientPacketsContext cpp = (ClientPacketsContext)processor;
 			
 			OnlineContentTranslator contentTranslator = cpp.getContentTranslator();

@@ -6,7 +6,6 @@ import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 import io.xol.chunkstories.api.content.OnlineContentTranslator;
-import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.api.exceptions.PacketProcessingException;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.PacketWorld;
@@ -19,7 +18,6 @@ import io.xol.chunkstories.api.world.WorldNetworked;
 import io.xol.chunkstories.content.translator.AbstractContentTranslator;
 import io.xol.chunkstories.net.LogicalPacketDatagram;
 import io.xol.chunkstories.net.PacketDefinitionImpl;
-import io.xol.chunkstories.net.packets.PacketSendWorldInfo;
 import io.xol.chunkstories.server.DedicatedServer;
 import io.xol.chunkstories.server.player.ServerPlayer;
 import io.xol.chunkstories.server.propagation.VirtualServerDecalsManager;
@@ -50,6 +48,7 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 		
 		this.translator = (AbstractContentTranslator) super.getContentTranslator();
 		this.translator.assignPacketIds();
+		this.translator.buildArrays();
 		
 		this.virtualServerSoundManager = new VirtualSoundManager(this);
 		this.virtualServerParticlesManager = new VirtualServerParticlesManager(this, server);

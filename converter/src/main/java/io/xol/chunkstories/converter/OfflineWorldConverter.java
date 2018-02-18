@@ -4,46 +4,23 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.HashSet;
 import java.util.Random;
-import java.util.Set;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.ConsoleAppender;
-import ch.qos.logback.core.FileAppender;
 import io.xol.chunkstories.api.content.Content;
-import io.xol.chunkstories.api.converter.mappings.Mapper;
-import io.xol.chunkstories.api.converter.mappings.NonTrivialMapper;
 import io.xol.chunkstories.api.GameContext;
-import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.plugin.PluginManager;
-import io.xol.chunkstories.api.util.concurrency.Fence;
-import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.api.world.WorldInfo.WorldSize;
-import io.xol.chunkstories.api.world.cell.CellData;
-import io.xol.chunkstories.api.world.cell.FutureCell;
-import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
-import io.xol.chunkstories.api.world.heightmap.RegionSummary;
 import io.xol.chunkstories.content.GameContentStore;
 import io.xol.chunkstories.tools.WorldTool;
-import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.chunkstories.world.WorldInfoMaster;
+import io.xol.chunkstories.util.LogbackSetupHelper;
 import io.xol.chunkstories.world.WorldLoadingException;
 import io.xol.chunkstories.world.WorldInfoImplementation;
-import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
-import io.xol.engine.concurrency.CompoundFence;
 import io.xol.engine.misc.FoldersUtils;
-import io.xol.enklume.MinecraftChunk;
-import io.xol.enklume.MinecraftRegion;
 import io.xol.enklume.MinecraftWorld;
-import io.xol.enklume.nbt.NBTInt;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz
@@ -193,38 +170,10 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser
 		logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 		
 		String loggingFilename = "./logs/converter_" + time + ".log";
-		
-		LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-        PatternLayoutEncoder ple = new PatternLayoutEncoder();
-
-        String pattern = "%date %level [%logger] [%-3thread] %msg%n";
-        String fancyPattern = "%date %level [%logger] [%thread] [%file:%line] %msg%n";
-        
-        ple.setPattern(pattern);
-        ple.setContext(lc);
-        ple.start();
-        FileAppender<ILoggingEvent> fileAppender = new FileAppender<ILoggingEvent>();
-        fileAppender.setFile(loggingFilename);
-        fileAppender.setEncoder(ple);
-        fileAppender.setContext(lc);
-        fileAppender.start();
-        
-        ConsoleAppender<ILoggingEvent> logConsoleAppender = new ConsoleAppender<>();
-	    logConsoleAppender.setContext(lc);
-	    logConsoleAppender.setName("console");
-	    logConsoleAppender.setEncoder(ple);
-	    logConsoleAppender.start();
-
-        ch.qos.logback.classic.Logger rootLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-        rootLogger.addAppender(fileAppender);
-        rootLogger.addAppender(logConsoleAppender);
-        
-        rootLogger.info("Started logging under: "+loggingFilename);
-		
+        new LogbackSetupHelper(loggingFilename);
 		
 		content = new GameContentStore(this, coreContentLocation, null);
 		content.reload();
-
 
 		verbose("Loading converter_mapping.txt");
 		File file = new File("converter_mapping.txt");

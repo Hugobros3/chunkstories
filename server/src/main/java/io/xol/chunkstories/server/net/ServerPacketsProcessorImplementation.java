@@ -3,6 +3,7 @@ package io.xol.chunkstories.server.net;
 import org.slf4j.Logger;
 
 import io.xol.chunkstories.api.GameContext;
+import io.xol.chunkstories.api.content.OnlineContentTranslator;
 import io.xol.chunkstories.api.net.Interlocutor;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.server.ServerInterface;
@@ -46,6 +47,10 @@ public class ServerPacketsProcessorImplementation implements ServerPacketsProces
 		public ClientPacketsContext(GameContext gameContext, ClientConnection connection) {
 			super(gameContext, connection);
 			this.connection = connection;
+		}
+		
+		public OnlineContentTranslator getContentTranslator() {
+			return getWorld().getContentTranslator();
 		}
 		
 		public ClientConnection getConnection()

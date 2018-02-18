@@ -74,8 +74,13 @@ public class SocketedClientConnection extends ClientConnection {
 
 	@Override
 	public void handleDatagram(LogicalPacketDatagram datagram) throws IOException, PacketProcessingException, IllegalPacketException {
-		PacketDefinitionImpl definition = (PacketDefinitionImpl) getPacketsContext().getContentTranslator()
-				.getPacketForId(datagram.packetTypeId);
+		//logger.debug("Handling datagram with packetId:"+datagram.packetTypeId);
+		PacketDefinitionImpl definition = (PacketDefinitionImpl) getPacketsContext().getContentTranslator().getPacketForId(datagram.packetTypeId);
+		if(definition == null) {
+			logger.error("No definition found for id:"+datagram.packetTypeId);
+			return;
+		}
+		//logger.debug("Definition found:"+definition);
 		if (definition.getGenre() == PacketGenre.GENERAL_PURPOSE) {
 			Packet packet = definition.createNew(true, null);
 			packet.process(packetsProcessor.getInterlocutor(), datagram.getData(), getPacketsContext());
@@ -102,7 +107,7 @@ public class SocketedClientConnection extends ClientConnection {
 			//it does, however, listen to world_user_requests packets to keep
 			//track of the client's world data
 			WorldServer world = getPacketsContext().getWorld();
-			PacketWorldStreaming packet = (PacketWorldStreaming) definition.createNew(true, world);
+			PacketWorldStreaming packet = (PacketWorldStreaming) definition.createNew(false, world);
 			packet.process(packetsProcessor.getInterlocutor(), datagram.getData(), getPacketsContext());
 			datagram.dispose();
 		} else {

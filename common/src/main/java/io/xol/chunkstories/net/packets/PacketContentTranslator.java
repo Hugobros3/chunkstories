@@ -49,6 +49,7 @@ public class PacketContentTranslator extends Packet {
 			PacketsContextCommon cCommon = (PacketsContextCommon)context;
 			cCommon.setContentTranslator(translator);
 			context.logger().info("Successfully installed content translator");
+			cCommon.getConnection().handleSystemRequest("world/translator_ok");
 			
 		} catch (IncompatibleContentException e) {
 			e.printStackTrace();

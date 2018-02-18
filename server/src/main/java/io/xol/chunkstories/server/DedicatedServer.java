@@ -16,11 +16,6 @@ import org.fusesource.jansi.AnsiConsole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.ConsoleAppender;
-import ch.qos.logback.core.FileAppender;
 import io.xol.engine.misc.ConfigFile;
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.content.Content;
@@ -41,6 +36,7 @@ import io.xol.chunkstories.server.net.ClientsManager;
 import io.xol.chunkstories.server.net.announcer.ServerAnnouncerThread;
 import io.xol.chunkstories.server.net.vanillasockets.VanillaClientsManager;
 import io.xol.chunkstories.server.propagation.ServerModsProvider;
+import io.xol.chunkstories.util.LogbackSetupHelper;
 import io.xol.chunkstories.workers.WorkerThreadPool;
 import io.xol.chunkstories.world.WorldInfoMaster;
 import io.xol.chunkstories.world.WorldServer;
@@ -132,43 +128,9 @@ public class DedicatedServer implements Runnable, DedicatedServerInterface {
 			logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 
 			String loggingFilename = GameDirectory.getGameFolderPath() + "/serverlogs/" + time + ".log";
+	        new LogbackSetupHelper(loggingFilename);
 
-			LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-
-			String pattern = "%date %level [%logger] %msg%n";
-			String fancyPattern = "%date %level [%logger] [%thread] [%file:%line] %msg%n";
-
-			PatternLayoutEncoder fileLayoutEncoder = new PatternLayoutEncoder();
-			fileLayoutEncoder.setPattern(fancyPattern);
-			fileLayoutEncoder.setContext(lc);
-			fileLayoutEncoder.start();
-
-			PatternLayoutEncoder consoleLayoutEncoder = new PatternLayoutEncoder();
-			consoleLayoutEncoder.setPattern(pattern);
-			consoleLayoutEncoder.setContext(lc);
-			consoleLayoutEncoder.start();
-
-			FileAppender<ILoggingEvent> fileAppender = new FileAppender<ILoggingEvent>();
-			fileAppender.setFile(loggingFilename);
-			fileAppender.setEncoder(fileLayoutEncoder);
-			fileAppender.setContext(lc);
-			fileAppender.start();
-
-			ConsoleAppender<ILoggingEvent> logConsoleAppender = new ConsoleAppender<>();
-			logConsoleAppender.setContext(lc);
-			logConsoleAppender.setName("console");
-			logConsoleAppender.setEncoder(consoleLayoutEncoder);
-			logConsoleAppender.start();
-
-			ch.qos.logback.classic.Logger rootLogger = (ch.qos.logback.classic.Logger) LoggerFactory
-					.getLogger(Logger.ROOT_LOGGER_NAME);
-			rootLogger.addAppender(fileAppender);
-			rootLogger.addAppender(logConsoleAppender);
-
-			rootLogger.info("Started logging under: " + loggingFilename);
-
-			logger.info("Starting Chunkstories server " + VersionInfo.version + " network protocol v"
-					+ VersionInfo.networkProtocolVersion);
+			logger.info("Starting Chunkstories server " + VersionInfo.version + " network protocol version "+ VersionInfo.networkProtocolVersion);
 
 			// Loads the mods/build filesystem
 			gameContent = new GameContentStore(this, coreContentLocation, modsString);

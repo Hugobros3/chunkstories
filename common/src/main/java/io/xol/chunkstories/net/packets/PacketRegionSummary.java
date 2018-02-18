@@ -62,7 +62,6 @@ public class PacketRegionSummary extends PacketWorldStreaming
 	{
 		rx = in.readInt();
 		rz = in.readInt();
-		//System.out.println("read "+rx+":"+rz);
 		int dataLength = in.readInt();
 		compressedData = new byte[dataLength];
 		in.readFully(compressedData);

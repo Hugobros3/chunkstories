@@ -76,18 +76,38 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 	}
 
 	public void assignPacketIds() {
-		AtomicInteger packetIdsCounter = new AtomicInteger(1);
+		//AtomicInteger packetIdsCounter = new AtomicInteger(1);
 		packetMappings = new HashMap<>();
 		content.packets().all().forEachRemaining(def -> {
 			PacketDefinitionImpl definition = (PacketDefinitionImpl)def;
 			
-			if(definition.getName().equals("text"))
-				packetMappings.put(definition, 0); // 'text' packet gets ID 0 always too
-			else
-				packetMappings.put(definition, packetIdsCounter.getAndIncrement());
+			int packetId = definition.getFixedId();
+			if(packetId != -1) {
+				packetMappings.put(definition, packetId);
+				logger.debug("Using pre-Assignated id "+packetId+" to "+definition.getName());
+			}
+		});
+		
+		content.packets().all().forEachRemaining(def -> {
+			PacketDefinitionImpl definition = (PacketDefinitionImpl)def;
+			
+			int packetId = definition.getFixedId();
+			if(packetId == -1) {
+				packetId = findNextFreeId(packetMappings.values());
+				packetMappings.put(definition, packetId);
+				logger.debug("Assignated id "+packetId+" to "+definition.getName());
+			}
 		});
 	}
 	
+	private int findNextFreeId(Collection<Integer> values) {
+		int id = 0;
+		while(values.contains(id)) {
+			id++;
+		}
+		return id;
+	}
+
 	public void buildArrays() {
 		// Create indexable arrays
 		voxelsArray = new Voxel[Collections.max(voxelMappings.values())+1];
@@ -99,8 +119,11 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 		itemsArray = new ItemDefinition[Collections.max(itemMappings.values())+1];
 		itemMappings.forEach((item, id) -> itemsArray[id] = item);
 		
-		packetsArray = new PacketDefinition[Collections.max(packetMappings.values())+1];
-		packetMappings.forEach((packet, id) -> packetsArray[id] = packet);
+		if(packetMappings != null && packetMappings.size() > 0) {
+			packetsArray = new PacketDefinition[Collections.max(packetMappings.values())+1];
+			packetMappings.forEach((packet, id) -> packetsArray[id] = packet);
+		} else 
+			packetsArray = new PacketDefinition[0];
 	}
 	
 	/** Derives a modified ContentTranslator that takes into account the new content */
@@ -216,7 +239,13 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 
 	@Override
 	public int getIdForPacket(PacketDefinition definition) {
-		return packetMappings.getOrDefault(definition, -1);
+		//return packetMappings.getOrDefault(definition, -1);
+		int id = packetMappings.getOrDefault(definition, -1);
+		if(id == -1) {
+			System.out.println("d:"+definition);
+			packetMappings.forEach((d,i) -> System.out.println(d.getName()+":"+d+":"+i));
+		}
+		return id;
 	}
 
 	@Override

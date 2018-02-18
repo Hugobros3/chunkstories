@@ -75,6 +75,7 @@ public abstract class ClientConnection extends Connection implements Interlocuto
 			
 		} else if (message.equals("mods")) {
 			sendTextMessage("info/mods:" + clientsManager.getServer().getModsProvider().getModsString());
+			this.flush();
 			return true;
 			
 		} else if (message.equals("icon-file")) {
@@ -117,7 +118,8 @@ public abstract class ClientConnection extends Connection implements Interlocuto
 			WorldServer world = clientsManager.getServer().getWorld();
 			message = message.substring(6, message.length());
 			
-			if (message.equals("info")) {
+			if (message.equals("enter")) {
+				player.setWorld(world);
 				// Sends the construction info for the world, and then the player entity
 				PacketSendWorldInfo packet = new PacketSendWorldInfo((WorldInfoImplementation) world.getWorldInfo());
 				pushPacket(packet);
@@ -183,7 +185,7 @@ public abstract class ClientConnection extends Connection implements Interlocuto
 	}
 
 	public void setPlayer(ServerPlayer player) {
-		if(this.player != null) {
+		if(this.player == null) {
 			this.player = player;
 			this.packetsProcessor = this.packetsProcessor.toPlayer(player);
 			

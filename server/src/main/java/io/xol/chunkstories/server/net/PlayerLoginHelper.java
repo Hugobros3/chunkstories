@@ -101,6 +101,7 @@ public class PlayerLoginHelper {
 		// Aknowledge the login
 		logged_in = true;
 		connection.sendTextMessage("login/ok");
+		connection.flush();
 		connection.setPlayer(player);
 	}
 }

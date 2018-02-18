@@ -82,6 +82,8 @@ public class SimplePostRequest extends Thread {
 				}
 				in.close();
 				result = buffer.toString();
+				if(postRequestAction != null)
+					postRequestAction.action(result);
 			}
 		} catch (IOException e) {
 			
@@ -92,7 +94,6 @@ public class SimplePostRequest extends Thread {
 	
 	public String result() {
 		doneFence.acquireUninterruptibly();
-		postRequestAction.action(result);
 		return result;
 	}
 }
