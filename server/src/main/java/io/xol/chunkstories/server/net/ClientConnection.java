@@ -11,7 +11,9 @@ import io.xol.chunkstories.api.events.player.PlayerChatEvent;
 import io.xol.chunkstories.api.events.player.PlayerLogoutEvent;
 import io.xol.chunkstories.api.net.Interlocutor;
 import io.xol.chunkstories.api.server.ServerInterface;
+import io.xol.chunkstories.content.translator.AbstractContentTranslator;
 import io.xol.chunkstories.net.Connection;
+import io.xol.chunkstories.net.packets.PacketContentTranslator;
 import io.xol.chunkstories.net.packets.PacketSendFile;
 import io.xol.chunkstories.net.packets.PacketSendWorldInfo;
 import io.xol.chunkstories.server.net.ServerPacketsProcessorImplementation.ClientPacketsContext;
@@ -53,13 +55,17 @@ public abstract class ClientConnection extends Connection implements Interlocuto
 	}
 
 	@Override
+	public ClientPacketsContext getPacketsContext() {
+		return packetsProcessor;
+	}
+
+	@Override
 	public boolean connect() {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public boolean handleSystemRequest(String message) {
-		// These requests don't require a login
 		if (message.startsWith("info")) {
 			this.clientsManager.sendServerInfo(this);
 			return true;
@@ -120,6 +126,11 @@ public abstract class ClientConnection extends Connection implements Interlocuto
 				world.spawnPlayer(player);
 				return true;
 				
+			} else if (message.equals("translator")) {
+				PacketContentTranslator packet = new PacketContentTranslator((AbstractContentTranslator) world.getContentTranslator());
+				player.pushPacket(packet);
+				return true;
+				
 			} else if (message.equals("respawn")) {
 				// Only allow to respawn if the current entity is null or dead
 				if (player.getControlledEntity() == null || (player.getControlledEntity() instanceof EntityLiving
@@ -165,8 +176,10 @@ public abstract class ClientConnection extends Connection implements Interlocuto
 	}
 
 	@Override
-	public ClientPacketsContext getPacketsContext() {
-		return packetsProcessor;
+	public void sendTextMessage(String string) {
+		super.sendTextMessage(string);
+		if(player == null) // Flush the pipe automatically when the player isn't yet logged in
+			this.flush();
 	}
 
 	public void setPlayer(ServerPlayer player) {

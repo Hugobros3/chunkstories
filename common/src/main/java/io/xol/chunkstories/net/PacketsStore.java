@@ -2,6 +2,8 @@ package io.xol.chunkstories.net;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -40,26 +42,35 @@ public class PacketsStore implements Content.PacketTypes {
 
 		byNames.clear();
 		byClasses.clear();
-		//for (int i = 0; i < byIDs.length; i++)
-		//	byIDs[i] = null;
 
+		//Load system.packets
+		InputStream is = getClass().getResourceAsStream("/system.packets");
+		readPacketsDefinitions(new BufferedReader(new InputStreamReader(is)), new Object() {
+			@Override
+			public String toString() {
+				return "system.packets";
+			}
+		});
+		
+		//Load packets from content
 		Iterator<Asset> i = store.modsManager().getAllAssetsByExtension("packets");
 		while (i.hasNext()) {
 			Asset f = i.next();
 			readPacketsDefinitions(f);
 		}
-		
-		//textPacket = this.getPacketByName("text");
-		//filePacket = this.getPacketByName("file");
 	}
 
 	private void readPacketsDefinitions(Asset f) {
 		if (f == null)
 			return;
+		BufferedReader reader = new BufferedReader(f.reader());
+		readPacketsDefinitions(reader, f);
+	}
+	
+	private void readPacketsDefinitions(BufferedReader reader, Object source) {
+		logger().debug("Reading packets definitions in : " + source);
 		try {
-			BufferedReader reader = new BufferedReader(f.reader());
 			String line = "";
-
 			PacketDefinitionImpl packetType = null;
 			while ((line = reader.readLine()) != null) {
 				line = line.replace("\t", "");
@@ -70,7 +81,7 @@ public class PacketsStore implements Content.PacketTypes {
 				// dealt with in the constructors
 				else if (line.startsWith("end")) {
 					logger()
-							.warn("Syntax error in file : " + f + " : Unexpected 'end' tag.");
+							.warn("Syntax error in file : " + source + " : Unexpected 'end' tag.");
 					continue;
 				} else if (line.startsWith("packet")) {
 					if (line.contains(" ")) {

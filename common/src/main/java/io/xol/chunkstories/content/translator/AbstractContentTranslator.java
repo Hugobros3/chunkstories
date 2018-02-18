@@ -19,7 +19,6 @@ import org.slf4j.LoggerFactory;
 import java.util.Set;
 
 import io.xol.chunkstories.api.content.Content;
-import io.xol.chunkstories.api.content.ContentTranslator;
 import io.xol.chunkstories.api.content.OnlineContentTranslator;
 import io.xol.chunkstories.api.content.mods.Mod;
 import io.xol.chunkstories.api.entity.Entity;
