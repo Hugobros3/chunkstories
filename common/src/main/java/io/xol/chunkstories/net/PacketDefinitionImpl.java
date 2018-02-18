@@ -8,6 +8,7 @@ import java.lang.reflect.InvocationTargetException;
 import io.xol.chunkstories.api.exceptions.content.IllegalPacketDeclarationException;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.PacketDefinition;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.content.GameContentStore;
 import io.xol.chunkstories.materials.GenericNamedConfigurable;
 
@@ -15,7 +16,8 @@ public class PacketDefinitionImpl extends GenericNamedConfigurable implements Pa
 
 	final AllowedFrom allowedFrom;
 	final PacketGenre type;
-
+	
+	final int fixedId;
 	final Class<? extends Packet> clientClass;
 	final Class<? extends Packet> serverClass;
 	final Class<? extends Packet> commonClass;
@@ -24,10 +26,14 @@ public class PacketDefinitionImpl extends GenericNamedConfigurable implements Pa
 	final Constructor<? extends Packet> serverClassConstructor;
 	final Constructor<? extends Packet> commonClassConstructor;
 
+	private boolean constructorTakesWorld = false; // True if the Packet constructor takes a World parameter
+	
 	public PacketDefinitionImpl(GameContentStore store, String name, BufferedReader reader)
 			throws IllegalPacketDeclarationException, IOException {
 		super(name, reader);
 
+		fixedId = Integer.parseInt(this.resolveProperty("fixedId", "-1"));
+		
 		String afs = this.resolveProperty("allowedFrom", "all");
 		if (afs.equals("all"))
 			allowedFrom = AllowedFrom.ALL;
@@ -43,11 +49,13 @@ public class PacketDefinitionImpl extends GenericNamedConfigurable implements Pa
 			type = PacketGenre.GENERAL_PURPOSE;
 		else if(tys.equals("system"))
 			type = PacketGenre.SYSTEM;
-		else if(tys.equals("world"))
+		else if(tys.equals("world")) {
 			type = PacketGenre.WORLD;
-		else if(tys.equals("world_streaming")) 
+			constructorTakesWorld = true;
+		} else if(tys.equals("world_streaming")) {
 			type = PacketGenre.WORLD_STREAMING;
-		else 
+			constructorTakesWorld = true;
+		} else 
 			throw new IllegalPacketDeclarationException("type can only take one of {general, systme, world, world_streaming}.");
 		
 		// First obtain the classes dedicated to a specific side
@@ -115,7 +123,7 @@ public class PacketDefinitionImpl extends GenericNamedConfigurable implements Pa
 		if (packetClass == null)
 			return null;
 
-		Class<?>[] types = {};
+		Class<?>[] types = constructorTakesWorld ? new Class[]{World.class} : new Class[]{};
 		Constructor<? extends Packet> constructor;
 		try {
 			constructor = packetClass.getConstructor(types);
@@ -131,9 +139,14 @@ public class PacketDefinitionImpl extends GenericNamedConfigurable implements Pa
 		return constructor;
 	}
 
-	public Packet createNew(boolean client) {
+	public int getFixedId() {
+		return fixedId;
+	}
+	
+	public Packet createNew(boolean client, World world) {
 		try {
-			Object[] parameters = {};
+			Object[] parameters = constructorTakesWorld ? new Object[]{world} : new Object[]{};
+			
 			if (client && clientClass != null)
 				return clientClassConstructor.newInstance(parameters);
 			else if (!client && serverClass != null)
@@ -143,7 +156,6 @@ public class PacketDefinitionImpl extends GenericNamedConfigurable implements Pa
 			
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
 				| InvocationTargetException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return null;
 		}
@@ -155,7 +167,7 @@ public class PacketDefinitionImpl extends GenericNamedConfigurable implements Pa
 	}
 
 	@Override
-	public PacketGenre getType() {
+	public PacketGenre getGenre() {
 		return type;
 	}
 }

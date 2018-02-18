@@ -5,7 +5,7 @@ import java.security.NoSuchAlgorithmException;
 
 import io.xol.chunkstories.api.workers.TaskExecutor;
 import io.xol.chunkstories.net.packets.PacketRegionSummary;
-import io.xol.chunkstories.server.net.UserConnection;
+import io.xol.chunkstories.server.net.ClientConnection;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
 
@@ -105,12 +105,12 @@ public class IOTasksMultiplayerServer extends IOTasks
 		scheduleTask(task);
 	}*/
 	
-	class IOTaskSendRegionSummary extends IOTask
+	/*class IOTaskSendRegionSummary extends IOTask
 	{
-		UserConnection client;
+		ClientConnection client;
 		int rx, rz;
 		
-		public IOTaskSendRegionSummary(int x, int z, UserConnection client)
+		public IOTaskSendRegionSummary(int x, int z, ClientConnection client)
 		{
 			this.client = client;
 			this.rx = x;
@@ -123,7 +123,7 @@ public class IOTasksMultiplayerServer extends IOTasks
 			try
 			{
 				//Cancel the task if the client disconnected
-				if(!client.isAlive())
+				if(!client.isOpen())
 					return true;
 				
 				RegionSummaryImplementation summary = world.getRegionsSummariesHolder().getRegionSummaryWorldCoordinates(rx * 256, rz * 256);
@@ -146,9 +146,9 @@ public class IOTasksMultiplayerServer extends IOTasks
 		}
 	}
 
-	public void requestRegionSummary(int x, int z, UserConnection sender)
+	public void requestRegionSummary(int x, int z, ClientConnection sender)
 	{
 		IOTaskSendRegionSummary task = new IOTaskSendRegionSummary(x, z, sender);
 		scheduleTask(task);
-	}
+	}*/
 }

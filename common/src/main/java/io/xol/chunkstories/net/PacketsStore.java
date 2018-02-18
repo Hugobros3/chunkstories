@@ -16,14 +16,14 @@ import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.PacketDefinition;
 import io.xol.chunkstories.content.GameContentStore;
+
 public class PacketsStore implements Content.PacketTypes {
 
 	private final GameContentStore store;
-
 	private final Map<String, PacketDefinitionImpl> byNames = new HashMap<String, PacketDefinitionImpl>();
-	//private final PacketDefinitionImpl[] byIDs = new PacketDefinitionImpl[32768];
-
 	private final Map<Class<? extends Packet>, PacketDefinitionImpl> byClasses = new HashMap<Class<? extends Packet>, PacketDefinitionImpl>();
+
+	//private PacketDefinition textPacket, filePacket;
 	
 	private static final Logger logger = LoggerFactory.getLogger("content.packets");
 	public Logger logger() {
@@ -48,6 +48,9 @@ public class PacketsStore implements Content.PacketTypes {
 			Asset f = i.next();
 			readPacketsDefinitions(f);
 		}
+		
+		//textPacket = this.getPacketByName("text");
+		//filePacket = this.getPacketByName("file");
 	}
 
 	private void readPacketsDefinitions(Asset f) {
@@ -101,12 +104,12 @@ public class PacketsStore implements Content.PacketTypes {
 	}
 
 	@Override
-	public PacketDefinition getPacketTypeByName(String name) {
+	public PacketDefinition getPacketByName(String name) {
 		return byNames.get(name);
 	}
 
 	@Override
-	public PacketDefinition getPacketType(Packet packet) throws UnknowPacketException {
+	public PacketDefinition getPacketFromInstance(Packet packet) throws UnknowPacketException {
 		Class<? extends Packet> pclass = packet.getClass();
 		
 		PacketDefinitionImpl ptd = this.byClasses.get(pclass);
@@ -139,4 +142,13 @@ public class PacketsStore implements Content.PacketTypes {
 		};
 	}
 
+	/*@Override
+	public PacketDefinition getTextPacket() {
+		return textPacket;
+	}
+
+	@Override
+	public PacketDefinition getFilePacket() {
+		return filePacket;
+	}*/
 }

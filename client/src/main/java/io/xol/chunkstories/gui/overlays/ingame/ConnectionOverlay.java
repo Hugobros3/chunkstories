@@ -7,7 +7,7 @@ import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.client.net.ClientSideConnectionSequence;
+import io.xol.chunkstories.client.net.ConnectionSequence;
 import io.xol.engine.gui.elements.Button;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -16,14 +16,14 @@ import io.xol.engine.gui.elements.Button;
 
 public class ConnectionOverlay extends Layer
 {
-	ClientSideConnectionSequence connectionSequence;
+	ConnectionSequence connectionSequence;
 	
 	Button exitButton = new Button(this, 0, 0, 320, "#{connection.cancel}");
 	
 	public ConnectionOverlay(GameWindow scene, Layer parent, String ip, int port)
 	{
 		super(scene, parent);
-		connectionSequence = new ClientSideConnectionSequence( ip,  port);
+		connectionSequence = new ConnectionSequence( ip,  port);
 		
 		this.exitButton.setAction(new Runnable() {
 			@Override
@@ -65,7 +65,7 @@ public class ConnectionOverlay extends Layer
 		if(connectionSequence.isDone())
 			this.gameWindow.setLayer(parentLayer);
 		
-		String fail = connectionSequence.hasFailed();
+		String fail = connectionSequence.wasAborted();
 		if(fail != null)
 			Client.getInstance().exitToMainMenu(fail);
 	}

@@ -214,23 +214,6 @@ public class Chat
 		
 	}
 
-	/**
-	 * Fetches message from the connection
-	 */
-	public void update()
-	{
-		String m;
-		//Grabs messages from the remote server connection buffer
-		if (ingame.getWorld() instanceof WorldClientRemote)
-			while ((m = ((WorldClientRemote) ingame.getWorld()).getConnection().getLastChatMessage()) != null)
-				insert(m);
-		
-		//if (!chatting)
-		//	inputBox.text = "<Press T to chat> lol no one can ever see dis!!!!ï¿½ï¿½";
-		
-		//inputBox.setFocus(true);
-	}
-
 	public void insert(String t)
 	{
 		chat.addFirst(new ChatLine(t));

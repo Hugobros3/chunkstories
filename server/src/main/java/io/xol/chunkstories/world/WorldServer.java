@@ -1,20 +1,26 @@
 package io.xol.chunkstories.world;
 
+import java.io.IOException;
+import java.util.Deque;
 import java.util.Iterator;
-import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
+import io.xol.chunkstories.api.content.OnlineContentTranslator;
 import io.xol.chunkstories.api.entity.EntityLiving;
+import io.xol.chunkstories.api.exceptions.PacketProcessingException;
+import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.PacketWorld;
-import io.xol.chunkstories.api.net.PacketWorldStreaming;
+import io.xol.chunkstories.api.net.PacketDefinition.PacketGenre;
 import io.xol.chunkstories.api.net.packets.PacketTime;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.WorldNetworked;
-import io.xol.chunkstories.net.PacketIngoingBuffered;
+import io.xol.chunkstories.content.translator.AbstractContentTranslator;
+import io.xol.chunkstories.net.LogicalPacketDatagram;
+import io.xol.chunkstories.net.PacketDefinitionImpl;
 import io.xol.chunkstories.net.packets.PacketSendWorldInfo;
 import io.xol.chunkstories.server.DedicatedServer;
-import io.xol.chunkstories.server.net.UserConnection;
 import io.xol.chunkstories.server.player.ServerPlayer;
 import io.xol.chunkstories.server.propagation.VirtualServerDecalsManager;
 import io.xol.chunkstories.server.propagation.VirtualServerParticlesManager;
@@ -28,17 +34,23 @@ import io.xol.engine.sound.sources.VirtualSoundManager;
 
 public class WorldServer extends WorldImplementation implements WorldMaster, WorldNetworked
 {
-	private DedicatedServer server;
+	private final DedicatedServer server;
+	private final AbstractContentTranslator translator;
 	
 	private VirtualSoundManager virtualServerSoundManager;
 	private VirtualServerParticlesManager virtualServerParticlesManager;
 	private VirtualServerDecalsManager virtualServerDecalsManager;
 
+	private Deque<PendingPlayerDatagram> packetsQueue = new ConcurrentLinkedDeque<>();
+
 	public WorldServer(DedicatedServer server, WorldInfoImplementation worldInfo) throws WorldLoadingException
 	{
 		super(server, worldInfo);
-
 		this.server = server;
+		
+		this.translator = (AbstractContentTranslator) super.getContentTranslator();
+		this.translator.assignPacketIds();
+		
 		this.virtualServerSoundManager = new VirtualSoundManager(this);
 		this.virtualServerParticlesManager = new VirtualServerParticlesManager(this, server);
 		this.virtualServerDecalsManager = new VirtualServerDecalsManager(this, server);
@@ -53,8 +65,17 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 	}
 
 	@Override
+	public OnlineContentTranslator getContentTranslator() {
+		return translator;
+	}
+	
+	@Override
 	public void tick()
-	{
+	{	
+		processIncommingPackets();
+
+		super.tick();
+		
 		//Update client tracking
 		Iterator<Player> playersIterator = this.getPlayers();
 		while (playersIterator.hasNext())
@@ -72,26 +93,21 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 			PacketTime packetTime = new PacketTime(this);
 			packetTime.time = this.getTime();
 			packetTime.overcastFactor = this.getWeather();
-			
 			player.pushPacket(packetTime);
 		}
 		
-		processIncommingPackets();
+		virtualServerSoundManager.update();
+		
 		//TODO this should work per-world
 		this.getServer().getHandler().flushAll();
-		
-		super.tick();
-		
-		virtualServerSoundManager.update();
 	}
 
-	public void handleWorldMessage(UserConnection sender, String message)
+	/*public void handleWorldMessage(UserConnection sender, String message)
 	{
 		if (message.equals("info"))
 		{
 			//Sends the construction info for the world, and then the player entity
 			//worldInfo.sendInfo(sender);
-
 			PacketSendWorldInfo packet = new PacketSendWorldInfo(worldInfo);
 			sender.pushPacket(packet);
 			
@@ -118,54 +134,56 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 					sender.sendChat("You're not dead, or you are controlling a non-living entity.");
 			}
 		}
-		if (message.startsWith("getChunkCompressed"))
-		{
-			//System.out.println(message);
-			
-			/*String[] split = message.split(":");
-			int x = Integer.parseInt(split[1]);
-			int y = Integer.parseInt(split[2]);
-			int z = Integer.parseInt(split[3]);
-			((IOTasksMultiplayerServer) ioHandler).requestCompressedChunkSend(x, y, z, sender);*/
-			System.out.println("FUCK YOU FUCK YOU FUCK YOU FOREVER");
-			sender.disconnect("FUCK YOU FUCK YOU FUCK YOU FOREVER");
-		}
-		if (message.startsWith("getChunkSummary") || message.startsWith("getRegionSummary"))
-		{
-			/*String[] split = message.split(":");
-			int x = Integer.parseInt(split[1]);
-			int z = Integer.parseInt(split[2]);
-			((IOTasksMultiplayerServer) ioHandler).requestRegionSummary(x, z, sender);*/
-			System.out.println("FUCK YOU FUCK YOU FUCK YOU FOREVER");
-			sender.disconnect("FUCK YOU FUCK YOU FUCK YOU FOREVER");
+	}*/
+	
+	class PendingPlayerDatagram {
+		LogicalPacketDatagram datagram;
+		ServerPlayer player;
+		public PendingPlayerDatagram(LogicalPacketDatagram datagram, ServerPlayer player) {
+			this.datagram = datagram;
+			this.player = player;
 		}
 	}
-
-	@Override
+	
 	public void processIncommingPackets()
 	{
 		entitiesLock.writeLock().lock();
 		
-		Iterator<PacketIngoingBuffered> iterator = incommingPacketsQueue.iterator();
+		Iterator<PendingPlayerDatagram> iterator = packetsQueue.iterator();
 		while (iterator.hasNext())
 		{
-			PacketIngoingBuffered incomming = iterator.next();
+			PendingPlayerDatagram incomming = iterator.next();
 			iterator.remove();
-			/*UserConnection playerConnection = ((ServerPlayer)iterator.next()).getPlayerConnection();
-
-			//Get buffered packets from this player
-			PendingSynchPacket packet = (playerConnection.getPacketsProcessor()).getPendingSynchPacket();
-			while (packet != null)
-			{
-				packet.process(playerConnection, playerConnection.getPacketsProcessor());
-				packet = ((PacketsProcessorActual)playerConnection.getPacketsProcessor()).getPendingSynchPacket();
-			}*/
+			
+			ServerPlayer player = incomming.player;
+			LogicalPacketDatagram datagram = incomming.datagram;
+			
+			try {
+				PacketDefinitionImpl definition = (PacketDefinitionImpl) this.getContentTranslator().getPacketForId(datagram.packetTypeId);
+				Packet packet = definition.createNew(true, this);
+				
+				if(definition.getGenre() != PacketGenre.WORLD || !(packet instanceof PacketWorld)) {
+					logger().error(definition + " isn't a PacketWorld");
+				} else {
+					PacketWorld packetWorld = (PacketWorld) packet;
+					
+					//packetsProcessor.getSender() is equivalent to getRemoteServer() here
+					packetWorld.process(player, datagram.getData(), player.getPlayerConnection().getPacketsContext());
+				}
+			}
+			catch(IOException | PacketProcessingException e) {
+				logger().warn("Exception while processing datagram: "+e.getMessage());
+			}
+			
+			datagram.dispose();
 		}
 		
 		entitiesLock.writeLock().unlock();
 	}
 
-	Queue<PacketIngoingBuffered> incommingPacketsQueue;
+	public void queueDatagram(LogicalPacketDatagram datagram, ServerPlayer player) {
+		packetsQueue.addLast(new PendingPlayerDatagram(datagram, player));
+	}
 	
 	@Override
 	public VirtualSoundManager getSoundManager()
@@ -210,12 +228,10 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 			{
 				Player player = next;
 				next = null;
-				//System.out.println("Giving up player" +player+", the jew");
 				return player;
 			}
 
 		};
-		//return server.getConnectedPlayers();
 	}
 
 	@Override
@@ -231,15 +247,5 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 			return null;
 		
 		return player;
-	}
-
-	@Override
-	public void queueWorldPacket(PacketWorld packet) {
-		throw new UnsupportedOperationException("TODO");
-	}
-
-	@Override
-	public void queueWorldStreamingPacket(PacketWorldStreaming packet) {
-		throw new UnsupportedOperationException("TODO");
 	}
 }

@@ -3,22 +3,20 @@ package io.xol.chunkstories.server.net;
 import org.slf4j.Logger;
 
 import io.xol.chunkstories.api.GameContext;
-import io.xol.chunkstories.api.net.PacketDestinator;
-import io.xol.chunkstories.api.net.PacketSender;
+import io.xol.chunkstories.api.net.Interlocutor;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.api.server.ServerPacketsProcessor;
-import io.xol.chunkstories.api.world.WorldMaster;
-import io.xol.chunkstories.net.PacketsProcessorCommon;
+import io.xol.chunkstories.net.PacketsContextCommon;
 import io.xol.chunkstories.server.DedicatedServer;
 import io.xol.chunkstories.server.player.ServerPlayer;
+import io.xol.chunkstories.world.WorldServer;
 
 public class ServerPacketsProcessorImplementation implements ServerPacketsProcessor {
 
 	final DedicatedServer server;
 	
 	public ServerPacketsProcessorImplementation(DedicatedServer server) {
-		//super(server);
 		this.server = server;
 	}
 
@@ -28,35 +26,29 @@ public class ServerPacketsProcessorImplementation implements ServerPacketsProces
 	}
 
 	@Override
-	public WorldMaster getWorld() {
+	public WorldServer getWorld() {
 		return server.getWorld();
 	}
 	
-	public UserPacketsProcessor forConnection(UserConnection connection)
+	public ClientPacketsContext forConnection(ClientConnection connection)
 	{
-		return new UserPacketsProcessor(server, connection);
+		return new ClientPacketsContext(server, connection);
 	}
 	
-	/*public PlayerPacketsProcessor forPlayer(ServerPlayer player)
-	{
-		return new PlayerPacketsProcessor(player);
-	}*/
-
-	public class UserPacketsProcessor extends PacketsProcessorCommon implements ServerPacketsProcessor {
+	public class ClientPacketsContext extends PacketsContextCommon implements ServerPacketsProcessor {
 		
-		final UserConnection connection;
-		//final Queue<PendingSynchPacket> pendingSynchPackets = new ConcurrentLinkedQueue<PendingSynchPacket>();
+		final ClientConnection connection;
 		
 		public Logger logger() {
 			return logger;
 		}
 		
-		public UserPacketsProcessor(GameContext gameContext, UserConnection connection) {
-			super(gameContext);
+		public ClientPacketsContext(GameContext gameContext, ClientConnection connection) {
+			super(gameContext, connection);
 			this.connection = connection;
 		}
 		
-		public UserConnection getConnection()
+		public ClientConnection getConnection()
 		{
 			return connection;
 		}
@@ -66,7 +58,7 @@ public class ServerPacketsProcessorImplementation implements ServerPacketsProces
 		}
 		
 		@Override
-		public WorldMaster getWorld() {
+		public WorldServer getWorld() {
 			return ServerPacketsProcessorImplementation.this.getWorld();
 		}
 
@@ -75,64 +67,18 @@ public class ServerPacketsProcessorImplementation implements ServerPacketsProces
 			return ServerPacketsProcessorImplementation.this.getContext();
 		}
 
-		/*public void sendPacketHeader(DataOutputStream out, Packet packet) throws UnknowPacketException, IOException {
-			ServerPacketsProcessorImplementation.this.sendPacketHeader(out, packet);
-		}*/
-
-		/*public Packet getPacket_(DataInputStream in) throws IOException, UnknowPacketException, IllegalPacketException {
-			//return ServerPacketsProcessorImplementation.this.getPacket(in);
-			while (true)
-			{
-				
-				
-				Packet packet = ((PacketDefinitionImpl)store.getPacketTypeById(packetTypeId)).createNew(this instanceof ClientPacketsProcessor);
-
-				//When we get a packetSynch
-				if (packet instanceof PacketSynch)
-				{
-					//Read it's meta
-					int packetSynchLength = in.readInt();
-
-					//Read it entirely
-					byte[] bufferedIncommingPacket = new byte[packetSynchLength];
-					in.readFully(bufferedIncommingPacket);
-
-					//Queue result
-					pendingSynchPackets.add(new PendingSynchPacket(packet, bufferedIncommingPacket));
-					
-					//Skip this packet ( don't return it )
-					continue;
-				}
-
-				if (packet == null)
-					throw new UnknowPacketException(packetTypeId);
-				else
-					return packet;
-			}
-			//System.out.println("could not find packut");
-			//throw new EOFException();
-			
-		}*/
-
 		@Override
 		public boolean isServer() {
 			return true;
 		}
 
 		@Override
-		public PacketSender getSender() {
-			// TODO Auto-generated method stub
-			throw new UnsupportedOperationException("TODO");
-		}
-
-		@Override
-		public PacketDestinator getDestinator() {
-			// TODO Auto-generated method stub
-			throw new UnsupportedOperationException("TODO");
+		public Interlocutor getInterlocutor() {
+			return connection;
 		}
 	}
 	
-	public class PlayerPacketsProcessor extends UserPacketsProcessor implements ServerPlayerPacketsProcessor {
+	public class PlayerPacketsProcessor extends ClientPacketsContext implements ServerPlayerPacketsProcessor {
 		final ServerPlayer player;
 		
 		public PlayerPacketsProcessor(ServerPlayer player) {
@@ -142,6 +88,11 @@ public class ServerPacketsProcessorImplementation implements ServerPacketsProces
 
 		@Override
 		public Player getPlayer() {
+			return player;
+		}
+		
+		@Override
+		public Interlocutor getInterlocutor() {
 			return player;
 		}
 	}

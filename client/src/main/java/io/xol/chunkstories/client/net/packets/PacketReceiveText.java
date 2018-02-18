@@ -5,7 +5,6 @@ import java.io.IOException;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketReceptionContext;
 import io.xol.chunkstories.api.net.packets.PacketText;
-import io.xol.chunkstories.client.net.ClientPacketsProcessorImplementation;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
@@ -16,6 +15,6 @@ public class PacketReceiveText extends PacketText
 	public void process(PacketSender sender, DataInputStream in, PacketReceptionContext processor) throws IOException
 	{
 		super.process(sender, in, processor);
-		((ClientPacketsProcessorImplementation)processor).getConnection().handleTextPacket(text);
+		//((ClientPacketsContext)processor).getConnection().handleTextPacket(text);
 	}
 }

@@ -6,12 +6,12 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import io.xol.chunkstories.api.client.net.ClientPacketsProcessor;
 import io.xol.chunkstories.api.net.PacketSender;
+import io.xol.chunkstories.api.content.OnlineContentTranslator;
 import io.xol.chunkstories.api.net.PacketReceptionContext;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.client.net.ClientPacketsProcessorImplementation;
+import io.xol.chunkstories.client.net.ClientPacketsContext;
 import io.xol.chunkstories.net.packets.PacketSendWorldInfo;
 import io.xol.chunkstories.world.WorldClientRemote;
 import io.xol.chunkstories.world.WorldInfoImplementation;
@@ -25,23 +25,21 @@ public class PacketInitializeRemoteWorld extends PacketSendWorldInfo {
 
 	public void process(PacketSender sender, DataInputStream in, PacketReceptionContext processor) throws IOException
 	{
-		//This is messy slow and all, but I rather this than dealing with the insane bullshit of UTF-8/16 wizzardry required to bypass the convience of a BufferedReader
-		//And I can be Unicode-correct so fancy pants bloggers don't get mad at me
-		int size = in.readInt();
-		byte[] vaChier = new byte[size];
-		in.readFully(vaChier);
+		String initializationString = in.readUTF();
 		
-		ByteArrayInputStream bais = new ByteArrayInputStream(vaChier);
-		
+		ByteArrayInputStream bais = new ByteArrayInputStream(initializationString.getBytes("UTF-8"));
 		BufferedReader reader = new BufferedReader(new InputStreamReader(bais, "UTF-8"));
 		info = new WorldInfoImplementation(reader);
 		
-		if (processor instanceof ClientPacketsProcessor)
+		if (processor instanceof ClientPacketsContext)
 		{
-			ClientPacketsProcessor cpp = (ClientPacketsProcessor)processor;
+			ClientPacketsContext cpp = (ClientPacketsContext)processor;
 			
-			//Asks
-			//ClientInterface client = cpp.getContext();
+			OnlineContentTranslator contentTranslator = cpp.getContentTranslator();
+			if (contentTranslator == null) {
+				processor.logger().error("Can't initialize a world without a ContentTranslator initialized first!");
+				return;
+			}
 			
 			Client client = (Client)cpp.getContext(); //TODO should we expose this to the interface ?
 			Fence fence = client.getGameWindow().queueSynchronousTask(new Runnable()
@@ -51,8 +49,10 @@ public class PacketInitializeRemoteWorld extends PacketSendWorldInfo {
 				{
 					WorldClientRemote world;
 					try {
-						world = new WorldClientRemote(client, info, ((ClientPacketsProcessorImplementation)cpp).getConnection());
-						Client.getInstance().changeWorld(world);
+						world = new WorldClientRemote(client, info, contentTranslator, cpp.getConnection());
+						client.changeWorld(world);
+						
+						cpp.getConnection().handleSystemRequest("world/ok");
 					} catch (WorldLoadingException e) {
 						client.exitToMainMenu(e.getMessage());
 					}

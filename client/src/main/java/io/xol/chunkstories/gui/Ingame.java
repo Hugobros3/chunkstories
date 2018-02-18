@@ -194,8 +194,8 @@ public class Ingame extends Layer
 		//Draw the GUI
 		if (!guiHidden)
 		{
-			//Draw chat
-			chatManager.update();
+			// Draw chat
+			// chatManager.update();
 			chatManager.draw(renderingContext);
 
 			//Draw inventory
@@ -217,8 +217,8 @@ public class Ingame extends Layer
 		// Check connection didn't died and change scene if it has
 		if (world instanceof WorldClientRemote)
 		{
-			if (!((WorldClientRemote) world).getConnection().isAlive() || ((WorldClientRemote) world).getConnection().hasFailed())
-				Client.getInstance().exitToMainMenu("Connection terminated : " + ((WorldClientRemote) world).getConnection().getLatestErrorMessage());
+			if (!((WorldClientRemote) world).getConnection().isOpen())
+				Client.getInstance().exitToMainMenu("Connection terminated : " + "(TODO: not this way)");
 		}
 
 		//Auto-switch to pause if it detects the game isn't in focus anymore

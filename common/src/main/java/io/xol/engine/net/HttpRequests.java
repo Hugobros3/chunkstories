@@ -12,25 +12,20 @@ import javax.net.ssl.HttpsURLConnection;
 // http://chunkstories.xyz
 // http://xol.io
 
+/** 
+ * Hilariously ugly helper methods I wrote in 2014 for another, unrelated game and kept using
+ * like the filthy degenerate that I am
+ */
 public class HttpRequests
 {
-
-	/*
-	 * Small tools for getting http(s) pages
-	 */
-
 	public static String sendPost(String address, String params)
 	{
-
-		boolean https = false;
 		try
 		{
 			URL url = new URL(address);
-			https = address.startsWith("https://");
-			if (!https)
+			if (!address.startsWith("https://"))
 			{
-				HttpURLConnection htc = (HttpURLConnection) url
-						.openConnection();
+				HttpURLConnection htc = (HttpURLConnection) url.openConnection();
 				htc.setRequestMethod("POST");
 				htc.setRequestProperty("Accept-Charset", "UTF-8");
 				htc.setRequestProperty("charset", "UTF-8");
@@ -63,8 +58,7 @@ public class HttpRequests
 				htc.setDoOutput(true);
 				htc.setConnectTimeout(5000);
 				htc.setReadTimeout(15000);
-				DataOutputStream out = new DataOutputStream(
-						htc.getOutputStream());
+				DataOutputStream out = new DataOutputStream(htc.getOutputStream());
 				out.writeBytes(params);
 				out.flush();
 				out.close();

@@ -27,7 +27,7 @@ import io.xol.chunkstories.api.workers.Tasks;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.ClientMasterPluginManager;
-import io.xol.chunkstories.server.UsersPrivilegesFile;
+import io.xol.chunkstories.server.FileBasedUsersPrivileges;
 import io.xol.chunkstories.server.commands.InstallServerCommands;
 import io.xol.chunkstories.world.WorldClientLocal;
 
@@ -42,7 +42,7 @@ public class LocalServerContext implements ClientInterface, ServerInterface
 	private final ClientMasterPluginManager pluginsManager;
 	
 	//TODO SAVE IT
-	private UsersPrivilegesFile usersPrivilege = new UsersPrivilegesFile();
+	private FileBasedUsersPrivileges usersPrivilege = new FileBasedUsersPrivileges();
 	private PermissionsManager permissionsManager;
 	
 	public LocalServerContext(Client client)

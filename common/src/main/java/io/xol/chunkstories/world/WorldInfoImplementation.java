@@ -84,6 +84,16 @@ public class WorldInfoImplementation extends GenericConfigurable implements Worl
 		
 		out.flush();
 	}
+
+	public String saveAsString() {
+		StringBuilder sb = new StringBuilder();
+		
+		for(Entry<String, String> k : properties.entrySet()) {
+			sb.append(k.getKey()+": "+k.getValue().replace("\n", "\\n") + "\n");
+		}
+		
+		return sb.toString();
+	}
 	
 	@Override
 	public String getInternalName()

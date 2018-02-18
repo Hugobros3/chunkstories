@@ -7,9 +7,11 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +20,7 @@ import java.util.Set;
 
 import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.content.ContentTranslator;
+import io.xol.chunkstories.api.content.OnlineContentTranslator;
 import io.xol.chunkstories.api.content.mods.Mod;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityDefinition;
@@ -25,9 +28,10 @@ import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemDefinition;
 import io.xol.chunkstories.api.net.PacketDefinition;
 import io.xol.chunkstories.api.voxel.Voxel;
+import io.xol.chunkstories.net.PacketDefinitionImpl;
 
 /** Assigns IDs for everything that needs one */
-public abstract class AbstractContentTranslator implements ContentTranslator {
+public abstract class AbstractContentTranslator implements OnlineContentTranslator {
 
 	final static Logger logger = LoggerFactory.getLogger("content.translator");
 	
@@ -49,6 +53,40 @@ public abstract class AbstractContentTranslator implements ContentTranslator {
 	/** Create an initial content translator */
 	public AbstractContentTranslator(Content content) {
 		this.content = content;
+	}
+
+	public void assignVoxelIds() {
+		AtomicInteger voxelIdsCounter = new AtomicInteger(1);
+		voxelMappings = new HashMap<>();
+		content.voxels().all().forEachRemaining(voxel -> {
+			if(voxel.getName().equals("air"))
+				voxelMappings.put(voxel, 0); // Air gets ID 0, always.
+			else
+				voxelMappings.put(voxel, voxelIdsCounter.getAndIncrement());
+		});
+	}
+
+	public void assignEntityIds() {
+		entityMappings = new HashMap<>();
+		content.entities().all().forEachRemaining(entity -> entityMappings.put(entity, entityMappings.size()));
+	}
+
+	public void assignItemIds() {
+		itemMappings = new HashMap<>();
+		content.items().all().forEachRemaining(item -> itemMappings.put(item, itemMappings.size()));
+	}
+
+	public void assignPacketIds() {
+		AtomicInteger packetIdsCounter = new AtomicInteger(1);
+		packetMappings = new HashMap<>();
+		content.packets().all().forEachRemaining(def -> {
+			PacketDefinitionImpl definition = (PacketDefinitionImpl)def;
+			
+			if(definition.getName().equals("text"))
+				packetMappings.put(definition, 0); // 'text' packet gets ID 0 always too
+			else
+				packetMappings.put(definition, packetIdsCounter.getAndIncrement());
+		});
 	}
 	
 	public void buildArrays() {
@@ -114,7 +152,7 @@ public abstract class AbstractContentTranslator implements ContentTranslator {
 				return false;
 		
 		for(PacketDefinition packet : packetMappings.keySet())
-			if(content.packets().getPacketTypeByName(packet.getName()) == null)
+			if(content.packets().getPacketByName(packet.getName()) == null)
 				return false;
 		
 		return true;
@@ -189,7 +227,7 @@ public abstract class AbstractContentTranslator implements ContentTranslator {
 		return packetsArray[id];
 	}
 	
-	public void write(BufferedWriter writer) throws IOException {
+	public void write(BufferedWriter writer, boolean writeOnlineStuff) throws IOException {
 		for(String internalName : requiredMods) {
 			writer.write("requiredMod "+internalName+"\n");
 		}
@@ -206,15 +244,49 @@ public abstract class AbstractContentTranslator implements ContentTranslator {
 			writer.write("entity "+e.getValue()+" "+e.getKey().getName()+"\n");
 		}
 		
-		for(Entry<PacketDefinition, Integer> e : packetMappings.entrySet()) {
-			writer.write("packet "+e.getValue()+" "+e.getKey().getName()+"\n");
+		if(writeOnlineStuff) {
+			for(Entry<PacketDefinition, Integer> e : packetMappings.entrySet()) {
+				writer.write("packet "+e.getValue()+" "+e.getKey().getName()+"\n");
+			}
 		}
+	}
+
+	public String toString() {
+		return toString(true);
+	}
+	
+	public String toString(boolean writeOnlineStuff) {
+		StringBuilder sb = new StringBuilder();
+		
+		for(String internalName : requiredMods) {
+			sb.append("requiredMod "+internalName+"\n");
+		}
+		
+		for(Entry<Voxel, Integer> e : voxelMappings.entrySet()) {
+			sb.append("voxel "+e.getValue()+" "+e.getKey().getName()+"\n");
+		}
+		
+		for(Entry<ItemDefinition, Integer> e : itemMappings.entrySet()) {
+			sb.append("item "+e.getValue()+" "+e.getKey().getName()+"\n");
+		}
+		
+		for(Entry<EntityDefinition, Integer> e : entityMappings.entrySet()) {
+			sb.append("entity "+e.getValue()+" "+e.getKey().getName()+"\n");
+		}
+		
+		if(writeOnlineStuff) {
+			for(Entry<PacketDefinition, Integer> e : packetMappings.entrySet()) {
+				sb.append("packet "+e.getValue()+" "+e.getKey().getName()+"\n");
+			}
+		}
+		
+		return sb.toString();
 	}
 	
 	public void test() {
 		try {
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(System.out));
-			write(writer);
+			write(writer, true);
 			writer.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -225,12 +297,11 @@ public abstract class AbstractContentTranslator implements ContentTranslator {
 		try {
 			file.getParentFile().mkdirs();
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
-			write(writer);
+			write(writer, false);
 			writer.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-
 	
 }

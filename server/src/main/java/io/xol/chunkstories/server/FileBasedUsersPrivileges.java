@@ -11,6 +11,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.net.Inet4Address;
+import java.net.Inet6Address;
+import java.net.InetAddress;
 import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,10 +24,9 @@ import io.xol.chunkstories.api.server.UserPrivileges;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class UsersPrivilegesFile implements UserPrivileges
-{
+public class FileBasedUsersPrivileges implements UserPrivileges {
 	// Takes care of the admins/banned/whitelisted people lists
-	public UsersPrivilegesFile() {
+	public FileBasedUsersPrivileges() {
 		this.load();
 	}
 
@@ -34,40 +36,34 @@ public class UsersPrivilegesFile implements UserPrivileges
 	public List<String> banned_ips = new ArrayList<String>();
 
 	@Override
-	public boolean isUserAdmin(String username)
-	{
+	public boolean isUserAdmin(String username) {
 		return admins.contains(username);
 	}
 
 	@Override
-	public boolean isUserWhitelisted(String username)
-	{
+	public boolean isUserWhitelisted(String username) {
 		return whitelist.contains(username);
 	}
-	
+
 	@Override
-	public boolean isUserBanned(String username)
-	{
+	public boolean isUserBanned(String username) {
 		return banned_users.contains(username);
 	}
 
 	@Override
-	public boolean isIpBanned(String username)
-	{
+	public boolean isIpBanned(String username) {
 		return banned_ips.contains(username);
 	}
 
 	// Ugly load/save methods
-	public void load()
-	{
+	public void load() {
 		admins = loadListFile(new File(System.getProperty("user.dir") + "/config/server-admins.txt"));
 		whitelist = loadListFile(new File(System.getProperty("user.dir") + "/config/server-whitelist.txt"));
 		banned_users = loadListFile(new File(System.getProperty("user.dir") + "/config/server-bans.txt"));
 		banned_ips = loadListFile(new File(System.getProperty("user.dir") + "/config/server-banips.txt"));
 	}
 
-	public void save()
-	{
+	public void save() {
 		saveListFile(new File(System.getProperty("user.dir") + "/config/server-admins.txt"), admins);
 		saveListFile(new File(System.getProperty("user.dir") + "/config/server-whitelist.txt"), whitelist);
 		saveListFile(new File(System.getProperty("user.dir") + "/config/server-bans.txt"), banned_users);
@@ -77,73 +73,57 @@ public class UsersPrivilegesFile implements UserPrivileges
 	// Uglier file loading/saving routines
 
 	@SuppressWarnings("deprecation")
-	void saveListFile(File f, List<String> list)
-	{
+	void saveListFile(File f, List<String> list) {
 		check4Folder(f);
-		try
-		{
+		try {
 			Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(f), "UTF-8"));
 			out.write("# File generated on " + new Time(System.currentTimeMillis()).toGMTString() + "\n");
-			for (String s : list)
-			{
+			for (String s : list) {
 				out.write(s + "\n");
 			}
 			out.close();
-		}
-		catch (FileNotFoundException e)
-		{
-		}
-		catch (IOException e)
-		{
+		} catch (FileNotFoundException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
-	List<String> loadListFile(File f)
-	{
+	List<String> loadListFile(File f) {
 		check4Folder(f);
 		List<String> list = new ArrayList<String>();
-		try
-		{
+		try {
 			InputStream ips = new FileInputStream(f);
 			InputStreamReader ipsr = new InputStreamReader(ips, "UTF-8");
 			BufferedReader br = new BufferedReader(ipsr);
 			String ligne;
-			while ((ligne = br.readLine()) != null)
-			{
+			while ((ligne = br.readLine()) != null) {
 				if (!ligne.startsWith("#"))
 					list.add(ligne);
 			}
 			br.close();
-		}
-		catch (IOException e)
-		{
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		return list;
 	}
 
-	void check4Folder(File file)
-	{
+	void check4Folder(File file) {
 		File folder = null;
 		if (!file.isDirectory())
 			folder = file.getParentFile();
 		if (folder != null && !folder.exists())
 			folder.mkdir();
 		if (!file.exists())
-			try
-			{
+			try {
 				file.createNewFile();
-			}
-			catch (IOException e)
-			{
+			} catch (IOException e) {
 				e.printStackTrace();
 			}
 	}
 
 	@Override
 	public void setUserAdmin(String username, boolean admin) {
-		if(admin)
+		if (admin)
 			this.admins.add(username);
 		else
 			this.admins.remove(username);
@@ -151,7 +131,7 @@ public class UsersPrivilegesFile implements UserPrivileges
 
 	@Override
 	public void setUserWhitelisted(String username, boolean whitelisted) {
-		if(whitelisted)
+		if (whitelisted)
 			this.whitelist.add(username);
 		else
 			this.whitelist.remove(username);
@@ -159,7 +139,7 @@ public class UsersPrivilegesFile implements UserPrivileges
 
 	@Override
 	public void setUserBanned(String username, boolean banned) {
-		if(banned)
+		if (banned)
 			this.banned_users.add(username);
 		else
 			this.banned_users.remove(username);
@@ -167,9 +147,20 @@ public class UsersPrivilegesFile implements UserPrivileges
 
 	@Override
 	public void setIpBanned(String ip, boolean banned) {
-		if(banned)
+		if (banned)
 			this.banned_ips.add(ip);
 		else
 			this.banned_ips.remove(ip);
+	}
+
+	public static String inetToString(InetAddress inet) {
+		if (inet == null)
+			return "ip0x0:Unconnected socket";
+		else if (inet instanceof Inet6Address)
+			return "ipv6:" + ((Inet6Address) inet).getHostAddress();
+		else if (inet instanceof Inet4Address)
+			return "ipv4:" + ((Inet4Address) inet).getHostAddress();
+
+		return inet.getHostAddress();
 	}
 }

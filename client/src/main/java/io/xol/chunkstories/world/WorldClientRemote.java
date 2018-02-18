@@ -1,13 +1,23 @@
 package io.xol.chunkstories.world;
 
+import java.io.IOException;
+import java.util.Deque;
+import java.util.Iterator;
+import java.util.concurrent.ConcurrentLinkedDeque;
+
+import io.xol.chunkstories.api.content.OnlineContentTranslator;
+import io.xol.chunkstories.api.exceptions.PacketProcessingException;
+import io.xol.chunkstories.api.net.Packet;
+import io.xol.chunkstories.api.net.PacketDefinition.PacketGenre;
 import io.xol.chunkstories.api.net.PacketWorld;
-import io.xol.chunkstories.api.net.PacketWorldStreaming;
 import io.xol.chunkstories.api.net.RemoteServer;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.world.WorldClientNetworkedRemote;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.client.net.ClientConnectionToServer;
-import io.xol.chunkstories.net.PacketsProcessorCommon;
+import io.xol.chunkstories.client.net.ServerConnection;
+import io.xol.chunkstories.net.LogicalPacketDatagram;
+import io.xol.chunkstories.net.PacketDefinitionImpl;
+import io.xol.chunkstories.net.PacketsContextCommon;
 import io.xol.chunkstories.world.io.IOTasksMultiplayerClient;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -16,30 +26,38 @@ import io.xol.chunkstories.world.io.IOTasksMultiplayerClient;
 
 public class WorldClientRemote extends WorldClientCommon implements WorldClientNetworkedRemote
 {
-	private ClientConnectionToServer connection;
-	private PacketsProcessorCommon packetsProcessor;
+	private final ServerConnection connection;
+	private final PacketsContextCommon packetsProcessor;
 
-	private IOTasksMultiplayerClient mpIOHandler;
+	private final IOTasksMultiplayerClient mpIOHandler;
 	
-	public WorldClientRemote(Client client, WorldInfoImplementation info,  ClientConnectionToServer connection) throws WorldLoadingException
+	private final OnlineContentTranslator translator;
+	
+	public WorldClientRemote(Client client, WorldInfoImplementation info, OnlineContentTranslator translator, ServerConnection connection) throws WorldLoadingException
 	{
-		super(client, info);
+		super(client, info, translator);
 
 		this.connection = connection;
-		this.packetsProcessor = connection.getPacketsProcessor();
+		this.packetsProcessor = connection.getPacketsContext();
 
+		this.translator = translator;
+		
 		mpIOHandler = new IOTasksMultiplayerClient(this);
 		
 		ioHandler = mpIOHandler;
 		ioHandler.start();
 	}
+	
+	public OnlineContentTranslator getContentTranslator() {
+		return translator;
+	}
 
 	@Override
 	public RemoteServer getRemoteServer() {
-		return connection;
+		return connection.getRemoteServer();
 	}
 	
-	public ClientConnectionToServer getConnection()
+	public ServerConnection getConnection()
 	{
 		return connection;
 	}
@@ -52,57 +70,65 @@ public class WorldClientRemote extends WorldClientCommon implements WorldClientN
 	
 	@Override
 	public void destroy() {
-		
 		super.destroy();
 		connection.close();
 	}
 
 	@Override
 	public void tick() {
-		
 		//Specific MP stuff
 		processIncommingPackets();
-		getConnection().flush();
 		
 		super.tick();
+		
+		getConnection().flush();
 	}
 	
-	@Override
+	Deque<LogicalPacketDatagram> incommingDatagrams = new ConcurrentLinkedDeque<>();
+	
 	public void processIncommingPackets()
 	{
 		//Accepts and processes synched packets
-		
-		throw new UnsupportedOperationException("TODO");
-		/*entitiesLock.writeLock().lock();
+		entitiesLock.writeLock().lock();
 		
 		@SuppressWarnings("unused")
 		int packetsThisTick = 0;
-		PendingSynchPacket packet = packetsProcessor.getPendingSynchPacket();
-		while (packet != null)
-		{
-			//System.out.println(packet);
-			packet.process(this.getConnection(), packetsProcessor);
-			packet = packetsProcessor.getPendingSynchPacket();
+		
+		Iterator<LogicalPacketDatagram> i = incommingDatagrams.iterator();
+		while (i.hasNext()) {
+			LogicalPacketDatagram datagram = i.next();
+
+			try {
+				PacketDefinitionImpl definition = (PacketDefinitionImpl) this.getContentTranslator().getPacketForId(datagram.packetTypeId);
+				Packet packet = definition.createNew(true, this);
+				if(definition.getGenre() != PacketGenre.WORLD || !(packet instanceof PacketWorld)) {
+					logger().error(definition + " isn't a PacketWorld");
+				} else {
+					PacketWorld packetWorld = (PacketWorld) packet;
+					
+					//packetsProcessor.getSender() is equivalent to getRemoteServer() here
+					packetWorld.process(packetsProcessor.getInterlocutor(), datagram.getData(), packetsProcessor);
+				}
+			}
+			catch(IOException | PacketProcessingException e) {
+				logger().warn("Exception while processing datagram: "+e.getMessage());
+			}
+			
+			datagram.dispose();
+			
+			i.remove();
 			packetsThisTick++;
 		}
 
-		entitiesLock.writeLock().unlock();*/
-		//if(packetsThisTick > 0)
-		//	System.out.println(packetsThisTick+"packets for "+this.entities.size()+ " entities");
+		entitiesLock.writeLock().unlock();
+	}
+	
+	public void queueDatagram(LogicalPacketDatagram datagram) {
+		this.incommingDatagrams.add(datagram);
 	}
 	
 	public IOTasksMultiplayerClient ioHandler()
 	{
 		return mpIOHandler;
-	}
-
-	@Override
-	public void queueWorldPacket(PacketWorld packet) {
-		throw new UnsupportedOperationException("TODO");
-	}
-
-	@Override
-	public void queueWorldStreamingPacket(PacketWorldStreaming packet) {
-		throw new UnsupportedOperationException("TODO");
 	}
 }

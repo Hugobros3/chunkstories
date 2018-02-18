@@ -56,7 +56,7 @@ public class LoadedContentTranslator extends AbstractContentTranslator {
 						itemMappings.put(itemDef, id);
 						break;
 					case "packet":
-						PacketDefinition packetDef = content.packets().getPacketTypeByName(defName);
+						PacketDefinition packetDef = content.packets().getPacketByName(defName);
 						failIfNull(packetDef, "Missing packet definition "+defName);
 						packetMappings.put(packetDef, id);
 						break;

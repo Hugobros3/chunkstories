@@ -29,7 +29,7 @@ import io.xol.chunkstories.api.plugin.ClientPluginManager;
 import io.xol.chunkstories.api.util.ConfigDeprecated;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.client.net.ClientConnectionToServer;
+import io.xol.chunkstories.client.net.ServerConnection;
 import io.xol.chunkstories.gui.overlays.config.KeyBindSelectionOverlay;
 import io.xol.chunkstories.input.InputVirtual;
 import io.xol.chunkstories.input.InputsManagerLoader;
@@ -378,22 +378,18 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 		
 		//Send input to server
 		World world = entityControlled.getWorld();
-		if (world instanceof WorldClientRemote)
-		{
-			//MouseScroll inputs are strictly client-side
-			if(!(input instanceof MouseScroll))
-			{
-				ClientConnectionToServer connection = ((WorldClientRemote) entityControlled.getWorld()).getConnection();
+		if (world instanceof WorldClientRemote) {
+			// MouseScroll inputs are strictly client-side
+			if (!(input instanceof MouseScroll)) {
+				ServerConnection connection = ((WorldClientRemote) entityControlled.getWorld()).getConnection();
 				PacketInput packet = new PacketInput(world);
 				packet.input = input;
 				packet.isPressed = true;
-				connection.sendPacket(packet);
+				connection.pushPacket(packet);
 			}
 			
 			return entityControlled.onControllerInput(input, Client.getInstance().getPlayer());
-		}
-		else
-		{
+		} else {
 			PlayerInputPressedEvent event2 = new PlayerInputPressedEvent(Client.getInstance().getPlayer(), input);
 			cpm.fireEvent(event2);
 			
@@ -427,22 +423,18 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 		
 		//Send input to server
 		World world = entityControlled.getWorld();
-		if (world instanceof WorldClientRemote)
-		{
-			ClientConnectionToServer connection = ((WorldClientRemote) entityControlled.getWorld()).getConnection();
+		if (world instanceof WorldClientRemote) {
+			ServerConnection connection = ((WorldClientRemote) entityControlled.getWorld()).getConnection();
 			PacketInput packet = new PacketInput(world);
 			packet.input = input;
 			packet.isPressed = false;
-			connection.sendPacket(packet);
+			connection.pushPacket(packet);
 			return true;
-		}
-		else 
-		{
+		} else {
 			PlayerInputReleasedEvent event2 = new PlayerInputReleasedEvent(Client.getInstance().getPlayer(), input);
 			cpm.fireEvent(event2);
 			return true;
 		}
-		
 	}
 
 	@Override

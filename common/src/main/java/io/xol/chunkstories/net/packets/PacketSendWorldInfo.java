@@ -7,7 +7,6 @@ import io.xol.chunkstories.api.net.PacketSendingContext;
 import io.xol.chunkstories.api.net.PacketReceptionContext;
 import io.xol.chunkstories.world.WorldInfoImplementation;
 
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -16,42 +15,23 @@ import java.io.IOException;
 // http://chunkstories.xyz
 // http://xol.io
 
-public class PacketSendWorldInfo extends Packet
-{
+public class PacketSendWorldInfo extends Packet {
 	public WorldInfoImplementation info;
-	
+
 	public PacketSendWorldInfo() {
-		
+
 	}
-	
+
 	public PacketSendWorldInfo(WorldInfoImplementation info) {
 		this.info = info;
 	}
 
 	@Override
-	public void send(PacketDestinator destinator, DataOutputStream out, PacketSendingContext ctx) throws IOException
-	{
-		//This is moronic
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		info.saveInStream(baos);
-		
-		//So is this
-		baos.flush();
-		byte[] fuckthis = baos.toByteArray();
-		
-		//And all of this
-		out.writeInt(fuckthis.length);
-		out.write(fuckthis);
-		
-		//I especially hated this part
-		out.flush();
-		
-		//Wasted half an afternoon trying to figure out this mess, moral of the story is to NEVER bother hacking arround with utf-8 and ALWAYS send the length before, because fuck
-		//you that's why.
+	public void send(PacketDestinator destinator, DataOutputStream out, PacketSendingContext ctx) throws IOException {
+		out.writeUTF(info.saveAsString());
 	}
 
-	public void process(PacketSender sender, DataInputStream in, PacketReceptionContext processor) throws IOException
-	{
-		
+	public void process(PacketSender sender, DataInputStream in, PacketReceptionContext processor) throws IOException {
+		throw new UnsupportedOperationException();
 	}
 }
