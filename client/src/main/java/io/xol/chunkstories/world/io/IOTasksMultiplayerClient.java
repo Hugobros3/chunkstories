@@ -142,9 +142,9 @@ public class IOTasksMultiplayerClient extends IOTasks
 				return;
 			region.getChunkHolder(((PacketChunkCompressedData) packet).x, ((PacketChunkCompressedData) packet).y, ((PacketChunkCompressedData) packet).z).
 				createChunk(((PacketChunkCompressedData) packet).data);
-		} else if(packet instanceof PacketWorldUser) {
+		} /*else if(packet instanceof PacketWorldUser) {
 			client.getPlayer().loadingAgent.handleServerResponse((PacketWorldUser) packet);
-		}
+		}*/
 		
 		//Else
 		else throw new IllegalPacketException(packet) {

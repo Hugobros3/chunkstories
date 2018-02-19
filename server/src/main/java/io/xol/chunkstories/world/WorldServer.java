@@ -159,14 +159,14 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 			
 			try {
 				PacketDefinitionImpl definition = (PacketDefinitionImpl) this.getContentTranslator().getPacketForId(datagram.packetTypeId);
-				Packet packet = definition.createNew(true, this);
+				Packet packet = definition.createNew(false, this);
 				
 				if(definition.getGenre() != PacketGenre.WORLD || !(packet instanceof PacketWorld)) {
 					logger().error(definition + " isn't a PacketWorld");
 				} else {
 					PacketWorld packetWorld = (PacketWorld) packet;
 					
-					//packetsProcessor.getSender() is equivalent to getRemoteServer() here
+					//packetsProcessor.getSender() is equivalent to player here
 					packetWorld.process(player, datagram.getData(), player.getPlayerConnection().getPacketsContext());
 				}
 			}

@@ -52,3 +52,12 @@ packet region_summary
 	fixedId: 5
 	commonClass: io.xol.chunkstories.net.packets.PacketRegionSummary
 end
+
+packet world_user_requests
+	allowFrom: all
+	type: world
+	fixedId: 6
+	commonClass: io.xol.chunkstories.api.net.packets.PacketWorldUser
+	clientClass: io.xol.chunkstories.client.net.packets.ClientPacketWorldUser
+	serverClass: io.xol.chunkstories.server.net.packets.ServerPacketWorldUser
+end

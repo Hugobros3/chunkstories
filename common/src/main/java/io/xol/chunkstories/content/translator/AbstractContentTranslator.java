@@ -242,8 +242,8 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 		//return packetMappings.getOrDefault(definition, -1);
 		int id = packetMappings.getOrDefault(definition, -1);
 		if(id == -1) {
-			System.out.println("d:"+definition);
-			packetMappings.forEach((d,i) -> System.out.println(d.getName()+":"+d+":"+i));
+			logger.debug("d:"+definition);
+			packetMappings.forEach((d,i) -> logger.debug(d.getName()+":"+d+":"+i));
 		}
 		return id;
 	}
