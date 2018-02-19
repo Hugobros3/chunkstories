@@ -87,7 +87,7 @@ public abstract class PacketsContextCommon implements PacketReceptionContext, Pa
 		
 		int packetLength = in.readInt();
 		byte[] bitme = new byte[packetLength];
-		in.read(bitme);
+		in.readFully(bitme);
 		
 		return new PacketIngoingBuffered(packetTypeId, packetLength, bitme);
 	}
@@ -125,7 +125,7 @@ public abstract class PacketsContextCommon implements PacketReceptionContext, Pa
 			short id = (short) world.getContentTranslator().getIdForPacket(def);
 			if(id == -1) {
 				logger.error("Could not find the id of packet definition "+def.getName());
-				((AbstractContentTranslator)world.getContentTranslator()).test();
+				//((AbstractContentTranslator)world.getContentTranslator()).test();
 				throw new UnknowPacketException(packet);
 			}
 			return id;
