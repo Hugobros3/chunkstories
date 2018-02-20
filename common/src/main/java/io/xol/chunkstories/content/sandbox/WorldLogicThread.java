@@ -3,6 +3,9 @@ package io.xol.chunkstories.content.sandbox;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.xol.chunkstories.Constants;
 import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.GameLogic;
@@ -20,177 +23,129 @@ import io.xol.engine.concurrency.TrivialFence;
 //http://xol.io
 
 /**
- * Sandboxed thread that runs all the game logic for one world, thus including foreign code
+ * Sandboxed thread that runs all the game logic for one world
  */
-public class WorldLogicThread extends Thread implements GameLogic
-{
+//TODO actually sandbox it lol
+public class WorldLogicThread extends Thread implements GameLogic {
 	private final GameContext context;
-	
+
 	private final WorldImplementation world;
-	
+
 	private GameLogicScheduler gameLogicScheduler;
-	
+
 	private AtomicBoolean die = new AtomicBoolean(false);
-	//private boolean die = false;
-	
+
 	private SimpleFence waitForLogicFinish = new SimpleFence();
 
-	public WorldLogicThread(WorldImplementation world, SecurityManager securityManager)
-	{
+	private static final Logger logger = LoggerFactory.getLogger("worldlogic");
+
+	public WorldLogicThread(WorldImplementation world, SecurityManager securityManager) {
 		this.world = world;
 		this.context = world.getGameContext();
-		
-		this.setName("World '"+world.getWorldInfo().getInternalName()+"' logic thread");
+
+		this.setName("World '" + world.getWorldInfo().getInternalName() + "' logic thread");
 		this.setPriority(Constants.MAIN_SINGLEPLAYER_LOGIC_THREAD_PRIORITY);
-		
+
 		gameLogicScheduler = new GameLogicScheduler();
-		
-		//this.start();
+
+		// this.start();
 	}
-	
-	public GameContext getGameContext()
-	{
+
+	public GameContext getGameContext() {
 		return context;
 	}
 
 	long lastNano;
-	
+
 	@SuppressWarnings("unused")
-	private void nanoCheckStep(int maxNs, String warn)
-	{
+	private void nanoCheckStep(int maxNs, String warn) {
 		long took = System.nanoTime() - lastNano;
-		//Took more than n ms ?
-		if(took > maxNs * 1000000)
-			System.out.println(warn + " " + (double)(took / 1000L) / 1000 + "ms");
-		
+		// Took more than n ms ?
+		if (took > maxNs * 1000000)
+			logger.warn(warn + " " + (double) (took / 1000L) / 1000 + "ms");
+
 		lastNano = System.nanoTime();
 	}
-	
-	public void run()
-	{
-		//TODO
-		//Installs a custom SecurityManager
-		System.out.println("Security manager: "+System.getSecurityManager());
 
-		while (!die.get())
-		{
-			//Dirty performance metric :]
-			//perfMetric();
-			//nanoCheckStep(20, "Loop was more than 20ms");
-			
-			//Timings
+	public void run() {
+		// TODO
+		// Installs a custom SecurityManager
+		logger.info("Security manager: " + System.getSecurityManager());
+
+		while (!die.get()) {
+			// Dirty performance metric :]
+			// perfMetric();
+			// nanoCheckStep(20, "Loop was more than 20ms");
+
+			// Timings
 			fps = 1f / ((System.nanoTime() - lastTimeNs) / 1000f / 1000f / 1000f);
 			lastTimeNs = System.nanoTime();
-			
-			//Updates controller/s views
-			
-			/*if(world instanceof WorldMaster)
-			{
-				Iterator<Player> i = ((WorldMaster)world).getPlayers();
-				while(i.hasNext())
-				{
-					Player p = i.next();
-					p.updateUsedWorldBits();
-				}
-			}
-			else if(world instanceof WorldClient)
-				((WorldClient) world).getClient().getPlayer().updateUsedWorldBits();*/
-			
-			//nanoCheckStep(1, "World bits");
-			
-			//Processes incomming pending packets in synch with game logic and flush outgoing ones
-			/*if(world instanceof WorldNetworked)
-			{
-				((WorldNetworked) world).processIncommingPackets();
-				//TODO clean
-				if(world instanceof WorldClientRemote)
-					((WorldClientRemote) world).getConnection().flush();
-				if(world instanceof WorldServer)
-					((WorldServer) world).getServer().getHandler().flushAll();
-			}*/
-			
-			//nanoCheckStep(2, "Incomming packets");
-			
+
 			this.getPluginsManager().fireEvent(new WorldTickEvent(world));
-			
-			//Place the entire tick() method in a try/catch
-			try
-			{
-				//Tick the world ( mostly entities )
+
+			try {
 				world.tick();
+			} catch (Exception e) {
+				world.logger().error("Exception occured while ticking the world : ", e);
 			}
-			catch (Exception e)
-			{
-				world.logger().error("Exception occured while ticking the world : " + e.getMessage());
-				//e.printStackTrace();
-				//e.printStackTrace(logger().getPrintWriter());
-			}
-			
-			//nanoCheckStep(5, "Tick");
-			
-			//Every second, unloads unused stuff
-			if(world.getTicksElapsed() % 60 == 0)
-			{
-				//System.gc();
-				
-				//Compresses pending chunk summaries
+
+			// nanoCheckStep(5, "Tick");
+
+			// Every second, unloads unused stuff
+			if (world.getTicksElapsed() % 60 == 0) {
+				// System.gc();
+
+				// Compresses pending chunk summaries
 				Iterator<RegionImplementation> loadedChunksHolders = world.getRegionsHolder().getLoadedRegions();
-				while(loadedChunksHolders.hasNext())
-				{
+				while (loadedChunksHolders.hasNext()) {
 					RegionImplementation region = loadedChunksHolders.next();
 					region.compressChangedChunks();
 				}
-				
-				//Delete unused world data
+
+				// Delete unused world data
 				world.unloadUselessData();
 			}
-			
-			//nanoCheckStep(1, "unload");
-			
+			// nanoCheckStep(1, "unload");
+
 			gameLogicScheduler.runScheduledTasks();
-			
-			//nanoCheckStep(1, "schedule");
-			
-			//Game logic is 60 ticks/s
+			// nanoCheckStep(1, "schedule");
+
+			// Game logic is 60 ticks/s
 			sync(getTargetFps());
 		}
-		
+
 		waitForLogicFinish.signal();
 	}
 
 	float fps = 0.0f;
-	
+
 	long lastTime = 0;
 	long lastTimeNs = 0;
 
 	@Override
-	public int getTargetFps()
-	{
+	public int getTargetFps() {
 		return 60;
 	}
 
-	public double getSimulationFps()
-	{
+	public double getSimulationFps() {
 		return (double) (Math.floor(fps * 100f) / 100f);
 	}
-	
-	public double getSimulationSpeed()
-	{
+
+	public double getSimulationSpeed() {
 		return 1.0;
 	}
-	
-	public void perfMetric()
-	{
+
+	public void perfMetric() {
 		double ms = Math.floor((System.nanoTime() - lastTimeNs) / 10000.0) / 100.0;
 		String kek = "";
 		double d = 0.02;
-		for(double i = 0; i < 1.0; i+= d)
+		for (double i = 0; i < 1.0; i += d)
 			kek += Math.abs(ms - 16 - i) > d ? " " : "|";
 		System.out.println(kek + ms + "ms");
 	}
-	
-	public void sync(int fps)
-	{
+
+	/** fancy sync method from SO iirc */
+	public void sync(int fps) {
 		if (fps <= 0)
 			return;
 
@@ -204,57 +159,42 @@ public class WorldLogicThread extends Thread implements GameLogic
 
 		long overSleep = 0; // time the sleep or burn goes over by
 
-		try
-		{
-			while (true)
-			{
+		try {
+			while (true) {
 				long t = System.nanoTime() - lastTime;
 
-				if (t < sleepTime - burnTime)
-				{
+				if (t < sleepTime - burnTime) {
 					Thread.sleep(1);
-				}
-				else if (t < sleepTime)
-				{
+				} else if (t < sleepTime) {
 					// burn the last few CPU cycles to ensure accuracy
 					Thread.yield();
-				}
-				else
-				{
+				} else {
 					overSleep = Math.min(t - sleepTime, errorMargin);
 					break; // exit while loop
 				}
 			}
-		}
-		catch (InterruptedException e)
-		{
+		} catch (InterruptedException e) {
 		}
 
 		lastTime = System.nanoTime() - overSleep;
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.content.sandbox.GameLogic#getPluginsManager()
-	 */
 	@Override
-	public PluginManager getPluginsManager()
-	{
+	public PluginManager getPluginsManager() {
 		return context.getPluginManager();
 	}
-	
-	public Fence stopLogicThread()
-	{
-		if(!this.isAlive())
+
+	public Fence stopLogicThread() {
+		if (!this.isAlive())
 			return new TrivialFence();
-		
+
 		die.set(true);
-		
+
 		return waitForLogicFinish;
 	}
 
 	@Override
-	public Scheduler getScheduler()
-	{
+	public Scheduler getScheduler() {
 		return gameLogicScheduler;
 	}
 }
