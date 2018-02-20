@@ -307,7 +307,7 @@ public class ChunkHolderImplementation implements ChunkHolder
 	{
 		try {
 			usersLock.lock();
-			boolean ok = users.add(user);
+			/*boolean ok = */users.add(user);
 			
 			//if(!ok)
 			//	System.out.println("warn: adding twice user to ch");

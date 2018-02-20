@@ -17,10 +17,8 @@ import io.xol.chunkstories.world.region.format.CSFRegionFile;
 //import io.xol.chunkstories.world.region.format.CSFRegionFile0x2C;
 import io.xol.engine.concurrency.SafeWriteLock;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;

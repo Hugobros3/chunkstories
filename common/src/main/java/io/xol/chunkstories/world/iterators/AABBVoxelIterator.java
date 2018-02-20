@@ -1,6 +1,5 @@
 package io.xol.chunkstories.world.iterators;
 
-import io.xol.chunkstories.api.content.Content.Voxels;
 import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.voxel.Voxel;
@@ -13,7 +12,7 @@ public class AABBVoxelIterator implements IterableIterator<CellData>, CellData{
 	private final World world;
 	private final CollisionBox collisionBox;
 	
-	private final Voxels voxels;
+	//private final Voxels voxels;
 	
 	private int i, j , k;
 	private int i2, j2, k2;
@@ -28,7 +27,7 @@ public class AABBVoxelIterator implements IterableIterator<CellData>, CellData{
 		this.world = world;
 		this.collisionBox = collisionBox;
 		
-		this.voxels = world.getGameContext().getContent().voxels();
+		//this.voxels = world.getGameContext().getContent().voxels();
 		
 		this.minx = (int)Math.floor(collisionBox.xpos);
 		this.miny = (int)Math.floor(collisionBox.ypos);

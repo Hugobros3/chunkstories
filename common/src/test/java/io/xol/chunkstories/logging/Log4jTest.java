@@ -1,7 +1,5 @@
 package io.xol.chunkstories.logging;
 
-import java.io.File;
-
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,11 +11,6 @@ import ch.qos.logback.core.FileAppender;
 
 public class Log4jTest {
 	
-    
-    private static void addAppender() {
-    	
-    }
-    
 	@Test 
 	public void testLog4j()
 	{
@@ -40,10 +33,5 @@ public class Log4jTest {
 	    logger.info("Hello World");
 	    
 	    LoggerFactory.getLogger("content.voxels").debug("Failed to load");
-	}
-	
-	public static void main(String a[]) {
-
-		//logger.error("Salut grosse brosse à chiotte");
 	}
 }

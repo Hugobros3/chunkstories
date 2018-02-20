@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,24 +54,23 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 	}
 
 	public void assignVoxelIds() {
-		AtomicInteger voxelIdsCounter = new AtomicInteger(1);
 		voxelMappings = new HashMap<>();
 		content.voxels().all().forEachRemaining(voxel -> {
 			if(voxel.getName().equals("air"))
 				voxelMappings.put(voxel, 0); // Air gets ID 0, always.
 			else
-				voxelMappings.put(voxel, voxelIdsCounter.getAndIncrement());
+				voxelMappings.put(voxel, findNextFreeId(1, voxelMappings.values()));
 		});
 	}
 
 	public void assignEntityIds() {
 		entityMappings = new HashMap<>();
-		content.entities().all().forEachRemaining(entity -> entityMappings.put(entity, entityMappings.size()));
+		content.entities().all().forEachRemaining(entity -> entityMappings.put(entity, findNextFreeId(1, entityMappings.values())));
 	}
 
 	public void assignItemIds() {
 		itemMappings = new HashMap<>();
-		content.items().all().forEachRemaining(item -> itemMappings.put(item, itemMappings.size()));
+		content.items().all().forEachRemaining(item -> itemMappings.put(item, findNextFreeId(1, itemMappings.values())));
 	}
 
 	public void assignPacketIds() {
@@ -93,15 +91,15 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 			
 			int packetId = definition.getFixedId();
 			if(packetId == -1) {
-				packetId = findNextFreeId(packetMappings.values());
+				packetId = findNextFreeId(0, packetMappings.values());
 				packetMappings.put(definition, packetId);
 				logger.debug("Assignated id "+packetId+" to "+definition.getName());
 			}
 		});
 	}
 	
-	private int findNextFreeId(Collection<Integer> values) {
-		int id = 0;
+	private int findNextFreeId(int baseId, Collection<Integer> values) {
+		int id = baseId;
 		while(values.contains(id)) {
 			id++;
 		}
@@ -178,7 +176,6 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 				return false;
 		
 		return true;
-		//return loadWith(content) != null;
 	}
 	
 	@Override
@@ -210,7 +207,7 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 
 	@Override
 	public int getIdForItem(Item item) {
-		return 0;
+		return getIdForItem(item.getType());
 	}
 
 	@Override
