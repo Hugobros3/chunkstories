@@ -63,16 +63,17 @@ public class TCPServerConnection extends ServerConnection {
 
 		try {
 			socket = new Socket(remoteAddress, port);
+			
 			in = new DataInputStream(socket.getInputStream());
-
 			streamGobbler = new ClientGobbler(this, in);
-			streamGobbler.start();
 
 			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 			sendQueue = new SendQueue(out);
-			sendQueue.start();
 
 			connected = true;
+			
+			streamGobbler.start();
+			sendQueue.start();
 			return true;
 		} catch (IOException e) {
 			return false;

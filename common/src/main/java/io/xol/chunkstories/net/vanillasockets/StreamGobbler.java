@@ -34,6 +34,7 @@ public abstract class StreamGobbler extends Thread {
 			
 		} catch(IOException e) {
 			connection.close();
+			logger.info("Connection error", e);
 		} catch (UnknowPacketException e) {
 			logger.error("Unknown packet", e);
 			connection.close();
