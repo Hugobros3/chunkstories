@@ -13,6 +13,7 @@ import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
 
 import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.events.rendering.WorldRenderingDecalsEvent;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.effects.DecalsRenderer;
@@ -333,50 +334,34 @@ public class DecalsRendererImplementation implements DecalsRenderer
 		renderingInterface.getCamera().setupShader(decalsShader);
 		
 		renderingInterface.bindTexture2D("zBuffer", worldRenderer.renderBuffers.rbZBuffer);
-		//decalsShader.setUniformSampler(1, "zBuffer", worldRenderer.zBuffer);
 
 		renderingInterface.setCullingMode(CullingMode.DISABLED);
-		//glDisable(GL_CULL_FACE);
-		
-		//glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 		
 		renderingInterface.setBlendMode(BlendMode.MIX);
-		//glEnable(GL_BLEND);
-		
-		//glDisable(GL_DEPTH_TEST);
 		renderingInterface.getRenderTargetManager().setDepthMask(false);
-		//glDepthMask(false);
-		//glDepthFunc(GL_LEQUAL);
 
 		for(DecalType decalType : decalsTypes.values())
 		{
 			Texture2D diffuseTexture = decalType.getTexture();
-			//diffuseTexture.bind();
 			diffuseTexture.setTextureWrapping(false);
 			diffuseTexture.setLinearFiltering(false);
 			
 			renderingInterface.bindAlbedoTexture(diffuseTexture);
-			//decalsShader.setUniformSampler(0, "diffuseTexture", diffuseTexture);
 			
 			if(!decalType.verticesObject.isDataPresent())
 				continue;
 			
-			//decalType.verticesObject.bind();
 			renderingInterface.bindAttribute("vertexIn", decalType.verticesObject.asAttributeSource(VertexFormat.FLOAT, 3, 4 * (3 + 2), 0));
 			renderingInterface.bindAttribute("texCoordIn", decalType.verticesObject.asAttributeSource(VertexFormat.FLOAT, 2, 4 * (3 + 2), 4 * 3));
-			//renderingContext.setVertexAttributePointerLocation("vertexIn", 3, GL_FLOAT, false, 4 * (3 + 2), 0);
-			//renderingContext.setVertexAttributePointerLocation("texCoordIn", 2, GL_FLOAT, false, 4 * (3 + 2), 4 * 3);
-			
-			//System.out.println("wtf son");
 			
 			renderingInterface.draw(Primitive.TRIANGLE, 0, decalType.kount);
-			//System.out.println(decalType.kount);
 			
 			renderingInterface.flush();
-			//decalType.verticesObject.drawElementsTriangles(decalType.kount);
 		}
 
 		renderingInterface.getRenderTargetManager().setDepthMask(true);
-		//glDepthMask(true);
+		
+		WorldRenderingDecalsEvent event = new WorldRenderingDecalsEvent(world, worldRenderer, renderingInterface, this);
+		world.getGameContext().getPluginManager().fireEvent(event);
 	}
 }
