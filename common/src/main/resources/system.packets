@@ -16,6 +16,7 @@ packet file
 	allowedFrom: server
 	type: system
 	fixedId: 1
+	streamed: true
 	commonClass: io.xol.chunkstories.net.packets.PacketSendFile
 	clientClass: io.xol.chunkstories.client.net.packets.PacketReceiveFile
 end

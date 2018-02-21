@@ -53,47 +53,67 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 		this.content = content;
 	}
 
-	public void assignVoxelIds() {
-		voxelMappings = new HashMap<>();
+	public void assignVoxelIds(boolean overwrite) {
+		if(overwrite)
+			voxelMappings = new HashMap<>();
+		
 		content.voxels().all().forEachRemaining(voxel -> {
-			if(voxel.getName().equals("air"))
-				voxelMappings.put(voxel, 0); // Air gets ID 0, always.
-			else
-				voxelMappings.put(voxel, findNextFreeId(1, voxelMappings.values()));
+			if(overwrite || voxelMappings.get(voxel) == null) {
+				if(voxel.getName().equals("air"))
+					voxelMappings.put(voxel, 0); // Air gets ID 0, always.
+				else
+					voxelMappings.put(voxel, findNextFreeId(1, voxelMappings.values()));
+			}
 		});
 	}
 
-	public void assignEntityIds() {
-		entityMappings = new HashMap<>();
-		content.entities().all().forEachRemaining(entity -> entityMappings.put(entity, findNextFreeId(1, entityMappings.values())));
+	public void assignEntityIds(boolean overwrite) {
+		if(overwrite)
+			entityMappings = new HashMap<>();
+		
+		content.entities().all().forEachRemaining(entity -> {
+			if(overwrite || entityMappings.get(entity) == null)
+				entityMappings.put(entity, findNextFreeId(1, entityMappings.values()));
+		});
 	}
 
-	public void assignItemIds() {
-		itemMappings = new HashMap<>();
-		content.items().all().forEachRemaining(item -> itemMappings.put(item, findNextFreeId(1, itemMappings.values())));
+	public void assignItemIds(boolean overwrite) {
+		if(overwrite)
+			itemMappings = new HashMap<>();
+		
+		content.items().all().forEachRemaining(item -> {
+			if(overwrite || itemMappings.get(item) == null)
+				itemMappings.put(item, findNextFreeId(1, itemMappings.values()));
+		});
 	}
 
-	public void assignPacketIds() {
-		//AtomicInteger packetIdsCounter = new AtomicInteger(1);
-		packetMappings = new HashMap<>();
+	public void assignPacketIds(boolean overwrite) {
+		if(overwrite)
+			packetMappings = new HashMap<>();
+		
 		content.packets().all().forEachRemaining(def -> {
 			PacketDefinitionImpl definition = (PacketDefinitionImpl)def;
 			
-			int packetId = definition.getFixedId();
-			if(packetId != -1) {
-				packetMappings.put(definition, packetId);
-				logger.debug("Using pre-Assignated id "+packetId+" to "+definition.getName());
+			if(overwrite || packetMappings.get(definition) == null) {
+				
+				int packetId = definition.getFixedId();
+				if(packetId != -1) {
+					packetMappings.put(definition, packetId);
+					logger.debug("Using pre-Assignated id "+packetId+" to "+definition.getName());
+				}
 			}
 		});
 		
 		content.packets().all().forEachRemaining(def -> {
 			PacketDefinitionImpl definition = (PacketDefinitionImpl)def;
-			
-			int packetId = definition.getFixedId();
-			if(packetId == -1) {
-				packetId = findNextFreeId(0, packetMappings.values());
-				packetMappings.put(definition, packetId);
-				logger.debug("Assignated id "+packetId+" to "+definition.getName());
+
+			if(overwrite || packetMappings.get(definition) == null) {
+				int packetId = definition.getFixedId();
+				if(packetId == -1) {
+					packetId = findNextFreeId(0, packetMappings.values());
+					packetMappings.put(definition, packetId);
+					logger.debug("Assignated id "+packetId+" to "+definition.getName());
+				}
 			}
 		});
 	}

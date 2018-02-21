@@ -85,19 +85,62 @@ public abstract class PacketsContextCommon implements PacketReceptionContext, Pa
 			packetTypeId = secondByte | (firstByte & 0x7F) << 8;
 		}
 		
+		PacketDefinitionImpl def = (PacketDefinitionImpl) this.getContentTranslator().getPacketForId(packetTypeId);
+		if(def == null) {
+			throw new UnknowPacketException(packetTypeId);
+		}
+		
+		if(def.isStreamed() || def.getName().equals("file")) {
+			System.out.println("is streamed" + def.isStreamed());
+			return new LogicalPacketDatagram(def, -1) {
+
+				@Override
+				public DataInputStream getData() {
+					return in;
+				}
+
+				@Override
+				public void dispose() {
+					
+				}
+				
+			};
+		}
+		
 		int packetLength = in.readInt();
 		byte[] bitme = new byte[packetLength];
 		in.readFully(bitme);
 		
-		return new PacketIngoingBuffered(packetTypeId, packetLength, bitme);
+		return new PacketIngoingBuffered(def, packetLength, bitme);
+	}
+	
+	private void writePacketIdHeader(DataOutputStream out, short id) throws IOException {
+		if (id < 127)
+			out.writeByte((byte) id);
+		else {
+			out.writeByte((byte) (0x80 | id >> 8));
+			out.writeByte((byte) (id % 256));
+		}
 	}
 
-	public PacketOutgoingBuffered buildOutgoingPacket(Packet packet) throws UnknowPacketException, IOException {
+	public PacketOutgoing buildOutgoingPacket(Packet packet) throws UnknowPacketException, IOException {
 		try {
+			short packet_id = findIdForPacket(packet);
+			if(packet instanceof PacketSendFile) {
+				return new PacketOutgoing() {
+
+					@Override
+					public void write(DataOutputStream out) throws IOException {
+						writePacketIdHeader(out, packet_id);
+						packet.send(getInterlocutor(), out, PacketsContextCommon.this);
+					}
+					
+				};
+			}
+			
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			DataOutputStream dos = new DataOutputStream(baos);
 			
-			short packet_id = findIdForPacket(packet);
 			packet.send(getInterlocutor(), dos, this);
 			
 			PacketOutgoingBuffered buffered = new PacketOutgoingBuffered(this, packet_id, baos.size(), baos.toByteArray());

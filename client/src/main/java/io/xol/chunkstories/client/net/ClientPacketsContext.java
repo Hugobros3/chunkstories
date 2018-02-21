@@ -20,8 +20,8 @@ public class ClientPacketsContext extends PacketsContextCommon implements Client
 		this.clientConnection = clientConnection;
 		
 		InitialContentTranslator translator = new InitialContentTranslator(gameContext.getContent());
-		translator.assignPacketIds();
-		translator.buildArrays();
+		//translator.assignPacketIds();
+		//translator.buildArrays();
 		this.contentTranslator = translator;
 	}
 	

@@ -47,8 +47,6 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 		this.server = server;
 		
 		this.translator = (AbstractContentTranslator) super.getContentTranslator();
-		this.translator.assignPacketIds();
-		this.translator.buildArrays();
 		
 		this.virtualServerSoundManager = new VirtualSoundManager(this);
 		this.virtualServerParticlesManager = new VirtualServerParticlesManager(this, server);
@@ -158,7 +156,7 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 			LogicalPacketDatagram datagram = incomming.datagram;
 			
 			try {
-				PacketDefinitionImpl definition = (PacketDefinitionImpl) this.getContentTranslator().getPacketForId(datagram.packetTypeId);
+				PacketDefinitionImpl definition = (PacketDefinitionImpl) datagram.packetDefinition; //this.getContentTranslator().getPacketForId(datagram.packetTypeId);
 				Packet packet = definition.createNew(false, this);
 				
 				if(definition.getGenre() != PacketGenre.WORLD || !(packet instanceof PacketWorld)) {

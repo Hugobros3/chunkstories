@@ -44,7 +44,7 @@ public class PacketHeaderDecoder extends ByteToMessageDecoder  {
 		
 		if(in.readableBytes() >= packetSize) {
 			ByteBuf buffer = ctx.alloc().buffer(packetSize);
-			LogicalPacketDatagram datagram = new NettyPacketDatagram(packetTypeId, packetSize, buffer);
+			//LogicalPacketDatagram datagram = new NettyPacketDatagram(packetTypeId, packetSize, buffer);
 		}
 		
 		if(packetTypeId == 0x1) {

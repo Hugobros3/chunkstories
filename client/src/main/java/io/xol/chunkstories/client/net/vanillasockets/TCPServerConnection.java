@@ -89,7 +89,7 @@ public class TCPServerConnection extends ServerConnection {
 
 	@Override
 	public void handleDatagram(LogicalPacketDatagram datagram) throws IOException, PacketProcessingException, IllegalPacketException {
-		PacketDefinitionImpl definition = (PacketDefinitionImpl) getPacketsContext().getContentTranslator().getPacketForId(datagram.packetTypeId);
+		PacketDefinitionImpl definition = (PacketDefinitionImpl) datagram.packetDefinition;//(PacketDefinitionImpl) getPacketsContext().getContentTranslator().getPacketForId(datagram.packetTypeId);
 		if (definition.getGenre() == PacketGenre.GENERAL_PURPOSE) {
 			Packet packet = definition.createNew(true, null);
 			packet.process(getRemoteServer(), datagram.getData(), getPacketsContext());

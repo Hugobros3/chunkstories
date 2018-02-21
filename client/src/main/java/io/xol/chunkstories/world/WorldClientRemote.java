@@ -99,7 +99,7 @@ public class WorldClientRemote extends WorldClientCommon implements WorldClientN
 			LogicalPacketDatagram datagram = i.next();
 
 			try {
-				PacketDefinitionImpl definition = (PacketDefinitionImpl) this.getContentTranslator().getPacketForId(datagram.packetTypeId);
+				PacketDefinitionImpl definition = (PacketDefinitionImpl) datagram.packetDefinition; //this.getContentTranslator().getPacketForId(datagram.packetTypeId);
 				Packet packet = definition.createNew(true, this);
 				if(definition.getGenre() != PacketGenre.WORLD || !(packet instanceof PacketWorld)) {
 					logger().error(definition + " isn't a PacketWorld");

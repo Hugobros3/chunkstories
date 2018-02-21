@@ -83,6 +83,14 @@ public class LoadedContentTranslator extends AbstractContentTranslator {
 		if(missingMods.size() > 0)
 			throw new IncompatibleContentException("Missing mods: "+missingMods.toString());
 		
+		//Assign ids to whatever was added
+		this.assignVoxelIds(false);
+		this.assignEntityIds(false);
+		this.assignItemIds(false);
+		this.assignPacketIds(false);
+		
+		content.modsManager().getCurrentlyLoadedMods().forEach(m -> requiredMods.add(m.getModInfo().getInternalName()));
+		
 		buildArrays();
 	}
 

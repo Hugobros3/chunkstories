@@ -74,13 +74,7 @@ public class SocketedClientConnection extends ClientConnection {
 
 	@Override
 	public void handleDatagram(LogicalPacketDatagram datagram) throws IOException, PacketProcessingException, IllegalPacketException {
-		//logger.debug("Handling datagram with packetId:"+datagram.packetTypeId);
-		PacketDefinitionImpl definition = (PacketDefinitionImpl) getPacketsContext().getContentTranslator().getPacketForId(datagram.packetTypeId);
-		if(definition == null) {
-			logger.error("No definition found for id:"+datagram.packetTypeId);
-			return;
-		}
-		//logger.debug("Definition found:"+definition);
+		PacketDefinitionImpl definition = (PacketDefinitionImpl) datagram.packetDefinition;//getPacketsContext().getContentTranslator().getPacketForId(datagram.packetTypeId);
 		if (definition.getGenre() == PacketGenre.GENERAL_PURPOSE) {
 			Packet packet = definition.createNew(true, null);
 			packet.process(packetsProcessor.getInterlocutor(), datagram.getData(), getPacketsContext());

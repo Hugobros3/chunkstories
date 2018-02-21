@@ -15,8 +15,9 @@ import io.xol.chunkstories.materials.GenericNamedConfigurable;
 public class PacketDefinitionImpl extends GenericNamedConfigurable implements PacketDefinition {
 
 	final AllowedFrom allowedFrom;
-	final PacketGenre type;
+	final PacketGenre genre;
 	
+	final boolean streamed;
 	final int fixedId;
 	final Class<? extends Packet> clientClass;
 	final Class<? extends Packet> serverClass;
@@ -32,6 +33,7 @@ public class PacketDefinitionImpl extends GenericNamedConfigurable implements Pa
 			throws IllegalPacketDeclarationException, IOException {
 		super(name, reader);
 
+		streamed = Boolean.parseBoolean(this.resolveProperty("streamed", "false"));
 		fixedId = Integer.parseInt(this.resolveProperty("fixedId", "-1"));
 		
 		String afs = this.resolveProperty("allowedFrom", "all");
@@ -46,14 +48,14 @@ public class PacketDefinitionImpl extends GenericNamedConfigurable implements Pa
 
 		String tys = this.resolveProperty("type", "general");
 		if(tys.equals("general"))
-			type = PacketGenre.GENERAL_PURPOSE;
+			genre = PacketGenre.GENERAL_PURPOSE;
 		else if(tys.equals("system"))
-			type = PacketGenre.SYSTEM;
+			genre = PacketGenre.SYSTEM;
 		else if(tys.equals("world")) {
-			type = PacketGenre.WORLD;
+			genre = PacketGenre.WORLD;
 			constructorTakesWorld = true;
 		} else if(tys.equals("world_streaming")) {
-			type = PacketGenre.WORLD_STREAMING;
+			genre = PacketGenre.WORLD_STREAMING;
 			constructorTakesWorld = true;
 		} else 
 			throw new IllegalPacketDeclarationException("type can only take one of {general, systme, world, world_streaming}.");
@@ -168,6 +170,10 @@ public class PacketDefinitionImpl extends GenericNamedConfigurable implements Pa
 
 	@Override
 	public PacketGenre getGenre() {
-		return type;
+		return genre;
+	}
+
+	public boolean isStreamed() {
+		return streamed;
 	}
 }

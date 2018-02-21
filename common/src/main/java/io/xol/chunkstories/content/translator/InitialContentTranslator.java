@@ -12,10 +12,10 @@ public class InitialContentTranslator extends AbstractContentTranslator {
 		requiredMods = new HashSet<>();
 		content.modsManager().getCurrentlyLoadedMods().forEach(m -> requiredMods.add(m.getModInfo().getInternalName()));
 		
-		this.assignVoxelIds();
-		this.assignEntityIds();
-		this.assignItemIds();
-		//this.assignPacketIds(); - a priori not needed
+		this.assignVoxelIds(true);
+		this.assignEntityIds(true);
+		this.assignItemIds(true);
+		this.assignPacketIds(true);
 		
 		buildArrays();
 	}

@@ -3,12 +3,16 @@ package io.xol.chunkstories.net.netty;
 import java.io.DataInputStream;
 
 import io.netty.buffer.ByteBuf;
+import io.xol.chunkstories.api.net.PacketDefinition;
 import io.xol.chunkstories.net.LogicalPacketDatagram;
 
 public class NettyPacketDatagram extends LogicalPacketDatagram {
 
-	public NettyPacketDatagram(int packetTypeId, int packetSize, ByteBuf buffer) {
-		super(packetTypeId, packetSize);
+	
+
+	public NettyPacketDatagram(PacketDefinition packetDefinition, int packetSize) {
+		super(packetDefinition, packetSize);
+		// TODO Auto-generated constructor stub
 	}
 
 	@Override

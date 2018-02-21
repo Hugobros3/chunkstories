@@ -2,12 +2,15 @@ package io.xol.chunkstories.net;
 
 import java.io.DataInputStream;
 
+import io.xol.chunkstories.api.net.PacketDefinition;
+
 public abstract class LogicalPacketDatagram {
 
-	public final int packetTypeId, packetSize;
+	public final PacketDefinition packetDefinition;
+	public final int packetSize;
 	
-	public LogicalPacketDatagram(int packetTypeId, int packetSize) {
-		this.packetTypeId = packetTypeId;
+	public LogicalPacketDatagram(PacketDefinition packetDefinition, int packetSize) {
+		this.packetDefinition = packetDefinition;
 		this.packetSize = packetSize;
 	}
 	
