@@ -5,31 +5,31 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.lwjgl.BufferUtils;
-
-import io.xol.chunkstories.api.Location;
 import org.joml.Matrix4f;
 import org.joml.Vector3d;
 import org.joml.Vector3dc;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+import org.lwjgl.BufferUtils;
+
+import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.rendering.Primitive;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.effects.DecalsRenderer;
-import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
+import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
-import io.xol.chunkstories.api.rendering.Primitive;
-import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.voxel.VoxelBakerCubic;
+import io.xol.chunkstories.api.rendering.voxel.VoxelBakerHighPoly;
+import io.xol.chunkstories.api.rendering.voxel.VoxelRenderer;
+import io.xol.chunkstories.api.rendering.world.chunk.ChunkMeshDataSubtypes.LodLevel;
+import io.xol.chunkstories.api.rendering.world.chunk.ChunkMeshDataSubtypes.ShadingType;
+import io.xol.chunkstories.api.rendering.world.chunk.ChunkRenderer;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelSides.Corners;
-import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.LodLevel;
-import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
-import io.xol.chunkstories.api.voxel.models.ChunkRenderer;
-import io.xol.chunkstories.api.voxel.models.VoxelBakerCubic;
-import io.xol.chunkstories.api.voxel.models.VoxelBakerHighPoly;
-import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.cell.CellData;
 import io.xol.chunkstories.api.world.chunk.Chunk;
@@ -261,7 +261,7 @@ public class DecalsRendererImplementation implements DecalsRenderer
 							Chunk chunk = world.getChunkWorldCoordinates(location);
 							virtualRenderBytebuffer.setChunk(chunk);
 							
-							model.renderInto(chunkRenderer, o2, chunk, cell);
+							model.bakeInto(chunkRenderer, o2, chunk, cell);
 						}
 
 					}

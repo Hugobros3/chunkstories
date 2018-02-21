@@ -11,7 +11,7 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityDefinition;
 import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.WorldRenderer.RenderingPass;
+import io.xol.chunkstories.api.rendering.world.WorldRenderer.RenderingPass;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.rendering.entity.RenderingIterator;

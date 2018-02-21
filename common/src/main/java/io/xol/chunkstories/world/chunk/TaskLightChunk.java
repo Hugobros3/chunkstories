@@ -1,6 +1,6 @@
 package io.xol.chunkstories.world.chunk;
 
-import io.xol.chunkstories.api.rendering.world.ChunkRenderable;
+import io.xol.chunkstories.api.rendering.world.chunk.ChunkRenderable;
 import io.xol.chunkstories.api.workers.Task;
 import io.xol.chunkstories.api.workers.TaskExecutor;
 

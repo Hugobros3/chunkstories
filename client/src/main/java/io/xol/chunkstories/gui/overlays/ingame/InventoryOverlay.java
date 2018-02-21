@@ -80,15 +80,15 @@ public class InventoryOverlay extends Layer
 		{
 			int slotSize = 24 * 2;
 			
-			int width = slotSize * selectedItem.getItem().getType().getSlotsWidth();
-			int height = slotSize * selectedItem.getItem().getType().getSlotsHeight();
+			int width = slotSize * selectedItem.getItem().getDefinition().getSlotsWidth();
+			int height = slotSize * selectedItem.getItem().getDefinition().getSlotsHeight();
 			//GuiDrawer.drawBoxWindowsSpaceWithSize(mouse.getCursorX() - width / 2, mouse.getCursorY() - height / 2, width, height, 0, 1, 1, 0, textureId, true, true, null);
 
 			//
-			selectedItem.getItem().getType().getRenderer().renderItemInInventory(renderer, selectedItem, (float)mouse.getCursorX() - width / 2, (float)mouse.getCursorY() - height / 2, 2);
+			selectedItem.getItem().getDefinition().getRenderer().renderItemInInventory(renderer, selectedItem, (float)mouse.getCursorX() - width / 2, (float)mouse.getCursorY() - height / 2, 2);
 
 			if (selectedItemAmount != 1)
-				renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), (float)mouse.getCursorX() - width / 2 + (selectedItem.getItem().getType().getSlotsWidth() - 1.0f) * slotSize, (float)mouse.getCursorY() - height / 2, selectedItemAmount + "", 2, 2,
+				renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), (float)mouse.getCursorX() - width / 2 + (selectedItem.getItem().getDefinition().getSlotsWidth() - 1.0f) * slotSize, (float)mouse.getCursorY() - height / 2, selectedItemAmount + "", 2, 2,
 						new Vector4f(1, 1, 1, 1));
 
 		}

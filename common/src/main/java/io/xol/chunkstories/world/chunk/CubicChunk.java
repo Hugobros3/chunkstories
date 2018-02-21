@@ -1,14 +1,24 @@
 package io.xol.chunkstories.world.chunk;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.joml.Vector3dc;
+
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.events.voxel.WorldModificationCause;
 import io.xol.chunkstories.api.exceptions.world.WorldException;
 import io.xol.chunkstories.api.net.packets.PacketVoxelUpdate;
-
-import org.joml.Vector3dc;
-
-import io.xol.chunkstories.api.rendering.world.ChunkRenderable;
+import io.xol.chunkstories.api.rendering.world.chunk.ChunkRenderable;
 import io.xol.chunkstories.api.server.RemotePlayer;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.util.IterableIteratorWrapper;
@@ -31,17 +41,6 @@ import io.xol.chunkstories.voxel.components.CellComponentsHolder;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.region.RegionImplementation;
 import io.xol.engine.concurrency.SimpleLock;
-
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicInteger;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz

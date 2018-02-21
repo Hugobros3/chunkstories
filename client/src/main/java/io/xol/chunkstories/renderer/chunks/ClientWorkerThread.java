@@ -7,14 +7,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.xol.chunkstories.api.client.ClientContent;
+import io.xol.chunkstories.api.rendering.world.chunk.ChunkMeshDataSubtypes;
+import io.xol.chunkstories.api.rendering.world.chunk.ChunkMeshDataSubtypes.LodLevel;
+import io.xol.chunkstories.api.rendering.world.chunk.ChunkMeshDataSubtypes.ShadingType;
+import io.xol.chunkstories.api.rendering.world.chunk.ChunkMeshDataSubtypes.VertexLayout;
+import io.xol.chunkstories.api.rendering.world.chunk.vertexlayout.BaseLayoutBaker;
+import io.xol.chunkstories.api.rendering.world.chunk.vertexlayout.IntricateLayoutBaker;
+import io.xol.chunkstories.api.rendering.world.chunk.vertexlayout.WholeBlocksLayoutBaker;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
-import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes;
-import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.LodLevel;
-import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
-import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.VertexLayout;
-import io.xol.chunkstories.api.voxel.models.layout.BaseLayoutBaker;
-import io.xol.chunkstories.api.voxel.models.layout.IntricateLayoutBaker;
-import io.xol.chunkstories.api.voxel.models.layout.WholeBlocksLayoutBaker;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.workers.WorkerThread;
 

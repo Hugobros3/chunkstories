@@ -9,9 +9,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import io.xol.engine.graphics.textures.Texture1DGL;
-import io.xol.engine.graphics.textures.TexturesHandler;
-
 import org.joml.Vector3dc;
 import org.lwjgl.BufferUtils;
 
@@ -20,23 +17,26 @@ import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.WorldRenderer.FarTerrainRenderer;
-import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
-import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.PolygonFillMode;
+import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.rendering.textures.Texture1D;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
+import io.xol.chunkstories.api.rendering.world.WorldRenderer.FarTerrainRenderer;
+import io.xol.chunkstories.api.rendering.world.WorldRenderer.FarTerrainRenderer.ReadyVoxelMeshesMask;
+import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.renderer.WorldRendererImplementation;
 import io.xol.chunkstories.renderer.terrain.FarTerrainBaker.RegionMesh;
 import io.xol.chunkstories.voxel.VoxelTextureAtlased;
 import io.xol.chunkstories.world.WorldClientCommon;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
+import io.xol.engine.graphics.textures.Texture1DGL;
+import io.xol.engine.graphics.textures.TexturesHandler;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz

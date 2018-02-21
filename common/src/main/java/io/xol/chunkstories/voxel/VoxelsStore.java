@@ -10,7 +10,7 @@ import io.xol.chunkstories.api.content.Asset;
 //http://xol.io
 
 import io.xol.chunkstories.api.voxel.Voxel;
-import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
+import io.xol.chunkstories.api.rendering.voxel.VoxelRenderer;
 import io.xol.chunkstories.content.GameContentStore;
 import io.xol.chunkstories.voxel.models.VoxelModelsStore;
 

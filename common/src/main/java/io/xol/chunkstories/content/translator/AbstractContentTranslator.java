@@ -227,7 +227,7 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 
 	@Override
 	public int getIdForItem(Item item) {
-		return getIdForItem(item.getType());
+		return getIdForItem(item.getDefinition());
 	}
 
 	@Override

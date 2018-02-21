@@ -1,6 +1,5 @@
 package io.xol.chunkstories.gui;
 
-import io.xol.engine.base.GameWindowOpenGL_LWJGL3;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityLiving;
@@ -33,6 +32,7 @@ import io.xol.chunkstories.server.LocalServerContext;
 import io.xol.chunkstories.server.commands.content.ReloadContentCommand;
 import io.xol.chunkstories.world.WorldClientCommon;
 import io.xol.chunkstories.world.WorldClientRemote;
+import io.xol.engine.base.GameWindowOpenGL_LWJGL3;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz
@@ -336,7 +336,7 @@ public class Ingame extends Layer
 					selectedInventorySlot %= ((EntityWithInventory) playerEntity).getInventory().getWidth();
 					selected = ((EntityWithInventory) playerEntity).getInventory().getItemPileAt(selectedInventorySlot, 0);
 					if (selected != null)
-						selectedInventorySlot += selected.getItem().getType().getSlotsWidth();
+						selectedInventorySlot += selected.getItem().getDefinition().getSlotsWidth();
 					else
 						selectedInventorySlot++;
 				}

@@ -2,10 +2,10 @@ package io.xol.chunkstories.renderer.decals;
 
 import java.nio.ByteBuffer;
 
-import io.xol.chunkstories.api.voxel.models.layout.IntricateLayoutBaker;
-import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.client.ClientContent;
-import io.xol.chunkstories.api.voxel.models.VoxelBakerCubic;
+import io.xol.chunkstories.api.rendering.voxel.VoxelBakerCubic;
+import io.xol.chunkstories.api.rendering.world.chunk.vertexlayout.IntricateLayoutBaker;
+import io.xol.chunkstories.api.world.chunk.Chunk;
 
 //(c) 2015-2017 XolioWare Interactive
 //http://chunkstories.xyz

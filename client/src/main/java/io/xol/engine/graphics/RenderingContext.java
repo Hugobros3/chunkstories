@@ -1,19 +1,27 @@
 package io.xol.engine.graphics;
 
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+
+import org.joml.Matrix4f;
+import org.lwjgl.BufferUtils;
+
 import io.xol.chunkstories.api.client.ClientContent.TexturesLibrary;
 import io.xol.chunkstories.api.client.ClientRenderingConfig;
 import io.xol.chunkstories.api.exceptions.rendering.AttributeNotPresentException;
 import io.xol.chunkstories.api.exceptions.rendering.RenderingException;
-import org.joml.Matrix4f;
+import io.xol.chunkstories.api.rendering.Primitive;
+import io.xol.chunkstories.api.rendering.RenderingCommand;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.mesh.ClientMeshLibrary;
 import io.xol.chunkstories.api.rendering.pipeline.AttributesConfiguration;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration;
-import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
-import io.xol.chunkstories.api.rendering.pipeline.TexturingConfiguration;
-import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.PolygonFillMode;
+import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
+import io.xol.chunkstories.api.rendering.pipeline.TexturingConfiguration;
 import io.xol.chunkstories.api.rendering.target.RenderTargetManager;
 import io.xol.chunkstories.api.rendering.textures.ArrayTexture;
 import io.xol.chunkstories.api.rendering.textures.Cubemap;
@@ -23,28 +31,21 @@ import io.xol.chunkstories.api.rendering.textures.TextureFormat;
 import io.xol.chunkstories.api.rendering.vertex.AttributeSource;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
+import io.xol.chunkstories.api.rendering.world.WorldRenderer;
+import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.lights.LightsRenderer;
-import io.xol.chunkstories.api.rendering.Primitive;
-import io.xol.chunkstories.api.rendering.RenderingCommand;
-import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.WorldRenderer;
-import io.xol.chunkstories.api.rendering.mesh.ClientMeshLibrary;
 import io.xol.engine.base.GameWindowOpenGL_LWJGL3;
 import io.xol.engine.graphics.fbo.OpenGLRenderTargetManager;
 import io.xol.engine.graphics.fonts.TrueTypeFontRenderer;
 import io.xol.engine.graphics.geometry.VertexBufferGL;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersStore;
-import io.xol.engine.graphics.textures.TextureGL;
 import io.xol.engine.graphics.textures.Texture2DRenderTargetGL;
+import io.xol.engine.graphics.textures.TextureGL;
 import io.xol.engine.graphics.textures.TexturingConfigurationImplementation;
 import io.xol.engine.graphics.util.GuiRendererImplementation;
-
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-import org.lwjgl.BufferUtils;
 
 //(c) 2015-2017 XolioWare Interactive
 // http://chunkstories.xyz

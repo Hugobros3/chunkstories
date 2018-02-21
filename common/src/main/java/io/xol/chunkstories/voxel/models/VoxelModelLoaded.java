@@ -2,14 +2,14 @@ package io.xol.chunkstories.voxel.models;
 
 import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.content.Content.Voxels.VoxelModels;
+import io.xol.chunkstories.api.rendering.voxel.VoxelBakerHighPoly;
+import io.xol.chunkstories.api.rendering.voxel.VoxelRenderer;
+import io.xol.chunkstories.api.rendering.world.chunk.ChunkMeshDataSubtypes.LodLevel;
+import io.xol.chunkstories.api.rendering.world.chunk.ChunkMeshDataSubtypes.ShadingType;
+import io.xol.chunkstories.api.rendering.world.chunk.ChunkRenderer;
+import io.xol.chunkstories.api.rendering.world.chunk.ChunkRenderer.ChunkRenderContext;
 import io.xol.chunkstories.api.voxel.VoxelSides;
-import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.LodLevel;
-import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
-import io.xol.chunkstories.api.voxel.models.ChunkRenderer.ChunkRenderContext;
-import io.xol.chunkstories.api.voxel.models.ChunkRenderer;
-import io.xol.chunkstories.api.voxel.models.VoxelBakerHighPoly;
 import io.xol.chunkstories.api.voxel.models.VoxelModel;
-import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
 import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.api.world.cell.CellData;
 import io.xol.chunkstories.api.world.chunk.Chunk;
@@ -284,7 +284,7 @@ public class VoxelModelLoaded implements VoxelRenderer, VoxelModel
 	}
 
 	@Override
-	public int renderInto(ChunkRenderer chunkRenderer, ChunkRenderContext bakingContext, Chunk chunk, CellData cell)
+	public int bakeInto(ChunkRenderer chunkRenderer, ChunkRenderContext bakingContext, Chunk chunk, CellData cell)
 	{
 		VoxelBakerHighPoly renderByteBuffer = chunkRenderer.getHighpolyBakerFor(LodLevel.ANY, ShadingType.OPAQUE);
 		return this.renderInto(renderByteBuffer, bakingContext, cell, chunk, cell.getX() & 0x1F, cell.getY() & 0x1F, cell.getZ() & 0x1F);

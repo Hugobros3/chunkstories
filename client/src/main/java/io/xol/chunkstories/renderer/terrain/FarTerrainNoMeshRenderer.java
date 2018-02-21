@@ -16,14 +16,15 @@ import io.xol.chunkstories.api.rendering.Primitive;
 //http://xol.io
 
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.WorldRenderer.FarTerrainRenderer;
-import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.PolygonFillMode;
+import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
+import io.xol.chunkstories.api.rendering.world.WorldRenderer.FarTerrainRenderer;
+import io.xol.chunkstories.api.rendering.world.WorldRenderer.FarTerrainRenderer.ReadyVoxelMeshesMask;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;

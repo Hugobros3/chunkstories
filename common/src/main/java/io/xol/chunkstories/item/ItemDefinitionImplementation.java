@@ -5,13 +5,13 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-import io.xol.chunkstories.api.content.Content.ItemsDefinitions;
 import io.xol.chunkstories.api.client.ClientContent;
+import io.xol.chunkstories.api.content.Content.ItemsDefinitions;
 import io.xol.chunkstories.api.exceptions.content.IllegalItemDeclarationException;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemDefinition;
-import io.xol.chunkstories.api.item.renderer.ItemRenderer;
-import io.xol.chunkstories.api.item.renderer.NullItemRenderer;
+import io.xol.chunkstories.api.rendering.item.ItemRenderer;
+import io.xol.chunkstories.api.rendering.item.NullItemRenderer;
 import io.xol.chunkstories.materials.GenericNamedConfigurable;
 
 //(c) 2015-2017 XolioWare Interactive

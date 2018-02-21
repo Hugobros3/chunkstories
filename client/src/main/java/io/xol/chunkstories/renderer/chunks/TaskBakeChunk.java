@@ -12,20 +12,21 @@ import org.slf4j.LoggerFactory;
 import io.xol.chunkstories.api.exceptions.tasks.UnexecutableTaskException;
 import io.xol.chunkstories.api.math.LoopingMathHelper;
 import io.xol.chunkstories.api.math.Math2;
-import io.xol.chunkstories.api.rendering.world.ChunkRenderable;
+import io.xol.chunkstories.api.rendering.voxel.VoxelBakerCubic;
+import io.xol.chunkstories.api.rendering.voxel.VoxelBakerHighPoly;
+import io.xol.chunkstories.api.rendering.voxel.VoxelRenderer;
+import io.xol.chunkstories.api.rendering.world.chunk.ChunkMeshDataSubtypes;
+import io.xol.chunkstories.api.rendering.world.chunk.ChunkMeshDataSubtypes.LodLevel;
+import io.xol.chunkstories.api.rendering.world.chunk.ChunkMeshDataSubtypes.ShadingType;
+import io.xol.chunkstories.api.rendering.world.chunk.ChunkMeshDataSubtypes.VertexLayout;
+import io.xol.chunkstories.api.rendering.world.chunk.ChunkRenderable;
+import io.xol.chunkstories.api.rendering.world.chunk.ChunkRenderer;
+import io.xol.chunkstories.api.rendering.world.chunk.ChunkRenderer.ChunkRenderContext;
+import io.xol.chunkstories.api.rendering.world.chunk.ChunkRenderer.ChunkRenderContext.VoxelLighter;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.voxel.VoxelSides.Corners;
-import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes;
-import io.xol.chunkstories.api.voxel.models.ChunkRenderer;
-import io.xol.chunkstories.api.voxel.models.VoxelBakerCubic;
-import io.xol.chunkstories.api.voxel.models.VoxelBakerHighPoly;
-import io.xol.chunkstories.api.voxel.models.VoxelRenderer;
-import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.LodLevel;
-import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.ShadingType;
-import io.xol.chunkstories.api.voxel.models.ChunkMeshDataSubtypes.VertexLayout;
-import io.xol.chunkstories.api.voxel.models.ChunkRenderer.ChunkRenderContext;
 import io.xol.chunkstories.api.workers.Task;
 import io.xol.chunkstories.api.workers.TaskExecutor;
 import io.xol.chunkstories.api.world.WorldClient;
@@ -273,7 +274,7 @@ public class TaskBakeChunk extends Task {
 						voxelRenderer = world.getContent().voxels().getDefaultVoxelRenderer();
 					
 					// Run the VoxelRenderer
-					voxelRenderer.renderInto(chunkRendererOutput, chunkRenderingContext, chunk, cell);
+					voxelRenderer.bakeInto(chunkRendererOutput, chunkRenderingContext, chunk, cell);
 					
 					// We handle voxels with a dynamic renderer here too - we just add them to a list !
 					//TODO
