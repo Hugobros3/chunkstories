@@ -8,8 +8,8 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import io.xol.chunkstories.api.content.OnlineContentTranslator;
 import io.xol.chunkstories.api.exceptions.PacketProcessingException;
 import io.xol.chunkstories.api.net.Packet;
-import io.xol.chunkstories.api.net.PacketWorld;
 import io.xol.chunkstories.api.net.PacketDefinition.PacketGenre;
+import io.xol.chunkstories.api.net.PacketWorld;
 import io.xol.chunkstories.api.net.packets.PacketTime;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.util.IterableIterator;
@@ -22,8 +22,7 @@ import io.xol.chunkstories.server.DedicatedServer;
 import io.xol.chunkstories.server.player.ServerPlayer;
 import io.xol.chunkstories.server.propagation.VirtualServerDecalsManager;
 import io.xol.chunkstories.server.propagation.VirtualServerParticlesManager;
-import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.chunkstories.world.io.IOTasksMultiplayerServer;
+import io.xol.chunkstories.world.io.IOTasks;
 import io.xol.engine.sound.sources.VirtualSoundManager;
 
 //(c) 2015-2017 XolioWare Interactive
@@ -52,7 +51,7 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 		this.virtualServerParticlesManager = new VirtualServerParticlesManager(this, server);
 		this.virtualServerDecalsManager = new VirtualServerDecalsManager(this, server);
 
-		ioHandler = new IOTasksMultiplayerServer(this);
+		ioHandler = new IOTasks(this);
 		ioHandler.start();
 	}
 	

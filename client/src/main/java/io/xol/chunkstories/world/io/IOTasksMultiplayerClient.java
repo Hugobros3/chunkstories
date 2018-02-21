@@ -7,7 +7,6 @@ import java.security.NoSuchAlgorithmException;
 
 import io.xol.chunkstories.api.exceptions.net.IllegalPacketException;
 import io.xol.chunkstories.api.net.PacketWorldStreaming;
-import io.xol.chunkstories.api.net.packets.PacketWorldUser;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.workers.TaskExecutor;
 import io.xol.chunkstories.client.Client;
@@ -142,9 +141,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 				return;
 			region.getChunkHolder(((PacketChunkCompressedData) packet).x, ((PacketChunkCompressedData) packet).y, ((PacketChunkCompressedData) packet).z).
 				createChunk(((PacketChunkCompressedData) packet).data);
-		} /*else if(packet instanceof PacketWorldUser) {
-			client.getPlayer().loadingAgent.handleServerResponse((PacketWorldUser) packet);
-		}*/
+		}
 		
 		//Else
 		else throw new IllegalPacketException(packet) {

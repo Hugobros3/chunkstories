@@ -8,9 +8,9 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.content.OnlineContentTranslator;
-import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.exceptions.PacketProcessingException;
 import io.xol.chunkstories.api.exceptions.net.IllegalPacketException;
 import io.xol.chunkstories.api.exceptions.net.UnknowPacketException;
@@ -21,7 +21,6 @@ import io.xol.chunkstories.api.net.PacketReceptionContext;
 import io.xol.chunkstories.api.net.PacketSendingContext;
 import io.xol.chunkstories.api.net.packets.PacketText;
 import io.xol.chunkstories.api.world.WorldNetworked;
-import io.xol.chunkstories.content.translator.AbstractContentTranslator;
 import io.xol.chunkstories.net.packets.PacketSendFile;
 
 //(c) 2015-2017 XolioWare Interactive
