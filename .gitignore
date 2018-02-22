@@ -28,7 +28,6 @@ bin/
 */build/
 *.class
 scripts/
-*.bat
 version.txt
 
 _Random utility/built jars no one cares about_
@@ -66,3 +65,4 @@ gradle.properties
 /Renderdoc-client.cap
 namalsk-map/
 core_content.zip
+debug-server-*
