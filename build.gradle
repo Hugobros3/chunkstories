@@ -76,13 +76,16 @@ task uploadAll {
 	dependsOn ':common:uploadArchives'
 }
 
-task versionTxt() << {
-    def file = new File("$projectDir/version.txt")
-    file.createNewFile()
-    file.text = """version: $version
-commit: ${Grgit.open(dir: '.').head().id}
-buildtime: ${new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(new Date())}
-"""
+task versionTxt {
+
+	doLast {
+		def file = new File("$projectDir/version.txt")
+		file.createNewFile()
+		file.text = """version: $version
+		commit: ${Grgit.open(dir: '.').head().id}
+		buildtime: ${new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(new Date())}
+		"""
+	}
 }
 
 repositories {
