@@ -19,11 +19,13 @@ subprojects {
 	buildscript {
 			repositories {
 				mavenCentral()
-				maven { url 'https://jitpack.io' }
+				//maven { url 'https://jitpack.io' }
+				maven { url "http://maven.xol.io/repository/public/" }
 			}
 
 			dependencies {
-				classpath 'com.github.johni0702:gradle-ecj-plugin:795736c7bd085c6ff3a5fbd3f5d2913c94fe589e'
+				classpath 'de.johni0702.gradle:gradle-ecj-plugin:1.1-JAVA9'
+				//classpath 'com.github.johni0702:gradle-ecj-plugin:795736c7bd085c6ff3a5fbd3f5d2913c94fe589e'
 			}
 	}
 }
@@ -116,7 +118,10 @@ subprojects { subproject ->
 		compileJava.options.compilerArgs << '-Xlint:-deprecation'
 		compileJava.options.compilerArgs << '-Xlint:none'
 			
-		compileJava.options.encoding = 'UTF-8'
+		compileJava.options.encoding = 'utf-8'
+
+		sourceCompatibility = '1.8'
+		targetCompatibility = '1.8'
 
 		switch ( OperatingSystem.current() ) {
 			case OperatingSystem.WINDOWS:
