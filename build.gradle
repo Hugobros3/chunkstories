@@ -218,7 +218,7 @@ subprojects { subproject ->
 	}
 
 	dependencies {
-		deployerJars "org.apache.maven.wagon:wagon-ssh:2.12" //<-- fuck this fuck this fuck this
+		deployerJars "org.apache.maven.wagon:wagon-ssh:3.0.0"
 	}
 }
 
