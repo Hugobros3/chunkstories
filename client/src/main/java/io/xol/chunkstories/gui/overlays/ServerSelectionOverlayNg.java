@@ -289,6 +289,7 @@ public class ServerSelectionOverlayNg extends Layer implements HttpRequester
 				DataInputStream in = new DataInputStream(socket.getInputStream());
 				DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 				out.write((byte)0x00);
+				out.writeInt("info".getBytes("UTF-8").length+2);
 				out.writeUTF("info");
 				out.flush();
 				
@@ -319,6 +320,7 @@ public class ServerSelectionOverlayNg extends Layer implements HttpRequester
 				
 				//Requests icon file
 				out.write((byte)0x00);
+				out.writeInt("icon-file".getBytes("UTF-8").length+2);
 				out.writeUTF("icon-file");
 				out.flush();
 				//Expect reply immediately
