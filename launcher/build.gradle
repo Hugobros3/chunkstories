@@ -31,6 +31,10 @@ dependencies {
     testCompile 'junit:junit:4.12'
 }
 
+processResources {
+	dependsOn rootProject.versionTxt
+}
+
 test {
 	workingDir = rootProject.projectDir
 	testLogging {

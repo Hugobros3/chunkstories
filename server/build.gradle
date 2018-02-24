@@ -25,6 +25,10 @@ dependencies {
 	compile project(':common')
 }
 
+processResources {
+	dependsOn rootProject.versionTxt
+}
+
 jar {
 	archivesBaseName = 'server-naked'
 	manifest {

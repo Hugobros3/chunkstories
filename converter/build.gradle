@@ -26,6 +26,10 @@ dependencies {
 	//compile group: 'io.xol.chunkstories', name: 'core', version: contentRevisionBuiltAgainst, ext: 'jar'
 }
 
+processResources {
+	dependsOn rootProject.versionTxt
+}
+
 jar {
 	archivesBaseName = 'converter-only'
 }
