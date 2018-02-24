@@ -13,6 +13,8 @@ import java.io.FileOutputStream;
 import java.net.Socket;
 
 import org.joml.Vector4f;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.input.Input;
@@ -32,8 +34,6 @@ import io.xol.engine.gui.elements.InputText;
 import io.xol.engine.net.HttpRequestThread;
 import io.xol.engine.net.HttpRequester;
 
-
-
 public class ServerSelectionOverlayNg extends Layer implements HttpRequester
 {
 	InputText ipForm = new InputText(this, 0, 0, 500);
@@ -45,6 +45,8 @@ public class ServerSelectionOverlayNg extends Layer implements HttpRequester
 	
 	boolean autologin;
 	private boolean movedInList = false;
+	
+	private final static Logger logger = LoggerFactory.getLogger("gui.serverselection");
 
 	public ServerSelectionOverlayNg(GameWindow scene, Layer parent, boolean a)
 	{
@@ -126,35 +128,6 @@ public class ServerSelectionOverlayNg extends Layer implements HttpRequester
 	@Override
 	public boolean handleInput(Input input)
 	{
-		//if (k == Keyboard.KEY_TAB)// FastConfig.keyTab)
-		//	guiHandler.next();
-		
-		//TODO Move special text edition tools to inputText class
-		
-		/*else if (k == 47 && (InputAbstractor.isKeyDown(29) || InputAbstractor.isKeyDown(157))) // Copy/paste
-		{
-			Clipboard clip = Toolkit.getDefaultToolkit().getSystemClipboard();
-			if (clip.isDataFlavorAvailable(DataFlavor.stringFlavor))
-			{
-				String newTxt = null;
-				try
-				{
-					newTxt = (String) clip.getData(DataFlavor.stringFlavor);
-				}
-				catch (UnsupportedFlavorException | IOException e)
-				{
-					e.printStackTrace();
-				}
-				if (newTxt != null)
-					ipForm.text = newTxt;
-			}
-		}
-		else if (k == 14 && (InputAbstractor.isKeyDown(29) || InputAbstractor.isKeyDown(157))) // CTR-DELETE
-		{
-			ipForm.text = "";
-		}
-		else */
-		
 		if (input.equals("enter"))
 			login();
 		else if (input.equals("refreshServers")) // F5
@@ -326,6 +299,8 @@ public class ServerSelectionOverlayNg extends Layer implements HttpRequester
 				{
 					//Discard first byte, assummed to be packed id
 					in.readByte();
+					//Discard one more byte, assumed to be packet length
+					in.readInt();
 					lineRead = in.readUTF();
 					//System.out.println("red:"+lineRead);
 					if (lineRead.startsWith("info/"))
@@ -348,11 +323,11 @@ public class ServerSelectionOverlayNg extends Layer implements HttpRequester
 				out.flush();
 				//Expect reply immediately
 				byte expect = in.readByte();
-				System.out.println("Expected:"+expect);
+				logger.info("Expected:"+expect);
 				//Read and discard tag, we know what we are expecting
 				in.readUTF();
 				long fileLength = in.readLong();
-				System.out.println("fileLength:"+fileLength);
+				logger.info("fileLength:"+fileLength);
 				
 				if (fileLength > 0)
 				{
@@ -378,7 +353,7 @@ public class ServerSelectionOverlayNg extends Layer implements HttpRequester
 			catch (Exception e)
 			{
 				//e.printStackTrace();
-				description = "Couldn't update.";
+				description = e.toString();
 				gameMode = "Couldn't update.";
 				version = "Unkwnow version";
 				
