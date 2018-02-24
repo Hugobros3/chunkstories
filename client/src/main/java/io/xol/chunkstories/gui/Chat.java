@@ -8,11 +8,11 @@ package io.xol.chunkstories.gui;
 
 import io.xol.engine.gui.elements.InputText;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.gui.Layer;
@@ -37,7 +37,7 @@ public class Chat
 
 	private int chatHistorySize = 150;
 	
-	private Deque<ChatLine> chat = new ArrayDeque<ChatLine>();
+	private Deque<ChatLine> chat = new ConcurrentLinkedDeque<ChatLine>();
 	private List<String> sent = new ArrayList<String>();
 	
 	private int sentMessages = 0;
