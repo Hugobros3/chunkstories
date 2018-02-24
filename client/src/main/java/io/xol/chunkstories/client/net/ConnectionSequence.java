@@ -1,3 +1,9 @@
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.chunkstories.client.net;
 
 import java.io.File;
@@ -17,10 +23,6 @@ import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.content.mods.ModZip;
 import io.xol.engine.misc.ConnectionStep;
 import io.xol.engine.net.SimplePostRequest;
-
-//(c) 2015-2017 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
 
 /** The job of the ConnectionSequence is to execute the required steps to login in a server, while monitoring back progress to the main thread */
 public class ConnectionSequence extends Thread

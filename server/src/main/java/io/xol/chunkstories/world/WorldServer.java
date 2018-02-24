@@ -1,3 +1,9 @@
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.chunkstories.world;
 
 import java.io.IOException;
@@ -24,10 +30,6 @@ import io.xol.chunkstories.server.propagation.VirtualServerDecalsManager;
 import io.xol.chunkstories.server.propagation.VirtualServerParticlesManager;
 import io.xol.chunkstories.world.io.IOTasks;
 import io.xol.engine.sound.sources.VirtualSoundManager;
-
-//(c) 2015-2017 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
 
 public class WorldServer extends WorldImplementation implements WorldMaster, WorldNetworked
 {

@@ -1,3 +1,9 @@
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.engine.graphics.geometry;
 
 import java.nio.ByteBuffer;
@@ -16,10 +22,6 @@ import org.joml.Vector4f;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.engine.graphics.fonts.TrueTypeFont;
 import io.xol.engine.graphics.fonts.TrueTypeFontRenderer;
-
-//(c) 2015-2017 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
 
 public class TextMeshObject implements TextMesh
 {

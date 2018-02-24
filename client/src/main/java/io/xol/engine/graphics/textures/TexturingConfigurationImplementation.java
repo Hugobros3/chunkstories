@@ -1,8 +1,10 @@
-package io.xol.engine.graphics.textures;
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
 
-//(c) 2015-2017 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
+package io.xol.engine.graphics.textures;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,10 +20,6 @@ import io.xol.chunkstories.api.rendering.textures.Texture1D;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.engine.graphics.shaders.ShaderProgram;
-
-//(c) 2015-2017 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
 
 import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL20.glUniform1i;

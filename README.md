@@ -1,63 +1,69 @@
 # Chunk Stories
-## A Moddable voxel game  engine
 
-Chunk Stories is a fully-featured voxel game engine written in Java, aiming to replace Minecraft as a modding framework to build mods and total conversions on. It features almost everything the original game could do, but is built in a modular and open fashion so as to accept modifications naturally and hassle-free.
+![alt text](http://chunkstories.xyz/img/github_header.png "Header screenshot")
 
-It features an API, an implementation of that API in the form of client and server executables and everything else is merely mods loaded at runtime. A base mod called "core" is bundled to give content creators a solid base upon which to build the gamemode of their dreams.
+### A Voxel Games Framework
 
-#### Why yet another clone ?
+Chunk Stories is a fully-featured voxel game engine written in Java, aiming to replace Minecraft/MCP as a modding framework to build mods and total conversions on. It features almost everything the original game could do, but is built in a modular and open fashion : everything is either engine or content. Mods are, by design, first-class citizens, and multiple of them can be loaded at the same time, without requiring a game restart. A server can host it's own custom mods and have the clients download them upon connection. It's basically gmod for Minecraft.
 
-It may have occured to you that a while ago, some company of the name 'Microsoft' spent a respectable country's GPD to aquire the rights to the videogame 'Minecraft', to the astonishment of most observers and fears of some faitfull players. More recently their strategy has become increasingly clear, as the proper Minecraft is being renamed 'Java Edition', as a way to slowly but surely phase it out. Replacing it is effectively a port of the C++/C# console remake, exclusive to Windows 10 and while bearing much ressemblance to the actual thing, is absolutely not geared towards modding nor is welcoming to anyone brave enough to go ahead and decompile it.
+The project consists of an API, an implementation of that API in the form of client and server executables and everything else is merely mods loaded at runtime. A base mod called "chunkstories-core" or just "core" is bundled with executables to give content creators a solid base upon which to build the gamemode of their dreams. It comes with most basic bloc types a Minecraft clone is expected to have: dirt, stone, wood, glass, chests, doors etc.
 
-For the author, Chunk Stories is and always has been a side project, made for fun and for learning to become a better programmer, but with the turns of events it also happens that there is some kind of niche opening-up: frustrated 'Java Edition' Minecraft modders, left homeless in the grand plans of Microsoft, or just unhappy with having to run a glorified spyware as their main OS. Chunk Stories borrows heavily from one of two best things about the Minecraft modding ecosystem: The Bukkit-style of plugins, and the ressource-pack style of mods packaging, adding in it's own ideas and paradigms.
+### Why yet another Minecraft clone ?
 
-### Technical notes
+It may have occured to you that a while ago, some company of the name 'Microsoft' spent more than what a few countries GPD to aquire the rights to the videogame 'Minecraft', to the astonishment of observers and fears of some faitfull players. More recently their strategy has become increasingly clear: they are using the brand to promote their other products, and are phasing out the relativly open, and beloved so-called "Java Edition". Replacing it is effectively a port of the C++/C# console remake, exclusive to the platforms Microsoft *wants* you to use.
 
-Chunk Stories is written in Java 8, using LWJGL3 as it's OpenGL wrapper. It uses Gradle in it's wrapper fashion to automate the build process, JOML for mathematical functions, lz4 for chunk compression, jansi for console coloring, for the full list of librairies used, see CREDITS.
+Chunk Stories is free software and runs on any platform someone can be bothered to port the implementation to.
 
-Here's a bullet points list:
+#### You didn't answer the question. There already are multiple open minecraft clones!
+
+For the author, Chunk Stories is and always has been a side project, made for fun and to become a better programmer. This is the main quest. The author also has the smug belief that other clones are flawed in some way, and he can do better, especially in the mods handling department. ( [Yes, that](https://xkcd.com/927/) )
+
+To this end, Chunk Stories borrows heavily from one of two best things about the Minecraft modding ecosystem: The Bukkit-style of plugins, and the server-downloadable "ressource packs", mixing the two into the idea of a "Mod".
+
+### Engine Features
 
  * Configuration files allow to redefine almost anything using a simplistic syntax
  * Customizable network packets, world generation, inputs, GUI*, fonts, localization, ...
- * Up to 65536 voxel types, with 8-bit metadata and support for [even more data](http://chunkstories.xyz/wiki)
- * Support for items that take up more than 1 slot
- * Component-based entity system
- * Self-wrapping worlds built out of cubical 32³ chunks, (un)loaded explicitly by reference counting
- * Heightmap summaries for far terrain rendering up to 1km
- * Modern-ish renderer in GL3.3 core, supporting deffered rendering, hotloading shaders, instanced rendering, particles, SSR, bloom, you name it
- * Skeleton-based animation system with hitboxes
  * Support for basically loading everything at runtime, including downloading on server connection
- * Works on Windows and Linux ( osx may work but unsupported )
+ * You only deal with named definitions, voxels|items|entities|whatever IDs are allocated automatically and dynamically
+ * Up to 65535 voxel types, with 8-bit metadata and optional support for [even more data](http://chunkstories.xyz/wiki)
+ * Component-based entity system
+ * Heightmap representation for unloaded terrain, rendering up to 1km
+ * Modern-ish renderer in GL3.3 core, supporting deffered rendering, reloading shaders, instanced rendering, particles, SSR, bloom, you name it
+ * Built-in support for AABB physics, skeletal animation with hitscan hit detection and more
+ * Works on Windows and Linux ( OSX may work but unsupported )
 
 \* some stuff *might* not be quite done right now
 
-### Building & Eclipse setup
+### Building chunkstories
 
-####Working on the core engine *(select contributors only)*
-Clone the `chunkstories` repo and run `gradlew buildAll` ( `./gradlew buildAll`on unixes ). 
-`gradlew client:run`and `gradlew server:run`respectively will compile and launch an up-to-date client or server. The build script takes care of setting up the right arguments for you.
+*This is for building `chunkstories`, the core engine. If you are only looking to write mods, you do not have to mess with this at all and should rather follow the [mods creation guide](http://chunkstories.xyz/wiki/doku.php?id=mod_setup) on the project Wiki !*
 
-Using Eclipse, do `Import->Gradle Project` and select the directory where you cloned chunkstories in, wait for it to rebuild the project and then you can create a new launch configuration. For the game to work properly, you must set the work directory to the root 'chunkstories' project, use `--dir=.` to tell the game to use the local directory and not .chunkstories, and finally you must use `--core=path/to/core_content.zip` to point to the directory or zipfile containing the base content you wish to use.
+#### Setup
 
-####Modifying the core content
-Clone the `chunkstories-core` repo and run `gradlew install` ( `./gradlew install`on unixes ). This will build you a copy of the latest official content in `build/distributions/core_content.zip`as well as updating the `res/` folder in the root of the project to include the built .jars, meaning you can use that directory instead of the zipfile when working on your content to iterate quickly.
+First you need to clone both `chunkstories-api` and `chunkstories-core` as both are needed to compile this. You can try to build from the artifacts in the repo, but only those used in released versions of the games are guaranteed to be present.
+ * `git clone` both `chunkstories-api` and `chunkstories-core`
+ * in the chunkstories-api folder: `./gradlew install` or `gradlew.exe install`on Windows
+ * in the chunkstories-core folder: `./gradlew install` or `gradlew.exe install`on Windows
 
-#### Modifiying the API
-Clone the `chunkstories-api` repo and run `gradlew install` ( `./gradlew install`on unixes ). This will build you a copy of the latest API
+The local maven repository on your computer (.m2 folder) now contains copies of both the api and core content the chunkstories engine requires. These are not automatically rebuilt when building the implementation as they are completly seperate projects, so keep that in mind.
 
-#### Creating mods and new content
+#### Gradle Tasks
 
-Clone the `chunkstories-template`repo and check out the instructions. It comes with a basic build.gradle configuration file, you just have to edit in your mod name, author, version and description, and run `gradlew mod`to package your mod.
+ * `./gradlew client:shadowJar` builds the Client executable (chunkstories.jar)
+ * `./gradlew server:shadowJar` builds the Server executable (server.jar)
+ * `./gradlew converter:shadowJar` builds the Map converter executable (converter.jar)
+ * `./gradlew launcher:createExe` builds the launcher executables (.exe and .jar as well)
+ * `./gradlew buildAll` builds all of the above
 
-#### What If I just want to play the game ?
+### Links
 
-You did not quite come to the right place for this. If you're just interested in playing Chunk Stories, you should check out the [Official Website](https://chunkstories.xyz)
+ * To lean how to play the game and register an account, please visit http://chunkstories.xyz
+ * You can find a lot more information on the game wiki, including guides to writing mods, at http://chunkstories.xyz/wiki/
+ * You can find videos and dev logs on the lead developper youtube channel: http://youtube.com/Hugobros3
+ * We have a discord where anyone can discuss with the devs: https://discord.gg/wudd4pe
+ * You can get support either by opening a issue on this project or by visiting the subreddit over at https://reddit.com/r/chunkstories
 
-### Licensing
+### License
 
-This project was entirely developed by Hugo "Gobrosse" Devillers on his spare time. The API is licensed under -, meaning anyone can do whatever the fuck they want with it. 
-
-The core content **code** is released under
-The core content **assets** that aren't specified otherwise in ATTRIBUTION.md are released under Creative Commons NON-COMMERCIAL ATTRIBUTION REDISTRIBUABLE, meaning you can use them with your mods, hack them up and have fun, but you can't use them in commercial projects nor claim you made them. 
-
-The implementation code remains private for the moment. It's not as clean, features angry french curse words, bloated build scripts and maybe even an evil bitcoin miner. Maybe not. I'm actually mostly cool with showing the code, but letting people lead my project in another direction isn't what I want, and publishing on github would distract me while not bringing anything to the table. This can of course change once I no longer work on this project "full-free-time"
+The chunkstories **implementation** is released under LGPL, see LICENSE.MD

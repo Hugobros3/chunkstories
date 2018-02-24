@@ -1,3 +1,9 @@
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.chunkstories.world.region.format;
 
 import java.io.DataInputStream;
@@ -12,10 +18,6 @@ import org.slf4j.LoggerFactory;
 
 import io.xol.chunkstories.api.world.serialization.OfflineSerializedData;
 import io.xol.chunkstories.world.region.RegionImplementation;
-
-//(c) 2015-2017 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
 
 /** Common region file storage formats stuff */
 public abstract class CSFRegionFile implements OfflineSerializedData {

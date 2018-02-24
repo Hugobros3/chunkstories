@@ -1,3 +1,9 @@
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.engine.animation;
 
 import java.util.HashMap;
@@ -11,9 +17,7 @@ import io.xol.chunkstories.api.content.Content.AnimationsLibrary;
 import io.xol.chunkstories.content.GameContentStore;
 import io.xol.engine.animation.BVHAnimation;
 
-//(c) 2015-2017 XolioWare Interactive
-// http://chunkstories.xyz
-// http://xol.io
+
 
 public class BVHLibrary implements AnimationsLibrary
 {

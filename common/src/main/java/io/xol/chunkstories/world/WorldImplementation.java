@@ -1,3 +1,9 @@
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.chunkstories.world;
 
 import java.io.BufferedReader;
@@ -71,9 +77,7 @@ import io.xol.chunkstories.world.summary.WorldRegionSummariesHolder;
 import io.xol.engine.concurrency.CompoundFence;
 import io.xol.engine.misc.ConfigFile;
 
-//(c) 2015-2017 XolioWare Interactive
-// http://chunkstories.xyz
-// http://xol.io
+
 
 public abstract class WorldImplementation implements World
 {

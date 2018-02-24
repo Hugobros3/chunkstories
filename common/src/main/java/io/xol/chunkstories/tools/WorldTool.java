@@ -1,3 +1,9 @@
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.chunkstories.tools;
 
 import java.util.Iterator;
@@ -20,10 +26,6 @@ import io.xol.chunkstories.world.WorldLoadingException;
 import io.xol.chunkstories.world.io.IOTasks;
 import io.xol.chunkstories.world.io.IOTasksImmediate;
 import io.xol.engine.sound.sources.DummySoundSource;
-
-//(c) 2015-2017 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
 
 public class WorldTool extends WorldImplementation implements WorldMaster
 {

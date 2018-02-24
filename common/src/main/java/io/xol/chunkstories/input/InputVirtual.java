@@ -1,10 +1,12 @@
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.chunkstories.input;
 
 import io.xol.chunkstories.api.input.Input;
-
-//(c) 2015-2017 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
 
 /** An input not linked to actual hardware directly, either representing a remote input or an input used for internal purposes ( like actions buttons, 'pressed' by the
  * client to tell the master what they did with fancy semantics, see shootGun in res/virtual.inputs */

@@ -1,3 +1,9 @@
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.chunkstories.voxel;
 
 import java.awt.Transparency;
@@ -36,9 +42,7 @@ import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.content.GameContentStore;
 import io.xol.chunkstories.content.GameDirectory;
 
-//(c) 2015-2017 XolioWare Interactive
-// http://chunkstories.xyz
-// http://xol.io
+
 
 public class VoxelTexturesStoreAndAtlaser implements ClientContent.ClientVoxels.ClientVoxelTextures
 {

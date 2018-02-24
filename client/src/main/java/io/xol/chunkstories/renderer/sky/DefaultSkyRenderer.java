@@ -1,3 +1,9 @@
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.chunkstories.renderer.sky;
 
 import java.nio.FloatBuffer;
@@ -19,10 +25,6 @@ import io.xol.chunkstories.api.rendering.world.SkyboxRenderer;
 import io.xol.chunkstories.api.world.World;
 //import io.xol.engine.graphics.geometry.FloatBufferAttributeSource;
 import io.xol.engine.graphics.textures.TexturesHandler;
-
-//(c) 2015-2017 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
 
 public class DefaultSkyRenderer implements SkyboxRenderer
 {

@@ -1,11 +1,15 @@
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 /*package io.xol.engine.gui;
 
 import io.xol.engine.base.GameWindowOpenGL_LWJGL3;
 import io.xol.engine.graphics.RenderingContext;
 
-//(c) 2015-2017 XolioWare Interactive
-// http://chunkstories.xyz
-// http://xol.io
+
 
 public abstract class Scene
 {

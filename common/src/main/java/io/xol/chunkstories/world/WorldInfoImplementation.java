@@ -1,3 +1,9 @@
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.chunkstories.world;
 
 import java.io.BufferedReader;
@@ -13,9 +19,7 @@ import java.util.Map.Entry;
 import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.materials.GenericConfigurable;
 
-//(c) 2015-2017 XolioWare Interactive
-// http://chunkstories.xyz
-// http://xol.io
+
 
 public class WorldInfoImplementation extends GenericConfigurable implements WorldInfo
 {

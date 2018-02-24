@@ -1,3 +1,9 @@
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.chunkstories.content.mods;
 
 import java.io.IOException;
@@ -16,10 +22,6 @@ import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.content.mods.Mod;
 import io.xol.chunkstories.api.content.mods.ModInfo;
 import io.xol.chunkstories.api.util.IterableIterator;
-
-//(c) 2015-2017 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
 
 public abstract class ModImplementation implements Mod
 {

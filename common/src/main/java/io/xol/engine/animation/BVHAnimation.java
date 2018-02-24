@@ -1,3 +1,9 @@
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.engine.animation;
 
 import java.io.BufferedReader;
@@ -18,9 +24,7 @@ import org.joml.Vector3f;
 import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 
-//(c) 2015-2017 XolioWare Interactive
-// http://chunkstories.xyz
-// http://xol.io
+
 
 public class BVHAnimation implements SkeletalAnimation
 {

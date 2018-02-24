@@ -1,3 +1,9 @@
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.chunkstories.server.net.packets;
 
 import java.io.DataInputStream;
@@ -6,9 +12,7 @@ import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketReceptionContext;
 import io.xol.chunkstories.api.net.packets.PacketText;
 
-//(c) 2015-2017 XolioWare Interactive
-// http://chunkstories.xyz
-// http://xol.io
+
 
 public class PacketReceiveText extends PacketText
 {

@@ -1,13 +1,15 @@
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.chunkstories.materials;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 
 import io.xol.chunkstories.api.voxel.materials.Material;
-
-//(c) 2015-2017 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
 
 public class MaterialImplementation extends GenericNamedConfigurable implements Material
 {	

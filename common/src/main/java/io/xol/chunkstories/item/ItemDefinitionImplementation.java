@@ -1,3 +1,9 @@
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.chunkstories.item;
 
 import java.io.BufferedReader;
@@ -13,10 +19,6 @@ import io.xol.chunkstories.api.item.ItemDefinition;
 import io.xol.chunkstories.api.rendering.item.ItemRenderer;
 import io.xol.chunkstories.api.rendering.item.NullItemRenderer;
 import io.xol.chunkstories.materials.GenericNamedConfigurable;
-
-//(c) 2015-2017 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
 
 public class ItemDefinitionImplementation extends GenericNamedConfigurable implements ItemDefinition
 {

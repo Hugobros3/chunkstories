@@ -1,3 +1,9 @@
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.chunkstories.net;
 
 import java.io.ByteArrayOutputStream;
@@ -22,10 +28,6 @@ import io.xol.chunkstories.api.net.PacketSendingContext;
 import io.xol.chunkstories.api.net.packets.PacketText;
 import io.xol.chunkstories.api.world.WorldNetworked;
 import io.xol.chunkstories.net.packets.PacketSendFile;
-
-//(c) 2015-2017 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
 
 /** The task of the packet processor is to decode & sort incomming packets by ID and to send outcoming packets with the right packet ID. */
 public abstract class PacketsContextCommon implements PacketReceptionContext, PacketSendingContext

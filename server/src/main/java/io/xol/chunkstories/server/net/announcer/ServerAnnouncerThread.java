@@ -1,3 +1,9 @@
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.chunkstories.server.net.announcer;
 
 import java.net.Inet4Address;
@@ -8,9 +14,7 @@ import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.server.DedicatedServer;
 import io.xol.engine.net.HttpRequests;
 
-//(c) 2015-2017 XolioWare Interactive
-// http://chunkstories.xyz
-// http://xol.io
+
 
 //TODO Use proper way to http stuff instead of this ugly ass hack
 /**

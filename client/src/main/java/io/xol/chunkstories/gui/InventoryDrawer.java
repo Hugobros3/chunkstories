@@ -1,3 +1,9 @@
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.chunkstories.gui;
 
 import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
@@ -10,9 +16,7 @@ import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.gui.overlays.ingame.InventoryOverlay;
 import io.xol.engine.graphics.textures.TexturesHandler;
 
-//(c) 2015-2017 XolioWare Interactive
-// http://chunkstories.xyz
-// http://xol.io
+
 
 public class InventoryDrawer
 {

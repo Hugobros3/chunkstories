@@ -1,6 +1,10 @@
-package io.xol.chunkstories.updater;
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
 
-//(c) 2015 XolioWare Interactive
+package io.xol.chunkstories.updater;
 
 import java.awt.Color;
 import java.io.BufferedReader;

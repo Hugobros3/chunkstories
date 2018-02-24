@@ -1,3 +1,9 @@
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.chunkstories.server.player;
 
 import io.xol.chunkstories.api.Location;
@@ -33,9 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.joml.Vector3d;
 
-//(c) 2015-2017 XolioWare Interactive
-// http://chunkstories.xyz
-// http://xol.io
+
 
 public class ServerPlayer implements RemotePlayer {
 	protected final ClientConnection connection;

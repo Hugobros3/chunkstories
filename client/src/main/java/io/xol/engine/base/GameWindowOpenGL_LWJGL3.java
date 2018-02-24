@@ -1,8 +1,10 @@
-package io.xol.engine.base;
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
 
-//(c) 2015-2016 XolioWare Interactive
-// http://chunkstories.xyz
-// http://xol.io
+package io.xol.engine.base;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -446,7 +448,7 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 			}
 			
 			//Sane way of ending the game.
-			client.logger().info("Copyright 2015-2017 XolioWare Interactive");
+			client.logger().info("Game exitting cleanly.");
 			
 			soundManager.destroy();
 			client.onClose();

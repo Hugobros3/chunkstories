@@ -1,3 +1,9 @@
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.chunkstories.content;
 
 import org.slf4j.Logger;
@@ -10,10 +16,6 @@ import io.xol.chunkstories.api.rendering.textures.TextureFormat;
 import io.xol.engine.graphics.textures.Texture2DRenderTargetGL;
 import io.xol.engine.graphics.textures.TextureGL;
 import io.xol.engine.graphics.textures.TexturesHandler;
-
-//(c) 2015-2017 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
 
 //TODO merge this & TexturesHandler
 public class ClientTexturesLibrary implements TexturesLibrary {

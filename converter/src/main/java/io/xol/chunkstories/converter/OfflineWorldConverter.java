@@ -1,3 +1,9 @@
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.chunkstories.converter;
 
 import java.io.File;
@@ -21,10 +27,6 @@ import io.xol.chunkstories.world.WorldLoadingException;
 import io.xol.chunkstories.world.WorldInfoImplementation;
 import io.xol.engine.misc.FoldersUtils;
 import io.xol.enklume.MinecraftWorld;
-
-//(c) 2015-2017 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
 
 public abstract class OfflineWorldConverter implements GameContext, WorldUser {
 	
@@ -59,7 +61,7 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser {
 		
 		int threadCount = -1;
 
-		File coreContentLocation = new File("core_content.zip");
+		File coreContentLocation = new File("we.zip");
 		for (int i = 5; i < arguments.length; i++) {
 			if (arguments[i].startsWith("-")) {
 				if (arguments[i].contains("v"))

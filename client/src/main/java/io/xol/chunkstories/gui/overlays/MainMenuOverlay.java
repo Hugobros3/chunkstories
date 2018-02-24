@@ -1,3 +1,9 @@
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.chunkstories.gui.overlays;
 
 import io.xol.chunkstories.VersionInfo;
@@ -11,10 +17,6 @@ import io.xol.chunkstories.gui.ng.LargeButtonIcon;
 import io.xol.chunkstories.gui.overlays.config.LogPolicyAsk;
 import io.xol.chunkstories.gui.overlays.config.ModsSelectionOverlay;
 import io.xol.chunkstories.gui.overlays.config.OptionsOverlay;
-
-//(c) 2015-2017 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
 
 public class MainMenuOverlay extends Layer
 {
@@ -121,7 +123,7 @@ public class MainMenuOverlay extends Layer
 		renderingContext.getFontRenderer().defaultFont().getWidth(version);
 		renderingContext.getFontRenderer().drawString(renderingContext.getFontRenderer().defaultFont(), 4, 0, version, this.getGuiScale(), noticeColor);
 	
-		String copyrightNotice = "Copyright (c) 2016-2017 XolioWare Interactive";
+		String copyrightNotice = "2015-2018 Hugo 'Gobrosse' Devillers";
 		float noticeDekal = renderingContext.getFontRenderer().defaultFont().getWidth(copyrightNotice) * (this.getGuiScale());
 		renderingContext.getFontRenderer().drawString(renderingContext.getFontRenderer().defaultFont(), renderingContext.getWindow().getWidth() - noticeDekal - 4, 0, copyrightNotice, this.getGuiScale(), noticeColor);
 	

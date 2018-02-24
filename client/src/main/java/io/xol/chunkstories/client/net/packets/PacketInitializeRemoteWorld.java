@@ -1,3 +1,9 @@
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.chunkstories.client.net.packets;
 
 import java.io.BufferedReader;
@@ -16,10 +22,6 @@ import io.xol.chunkstories.net.packets.PacketSendWorldInfo;
 import io.xol.chunkstories.world.WorldClientRemote;
 import io.xol.chunkstories.world.WorldInfoImplementation;
 import io.xol.chunkstories.world.WorldLoadingException;
-
-//(c) 2015-2017 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
 
 public class PacketInitializeRemoteWorld extends PacketSendWorldInfo {
 

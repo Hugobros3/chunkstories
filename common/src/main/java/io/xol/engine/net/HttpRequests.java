@@ -1,3 +1,9 @@
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.engine.net;
 
 import java.io.BufferedReader;
@@ -8,9 +14,7 @@ import java.net.URL;
 
 import javax.net.ssl.HttpsURLConnection;
 
-//(c) 2015-2017 XolioWare Interactive
-// http://chunkstories.xyz
-// http://xol.io
+
 
 /** 
  * Hilariously ugly helper methods I wrote in 2014 for another, unrelated game and kept using

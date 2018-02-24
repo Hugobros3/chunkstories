@@ -28,6 +28,17 @@ subprojects {
 				//classpath 'com.github.johni0702:gradle-ecj-plugin:795736c7bd085c6ff3a5fbd3f5d2913c94fe589e'
 			}
 	}
+	
+	apply plugin: "com.github.hierynomus.license"
+	
+	license {
+		header rootProject.file('codequality/header-include-notice.txt')
+		strictCheck true
+		
+		mapping {
+			java='DOUBLESLASH_STYLE'
+		}
+	}
 }
 
 buildscript {
@@ -38,6 +49,7 @@ buildscript {
 	}
 	dependencies {
 		classpath "org.ajoberstar:grgit:2.1.0"
+		classpath "gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.14.0"
 	}
 }
 

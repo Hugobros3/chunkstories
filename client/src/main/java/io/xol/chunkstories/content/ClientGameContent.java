@@ -1,3 +1,9 @@
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.chunkstories.content;
 
 import java.io.File;
@@ -9,10 +15,6 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.mesh.ClientMeshStore;
 import io.xol.engine.graphics.shaders.ShadersStore;
 import io.xol.engine.sound.library.SoundsLibrary;
-
-//(c) 2015-2017 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
 
 public class ClientGameContent extends GameContentStore implements ClientContent
 {

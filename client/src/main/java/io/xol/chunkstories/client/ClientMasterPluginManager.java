@@ -1,3 +1,9 @@
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.chunkstories.client;
 
 import io.xol.chunkstories.api.client.ClientInterface;
@@ -6,10 +12,6 @@ import io.xol.chunkstories.api.plugin.ServerPluginManager;
 import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.plugin.DefaultPluginManager;
 import io.xol.chunkstories.server.LocalServerContext;
-
-//(c) 2015-2017 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
 
 public class ClientMasterPluginManager extends DefaultPluginManager implements ClientPluginManager, ServerPluginManager
 {

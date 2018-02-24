@@ -1,8 +1,10 @@
-package io.xol.chunkstories.plugin;
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
 
-//(c) 2015-2017 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
+package io.xol.chunkstories.plugin;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -31,10 +33,6 @@ import io.xol.chunkstories.api.plugin.ServerPlugin;
 import io.xol.chunkstories.api.plugin.commands.PluginCommand;
 import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.content.GameDirectory;
-
-//(c) 2015-2017 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
 
 /** Loads the plugin definition from it's Jar file and allows to instanciate it */
 public class PluginInformationImplementation extends URLClassLoader implements PluginInformation

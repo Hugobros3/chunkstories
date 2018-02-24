@@ -1,3 +1,9 @@
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.engine.graphics.fbo;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -9,10 +15,6 @@ import io.xol.chunkstories.api.rendering.target.RenderTarget;
 import io.xol.chunkstories.api.rendering.target.RenderTargetAttachementsConfiguration;
 import io.xol.chunkstories.api.rendering.target.RenderTargetManager;
 import io.xol.engine.graphics.RenderingContext;
-
-//(c) 2015-2017 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
 
 public class OpenGLRenderTargetManager implements RenderTargetManager
 {

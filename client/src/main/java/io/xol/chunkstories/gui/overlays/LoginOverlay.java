@@ -1,3 +1,9 @@
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.chunkstories.gui.overlays;
 
 import io.xol.chunkstories.api.gui.FocusableGuiElement;
@@ -16,10 +22,6 @@ import io.xol.engine.gui.elements.Button;
 import io.xol.engine.gui.elements.InputText;
 import io.xol.engine.net.HttpRequestThread;
 import io.xol.engine.net.HttpRequester;
-
-//(c) 2015-2017 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
 
 public class LoginOverlay extends Layer implements HttpRequester
 {
@@ -124,7 +126,7 @@ public class LoginOverlay extends Layer implements HttpRequester
 			}
 		}
 		
-		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), 12, 12 , "Copyright 2017 XolioWare Interactive", 2, 2, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
+		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), 12, 12 , "2015-2018 Hugo 'Gobrosse' Devillers", 2, 2, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
 	}
 	
 	void connect()

@@ -1,3 +1,9 @@
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.chunkstories.world;
 
 import java.io.IOException;
@@ -19,10 +25,6 @@ import io.xol.chunkstories.net.LogicalPacketDatagram;
 import io.xol.chunkstories.net.PacketDefinitionImpl;
 import io.xol.chunkstories.net.PacketsContextCommon;
 import io.xol.chunkstories.world.io.IOTasksMultiplayerClient;
-
-//(c) 2015-2017 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
 
 public class WorldClientRemote extends WorldClientCommon implements WorldClientNetworkedRemote
 {

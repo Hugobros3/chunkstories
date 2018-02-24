@@ -1,3 +1,9 @@
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.chunkstories.content.mods;
 
 import java.io.BufferedReader;
@@ -9,10 +15,6 @@ import io.xol.chunkstories.api.exceptions.content.mods.MalformedModTxtException;
 import io.xol.chunkstories.api.content.mods.Mod;
 import io.xol.chunkstories.api.content.mods.ModInfo;
 import io.xol.chunkstories.materials.GenericConfigurable;
-
-//(c) 2015-2017 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
 
 public class ModInfoImplementation extends GenericConfigurable implements ModInfo
 {

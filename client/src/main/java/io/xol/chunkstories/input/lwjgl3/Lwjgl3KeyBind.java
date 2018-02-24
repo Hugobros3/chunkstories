@@ -1,13 +1,15 @@
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.chunkstories.input.lwjgl3;
 
 import static org.lwjgl.glfw.GLFW.*;
 
 import io.xol.chunkstories.api.input.KeyboardKeyInput;
 import io.xol.chunkstories.client.Client;
-
-//(c) 2015-2017 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
 
 /**
  * Describes a key assignated to some action

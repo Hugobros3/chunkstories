@@ -1,3 +1,9 @@
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.chunkstories.bugsreporter;
 
 import java.io.File;
@@ -8,10 +14,6 @@ import org.slf4j.LoggerFactory;
 import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.content.GameDirectory;
-
-//(c) 2015-2017 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
 
 /** A straightforward class that look for hs_id_err files, uploads them and then moves the files to logs/ */
 public class JavaCrashesUploader extends Thread

@@ -1,12 +1,14 @@
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.engine.base;
 
 import org.lwjgl.opengl.GLDebugMessageARBCallbackI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-//(c) 2015-2017 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
 
 public class OpenGLDebugOutputCallback implements GLDebugMessageARBCallbackI
 {

@@ -1,3 +1,9 @@
+//
+// This file is a part of the Chunk Stories API codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.chunkstories.server;
 
 import java.util.Collection;
@@ -13,10 +19,6 @@ import io.xol.chunkstories.input.InputVirtual;
 import io.xol.chunkstories.input.InputsManagerLoader;
 import io.xol.chunkstories.server.player.ServerPlayer;
 import io.xol.chunkstories.input.InputsLoaderHelper;
-
-//(c) 2015-2017 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
 
 public class ServerInputsManager implements InputsManager, InputsManagerLoader
 {
