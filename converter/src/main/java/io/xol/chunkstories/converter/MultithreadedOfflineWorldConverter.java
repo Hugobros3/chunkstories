@@ -51,19 +51,11 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 		//Destroy the workers or it won't do shit
 		this.workers.destroy();
 		
-		System.out.println("Done converting "+mcWorldName + ", took "+timeTookSeconds + " seconds.");
+		logger.info("Done converting "+mcWorldName + ", took "+timeTookSeconds + " seconds.");
 	}
-	
 
-	protected void stepOneCopyWorldData(MinecraftWorld mcWorld, WorldImplementation csWorld, int minecraftOffsetX,
-			int minecraftOffsetZ) {
-
+	protected void stepOneCopyWorldData(MinecraftWorld mcWorld, WorldImplementation csWorld, int minecraftOffsetX, int minecraftOffsetZ) {
 		verbose("Entering step one: converting raw block data");
-
-		long ict = System.nanoTime();
-		/*verbose("Creating ids conversion cache");
-		int[] quickConversion = IDsConverter.generateQuickConversionTable();
-		verbose("Done, took " + (System.nanoTime() - ict) / 1000 + " µs");*/
 
 		//Prepares the loops
 		WorldSize size = csWorld.getWorldInfo().getSize();
@@ -82,14 +74,12 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 		double completion = 0.0;
 		long lastPercentageShow = System.currentTimeMillis();
 
-		try
-		{
-			//We do this minecraft region per minecraft region.
-			for (int minecraftRegionX = mcRegionStartX; minecraftRegionX < mcRegionEndX; minecraftRegionX++)
-			{
-				for (int minecraftRegionZ = mcRegionStartZ; minecraftRegionZ < mcRegionEndZ; minecraftRegionZ++)
-				{
-					//Load the culprit (There isn't any fancy world management, the getRegion() actually loads the entire region file)
+		try {
+			// We do this minecraft region per minecraft region.
+			for (int minecraftRegionX = mcRegionStartX; minecraftRegionX < mcRegionEndX; minecraftRegionX++) {
+				for (int minecraftRegionZ = mcRegionStartZ; minecraftRegionZ < mcRegionEndZ; minecraftRegionZ++) {
+					// Load the culprit (There isn't any fancy world management, the getRegion()
+					// actually loads the entire region file)
 					MinecraftRegion minecraftRegion = mcWorld.getRegion(minecraftRegionX, minecraftRegionZ);
 
 					CompoundFence waitForTheBoys = new CompoundFence();
@@ -148,9 +138,7 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 
 				}
 			}
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
@@ -172,19 +160,15 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 		int wave = 0;
 		
 		CompoundFence compoundFence = new CompoundFence();
-		for (int regionX = 0; regionX < size.sizeInChunks / 8; regionX++)
-			for (int regionZ = 0; regionZ < size.sizeInChunks / 8; regionZ++)
-			{
+		for (int regionX = 0; regionX < size.sizeInChunks / 8; regionX++) {
+			for (int regionZ = 0; regionZ < size.sizeInChunks / 8; regionZ++) {
 				TaskBuildRegionSummary task = new TaskBuildRegionSummary(regionX, regionZ, csWorld);
 				workers.scheduleTask(task);
 				compoundFence.traverse();
 				
-				if(wave < wavesSize) {
-					
+				if (wave < wavesSize) {
 					wave++;
-				}
-				else
-				{
+				} else {
 					compoundFence.traverse();
 					compoundFence.clear();
 					
@@ -192,13 +176,12 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 					done += wavesSize;
 					
 					//Display progress...
-					if (Math.floor(((double) done / (double) todo) * 100) > completion)
-					{
+					if (Math.floor(((double) done / (double) todo) * 100) > completion) {
 						completion = Math.floor(((double) done / (double) todo) * 100);
 
-						if (completion >= 100.0 || (System.currentTimeMillis() - lastPercentageShow > 5000))
-						{
-							verbose(completion + "% ... using " + Runtime.getRuntime().freeMemory() / 1024 / 1024 + "/" + Runtime.getRuntime().maxMemory() / 1024 / 1024 + "Mb ");
+						if (completion >= 100.0 || (System.currentTimeMillis() - lastPercentageShow > 5000)) {
+							verbose(completion + "% ... using " + Runtime.getRuntime().freeMemory() / 1024 / 1024 + "/"
+									+ Runtime.getRuntime().maxMemory() / 1024 / 1024 + "Mb ");
 							lastPercentageShow = System.currentTimeMillis();
 						}
 					}
@@ -206,11 +189,10 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 					//Drop all unsued chunk data
 					workers.dropAll();
 					
-					//verbose("Saving unused chunk data...");
 					csWorld.unloadUselessData().traverse();
-					//verbose("Done.");
 				}
 			}
+		}
 		compoundFence.traverse();
 
 		//Drop all unsued chunk data
@@ -223,9 +205,8 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 
 	protected void stepThreeSpreadLightning(WorldImplementation csWorld) {
 		verbose("Entering step three: spreading light");
-
+		
 		WorldSize size = csWorld.getWorldInfo().getSize();
-
 		int maxHeightPossible = 256;
 
 		int done = 0;
@@ -245,54 +226,44 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 
 		CompoundFence waveFence = new CompoundFence();
 		
-		for (int chunkX = 0; chunkX < size.sizeInChunks; chunkX++)
-			for (int chunkZ = 0; chunkZ < size.sizeInChunks; chunkZ++)
-			{
-				//if(wave < waveSize) {
-					wave++;
-					
-					CompoundFence loadRelevantData = new CompoundFence();
-					
-					//RegionSummary sum = csWorld.getRegionsSummariesHolder().getRegionSummaryChunkCoordinates(chunkX, chunkZ);
-					//if (sum == null)
-					//{
-						//System.out.println("Loading missing summary");
-					
-					RegionSummary sum = csWorld.getRegionsSummariesHolder().aquireRegionSummaryChunkCoordinates(worldUser, chunkX, chunkZ);
-					registeredCS_Summaries.add(sum);
-					loadRelevantData.add(sum.waitForLoading());
-					
-					//}
-	
-					//Loads 3x3 arround relevant chunks
-					for (int i = -1; i < 2; i++)
-						for (int j = -1; j < 2; j++)
-							for (int chunkY = 0; chunkY <= maxHeightPossible / 32; chunkY++)
-							{
-								ChunkHolder holder = csWorld.aquireChunkHolder(worldUser, chunkX + i, chunkY, chunkZ + j);
-								if (holder != null) {
-									loadRelevantData.add(holder.waitForLoading());
-									if(registeredCS_Holders.add(holder))
-										chunksAquired++;
-								}
+		for (int chunkX = 0; chunkX < size.sizeInChunks; chunkX++) {
+			for (int chunkZ = 0; chunkZ < size.sizeInChunks; chunkZ++) {
+				wave++;
+				
+				CompoundFence loadRelevantData = new CompoundFence();
+				
+				RegionSummary sum = csWorld.getRegionsSummariesHolder().aquireRegionSummaryChunkCoordinates(worldUser, chunkX, chunkZ);
+				registeredCS_Summaries.add(sum);
+				loadRelevantData.add(sum.waitForLoading());
+				
+				// Loads 3x3 arround relevant chunks
+				for (int i = -1; i < 2; i++) {
+					for (int j = -1; j < 2; j++) {
+						for (int chunkY = 0; chunkY <= maxHeightPossible / 32; chunkY++) {
+							ChunkHolder chunkHolder = csWorld.aquireChunkHolder(worldUser, chunkX + i, chunkY, chunkZ + j);
+							if (chunkHolder != null) {
+								loadRelevantData.add(chunkHolder.waitForLoading());
+								if (registeredCS_Holders.add(chunkHolder))
+									chunksAquired++;
 							}
-					
-					//Wait for everything to actually load
-					loadRelevantData.traverse();
-	
-					//Spreads lightning, from top to botton
-					for (int chunkY = maxHeightPossible / 32; chunkY >= 0; chunkY--)
-					{
-						CubicChunk chunk = csWorld.getChunk(chunkX, chunkY, chunkZ);
-						TaskLightChunk task = new TaskLightChunk(chunk, true);
-						workers.scheduleTask(task);
-						waveFence.add(task);
-						//csWorld.getChunk(chunkX, chunkY, chunkZ).computeVoxelLightning(true);
+						}
 					}
-				//}
-				//else
-				if(wave >= waveSize)
-				{
+				}
+				
+				assert chunksAquired == registeredCS_Holders.size();
+				
+				//Wait for everything to actually load
+				loadRelevantData.traverse();
+
+				//Spreads lightning, from top to botton
+				for (int chunkY = maxHeightPossible / 32; chunkY >= 0; chunkY--) {
+					CubicChunk chunk = csWorld.getChunk(chunkX, chunkY, chunkZ);
+					TaskLightChunk task = new TaskLightChunk(chunk, true);
+					workers.scheduleTask(task);
+					waveFence.add(task);
+				}
+					
+				if (wave >= waveSize) {
 					waveFence.traverse();
 					waveFence.clear();
 					
@@ -300,42 +271,41 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 					
 					//Show progress
 					done+= waveSize;
-					if (Math.floor(((double) done / (double) todo) * 100) > completion)
-					{
+					if (Math.floor(((double) done / (double) todo) * 100) > completion) {
 						completion = Math.floor(((double) done / (double) todo) * 100);
-	
-						if (completion >= 100.0 || (System.currentTimeMillis() - lastPercentageShow > 5000))
-						{
-							verbose(completion + "% ... using " + Runtime.getRuntime().freeMemory() / 1024 / 1024 + "/" + Runtime.getRuntime().maxMemory() / 1024 / 1024 + "Mb ");
+
+						if (completion >= 100.0 || (System.currentTimeMillis() - lastPercentageShow > 5000)) {
+							verbose(completion + "% ... using " + Runtime.getRuntime().freeMemory() / 1024 / 1024 + "/"
+									+ Runtime.getRuntime().maxMemory() / 1024 / 1024 + "Mb ");
 							lastPercentageShow = System.currentTimeMillis();
 						}
 					}
 				
-					if (registeredCS_Holders.size() > targetChunksToKeepInRam)
-					{
-						//Save world
-						//verbose("More than "+targetChunksToKeepInRam+" chunks already in memory, saving and unloading before continuing");
-						
-						//csWorld.saveEverything();
-						//for(Region region : registeredCS_Regions)
-						//	region.unregisterUser(user);
-	
+					if (registeredCS_Holders.size() > targetChunksToKeepInRam) {
+						// Save world
+						// verbose("More than "+targetChunksToKeepInRam+" chunks already in memory, saving and unloading before continuing");
+
+						// csWorld.saveEverything();
+						// for(Region region : registeredCS_Regions)
+						// region.unregisterUser(user);
+
 						for (ChunkHolder holder : registeredCS_Holders) {
 							holder.unregisterUser(worldUser);
 							chunksAquired--;
 						}
-	
+
 						for (RegionSummary summary : registeredCS_Summaries)
 							summary.unregisterUser(worldUser);
-	
+
 						registeredCS_Summaries.clear();
 						registeredCS_Holders.clear();
-	
+
 						csWorld.unloadUselessData().traverse();
-						//verbose("Done.");
+						// verbose("Done.");
 					}
 				}
 			}
+		}
 
 		waveFence.traverse();
 		wave = 0;

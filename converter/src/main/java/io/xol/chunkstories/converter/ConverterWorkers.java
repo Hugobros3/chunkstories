@@ -160,9 +160,7 @@ public class ConverterWorkers extends TasksPool<Task> implements Tasks
 		CompoundFence doneAll = new CompoundFence();
 		SimpleFence atSignal = new SimpleFence();
 		
-		for(ConverterWorkerThread cwt : workers) {
-			//cwt.pleaseDrop.set(true);
-			
+		for(int i = 0; i < workers.length; i++) {
 			SimpleFence ready = new SimpleFence();
 			readyAll.add(ready);
 			
@@ -178,12 +176,6 @@ public class ConverterWorkers extends TasksPool<Task> implements Tasks
 					atSignal.traverse();
 					
 					ConverterWorkerThread cwt = (ConverterWorkerThread)taskExecutor;
-					
-					//converter.verbose("Unregistering this thread worker from all it has ("+cwt.chunksAquired+")");
-					
-					//csWorld.saveEverything();
-					//for(Region region : registeredCS_Regions)
-					//	region.unregisterUser(user);
 
 					for (ChunkHolder holder : cwt.registeredCS_Holders) {
 						holder.unregisterUser(cwt);
@@ -195,9 +187,6 @@ public class ConverterWorkers extends TasksPool<Task> implements Tasks
 
 					cwt.registeredCS_Summaries.clear();
 					cwt.registeredCS_Holders.clear();
-
-					//csWorld.unloadUselessData().traverse();
-					//converter.verbose("Done.");
 					
 					done.signal();
 					

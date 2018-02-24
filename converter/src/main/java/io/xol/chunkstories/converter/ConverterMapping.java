@@ -54,6 +54,7 @@ public class ConverterMapping {
 						String className = splitted[1];
 						
 						try {
+							@SuppressWarnings("unchecked")
 							Class<? extends Mapper> mapperClass = (Class<? extends Mapper>) context.getContent().modsManager().getClassByName(className);
 							Constructor<? extends Mapper> mapperConstructor = mapperClass.getConstructor(Voxel.class);
 							customMappers.put(name, mapperConstructor);
