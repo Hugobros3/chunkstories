@@ -74,7 +74,7 @@ public class TCPServerConnection extends ServerConnection {
 			streamGobbler = new ClientGobbler(this, in);
 
 			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-			sendQueue = new SendQueue(out);
+			sendQueue = new SendQueue(this, out);
 
 			connected = true;
 			

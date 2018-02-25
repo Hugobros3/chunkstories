@@ -7,6 +7,7 @@
 package io.xol.chunkstories.net.vanillasockets;
 
 import io.xol.chunkstories.api.util.concurrency.Fence;
+import io.xol.chunkstories.net.Connection;
 import io.xol.chunkstories.net.PacketOutgoing;
 import io.xol.engine.concurrency.SimpleFence;
 import io.xol.engine.concurrency.TrivialFence;
@@ -30,6 +31,7 @@ import org.slf4j.LoggerFactory;
 public class SendQueue extends Thread {
 	private final BlockingQueue<PacketOutgoing> sendQueue = new LinkedBlockingQueue<PacketOutgoing>();
 	private final DataOutputStream outputStream;
+	private final Connection connection;
 
 	private static final Logger logger = LoggerFactory.getLogger("net");
 
@@ -37,7 +39,8 @@ public class SendQueue extends Thread {
 		return logger;
 	}
 
-	public SendQueue(DataOutputStream out) {
+	public SendQueue(Connection connection, DataOutputStream out) {
+		this.connection = connection;
 		this.outputStream = out;
 		this.setName("Send queue thread");
 	}
@@ -147,6 +150,7 @@ public class SendQueue extends Thread {
 
 	private void disconnect(String string) {
 		deathLock.lock();
+		this.connection.close();
 		if (!dead) {
 			logger.error("Error in send queue: " + string);
 			dead = true;

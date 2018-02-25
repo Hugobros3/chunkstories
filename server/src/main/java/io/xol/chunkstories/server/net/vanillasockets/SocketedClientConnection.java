@@ -61,7 +61,7 @@ public class SocketedClientConnection extends ClientConnection {
 		streamGobbler = new ServerClientGobbler(this, inputDataStream);
 		streamGobbler.start();
 		
-		sendQueue = new SendQueue(dataOutputStream);
+		sendQueue = new SendQueue(this, dataOutputStream);
 		sendQueue.start();
 	}
 	
