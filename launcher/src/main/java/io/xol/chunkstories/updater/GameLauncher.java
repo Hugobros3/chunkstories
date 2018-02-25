@@ -11,6 +11,7 @@ import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,13 +53,14 @@ public class GameLauncher implements ActionListener {
 					
 					//If we get this error less than 5s after starting the game, it's fucked !
 					if(line.contains("This Java instance does not support a 64-bit JVM") && (System.currentTimeMillis() - t) < 5000 ) {
-						JOptionPane.showMessageDialog(null, "Non 64 bit JVM detected. Please install 64-bit Java to run Chunk Stories.");
+						wrongJVM = true;
 					}
 					
 					noLineCrosstalk.acquireUninterruptibly();
 					
 					try {
-						out.write((type + line + "\n").getBytes("UTF-8"));
+						if(out != null)
+							out.write((type + line + "\n").getBytes("UTF-8"));
 					} catch (IOException ioe) {
 						ioe.printStackTrace();
 					}
@@ -76,6 +78,8 @@ public class GameLauncher implements ActionListener {
 	public GameLauncher(JFrame window) {
 		this.window = window;
 	}
+	
+	boolean wrongJVM = false; //Set to 'true' if we are running a 32-bit JVM
 
 	@Override
 	public void actionPerformed(ActionEvent ee) {
@@ -90,10 +94,18 @@ public class GameLauncher implements ActionListener {
 			String time = sdf.format(cal.getTime());
 
 			File launcherLog = new File(GameDirectory.getGameFolderPath() + "/logs/launcher-debug-" + time + ".log");
+			launcherLog.getParentFile().mkdirs();
 
-			FileOutputStream fos = new FileOutputStream(launcherLog);
-			DataOutputStream dos = new DataOutputStream(fos);
-
+			FileOutputStream fos = null;
+			DataOutputStream dos = null;
+			
+			try {
+				fos = new FileOutputStream(launcherLog);
+				dos = new DataOutputStream(fos);
+			} catch(FileNotFoundException e) {
+				e.printStackTrace();
+			}
+			
 			// any error message?
 			StreamGobbler errorGobbler = new StreamGobbler(process.getErrorStream(), dos, "ERROR:");
 			
@@ -121,7 +133,10 @@ public class GameLauncher implements ActionListener {
 
 			System.out.println("ExitValue: " + exitVal);
 
-			if (exitVal != 0) {
+			if(wrongJVM) {
+				JOptionPane.showMessageDialog(null, "Non 64 bit JVM detected. Please install 64-bit Java to run Chunk Stories.");
+			}
+			else if (exitVal != 0) {
 				int dialogButton = JOptionPane.YES_NO_OPTION;
 				int dialogResult = JOptionPane.showConfirmDialog(null,
 						"The game crashed (exitval=" + exitVal + "), do you want to upload the log ? It surely will help us figure out where it went wrong.",
