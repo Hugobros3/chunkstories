@@ -18,7 +18,7 @@ Chunk Stories is free software and runs on any platform someone can be bothered 
 
 For the author, Chunk Stories is and always has been a side project, made for fun and to become a better programmer. This is the main quest. The author also has the smug belief that other clones are flawed in some way, and he can do better, especially in the mods handling department. ( [Yes, that](https://xkcd.com/927/) )
 
-To this end, Chunk Stories borrows heavily from one of two best things about the Minecraft modding ecosystem: The Bukkit-style of plugins, and the server-downloadable "ressource packs", mixing the two into the idea of a "Mod".
+To this end, Chunk Stories borrows heavily from one of two best things about the Minecraft modding ecosystem: The Bukkit-style of plugins, and the server-downloadable "resource packs", mixing the two into the idea of a "Mod".
 
 ### Engine Features
 
@@ -29,7 +29,7 @@ To this end, Chunk Stories borrows heavily from one of two best things about the
  * Up to 65535 voxel types, with 8-bit metadata and optional support for [even more data](http://chunkstories.xyz/wiki)
  * Component-based entity system
  * Heightmap representation for unloaded terrain, rendering up to 1km
- * Modern-ish renderer in GL3.3 core, supporting deffered rendering, reloading shaders, instanced rendering, particles, SSR, bloom, you name it
+ * Modern-ish renderer in GL3.3 core, supporting deferred rendering, reloading shaders, instanced rendering, particles, SSR, bloom, you name it
  * Built-in support for AABB physics, skeletal animation with hitscan hit detection and more
  * Works on Windows and Linux ( OSX may work but unsupported )
 
@@ -58,9 +58,9 @@ The local maven repository on your computer (.m2 folder) now contains copies of 
 
 ### Links
 
- * To lean how to play the game and register an account, please visit http://chunkstories.xyz
+ * To learn how to play the game and register an account, please visit http://chunkstories.xyz
  * You can find a lot more information on the game wiki, including guides to writing mods, at http://chunkstories.xyz/wiki/
- * You can find videos and dev logs on the lead developper youtube channel: http://youtube.com/Hugobros3
+ * You can find videos and dev logs on the lead developer youtube channel: http://youtube.com/Hugobros3
  * We have a discord where anyone can discuss with the devs: https://discord.gg/wudd4pe
  * You can get support either by opening a issue on this project or by visiting the subreddit over at https://reddit.com/r/chunkstories
 
