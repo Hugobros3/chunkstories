@@ -56,7 +56,7 @@ buildscript {
 apply plugin: "org.ajoberstar.grgit"
 import org.ajoberstar.grgit.Grgit
 
-version = 'Alpha1.0'
+version = 'Alpha1.0.1'
 description = 'A voxel game engine'
 group = 'io.xol.chunkstories'
 
