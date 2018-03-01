@@ -7,7 +7,9 @@
 package io.xol.chunkstories.net.vanillasockets;
 
 import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.IOException;
+import java.net.SocketException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +40,14 @@ public abstract class StreamGobbler extends Thread {
 				connection.handleDatagram(datagram);
 			}
 			
+		} catch(SocketException e) { //Natural
+			if(connection.isOpen()) {
+				logger.info("Closing socket.");
+			}
+			connection.close();
+		} catch(EOFException e) { //Natural too
+			connection.close();
+			logger.info("Connection closed");
 		} catch(IOException e) {
 			connection.close();
 			logger.info("Connection error", e);
@@ -47,10 +57,9 @@ public abstract class StreamGobbler extends Thread {
 		} catch (PacketProcessingException e) {
 			connection.close();
 			logger.error("Error processing packet", e);
-			e.printStackTrace();
 		} catch (IllegalPacketException e) {
 			logger.error("Illegal packet", e);
-			e.printStackTrace();
+			connection.close();
 		}
 	}
 }

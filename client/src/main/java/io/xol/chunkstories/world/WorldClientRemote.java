@@ -87,42 +87,47 @@ public class WorldClientRemote extends WorldClientCommon implements WorldClientN
 	}
 	
 	Deque<LogicalPacketDatagram> incommingDatagrams = new ConcurrentLinkedDeque<>();
-	
+
+	//Accepts and processes synched packets
 	public void processIncommingPackets()
 	{
-		//Accepts and processes synched packets
+		try {
 		entitiesLock.writeLock().lock();
-		
-		@SuppressWarnings("unused")
-		int packetsThisTick = 0;
-		
-		Iterator<LogicalPacketDatagram> i = incommingDatagrams.iterator();
-		while (i.hasNext()) {
-			LogicalPacketDatagram datagram = i.next();
-
-			try {
-				PacketDefinitionImpl definition = (PacketDefinitionImpl) datagram.packetDefinition; //this.getContentTranslator().getPacketForId(datagram.packetTypeId);
-				Packet packet = definition.createNew(true, this);
-				if(definition.getGenre() != PacketGenre.WORLD || !(packet instanceof PacketWorld)) {
-					logger().error(definition + " isn't a PacketWorld");
-				} else {
-					PacketWorld packetWorld = (PacketWorld) packet;
-					
-					//packetsProcessor.getSender() is equivalent to getRemoteServer() here
-					packetWorld.process(packetsProcessor.getInterlocutor(), datagram.getData(), packetsProcessor);
+			
+			@SuppressWarnings("unused")
+			int packetsThisTick = 0;
+			
+			Iterator<LogicalPacketDatagram> i = incommingDatagrams.iterator();
+			while (i.hasNext()) {
+				LogicalPacketDatagram datagram = i.next();
+	
+				try {
+					PacketDefinitionImpl definition = (PacketDefinitionImpl) datagram.packetDefinition; //this.getContentTranslator().getPacketForId(datagram.packetTypeId);
+					Packet packet = definition.createNew(true, this);
+					if(definition.getGenre() != PacketGenre.WORLD || !(packet instanceof PacketWorld)) {
+						logger().error(definition + " isn't a PacketWorld");
+					} else {
+						PacketWorld packetWorld = (PacketWorld) packet;
+						
+						//packetsProcessor.getSender() is equivalent to getRemoteServer() here
+						packetWorld.process(packetsProcessor.getInterlocutor(), datagram.getData(), packetsProcessor);
+					}
 				}
+				catch(IOException | PacketProcessingException e) {
+					logger().warn("Networking Exception while processing datagram: "+e.getMessage());
+				}
+				catch(Exception e) {
+					logger().warn("Exception while processing datagram: "+e.getMessage());
+				}
+				
+				datagram.dispose();
+				
+				i.remove();
+				packetsThisTick++;
 			}
-			catch(IOException | PacketProcessingException e) {
-				logger().warn("Exception while processing datagram: "+e.getMessage());
-			}
-			
-			datagram.dispose();
-			
-			i.remove();
-			packetsThisTick++;
+		} finally {
+			entitiesLock.writeLock().unlock();
 		}
-
-		entitiesLock.writeLock().unlock();
 	}
 	
 	public void queueDatagram(LogicalPacketDatagram datagram) {

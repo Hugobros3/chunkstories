@@ -145,38 +145,43 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 	
 	public void processIncommingPackets()
 	{
-		entitiesLock.writeLock().lock();
-		
-		Iterator<PendingPlayerDatagram> iterator = packetsQueue.iterator();
-		while (iterator.hasNext())
-		{
-			PendingPlayerDatagram incomming = iterator.next();
-			iterator.remove();
+		try {
+			entitiesLock.writeLock().lock();
 			
-			ServerPlayer player = incomming.player;
-			LogicalPacketDatagram datagram = incomming.datagram;
-			
-			try {
-				PacketDefinitionImpl definition = (PacketDefinitionImpl) datagram.packetDefinition; //this.getContentTranslator().getPacketForId(datagram.packetTypeId);
-				Packet packet = definition.createNew(false, this);
+			Iterator<PendingPlayerDatagram> iterator = packetsQueue.iterator();
+			while (iterator.hasNext())
+			{
+				PendingPlayerDatagram incomming = iterator.next();
+				iterator.remove();
 				
-				if(definition.getGenre() != PacketGenre.WORLD || !(packet instanceof PacketWorld)) {
-					logger().error(definition + " isn't a PacketWorld");
-				} else {
-					PacketWorld packetWorld = (PacketWorld) packet;
+				ServerPlayer player = incomming.player;
+				LogicalPacketDatagram datagram = incomming.datagram;
+				
+				try {
+					PacketDefinitionImpl definition = (PacketDefinitionImpl) datagram.packetDefinition; //this.getContentTranslator().getPacketForId(datagram.packetTypeId);
+					Packet packet = definition.createNew(false, this);
 					
-					//packetsProcessor.getSender() is equivalent to player here
-					packetWorld.process(player, datagram.getData(), player.getPlayerConnection().getPacketsContext());
+					if(definition.getGenre() != PacketGenre.WORLD || !(packet instanceof PacketWorld)) {
+						logger().error(definition + " isn't a PacketWorld");
+					} else {
+						PacketWorld packetWorld = (PacketWorld) packet;
+						
+						//packetsProcessor.getSender() is equivalent to player here
+						packetWorld.process(player, datagram.getData(), player.getPlayerConnection().getPacketsContext());
+					}
 				}
+				catch(IOException | PacketProcessingException e) {
+					logger().warn("Networking Exception while processing datagram: "+e.getMessage());
+				}
+				catch(Exception e) {
+					logger().warn("Exception while processing datagram: "+e.getMessage());
+				}
+				
+				datagram.dispose();
 			}
-			catch(IOException | PacketProcessingException e) {
-				logger().warn("Exception while processing datagram: "+e.getMessage());
-			}
-			
-			datagram.dispose();
+		} finally {
+			entitiesLock.writeLock().unlock();
 		}
-		
-		entitiesLock.writeLock().unlock();
 	}
 
 	public void queueDatagram(LogicalPacketDatagram datagram, ServerPlayer player) {

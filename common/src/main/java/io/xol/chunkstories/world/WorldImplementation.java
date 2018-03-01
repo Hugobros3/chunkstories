@@ -407,9 +407,7 @@ public abstract class WorldImplementation implements World
 					((EntityBase)entity).positionComponent.trySnappingToChunk();
 
 			}
-		}
-		finally
-		{
+		} finally {
 			entitiesLock.writeLock().unlock();
 		}
 
