@@ -8,6 +8,7 @@ package io.xol.chunkstories.renderer.chunks;
 
 import java.nio.ByteBuffer;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.joml.Vector3dc;
@@ -20,6 +21,7 @@ import io.xol.chunkstories.api.math.LoopingMathHelper;
 import io.xol.chunkstories.api.math.Math2;
 import io.xol.chunkstories.api.rendering.voxel.VoxelBakerCubic;
 import io.xol.chunkstories.api.rendering.voxel.VoxelBakerHighPoly;
+import io.xol.chunkstories.api.rendering.voxel.VoxelDynamicRenderer;
 import io.xol.chunkstories.api.rendering.voxel.VoxelRenderer;
 import io.xol.chunkstories.api.rendering.world.chunk.ChunkMeshDataSubtypes;
 import io.xol.chunkstories.api.rendering.world.chunk.ChunkMeshDataSubtypes.LodLevel;
@@ -37,7 +39,7 @@ import io.xol.chunkstories.api.workers.TaskExecutor;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
-import io.xol.chunkstories.renderer.chunks.ChunkMeshDataSections.DynamicallyRenderedVoxelClass;
+import io.xol.chunkstories.renderer.chunks.ChunkMeshDataSections.DynamicallyRenderedVoxelType;
 import io.xol.chunkstories.renderer.chunks.ClientWorkerThread.ChunkMeshingBuffers;
 import io.xol.chunkstories.world.cell.ScratchCell;
 import io.xol.chunkstories.world.chunk.ClientChunk;
@@ -252,7 +254,7 @@ public class TaskBakeChunk extends Task {
 		
 		bakedBlockId = -1;
 		
-		Map<Voxel, DynamicallyRenderedVoxelClass> dynamicVoxels = new HashMap<>();
+		Map<Voxel, DynamicallyRenderedVoxelType> dynamicVoxels = new HashMap<>();
 		
 		ScratchCell cell = new ScratchCell(world);
 		//Render the fucking thing!
@@ -278,23 +280,15 @@ public class TaskBakeChunk extends Task {
 					voxelRenderer.bakeInto(chunkRendererOutput, chunkRenderingContext, chunk, cell);
 					
 					// We handle voxels with a dynamic renderer here too - we just add them to a list !
-					//TODO
-					/*if(cell.voxel instanceof VoxelDynamicallyRendered) {
-						DynamicallyRenderedVoxelClass vClass = dynamicVoxels.get(cell.voxel);
-						if(vClass == null) {
-							vClass = new DynamicallyRenderedVoxelClass();
-							
-							//TODO cache it world-wide 
-							VoxelComponentDynamicRenderer component = ((VoxelDynamicallyRendered)cell.voxel).getDynamicRendererComponent(chunk.peek(i, k, j));
-							
-							if(component != null) {
-								vClass.renderer = component.getVoxelDynamicRenderer();
-								if(vClass.renderer != null)
-									dynamicVoxels.put(cell.voxel, vClass);
-							}
+					if(voxelRenderer instanceof VoxelDynamicRenderer) {
+						DynamicallyRenderedVoxelType drvt = dynamicVoxels.get(cell.voxel);
+						
+						if(drvt == null) {
+							drvt = new DynamicallyRenderedVoxelType((VoxelDynamicRenderer) voxelRenderer, cell.voxel);
+							dynamicVoxels.put(cell.voxel, drvt);
 						}
-						vClass.indexes.add(i * 1024 + k * 32 + j);
-					}*/
+						drvt.indexes.add(i * 1024 + k * 32 + j);
+					}
 					
 					bakedBlockId++;
 				}
@@ -351,7 +345,21 @@ public class TaskBakeChunk extends Task {
 		finalData.flip();
 		
 		ChunkMeshDataSections newRenderData = new ChunkMeshDataSections(wrappedBuffer, sizes, offsets);
-		newRenderData.dynamicallyRenderedVoxels = dynamicVoxels;
+		
+		DynamicallyRenderedVoxelType[] bakedDrvt = new DynamicallyRenderedVoxelType[dynamicVoxels.size()];
+		Iterator<DynamicallyRenderedVoxelType> i = dynamicVoxels.values().iterator();
+		for(int j = 0; j < dynamicVoxels.size(); j++) {
+			if(i.hasNext())
+				bakedDrvt[j] = i.next();
+			else {
+				logger.error("while baking dynamicVoxelTypes array the iterator returned less than dynamicVoxels.size() elements");
+				logger.error("cancelling");
+				bakedDrvt = null;
+				break;
+			}
+		}
+		
+		newRenderData.dynamicVoxelTypes = bakedDrvt;
 		
 		chunk.getChunkRenderData().setData(newRenderData);
 		
@@ -360,8 +368,6 @@ public class TaskBakeChunk extends Task {
 		//Wait until data is actually uploaded to not accidentally OOM while it struggles uploading it
 		if(Client.getInstance().configDeprecated().getBoolean("waitForChunkMeshDataUploadBeforeStartingTheNext", true))
 			newRenderData.fence.traverse();
-		
-		//System.out.println(wrappedBuffer);
 		
 		return true;
 	}

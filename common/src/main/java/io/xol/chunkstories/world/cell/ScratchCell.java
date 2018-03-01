@@ -28,34 +28,42 @@ public class ScratchCell implements CellData {
 	public World getWorld() {
 		return world;
 	}
+	
 	@Override
 	public int getX() {
 		return x;
 	}
+	
 	@Override
 	public int getY() {
 		return y;
 	}
+	
 	@Override
 	public int getZ() {
 		return z;
 	}
+	
 	@Override
 	public Voxel getVoxel() {
 		return voxel;
 	}
+	
 	@Override
 	public int getMetaData() {
 		return metadata;
 	}
+	
 	@Override
 	public int getSunlight() {
 		return sunlight;
 	}
+	
 	@Override
 	public int getBlocklight() {
 		return blocklight;
 	}
+	
 	@Override
 	public CellData getNeightbor(int side_int) {
 		VoxelSides side = VoxelSides.values()[side_int];

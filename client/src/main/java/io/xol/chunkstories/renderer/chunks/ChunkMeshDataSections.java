@@ -8,11 +8,10 @@ package io.xol.chunkstories.renderer.chunks;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import io.xol.chunkstories.api.rendering.vertex.RecyclableByteBuffer;
+import io.xol.chunkstories.api.rendering.voxel.VoxelDynamicRenderer;
 import io.xol.chunkstories.api.voxel.Voxel;
-import io.xol.chunkstories.api.voxel.components.VoxelComponentDynamicRenderer.VoxelDynamicRenderer;
 import io.xol.engine.concurrency.SimpleFence;
 
 public class ChunkMeshDataSections
@@ -23,11 +22,18 @@ public class ChunkMeshDataSections
 	RecyclableByteBuffer dataToUpload;
 	SimpleFence fence = new SimpleFence();
 	
-	Map<Voxel, DynamicallyRenderedVoxelClass> dynamicallyRenderedVoxels;
+	DynamicallyRenderedVoxelType[] dynamicVoxelTypes = null;
 	
-	public static class DynamicallyRenderedVoxelClass {
-		VoxelDynamicRenderer renderer;
-		List<Integer> indexes = new ArrayList<>();
+	/** Represents a Voxel that exposes a dynamic renderer and the indexes of the cells within a chunk that correspond to it */
+	public static class DynamicallyRenderedVoxelType {
+		final Voxel voxelType;
+		final VoxelDynamicRenderer renderer;
+		final List<Integer> indexes = new ArrayList<>(); //TODO just use a regular array for dem speed
+		
+		public DynamicallyRenderedVoxelType(VoxelDynamicRenderer dynamicRenderer, Voxel voxelType) {
+			this.renderer = dynamicRenderer;
+			this.voxelType = voxelType;
+		}
 	}
 	
 	public ChunkMeshDataSections(RecyclableByteBuffer dataToUpload, int[][][] vertices_type_size, int[][][] vertices_type_offset)
@@ -38,7 +44,6 @@ public class ChunkMeshDataSections
 	}
 
 	public void notNeeded() {
-		
 		//Your life was a lie
 		dataToUpload.recycle();
 		
