@@ -33,6 +33,7 @@ import io.xol.chunkstories.api.rendering.textures.ArrayTexture;
 import io.xol.chunkstories.api.rendering.textures.Cubemap;
 import io.xol.chunkstories.api.rendering.textures.Texture1D;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
+import io.xol.chunkstories.api.rendering.textures.Texture3D;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
 import io.xol.chunkstories.api.rendering.vertex.AttributeSource;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
@@ -49,11 +50,10 @@ import io.xol.engine.graphics.geometry.VertexBufferGL;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 import io.xol.engine.graphics.shaders.ShadersStore;
 import io.xol.engine.graphics.textures.Texture2DRenderTargetGL;
+import io.xol.engine.graphics.textures.Texture3DGL;
 import io.xol.engine.graphics.textures.TextureGL;
 import io.xol.engine.graphics.textures.TexturingConfigurationImplementation;
 import io.xol.engine.graphics.util.GuiRendererImplementation;
-
-
 
 public class RenderingContext implements RenderingInterface
 {
@@ -162,6 +162,12 @@ public class RenderingContext implements RenderingInterface
 		texturingConfiguration = texturingConfiguration.bindTexture2D(textureSamplerName, texture);
 		return texturingConfiguration;
 	}
+	
+	public TexturingConfiguration bindTexture3D(String textureSamplerName, Texture3D texture)
+	{
+		texturingConfiguration = texturingConfiguration.bindTexture3D(textureSamplerName, texture);
+		return texturingConfiguration;
+	}
 
 	public TexturingConfiguration bindCubemap(String cubemapSamplerName, Cubemap cubemapTexture)
 	{
@@ -189,18 +195,6 @@ public class RenderingContext implements RenderingInterface
 	{
 		return bindTexture2D("materialTexture", texture);
 	}
-
-	/*@Deprecated
-	public boolean isThisAShadowPass()
-	{
-		return isThisAShadowPass;
-	}
-
-	@Deprecated
-	public void setIsShadowPass(boolean isShadowPass)
-	{
-		isThisAShadowPass = isShadowPass;
-	}*/
 
 	public GuiRendererImplementation getGuiRenderer()
 	{
@@ -427,12 +421,15 @@ public class RenderingContext implements RenderingInterface
 		return new Texture2DRenderTargetGL(type, width, height);
 	}
 	
+	@Override
+	public Texture3D newTexture3D(TextureFormat type, int width, int height, int depth) {
+		return new Texture3DGL(type, width, height, depth);
+	}
 
 	@Override
 	public VertexBuffer newVertexBuffer() {
 		return new VertexBufferGL();
 	}
-	
 
 	@Override
 	public TrueTypeFontRenderer getFontRenderer() {

@@ -66,3 +66,4 @@ gradle.properties
 namalsk-map/
 core_content.zip
 debug-server-*
+/convert-namalsk.bat

@@ -14,8 +14,6 @@ import io.xol.chunkstories.api.rendering.textures.Cubemap;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.client.Client;
 
-
-
 public class TexturesHandler
 {
 	static Texture2DGL nullTexture;

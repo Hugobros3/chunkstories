@@ -9,11 +9,9 @@ package io.xol.engine.graphics.textures;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
 import io.xol.chunkstories.client.Client;
 
-
-
 public class Texture2DRenderTargetGL extends Texture2DGL
 {
-	protected boolean scheduledForLoad = false;
+	protected boolean scheduledForCreation = false;
 	
 	int scheduledW, scheduledH;
 	
@@ -24,7 +22,7 @@ public class Texture2DRenderTargetGL extends Texture2DGL
 		if (!Client.getInstance().getGameWindow().isMainGLWindow())
 		{
 			//System.out.println("isn't main thread, scheduling texture creation");
-			scheduledForLoad = true;
+			scheduledForCreation = true;
 			scheduledW = w;
 			scheduledH = h;
 			return;
@@ -37,9 +35,9 @@ public class Texture2DRenderTargetGL extends Texture2DGL
 	{
 		super.bind();
 		
-		if (scheduledForLoad)
+		if (scheduledForCreation)
 		{
-			scheduledForLoad = false;
+			scheduledForCreation = false;
 			//TODO defer to asynch thread
 			resize(scheduledW, scheduledH);
 		}

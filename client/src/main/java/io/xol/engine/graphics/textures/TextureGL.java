@@ -58,7 +58,6 @@ public abstract class TextureGL implements Texture
 			return;
 
 		glId = glGenTextures();
-		//System.out.println("Allocated glId "+glId+" for "+this);
 		
 		//Keep the reference for this allocated id
 		allocatedIds.put(glId, selfReference);
@@ -150,7 +149,7 @@ public abstract class TextureGL implements Texture
 			Texture texture = weakReference.get();
 			if(texture == null)
 			{
-				System.out.println("Disallocated orphan openGL texture ID "+id);
+				logger.info("Disallocated orphan openGL texture ID "+id);
 				glDeleteTextures(id);
 				destroyedVerticesObjects++;
 				

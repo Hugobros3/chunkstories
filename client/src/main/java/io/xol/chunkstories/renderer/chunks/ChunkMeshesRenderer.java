@@ -255,7 +255,7 @@ public class ChunkMeshesRenderer
 		if (RenderingConfig.shadowMapResolutions >= 2048)
 			maxShadowDistance = 5;
 		if (RenderingConfig.shadowMapResolutions >= 4096)
-			maxShadowDistance = 6;
+			maxShadowDistance = 60;
 
 		int maxVerticalShadowDistance = 4;
 

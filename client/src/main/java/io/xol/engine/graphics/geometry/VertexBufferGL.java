@@ -454,7 +454,7 @@ public class VertexBufferGL implements VertexBuffer
 		//If it was already destroyed
 		if (openGLID == -2)
 		{
-			System.out.println("Tried to delete already destroyed verticesObject");
+			logger.error("Tried to delete already destroyed verticesObject");
 			Thread.dumpStack();
 		}
 
@@ -527,7 +527,7 @@ public class VertexBufferGL implements VertexBuffer
 				//Gives back orphan buffers
 				glDeleteBuffers(openGLID);
 				totalVerticesObjects--;
-				//System.out.println("Destroyed orphan VerticesObject id #"+openGLID);
+				//logger.debug("Destroyed orphan VerticesObject id #"+openGLID);
 
 				i.remove();
 			}

@@ -74,8 +74,9 @@ public class Texture2DFile extends Texture2DGL
 			bind();
 			glTexImage2D(GL_TEXTURE_2D, 0, type.getInternalFormat(), width, height, 0, type.getFormat(), type.getType(), (ByteBuffer) temp);
 		
-			applyTextureParameters();
-
+			this.applyTextureWrapping();
+			this.applyFiltering();
+			this.computeMipmaps();
 		}
 		catch (FileNotFoundException e)
 		{

@@ -18,16 +18,20 @@ import io.xol.chunkstories.api.rendering.textures.Cubemap;
 import io.xol.chunkstories.api.rendering.textures.Texture;
 import io.xol.chunkstories.api.rendering.textures.Texture1D;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
+import io.xol.chunkstories.api.rendering.textures.Texture3D;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 
 import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL20.glUniform1i;
 
+//TODO overcomplicated and the immutable aspect is left unsued
+//TODO remove it and replace it with something simpler
 public class TexturingConfigurationImplementation implements TexturingConfiguration
 {
 	private Map<String, Texture1D> textures1d;
 	private Map<String, Texture2D> textures2d;
+	private Map<String, Texture3D> textures3d;
 	private Map<String, Cubemap> cubemaps;
 	private Map<String, ArrayTexture> arrayTextures;
 
@@ -39,10 +43,11 @@ public class TexturingConfigurationImplementation implements TexturingConfigurat
 		this.arrayTextures = new HashMap<String, ArrayTexture>();
 	}
 
-	public TexturingConfigurationImplementation(Map<String, Texture1D> textures1d, Map<String, Texture2D> textures2d, Map<String, Cubemap> cubemaps, Map<String, ArrayTexture> arrayTextures)
+	public TexturingConfigurationImplementation(Map<String, Texture1D> textures1d, Map<String, Texture2D> textures2d, Map<String, Texture3D> textures3d, Map<String, Cubemap> cubemaps, Map<String, ArrayTexture> arrayTextures)
 	{
 		this.textures1d = textures1d;
 		this.textures2d = textures2d;
+		this.textures3d = textures3d;
 		this.cubemaps = cubemaps;
 		this.arrayTextures = arrayTextures;
 	}
@@ -56,7 +61,7 @@ public class TexturingConfigurationImplementation implements TexturingConfigurat
 		}
 		textures1d.put(textureSamplerName, texture);
 
-		return new TexturingConfigurationImplementation(textures1d, textures2d, cubemaps, arrayTextures);
+		return new TexturingConfigurationImplementation(textures1d, textures2d, textures3d, cubemaps, arrayTextures);
 	}
 
 	public TexturingConfigurationImplementation bindTexture2D(String textureSamplerName, Texture2D texture)
@@ -68,7 +73,19 @@ public class TexturingConfigurationImplementation implements TexturingConfigurat
 		}
 		textures2d.put(textureSamplerName, texture);
 
-		return new TexturingConfigurationImplementation(textures1d, textures2d, cubemaps, arrayTextures);
+		return new TexturingConfigurationImplementation(textures1d, textures2d, textures3d, cubemaps, arrayTextures);
+	}
+	
+	public TexturingConfigurationImplementation bindTexture3D(String textureSamplerName, Texture3D texture)
+	{
+		Map<String, Texture3D> textures3d = new HashMap<String, Texture3D>();
+		for (Entry<String, Texture3D> e : this.textures3d.entrySet())
+		{
+			textures3d.put(e.getKey(), e.getValue());
+		}
+		textures3d.put(textureSamplerName, texture);
+
+		return new TexturingConfigurationImplementation(textures1d, textures2d, textures3d, cubemaps, arrayTextures);
 	}
 
 	public TexturingConfigurationImplementation bindCubemap(String cubemapSamplerName, Cubemap cubemapTexture)
@@ -80,7 +97,7 @@ public class TexturingConfigurationImplementation implements TexturingConfigurat
 		}
 		cubemaps.put(cubemapSamplerName, cubemapTexture);
 
-		return new TexturingConfigurationImplementation(textures1d, textures2d, cubemaps, arrayTextures);
+		return new TexturingConfigurationImplementation(textures1d, textures2d, textures3d, cubemaps, arrayTextures);
 	}
 
 	public TexturingConfigurationImplementation bindArrayTexture(String textureSamplerName, ArrayTexture texture) {
@@ -91,7 +108,7 @@ public class TexturingConfigurationImplementation implements TexturingConfigurat
 		}
 		arrayTextures.put(textureSamplerName, texture);
 
-		return new TexturingConfigurationImplementation(textures1d, textures2d, cubemaps, arrayTextures);
+		return new TexturingConfigurationImplementation(textures1d, textures2d, textures3d, cubemaps, arrayTextures);
 	}
 
 	@Override
@@ -210,6 +227,36 @@ public class TexturingConfigurationImplementation implements TexturingConfigurat
 			//Increase the counter
 			textureUnitId++;
 		}
+		
+		for (Entry<String, Texture3D> entry : textures3d.entrySet())
+		{
+			//Check it ain't null
+			Texture texture = entry.getValue();
+			if (texture == null)
+				continue;
+			
+			//Check it is used in the shader
+			int textureLocation = shaderProgram.getUniformLocation(entry.getKey());
+			if (textureLocation == -1)
+				continue;
+
+			if (!(boundTextures[textureUnitId] == texture))
+			{
+				//Select a valid, free texturing unit
+				selectTextureUnit(textureUnitId);
+
+				//Bind the texture to this texturing unit
+				texture.bind();
+			}
+			//Set the uniform location to this texturing unit
+			glUniform1i(shaderProgram.getUniformLocation(entry.getKey()), textureUnitId);
+			//shaderProgram.setUniform1i(entry.getKey(), textureUnitId);
+			
+			boundTextures[textureUnitId] = texture;
+
+			//Increase the counter
+			textureUnitId++;
+		}
 
 		for (Entry<String, Cubemap> entry : cubemaps.entrySet())
 		{
@@ -284,10 +331,4 @@ public class TexturingConfigurationImplementation implements TexturingConfigurat
 		for(int i = 0; i < boundTextures.length; i++)
 			boundTextures[i] = null;
 	}
-	
-	/*@Override
-	public Map<String, Texture2D> getBoundTextures2D()
-	{
-		return textures2d;
-	}*/
 }
