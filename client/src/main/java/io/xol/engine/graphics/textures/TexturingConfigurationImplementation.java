@@ -39,6 +39,7 @@ public class TexturingConfigurationImplementation implements TexturingConfigurat
 	{
 		this.textures1d = new HashMap<String, Texture1D>();
 		this.textures2d = new HashMap<String, Texture2D>();
+		this.textures3d = new HashMap<String, Texture3D>();
 		this.cubemaps = new HashMap<String, Cubemap>();
 		this.arrayTextures = new HashMap<String, ArrayTexture>();
 	}

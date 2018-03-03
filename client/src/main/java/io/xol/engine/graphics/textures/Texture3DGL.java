@@ -26,7 +26,7 @@ public class Texture3DGL extends TextureGL implements Texture3D {
 	// Filtering parameters
 	boolean wrapping = true;
 	boolean mipmapping = false;
-	boolean linearFiltering = true;
+	boolean linearFiltering = false;
 	int baseMipmapLevel = 0;
 	int maxMipmapLevel = 1000;
 
@@ -276,7 +276,7 @@ public class Texture3DGL extends TextureGL implements Texture3D {
 
 	@Override
 	public long getVramUsage() {
-		int surface = getWidth() * getHeight();
+		int surface = getWidth() * getHeight() * getDepth();
 		return surface * type.getBytesPerTexel();
 	}
 
