@@ -514,7 +514,7 @@ public class WorldRendererImplementation implements WorldRenderer
 			test = new Texture3DGL(TextureFormat.RGBA_8BPP, 32, 32, 32);
 		}
 
-		final int SIZE = 256;
+		final int SIZE = 128;
 		final int mod = SIZE / 32;
 
 		int offCenter = SIZE / 2;
@@ -560,18 +560,18 @@ public class WorldRendererImplementation implements WorldRenderer
 										CellData cell = zChunk.peek(x, y, z);
 										Voxel voxel = cell.getVoxel();//zChunk.peekSimple(x, y, z);
 										
-										if(voxel.isAir() || !voxel.getDefinition().isSolid() && !voxel.getDefinition().isLiquid()) {
+										if(voxel.isAir() || voxel.getName().startsWith("glass") || !voxel.getDefinition().isSolid() && !voxel.getDefinition().isLiquid()) {
 											bb.put(empty);
 										} else {
 											col.set(voxel.getVoxelTexture(VoxelSides.TOP, cell).getColor());
 											if(col.w() < 1.0) {
-												col.mul(new Vector4f(0.1f, 0.3f, 0.1f, 1.0f));
+												col.mul(new Vector4f(0.1f, 0.5f, 0.1f, 1.0f));
 											}
 											
 											bb.put((byte)(int)(col.x() * 255));
 											bb.put((byte)(int)(col.y() * 255));
 											bb.put((byte)(int)(col.z() * 255));
-											bb.put((byte) -1);
+											bb.put(voxel.getDefinition().getEmittedLightLevel() > 0 ? (byte) 20 : (byte) 1);
 										} 
 									}
 								}
