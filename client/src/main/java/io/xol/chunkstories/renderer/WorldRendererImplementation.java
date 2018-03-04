@@ -84,6 +84,9 @@ public class WorldRendererImplementation implements WorldRenderer
 
 	private ComputedShadowMap sun_shadowMap;
 
+	private NearbyVoxelsVolumeTexture voxels4gi;
+	private GiRenderer giRenderer;
+
 	public WorldRendererImplementation(WorldClientCommon world, ClientInterface client)
 	{
 		this.world = world;
@@ -111,6 +114,9 @@ public class WorldRendererImplementation implements WorldRenderer
 		this.bloomRenderer = new BloomRenderer(this);
 		this.reflectionsRenderer = new ReflectionsRenderer(this);
 		this.cubemapRenderer = new CubemapRenderer(this);
+
+		voxels4gi = new NearbyVoxelsVolumeTexture(this);
+		giRenderer = new GiRenderer(this, voxels4gi);
 	}
 
 	@Override
@@ -197,6 +203,8 @@ public class WorldRendererImplementation implements WorldRenderer
 		currentPass = RenderingPass.INTERNAL;
 		renderingInterface.getRenderTargetManager().setConfiguration(renderBuffers.fboShadedBuffer);
 		renderBuffers.fboShadedBuffer.setEnabledRenderTargets();
+		
+		giRenderer.render(renderingInterface);
 		
 		//Render the deffered light
 		renderShadedBlocks(renderingInterface, sun_shadowMap);
@@ -383,9 +391,7 @@ public class WorldRendererImplementation implements WorldRenderer
 		
 		entitiesRenderer.renderEntities(renderingContext);
 	}
-	
-	NearbyVoxelsVolumeTexture voxels4gi = new NearbyVoxelsVolumeTexture(this);
-	
+		
 	/**
 	 * Uses G-Buffers data to spit out shaded solid blocks ( shadows etc )
 	 * @param sun_shadowMap 
@@ -394,11 +400,10 @@ public class WorldRendererImplementation implements WorldRenderer
 	{
 		ShaderInterface applyShadowsShader = renderingContext.useShader("shadows_apply");
 		
-		voxels4gi.update(renderingContext);
-		voxels4gi.setupForRendering(renderingContext);
-		
 		world.getGenerator().getEnvironment().setupShadowColors(renderingContext, applyShadowsShader);
 		//setupShadowColors(applyShadowsShader);
+		
+		renderingContext.bindTexture2D("giBuffer", this.giRenderer.giTexture());
 
 		applyShadowsShader.setUniform1f("animationTimer", animationTimer);
 		applyShadowsShader.setUniform1f("overcastFactor", world.getWeather());
@@ -779,10 +784,13 @@ public class WorldRendererImplementation implements WorldRenderer
 		int width = gameWindow.getWidth();
 		int height = gameWindow.getHeight();
 		this.setupRenderSize(width, height);
+		
+		this.giRenderer.resize();
 	}
 	
 	public void setupRenderSize(int width, int height) {
 		this.renderBuffers.resizeBuffers(width, height);
+		this.giRenderer.resize();
 	}
 
 	/** Debug-related, usually not called in gameplay */
@@ -857,5 +865,11 @@ public class WorldRendererImplementation implements WorldRenderer
 	@Override
 	public RenderingInterface getRenderingInterface() {
 		return Client.getInstance().getGameWindow().getRenderingContext();
+	}
+
+	
+	@Override
+	public GameWindow getWindow() {
+		return gameWindow;
 	}
 }

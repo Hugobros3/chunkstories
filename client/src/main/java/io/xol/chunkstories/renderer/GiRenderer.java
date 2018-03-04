@@ -1,0 +1,103 @@
+package io.xol.chunkstories.renderer;
+
+import static io.xol.chunkstories.api.rendering.textures.TextureFormat.DEPTH_RENDERBUFFER;
+
+import org.joml.Vector3d;
+
+import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
+import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
+import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
+import io.xol.chunkstories.api.rendering.textures.TextureFormat;
+import io.xol.chunkstories.api.rendering.world.WorldRenderer;
+import io.xol.engine.graphics.fbo.FrameBufferObjectGL;
+import io.xol.engine.graphics.textures.Texture2DRenderTargetGL;
+
+public class GiRenderer {
+	public final WorldRendererImplementation worldRenderer;
+	
+	private Texture2DRenderTargetGL accumulationA, accumulationB;
+	private Texture2DRenderTargetGL zBufferA, zBufferB;
+	private FrameBufferObjectGL fboAccumulationA, fboAccumulationB;
+	
+	private NearbyVoxelsVolumeTexture voxels4gi;
+
+	public GiRenderer(WorldRendererImplementation worldRenderer, NearbyVoxelsVolumeTexture voxels4gi) {
+		this.worldRenderer = worldRenderer;
+		this.voxels4gi = voxels4gi;
+		
+		accumulationA = new Texture2DRenderTargetGL(TextureFormat.RGBA_32F, worldRenderer.getWindow().getWidth() / 2, worldRenderer.getWindow().getHeight() / 2);
+		accumulationB = new Texture2DRenderTargetGL(TextureFormat.RGBA_32F, worldRenderer.getWindow().getWidth() / 2, worldRenderer.getWindow().getHeight() / 2);
+		
+		float giScale = 1.5f;
+		zBufferA = new Texture2DRenderTargetGL(DEPTH_RENDERBUFFER, (int) (worldRenderer.getWindow().getWidth() / giScale), (int) (worldRenderer.getWindow().getHeight() / giScale));
+		zBufferB = new Texture2DRenderTargetGL(DEPTH_RENDERBUFFER, (int) (worldRenderer.getWindow().getWidth() / giScale), (int) (worldRenderer.getWindow().getHeight() / giScale));
+		
+		fboAccumulationA = new FrameBufferObjectGL(zBufferA, accumulationA);
+		fboAccumulationB = new FrameBufferObjectGL(zBufferB, accumulationB);
+	}
+	
+	Vector3d cameraPosition = new Vector3d();
+	Vector3d cameraDirection = new Vector3d();
+	
+	Vector3d oldCameraPosition = new Vector3d();
+	Vector3d oldCameraDirection = new Vector3d();
+	
+	boolean renderingToA = false;
+	
+	public void resize() {
+
+		float giScale = 1.0f;
+		fboAccumulationA.resizeFBO((int) (worldRenderer.getWindow().getWidth() / giScale), (int) (worldRenderer.getWindow().getHeight() / giScale));
+		fboAccumulationB.resizeFBO((int) (worldRenderer.getWindow().getWidth() / giScale), (int) (worldRenderer.getWindow().getHeight() / giScale));
+	}
+	
+	public Texture2DRenderTargetGL giTexture() {
+		return (!renderingToA ? accumulationA : accumulationB);
+	}
+	
+	public void render(RenderingInterface renderer) {
+		cameraPosition.set(renderer.getCamera().getCameraPosition());
+		cameraDirection.set(renderer.getCamera().getViewDirection());
+
+		ShaderInterface giShader = renderer.useShader("gi");
+		
+		renderer.getRenderTargetManager().setConfiguration(renderingToA ? fboAccumulationA : fboAccumulationB);
+		renderer.setDepthTestMode(DepthTestMode.DISABLED);
+		renderer.setBlendMode(BlendMode.DISABLED);
+
+		renderer.bindTexture2D("albedoBuffer", worldRenderer.renderBuffers.rbAlbedo);
+		renderer.bindTexture2D("depthBuffer", worldRenderer.renderBuffers.rbZBuffer);
+		renderer.bindTexture2D("normalBuffer", worldRenderer.renderBuffers.rbNormal);
+		
+		renderer.getRenderTargetManager().clearBoundRenderTargetAll();
+
+		renderer.bindTexture2D("previousBuffer", giTexture());
+		
+		if(cameraPosition.distance(oldCameraPosition) != 0.0f || cameraDirection.distance(oldCameraDirection) != 0.0f) {
+			System.out.println("moved! : " + cameraPosition.distance(oldCameraPosition) + "or " + cameraDirection.distance(oldCameraDirection));
+			giShader.setUniform1i("keepPreviousData", 0);
+		} else {
+			giShader.setUniform1i("keepPreviousData", 1);
+		}
+
+		voxels4gi.update(renderer);
+		voxels4gi.setupForRendering(renderer);
+		
+
+		giShader.setUniform1f("animationTimer", worldRenderer.animationTimer);
+		giShader.setUniform1f("overcastFactor", worldRenderer.getWorld().getWeather());
+		giShader.setUniform1f("wetness", worldRenderer.getWorld().getGenerator().getEnvironment().getWorldWetness(cameraPosition));
+
+		
+		worldRenderer.getSky().setupShader(giShader);
+		renderer.getCamera().setupShader(giShader);
+		
+		renderer.drawFSQuad();
+		
+		renderingToA = !renderingToA;
+		
+		oldCameraPosition.set(cameraPosition);
+		oldCameraDirection.set(cameraDirection);
+	}
+}
