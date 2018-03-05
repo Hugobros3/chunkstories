@@ -25,11 +25,11 @@ public class GiRenderer {
 	public GiRenderer(WorldRendererImplementation worldRenderer, NearbyVoxelsVolumeTexture voxels4gi) {
 		this.worldRenderer = worldRenderer;
 		this.voxels4gi = voxels4gi;
+
+		float giScale = 2.0f;
+		accumulationA = new Texture2DRenderTargetGL(TextureFormat.RGBA_32F, (int) (worldRenderer.getWindow().getWidth() / giScale), (int) (worldRenderer.getWindow().getHeight() / giScale));
+		accumulationB = new Texture2DRenderTargetGL(TextureFormat.RGBA_32F, (int) (worldRenderer.getWindow().getWidth() / giScale), (int) (worldRenderer.getWindow().getHeight() / giScale));
 		
-		accumulationA = new Texture2DRenderTargetGL(TextureFormat.RGBA_32F, worldRenderer.getWindow().getWidth() / 2, worldRenderer.getWindow().getHeight() / 2);
-		accumulationB = new Texture2DRenderTargetGL(TextureFormat.RGBA_32F, worldRenderer.getWindow().getWidth() / 2, worldRenderer.getWindow().getHeight() / 2);
-		
-		float giScale = 1.5f;
 		zBufferA = new Texture2DRenderTargetGL(DEPTH_RENDERBUFFER, (int) (worldRenderer.getWindow().getWidth() / giScale), (int) (worldRenderer.getWindow().getHeight() / giScale));
 		zBufferB = new Texture2DRenderTargetGL(DEPTH_RENDERBUFFER, (int) (worldRenderer.getWindow().getWidth() / giScale), (int) (worldRenderer.getWindow().getHeight() / giScale));
 		
@@ -47,7 +47,7 @@ public class GiRenderer {
 	
 	public void resize() {
 
-		float giScale = 1.0f;
+		float giScale = 2.0f;
 		fboAccumulationA.resizeFBO((int) (worldRenderer.getWindow().getWidth() / giScale), (int) (worldRenderer.getWindow().getHeight() / giScale));
 		fboAccumulationB.resizeFBO((int) (worldRenderer.getWindow().getWidth() / giScale), (int) (worldRenderer.getWindow().getHeight() / giScale));
 	}
