@@ -9,7 +9,6 @@ import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
-import io.xol.chunkstories.api.rendering.world.WorldRenderer;
 import io.xol.engine.graphics.fbo.FrameBufferObjectGL;
 import io.xol.engine.graphics.textures.Texture2DRenderTargetGL;
 
@@ -27,8 +26,8 @@ public class GiRenderer {
 		this.voxels4gi = voxels4gi;
 
 		float giScale = 2.0f;
-		accumulationA = new Texture2DRenderTargetGL(TextureFormat.RGBA_32F, (int) (worldRenderer.getWindow().getWidth() / giScale), (int) (worldRenderer.getWindow().getHeight() / giScale));
-		accumulationB = new Texture2DRenderTargetGL(TextureFormat.RGBA_32F, (int) (worldRenderer.getWindow().getWidth() / giScale), (int) (worldRenderer.getWindow().getHeight() / giScale));
+		accumulationA = new Texture2DRenderTargetGL(TextureFormat.RGBA_16F, (int) (worldRenderer.getWindow().getWidth() / giScale), (int) (worldRenderer.getWindow().getHeight() / giScale));
+		accumulationB = new Texture2DRenderTargetGL(TextureFormat.RGBA_16F, (int) (worldRenderer.getWindow().getWidth() / giScale), (int) (worldRenderer.getWindow().getHeight() / giScale));
 		
 		zBufferA = new Texture2DRenderTargetGL(DEPTH_RENDERBUFFER, (int) (worldRenderer.getWindow().getWidth() / giScale), (int) (worldRenderer.getWindow().getHeight() / giScale));
 		zBufferB = new Texture2DRenderTargetGL(DEPTH_RENDERBUFFER, (int) (worldRenderer.getWindow().getWidth() / giScale), (int) (worldRenderer.getWindow().getHeight() / giScale));
