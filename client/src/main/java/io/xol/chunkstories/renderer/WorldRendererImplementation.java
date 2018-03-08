@@ -22,15 +22,19 @@ import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.RenderingPipeline;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.rendering.target.RenderTargetAttachementsConfiguration;
+import io.xol.chunkstories.api.rendering.textures.Texture;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
+import io.xol.chunkstories.api.rendering.world.SkyRenderer;
 import io.xol.chunkstories.api.rendering.world.WorldEffectsRenderer;
 import io.xol.chunkstories.api.rendering.world.WorldRenderer;
+import io.xol.chunkstories.api.rendering.world.chunk.ChunksRenderer;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
@@ -41,7 +45,6 @@ import io.xol.chunkstories.renderer.debug.FakeImmediateModeDebugRenderer;
 import io.xol.chunkstories.renderer.decals.DecalsRendererImplementation;
 import io.xol.chunkstories.renderer.lights.ComputedShadowMap;
 import io.xol.chunkstories.renderer.particles.ClientParticlesRenderer;
-import io.xol.chunkstories.renderer.sky.DefaultSkyRenderer;
 import io.xol.chunkstories.renderer.terrain.FarTerrainGSMeshRenderer;
 import io.xol.chunkstories.renderer.terrain.FarTerrainMeshRenderer;
 //import io.xol.chunkstories.renderer.terrain.FarTerrainNoMeshRenderer;
@@ -62,8 +65,10 @@ public class WorldRendererImplementation implements WorldRenderer
 	
 	private ChunkMeshesRenderer chunksRenderer;
 	
+	private RenderingGraph renderingGraph;
+	
 	EntitiesRenderer entitiesRenderer;
-	DefaultSkyRenderer skyRenderer;
+	SkyRenderer skyRenderer;
 	DecalsRendererImplementation decalsRenderer;
 	ClientParticlesRenderer particlesRenderer;
 	FarTerrainRenderer farTerrainRenderer;
@@ -79,8 +84,6 @@ public class WorldRendererImplementation implements WorldRenderer
 	
 	public RenderBuffers renderBuffers;
 	public WorldTextures worldTextures;
-	
-	RenderingPass currentPass = null;
 
 	private ComputedShadowMap sun_shadowMap;
 
@@ -91,8 +94,6 @@ public class WorldRendererImplementation implements WorldRenderer
 	{
 		this.world = world;
 		this.gameWindow = client.getGameWindow();
-		
-		//this.logger = client.logger();
 		
 		//Creates all these fancy render buffers
 		renderBuffers = new RenderBuffers();
@@ -108,7 +109,7 @@ public class WorldRendererImplementation implements WorldRenderer
 		this.farTerrainRenderer = new FarTerrainGSMeshRenderer(this);
 		this.summariesTexturesHolder = new SummariesArrayTexture(client, world);
 		this.weatherEffectsRenderer = new DefaultWeatherEffectsRenderer(world, this);
-		this.skyRenderer = new DefaultSkyRenderer(world);
+		//this.skyRenderer = new DefaultSkyRenderer(world);
 		this.decalsRenderer = new DecalsRendererImplementation(this);
 		this.shadower = new ShadowMapRenderer(this);
 		this.bloomRenderer = new BloomRenderer(this);
@@ -117,6 +118,8 @@ public class WorldRendererImplementation implements WorldRenderer
 
 		voxels4gi = new NearbyVoxelsVolumeTexture(this);
 		giRenderer = new GiRenderer(this, voxels4gi);
+		
+		this.renderingGraph = new RenderingGraph(this.getRenderingInterface());
 	}
 
 	@Override
@@ -126,12 +129,16 @@ public class WorldRendererImplementation implements WorldRenderer
 	}
 
 	@Override
-	public DefaultSkyRenderer getSky()
+	public SkyRenderer getSkyRenderer()
 	{
 		return skyRenderer;
 	}
 
 	@Override
+	public void setSkyRenderer(SkyRenderer skyRenderer) {
+		this.skyRenderer = skyRenderer;
+	}
+	
 	public void renderWorld(RenderingInterface renderingInterface)
 	{
 		((SummariesArrayTexture) summariesTexturesHolder).update();
@@ -150,14 +157,19 @@ public class WorldRendererImplementation implements WorldRenderer
 		
 		//TODO remove entirely
 		FakeImmediateModeDebugRenderer.setCamera(mainCamera);
+		chunksRenderer.updatePVSSet(mainCamera);
 		
 		// Prepare matrices
 		mainCamera.setupUsingScreenSize(gameWindow.getWidth(), gameWindow.getHeight());
 		
 		this.renderWorldInternal(renderingInterface);
 	}
-		
-	protected void renderWorldInternal(RenderingInterface renderingInterface)
+	
+	protected void renderWorldInternal(RenderingInterface renderingInterface) {
+		this.renderingGraph.render(renderingInterface);
+	}
+	
+	/*protected void renderWorldInternal(RenderingInterface renderingInterface)
 	{
 		//Step one, set the camera to the proper spot
 		CameraInterface mainCamera = renderingInterface.getCamera();
@@ -177,7 +189,7 @@ public class WorldRendererImplementation implements WorldRenderer
 		renderingInterface.getRenderTargetManager().setConfiguration(renderBuffers.fboShadedBuffer);
 		
 		// Update sky and render it
-		skyRenderer.time = (world.getTime() % 10000) / 10000f;
+		skyRenderer.dayTime = (world.getTime() % 10000) / 10000f;
 		skyRenderer.render(renderingInterface);
 
 		// Fill up the G-Buffers
@@ -222,7 +234,7 @@ public class WorldRendererImplementation implements WorldRenderer
 		reflectionsRenderer.renderReflections(renderingInterface);
 		
 		weatherEffectsRenderer.renderEffects(renderingInterface);
-	}
+	}*/
 
 	private void gbuffers_opaque_chunk_meshes(RenderingInterface renderingInterface)
 	{
@@ -269,7 +281,35 @@ public class WorldRendererImplementation implements WorldRenderer
 
 		renderingInterface.setObjectMatrix(new Matrix4f());
 		
-		chunksRenderer.renderChunks(renderingInterface, WorldRenderer.RenderingPass.NORMAL_OPAQUE);
+		chunksRenderer.renderChunks(renderingInterface);
+	}
+	
+	private void gbuffers_opaque_entities(RenderingInterface renderingContext) {
+		
+		// Select shader
+		ShaderInterface entitiesShader = renderingContext.useShader("entities");
+
+		//entitiesShader.setUniformMatrix4f("localTansform", new Matrix4f());
+		//entitiesShader.setUniformMatrix3f("localTransformNormal", new Matrix3f());
+
+		entitiesShader.setUniform1f("viewDistance", RenderingConfig.viewDistance);
+		entitiesShader.setUniform1f("shadowVisiblity", shadower.getShadowVisibility());
+
+		renderingContext.bindTexture2D("lightColors", worldTextures.lightmapTexture);
+		entitiesShader.setUniform3f("blockColor", 1f, 1f, 1f);
+		entitiesShader.setUniform1f("time", animationTimer);
+
+		entitiesShader.setUniform1f("overcastFactor", world.getWeather());
+		entitiesShader.setUniform1f("wetness", world.getGenerator().getEnvironment().getWorldWetness(renderingContext.getCamera().getCameraPosition()));
+
+		renderingContext.currentShader().setUniform1f("useColorIn", 0.0f);
+		renderingContext.currentShader().setUniform1f("useNormalIn", 1.0f);
+
+		renderingContext.getCamera().setupShader(entitiesShader);
+
+		chunksRenderer.renderChunksExtras(renderingContext);
+		
+		entitiesRenderer.renderEntities(renderingContext);
 	}
 	
 	private void gbuffers_water_chunk_meshes(RenderingInterface renderingInterface)
@@ -332,7 +372,7 @@ public class WorldRendererImplementation implements WorldRenderer
 			}
 
 			renderingInterface.setObjectMatrix(new Matrix4f());
-			chunksRenderer.renderChunks(renderingInterface, WorldRenderer.RenderingPass.NORMAL_LIQUIDS_PASS_1);
+			chunksRenderer.renderChunks(renderingInterface);
 		}
 		// Set fixed-function parameters
 		/*renderingInterface.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
@@ -364,34 +404,6 @@ public class WorldRendererImplementation implements WorldRenderer
 		renderingInterface.setBlendMode(BlendMode.DISABLED);*/
 	}
 
-	private void gbuffers_opaque_entities(RenderingInterface renderingContext) {
-		
-		// Select shader
-		ShaderInterface entitiesShader = renderingContext.useShader("entities");
-
-		//entitiesShader.setUniformMatrix4f("localTansform", new Matrix4f());
-		//entitiesShader.setUniformMatrix3f("localTransformNormal", new Matrix3f());
-
-		entitiesShader.setUniform1f("viewDistance", RenderingConfig.viewDistance);
-		entitiesShader.setUniform1f("shadowVisiblity", shadower.getShadowVisibility());
-
-		renderingContext.bindTexture2D("lightColors", worldTextures.lightmapTexture);
-		entitiesShader.setUniform3f("blockColor", 1f, 1f, 1f);
-		entitiesShader.setUniform1f("time", animationTimer);
-
-		entitiesShader.setUniform1f("overcastFactor", world.getWeather());
-		entitiesShader.setUniform1f("wetness", world.getGenerator().getEnvironment().getWorldWetness(renderingContext.getCamera().getCameraPosition()));
-
-		renderingContext.currentShader().setUniform1f("useColorIn", 0.0f);
-		renderingContext.currentShader().setUniform1f("useNormalIn", 1.0f);
-
-		renderingContext.getCamera().setupShader(entitiesShader);
-
-		chunksRenderer.renderChunksExtras(renderingContext, RenderingPass.NORMAL_OPAQUE);
-		
-		entitiesRenderer.renderEntities(renderingContext);
-	}
-		
 	/**
 	 * Uses G-Buffers data to spit out shaded solid blocks ( shadows etc )
 	 * @param sun_shadowMap 
@@ -404,6 +416,7 @@ public class WorldRendererImplementation implements WorldRenderer
 		//setupShadowColors(applyShadowsShader);
 		
 		renderingContext.bindTexture2D("giBuffer", this.giRenderer.giTexture());
+		applyShadowsShader.setUniform1f("accumulatedSamples", giRenderer.accumulatedSamples);
 
 		applyShadowsShader.setUniform1f("animationTimer", animationTimer);
 		applyShadowsShader.setUniform1f("overcastFactor", world.getWeather());
@@ -441,7 +454,7 @@ public class WorldRendererImplementation implements WorldRenderer
 
 		renderingContext.bindCubemap("environmentCubemap", renderBuffers.rbEnvironmentMap);
 
-		applyShadowsShader.setUniform1f("dayTime", skyRenderer.time);
+		applyShadowsShader.setUniform1f("dayTime", skyRenderer.getDayTime());
 
 		applyShadowsShader.setUniform1f("shadowMapResolution", RenderingConfig.shadowMapResolutions);
 		applyShadowsShader.setUniform1f("shadowVisiblity", shadower.getShadowVisibility());
@@ -497,8 +510,28 @@ public class WorldRendererImplementation implements WorldRenderer
 		renderingInterface.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
 	}
 	
-	@Override
 	public void blitFinalImage(RenderingInterface renderingContext, boolean hideGui)
+	{
+		Texture finalBuffer = this.renderingGraph.getRenderPass("final").resolvedOutputs.get("finalBuffer");
+		
+		if(finalBuffer != null && finalBuffer instanceof Texture2D) {
+			final Texture2D finalTexture = (Texture2D)(finalBuffer);
+			
+			// We render to the screen.
+			renderingContext.getRenderTargetManager().setConfiguration(null);
+
+			renderingContext.setDepthTestMode(DepthTestMode.DISABLED);
+			renderingContext.setBlendMode(BlendMode.DISABLED);
+
+			renderingContext.useShader("blit");
+			
+			renderingContext.bindTexture2D("diffuseTexture", finalTexture);
+
+			renderingContext.drawFSQuad();
+		}
+	}
+	
+	public void postprocess(RenderingInterface renderingContext, boolean hideGui)
 	{
 		//TODO mix in the reflections earlier ?
 		Texture2D bloomRendered = RenderingConfig.doBloom ? bloomRenderer.renderBloom(renderingContext) : null;
@@ -561,7 +594,7 @@ public class WorldRendererImplementation implements WorldRenderer
 		renderingContext.drawFSQuad();
 
 		//Draw entities Huds
-		if(!hideGui) {
+		/*if(!hideGui) {
 			world.entitiesLock.readLock().lock();
 			Iterator<Entity> ei = world.getAllLoadedEntities();
 			Entity e;
@@ -573,12 +606,11 @@ public class WorldRendererImplementation implements WorldRenderer
 				}
 			}
 			world.entitiesLock.readLock().unlock();
-		}
+		}*/
 	}
 	
 	public void destroy()
 	{
-		skyRenderer.destroy();
 		particlesRenderer.destroy();
 		farTerrainRenderer.destroy();
 		summariesTexturesHolder.destroy();
@@ -627,12 +659,13 @@ public class WorldRendererImplementation implements WorldRenderer
 			// Main Rendertarget (HDR)
 			rbShaded = new Texture2DRenderTargetGL(RGB_HDR, gameWindow.getWidth(), gameWindow.getHeight());
 			rbZBuffer = new Texture2DRenderTargetGL(DEPTH_RENDERBUFFER, gameWindow.getWidth(), gameWindow.getHeight());
-			rbAlbedo = new Texture2DRenderTargetGL(RGBA_8BPP, gameWindow.getWidth(), gameWindow.getHeight());
 			
+			rbAlbedo = new Texture2DRenderTargetGL(RGBA_8BPP, gameWindow.getWidth(), gameWindow.getHeight());
 			rbNormal = new Texture2DRenderTargetGL(RGB_8, gameWindow.getWidth(), gameWindow.getHeight());
 			rbVoxelLight = new Texture2DRenderTargetGL(RG_8, gameWindow.getWidth(), gameWindow.getHeight());
 			rbSpecularity = new Texture2DRenderTargetGL(RED_8, gameWindow.getWidth(), gameWindow.getHeight());
 			rbMaterial = new Texture2DRenderTargetGL(RED_8UI, gameWindow.getWidth(), gameWindow.getHeight());
+			fboGBuffers = new FrameBufferObjectGL(rbZBuffer, rbAlbedo, rbNormal, rbVoxelLight, rbSpecularity, rbMaterial);
 
 			// Bloom texture
 			rbBloom = new Texture2DRenderTargetGL(RGB_HDR, gameWindow.getWidth() / 2, gameWindow.getHeight() / 2);
@@ -642,7 +675,6 @@ public class WorldRendererImplementation implements WorldRenderer
 			rbReflections = new Texture2DRenderTargetGL(RGB_HDR, gameWindow.getWidth(), gameWindow.getHeight());
 
 			// FBOs
-			fboGBuffers = new FrameBufferObjectGL(rbZBuffer, rbAlbedo, rbNormal, rbVoxelLight, rbSpecularity, rbMaterial);
 			fboOnlyAlbedoBuffer = new FrameBufferObjectGL(rbZBuffer, rbAlbedo);
 			
 			fboShadedBuffer = new FrameBufferObjectGL(rbZBuffer, rbShaded);
@@ -697,18 +729,18 @@ public class WorldRendererImplementation implements WorldRenderer
 		
 		public void destroy() {
 			//Destroy FBOs
-			this.fboShadowMap.destroy(false);
-			this.fboGBuffers.destroy(false);
-			this.fboShadedBuffer.destroy(false);
-			this.fboBloom.destroy(false);
-			this.fboBlur.destroy(false);
-			this.fboSSAO.destroy(false);
-			this.fboSSR.destroy(false);
-			this.fboShadedBufferWithSpecular.destroy(false);
-			this.fboOnlyAlbedoBuffer.destroy(false);
-			this.fboTempBufferEnvMap.destroy(false);
+			this.fboShadowMap.destroy();
+			this.fboGBuffers.destroy();
+			this.fboShadedBuffer.destroy();
+			this.fboBloom.destroy();
+			this.fboBlur.destroy();
+			this.fboSSAO.destroy();
+			this.fboSSR.destroy();
+			this.fboShadedBufferWithSpecular.destroy();
+			this.fboOnlyAlbedoBuffer.destroy();
+			this.fboTempBufferEnvMap.destroy();
 			for(int i = 0; i < 6; i++) {
-				fbosEnvMap[i].destroy(false);
+				fbosEnvMap[i].destroy();
 			}
 			
 			//Destroy render buffers
@@ -784,11 +816,10 @@ public class WorldRendererImplementation implements WorldRenderer
 		int width = gameWindow.getWidth();
 		int height = gameWindow.getHeight();
 		this.setupRenderSize(width, height);
-		
-		this.giRenderer.resize();
 	}
 	
 	public void setupRenderSize(int width, int height) {
+		this.renderingGraph.resize(width, height);
 		this.renderBuffers.resizeBuffers(width, height);
 		this.giRenderer.resize();
 	}
@@ -837,17 +868,6 @@ public class WorldRendererImplementation implements WorldRenderer
 		return gameWindow.takeScreenshot();
 	}
 	
-	public ChunkMeshesRenderer getChunkMeshesRenderer()
-	{
-		return this.chunksRenderer;
-	}
-
-	@Override
-	public RenderingPass getCurrentRenderingPass()
-	{
-		return currentPass;
-	}
-
 	public ShadowMapRenderer getShadowRenderer()
 	{
 		return this.shadower;
@@ -867,9 +887,25 @@ public class WorldRendererImplementation implements WorldRenderer
 		return Client.getInstance().getGameWindow().getRenderingContext();
 	}
 
-	
 	@Override
 	public GameWindow getWindow() {
 		return gameWindow;
+	}
+
+	@Override
+	public RenderingPipeline getRenderingPipeline() {
+		return renderingGraph;
+	}
+
+	
+	@Override
+	public float getAnimationTimer() {
+		return this.animationTimer;
+	}
+	
+
+	@Override
+	public ChunkMeshesRenderer getChunksRenderer() {
+		return this.chunksRenderer;
 	}
 }

@@ -6,8 +6,6 @@
 
 package io.xol.chunkstories.renderer;
 
-
-
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3d;

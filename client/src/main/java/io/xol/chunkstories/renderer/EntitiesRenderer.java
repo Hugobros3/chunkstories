@@ -17,7 +17,6 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityDefinition;
 import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.world.WorldRenderer.RenderingPass;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
@@ -187,7 +186,7 @@ public class EntitiesRenderer
 
 			CollisionBox box = currentEntity.getTranslatedBoundingBox();
 
-			if (renderingContext.getWorldRenderer().getCurrentRenderingPass() == RenderingPass.SHADOW || renderingContext.getCamera().isBoxInFrustrum(box))//new Vector3f(box.xpos - box.xw, box.ypos - box.h, box.zpos - box.zw), new Vector3f(box.xw, box.h, box.zw)))
+			if (renderingContext.getWorldRenderer().getRenderingPipeline().getCurrentPass().name.startsWith("shadow") || renderingContext.getCamera().isBoxInFrustrum(box))//new Vector3f(box.xpos - box.xw, box.ypos - box.h, box.zpos - box.zw), new Vector3f(box.xw, box.h, box.zw)))
 			{
 				return true;
 			}

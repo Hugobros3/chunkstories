@@ -6,15 +6,23 @@
 
 package io.xol.engine.graphics.fbo;
 
+import static org.lwjgl.opengl.GL11.GL_NONE;
+import static org.lwjgl.opengl.GL11.glViewport;
+import static org.lwjgl.opengl.GL20.glDrawBuffers;
+import static org.lwjgl.opengl.GL30.GL_COLOR_ATTACHMENT0;
+import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER;
+import static org.lwjgl.opengl.GL30.glBindFramebuffer;
+import static org.lwjgl.opengl.GL30.glDeleteFramebuffers;
+import static org.lwjgl.opengl.GL30.glGenFramebuffers;
 
-
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL30.*;
-import static org.lwjgl.opengl.GL20.*;
-
+import java.lang.ref.WeakReference;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.lwjgl.BufferUtils;
 
@@ -27,12 +35,13 @@ public class FrameBufferObjectGL implements RenderTargetAttachementsConfiguratio
 	RenderTarget[] colorAttachements;
 	RenderTarget depthAttachement;
 
-	int fbo_id;
+	int glId;
 
 	public FrameBufferObjectGL(RenderTarget depth, RenderTarget... colors)
 	{
-		fbo_id = glGenFramebuffers();
-		glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
+		glId = glGenFramebuffers();
+		glBindFramebuffer(GL_FRAMEBUFFER, glId);
+		allocatedIds.put(glId, new WeakReference<>(this));
 
 		depthAttachement = depth;
 		colorAttachements = colors;
@@ -112,10 +121,7 @@ public class FrameBufferObjectGL implements RenderTargetAttachementsConfiguratio
 				glDrawBuffers(GL_NONE);
 		}
 	}
-	
-	/* (non-Javadoc)
-	 * @see io.xol.engine.graphics.fbo.RenderTargetAttachementsConfiguration#setDepthAttachement(io.xol.chunkstories.api.rendering.target.RenderTarget)
-	 */
+
 	@Override
 	public void setDepthAttachement(RenderTarget depthAttachement)
 	{
@@ -123,10 +129,7 @@ public class FrameBufferObjectGL implements RenderTargetAttachementsConfiguratio
 		if(depthAttachement != null)
 			depthAttachement.attachAsDepth();
 	}
-	
-	/* (non-Javadoc)
-	 * @see io.xol.engine.graphics.fbo.RenderTargetAttachementsConfiguration#setColorAttachement(int, io.xol.chunkstories.api.rendering.target.RenderTarget)
-	 */
+
 	@Override
 	public void setColorAttachement(int index, RenderTarget colorAttachement)
 	{
@@ -134,10 +137,7 @@ public class FrameBufferObjectGL implements RenderTargetAttachementsConfiguratio
 		if(colorAttachement != null)
 			colorAttachement.attachAsColor(index);
 	}
-	
-	/* (non-Javadoc)
-	 * @see io.xol.engine.graphics.fbo.RenderTargetAttachementsConfiguration#setColorAttachements(io.xol.chunkstories.api.rendering.target.RenderTarget)
-	 */
+
 	@Override
 	public void setColorAttachements(RenderTarget... colorAttachements)
 	{
@@ -154,9 +154,6 @@ public class FrameBufferObjectGL implements RenderTargetAttachementsConfiguratio
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.engine.graphics.fbo.RenderTargetAttachementsConfiguration#resizeFBO(int, int)
-	 */
 	@Override
 	public void resizeFBO(int w, int h)
 	{
@@ -176,16 +173,16 @@ public class FrameBufferObjectGL implements RenderTargetAttachementsConfiguratio
 	void bind()
 	{
 		//Don't rebind twice
-		if(fbo_id == bound)
+		if(glId == bound)
 			return;
 		Client.getInstance().getGameWindow().getRenderingContext().flush();
-		glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
+		glBindFramebuffer(GL_FRAMEBUFFER, glId);
 		RenderTarget ok = this.depthAttachement != null ? depthAttachement : (this.colorAttachements != null && this.colorAttachements.length > 0 ? this.colorAttachements[0] : null);
 		if(ok != null)
 			glViewport(0, 0, ok.getWidth(), ok.getHeight());
 		else
 			System.out.println("fck off");
-		bound = fbo_id;
+		bound = glId;
 	}
 
 	static void unbind()
@@ -198,14 +195,12 @@ public class FrameBufferObjectGL implements RenderTargetAttachementsConfiguratio
 	
 	static int bound = 0;
 
-	/* (non-Javadoc)
-	 * @see io.xol.engine.graphics.fbo.RenderTargetAttachementsConfiguration#destroy(boolean)
-	 */
 	@Override
-	public void destroy(boolean texturesToo)
+	public void destroy()
 	{
-		glDeleteFramebuffers(fbo_id);
-		if (texturesToo)
+		allocatedIds.remove(glId);
+		glDeleteFramebuffers(glId);
+		/*if (texturesToo)
 		{
 			if (depthAttachement != null)
 				depthAttachement.destroy();
@@ -214,6 +209,27 @@ public class FrameBufferObjectGL implements RenderTargetAttachementsConfiguratio
 				if (tex != null)
 					tex.destroy();
 			}
+		}*/
+	}
+
+	public static void updateFrameBufferObjects() {
+		
+		Iterator<Entry<Integer, WeakReference<FrameBufferObjectGL>>> i = allocatedIds.entrySet().iterator();
+		while (i.hasNext())
+		{
+			Entry<Integer, WeakReference<FrameBufferObjectGL>> entry = i.next();
+			int glId = entry.getKey();
+			WeakReference<FrameBufferObjectGL> weakReference = entry.getValue();
+			FrameBufferObjectGL fbo = weakReference.get();
+	
+			if (fbo == null)
+			{
+				//Gives back orphan objects
+				glDeleteFramebuffers(glId);
+				i.remove();
+			}
 		}
 	}
+	
+	protected static Map<Integer, WeakReference<FrameBufferObjectGL>> allocatedIds = new ConcurrentHashMap<>();
 }

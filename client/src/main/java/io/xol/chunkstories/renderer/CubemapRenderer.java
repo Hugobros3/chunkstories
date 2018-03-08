@@ -127,7 +127,7 @@ public class CubemapRenderer {
 			if (onlyTerrain)
 			{
 				//Draw sky
-				worldRenderer.getSky().render(renderingContext);
+				worldRenderer.getSkyRenderer().render(renderingContext);
 				worldRenderer.getFarTerrainRenderer().renderTerrain(renderingContext, null);
 			}
 			else

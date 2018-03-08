@@ -62,6 +62,7 @@ import io.xol.chunkstories.renderer.debug.WorldLogicTimeRenderer;
 import io.xol.engine.concurrency.SimpleFence;
 import io.xol.engine.graphics.GLCalls;
 import io.xol.engine.graphics.RenderingContext;
+import io.xol.engine.graphics.fbo.FrameBufferObjectGL;
 import io.xol.engine.graphics.geometry.VertexBufferGL;
 import io.xol.engine.graphics.textures.Texture2DGL;
 import io.xol.engine.misc.CPUModelDetection;
@@ -378,6 +379,7 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 				//Update pending actions
 				vramUsageVerticesObjects = VertexBufferGL.updateVerticesObjects();
 				Texture2DGL.updateTextureObjects();
+				FrameBufferObjectGL.updateFrameBufferObjects();
 
 				//Clear windows
 				renderingContext.getRenderTargetManager().clearBoundRenderTargetAll();

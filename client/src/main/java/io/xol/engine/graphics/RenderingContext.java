@@ -417,12 +417,12 @@ public class RenderingContext implements RenderingInterface
 	}
 
 	@Override
-	public Texture2D newTexture2D(TextureFormat type, int width, int height) {
+	public Texture2DRenderTargetGL newTexture2D(TextureFormat type, int width, int height) {
 		return new Texture2DRenderTargetGL(type, width, height);
 	}
 	
 	@Override
-	public Texture3D newTexture3D(TextureFormat type, int width, int height, int depth) {
+	public Texture3DGL newTexture3D(TextureFormat type, int width, int height, int depth) {
 		return new Texture3DGL(type, width, height, depth);
 	}
 

@@ -123,9 +123,9 @@ public class MainMenu extends Layer
 	@Override
 	public void destroy()
 	{
-		unblurredFBO.destroy(true);
-		blurredHFBO.destroy(true);
-		blurredVFBO.destroy(true);
+		unblurredFBO.destroy();
+		blurredHFBO.destroy();
+		blurredVFBO.destroy();
 	}
 
 	@Override

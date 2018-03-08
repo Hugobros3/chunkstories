@@ -20,6 +20,8 @@ public class GiRenderer {
 	private FrameBufferObjectGL fboAccumulationA, fboAccumulationB;
 	
 	private NearbyVoxelsVolumeTexture voxels4gi;
+	
+	public int accumulatedSamples = 0;
 
 	public GiRenderer(WorldRendererImplementation worldRenderer, NearbyVoxelsVolumeTexture voxels4gi) {
 		this.worldRenderer = worldRenderer;
@@ -74,22 +76,25 @@ public class GiRenderer {
 		renderer.bindTexture2D("previousBuffer", giTexture());
 		
 		if(cameraPosition.distance(oldCameraPosition) != 0.0f || cameraDirection.distance(oldCameraDirection) != 0.0f) {
-			System.out.println("moved! : " + cameraPosition.distance(oldCameraPosition) + "or " + cameraDirection.distance(oldCameraDirection));
+			//System.out.println("moved! : " + cameraPosition.distance(oldCameraPosition) + "or " + cameraDirection.distance(oldCameraDirection));
 			giShader.setUniform1i("keepPreviousData", 0);
+			accumulatedSamples = 0;
 		} else {
 			giShader.setUniform1i("keepPreviousData", 1);
 		}
+		
+		accumulatedSamples++;
 
 		voxels4gi.update(renderer);
 		voxels4gi.setupForRendering(renderer);
 		
 
-		giShader.setUniform1f("animationTimer", worldRenderer.animationTimer);
+		giShader.setUniform1f("animationTimer", worldRenderer.animationTimer + accumulatedSamples);
 		giShader.setUniform1f("overcastFactor", worldRenderer.getWorld().getWeather());
 		giShader.setUniform1f("wetness", worldRenderer.getWorld().getGenerator().getEnvironment().getWorldWetness(cameraPosition));
 
 		
-		worldRenderer.getSky().setupShader(giShader);
+		worldRenderer.getSkyRenderer().setupShader(giShader);
 		renderer.getCamera().setupShader(giShader);
 		
 		renderer.drawFSQuad();

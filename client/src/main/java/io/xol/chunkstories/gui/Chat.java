@@ -239,7 +239,7 @@ public class Chat
 				args = chatMsg.substring(chatMsg.indexOf(" ") + 1, chatMsg.length()).split(" ");
 			}
 
-			if (ingame.getPluginManager().dispatchCommand(Client.getInstance().getPlayer(), cmdName, args))
+			if (ingame.getGameWindow().getClient().getPluginManager().dispatchCommand(Client.getInstance().getPlayer(), cmdName, args))
 			{
 				if (sent.size() == 0 || !sent.get(0).equals(input))
 				{
@@ -252,7 +252,7 @@ public class Chat
 			{
 				String list = "";
 				
-				Iterator<ChunkStoriesPlugin> i = ingame.getPluginManager().activePlugins();
+				Iterator<ChunkStoriesPlugin> i = ingame.getGameWindow().getClient().getPluginManager().activePlugins();
 				while(i.hasNext()) {
 					ChunkStoriesPlugin plugin = i.next();
 					list += plugin.getName() + (i.hasNext() ? ", " : "");

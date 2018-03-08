@@ -7,12 +7,18 @@
 package io.xol.chunkstories.world;
 
 import io.xol.chunkstories.api.content.ContentTranslator;
+import io.xol.chunkstories.api.plugin.ClientPluginManager;
 import io.xol.chunkstories.api.world.WorldClient;
+import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.client.ClientSlavePluginManager;
 import io.xol.chunkstories.renderer.WorldRendererImplementation;
 import io.xol.chunkstories.renderer.debug.WorldLogicTimeRenderer;
 import io.xol.chunkstories.renderer.decals.DecalsRendererImplementation;
 import io.xol.chunkstories.renderer.particles.ClientParticlesRenderer;
+import io.xol.chunkstories.server.LocalServerContext;
+import io.xol.chunkstories.server.commands.InstallServerCommands;
+import io.xol.chunkstories.server.commands.content.ReloadContentCommand;
 
 /**
  * Mostly the common methods of WorldClientRemote and WorldClientLocal
@@ -20,6 +26,9 @@ import io.xol.chunkstories.renderer.particles.ClientParticlesRenderer;
 public abstract class WorldClientCommon extends WorldImplementation implements WorldClient {
 	protected WorldRendererImplementation renderer;
 
+	private  LocalServerContext localServer;
+	//private ClientPluginManager pluginManager;
+	
 	public WorldClientCommon(Client client, WorldInfoImplementation info) throws WorldLoadingException {
 		this(client, info, null);
 	}
@@ -28,7 +37,32 @@ public abstract class WorldClientCommon extends WorldImplementation implements W
 			throws WorldLoadingException {
 		super(client, info, translator);
 
+		ClientPluginManager pluginManager;
+		
+		//Start a mini server
+		if(this instanceof WorldMaster)
+		{
+			localServer = new LocalServerContext(Client.getInstance());
+			pluginManager = localServer.getPluginManager();
+
+			pluginManager.reloadPlugins();
+			client.setClientPluginManager(pluginManager);
+			
+			new InstallServerCommands(localServer);
+			new ReloadContentCommand(Client.getInstance());
+		}
+		else
+		{
+			localServer = null;
+			pluginManager = new ClientSlavePluginManager(Client.getInstance());
+			new ReloadContentCommand(Client.getInstance());
+		}
+		
 		this.renderer = new WorldRendererImplementation(this, client);
+	}
+
+	public ClientPluginManager getPluginManager() {
+		return Client.getInstance().getPluginManager();
 	}
 
 	@Override

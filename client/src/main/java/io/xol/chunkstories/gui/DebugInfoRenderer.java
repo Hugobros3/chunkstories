@@ -16,7 +16,6 @@ import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
-import io.xol.chunkstories.api.rendering.world.WorldRenderer;
 import io.xol.chunkstories.api.rendering.world.chunk.ChunkRenderable;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.voxel.VoxelSides;
@@ -131,7 +130,7 @@ public class DebugInfoRenderer {
 		
 		posx = 8;
 		posy = x_top - posx;
-		text = GLCalls.getStatistics() + " Chunks in view : " + formatBigAssNumber("" + world.getWorldRenderer().getChunkMeshesRenderer().getChunksVisibleForPass(WorldRenderer.RenderingPass.NORMAL_OPAQUE)) + " Entities " + ec + " Particles :" + ((ClientParticlesRenderer) world.getParticlesManager()).count()
+		text = GLCalls.getStatistics() + " Chunks in view : " + world.getWorldRenderer().getChunksRenderer().getChunksVisible() + " Entities " + ec + " Particles :" + ((ClientParticlesRenderer) world.getParticlesManager()).count()
 				+ " #FF0000Render FPS: " + Client.getInstance().getGameWindow().getFPS() + " avg: " + Math.floor(10000.0 / Client.getInstance().getGameWindow().getFPS()) / 10.0 + " #00FFFFSimulation FPS: " + world.getWorldRenderer().getWorld().getGameLogic().getSimulationFps();
 		
 		renderingInterface.getFontRenderer().drawStringWithShadow(font, posx, posy, text, 1, 1, new Vector4f(1));

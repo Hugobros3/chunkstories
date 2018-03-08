@@ -20,13 +20,11 @@ import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse.MouseScroll;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.player.Player;
-import io.xol.chunkstories.api.plugin.ClientPluginManager;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.client.ClientSlavePluginManager;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.entity.SerializedEntityFile;
 import io.xol.chunkstories.gui.Chat.ChatPanelOverlay;
@@ -34,23 +32,16 @@ import io.xol.chunkstories.gui.overlays.ingame.DeathOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.PauseOverlay;
 import io.xol.chunkstories.renderer.decals.VoxelOverlays;
 import io.xol.chunkstories.renderer.particles.ClientParticlesRenderer;
-import io.xol.chunkstories.server.LocalServerContext;
-import io.xol.chunkstories.server.commands.content.ReloadContentCommand;
 import io.xol.chunkstories.world.WorldClientCommon;
 import io.xol.chunkstories.world.WorldClientRemote;
 import io.xol.engine.base.GameWindowOpenGL_LWJGL3;
-
-
 
 public class Ingame extends Layer
 {
 	private final WorldClientCommon world;
 	
 	//Moved from client to IG, as these make sense per world/play
-	private final ClientPluginManager pluginManager;
-	
-	//Only in SP
-	private final LocalServerContext localServer;
+	//private final ClientPluginManager pluginManager;
 
 	// Renderer & client interface components
 	private final VoxelOverlays selectionRenderer;
@@ -80,20 +71,6 @@ public class Ingame extends Layer
 		this.selectionRenderer = new VoxelOverlays();
 		this.wireframeDebugger = new PhysicsWireframeDebugger(window.getClient(), world);
 		this.debugInfoRenderer = new DebugInfoRenderer(window.getClient(), world);
-		
-		//Start a mini server
-		if(world instanceof WorldMaster)
-		{
-			localServer = new LocalServerContext(Client.getInstance());
-			pluginManager = localServer.getPluginManager();
-			new ReloadContentCommand(Client.getInstance());
-		}
-		else
-		{
-			localServer = null;
-			pluginManager = new ClientSlavePluginManager(Client.getInstance());
-			new ReloadContentCommand(Client.getInstance());
-		}
 		
 		//Hacky job because the client is a global state and the ingame scene is per-world
 		//Client.getInstance().setClientPluginManager(pluginManager);
@@ -154,7 +131,7 @@ public class Ingame extends Layer
 		if (playerEntity instanceof EntityControllable)
 			selectedBlock = ((EntityControllable) playerEntity).getBlockLookingAt(true);
 		
-		pluginManager.fireEvent(new CameraSetupEvent(renderingContext.getCamera()));
+		world.getPluginManager().fireEvent(new CameraSetupEvent(renderingContext.getCamera()));
 
 		//Main render call
 		world.getWorldRenderer().renderWorld(renderingContext);
@@ -282,7 +259,7 @@ public class Ingame extends Layer
 			Client.getInstance().reloadAssets();
 			
 			//Reload plugins
-			this.pluginManager.reloadPlugins();
+			world.getPluginManager().reloadPlugins();
 			
 			//Mark some caches dirty
 			world.getWorldRenderer().reloadContentSpecificStuff();
@@ -378,7 +355,7 @@ public class Ingame extends Layer
 			Player player = Client.getInstance().getPlayer();
 			
 			PlayerLogoutEvent playerDisconnectionEvent = new PlayerLogoutEvent(player);
-			pluginManager.fireEvent(playerDisconnectionEvent);
+			world.getPluginManager().fireEvent(playerDisconnectionEvent);
 	
 			if(this.playerEntity != null)
 			{
@@ -404,14 +381,9 @@ public class Ingame extends Layer
 		}
 		
 		//Disables plugins
-		pluginManager.disablePlugins();
+		world.getPluginManager().disablePlugins();
 		
 		this.world.getWorldRenderer().destroy();
-	}
-	
-	public ClientPluginManager getPluginManager()
-	{
-		return pluginManager;
 	}
 
 	public float getPauseOverlayFade() {

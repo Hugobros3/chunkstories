@@ -16,14 +16,14 @@ import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingM
 import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
 import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
+import io.xol.chunkstories.api.rendering.world.SkyRenderer;
 import io.xol.chunkstories.api.rendering.world.WorldRenderer;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.renderer.lights.ComputedShadowMap;
-import io.xol.chunkstories.renderer.sky.DefaultSkyRenderer;
 
 public class ShadowMapRenderer
 {
-	WorldRendererImplementation worldRenderer;
+	WorldRenderer worldRenderer;
 	WorldClient world;
 	
 	public ShadowMapRenderer(WorldRendererImplementation worldRendererImplementation)
@@ -32,7 +32,7 @@ public class ShadowMapRenderer
 		this.world = worldRendererImplementation.getWorld();
 	}
 
-	public ComputedShadowMap generateSunShadowMap(RenderingInterface renderingContext, DefaultSkyRenderer sky)
+	public ComputedShadowMap generateSunShadowMap(RenderingInterface renderingContext, SkyRenderer sky)
 	{
 		if (this.getShadowVisibility() == 0f)
 			return null; // No shadows at night :)
@@ -72,7 +72,7 @@ public class ShadowMapRenderer
 
 		ShaderInterface shadowsPassShader = renderingContext.useShader("shadows");
 		
-		shadowsPassShader.setUniform1f("time", worldRenderer.animationTimer);
+		shadowsPassShader.setUniform1f("time", worldRenderer.getAnimationTimer());
 		shadowsPassShader.setUniformMatrix4f("depthMVP", shadowMVP);
 
 		renderingContext.bindAlbedoTexture(worldRenderer.worldTextures.blocksAlbedoTexture);
@@ -80,10 +80,10 @@ public class ShadowMapRenderer
 		
 		//We render the world from that perspective
 		shadowsPassShader.setUniform1f("allowForWavyStuff", 1); //Hackish way of enabling the shader input for the fake "wind" effect vegetation can have
-		worldRenderer.getChunkMeshesRenderer().renderChunks(renderingContext, WorldRenderer.RenderingPass.SHADOW);
+		worldRenderer.getChunksRenderer().renderChunks(renderingContext);
 		
 		shadowsPassShader.setUniform1f("allowForWavyStuff", 0); //In tern, disabling it while we do the entities
-		worldRenderer.entitiesRenderer.renderEntities(renderingContext);
+		worldRenderer.getEntitiesRenderer().renderEntities(renderingContext);
 		
 		//Returns a fancy object pointing to the data we just generated
 		return new ComputedShadowMap() {

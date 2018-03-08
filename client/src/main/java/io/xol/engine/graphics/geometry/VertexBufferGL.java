@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
  */
 public class VertexBufferGL implements VertexBuffer
 {
-	private int openGLID = -1;
+	private int glID = -1;
 
 	private boolean isDataPresent = false;
 	private long dataSize = 0L;
@@ -90,12 +90,12 @@ public class VertexBufferGL implements VertexBuffer
 	public final synchronized void aquireID()
 	{
 		//If texture was already assignated we discard this call
-		if (openGLID == -2 || openGLID >= 0)
+		if (glID == -2 || glID >= 0)
 			return;
 
-		openGLID = glGenBuffers();
+		glID = glGenBuffers();
 		//Keep the reference for this allocated id
-		allocatedIds.put(openGLID, selfReference);
+		allocatedIds.put(glID, selfReference);
 	}
 
 	/**
@@ -104,7 +104,7 @@ public class VertexBufferGL implements VertexBuffer
 	 */
 	public void bind()
 	{
-		if (openGLID == -2)
+		if (glID == -2)
 		{
 			logger().error("Critical mess-up: Tried to bind a destroyed VerticesObject. Terminating process immediately.");
 			//logger().save();
@@ -114,10 +114,10 @@ public class VertexBufferGL implements VertexBuffer
 		}
 
 		//Check for and if needed create the buffer
-		if (openGLID == -1)
+		if (glID == -1)
 			aquireID();
 
-		bind(openGLID);
+		bind(glID);
 	}
 
 	/**
@@ -176,7 +176,7 @@ public class VertexBufferGL implements VertexBuffer
 	@Override
 	public Fence uploadData(ByteBuffer dataToUpload)
 	{
-		if (openGLID == -2)
+		if (glID == -2)
 			throw new RuntimeException("Illegal operation : Attempted to upload data to a destroyed VerticesObject !");
 
 		//Queue for immediate upload
@@ -200,7 +200,7 @@ public class VertexBufferGL implements VertexBuffer
 	@Override
 	public Fence uploadData(FloatBuffer dataToUpload)
 	{
-		if (openGLID == -2)
+		if (glID == -2)
 			throw new RuntimeException("Illegal operation : Attempted to upload data to a destroyed VerticesObject !");
 
 		//Queue for immediate upload
@@ -223,7 +223,7 @@ public class VertexBufferGL implements VertexBuffer
 	@Override
 	public Fence uploadData(RecyclableByteBuffer dataToUpload)
 	{
-		if (openGLID == -2)
+		if (glID == -2)
 			throw new RuntimeException("Illegal operation : Attempted to upload data to a destroyed VerticesObject !");
 
 		//Queue for immediate upload
@@ -254,7 +254,7 @@ public class VertexBufferGL implements VertexBuffer
 
 		bind();
 
-		if (openGLID == -2)
+		if (glID == -2)
 		{
 			System.out.println("FATAL: Attempted to upload data to a destroy()ed VertexBuffer. Terminating immediately.");
 			Runtime.getRuntime().exit(-555);
@@ -316,7 +316,7 @@ public class VertexBufferGL implements VertexBuffer
 	@Override
 	public boolean isDataPresent()
 	{
-		if (openGLID == -2)
+		if (glID == -2)
 			return false;
 
 		return isDataPresent || waitingToUploadMainThread != null;
@@ -442,7 +442,7 @@ public class VertexBufferGL implements VertexBuffer
 
 	public String toString()
 	{
-		return "[VerticeObjcect glId = " + this.openGLID + "]";
+		return "[VerticeObjcect glId = " + this.glID + "]";
 	}
 
 	/* (non-Javadoc)
@@ -452,17 +452,17 @@ public class VertexBufferGL implements VertexBuffer
 	public synchronized boolean destroy()
 	{
 		//If it was already destroyed
-		if (openGLID == -2)
+		if (glID == -2)
 		{
 			logger.error("Tried to delete already destroyed verticesObject");
 			Thread.dumpStack();
 		}
 
 		//If it wasn't allocated an id
-		if (openGLID == -1)
+		if (glID == -1)
 		{
 			//Mark it for unable to receive data, decrease counter
-			openGLID = -2;
+			glID = -2;
 			totalVerticesObjects--;
 			return true;
 		}
@@ -472,9 +472,9 @@ public class VertexBufferGL implements VertexBuffer
 			isDataPresent = false;
 
 			//System.out.println("Deleting Buffer "+openglBufferId);
-			allocatedIds.remove(openGLID);
-			glDeleteBuffers(openGLID);
-			openGLID = -2;
+			allocatedIds.remove(glID);
+			glDeleteBuffers(glID);
+			glID = -2;
 			dataSize = 0;
 
 			totalVerticesObjects--;
@@ -497,27 +497,22 @@ public class VertexBufferGL implements VertexBuffer
 	{
 		long vram = 0;
 
-		//synchronized (objectsToDestroy)
-
-		//Destroys unused objects
-		{
-			Iterator<VertexBufferGL> i = objectsToDestroy.iterator();
-			while (i.hasNext())
-			{
-				VertexBuffer object = i.next();
-
-				if (object.destroy())
-				{
-				}
-
-				i.remove();
-			}
-		}
-
-		Iterator<Entry<Integer, WeakReference<VertexBufferGL>>> i = allocatedIds.entrySet().iterator();
+		Iterator<VertexBufferGL> i = objectsToDestroy.iterator();
 		while (i.hasNext())
 		{
-			Entry<Integer, WeakReference<VertexBufferGL>> entry = i.next();
+			VertexBuffer object = i.next();
+
+			if (object.destroy())
+			{
+			}
+
+			i.remove();
+		}
+
+		Iterator<Entry<Integer, WeakReference<VertexBufferGL>>> i2 = allocatedIds.entrySet().iterator();
+		while (i2.hasNext())
+		{
+			Entry<Integer, WeakReference<VertexBufferGL>> entry = i2.next();
 			int openGLID = entry.getKey();
 			WeakReference<VertexBufferGL> weakReference = entry.getValue();
 			VertexBuffer verticesObject = weakReference.get();
@@ -529,18 +524,18 @@ public class VertexBufferGL implements VertexBuffer
 				totalVerticesObjects--;
 				//logger.debug("Destroyed orphan VerticesObject id #"+openGLID);
 
-				i.remove();
+				i2.remove();
 			}
 		}
 
 		//Iterates over every instance reference, removes null ones and add up valid ones
-		Iterator<WeakReference<VertexBufferGL>> i2 = allVerticesObjects.iterator();
-		while (i2.hasNext())
+		Iterator<WeakReference<VertexBufferGL>> i3 = allVerticesObjects.iterator();
+		while (i3.hasNext())
 		{
-			WeakReference<VertexBufferGL> reference = i2.next();
+			WeakReference<VertexBufferGL> reference = i3.next();
 
 			VertexBufferGL verticesObject = reference.get();
-			if (verticesObject != null && verticesObject.openGLID != -2)
+			if (verticesObject != null && verticesObject.glID != -2)
 			{
 				//Send deffered uploads
 				verticesObject.uploadPendingDefferedData();
@@ -549,7 +544,7 @@ public class VertexBufferGL implements VertexBuffer
 			}
 			//Remove null objects from the list
 			else
-				i2.remove();
+				i3.remove();
 		}
 
 		return vram;

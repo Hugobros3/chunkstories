@@ -34,7 +34,6 @@ import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.ClientMasterPluginManager;
 import io.xol.chunkstories.server.FileBasedUsersPrivileges;
-import io.xol.chunkstories.server.commands.InstallServerCommands;
 import io.xol.chunkstories.world.WorldClientLocal;
 
 /**
@@ -57,8 +56,6 @@ public class LocalServerContext implements ClientInterface, ServerInterface
 		this.world = (WorldClientLocal) client.getWorld();
 		
 		this.pluginsManager = new ClientMasterPluginManager(this);
-		client.setClientPluginManager(this.pluginsManager);
-		pluginsManager.reloadPlugins();
 		
 		this.permissionsManager = new PermissionsManager() {
 
@@ -71,9 +68,6 @@ public class LocalServerContext implements ClientInterface, ServerInterface
 			}
 			
 		};
-		
-		//Install vanilla server commands
-		new InstallServerCommands(this);
 	}
 	
 	@Override
@@ -85,7 +79,7 @@ public class LocalServerContext implements ClientInterface, ServerInterface
 	@Override
 	public ClientPluginManager getPluginManager()
 	{
-		return client.getPluginManager();
+		return pluginsManager;
 	}
 
 	@Override

@@ -174,9 +174,8 @@ public class FarTerrainMeshRenderer implements FarTerrainRenderer
 		ShaderInterface terrainShader = renderer.useShader("terrain");
 		renderer.setBlendMode(BlendMode.DISABLED);
 		renderer.getCamera().setupShader(terrainShader);
-		worldRenderer.getSky().setupShader(terrainShader);
+		worldRenderer.getSkyRenderer().setupShader(terrainShader);
 
-		terrainShader.setUniform3f("sunPos", worldRenderer.getSky().getSunPosition());
 		terrainShader.setUniform1f("viewDistance", RenderingConfig.viewDistance);
 		terrainShader.setUniform1f("shadowVisiblity", worldRenderer.getShadowRenderer().getShadowVisibility());
 		worldRenderer.worldTextures.waterNormalTexture.setLinearFiltering(true);
@@ -194,7 +193,6 @@ public class FarTerrainMeshRenderer implements FarTerrainRenderer
 		
 		world.getGenerator().getEnvironment().setupShadowColors(renderer, terrainShader);
 		//worldRenderer.setupShadowColors(terrainShader);
-		terrainShader.setUniform1f("time", worldRenderer.getSky().time);
 
 		renderer.bindTexture2D("vegetationColorTexture", world.getGenerator().getEnvironment().getGrassTexture(renderer));
 		//renderingContext.bindTexture2D("vegetationColorTexture", worldRenderer.getGrassTexture());

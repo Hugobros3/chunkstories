@@ -43,7 +43,7 @@ public class ReflectionsRenderer {
 		renderer.bindTexture2D("sunSetRiseTexture", worldRenderer.worldTextures.sunGlowTexture);
 		renderer.bindTexture2D("skyTextureSunny", worldRenderer.worldTextures.skyTextureSunny);
 		renderer.bindTexture2D("skyTextureRaining", worldRenderer.worldTextures.skyTextureRaining);
-		reflectionsShader.setUniform1f("dayTime", worldRenderer.skyRenderer.time);
+		reflectionsShader.setUniform1f("dayTime", worldRenderer.skyRenderer.getDayTime());
 
 		//Texture2D lightColors = TexturesHandler.getTexture("./textures/environement/lightcolors.png");
 		//renderingContext.bindTexture2D("lightColors", lightColors);
