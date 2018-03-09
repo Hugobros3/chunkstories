@@ -20,16 +20,17 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
+import io.xol.chunkstories.api.rendering.world.WorldRenderer.EntitiesRenderer;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.world.WorldImplementation;
 
-public class EntitiesRenderer
+public class CulledEntitiesRenderer implements EntitiesRenderer
 {
 	Map<EntityDefinition, EntityRenderer<? extends EntityRenderable>> entityRenderers = new HashMap<EntityDefinition, EntityRenderer<? extends EntityRenderable>>();
 
 	World world;
 
-	public EntitiesRenderer(World world)
+	public CulledEntitiesRenderer(World world)
 	{
 		this.world = world;
 	}

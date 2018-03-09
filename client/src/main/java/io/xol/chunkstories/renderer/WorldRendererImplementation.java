@@ -67,14 +67,14 @@ public class WorldRendererImplementation implements WorldRenderer
 	
 	private RenderingGraph renderingGraph;
 	
-	EntitiesRenderer entitiesRenderer;
+	CulledEntitiesRenderer entitiesRenderer;
 	SkyRenderer skyRenderer;
 	DecalsRendererImplementation decalsRenderer;
 	ClientParticlesRenderer particlesRenderer;
 	FarTerrainRenderer farTerrainRenderer;
 	SummariesTexturesHolder summariesTexturesHolder;
 	WorldEffectsRenderer weatherEffectsRenderer;
-	ShadowMapRenderer shadower;
+	//ShadowMapRenderer shadower;
 	BloomRenderer bloomRenderer;
 	ReflectionsRenderer reflectionsRenderer;
 	CubemapRenderer cubemapRenderer;
@@ -104,14 +104,14 @@ public class WorldRendererImplementation implements WorldRenderer
 		//Creates subsystems
 		this.chunksRenderer = new ChunkMeshesRenderer(this);
 		
-		this.entitiesRenderer = new EntitiesRenderer(world);
+		this.entitiesRenderer = new CulledEntitiesRenderer(world);
 		this.particlesRenderer = new ClientParticlesRenderer(world);
 		this.farTerrainRenderer = new FarTerrainGSMeshRenderer(this);
 		this.summariesTexturesHolder = new SummariesArrayTexture(client, world);
 		this.weatherEffectsRenderer = new DefaultWeatherEffectsRenderer(world, this);
 		//this.skyRenderer = new DefaultSkyRenderer(world);
 		this.decalsRenderer = new DecalsRendererImplementation(this);
-		this.shadower = new ShadowMapRenderer(this);
+		//this.shadower = new ShadowMapRenderer(this);
 		this.bloomRenderer = new BloomRenderer(this);
 		this.reflectionsRenderer = new ReflectionsRenderer(this);
 		this.cubemapRenderer = new CubemapRenderer(this);
@@ -239,7 +239,7 @@ public class WorldRendererImplementation implements WorldRenderer
 	private void gbuffers_opaque_chunk_meshes(RenderingInterface renderingInterface)
 	{
 		// Set fixed-function parameters
-		renderingInterface.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
+		/*renderingInterface.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
 		renderingInterface.setBlendMode(BlendMode.DISABLED);
 		renderingInterface.setCullingMode(CullingMode.COUNTERCLOCKWISE);
 		
@@ -281,13 +281,13 @@ public class WorldRendererImplementation implements WorldRenderer
 
 		renderingInterface.setObjectMatrix(new Matrix4f());
 		
-		chunksRenderer.renderChunks(renderingInterface);
+		chunksRenderer.renderChunks(renderingInterface);*/
 	}
 	
 	private void gbuffers_opaque_entities(RenderingInterface renderingContext) {
 		
 		// Select shader
-		ShaderInterface entitiesShader = renderingContext.useShader("entities");
+		/*ShaderInterface entitiesShader = renderingContext.useShader("entities");
 
 		//entitiesShader.setUniformMatrix4f("localTansform", new Matrix4f());
 		//entitiesShader.setUniformMatrix3f("localTransformNormal", new Matrix3f());
@@ -308,8 +308,7 @@ public class WorldRendererImplementation implements WorldRenderer
 		renderingContext.getCamera().setupShader(entitiesShader);
 
 		chunksRenderer.renderChunksExtras(renderingContext);
-		
-		entitiesRenderer.renderEntities(renderingContext);
+		entitiesRenderer.renderEntities(renderingContext);*/
 	}
 	
 	private void gbuffers_water_chunk_meshes(RenderingInterface renderingInterface)
@@ -324,9 +323,6 @@ public class WorldRendererImplementation implements WorldRenderer
 			ShaderInterface liquidBlocksShader = renderingInterface.useShader("blocks_liquid_pass" + pass);
 
 			liquidBlocksShader.setUniform1f("viewDistance", RenderingConfig.viewDistance);
-
-			//liquidBlocksShader.setUniform1f("yAngle", (float) (renderingContext.getCamera().rotationY * Math.PI / 180f));
-			liquidBlocksShader.setUniform1f("shadowVisiblity", this.shadower.getShadowVisibility());
 
 			renderingInterface.bindTexture2D("normalTextureDeep", TexturesHandler.getTexture("./textures/water/deep.png"));
 			renderingInterface.bindTexture2D("normalTextureShallow", worldTextures.waterNormalTexture);
@@ -457,7 +453,6 @@ public class WorldRendererImplementation implements WorldRenderer
 		applyShadowsShader.setUniform1f("dayTime", skyRenderer.getDayTime());
 
 		applyShadowsShader.setUniform1f("shadowMapResolution", RenderingConfig.shadowMapResolutions);
-		applyShadowsShader.setUniform1f("shadowVisiblity", shadower.getShadowVisibility());
 		
 		if(sun_shadowMap != null)
 		{
@@ -534,7 +529,7 @@ public class WorldRendererImplementation implements WorldRenderer
 	public void postprocess(RenderingInterface renderingContext, boolean hideGui)
 	{
 		//TODO mix in the reflections earlier ?
-		Texture2D bloomRendered = RenderingConfig.doBloom ? bloomRenderer.renderBloom(renderingContext) : null;
+		/*Texture2D bloomRendered = RenderingConfig.doBloom ? bloomRenderer.renderBloom(renderingContext) : null;
 		
 		Layer layer = renderingContext.getWindow().getLayer().getRootLayer();
 		float pauseFade = (layer instanceof Ingame) ? ((Ingame)layer).getPauseOverlayFade() : 0;
@@ -591,7 +586,7 @@ public class WorldRendererImplementation implements WorldRenderer
 
 		postProcess.setUniform1f("apertureModifier", apertureModifier);
 
-		renderingContext.drawFSQuad();
+		renderingContext.drawFSQuad();*/
 
 		//Draw entities Huds
 		/*if(!hideGui) {
@@ -867,11 +862,6 @@ public class WorldRendererImplementation implements WorldRenderer
 	{
 		return gameWindow.takeScreenshot();
 	}
-	
-	public ShadowMapRenderer getShadowRenderer()
-	{
-		return this.shadower;
-	}
 
 	public CubemapRenderer getCubemapRenderer() {
 		return this.cubemapRenderer;
@@ -907,5 +897,10 @@ public class WorldRendererImplementation implements WorldRenderer
 	@Override
 	public ChunkMeshesRenderer getChunksRenderer() {
 		return this.chunksRenderer;
+	}
+
+	@Override
+	public EntitiesRenderer getEntitiesRenderer() {
+		return this.entitiesRenderer;
 	}
 }

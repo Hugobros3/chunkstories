@@ -22,7 +22,7 @@ public class ParticleTypeImpl extends GenericNamedConfigurable implements Partic
 	private final ParticlesTypesStore store;
 
 	private final float billBoardSize;
-	private final RenderTime renderTime;
+	private final String renderPass;
 	
 	private final ParticleTypeHandler handler;
 
@@ -36,7 +36,7 @@ public class ParticleTypeImpl extends GenericNamedConfigurable implements Partic
 		super(particleName, reader);
 		this.store = store;
 		
-		String rt = this.resolveProperty("renderTime", "forward");
+		/*String rt = this.resolveProperty("renderTime", "forward");
 		if(rt.equals("forward"))
 			renderTime = RenderTime.FORWARD;
 		else if(rt.equals("gbuffer"))
@@ -44,7 +44,8 @@ public class ParticleTypeImpl extends GenericNamedConfigurable implements Partic
 		else if(rt.endsWith("never"))
 			renderTime = RenderTime.NEVER;
 		else
-			throw new IllegalParticleDeclarationException("renderTime has to be any of {forward, gbuffer, never}");
+			throw new IllegalParticleDeclarationException("renderTime has to be any of {forward, gbuffer, never}");*/
+		this.renderPass = this.resolveProperty("renderTime", "forward");
 		
 		try {
 			this.billBoardSize = Float.parseFloat(this.resolveProperty("billboardSize", "1.0"));
@@ -94,8 +95,8 @@ public class ParticleTypeImpl extends GenericNamedConfigurable implements Partic
 	}
 
 	@Override
-	public RenderTime getRenderTime() {
-		return renderTime;
+	public String getRenderPass() {
+		return renderPass;
 	}
 
 	@Override

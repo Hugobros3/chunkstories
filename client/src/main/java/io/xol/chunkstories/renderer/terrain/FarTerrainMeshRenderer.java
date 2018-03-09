@@ -177,7 +177,6 @@ public class FarTerrainMeshRenderer implements FarTerrainRenderer
 		worldRenderer.getSkyRenderer().setupShader(terrainShader);
 
 		terrainShader.setUniform1f("viewDistance", RenderingConfig.viewDistance);
-		terrainShader.setUniform1f("shadowVisiblity", worldRenderer.getShadowRenderer().getShadowVisibility());
 		worldRenderer.worldTextures.waterNormalTexture.setLinearFiltering(true);
 		worldRenderer.worldTextures.waterNormalTexture.setMipMapping(true);
 

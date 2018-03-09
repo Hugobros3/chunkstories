@@ -6,15 +6,23 @@
 
 package io.xol.chunkstories.renderer.particles;
 
-import io.xol.chunkstories.api.content.Content;
-import io.xol.chunkstories.api.client.ClientContent;
-import io.xol.chunkstories.api.client.ClientInterface;
+import java.nio.FloatBuffer;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import org.joml.Vector3dc;
 import org.joml.Vector3f;
+import org.lwjgl.BufferUtils;
 
+import io.xol.chunkstories.api.client.ClientContent;
+import io.xol.chunkstories.api.client.ClientInterface;
+import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.particles.ParticleDataWithTextureCoordinates;
 import io.xol.chunkstories.api.particles.ParticleDataWithVelocity;
-import io.xol.chunkstories.api.particles.ParticleTypeDefinition.RenderTime;
 import io.xol.chunkstories.api.particles.ParticleTypeHandler;
 import io.xol.chunkstories.api.particles.ParticleTypeHandler.ParticleData;
 import io.xol.chunkstories.api.particles.ParticleTypeHandler.ParticleTypeRenderer;
@@ -26,16 +34,6 @@ import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.engine.graphics.geometry.VertexBufferGL;
-
-import java.nio.FloatBuffer;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
-import org.lwjgl.BufferUtils;
 
 
 
@@ -125,14 +123,14 @@ public class ClientParticlesRenderer implements ParticlesRenderer
 
 	}
 
-	public int render(RenderingInterface renderingInterface, boolean isThisGBufferPass)
+	public void renderParticles(RenderingInterface renderingInterface)
 	{
 		int totalDrawn = 0;
 		
 		//For all present particles types
 		for (ParticleTypeHandler particleTypeHandler : particles.keySet())
 		{
-			RenderTime renderTime = particleTypeHandler.getType().getRenderTime();
+			/*RenderTime renderTime = particleTypeHandler.getType().getRenderTime();
 			
 			//Skip forward stuff when doing gbuf
 			if(isThisGBufferPass && renderTime == RenderTime.FORWARD)
@@ -142,6 +140,9 @@ public class ClientParticlesRenderer implements ParticlesRenderer
 			else if(!isThisGBufferPass && renderTime == RenderTime.NEVER)
 				continue;
 			else if(!isThisGBufferPass && renderTime == RenderTime.GBUFFER)
+				continue;*/
+			String renderPass = particleTypeHandler.getType().getRenderPass();
+			if(!renderingInterface.getWorldRenderer().getRenderingPipeline().getCurrentPass().name.equals(renderPass))
 				continue;
 				
 			//Don't bother rendering empty sets
@@ -157,7 +158,7 @@ public class ClientParticlesRenderer implements ParticlesRenderer
 				particlesPositionsBuffer.clear();
 				
 				//Some stuff don't wanna be rendered, so don't
-				boolean actuallyRenderThatStuff = renderTime != RenderTime.NEVER;
+				boolean actuallyRenderThatStuff = !renderPass.equals("lights");
 				
 				int elementsInDrawBuffer = 0;
 				while (iterator.hasNext())
@@ -257,7 +258,7 @@ public class ClientParticlesRenderer implements ParticlesRenderer
 		renderingInterface.getRenderTargetManager().setDepthMask(true);
 		renderingInterface.setBlendMode(BlendMode.DISABLED);
 		
-		return totalDrawn;
+		//return totalDrawn;
 	}
 
 	private ParticleTypeRenderer getRendererForType(ParticleTypeHandler particleTypeHandler) {
