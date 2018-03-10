@@ -9,12 +9,12 @@ package io.xol.chunkstories.renderer.debug;
 import java.nio.ByteBuffer;
 import org.lwjgl.system.MemoryUtil;
 
-import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
+import io.xol.chunkstories.api.rendering.pipeline.Shader;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
 import org.joml.Vector4f;
-import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
-import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
-import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
+import io.xol.chunkstories.api.rendering.pipeline.StateMachine.BlendMode;
+import io.xol.chunkstories.api.rendering.pipeline.StateMachine.CullingMode;
+import io.xol.chunkstories.api.rendering.pipeline.StateMachine.DepthTestMode;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.textures.Texture1DGL;
 
@@ -47,7 +47,7 @@ public class MemUsageRenderer
 		renderingContext.setBlendMode(BlendMode.MIX);
 		renderingContext.setCullingMode(CullingMode.DISABLED);
 
-		ShaderInterface overlayProgram = renderingContext.useShader("fps_graph");
+		Shader overlayProgram = renderingContext.useShader("fps_graph");
 		
 		overlayProgram.setUniform1f("currentTiming", lel);
 		overlayProgram.setUniform2f("screenSize", renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight());

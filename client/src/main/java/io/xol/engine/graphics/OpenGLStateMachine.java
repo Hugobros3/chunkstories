@@ -7,23 +7,23 @@
 package io.xol.engine.graphics;
 
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration;
+import io.xol.chunkstories.api.rendering.pipeline.StateMachine;
 
 import static org.lwjgl.opengl.GL11.*;
 
 /**
  * Abstracts the OpenGL state machine, reduces state changes by tracking them
  */
-public final class PipelineConfigurationImplementation implements PipelineConfiguration
+public final class OpenGLStateMachine implements StateMachine
 {
-	public static PipelineConfigurationImplementation DEFAULT = new PipelineConfigurationImplementation(DepthTestMode.LESS_OR_EQUAL, BlendMode.DISABLED, CullingMode.COUNTERCLOCKWISE, PolygonFillMode.FILL);
+	public static OpenGLStateMachine DEFAULT = new OpenGLStateMachine(DepthTestMode.LESS_OR_EQUAL, BlendMode.DISABLED, CullingMode.COUNTERCLOCKWISE, PolygonFillMode.FILL);
 
-	private final DepthTestMode depthTestMode;
-	private final BlendMode blendMode;
-	private final CullingMode cullingMode;
-	private final PolygonFillMode polygonFillMode;
+	private DepthTestMode depthTestMode;
+	private BlendMode blendMode;
+	private CullingMode cullingMode;
+	private PolygonFillMode polygonFillMode;
 
-	public PipelineConfigurationImplementation(DepthTestMode depthTestMode, BlendMode blendMode, CullingMode cullingMode, PolygonFillMode polygonFillMode)
+	public OpenGLStateMachine(DepthTestMode depthTestMode, BlendMode blendMode, CullingMode cullingMode, PolygonFillMode polygonFillMode)
 	{
 		this.depthTestMode = depthTestMode;
 		this.blendMode = blendMode;
@@ -32,70 +32,41 @@ public final class PipelineConfigurationImplementation implements PipelineConfig
 	}
 
 	@Override
-	public DepthTestMode getDepthTestMode()
-	{
+	public DepthTestMode getDepthTestMode() {
 		return depthTestMode;
 	}
 
 	@Override
-	public BlendMode getBlendMode()
-	{
+	public BlendMode getBlendMode() {
 		return blendMode;
 	}
 
 	@Override
-	public CullingMode getCullingMode()
-	{
+	public CullingMode getCullingMode() {
 		return cullingMode;
 	}
 
 	@Override
-	public PolygonFillMode getPolygonFillMode()
-	{
+	public PolygonFillMode getPolygonFillMode() {
 		return polygonFillMode;
 	}
 
-	public PipelineConfigurationImplementation setDepthTestMode(DepthTestMode depthTestMode)
-	{
-		return new PipelineConfigurationImplementation(depthTestMode, blendMode, cullingMode, polygonFillMode);
+	public void setDepthTestMode(DepthTestMode depthTestMode) {
+		this.depthTestMode = depthTestMode;
 	}
 
-	public PipelineConfigurationImplementation setBlendMode(BlendMode blendMode)
-	{
-		return new PipelineConfigurationImplementation(depthTestMode, blendMode, cullingMode, polygonFillMode);
+	public void setBlendMode(BlendMode blendMode) {
+		this.blendMode = blendMode;
 	}
 
-	public PipelineConfigurationImplementation setCullingMode(CullingMode cullingMode)
-	{
-		return new PipelineConfigurationImplementation(depthTestMode, blendMode, cullingMode, polygonFillMode);
+	public void setCullingMode(CullingMode cullingMode) {
+		this.cullingMode = cullingMode;
 	}
 
-	public PipelineConfigurationImplementation setPolygonFillMode(PolygonFillMode polygonFillMode)
-	{
-		return new PipelineConfigurationImplementation(depthTestMode, blendMode, cullingMode, polygonFillMode);
+	public void setPolygonFillMode(PolygonFillMode polygonFillMode) {
+		this.polygonFillMode = polygonFillMode;
 	}
 
-	public boolean equals(Object o)
-	{
-		if (o instanceof PipelineConfigurationImplementation)
-		{
-			PipelineConfigurationImplementation p = (PipelineConfigurationImplementation) o;
-
-			if (p.depthTestMode != this.depthTestMode)
-				return false;
-
-			if (p.blendMode != this.blendMode)
-				return false;
-
-			if (p.polygonFillMode != this.polygonFillMode)
-				return false;
-
-			return true;
-		}
-		return false;
-	}
-
-	@Override
 	public void setup(RenderingInterface renderingInterface)
 	{
 		switch (depthTestMode)

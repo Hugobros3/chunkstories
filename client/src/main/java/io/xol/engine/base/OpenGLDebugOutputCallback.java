@@ -48,7 +48,6 @@ public class OpenGLDebugOutputCallback implements GLDebugMessageARBCallbackI
 	}
 
 	@Override
-
 	public void invoke(int source, int type, int id, int severity, int length, long message, long userParam)
 	//public void handleMessage(int source, int type, int id, int severity, String message)
 	{

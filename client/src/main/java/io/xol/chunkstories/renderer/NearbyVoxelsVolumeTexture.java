@@ -6,7 +6,7 @@ import org.joml.Vector4f;
 import org.lwjgl.system.MemoryUtil;
 
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
+import io.xol.chunkstories.api.rendering.pipeline.Shader;
 import io.xol.chunkstories.api.rendering.textures.Texture3D;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
 import io.xol.chunkstories.api.rendering.world.WorldRenderer;
@@ -122,7 +122,7 @@ public class NearbyVoxelsVolumeTexture {
 
 		renderingContext.bindTexture3D("currentChunk", test);
 		
-		ShaderInterface shader = renderingContext.currentShader();
+		Shader shader = renderingContext.currentShader();
 		shader.setUniform1i("voxel_size", size);
 		shader.setUniform1f("voxel_sizef", 0.0f + size);
 		shader.setUniform3f("voxelOffset", offsetX * 32, offsetY * 32, offsetZ * 32);

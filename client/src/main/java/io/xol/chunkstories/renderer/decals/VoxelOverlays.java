@@ -15,10 +15,10 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
-import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
-import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
-import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
+import io.xol.chunkstories.api.rendering.pipeline.Shader;
+import io.xol.chunkstories.api.rendering.pipeline.StateMachine.BlendMode;
+import io.xol.chunkstories.api.rendering.pipeline.StateMachine.CullingMode;
+import io.xol.chunkstories.api.rendering.pipeline.StateMachine.DepthTestMode;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
 import io.xol.chunkstories.api.world.cell.CellData;
@@ -50,7 +50,7 @@ public class VoxelOverlays {
 		renderingInterface.setBlendMode(BlendMode.MIX);
 		renderingInterface.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
 		
-		ShaderInterface overlayProgram = renderingInterface.useShader("overlay");//ShadersLibrary.getShaderProgram("overlay");
+		Shader overlayProgram = renderingInterface.useShader("overlay");//ShadersLibrary.getShaderProgram("overlay");
 		renderingInterface.getCamera().setupShader(overlayProgram);
 		overlayProgram.setUniform4f("colorIn", new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
 		
@@ -73,7 +73,6 @@ public class VoxelOverlays {
 		
 		renderingInterface.draw(Primitive.LINE, 0, boxes.length * 3 * 8);
 		renderingInterface.setBlendMode(BlendMode.DISABLED);
-		renderingInterface.flush();
 		
 		//System.out.println("k");
 		/*

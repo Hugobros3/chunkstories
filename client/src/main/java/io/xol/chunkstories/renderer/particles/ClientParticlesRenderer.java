@@ -29,7 +29,7 @@ import io.xol.chunkstories.api.particles.ParticleTypeHandler.ParticleTypeRendere
 import io.xol.chunkstories.api.particles.ParticlesRenderer;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
+import io.xol.chunkstories.api.rendering.pipeline.StateMachine.BlendMode;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
 import io.xol.chunkstories.api.world.WorldClient;
@@ -292,7 +292,6 @@ public class ClientParticlesRenderer implements ParticlesRenderer
 		}
 		
 		renderingInterface.draw(Primitive.TRIANGLE, 0, elements);
-		renderingInterface.flush();
 		renderingInterface.unbindAttributes();
 
 		// And then clear the buffer to start over

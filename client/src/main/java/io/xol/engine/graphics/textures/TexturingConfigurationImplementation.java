@@ -6,34 +6,40 @@
 
 package io.xol.engine.graphics.textures;
 
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL12.*;
+import static org.lwjgl.opengl.GL13.*;
+import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL30.*;
+
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import io.xol.chunkstories.api.exceptions.rendering.NotEnoughtTextureUnitsException;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.pipeline.TexturingConfiguration;
+import io.xol.chunkstories.api.rendering.pipeline.Shader;
+import io.xol.chunkstories.api.rendering.pipeline.Shader.SamplerType;
 import io.xol.chunkstories.api.rendering.textures.ArrayTexture;
 import io.xol.chunkstories.api.rendering.textures.Cubemap;
 import io.xol.chunkstories.api.rendering.textures.Texture;
 import io.xol.chunkstories.api.rendering.textures.Texture1D;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.rendering.textures.Texture3D;
+import io.xol.chunkstories.api.rendering.textures.TextureFormat;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.engine.graphics.shaders.ShaderProgram;
 
-import static org.lwjgl.opengl.GL13.*;
-import static org.lwjgl.opengl.GL20.glUniform1i;
-
-//TODO overcomplicated and the immutable aspect is left unsued
-//TODO remove it and replace it with something simpler
-public class TexturingConfigurationImplementation implements TexturingConfiguration
+public class TexturingConfigurationImplementation
 {
 	private Map<String, Texture1D> textures1d;
 	private Map<String, Texture2D> textures2d;
 	private Map<String, Texture3D> textures3d;
 	private Map<String, Cubemap> cubemaps;
 	private Map<String, ArrayTexture> arrayTextures;
+	
+	private Map<String, Texture> allTextures = new HashMap<>();
 
 	public TexturingConfigurationImplementation()
 	{
@@ -44,280 +50,190 @@ public class TexturingConfigurationImplementation implements TexturingConfigurat
 		this.arrayTextures = new HashMap<String, ArrayTexture>();
 	}
 
-	public TexturingConfigurationImplementation(Map<String, Texture1D> textures1d, Map<String, Texture2D> textures2d, Map<String, Texture3D> textures3d, Map<String, Cubemap> cubemaps, Map<String, ArrayTexture> arrayTextures)
+	public void bindTexture1D(String textureSamplerName, Texture1D texture)
 	{
-		this.textures1d = textures1d;
-		this.textures2d = textures2d;
-		this.textures3d = textures3d;
-		this.cubemaps = cubemaps;
-		this.arrayTextures = arrayTextures;
-	}
-
-	public TexturingConfigurationImplementation bindTexture1D(String textureSamplerName, Texture1D texture)
-	{
-		Map<String, Texture1D> textures1d = new HashMap<String, Texture1D>();
-		for (Entry<String, Texture1D> e : this.textures1d.entrySet())
-		{
-			textures1d.put(e.getKey(), e.getValue());
-		}
 		textures1d.put(textureSamplerName, texture);
-
-		return new TexturingConfigurationImplementation(textures1d, textures2d, textures3d, cubemaps, arrayTextures);
+		allTextures.put(textureSamplerName, texture);
 	}
 
-	public TexturingConfigurationImplementation bindTexture2D(String textureSamplerName, Texture2D texture)
+	public void bindTexture2D(String textureSamplerName, Texture2D texture)
 	{
-		Map<String, Texture2D> textures2d = new HashMap<String, Texture2D>();
-		for (Entry<String, Texture2D> e : this.textures2d.entrySet())
-		{
-			textures2d.put(e.getKey(), e.getValue());
-		}
 		textures2d.put(textureSamplerName, texture);
-
-		return new TexturingConfigurationImplementation(textures1d, textures2d, textures3d, cubemaps, arrayTextures);
+		allTextures.put(textureSamplerName, texture);
 	}
 	
-	public TexturingConfigurationImplementation bindTexture3D(String textureSamplerName, Texture3D texture)
+	public void bindTexture3D(String textureSamplerName, Texture3D texture)
 	{
-		Map<String, Texture3D> textures3d = new HashMap<String, Texture3D>();
-		for (Entry<String, Texture3D> e : this.textures3d.entrySet())
-		{
-			textures3d.put(e.getKey(), e.getValue());
-		}
 		textures3d.put(textureSamplerName, texture);
-
-		return new TexturingConfigurationImplementation(textures1d, textures2d, textures3d, cubemaps, arrayTextures);
+		allTextures.put(textureSamplerName, texture);
 	}
 
-	public TexturingConfigurationImplementation bindCubemap(String cubemapSamplerName, Cubemap cubemapTexture)
+	public void bindCubemap(String cubemapSamplerName, Cubemap cubemapTexture)
 	{
-		Map<String, Cubemap> cubemaps = new HashMap<String, Cubemap>();
-		for (Entry<String, Cubemap> e : this.cubemaps.entrySet())
-		{
-			cubemaps.put(e.getKey(), e.getValue());
-		}
 		cubemaps.put(cubemapSamplerName, cubemapTexture);
-
-		return new TexturingConfigurationImplementation(textures1d, textures2d, textures3d, cubemaps, arrayTextures);
+		allTextures.put(cubemapSamplerName, cubemapTexture);
 	}
 
-	public TexturingConfigurationImplementation bindArrayTexture(String textureSamplerName, ArrayTexture texture) {
-		Map<String, ArrayTexture> arrayTextures = new HashMap<String, ArrayTexture>();
-		for (Entry<String, ArrayTexture> e : this.arrayTextures.entrySet())
-		{
-			arrayTextures.put(e.getKey(), e.getValue());
-		}
+	public void bindArrayTexture(String textureSamplerName, ArrayTexture texture) {
 		arrayTextures.put(textureSamplerName, texture);
-
-		return new TexturingConfigurationImplementation(textures1d, textures2d, textures3d, cubemaps, arrayTextures);
+		allTextures.put(textureSamplerName, texture);
 	}
 
-	@Override
-	public boolean isCompatibleWith(TexturingConfiguration boundTextures)
-	{
-		TexturingConfigurationImplementation b = (TexturingConfigurationImplementation) boundTextures;
-
-		//Early-out, it's the same object
-		if (b == this)
-			return true;
-
-		//Check for texture conflicts
-		for (Entry<String, Texture1D> entry : textures1d.entrySet())
-		{
-			Texture1D conflicting = b.textures1d.get(entry.getKey());
-			if (!conflicting.equals(entry.getValue()))
-			{
-				System.out.println("Conflicting textures 1d");
-				return false;
-			}
-		}
-
-		for (Entry<String, Texture2D> entry : textures2d.entrySet())
-		{
-			Texture2D conflicting = b.textures2d.get(entry.getKey());
-			if (!conflicting.equals(entry.getValue()))
-			{
-				System.out.println("Conflicting textures 2d");
-				return false;
-			}
-		}
-
-		for (Entry<String, Cubemap> entry : cubemaps.entrySet())
-		{
-			Cubemap conflicting = b.cubemaps.get(entry.getKey());
-			if (!conflicting.equals(entry.getValue()))
-			{
-				System.out.println("Conflicting Cubemap");
-				return false;
-			}
-		}
-
-		//I guess it's fine
-		return true;
+	public void clear() {
+		this.textures1d.clear();
+		this.textures2d.clear();
+		this.textures3d.clear();
+		this.cubemaps.clear();
+		this.arrayTextures.clear();
+		this.allTextures.clear();
 	}
 
-	private static Texture[] boundTextures = new Texture[RenderingConfig.gl_MaxTextureUnits];
-	//private static Map<Integer, Texture> boundTextures = new HashMap<Integer, Texture>(16);
+	/** Represents the unbund texture (id=0) for one texture type */
+	static class DefaultTexture implements Texture {
+		
+		final SamplerType samplerType;
+		public DefaultTexture(SamplerType samplerType) {
+			this.samplerType = samplerType;
+		}
 
+		@Override
+		public TextureFormat getType() {
+			return null;
+		}
+
+		@Override
+		public void bind() {
+			switch(samplerType) {
+			case ARRAY_TEXTURE_2D:
+				glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+				break;
+			case CUBEMAP:
+				glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+				break;
+			case TEXTURE_1D:
+				glBindTexture(GL_TEXTURE_1D, 0);
+				break;
+			case TEXTURE_2D:
+				glBindTexture(GL_TEXTURE_2D, 0);
+				break;
+			case TEXTURE_3D:
+				glBindTexture(GL_TEXTURE_3D, 0);
+				break;
+			default:
+				break;
+			
+			}
+		}
+
+		@Override
+		public boolean destroy() {
+			return false;
+		}
+
+		@Override
+		public long getVramUsage() {
+			return 0;
+		}
+	}
+	
+	static DefaultTexture[] defaultTextures = new DefaultTexture[Shader.SamplerType.values().length];
+	static {
+		for(int i = 0; i < Shader.SamplerType.values().length; i++)
+			defaultTextures[i] = new DefaultTexture(Shader.SamplerType.values()[i]);
+	}
+	
+	private Shader lastShaderConfigured = null;
+	private Map<Texture, Integer> alreadyBound = new HashMap<>();
+	private Texture[] boundTextures = new Texture[RenderingConfig.gl_MaxTextureUnits];
+	
 	/**
 	 * Setups the required texturing units and links the shaders uniforms to them
 	 */
 	public void setup(RenderingInterface renderingInterface) throws NotEnoughtTextureUnitsException
 	{
 		ShaderProgram shaderProgram = (ShaderProgram) renderingInterface.currentShader();
-
-		int textureUnitId = 0;
-
-		//Foreach texture
-		for (Entry<String, Texture1D> entry : textures1d.entrySet())
-		{
-			//Check it ain't null
-			Texture texture = entry.getValue();
-			if (texture == null)
-				continue;
-
-			//Check it is used in the shader
-			int textureLocation = shaderProgram.getUniformLocation(entry.getKey());
-			if (textureLocation == -1)
-				continue;
-
-			if (!(boundTextures[textureUnitId] == texture))
-			{
-				//Select a valid, free texturing unit
-				selectTextureUnit(textureUnitId);
-
-				//Bind the texture to this texturing unit
-				texture.bind();
+		
+		//Drop the older bound textures when a new shader is used
+		if(lastShaderConfigured != shaderProgram) {
+			alreadyBound.clear();
+			this.resetBoundTextures();
+		} else {
+			//Go through the already bound textures
+			Iterator<Entry<Texture, Integer>> i = alreadyBound.entrySet().iterator();
+			while(i.hasNext()) {
+				Entry<Texture, Integer> e = i.next();
+				Texture texture = e.getKey();
+				
+				//If one texture is no longer used, remove it
+				if(!allTextures.values().contains(texture)) {
+					i.remove();
+					boundTextures[e.getValue()] = null;
+				}
 			}
-			//Set the uniform location to this texturing unit
-			glUniform1i(shaderProgram.getUniformLocation(entry.getKey()), textureUnitId);
-			//shaderProgram.setUniform1i(entry.getKey(), textureUnitId);
-
-			boundTextures[textureUnitId] = texture;
-
-			//Increase the counter
-			textureUnitId++;
-		}
-
-		for (Entry<String, Texture2D> entry : textures2d.entrySet())
-		{
-			//Check it ain't null
-			Texture texture = entry.getValue();
-			if (texture == null)
-				continue;
-			
-			//Check it is used in the shader
-			int textureLocation = shaderProgram.getUniformLocation(entry.getKey());
-			if (textureLocation == -1)
-				continue;
-
-			if (!(boundTextures[textureUnitId] == texture))
-			{
-				//Select a valid, free texturing unit
-				selectTextureUnit(textureUnitId);
-
-				//Bind the texture to this texturing unit
-				texture.bind();
-			}
-			//Set the uniform location to this texturing unit
-			glUniform1i(shaderProgram.getUniformLocation(entry.getKey()), textureUnitId);
-			//shaderProgram.setUniform1i(entry.getKey(), textureUnitId);
-			
-			boundTextures[textureUnitId] = texture;
-
-			//Increase the counter
-			textureUnitId++;
 		}
 		
-		for (Entry<String, Texture3D> entry : textures3d.entrySet())
-		{
-			//Check it ain't null
-			Texture texture = entry.getValue();
-			if (texture == null)
-				continue;
+		//For each sampler defined in the shader we will try to bind the necessary texture
+		for(Entry<String, SamplerType> e : shaderProgram.samplers().entrySet()) {
+			String samplerName = e.getKey();
+			//System.out.println("figuring out texture for"+samplerName);
 			
-			//Check it is used in the shader
-			int textureLocation = shaderProgram.getUniformLocation(entry.getKey());
-			if (textureLocation == -1)
-				continue;
+			Texture texture = allTextures.get(samplerName);
+			if(texture == null || texture2sampler(texture) != e.getValue()) //No texture or the wrong type supplied ? No worries
+				texture = defaultTextures[e.getValue().ordinal()];
 
-			if (!(boundTextures[textureUnitId] == texture))
-			{
-				//Select a valid, free texturing unit
-				selectTextureUnit(textureUnitId);
-
-				//Bind the texture to this texturing unit
-				texture.bind();
-			}
-			//Set the uniform location to this texturing unit
-			glUniform1i(shaderProgram.getUniformLocation(entry.getKey()), textureUnitId);
-			//shaderProgram.setUniform1i(entry.getKey(), textureUnitId);
+			//System.out.println(texture);
 			
-			boundTextures[textureUnitId] = texture;
-
-			//Increase the counter
-			textureUnitId++;
-		}
-
-		for (Entry<String, Cubemap> entry : cubemaps.entrySet())
-		{
-			//Check it ain't null
-			Texture texture = entry.getValue();
-			if (texture == null)
-				continue;
-
-			//Check it is used in the shader
-			int textureLocation = shaderProgram.getUniformLocation(entry.getKey());
-			if (textureLocation == -1)
-				continue;
-
-			if (!(boundTextures[textureUnitId] == texture))
-			{
-				//Select a valid, free texturing unit
-				selectTextureUnit(textureUnitId);
-
-				//Bind the texture to this texturing unit
+			int alreadyBoundTextureUnit = alreadyBound.getOrDefault(texture, -1);
+			
+			if(alreadyBoundTextureUnit == -1) {
+				int freeTextureUnit = findFreeTextureUnit();
+				this.selectTextureUnit(freeTextureUnit);
+				
 				texture.bind();
+				alreadyBound.put(texture, freeTextureUnit);
+				boundTextures[freeTextureUnit] = texture;
+				
+				int uniform = shaderProgram.getUniformLocation(samplerName);
+				if(uniform == -1)
+					continue;
+				
+				glUniform1i(uniform, freeTextureUnit);
+				
+				//if(shaderProgram.getShaderName().contains("postprocess"))
+				//	System.out.println("bound " + samplerName + " to " + freeTextureUnit + " ("+uniform+") :" + texture);
+			} else {
+				glUniform1i(shaderProgram.getUniformLocation(samplerName), alreadyBoundTextureUnit);
 			}
-			//Set the uniform location to this texturing unit
-			glUniform1i(shaderProgram.getUniformLocation(entry.getKey()), textureUnitId);
-			//shaderProgram.setUniform1i(entry.getKey(), textureUnitId);
-
-			boundTextures[textureUnitId] = texture;
-
-			//Increase the counter
-			textureUnitId++;
 		}
 		
-		for (Entry<String, ArrayTexture> entry : arrayTextures.entrySet())
-		{
-			//Check it ain't null
-			Texture texture = entry.getValue();
-			if (texture == null)
-				continue;
+		lastShaderConfigured = shaderProgram;
+	}
 
-			//Check it is used in the shader
-			int textureLocation = shaderProgram.getUniformLocation(entry.getKey());
-			if (textureLocation == -1)
-				continue;
-
-			if (!(boundTextures[textureUnitId] == texture))
-			{
-				//Select a valid, free texturing unit
-				selectTextureUnit(textureUnitId);
-
-				//Bind the texture to this texturing unit
-				texture.bind();
-			}
-			//Set the uniform location to this texturing unit
-			glUniform1i(shaderProgram.getUniformLocation(entry.getKey()), textureUnitId);
-			//shaderProgram.setUniform1i(entry.getKey(), textureUnitId);
-
-			boundTextures[textureUnitId] = texture;
-
-			//Increase the counter
-			textureUnitId++;
+	private int findFreeTextureUnit() {
+		for(int i = 0; i < boundTextures.length; i++) {
+			if(boundTextures[i] == null)
+				return i;
 		}
+		throw new RuntimeException("Out of texture units!");
+	}
+
+	private SamplerType texture2sampler(Texture texture) {
+		if(texture instanceof Texture1D)
+			return SamplerType.TEXTURE_1D;
+		
+		else if(texture instanceof Texture2D)
+			return SamplerType.TEXTURE_2D;
+		
+		else if(texture instanceof Texture3D)
+			return SamplerType.TEXTURE_3D;
+		
+		else if(texture instanceof Cubemap)
+			return SamplerType.CUBEMAP;
+		
+		else if(texture instanceof ArrayTexture)
+			return SamplerType.ARRAY_TEXTURE_2D;
+		
+		throw new RuntimeException("what is this texture ?");
 	}
 
 	private void selectTextureUnit(int id) throws NotEnoughtTextureUnitsException
@@ -327,7 +243,7 @@ public class TexturingConfigurationImplementation implements TexturingConfigurat
 		glActiveTexture(GL_TEXTURE0 + id);
 	}
 
-	public static void resetBoundTextures()
+	public void resetBoundTextures()
 	{
 		for(int i = 0; i < boundTextures.length; i++)
 			boundTextures[i] = null;

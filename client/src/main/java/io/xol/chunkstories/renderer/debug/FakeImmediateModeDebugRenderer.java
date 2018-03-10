@@ -15,10 +15,10 @@ import org.joml.Vector4f;
 import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.Primitive;
-import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
-import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
-import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
-import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
+import io.xol.chunkstories.api.rendering.pipeline.Shader;
+import io.xol.chunkstories.api.rendering.pipeline.StateMachine.BlendMode;
+import io.xol.chunkstories.api.rendering.pipeline.StateMachine.CullingMode;
+import io.xol.chunkstories.api.rendering.pipeline.StateMachine.DepthTestMode;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
 import io.xol.chunkstories.client.Client;
@@ -96,7 +96,7 @@ public class FakeImmediateModeDebugRenderer
 		renderingContext.setBlendMode(BlendMode.MIX);
 		renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
 		
-		ShaderInterface overlayProgram = renderingContext.useShader("overlay");//ShadersLibrary.getShaderProgram("overlay");
+		Shader overlayProgram = renderingContext.useShader("overlay");//ShadersLibrary.getShaderProgram("overlay");
 		camera.setupShader(overlayProgram);
 		overlayProgram.setUniform4f("colorIn", color);
 		
@@ -109,7 +109,6 @@ public class FakeImmediateModeDebugRenderer
 		
 		renderingContext.draw(mode == GL_TRIANGLES ? Primitive.TRIANGLE : Primitive.LINE, 0, size);
 		renderingContext.setBlendMode(BlendMode.DISABLED);
-		renderingContext.flush();
 		data.clear();
 		size = 0;
 	}

@@ -12,7 +12,7 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.RenderingInterface.LightsAccumulator;
 import io.xol.chunkstories.api.rendering.lightning.Light;
 import io.xol.chunkstories.api.rendering.lightning.SpotLight;
-import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
+import io.xol.chunkstories.api.rendering.pipeline.Shader;
 import io.xol.engine.graphics.RenderingContext;
 
 import java.util.Iterator;
@@ -24,7 +24,7 @@ public class LightsRenderer implements LightsAccumulator
 	//private final RenderingContext renderingContext;
 	
 	int lightsBuffer = 0;
-	ShaderInterface lightShader;
+	Shader lightShader;
 	private List<Light> lights = new LinkedList<Light>();
 
 	public LightsRenderer(RenderingContext renderingContext)

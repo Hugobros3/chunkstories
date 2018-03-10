@@ -18,7 +18,7 @@ import org.joml.Vector4fc;
 
 import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.rendering.CameraInterface;
-import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
+import io.xol.chunkstories.api.rendering.pipeline.Shader;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.physics.CollisionPlane;
 
@@ -438,27 +438,27 @@ public class Camera implements CameraInterface
 	 * @see io.xol.chunkstories.renderer.CameraInterface#setupShader(io.xol.engine.graphics.shaders.ShaderProgram)
 	 */
 	@Override
-	public void setupShader(ShaderInterface shaderInterface)
+	public void setupShader(Shader Shader)
 	{
 		// Helper function to clean code from messy bits :)
-		shaderInterface.setUniformMatrix4f("projectionMatrix", projectionMatrix4f);
-		shaderInterface.setUniformMatrix4f("projectionMatrixInv", projectionMatrix4fInverted);
+		Shader.setUniformMatrix4f("projectionMatrix", projectionMatrix4f);
+		Shader.setUniformMatrix4f("projectionMatrixInv", projectionMatrix4fInverted);
 
-		shaderInterface.setUniformMatrix4f("modelViewMatrix", modelViewMatrix4f);
-		shaderInterface.setUniformMatrix4f("modelViewMatrixInv", modelViewMatrix4fInverted);
+		Shader.setUniformMatrix4f("modelViewMatrix", modelViewMatrix4f);
+		Shader.setUniformMatrix4f("modelViewMatrixInv", modelViewMatrix4fInverted);
 
-		shaderInterface.setUniformMatrix3f("normalMatrix", normalMatrix3f);
-		shaderInterface.setUniformMatrix3f("normalMatrixInv", normalMatrix3fInverted);
+		Shader.setUniformMatrix3f("normalMatrix", normalMatrix3f);
+		Shader.setUniformMatrix3f("normalMatrixInv", normalMatrix3fInverted);
 		
-		shaderInterface.setUniformMatrix4f("modelViewProjectionMatrix", modelViewProjectionMatrix4f);
-		shaderInterface.setUniformMatrix4f("modelViewProjectionMatrixInv", modelViewProjectionMatrix4fInverted);
+		Shader.setUniformMatrix4f("modelViewProjectionMatrix", modelViewProjectionMatrix4f);
+		Shader.setUniformMatrix4f("modelViewProjectionMatrixInv", modelViewProjectionMatrix4fInverted);
 		
-		shaderInterface.setUniformMatrix4f("untranslatedMV", untranslatedMVP4f);
-		shaderInterface.setUniformMatrix4f("untranslatedMVInv", untranslatedMVP4fInv);
+		Shader.setUniformMatrix4f("untranslatedMV", untranslatedMVP4f);
+		Shader.setUniformMatrix4f("untranslatedMVInv", untranslatedMVP4fInv);
 		
-		shaderInterface.setUniform2f("screenViewportSize", this.viewportWidth, this.viewportHeight);
+		Shader.setUniform2f("screenViewportSize", this.viewportWidth, this.viewportHeight);
 
-		shaderInterface.setUniform3f("camPos", getCameraPosition());
+		Shader.setUniform3f("camPos", getCameraPosition());
 	}
 	
 	public Vector3f transform3DCoordinate(Vector3fc in)

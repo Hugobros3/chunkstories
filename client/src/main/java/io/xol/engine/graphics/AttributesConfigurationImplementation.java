@@ -29,10 +29,10 @@ public class AttributesConfigurationImplementation implements AttributesConfigur
 		attributes = new HashMap<String, AttributeSource>();
 	}
 	
-	public AttributesConfigurationImplementation(Map<String, AttributeSource> attributes)
+	/*public AttributesConfigurationImplementation(Map<String, AttributeSource> attributes)
 	{
 		this.attributes = attributes;
-	}
+	}*/
 	
 	@Override
 	public Map<String, AttributeSource> getBoundAttributes()
@@ -40,28 +40,24 @@ public class AttributesConfigurationImplementation implements AttributesConfigur
 		return attributes;
 	}
 
+	public void clear() {
+		this.attributes.clear();
+	}
+
 	public AttributesConfigurationImplementation bindAttribute(String attributeName, AttributeSource attributeSource) throws AttributeNotPresentException
 	{
 		//Clone the hashMap
-		Map<String, AttributeSource> attributes = new HashMap<String, AttributeSource>(this.attributes);
+		/*Map<String, AttributeSource> attributes = new HashMap<String, AttributeSource>(this.attributes);
 		if(attributeSource == null)
 			attributes.remove(attributeName);
-		else
+		else*/
 			attributes.put(attributeName, attributeSource);
 		
 		//Returns the new object
-		return new AttributesConfigurationImplementation(attributes);
-	}
-	
-	@Override
-	public boolean isCompatibleWith(AttributesConfiguration attributesConfiguration)
-	{
-		//Simple check
-		//TODO improve
-		return attributesConfiguration == this;
+		//return new AttributesConfigurationImplementation(attributes);
+			return this;
 	}
 
-	@Override
 	public void setup(RenderingInterface renderingInterface)
 	{
 		ShaderProgram shaderProgram = (ShaderProgram) renderingInterface.currentShader();

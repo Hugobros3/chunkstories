@@ -23,9 +23,9 @@ import io.xol.chunkstories.api.events.rendering.WorldRenderingDecalsEvent;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.effects.DecalsRenderer;
-import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
-import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
-import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
+import io.xol.chunkstories.api.rendering.pipeline.StateMachine.BlendMode;
+import io.xol.chunkstories.api.rendering.pipeline.StateMachine.CullingMode;
+import io.xol.chunkstories.api.rendering.pipeline.Shader;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
@@ -331,7 +331,7 @@ public class DecalsRendererImplementation implements DecalsRenderer
 
 	public void renderDecals(RenderingInterface renderingInterface)
 	{
-		ShaderInterface decalsShader = renderingInterface.useShader("decals");
+		Shader decalsShader = renderingInterface.useShader("decals");
 
 		renderingInterface.getCamera().setupShader(decalsShader);
 		
@@ -357,8 +357,6 @@ public class DecalsRendererImplementation implements DecalsRenderer
 			renderingInterface.bindAttribute("texCoordIn", decalType.verticesObject.asAttributeSource(VertexFormat.FLOAT, 2, 4 * (3 + 2), 4 * 3));
 			
 			renderingInterface.draw(Primitive.TRIANGLE, 0, decalType.kount);
-			
-			renderingInterface.flush();
 		}
 
 		renderingInterface.getRenderTargetManager().setDepthMask(true);

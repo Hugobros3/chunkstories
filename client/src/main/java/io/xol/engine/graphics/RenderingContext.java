@@ -17,18 +17,16 @@ import io.xol.chunkstories.api.client.ClientRenderingConfig;
 import io.xol.chunkstories.api.exceptions.rendering.AttributeNotPresentException;
 import io.xol.chunkstories.api.exceptions.rendering.RenderingException;
 import io.xol.chunkstories.api.rendering.Primitive;
-import io.xol.chunkstories.api.rendering.RenderingCommand;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.mesh.ClientMeshLibrary;
 import io.xol.chunkstories.api.rendering.pipeline.AttributesConfiguration;
-import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration;
-import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
-import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
-import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
-import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.PolygonFillMode;
-import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
-import io.xol.chunkstories.api.rendering.pipeline.TexturingConfiguration;
-import io.xol.chunkstories.api.rendering.target.RenderTargetManager;
+import io.xol.chunkstories.api.rendering.pipeline.StateMachine;
+import io.xol.chunkstories.api.rendering.pipeline.StateMachine.BlendMode;
+import io.xol.chunkstories.api.rendering.pipeline.StateMachine.CullingMode;
+import io.xol.chunkstories.api.rendering.pipeline.StateMachine.DepthTestMode;
+import io.xol.chunkstories.api.rendering.pipeline.StateMachine.PolygonFillMode;
+import io.xol.chunkstories.api.rendering.pipeline.Shader;
+import io.xol.chunkstories.api.rendering.target.RenderTargets;
 import io.xol.chunkstories.api.rendering.textures.ArrayTexture;
 import io.xol.chunkstories.api.rendering.textures.Cubemap;
 import io.xol.chunkstories.api.rendering.textures.Texture1D;
@@ -73,14 +71,12 @@ public class RenderingContext implements RenderingInterface
 	private TexturingConfigurationImplementation texturingConfiguration = new TexturingConfigurationImplementation();
 	//Object matrix
 	private Matrix4f currentObjectMatrix = null;
-	//Pipeline config
-	private PipelineConfigurationImplementation pipelineConfiguration = PipelineConfigurationImplementation.DEFAULT;
-	private AttributesConfigurationImplementation attributesConfiguration = new AttributesConfigurationImplementation();
-
-	private int queuedCommandsIndex;
-	private RenderingCommand[] queuedCommands = new RenderingCommand[1024];
 	
-	private final RenderTargetManager renderTargetManager;
+	//Pipeline config
+	private final OpenGLStateMachine stateMachine = OpenGLStateMachine.DEFAULT;
+	private final AttributesConfigurationImplementation attributesConfiguration = new AttributesConfigurationImplementation();
+	private final RenderTargets renderTargetManager;
+	
 	//private Deque<RenderingCommandImplementation> commands = new ArrayDeque<RenderingCommandImplementation>();
 
 	public RenderingContext(GameWindowOpenGL_LWJGL3 windows)
@@ -116,88 +112,64 @@ public class RenderingContext implements RenderingInterface
 		return gameWindow;
 	}
 	
-	public ShaderInterface useShader(String shaderName)
+	public Shader useShader(String shaderName)
 	{
 		return setCurrentShader(shaders().getShaderProgram(shaderName));
 	}
 
-	private ShaderInterface setCurrentShader(ShaderProgram shaderProgram)
+	private Shader setCurrentShader(ShaderProgram shaderProgram)
 	{
 		//Save calls
 		if (shaderProgram != currentlyBoundShader)
 		{
-			//When changing shaders, we make sure we disable whatever was enabled
-			flush();
-
-			texturingConfiguration = new TexturingConfigurationImplementation();
-			TexturingConfigurationImplementation.resetBoundTextures();
-			attributesConfiguration = new AttributesConfigurationImplementation();
-			//resetAllVertexAttributesLocations();
-			//disableUnusedVertexAttributes();
+			texturingConfiguration.clear();
+			attributesConfiguration.clear();
 		}
 		currentlyBoundShader = shaderProgram;
 		return currentlyBoundShader;
 	}
 
-	public ShaderInterface currentShader()
+	public Shader currentShader()
 	{
 		return currentlyBoundShader;
 	}
 
 	/* TEXTURING */
 
-	public TexturingConfiguration getTexturingConfiguration()
-	{
-		return texturingConfiguration;
+	public void bindTexture1D(String textureSamplerName, Texture1D texture) {
+		texturingConfiguration.bindTexture1D(textureSamplerName, texture);
 	}
 
-	public TexturingConfiguration bindTexture1D(String textureSamplerName, Texture1D texture)
-	{
-		texturingConfiguration = texturingConfiguration.bindTexture1D(textureSamplerName, texture);
-		return texturingConfiguration;
+	public void bindTexture2D(String textureSamplerName, Texture2D texture) {
+		texturingConfiguration.bindTexture2D(textureSamplerName, texture);
 	}
 
-	public TexturingConfiguration bindTexture2D(String textureSamplerName, Texture2D texture)
-	{
-		texturingConfiguration = texturingConfiguration.bindTexture2D(textureSamplerName, texture);
-		return texturingConfiguration;
-	}
-	
-	public TexturingConfiguration bindTexture3D(String textureSamplerName, Texture3D texture)
-	{
-		texturingConfiguration = texturingConfiguration.bindTexture3D(textureSamplerName, texture);
-		return texturingConfiguration;
+	public void bindTexture3D(String textureSamplerName, Texture3D texture) {
+		texturingConfiguration.bindTexture3D(textureSamplerName, texture);
 	}
 
-	public TexturingConfiguration bindCubemap(String cubemapSamplerName, Cubemap cubemapTexture)
-	{
-		texturingConfiguration = texturingConfiguration.bindCubemap(cubemapSamplerName, cubemapTexture);
-		return texturingConfiguration;
+	public void bindCubemap(String cubemapSamplerName, Cubemap cubemapTexture) {
+		texturingConfiguration.bindCubemap(cubemapSamplerName, cubemapTexture);
 	}
 
 	@Override
-	public TexturingConfiguration bindArrayTexture(String textureSamplerName, ArrayTexture texture) {
-		texturingConfiguration = texturingConfiguration.bindArrayTexture(textureSamplerName, texture);
-		return texturingConfiguration;
+	public void bindArrayTexture(String textureSamplerName, ArrayTexture texture) {
+		texturingConfiguration.bindArrayTexture(textureSamplerName, texture);
 	}
 
-	public TexturingConfiguration bindAlbedoTexture(Texture2D texture)
-	{
-		return bindTexture2D("diffuseTexture", texture);
+	public void bindAlbedoTexture(Texture2D texture) {
+		bindTexture2D("diffuseTexture", texture);
 	}
 
-	public TexturingConfiguration bindNormalTexture(Texture2D texture)
-	{
-		return bindTexture2D("normalTexture", texture);
+	public void bindNormalTexture(Texture2D texture) {
+		bindTexture2D("normalTexture", texture);
 	}
 
-	public TexturingConfiguration bindMaterialTexture(Texture2D texture)
-	{
-		return bindTexture2D("materialTexture", texture);
+	public void bindMaterialTexture(Texture2D texture) {
+		bindTexture2D("materialTexture", texture);
 	}
 
-	public GuiRendererImplementation getGuiRenderer()
-	{
+	public GuiRendererImplementation getGuiRenderer() {
 		return guiRenderer;
 	}
 
@@ -213,13 +185,6 @@ public class RenderingContext implements RenderingInterface
 	public Matrix4f getObjectMatrix()
 	{
 		return this.currentObjectMatrix;
-	}
-
-	@Override
-	public void setWorldLight(int sunLight, int blockLight)
-	{
-		// TODO Auto-generated method stub
-		
 	}
 
 	static VertexBuffer fsQuadVertices = null;
@@ -247,88 +212,74 @@ public class RenderingContext implements RenderingInterface
 	/* Pipeline config */
 
 	@Override
-	public PipelineConfiguration getPipelineConfiguration()
-	{
-		return pipelineConfiguration;
+	public StateMachine getStateMachine() {
+		return stateMachine;
 	}
 
 	@Override
-	public PipelineConfiguration setDepthTestMode(DepthTestMode depthTestMode)
-	{
-		pipelineConfiguration = pipelineConfiguration.setDepthTestMode(depthTestMode);
-		return pipelineConfiguration;
+	public void setDepthTestMode(DepthTestMode depthTestMode) {
+		stateMachine.setDepthTestMode(depthTestMode);
 	}
 
 	@Override
-	public PipelineConfiguration setBlendMode(BlendMode blendMode)
-	{
-		pipelineConfiguration = pipelineConfiguration.setBlendMode(blendMode);
-		return pipelineConfiguration;
+	public void setBlendMode(BlendMode blendMode) {
+		stateMachine.setBlendMode(blendMode);
 	}
 
 	@Override
-	public PipelineConfiguration setCullingMode(CullingMode cullingMode)
-	{
-		pipelineConfiguration = pipelineConfiguration.setCullingMode(cullingMode);
-		return pipelineConfiguration;
+	public void setCullingMode(CullingMode cullingMode) {
+		stateMachine.setCullingMode(cullingMode);
 	}
 
 	@Override
-	public PipelineConfiguration setPolygonFillMode(PolygonFillMode polygonFillMode)
-	{
-		pipelineConfiguration = pipelineConfiguration.setPolygonFillMode(polygonFillMode);
-		return pipelineConfiguration;
-	}
-
-	@Override
-	public AttributesConfiguration getAttributesConfiguration()
-	{
-		return attributesConfiguration;
+	public void setPolygonFillMode(PolygonFillMode polygonFillMode) {
+		stateMachine.setPolygonFillMode(polygonFillMode);
 	}
 
 	@Override
 	public AttributesConfiguration bindAttribute(String attributeName, AttributeSource attributeSource) throws AttributeNotPresentException
 	{
 		//TODO check in shader if attribute exists
-		attributesConfiguration = attributesConfiguration.bindAttribute(attributeName, attributeSource);
-
+		attributesConfiguration.bindAttribute(attributeName, attributeSource);
 		return this.attributesConfiguration;
 	}
 
 	@Override
 	public AttributesConfiguration unbindAttributes()
 	{
-		attributesConfiguration = new AttributesConfigurationImplementation();
+		attributesConfiguration.clear();
 		return this.attributesConfiguration;
 	}
 
 	@Override
-	public RenderingCommand draw(Primitive p, int startAt, int count)
+	public void draw(Primitive p, int startAt, int count)
 	{
-		RenderingCommandImplementation command = new RenderingCommandSingleInstance(p, currentlyBoundShader, texturingConfiguration, attributesConfiguration, currentlyBoundShader.getUniformsConfiguration(), pipelineConfiguration, currentObjectMatrix,
+		RenderingCommandSingleInstance command = new RenderingCommandSingleInstance(p, currentlyBoundShader, texturingConfiguration, attributesConfiguration, currentlyBoundShader.getUniformsConfiguration(), stateMachine, currentObjectMatrix,
 				startAt, count);
 
-		queue(command);
+		command.render(this);
+		//queue(command);
 
-		return command;
+		//return command;
 	}
 	
 	@Override
-	public RenderingCommand draw(Primitive p, int startAt, int count, int instances)
+	public void draw(Primitive p, int startAt, int count, int instances)
 	{
-		RenderingCommandImplementation command = new RenderingCommandMultipleInstances(p, currentlyBoundShader, texturingConfiguration, attributesConfiguration, currentlyBoundShader.getUniformsConfiguration(), pipelineConfiguration, currentObjectMatrix,
+		RenderingCommandMultipleInstances command = new RenderingCommandMultipleInstances(p, currentlyBoundShader, texturingConfiguration, attributesConfiguration, currentlyBoundShader.getUniformsConfiguration(), stateMachine, currentObjectMatrix,
 				startAt, count, instances);
 
-		queue(command);
+		command.render(this);
+		//queue(command);
 
-		return command;
+		//return command;
 	}
 	
 	@Override
-	public RenderingCommand drawMany(Primitive p, int... startAndCountPairs)
+	public void drawMany(Primitive p, int... startAndCountPairs)
 	{
 		if(startAndCountPairs.length == 0)
-			return null;
+			return;// null;
 		if(startAndCountPairs.length % 2 == 1)
 			throw new IllegalArgumentException("Non-pair amount of integers provided");
 		
@@ -345,14 +296,15 @@ public class RenderingContext implements RenderingInterface
 		starts.flip();
 		counts.flip();
 		
-		RenderingCommandMultiDraw command = new RenderingCommandMultiDraw(p, currentlyBoundShader, texturingConfiguration, attributesConfiguration, currentlyBoundShader.getUniformsConfiguration(), pipelineConfiguration, currentObjectMatrix, starts, counts);
+		RenderingCommandMultiDraw command = new RenderingCommandMultiDraw(p, currentlyBoundShader, texturingConfiguration, attributesConfiguration, currentlyBoundShader.getUniformsConfiguration(), stateMachine, currentObjectMatrix, starts, counts);
 
-		queue(command);
+		command.render(this);
+		//queue(command);
 
-		return command;
+		//return command;
 	}
 
-	private void queue(RenderingCommandImplementation command)
+	/*private void queue(RenderingCommandImplementation command)
 	{
 		//Limit to how many commands it may stack
 		if (queuedCommandsIndex >= 1024)
@@ -381,7 +333,7 @@ public class RenderingContext implements RenderingInterface
 		}
 
 		queuedCommandsIndex = 0;
-	}
+	}*/
 
 	@Override
 	public long getVertexDataVramUsage()
@@ -396,7 +348,7 @@ public class RenderingContext implements RenderingInterface
 	}
 
 	@Override
-	public RenderTargetManager getRenderTargetManager()
+	public RenderTargets getRenderTargetManager()
 	{
 		return renderTargetManager;
 	}

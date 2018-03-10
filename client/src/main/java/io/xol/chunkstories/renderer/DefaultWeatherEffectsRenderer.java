@@ -17,8 +17,8 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.math.Math2;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
-import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
+import io.xol.chunkstories.api.rendering.pipeline.StateMachine.CullingMode;
+import io.xol.chunkstories.api.rendering.pipeline.Shader;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
 import io.xol.chunkstories.api.rendering.world.WorldEffectsRenderer;
@@ -197,7 +197,7 @@ public class DefaultWeatherEffectsRenderer implements WorldEffectsRenderer
 
 	private void renderRain(RenderingInterface renderingContext, float rainPresence)
 	{
-		ShaderInterface weatherShader = renderingContext.useShader("weather");
+		Shader weatherShader = renderingContext.useShader("weather");
 
 		if ((System.currentTimeMillis() - lastRender) >= 1000 || Math.abs(viewX - lastX) > 10 || Math.abs(viewZ - lastZ) > 10)
 		{

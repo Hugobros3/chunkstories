@@ -13,7 +13,7 @@ import java.util.List;
 import org.lwjgl.BufferUtils;
 
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
+import io.xol.chunkstories.api.rendering.pipeline.StateMachine.CullingMode;
 import io.xol.chunkstories.api.rendering.text.TextMesh;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;

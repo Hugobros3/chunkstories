@@ -5,9 +5,9 @@ import static io.xol.chunkstories.api.rendering.textures.TextureFormat.DEPTH_REN
 import org.joml.Vector3d;
 
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
-import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
-import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
+import io.xol.chunkstories.api.rendering.pipeline.Shader;
+import io.xol.chunkstories.api.rendering.pipeline.StateMachine.BlendMode;
+import io.xol.chunkstories.api.rendering.pipeline.StateMachine.DepthTestMode;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
 import io.xol.engine.graphics.fbo.FrameBufferObjectGL;
 import io.xol.engine.graphics.textures.Texture2DRenderTargetGL;
@@ -49,8 +49,8 @@ public class GiRenderer {
 	public void resize() {
 
 		float giScale = 2.0f;
-		fboAccumulationA.resizeFBO((int) (worldRenderer.getWindow().getWidth() / giScale), (int) (worldRenderer.getWindow().getHeight() / giScale));
-		fboAccumulationB.resizeFBO((int) (worldRenderer.getWindow().getWidth() / giScale), (int) (worldRenderer.getWindow().getHeight() / giScale));
+		fboAccumulationA.resize((int) (worldRenderer.getWindow().getWidth() / giScale), (int) (worldRenderer.getWindow().getHeight() / giScale));
+		fboAccumulationB.resize((int) (worldRenderer.getWindow().getWidth() / giScale), (int) (worldRenderer.getWindow().getHeight() / giScale));
 	}
 	
 	public Texture2DRenderTargetGL giTexture() {
@@ -61,7 +61,7 @@ public class GiRenderer {
 		cameraPosition.set(renderer.getCamera().getCameraPosition());
 		cameraDirection.set(renderer.getCamera().getViewDirection());
 
-		ShaderInterface giShader = renderer.useShader("gi");
+		Shader giShader = renderer.useShader("gi");
 		
 		renderer.getRenderTargetManager().setConfiguration(renderingToA ? fboAccumulationA : fboAccumulationB);
 		renderer.setDepthTestMode(DepthTestMode.DISABLED);

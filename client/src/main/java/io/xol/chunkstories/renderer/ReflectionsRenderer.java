@@ -7,9 +7,9 @@
 package io.xol.chunkstories.renderer;
 
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
-import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
-import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
+import io.xol.chunkstories.api.rendering.pipeline.Shader;
+import io.xol.chunkstories.api.rendering.pipeline.StateMachine.BlendMode;
+import io.xol.chunkstories.api.rendering.pipeline.StateMachine.DepthTestMode;
 
 public class ReflectionsRenderer {
 
@@ -22,7 +22,7 @@ public class ReflectionsRenderer {
 
 	/** Only ran if realtime screen-space reflections are enabled, otherwise a flag is raised and a baked envmap is used. */
 	public void renderReflections(RenderingInterface renderer) {
-		ShaderInterface reflectionsShader = renderer.useShader("reflections");
+		Shader reflectionsShader = renderer.useShader("reflections");
 
 		//This isn't a depth-buffered pass.
 		renderer.setDepthTestMode(DepthTestMode.DISABLED);

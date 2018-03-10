@@ -18,11 +18,11 @@ import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.rendering.Primitive;
 
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.BlendMode;
-import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.CullingMode;
-import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.DepthTestMode;
-import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration.PolygonFillMode;
-import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
+import io.xol.chunkstories.api.rendering.pipeline.StateMachine.BlendMode;
+import io.xol.chunkstories.api.rendering.pipeline.StateMachine.CullingMode;
+import io.xol.chunkstories.api.rendering.pipeline.StateMachine.DepthTestMode;
+import io.xol.chunkstories.api.rendering.pipeline.StateMachine.PolygonFillMode;
+import io.xol.chunkstories.api.rendering.pipeline.Shader;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
 import io.xol.chunkstories.api.rendering.world.WorldRenderer.FarTerrainRenderer;
@@ -110,7 +110,7 @@ public class FarTerrainGSMeshRenderer implements FarTerrainRenderer {
 	@Override
 	public void renderTerrain(RenderingInterface renderer, ReadyVoxelMeshesMask mask) {
 		
-		ShaderInterface terrainShader = renderer.useShader("terrain_blocky");
+		Shader terrainShader = renderer.useShader("terrain_blocky");
 		renderer.setBlendMode(BlendMode.DISABLED);
 		renderer.getCamera().setupShader(terrainShader);
 		worldRenderer.getSkyRenderer().setupShader(terrainShader);
@@ -120,9 +120,6 @@ public class FarTerrainGSMeshRenderer implements FarTerrainRenderer {
 		worldRenderer.worldTextures.waterNormalTexture.setMipMapping(true);
 
 		renderer.bindCubemap("environmentCubemap", worldRenderer.renderBuffers.rbEnvironmentMap);
-		renderer.bindTexture2D("sunSetRiseTexture", worldRenderer.worldTextures.sunGlowTexture);
-		renderer.bindTexture2D("skyTextureSunny", worldRenderer.worldTextures.skyTextureSunny);
-		renderer.bindTexture2D("skyTextureRaining", worldRenderer.worldTextures.skyTextureRaining);
 		renderer.bindTexture2D("blockLightmap", worldRenderer.worldTextures.lightmapTexture);
 		Texture2D lightColors = TexturesHandler.getTexture("./textures/environement/lightcolors.png");
 
@@ -309,11 +306,9 @@ public class FarTerrainGSMeshRenderer implements FarTerrainRenderer {
 				renderer.bindAttribute("indexIn", gridAttributes.asIntegerAttributeSource(VertexFormat.BYTE, 4, (4 + 2 * 4), 8L, 1));
 				
 				renderer.draw(Primitive.POINT, 0, (detailLevels[lod]+1)*(detailLevels[lod]+1)*1, lodInstanceCount[lod]);
-				renderer.flush();
 			}
 		}
 		
-		renderer.flush();
 
 		renderer.setPolygonFillMode(PolygonFillMode.FILL);
 	}

@@ -21,8 +21,7 @@ import org.joml.Vector4fc;
 import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.content.mods.ModsManager;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
-import io.xol.chunkstories.api.rendering.pipeline.UniformsConfiguration;
+import io.xol.chunkstories.api.rendering.pipeline.Shader;
 
 import java.io.IOException;
 import java.nio.FloatBuffer;
@@ -40,12 +39,10 @@ import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.opengl.GL32.*;
 
-
-
 /**
  * Handles a GLSL shader
  */
-public class ShaderProgram implements ShaderInterface
+public class ShaderProgram implements Shader
 {
 	private final ModsManager modsManager;
 	
@@ -67,6 +64,8 @@ public class ShaderProgram implements ShaderInterface
 
 	private HashMap<String, Object> uncommitedUniforms = new HashMap<String, Object>();
 	private HashMap<String, Object> commitedUniforms = new HashMap<String, Object>();
+	
+	private HashMap<String, SamplerType> samplers = new HashMap<>();
 
 	protected ShaderProgram(ModsManager modsManager, String shaderName)
 	{
@@ -87,6 +86,8 @@ public class ShaderProgram implements ShaderInterface
 
 	private void load(String[] parameters)
 	{
+		this.samplers.clear();
+		
 		shaderProgramId = glCreateProgram();
 
 		StringBuilder vertexSource = new StringBuilder();
@@ -129,11 +130,9 @@ public class ShaderProgram implements ShaderInterface
 		int i = 0;
 		for (String line : vertexSource.toString().split("\n"))
 		{
-			//We're still GLSL 130
-			if (line.startsWith("in ") || line.startsWith("attribute "))
+			if (line.startsWith("in "))
 			{
 				String attributeName = line.split(" ")[2].replace(";", "");
-				//System.out.println("Binding " + attributeName + " to location : " + i);
 				glBindAttribLocation(shaderProgramId, i, attributeName);
 				i++;
 			}
@@ -142,18 +141,43 @@ public class ShaderProgram implements ShaderInterface
 		glShaderSource(vertexShaderId, vertexSource);
 		glCompileShader(vertexShaderId);
 
-		//Anti-Apple bullshit : Apple being so tight-ass about gl 3.2 CORE spec won't let me have gl_FragColor[] in GLSL 150.
-		//So I'll just declare out values in my fragment shaders by order of expected bound MRT and roll this hack.
+		//Parse the fragment shader to look for outputs and assign them locations based on their order of appearance
+		//Also look for samplers
 		int j = 0;
-		for (String line : fragSource.toString().split("\n"))
-		{
-			//We're still GLSL 130
-			if (line.startsWith("out "))
-			{
+		for (String line : fragSource.toString().split("\n")) {
+			if (line.startsWith("out ")) {
 				String outputName = line.split(" ")[2].replace(";", "");
-				//System.out.println("Binding frag output " + outputName + " to location : " + j);
 				glBindFragDataLocation(shaderProgramId, j, outputName);
 				j++;
+			} else if(line.startsWith("uniform ")) {
+				String tokens[] = line.split(" ");
+				if(tokens.length >= 3) {
+					if(tokens[1].startsWith("sampler") || tokens[1].startsWith("usampler") || tokens[1].startsWith("isampler")) {
+						SamplerType type = null;
+
+						if(tokens[1].endsWith("Shadow"))
+							tokens[1] = tokens[1].substring(0, tokens[1].length() - 6);
+						
+						if(tokens[1].endsWith("1D"))
+							type = SamplerType.TEXTURE_1D;
+						else if(tokens[1].endsWith("2D"))
+							type = SamplerType.TEXTURE_2D;
+						else if(tokens[1].endsWith("3D"))
+							type = SamplerType.TEXTURE_3D;
+						else if(tokens[1].endsWith("Cube"))
+							type = SamplerType.CUBEMAP;
+						else if(tokens[1].endsWith("2DArray"))
+							type = SamplerType.ARRAY_TEXTURE_2D;
+						else {
+							logger.error("Could not recognize the sampler type: "+tokens[1]);
+						}
+						
+						tokens[2] = tokens[2].substring(0, tokens[2].length() - 1);
+						if(type != null) {
+							samplers.put(tokens[2], type);
+						}
+					}
+				}
 			}
 		}
 		
@@ -411,7 +435,7 @@ public class ShaderProgram implements ShaderInterface
 		uncommitedUniforms.put(uniformName, uniformData);
 	}
 
-	public class InternalUniformsConfiguration implements UniformsConfiguration
+	public class InternalUniformsConfiguration
 	{
 		Map<String, Object> commit;
 		
@@ -420,20 +444,6 @@ public class ShaderProgram implements ShaderInterface
 			this.commit = commit;
 		}
 
-		@Override
-		public boolean isCompatibleWith(UniformsConfiguration u)
-		{
-			//This is quick n' dirty, should be made better someday
-			if (u instanceof InternalUniformsConfiguration)
-			{
-				InternalUniformsConfiguration t = (InternalUniformsConfiguration) u;
-				return t.commit == commit;
-			}
-
-			return false;
-		}
-
-		@Override
 		public void setup(RenderingInterface renderingInterface)
 		{
 			if(commit != null)
@@ -535,7 +545,7 @@ public class ShaderProgram implements ShaderInterface
 			return;
 		
 		glUseProgram(shaderProgramId);
-		
+
 		currentProgram = shaderProgramId;
 		//Reset uniforms when changing shader
 		
@@ -600,4 +610,8 @@ public class ShaderProgram implements ShaderInterface
 		return setUniforms2.put("aaa", "whatever") == o;
 	}
 
+	@Override
+	public Map<String, SamplerType> samplers() {
+		return samplers;
+	}
 }

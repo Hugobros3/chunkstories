@@ -438,9 +438,6 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 					WorldLogicTimeRenderer.draw(renderingContext);
 				}
 
-				//Draw last shit
-				GameWindowOpenGL_LWJGL3.instance.renderingContext.flush();
-
 				//Update the screen
 				//Display.update();
 				glfwSwapBuffers(glfwWindowHandle);

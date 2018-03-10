@@ -6,56 +6,52 @@
 
 package io.xol.engine.graphics;
 
-import io.xol.chunkstories.api.exceptions.rendering.RenderingException;
 import org.joml.Matrix4f;
+
+import io.xol.chunkstories.api.exceptions.rendering.RenderingException;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.pipeline.AttributesConfiguration;
-import io.xol.chunkstories.api.rendering.pipeline.PipelineConfiguration;
-import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
-import io.xol.chunkstories.api.rendering.pipeline.TexturingConfiguration;
-import io.xol.chunkstories.api.rendering.pipeline.UniformsConfiguration;
+import io.xol.chunkstories.api.rendering.pipeline.Shader;
 import io.xol.engine.graphics.shaders.ShaderProgram;
+import io.xol.engine.graphics.shaders.ShaderProgram.InternalUniformsConfiguration;
+import io.xol.engine.graphics.textures.TexturingConfigurationImplementation;
 
-public class RenderingCommandSingleInstance extends RenderingCommandImplementation
-{
+public class RenderingCommandSingleInstance extends RenderingCommandImplementation {
 	Matrix4f objectMatrix;
 	int sunLight, blockLight;
 	int start, count;
 
-	public RenderingCommandSingleInstance(Primitive primitive, ShaderInterface shaderInterface, TexturingConfiguration texturingConfiguration, AttributesConfiguration attributesConfiguration, UniformsConfiguration uniformsConfiguration,
-			PipelineConfiguration pipelineConfiguration, Matrix4f objectMatrix, int start, int count)
-	{
-		super(primitive, shaderInterface, texturingConfiguration, attributesConfiguration, uniformsConfiguration, pipelineConfiguration);
+	public RenderingCommandSingleInstance(Primitive primitive, Shader Shader, TexturingConfigurationImplementation texturingConfiguration,
+			AttributesConfigurationImplementation attributesConfiguration, InternalUniformsConfiguration uniformsConfiguration, OpenGLStateMachine StateMachine,
+			Matrix4f objectMatrix, int start, int count) {
+		super(primitive, Shader, texturingConfiguration, attributesConfiguration, uniformsConfiguration, StateMachine);
 		this.objectMatrix = objectMatrix;
-		
+
 		this.start = start;
 		this.count = count;
 	}
 
-	protected void setup(RenderingInterface renderingInterface) throws RenderingException
-	{
-		//Make sure to use the right shader
-		((ShaderProgram) shaderInterface).use();
+	protected void setup(RenderingInterface renderingInterface) throws RenderingException {
+		// Make sure to use the right shader
+		((ShaderProgram) shader).use();
 
-		//Setups vertex attributes
+		// Setups vertex attributes
 		this.attributesConfiguration.setup(renderingInterface);
 
-		//Bind required textures
+		// Bind required textures
 		this.texturingConfiguration.setup(renderingInterface);
 
-		//Compute & send the object matrix
-		if (objectMatrix != null)
-		{
-			((ShaderProgram) this.shaderInterface).applyUniformAttribute("objectMatrix", objectMatrix);
-			//this.shaderInterface.setUniformMatrix4f("objectMatrix", objectMatrix);
-			
+		// Compute & send the object matrix
+		if (objectMatrix != null) {
+			((ShaderProgram) this.shader).applyUniformAttribute("objectMatrix", objectMatrix);
+			// this.Shader.setUniformMatrix4f("objectMatrix", objectMatrix);
+
 			objectMatrix.invert(temp);
-			//Matrix4f.invert(objectMatrix, temp);
-			
+			// Matrix4f.invert(objectMatrix, temp);
+
 			temp.transpose();
-			//Matrix4f.transpose(temp, temp);
-			//TODO make a clean function for this
+			// Matrix4f.transpose(temp, temp);
+			// TODO make a clean function for this
 			normal.m00 = temp.m00();
 			normal.m01 = temp.m01();
 			normal.m02 = temp.m02();
@@ -67,25 +63,23 @@ public class RenderingCommandSingleInstance extends RenderingCommandImplementati
 			normal.m20 = temp.m20();
 			normal.m21 = temp.m21();
 			normal.m22 = temp.m22();
-			((ShaderProgram) this.shaderInterface).applyUniformAttribute("objectMatrixNormal", normal);
-			//this.shaderInterface.setUniformMatrix3f("objectMatrixNormal", normal);
+			((ShaderProgram) this.shader).applyUniformAttribute("objectMatrixNormal", normal);
+			// this.Shader.setUniformMatrix3f("objectMatrixNormal", normal);
 		}
 
-		//Setup pipeline state
-		this.pipelineConfiguration.setup(renderingInterface);
+		// Setup pipeline state
+		this.stateMachine.setup(renderingInterface);
 
-		//Updates uniforms
+		// Updates uniforms
 		this.uniformsConfiguration.setup(renderingInterface);
 
-		((ShaderProgram) this.shaderInterface).validate();
+		((ShaderProgram) this.shader).validate();
 	}
 
-	@Override
-	public void render(RenderingInterface renderingInterface) throws RenderingException
-	{
+	public void render(RenderingInterface renderingInterface) throws RenderingException {
 		setup(renderingInterface);
 
-		//Do the draw call
+		// Do the draw call
 		GLCalls.DrawArrays(modes[primitive.ordinal()], start, count);
 	}
 }

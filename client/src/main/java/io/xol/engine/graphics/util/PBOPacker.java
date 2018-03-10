@@ -18,8 +18,8 @@ import java.nio.IntBuffer;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.MemoryStack;
 
-import io.xol.chunkstories.api.rendering.target.RenderTargetAttachementsConfiguration;
-import io.xol.chunkstories.api.rendering.target.RenderTargetManager;
+import io.xol.chunkstories.api.rendering.target.RenderTargetsConfiguration;
+import io.xol.chunkstories.api.rendering.target.RenderTargets;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.client.Client;
 import io.xol.engine.graphics.fbo.FrameBufferObjectGL;
@@ -27,7 +27,7 @@ import io.xol.engine.graphics.textures.Texture2DGL;
 
 public class PBOPacker
 {
-	RenderTargetAttachementsConfiguration fbo = new FrameBufferObjectGL(null);
+	RenderTargetsConfiguration fbo = new FrameBufferObjectGL(null);
 	
 	int bufferId;
 	boolean alreadyReading = false;
@@ -63,9 +63,9 @@ public class PBOPacker
 		glBufferData(GL_PIXEL_PACK_BUFFER, width * height * 4 * 3 , GL_STREAM_COPY);
 
 		//Obtains ref to RTM
-		RenderTargetManager rtm = Client.getInstance().getGameWindow().getRenderingContext().getRenderTargetManager();
+		RenderTargets rtm = Client.getInstance().getGameWindow().getRenderingContext().getRenderTargetManager();
 		
-		RenderTargetAttachementsConfiguration previousFB = rtm.getCurrentConfiguration();
+		RenderTargetsConfiguration previousFB = rtm.getCurrentConfiguration();
 		rtm.setConfiguration(fbo);
 		fbo.setColorAttachements(texture.getMipLevelAsRenderTarget(level));
 		fbo.setEnabledRenderTargets(true);

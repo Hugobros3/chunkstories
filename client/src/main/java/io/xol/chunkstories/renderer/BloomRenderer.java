@@ -10,7 +10,7 @@ import java.nio.ByteBuffer;
 
 import org.joml.Vector3f;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.pipeline.ShaderInterface;
+import io.xol.chunkstories.api.rendering.pipeline.Shader;
 import io.xol.engine.graphics.textures.Texture2DGL;
 import io.xol.engine.graphics.util.PBOPacker;
 
@@ -121,7 +121,7 @@ public class BloomRenderer
 		worldRenderer.renderBuffers.rbBloom.setLinearFiltering(true);
 		worldRenderer.renderBuffers.rbBlurTemp.setLinearFiltering(true);
 
-		ShaderInterface bloomShader = renderingContext.useShader("bloom");
+		Shader bloomShader = renderingContext.useShader("bloom");
 
 		renderingContext.bindTexture2D("shadedBuffer", worldRenderer.renderBuffers.rbShaded);
 		bloomShader.setUniform1f("apertureModifier", apertureModifier);
@@ -140,7 +140,7 @@ public class BloomRenderer
 		renderingContext.getRenderTargetManager().setConfiguration(worldRenderer.renderBuffers.fboBlur);
 		//fboBlur.bind();
 
-		ShaderInterface blurV = renderingContext.useShader("blurV");
+		Shader blurV = renderingContext.useShader("blurV");
 		blurV.setUniform2f("screenSize", renderingContext.getWindow().getWidth() / 2f, renderingContext.getWindow().getHeight() / 2f);
 		blurV.setUniform1f("lookupScale", 1);
 		renderingContext.bindTexture2D("inputTexture", worldRenderer.renderBuffers.rbBloom);
@@ -150,7 +150,7 @@ public class BloomRenderer
 		renderingContext.getRenderTargetManager().setConfiguration(worldRenderer.renderBuffers.fboBloom);
 		//this.fboBloom.bind();
 
-		ShaderInterface blurH = renderingContext.useShader("blurH");
+		Shader blurH = renderingContext.useShader("blurH");
 		blurH.setUniform2f("screenSize", renderingContext.getWindow().getWidth() / 2f, renderingContext.getWindow().getHeight() / 2f);
 		renderingContext.bindTexture2D("inputTexture", worldRenderer.renderBuffers.rbBlurTemp);
 		renderingContext.drawFSQuad();

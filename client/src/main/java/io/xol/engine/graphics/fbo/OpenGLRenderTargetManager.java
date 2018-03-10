@@ -12,14 +12,14 @@ import org.joml.Vector4f;
 import org.joml.Vector4fc;
 
 import io.xol.chunkstories.api.rendering.target.RenderTarget;
-import io.xol.chunkstories.api.rendering.target.RenderTargetAttachementsConfiguration;
-import io.xol.chunkstories.api.rendering.target.RenderTargetManager;
+import io.xol.chunkstories.api.rendering.target.RenderTargetsConfiguration;
+import io.xol.chunkstories.api.rendering.target.RenderTargets;
 import io.xol.engine.graphics.RenderingContext;
 
-public class OpenGLRenderTargetManager implements RenderTargetManager
+public class OpenGLRenderTargetManager implements RenderTargets
 {
 	final RenderingContext renderingContext;
-	RenderTargetAttachementsConfiguration fbo = null;
+	RenderTargetsConfiguration fbo = null;
 
 	public OpenGLRenderTargetManager(RenderingContext renderingContext)
 	{
@@ -27,13 +27,13 @@ public class OpenGLRenderTargetManager implements RenderTargetManager
 	}
 
 	@Override
-	public RenderTargetAttachementsConfiguration getCurrentConfiguration()
+	public RenderTargetsConfiguration getCurrentConfiguration()
 	{
 		return fbo;
 	}
 
 	@Override
-	public void setConfiguration(RenderTargetAttachementsConfiguration fbo)
+	public void setConfiguration(RenderTargetsConfiguration fbo)
 	{
 		if (fbo == null)
 			FrameBufferObjectGL.unbind();
@@ -49,10 +49,7 @@ public class OpenGLRenderTargetManager implements RenderTargetManager
 	public void setDepthMask(boolean depthMask)
 	{
 		if(this.depthMask != depthMask)
-		{
-			renderingContext.flush();
 			glDepthMask(depthMask);
-		}
 		this.depthMask = depthMask;
 	}
 
@@ -85,10 +82,7 @@ public class OpenGLRenderTargetManager implements RenderTargetManager
 
 	@Override
 	public void clearBoundRenderTargetAll()
-	{
-		//Flushes any command before messing them up
-		renderingContext.flush();
-		
+	{	
 		//Resets those to default values
 		setClearDepth(1);
 		setClearColor(new Vector4f(0));
@@ -99,25 +93,19 @@ public class OpenGLRenderTargetManager implements RenderTargetManager
 	@Override
 	public void clearBoundRenderTargetZ(float z)
 	{
-		//Flushes any command before messing them up
-		renderingContext.flush();
-		
 		setClearDepth(z);
 		glClear(GL_DEPTH_BUFFER_BIT);
 	}
 
 	@Override
 	public void clearBoundRenderTargetColor(Vector4fc color)
-	{
-		//Flushes any command before messing them up
-		renderingContext.flush();
-		
+	{	
 		setClearColor(color);
 		glClear(GL_COLOR_BUFFER_BIT);
 	}
 
 	@Override
-	public RenderTargetAttachementsConfiguration newConfiguration(RenderTarget depth, RenderTarget... colors) {
+	public RenderTargetsConfiguration newConfiguration(RenderTarget depth, RenderTarget... colors) {
 		return new FrameBufferObjectGL(depth, colors);
 	}
 
