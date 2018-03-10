@@ -125,24 +125,11 @@ public class ClientParticlesRenderer implements ParticlesRenderer
 
 	public void renderParticles(RenderingInterface renderingInterface)
 	{
-		int totalDrawn = 0;
-		
 		//For all present particles types
 		for (ParticleTypeHandler particleTypeHandler : particles.keySet())
 		{
-			/*RenderTime renderTime = particleTypeHandler.getType().getRenderTime();
-			
-			//Skip forward stuff when doing gbuf
-			if(isThisGBufferPass && renderTime == RenderTime.FORWARD)
-				continue;
-			
-			//Skip gbuf stuff when doing forward
-			else if(!isThisGBufferPass && renderTime == RenderTime.NEVER)
-				continue;
-			else if(!isThisGBufferPass && renderTime == RenderTime.GBUFFER)
-				continue;*/
 			String renderPass = particleTypeHandler.getType().getRenderPass();
-			if(!renderingInterface.getWorldRenderer().renderPasses().getCurrentPass().name.equals(renderPass))
+			if(!renderingInterface.getCurrentPass().name.equals(renderPass))
 				continue;
 				
 			//Don't bother rendering empty sets
@@ -186,7 +173,6 @@ public class ClientParticlesRenderer implements ParticlesRenderer
 					if (elementsInDrawBuffer >= 60000)
 					{
 						drawBuffers(renderingInterface, elementsInDrawBuffer, haveTextureCoordinates);
-						totalDrawn += elementsInDrawBuffer;
 						elementsInDrawBuffer = 0;
 					}
 
@@ -248,7 +234,6 @@ public class ClientParticlesRenderer implements ParticlesRenderer
 				if (elementsInDrawBuffer > 0)
 				{
 					drawBuffers(renderingInterface, elementsInDrawBuffer, haveTextureCoordinates);
-					totalDrawn += elementsInDrawBuffer;
 					elementsInDrawBuffer = 0;
 				}
 			}

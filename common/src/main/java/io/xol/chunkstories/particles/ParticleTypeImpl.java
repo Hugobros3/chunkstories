@@ -45,7 +45,7 @@ public class ParticleTypeImpl extends GenericNamedConfigurable implements Partic
 			renderTime = RenderTime.NEVER;
 		else
 			throw new IllegalParticleDeclarationException("renderTime has to be any of {forward, gbuffer, never}");*/
-		this.renderPass = this.resolveProperty("renderTime", "forward");
+		this.renderPass = this.resolveProperty("renderPass", "forward");
 		
 		try {
 			this.billBoardSize = Float.parseFloat(this.resolveProperty("billboardSize", "1.0"));
