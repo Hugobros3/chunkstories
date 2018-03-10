@@ -280,7 +280,7 @@ public class ChunkMeshesRenderer implements ChunksRenderer {
 		RenderPass currentPass = renderingInterface.getCurrentPass();
 		List<ChunkRenderCommand> culledChunks = currentPass.name.startsWith("shadow") ? culledChunksShadow : culledChunksNormal;
 
-		ShadingType shadingType = /*currentPass.name.startsWith("liquid") ? ShadingType.LIQUIDS : */ShadingType.OPAQUE;
+		ShadingType shadingType = currentPass.name.startsWith("water") ? ShadingType.LIQUIDS : ShadingType.OPAQUE;
 
 		if (currentPass.name.startsWith("shadow"))
 			renderingInterface.currentShader().setUniform1f("useVoxelCoordinates", 1f);

@@ -45,7 +45,7 @@ public class LightsRenderer implements LightsAccumulator
 	
 	public void renderPendingLights(RenderingInterface renderingContext)
 	{
-		lightShader = renderingContext.useShader("light");
+		lightShader = renderingContext.currentShader(); //renderingContext.useShader("light");
 		lightsBuffer = 0;
 		//Render entities lights
 		Iterator<Light> lightsIterator = lights.iterator();

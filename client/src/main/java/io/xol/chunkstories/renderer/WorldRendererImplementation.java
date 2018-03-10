@@ -229,12 +229,12 @@ public class WorldRendererImplementation implements WorldRenderer
 
 		renderingInterface.getRenderTargetManager().setConfiguration(renderBuffers.fboShadedBuffer);
 		particlesRenderer.render(renderingInterface, false);
+		weatherEffectsRenderer.renderEffects(renderingInterface);
 		
 		//Render SSR if enabled
-		//if(RenderingConfig.doRealtimeReflections)
-		reflectionsRenderer.renderReflections(renderingInterface);
+		if(RenderingConfig.doRealtimeReflections)
+			reflectionsRenderer.renderReflections(renderingInterface);
 		
-		weatherEffectsRenderer.renderEffects(renderingInterface);
 	}*/
 
 	private void gbuffers_opaque_chunk_meshes(RenderingInterface renderingInterface)
@@ -319,7 +319,7 @@ public class WorldRendererImplementation implements WorldRenderer
 
 		// We do water in two passes : one for computing the refracted color and putting it in shaded buffer, and another one
 		// to read it back and blend it
-		for (int pass = 1; pass < 3; pass++)
+		for (int pass = 1; pass <= 2; pass++)
 		{
 			Shader liquidBlocksShader = renderingInterface.useShader("blocks_liquid_pass" + pass);
 
@@ -405,7 +405,7 @@ public class WorldRendererImplementation implements WorldRenderer
 	 * Uses G-Buffers data to spit out shaded solid blocks ( shadows etc )
 	 * @param sun_shadowMap 
 	 */
-	public void renderShadedBlocks(RenderingInterface renderingContext, ComputedShadowMap sun_shadowMap)
+	private void renderShadedBlocks(RenderingInterface renderingContext, ComputedShadowMap sun_shadowMap)
 	{
 		Shader applyShadowsShader = renderingContext.useShader("shadows_apply");
 		
@@ -471,39 +471,39 @@ public class WorldRendererImplementation implements WorldRenderer
 		renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
 	}
 	
-	private void renderLightsDeffered(RenderingInterface renderingInterface)
+	private void renderLightsDeffered(RenderingInterface renderer)
 	{
 		//Client.profiler.startSection("lights");
 
 		//We work on the shaded buffer
-		renderingInterface.getRenderTargetManager().setConfiguration(this.renderBuffers.fboShadedBuffer);
+		renderer.getRenderTargetManager().setConfiguration(this.renderBuffers.fboShadedBuffer);
 		
 		// Deffered lightning
 		// Disable depth read/write
-		renderingInterface.setDepthTestMode(DepthTestMode.DISABLED);
-		renderingInterface.getRenderTargetManager().setDepthMask(false);
+		renderer.setDepthTestMode(DepthTestMode.DISABLED);
+		renderer.getRenderTargetManager().setDepthMask(false);
 
-		Shader lightShader = renderingInterface.useShader("light");
+		Shader lightShader = renderer.useShader("light");
 
 		//Required info
-		renderingInterface.bindTexture2D("depthBuffer", this.renderBuffers.rbZBuffer);
-		renderingInterface.bindTexture2D("diffuseBuffer", this.renderBuffers.rbAlbedo);
-		renderingInterface.bindTexture2D("normalBuffer", this.renderBuffers.rbNormal);
+		renderer.bindTexture2D("depthBuffer", this.renderBuffers.rbZBuffer);
+		renderer.bindTexture2D("diffuseBuffer", this.renderBuffers.rbAlbedo);
+		renderer.bindTexture2D("normalBuffer", this.renderBuffers.rbNormal);
 
 		//Parameters
 		lightShader.setUniform1f("powFactor", 5f);
-		renderingInterface.getCamera().setupShader(lightShader);
+		renderer.getCamera().setupShader(lightShader);
 		//Blend parameters
 
-		renderingInterface.setDepthTestMode(DepthTestMode.DISABLED);
-		renderingInterface.setBlendMode(BlendMode.ADD);
+		renderer.setDepthTestMode(DepthTestMode.DISABLED);
+		renderer.setBlendMode(BlendMode.ADD);
 
-		renderingInterface.getLightsRenderer().renderPendingLights(renderingInterface);
+		renderer.getLightsRenderer().renderPendingLights(renderer);
 		//Cleanup
-		renderingInterface.getRenderTargetManager().setDepthMask(true);
+		renderer.getRenderTargetManager().setDepthMask(true);
 
-		renderingInterface.setBlendMode(BlendMode.MIX);
-		renderingInterface.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
+		renderer.setBlendMode(BlendMode.MIX);
+		renderer.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
 	}
 	
 	public void blitFinalImage(RenderingInterface renderingContext, boolean hideGui)

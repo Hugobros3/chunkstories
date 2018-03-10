@@ -22,16 +22,14 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.events.rendering.WorldRenderingDecalsEvent;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.StateMachine.BlendMode;
-import io.xol.chunkstories.api.rendering.StateMachine.CullingMode;
 import io.xol.chunkstories.api.rendering.effects.DecalsRenderer;
-import io.xol.chunkstories.api.rendering.shader.Shader;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
 import io.xol.chunkstories.api.rendering.voxel.VoxelBakerCubic;
 import io.xol.chunkstories.api.rendering.voxel.VoxelBakerHighPoly;
 import io.xol.chunkstories.api.rendering.voxel.VoxelRenderer;
+import io.xol.chunkstories.api.rendering.world.WorldRenderer;
 import io.xol.chunkstories.api.rendering.world.chunk.ChunkMeshDataSubtypes.LodLevel;
 import io.xol.chunkstories.api.rendering.world.chunk.ChunkMeshDataSubtypes.ShadingType;
 import io.xol.chunkstories.api.rendering.world.chunk.ChunkRenderer;
@@ -40,7 +38,6 @@ import io.xol.chunkstories.api.voxel.VoxelSides.Corners;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.cell.CellData;
 import io.xol.chunkstories.api.world.chunk.Chunk;
-import io.xol.chunkstories.renderer.WorldRendererImplementation;
 import io.xol.engine.graphics.geometry.VertexBufferGL;
 import io.xol.engine.graphics.textures.Texture2DGL;
 import io.xol.engine.graphics.textures.TexturesHandler;
@@ -51,10 +48,10 @@ public class DecalsRendererImplementation implements DecalsRenderer
 	int DECALS_BUFFER_SIZE = 4 * (3 + 2) * (3 * 2) * 4096;
 	Map<Texture2DGL, DecalType> decalsTypes = new HashMap<Texture2DGL, DecalType>();
 	
-	WorldRendererImplementation worldRenderer;
+	WorldRenderer worldRenderer;
 	WorldClient world;
 
-	public DecalsRendererImplementation(WorldRendererImplementation worldRenderer)
+	public DecalsRendererImplementation(WorldRenderer worldRenderer)
 	{
 		this.worldRenderer = worldRenderer;
 		this.world = worldRenderer.getWorld();
@@ -331,17 +328,6 @@ public class DecalsRendererImplementation implements DecalsRenderer
 
 	public void renderDecals(RenderingInterface renderingInterface)
 	{
-		Shader decalsShader = renderingInterface.useShader("decals");
-
-		renderingInterface.getCamera().setupShader(decalsShader);
-		
-		renderingInterface.bindTexture2D("zBuffer", worldRenderer.renderBuffers.rbZBuffer);
-
-		renderingInterface.setCullingMode(CullingMode.DISABLED);
-		
-		renderingInterface.setBlendMode(BlendMode.MIX);
-		renderingInterface.getRenderTargetManager().setDepthMask(false);
-
 		for(DecalType decalType : decalsTypes.values())
 		{
 			Texture2D diffuseTexture = decalType.getTexture();
@@ -358,8 +344,6 @@ public class DecalsRendererImplementation implements DecalsRenderer
 			
 			renderingInterface.draw(Primitive.TRIANGLE, 0, decalType.kount);
 		}
-
-		renderingInterface.getRenderTargetManager().setDepthMask(true);
 		
 		WorldRenderingDecalsEvent event = new WorldRenderingDecalsEvent(world, worldRenderer, renderingInterface, this);
 		world.getGameContext().getPluginManager().fireEvent(event);
