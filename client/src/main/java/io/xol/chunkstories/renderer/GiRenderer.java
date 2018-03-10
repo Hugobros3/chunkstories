@@ -11,9 +11,9 @@ import static io.xol.chunkstories.api.rendering.textures.TextureFormat.DEPTH_REN
 import org.joml.Vector3d;
 
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.pipeline.Shader;
-import io.xol.chunkstories.api.rendering.pipeline.StateMachine.BlendMode;
-import io.xol.chunkstories.api.rendering.pipeline.StateMachine.DepthTestMode;
+import io.xol.chunkstories.api.rendering.StateMachine.BlendMode;
+import io.xol.chunkstories.api.rendering.StateMachine.DepthTestMode;
+import io.xol.chunkstories.api.rendering.shader.Shader;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
 import io.xol.engine.graphics.fbo.FrameBufferObjectGL;
 import io.xol.engine.graphics.textures.Texture2DRenderTargetGL;

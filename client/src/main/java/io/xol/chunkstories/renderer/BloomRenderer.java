@@ -9,8 +9,9 @@ package io.xol.chunkstories.renderer;
 import java.nio.ByteBuffer;
 
 import org.joml.Vector3f;
+
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.pipeline.Shader;
+import io.xol.chunkstories.api.rendering.shader.Shader;
 import io.xol.engine.graphics.textures.Texture2DGL;
 import io.xol.engine.graphics.util.PBOPacker;
 
@@ -115,64 +116,64 @@ public class BloomRenderer
 		worldRenderer.renderBuffers.rbShaded.setMipmapLevelsRange(0, 0);
 	}
 	
-	private void renderAndBlurBloom(RenderingInterface renderingContext)
+	private void renderAndBlurBloom(RenderingInterface renderer)
 	{
 		worldRenderer.renderBuffers.rbShaded.setLinearFiltering(true);
 		worldRenderer.renderBuffers.rbBloom.setLinearFiltering(true);
 		worldRenderer.renderBuffers.rbBlurTemp.setLinearFiltering(true);
 
-		Shader bloomShader = renderingContext.useShader("bloom");
+		Shader bloomShader = renderer.useShader("bloom");
 
-		renderingContext.bindTexture2D("shadedBuffer", worldRenderer.renderBuffers.rbShaded);
+		renderer.bindTexture2D("shadedBuffer", worldRenderer.renderBuffers.rbShaded);
 		bloomShader.setUniform1f("apertureModifier", apertureModifier);
-		bloomShader.setUniform2f("screenSize", renderingContext.getWindow().getWidth() / 2f, renderingContext.getWindow().getHeight() / 2f);
+		bloomShader.setUniform2f("screenSize", renderer.getWindow().getWidth() / 2f, renderer.getWindow().getHeight() / 2f);
 
 		//int max_mipmap = (int) (Math.ceil(Math.log(Math.max(scrH, scrW)) / Math.log(2)));
 		//bloomShader.setUniform1f("max_mipmap", max_mipmap);
 
-		renderingContext.getRenderTargetManager().setConfiguration(worldRenderer.renderBuffers.fboBloom);
+		renderer.getRenderTargetManager().setConfiguration(worldRenderer.renderBuffers.fboBloom);
 		//this.fboBloom.bind();
 		worldRenderer.renderBuffers.fboBloom.setEnabledRenderTargets();
-		renderingContext.drawFSQuad();
+		renderer.drawFSQuad();
 
 		// Blur bloom
 		// Vertical pass
-		renderingContext.getRenderTargetManager().setConfiguration(worldRenderer.renderBuffers.fboBlur);
+		renderer.getRenderTargetManager().setConfiguration(worldRenderer.renderBuffers.fboBlur);
 		//fboBlur.bind();
 
-		Shader blurV = renderingContext.useShader("blurV");
-		blurV.setUniform2f("screenSize", renderingContext.getWindow().getWidth() / 2f, renderingContext.getWindow().getHeight() / 2f);
+		Shader blurV = renderer.useShader("blurV");
+		blurV.setUniform2f("screenSize", renderer.getWindow().getWidth() / 2f, renderer.getWindow().getHeight() / 2f);
 		blurV.setUniform1f("lookupScale", 1);
-		renderingContext.bindTexture2D("inputTexture", worldRenderer.renderBuffers.rbBloom);
-		renderingContext.drawFSQuad();
+		renderer.bindTexture2D("inputTexture", worldRenderer.renderBuffers.rbBloom);
+		renderer.drawFSQuad();
 
 		// Horizontal pass
-		renderingContext.getRenderTargetManager().setConfiguration(worldRenderer.renderBuffers.fboBloom);
+		renderer.getRenderTargetManager().setConfiguration(worldRenderer.renderBuffers.fboBloom);
 		//this.fboBloom.bind();
 
-		Shader blurH = renderingContext.useShader("blurH");
-		blurH.setUniform2f("screenSize", renderingContext.getWindow().getWidth() / 2f, renderingContext.getWindow().getHeight() / 2f);
-		renderingContext.bindTexture2D("inputTexture", worldRenderer.renderBuffers.rbBlurTemp);
-		renderingContext.drawFSQuad();
+		Shader blurH = renderer.useShader("blurH");
+		blurH.setUniform2f("screenSize", renderer.getWindow().getWidth() / 2f, renderer.getWindow().getHeight() / 2f);
+		renderer.bindTexture2D("inputTexture", worldRenderer.renderBuffers.rbBlurTemp);
+		renderer.drawFSQuad();
 
-		renderingContext.getRenderTargetManager().setConfiguration(worldRenderer.renderBuffers.fboBlur);
+		renderer.getRenderTargetManager().setConfiguration(worldRenderer.renderBuffers.fboBlur);
 		//fboBlur.bind();
 
-		blurV = renderingContext.useShader("blurV");
+		blurV = renderer.useShader("blurV");
 
-		blurV.setUniform2f("screenSize", renderingContext.getWindow().getWidth() / 4f, renderingContext.getWindow().getHeight() / 4f);
+		blurV.setUniform2f("screenSize", renderer.getWindow().getWidth() / 4f, renderer.getWindow().getHeight() / 4f);
 		blurV.setUniform1f("lookupScale", 1);
-		renderingContext.bindTexture2D("inputTexture", worldRenderer.renderBuffers.rbBloom);
-		renderingContext.drawFSQuad();
+		renderer.bindTexture2D("inputTexture", worldRenderer.renderBuffers.rbBloom);
+		renderer.drawFSQuad();
 
 		// Horizontal pass
-		renderingContext.getRenderTargetManager().setConfiguration(worldRenderer.renderBuffers.fboBloom);
+		renderer.getRenderTargetManager().setConfiguration(worldRenderer.renderBuffers.fboBloom);
 
-		blurH = renderingContext.useShader("blurH");
-		blurH.setUniform2f("screenSize", renderingContext.getWindow().getWidth() / 4f, renderingContext.getWindow().getHeight() / 4f);
-		renderingContext.bindTexture2D("inputTexture", worldRenderer.renderBuffers.rbBlurTemp);
-		renderingContext.drawFSQuad();
+		blurH = renderer.useShader("blurH");
+		blurH.setUniform2f("screenSize", renderer.getWindow().getWidth() / 4f, renderer.getWindow().getHeight() / 4f);
+		renderer.bindTexture2D("inputTexture", worldRenderer.renderBuffers.rbBlurTemp);
+		renderer.drawFSQuad();
 		
-		renderingContext.getRenderTargetManager().setConfiguration(worldRenderer.renderBuffers.fboShadedBuffer);
+		renderer.getRenderTargetManager().setConfiguration(worldRenderer.renderBuffers.fboShadedBuffer);
 	}
 }

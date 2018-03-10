@@ -11,10 +11,10 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.TreeMap;
 
-import io.xol.chunkstories.api.math.HexTools;
 import org.joml.Vector4f;
 import org.joml.Vector4fc;
 
+import io.xol.chunkstories.api.math.HexTools;
 import io.xol.chunkstories.api.rendering.text.FontRenderer;
 import io.xol.chunkstories.api.rendering.text.TextMesh;
 import io.xol.chunkstories.api.util.ColorsTools;

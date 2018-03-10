@@ -6,6 +6,9 @@
 
 package io.xol.engine.graphics;
 
+import static org.lwjgl.opengl.GL20.glDisableVertexAttribArray;
+import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -14,11 +17,9 @@ import java.util.Set;
 
 import io.xol.chunkstories.api.exceptions.rendering.AttributeNotPresentException;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.pipeline.AttributesConfiguration;
 import io.xol.chunkstories.api.rendering.vertex.AttributeSource;
+import io.xol.chunkstories.api.rendering.vertex.AttributesConfiguration;
 import io.xol.engine.graphics.shaders.ShaderProgram;
-
-import static org.lwjgl.opengl.GL20.*;
 
 public class AttributesConfigurationImplementation implements AttributesConfiguration
 {

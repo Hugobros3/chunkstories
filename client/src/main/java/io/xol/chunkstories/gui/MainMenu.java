@@ -14,20 +14,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import io.xol.chunkstories.api.gui.Layer;
 import org.joml.Vector4f;
+
+import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.pipeline.StateMachine.BlendMode;
+import io.xol.chunkstories.api.rendering.StateMachine.BlendMode;
+import io.xol.chunkstories.api.rendering.shader.Shader;
 import io.xol.chunkstories.api.rendering.target.RenderTargetsConfiguration;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.api.rendering.pipeline.Shader;
 import io.xol.chunkstories.gui.overlays.MainMenuOverlay;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.engine.graphics.fbo.FrameBufferObjectGL;
-import io.xol.engine.graphics.textures.Texture2DRenderTargetGL;
 import io.xol.engine.graphics.textures.Texture2DGL;
+import io.xol.engine.graphics.textures.Texture2DRenderTargetGL;
 import io.xol.engine.graphics.textures.TexturesHandler;
 
 public class MainMenu extends Layer

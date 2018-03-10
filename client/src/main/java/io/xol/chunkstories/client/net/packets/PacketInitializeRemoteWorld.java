@@ -12,9 +12,9 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.content.OnlineContentTranslator;
 import io.xol.chunkstories.api.net.PacketReceptionContext;
+import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ClientPacketsContext;

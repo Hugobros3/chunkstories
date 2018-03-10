@@ -12,8 +12,8 @@ import java.io.IOException;
 import java.util.concurrent.Semaphore;
 
 import io.xol.chunkstories.api.exceptions.PacketProcessingException;
-import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketReceptionContext;
+import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.client.net.ClientPacketsContext;
 import io.xol.chunkstories.net.Connection.DownloadStatus;
 import io.xol.chunkstories.net.Connection.PendingDownload;

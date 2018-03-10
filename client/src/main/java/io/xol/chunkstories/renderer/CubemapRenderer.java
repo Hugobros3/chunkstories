@@ -6,25 +6,11 @@
 
 package io.xol.chunkstories.renderer;
 
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-
-import javax.imageio.ImageIO;
-
-import io.xol.chunkstories.api.math.Math2;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.textures.Cubemap;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
-import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.renderer.WorldRendererImplementation.RenderBuffers;
-
-import static org.lwjgl.opengl.GL11.*;
 
 public class CubemapRenderer {
 	private final WorldRendererImplementation worldRenderer;
@@ -58,7 +44,6 @@ public class CubemapRenderer {
 		// Setup cubemap resolution
 
 		if (!onlyTerrain) {
-			
 			worldRenderer.setupRenderSize(resolution, resolution);
 		}
 		
@@ -66,7 +51,7 @@ public class CubemapRenderer {
 		scrH = resolution;
 		
 		int t[] = new int[] { 4, 5, 3, 2, 0, 1 };
-		String[] names = { "front", "back", "top", "bottom", "right", "left" };
+		/*String[] names = { "front", "back", "top", "bottom", "right", "left" };
 
 		String time = null;
 		if (cubemap == null)
@@ -74,7 +59,7 @@ public class CubemapRenderer {
 			Calendar cal = Calendar.getInstance();
 			SimpleDateFormat sdf = new SimpleDateFormat("YYYY.MM.dd HH.mm.ss");
 			time = sdf.format(cal.getTime());
-		}
+		}*/
 
 		for (int z = 0; z < 6; z++)
 		{
@@ -118,9 +103,7 @@ public class CubemapRenderer {
 			else
 				renderingContext.getRenderTargetManager().setConfiguration(buffers.fboShadedBuffer);
 
-			//renderingContext.getRenderTargetManager().clearBoundRenderTargetAll();
 			renderingContext.getRenderTargetManager().clearBoundRenderTargetZ(0f);
-
 			camera.setupUsingScreenSize(scrW, scrH);
 			
 			// Scene rendering
@@ -133,27 +116,9 @@ public class CubemapRenderer {
 			else
 				worldRenderer.renderWorldInternal(renderingContext);
 
-			if (cubemap != null)
-			{
-				//Stupid useless step!
-				/*
-				renderingContext.useShader("blit");
-
-				renderingContext.getRenderTargetManager().setConfiguration(buffers.fbosEnvMap[f]);
-
-				if (onlyTerrain)
-					renderingContext.bindTexture2D("diffuseTexture", buffers.rbEnvMapTemp);
-				else
-					renderingContext.bindTexture2D("diffuseTexture", buffers.rbShaded);
-
-				renderingContext.currentShader().setUniform2f("screenSize", resolution, resolution);
-
-				renderingContext.drawFSQuad();*/
-			}
-			else
+			/*if (cubemap == null)
 			{
 				glBindTexture(GL_TEXTURE_2D, buffers.rbShaded.getId());
-				//glBindTexture(GL_TEXTURE_2D, environmentMapBufferHDR.getId());
 
 				// File access
 				File image = new File(GameDirectory.getGameFolderPath() + "/skyboxscreens/" + time + "/" + names[z] + ".png");
@@ -183,7 +148,7 @@ public class CubemapRenderer {
 				{
 					e.printStackTrace();
 				}
-			}
+			}*/
 
 		}
 

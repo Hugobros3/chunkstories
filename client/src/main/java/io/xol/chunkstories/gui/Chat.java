@@ -6,20 +6,19 @@
 
 package io.xol.chunkstories.gui;
 
-import io.xol.engine.gui.elements.InputText;
-
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
+import org.joml.Vector4f;
+
+import io.xol.chunkstories.api.content.mods.Mod;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse.MouseScroll;
-import org.joml.Vector4f;
-import io.xol.chunkstories.api.content.mods.Mod;
 import io.xol.chunkstories.api.plugin.ChunkStoriesPlugin;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
@@ -30,6 +29,7 @@ import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.chunkstories.world.WorldClientRemote;
 import io.xol.chunkstories.world.WorldImplementation;
+import io.xol.engine.gui.elements.InputText;
 
 public class Chat
 {

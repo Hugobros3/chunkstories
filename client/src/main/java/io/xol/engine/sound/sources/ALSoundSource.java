@@ -6,7 +6,27 @@
 
 package io.xol.engine.sound.sources;
 
-import static org.lwjgl.openal.AL10.*;
+import static org.lwjgl.openal.AL10.AL_BUFFER;
+import static org.lwjgl.openal.AL10.AL_BUFFERS_PROCESSED;
+import static org.lwjgl.openal.AL10.AL_GAIN;
+import static org.lwjgl.openal.AL10.AL_MAX_DISTANCE;
+import static org.lwjgl.openal.AL10.AL_PITCH;
+import static org.lwjgl.openal.AL10.AL_POSITION;
+import static org.lwjgl.openal.AL10.AL_REFERENCE_DISTANCE;
+import static org.lwjgl.openal.AL10.AL_ROLLOFF_FACTOR;
+import static org.lwjgl.openal.AL10.AL_SOURCE_RELATIVE;
+import static org.lwjgl.openal.AL10.AL_TRUE;
+import static org.lwjgl.openal.AL10.AL_VELOCITY;
+import static org.lwjgl.openal.AL10.alDeleteBuffers;
+import static org.lwjgl.openal.AL10.alDeleteSources;
+import static org.lwjgl.openal.AL10.alGenSources;
+import static org.lwjgl.openal.AL10.alSource3f;
+import static org.lwjgl.openal.AL10.alSourcePlay;
+import static org.lwjgl.openal.AL10.alSourceQueueBuffers;
+import static org.lwjgl.openal.AL10.alSourceStop;
+import static org.lwjgl.openal.AL10.alSourcef;
+import static org.lwjgl.openal.AL10.alSourcei;
+
 import org.joml.Vector3dc;
 
 //TODO EFX LWJGL3

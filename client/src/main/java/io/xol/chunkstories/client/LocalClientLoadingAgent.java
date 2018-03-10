@@ -15,13 +15,13 @@ import java.util.concurrent.locks.ReentrantLock;
 import com.carrotsearch.hppc.IntHashSet;
 
 import io.xol.chunkstories.api.client.ClientInterface;
+import io.xol.chunkstories.api.client.LocalPlayer;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.exceptions.net.IllegalPacketException;
 import io.xol.chunkstories.api.math.LoopingMathHelper;
 import io.xol.chunkstories.api.math.Math2;
 import io.xol.chunkstories.api.net.packets.PacketWorldUser;
 import io.xol.chunkstories.api.net.packets.PacketWorldUser.Type;
-import io.xol.chunkstories.api.client.LocalPlayer;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;

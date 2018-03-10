@@ -6,27 +6,29 @@
 
 package io.xol.chunkstories.renderer;
 
-import static io.xol.chunkstories.api.rendering.textures.TextureFormat.*;
-
-import java.util.Iterator;
+import static io.xol.chunkstories.api.rendering.textures.TextureFormat.DEPTH_RENDERBUFFER;
+import static io.xol.chunkstories.api.rendering.textures.TextureFormat.DEPTH_SHADOWMAP;
+import static io.xol.chunkstories.api.rendering.textures.TextureFormat.RED_8;
+import static io.xol.chunkstories.api.rendering.textures.TextureFormat.RED_8UI;
+import static io.xol.chunkstories.api.rendering.textures.TextureFormat.RGBA_8BPP;
+import static io.xol.chunkstories.api.rendering.textures.TextureFormat.RGB_8;
+import static io.xol.chunkstories.api.rendering.textures.TextureFormat.RGB_HDR;
+import static io.xol.chunkstories.api.rendering.textures.TextureFormat.RG_8;
 
 import org.joml.Matrix4f;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.xol.chunkstories.api.client.ClientInterface;
-import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
-import io.xol.chunkstories.api.entity.interfaces.EntityOverlay;
-import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.RenderingPipeline;
-import io.xol.chunkstories.api.rendering.pipeline.StateMachine.BlendMode;
-import io.xol.chunkstories.api.rendering.pipeline.StateMachine.CullingMode;
-import io.xol.chunkstories.api.rendering.pipeline.StateMachine.DepthTestMode;
-import io.xol.chunkstories.api.rendering.pipeline.Shader;
+import io.xol.chunkstories.api.rendering.StateMachine.BlendMode;
+import io.xol.chunkstories.api.rendering.StateMachine.CullingMode;
+import io.xol.chunkstories.api.rendering.StateMachine.DepthTestMode;
+import io.xol.chunkstories.api.rendering.pass.RenderPasses;
+import io.xol.chunkstories.api.rendering.shader.Shader;
 import io.xol.chunkstories.api.rendering.target.RenderTargetsConfiguration;
 import io.xol.chunkstories.api.rendering.textures.Texture;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
@@ -34,12 +36,10 @@ import io.xol.chunkstories.api.rendering.textures.TextureFormat;
 import io.xol.chunkstories.api.rendering.world.SkyRenderer;
 import io.xol.chunkstories.api.rendering.world.WorldEffectsRenderer;
 import io.xol.chunkstories.api.rendering.world.WorldRenderer;
-import io.xol.chunkstories.api.rendering.world.chunk.ChunksRenderer;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
-import io.xol.chunkstories.gui.Ingame;
 import io.xol.chunkstories.renderer.chunks.ChunkMeshesRenderer;
 import io.xol.chunkstories.renderer.debug.FakeImmediateModeDebugRenderer;
 import io.xol.chunkstories.renderer.decals.DecalsRendererImplementation;
@@ -143,14 +143,14 @@ public class WorldRendererImplementation implements WorldRenderer
 	{
 		((SummariesArrayTexture) summariesTexturesHolder).update();
 		
-		if(RenderingConfig.doDynamicCubemaps)
-			cubemapRenderer.renderWorldCubemap(renderingInterface, renderBuffers.rbEnvironmentMap, 128, true);
+		//if(RenderingConfig.doDynamicCubemaps)
+		//	cubemapRenderer.renderWorldCubemap(renderingInterface, renderBuffers.rbEnvironmentMap, 128, true);
 		
 		//Step one, set the camera to the proper spot
 		CameraInterface mainCamera = renderingInterface.getCamera();
-		EntityControllable entity = Client.getInstance().getPlayer().getControlledEntity();
+		EntityControllable entity = world.getClient().getPlayer().getControlledEntity();
 		
-		if (entity != null)
+		if(entity != null)
 			entity.setupCamera(renderingInterface);
 		
 		animationTimer = ((float)(System.currentTimeMillis() & 0x7FFF)) / 100.0f;
@@ -884,10 +884,9 @@ public class WorldRendererImplementation implements WorldRenderer
 	}
 
 	@Override
-	public RenderingPipeline getRenderingPipeline() {
+	public RenderPasses renderPasses() {
 		return renderingGraph;
 	}
-
 	
 	@Override
 	public float getAnimationTimer() {

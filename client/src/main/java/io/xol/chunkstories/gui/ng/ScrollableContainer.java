@@ -9,12 +9,13 @@ package io.xol.chunkstories.gui.ng;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.joml.Vector4f;
+
 import io.xol.chunkstories.api.gui.ClickableGuiElement;
 import io.xol.chunkstories.api.gui.FocusableGuiElement;
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.input.Mouse.MouseButton;
-import org.joml.Vector4f;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.engine.graphics.textures.Texture2DGL;
 import io.xol.engine.graphics.textures.TexturesHandler;

@@ -6,6 +6,8 @@
 
 package io.xol.chunkstories.gui.overlays.ingame;
 
+import org.joml.Vector4f;
+
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.events.item.EventItemDroppedToWorld;
@@ -17,16 +19,14 @@ import io.xol.chunkstories.api.input.Mouse.MouseButton;
 import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.net.packets.PacketInventoryMoveItemPile;
-
-import org.joml.Vector4f;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.InventoryDrawer;
-import io.xol.chunkstories.world.WorldClientRemote;
 import io.xol.chunkstories.world.WorldClientLocal;
+import io.xol.chunkstories.world.WorldClientRemote;
 
 
 

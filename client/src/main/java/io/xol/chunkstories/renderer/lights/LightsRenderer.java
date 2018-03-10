@@ -6,18 +6,19 @@
 
 package io.xol.chunkstories.renderer.lights;
 
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+
 import org.joml.Vector3d;
 import org.joml.Vector3f;
+
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.RenderingInterface.LightsAccumulator;
 import io.xol.chunkstories.api.rendering.lightning.Light;
 import io.xol.chunkstories.api.rendering.lightning.SpotLight;
-import io.xol.chunkstories.api.rendering.pipeline.Shader;
+import io.xol.chunkstories.api.rendering.shader.Shader;
 import io.xol.engine.graphics.RenderingContext;
-
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 
 public class LightsRenderer implements LightsAccumulator
 {

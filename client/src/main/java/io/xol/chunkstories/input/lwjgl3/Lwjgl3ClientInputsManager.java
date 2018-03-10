@@ -6,7 +6,21 @@
 
 package io.xol.chunkstories.input.lwjgl3;
 
-import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
+import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
+import static org.lwjgl.glfw.GLFW.GLFW_REPEAT;
+import static org.lwjgl.glfw.GLFW.glfwGetKey;
+import static org.lwjgl.glfw.GLFW.glfwPollEvents;
+import static org.lwjgl.glfw.GLFW.glfwSetCharCallback;
+import static org.lwjgl.glfw.GLFW.glfwSetKeyCallback;
+import static org.lwjgl.glfw.GLFW.glfwSetMouseButtonCallback;
+import static org.lwjgl.glfw.GLFW.glfwSetScrollCallback;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import org.lwjgl.glfw.GLFWCharCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
@@ -15,13 +29,8 @@ import org.lwjgl.glfw.GLFWScrollCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-
 import io.xol.chunkstories.api.client.ClientInputsManager;
+import io.xol.chunkstories.api.client.LocalPlayer;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.events.client.ClientInputPressedEvent;
 import io.xol.chunkstories.api.events.client.ClientInputReleasedEvent;
@@ -32,7 +41,6 @@ import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.input.Mouse.MouseButton;
 import io.xol.chunkstories.api.input.Mouse.MouseScroll;
-import io.xol.chunkstories.api.client.LocalPlayer;
 import io.xol.chunkstories.api.plugin.ClientPluginManager;
 import io.xol.chunkstories.api.util.ConfigDeprecated;
 import io.xol.chunkstories.api.world.World;
@@ -40,13 +48,10 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ServerConnection;
 import io.xol.chunkstories.gui.overlays.config.KeyBindSelectionOverlay;
 import io.xol.chunkstories.input.InputVirtual;
-import io.xol.chunkstories.input.InputsManagerLoader;
 import io.xol.chunkstories.input.InputsLoaderHelper;
-
+import io.xol.chunkstories.input.InputsManagerLoader;
 import io.xol.chunkstories.net.packets.PacketInput;
-
 import io.xol.chunkstories.world.WorldClientRemote;
-
 import io.xol.engine.base.GameWindowOpenGL_LWJGL3;
 
 public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsManagerLoader

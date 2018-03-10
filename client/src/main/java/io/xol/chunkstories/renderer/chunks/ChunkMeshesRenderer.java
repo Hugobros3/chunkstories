@@ -21,8 +21,8 @@ import com.carrotsearch.hppc.IntDeque;
 import io.xol.chunkstories.api.math.LoopingMathHelper;
 import io.xol.chunkstories.api.math.Math2;
 import io.xol.chunkstories.api.rendering.CameraInterface;
-import io.xol.chunkstories.api.rendering.RenderPass;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.pass.RenderPass;
 import io.xol.chunkstories.api.rendering.world.WorldRenderer;
 import io.xol.chunkstories.api.rendering.world.WorldRenderer.FarTerrainRenderer.ReadyVoxelMeshesMask;
 import io.xol.chunkstories.api.rendering.world.chunk.ChunkMeshDataSubtypes.ShadingType;
@@ -277,7 +277,7 @@ public class ChunkMeshesRenderer implements ChunksRenderer {
 
 	@Override
 	public void renderChunks(RenderingInterface renderingInterface) {
-		RenderPass currentPass = renderingInterface.getWorldRenderer().getRenderingPipeline().getCurrentPass();
+		RenderPass currentPass = renderingInterface.getCurrentPass();
 		List<ChunkRenderCommand> culledChunks = currentPass.name.startsWith("shadow") ? culledChunksShadow : culledChunksNormal;
 
 		ShadingType shadingType = /*currentPass.name.startsWith("liquid") ? ShadingType.LIQUIDS : */ShadingType.OPAQUE;
@@ -309,7 +309,7 @@ public class ChunkMeshesRenderer implements ChunksRenderer {
 
 	@Override
 	public void renderChunksExtras(RenderingInterface renderingInterface) {
-		RenderPass currentPass = renderingInterface.getWorldRenderer().getRenderingPipeline().getCurrentPass();
+		RenderPass currentPass = renderingInterface.getCurrentPass();
 		List<ChunkRenderCommand> culledChunks = currentPass.name.startsWith("shadow") ? culledChunksShadow
 				: culledChunksNormal;
 

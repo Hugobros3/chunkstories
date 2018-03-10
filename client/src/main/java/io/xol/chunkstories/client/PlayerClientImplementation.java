@@ -7,17 +7,18 @@
 package io.xol.chunkstories.client;
 
 import java.util.Iterator;
+
 import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.client.ClientInputsManager;
 import io.xol.chunkstories.api.client.ClientInterface;
+import io.xol.chunkstories.api.client.LocalPlayer;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
 import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
 import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.particles.ParticlesManager;
-import io.xol.chunkstories.api.client.LocalPlayer;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.sound.SoundManager;

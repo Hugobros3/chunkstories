@@ -8,16 +8,17 @@ package io.xol.chunkstories.gui.overlays;
 
 import java.util.Iterator;
 
+import org.joml.Vector4f;
+
 import io.xol.chunkstories.api.content.Content.WorldGenerators.WorldGeneratorDefinition;
 import io.xol.chunkstories.api.gui.Layer;
-import org.joml.Vector4f;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.chunkstories.world.WorldInfoImplementation;
 import io.xol.chunkstories.world.WorldLoadingException;
-import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.engine.graphics.util.CorneredBoxDrawer;
 import io.xol.engine.gui.elements.Button;
 import io.xol.engine.gui.elements.InputText;

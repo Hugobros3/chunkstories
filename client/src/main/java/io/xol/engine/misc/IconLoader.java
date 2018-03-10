@@ -6,10 +6,11 @@
 
 package io.xol.engine.misc;
 
+import static org.lwjgl.glfw.GLFW.glfwSetWindowIcon;
+
 import java.nio.ByteBuffer;
 
 import org.lwjgl.glfw.GLFWImage;
-import static org.lwjgl.glfw.GLFW.*;
 
 import de.matthiasmann.twl.utils.PNGDecoder;
 import de.matthiasmann.twl.utils.PNGDecoder.Format;

@@ -15,17 +15,16 @@ import org.lwjgl.BufferUtils;
 import io.xol.chunkstories.api.client.ClientContent.TexturesLibrary;
 import io.xol.chunkstories.api.client.ClientRenderingConfig;
 import io.xol.chunkstories.api.exceptions.rendering.AttributeNotPresentException;
-import io.xol.chunkstories.api.exceptions.rendering.RenderingException;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.StateMachine;
+import io.xol.chunkstories.api.rendering.StateMachine.BlendMode;
+import io.xol.chunkstories.api.rendering.StateMachine.CullingMode;
+import io.xol.chunkstories.api.rendering.StateMachine.DepthTestMode;
+import io.xol.chunkstories.api.rendering.StateMachine.PolygonFillMode;
 import io.xol.chunkstories.api.rendering.mesh.ClientMeshLibrary;
-import io.xol.chunkstories.api.rendering.pipeline.AttributesConfiguration;
-import io.xol.chunkstories.api.rendering.pipeline.StateMachine;
-import io.xol.chunkstories.api.rendering.pipeline.StateMachine.BlendMode;
-import io.xol.chunkstories.api.rendering.pipeline.StateMachine.CullingMode;
-import io.xol.chunkstories.api.rendering.pipeline.StateMachine.DepthTestMode;
-import io.xol.chunkstories.api.rendering.pipeline.StateMachine.PolygonFillMode;
-import io.xol.chunkstories.api.rendering.pipeline.Shader;
+import io.xol.chunkstories.api.rendering.pass.RenderPass;
+import io.xol.chunkstories.api.rendering.shader.Shader;
 import io.xol.chunkstories.api.rendering.target.RenderTargets;
 import io.xol.chunkstories.api.rendering.textures.ArrayTexture;
 import io.xol.chunkstories.api.rendering.textures.Cubemap;
@@ -34,6 +33,7 @@ import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.rendering.textures.Texture3D;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
 import io.xol.chunkstories.api.rendering.vertex.AttributeSource;
+import io.xol.chunkstories.api.rendering.vertex.AttributesConfiguration;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
 import io.xol.chunkstories.api.rendering.world.WorldRenderer;
@@ -117,15 +117,17 @@ public class RenderingContext implements RenderingInterface
 		return setCurrentShader(shaders().getShaderProgram(shaderName));
 	}
 
-	private Shader setCurrentShader(ShaderProgram shaderProgram)
+	private Shader setCurrentShader(ShaderProgram shader)
 	{
-		//Save calls
-		if (shaderProgram != currentlyBoundShader)
-		{
+		if (shader != currentlyBoundShader) {
 			texturingConfiguration.clear();
 			attributesConfiguration.clear();
+			currentlyBoundShader = shader;
+			
+			RenderPass currentPass = this.getCurrentPass();
+			if(currentPass != null)
+				currentPass.autoBindInputs(this, shader);
 		}
-		currentlyBoundShader = shaderProgram;
 		return currentlyBoundShader;
 	}
 
@@ -363,9 +365,7 @@ public class RenderingContext implements RenderingInterface
 	public WorldRenderer getWorldRenderer()
 	{
 		WorldClient world = Client.getInstance().getWorld();
-		if(world != null)
-			return world.getWorldRenderer();
-		return null;
+		return world == null ? null : world.getWorldRenderer();
 	}
 
 	@Override
@@ -411,5 +411,11 @@ public class RenderingContext implements RenderingInterface
 	@Override
 	public ShadersStore shaders() {
 		return getClient().getContent().shaders();
+	}
+
+	@Override
+	public RenderPass getCurrentPass() {
+		WorldRenderer worldRenderer = this.getWorldRenderer();
+		return worldRenderer == null ? null : worldRenderer.renderPasses().getCurrentPass();
 	}
 }

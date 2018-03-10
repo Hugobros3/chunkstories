@@ -13,14 +13,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import io.xol.chunkstories.api.events.rendering.RenderingPipelineInitEvent;
-import io.xol.chunkstories.api.rendering.RenderPass;
+import io.xol.chunkstories.api.events.rendering.RenderPassesInitEvent;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.RenderingPipeline;
+import io.xol.chunkstories.api.rendering.pass.RenderPass;
+import io.xol.chunkstories.api.rendering.pass.RenderPasses;
 import io.xol.chunkstories.api.rendering.textures.Texture;
 import io.xol.chunkstories.api.rendering.world.WorldRenderer;
 
-public class RenderingGraph implements RenderingPipeline {
+public class RenderingGraph implements RenderPasses {
 
 	Map<String, RenderPass> registeredRenderPasses = new HashMap<>();
 	RenderingInterface renderer;
@@ -183,14 +183,16 @@ public class RenderingGraph implements RenderingPipeline {
 				}
 				
 				//notify the pass we found it's buffers
-				pass.resolvedInputs(inputs);
+				pass.resolvedInputs.clear();
+				pass.resolvedInputs.putAll(inputs);
+				pass.onResolvedInputs();
 			}
 		}
 	}
 	
 	public void render(RenderingInterface renderer) {
 		if(executionOrder == null) {
-			RenderingPipelineInitEvent event = new RenderingPipelineInitEvent(this);
+			RenderPassesInitEvent event = new RenderPassesInitEvent(this);
 			renderer.getClient().getPluginManager().fireEvent(event);
 			
 			resolveGraphOrder();

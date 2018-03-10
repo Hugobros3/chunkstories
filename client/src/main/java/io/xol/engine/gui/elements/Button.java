@@ -6,12 +6,13 @@
 
 package io.xol.engine.gui.elements;
 
+import org.joml.Vector4f;
+
 import io.xol.chunkstories.api.gui.ClickableGuiElement;
 import io.xol.chunkstories.api.gui.FocusableGuiElement;
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.input.Mouse.MouseButton;
-import org.joml.Vector4f;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.client.Client;
 import io.xol.engine.graphics.textures.TexturesHandler;

@@ -20,8 +20,8 @@ import io.xol.chunkstories.client.net.ServerConnection;
 import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
 import io.xol.chunkstories.net.packets.PacketRegionSummary;
 import io.xol.chunkstories.world.WorldClientRemote;
-import io.xol.chunkstories.world.region.RegionImplementation;
 import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
+import io.xol.chunkstories.world.region.RegionImplementation;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
 
 

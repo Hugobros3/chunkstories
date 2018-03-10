@@ -7,14 +7,15 @@
 package io.xol.chunkstories.renderer.debug;
 
 import java.nio.ByteBuffer;
+
+import org.joml.Vector4f;
 import org.lwjgl.system.MemoryUtil;
 
-import io.xol.chunkstories.api.rendering.pipeline.Shader;
+import io.xol.chunkstories.api.rendering.StateMachine.BlendMode;
+import io.xol.chunkstories.api.rendering.StateMachine.CullingMode;
+import io.xol.chunkstories.api.rendering.StateMachine.DepthTestMode;
+import io.xol.chunkstories.api.rendering.shader.Shader;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
-import org.joml.Vector4f;
-import io.xol.chunkstories.api.rendering.pipeline.StateMachine.BlendMode;
-import io.xol.chunkstories.api.rendering.pipeline.StateMachine.CullingMode;
-import io.xol.chunkstories.api.rendering.pipeline.StateMachine.DepthTestMode;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.textures.Texture1DGL;
 

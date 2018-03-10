@@ -6,22 +6,40 @@
 
 package io.xol.engine.graphics.textures;
 
+import static org.lwjgl.opengl.GL11.GL_LEQUAL;
+import static org.lwjgl.opengl.GL11.GL_LINEAR;
+import static org.lwjgl.opengl.GL11.GL_LINEAR_MIPMAP_LINEAR;
+import static org.lwjgl.opengl.GL11.GL_NEAREST;
+import static org.lwjgl.opengl.GL11.GL_NEAREST_MIPMAP_NEAREST;
+import static org.lwjgl.opengl.GL11.GL_REPEAT;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_MAG_FILTER;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_MIN_FILTER;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_WRAP_S;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_WRAP_T;
+import static org.lwjgl.opengl.GL11.glBindTexture;
+import static org.lwjgl.opengl.GL11.glTexParameteri;
+import static org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE;
+import static org.lwjgl.opengl.GL12.GL_TEXTURE_3D;
+import static org.lwjgl.opengl.GL12.GL_TEXTURE_BASE_LEVEL;
+import static org.lwjgl.opengl.GL12.GL_TEXTURE_MAX_LEVEL;
+import static org.lwjgl.opengl.GL12.glTexImage3D;
+import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
+import static org.lwjgl.opengl.GL13.glActiveTexture;
+import static org.lwjgl.opengl.GL14.GL_COMPARE_R_TO_TEXTURE;
+import static org.lwjgl.opengl.GL14.GL_TEXTURE_COMPARE_FUNC;
+import static org.lwjgl.opengl.GL14.GL_TEXTURE_COMPARE_MODE;
+
+import java.nio.ByteBuffer;
+
+import org.lwjgl.opengl.ARBFramebufferObject;
+import org.lwjgl.opengl.GL30;
+
 import io.xol.chunkstories.api.exceptions.rendering.IllegalRenderingThreadException;
 import io.xol.chunkstories.api.rendering.textures.Texture3D;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.engine.base.OpenGLDebugOutputCallback;
-
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL12.*;
-import static org.lwjgl.opengl.GL13.*;
-import static org.lwjgl.opengl.GL14.*;
-
-import java.nio.ByteBuffer;
-
-import org.lwjgl.opengl.ARBFramebufferObject;
-import org.lwjgl.opengl.GL30;
 
 public class Texture3DGL extends TextureGL implements Texture3D {
 

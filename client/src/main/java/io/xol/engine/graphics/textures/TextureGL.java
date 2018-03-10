@@ -6,7 +6,8 @@
 
 package io.xol.engine.graphics.textures;
 
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.glDeleteTextures;
+import static org.lwjgl.opengl.GL11.glGenTextures;
 
 import java.lang.ref.WeakReference;
 import java.util.Iterator;

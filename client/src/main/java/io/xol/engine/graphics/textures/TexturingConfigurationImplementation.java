@@ -6,11 +6,15 @@
 
 package io.xol.engine.graphics.textures;
 
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL12.*;
-import static org.lwjgl.opengl.GL13.*;
-import static org.lwjgl.opengl.GL20.*;
-import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_1D;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
+import static org.lwjgl.opengl.GL11.glBindTexture;
+import static org.lwjgl.opengl.GL12.GL_TEXTURE_3D;
+import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
+import static org.lwjgl.opengl.GL13.GL_TEXTURE_CUBE_MAP;
+import static org.lwjgl.opengl.GL13.glActiveTexture;
+import static org.lwjgl.opengl.GL20.glUniform1i;
+import static org.lwjgl.opengl.GL30.GL_TEXTURE_2D_ARRAY;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -19,8 +23,8 @@ import java.util.Map.Entry;
 
 import io.xol.chunkstories.api.exceptions.rendering.NotEnoughtTextureUnitsException;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.pipeline.Shader;
-import io.xol.chunkstories.api.rendering.pipeline.Shader.SamplerType;
+import io.xol.chunkstories.api.rendering.shader.Shader;
+import io.xol.chunkstories.api.rendering.shader.Shader.SamplerType;
 import io.xol.chunkstories.api.rendering.textures.ArrayTexture;
 import io.xol.chunkstories.api.rendering.textures.Cubemap;
 import io.xol.chunkstories.api.rendering.textures.Texture;
@@ -178,7 +182,7 @@ public class TexturingConfigurationImplementation
 			//System.out.println("figuring out texture for"+samplerName);
 			
 			Texture texture = allTextures.get(samplerName);
-			if(texture == null || texture2sampler(texture) != e.getValue()) //No texture or the wrong type supplied ? No worries
+			if(texture == null || texture.getSamplerType() != e.getValue()) //No texture or the wrong type supplied ? No worries
 				texture = defaultTextures[e.getValue().ordinal()];
 
 			//System.out.println(texture);
@@ -215,25 +219,6 @@ public class TexturingConfigurationImplementation
 				return i;
 		}
 		throw new RuntimeException("Out of texture units!");
-	}
-
-	private SamplerType texture2sampler(Texture texture) {
-		if(texture instanceof Texture1D)
-			return SamplerType.TEXTURE_1D;
-		
-		else if(texture instanceof Texture2D)
-			return SamplerType.TEXTURE_2D;
-		
-		else if(texture instanceof Texture3D)
-			return SamplerType.TEXTURE_3D;
-		
-		else if(texture instanceof Cubemap)
-			return SamplerType.CUBEMAP;
-		
-		else if(texture instanceof ArrayTexture)
-			return SamplerType.ARRAY_TEXTURE_2D;
-		
-		throw new RuntimeException("what is this texture ?");
 	}
 
 	private void selectTextureUnit(int id) throws NotEnoughtTextureUnitsException

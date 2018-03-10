@@ -6,10 +6,11 @@
 
 package io.xol.chunkstories.gui.overlays.ingame;
 
+import org.joml.Vector4f;
+
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.math.HexTools;
-import org.joml.Vector4f;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;

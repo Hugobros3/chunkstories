@@ -11,7 +11,7 @@ import org.joml.Matrix4f;
 import io.xol.chunkstories.api.exceptions.rendering.RenderingException;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.pipeline.Shader;
+import io.xol.chunkstories.api.rendering.shader.Shader;
 import io.xol.engine.graphics.shaders.ShaderProgram.InternalUniformsConfiguration;
 import io.xol.engine.graphics.textures.TexturingConfigurationImplementation;
 

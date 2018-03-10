@@ -6,14 +6,19 @@
 
 package io.xol.engine.graphics.fbo;
 
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.glClear;
+import static org.lwjgl.opengl.GL11.glClearColor;
+import static org.lwjgl.opengl.GL11.glClearDepth;
+import static org.lwjgl.opengl.GL11.glDepthMask;
 
 import org.joml.Vector4f;
 import org.joml.Vector4fc;
 
 import io.xol.chunkstories.api.rendering.target.RenderTarget;
-import io.xol.chunkstories.api.rendering.target.RenderTargetsConfiguration;
 import io.xol.chunkstories.api.rendering.target.RenderTargets;
+import io.xol.chunkstories.api.rendering.target.RenderTargetsConfiguration;
 import io.xol.engine.graphics.RenderingContext;
 
 public class OpenGLRenderTargetManager implements RenderTargets

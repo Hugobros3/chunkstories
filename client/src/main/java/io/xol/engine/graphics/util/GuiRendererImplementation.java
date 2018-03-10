@@ -6,14 +6,17 @@
 
 package io.xol.engine.graphics.util;
 
+import java.nio.ByteBuffer;
+
 import org.joml.Vector4f;
 import org.joml.Vector4fc;
+import org.lwjgl.BufferUtils;
 
 import io.xol.chunkstories.api.rendering.GuiRenderer;
 import io.xol.chunkstories.api.rendering.Primitive;
-import io.xol.chunkstories.api.rendering.pipeline.StateMachine.BlendMode;
-import io.xol.chunkstories.api.rendering.pipeline.StateMachine.CullingMode;
-import io.xol.chunkstories.api.rendering.pipeline.StateMachine.DepthTestMode;
+import io.xol.chunkstories.api.rendering.StateMachine.BlendMode;
+import io.xol.chunkstories.api.rendering.StateMachine.CullingMode;
+import io.xol.chunkstories.api.rendering.StateMachine.DepthTestMode;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
@@ -23,10 +26,6 @@ import io.xol.engine.graphics.geometry.VertexBufferGL;
 import io.xol.engine.graphics.geometry.VertexBufferGL.UploadRegime;
 import io.xol.engine.graphics.textures.Texture2DGL;
 import io.xol.engine.graphics.textures.TexturesHandler;
-
-import java.nio.ByteBuffer;
-
-import org.lwjgl.BufferUtils;
 
 public class GuiRendererImplementation implements GuiRenderer
 {

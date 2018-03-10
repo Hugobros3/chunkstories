@@ -6,17 +6,22 @@
 
 package io.xol.chunkstories.input.lwjgl3;
 
-import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFW.GLFW_CURSOR;
+import static org.lwjgl.glfw.GLFW.GLFW_CURSOR_DISABLED;
+import static org.lwjgl.glfw.GLFW.GLFW_CURSOR_NORMAL;
+import static org.lwjgl.glfw.GLFW.glfwGetCursorPos;
+import static org.lwjgl.glfw.GLFW.glfwGetInputMode;
+import static org.lwjgl.glfw.GLFW.glfwSetCursorPos;
+import static org.lwjgl.glfw.GLFW.glfwSetInputMode;
 
 import java.nio.DoubleBuffer;
 
+import org.joml.Vector2d;
 import org.lwjgl.system.MemoryUtil;
 
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse;
-
-import org.joml.Vector2d;
 import io.xol.chunkstories.client.Client;
 
 public class Lwjgl3Mouse implements Mouse {

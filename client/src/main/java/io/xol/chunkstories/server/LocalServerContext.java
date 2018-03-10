@@ -17,10 +17,10 @@ import io.xol.chunkstories.api.client.ClientInputsManager;
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.client.ClientRenderingConfig;
 import io.xol.chunkstories.api.client.ClientSoundManager;
+import io.xol.chunkstories.api.client.LocalPlayer;
 import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.player.Player;
-import io.xol.chunkstories.api.client.LocalPlayer;
 import io.xol.chunkstories.api.plugin.ClientPluginManager;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
@@ -33,7 +33,6 @@ import io.xol.chunkstories.api.workers.Tasks;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.ClientMasterPluginManager;
-import io.xol.chunkstories.server.FileBasedUsersPrivileges;
 import io.xol.chunkstories.world.WorldClientLocal;
 
 /**

@@ -6,17 +6,20 @@
 
 package io.xol.engine.graphics;
 
-import io.xol.chunkstories.api.rendering.pipeline.AttributesConfiguration;
-import io.xol.chunkstories.api.rendering.pipeline.StateMachine;
-import io.xol.chunkstories.api.rendering.pipeline.Shader;
-import io.xol.engine.graphics.shaders.ShaderProgram.InternalUniformsConfiguration;
-import io.xol.engine.graphics.textures.TexturingConfigurationImplementation;
+import static org.lwjgl.opengl.GL11.GL_LINES;
+import static org.lwjgl.opengl.GL11.GL_POINTS;
+import static org.lwjgl.opengl.GL11.GL_QUADS;
+import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
 
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
-import io.xol.chunkstories.api.rendering.Primitive;
 
-import static org.lwjgl.opengl.GL11.*;
+import io.xol.chunkstories.api.rendering.Primitive;
+import io.xol.chunkstories.api.rendering.StateMachine;
+import io.xol.chunkstories.api.rendering.shader.Shader;
+import io.xol.chunkstories.api.rendering.vertex.AttributesConfiguration;
+import io.xol.engine.graphics.shaders.ShaderProgram.InternalUniformsConfiguration;
+import io.xol.engine.graphics.textures.TexturingConfigurationImplementation;
 
 public abstract class RenderingCommandImplementation {
 	// Draw call paramters

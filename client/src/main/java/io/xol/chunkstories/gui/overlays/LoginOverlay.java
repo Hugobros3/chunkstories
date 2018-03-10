@@ -6,11 +6,12 @@
 
 package io.xol.chunkstories.gui.overlays;
 
+import org.joml.Vector4f;
+
 import io.xol.chunkstories.api.gui.FocusableGuiElement;
 import io.xol.chunkstories.api.gui.GuiElement;
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.input.Input;
-import org.joml.Vector4f;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.bugsreporter.JavaCrashesUploader;

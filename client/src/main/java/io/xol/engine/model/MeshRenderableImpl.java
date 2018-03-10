@@ -7,12 +7,13 @@
 package io.xol.engine.model;
 
 import java.nio.FloatBuffer;
+
+import io.xol.chunkstories.api.mesh.Mesh;
+import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.mesh.RenderableMesh;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
-import io.xol.chunkstories.api.mesh.Mesh;
-import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.engine.graphics.geometry.VertexBufferGL;
 
 public class MeshRenderableImpl implements RenderableMesh

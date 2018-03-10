@@ -10,17 +10,18 @@ import java.nio.FloatBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.joml.Matrix4f;
+
+import io.xol.chunkstories.api.animation.SkeletonAnimator;
+import io.xol.chunkstories.api.exceptions.rendering.RenderingException;
+import io.xol.chunkstories.api.mesh.MultiPartMesh;
+import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.mesh.RenderableMesh;
 import io.xol.chunkstories.api.rendering.mesh.RenderableMultiPartAnimatableMesh;
 import io.xol.chunkstories.api.rendering.mesh.RenderableMultiPartMesh;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
-import io.xol.chunkstories.api.animation.SkeletonAnimator;
-import io.xol.chunkstories.api.exceptions.rendering.RenderingException;
-import org.joml.Matrix4f;
-import io.xol.chunkstories.api.mesh.MultiPartMesh;
-import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.engine.graphics.geometry.VertexBufferGL;
 
 public class MultiPartMeshRenderable implements RenderableMesh, RenderableMultiPartMesh, RenderableMultiPartAnimatableMesh

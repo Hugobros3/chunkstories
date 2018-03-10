@@ -29,7 +29,7 @@ import io.xol.chunkstories.api.particles.ParticleTypeHandler.ParticleTypeRendere
 import io.xol.chunkstories.api.particles.ParticlesRenderer;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.pipeline.StateMachine.BlendMode;
+import io.xol.chunkstories.api.rendering.StateMachine.BlendMode;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
 import io.xol.chunkstories.api.world.WorldClient;
@@ -142,7 +142,7 @@ public class ClientParticlesRenderer implements ParticlesRenderer
 			else if(!isThisGBufferPass && renderTime == RenderTime.GBUFFER)
 				continue;*/
 			String renderPass = particleTypeHandler.getType().getRenderPass();
-			if(!renderingInterface.getWorldRenderer().getRenderingPipeline().getCurrentPass().name.equals(renderPass))
+			if(!renderingInterface.getWorldRenderer().renderPasses().getCurrentPass().name.equals(renderPass))
 				continue;
 				
 			//Don't bother rendering empty sets

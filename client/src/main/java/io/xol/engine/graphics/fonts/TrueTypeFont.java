@@ -6,19 +6,12 @@
 
 package io.xol.engine.graphics.fonts;
 
-import io.xol.chunkstories.api.math.HexTools;
-import io.xol.chunkstories.api.content.Asset;
-import io.xol.chunkstories.api.rendering.text.FontRenderer;
-import io.xol.chunkstories.api.rendering.textures.Texture2D;
-import io.xol.chunkstories.api.rendering.textures.TextureFormat;
-import io.xol.engine.graphics.textures.Texture2DGL;
-import io.xol.engine.graphics.textures.Texture2DRenderTargetGL;
-
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
@@ -31,7 +24,13 @@ import java.nio.ByteOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.GraphicsEnvironment;
+import io.xol.chunkstories.api.content.Asset;
+import io.xol.chunkstories.api.math.HexTools;
+import io.xol.chunkstories.api.rendering.text.FontRenderer;
+import io.xol.chunkstories.api.rendering.textures.Texture2D;
+import io.xol.chunkstories.api.rendering.textures.TextureFormat;
+import io.xol.engine.graphics.textures.Texture2DGL;
+import io.xol.engine.graphics.textures.Texture2DRenderTargetGL;
 
 /**
  * A TrueType font implementation originally for Slick, edited for Bobjob's Engine, edited for Chunk Stories engine

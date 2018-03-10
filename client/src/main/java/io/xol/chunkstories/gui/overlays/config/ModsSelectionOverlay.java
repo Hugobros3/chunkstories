@@ -14,29 +14,30 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.joml.Vector4f;
+
+import io.xol.chunkstories.api.content.Asset;
+import io.xol.chunkstories.api.content.mods.Mod;
 import io.xol.chunkstories.api.exceptions.content.mods.ModLoadFailureException;
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.input.Mouse.MouseButton;
 import io.xol.chunkstories.api.input.Mouse.MouseScroll;
-import org.joml.Vector4f;
-import io.xol.chunkstories.api.content.Asset;
-import io.xol.chunkstories.api.content.mods.Mod;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.GameDirectory;
-import io.xol.chunkstories.content.mods.ModImplementation;
 import io.xol.chunkstories.content.mods.ModFolder;
+import io.xol.chunkstories.content.mods.ModImplementation;
 import io.xol.chunkstories.content.mods.ModZip;
-import io.xol.chunkstories.gui.ng.ThinButton;
 import io.xol.chunkstories.gui.ng.LargeButtonIcon;
 import io.xol.chunkstories.gui.ng.ScrollableContainer;
 import io.xol.chunkstories.gui.ng.ScrollableContainer.ContainerElement;
+import io.xol.chunkstories.gui.ng.ThinButton;
 import io.xol.chunkstories.gui.overlays.config.ModsSelectionOverlay.ModsScrollableContainer.ModItem;
-import io.xol.engine.graphics.textures.Texture2DGL;
 import io.xol.engine.graphics.textures.Texture2DAsset;
+import io.xol.engine.graphics.textures.Texture2DGL;
 import io.xol.engine.graphics.textures.TexturesHandler;
 
 public class ModsSelectionOverlay extends Layer

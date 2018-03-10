@@ -6,13 +6,24 @@
 
 package io.xol.engine.sound.ogg;
 
+import static org.lwjgl.openal.AL10.AL_FORMAT_MONO16;
+import static org.lwjgl.openal.AL10.AL_FORMAT_STEREO16;
+import static org.lwjgl.openal.AL10.AL_INVALID_ENUM;
+import static org.lwjgl.openal.AL10.AL_INVALID_NAME;
+import static org.lwjgl.openal.AL10.AL_INVALID_OPERATION;
+import static org.lwjgl.openal.AL10.AL_INVALID_VALUE;
+import static org.lwjgl.openal.AL10.AL_NO_ERROR;
+import static org.lwjgl.openal.AL10.AL_OUT_OF_MEMORY;
+import static org.lwjgl.openal.AL10.alBufferData;
+import static org.lwjgl.openal.AL10.alDeleteBuffers;
+import static org.lwjgl.openal.AL10.alGenBuffers;
+import static org.lwjgl.openal.AL10.alGetError;
+
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.nio.ByteBuffer;
 
 import org.lwjgl.BufferUtils;
-
-import static org.lwjgl.openal.AL10.*;
 
 import io.xol.chunkstories.api.content.Asset;
 import io.xol.engine.sound.SoundData;

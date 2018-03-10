@@ -6,12 +6,14 @@
 
 package io.xol.chunkstories.gui.overlays.config;
 
-import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFW.glfwGetKeyName;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+
+import org.joml.Vector4f;
 
 import io.xol.chunkstories.api.content.Content.LocalizationManager;
 import io.xol.chunkstories.api.gui.GuiElement;
@@ -19,7 +21,6 @@ import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.input.Mouse.MouseButton;
-import org.joml.Vector4f;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.client.Client;

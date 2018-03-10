@@ -6,11 +6,25 @@
 
 package io.xol.engine.sound;
 
-import static org.lwjgl.openal.AL10.*;
-import static org.lwjgl.openal.AL11.*;
-import static org.lwjgl.openal.ALC10.*;
-import static org.lwjgl.openal.ALC11.*;
-import static org.lwjgl.openal.EXTEfx.*;
+import static org.lwjgl.openal.AL10.AL_EXTENSIONS;
+import static org.lwjgl.openal.AL10.AL_NO_ERROR;
+import static org.lwjgl.openal.AL10.AL_ORIENTATION;
+import static org.lwjgl.openal.AL10.AL_POSITION;
+import static org.lwjgl.openal.AL10.AL_VERSION;
+import static org.lwjgl.openal.AL10.alDistanceModel;
+import static org.lwjgl.openal.AL10.alGetError;
+import static org.lwjgl.openal.AL10.alGetString;
+import static org.lwjgl.openal.AL10.alListenerfv;
+import static org.lwjgl.openal.AL11.AL_LINEAR_DISTANCE_CLAMPED;
+import static org.lwjgl.openal.ALC10.ALC_DEFAULT_DEVICE_SPECIFIER;
+import static org.lwjgl.openal.ALC10.alcCloseDevice;
+import static org.lwjgl.openal.ALC10.alcCreateContext;
+import static org.lwjgl.openal.ALC10.alcDestroyContext;
+import static org.lwjgl.openal.ALC10.alcGetString;
+import static org.lwjgl.openal.ALC10.alcMakeContextCurrent;
+import static org.lwjgl.openal.ALC10.alcOpenDevice;
+import static org.lwjgl.openal.ALC11.ALC_ALL_DEVICES_SPECIFIER;
+import static org.lwjgl.openal.EXTEfx.alGenAuxiliaryEffectSlots;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -23,6 +37,8 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.joml.Vector3dc;
+import org.joml.Vector3fc;
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.ALC;
 import org.lwjgl.openal.ALCCapabilities;
@@ -33,10 +49,6 @@ import org.slf4j.LoggerFactory;
 
 import io.xol.chunkstories.api.client.ClientSoundManager;
 import io.xol.chunkstories.api.exceptions.SoundEffectNotFoundException;
-
-import org.joml.Vector3dc;
-import org.joml.Vector3fc;
-
 import io.xol.chunkstories.api.sound.SoundSource;
 import io.xol.chunkstories.api.sound.SoundSource.Mode;
 import io.xol.engine.sound.ogg.SoundDataOggSample;

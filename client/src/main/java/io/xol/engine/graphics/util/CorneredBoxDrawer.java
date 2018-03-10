@@ -7,6 +7,7 @@
 package io.xol.engine.graphics.util;
 
 import org.joml.Vector4f;
+
 import io.xol.chunkstories.api.rendering.GuiRenderer;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.client.Client;

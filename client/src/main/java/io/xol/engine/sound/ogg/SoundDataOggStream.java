@@ -6,14 +6,19 @@
 
 package io.xol.engine.sound.ogg;
 
+import static org.lwjgl.openal.AL10.AL_FORMAT_MONO16;
+import static org.lwjgl.openal.AL10.AL_FORMAT_STEREO16;
+import static org.lwjgl.openal.AL10.AL_NO_ERROR;
+import static org.lwjgl.openal.AL10.alBufferData;
+import static org.lwjgl.openal.AL10.alGenBuffers;
+import static org.lwjgl.openal.AL10.alGetError;
+
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 import org.lwjgl.system.MemoryUtil;
-
-import static org.lwjgl.openal.AL10.*;
 
 import io.xol.engine.sound.SoundDataBuffered;
 

@@ -6,15 +6,23 @@
 
 package io.xol.engine.base;
 
-import io.xol.engine.concurrency.SimpleFence;
-
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
+import static org.lwjgl.glfw.GLFW.glfwPollEvents;
+import static org.lwjgl.glfw.GLFW.glfwSwapBuffers;
+import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
+import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_FRONT;
+import static org.lwjgl.opengl.GL11.glClear;
+import static org.lwjgl.opengl.GL11.glClearColor;
+import static org.lwjgl.opengl.GL11.glDrawBuffer;
+import static org.lwjgl.opengl.GL11.glViewport;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.lwjgl.opengl.GL;
 
-import static org.lwjgl.glfw.GLFW.*;
+import io.xol.engine.concurrency.SimpleFence;
 
 public class BusyMainThreadLoop extends Thread {
 	final SimpleFence fence = new SimpleFence();

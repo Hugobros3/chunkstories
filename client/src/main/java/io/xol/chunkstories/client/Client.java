@@ -11,12 +11,10 @@ package io.xol.chunkstories.client;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.xol.engine.base.GameWindowOpenGL_LWJGL3;
-import io.xol.engine.concurrency.SimpleFence;
-import io.xol.engine.misc.ConfigFile;
 import io.xol.chunkstories.Constants;
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.client.ClientInterface;
@@ -27,12 +25,12 @@ import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.plugin.ClientPluginManager;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
+import io.xol.chunkstories.api.util.ConfigDeprecated;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.workers.Tasks;
-import io.xol.chunkstories.api.util.ConfigDeprecated;
 import io.xol.chunkstories.api.world.WorldClient;
-import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.content.ClientGameContent;
+import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.gui.Ingame;
 import io.xol.chunkstories.gui.MainMenu;
 import io.xol.chunkstories.gui.overlays.LoginOverlay;
@@ -45,6 +43,9 @@ import io.xol.chunkstories.renderer.chunks.ClientTasksPool;
 import io.xol.chunkstories.tools.DebugProfiler;
 import io.xol.chunkstories.util.LogbackSetupHelper;
 import io.xol.chunkstories.world.WorldClientCommon;
+import io.xol.engine.base.GameWindowOpenGL_LWJGL3;
+import io.xol.engine.concurrency.SimpleFence;
+import io.xol.engine.misc.ConfigFile;
 
 public class Client implements ClientInterface
 {

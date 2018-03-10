@@ -10,7 +10,6 @@ import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3d;
 import org.joml.Vector3dc;
-
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import org.joml.Vector4f;
@@ -18,7 +17,7 @@ import org.joml.Vector4fc;
 
 import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.rendering.CameraInterface;
-import io.xol.chunkstories.api.rendering.pipeline.Shader;
+import io.xol.chunkstories.api.rendering.shader.Shader;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.physics.CollisionPlane;
 

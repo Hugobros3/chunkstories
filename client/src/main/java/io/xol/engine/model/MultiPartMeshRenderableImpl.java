@@ -8,9 +8,10 @@ package io.xol.engine.model;
 
 import java.util.Map;
 
+import org.joml.Matrix4f;
+
 import io.xol.chunkstories.api.animation.SkeletonAnimator;
 import io.xol.chunkstories.api.exceptions.rendering.RenderingException;
-import org.joml.Matrix4f;
 import io.xol.chunkstories.api.mesh.MultiPartMesh;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;

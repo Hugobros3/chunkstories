@@ -6,12 +6,11 @@
 
 package io.xol.engine.graphics;
 
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL14.*;
+import static org.lwjgl.opengl.ARBDrawInstanced.glDrawArraysInstancedARB;
+import static org.lwjgl.opengl.GL11.glDrawArrays;
+import static org.lwjgl.opengl.GL14.glMultiDrawArrays;
 
 import java.nio.IntBuffer;
-
-import static org.lwjgl.opengl.ARBDrawInstanced.*;
 
 public class GLCalls
 {

@@ -8,8 +8,9 @@ package io.xol.chunkstories.client.net.packets;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import io.xol.chunkstories.api.net.PacketSender;
+
 import io.xol.chunkstories.api.net.PacketReceptionContext;
+import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.packets.PacketText;
 
 

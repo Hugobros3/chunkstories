@@ -6,11 +6,12 @@
 
 package io.xol.chunkstories.gui;
 
+import org.joml.Vector4f;
+
 import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
 import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
-import org.joml.Vector4f;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.gui.overlays.ingame.InventoryOverlay;

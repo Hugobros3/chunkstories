@@ -6,20 +6,16 @@
 
 package io.xol.engine.graphics.geometry;
 
-import io.xol.chunkstories.api.rendering.vertex.AttributeSource;
-import io.xol.chunkstories.api.rendering.vertex.RecyclableByteBuffer;
-import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
-import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
-import io.xol.chunkstories.api.util.concurrency.Fence;
-import io.xol.chunkstories.client.Client;
-import io.xol.engine.base.GameWindowOpenGL_LWJGL3;
-import io.xol.engine.concurrency.SimpleFence;
-import io.xol.engine.concurrency.TrivialFence;
-
-import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL20.*;
-import static org.lwjgl.opengl.GL30.*;
-import static org.lwjgl.opengl.GL33.*;
+import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
+import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
+import static org.lwjgl.opengl.GL15.GL_STREAM_DRAW;
+import static org.lwjgl.opengl.GL15.glBindBuffer;
+import static org.lwjgl.opengl.GL15.glBufferData;
+import static org.lwjgl.opengl.GL15.glDeleteBuffers;
+import static org.lwjgl.opengl.GL15.glGenBuffers;
+import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
+import static org.lwjgl.opengl.GL30.glVertexAttribIPointer;
+import static org.lwjgl.opengl.GL33.glVertexAttribDivisor;
 
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
@@ -37,6 +33,16 @@ import java.util.concurrent.Semaphore;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.xol.chunkstories.api.rendering.vertex.AttributeSource;
+import io.xol.chunkstories.api.rendering.vertex.RecyclableByteBuffer;
+import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
+import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
+import io.xol.chunkstories.api.util.concurrency.Fence;
+import io.xol.chunkstories.client.Client;
+import io.xol.engine.base.GameWindowOpenGL_LWJGL3;
+import io.xol.engine.concurrency.SimpleFence;
+import io.xol.engine.concurrency.TrivialFence;
 
 /**
  * Holds and abstracts vertex buffers from OpenGL

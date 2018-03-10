@@ -6,11 +6,31 @@
 
 package io.xol.engine.graphics.util;
 
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL21.*;
-import static org.lwjgl.opengl.GL30.*;
-import static org.lwjgl.opengl.ARBSync.*;
+import static org.lwjgl.opengl.ARBSync.GL_ALREADY_SIGNALED;
+import static org.lwjgl.opengl.ARBSync.GL_CONDITION_SATISFIED;
+import static org.lwjgl.opengl.ARBSync.GL_SIGNALED;
+import static org.lwjgl.opengl.ARBSync.GL_SYNC_FLUSH_COMMANDS_BIT;
+import static org.lwjgl.opengl.ARBSync.GL_SYNC_GPU_COMMANDS_COMPLETE;
+import static org.lwjgl.opengl.ARBSync.GL_SYNC_STATUS;
+import static org.lwjgl.opengl.ARBSync.GL_WAIT_FAILED;
+import static org.lwjgl.opengl.ARBSync.glClientWaitSync;
+import static org.lwjgl.opengl.ARBSync.glDeleteSync;
+import static org.lwjgl.opengl.ARBSync.glFenceSync;
+import static org.lwjgl.opengl.ARBSync.glGetSynci;
+import static org.lwjgl.opengl.GL11.GL_FLOAT;
+import static org.lwjgl.opengl.GL11.GL_RGB;
+import static org.lwjgl.opengl.GL11.glReadBuffer;
+import static org.lwjgl.opengl.GL11.glReadPixels;
+import static org.lwjgl.opengl.GL15.GL_READ_ONLY;
+import static org.lwjgl.opengl.GL15.GL_STREAM_COPY;
+import static org.lwjgl.opengl.GL15.glBindBuffer;
+import static org.lwjgl.opengl.GL15.glBufferData;
+import static org.lwjgl.opengl.GL15.glDeleteBuffers;
+import static org.lwjgl.opengl.GL15.glGenBuffers;
+import static org.lwjgl.opengl.GL15.glMapBuffer;
+import static org.lwjgl.opengl.GL15.glUnmapBuffer;
+import static org.lwjgl.opengl.GL21.GL_PIXEL_PACK_BUFFER;
+import static org.lwjgl.opengl.GL30.GL_COLOR_ATTACHMENT0;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -18,8 +38,8 @@ import java.nio.IntBuffer;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.MemoryStack;
 
-import io.xol.chunkstories.api.rendering.target.RenderTargetsConfiguration;
 import io.xol.chunkstories.api.rendering.target.RenderTargets;
+import io.xol.chunkstories.api.rendering.target.RenderTargetsConfiguration;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.client.Client;
 import io.xol.engine.graphics.fbo.FrameBufferObjectGL;

@@ -6,7 +6,8 @@
 
 package io.xol.chunkstories.input.lwjgl3;
 
-import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
+import static org.lwjgl.glfw.GLFW.glfwGetMouseButton;
 
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.input.Input;

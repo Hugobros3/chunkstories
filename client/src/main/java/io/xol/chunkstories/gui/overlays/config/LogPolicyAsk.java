@@ -6,8 +6,9 @@
 
 package io.xol.chunkstories.gui.overlays.config;
 
-import io.xol.chunkstories.api.gui.Layer;
 import org.joml.Vector4f;
+
+import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.client.Client;
