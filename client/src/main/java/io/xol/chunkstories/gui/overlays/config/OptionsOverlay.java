@@ -285,15 +285,7 @@ public class OptionsOverlay extends Layer
 						renderer.shaders().reloadShader("terrain_blocky");
 					}
 				}),
-				new ConfigButtonMultiChoice("shadowMapResolutions", new String[] { "512", "1024", "2048", "4096" }).setApplyAction(new Runnable(){
-						@Override
-						public void run()
-						{
-							if (parentLayer.getRootLayer() instanceof Ingame){
-								Client.getInstance().getWorld().getWorldRenderer().resizeShadowMaps();
-						}
-					}
-				}),
+				new ConfigButtonMultiChoice("shadowMapResolutions", new String[] { "512", "1024", "2048", "4096" }),
 				new ConfigButtonToggle("dynamicGrass").setApplyAction(new Runnable(){
 					@Override
 					public void run()

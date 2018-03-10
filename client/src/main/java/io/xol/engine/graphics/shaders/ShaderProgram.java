@@ -176,6 +176,10 @@ public class ShaderProgram implements Shader
 		for (String line : fragSource.toString().split("\n")) {
 			if (line.startsWith("out ")) {
 				String outputName = line.split(" ")[2].replace(";", "");
+				if(outputName.equals("gl_FragDepth")) {
+					logger.info("Writing to depth in frag enabled");
+					continue;
+				}
 				glBindFragDataLocation(shaderProgramId, j, outputName);
 				j++;
 			} else if(line.startsWith("uniform ")) {

@@ -6,6 +6,7 @@
 
 package io.xol.engine.graphics;
 
+import static org.lwjgl.opengl.GL11.GL_ALWAYS;
 import static org.lwjgl.opengl.GL11.GL_BLEND;
 import static org.lwjgl.opengl.GL11.GL_CCW;
 import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
@@ -96,6 +97,10 @@ public final class OpenGLStateMachine implements StateMachine
 		case DISABLED:
 			depth(false);
 			//depthFunc(-1);
+			break;
+		case ALWAYS:
+			depth(true);
+			depthFunc(GL_ALWAYS);
 			break;
 		case LESS:
 			depth(true);

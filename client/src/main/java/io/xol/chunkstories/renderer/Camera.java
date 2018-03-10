@@ -55,6 +55,46 @@ public class Camera implements CameraInterface
 	public Matrix3f normalMatrix3f = new Matrix3f();
 	public Matrix3f normalMatrix3fInverted = new Matrix3f();
 
+	public Matrix4f getProjectionMatrix4f() {
+		return projectionMatrix4f;
+	}
+
+	public Matrix4f getProjectionMatrix4fInverted() {
+		return projectionMatrix4fInverted;
+	}
+
+	public Matrix4f getModelViewProjectionMatrix4f() {
+		return modelViewProjectionMatrix4f;
+	}
+
+	public Matrix4f getModelViewProjectionMatrix4fInverted() {
+		return modelViewProjectionMatrix4fInverted;
+	}
+
+	public Matrix4f getUntranslatedMVP4f() {
+		return untranslatedMVP4f;
+	}
+
+	public Matrix4f getUntranslatedMVP4fInv() {
+		return untranslatedMVP4fInv;
+	}
+
+	public Matrix4f getModelViewMatrix4f() {
+		return modelViewMatrix4f;
+	}
+
+	public Matrix4f getModelViewMatrix4fInverted() {
+		return modelViewMatrix4fInverted;
+	}
+
+	public Matrix3f getNormalMatrix3f() {
+		return normalMatrix3f;
+	}
+
+	public Matrix3f getNormalMatrix3fInverted() {
+		return normalMatrix3fInverted;
+	}
+
 	public Camera()
 	{
 		// Init frustrum planes

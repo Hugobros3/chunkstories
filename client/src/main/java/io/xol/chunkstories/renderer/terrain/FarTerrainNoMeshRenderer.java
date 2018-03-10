@@ -115,15 +115,17 @@ public class FarTerrainNoMeshRenderer implements FarTerrainRenderer {
 		worldRenderer.getSkyRenderer().setupShader(terrainShader);
 
 		terrainShader.setUniform1f("viewDistance", RenderingConfig.viewDistance);
-		worldRenderer.worldTextures.waterNormalTexture.setLinearFiltering(true);
-		worldRenderer.worldTextures.waterNormalTexture.setMipMapping(true);
+		
+		Texture2D waterTexture = renderer.textures().getTexture("./textures/water/shallow.png");
+		waterTexture.setLinearFiltering(true);
+		waterTexture.setMipMapping(true);
 
-		renderer.bindCubemap("environmentCubemap", worldRenderer.renderBuffers.rbEnvironmentMap);
-		renderer.bindTexture2D("blockLightmap", worldRenderer.worldTextures.lightmapTexture);
+		//renderer.bindCubemap("environmentCubemap", worldRenderer.renderBuffers.rbEnvironmentMap);
+		renderer.bindTexture2D("blockLightmap", TexturesHandler.getTexture("./textures/environement/light.png"));
 		
 		Texture2D lightColors = TexturesHandler.getTexture("./textures/environement/lightcolors.png");
 		renderer.bindTexture2D("lightColors", lightColors);
-		renderer.bindTexture2D("normalTexture", worldRenderer.worldTextures.waterNormalTexture);
+		renderer.bindTexture2D("normalTexture", waterTexture);
 		
 		world.getGenerator().getEnvironment().setupShadowColors(renderer, terrainShader);
 		//worldRenderer.setupShadowColors(terrainShader);

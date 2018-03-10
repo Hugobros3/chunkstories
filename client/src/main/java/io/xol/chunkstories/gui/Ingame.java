@@ -151,7 +151,7 @@ public class Ingame extends Layer
 		if (shouldTakeACubemap)
 		{
 			shouldTakeACubemap = false;
-			world.getWorldRenderer().getCubemapRenderer().renderWorldCubemap(renderingContext, null, 1024, false);
+			//world.getWorldRenderer().getCubemapRenderer().renderWorldCubemap(renderingContext, null, 1024, false);
 		}
 
 		//Fades in & out the overlay
