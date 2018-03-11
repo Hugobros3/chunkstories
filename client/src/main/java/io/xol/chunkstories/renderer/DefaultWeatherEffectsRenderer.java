@@ -129,10 +129,6 @@ public class DefaultWeatherEffectsRenderer implements WorldEffectsRenderer
 
 	private SoundSource rainSoundSource;
 
-	// Rain falls at ~10m/s, so we prepare in advance 10 meters of rain to fall until we add some more on top
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.renderer.WeatherEffectsRenderer#renderEffects(io.xol.chunkstories.api.rendering.RenderingInterface)
-	 */
 	@Override
 	public void renderEffects(RenderingInterface renderingContext)
 	{
@@ -210,9 +206,12 @@ public class DefaultWeatherEffectsRenderer implements WorldEffectsRenderer
 
 		//Time since gen in ms
 		weatherShader.setUniform1f("time", (System.currentTimeMillis() - lastRender) / 1000f);
-		renderingContext.bindTexture2D("lightmap", TexturesHandler.getTexture("./textures/environement/lightcolors.png"));
+		renderingContext.bindTexture2D("sunlightCycle", renderingContext.textures().getTexture("./textures/environement/lightcolors.png"));
+		
+		renderingContext.textures().getTexture("./textures/environement/lightcolors.png").setTextureWrapping(true);
 		
 		//TODO check on this
+		this.worldRenderer.getSkyRenderer().setupShader(weatherShader);
 		weatherShader.setUniform1f("sunTime", world.getTime() % 10000);
 		renderingContext.bindAttribute("vertexIn", rainVerticesBuffer.asAttributeSource(VertexFormat.FLOAT, 4));
 		float rainIntensity = Math.min(Math.max(0.0f, rainPresence - 0.5f) / 0.3f, 1.0f);
