@@ -38,4 +38,12 @@ public class Texture2DRenderTargetGL extends Texture2DGL implements Texture2DRen
 			resize(scheduledW, scheduledH);
 		}
 	}
+
+	@Override
+	public void computeMipmaps() {
+		mipmapsUpToDate = false; 
+		super.computeMipmaps();
+	}
+	
+	
 }
