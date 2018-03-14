@@ -40,9 +40,9 @@ public class ClientConfigurationImplementation extends ConfigurationImplementati
 		BufferedReader br = new BufferedReader(sr);
 		
 		try {
-			OptionUntyped or = new OptionUntyped(client.getConfiguration(), "client.game.language", br);
+			OptionUntyped or = new OptionUntyped(this, "client.game.language", br);
 			
-			return new OptionChoiceImplementation(client.getConfiguration(), or);
+			return new OptionChoiceImplementation(this, or);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

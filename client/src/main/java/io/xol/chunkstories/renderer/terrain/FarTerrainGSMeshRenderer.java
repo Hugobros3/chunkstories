@@ -120,6 +120,10 @@ public class FarTerrainGSMeshRenderer implements FarTerrainRenderer {
 		Texture2D waterTexture = renderer.textures().getTexture("./textures/water/shallow.png");
 		waterTexture.setLinearFiltering(true);
 		waterTexture.setMipMapping(true);
+		
+		Texture2D waterTexture2 = renderer.textures().getTexture("./textures/water/deep.png");
+		waterTexture2.setLinearFiltering(true);
+		waterTexture2.setMipMapping(true);
 
 		//renderer.bindCubemap("environmentCubemap", worldRenderer.renderBuffers.rbEnvironmentMap);
 		
@@ -127,12 +131,14 @@ public class FarTerrainGSMeshRenderer implements FarTerrainRenderer {
 		Texture2D lightColors = TexturesHandler.getTexture("./textures/environement/lightcolors.png");
 
 		renderer.bindTexture2D("lightColors", lightColors);
-		renderer.bindTexture2D("normalTexture", waterTexture);
+		renderer.bindTexture2D("waterNormalShallow", waterTexture);
+		renderer.bindTexture2D("waterNormalDeep", waterTexture2);
 		
 		world.getGenerator().getEnvironment().setupShadowColors(renderer, terrainShader);
 
 		renderer.bindTexture2D("vegetationColorTexture", world.getGenerator().getEnvironment().getGrassTexture(renderer));
 		terrainShader.setUniform1f("mapSize", worldRenderer.getWorld().getSizeInChunks() * 32);
+		terrainShader.setUniform1f("animationTimer", worldRenderer.getAnimationTimer());
 		
 		renderer.bindArrayTexture("heights", worldRenderer.getSummariesTexturesHolder().getHeightsArrayTexture());
 		renderer.bindArrayTexture("topVoxels", worldRenderer.getSummariesTexturesHolder().getTopVoxelsArrayTexture());

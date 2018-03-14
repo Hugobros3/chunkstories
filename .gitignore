@@ -1,7 +1,7 @@
 _Game folders relevant to a specific installation_
 
 worlds/
-config/
+/config/
 doc/
 /plugins/
 players/

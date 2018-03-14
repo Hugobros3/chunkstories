@@ -163,8 +163,8 @@ public class Client implements ClientInterface
 		gameContent.reload();
 
 		configuration = new ClientConfigurationImplementation(this, new File("./config/client.cfg"));
-		
 		gameWindow.stage_2_init();
+		configuration.load();
 		
 		// Spawns worker threads
 		int nbThreads = -1;
@@ -242,28 +242,21 @@ public class Client implements ClientInterface
 	{
 		SimpleFence waitForReload = new SimpleFence();
 
-		if (gameWindow.isMainGLWindow())
-		{
+		Runnable reload = () -> {
+			configuration.save();
 			gameContent.reload();
+			configuration.reload();
 			gameWindow.getInputsManager().reload();
 			gameWindow.getRenderingContext().getFontRenderer().reloadFonts();
-
-			return;
-		}
-
-		gameWindow.queueSynchronousTask(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				//ModsManager.reload();
-				gameContent.reload();
-				gameWindow.getInputsManager().reload();
-				gameWindow.getRenderingContext().getFontRenderer().reloadFonts();
-				
-				waitForReload.signal();
-			}
-		});
+			configuration.load();
+			
+			waitForReload.signal();
+		};
+		
+		if (gameWindow.isMainGLWindow())
+			reload.run();
+		else
+			gameWindow.queueSynchronousTask(reload);
 
 		waitForReload.traverse();
 	}
