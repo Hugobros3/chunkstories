@@ -30,10 +30,8 @@ public class Camera implements CameraInterface
 	public float rotationX = 0.0f;
 	public float rotationY = 0.0f;
 	public float rotationZ = 0.0f;
-	//Camera positions
 	
 	private Vector3d position = new Vector3d();
-	//private Vector3d pos = new Vector3d();
 	
 	//Mouse pointer tracking
 	float lastPX = -1f;
@@ -95,15 +93,6 @@ public class Camera implements CameraInterface
 		return normalMatrix3fInverted;
 	}
 
-	public Camera()
-	{
-		// Init frustrum planes
-		for(int i = 0; i < 6; i++)
-		{
-			//cameraPlanes[i] = new CollisionPlane();
-		}
-	}
-
 	/**
 	 * Updates the sound engine position and listener orientation
 	 */
@@ -118,10 +107,7 @@ public class Camera implements CameraInterface
 		Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
 		
 		lookAt.cross(up, up);		
-		//VectorCrossProduct.cross33(lookAt, up, up);
-		
 		up.cross(lookAt, up);
-		//VectorCrossProduct.cross33(up, lookAt, up);
 		
 		Client.getInstance().getSoundManager().setListenerPosition((float)(double)position.x(), (float)(double)position.y(), (float)(double)position.z(), lookAt, up);
 	}
@@ -134,21 +120,16 @@ public class Camera implements CameraInterface
 	public void updateMatricesForShaderUniforms()
 	{
 		//Invert two main patrices
-		
 		projectionMatrix4f.invert(projectionMatrix4fInverted);
-		//Matrix4f.invert(projectionMatrix4f, projectionMatrix4fInverted);
 		
 		modelViewMatrix4f.invert(modelViewMatrix4fInverted);
-		//Matrix4f.invert(modelViewMatrix4f, modelViewMatrix4fInverted);
 		
 		//Build normal matrix
 		Matrix4f tempMatrix = new Matrix4f();
 		
 		modelViewMatrix4f.invert(tempMatrix);
-		//Matrix4f.invert(modelViewMatrix4f, tempMatrix);
 		
 		tempMatrix.transpose();
-		//Matrix4f.transpose(tempMatrix, tempMatrix);
 		normalMatrix3f.m00 = tempMatrix.m00();
 		normalMatrix3f.m01 = tempMatrix.m01();
 		normalMatrix3f.m02 = tempMatrix.m02();
@@ -160,18 +141,14 @@ public class Camera implements CameraInterface
 		normalMatrix3f.m20 = tempMatrix.m20();
 		normalMatrix3f.m21 = tempMatrix.m21();
 		normalMatrix3f.m22 = tempMatrix.m22();
+		
 		//Invert it
-
 		normalMatrix3f.invert(normalMatrix3fInverted);
-		//Matrix3f.invert(normalMatrix3f, normalMatrix3fInverted);
 		
 		//Premultiplied versions ( optimization for poor drivers that don't figure it out themselves )
-		
 		projectionMatrix4f.mul(modelViewMatrix4f, modelViewProjectionMatrix4f);
-		//Matrix4f.mul(projectionMatrix4f, modelViewMatrix4f, modelViewProjectionMatrix4f);
 				
 		modelViewProjectionMatrix4f.invert(modelViewProjectionMatrix4fInverted);
-		//Matrix4f.invert(modelViewProjectionMatrix4f, modelViewProjectionMatrix4fInverted);
 	}
 
 	public void setupUsingScreenSize(int width, int height)
@@ -179,7 +156,7 @@ public class Camera implements CameraInterface
 		this.viewportWidth = width;
 		this.viewportHeight = height;
 		// Frustrum values
-		float fovRad = (float) toRad(fov);
+		float fovRad = (float) toRad(fov / 2.0);
 
 		float aspect = (float) width / (float) height;
 		float top = (float) Math.tan(fovRad) * 0.1f;
@@ -207,36 +184,26 @@ public class Camera implements CameraInterface
 		// Grab the generated matrix
 		
 		modelViewMatrix4f.identity();
-		// Rotate the modelview matrix
 		modelViewMatrix4f.rotate((float) (rotationZ / 180 * Math.PI), new Vector3f( 0.0f, 0.0f, 1.0f));
 		modelViewMatrix4f.rotate((float) (rotationX / 180 * Math.PI), new Vector3f( 1.0f, 0.0f, 0.0f));
 		modelViewMatrix4f.rotate((float) (rotationY / 180 * Math.PI), new Vector3f( 0.0f, 1.0f, 0.0f));
 		
 		Vector3f position = new Vector3f((float)this.position.x, (float)this.position.y, (float)this.position.z);
-		//Vector3m<Float> position = this.position.castToSinglePrecision();
 		
 		float rotH = rotationY;
 		float rotV = rotationX;
 		float a = (float) ((180-rotH) / 180f * Math.PI);
 		float b = (float) ((-rotV) / 180f * Math.PI);
 		Vector3f lookAt = new Vector3f((float) (Math.sin(a) * Math.cos(b)),(float)( Math.sin(b)) , (float)(Math.cos(a) * Math.cos(b)));
-		//Vector3f direction = new Vector3f((float) (Math.sin(a) * Math.cos(b)),(float)( Math.sin(b)) , (float)(Math.cos(a) * Math.cos(b)));
 		
 		Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
 		lookAt.cross(up, up);
-		//VectorCrossProduct.cross33(lookAt, up, up);
 		up.cross(lookAt, up);
-		//VectorCrossProduct.cross33(up, lookAt, up);
 		
 		lookAt.add(position);
-		//Vector3f.add(position, lookAt, lookAt);
 		
 		//TODO ?
 		position.mul(0.0f);
-	    
-		// modelViewMatrix4f = MatrixHelper.getLookAtMatrix(position, direction, up);
-	    
-	    //return result;
 		
 		computeFrustrumPlanes();
 		updateMatricesForShaderUniforms();
@@ -250,7 +217,7 @@ public class Camera implements CameraInterface
 	{
 		Vector3f temp = new Vector3f();
 		//Init values
-		float tang = (float)Math.tan(toRad(fov)) ;
+		float tang = (float)Math.tan(toRad(fov / 2.0)) ;
 		float ratio = (float) viewportWidth / (float) viewportHeight;
 		float nh = 0.1f * tang;
 		float nw = nh * ratio;
@@ -522,15 +489,7 @@ public class Camera implements CameraInterface
 		Vector4f transormed = new Vector4f();
 		mvm.transform(in, transormed);
 		
-		//in = Matrix4f.transform(mvm, in, null);
-		
 		pm.transform(transormed, transormed);
-		//in = Matrix4f.transform(pm, in, null);
-		
-		//in = Matrix4f.transform(combined, in, null);
-
-		//position.scale(1/position.w);
-
 		Vector3f posOnScreen = new Vector3f((float)in.x(), (float)in.y(), 0f);
 		float scale = 1/in.z();
 		posOnScreen.mul(scale);
@@ -541,9 +500,6 @@ public class Camera implements CameraInterface
 		return posOnScreen;
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.renderer.CameraInterface#getViewDirection()
-	 */
 	@Override
 	public Vector3f getViewDirection()
 	{
@@ -554,14 +510,10 @@ public class Camera implements CameraInterface
 		return new Vector3f((float) (Math.sin(a) * Math.cos(b)),(float)( Math.sin(b)) , (float)(Math.cos(a) * Math.cos(b)));
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.renderer.CameraInterface#getCameraPosition()
-	 */
 	@Override
 	public Vector3dc getCameraPosition()
 	{
 		return this.position;
-		//return this.pos.clone().negate();
 	}
 
 	@Override
@@ -570,7 +522,6 @@ public class Camera implements CameraInterface
 		this.position.x = pos.x();
 		this.position.y = pos.y();
 		this.position.z = pos.z();
-		//this.pos = new Vector3d(pos).negate();
 	}
 
 	@Override
@@ -583,7 +534,6 @@ public class Camera implements CameraInterface
 	@Override
 	public float getFOV()
 	{
-		// TODO Auto-generated method stub
 		return fov;
 	}
 

@@ -30,8 +30,6 @@ import io.xol.chunkstories.api.rendering.world.chunk.ChunkRenderable;
 import io.xol.chunkstories.api.rendering.world.chunk.ChunksRenderer;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.chunk.Chunk;
-import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderDataHolder.RenderLodLevel;
 import io.xol.chunkstories.world.chunk.ClientChunk;
 
@@ -53,7 +51,7 @@ public class ChunkMeshesRenderer implements ChunksRenderer {
 		this.world = worldRenderer.getWorld();
 
 		int nbThreads = -1;
-		String configThreads = Client.getInstance().configDeprecated().getString("workersThreads", "auto");
+		String configThreads = world.getClient().getConfiguration().getStringOption("client.game.workersThreads");//Client.getInstance().configDeprecated().getString("workersThreads", "auto");
 		if (!configThreads.equals("auto")) {
 			try {
 				nbThreads = Integer.parseInt(configThreads);
@@ -88,7 +86,7 @@ public class ChunkMeshesRenderer implements ChunksRenderer {
 
 		// Do a floodfill arround the entity
 		List<ClientChunk> floodFillResults = floodFillArround(cameraFloatPosition,
-				(int) RenderingConfig.viewDistance / 32);
+				(int) world.getClient().getConfiguration().getIntOption("client.rendering.viewDistance") / 32);
 
 		culledChunksNormal.clear();
 		// Check they have render data & submit them if they don't
@@ -256,9 +254,9 @@ public class ChunkMeshesRenderer implements ChunksRenderer {
 		shadowChunks.clear();
 
 		int maxShadowDistance = 4;
-		if (RenderingConfig.shadowMapResolutions >= 2048)
+		if (world.getClient().getConfiguration().getIntOption("client.rendering.shadowsResolution") >= 2048)
 			maxShadowDistance = 5;
-		if (RenderingConfig.shadowMapResolutions >= 4096)
+		if (world.getClient().getConfiguration().getIntOption("client.rendering.shadowsResolution") >= 4096)
 			maxShadowDistance = 60;
 
 		int maxVerticalShadowDistance = 4;
@@ -298,7 +296,7 @@ public class ChunkMeshesRenderer implements ChunksRenderer {
 
 			RenderLodLevel lodToUse;
 			
-			lodToUse = distance < Math.max(64, RenderingConfig.viewDistance / 4.0) ? RenderLodLevel.HIGH : RenderLodLevel.LOW;
+			lodToUse = distance < Math.max(64, world.getClient().getConfiguration().getIntOption("client.rendering.viewDistance") / 4.0) ? RenderLodLevel.HIGH : RenderLodLevel.LOW;
 
 			((ClientChunk) command.chunk).getChunkRenderData().renderPass(renderingInterface, lodToUse, shadingType);
 		}
@@ -345,7 +343,7 @@ public class ChunkMeshesRenderer implements ChunksRenderer {
 				int dz = LoopingMathHelper.moduloDistance(chunk.getChunkZ(), vz, chunk.getWorld().getSizeInChunks());
 				int dy = Math.abs(chunk.getChunkY() - vy);
 
-				int chunksViewDistance = (int) (RenderingConfig.viewDistance / 32);
+				int chunksViewDistance = (int) (world.getClient().getConfiguration().getIntOption("client.rendering.viewDistance") / 32);
 
 				if (dx <= chunksViewDistance && dz <= chunksViewDistance && dy <= 2)
 					this.chunk.meshUpdater().spawnUpdateTaskIfNeeded();
@@ -377,7 +375,7 @@ public class ChunkMeshesRenderer implements ChunksRenderer {
 
 	@Override
 	public RenderedChunksMask getRenderedChunksMask(CameraInterface camera) {
-		return new RenderedChunksMask(camera, Math.max(2, (int) (RenderingConfig.viewDistance / 32f) - 1), 5);
+		return new RenderedChunksMask(camera, Math.max(2, (int) (world.getClient().getConfiguration().getIntOption("client.rendering.viewDistance") / 32f) - 1), 5);
 	}
 
 	public class RenderedChunksMask implements ReadyVoxelMeshesMask {

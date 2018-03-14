@@ -7,6 +7,7 @@
 package io.xol.chunkstories.gui;
 
 import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
@@ -21,11 +22,11 @@ import io.xol.chunkstories.api.input.Mouse.MouseScroll;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.util.Configuration.OptionBoolean;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.entity.SerializedEntityFile;
 import io.xol.chunkstories.gui.Chat.ChatPanelOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.DeathOverlay;
@@ -38,6 +39,7 @@ import io.xol.engine.base.GameWindowOpenGL_LWJGL3;
 
 public class Ingame extends Layer
 {
+	private final ClientInterface client;
 	private final WorldClientCommon world;
 	
 	//Moved from client to IG, as these make sense per world/play
@@ -64,6 +66,7 @@ public class Ingame extends Layer
 	{
 		super(window, null);
 		this.world = world;
+		this.client = world.getClient();
 		
 		this.chatManager = new Chat(this);
 
@@ -137,31 +140,25 @@ public class Ingame extends Layer
 		world.getWorldRenderer().renderWorld(renderingContext);
 
 		//Debug draws
-		if (RenderingConfig.physicsVisualization && playerEntity != null) {
+		if (client.getConfiguration().getBooleanOption("client.debug.physicsVisualization") && playerEntity != null) {
 			wireframeDebugger.render(renderingContext);
 		}
 		
 		if (!guiHidden && selectedBlock != null && playerEntity instanceof EntityCreative && ((EntityCreative) playerEntity).getCreativeModeComponent().get())
 			selectionRenderer.drawSelectionBox(renderingContext, selectedBlock);
 		
-		//selectionRenderer.drawnCrackedBlocks(renderingContext);
-		
 		//Cubemap rendering trigger (can't run it while main render is occuring)
 		//TODO reimplement cubemaps screenshots
-		if (shouldTakeACubemap)
-		{
+		if (shouldTakeACubemap) {
 			shouldTakeACubemap = false;
 			//world.getWorldRenderer().getCubemapRenderer().renderWorldCubemap(renderingContext, null, 1024, false);
 		}
 
 		//Fades in & out the overlay
-		if (!isCovered())
-		{
+		if (!isCovered()) {
 			if (pauseOverlayFade > 0.0)
 				pauseOverlayFade -= 0.1;
-		}
-		else
-		{
+		} else {
 			float maxFade = 1.0f;
 			if (gameWindow.getLayer() instanceof ChatPanelOverlay)
 				maxFade = 0.25f;
@@ -184,7 +181,7 @@ public class Ingame extends Layer
 				inventoryBarDrawer.drawPlayerInventorySummary(renderingContext, renderingContext.getWindow().getWidth() / 2 - 7, 64 + 64);
 
 			//Draw debug info
-			if (RenderingConfig.showDebugInfo)
+			if (client.getConfiguration().getBooleanOption("client.debug.showDebugInfo"))
 				debugInfoRenderer.drawF3debugMenu(renderingContext);
 			
 			renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(getGameWindow().getWidth() / 2 - 8, getGameWindow().getHeight() / 2 - 8, 16, 16, 0, 1, 1, 0,
@@ -246,8 +243,13 @@ public class Ingame extends Layer
 		}
 		else if (input.equals("toggleDebugInfo"))
 		{
-			gameWindow.getClient().configDeprecated().setString("showDebugInfo", gameWindow.getClient().configDeprecated().getBoolean("showDebugInfo", false) ? "false" : "true");
-			RenderingConfig.define();
+			@SuppressWarnings("unchecked")
+			OptionBoolean debugInfo = (OptionBoolean) client.getConfiguration().getOption("client.debug.showDebugInfo");
+			debugInfo.toggle();
+			//debugInfo.trySetting("" + !debugInfo.getValue());
+			
+			//gameWindow.getClient().configDeprecated().setString("showDebugInfo", gameWindow.getClient().configDeprecated().getBoolean("showDebugInfo", false) ? "false" : "true");
+			//RenderingConfig.define();
 			//RenderingConfig.showDebugInfo = !RenderingConfig.showDebugInfo;
 		}
 		else if (input.equals("takeCubemap"))

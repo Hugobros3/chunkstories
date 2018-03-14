@@ -59,14 +59,14 @@ public class LanguageSelectionScreen extends Layer
 				@Override
 				public void run() {
 					//Convinience hack to set keys to wasd when first lauching and selecting English as a language
-					if(!allowBackButton && langButton.translationCode.endsWith("en"))
+					if(!allowBackButton && langButton.translationCode.endsWith("fr"))
 					{
-						//Englishfag detected, thanks /u/MrSmith33 for feedback
-						Client.getInstance().configDeprecated().setInteger("bind.forward", GLFW.GLFW_KEY_W);
-						Client.getInstance().configDeprecated().setInteger("bind.left", GLFW.GLFW_KEY_A);
+						//azerty mode enabled
+						Client.getInstance().getConfiguration().getOption("client.input.bind.forward").trySetting(""+GLFW.GLFW_KEY_Z);
+						Client.getInstance().getConfiguration().getOption("client.input.bind.left").trySetting(""+GLFW.GLFW_KEY_Q);
 					}
 					
-					Client.getInstance().configDeprecated().setString("language", langButton.translationCode);
+					Client.getInstance().getConfiguration().getOption("client.game.language").trySetting(langButton.translationCode);
 					Client.getInstance().getContent().localization().loadTranslation(langButton.translationCode);
 					gameWindow.setLayer(parentLayer);
 				}

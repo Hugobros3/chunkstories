@@ -21,13 +21,6 @@ import io.xol.chunkstories.gui.overlays.config.OptionsOverlay;
 
 public class MainMenuOverlay extends Layer
 {
-	//GuiElementsHandler guiHandler = new GuiElementsHandler();
-	/*ThinButton singlePlayer = new ThinButton(this, 0, 0,("#{menu.singleplayer}"));
-	ThinButton multiPlayer = new ThinButton(this, 0, 0, ("#{menu.serverbrowser}"));
-	ThinButton modsOption = new ThinButton(this, 0, 0,("#{menu.mods}"));
-	ThinButton optionsMenu = new ThinButton(this, 0, 0,("#{menu.options}"));
-	ThinButton exitGame = new ThinButton(this, 0, 0, ("#{menu.quit}"));*/
-	
 	LargeButtonIcon largeOnline = new LargeButtonIcon(this, "online");
 	LargeButtonIcon largeMods = new LargeButtonIcon(this, "mods");
 	
@@ -93,7 +86,7 @@ public class MainMenuOverlay extends Layer
 	{
 		parentLayer.render(renderingContext);
 		
-		if(gameWindow.getLayer() == this && Client.getInstance().configDeprecated().getString("log-policy", "undefined").equals("undefined"))
+		if(gameWindow.getLayer() == this && Client.getInstance().getConfiguration().getStringOption("client.game.log-policy").equals("undefined"))
 			gameWindow.setLayer(new LogPolicyAsk(gameWindow, this));
 
 		float spacing = 8;

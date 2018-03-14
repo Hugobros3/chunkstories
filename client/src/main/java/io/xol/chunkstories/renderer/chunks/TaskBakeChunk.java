@@ -37,8 +37,6 @@ import io.xol.chunkstories.api.voxel.VoxelSides.Corners;
 import io.xol.chunkstories.api.workers.Task;
 import io.xol.chunkstories.api.workers.TaskExecutor;
 import io.xol.chunkstories.api.world.WorldClient;
-import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.renderer.chunks.ChunkMeshDataSections.DynamicallyRenderedVoxelType;
 import io.xol.chunkstories.renderer.chunks.ClientWorkerThread.ChunkMeshingBuffers;
 import io.xol.chunkstories.world.cell.ScratchCell;
@@ -95,7 +93,7 @@ public class TaskBakeChunk extends Task {
 		int dz = LoopingMathHelper.moduloDistance(chunk.getChunkZ(), vz, chunk.getWorld().getSizeInChunks());
 		int dy = Math.abs(chunk.getChunkY() - vy);
 		
-		int chunksViewDistance = (int) (RenderingConfig.viewDistance / 32);
+		int chunksViewDistance = (int) (world.getClient().getConfiguration().getIntOption("client.rendering.viewDistance") / 32);
 		
 		//System.out.println("heil" + chunk);
 		
@@ -366,8 +364,8 @@ public class TaskBakeChunk extends Task {
 		chunk.chunkRenderData.unbakedUpdates.addAndGet(-updatesToConsider);
 		
 		//Wait until data is actually uploaded to not accidentally OOM while it struggles uploading it
-		if(Client.getInstance().configDeprecated().getBoolean("waitForChunkMeshDataUploadBeforeStartingTheNext", true))
-			newRenderData.fence.traverse();
+		//if(Client.getInstance().configDeprecated().getBoolean("waitForChunkMeshDataUploadBeforeStartingTheNext", true))
+		newRenderData.fence.traverse();
 		
 		return true;
 	}

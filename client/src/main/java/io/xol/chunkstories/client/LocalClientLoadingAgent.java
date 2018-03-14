@@ -60,7 +60,7 @@ public class LocalClientLoadingAgent {
 			int cameraChunkX = Math2.floor((controlledEntity.getLocation().x()) / 32);
 			int cameraChunkY = Math2.floor((controlledEntity.getLocation().y()) / 32);
 			int cameraChunkZ = Math2.floor((controlledEntity.getLocation().z()) / 32);
-			int chunksViewDistance = (int) (RenderingConfig.viewDistance / 32);
+			int chunksViewDistance = (int) (world.getClient().getConfiguration().getIntOption("client.rendering.viewDistance") / 32);
 			
 			for (int chunkX = (cameraChunkX - chunksViewDistance - 1); chunkX <= cameraChunkX + chunksViewDistance + 1; chunkX++)
 			{

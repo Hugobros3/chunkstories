@@ -80,7 +80,7 @@ public class ServerSelectionOverlayNg extends Layer implements HttpRequester
 		elements.add(backOption);
 		
 		autologin = a;
-		String lastServer = Client.getInstance().configDeprecated().getString("last-server", "");
+		String lastServer = Client.getInstance().getConfiguration().getStringOption("client.game.last-server");
 		if (!lastServer.equals(""))
 		{
 			ipForm.setText(lastServer);
@@ -163,8 +163,8 @@ public class ServerSelectionOverlayNg extends Layer implements HttpRequester
 		if (ip.length() == 0)
 			return;
 		
-		Client.getInstance().configDeprecated().setString("last-server", ip);
-		Client.getInstance().configDeprecated().save();
+		Client.getInstance().getConfiguration().getOption("client.game.last-server").trySetting(ip);
+		Client.getInstance().getConfiguration().save();
 		
 		if (ip.contains(":"))
 		{

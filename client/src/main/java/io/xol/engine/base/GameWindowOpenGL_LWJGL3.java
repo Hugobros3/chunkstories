@@ -178,7 +178,7 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 	
 	private int windowWidth = defaultWidth;
 	private int windowHeight = defaultHeight;
-	private int targetFPS = 60;
+	//private int targetFPS = 60;
 
 	private boolean closeRequest = false;
 
@@ -510,6 +510,7 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 				tick();
 
 				//Clamp fps
+				int targetFPS = this.client.getConfiguration().getIntOption("client.video.framerateCap");
 				if (targetFPS != -1)
 				{
 					//long time = System.currentTimeMillis();
@@ -521,7 +522,7 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 				}
 
 				//Draw graph
-				if (client.getConfig().getBoolean("frametimeGraph", false)) {
+				if (client.getConfiguration().getBooleanOption("client.debug.frametimeGraph")) {
 					FrametimeRenderer.draw(renderingContext);
 					MemUsageRenderer.draw(renderingContext);
 					WorldLogicTimeRenderer.draw(renderingContext);
@@ -655,14 +656,14 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 		long mainMonitor = glfwGetPrimaryMonitor();
 		GLFWVidMode currentVideoMode = glfwGetVideoMode(mainMonitor);
 		
-		boolean isFullscreenEnabled = client.configDeprecated().getBoolean("fullscreen", false);
+		boolean isFullscreenEnabled = client.getConfiguration() == null ? false : client.getConfiguration().getBooleanOption("client.video.fullScreen");
 		if(isFullscreenEnabled) {
 			//Enable fullscreen using desktop resolution, by default on the primary monitor and at it's nominal video mode
 			
-			String modeString = client.configDeprecated().getString("fullScreenResolution", null);
+			String modeString = client.getConfiguration().getStringOption("client.video.fullScreenResolution");
 			if(modeString == null || modeString.contains("x") || !modeString.contains(":")) {
 				modeString = "1:"+currentVideoMode.width()+":"+currentVideoMode.height()+":"+currentVideoMode.refreshRate();
-				client.configDeprecated().setString("fullScreenResolution", modeString);
+				client.getConfiguration().getOption("client.video.fullScreenResolution").trySetting(modeString);
 			}
 			
 			VideoMode videoMode = findMatchForVideoMode(modeString);
@@ -701,11 +702,6 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 		}
 	}
 
-	public void setTargetFPS(int target)
-	{
-		targetFPS = target;
-	}
-
 	public int getFPS()
 	{
 		return lastFPS;
@@ -717,9 +713,10 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 	}
 	
 	public void toggleFullscreen() {
-		boolean isFullscreenEnabled = client.configDeprecated().getBoolean("fullscreen", false);
+		boolean isFullscreenEnabled = client.getConfiguration().getBooleanOption("client.video.fullScreen");
 		isFullscreenEnabled = !isFullscreenEnabled;
-		client.configDeprecated().setString("fullscreen", isFullscreenEnabled ? "true" : "false");
+		client.getConfiguration().getOption("client.video.fullScreen").trySetting(isFullscreenEnabled ? "true" : "false");
+		//client.configDeprecated().setString("fullscreen", isFullscreenEnabled ? "true" : "false");
 		switchResolution();
 	}
 

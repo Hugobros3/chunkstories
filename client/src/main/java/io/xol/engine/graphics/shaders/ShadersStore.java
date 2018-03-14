@@ -6,7 +6,6 @@
 
 package io.xol.engine.graphics.shaders;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,9 +13,6 @@ import org.slf4j.Logger;
 
 import io.xol.chunkstories.api.client.ClientContent;
 import io.xol.chunkstories.api.client.ClientContent.ShadersLibrary;
-import io.xol.chunkstories.client.RenderingConfig;
-
-
 
 public class ShadersStore implements ShadersLibrary
 {
@@ -36,7 +32,7 @@ public class ShadersStore implements ShadersLibrary
 	
 	boolean loadShader(String name)
 	{
-		ShaderProgram subject = new ShaderProgram(clientContent.modsManager(), name, RenderingConfig.getShaderConfig());
+		ShaderProgram subject = new ShaderProgram(clientContent.modsManager(), name);
 		loadedShaders.put(name, subject);
 		return subject.loadOK;
 	}
@@ -44,24 +40,24 @@ public class ShadersStore implements ShadersLibrary
 	public void preloadShaders()
 	{
 		//TODO support for external shaders !
-		File shadersDir = new File("res/shaders/");
+		/*File shadersDir = new File("res/shaders/");
 		if(shadersDir.exists() && shadersDir.isDirectory())
 			for(File f : shadersDir.listFiles())
 				if(f.isDirectory())
-					loadShader(f.getName());
+					loadShader(f.getName());*/
 	}
 	
 	public void reloadShader(String shaderName)
 	{
 		ShaderProgram s = loadedShaders.get(shaderName);
 		if(s != null)
-			s.reload(RenderingConfig.getShaderConfig());
+			s.reload();
 	}
 	
 	public void reloadAll()
 	{
 		for(ShaderProgram s : loadedShaders.values())
-			s.reload(RenderingConfig.getShaderConfig());
+			s.reload();
 	}
 	
 	public void destroy()

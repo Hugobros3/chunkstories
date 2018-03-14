@@ -4,7 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.chunkstories.renderer;
+package io.xol.chunkstories.renderer.passes;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,20 +13,32 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.xol.chunkstories.api.events.rendering.RenderPassesInitEvent;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.pass.RenderPass;
 import io.xol.chunkstories.api.rendering.pass.RenderPasses;
 import io.xol.chunkstories.api.rendering.textures.Texture;
 import io.xol.chunkstories.api.rendering.world.WorldRenderer;
+import io.xol.chunkstories.renderer.CycleException;
 
 public class RenderingGraph implements RenderPasses {
 
+	private static final Logger logger = LoggerFactory.getLogger("rendering.graph");
+	static Logger logger() {
+		return logger;
+	}
+	
 	Map<String, RenderPass> registeredRenderPasses = new HashMap<>();
 	RenderingInterface renderer;
 
 	private RenderPass currentPassBeingRendered = null;
 	private RenderPass[] executionOrder = null;
+	
+	Map<String, Node> nodes = new HashMap<>();
+	private boolean shouldRebuildGraph = true;
 	
 	public RenderingGraph(RenderingInterface renderer) {
 		this.renderer = renderer;
@@ -112,13 +124,13 @@ public class RenderingGraph implements RenderPasses {
 			
 			String passName = requirement.indexOf(".") == -1 ? "invalid" : requirement.split("\\.")[0];
 			
-			System.out.println("this requires pass: "+passName + " (from "+requirement+")");
+			//System.out.println("this requires pass: "+passName + " (from "+requirement+")");
 			RenderPass requiredPass = getRenderPass(passName);
 			if(requiredPass != null) {
 				Node childNode = recursivelyAddNodes(requiredPass, node);
 				node.children.add(childNode);
 			} else
-				System.out.println("pass" +passName+" missing");
+				logger.error("pass" +passName+" missing");
 		}
 		
 		return node;
@@ -135,8 +147,6 @@ public class RenderingGraph implements RenderPasses {
 			cycleCheck(lookFor, parent);
 		}
 	}
-
-	Map<String, Node> nodes = new HashMap<>();
 	
 	class Node {
 		RenderPass pass;
@@ -155,7 +165,7 @@ public class RenderingGraph implements RenderPasses {
 				
 				//For each buffer we depend on
 				for(String requirement : pass.requires) {
-					System.out.println("resolving requirement "+requirement+" for pass "+pass.name);
+					//System.out.println("resolving requirement "+requirement+" for pass "+pass.name);
 					
 					//parse pass and buffer name
 					String s[] = requirement.split("\\.");
@@ -165,14 +175,14 @@ public class RenderingGraph implements RenderPasses {
 					boolean forward = requiredBufferName.endsWith("!");
 					requiredBufferName = requiredBufferName.replace("!", "");
 					
-					System.out.println(requiredPassName+"."+requiredBufferName+" forward:"+forward);
+					//System.out.println(requiredPassName+"."+requiredBufferName+" forward:"+forward);
 					RenderPass requiredPass = this.getRenderPass(requiredPassName);
 					//assumes all previous passes were resolved ok
 					Texture requiredBuffer = requiredPass == null ? null : requiredPass.resolvedOutputs.get(requiredBufferName);
-					System.out.println("found buffer "+requiredBuffer);
+					//System.out.println("found buffer "+requiredBuffer);
 					
 					if(forward) {
-						System.out.println("auto-forwarding buffer:"+requiredBufferName);
+						//System.out.println("auto-forwarding buffer:"+requiredBufferName);
 						pass.resolvedOutputs.put(requiredBufferName, requiredBuffer);
 					}
 					
@@ -191,13 +201,14 @@ public class RenderingGraph implements RenderPasses {
 	}
 	
 	public void render(RenderingInterface renderer) {
-		if(executionOrder == null) {
+		if(shouldRebuildGraph) {
 			RenderPassesInitEvent event = new RenderPassesInitEvent(this);
 			renderer.getClient().getPluginManager().fireEvent(event);
 			
 			resolveGraphOrder();
-			
 			resolveInputs();
+			
+			shouldRebuildGraph = false;
 			
 			System.out.println("----------");
 			if(executionOrder != null) {
@@ -226,5 +237,10 @@ public class RenderingGraph implements RenderPasses {
 	@Override
 	public WorldRenderer getWorldRenderer() {
 		return this.renderer.getWorldRenderer();
+	}
+
+	@Override
+	public void reloadPasses() {
+		this.shouldRebuildGraph = true;
 	}
 }

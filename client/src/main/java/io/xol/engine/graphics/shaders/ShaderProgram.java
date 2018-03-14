@@ -67,6 +67,8 @@ import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.content.mods.ModsManager;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.shader.Shader;
+import io.xol.chunkstories.api.util.Configuration.Option;
+import io.xol.chunkstories.client.Client;
 
 /**
  * Handles a GLSL shader
@@ -98,14 +100,9 @@ public class ShaderProgram implements Shader
 
 	protected ShaderProgram(ModsManager modsManager, String shaderName)
 	{
-		this(modsManager, shaderName, new String[] {});
-	}
-
-	protected ShaderProgram(ModsManager modsManager, String shaderName, String[] parameters)
-	{
 		this.modsManager = modsManager;
 		this.shaderName = shaderName;
-		load(parameters);
+		load();
 	}
 
 	public String getShaderName()
@@ -113,7 +110,7 @@ public class ShaderProgram implements Shader
 		return shaderName;
 	}
 
-	private void load(String[] parameters)
+	private void load()
 	{
 		this.samplers.clear();
 		
@@ -129,14 +126,14 @@ public class ShaderProgram implements Shader
 			
 			//This might not exist !
 			Asset geometryShader = modsManager.getAsset("./shaders/" + shaderName + "/" + shaderName + ".gs");
-			
-			CustomGLSLReader.loadRecursivly(modsManager, vertexShader, vertexSource, parameters, false, null);
-			CustomGLSLReader.loadRecursivly(modsManager, fragmentShader, fragSource, parameters, true, null);
+
+			CustomGLSLReader.loadRecursivly(modsManager, vertexShader, vertexSource, false, null);
+			CustomGLSLReader.loadRecursivly(modsManager, fragmentShader, fragSource, true, null);
 			
 			//If a geometry shader asset was found
 			if(geometryShader != null) {
 				geometrySource = new StringBuilder();
-				CustomGLSLReader.loadRecursivly(modsManager, geometryShader, geometrySource, parameters, true, null);
+				CustomGLSLReader.loadRecursivly(modsManager, geometryShader, geometrySource, true, null);
 			}
 		}
 		catch (IOException e)
@@ -626,10 +623,10 @@ public class ShaderProgram implements Shader
 		attributesLocations.clear();
 	}
 
-	public void reload(String[] parameters)
+	public void reload()
 	{
 		free();
-		load(parameters);
+		load();
 	}
 
 	@Override

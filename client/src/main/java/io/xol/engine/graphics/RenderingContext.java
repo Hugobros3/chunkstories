@@ -13,7 +13,6 @@ import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
 
 import io.xol.chunkstories.api.client.ClientContent.TexturesLibrary;
-import io.xol.chunkstories.api.client.ClientRenderingConfig;
 import io.xol.chunkstories.api.exceptions.rendering.AttributeNotPresentException;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
@@ -391,11 +390,6 @@ public class RenderingContext implements RenderingInterface
 	@Override
 	public final Client getClient() {
 		return Client.getInstance();
-	}
-
-	@Override
-	public final ClientRenderingConfig renderingConfig() {
-		return Client.getInstance().renderingConfig();
 	}
 
 	@Override

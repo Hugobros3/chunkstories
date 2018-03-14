@@ -15,7 +15,6 @@ import org.slf4j.Logger;
 import io.xol.chunkstories.api.client.ClientContent;
 import io.xol.chunkstories.api.client.ClientInputsManager;
 import io.xol.chunkstories.api.client.ClientInterface;
-import io.xol.chunkstories.api.client.ClientRenderingConfig;
 import io.xol.chunkstories.api.client.ClientSoundManager;
 import io.xol.chunkstories.api.client.LocalPlayer;
 import io.xol.chunkstories.api.item.inventory.Inventory;
@@ -23,11 +22,12 @@ import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.plugin.ClientPluginManager;
 import io.xol.chunkstories.api.rendering.GameWindow;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.server.PermissionsManager;
 import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.api.server.UserPrivileges;
-import io.xol.chunkstories.api.util.ConfigDeprecated;
+import io.xol.chunkstories.api.util.Configuration;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.workers.Tasks;
 import io.xol.chunkstories.api.world.WorldClient;
@@ -252,16 +252,6 @@ public class LocalServerContext implements ClientInterface, ServerInterface
 	}
 
 	@Override
-	public ConfigDeprecated configDeprecated() {
-		return client.configDeprecated();
-	}
-
-	@Override
-	public ClientRenderingConfig renderingConfig() {
-		return client.renderingConfig();
-	}
-
-	@Override
 	public String getPublicIp() {
 		// TODO Auto-generated method stub
 		return "[127.0.0.1]";
@@ -286,6 +276,16 @@ public class LocalServerContext implements ClientInterface, ServerInterface
 	@Override
 	public Tasks tasks() {
 		return client.tasks();
+	}
+
+	@Override
+	public Configuration getConfiguration() {
+		return client.getConfiguration();
+	}
+
+	@Override
+	public RenderingInterface getRenderingInterface() {
+		return client.getRenderingInterface();
 	}
 
 }

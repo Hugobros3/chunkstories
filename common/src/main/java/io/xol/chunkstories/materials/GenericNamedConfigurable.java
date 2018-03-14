@@ -42,7 +42,10 @@ public class GenericNamedConfigurable extends GenericConfigurable implements Def
 			else if(line.contains(":"))
 			{
 				String[] s = line.split(": ");
-				this.setProperty(s[0], s[1]);
+				if(s.length == 1)
+					this.setProperty(s[0], "");
+				else
+					this.setProperty(s[0], s[1]);
 			}
 		}
 		

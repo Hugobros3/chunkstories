@@ -79,7 +79,7 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 	{
 		this.gameWindow = gameWindow;
 		
-		ConfigDeprecated clientConfig = gameWindow.getClient().configDeprecated();
+		/*ConfigDeprecated clientConfig = gameWindow.getClient().configDeprecated();
 		if(clientConfig.getString("lwjgl-version", "lwjgl2").equals("lwjgl2")) {
 			
 			gameWindow.getClient().logger().warn("Game was last ran on LWJGL2.x, input codes are messed up, resetting all of them.");
@@ -96,7 +96,7 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 			}
 		}
 		clientConfig.setString("lwjgl-version", "lwjgl3");
-		clientConfig.save();
+		clientConfig.save();*/
 		
 		mouse = new Lwjgl3Mouse(this);
 		LEFT = new Lwjgl3MouseButton(mouse, "mouse.left", 0);
@@ -237,7 +237,7 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 	{
 		for (Input keyBind : inputs)
 		{
-			if (keyBind instanceof Lwjgl3KeyBind && ((Lwjgl3KeyBind) keyBind).getLWJGL2xKey() == keyCode)
+			if (keyBind instanceof Lwjgl3KeyBind && ((Lwjgl3KeyBind) keyBind).getLWJGL3xKey() == keyCode)
 				return (Lwjgl3KeyBind) keyBind;
 		}
 		return null;
@@ -275,36 +275,13 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 		
 		return inputsMap.get(hash);
 	}
-	
-	//Debug
-	public void reloadBoundKeysFromConfig()
-	{
-		for (Input keyBind : inputs)
-		{
-			if (keyBind instanceof Lwjgl3Input)
-				((Lwjgl3Input) keyBind).reload();
-		}
-	}
 
 	public void reload()
 	{
 		inputs.clear();
 		inputsMap.clear();
-		//keyboardInputs.clear();
 		
 		InputsLoaderHelper.loadKeyBindsIntoManager(this, Client.getInstance().getContent().modsManager());
-		/*Iterator<Input> i = KeyBindsLoader.loadKeyBindsIntoManager(this, Client.getInstance().getContent().modsManager());
-		while(i.hasNext())
-		{
-			Input input = i.next();
-			inputs.add(input);
-			inputsMap.put(input.getHash(), input);
-			
-			if(input instanceof KeyBindImplementation)
-			{
-				keyboardInputs.add((KeyBindImplementation) input);
-			}
-		}*/
 
 		//Add physical mouse buttons
 		inputs.add(LEFT);

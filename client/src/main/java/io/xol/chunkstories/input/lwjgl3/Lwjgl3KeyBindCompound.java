@@ -6,9 +6,9 @@
 
 package io.xol.chunkstories.input.lwjgl3;
 
-import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.api.input.KeyboardKeyInput;
 
-public class Lwjgl3KeyBindCompound extends Lwjgl3Input {
+public class Lwjgl3KeyBindCompound extends Lwjgl3Input implements KeyboardKeyInput {
 
 	final String defaultKeysNames;
 	int[] glfwKeys;
@@ -28,7 +28,8 @@ public class Lwjgl3KeyBindCompound extends Lwjgl3Input {
 
 	@Override
 	public void reload() {
-		String keyNamesString = Client.getInstance().getConfig().getString("bind.glfw.compound."+name, defaultKeysNames);
+		//TODO TODO TODO
+		String keyNamesString = defaultKeysNames; //Client.getInstance().getConfig().getString("bind.glfw.compound."+name, defaultKeysNames);
 		String keyNames[] = keyNamesString.split("\\+");
 		
 		glfwKeys = new int[keyNames.length];

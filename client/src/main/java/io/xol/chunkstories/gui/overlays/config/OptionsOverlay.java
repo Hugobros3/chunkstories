@@ -9,8 +9,6 @@ package io.xol.chunkstories.gui.overlays.config;
 import static org.lwjgl.glfw.GLFW.glfwGetKeyName;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 import org.joml.Vector4f;
@@ -23,12 +21,15 @@ import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.input.Mouse.MouseButton;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.util.Configuration.Option;
+import io.xol.chunkstories.api.util.Configuration.OptionBoolean;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.client.RenderingConfig;
-import io.xol.chunkstories.gui.Ingame;
 import io.xol.chunkstories.gui.ng.BaseNgButton;
 import io.xol.chunkstories.gui.ng.LargeButtonIcon;
-import io.xol.chunkstories.input.lwjgl3.Lwjgl3KeyBind;
+import io.xol.chunkstories.input.lwjgl3.Lwjgl3KeyBind.Lwjgl3KeyBindOption;
+import io.xol.chunkstories.util.config.OptionChoiceImplementation;
+import io.xol.chunkstories.util.config.OptionScaleImplementation;
+import io.xol.chunkstories.util.config.OptionToggleImplementation;
 import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.graphics.util.CorneredBoxDrawer;
 import io.xol.engine.graphics.util.ObjectRenderer;
@@ -42,7 +43,7 @@ public class OptionsOverlay extends Layer
 	int selectedConfigTab = 0;
 	private final LocalizationManager locMgr;
 	
-	private RenderingInterface renderer;
+	//private RenderingInterface renderer;
 
 	abstract class ConfigButton extends BaseNgButton
 	{
@@ -56,20 +57,16 @@ public class OptionsOverlay extends Layer
 		
 		public void apply()
 		{
-			save();
-			RenderingConfig.define();
 			if(run != null)
 				run.run();
 		}
 		
-		String parameter;
-		String value;
+		final Option option;
 
-		public ConfigButton(String n)
+		public ConfigButton(Option o)
 		{
-			super(OptionsOverlay.this, 0, 0, n);
-			this.parameter = n;
-			this.value = Client.getInstance().getConfig().getString(parameter, value);
+			super(OptionsOverlay.this, 0, 0, o.getName());
+			this.option = o;
 			
 			this.height = 24;
 			this.width = 160;
@@ -77,47 +74,47 @@ public class OptionsOverlay extends Layer
 
 		public void updateText()
 		{
-			this.text = locMgr.getLocalizedString(parameter) + " : " + value;
+			this.text = locMgr.getLocalizedString(option.getName()) + " : " + option.getValue();
 		}
 
 		public abstract void onClick(float posx, float posy, int button);
-
-		public void save()
-		{
-			Client.getInstance().getConfig().setString(parameter, value);
-		}
 	}
 
-	class ConfigButtonToggle extends ConfigButton
-	{
+	class ConfigButtonToggle extends ConfigButton {
+		final OptionBoolean option;
 
-		public ConfigButtonToggle(String n)
-		{
-			super(n);
-			value = Client.getInstance().getConfig().getBoolean(n, false)+"";
+		public ConfigButtonToggle(OptionBoolean o) {
+			super(o);
+			option = o;
 		}
 
 		@Override
-		public void onClick(float posx, float posy, int button)
-		{
-			value = !Boolean.parseBoolean(value) + "";
+		public void onClick(float posx, float posy, int button) {
+			option.toggle();
 		}
 
 	}
 
 	class ConfigButtonMultiChoice extends ConfigButton
 	{
+		final OptionChoiceImplementation option;
+		
 		String values[];
 		int cuVal = 0;
 
-		public ConfigButtonMultiChoice(String n, String values[])
+		public ConfigButtonMultiChoice(OptionChoiceImplementation o)
 		{
-			super(n);
-			this.values = values;
-			for (int i = 0; i < values.length; i++)
-			{
-				if (values[i].equals(value))
-					cuVal = i;
+			super(o);
+			this.option = o;
+			this.values = new String[o.getPossibleChoices().size()];
+			o.getPossibleChoices().toArray(values);
+			
+			if(o.getValue() != null) {
+				for (int i = 0; i < values.length; i++)
+				{
+					if (values[i].equals(o.getValue()))
+						cuVal = i;
+				}
 			}
 		}
 
@@ -132,61 +129,46 @@ public class OptionsOverlay extends Layer
 				cuVal = values.length - 1;
 			if (cuVal >= values.length)
 				cuVal = 0;
-			value = values[cuVal];
+			option.trySetting(values[cuVal]);
 		}
 
 	}
 
 	class ConfigButtonKey extends ConfigButton
 	{
-		Lwjgl3KeyBind kbi;
-		OptionsOverlay options;
-
-		public ConfigButtonKey(Lwjgl3KeyBind kbi, OptionsOverlay options)
+		public ConfigButtonKey(Lwjgl3KeyBindOption kbi)
 		{
-			super("bind."+kbi.getName());
-			this.kbi = kbi;
-			this.options = options;
+			super(kbi);
 		}
 
 		@Override
 		public void updateText()
 		{
-			this.text = locMgr.getLocalizedString(parameter) + " : " + glfwGetKeyName(Integer.parseInt(value), 0);//Keyboard.getKeyName(Integer.parseInt(value));
+			this.text = locMgr.getLocalizedString(option.getName()) + " : " + glfwGetKeyName(Integer.parseInt(option.getValue()), 0);//Keyboard.getKeyName(Integer.parseInt(value));
 		}
 
 		@Override
 		public void onClick(float posx, float posy, int button)
 		{
-			options.gameWindow.setLayer(new KeyBindSelectionOverlay(options.gameWindow, options, this));
+			OptionsOverlay.this.gameWindow.setLayer(new KeyBindSelectionOverlay(OptionsOverlay.this.gameWindow, OptionsOverlay.this, this));
 		}
 
 		public void callBack(int key)
 		{
-			value = key + "";
+			option.trySetting("" + key);
 			apply();
-			kbi.reload();
-			//options.applyAndSave();
 		}
 
 	}
 
 	class ConfigButtonScale extends ConfigButton
 	{
-		float min,max,steps;
+		final OptionScaleImplementation option;
 		
-		public ConfigButtonScale(String n, float min, float max, float steps)
+		public ConfigButtonScale(OptionScaleImplementation o)
 		{
-			super(n);
-			this.min = min;
-			this.max = max;
-			this.steps = steps;
-		}
-
-		@Override
-		public void updateText()
-		{
-			this.text = locMgr.getLocalizedString(parameter) + " : " + value;
+			super(o);
+			this.option = o;
 		}
 
 		@Override
@@ -194,20 +176,27 @@ public class OptionsOverlay extends Layer
 		{
 			float relPos = posx - this.xPosition;
 			float scaled = (float) (0.0f + Math.min(320, Math.max(0.0, relPos))) / 320.0f;
-			scaled *= (max-min);
-			scaled += min;
-			scaled /= steps;
-			scaled = (float) (Math.floor(scaled)) * steps;
-				
-			//scaled -= scaled % 0.01f;
+			scaled *= (option.getMaximumValue()-option.getMinimumValue());
+			scaled += option.getMinimumValue();
 			
-			value = scaled+"";
-			//options.mainScene.changeOverlay(new KeyBindSelectionOverlay(options.mainScene, options, this));
+			option.trySetting("" + scaled);
+			/*scaled /= steps;
+			scaled = (float) (Math.floor(scaled)) * steps;
+			
+			value = scaled+"";*/
 		}
 		
 		@Override
 		public void render(RenderingInterface renderer)
 		{
+			double scaled = option.getDoubleValue();
+			
+			scaled /= option.getGranularity();
+			scaled = (float) (Math.floor(scaled)) * option.getGranularity();
+			
+			this.text = locMgr.getLocalizedString(option.getName()) + " : " + String.format("%."+3+"G", scaled);//Keyboard.getKeyName(Integer.parseInt(value));
+			
+			
 			String localizedText = Client.getInstance().getContent().localization().localize(text);
 			int textWidth = Client.getInstance().getContent().fonts().defaultFont().getWidth(localizedText) * scale();
 			if (width < 0)
@@ -218,7 +207,9 @@ public class OptionsOverlay extends Layer
 			TexturesHandler.getTexture("./textures/gui/scalableField.png").setLinearFiltering(false);
 			CorneredBoxDrawer.drawCorneredBoxTiled(xPosition + getWidth() / 2, yPosition + getHeight() / 2, getWidth(), getHeight(), 8, "./textures/gui/scalableField.png", 32, scale());
 			
-			ObjectRenderer.renderTexturedRect(xPosition + getWidth() * (Float.parseFloat(value)-min)/(max-min), yPosition + 12 * scale(), 32 * scale(), 32 * scale(), 0, 0, 32, 32, 32, "./textures/gui/barCursor.png");
+			ObjectRenderer.renderTexturedRect(
+					xPosition + this.width * scale() * (float)(option.getDoubleValue()-option.getMinimumValue())/(float)(option.getMaximumValue()-option.getMinimumValue()),
+					yPosition + 12 * scale(), 32 * scale(), 32 * scale(), 0, 0, 32, 32, 32, "./textures/gui/barCursor.png");
 			
 			renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), xPosition + textDekal, yPosition + 4 * scale(), localizedText, scale(), scale(), new Vector4f(1.0f));
 		}
@@ -228,12 +219,19 @@ public class OptionsOverlay extends Layer
 	class ConfigTab
 	{
 		String name;
-		ConfigButton[] configButtons;
+		List<ConfigButton> configButtons;
 
-		public ConfigTab(String name, ConfigButton[] buttons)
+		public ConfigTab(String name)
 		{
 			this.name = name;
-			this.configButtons = buttons;
+			this.configButtons = new ArrayList<>();
+		}
+		
+		public ConfigTab(String name, ConfigButton[] buttons)
+		{
+			this(name);
+			for(ConfigButton b : buttons)
+				configButtons.add(b);
 		}
 	}
 	
@@ -247,172 +245,56 @@ public class OptionsOverlay extends Layer
 
 			@Override
 			public void run() {
-				//applyAndSave();
-				Client.getInstance().getConfig().save();
+				Client.getInstance().getConfiguration().save();
 				gameWindow.setLayer(parentLayer);
 			}
 			
 		});
 		elements.add(exitButton);
 
-		configTabs.add(new ConfigTab("#{Rendering}", new ConfigButton[] { 
-				new ConfigButtonMultiChoice("viewDistance",new String[] { "64", "96", "128", "144", "160", "192", "224", "256", "512", "768" }),
-				new ConfigButtonToggle("doRealtimeReflections").setApplyAction(new Runnable(){
-					@Override
-					public void run()
-					{
-						renderer.shaders().reloadShader("reflections");
-						renderer.shaders().reloadShader("postprocess");
-					}
-				}),
-				new ConfigButtonToggle("doDynamicCubemaps").setApplyAction(new Runnable(){
-					@Override
-					public void run()
-					{
-						renderer.shaders().reloadShader("shadows_apply");
-						renderer.shaders().reloadShader("terrain");
-						renderer.shaders().reloadShader("terrain_blocky");
-						renderer.shaders().reloadShader("postprocess");
-						renderer.shaders().reloadShader("reflections");
-					}
-				}),
-				new ConfigButtonToggle("doShadows").setApplyAction(new Runnable(){
-					@Override
-					public void run()
-					{
-						renderer.shaders().reloadShader("shadows_apply");
-						renderer.shaders().reloadShader("terrain");
-						renderer.shaders().reloadShader("terrain_blocky");
-					}
-				}),
-				new ConfigButtonMultiChoice("shadowMapResolutions", new String[] { "512", "1024", "2048", "4096" }),
-				new ConfigButtonToggle("dynamicGrass").setApplyAction(new Runnable(){
-					@Override
-					public void run()
-					{
-						renderer.shaders().reloadShader("blocks_opaque");
-						renderer.shaders().reloadShader("postprocess");
-						renderer.shaders().reloadShader("shadows");
-					}
-				}),
-				new ConfigButtonToggle("hqTerrain").setApplyAction(new Runnable(){
-					@Override
-					public void run()
-					{
-						renderer.shaders().reloadShader("terrain");
-						renderer.shaders().reloadShader("terrain_blocky");
-					}
-				}),
-				/*new ConfigButtonMultiChoice("ssaoQuality", new String[] { "0", "1", "2"}).setApplyAction(new Runnable(){
-					@Override
-					public void run()
-					{
-						ShadersLibrary.getShaderProgram("blocks_opaque").reload(FastConfig.getShaderConfig());
-						ShadersLibrary.getShaderProgram("shadows_apply").reload(FastConfig.getShaderConfig());
-					}
-				}),*/
-				new ConfigButtonToggle("doBloom").setApplyAction(new Runnable(){
-						@Override
-						public void run()
-						{
-							if (parentLayer.getRootLayer() instanceof Ingame){
-								Client.getInstance().getWorld().getWorldRenderer().setupRenderSize();
-							renderer.shaders().reloadShader("postprocess");
-						}
-					}
-				}),
-				new ConfigButtonMultiChoice("framerate",new String[] { "30", "60", "120", "-1" }).setApplyAction(new Runnable(){
-					@Override
-					public void run()
-					{
-						Client.getInstance().getGameWindow().setTargetFPS(Client.getInstance().getConfig().getInteger("framerate", -1));
-					}
-				}),
-				}));
-
-		
-		//Make a list of the available translations before creating the button
-		Collection<String> translationsCollection = Client.getInstance().getContent().localization().listTranslations();
-		String[] translations = new String[translationsCollection.size()];
-		int z = 0;
-		for(String loc : translationsCollection)
-		{
-			translations[z] = loc;
-			z++;
-		}
-		configTabs.add(new ConfigTab("#{Video}", new ConfigButton[] {
-				new ConfigButtonScale("fov", 25f, 85f, 1f),
-				new ConfigButtonToggle("fullScreen"),
-				new ConfigButtonMultiChoice("fullScreenResolution", Client.getInstance().getGameWindow().getDisplayModes()),
-				new ConfigButtonMultiChoice("language", translations).setApplyAction(new Runnable(){
-					@Override
-					public void run()
-					{
-						String code = Client.getInstance().getConfig().getString("language", "en");
-						Client.getInstance().configDeprecated().setString("language", code);
-						Client.getInstance().getContent().localization().loadTranslation(code);
-					}
-				}),
-				}));
-
-		
-		List<ConfigButton> controlsButtons = new ArrayList<ConfigButton>();
-		controlsButtons.add(new ConfigButtonScale("mouseSensitivity", 0.5f, 2f, 0.05f));
-		
-		//List all the configurable inputs
-		Iterator<Input> inputsIterator = Client.getInstance().getInputsManager().getAllInputs();
-		while(inputsIterator.hasNext())
-		{
-			Input keyBind = inputsIterator.next();
-			if(keyBind instanceof Lwjgl3KeyBind)
-			{
-				Lwjgl3KeyBind kbi = (Lwjgl3KeyBind)keyBind;
-				if(kbi.isEditable())
-					controlsButtons.add(new ConfigButtonKey(kbi, this));
+		for(Option option : gameWindow.getClient().getConfiguration().allOptions()) {
+			if(!option.getName().startsWith("client."))
+				continue;
+			
+			String name = option.getName();
+			String category = name.substring("client.".length());
+			category = category.substring(0, category.indexOf("."));
+			
+			category = category.substring(0,1).toUpperCase() + category.substring(1).toLowerCase();
+			
+			ConfigButton optionButton = null;
+			
+			if(option instanceof OptionChoiceImplementation)
+				optionButton = new ConfigButtonMultiChoice((OptionChoiceImplementation) option);
+			if(option instanceof OptionScaleImplementation)
+				optionButton = new ConfigButtonScale((OptionScaleImplementation) option);
+			if(option instanceof OptionToggleImplementation)
+				optionButton = new ConfigButtonToggle((OptionToggleImplementation) option);
+			if(option instanceof Lwjgl3KeyBindOption) {
+				
+				Lwjgl3KeyBindOption keyOption = (Lwjgl3KeyBindOption) option;
+				if(keyOption.getInput().isEditable())
+					optionButton = new ConfigButtonKey(keyOption);
 			}
-		}
-		
-		//Turn that into an array and make a tab from it
-		ConfigButton[] controlsButtonsArray = new ConfigButton[controlsButtons.size()];
-		int i = 0;
-		for(ConfigButton cb : controlsButtons)
-		{
-			controlsButtonsArray[i] = cb;
-			i++;
-		}
-		configTabs.add(new ConfigTab("#{Controls}", controlsButtonsArray));
-		
-		//TODO sound config ?
-		configTabs.add(new ConfigTab("#{Sound}", new ConfigButton[] {}));
-		
-		//Make the debug tab dependant on runtime perms
-		if(RenderingConfig.isDebugAllowed)
-		{
-			configTabs.add(new ConfigTab("#{Debug}", new ConfigButton[] { 
-					new ConfigButtonToggle("debugGBuffers").setApplyAction(new Runnable(){
-						@Override
-						public void run()
-						{
-							renderer.shaders().reloadShader("postprocess");
-						}
-					}),
-					new ConfigButtonToggle("physicsVisualization"),
-					new ConfigButtonToggle("showDebugInfo"),
-					new ConfigButtonToggle("frametimeGraph"),
-					new ConfigButtonMultiChoice("log-policy",new String[] { "send", "dont" }),
-					}));
-		}
-		else
-		{
-			configTabs.add(new ConfigTab("#{Debug}", new ConfigButton[] { 
-					
-					//No cheat-allowing debug functions
-					new ConfigButtonToggle("showDebugInfo"),
-					new ConfigButtonToggle("frametimeGraph"),
-					new ConfigButtonMultiChoice("log-policy",new String[] { "send", "dont" }),
-					}));
-		}
+			
+			if(optionButton == null || option.resolveProperty("hidden", "false").equals("true"))
+				continue;
+			
+			ConfigTab relevantTab = null;
+			for (ConfigTab tab : configTabs) {
+				if(tab.name.equals(category)) {
+					relevantTab = tab;
+					break;
+				}
+			}
+			if(relevantTab == null) {
+				relevantTab = new ConfigTab(category);
+				configTabs.add(0, relevantTab);
+			}
 
+			relevantTab.configButtons.add(optionButton);
+		}
+		
 		int configTabIndex = 0;
 		for (ConfigTab tab : configTabs)
 		{
@@ -455,8 +337,7 @@ public class OptionsOverlay extends Layer
 	@Override
 	public void render(RenderingInterface renderer)
 	{
-		this.renderer = renderer;
-		
+		//this.renderer = renderer;
 		parentLayer.getRootLayer().render(renderer);
 		
 		int optionsPanelSize = (160 * 2 + 16 + 32) * this.getGuiScale();
@@ -483,17 +364,15 @@ public class OptionsOverlay extends Layer
 		
 		Mouse mouse = gameWindow.getInputsManager().getMouse();
 		
-		for (ConfigButton c : currentConfigTab.configButtons)
-		{
+		for (ConfigButton c : currentConfigTab.configButtons) {
 			c.setPosition(startPosX + b * (160 + 16) * this.getGuiScale(), startPosY - (float) Math.floor(a / 2) * 32 * this.getGuiScale());
 			c.updateText();
 			c.render(renderer);
 			
 			//Scale buttons work a bit hackyshly
-			if(c instanceof ConfigButtonScale && c.isMouseOver() && mouse.getMainButton().isPressed())
-			{
-				ConfigButtonScale cs = (ConfigButtonScale)c;
-				cs.onClick((float)mouse.getCursorX(), (float)mouse.getCursorY(), 0);
+			if (c instanceof ConfigButtonScale && c.isMouseOver() && mouse.getMainButton().isPressed()) {
+				ConfigButtonScale cs = (ConfigButtonScale) c;
+				cs.onClick((float) mouse.getCursorX(), (float) mouse.getCursorY(), 0);
 				cs.apply();
 			}
 			
@@ -509,18 +388,16 @@ public class OptionsOverlay extends Layer
 	
 	@Override
 	public boolean handleInput(Input input) {
-		if(input.getName().equals("exit"))
-		{
-			Client.getInstance().getConfig().save();
+		if (input.getName().equals("exit")) {
+			Client.getInstance().getConfiguration().save();
 			gameWindow.setLayer(parentLayer);
 			return true;
-		} else if(input instanceof MouseButton) {
-			MouseButton mb = (MouseButton)input;
-			for (ConfigButton b : configTabs.get(selectedConfigTab).configButtons)
-			{
-				if (b.isMouseOver())
-				{
-					b.onClick((float)mb.getMouse().getCursorX(), (float)mb.getMouse().getCursorY(), mb.getName().equals("mouse.left") ? 0 : 1);
+		} else if (input instanceof MouseButton) {
+			MouseButton mb = (MouseButton) input;
+			for (ConfigButton b : configTabs.get(selectedConfigTab).configButtons) {
+				if (b.isMouseOver()) {
+					b.onClick((float) mb.getMouse().getCursorX(), (float) mb.getMouse().getCursorY(),
+							mb.getName().equals("mouse.left") ? 0 : 1);
 					b.apply();
 				}
 			}

@@ -25,8 +25,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-
 public class ItemDefinitionsStore implements ItemsDefinitions
 {
 	Map<Short, Constructor<? extends Item>> ItemDefinitions = new HashMap<Short, Constructor<? extends Item>>();

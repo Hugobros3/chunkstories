@@ -41,10 +41,10 @@ public class LoginOverlay extends Layer implements HttpRequester
 		
 		//Autologin fills in the forms automagically
 		//TODO Secure storage of password
-		if (Client.getInstance().getConfig().getString("autologin", "ko").equals("ok"))
+		if (Client.getInstance().getConfiguration().getStringOption("client.login.auto").equals("ok"))
 		{
-			usernameForm.setText(Client.getInstance().getConfig().getString("user", ""));
-			passwordForm.setText(Client.getInstance().getConfig().getString("pass", ""));
+			usernameForm.setText(Client.getInstance().getConfiguration().getStringOption("client.login.username"));
+			passwordForm.setText(Client.getInstance().getConfiguration().getStringOption("client.login.password"));
 			autologin = true;
 		}
 		
@@ -76,7 +76,7 @@ public class LoginOverlay extends Layer implements HttpRequester
 	{
 		parentLayer.render(renderer);
 		
-		if(Client.getInstance().configDeprecated().getString("language", "undefined").equals("undefined"))
+		if(Client.getInstance().getConfiguration().getStringOption("client.game.language").equals("undefined"))
 		{
 			gameWindow.setLayer(new LanguageSelectionScreen(gameWindow, this, false));
 			//this.mainScene.changeOverlay(new LanguageSelectionScreen(mainScene, this, false));
@@ -85,7 +85,6 @@ public class LoginOverlay extends Layer implements HttpRequester
 		if (can_next)
 			gameWindow.setLayer(new MainMenuOverlay(gameWindow, parentLayer));
 		
-			//mainScene.changeOverlay(new MainMenuOverlay(mainScene, null));
 		ObjectRenderer.renderTexturedRect(renderer.getWindow().getWidth() / 2, renderer.getWindow().getHeight() / 2 + 180, 512, 512, "./textures/logo.png");
 
 		loginButton.setPosition(usernameForm.getPositionX() + loginButton.getWidth() / 2f - 8, renderer.getWindow().getHeight() / 2 - 80);
@@ -127,7 +126,7 @@ public class LoginOverlay extends Layer implements HttpRequester
 			}
 		}
 		
-		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), 12, 12 , "2015-2018 Hugo 'Gobrosse' Devillers", 2, 2, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
+		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), 12, 12 , "2015-2018 XolioWare Interactive", 2, 2, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
 	}
 	
 	void connect()
@@ -192,9 +191,9 @@ public class LoginOverlay extends Layer implements HttpRequester
 				String session = result.split(":")[1];
 				Client.username = usernameForm.text;
 				Client.session_key = session;
-				Client.getInstance().getConfig().setString("autologin", "ok");
-				Client.getInstance().getConfig().setString("user", usernameForm.text);
-				Client.getInstance().getConfig().setString("pass", passwordForm.text);
+				Client.getInstance().getConfiguration().getOption("client.login.auto").trySetting("ok");
+				Client.getInstance().getConfiguration().getOption("client.login.username").trySetting(usernameForm.text);
+				Client.getInstance().getConfiguration().getOption("client.login.password").trySetting(passwordForm.text);
 				
 				if(Client.username.equals("Gobrosse") || Client.username.equals("kektest"))
 				{
@@ -202,7 +201,7 @@ public class LoginOverlay extends Layer implements HttpRequester
 				}
 				
 				//If the user didn't opt-out, look for crash files and upload those
-				if(Client.getInstance().configDeprecated().getString("log-policy", "undefined").equals("send"))
+				if(Client.getInstance().getConfiguration().getStringOption("client.game.log-policy").equals("send"))
 				{
 					JavaCrashesUploader t = new JavaCrashesUploader(Client.getInstance());
 					t.start();

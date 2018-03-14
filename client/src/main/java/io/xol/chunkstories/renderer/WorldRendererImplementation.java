@@ -28,6 +28,7 @@ import io.xol.chunkstories.renderer.chunks.ChunkMeshesRenderer;
 import io.xol.chunkstories.renderer.debug.FakeImmediateModeDebugRenderer;
 import io.xol.chunkstories.renderer.decals.DecalsRendererImplementation;
 import io.xol.chunkstories.renderer.particles.ClientParticlesRenderer;
+import io.xol.chunkstories.renderer.passes.RenderingGraph;
 import io.xol.chunkstories.renderer.terrain.FarTerrainGSMeshRenderer;
 import io.xol.chunkstories.renderer.terrain.FarTerrainMeshRenderer;
 //import io.xol.chunkstories.renderer.terrain.FarTerrainNoMeshRenderer;

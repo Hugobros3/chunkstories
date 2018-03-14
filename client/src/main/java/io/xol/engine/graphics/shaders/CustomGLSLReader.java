@@ -16,31 +16,30 @@ import java.util.Set;
 
 import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.content.mods.ModsManager;
+import io.xol.chunkstories.api.util.Configuration.Option;
+import io.xol.chunkstories.api.util.Configuration.OptionBoolean;
+import io.xol.chunkstories.client.Client;
 
 
 
 public class CustomGLSLReader
 {
-	public static void loadRecursivly(ModsManager modsManager, Asset asset, StringBuilder into, String[] parameters, boolean type, Set<String> alreadyIncluded) throws IOException
+	public static void loadRecursivly(ModsManager modsManager, Asset asset, StringBuilder into, boolean type, Set<String> alreadyIncluded) throws IOException
 	{
 		if(alreadyIncluded == null)
 			alreadyIncluded = new HashSet<String>();
 		
-		//type : false = vertex, true = frag
-		//FileReader fileReader = new FileReader(file);
-		//BufferedReader reader = new BufferedReader(fileReader);
-		
 		Reader fileReader = asset.reader();
 		BufferedReader reader = new BufferedReader(fileReader);
 		
-		List<String> blockingDef = new ArrayList<String>();
+		//List<String> blockingDef = new ArrayList<String>();
 		String l;
 		while ((l = reader.readLine()) != null)
 		{
 			String strippedLine = l.replace("	", "");
-			if (strippedLine.startsWith("<"))
+			if (strippedLine.startsWith("#"))
 			{
-				String[] line = strippedLine.replace(">", "").replace("<", "").split(" ");
+				String[] line = strippedLine.substring(1).replace(">", "").replace("<", "").split(" ");
 				if (line.length == 2)
 				{
 					if (line[0].equals("include"))
@@ -60,17 +59,11 @@ public class CustomGLSLReader
 							
 							String lowerHalf = shaderInclude.substring(0, indexOf - 1);
 							String upperHalf = shaderInclude.substring(indexOf + 2);
-
-							//System.out.println("lh0:"+lowerHalf);
 							
 							lowerHalf = lowerHalf.substring(0, lowerHalf.lastIndexOf("/"));
 							
-							//System.out.println("lh1:"+lowerHalf);
-							
 							shaderInclude = lowerHalf + upperHalf;
 						}
-						
-						//System.out.println("done: "+shaderInclude);
 						
 						Asset asset2include = modsManager.getAsset(shaderInclude);
 						
@@ -81,54 +74,43 @@ public class CustomGLSLReader
 						
 						//Prevents including same file twice and retarded loops
 						if(alreadyIncluded.add(asset2include.getName()))
-							loadRecursivly(modsManager, asset2include, into, parameters, type, alreadyIncluded);
+							loadRecursivly(modsManager, asset2include, into, type, alreadyIncluded);
 						else
 							System.out.println("Shader include : "+asset2include.getName()+" already included, skipping");
-					}
-					else if (line[0].equals("ifdef"))
-					{
-						String def = line[1];
-						boolean shouldFind = true;
-						if(def.startsWith("!"))
-						{
-							def = def.replace("!", "");	
-							shouldFind = false;
-						}
-						boolean found = false;
-						if (parameters != null)
-						{
-							for (String a : parameters)
-								if (a.equals(def))
-									found = true;
-						}
-						if ((shouldFind && !found) || !shouldFind && found)
-						{
-							blockingDef.add(def);
-						}
-					}
-					else if (line[0].equals("endif"))
-					{
-						String def = line[1];
-						if(def.startsWith("!"))
-							def = def.replace("!", "");	
-						blockingDef.remove(def);
+						
+						continue;
+					} else if(line[0].equals("version")) {
+						into.append(l).append("\n");
+						
+						defineConfiguration(into); //<- append the defines stuff after the version tag
+						continue;
 					}
 				}
-				else
-				{
-					if(line[0].equals("vertex-only") && type)
-						blockingDef.add("vertex-only");
-					if(line[0].equals("/vertex-only") && type)
-						blockingDef.remove("vertex-only");
-				}
 			}
-			else
-			{
-				if (blockingDef.size() == 0)
-					into.append(l).append("\n");
-			}
+			
+			into.append(l).append("\n");
 		}
 		reader.close();
 		//return into;
+	}
+	
+	private static void defineConfiguration(StringBuilder shaderSource) {
+		for(Option option : Client.getInstance().getConfiguration().allOptions()) {
+			String fullname = option.getName();
+			if(fullname.startsWith("client.rendering")) {
+				String abridgedName = fullname.substring("client.rendering.".length());
+				
+				abridgedName = abridgedName.replace(".", "_");
+
+				if(option instanceof OptionBoolean) {
+					if(option.getValue().equals("true"))
+						shaderSource.append("#define " + abridgedName + " " + option.getValue().toString() + "\n");
+					//shaderSource.append("#define " + abridgedName + " " + (option.getValue().equals("true") ? 1 : 0) + "\n");
+				} else
+					shaderSource.append("#define " + abridgedName + " " + option.getValue().toString() + "\n");
+				//System.out.println("#define " + abridgedName + " " + option.getValue().toString());
+			}
+			
+		}
 	}
 }

@@ -6,8 +6,6 @@
 
 package io.xol.chunkstories.client;
 
-
-
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -18,14 +16,15 @@ import org.slf4j.LoggerFactory;
 import io.xol.chunkstories.Constants;
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.client.ClientInterface;
-import io.xol.chunkstories.api.client.ClientRenderingConfig;
 import io.xol.chunkstories.api.client.ClientSoundManager;
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.plugin.ClientPluginManager;
+import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.util.ConfigDeprecated;
+import io.xol.chunkstories.api.util.Configuration;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.workers.Tasks;
 import io.xol.chunkstories.api.world.WorldClient;
@@ -42,6 +41,7 @@ import io.xol.chunkstories.input.lwjgl3.Lwjgl3ClientInputsManager;
 import io.xol.chunkstories.renderer.chunks.ClientTasksPool;
 import io.xol.chunkstories.tools.DebugProfiler;
 import io.xol.chunkstories.util.LogbackSetupHelper;
+import io.xol.chunkstories.util.config.ConfigurationImplementation;
 import io.xol.chunkstories.world.WorldClientCommon;
 import io.xol.engine.base.GameWindowOpenGL_LWJGL3;
 import io.xol.engine.concurrency.SimpleFence;
@@ -52,13 +52,13 @@ public class Client implements ClientInterface
 	private static Client staticClientReference; //Self-reference for static access
 	
 	//Base client data
-	private final ConfigDeprecated clientConfig;
+	//private final ConfigDeprecated clientConfig;
 	private final Logger logger;
 	private final ClientGameContent gameContent;
 
 	//Windowing/Rendering
 	private final GameWindowOpenGL_LWJGL3 gameWindow;
-	private final RenderingConfig renderingConfig = new RenderingConfig();
+	//private final RenderingConfig renderingConfig = new RenderingConfig();
 	
 	//Login data
 	public static String username = "Unknow";
@@ -72,6 +72,8 @@ public class Client implements ClientInterface
 	private final ClientTasksPool workers;
 
 	private Logger chatLogger = LoggerFactory.getLogger("game.chat");
+
+	private ConfigurationImplementation configuration;
 
 	//Debug
 	public static DebugProfiler profiler = new DebugProfiler();
@@ -88,6 +90,7 @@ public class Client implements ClientInterface
 		for (String s : args) // Debug arguments
 		{
 			if (s.equals("--forceobsolete")) {
+				
 				RenderingConfig.ignoreObsoleteHardware = false;
 				System.out.println("Ignoring OpenGL detection. This is absolutely definitely not going to make the game run, proceed at your own risk of imminent failure."
 						+ "You are stripped of any tech support rights when running the game using this.");
@@ -150,11 +153,22 @@ public class Client implements ClientInterface
         new LogbackSetupHelper(loggingFilename);
 		
 		//Get configuration right
-		clientConfig = new ConfigFile("./config/client.cfg");
+		//clientConfig = new ConfigFile("./config/client.cfg");
+		
+		// Creates game window, no use of any user content up to this point
+		gameWindow = new GameWindowOpenGL_LWJGL3(this, "Chunk Stories " + VersionInfo.version);
+		
+		// Create game content manager
+		gameContent = new ClientGameContent(this, coreContentLocation, modsStringArgument);
+		gameContent.reload();
+
+		configuration = new ClientConfigurationImplementation(this, new File("./config/client.cfg"));
+		
+		gameWindow.stage_2_init();
 		
 		// Spawns worker threads
 		int nbThreads = -1;
-		String configThreads = configDeprecated().getString("workersThreads", "auto");
+		String configThreads = getConfiguration().getStringOption("workersThreads");
 		if(!configThreads.equals("auto")) {
 			try {
 				nbThreads = Integer.parseInt(configThreads);
@@ -170,21 +184,11 @@ public class Client implements ClientInterface
 				nbThreads = 1;
 		}
 		
-		// Creates game window, no use of any user content up to this point
-		gameWindow = new GameWindowOpenGL_LWJGL3(this, "Chunk Stories " + VersionInfo.version);
-		RenderingConfig.define();
-		
-		// Create game content manager
-		gameContent = new ClientGameContent(this, coreContentLocation, modsStringArgument);
-		gameContent.reload();
-		
 		workers = new ClientTasksPool(this, nbThreads);
 		workers.start();
 		
-		gameWindow.stage_2_init();
-		
 		//Load the correct language
-		String lang = clientConfig.getString("language", "undefined");
+		String lang = getConfiguration().getStringOption("client.game.language");
 		if(!lang.equals("undefined"))
 			gameContent.localization().loadTranslation(lang);
 
@@ -222,12 +226,7 @@ public class Client implements ClientInterface
 	{
 		workers.destroy();
 		
-		clientConfig.save();
-	}
-
-	public ConfigDeprecated getConfig()
-	{
-		return clientConfig;
+		configuration.save();
 	}
 
 	@Override
@@ -446,17 +445,17 @@ public class Client implements ClientInterface
 	}
 
 	@Override
-	public ConfigDeprecated configDeprecated() {
-		return this.clientConfig;
-	}
-
-	@Override
-	public ClientRenderingConfig renderingConfig() {
-		return renderingConfig;
-	}
-
-	@Override
 	public Tasks tasks() {
 		return workers;
+	}
+
+	@Override
+	public ConfigurationImplementation getConfiguration() {
+		return configuration;
+	}
+
+	@Override
+	public RenderingInterface getRenderingInterface() {
+		return this.gameWindow.getRenderingContext();
 	}
 }

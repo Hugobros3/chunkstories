@@ -16,7 +16,6 @@ import io.xol.engine.gui.elements.Button;
 
 public class LogPolicyAsk extends Layer
 {
-	//GuiElementsHandler guiHandler = new GuiElementsHandler();
 	Button acceptButton = new Button(this, 0, 0, 300, "#{logpolicy.accept}");
 	Button refuseButton = new Button(this, 0, 0, 300, "#{logpolicy.deny}");
 	
@@ -30,8 +29,8 @@ public class LogPolicyAsk extends Layer
 
 			@Override
 			public void run() {
-				Client.getInstance().configDeprecated().setString("log-policy", "send");
-				Client.getInstance().configDeprecated().save();
+				Client.getInstance().getConfiguration().getOption("client.game.log-policy").trySetting("send");
+				Client.getInstance().getConfiguration().save();
 				gameWindow.setLayer(parentLayer);
 			}
 			
@@ -41,8 +40,8 @@ public class LogPolicyAsk extends Layer
 
 			@Override
 			public void run() {
-				Client.getInstance().configDeprecated().setString("log-policy", "dont");
-				Client.getInstance().configDeprecated().save();
+				Client.getInstance().getConfiguration().getOption("client.game.log-policy").trySetting("dont");
+				Client.getInstance().getConfiguration().save();
 				gameWindow.setLayer(parentLayer);
 			}
 			

@@ -176,7 +176,7 @@ public class FarTerrainMeshRenderer implements FarTerrainRenderer
 		renderer.getCamera().setupShader(terrainShader);
 		worldRenderer.getSkyRenderer().setupShader(terrainShader);
 
-		terrainShader.setUniform1f("viewDistance", RenderingConfig.viewDistance);
+		terrainShader.setUniform1f("viewDistance", world.getClient().getConfiguration().getIntOption("client.rendering.viewDistance"));
 		Texture2D waterTexture = renderer.textures().getTexture("./textures/water/shallow.png");
 		waterTexture.setLinearFiltering(true);
 		waterTexture.setMipMapping(true);

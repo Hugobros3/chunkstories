@@ -25,7 +25,7 @@ import io.xol.chunkstories.api.rendering.shader.Shader;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
 import io.xol.chunkstories.api.rendering.world.WorldRenderer.FarTerrainRenderer;
-import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
 import io.xol.chunkstories.renderer.WorldRendererImplementation;
@@ -39,7 +39,7 @@ import io.xol.engine.graphics.textures.TexturesHandler;
  */
 public class FarTerrainNoMeshRenderer implements FarTerrainRenderer {
 
-	final World world;
+	final WorldClient world;
 	final WorldRendererImplementation worldRenderer;
 	
 	private VoxelTexturesColours colours;
@@ -114,7 +114,7 @@ public class FarTerrainNoMeshRenderer implements FarTerrainRenderer {
 		renderer.getCamera().setupShader(terrainShader);
 		worldRenderer.getSkyRenderer().setupShader(terrainShader);
 
-		terrainShader.setUniform1f("viewDistance", RenderingConfig.viewDistance);
+		terrainShader.setUniform1f("viewDistance", world.getClient().getConfiguration().getIntOption("client.rendering.viewDistance"));
 		
 		Texture2D waterTexture = renderer.textures().getTexture("./textures/water/shallow.png");
 		waterTexture.setLinearFiltering(true);
@@ -155,8 +155,7 @@ public class FarTerrainNoMeshRenderer implements FarTerrainRenderer {
 				return; //We won't do shit with that going on
 			
 			Vector2d playerCenter = new Vector2d(playerPosition.x, playerPosition.z);
-			
-			World world = playerPosition.getWorld();
+
 			
 			int chunkX = (int) Math.floor(playerPosition.x / 32.0);
 			int chunkZ = (int) Math.floor(playerPosition.z / 32.0);
@@ -174,7 +173,7 @@ public class FarTerrainNoMeshRenderer implements FarTerrainRenderer {
 			double lodBias = -0.0;
 			double lodExponent = 0.35;
 			
-			if(!RenderingConfig.hqTerrain) {
+			if(!world.getClient().getConfiguration().getBooleanOption("client.rendering.hqTerrain")) {
 				lodBias = 0.4;
 				lodExponent = 0.35;
 			}

@@ -38,8 +38,7 @@ public class InputsLoaderHelper
 	{
 		Iterator<Asset> i = modsManager.getAllAssetsByExtension("inputs");
 		//Load the next one
-		while (i.hasNext())
-		{
+		while (i.hasNext()) {
 			loadKeyBindsFile(i.next(), inputManager);
 		}
 	}
