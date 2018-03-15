@@ -23,13 +23,13 @@ To this end, Chunk Stories borrows heavily from one of two best things about the
 ### Engine Features
 
  * Configuration files allow to redefine almost anything using a simplistic syntax
- * Customizable network packets, world generation, inputs, GUI*, fonts, localization, ...
+ * Customizable network packets, render passes, world generation, inputs, GUI*, fonts, localization, ...
  * Support for basically loading everything at runtime, including downloading on server connection
  * You only deal with named definitions, voxels|items|entities|whatever IDs are allocated automatically and dynamically
  * Up to 65535 voxel types, with 8-bit metadata and optional support for [even more data](http://chunkstories.xyz/wiki)
  * Component-based entity system
  * Heightmap representation for unloaded terrain, rendering up to 1km
- * Modern-ish renderer in GL3.3 core, supporting deferred rendering, reloading shaders, instanced rendering, particles, SSR, bloom, you name it
+ * Mod-customizable and modular renderer in GL3.3, supporting deferred shading, shadow mapping, **voxel-based global-illumination**, instancing, particles, SSR, bloom, you name it !
  * Built-in support for AABB physics, skeletal animation with hitscan hit detection and more
  * Works on Windows and Linux ( OSX may work but unsupported )
 
@@ -40,6 +40,12 @@ To this end, Chunk Stories borrows heavily from one of two best things about the
 *This is for building `chunkstories`, the core engine. If you are only looking to write mods, you do not have to mess with this at all and should rather follow the [mods creation guide](http://chunkstories.xyz/wiki/doku.php?id=mod_setup) on the project Wiki !*
 
 #### Setup
+
+##### Video tutorial
+
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/uLigFN8id3c/0.jpg)](https://www.youtube.com/watch?v=uLigFN8id3c)
+
+##### Brief Instructions
 
 First you need to clone both `chunkstories-api` and `chunkstories-core` as both are needed to compile this. You can try to build from the artifacts in the repo, but only those used in released versions of the games are guaranteed to be present.
  * `git clone` both `chunkstories-api` and `chunkstories-core`
@@ -67,3 +73,4 @@ The local maven repository on your computer (.m2 folder) now contains copies of 
 ### License
 
 The chunkstories **implementation** is released under LGPL, see LICENSE.MD
+
