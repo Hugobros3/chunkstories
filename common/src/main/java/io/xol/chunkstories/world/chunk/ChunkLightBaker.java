@@ -145,7 +145,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 		int mods = 0;
 		
 		// Load nearby chunks and check if they contain bright spots we haven't accounted for yet
-		if (adjacent && false)
+		if (adjacent)
 			mods += addAdjacentChunksLightSources(blockSources, sunSources);
 
 		//Propagates the light
@@ -586,60 +586,6 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 						peek(0, c, b, adj);
 						peek(31, c, b, cell);
 						
-						int modifier = adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.LEFT) + 1;
-						if(adj.blocklight - modifier > cell.blocklight) {
-							cell.blocklight = adj.blocklight - modifier;
-							poke(cell);
-							mods++;
-							blockSources.addLast(cell.x & 0x1f);
-							blockSources.addLast(cell.y & 0x1f);
-							blockSources.addLast(cell.z & 0x1f);
-						}
-						if(adj.sunlight - modifier > cell.sunlight) {
-							cell.sunlight = adj.sunlight - modifier;
-							mods++;
-							poke(cell);
-							sunSources.addLast(cell.x & 0x1f);
-							sunSources.addLast(cell.y & 0x1f);
-							sunSources.addLast(cell.z & 0x1f);
-						}
-						
-						/*int adjacent_data = cc.peekRaw(0, c, b);
-						int current_data = chunk.peekRaw(31, c, b);
-
-						int adjacent_blo = ((adjacent_data & blocklightMask) >>> blockBitshift);
-						int current_blo = ((current_data & blocklightMask) >>> blockBitshift);
-						int adjacent_sun = ((adjacent_data & sunlightMask) >>> sunBitshift);
-						int current_sun = ((current_data & sunlightMask) >>> sunBitshift);
-						if (adjacent_blo > 1 && adjacent_blo > current_blo)
-						{
-							int ndata = current_data & blockAntiMask | (adjacent_blo - 1) << blockBitshift;
-							chunk.pokeRawSilently(31, c, b, ndata);
-							mods++;
-							blockSources.addLast(31);
-							blockSources.addLast(b);
-							blockSources.addLast(c);
-						}
-						if (adjacent_sun > 1 && adjacent_sun > current_sun)
-						{
-							int ndata = current_data & sunAntiMask | (adjacent_sun - 1) << sunBitshift;
-							chunk.pokeRawSilently(31, c, b, ndata);
-							mods++;
-							sunSources.addLast(31);
-							sunSources.addLast(b);
-							sunSources.addLast(c);
-						}*/
-					}
-			}
-			cc = world.getChunk(chunkX - 1, chunkY, chunkZ);
-			if (cc != null)
-			{
-				for (int b = 0; b < 32; b++)
-					for (int c = 0; c < 32; c++)
-					{
-						peek(31, c, b, adj);
-						peek(0, c, b, cell);
-						
 						int modifier = adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.RIGHT) + 1;
 						if(adj.blocklight - modifier > cell.blocklight) {
 							cell.blocklight = adj.blocklight - modifier;
@@ -657,31 +603,34 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 							sunSources.addLast(cell.y & 0x1f);
 							sunSources.addLast(cell.z & 0x1f);
 						}
-						/*int adjacent_data = cc.peekRaw(31, c, b);
-						int current_data = chunk.peekRaw(0, c, b);
-
-						int adjacent_blo = ((adjacent_data & blocklightMask) >>> blockBitshift);
-						int current_blo = ((current_data & blocklightMask) >>> blockBitshift);
-						int adjacent_sun = ((adjacent_data & sunlightMask) >>> sunBitshift);
-						int current_sun = ((current_data & sunlightMask) >>> sunBitshift);
-						if (adjacent_blo > 1 && adjacent_blo > current_blo)
-						{
-							int ndata = current_data & blockAntiMask | (adjacent_blo - 1) << blockBitshift;
-							chunk.pokeRawSilently(0, c, b, ndata);
+					}
+			}
+			cc = world.getChunk(chunkX - 1, chunkY, chunkZ);
+			if (cc != null)
+			{
+				for (int b = 0; b < 32; b++)
+					for (int c = 0; c < 32; c++)
+					{
+						peek(31, c, b, adj);
+						peek(0, c, b, cell);
+						
+						int modifier = adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.LEFT) + 1;
+						if(adj.blocklight - modifier > cell.blocklight) {
+							cell.blocklight = adj.blocklight - modifier;
+							poke(cell);
 							mods++;
-							blockSources.addLast(0);
-							blockSources.addLast(b);
-							blockSources.addLast(c);
+							blockSources.addLast(cell.x & 0x1f);
+							blockSources.addLast(cell.y & 0x1f);
+							blockSources.addLast(cell.z & 0x1f);
 						}
-						if (adjacent_sun > 1 && adjacent_sun > current_sun)
-						{
-							int ndata = current_data & sunAntiMask | (adjacent_sun - 1) << sunBitshift;
-							chunk.pokeRawSilently(0, c, b, ndata);
+						if(adj.sunlight - modifier > cell.sunlight) {
+							cell.sunlight = adj.sunlight - modifier;
 							mods++;
-							sunSources.addLast(0);
-							sunSources.addLast(b);
-							sunSources.addLast(c);
-						}*/
+							poke(cell);
+							sunSources.addLast(cell.x & 0x1f);
+							sunSources.addLast(cell.y & 0x1f);
+							sunSources.addLast(cell.z & 0x1f);
+						}
 					}
 			}
 			// Top chunk
@@ -694,7 +643,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 						peek(c, 0, b, adj);
 						peek(c, 31, b, cell);
 						
-						int modifier = adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.BOTTOM) + 1;
+						int modifier = adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.TOP) + 1;
 						if(adj.blocklight - modifier > cell.blocklight) {
 							cell.blocklight = adj.blocklight - modifier;
 							poke(cell);
@@ -712,37 +661,6 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 							sunSources.addLast(cell.y & 0x1f);
 							sunSources.addLast(cell.z & 0x1f);
 						}
-						/*int adjacent_data = cc.peekRaw(c, 0, b);
-						int current_data = chunk.peekRaw(c, 31, b);
-
-						int adjacent_blo = ((adjacent_data & blocklightMask) >>> blockBitshift);
-						int current_blo = ((current_data & blocklightMask) >>> blockBitshift);
-						int adjacent_sun = ((adjacent_data & sunlightMask) >>> sunBitshift);
-						int current_sun = ((current_data & sunlightMask) >>> sunBitshift);
-						if (adjacent_blo > 1 && adjacent_blo > current_blo)
-						{
-							int ndata = current_data & blockAntiMask | (adjacent_blo - 1) << blockBitshift;
-							chunk.pokeRawSilently(c, 31, b, ndata);
-							mods++;
-							if (adjacent_blo > 2)
-							{
-								blockSources.addLast(c);
-								blockSources.addLast(b);
-								blockSources.addLast(31);
-							}
-						}
-						if (adjacent_sun > 1 && adjacent_sun > current_sun)
-						{
-							int ndata = current_data & sunAntiMask | (adjacent_sun - 1) << sunBitshift;
-							chunk.pokeRawSilently(c, 31, b, ndata);
-							mods++;
-							if (adjacent_sun > 2)
-							{
-								sunSources.addLast(c);
-								sunSources.addLast(b);
-								sunSources.addLast(31);
-							}
-						}*/
 					}
 			}
 			else
@@ -798,7 +716,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 						peek(c, 31, b, adj);
 						peek(c, 0, b, cell);
 						
-						int modifier = adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.TOP) + 1;
+						int modifier = adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.BOTTOM) + 1;
 						if(adj.blocklight - modifier > cell.blocklight) {
 							cell.blocklight = adj.blocklight - modifier;
 							poke(cell);
@@ -815,37 +733,6 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 							sunSources.addLast(cell.y & 0x1f);
 							sunSources.addLast(cell.z & 0x1f);
 						}
-						/*int adjacent_data = cc.peekRaw(c, 31, b);
-						int current_data = chunk.peekRaw(c, 0, b);
-
-						int adjacent_blo = ((adjacent_data & blocklightMask) >>> blockBitshift);
-						int current_blo = ((current_data & blocklightMask) >>> blockBitshift);
-						int adjacent_sun = ((adjacent_data & sunlightMask) >>> sunBitshift);
-						int current_sun = ((current_data & sunlightMask) >>> sunBitshift);
-						if (adjacent_blo > 1 && adjacent_blo > current_blo)
-						{
-							int ndata = current_data & blockAntiMask | (adjacent_blo - 1) << blockBitshift;
-							chunk.pokeRawSilently(c, 0, b, ndata);
-							mods++;
-							if (adjacent_blo > 2)
-							{
-								blockSources.addLast(c);
-								blockSources.addLast(b);
-								blockSources.addLast(0);
-							}
-						}
-						if (adjacent_sun > 1 && adjacent_sun > current_sun)
-						{
-							int ndata = current_data & sunAntiMask | (adjacent_sun - 1) << sunBitshift;
-							chunk.pokeRawSilently(c, 0, b, ndata);
-							mods++;
-							if (adjacent_sun > 2)
-							{
-								sunSources.addLast(c);
-								sunSources.addLast(b);
-								sunSources.addLast(0);
-							}
-						}*/
 					}
 			}
 			// Z
@@ -857,59 +744,6 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 					{
 						peek(c, b, 0, adj);
 						peek(c, b, 31, cell);
-						
-						int modifier = adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.BACK) + 1;
-						if(adj.blocklight - modifier > cell.blocklight) {
-							cell.blocklight = adj.blocklight - modifier;
-							poke(cell);
-							mods++;
-							blockSources.addLast(cell.x & 0x1f);
-							blockSources.addLast(cell.y & 0x1f);
-							blockSources.addLast(cell.z & 0x1f);
-						}
-						if(adj.sunlight - modifier > cell.sunlight) {
-							cell.sunlight = adj.sunlight - modifier;
-							mods++;
-							poke(cell);
-							sunSources.addLast(cell.x & 0x1f);
-							sunSources.addLast(cell.y & 0x1f);
-							sunSources.addLast(cell.z & 0x1f);
-						}
-						/*int adjacent_data = cc.peekRaw(c, b, 0);
-						int current_data = chunk.peekRaw(c, b, 31);
-
-						int adjacent_blo = ((adjacent_data & blocklightMask) >>> blockBitshift);
-						int current_blo = ((current_data & blocklightMask) >>> blockBitshift);
-						int adjacent_sun = ((adjacent_data & sunlightMask) >>> sunBitshift);
-						int current_sun = ((current_data & sunlightMask) >>> sunBitshift);
-						if (adjacent_blo > 1 && adjacent_blo > current_blo)
-						{
-							int ndata = current_data & blockAntiMask | (adjacent_blo - 1) << blockBitshift;
-							chunk.pokeRawSilently(c, b, 31, ndata);
-							mods++;
-							blockSources.addLast(c);
-							blockSources.addLast(31);
-							blockSources.addLast(b);
-						}
-						if (adjacent_sun > 1 && adjacent_sun > current_sun)
-						{
-							int ndata = current_data & sunAntiMask | (adjacent_sun - 1) << sunBitshift;
-							chunk.pokeRawSilently(c, b, 31, ndata);
-							mods++;
-							sunSources.addLast(c);
-							sunSources.addLast(31);
-							sunSources.addLast(b);
-						}*/
-					}
-			}
-			cc = world.getChunk(chunkX, chunkY, chunkZ - 1);
-			if (cc != null)
-			{
-				for (int b = 0; b < 32; b++)
-					for (int c = 0; c < 32; c++)
-					{
-						peek(c, b, 31, adj);
-						peek(c, b, 0, cell);
 						
 						int modifier = adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.FRONT) + 1;
 						if(adj.blocklight - modifier > cell.blocklight) {
@@ -928,31 +762,34 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 							sunSources.addLast(cell.y & 0x1f);
 							sunSources.addLast(cell.z & 0x1f);
 						}
-						/*int adjacent_data = cc.peekRaw(c, b, 31);
-						int current_data = chunk.peekRaw(c, b, 0);
-
-						int adjacent_blo = ((adjacent_data & blocklightMask) >>> blockBitshift);
-						int current_blo = ((current_data & blocklightMask) >>> blockBitshift);
-						int adjacent_sun = ((adjacent_data & sunlightMask) >>> sunBitshift);
-						int current_sun = ((current_data & sunlightMask) >>> sunBitshift);
-						if (adjacent_blo > 1 && adjacent_blo > current_blo)
-						{
-							int ndata = current_data & blockAntiMask | (adjacent_blo - 1) << blockBitshift;
-							chunk.pokeRawSilently(c, b, 0, ndata);
+					}
+			}
+			cc = world.getChunk(chunkX, chunkY, chunkZ - 1);
+			if (cc != null)
+			{
+				for (int b = 0; b < 32; b++)
+					for (int c = 0; c < 32; c++)
+					{
+						peek(c, b, 31, adj);
+						peek(c, b, 0, cell);
+						
+						int modifier = adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.BACK) + 1;
+						if(adj.blocklight - modifier > cell.blocklight) {
+							cell.blocklight = adj.blocklight - modifier;
+							poke(cell);
 							mods++;
-							blockSources.addLast(c);
-							blockSources.addLast(0);
-							blockSources.addLast(b);
+							blockSources.addLast(cell.x & 0x1f);
+							blockSources.addLast(cell.y & 0x1f);
+							blockSources.addLast(cell.z & 0x1f);
 						}
-						if (adjacent_sun > 1 && adjacent_sun > current_sun)
-						{
-							int ndata = current_data & sunAntiMask | (adjacent_sun - 1) << sunBitshift;
-							chunk.pokeRawSilently(c, b, 0, ndata);
+						if(adj.sunlight - modifier > cell.sunlight) {
+							cell.sunlight = adj.sunlight - modifier;
 							mods++;
-							sunSources.addLast(c);
-							sunSources.addLast(0);
-							sunSources.addLast(b);
-						}*/
+							poke(cell);
+							sunSources.addLast(cell.x & 0x1f);
+							sunSources.addLast(cell.y & 0x1f);
+							sunSources.addLast(cell.z & 0x1f);
+						}
 					}
 			}
 		}
@@ -1500,7 +1337,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 					return;
 				}
 
-		int oldData = world.peekRaw(x, y, z);
+		int oldData = world.peekRaw(x + chunkX * 32, y + chunkY * 32, z + chunkZ * 32);
 		world.pokeRawSilently(x + chunkX * 32, y + chunkY * 32, z + chunkZ * 32, data);
 		
 		Chunk c = world.getChunk((x + chunkX * 32) / 32, (y + chunkY * 32) / 32, (z + chunkZ * 32) / 32);
