@@ -145,7 +145,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 		int mods = 0;
 		
 		// Load nearby chunks and check if they contain bright spots we haven't accounted for yet
-		if (adjacent)
+		if (adjacent && false)
 			mods += addAdjacentChunksLightSources(blockSources, sunSources);
 
 		//Propagates the light
@@ -186,8 +186,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 		ScratchCell adj = new ScratchCell(world);
 		while (blockSources.size() > 0)
 		{
-			int y = blockSources.removeLast();
 			int z = blockSources.removeLast();
+			int y = blockSources.removeLast();
 			int x = blockSources.removeLast();
 			
 			peek(x, y, z, cell);
@@ -208,8 +208,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 						poke(adj);
 						modifiedBlocks++;
 						blockSources.addLast(x + 1);
-						blockSources.addLast(z);
 						blockSources.addLast(y);
+						blockSources.addLast(z);
 					}
 				}
 				else if (checkRightBleeding)
@@ -232,8 +232,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 						poke(adj);
 						modifiedBlocks++;
 						blockSources.addLast(x - 1);
-						blockSources.addLast(z);
 						blockSources.addLast(y);
+						blockSources.addLast(z);
 					}
 				}
 				else if (checkLeftBleeding)
@@ -257,8 +257,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 						poke(adj);
 						modifiedBlocks++;
 						blockSources.addLast(x);
-						blockSources.addLast(z + 1);
 						blockSources.addLast(y);
+						blockSources.addLast(z + 1);
 					}
 				}
 				else if (checkFrontBleeding)
@@ -281,8 +281,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 						poke(adj);
 						modifiedBlocks++;
 						blockSources.addLast(x);
-						blockSources.addLast(z - 1);
 						blockSources.addLast(y);
+						blockSources.addLast(z - 1);
 					}
 				}
 				else if (checkBackBleeding)
@@ -306,8 +306,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 						poke(adj);
 						modifiedBlocks++;
 						blockSources.addLast(x);
-						blockSources.addLast(z);
 						blockSources.addLast(y + 1);
+						blockSources.addLast(z);
 					}
 				}
 				else if (checkTopBleeding)
@@ -331,8 +331,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 						poke(adj);
 						modifiedBlocks++;
 						blockSources.addLast(x);
-						blockSources.addLast(z);
 						blockSources.addLast(y - 1);
+						blockSources.addLast(z);
 					}
 				}
 				else if (checkBottomBleeding)
@@ -350,8 +350,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 		
 		while (sunSources.size() > 0)
 		{
-			int y = sunSources.removeLast();
 			int z = sunSources.removeLast();
+			int y = sunSources.removeLast();
 			int x = sunSources.removeLast();
 			
 			peek(x, y, z, cell);
@@ -372,8 +372,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 						poke(adj);
 						modifiedBlocks++;
 						sunSources.addLast(x + 1);
-						sunSources.addLast(z);
 						sunSources.addLast(y);
+						sunSources.addLast(z);
 					}
 				}
 				else if (checkRightBleeding)
@@ -396,8 +396,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 						poke(adj);
 						modifiedBlocks++;
 						sunSources.addLast(x - 1);
-						sunSources.addLast(z);
 						sunSources.addLast(y);
+						sunSources.addLast(z);
 					}
 				}
 				else if (checkLeftBleeding)
@@ -421,8 +421,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 						poke(adj);
 						modifiedBlocks++;
 						sunSources.addLast(x);
-						sunSources.addLast(z + 1);
 						sunSources.addLast(y);
+						sunSources.addLast(z + 1);
 					}
 				}
 				else if (checkFrontBleeding)
@@ -445,8 +445,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 						poke(adj);
 						modifiedBlocks++;
 						sunSources.addLast(x);
-						sunSources.addLast(z - 1);
 						sunSources.addLast(y);
+						sunSources.addLast(z - 1);
 					}
 				}
 				else if (checkBackBleeding)
@@ -470,8 +470,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 						poke(adj);
 						modifiedBlocks++;
 						sunSources.addLast(x);
-						sunSources.addLast(z);
 						sunSources.addLast(y + 1);
+						sunSources.addLast(z);
 					}
 				}
 				else if (checkTopBleeding)
@@ -497,8 +497,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 						poke(adj);
 						modifiedBlocks++;
 						sunSources.addLast(x);
-						sunSources.addLast(z);
 						sunSources.addLast(y - 1);
+						sunSources.addLast(z);
 					}
 				}
 				else if (checkBottomBleeding)
@@ -514,7 +514,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 			}
 		}
 		
-		if(requestTop)
+		/*if(requestTop)
 			adjacentChunkTop.lightBaker().requestLightningUpdate();
 		if(requestBot)
 			adjacentChunkBottom.lightBaker().requestLightningUpdate();
@@ -525,7 +525,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 		if(requestBack)
 			adjacentChunkBack.lightBaker().requestLightningUpdate();
 		if(requestFront)
-			adjacentChunkFront.lightBaker().requestLightningUpdate();
+			adjacentChunkFront.lightBaker().requestLightningUpdate();*/
 
 		return modifiedBlocks;
 	}
@@ -536,53 +536,75 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 		for (int a = 0; a < 32; a++)
 			for (int b = 0; b < 32; b++)
 			{
-				int z = 31; // This is basically wrong since we work with cubic chunks
+				int y = 31; // This is basically wrong since we work with cubic chunks
 				boolean hitGroundYet = false;
 				int csh = world.
 						getRegionsSummariesHolder().
 						getHeightAtWorldCoordinates(chunkX * 32 + a, chunkZ * 32 + b) + 1;
-				while (z >= 0)
+				while (y >= 0)
 				{
-					peek(a, z, b, cell);
+					peek(a, y, b, cell);
 					int ll = cell.voxel.getEmittedLightLevel(cell);
 					
 					if (ll > 0)
 					{
-						chunk.chunkVoxelData[a * 1024 + z * 32 + b] = chunk.chunkVoxelData[a * 1024 + z * 32 + b] & blockAntiMask | ((ll & 0xF) << blockBitshift);
+						chunk.chunkVoxelData[a * 1024 + y * 32 + b] = chunk.chunkVoxelData[a * 1024 + y * 32 + b] & blockAntiMask | ((ll & 0xF) << blockBitshift);
 						blockSources.addLast(a);
+						blockSources.addLast(y);
 						blockSources.addLast(b);
-						blockSources.addLast(z);
 					}
 					if (!hitGroundYet)
 					{
-						if (chunkY * 32 + z >= csh)
+						if (chunkY * 32 + y >= csh)
 						{
-							chunk.chunkVoxelData[a * 1024 + (z) * 32 + b] = chunk.chunkVoxelData[a * 1024 + (z) * 32 + b] & sunAntiMask | (15 << sunBitshift);
+							chunk.chunkVoxelData[a * 1024 + (y) * 32 + b] = chunk.chunkVoxelData[a * 1024 + (y) * 32 + b] & sunAntiMask | (15 << sunBitshift);
 							sunSources.addLast(a);
+							sunSources.addLast(y);
 							sunSources.addLast(b);
-							sunSources.addLast(z);
-							if (chunkY * 32 + z < csh || !world.getContentTranslator().getVoxelForId(VoxelFormat.id(chunk.chunkVoxelData[a * 1024 + (z) * 32 + b])).isAir())
+							if (chunkY * 32 + y < csh || !world.getContentTranslator().getVoxelForId(VoxelFormat.id(chunk.chunkVoxelData[a * 1024 + (y) * 32 + b])).isAir())
 								hitGroundYet = true;
 						}
 					}
-					z--;
+					y--;
 				}
 			}
 	}
 
 	private int addAdjacentChunksLightSources(IntDeque blockSources, IntDeque sunSources)
 	{
+		ScratchCell cell = new ScratchCell(world);
+		ScratchCell adj = new ScratchCell(world);
+		
 		int mods = 0;
 		if (world != null)
 		{
-			Chunk cc;
-			cc = world.getChunk(chunkX + 1, chunkY, chunkZ);
-			if (cc != null)
-			{
+			Chunk cc = world.getChunk(chunkX + 1, chunkY, chunkZ);
+			if (cc != null) {
 				for (int b = 0; b < 32; b++)
 					for (int c = 0; c < 32; c++)
 					{
-						int adjacent_data = cc.peekRaw(0, c, b);
+						peek(0, c, b, adj);
+						peek(31, c, b, cell);
+						
+						int modifier = adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.LEFT) + 1;
+						if(adj.blocklight - modifier > cell.blocklight) {
+							cell.blocklight = adj.blocklight - modifier;
+							poke(cell);
+							mods++;
+							blockSources.addLast(cell.x & 0x1f);
+							blockSources.addLast(cell.y & 0x1f);
+							blockSources.addLast(cell.z & 0x1f);
+						}
+						if(adj.sunlight - modifier > cell.sunlight) {
+							cell.sunlight = adj.sunlight - modifier;
+							mods++;
+							poke(cell);
+							sunSources.addLast(cell.x & 0x1f);
+							sunSources.addLast(cell.y & 0x1f);
+							sunSources.addLast(cell.z & 0x1f);
+						}
+						
+						/*int adjacent_data = cc.peekRaw(0, c, b);
 						int current_data = chunk.peekRaw(31, c, b);
 
 						int adjacent_blo = ((adjacent_data & blocklightMask) >>> blockBitshift);
@@ -606,7 +628,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 							sunSources.addLast(31);
 							sunSources.addLast(b);
 							sunSources.addLast(c);
-						}
+						}*/
 					}
 			}
 			cc = world.getChunk(chunkX - 1, chunkY, chunkZ);
@@ -615,7 +637,27 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				for (int b = 0; b < 32; b++)
 					for (int c = 0; c < 32; c++)
 					{
-						int adjacent_data = cc.peekRaw(31, c, b);
+						peek(31, c, b, adj);
+						peek(0, c, b, cell);
+						
+						int modifier = adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.RIGHT) + 1;
+						if(adj.blocklight - modifier > cell.blocklight) {
+							cell.blocklight = adj.blocklight - modifier;
+							poke(cell);
+							mods++;
+							blockSources.addLast(cell.x & 0x1f);
+							blockSources.addLast(cell.y & 0x1f);
+							blockSources.addLast(cell.z & 0x1f);
+						}
+						if(adj.sunlight - modifier > cell.sunlight) {
+							cell.sunlight = adj.sunlight - modifier;
+							mods++;
+							poke(cell);
+							sunSources.addLast(cell.x & 0x1f);
+							sunSources.addLast(cell.y & 0x1f);
+							sunSources.addLast(cell.z & 0x1f);
+						}
+						/*int adjacent_data = cc.peekRaw(31, c, b);
 						int current_data = chunk.peekRaw(0, c, b);
 
 						int adjacent_blo = ((adjacent_data & blocklightMask) >>> blockBitshift);
@@ -639,7 +681,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 							sunSources.addLast(0);
 							sunSources.addLast(b);
 							sunSources.addLast(c);
-						}
+						}*/
 					}
 			}
 			// Top chunk
@@ -649,7 +691,28 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				for (int b = 0; b < 32; b++)
 					for (int c = 0; c < 32; c++)
 					{
-						int adjacent_data = cc.peekRaw(c, 0, b);
+						peek(c, 0, b, adj);
+						peek(c, 31, b, cell);
+						
+						int modifier = adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.BOTTOM) + 1;
+						if(adj.blocklight - modifier > cell.blocklight) {
+							cell.blocklight = adj.blocklight - modifier;
+							poke(cell);
+							mods++;
+							blockSources.addLast(cell.x & 0x1f);
+							blockSources.addLast(cell.y & 0x1f);
+							blockSources.addLast(cell.z & 0x1f);
+						}
+						modifier -= 1; // sunlight doesn't dim travelling downwards
+						if(adj.sunlight - modifier > cell.sunlight) {
+							cell.sunlight = adj.sunlight - modifier;
+							mods++;
+							poke(cell);
+							sunSources.addLast(cell.x & 0x1f);
+							sunSources.addLast(cell.y & 0x1f);
+							sunSources.addLast(cell.z & 0x1f);
+						}
+						/*int adjacent_data = cc.peekRaw(c, 0, b);
 						int current_data = chunk.peekRaw(c, 31, b);
 
 						int adjacent_blo = ((adjacent_data & blocklightMask) >>> blockBitshift);
@@ -679,7 +742,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 								sunSources.addLast(b);
 								sunSources.addLast(31);
 							}
-						}
+						}*/
 					}
 			}
 			else
@@ -706,8 +769,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 								if (adjacent_blo > 2)
 								{
 									blockSources.addLast(c);
-									blockSources.addLast(b);
 									blockSources.addLast(31);
+									blockSources.addLast(b);
 								}
 							}
 							if (adjacent_sun > 1 && adjacent_sun > current_sun)
@@ -718,8 +781,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 								if (adjacent_sun > 2)
 								{
 									sunSources.addLast(c);
-									sunSources.addLast(b);
 									sunSources.addLast(31);
+									sunSources.addLast(b);
 								}
 							}
 						}
@@ -732,7 +795,27 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				for (int b = 0; b < 32; b++)
 					for (int c = 0; c < 32; c++)
 					{
-						int adjacent_data = cc.peekRaw(c, 31, b);
+						peek(c, 31, b, adj);
+						peek(c, 0, b, cell);
+						
+						int modifier = adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.TOP) + 1;
+						if(adj.blocklight - modifier > cell.blocklight) {
+							cell.blocklight = adj.blocklight - modifier;
+							poke(cell);
+							mods++;
+							blockSources.addLast(cell.x & 0x1f);
+							blockSources.addLast(cell.y & 0x1f);
+							blockSources.addLast(cell.z & 0x1f);
+						}
+						if(adj.sunlight - modifier > cell.sunlight) {
+							cell.sunlight = adj.sunlight - modifier;
+							mods++;
+							poke(cell);
+							sunSources.addLast(cell.x & 0x1f);
+							sunSources.addLast(cell.y & 0x1f);
+							sunSources.addLast(cell.z & 0x1f);
+						}
+						/*int adjacent_data = cc.peekRaw(c, 31, b);
 						int current_data = chunk.peekRaw(c, 0, b);
 
 						int adjacent_blo = ((adjacent_data & blocklightMask) >>> blockBitshift);
@@ -762,7 +845,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 								sunSources.addLast(b);
 								sunSources.addLast(0);
 							}
-						}
+						}*/
 					}
 			}
 			// Z
@@ -772,7 +855,27 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				for (int b = 0; b < 32; b++)
 					for (int c = 0; c < 32; c++)
 					{
-						int adjacent_data = cc.peekRaw(c, b, 0);
+						peek(c, b, 0, adj);
+						peek(c, b, 31, cell);
+						
+						int modifier = adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.BACK) + 1;
+						if(adj.blocklight - modifier > cell.blocklight) {
+							cell.blocklight = adj.blocklight - modifier;
+							poke(cell);
+							mods++;
+							blockSources.addLast(cell.x & 0x1f);
+							blockSources.addLast(cell.y & 0x1f);
+							blockSources.addLast(cell.z & 0x1f);
+						}
+						if(adj.sunlight - modifier > cell.sunlight) {
+							cell.sunlight = adj.sunlight - modifier;
+							mods++;
+							poke(cell);
+							sunSources.addLast(cell.x & 0x1f);
+							sunSources.addLast(cell.y & 0x1f);
+							sunSources.addLast(cell.z & 0x1f);
+						}
+						/*int adjacent_data = cc.peekRaw(c, b, 0);
 						int current_data = chunk.peekRaw(c, b, 31);
 
 						int adjacent_blo = ((adjacent_data & blocklightMask) >>> blockBitshift);
@@ -796,7 +899,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 							sunSources.addLast(c);
 							sunSources.addLast(31);
 							sunSources.addLast(b);
-						}
+						}*/
 					}
 			}
 			cc = world.getChunk(chunkX, chunkY, chunkZ - 1);
@@ -805,7 +908,27 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				for (int b = 0; b < 32; b++)
 					for (int c = 0; c < 32; c++)
 					{
-						int adjacent_data = cc.peekRaw(c, b, 31);
+						peek(c, b, 31, adj);
+						peek(c, b, 0, cell);
+						
+						int modifier = adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.FRONT) + 1;
+						if(adj.blocklight - modifier > cell.blocklight) {
+							cell.blocklight = adj.blocklight - modifier;
+							poke(cell);
+							mods++;
+							blockSources.addLast(cell.x & 0x1f);
+							blockSources.addLast(cell.y & 0x1f);
+							blockSources.addLast(cell.z & 0x1f);
+						}
+						if(adj.sunlight - modifier > cell.sunlight) {
+							cell.sunlight = adj.sunlight - modifier;
+							mods++;
+							poke(cell);
+							sunSources.addLast(cell.x & 0x1f);
+							sunSources.addLast(cell.y & 0x1f);
+							sunSources.addLast(cell.z & 0x1f);
+						}
+						/*int adjacent_data = cc.peekRaw(c, b, 31);
 						int current_data = chunk.peekRaw(c, b, 0);
 
 						int adjacent_blo = ((adjacent_data & blocklightMask) >>> blockBitshift);
@@ -829,7 +952,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 							sunSources.addLast(c);
 							sunSources.addLast(0);
 							sunSources.addLast(b);
-						}
+						}*/
 					}
 			}
 		}
@@ -873,14 +996,14 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 		if (sunLightAfter > 0)
 		{
 			sunSources.addLast(bx);
-			sunSources.addLast(bz);
 			sunSources.addLast(by);
+			sunSources.addLast(bz);
 		}
 		if (blockLightAfter > 0)
 		{
 			blockSources.addLast(bx);
-			blockSources.addLast(bz);
 			blockSources.addLast(by);
+			blockSources.addLast(bz);
 		}
 
 		//Propagate remaining light
@@ -889,6 +1012,9 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 
 	private void propagateLightRemovalBeyondChunks(IntDeque blockSources, IntDeque sunSources, IntDeque blockSourcesRemoval, IntDeque sunSourcesRemoval)
 	{
+		if(true)
+			return;
+		
 		int bounds = 64;
 		while (sunSourcesRemoval.size() > 0)
 		{
@@ -914,8 +1040,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				else if (neighborSunLightLevel >= sunLightLevel)
 				{
 					sunSources.addLast(x - 1);
-					sunSources.addLast(z);
 					sunSources.addLast(y);
+					sunSources.addLast(z);
 				}
 			}
 			if (x < bounds)
@@ -932,8 +1058,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				else if (neighborSunLightLevel >= sunLightLevel)
 				{
 					sunSources.addLast(x + 1);
-					sunSources.addLast(z);
 					sunSources.addLast(y);
+					sunSources.addLast(z);
 				}
 			}
 			// Y axis
@@ -951,8 +1077,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				else if (neighborSunLightLevel >= sunLightLevel)
 				{
 					sunSources.addLast(x);
-					sunSources.addLast(z);
 					sunSources.addLast(y - 1);
+					sunSources.addLast(z);
 				}
 			}
 			if (y < bounds)
@@ -970,8 +1096,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				else if (neighborSunLightLevel >= sunLightLevel)
 				{
 					sunSources.addLast(x);
-					sunSources.addLast(z);
 					sunSources.addLast(y + 1);
+					sunSources.addLast(z);
 				}
 			}
 			// Z Axis
@@ -989,8 +1115,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				else if (neighborSunLightLevel >= sunLightLevel)
 				{
 					sunSources.addLast(x);
-					sunSources.addLast(z - 1);
 					sunSources.addLast(y);
+					sunSources.addLast(z - 1);
 				}
 			}
 			if (z < bounds)
@@ -1007,8 +1133,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				else if (neighborSunLightLevel >= sunLightLevel)
 				{
 					sunSources.addLast(x);
-					sunSources.addLast(z + 1);
 					sunSources.addLast(y);
+					sunSources.addLast(z + 1);
 				}
 			}
 		}
@@ -1038,8 +1164,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				else if (neighborBlockLightLevel >= blockLightLevel)
 				{
 					blockSources.addLast(x - 1);
-					blockSources.addLast(z);
 					blockSources.addLast(y);
+					blockSources.addLast(z);
 				}
 			}
 			if (x < bounds)
@@ -1056,8 +1182,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				else if (neighborBlockLightLevel >= blockLightLevel)
 				{
 					blockSources.addLast(x + 1);
-					blockSources.addLast(z);
 					blockSources.addLast(y);
+					blockSources.addLast(z);
 				}
 			}
 			// Y axis
@@ -1075,8 +1201,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				else if (neighborBlockLightLevel >= blockLightLevel)
 				{
 					blockSources.addLast(x);
-					blockSources.addLast(z);
 					blockSources.addLast(y - 1);
+					blockSources.addLast(z);
 				}
 			}
 			if (y < bounds)
@@ -1093,8 +1219,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				else if (neighborBlockLightLevel >= blockLightLevel)
 				{
 					blockSources.addLast(x);
-					blockSources.addLast(z);
 					blockSources.addLast(y + 1);
+					blockSources.addLast(z);
 				}
 			}
 			// Z Axis
@@ -1112,8 +1238,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				else if (neighborBlockLightLevel >= blockLightLevel)
 				{
 					blockSources.addLast(x);
-					blockSources.addLast(z - 1);
 					blockSources.addLast(y);
+					blockSources.addLast(z - 1);
 				}
 			}
 			if (z < bounds)
@@ -1130,8 +1256,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				else if (neighborBlockLightLevel >= blockLightLevel)
 				{
 					blockSources.addLast(x);
-					blockSources.addLast(z + 1);
 					blockSources.addLast(y);
+					blockSources.addLast(z + 1);
 				}
 			}
 		}
@@ -1139,6 +1265,9 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 
 	private int propagateLightningBeyondChunk(IntDeque blockSources, IntDeque sunSources)
 	{
+		if(true)
+			return -1;
+		
 		int modifiedBlocks = 0;
 		int bounds = 64;
 
@@ -1146,8 +1275,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 		ScratchCell sideCell = new ScratchCell(world);
 		while (blockSources.size() > 0)
 		{
-			int y = blockSources.removeLast();
 			int z = blockSources.removeLast();
+			int y = blockSources.removeLast();
 			int x = blockSources.removeLast();
 			peek(x, y, z, cell);
 			int ll = cell.getBlocklight();
@@ -1166,8 +1295,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 						this.pokeRawFast(x + 1, y, z, adj & blockAntiMask | (ll - 1) << blockBitshift);
 						modifiedBlocks++;
 						blockSources.addLast(x + 1);
-						blockSources.addLast(z);
 						blockSources.addLast(y);
+						blockSources.addLast(z);
 					}
 				}
 				if (x > -bounds)
@@ -1178,8 +1307,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 						this.pokeRawFast(x - 1, y, z, adj & blockAntiMask | (ll - 1) << blockBitshift);
 						modifiedBlocks++;
 						blockSources.addLast(x - 1);
-						blockSources.addLast(z);
 						blockSources.addLast(y);
+						blockSources.addLast(z);
 					}
 				}
 				// Z-propagation
@@ -1191,8 +1320,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 						this.pokeRawFast(x, y, z + 1, adj & blockAntiMask | (ll - 1) << blockBitshift);
 						modifiedBlocks++;
 						blockSources.addLast(x);
-						blockSources.addLast(z + 1);
 						blockSources.addLast(y);
+						blockSources.addLast(z + 1);
 					}
 				}
 				if (z > -bounds)
@@ -1203,8 +1332,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 						this.pokeRawFast(x, y, z - 1, adj & blockAntiMask | (ll - 1) << blockBitshift);
 						modifiedBlocks++;
 						blockSources.addLast(x);
-						blockSources.addLast(z - 1);
 						blockSources.addLast(y);
+						blockSources.addLast(z - 1);
 					}
 				}
 				// Y-propagation
@@ -1216,8 +1345,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 						this.pokeRawFast(x, y + 1, z, adj & blockAntiMask | (ll - 1) << blockBitshift);
 						modifiedBlocks++;
 						blockSources.addLast(x);
-						blockSources.addLast(z);
 						blockSources.addLast(y + 1);
+						blockSources.addLast(z);
 					}
 				}
 				if (y > -bounds)
@@ -1228,8 +1357,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 						this.pokeRawFast(x, y - 1, z, adj & blockAntiMask | (ll - 1) << blockBitshift);
 						modifiedBlocks++;
 						blockSources.addLast(x);
-						blockSources.addLast(z);
 						blockSources.addLast(y - 1);
+						blockSources.addLast(z);
 					}
 				}
 			}
@@ -1237,8 +1366,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 		// Sunlight propagation
 		while (sunSources.size() > 0)
 		{
-			int y = sunSources.removeLast();
 			int z = sunSources.removeLast();
+			int y = sunSources.removeLast();
 			int x = sunSources.removeLast();
 			peek(x, y, z, cell);
 			int ll = cell.sunlight;
@@ -1259,8 +1388,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 						poke(sideCell);
 						modifiedBlocks++;
 						sunSources.addLast(x + 1);
-						sunSources.addLast(z);
 						sunSources.addLast(y);
+						sunSources.addLast(z);
 					}
 				}
 				if (x > -bounds)
@@ -1273,8 +1402,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 						poke(sideCell);
 						modifiedBlocks++;
 						sunSources.addLast(x - 1);
-						sunSources.addLast(z);
 						sunSources.addLast(y);
+						sunSources.addLast(z);
 					}
 				}
 				// Z-propagation
@@ -1288,8 +1417,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 						poke(sideCell);
 						modifiedBlocks++;
 						sunSources.addLast(x);
-						sunSources.addLast(z + 1);
 						sunSources.addLast(y);
+						sunSources.addLast(z + 1);
 					}
 				}
 				if (z > -bounds)
@@ -1302,8 +1431,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 						poke(sideCell);
 						modifiedBlocks++;
 						sunSources.addLast(x);
-						sunSources.addLast(z - 1);
 						sunSources.addLast(y);
+						sunSources.addLast(z - 1);
 					}
 				}
 				// Y-propagation
@@ -1317,8 +1446,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 						poke(sideCell);
 						modifiedBlocks++;
 						sunSources.addLast(x);
-						sunSources.addLast(z);
 						sunSources.addLast(y + 1);
+						sunSources.addLast(z);
 					}
 				}
 				if (y > -bounds)
@@ -1331,8 +1460,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 						poke(sideCell);
 						modifiedBlocks++;
 						sunSources.addLast(x);
-						sunSources.addLast(z);
 						sunSources.addLast(y - 1);
+						sunSources.addLast(z);
 					}
 				}
 			}
@@ -1430,7 +1559,6 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 		this.pokeRawFast(x, y, z, VoxelFormat.changeBlocklight(this.peekRawFast(x, y, z), level));
 	}
 
-	
 	/** cleanup */
 	public void destroy() {
 		Task task = this.task;
