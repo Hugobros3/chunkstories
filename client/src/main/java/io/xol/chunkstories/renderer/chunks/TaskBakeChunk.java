@@ -98,7 +98,7 @@ public class TaskBakeChunk extends Task {
 		//System.out.println("heil" + chunk);
 		
 		if(dx > chunksViewDistance || dz > chunksViewDistance || dy > 2) {
-			logger.info("unscheduled chunk mesh render task for it being too far to be rendered anyway");
+			//logger.info("unscheduled chunk mesh render task for it being too far to be rendered anyway");
 			return true;
 		}
 
