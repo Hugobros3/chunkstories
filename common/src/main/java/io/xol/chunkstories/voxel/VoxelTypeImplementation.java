@@ -98,7 +98,7 @@ public class VoxelTypeImplementation extends GenericNamedConfigurable implements
 		selfOpaque = getBoolean("selfOpaque", false);
 		liquid = getBoolean("liquid", false);
 		billboard = getBoolean("billboard", false);
-		isSelectable = getBoolean("isSelectable", solid && !liquid);
+		isSelectable = getBoolean("isSelectable", !name.equals("air") && !liquid);
 		
 		emittingLightLevel = getByte("emitting", (byte)0);
 		shadingLightLevel = getByte("shading", (byte)0);

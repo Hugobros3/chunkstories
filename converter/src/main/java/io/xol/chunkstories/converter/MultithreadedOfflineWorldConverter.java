@@ -273,6 +273,21 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 					waveFence.traverse();
 					waveFence.clear();
 					
+					while(true) {
+						if(workers.size() > 0)  {
+							//we actually wait for the workers to chew through all their tasks
+							//hopefully nothing cocks about in the lightning code and spawns
+							//endless tasks
+							try {
+								Thread.sleep(50L);
+							} catch (InterruptedException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						} else
+							break;
+					}
+					
 					wave = 0;
 					
 					//Show progress

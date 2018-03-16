@@ -189,65 +189,6 @@ public class TaskBakeChunk extends Task {
 			}
 			
 		};
-		
-		/*CellData voxelRenderingContext = new CellData()
-		{
-			@Override
-			public Voxel getVoxel()
-			{
-				return store.getVoxelById(getData());
-			}
-
-			public int getData()
-			{
-				return cmd.getBlockData(chunk, i, k, j);
-			}
-
-			public int getNeightborData(int side)
-			{
-				switch (side)
-				{
-				case (0):
-					return cmd.getBlockData(chunk, i - 1, k, j);
-				case (1):
-					return cmd.getBlockData(chunk, i, k, j + 1);
-				case (2):
-					return cmd.getBlockData(chunk, i + 1, k, j);
-				case (3):
-					return cmd.getBlockData(chunk, i, k, j - 1);
-				case (4):
-					return cmd.getBlockData(chunk, i, k + 1, j);
-				case (5):
-					return cmd.getBlockData(chunk, i, k - 1, j);
-				}
-				throw new RuntimeException("Fuck off");
-			}
-
-			@Override
-			public int getX()
-			{
-				return i;
-			}
-
-			@Override
-			public int getY()
-			{
-				return k;
-			}
-
-			@Override
-			public int getZ()
-			{
-				return j;
-			}
-
-			@Override
-			public World getWorld() {
-				return world;
-			}
-
-		};*/
-
 		ChunkBakerRenderContext chunkRenderingContext = new ChunkBakerRenderContext(chunk, cx, cy, cz);
 		
 		bakedBlockId = -1;

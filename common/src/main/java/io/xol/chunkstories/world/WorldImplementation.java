@@ -658,7 +658,7 @@ public abstract class WorldImplementation implements World
 			if (c instanceof ChunkRenderable)
 			{
 				ChunkRenderable c2 = (ChunkRenderable) c;
-
+				c2.lightBaker().requestLightningUpdate();
 				c2.meshUpdater().requestMeshUpdate();
 			}
 		}
