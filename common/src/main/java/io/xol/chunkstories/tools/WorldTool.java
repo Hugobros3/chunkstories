@@ -31,6 +31,8 @@ public class WorldTool extends WorldImplementation implements WorldMaster
 {
 	private final GameContext toolContext;
 	
+	private boolean isLightningEnabled = false;
+	
 	public WorldTool(GameContext toolContext, WorldInfoImplementation info) throws WorldLoadingException {
 		this(toolContext, info, true);
 	}
@@ -173,5 +175,13 @@ public class WorldTool extends WorldImplementation implements WorldMaster
 	public Player getPlayerByName(String playerName)
 	{
 		throw new UnsupportedOperationException("getPlayers");
+	}
+
+	public boolean isLightningEnabled() {
+		return isLightningEnabled;
+	}
+	
+	public void setLightning(boolean e) {
+		isLightningEnabled = e;
 	}
 }

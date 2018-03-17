@@ -13,6 +13,7 @@ import io.xol.chunkstories.api.workers.TaskExecutor;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.Region;
+import io.xol.chunkstories.api.world.heightmap.RegionSummary;
 import io.xol.chunkstories.tools.WorldTool;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.region.RegionImplementation;
@@ -241,8 +242,7 @@ public class IOTasks extends Thread implements TaskExecutor
 				//TODO Look into this properly
 				//We never want to mess with that when we are the world
 				if(!(world instanceof WorldTool)) {
-					//chunkSlot.getChunk().computeVoxelLightning(false);
-					chunk.lightBaker().requestLightningUpdate();
+					//chunk.lightBaker().requestLightningUpdate();
 				}
 			}
 
@@ -580,11 +580,13 @@ public class IOTasks extends Thread implements TaskExecutor
 				int[] heights = new int[256*256];
 				int[] ids = new int[256*256];
 				
+				t = 0;
+				h = RegionSummary.NO_DATA;
 				for (int x = 0; x < 256; x++)
 					for (int z = 0; z < 256; z++)
 					{
-						h = world.getGenerator().getHeightAt(x + summary.getRegionX() * 256, z + summary.getRegionZ() * 256);
-						t = world.getGenerator().getTopDataAt(x + summary.getRegionX() * 256, z + summary.getRegionZ() * 256);
+						//h = world.getGenerator().getHeightAt(x + summary.getRegionX() * 256, z + summary.getRegionZ() * 256);
+						//t = world.getGenerator().getTopDataAt(x + summary.getRegionX() * 256, z + summary.getRegionZ() * 256);
 						heights[x * 256 + z] = h;
 						ids[x * 256 + z] = t;
 					}

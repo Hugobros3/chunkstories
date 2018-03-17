@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.workers.Tasks;
 import io.xol.chunkstories.api.world.WorldInfo.WorldSize;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
@@ -209,8 +210,9 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 		verbose("Done.");
 	}
 
-	protected void stepThreeSpreadLightning(WorldImplementation csWorld) {
+	protected void stepThreeSpreadLightning(WorldTool csWorld) {
 		verbose("Entering step three: spreading light");
+		csWorld.setLightning(true);
 		
 		WorldSize size = csWorld.getWorldInfo().getSize();
 		int maxHeightPossible = 256;
@@ -264,9 +266,10 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 				//Spreads lightning, from top to botton
 				for (int chunkY = maxHeightPossible / 32; chunkY >= 0; chunkY--) {
 					CubicChunk chunk = csWorld.getChunk(chunkX, chunkY, chunkZ);
-					TaskLightChunk task = new TaskLightChunk(chunk, true);
-					workers.scheduleTask(task);
-					waveFence.add(task);
+					Fence fence = chunk.lightBaker.requestLightningUpdate();
+					//TaskLightChunk task = new TaskLightChunk(chunk, true);
+					//workers.scheduleTask(task);
+					waveFence.add(fence);
 				}
 					
 				if (wave >= waveSize) {

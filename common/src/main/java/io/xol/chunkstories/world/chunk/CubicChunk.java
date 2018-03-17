@@ -41,6 +41,7 @@ import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunkLightUpdater;
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
+import io.xol.chunkstories.api.world.heightmap.RegionSummary;
 import io.xol.chunkstories.entity.EntitySerializer;
 import io.xol.chunkstories.tools.WorldTool;
 import io.xol.chunkstories.voxel.components.CellComponentsHolder;
@@ -215,15 +216,22 @@ public class CubicChunk implements Chunk {
 
 	@Override
 	public int peekRaw(int x, int y, int z) {
-		if (chunkVoxelData == null) // Empty chunk ? Use the heightmap to figure out wether or not that cell should
-									// be skylit.
-			return VoxelFormat.format(0, 0, world.getRegionsSummariesHolder().getHeightAtWorldCoordinates(x, z) >= y ? 0 : 15, 0);
-		else {
+		x = sanitizeCoordinate(x);
+		y = sanitizeCoordinate(y);
+		z = sanitizeCoordinate(z);
+		
+		if (chunkVoxelData == null) {
+			// Empty chunk ? 
+			// Use the heightmap to figure out wether or not that cell should be skylit.
+			int sunlight = 0;
+			int groundHeight = world.getRegionsSummariesHolder().getHeightAtWorldCoordinates(chunkX * 32 + x, chunkZ * 32 + z);
+			if(groundHeight < y + chunkY * 32 && groundHeight != RegionSummary.NO_DATA)
+				sunlight = 15;
+			
+			return VoxelFormat.format(0, 0, sunlight, 0);
+		} else {
 			//Thread.dumpStack();
 			//System.out.println(x+":"+y+":"+z);
-			x = sanitizeCoordinate(x);
-			y = sanitizeCoordinate(y);
-			z = sanitizeCoordinate(z);
 			return chunkVoxelData[x * 32 * 32 + y * 32 + z];
 		}
 	}

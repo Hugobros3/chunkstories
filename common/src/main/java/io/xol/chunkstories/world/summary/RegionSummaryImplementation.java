@@ -230,9 +230,9 @@ public class RegionSummaryImplementation implements RegionSummary
 		int h = getHeight(worldX, worldZ);
 		
 		//If we place something solid over the last solid thing
-		if ((cell.getVoxel().getDefinition().isSolid() || cell.getVoxel().getDefinition().isLiquid()) && height >= h)
+		if ((cell.getVoxel().getDefinition().isSolid() || cell.getVoxel().getDefinition().isLiquid()))
 		{
-			if (height >= h)
+			if (height >= h || h == RegionSummary.NO_DATA)
 			{
 				heights[index(worldX, worldZ)] = height;
 				ids[index(worldX, worldZ)] = cell.getData();
@@ -289,7 +289,7 @@ public class RegionSummaryImplementation implements RegionSummary
 	public int getHeight(int x, int z)
 	{
 		if(!this.isLoaded())
-			return 0;
+			return RegionSummary.NO_DATA;
 		
 		x &= 0xFF;
 		z &= 0xFF;
@@ -402,9 +402,9 @@ public class RegionSummaryImplementation implements RegionSummary
 	public int getHeightMipmapped(int x, int z, int level)
 	{
 		if(!this.isLoaded())
-			return -1;
+			return RegionSummary.NO_DATA;
 		if (level > 8)
-			return -1;
+			return RegionSummary.NO_DATA;
 		int resolution = 256 >> level;
 		x >>= level;
 		z >>= level;

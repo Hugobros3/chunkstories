@@ -59,6 +59,7 @@ import io.xol.chunkstories.api.world.chunk.ChunksIterator;
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.api.world.generator.WorldGenerator;
+import io.xol.chunkstories.api.world.heightmap.RegionSummary;
 import io.xol.chunkstories.content.sandbox.UnthrustedUserContentSecurityManager;
 import io.xol.chunkstories.content.sandbox.WorldLogicThread;
 import io.xol.chunkstories.content.translator.AbstractContentTranslator;
@@ -484,12 +485,13 @@ public abstract class WorldImplementation implements World
 		z = sanitizeHorizontalCoordinate(z);
 		
 		Region region = this.getRegionWorldCoordinates(x, y, z);
-		if(region == null)
-			return new UnloadedWorldCell(x, y, z, this.getGameContext().getContent().voxels().air(), 0, 0, (this.getRegionsSummariesHolder().getHeightAtWorldCoordinates(x, z) >= y ? 0: 15));
+		if(region == null) {
+			return new UnloadedWorldCell(x, y, z, this.getGameContext().getContent().voxels().air(), 0, 0, 0);
+		}
 			
 		Chunk chunk = region.getChunk((x / 32) % 8, (y / 32) % 8, (z / 32) % 8);
 		if(chunk == null)
-			return new UnloadedWorldCell(x, y, z, this.getGameContext().getContent().voxels().air(), 0, 0, (this.getRegionsSummariesHolder().getHeightAtWorldCoordinates(x, z) >= y ? 0: 15));
+			return new UnloadedWorldCell(x, y, z, this.getGameContext().getContent().voxels().air(), 0, 0, 0);
 		
 		return chunk.peek(x, y, z);
 	}
@@ -499,6 +501,10 @@ public abstract class WorldImplementation implements World
 
 		public UnloadedWorldCell(int x, int y, int z, Voxel voxel, int meta, int blocklight, int sunlight) {
 			super(x, y, z, voxel, meta, blocklight, sunlight);
+			
+			int groundHeight = getRegionsSummariesHolder().getHeightAtWorldCoordinates(x, z);
+			if(groundHeight < y && groundHeight != RegionSummary.NO_DATA)
+				this.sunlight = 15;
 		}
 
 		@Override

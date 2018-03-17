@@ -9,7 +9,6 @@ package io.xol.chunkstories.world.chunk;
 import io.xol.chunkstories.api.rendering.world.chunk.ChunkRenderable;
 import io.xol.chunkstories.api.workers.Task;
 import io.xol.chunkstories.api.workers.TaskExecutor;
-import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.world.WorldImplementation;
 
 public class TaskLightChunk extends Task {

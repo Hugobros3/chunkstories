@@ -19,9 +19,12 @@ import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.workers.Task;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunkLightUpdater;
+import io.xol.chunkstories.api.world.heightmap.RegionSummary;
+import io.xol.chunkstories.tools.WorldTool;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.cell.ScratchCell;
 import io.xol.engine.concurrency.SimpleLock;
+import io.xol.engine.concurrency.TrivialFence;
 
 //TODO use custom propagation for ALL propagation functions & cleanup this whole darn mess
 /** Responsible for propagating voxel volumetric light */
@@ -31,7 +34,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 	final CubicChunk chunk;
 	//final CubicChunk leftChunk, rightChunk, topChunk, bottomChunk, frontChunk, backChunk;
 
-	final AtomicInteger unbakedUpdates = new AtomicInteger(1);
+	final AtomicInteger unbakedUpdates = new AtomicInteger(0);
 	public final SimpleLock onlyOneUpdateAtATime = new SimpleLock();
 
 	protected TaskLightChunk task = null;
@@ -50,6 +53,14 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 	public Fence requestLightningUpdate() {
 		unbakedUpdates.incrementAndGet();
 
+		if(world instanceof WorldTool) {
+			WorldTool tool = (WorldTool)world;
+			if(!tool.isLightningEnabled()) {
+				System.out.println("too soon");
+				return new TrivialFence();
+			}
+		}
+		
 		Task fence;
 
 		taskLock.lock();
@@ -118,7 +129,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 		}
 	};
 
-	public int computeVoxelLightningInternal(boolean adjacent) {
+	int computeVoxelLightningInternal(boolean adjacent) {
 		// Checks first if chunk contains blocks
 		if (chunk.chunkVoxelData == null)
 			return 0; // Nothing to do
@@ -142,13 +153,13 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 			mods += addAdjacentChunksLightSources(blockSources, sunSources);
 
 		// Propagates the light
-		mods += propagateLightning(blockSources, sunSources);
+		mods += propagateLightning(blockSources, sunSources, adjacent);
 
 		return mods;
 	}
 
 	// Now entering lightning code part, brace yourselves
-	private int propagateLightning(IntDeque blockSources, IntDeque sunSources) {
+	private int propagateLightning(IntDeque blockSources, IntDeque sunSources, boolean adjacent) {
 		int modifiedBlocks = 0;
 
 		CubicChunk leftChunk, rightChunk, topChunk, bottomChunk, frontChunk, backChunk;
@@ -161,12 +172,12 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 		rightChunk = world.getChunk(chunkX + 1, chunkY, chunkZ);
 		
 		// Don't spam the requeue requests
-		boolean checkTopBleeding = (topChunk != null);
-		boolean checkBottomBleeding = (bottomChunk != null);
-		boolean checkFrontBleeding = (frontChunk != null);
-		boolean checkBackBleeding = (backChunk != null);
-		boolean checkLeftBleeding = (leftChunk != null);
-		boolean checkRightBleeding = (rightChunk != null);
+		boolean checkTopBleeding = adjacent && (topChunk != null);
+		boolean checkBottomBleeding = adjacent && (bottomChunk != null);
+		boolean checkFrontBleeding = adjacent && (frontChunk != null);
+		boolean checkBackBleeding = adjacent && (backChunk != null);
+		boolean checkLeftBleeding = adjacent && (leftChunk != null);
+		boolean checkRightBleeding = adjacent && (rightChunk != null);
 
 		boolean requestTop = false;
 		boolean requestBot = false;
@@ -465,29 +476,35 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 			for (int b = 0; b < 32; b++) {
 				int y = 31; // This is basically wrong since we work with cubic chunks
 				boolean hitGroundYet = false;
-				int csh = world.getRegionsSummariesHolder().getHeightAtWorldCoordinates(chunkX * 32 + a, chunkZ * 32 + b) + 1;
+				int csh = world.getRegionsSummariesHolder().getHeightAtWorldCoordinates(chunkX * 32 + a, chunkZ * 32 + b);
 				while (y >= 0) {
 					peek(a, y, b, cell);
 					int ll = cell.voxel.getEmittedLightLevel(cell);
 
 					if (ll > 0) {
-						chunk.chunkVoxelData[a * 1024 + y * 32 + b] = chunk.chunkVoxelData[a * 1024 + y * 32 + b] & blockAntiMask
-								| ((ll & 0xF) << blockBitshift);
+						cell.blocklight = ll;
+						//chunk.chunkVoxelData[a * 1024 + y * 32 + b] = chunk.chunkVoxelData[a * 1024 + y * 32 + b] & blockAntiMask
+						//		| ((ll & 0xF) << blockBitshift);
 						blockSources.addLast(a);
 						blockSources.addLast(y);
 						blockSources.addLast(b);
 					}
-					if (!hitGroundYet) {
+					
+					if (!hitGroundYet && csh != RegionSummary.NO_DATA) {
 						if (chunkY * 32 + y >= csh) {
-							chunk.chunkVoxelData[a * 1024 + (y) * 32 + b] = chunk.chunkVoxelData[a * 1024 + (y) * 32 + b] & sunAntiMask | (15 << sunBitshift);
-							sunSources.addLast(a);
-							sunSources.addLast(y);
-							sunSources.addLast(b);
-							if (chunkY * 32 + y < csh
-									|| !world.getContentTranslator().getVoxelForId(VoxelFormat.id(chunk.chunkVoxelData[a * 1024 + (y) * 32 + b])).isAir())
+							if (chunkY * 32 + y <= csh || !world.getContentTranslator().getVoxelForId(VoxelFormat.id(chunk.chunkVoxelData[a * 1024 + (y) * 32 + b])).isAir())
 								hitGroundYet = true;
+							else {
+								cell.sunlight = 15;
+								//chunk.chunkVoxelData[a * 1024 + (y) * 32 + b] = chunk.chunkVoxelData[a * 1024 + (y) * 32 + b] & sunAntiMask | (15 << sunBitshift);
+								sunSources.addLast(a);
+								sunSources.addLast(y);
+								sunSources.addLast(b);
+							}
 						}
 					}
+					
+					poke(cell);
 					y--;
 				}
 			}
@@ -586,8 +603,8 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 			} else {
 				for (int x = 0; x < 32; x++)
 					for (int z = 0; z < 32; z++) {
-						peek(x, 31, z, cell);
 						peek(x, 32, z, adj);
+						peek(x, 31, z, cell);
 
 						int modifier = cell.voxel.getLightLevelModifier(cell, adj, VoxelSides.TOP);
 						if (adj.sunlight - modifier > cell.sunlight) {
@@ -935,7 +952,6 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 
 	//TODO use getLightLevelModifier
 	private int propagateLightningBeyondChunk(IntDeque blockSources, IntDeque sunSources) {
-		
 		int modifiedBlocks = 0;
 		int bounds = 64;
 

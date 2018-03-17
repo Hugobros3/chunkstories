@@ -146,7 +146,7 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 			z += worldSize;
 		RegionSummaryImplementation cs = getRegionSummaryWorldCoordinates(x, z);
 		if (cs == null)
-			return 0;
+			return RegionSummary.NO_DATA;
 		return cs.getHeightMipmapped(x % 256, z % 256, level);
 	}
 
@@ -174,7 +174,7 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 			z += worldSize;
 		RegionSummaryImplementation cs = getRegionSummaryWorldCoordinates(x, z);
 		if (cs == null)
-			return 0;
+			return RegionSummary.NO_DATA;
 		return cs.getHeight(x % 256, z % 256);
 	}
 
