@@ -161,7 +161,7 @@ public class ChunkMeshesRenderer implements ChunksRenderer {
 			int chunkZ = floodFillDeque.removeLast();
 			int chunkY = floodFillDeque.removeLast();
 			int chunkX = floodFillDeque.removeLast();
-			// sideFrom = -1;
+			sideFrom = -1;
 
 			int ajustedChunkX = chunkX;
 			int ajustedChunkZ = chunkZ;
