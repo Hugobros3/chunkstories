@@ -6,31 +6,11 @@
 
 package io.xol.engine.graphics.util;
 
-import static org.lwjgl.opengl.ARBSync.GL_ALREADY_SIGNALED;
-import static org.lwjgl.opengl.ARBSync.GL_CONDITION_SATISFIED;
-import static org.lwjgl.opengl.ARBSync.GL_SIGNALED;
-import static org.lwjgl.opengl.ARBSync.GL_SYNC_FLUSH_COMMANDS_BIT;
-import static org.lwjgl.opengl.ARBSync.GL_SYNC_GPU_COMMANDS_COMPLETE;
-import static org.lwjgl.opengl.ARBSync.GL_SYNC_STATUS;
-import static org.lwjgl.opengl.ARBSync.GL_WAIT_FAILED;
-import static org.lwjgl.opengl.ARBSync.glClientWaitSync;
-import static org.lwjgl.opengl.ARBSync.glDeleteSync;
-import static org.lwjgl.opengl.ARBSync.glFenceSync;
-import static org.lwjgl.opengl.ARBSync.glGetSynci;
-import static org.lwjgl.opengl.GL11.GL_FLOAT;
-import static org.lwjgl.opengl.GL11.GL_RGB;
-import static org.lwjgl.opengl.GL11.glReadBuffer;
-import static org.lwjgl.opengl.GL11.glReadPixels;
-import static org.lwjgl.opengl.GL15.GL_READ_ONLY;
-import static org.lwjgl.opengl.GL15.GL_STREAM_COPY;
-import static org.lwjgl.opengl.GL15.glBindBuffer;
-import static org.lwjgl.opengl.GL15.glBufferData;
-import static org.lwjgl.opengl.GL15.glDeleteBuffers;
-import static org.lwjgl.opengl.GL15.glGenBuffers;
-import static org.lwjgl.opengl.GL15.glMapBuffer;
-import static org.lwjgl.opengl.GL15.glUnmapBuffer;
-import static org.lwjgl.opengl.GL21.GL_PIXEL_PACK_BUFFER;
-import static org.lwjgl.opengl.GL30.GL_COLOR_ATTACHMENT0;
+import static org.lwjgl.opengl.ARBSync.*;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL15.*;
+import static org.lwjgl.opengl.GL21.*;
+import static org.lwjgl.opengl.GL30.*;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -102,6 +82,7 @@ public class PBOPacker
 		glGetTexImage(GL_TEXTURE_2D, level, format.getFormat(), format.getType(), 0);*/
 
 		final long fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0x00);
+		//System.out.println(fence);
 		
 		//Puts everything back into place
 		glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
@@ -148,8 +129,11 @@ public class PBOPacker
 			//int syncStatus = glGetSynci(fence, GL_SYNC_STATUS);
 			try(MemoryStack stack = MemoryStack.stackPush()) {
 				IntBuffer ib = stack.mallocInt(1);
+				ib.put(0,0);
+				//System.out.println(ib.get(0));
 				glGetSynci(fence, GL_SYNC_STATUS, ib);
-				isTraversable = ib.get(0) == GL_SIGNALED;
+				//System.out.println(ib.get(0));
+				isTraversable = (ib.get(0) == GL_SIGNALED || ib.get(0) == GL_TRUE);
 			}
 			
 			return isTraversable;

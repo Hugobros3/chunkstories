@@ -34,6 +34,7 @@ import io.xol.chunkstories.renderer.terrain.FarTerrainMeshRenderer;
 //import io.xol.chunkstories.renderer.terrain.FarTerrainNoMeshRenderer;
 import io.xol.chunkstories.renderer.terrain.SummariesArrayTexture;
 import io.xol.chunkstories.world.WorldClientCommon;
+import io.xol.engine.graphics.textures.Texture2DRenderTargetGL;
 
 /** A tragically huge behemoth, held responsible of actually displaying all that mess */
 public class WorldRendererImplementation implements WorldRenderer
@@ -55,6 +56,8 @@ public class WorldRendererImplementation implements WorldRenderer
 	SummariesTexturesHolder summariesTexturesHolder;
 	WorldEffectsRenderer weatherEffectsRenderer;
 	//CubemapRenderer cubemapRenderer;
+
+	AverageLuma averageLuma;
 	
 	float animationTimer = 0.0f;
 	float apertureModifier = 1.0f;
@@ -74,6 +77,7 @@ public class WorldRendererImplementation implements WorldRenderer
 		this.weatherEffectsRenderer = new DefaultWeatherEffectsRenderer(world, this);
 		this.decalsRenderer = new DecalsRendererImplementation(this);
 		
+		this.averageLuma = new AverageLuma();
 		//this.cubemapRenderer = new CubemapRenderer(this);
 		
 		this.renderingGraph = new RenderingGraph(this.getRenderingInterface());
@@ -124,9 +128,12 @@ public class WorldRendererImplementation implements WorldRenderer
 	
 	protected void renderWorldInternal(RenderingInterface renderingInterface) {
 		this.renderingGraph.render(renderingInterface);
+		
+		Texture finalBuffer = this.renderingGraph.getRenderPass("forward").resolvedOutputs.get("shadedBuffer");
+		if(finalBuffer != null && finalBuffer instanceof Texture2DRenderTargetGL) {
+			this.averageLuma.computeAverageLuma((Texture2DRenderTargetGL) finalBuffer);
+		}
 	}
-	
-	
 	
 	public void blitFinalImage(RenderingInterface renderingContext, boolean hideGui)
 	{
@@ -171,6 +178,8 @@ public class WorldRendererImplementation implements WorldRenderer
 		summariesTexturesHolder.destroy();
 		entitiesRenderer.clearLoadedEntitiesRenderers();
 		chunksRenderer.destroy();
+		
+		averageLuma.destroy();
 	}
 	
 	@Override

@@ -18,6 +18,7 @@ import org.joml.Vector4fc;
 import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.shader.Shader;
+import io.xol.chunkstories.api.rendering.world.WorldRenderer;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.physics.CollisionPlane;
 
@@ -32,6 +33,7 @@ public class Camera implements CameraInterface
 	public float rotationZ = 0.0f;
 	
 	private Vector3d position = new Vector3d();
+	private Vector3f up = new Vector3f();
 	
 	//Mouse pointer tracking
 	float lastPX = -1f;
@@ -196,9 +198,23 @@ public class Camera implements CameraInterface
 		float b = (float) ((-rotV) / 180f * Math.PI);
 		Vector3f lookAt = new Vector3f((float) (Math.sin(a) * Math.cos(b)),(float)( Math.sin(b)) , (float)(Math.cos(a) * Math.cos(b)));
 		
-		Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
+		up.set(0.0f, 1.0f, 0.0f);
 		lookAt.cross(up, up);
 		up.cross(lookAt, up);
+		
+		if(up.x == lookAt.x && lookAt.y == -1.0f && up.z == lookAt.z) {
+			//System.out.println("straight down");
+			up.set((float) (Math.sin(a)), 0, (float)(Math.cos(a)));
+			
+		} else if(up.x == -lookAt.x && lookAt.y == 1.0f && up.z == -lookAt.z) {
+			//System.out.println("straight up");
+			up.set(-(float) (Math.sin(a)), 0, -(float)(Math.cos(a)));
+		}
+		//System.out.println(up + " : " + lookAt);
+		
+		modelViewMatrix4f.identity();
+		position.mul(0.0f);
+		modelViewMatrix4f.lookAt(position, lookAt, up);
 		
 		lookAt.add(position);
 		
@@ -444,27 +460,39 @@ public class Camera implements CameraInterface
 	 * @see io.xol.chunkstories.renderer.CameraInterface#setupShader(io.xol.engine.graphics.shaders.ShaderProgram)
 	 */
 	@Override
-	public void setupShader(Shader Shader)
+	public void setupShader(Shader shader)
 	{
 		// Helper function to clean code from messy bits :)
-		Shader.setUniformMatrix4f("projectionMatrix", projectionMatrix4f);
-		Shader.setUniformMatrix4f("projectionMatrixInv", projectionMatrix4fInverted);
+		shader.setUniformMatrix4f("projectionMatrix", projectionMatrix4f);
+		shader.setUniformMatrix4f("projectionMatrixInv", projectionMatrix4fInverted);
 
-		Shader.setUniformMatrix4f("modelViewMatrix", modelViewMatrix4f);
-		Shader.setUniformMatrix4f("modelViewMatrixInv", modelViewMatrix4fInverted);
+		shader.setUniformMatrix4f("modelViewMatrix", modelViewMatrix4f);
+		shader.setUniformMatrix4f("modelViewMatrixInv", modelViewMatrix4fInverted);
 
-		Shader.setUniformMatrix3f("normalMatrix", normalMatrix3f);
-		Shader.setUniformMatrix3f("normalMatrixInv", normalMatrix3fInverted);
+		shader.setUniformMatrix3f("normalMatrix", normalMatrix3f);
+		shader.setUniformMatrix3f("normalMatrixInv", normalMatrix3fInverted);
 		
-		Shader.setUniformMatrix4f("modelViewProjectionMatrix", modelViewProjectionMatrix4f);
-		Shader.setUniformMatrix4f("modelViewProjectionMatrixInv", modelViewProjectionMatrix4fInverted);
+		shader.setUniformMatrix4f("modelViewProjectionMatrix", modelViewProjectionMatrix4f);
+		shader.setUniformMatrix4f("modelViewProjectionMatrixInv", modelViewProjectionMatrix4fInverted);
 		
-		Shader.setUniformMatrix4f("untranslatedMV", untranslatedMVP4f);
-		Shader.setUniformMatrix4f("untranslatedMVInv", untranslatedMVP4fInv);
+		shader.setUniformMatrix4f("untranslatedMV", untranslatedMVP4f);
+		shader.setUniformMatrix4f("untranslatedMVInv", untranslatedMVP4fInv);
 		
-		Shader.setUniform2f("screenViewportSize", this.viewportWidth, this.viewportHeight);
+		shader.setUniform2f("screenViewportSize", this.viewportWidth, this.viewportHeight);
 
-		Shader.setUniform3f("camPos", getCameraPosition());
+		shader.setUniform3f("camPos", getCameraPosition());
+		shader.setUniform3f("camUp", up);
+
+		WorldRenderer wr = Client.getInstance().getRenderingInterface().getWorldRenderer();
+		if(wr != null) {
+			WorldRendererImplementation wri = (WorldRendererImplementation) wr;
+			float am = wri.averageLuma.getApertureModifier();
+
+			shader.setUniform1f("apertureModifier", am);
+			//System.out.println(am);
+		}
+		else 
+			shader.setUniform1f("apertureModifier", 1.0f);
 	}
 	
 	public Vector3f transform3DCoordinate(Vector3fc in)
