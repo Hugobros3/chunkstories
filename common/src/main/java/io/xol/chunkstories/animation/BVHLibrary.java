@@ -4,7 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.engine.animation;
+package io.xol.chunkstories.animation;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,10 +12,10 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.xol.chunkstories.animation.BVHAnimation;
 import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.content.Content.AnimationsLibrary;
 import io.xol.chunkstories.content.GameContentStore;
-import io.xol.engine.animation.BVHAnimation;
 
 
 

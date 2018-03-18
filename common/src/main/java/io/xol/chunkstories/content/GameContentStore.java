@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.xol.chunkstories.api.content.Content;
+import io.xol.chunkstories.animation.BVHLibrary;
 import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.exceptions.content.mods.NotAllModsLoadedException;
 import io.xol.chunkstories.api.mesh.MeshLibrary;
@@ -26,7 +27,6 @@ import io.xol.chunkstories.net.PacketsStore;
 import io.xol.chunkstories.particles.ParticlesTypesStore;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.generator.WorldGeneratorsStore;
-import io.xol.engine.animation.BVHLibrary;
 
 public class GameContentStore implements Content
 {

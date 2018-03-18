@@ -4,7 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.engine.animation;
+package io.xol.chunkstories.animation;
 
 import java.io.BufferedReader;
 import java.io.File;
