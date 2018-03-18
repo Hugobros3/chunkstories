@@ -16,7 +16,7 @@ import io.xol.chunkstories.api.rendering.StateMachine.CullingMode;
 import io.xol.chunkstories.api.rendering.StateMachine.DepthTestMode;
 import io.xol.chunkstories.api.rendering.shader.Shader;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
-import io.xol.chunkstories.renderer.RenderingContext;
+import io.xol.chunkstories.renderer.OpenGLRenderingContext;
 import io.xol.chunkstories.renderer.opengl.texture.Texture1DGL;
 
 public class WorldLogicTimeRenderer
@@ -37,7 +37,7 @@ public class WorldLogicTimeRenderer
 		dataBB.putFloat(lel * 4, elapsedTime/1000000f);
 	}
 	
-	public static void draw(RenderingContext renderingContext)
+	public static void draw(OpenGLRenderingContext renderingContext)
 	{
 		renderingContext.setDepthTestMode(DepthTestMode.DISABLED);
 		renderingContext.setBlendMode(BlendMode.MIX);

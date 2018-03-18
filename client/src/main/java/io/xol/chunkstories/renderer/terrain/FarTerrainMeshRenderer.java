@@ -34,7 +34,7 @@ import io.xol.chunkstories.api.rendering.textures.TextureFormat;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
 import io.xol.chunkstories.api.rendering.world.WorldRenderer.FarTerrainRenderer;
 import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
-import io.xol.chunkstories.client.RenderingConfig;
+import io.xol.chunkstories.client.ClientLimitations;
 import io.xol.chunkstories.renderer.opengl.texture.Texture1DGL;
 import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;
 import io.xol.chunkstories.renderer.terrain.FarTerrainBaker.RegionMesh;
@@ -196,10 +196,10 @@ public class FarTerrainMeshRenderer implements FarTerrainRenderer
 		terrainShader.setUniform1f("mapSize", world.getSizeInChunks() * 32);
 
 		//TODO hidden inputs ?
-		if(renderer.getClient().getInputsManager().getInputByName("wireframeFarTerrain").isPressed() && RenderingConfig.isDebugAllowed)
+		if(renderer.getClient().getInputsManager().getInputByName("wireframeFarTerrain").isPressed() && ClientLimitations.isDebugAllowed)
 			renderer.setPolygonFillMode(PolygonFillMode.WIREFRAME);
 
-		if(!renderer.getClient().getInputsManager().getInputByName("hideFarTerrain").isPressed() && RenderingConfig.isDebugAllowed)
+		if(!renderer.getClient().getInputsManager().getInputByName("hideFarTerrain").isPressed() && ClientLimitations.isDebugAllowed)
 			drawTerrainBits(renderer, mask, terrainShader);
 
 		renderer.setPolygonFillMode(PolygonFillMode.FILL);

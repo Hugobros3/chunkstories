@@ -43,7 +43,7 @@ import io.xol.chunkstories.api.rendering.target.RenderTarget;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.client.RenderingConfig;
+import io.xol.chunkstories.client.ClientLimitations;
 import io.xol.chunkstories.renderer.opengl.OpenGLDebugOutputCallback;
 
 public abstract class Texture2DGL extends TextureGL implements RenderTarget, Texture2D {
@@ -136,7 +136,7 @@ public abstract class Texture2DGL extends TextureGL implements RenderTarget, Tex
 
 		glBindTexture(GL_TEXTURE_2D, glId);
 
-		if (RenderingConfig.DEBUG_OPENGL)
+		if (ClientLimitations.debugOpenGL)
 			checkForErrors();
 		currentlyBoundId = glId;
 	}
@@ -248,9 +248,9 @@ public abstract class Texture2DGL extends TextureGL implements RenderTarget, Tex
 			bind();
 	
 			// Regenerate the mipmaps only when necessary
-			if (RenderingConfig.gl_openGL3Capable)
+			if (ClientLimitations.gl_openGL3Capable)
 				GL30.glGenerateMipmap(GL_TEXTURE_2D);
-			else if (RenderingConfig.gl_fbExtCapable)
+			else if (ClientLimitations.gl_fbExtCapable)
 				ARBFramebufferObject.glGenerateMipmap(GL_TEXTURE_2D);
 	
 			mipmapsUpToDate = true;

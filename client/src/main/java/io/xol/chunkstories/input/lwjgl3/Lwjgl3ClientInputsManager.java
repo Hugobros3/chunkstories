@@ -46,17 +46,17 @@ import io.xol.chunkstories.api.util.ConfigDeprecated;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ServerConnection;
-import io.xol.chunkstories.gui.overlays.config.KeyBindSelectionOverlay;
+import io.xol.chunkstories.gui.layer.config.KeyBindSelectionOverlay;
 import io.xol.chunkstories.input.InputVirtual;
 import io.xol.chunkstories.input.InputsLoaderHelper;
 import io.xol.chunkstories.input.InputsManagerLoader;
 import io.xol.chunkstories.net.packets.PacketInput;
-import io.xol.chunkstories.renderer.opengl.GameWindowOpenGL_LWJGL3;
+import io.xol.chunkstories.renderer.opengl.GLFWGameWindow;
 import io.xol.chunkstories.world.WorldClientRemote;
 
 public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsManagerLoader
 {
-	protected final GameWindowOpenGL_LWJGL3 gameWindow;
+	protected final GLFWGameWindow gameWindow;
 	
 	Collection<Input> inputs = new ArrayList<Input>();
 	//Set<Lwjgl3KeyBind> keyboardInputs = new HashSet<Lwjgl3KeyBind>();
@@ -75,7 +75,7 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 	private static final Logger logger = LoggerFactory.getLogger("client.workers");
 	
 	//private final Ingame scene;
-	public Lwjgl3ClientInputsManager(GameWindowOpenGL_LWJGL3 gameWindow)
+	public Lwjgl3ClientInputsManager(GLFWGameWindow gameWindow)
 	{
 		this.gameWindow = gameWindow;
 		

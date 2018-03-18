@@ -31,7 +31,7 @@ import org.lwjgl.opengl.GL30;
 
 import io.xol.chunkstories.api.rendering.textures.ArrayTexture;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
-import io.xol.chunkstories.client.RenderingConfig;
+import io.xol.chunkstories.client.ClientLimitations;
 
 public class ArrayTextureGL extends TextureGL implements ArrayTexture {
 	
@@ -127,9 +127,9 @@ public class ArrayTextureGL extends TextureGL implements ArrayTexture {
 		bind();
 		
 		//Regenerate the mipmaps only when necessary
-		if (RenderingConfig.gl_openGL3Capable)
+		if (ClientLimitations.gl_openGL3Capable)
 			GL30.glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
-		else if (RenderingConfig.gl_fbExtCapable)
+		else if (ClientLimitations.gl_fbExtCapable)
 			ARBFramebufferObject.glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
 	
 		mipmapsUpToDate = true;

@@ -4,9 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.chunkstories.gui.overlays;
-
-
+package io.xol.chunkstories.gui.layer;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,14 +30,14 @@ import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.chunkstories.world.WorldInfoMaster;
 import io.xol.chunkstories.world.WorldLoadingException;
 
-public class LevelSelectOverlay extends Layer
+public class LevelSelection extends Layer
 {
 	LargeButtonIcon backOption = new LargeButtonIcon(this, "back");
 	LargeButtonIcon newWorldOption = new LargeButtonIcon(this, "new");
 	List<WorldInfoMaster> localWorlds = new ArrayList<WorldInfoMaster>();
 	List<LocalWorldButton> worldsButtons = new ArrayList<LocalWorldButton>();
 
-	public LevelSelectOverlay(GameWindow scene, Layer parent)
+	public LevelSelection(GameWindow scene, Layer parent)
 	{
 		super(scene, parent);
 		// Gui buttons
@@ -55,7 +53,7 @@ public class LevelSelectOverlay extends Layer
 		this.newWorldOption.setAction(new Runnable() {
 			@Override
 			public void run() {
-				gameWindow.setLayer(new LevelCreateOverlay(gameWindow, LevelSelectOverlay.this));
+				gameWindow.setLayer(new LevelCreation(gameWindow, LevelSelection.this));
 			}
 			
 		});
@@ -171,7 +169,7 @@ public class LevelSelectOverlay extends Layer
 
 		public LocalWorldButton(int x, int y, WorldInfoMaster info)
 		{
-			super(LevelSelectOverlay.this, x, y, 0, "");
+			super(LevelSelection.this, x, y, 0, "");
 			this.height = 64 + 8;
 			this.info = info;
 		}

@@ -173,5 +173,6 @@ public class PBOPacker
 	public void destroy()
 	{
 		glDeleteBuffers(bufferId);
+		fbo.destroy();
 	}
 }

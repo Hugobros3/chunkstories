@@ -18,7 +18,7 @@ import io.xol.chunkstories.api.math.HexTools;
 import io.xol.chunkstories.api.rendering.text.FontRenderer;
 import io.xol.chunkstories.api.rendering.text.TextMesh;
 import io.xol.chunkstories.api.util.ColorsTools;
-import io.xol.chunkstories.renderer.RenderingContext;
+import io.xol.chunkstories.renderer.OpenGLRenderingContext;
 import io.xol.chunkstories.renderer.mesh.TextMeshObject;
 import io.xol.chunkstories.renderer.opengl.texture.Texture2DGL;
 
@@ -28,7 +28,7 @@ public class TrueTypeFontRenderer implements FontRenderer
 	//private static TrueTypeFontRenderer trueTypeFontRenderer;
 	
 	private final Map<String, TrueTypeFont> loadedFonts = new TreeMap<String, TrueTypeFont>();
-	private final RenderingContext renderingContext;
+	private final OpenGLRenderingContext renderingContext;
 
 	/** Default font texture width */
 	private int textureWidth = 512;
@@ -41,7 +41,7 @@ public class TrueTypeFontRenderer implements FontRenderer
 		return trueTypeFontRenderer;
 	}*/
 
-	public TrueTypeFontRenderer(RenderingContext renderingContext)
+	public TrueTypeFontRenderer(OpenGLRenderingContext renderingContext)
 	{
 		this.renderingContext = renderingContext;
 		//TrueTypeFontRenderer.trueTypeFontRenderer = this;

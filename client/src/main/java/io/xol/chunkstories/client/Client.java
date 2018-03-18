@@ -30,16 +30,16 @@ import io.xol.chunkstories.api.workers.Tasks;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.content.ClientGameContent;
 import io.xol.chunkstories.content.GameDirectory;
-import io.xol.chunkstories.gui.Ingame;
-import io.xol.chunkstories.gui.MainMenu;
-import io.xol.chunkstories.gui.overlays.LoginOverlay;
-import io.xol.chunkstories.gui.overlays.MainMenuOverlay;
-import io.xol.chunkstories.gui.overlays.general.MessageBoxOverlay;
-import io.xol.chunkstories.gui.overlays.ingame.ConnectionOverlay;
-import io.xol.chunkstories.gui.overlays.ingame.InventoryOverlay;
+import io.xol.chunkstories.gui.layer.LoginPrompt;
+import io.xol.chunkstories.gui.layer.MainMenu;
+import io.xol.chunkstories.gui.layer.MessageBox;
+import io.xol.chunkstories.gui.layer.SkyBoxBackground;
+import io.xol.chunkstories.gui.layer.ingame.ConnectionOverlay;
+import io.xol.chunkstories.gui.layer.ingame.Ingame;
+import io.xol.chunkstories.gui.layer.ingame.InventoryView;
 import io.xol.chunkstories.input.lwjgl3.Lwjgl3ClientInputsManager;
 import io.xol.chunkstories.renderer.chunks.ClientTasksPool;
-import io.xol.chunkstories.renderer.opengl.GameWindowOpenGL_LWJGL3;
+import io.xol.chunkstories.renderer.opengl.GLFWGameWindow;
 import io.xol.chunkstories.tools.DebugProfiler;
 import io.xol.chunkstories.util.LogbackSetupHelper;
 import io.xol.chunkstories.util.concurrency.SimpleFence;
@@ -57,7 +57,7 @@ public class Client implements ClientInterface
 	private final ClientGameContent gameContent;
 
 	//Windowing/Rendering
-	private final GameWindowOpenGL_LWJGL3 gameWindow;
+	private final GLFWGameWindow gameWindow;
 	//private final RenderingConfig renderingConfig = new RenderingConfig();
 	
 	//Login data
@@ -91,7 +91,7 @@ public class Client implements ClientInterface
 		{
 			if (s.equals("--forceobsolete")) {
 				
-				RenderingConfig.ignoreObsoleteHardware = false;
+				ClientLimitations.ignoreObsoleteHardware = false;
 				System.out.println("Ignoring OpenGL detection. This is absolutely definitely not going to make the game run, proceed at your own risk of imminent failure."
 						+ "You are stripped of any tech support rights when running the game using this.");
 			}
@@ -106,7 +106,7 @@ public class Client implements ClientInterface
 				coreContentLocation = new File(coreContentLocationPath);
 			}
 			else if(s.contains("--gldebug")) {
-				RenderingConfig.DEBUG_OPENGL = true;
+				ClientLimitations.debugOpenGL = true;
 				System.out.println("OpenGL debug output ENABLED");
 			}
 			else {
@@ -156,7 +156,7 @@ public class Client implements ClientInterface
 		//clientConfig = new ConfigFile("./config/client.cfg");
 		
 		// Creates game window, no use of any user content up to this point
-		gameWindow = new GameWindowOpenGL_LWJGL3(this, "Chunk Stories " + VersionInfo.version);
+		gameWindow = new GLFWGameWindow(this, "Chunk Stories " + VersionInfo.version);
 		
 		// Create game content manager
 		gameContent = new ClientGameContent(this, coreContentLocation, modsStringArgument);
@@ -193,7 +193,7 @@ public class Client implements ClientInterface
 			gameContent.localization().loadTranslation(lang);
 
 		//Initlializes windows screen to main menu ( and ask for login )
-		gameWindow.setLayer(new LoginOverlay(gameWindow, new MainMenu(gameWindow)));
+		gameWindow.setLayer(new LoginPrompt(gameWindow, new SkyBoxBackground(gameWindow)));
 		
 		//Pass control to the windows for main game loop
 		gameWindow.run();
@@ -278,7 +278,7 @@ public class Client implements ClientInterface
 				if (gameWindow.getLayer().getRootLayer() instanceof Ingame)
 				{
 					Ingame gmp = (Ingame) gameWindow.getLayer().getRootLayer();
-					gameWindow.setLayer(new InventoryOverlay(gameWindow, gmp, inventories));
+					gameWindow.setLayer(new InventoryView(gameWindow, gmp, inventories));
 					gmp.focus(false);
 				}
 			}
@@ -353,7 +353,7 @@ public class Client implements ClientInterface
 					currentRootLayer.destroy();
 				}
 				
-				gameWindow.setLayer(new MainMenuOverlay(gameWindow, new MainMenu(gameWindow)));
+				gameWindow.setLayer(new MainMenu(gameWindow, new SkyBoxBackground(gameWindow)));
 				
 				if (world != null)
 				{
@@ -374,7 +374,7 @@ public class Client implements ClientInterface
 			@Override
 			public void run()
 			{
-				gameWindow.setLayer(new MessageBoxOverlay(gameWindow, new MainMenu(gameWindow), errorMessage));
+				gameWindow.setLayer(new MessageBox(gameWindow, new SkyBoxBackground(gameWindow), errorMessage));
 				
 				if (world != null)
 				{
@@ -422,7 +422,7 @@ public class Client implements ClientInterface
 		return gameWindow.getInputsManager();
 	}
 
-	public GameWindowOpenGL_LWJGL3 getGameWindow()
+	public GLFWGameWindow getGameWindow()
 	{
 		return gameWindow;
 	}

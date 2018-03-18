@@ -14,13 +14,13 @@ import org.lwjgl.glfw.GLFWImage;
 
 import de.matthiasmann.twl.utils.PNGDecoder;
 import de.matthiasmann.twl.utils.PNGDecoder.Format;
-import io.xol.chunkstories.renderer.opengl.GameWindowOpenGL_LWJGL3;
+import io.xol.chunkstories.renderer.opengl.GLFWGameWindow;
 
 
 
 public class IconLoader
 {
-	public IconLoader(GameWindowOpenGL_LWJGL3 gameWindow)
+	public IconLoader(GLFWGameWindow gameWindow)
 	{
 		try (GLFWImage.Buffer icons = GLFWImage.malloc(2)) {
             ByteBuffer pixels16 = getByteBufferData("/textures/icon16.png");

@@ -13,7 +13,7 @@ import java.util.List;
 import org.lwjgl.BufferUtils;
 
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
-import io.xol.chunkstories.client.RenderingConfig;
+import io.xol.chunkstories.client.ClientLimitations;
 import io.xol.chunkstories.renderer.opengl.vbo.VertexBufferGL;
 import io.xol.chunkstories.renderer.terrain.HeightmapMesher.Surface;
 import io.xol.chunkstories.world.WorldClientCommon;

@@ -25,8 +25,9 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.api.util.ColorsTools;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.client.RenderingConfig;
+import io.xol.chunkstories.client.ClientLimitations;
 import io.xol.chunkstories.gui.elements.InputText;
+import io.xol.chunkstories.gui.layer.ingame.Ingame;
 import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.chunkstories.world.WorldClientRemote;
 import io.xol.chunkstories.world.WorldImplementation;
@@ -298,7 +299,7 @@ public class Chat
 		}
 		else if (input.equals("I am Mr Debug"))
 		{
-			RenderingConfig.isDebugAllowed = true;
+			ClientLimitations.isDebugAllowed = true;
 		}
 		else if (input.equals("_-"))
 		{

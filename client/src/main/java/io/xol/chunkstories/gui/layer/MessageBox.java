@@ -4,7 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.chunkstories.gui.overlays.general;
+package io.xol.chunkstories.gui.layer;
 
 import org.joml.Vector4f;
 
@@ -13,12 +13,12 @@ import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.gui.elements.Button;
 
-public class MessageBoxOverlay extends Layer
+public class MessageBox extends Layer
 {
 	Button okButton = new Button(this, 0, 0, 300, "#{menu.ok}");
 	String message;
 	
-	public MessageBoxOverlay(GameWindow scene, Layer parent, String message)
+	public MessageBox(GameWindow scene, Layer parent, String message)
 	{
 		super(scene, parent);
 		//Thread.dumpStack();

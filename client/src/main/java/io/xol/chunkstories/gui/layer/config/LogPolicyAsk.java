@@ -4,7 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.chunkstories.gui.overlays.config;
+package io.xol.chunkstories.gui.layer.config;
 
 import org.joml.Vector4f;
 

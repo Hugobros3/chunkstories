@@ -16,7 +16,7 @@ import io.xol.chunkstories.api.rendering.StateMachine.CullingMode;
 import io.xol.chunkstories.api.rendering.StateMachine.DepthTestMode;
 import io.xol.chunkstories.api.rendering.shader.Shader;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
-import io.xol.chunkstories.renderer.RenderingContext;
+import io.xol.chunkstories.renderer.OpenGLRenderingContext;
 import io.xol.chunkstories.renderer.opengl.texture.Texture1DGL;
 
 public class MemUsageRenderer
@@ -28,7 +28,7 @@ public class MemUsageRenderer
 	static int lel = 0;
 	static long lastTime;
 	
-	public static void draw(RenderingContext renderingContext)
+	public static void draw(OpenGLRenderingContext renderingContext)
 	{
 		lel++;
 		lel%=1024;

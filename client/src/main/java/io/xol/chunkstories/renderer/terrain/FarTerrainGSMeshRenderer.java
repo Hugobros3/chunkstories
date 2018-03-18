@@ -28,7 +28,7 @@ import io.xol.chunkstories.api.rendering.world.WorldRenderer.FarTerrainRenderer;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.client.RenderingConfig;
+import io.xol.chunkstories.client.ClientLimitations;
 import io.xol.chunkstories.client.util.MemFreeByteBuffer;
 import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;
 import io.xol.chunkstories.renderer.opengl.vbo.VertexBufferGL;
@@ -147,10 +147,10 @@ public class FarTerrainGSMeshRenderer implements FarTerrainRenderer {
 
 		//TODO hidden inputs ?
 		
-		if(renderer.getClient().getInputsManager().getInputByName("wireframeFarTerrain").isPressed() && RenderingConfig.isDebugAllowed)
+		if(renderer.getClient().getInputsManager().getInputByName("wireframeFarTerrain").isPressed() && ClientLimitations.isDebugAllowed)
 			renderer.setPolygonFillMode(PolygonFillMode.WIREFRAME);
 
-		if(!renderer.getClient().getInputsManager().getInputByName("hideFarTerrain").isPressed() && RenderingConfig.isDebugAllowed)
+		if(!renderer.getClient().getInputsManager().getInputByName("hideFarTerrain").isPressed() && ClientLimitations.isDebugAllowed)
 		{
 			renderer.setCullingMode(CullingMode.DISABLED);
 			//renderer.setCullingMode(CullingMode.COUNTERCLOCKWISE);

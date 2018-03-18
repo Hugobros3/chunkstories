@@ -4,7 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.chunkstories.gui.overlays.ingame;
+package io.xol.chunkstories.gui.layer.ingame;
 
 import org.joml.Vector4f;
 
@@ -28,9 +28,7 @@ import io.xol.chunkstories.gui.InventoryDrawer;
 import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.chunkstories.world.WorldClientRemote;
 
-
-
-public class InventoryOverlay extends Layer
+public class InventoryView extends Layer
 {
 	Inventory[] inventories;
 	InventoryDrawer[] drawers;
@@ -38,7 +36,7 @@ public class InventoryOverlay extends Layer
 	public static ItemPile selectedItem;
 	public static int selectedItemAmount;
 
-	public InventoryOverlay(GameWindow scene, Layer parent, Inventory[] entityInventories)
+	public InventoryView(GameWindow scene, Layer parent, Inventory[] entityInventories)
 	{
 		super(scene, parent);
 		this.inventories = entityInventories;
@@ -104,7 +102,7 @@ public class InventoryOverlay extends Layer
 			return handleClick((MouseButton)input);
 		else if(input.equals("exit")) {
 			this.gameWindow.setLayer(parentLayer);
-			InventoryOverlay.selectedItem = null;
+			InventoryView.selectedItem = null;
 			return true;
 		}
 		else

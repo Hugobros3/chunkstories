@@ -4,7 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.chunkstories.gui;
+package io.xol.chunkstories.gui.layer;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -24,14 +24,13 @@ import io.xol.chunkstories.api.rendering.shader.Shader;
 import io.xol.chunkstories.api.rendering.target.RenderTargetsConfiguration;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.gui.overlays.MainMenuOverlay;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.opengl.fbo.FrameBufferObjectGL;
 import io.xol.chunkstories.renderer.opengl.texture.Texture2DGL;
 import io.xol.chunkstories.renderer.opengl.texture.Texture2DRenderTargetGL;
 import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;
 
-public class MainMenu extends Layer
+public class SkyBoxBackground extends Layer
 {
 	// Stuff for rendering the background
 
@@ -48,7 +47,7 @@ public class MainMenu extends Layer
 
 	// private String splashText = getRandomSplashScreen();
 
-	public MainMenu(GameWindow gameWindow)
+	public SkyBoxBackground(GameWindow gameWindow)
 	{
 		super(gameWindow, null);
 		selectRandomSkybox();
@@ -126,7 +125,7 @@ public class MainMenu extends Layer
 	public void render(RenderingInterface renderingContext)
 	{
 		if(gameWindow.getLayer() == this)
-			gameWindow.setLayer( new MainMenuOverlay(gameWindow, this));
+			gameWindow.setLayer( new MainMenu(gameWindow, this));
 		
 		try // Ugly fps caps yay
 		{

@@ -4,7 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.chunkstories.gui.overlays.config;
+package io.xol.chunkstories.gui.layer.config;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -31,16 +31,16 @@ import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.content.mods.ModFolder;
 import io.xol.chunkstories.content.mods.ModImplementation;
 import io.xol.chunkstories.content.mods.ModZip;
+import io.xol.chunkstories.gui.layer.config.ModsSelection.ModsScrollableContainer.ModItem;
 import io.xol.chunkstories.gui.ng.LargeButtonIcon;
 import io.xol.chunkstories.gui.ng.ScrollableContainer;
 import io.xol.chunkstories.gui.ng.ScrollableContainer.ContainerElement;
 import io.xol.chunkstories.gui.ng.ThinButton;
-import io.xol.chunkstories.gui.overlays.config.ModsSelectionOverlay.ModsScrollableContainer.ModItem;
 import io.xol.chunkstories.renderer.opengl.texture.Texture2DAsset;
 import io.xol.chunkstories.renderer.opengl.texture.Texture2DGL;
 import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;
 
-public class ModsSelectionOverlay extends Layer
+public class ModsSelection extends Layer
 {
 	LargeButtonIcon applyMods = new LargeButtonIcon(this, "validate");
 	
@@ -51,7 +51,7 @@ public class ModsSelectionOverlay extends Layer
 	
 	ModsScrollableContainer modsContainer = new ModsScrollableContainer(this);
 	
-	public ModsSelectionOverlay(GameWindow window, Layer parent)
+	public ModsSelection(GameWindow window, Layer parent)
 	{
 		super(window, parent);
 		

@@ -4,7 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.chunkstories.gui.overlays;
+package io.xol.chunkstories.gui.layer;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -26,15 +26,15 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.gui.elements.Button;
 import io.xol.chunkstories.gui.elements.InputText;
+import io.xol.chunkstories.gui.layer.ServerSelection.ServerSelectionZone.ServerGuiItem;
+import io.xol.chunkstories.gui.layer.ingame.ConnectionOverlay;
 import io.xol.chunkstories.gui.ng.LargeButtonIcon;
 import io.xol.chunkstories.gui.ng.ScrollableContainer;
 import io.xol.chunkstories.gui.ng.ScrollableContainer.ContainerElement;
-import io.xol.chunkstories.gui.overlays.ServerSelectionOverlayNg.ServerSelectionZone.ServerGuiItem;
-import io.xol.chunkstories.gui.overlays.ingame.ConnectionOverlay;
 import io.xol.chunkstories.net.http.HttpRequestThread;
 import io.xol.chunkstories.net.http.HttpRequester;
 
-public class ServerSelectionOverlayNg extends Layer implements HttpRequester
+public class ServerSelection extends Layer implements HttpRequester
 {
 	InputText ipForm = new InputText(this, 0, 0, 500);
 
@@ -48,7 +48,7 @@ public class ServerSelectionOverlayNg extends Layer implements HttpRequester
 	
 	private final static Logger logger = LoggerFactory.getLogger("gui.serverselection");
 
-	public ServerSelectionOverlayNg(GameWindow scene, Layer parent, boolean a)
+	public ServerSelection(GameWindow scene, Layer parent, boolean a)
 	{
 		super(scene, parent);
 		elements.add(ipForm);

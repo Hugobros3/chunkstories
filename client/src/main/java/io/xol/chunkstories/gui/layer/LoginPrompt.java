@@ -4,7 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.chunkstories.gui.overlays;
+package io.xol.chunkstories.gui.layer;
 
 import org.joml.Vector4f;
 
@@ -16,22 +16,22 @@ import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.bugsreporter.JavaCrashesUploader;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.client.RenderingConfig;
+import io.xol.chunkstories.client.ClientLimitations;
 import io.xol.chunkstories.gui.elements.Button;
 import io.xol.chunkstories.gui.elements.InputText;
-import io.xol.chunkstories.gui.overlays.config.LanguageSelectionScreen;
+import io.xol.chunkstories.gui.layer.config.LanguageSelectionScreen;
 import io.xol.chunkstories.net.http.HttpRequestThread;
 import io.xol.chunkstories.net.http.HttpRequester;
 import io.xol.chunkstories.renderer.opengl.util.ObjectRenderer;
 
-public class LoginOverlay extends Layer implements HttpRequester
+public class LoginPrompt extends Layer implements HttpRequester
 {
 	InputText usernameForm = new InputText(this, 0, 0, 500);
 	InputText passwordForm = new InputText(this, 0, 0, 500);
 	
 	Button loginButton = new Button(this, 0, 0, 128, "#{login.login}");
 	
-	public LoginOverlay(GameWindow scene, Layer parent)
+	public LoginPrompt(GameWindow scene, Layer parent)
 	{
 		super(scene, parent);
 		
@@ -83,7 +83,7 @@ public class LoginOverlay extends Layer implements HttpRequester
 		}
 		
 		if (can_next)
-			gameWindow.setLayer(new MainMenuOverlay(gameWindow, parentLayer));
+			gameWindow.setLayer(new MainMenu(gameWindow, parentLayer));
 		
 		ObjectRenderer.renderTexturedRect(renderer.getWindow().getWidth() / 2, renderer.getWindow().getHeight() / 2 + 180, 512, 512, "./textures/logo.png");
 
@@ -135,7 +135,7 @@ public class LoginOverlay extends Layer implements HttpRequester
 		{
 			Client.offline = true;
 			Client.username = "OfflineUser" + (int) (Math.random() * 1000);
-			gameWindow.setLayer(new MainMenuOverlay(gameWindow, parentLayer));
+			gameWindow.setLayer(new MainMenu(gameWindow, parentLayer));
 			//this.mainScene.changeOverlay(new MainMenuOverlay(mainScene, null));//eng.changeScene(new MainMenu(eng));
 		}
 		else
@@ -197,7 +197,7 @@ public class LoginOverlay extends Layer implements HttpRequester
 				
 				if(Client.username.equals("Gobrosse") || Client.username.equals("kektest"))
 				{
-					RenderingConfig.isDebugAllowed = true;
+					ClientLimitations.isDebugAllowed = true;
 				}
 				
 				//If the user didn't opt-out, look for crash files and upload those

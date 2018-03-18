@@ -4,7 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.chunkstories.gui.overlays.ingame;
+package io.xol.chunkstories.gui.layer.ingame;
 
 import org.joml.Vector4f;
 
@@ -19,13 +19,12 @@ import io.xol.chunkstories.gui.elements.Button;
 import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.chunkstories.world.WorldClientRemote;
 
-public class DeathOverlay extends Layer
-{;
-	
+public class DeathScreen extends Layer
+{	
 	Button respawnButton = new Button(this, 0, 0, 320, "#{ingame.respawn}");
 	Button exitButton = new Button(this, 0, 0, 320, "#{ingame.exit}");
 
-	public DeathOverlay(GameWindow scene, Layer parent)
+	public DeathScreen(GameWindow scene, Layer parent)
 	{
 		super(scene, parent);
 		

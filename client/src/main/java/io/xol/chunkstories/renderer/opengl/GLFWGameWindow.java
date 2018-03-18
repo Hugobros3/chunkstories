@@ -142,11 +142,11 @@ import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.client.RenderingConfig;
+import io.xol.chunkstories.client.ClientLimitations;
 import io.xol.chunkstories.client.util.IconLoader;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.input.lwjgl3.Lwjgl3ClientInputsManager;
-import io.xol.chunkstories.renderer.RenderingContext;
+import io.xol.chunkstories.renderer.OpenGLRenderingContext;
 import io.xol.chunkstories.renderer.debug.FrametimeRenderer;
 import io.xol.chunkstories.renderer.debug.MemUsageRenderer;
 import io.xol.chunkstories.renderer.debug.WorldLogicTimeRenderer;
@@ -157,15 +157,15 @@ import io.xol.chunkstories.sound.ALSoundManager;
 import io.xol.chunkstories.util.CPUModelDetection;
 import io.xol.chunkstories.util.concurrency.SimpleFence;
 
-public class GameWindowOpenGL_LWJGL3 implements GameWindow
+public class GLFWGameWindow implements GameWindow
 {
-	public static GameWindowOpenGL_LWJGL3 instance;
+	public static GLFWGameWindow instance;
 	private Lwjgl3ClientInputsManager inputsManager;
 	
 	private final long mainGLThreadId;
 
 	private Client client;
-	public RenderingContext renderingContext;
+	public OpenGLRenderingContext renderingContext;
 	private ALSoundManager soundManager;
 
 	private Layer layer;
@@ -184,7 +184,7 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 	//Monitors/resolutions probing
 	private long monitors[];
 	private String[] modes;
-	private final List<VideoMode> enumeratedVideoModes = new ArrayList<VideoMode>();
+	private final List<DisplayMode> enumeratedVideoModes = new ArrayList<DisplayMode>();
 
 	private long lastTimeMS = 0;
 	private int framesSinceLS = 0;
@@ -204,7 +204,7 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 	private BusyMainThreadLoop pleaseWait = null;
 	protected GLCapabilities capabilities;
 	
-	public GameWindowOpenGL_LWJGL3(Client client, String name)
+	public GLFWGameWindow(Client client, String name)
 	{
 		this.windowName = name;
 		this.client = client;
@@ -238,7 +238,7 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 			glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); 
 			
-			if(RenderingConfig.DEBUG_OPENGL)
+			if(ClientLimitations.debugOpenGL)
 				glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 			
 			glfwWindowHandle = glfwCreateWindow(windowWidth, windowHeight, windowName, 0, 0);
@@ -257,7 +257,7 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 			glfwShowWindow(glfwWindowHandle);
 			
 			//Enable error callback
-			if(RenderingConfig.DEBUG_OPENGL)
+			if(ClientLimitations.debugOpenGL)
 				glDebugMessageCallbackARB(new OpenGLDebugOutputCallback(Thread.currentThread()), 0);
 			
 			//Oops.. Didn't use any VAOs anywhere so we put this there to be GL 3.2 core compliant
@@ -266,7 +266,7 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 			
 			//displaySplashScreen();
 
-			renderingContext = new RenderingContext(this);
+			renderingContext = new OpenGLRenderingContext(this);
 		}
 		catch (Exception e)
 		{
@@ -409,25 +409,25 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 		//Kill the game early if not fit
 		if (glVersionf < 3.3f)
 		{
-			RenderingConfig.gl_openGL3Capable = false;
+			ClientLimitations.gl_openGL3Capable = false;
 			
 			// bien le moyen-âge ?
 			logger().warn("Pre-OpenGL 3.3 Hardware detected.");
 			logger().warn("This game isn't made to run in those conditions, please update your drivers or upgrade your graphics card.");
 			JOptionPane.showMessageDialog(null, "Pre-OpenGL 3.0 Hardware without needed extensions support detected.\n" + "This game isn't made to run in those conditions, please update your drivers or upgrade your graphics card.");
 			// If you feel brave after all
-			if (!RenderingConfig.ignoreObsoleteHardware)
+			if (!ClientLimitations.ignoreObsoleteHardware)
 				Runtime.getRuntime().exit(0);
 		}
 		else
 			logger().info("OpenGL 3.3+ Hardware detected OK!");
 
 		//Check for various limitations
-		RenderingConfig.gl_MaxTextureUnits = glGetInteger(GL_MAX_TEXTURE_IMAGE_UNITS);
-		RenderingConfig.gl_MaxTextureArraySize = glGetInteger(GL_MAX_ARRAY_TEXTURE_LAYERS);
+		ClientLimitations.gl_MaxTextureUnits = glGetInteger(GL_MAX_TEXTURE_IMAGE_UNITS);
+		ClientLimitations.gl_MaxTextureArraySize = glGetInteger(GL_MAX_ARRAY_TEXTURE_LAYERS);
 		
-		RenderingConfig.gl_IsInstancingSupported = GL.getCapabilities().GL_ARB_draw_instanced;
-		RenderingConfig.gl_InstancedArrays = GL.getCapabilities().GL_ARB_instanced_arrays;
+		ClientLimitations.gl_IsInstancingSupported = GL.getCapabilities().GL_ARB_draw_instanced;
+		ClientLimitations.gl_InstancedArrays = GL.getCapabilities().GL_ARB_instanced_arrays;
 	}
 
 	// what is stage 2 ?
@@ -454,7 +454,7 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 
 					glViewport(0, 0, width, height);
 
-					Layer layer = GameWindowOpenGL_LWJGL3.this.layer;
+					Layer layer = GLFWGameWindow.this.layer;
 					while (layer != null) {
 						layer.onResize(width, height);
 						layer = layer.getParentLayer();
@@ -623,7 +623,7 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 				//String videoModeString = videoMode.width() + "x" + videoMode.height() + " @" + videoMode.refreshRate()+"Hz ";
 				
 				//System.out.println(videoModeString+(videoMode.blueBits()+videoMode.redBits()+videoMode.greenBits()) + "bpp");
-				VideoMode vm = new VideoMode(monitorCount, videoMode);
+				DisplayMode vm = new DisplayMode(monitorCount, videoMode);
 				//System.out.println("vm: "+vm);
 				enumeratedVideoModes.add(vm);
 			}
@@ -665,7 +665,7 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 				client.getConfiguration().getOption("client.video.fullScreenResolution").trySetting(modeString);
 			}
 			
-			VideoMode videoMode = findMatchForVideoMode(modeString);
+			DisplayMode videoMode = findMatchForVideoMode(modeString);
 			glfwSetWindowMonitor(this.glfwWindowHandle, monitors[videoMode.monitorId - 1], 0, 0, videoMode.videoMode.width(), videoMode.videoMode.height(), videoMode.videoMode.refreshRate());
 		
 			windowWidth = videoMode.videoMode.width();
@@ -719,14 +719,14 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 		switchResolution();
 	}
 
-	private VideoMode findMatchForVideoMode(String modeString) {
+	private DisplayMode findMatchForVideoMode(String modeString) {
 		
 		String[] s = modeString.split(":");
 		int id = Integer.parseInt(s[0]);
 		int w = Integer.parseInt(s[1]);
 		int h = Integer.parseInt(s[2]);
 		int freq = Integer.parseInt(s[3]);
-		for(VideoMode v : enumeratedVideoModes) {
+		for(DisplayMode v : enumeratedVideoModes) {
 			if(v.monitorId == id && v.videoMode.width() == w && v.videoMode.height() == h && v.videoMode.refreshRate() == freq)
 				return v;
 		}
@@ -734,10 +734,10 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 		System.out.println("Couldn't find a resolution/monitor combo matching :"+modeString);
 		long mainMonitor = glfwGetPrimaryMonitor();
 		GLFWVidMode currentVideoMode = glfwGetVideoMode(mainMonitor);
-		return new VideoMode(1, currentVideoMode);
+		return new DisplayMode(1, currentVideoMode);
 	}
 
-	public static GameWindowOpenGL_LWJGL3 getInstance()
+	public static GLFWGameWindow getInstance()
 	{
 		return instance;
 	}
@@ -747,7 +747,7 @@ public class GameWindowOpenGL_LWJGL3 implements GameWindow
 		return soundManager;
 	}
 
-	public RenderingContext getRenderingContext()
+	public OpenGLRenderingContext getRenderingContext()
 	{
 		return renderingContext;
 	}

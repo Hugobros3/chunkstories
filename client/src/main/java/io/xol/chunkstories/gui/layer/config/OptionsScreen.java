@@ -4,7 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.chunkstories.gui.overlays.config;
+package io.xol.chunkstories.gui.layer.config;
 
 import static org.lwjgl.glfw.GLFW.glfwGetKeyName;
 
@@ -34,7 +34,7 @@ import io.xol.chunkstories.util.config.OptionChoiceImplementation;
 import io.xol.chunkstories.util.config.OptionScaleImplementation;
 import io.xol.chunkstories.util.config.OptionToggleImplementation;
 
-public class OptionsOverlay extends Layer 
+public class OptionsScreen extends Layer 
 {
 	LargeButtonIcon exitButton = new LargeButtonIcon(this, "back");
 	List<ConfigTab> configTabs = new ArrayList<ConfigTab>();
@@ -65,7 +65,7 @@ public class OptionsOverlay extends Layer
 
 		public ConfigButton(Option o)
 		{
-			super(OptionsOverlay.this, 0, 0, o.getName());
+			super(OptionsScreen.this, 0, 0, o.getName());
 			this.option = o;
 			
 			this.height = 24;
@@ -150,7 +150,7 @@ public class OptionsOverlay extends Layer
 		@Override
 		public void onClick(float posx, float posy, int button)
 		{
-			OptionsOverlay.this.gameWindow.setLayer(new KeyBindSelectionOverlay(OptionsOverlay.this.gameWindow, OptionsOverlay.this, this));
+			OptionsScreen.this.gameWindow.setLayer(new KeyBindSelectionOverlay(OptionsScreen.this.gameWindow, OptionsScreen.this, this));
 		}
 
 		public void callBack(int key)
@@ -235,7 +235,7 @@ public class OptionsOverlay extends Layer
 		}
 	}
 	
-	public OptionsOverlay(GameWindow scene, Layer parent)
+	public OptionsScreen(GameWindow scene, Layer parent)
 	{
 		super(scene, parent);
 		
@@ -323,7 +323,7 @@ public class OptionsOverlay extends Layer
 	}
 	
 	class TabButton extends BaseNgButton {
-		TabButton(OptionsOverlay layer, ConfigTab tab) {
+		TabButton(OptionsScreen layer, ConfigTab tab) {
 			super(layer, 0, 0, tab.name);
 			
 			this.height = 24;

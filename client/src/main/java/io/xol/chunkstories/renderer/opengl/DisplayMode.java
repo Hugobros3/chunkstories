@@ -8,12 +8,12 @@ package io.xol.chunkstories.renderer.opengl;
 
 import org.lwjgl.glfw.GLFWVidMode;
 
-public class VideoMode {
+public class DisplayMode {
 	
 	final int monitorId;
 	final GLFWVidMode videoMode;
 	
-	public VideoMode(int monitorId, GLFWVidMode videoMode) {
+	public DisplayMode(int monitorId, GLFWVidMode videoMode) {
 		super();
 		this.monitorId = monitorId;
 		this.videoMode = videoMode;

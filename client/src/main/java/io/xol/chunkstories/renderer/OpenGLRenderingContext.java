@@ -40,7 +40,7 @@ import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.renderer.font.TrueTypeFontRenderer;
 import io.xol.chunkstories.renderer.lights.LightsRenderer;
-import io.xol.chunkstories.renderer.opengl.GameWindowOpenGL_LWJGL3;
+import io.xol.chunkstories.renderer.opengl.GLFWGameWindow;
 import io.xol.chunkstories.renderer.opengl.OpenGLStateMachine;
 import io.xol.chunkstories.renderer.opengl.commands.RenderingCommandMultiDraw;
 import io.xol.chunkstories.renderer.opengl.commands.RenderingCommandMultipleInstances;
@@ -56,9 +56,9 @@ import io.xol.chunkstories.renderer.opengl.vbo.VertexBufferGL;
 import io.xol.chunkstories.renderer.shaders.ShaderProgram;
 import io.xol.chunkstories.renderer.shaders.ShadersStore;
 
-public class RenderingContext implements RenderingInterface
+public class OpenGLRenderingContext implements RenderingInterface
 {
-	private GameWindowOpenGL_LWJGL3 gameWindow;
+	private GLFWGameWindow gameWindow;
 	
 	private ShaderProgram currentlyBoundShader = null;
 
@@ -82,7 +82,7 @@ public class RenderingContext implements RenderingInterface
 	
 	//private Deque<RenderingCommandImplementation> commands = new ArrayDeque<RenderingCommandImplementation>();
 
-	public RenderingContext(GameWindowOpenGL_LWJGL3 windows)
+	public OpenGLRenderingContext(GLFWGameWindow windows)
 	{
 		gameWindow = windows;
 		
@@ -110,7 +110,7 @@ public class RenderingContext implements RenderingInterface
 		return mainCamera;
 	}
 
-	public GameWindowOpenGL_LWJGL3 getWindow()
+	public GLFWGameWindow getWindow()
 	{
 		return gameWindow;
 	}

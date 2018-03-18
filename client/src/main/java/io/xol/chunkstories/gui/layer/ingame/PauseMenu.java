@@ -4,7 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.chunkstories.gui.overlays.ingame;
+package io.xol.chunkstories.gui.layer.ingame;
 
 import org.joml.Vector4f;
 
@@ -15,17 +15,17 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.elements.Button;
-import io.xol.chunkstories.gui.overlays.config.ModsSelectionOverlay;
-import io.xol.chunkstories.gui.overlays.config.OptionsOverlay;
+import io.xol.chunkstories.gui.layer.config.ModsSelection;
+import io.xol.chunkstories.gui.layer.config.OptionsScreen;
 
-public class PauseOverlay extends Layer
+public class PauseMenu extends Layer
 {
 	Button resumeButton = new Button(this, 0, 0, 320, "#{menu.resume}");
 	Button optionsButton = new Button(this, 0, 0, 320, "#{menu.options}");
 	Button modsButton = new Button(this, -100, 0, 320, "#{menu.mods}");
 	Button exitButton = new Button(this, 0, 0, 320, "#{menu.backto}");
 	
-	public PauseOverlay(GameWindow scene, Layer parent)
+	public PauseMenu(GameWindow scene, Layer parent)
 	{
 		super(scene, parent);
 		
@@ -39,14 +39,14 @@ public class PauseOverlay extends Layer
 		this.optionsButton.setAction(new Runnable() {
 			@Override
 			public void run() {
-				gameWindow.setLayer(new OptionsOverlay(gameWindow, PauseOverlay.this));
+				gameWindow.setLayer(new OptionsScreen(gameWindow, PauseMenu.this));
 			}
 		});
 		
 		this.modsButton.setAction(new Runnable() {
 			@Override
 			public void run() {
-				gameWindow.setLayer(new ModsSelectionOverlay(gameWindow, PauseOverlay.this));
+				gameWindow.setLayer(new ModsSelection(gameWindow, PauseMenu.this));
 			}
 		});
 		

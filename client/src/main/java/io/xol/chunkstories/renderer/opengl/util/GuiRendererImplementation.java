@@ -21,7 +21,7 @@ import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
 import io.xol.chunkstories.api.util.ColorsTools;
-import io.xol.chunkstories.renderer.RenderingContext;
+import io.xol.chunkstories.renderer.OpenGLRenderingContext;
 import io.xol.chunkstories.renderer.opengl.texture.Texture2DGL;
 import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;
 import io.xol.chunkstories.renderer.opengl.vbo.VertexBufferGL;
@@ -29,7 +29,7 @@ import io.xol.chunkstories.renderer.opengl.vbo.VertexBufferGL.UploadRegime;
 
 public class GuiRendererImplementation implements GuiRenderer
 {
-	private RenderingContext renderingContext;
+	private OpenGLRenderingContext renderingContext;
 	
 	public int MAX_ELEMENTS = 1024;
 	public ByteBuffer buf;
@@ -42,7 +42,7 @@ public class GuiRendererImplementation implements GuiRenderer
 	// GL stuff
 	VertexBuffer guiDrawData = new VertexBufferGL(UploadRegime.FAST);
 	
-	public GuiRendererImplementation(RenderingContext renderingContext)
+	public GuiRendererImplementation(OpenGLRenderingContext renderingContext)
 	{
 		this.renderingContext = renderingContext;
 		// Buffer contains MAX_ELEMENTS of 2 triangles, each defined by 3

@@ -4,7 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.chunkstories.gui.overlays;
+package io.xol.chunkstories.gui.layer;
 
 import java.util.Iterator;
 
@@ -23,7 +23,7 @@ import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.chunkstories.world.WorldInfoImplementation;
 import io.xol.chunkstories.world.WorldLoadingException;
 
-public class LevelCreateOverlay extends Layer
+public class LevelCreation extends Layer
 {
 	Button cancelOption = new Button(this, 0, 0, 150, "Cancel");
 	Button createOption = new Button(this, 0, 0, 150, "Create");
@@ -31,7 +31,7 @@ public class LevelCreateOverlay extends Layer
 	InputText levelName = new InputText(this, 0, 0, 500);
 	InputText worldGenName = new InputText(this, 0, 0, 500);
 	
-	public LevelCreateOverlay(GameWindow scene, Layer parent)
+	public LevelCreation(GameWindow scene, Layer parent)
 	{
 		super(scene, parent);
 		

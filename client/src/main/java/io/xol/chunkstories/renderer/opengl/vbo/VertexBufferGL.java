@@ -40,7 +40,7 @@ import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.renderer.opengl.GameWindowOpenGL_LWJGL3;
+import io.xol.chunkstories.renderer.opengl.GLFWGameWindow;
 import io.xol.chunkstories.util.concurrency.SimpleFence;
 import io.xol.chunkstories.util.concurrency.TrivialFence;
 
@@ -89,7 +89,7 @@ public class VertexBufferGL implements VertexBuffer
 		allVerticesObjects.add(selfReference);
 
 		//Assign a buffer ID if we're in the right thread/fly
-		if (GameWindowOpenGL_LWJGL3.getInstance().isMainGLWindow())
+		if (GLFWGameWindow.getInstance().isMainGLWindow())
 			aquireID();
 	}
 

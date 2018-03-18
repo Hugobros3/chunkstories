@@ -11,14 +11,14 @@ import org.joml.Vector4f;
 import io.xol.chunkstories.api.rendering.GuiRenderer;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.renderer.RenderingContext;
+import io.xol.chunkstories.renderer.OpenGLRenderingContext;
 import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;
 
 public class CorneredBoxDrawer
 {
 	public static void drawCorneredBoxTiled(float posx, float posy, float width, float height, int cornerSize, Texture2D texture, int textureSize, int scale)
 	{
-		RenderingContext renderingContext = Client.getInstance().getGameWindow().getRenderingContext();
+		OpenGLRenderingContext renderingContext = Client.getInstance().getGameWindow().getRenderingContext();
 		GuiRenderer guiRenderer = renderingContext.getGuiRenderer();
 		
 		float topLeftCornerX = posx - width / 2;

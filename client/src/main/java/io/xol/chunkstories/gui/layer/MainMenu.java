@@ -4,7 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.chunkstories.gui.overlays;
+package io.xol.chunkstories.gui.layer;
 
 import org.joml.Vector4f;
 
@@ -13,13 +13,13 @@ import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.gui.layer.config.LogPolicyAsk;
+import io.xol.chunkstories.gui.layer.config.ModsSelection;
+import io.xol.chunkstories.gui.layer.config.OptionsScreen;
 import io.xol.chunkstories.gui.ng.LargeButton;
 import io.xol.chunkstories.gui.ng.LargeButtonIcon;
-import io.xol.chunkstories.gui.overlays.config.LogPolicyAsk;
-import io.xol.chunkstories.gui.overlays.config.ModsSelectionOverlay;
-import io.xol.chunkstories.gui.overlays.config.OptionsOverlay;
 
-public class MainMenuOverlay extends Layer
+public class MainMenu extends Layer
 {
 	LargeButtonIcon largeOnline = new LargeButtonIcon(this, "online");
 	LargeButtonIcon largeMods = new LargeButtonIcon(this, "mods");
@@ -29,35 +29,35 @@ public class MainMenuOverlay extends Layer
 	
 	//NgButton k = new NgButton(this, 0, 0, "Singleplayer");
 
-	public MainMenuOverlay(GameWindow scene, Layer parent)
+	public MainMenu(GameWindow scene, Layer parent)
 	{
 		super(scene, parent);
 		// Gui buttons
 		this.largeSingleplayer.setAction(new Runnable() {
 			@Override
 			public void run() {
-				gameWindow.setLayer(new LevelSelectOverlay(gameWindow, MainMenuOverlay.this));
+				gameWindow.setLayer(new LevelSelection(gameWindow, MainMenu.this));
 			}
 		});
 		
 		this.largeOnline.setAction(new Runnable() {
 			@Override
 			public void run() {
-				gameWindow.setLayer(new ServerSelectionOverlayNg(gameWindow, MainMenuOverlay.this, false));
+				gameWindow.setLayer(new ServerSelection(gameWindow, MainMenu.this, false));
 			}
 		});
 		
 		this.largeMods.setAction(new Runnable() {
 			@Override
 			public void run() {
-				gameWindow.setLayer(new ModsSelectionOverlay(gameWindow, MainMenuOverlay.this));
+				gameWindow.setLayer(new ModsSelection(gameWindow, MainMenu.this));
 			}
 		});
 		
 		this.largeOptions.setAction(new Runnable() {
 			@Override
 			public void run() {
-				gameWindow.setLayer(new OptionsOverlay(gameWindow, MainMenuOverlay.this));
+				gameWindow.setLayer(new OptionsScreen(gameWindow, MainMenu.this));
 			}
 		});
 		

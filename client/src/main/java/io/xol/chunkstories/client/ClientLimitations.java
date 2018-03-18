@@ -6,7 +6,7 @@
 
 package io.xol.chunkstories.client;
 
-public class RenderingConfig
+public class ClientLimitations
 {
 	//Open GL limitations
 	public static int gl_MaxTextureUnits;
@@ -16,11 +16,8 @@ public class RenderingConfig
 	public static boolean gl_fbExtCapable = false;
 	public static boolean gl_InstancedArrays;
 
-	public static boolean DEBUG_OPENGL = false;
+	public static boolean debugOpenGL = false;
 	public static boolean ignoreObsoleteHardware = false;
-	
-	public static int animationCacheMaxSize = 128 * 1024; // 128kb max per animation
-	public static int animationCacheFrameRate = 60;
 	
 	public static boolean isDebugAllowed = false;
 }

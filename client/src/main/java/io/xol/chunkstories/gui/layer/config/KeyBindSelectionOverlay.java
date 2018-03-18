@@ -4,7 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.chunkstories.gui.overlays.config;
+package io.xol.chunkstories.gui.layer.config;
 
 import org.joml.Vector4f;
 
@@ -12,7 +12,7 @@ import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
-import io.xol.chunkstories.gui.overlays.config.OptionsOverlay.ConfigButtonKey;
+import io.xol.chunkstories.gui.layer.config.OptionsScreen.ConfigButtonKey;
 
 public class KeyBindSelectionOverlay extends Layer
 {

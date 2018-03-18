@@ -14,7 +14,7 @@ import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
-import io.xol.chunkstories.gui.overlays.ingame.InventoryOverlay;
+import io.xol.chunkstories.gui.layer.ingame.InventoryView;
 import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;
 
 public class InventoryDrawer
@@ -200,10 +200,10 @@ public class InventoryDrawer
 			{
 				int amountToDisplay = pile.getAmount();
 				//If we selected this item
-				if ((InventoryOverlay.selectedItem != null && InventoryOverlay.selectedItem.getInventory() != null && getInventory().equals(InventoryOverlay.selectedItem.getInventory()) && InventoryOverlay.selectedItem.getX() == i
-						&& InventoryOverlay.selectedItem.getY() == j))
+				if ((InventoryView.selectedItem != null && InventoryView.selectedItem.getInventory() != null && getInventory().equals(InventoryView.selectedItem.getInventory()) && InventoryView.selectedItem.getX() == i
+						&& InventoryView.selectedItem.getY() == j))
 				{
-					amountToDisplay -= InventoryOverlay.selectedItemAmount;
+					amountToDisplay -= InventoryView.selectedItemAmount;
 				}
 
 				if (amountToDisplay > 1)

@@ -4,7 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.chunkstories.gui;
+package io.xol.chunkstories.gui.layer.ingame;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.client.ClientInterface;
@@ -28,11 +28,13 @@ import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.entity.SerializedEntityFile;
+import io.xol.chunkstories.gui.Chat;
+import io.xol.chunkstories.gui.DebugInfoRenderer;
+import io.xol.chunkstories.gui.InventoryDrawer;
+import io.xol.chunkstories.gui.PhysicsWireframeDebugger;
 import io.xol.chunkstories.gui.Chat.ChatPanelOverlay;
-import io.xol.chunkstories.gui.overlays.ingame.DeathOverlay;
-import io.xol.chunkstories.gui.overlays.ingame.PauseOverlay;
 import io.xol.chunkstories.renderer.decals.VoxelOverlays;
-import io.xol.chunkstories.renderer.opengl.GameWindowOpenGL_LWJGL3;
+import io.xol.chunkstories.renderer.opengl.GLFWGameWindow;
 import io.xol.chunkstories.renderer.particles.ClientParticlesRenderer;
 import io.xol.chunkstories.world.WorldClientCommon;
 import io.xol.chunkstories.world.WorldClientRemote;
@@ -41,9 +43,6 @@ public class Ingame extends Layer
 {
 	private final ClientInterface client;
 	private final WorldClientCommon world;
-	
-	//Moved from client to IG, as these make sense per world/play
-	//private final ClientPluginManager pluginManager;
 
 	// Renderer & client interface components
 	private final VoxelOverlays selectionRenderer;
@@ -62,7 +61,7 @@ public class Ingame extends Layer
 	//Hack
 	private boolean shouldTakeACubemap = false;
 
-	public Ingame(GameWindowOpenGL_LWJGL3 window, WorldClientCommon world)
+	public Ingame(GLFWGameWindow window, WorldClientCommon world)
 	{
 		super(window, null);
 		this.world = world;
@@ -122,8 +121,8 @@ public class Ingame extends Layer
 				inventoryBarDrawer = null;
 		}
 		
-		if (playerEntity != null && ((EntityLiving) playerEntity).isDead() && !(gameWindow.getLayer() instanceof DeathOverlay))
-			gameWindow.setLayer(new DeathOverlay(gameWindow, this));
+		if (playerEntity != null && ((EntityLiving) playerEntity).isDead() && !(gameWindow.getLayer() instanceof DeathScreen))
+			gameWindow.setLayer(new DeathScreen(gameWindow, this));
 
 		// Update the player
 		if (playerEntity instanceof EntityControllable)
@@ -203,7 +202,7 @@ public class Ingame extends Layer
 		if (!gameWindow.hasFocus() && !isCovered())
 		{
 			focus(false);
-			gameWindow.setLayer(new PauseOverlay(gameWindow, gameWindow.getLayer()));
+			gameWindow.setLayer(new PauseMenu(gameWindow, gameWindow.getLayer()));
 		}
 	}
 
@@ -304,7 +303,7 @@ public class Ingame extends Layer
 		{
 			focus(false);
 			guiHidden = false;
-			gameWindow.setLayer(new PauseOverlay(gameWindow, this));
+			gameWindow.setLayer(new PauseMenu(gameWindow, this));
 		}
 		else if(input instanceof MouseScroll) {
 			MouseScroll ms = (MouseScroll)input;

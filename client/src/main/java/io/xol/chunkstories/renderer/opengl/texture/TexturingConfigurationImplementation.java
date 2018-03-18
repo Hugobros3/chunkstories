@@ -32,7 +32,7 @@ import io.xol.chunkstories.api.rendering.textures.Texture1D;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.rendering.textures.Texture3D;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
-import io.xol.chunkstories.client.RenderingConfig;
+import io.xol.chunkstories.client.ClientLimitations;
 import io.xol.chunkstories.renderer.shaders.ShaderProgram;
 
 public class TexturingConfigurationImplementation
@@ -148,7 +148,7 @@ public class TexturingConfigurationImplementation
 	
 	private Shader lastShaderConfigured = null;
 	private Map<Texture, Integer> alreadyBound = new HashMap<>();
-	private Texture[] boundTextures = new Texture[RenderingConfig.gl_MaxTextureUnits];
+	private Texture[] boundTextures = new Texture[ClientLimitations.gl_MaxTextureUnits];
 	
 	/**
 	 * Setups the required texturing units and links the shaders uniforms to them
@@ -223,7 +223,7 @@ public class TexturingConfigurationImplementation
 
 	private void selectTextureUnit(int id) throws NotEnoughtTextureUnitsException
 	{
-		if (id >= RenderingConfig.gl_MaxTextureUnits)
+		if (id >= ClientLimitations.gl_MaxTextureUnits)
 			throw new NotEnoughtTextureUnitsException();
 		glActiveTexture(GL_TEXTURE0 + id);
 	}

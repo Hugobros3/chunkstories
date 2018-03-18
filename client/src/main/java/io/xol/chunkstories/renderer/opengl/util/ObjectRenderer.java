@@ -13,8 +13,6 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.renderer.opengl.texture.Texture2DGL;
 import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;
 
-
-
 public class ObjectRenderer
 {
 	public static void renderTexturedRect(float xpos, float ypos, float w, float h, String tex)

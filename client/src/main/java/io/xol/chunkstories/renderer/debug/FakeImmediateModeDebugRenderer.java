@@ -22,7 +22,7 @@ import io.xol.chunkstories.api.rendering.shader.Shader;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.renderer.RenderingContext;
+import io.xol.chunkstories.renderer.OpenGLRenderingContext;
 import io.xol.chunkstories.renderer.opengl.vbo.VertexBufferGL;
 
 public class FakeImmediateModeDebugRenderer
@@ -90,7 +90,7 @@ public class FakeImmediateModeDebugRenderer
 	
 	public static void glEnd()
 	{
-		RenderingContext renderingContext = Client.getInstance().getGameWindow().getRenderingContext();
+		OpenGLRenderingContext renderingContext = Client.getInstance().getGameWindow().getRenderingContext();
 		
 		renderingContext.setCullingMode(CullingMode.DISABLED);
 		renderingContext.setBlendMode(BlendMode.MIX);

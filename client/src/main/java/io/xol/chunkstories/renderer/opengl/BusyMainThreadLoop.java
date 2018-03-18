@@ -26,10 +26,10 @@ import io.xol.chunkstories.util.concurrency.SimpleFence;
 
 public class BusyMainThreadLoop extends Thread {
 	final SimpleFence fence = new SimpleFence();
-	final GameWindowOpenGL_LWJGL3 window;
+	final GLFWGameWindow window;
 	final AtomicBoolean controlRequested = new AtomicBoolean();
 
-	BusyMainThreadLoop(GameWindowOpenGL_LWJGL3 window) {
+	BusyMainThreadLoop(GLFWGameWindow window) {
 		this.window = window;
 		
 		this.start();

@@ -19,14 +19,14 @@ import org.joml.Vector4fc;
 import io.xol.chunkstories.api.rendering.target.RenderTarget;
 import io.xol.chunkstories.api.rendering.target.RenderTargets;
 import io.xol.chunkstories.api.rendering.target.RenderTargetsConfiguration;
-import io.xol.chunkstories.renderer.RenderingContext;
+import io.xol.chunkstories.renderer.OpenGLRenderingContext;
 
 public class OpenGLRenderTargetManager implements RenderTargets
 {
-	final RenderingContext renderingContext;
+	final OpenGLRenderingContext renderingContext;
 	RenderTargetsConfiguration fbo = null;
 
-	public OpenGLRenderTargetManager(RenderingContext renderingContext)
+	public OpenGLRenderTargetManager(OpenGLRenderingContext renderingContext)
 	{
 		this.renderingContext = renderingContext;
 	}
