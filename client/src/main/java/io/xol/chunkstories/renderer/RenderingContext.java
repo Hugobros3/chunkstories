@@ -42,19 +42,19 @@ import io.xol.chunkstories.renderer.font.TrueTypeFontRenderer;
 import io.xol.chunkstories.renderer.lights.LightsRenderer;
 import io.xol.chunkstories.renderer.opengl.GameWindowOpenGL_LWJGL3;
 import io.xol.chunkstories.renderer.opengl.OpenGLStateMachine;
+import io.xol.chunkstories.renderer.opengl.commands.RenderingCommandMultiDraw;
+import io.xol.chunkstories.renderer.opengl.commands.RenderingCommandMultipleInstances;
+import io.xol.chunkstories.renderer.opengl.commands.RenderingCommandSingleInstance;
 import io.xol.chunkstories.renderer.opengl.fbo.OpenGLRenderTargetManager;
 import io.xol.chunkstories.renderer.opengl.texture.Texture2DRenderTargetGL;
 import io.xol.chunkstories.renderer.opengl.texture.Texture3DGL;
 import io.xol.chunkstories.renderer.opengl.texture.TextureGL;
 import io.xol.chunkstories.renderer.opengl.texture.TexturingConfigurationImplementation;
+import io.xol.chunkstories.renderer.opengl.util.GuiRendererImplementation;
+import io.xol.chunkstories.renderer.opengl.vbo.AttributesConfigurationImplementation;
 import io.xol.chunkstories.renderer.opengl.vbo.VertexBufferGL;
 import io.xol.chunkstories.renderer.shaders.ShaderProgram;
 import io.xol.chunkstories.renderer.shaders.ShadersStore;
-import io.xol.engine.graphics.AttributesConfigurationImplementation;
-import io.xol.engine.graphics.RenderingCommandMultiDraw;
-import io.xol.engine.graphics.RenderingCommandMultipleInstances;
-import io.xol.engine.graphics.RenderingCommandSingleInstance;
-import io.xol.engine.graphics.util.GuiRendererImplementation;
 
 public class RenderingContext implements RenderingInterface
 {

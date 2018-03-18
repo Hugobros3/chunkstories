@@ -4,7 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.engine.graphics.util;
+package io.xol.chunkstories.renderer.opengl.util;
 
 import static org.lwjgl.opengl.ARBSync.*;
 import static org.lwjgl.opengl.GL11.*;

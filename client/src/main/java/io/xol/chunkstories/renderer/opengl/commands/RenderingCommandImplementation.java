@@ -4,7 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.engine.graphics;
+package io.xol.chunkstories.renderer.opengl.commands;
 
 import static org.lwjgl.opengl.GL11.GL_LINES;
 import static org.lwjgl.opengl.GL11.GL_POINTS;
@@ -20,6 +20,7 @@ import io.xol.chunkstories.api.rendering.shader.Shader;
 import io.xol.chunkstories.api.rendering.vertex.AttributesConfiguration;
 import io.xol.chunkstories.renderer.opengl.OpenGLStateMachine;
 import io.xol.chunkstories.renderer.opengl.texture.TexturingConfigurationImplementation;
+import io.xol.chunkstories.renderer.opengl.vbo.AttributesConfigurationImplementation;
 import io.xol.chunkstories.renderer.shaders.ShaderProgram.InternalUniformsConfiguration;
 
 public abstract class RenderingCommandImplementation {

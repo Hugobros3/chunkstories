@@ -22,7 +22,7 @@ import io.xol.chunkstories.gui.elements.InputText;
 import io.xol.chunkstories.gui.overlays.config.LanguageSelectionScreen;
 import io.xol.chunkstories.net.http.HttpRequestThread;
 import io.xol.chunkstories.net.http.HttpRequester;
-import io.xol.engine.graphics.util.ObjectRenderer;
+import io.xol.chunkstories.renderer.opengl.util.ObjectRenderer;
 
 public class LoginOverlay extends Layer implements HttpRequester
 {

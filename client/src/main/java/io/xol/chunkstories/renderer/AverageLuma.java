@@ -11,7 +11,7 @@ import java.nio.ByteBuffer;
 import org.joml.Vector3f;
 
 import io.xol.chunkstories.renderer.opengl.texture.Texture2DRenderTargetGL;
-import io.xol.engine.graphics.util.PBOPacker;
+import io.xol.chunkstories.renderer.opengl.util.PBOPacker;
 
 public class AverageLuma
 {

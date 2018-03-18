@@ -24,8 +24,8 @@ import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.elements.Button;
-import io.xol.engine.graphics.util.CorneredBoxDrawer;
-import io.xol.engine.graphics.util.ObjectRenderer;
+import io.xol.chunkstories.renderer.opengl.util.CorneredBoxDrawer;
+import io.xol.chunkstories.renderer.opengl.util.ObjectRenderer;
 
 public class LanguageSelectionScreen extends Layer
 {

@@ -14,7 +14,7 @@ import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;
-import io.xol.engine.graphics.util.CorneredBoxDrawer;
+import io.xol.chunkstories.renderer.opengl.util.CorneredBoxDrawer;
 
 public class LargeButtonIcon extends BaseNgButton{
 

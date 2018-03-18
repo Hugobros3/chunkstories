@@ -4,7 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.engine.graphics.util;
+package io.xol.chunkstories.renderer.opengl.util;
 
 import java.nio.ByteBuffer;
 
