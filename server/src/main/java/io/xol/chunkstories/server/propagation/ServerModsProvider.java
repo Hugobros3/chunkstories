@@ -20,7 +20,7 @@ import io.xol.chunkstories.api.content.mods.Mod;
 import io.xol.chunkstories.content.mods.ModFolder;
 import io.xol.chunkstories.content.mods.ModZip;
 import io.xol.chunkstories.server.DedicatedServer;
-import io.xol.engine.misc.FoldersUtils;
+import io.xol.chunkstories.util.FoldersUtils;
 
 /**
  * Provides mods for connected users

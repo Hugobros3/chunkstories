@@ -27,12 +27,12 @@ import io.xol.chunkstories.client.net.ClientPacketsContext;
 import io.xol.chunkstories.client.net.RemoteServerImplementation;
 import io.xol.chunkstories.client.net.ServerConnection;
 import io.xol.chunkstories.net.Connection;
+import io.xol.chunkstories.net.ConnectionStep;
 import io.xol.chunkstories.net.LogicalPacketDatagram;
 import io.xol.chunkstories.net.PacketDefinitionImpl;
 import io.xol.chunkstories.net.vanillasockets.SendQueue;
 import io.xol.chunkstories.net.vanillasockets.StreamGobbler;
 import io.xol.chunkstories.world.WorldClientRemote;
-import io.xol.engine.misc.ConnectionStep;
 
 /** A clientside connection to a server using the TCP protocol. */
 public class TCPServerConnection extends ServerConnection {

@@ -22,10 +22,10 @@ import io.xol.chunkstories.api.world.cell.FutureCell;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
 import io.xol.chunkstories.net.packets.PacketRegionSummary;
+import io.xol.chunkstories.util.concurrency.SimpleFence;
+import io.xol.chunkstories.util.concurrency.TrivialFence;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.io.IOTasks.IOTask;
-import io.xol.engine.concurrency.SimpleFence;
-import io.xol.engine.concurrency.TrivialFence;
 
 import java.io.File;
 import java.util.HashSet;

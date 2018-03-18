@@ -21,7 +21,6 @@ import io.xol.chunkstories.api.mesh.MultiPartMesh;
 import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.content.mods.ModsManager;
 import io.xol.chunkstories.content.GameContentStore;
-import io.xol.engine.model.WavefrontLoader;
 
 public class MeshStore implements MeshLibrary {
 	

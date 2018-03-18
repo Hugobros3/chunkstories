@@ -11,7 +11,7 @@ import java.io.File;
 import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.net.RemoteServer;
 import io.xol.chunkstories.net.Connection;
-import io.xol.engine.misc.ConnectionStep;
+import io.xol.chunkstories.net.ConnectionStep;
 
 public abstract class ServerConnection extends Connection {
 	

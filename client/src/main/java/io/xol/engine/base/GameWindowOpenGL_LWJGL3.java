@@ -148,15 +148,15 @@ import io.xol.chunkstories.input.lwjgl3.Lwjgl3ClientInputsManager;
 import io.xol.chunkstories.renderer.debug.FrametimeRenderer;
 import io.xol.chunkstories.renderer.debug.MemUsageRenderer;
 import io.xol.chunkstories.renderer.debug.WorldLogicTimeRenderer;
-import io.xol.engine.concurrency.SimpleFence;
+import io.xol.chunkstories.sound.ALSoundManager;
+import io.xol.chunkstories.util.CPUModelDetection;
+import io.xol.chunkstories.util.concurrency.SimpleFence;
 import io.xol.engine.graphics.GLCalls;
 import io.xol.engine.graphics.RenderingContext;
 import io.xol.engine.graphics.fbo.FrameBufferObjectGL;
 import io.xol.engine.graphics.geometry.VertexBufferGL;
 import io.xol.engine.graphics.textures.Texture2DGL;
-import io.xol.engine.misc.CPUModelDetection;
 import io.xol.engine.misc.IconLoader;
-import io.xol.engine.sound.ALSoundManager;
 
 public class GameWindowOpenGL_LWJGL3 implements GameWindow
 {

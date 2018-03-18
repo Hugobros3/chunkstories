@@ -39,8 +39,8 @@ import io.xol.chunkstories.content.mods.ModFolder;
 import io.xol.chunkstories.content.mods.ModZip;
 import io.xol.chunkstories.plugin.NotAPluginException;
 import io.xol.chunkstories.plugin.PluginInformationImplementation;
-import io.xol.engine.concurrency.UniqueList;
-import io.xol.engine.misc.FoldersUtils;
+import io.xol.chunkstories.util.FoldersUtils;
+import io.xol.chunkstories.util.concurrency.UniqueList;
 
 public class ModsManagerImplementation implements ModsManager
 {

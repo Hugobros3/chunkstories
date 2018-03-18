@@ -17,9 +17,9 @@ import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
+import io.xol.chunkstories.util.concurrency.CompoundFence;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.CubicChunk;
-import io.xol.engine.concurrency.CompoundFence;
 
 
 

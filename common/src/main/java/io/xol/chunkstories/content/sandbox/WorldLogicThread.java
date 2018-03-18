@@ -19,10 +19,10 @@ import io.xol.chunkstories.api.events.world.WorldTickEvent;
 import io.xol.chunkstories.api.plugin.PluginManager;
 import io.xol.chunkstories.api.plugin.Scheduler;
 import io.xol.chunkstories.api.util.concurrency.Fence;
+import io.xol.chunkstories.util.concurrency.SimpleFence;
+import io.xol.chunkstories.util.concurrency.TrivialFence;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.region.RegionImplementation;
-import io.xol.engine.concurrency.SimpleFence;
-import io.xol.engine.concurrency.TrivialFence;
 
 /**
  * Sandboxed thread that runs all the game logic for one world

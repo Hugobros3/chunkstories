@@ -12,7 +12,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.workers.Task;
-import io.xol.engine.concurrency.SimpleLock;
+import io.xol.chunkstories.util.concurrency.SimpleLock;
 
 public class ChunkOcclusionUpdater {
 

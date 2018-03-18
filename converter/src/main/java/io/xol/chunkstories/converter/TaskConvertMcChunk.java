@@ -14,7 +14,7 @@ import io.xol.chunkstories.api.world.cell.FutureCell;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.converter.ConverterWorkers.ConverterWorkerThread;
 import io.xol.chunkstories.tools.WorldTool;
-import io.xol.engine.concurrency.CompoundFence;
+import io.xol.chunkstories.util.concurrency.CompoundFence;
 import io.xol.enklume.MinecraftChunk;
 import io.xol.enklume.MinecraftRegion;
 

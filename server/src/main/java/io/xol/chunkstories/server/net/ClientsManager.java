@@ -14,9 +14,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.util.IterableIterator;
+import io.xol.chunkstories.net.http.HttpRequests;
 import io.xol.chunkstories.server.DedicatedServer;
 import io.xol.chunkstories.server.player.ServerPlayer;
-import io.xol.engine.net.HttpRequests;
 
 public abstract class ClientsManager {
 

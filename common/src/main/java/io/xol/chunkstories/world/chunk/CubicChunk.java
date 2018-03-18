@@ -44,10 +44,10 @@ import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
 import io.xol.chunkstories.entity.EntitySerializer;
 import io.xol.chunkstories.tools.WorldTool;
+import io.xol.chunkstories.util.concurrency.SimpleLock;
 import io.xol.chunkstories.voxel.components.CellComponentsHolder;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.region.RegionImplementation;
-import io.xol.engine.concurrency.SimpleLock;
 
 
 

@@ -21,8 +21,8 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.vanillasockets.TCPServerConnection;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.content.mods.ModZip;
-import io.xol.engine.misc.ConnectionStep;
-import io.xol.engine.net.SimplePostRequest;
+import io.xol.chunkstories.net.ConnectionStep;
+import io.xol.chunkstories.net.http.SimplePostRequest;
 
 /** The job of the ConnectionSequence is to execute the required steps to login in a server, while monitoring back progress to the main thread */
 public class ConnectionSequence extends Thread

@@ -28,8 +28,8 @@ import io.xol.chunkstories.server.DedicatedServer;
 import io.xol.chunkstories.server.player.ServerPlayer;
 import io.xol.chunkstories.server.propagation.VirtualServerDecalsManager;
 import io.xol.chunkstories.server.propagation.VirtualServerParticlesManager;
+import io.xol.chunkstories.sound.VirtualSoundManager;
 import io.xol.chunkstories.world.io.IOTasks;
-import io.xol.engine.sound.sources.VirtualSoundManager;
 
 public class WorldServer extends WorldImplementation implements WorldMaster, WorldNetworked
 {

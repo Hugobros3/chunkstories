@@ -18,9 +18,9 @@ import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
 import io.xol.chunkstories.tools.WorldTool;
+import io.xol.chunkstories.util.concurrency.CompoundFence;
+import io.xol.chunkstories.util.concurrency.SimpleFence;
 import io.xol.chunkstories.workers.TasksPool;
-import io.xol.engine.concurrency.CompoundFence;
-import io.xol.engine.concurrency.SimpleFence;
 
 /** Map converter-specialized workers pool, assumes only one world ever used and provides extra handy for the execution */
 public class ConverterWorkers extends TasksPool<Task> implements Tasks

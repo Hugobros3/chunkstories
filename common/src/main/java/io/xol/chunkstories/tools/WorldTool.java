@@ -20,12 +20,12 @@ import io.xol.chunkstories.api.sound.SoundSource;
 import io.xol.chunkstories.api.sound.SoundSource.Mode;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.world.WorldMaster;
+import io.xol.chunkstories.sound.source.DummySoundSource;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.WorldInfoImplementation;
 import io.xol.chunkstories.world.WorldLoadingException;
 import io.xol.chunkstories.world.io.IOTasks;
 import io.xol.chunkstories.world.io.IOTasksImmediate;
-import io.xol.engine.sound.sources.DummySoundSource;
 
 public class WorldTool extends WorldImplementation implements WorldMaster
 {

@@ -22,7 +22,6 @@ import org.fusesource.jansi.AnsiConsole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.xol.engine.misc.ConfigFile;
 import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.entity.Entity;
@@ -43,6 +42,7 @@ import io.xol.chunkstories.server.net.announcer.ServerAnnouncerThread;
 import io.xol.chunkstories.server.net.vanillasockets.VanillaClientsManager;
 import io.xol.chunkstories.server.propagation.ServerModsProvider;
 import io.xol.chunkstories.util.LogbackSetupHelper;
+import io.xol.chunkstories.util.config.ConfigFile;
 import io.xol.chunkstories.workers.WorkerThreadPool;
 import io.xol.chunkstories.world.WorldInfoMaster;
 import io.xol.chunkstories.world.WorldServer;

@@ -18,8 +18,8 @@ import io.xol.chunkstories.api.world.cell.FutureCell;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.api.world.heightmap.RegionSummaries;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
+import io.xol.chunkstories.util.concurrency.CompoundFence;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.engine.concurrency.CompoundFence;
 
 
 

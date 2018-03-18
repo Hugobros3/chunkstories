@@ -12,7 +12,7 @@ import java.util.List;
 import io.xol.chunkstories.api.rendering.vertex.RecyclableByteBuffer;
 import io.xol.chunkstories.api.rendering.voxel.VoxelDynamicRenderer;
 import io.xol.chunkstories.api.voxel.Voxel;
-import io.xol.engine.concurrency.SimpleFence;
+import io.xol.chunkstories.util.concurrency.SimpleFence;
 
 public class ChunkMeshDataSections
 {

@@ -15,13 +15,13 @@ import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.Region;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
 import io.xol.chunkstories.tools.WorldTool;
+import io.xol.chunkstories.util.concurrency.UniqueQueue;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.region.RegionImplementation;
 import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
 import io.xol.chunkstories.world.chunk.CompressedData;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
-import io.xol.engine.concurrency.UniqueQueue;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

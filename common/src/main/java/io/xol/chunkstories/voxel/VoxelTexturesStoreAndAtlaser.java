@@ -25,7 +25,6 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 
-import io.xol.engine.misc.CasterIterator;
 import io.xol.chunkstories.api.content.Content.Voxels;
 import io.xol.chunkstories.api.client.ClientContent;
 import io.xol.chunkstories.api.client.ClientInterface;
@@ -41,6 +40,7 @@ import io.xol.chunkstories.api.rendering.textures.TextureFormat;
 import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.content.GameContentStore;
 import io.xol.chunkstories.content.GameDirectory;
+import io.xol.chunkstories.util.CasterIterator;
 
 
 

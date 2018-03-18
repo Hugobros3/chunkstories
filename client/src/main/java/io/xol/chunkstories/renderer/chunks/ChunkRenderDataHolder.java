@@ -27,9 +27,9 @@ import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.workers.Task;
 import io.xol.chunkstories.api.world.chunk.Chunk.ChunkCell;
 import io.xol.chunkstories.renderer.chunks.ChunkMeshDataSections.DynamicallyRenderedVoxelType;
+import io.xol.chunkstories.util.concurrency.SimpleLock;
 import io.xol.chunkstories.world.chunk.ClientChunk;
 import io.xol.chunkstories.world.chunk.CubicChunk;
-import io.xol.engine.concurrency.SimpleLock;
 
 /**
  * Responsible of holding all rendering information about one chunk

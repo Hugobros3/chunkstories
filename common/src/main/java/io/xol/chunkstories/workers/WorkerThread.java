@@ -8,7 +8,7 @@ package io.xol.chunkstories.workers;
 
 import io.xol.chunkstories.api.workers.Task;
 import io.xol.chunkstories.api.workers.TaskExecutor;
-import io.xol.engine.concurrency.SimpleFence;
+import io.xol.chunkstories.util.concurrency.SimpleFence;
 
 public class WorkerThread extends Thread implements TaskExecutor {
 	

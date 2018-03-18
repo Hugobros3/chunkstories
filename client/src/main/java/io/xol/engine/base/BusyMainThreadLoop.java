@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.lwjgl.opengl.GL;
 
-import io.xol.engine.concurrency.SimpleFence;
+import io.xol.chunkstories.util.concurrency.SimpleFence;
 
 public class BusyMainThreadLoop extends Thread {
 	final SimpleFence fence = new SimpleFence();

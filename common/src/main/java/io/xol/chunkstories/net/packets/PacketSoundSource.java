@@ -20,7 +20,7 @@ import io.xol.chunkstories.api.net.PacketReceptionContext;
 import io.xol.chunkstories.api.sound.SoundSource;
 import io.xol.chunkstories.api.sound.SoundSource.Mode;
 import io.xol.chunkstories.api.world.World;
-import io.xol.engine.sound.sources.SoundSourceVirtual;
+import io.xol.chunkstories.sound.source.SoundSourceVirtual;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketSendingContext;
 import io.xol.chunkstories.api.net.PacketWorld;

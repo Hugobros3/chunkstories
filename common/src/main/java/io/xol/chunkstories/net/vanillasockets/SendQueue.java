@@ -9,8 +9,8 @@ package io.xol.chunkstories.net.vanillasockets;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.net.Connection;
 import io.xol.chunkstories.net.PacketOutgoing;
-import io.xol.engine.concurrency.SimpleFence;
-import io.xol.engine.concurrency.TrivialFence;
+import io.xol.chunkstories.util.concurrency.SimpleFence;
+import io.xol.chunkstories.util.concurrency.TrivialFence;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

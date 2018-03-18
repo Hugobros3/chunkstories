@@ -36,13 +36,13 @@ import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.world.io.IOTasks.IOTask;
 import io.xol.chunkstories.world.region.RegionImplementation;
-import io.xol.engine.concurrency.SafeWriteLock;
-import io.xol.engine.concurrency.TrivialFence;
 import net.jpountz.lz4.LZ4Compressor;
 import net.jpountz.lz4.LZ4Factory;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.entity.EntitySerializer;
 import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
+import io.xol.chunkstories.util.concurrency.SafeWriteLock;
+import io.xol.chunkstories.util.concurrency.TrivialFence;
 import io.xol.chunkstories.voxel.components.CellComponentsHolder;
 
 public class ChunkHolderImplementation implements ChunkHolder

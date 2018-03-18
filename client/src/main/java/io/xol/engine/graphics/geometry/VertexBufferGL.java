@@ -40,9 +40,9 @@ import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.util.concurrency.SimpleFence;
+import io.xol.chunkstories.util.concurrency.TrivialFence;
 import io.xol.engine.base.GameWindowOpenGL_LWJGL3;
-import io.xol.engine.concurrency.SimpleFence;
-import io.xol.engine.concurrency.TrivialFence;
 
 /**
  * Holds and abstracts vertex buffers from OpenGL

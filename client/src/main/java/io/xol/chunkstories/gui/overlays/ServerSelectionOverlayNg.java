@@ -31,8 +31,8 @@ import io.xol.chunkstories.gui.ng.ScrollableContainer;
 import io.xol.chunkstories.gui.ng.ScrollableContainer.ContainerElement;
 import io.xol.chunkstories.gui.overlays.ServerSelectionOverlayNg.ServerSelectionZone.ServerGuiItem;
 import io.xol.chunkstories.gui.overlays.ingame.ConnectionOverlay;
-import io.xol.engine.net.HttpRequestThread;
-import io.xol.engine.net.HttpRequester;
+import io.xol.chunkstories.net.http.HttpRequestThread;
+import io.xol.chunkstories.net.http.HttpRequester;
 
 public class ServerSelectionOverlayNg extends Layer implements HttpRequester
 {

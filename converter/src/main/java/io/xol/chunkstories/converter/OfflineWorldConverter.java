@@ -22,10 +22,10 @@ import io.xol.chunkstories.api.world.WorldInfo.WorldSize;
 import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.content.GameContentStore;
 import io.xol.chunkstories.tools.WorldTool;
+import io.xol.chunkstories.util.FoldersUtils;
 import io.xol.chunkstories.util.LogbackSetupHelper;
 import io.xol.chunkstories.world.WorldLoadingException;
 import io.xol.chunkstories.world.WorldInfoImplementation;
-import io.xol.engine.misc.FoldersUtils;
 import io.xol.enklume.MinecraftWorld;
 
 public abstract class OfflineWorldConverter implements GameContext, WorldUser {
