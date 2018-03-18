@@ -21,7 +21,6 @@ import io.xol.chunkstories.api.world.heightmap.RegionSummary;
 import io.xol.chunkstories.tools.WorldTool;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.CubicChunk;
-import io.xol.chunkstories.world.chunk.TaskLightChunk;
 import io.xol.engine.concurrency.CompoundFence;
 import io.xol.enklume.MinecraftChunk;
 import io.xol.enklume.MinecraftRegion;

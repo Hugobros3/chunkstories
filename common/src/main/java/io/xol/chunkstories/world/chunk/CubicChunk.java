@@ -121,32 +121,28 @@ public class CubicChunk implements Chunk {
 						int index = dis.readInt();
 						CellComponentsHolder components = new CellComponentsHolder(this, index);
 						allCellComponents.put(index, components);
-
-						boolean once = true;
+						
+						// Call the block's onPlace method as to make it spawn the necessary components
+						FreshChunkCell peek = peek(components.getX(), components.getY(), components.getZ());
+						FreshFutureCell future = new FreshFutureCell(peek);
+						
+						//peek.getVoxel().onPlace(future, null);
+						peek.getVoxel().whenPlaced(future);
 						
 						String componentName = dis.readUTF();
 						while (!componentName.equals("\n")) {
-							// System.out.println("componentName: "+componentName);
+							//System.out.println("componentName: "+componentName);
 
 							// Read however many bytes this component wrote
 							int bytes = dis.readShort();
 							dis.readFully(smallArray, 0, bytes);
-
-							if(once) {
-								// Call the block's onPlace method as to make it spawn the necessary components
-								FreshChunkCell peek = peek(components.getX(), components.getY(), components.getZ());
-								FreshFutureCell future = new FreshFutureCell(peek);
-								
-								//peek.getVoxel().onPlace(future, null);
-								peek.getVoxel().whenPlaced(future);
-								once = false;
-							}
 
 							VoxelComponent component = components.get(componentName);
 							if (component == null) {
 								System.out.println("Error, a component named " + componentName + " was saved, but it was not recreated by the voxel whenPlaced() method.");
 							} else {
 								// Hope for the best
+								//System.out.println("called pull on "+component.getClass());
 								component.pull(holder.getRegion().handler, dias);
 							}
 							
@@ -349,7 +345,8 @@ public class CubicChunk implements Chunk {
 
 		chunkVoxelData[x * 32 * 32 + y * 32 + z] = raw_data;
 		
-		newVoxel.whenPlaced(future);
+		if(newVoxel != null && !formerVoxel.equals(newVoxel))
+			newVoxel.whenPlaced(future);
 
 		// Update lightning
 		if (update)

@@ -112,7 +112,6 @@ public class TaskConvertMcChunk extends Task {
 									if(mapper instanceof NonTrivialMapper) {
 										((NonTrivialMapper)mapper).output(csWorld, chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, mcId, meta, minecraftRegion, minecraftCurrentChunkXinsideRegion, minecraftCuurrentChunkZinsideRegion, x, y, z);
 									} else {
-										
 										FutureCell future = new FutureCell(csWorld, chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, csWorld.getContent().voxels().air());
 										
 										//Directly set trivial blocks

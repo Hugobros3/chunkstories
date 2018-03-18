@@ -56,7 +56,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 		if(world instanceof WorldTool) {
 			WorldTool tool = (WorldTool)world;
 			if(!tool.isLightningEnabled()) {
-				System.out.println("too soon");
+				//System.out.println("too soon");
 				return new TrivialFence();
 			}
 		}
