@@ -15,9 +15,9 @@ import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.gui.elements.Button;
 import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.chunkstories.world.WorldClientRemote;
-import io.xol.engine.gui.elements.Button;
 
 public class DeathOverlay extends Layer
 {;

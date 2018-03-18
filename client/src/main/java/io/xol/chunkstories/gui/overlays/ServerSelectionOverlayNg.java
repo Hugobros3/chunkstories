@@ -24,13 +24,13 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.GameDirectory;
+import io.xol.chunkstories.gui.elements.Button;
+import io.xol.chunkstories.gui.elements.InputText;
 import io.xol.chunkstories.gui.ng.LargeButtonIcon;
 import io.xol.chunkstories.gui.ng.ScrollableContainer;
 import io.xol.chunkstories.gui.ng.ScrollableContainer.ContainerElement;
 import io.xol.chunkstories.gui.overlays.ServerSelectionOverlayNg.ServerSelectionZone.ServerGuiItem;
 import io.xol.chunkstories.gui.overlays.ingame.ConnectionOverlay;
-import io.xol.engine.gui.elements.Button;
-import io.xol.engine.gui.elements.InputText;
 import io.xol.engine.net.HttpRequestThread;
 import io.xol.engine.net.HttpRequester;
 

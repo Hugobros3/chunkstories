@@ -14,9 +14,9 @@ import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.gui.elements.Button;
 import io.xol.chunkstories.gui.overlays.config.ModsSelectionOverlay;
 import io.xol.chunkstories.gui.overlays.config.OptionsOverlay;
-import io.xol.engine.gui.elements.Button;
 
 public class PauseOverlay extends Layer
 {

@@ -14,7 +14,7 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ConnectionSequence;
-import io.xol.engine.gui.elements.Button;
+import io.xol.chunkstories.gui.elements.Button;
 
 public class ConnectionOverlay extends Layer
 {

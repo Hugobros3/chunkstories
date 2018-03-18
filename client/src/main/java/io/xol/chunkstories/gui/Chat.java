@@ -26,10 +26,10 @@ import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.api.util.ColorsTools;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
+import io.xol.chunkstories.gui.elements.InputText;
 import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.chunkstories.world.WorldClientRemote;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.engine.gui.elements.InputText;
 
 public class Chat
 {

@@ -171,6 +171,7 @@ public class VoxelModelLoaded implements VoxelRenderer, VoxelModel
 			//renderByteBuffer.addColors(sunLight, blockLight, ao);
 			
 			baker.setNormal(normals[i_currentVertex*3+0], normals[i_currentVertex*3+1], normals[i_currentVertex*3+2]);
+			baker.setWavyFlag(this.extra[i_currentVertex] != 0);
 			//renderByteBuffer.addNormalsInt(intifyNormal(this.normals[i_currentVertex*3+0]), intifyNormal(this.normals[i_currentVertex*3+1]), intifyNormal(this.normals[i_currentVertex*3+2]), this.extra[i_currentVertex]);
 		
 			baker.endVertex();

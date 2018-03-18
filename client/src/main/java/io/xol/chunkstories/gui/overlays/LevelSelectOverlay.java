@@ -24,13 +24,13 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.GameDirectory;
+import io.xol.chunkstories.gui.elements.Button;
 import io.xol.chunkstories.gui.ng.LargeButtonIcon;
 import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.chunkstories.world.WorldInfoMaster;
 import io.xol.chunkstories.world.WorldLoadingException;
 import io.xol.engine.graphics.util.CorneredBoxDrawer;
 import io.xol.engine.graphics.util.ObjectRenderer;
-import io.xol.engine.gui.elements.Button;
 
 public class LevelSelectOverlay extends Layer
 {
