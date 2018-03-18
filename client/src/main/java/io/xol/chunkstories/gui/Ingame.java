@@ -32,10 +32,10 @@ import io.xol.chunkstories.gui.Chat.ChatPanelOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.DeathOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.PauseOverlay;
 import io.xol.chunkstories.renderer.decals.VoxelOverlays;
+import io.xol.chunkstories.renderer.opengl.GameWindowOpenGL_LWJGL3;
 import io.xol.chunkstories.renderer.particles.ClientParticlesRenderer;
 import io.xol.chunkstories.world.WorldClientCommon;
 import io.xol.chunkstories.world.WorldClientRemote;
-import io.xol.engine.base.GameWindowOpenGL_LWJGL3;
 
 public class Ingame extends Layer
 {

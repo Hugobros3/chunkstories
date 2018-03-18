@@ -13,9 +13,9 @@ import io.xol.chunkstories.api.client.ClientContent.TexturesLibrary;
 import io.xol.chunkstories.api.rendering.textures.Cubemap;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
-import io.xol.engine.graphics.textures.Texture2DRenderTargetGL;
-import io.xol.engine.graphics.textures.TextureGL;
-import io.xol.engine.graphics.textures.TexturesHandler;
+import io.xol.chunkstories.renderer.opengl.texture.Texture2DRenderTargetGL;
+import io.xol.chunkstories.renderer.opengl.texture.TextureGL;
+import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;
 
 //TODO merge this & TexturesHandler
 public class ClientTexturesLibrary implements TexturesLibrary {

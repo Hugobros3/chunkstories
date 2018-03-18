@@ -28,11 +28,11 @@ import io.xol.chunkstories.api.rendering.world.WorldRenderer.FarTerrainRenderer;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.RenderingConfig;
-import io.xol.chunkstories.renderer.WorldRendererImplementation;
+import io.xol.chunkstories.client.util.MemFreeByteBuffer;
+import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;
+import io.xol.chunkstories.renderer.opengl.vbo.VertexBufferGL;
+import io.xol.chunkstories.renderer.world.WorldRendererImplementation;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
-import io.xol.engine.base.MemFreeByteBuffer;
-import io.xol.engine.graphics.geometry.VertexBufferGL;
-import io.xol.engine.graphics.textures.TexturesHandler;
 
 /** Idea: stop with the idea of building meshes on the CPU. Just use pre-computed grids or a geometry shader and a big array texture with all the summaries
  * to draw this shit insanely fast.

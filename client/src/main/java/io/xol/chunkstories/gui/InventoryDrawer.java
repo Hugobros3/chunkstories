@@ -15,7 +15,7 @@ import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.gui.overlays.ingame.InventoryOverlay;
-import io.xol.engine.graphics.textures.TexturesHandler;
+import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;
 
 public class InventoryDrawer
 {

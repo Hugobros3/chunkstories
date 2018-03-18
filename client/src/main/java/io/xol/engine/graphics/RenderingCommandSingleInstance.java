@@ -12,9 +12,11 @@ import io.xol.chunkstories.api.exceptions.rendering.RenderingException;
 import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.shader.Shader;
-import io.xol.engine.graphics.shaders.ShaderProgram;
-import io.xol.engine.graphics.shaders.ShaderProgram.InternalUniformsConfiguration;
-import io.xol.engine.graphics.textures.TexturingConfigurationImplementation;
+import io.xol.chunkstories.renderer.opengl.GLCalls;
+import io.xol.chunkstories.renderer.opengl.OpenGLStateMachine;
+import io.xol.chunkstories.renderer.opengl.texture.TexturingConfigurationImplementation;
+import io.xol.chunkstories.renderer.shaders.ShaderProgram;
+import io.xol.chunkstories.renderer.shaders.ShaderProgram.InternalUniformsConfiguration;
 
 public class RenderingCommandSingleInstance extends RenderingCommandImplementation {
 	Matrix4f objectMatrix;

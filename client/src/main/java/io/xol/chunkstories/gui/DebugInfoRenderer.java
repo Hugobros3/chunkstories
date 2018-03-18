@@ -24,12 +24,12 @@ import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunksIterator;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.renderer.chunks.ChunkRenderDataHolder;
+import io.xol.chunkstories.renderer.opengl.GLCalls;
+import io.xol.chunkstories.renderer.opengl.texture.Texture2DGL;
+import io.xol.chunkstories.renderer.opengl.vbo.VertexBufferGL;
 import io.xol.chunkstories.renderer.particles.ClientParticlesRenderer;
 import io.xol.chunkstories.world.WorldClientCommon;
 import io.xol.chunkstories.world.chunk.ClientChunk;
-import io.xol.engine.graphics.GLCalls;
-import io.xol.engine.graphics.geometry.VertexBufferGL;
-import io.xol.engine.graphics.textures.Texture2DGL;
 
 public class DebugInfoRenderer {
 	

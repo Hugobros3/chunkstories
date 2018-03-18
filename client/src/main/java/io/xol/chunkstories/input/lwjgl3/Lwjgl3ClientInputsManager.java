@@ -51,8 +51,8 @@ import io.xol.chunkstories.input.InputVirtual;
 import io.xol.chunkstories.input.InputsLoaderHelper;
 import io.xol.chunkstories.input.InputsManagerLoader;
 import io.xol.chunkstories.net.packets.PacketInput;
+import io.xol.chunkstories.renderer.opengl.GameWindowOpenGL_LWJGL3;
 import io.xol.chunkstories.world.WorldClientRemote;
-import io.xol.engine.base.GameWindowOpenGL_LWJGL3;
 
 public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsManagerLoader
 {

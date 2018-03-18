@@ -14,11 +14,11 @@ import org.lwjgl.BufferUtils;
 
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.client.RenderingConfig;
+import io.xol.chunkstories.renderer.opengl.vbo.VertexBufferGL;
 import io.xol.chunkstories.renderer.terrain.HeightmapMesher.Surface;
 import io.xol.chunkstories.world.WorldClientCommon;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
-import io.xol.engine.graphics.geometry.VertexBufferGL;
 
 public class FarTerrainBaker
 {

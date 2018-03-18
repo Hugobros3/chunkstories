@@ -15,7 +15,7 @@ import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.input.Mouse.MouseButton;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.client.Client;
-import io.xol.engine.graphics.textures.TexturesHandler;
+import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;
 import io.xol.engine.graphics.util.CorneredBoxDrawer;
 
 public class Button extends FocusableGuiElement implements ClickableGuiElement

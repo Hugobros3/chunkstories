@@ -37,12 +37,12 @@ import io.xol.chunkstories.api.voxel.VoxelSides.Corners;
 import io.xol.chunkstories.api.workers.Task;
 import io.xol.chunkstories.api.workers.TaskExecutor;
 import io.xol.chunkstories.api.world.WorldClient;
+import io.xol.chunkstories.client.util.MemFreeByteBuffer;
 import io.xol.chunkstories.renderer.chunks.ChunkMeshDataSections.DynamicallyRenderedVoxelType;
 import io.xol.chunkstories.renderer.chunks.ClientWorkerThread.ChunkMeshingBuffers;
 import io.xol.chunkstories.world.cell.ScratchCell;
 import io.xol.chunkstories.world.chunk.ClientChunk;
 import io.xol.chunkstories.world.chunk.CubicChunk;
-import io.xol.engine.base.MemFreeByteBuffer;
 
 public class TaskBakeChunk extends Task {
 

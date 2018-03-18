@@ -26,9 +26,9 @@ import io.xol.chunkstories.api.rendering.world.WorldRenderer;
 import io.xol.chunkstories.api.sound.SoundSource;
 import io.xol.chunkstories.api.sound.SoundSource.Mode;
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;
+import io.xol.chunkstories.renderer.opengl.vbo.VertexBufferGL;
 import io.xol.chunkstories.world.WorldClientCommon;
-import io.xol.engine.graphics.geometry.VertexBufferGL;
-import io.xol.engine.graphics.textures.TexturesHandler;
 
 public class DefaultWeatherEffectsRenderer implements WorldEffectsRenderer
 {

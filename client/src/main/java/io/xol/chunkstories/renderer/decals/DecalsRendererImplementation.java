@@ -38,9 +38,9 @@ import io.xol.chunkstories.api.voxel.VoxelSides.Corners;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.cell.CellData;
 import io.xol.chunkstories.api.world.chunk.Chunk;
-import io.xol.engine.graphics.geometry.VertexBufferGL;
-import io.xol.engine.graphics.textures.Texture2DGL;
-import io.xol.engine.graphics.textures.TexturesHandler;
+import io.xol.chunkstories.renderer.opengl.texture.Texture2DGL;
+import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;
+import io.xol.chunkstories.renderer.opengl.vbo.VertexBufferGL;
 
 public class DecalsRendererImplementation implements DecalsRenderer
 {

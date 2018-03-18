@@ -35,13 +35,13 @@ import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
 import io.xol.chunkstories.api.rendering.world.WorldRenderer.FarTerrainRenderer;
 import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.client.RenderingConfig;
-import io.xol.chunkstories.renderer.WorldRendererImplementation;
+import io.xol.chunkstories.renderer.opengl.texture.Texture1DGL;
+import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;
 import io.xol.chunkstories.renderer.terrain.FarTerrainBaker.RegionMesh;
+import io.xol.chunkstories.renderer.world.WorldRendererImplementation;
 import io.xol.chunkstories.voxel.VoxelTextureAtlased;
 import io.xol.chunkstories.world.WorldClientCommon;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
-import io.xol.engine.graphics.textures.Texture1DGL;
-import io.xol.engine.graphics.textures.TexturesHandler;
 
 
 

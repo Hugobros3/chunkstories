@@ -39,13 +39,13 @@ import io.xol.chunkstories.gui.overlays.ingame.ConnectionOverlay;
 import io.xol.chunkstories.gui.overlays.ingame.InventoryOverlay;
 import io.xol.chunkstories.input.lwjgl3.Lwjgl3ClientInputsManager;
 import io.xol.chunkstories.renderer.chunks.ClientTasksPool;
+import io.xol.chunkstories.renderer.opengl.GameWindowOpenGL_LWJGL3;
 import io.xol.chunkstories.tools.DebugProfiler;
 import io.xol.chunkstories.util.LogbackSetupHelper;
 import io.xol.chunkstories.util.concurrency.SimpleFence;
 import io.xol.chunkstories.util.config.ConfigFile;
 import io.xol.chunkstories.util.config.ConfigurationImplementation;
 import io.xol.chunkstories.world.WorldClientCommon;
-import io.xol.engine.base.GameWindowOpenGL_LWJGL3;
 
 public class Client implements ClientInterface
 {

@@ -36,9 +36,9 @@ import io.xol.chunkstories.gui.ng.ScrollableContainer;
 import io.xol.chunkstories.gui.ng.ScrollableContainer.ContainerElement;
 import io.xol.chunkstories.gui.ng.ThinButton;
 import io.xol.chunkstories.gui.overlays.config.ModsSelectionOverlay.ModsScrollableContainer.ModItem;
-import io.xol.engine.graphics.textures.Texture2DAsset;
-import io.xol.engine.graphics.textures.Texture2DGL;
-import io.xol.engine.graphics.textures.TexturesHandler;
+import io.xol.chunkstories.renderer.opengl.texture.Texture2DAsset;
+import io.xol.chunkstories.renderer.opengl.texture.Texture2DGL;
+import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;
 
 public class ModsSelectionOverlay extends Layer
 {

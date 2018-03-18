@@ -26,10 +26,10 @@ import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
+import io.xol.chunkstories.renderer.opengl.texture.ArrayTextureGL;
 import io.xol.chunkstories.voxel.VoxelTextureAtlased;
 import io.xol.chunkstories.world.cell.ScratchCell;
 import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
-import io.xol.engine.graphics.textures.ArrayTextureGL;
 
 public class SummariesArrayTexture implements SummariesTexturesHolder {
 	final ArrayTextureGL heights;

@@ -17,8 +17,6 @@ import io.xol.chunkstories.api.rendering.mesh.RenderableMesh;
 import io.xol.chunkstories.api.rendering.mesh.RenderableMultiPartAnimatableMesh;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.renderer.debug.FakeImmediateModeDebugRenderer;
-import io.xol.engine.model.MeshRenderableImpl;
-import io.xol.engine.model.MultiPartMeshRenderableImpl;
 
 public class ClientMeshStore implements ClientMeshLibrary {
 	

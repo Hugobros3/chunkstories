@@ -17,8 +17,8 @@ import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.input.Mouse.MouseButton;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.engine.graphics.textures.Texture2DGL;
-import io.xol.engine.graphics.textures.TexturesHandler;
+import io.xol.chunkstories.renderer.opengl.texture.Texture2DGL;
+import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;
 
 public class ScrollableContainer extends FocusableGuiElement implements ClickableGuiElement
 {

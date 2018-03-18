@@ -22,8 +22,8 @@ import io.xol.chunkstories.api.rendering.shader.Shader;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
 import io.xol.chunkstories.client.Client;
-import io.xol.engine.graphics.RenderingContext;
-import io.xol.engine.graphics.geometry.VertexBufferGL;
+import io.xol.chunkstories.renderer.RenderingContext;
+import io.xol.chunkstories.renderer.opengl.vbo.VertexBufferGL;
 
 public class FakeImmediateModeDebugRenderer
 {

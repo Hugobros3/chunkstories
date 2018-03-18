@@ -13,8 +13,8 @@ import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.mesh.ClientMeshStore;
+import io.xol.chunkstories.renderer.shaders.ShadersStore;
 import io.xol.chunkstories.sound.SoundsLibrary;
-import io.xol.engine.graphics.shaders.ShadersStore;
 
 public class ClientGameContent extends GameContentStore implements ClientContent
 {

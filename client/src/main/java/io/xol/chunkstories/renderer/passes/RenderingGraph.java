@@ -22,7 +22,6 @@ import io.xol.chunkstories.api.rendering.pass.RenderPass;
 import io.xol.chunkstories.api.rendering.pass.RenderPasses;
 import io.xol.chunkstories.api.rendering.textures.Texture;
 import io.xol.chunkstories.api.rendering.world.WorldRenderer;
-import io.xol.chunkstories.renderer.CycleException;
 
 public class RenderingGraph implements RenderPasses {
 

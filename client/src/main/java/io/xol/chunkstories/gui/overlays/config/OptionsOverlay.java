@@ -27,10 +27,10 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.ng.BaseNgButton;
 import io.xol.chunkstories.gui.ng.LargeButtonIcon;
 import io.xol.chunkstories.input.lwjgl3.Lwjgl3KeyBind.Lwjgl3KeyBindOption;
+import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;
 import io.xol.chunkstories.util.config.OptionChoiceImplementation;
 import io.xol.chunkstories.util.config.OptionScaleImplementation;
 import io.xol.chunkstories.util.config.OptionToggleImplementation;
-import io.xol.engine.graphics.textures.TexturesHandler;
 import io.xol.engine.graphics.util.CorneredBoxDrawer;
 import io.xol.engine.graphics.util.ObjectRenderer;
 

@@ -14,8 +14,8 @@ import io.xol.chunkstories.api.rendering.textures.Texture1D;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
 import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.renderer.opengl.texture.Texture1DGL;
 import io.xol.chunkstories.voxel.VoxelTextureAtlased;
-import io.xol.engine.graphics.textures.Texture1DGL;
 
 public class VoxelTexturesColours {
 

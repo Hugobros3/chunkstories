@@ -21,6 +21,7 @@ import io.xol.chunkstories.api.rendering.shader.Shader;
 import io.xol.chunkstories.api.rendering.world.WorldRenderer;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.physics.CollisionPlane;
+import io.xol.chunkstories.renderer.world.WorldRendererImplementation;
 
 public class Camera implements CameraInterface
 {
@@ -486,7 +487,7 @@ public class Camera implements CameraInterface
 		WorldRenderer wr = Client.getInstance().getRenderingInterface().getWorldRenderer();
 		if(wr != null) {
 			WorldRendererImplementation wri = (WorldRendererImplementation) wr;
-			float am = wri.averageLuma.getApertureModifier();
+			float am = wri.getApertureModifier();
 
 			shader.setUniform1f("apertureModifier", am);
 			//System.out.println(am);

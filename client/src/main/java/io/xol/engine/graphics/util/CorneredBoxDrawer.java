@@ -11,8 +11,8 @@ import org.joml.Vector4f;
 import io.xol.chunkstories.api.rendering.GuiRenderer;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.client.Client;
-import io.xol.engine.graphics.RenderingContext;
-import io.xol.engine.graphics.textures.TexturesHandler;
+import io.xol.chunkstories.renderer.RenderingContext;
+import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;
 
 public class CorneredBoxDrawer
 {

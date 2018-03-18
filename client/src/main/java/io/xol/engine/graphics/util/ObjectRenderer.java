@@ -10,8 +10,8 @@ import org.joml.Vector4f;
 
 import io.xol.chunkstories.api.util.ColorsTools;
 import io.xol.chunkstories.client.Client;
-import io.xol.engine.graphics.textures.Texture2DGL;
-import io.xol.engine.graphics.textures.TexturesHandler;
+import io.xol.chunkstories.renderer.opengl.texture.Texture2DGL;
+import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;
 
 
 

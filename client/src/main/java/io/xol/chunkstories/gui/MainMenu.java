@@ -26,10 +26,10 @@ import io.xol.chunkstories.api.rendering.textures.TextureFormat;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.overlays.MainMenuOverlay;
 import io.xol.chunkstories.renderer.Camera;
-import io.xol.engine.graphics.fbo.FrameBufferObjectGL;
-import io.xol.engine.graphics.textures.Texture2DGL;
-import io.xol.engine.graphics.textures.Texture2DRenderTargetGL;
-import io.xol.engine.graphics.textures.TexturesHandler;
+import io.xol.chunkstories.renderer.opengl.fbo.FrameBufferObjectGL;
+import io.xol.chunkstories.renderer.opengl.texture.Texture2DGL;
+import io.xol.chunkstories.renderer.opengl.texture.Texture2DRenderTargetGL;
+import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;
 
 public class MainMenu extends Layer
 {

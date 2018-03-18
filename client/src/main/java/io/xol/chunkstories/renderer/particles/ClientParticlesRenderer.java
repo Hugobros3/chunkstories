@@ -33,7 +33,7 @@ import io.xol.chunkstories.api.rendering.StateMachine.BlendMode;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
 import io.xol.chunkstories.api.world.WorldClient;
-import io.xol.engine.graphics.geometry.VertexBufferGL;
+import io.xol.chunkstories.renderer.opengl.vbo.VertexBufferGL;
 
 
 

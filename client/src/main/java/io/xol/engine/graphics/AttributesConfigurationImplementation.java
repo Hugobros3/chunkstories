@@ -19,7 +19,7 @@ import io.xol.chunkstories.api.exceptions.rendering.AttributeNotPresentException
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.vertex.AttributeSource;
 import io.xol.chunkstories.api.rendering.vertex.AttributesConfiguration;
-import io.xol.engine.graphics.shaders.ShaderProgram;
+import io.xol.chunkstories.renderer.shaders.ShaderProgram;
 
 public class AttributesConfigurationImplementation implements AttributesConfiguration
 {

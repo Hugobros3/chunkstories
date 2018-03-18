@@ -21,11 +21,11 @@ import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
 import io.xol.chunkstories.api.util.ColorsTools;
-import io.xol.engine.graphics.RenderingContext;
-import io.xol.engine.graphics.geometry.VertexBufferGL;
-import io.xol.engine.graphics.geometry.VertexBufferGL.UploadRegime;
-import io.xol.engine.graphics.textures.Texture2DGL;
-import io.xol.engine.graphics.textures.TexturesHandler;
+import io.xol.chunkstories.renderer.RenderingContext;
+import io.xol.chunkstories.renderer.opengl.texture.Texture2DGL;
+import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;
+import io.xol.chunkstories.renderer.opengl.vbo.VertexBufferGL;
+import io.xol.chunkstories.renderer.opengl.vbo.VertexBufferGL.UploadRegime;
 
 public class GuiRendererImplementation implements GuiRenderer
 {

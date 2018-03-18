@@ -16,8 +16,8 @@ import io.xol.chunkstories.api.rendering.StateMachine.CullingMode;
 import io.xol.chunkstories.api.rendering.StateMachine.DepthTestMode;
 import io.xol.chunkstories.api.rendering.shader.Shader;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
-import io.xol.engine.graphics.RenderingContext;
-import io.xol.engine.graphics.textures.Texture1DGL;
+import io.xol.chunkstories.renderer.RenderingContext;
+import io.xol.chunkstories.renderer.opengl.texture.Texture1DGL;
 
 public class WorldLogicTimeRenderer
 {
