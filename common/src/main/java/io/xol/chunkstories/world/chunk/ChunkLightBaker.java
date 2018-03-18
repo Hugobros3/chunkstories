@@ -202,7 +202,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 			if (cellLightLevel > 1) {
 				if (x < 31) {
 					peek(x + 1, y, z, adj);
-					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.RIGHT) + 1);
+					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.LEFT) + 1);
 					if (adj.blocklight < fadedLightLevel) {
 						adj.blocklight = fadedLightLevel;
 						poke(adj);
@@ -213,7 +213,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 					}
 				} else if (checkRightBleeding) {
 					peek(32, y, z, adj);
-					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.RIGHT) + 1);
+					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.LEFT) + 1);
 					if (adj.blocklight < fadedLightLevel) {
 						requestRight = true;
 						checkRightBleeding = false;
@@ -221,7 +221,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				}
 				if (x > 0) {
 					peek(x - 1, y, z, adj);
-					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.LEFT) + 1);
+					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.RIGHT) + 1);
 					if (adj.blocklight < fadedLightLevel) {
 						adj.blocklight = fadedLightLevel;
 						poke(adj);
@@ -232,7 +232,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 					}
 				} else if (checkLeftBleeding) {
 					peek(-1, y, z, adj);
-					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.LEFT) + 1);
+					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.RIGHT) + 1);
 					if (adj.blocklight < fadedLightLevel) {
 						requestLeft = true;
 						checkLeftBleeding = false;
@@ -241,7 +241,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 
 				if (z < 31) {
 					peek(x, y, z + 1, adj);
-					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.FRONT) + 1);
+					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.BACK) + 1);
 					if (adj.blocklight < fadedLightLevel) {
 						adj.blocklight = fadedLightLevel;
 						poke(adj);
@@ -252,7 +252,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 					}
 				} else if (checkFrontBleeding) {
 					peek(x, y, 32, adj);
-					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.FRONT) + 1);
+					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.BACK) + 1);
 					if (adj.blocklight < fadedLightLevel) {
 						requestFront = true;
 						checkFrontBleeding = false;
@@ -260,7 +260,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				}
 				if (z > 0) {
 					peek(x, y, z - 1, adj);
-					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.BACK) + 1);
+					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.FRONT) + 1);
 					if (adj.blocklight < fadedLightLevel) {
 						adj.blocklight = fadedLightLevel;
 						poke(adj);
@@ -271,7 +271,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 					}
 				} else if (checkBackBleeding) {
 					peek(x, y, -1, adj);
-					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.BACK) + 1);
+					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.FRONT) + 1);
 					if (adj.blocklight < fadedLightLevel) {
 						requestBack = true;
 						checkBackBleeding = false;
@@ -280,7 +280,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 
 				if (y < 31) {
 					peek(x, y + 1, z, adj);
-					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.TOP) + 1);
+					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.BOTTOM) + 1);
 					if (adj.blocklight < fadedLightLevel) {
 						adj.blocklight = fadedLightLevel;
 						poke(adj);
@@ -291,7 +291,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 					}
 				} else if (checkTopBleeding) {
 					peek(x, 32, z, adj);
-					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.TOP) + 1);
+					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.BOTTOM) + 1);
 					if (adj.blocklight < fadedLightLevel) {
 						requestTop = true;
 						checkTopBleeding = false;
@@ -300,7 +300,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 
 				if (y > 0) {
 					peek(x, y - 1, z, adj);
-					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.BOTTOM) + 1);
+					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.TOP) + 1);
 					if (adj.blocklight < fadedLightLevel) {
 						adj.blocklight = fadedLightLevel;
 						poke(adj);
@@ -311,7 +311,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 					}
 				} else if (checkBottomBleeding) {
 					peek(x, -1, z, adj);
-					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.BOTTOM) + 1);
+					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.TOP) + 1);
 					if (adj.blocklight < fadedLightLevel) {
 						requestBot = true;
 						checkBottomBleeding = false;
@@ -334,7 +334,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 			if (cellLightLevel > 1) {
 				if (x < 31) {
 					peek(x + 1, y, z, adj);
-					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.RIGHT) + 1);
+					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.LEFT) + 1);
 					if (adj.sunlight < fadedLightLevel) {
 						adj.sunlight = fadedLightLevel;
 						poke(adj);
@@ -345,7 +345,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 					}
 				} else if (checkRightBleeding) {
 					peek(32, y, z, adj);
-					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.RIGHT) + 1);
+					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.LEFT) + 1);
 					if (adj.sunlight < fadedLightLevel) {
 						requestRight = true;
 						checkRightBleeding = false;
@@ -353,7 +353,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				}
 				if (x > 0) {
 					peek(x - 1, y, z, adj);
-					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.LEFT) + 1);
+					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.RIGHT) + 1);
 					if (adj.sunlight < fadedLightLevel) {
 						adj.sunlight = fadedLightLevel;
 						poke(adj);
@@ -364,7 +364,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 					}
 				} else if (checkLeftBleeding) {
 					peek(-1, y, z, adj);
-					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.LEFT) + 1);
+					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.RIGHT) + 1);
 					if (adj.sunlight < fadedLightLevel) {
 						requestLeft = true;
 						checkLeftBleeding = false;
@@ -373,7 +373,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 
 				if (z < 31) {
 					peek(x, y, z + 1, adj);
-					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.FRONT) + 1);
+					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.BACK) + 1);
 					if (adj.sunlight < fadedLightLevel) {
 						adj.sunlight = fadedLightLevel;
 						poke(adj);
@@ -384,7 +384,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 					}
 				} else if (checkFrontBleeding) {
 					peek(x, y, 32, adj);
-					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.FRONT) + 1);
+					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.BACK) + 1);
 					if (adj.sunlight < fadedLightLevel) {
 						requestFront = true;
 						checkFrontBleeding = false;
@@ -392,7 +392,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				}
 				if (z > 0) {
 					peek(x, y, z - 1, adj);
-					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.BACK) + 1);
+					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.FRONT) + 1);
 					if (adj.sunlight < fadedLightLevel) {
 						adj.sunlight = fadedLightLevel;
 						poke(adj);
@@ -403,7 +403,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 					}
 				} else if (checkBackBleeding) {
 					peek(x, y, -1, adj);
-					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.BACK) + 1);
+					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.FRONT) + 1);
 					if (adj.sunlight < fadedLightLevel) {
 						requestBack = true;
 						checkBackBleeding = false;
@@ -412,7 +412,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 
 				if (y < 31) {
 					peek(x, y + 1, z, adj);
-					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.TOP) + 1);
+					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.BOTTOM) + 1);
 					if (adj.sunlight < fadedLightLevel) {
 						adj.sunlight = fadedLightLevel;
 						poke(adj);
@@ -423,7 +423,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 					}
 				} else if (checkTopBleeding) {
 					peek(x, 32, z, adj);
-					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.TOP) + 1);
+					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.BOTTOM) + 1);
 					if (adj.sunlight < fadedLightLevel) {
 						requestTop = true;
 						checkTopBleeding = false;
@@ -434,7 +434,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				// fade when traveling backwards so we do not decrement fadedLightLevel !
 				if (y > 0) {
 					peek(x, y - 1, z, adj);
-					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.BOTTOM));
+					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.TOP));
 					if (adj.sunlight < fadedLightLevel) {
 						adj.sunlight = fadedLightLevel;
 						poke(adj);
@@ -445,7 +445,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 					}
 				} else if (checkBottomBleeding) {
 					peek(x, -1, z, adj);
-					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.BOTTOM));
+					int fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSides.TOP));
 					if (adj.sunlight < fadedLightLevel) {
 						requestBot = true;
 						checkBottomBleeding = false;
@@ -1055,7 +1055,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				// X-propagation
 				if (x < bounds) {
 					peek(x + 1, y, z, sideCell);
-					int llRight = ll - sideCell.voxel.getLightLevelModifier(sideCell, cell, VoxelSides.RIGHT);
+					int llRight = ll - sideCell.voxel.getLightLevelModifier(sideCell, cell, VoxelSides.LEFT);
 					if (!sideCell.getVoxel().getDefinition().isOpaque() && sideCell.sunlight < llRight - 1) {
 						sideCell.sunlight = llRight - 1;
 						poke(sideCell);
@@ -1067,7 +1067,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				}
 				if (x > -bounds) {
 					peek(x - 1, y, z, sideCell);
-					int llLeft = ll - sideCell.voxel.getLightLevelModifier(sideCell, cell, VoxelSides.LEFT);
+					int llLeft = ll - sideCell.voxel.getLightLevelModifier(sideCell, cell, VoxelSides.RIGHT);
 					if (!sideCell.voxel.getDefinition().isOpaque() && sideCell.sunlight < llLeft - 1) {
 						sideCell.sunlight = llLeft - 1;
 						poke(sideCell);
@@ -1080,7 +1080,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				// Z-propagation
 				if (z < bounds) {
 					peek(x, y, z + 1, sideCell);
-					int llFront = ll - sideCell.voxel.getLightLevelModifier(sideCell, cell, VoxelSides.FRONT);
+					int llFront = ll - sideCell.voxel.getLightLevelModifier(sideCell, cell, VoxelSides.BACK);
 					if (!sideCell.voxel.getDefinition().isOpaque() && sideCell.sunlight < llFront - 1) {
 						sideCell.sunlight = llFront - 1;
 						poke(sideCell);
@@ -1092,7 +1092,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				}
 				if (z > -bounds) {
 					peek(x, y, z - 1, sideCell);
-					int llBack = ll - sideCell.voxel.getLightLevelModifier(sideCell, cell, VoxelSides.BACK);
+					int llBack = ll - sideCell.voxel.getLightLevelModifier(sideCell, cell, VoxelSides.FRONT);
 					if (!sideCell.voxel.getDefinition().isOpaque() && sideCell.sunlight < llBack - 1) {
 						sideCell.sunlight = llBack - 1;
 						poke(sideCell);
@@ -1105,7 +1105,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				// Y-propagation
 				if (y < bounds) {
 					peek(x, y + 1, z, sideCell);
-					int llTop = ll - sideCell.voxel.getLightLevelModifier(sideCell, cell, VoxelSides.TOP);
+					int llTop = ll - sideCell.voxel.getLightLevelModifier(sideCell, cell, VoxelSides.BOTTOM);
 					if (!sideCell.voxel.getDefinition().isOpaque() && sideCell.sunlight < llTop - 1) {
 						sideCell.sunlight = llTop - 1;
 						poke(sideCell);
@@ -1117,7 +1117,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 				}
 				if (y > -bounds) {
 					peek(x, y - 1, z, sideCell);
-					int llBottom = ll - sideCell.voxel.getLightLevelModifier(sideCell, cell, VoxelSides.BOTTOM);
+					int llBottom = ll - sideCell.voxel.getLightLevelModifier(sideCell, cell, VoxelSides.TOP);
 					if (!sideCell.voxel.getDefinition().isOpaque() && sideCell.sunlight < llBottom) {
 						sideCell.sunlight = llBottom;
 						poke(sideCell);
