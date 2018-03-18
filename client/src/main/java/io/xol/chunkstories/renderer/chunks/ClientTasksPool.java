@@ -9,8 +9,8 @@ package io.xol.chunkstories.renderer.chunks;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import io.xol.chunkstories.api.client.ClientInterface;
-import io.xol.chunkstories.workers.WorkerThread;
-import io.xol.chunkstories.workers.WorkerThreadPool;
+import io.xol.chunkstories.task.WorkerThread;
+import io.xol.chunkstories.task.WorkerThreadPool;
 
 public class ClientTasksPool extends WorkerThreadPool {
 

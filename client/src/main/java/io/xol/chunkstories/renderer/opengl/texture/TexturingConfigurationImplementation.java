@@ -33,7 +33,7 @@ import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.rendering.textures.Texture3D;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
 import io.xol.chunkstories.client.ClientLimitations;
-import io.xol.chunkstories.renderer.shaders.ShaderProgram;
+import io.xol.chunkstories.renderer.opengl.shader.ShaderGL;
 
 public class TexturingConfigurationImplementation
 {
@@ -155,7 +155,7 @@ public class TexturingConfigurationImplementation
 	 */
 	public void setup(RenderingInterface renderingInterface) throws NotEnoughtTextureUnitsException
 	{
-		ShaderProgram shaderProgram = (ShaderProgram) renderingInterface.currentShader();
+		ShaderGL shaderProgram = (ShaderGL) renderingInterface.currentShader();
 		
 		//Drop the older bound textures when a new shader is used
 		if(lastShaderConfigured != shaderProgram) {

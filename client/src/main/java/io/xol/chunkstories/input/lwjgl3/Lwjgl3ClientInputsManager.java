@@ -42,7 +42,6 @@ import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.input.Mouse.MouseButton;
 import io.xol.chunkstories.api.input.Mouse.MouseScroll;
 import io.xol.chunkstories.api.plugin.ClientPluginManager;
-import io.xol.chunkstories.api.util.ConfigDeprecated;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ServerConnection;
@@ -50,6 +49,7 @@ import io.xol.chunkstories.gui.layer.config.KeyBindSelectionOverlay;
 import io.xol.chunkstories.input.InputVirtual;
 import io.xol.chunkstories.input.InputsLoaderHelper;
 import io.xol.chunkstories.input.InputsManagerLoader;
+import io.xol.chunkstories.input.Pollable;
 import io.xol.chunkstories.net.packets.PacketInput;
 import io.xol.chunkstories.renderer.opengl.GLFWGameWindow;
 import io.xol.chunkstories.world.WorldClientRemote;
@@ -323,8 +323,8 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 		
 		for(Input input : this.inputs)
 		{
-			if(input instanceof LWJGLPollable)
-				((LWJGLPollable) input).updateStatus();
+			if(input instanceof Pollable)
+				((Pollable) input).updateStatus();
 		}
 	}
 

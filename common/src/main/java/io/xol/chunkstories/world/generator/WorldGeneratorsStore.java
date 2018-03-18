@@ -14,7 +14,7 @@ import io.xol.chunkstories.api.world.generator.BlankWorldGenerator;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.generator.WorldGenerator;
 import io.xol.chunkstories.content.GameContentStore;
-import io.xol.chunkstories.materials.GenericNamedConfigurable;
+import io.xol.chunkstories.content.GenericNamedConfigurable;
 
 import java.io.BufferedReader;
 import java.io.IOException;

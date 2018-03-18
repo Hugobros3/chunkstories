@@ -16,7 +16,7 @@ import io.xol.chunkstories.api.content.Content.EntityDefinitions;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityDefinition;
 import io.xol.chunkstories.api.exceptions.content.IllegalEntityDeclarationException;
-import io.xol.chunkstories.materials.GenericNamedConfigurable;
+import io.xol.chunkstories.content.GenericNamedConfigurable;
 
 public class EntityDefinitionImplementation extends GenericNamedConfigurable implements EntityDefinition {
 	

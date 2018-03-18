@@ -15,14 +15,13 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.exceptions.content.mods.ModLoadFailureException;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.vanillasockets.TCPServerConnection;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.content.mods.ModZip;
-import io.xol.chunkstories.net.ConnectionStep;
 import io.xol.chunkstories.net.http.SimplePostRequest;
+import io.xol.chunkstories.util.VersionInfo;
 
 /** The job of the ConnectionSequence is to execute the required steps to login in a server, while monitoring back progress to the main thread */
 public class ConnectionSequence extends Thread

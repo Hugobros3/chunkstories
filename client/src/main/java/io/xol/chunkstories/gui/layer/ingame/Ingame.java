@@ -28,11 +28,10 @@ import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.entity.SerializedEntityFile;
-import io.xol.chunkstories.gui.Chat;
-import io.xol.chunkstories.gui.DebugInfoRenderer;
 import io.xol.chunkstories.gui.InventoryDrawer;
-import io.xol.chunkstories.gui.PhysicsWireframeDebugger;
-import io.xol.chunkstories.gui.Chat.ChatPanelOverlay;
+import io.xol.chunkstories.gui.layer.ingame.ChatManager.ChatPanelOverlay;
+import io.xol.chunkstories.renderer.debug.DebugInfoRenderer;
+import io.xol.chunkstories.renderer.debug.PhysicsWireframeDebugger;
 import io.xol.chunkstories.renderer.decals.VoxelOverlays;
 import io.xol.chunkstories.renderer.opengl.GLFWGameWindow;
 import io.xol.chunkstories.renderer.particles.ClientParticlesRenderer;
@@ -49,7 +48,7 @@ public class Ingame extends Layer
 	private InventoryDrawer inventoryBarDrawer = null;
 	private final PhysicsWireframeDebugger wireframeDebugger;
 	private final DebugInfoRenderer debugInfoRenderer;
-	public final Chat chatManager;
+	public final ChatManager chatManager;
 	
 	//Convinience references
 	private boolean focus2 = true;
@@ -67,7 +66,7 @@ public class Ingame extends Layer
 		this.world = world;
 		this.client = world.getClient();
 		
-		this.chatManager = new Chat(this);
+		this.chatManager = new ChatManager(this);
 
 		//Creates the rendering stuff
 		this.selectionRenderer = new VoxelOverlays();
@@ -242,7 +241,6 @@ public class Ingame extends Layer
 		}
 		else if (input.equals("toggleDebugInfo"))
 		{
-			@SuppressWarnings("unchecked")
 			OptionBoolean debugInfo = (OptionBoolean) client.getConfiguration().getOption("client.debug.showDebugInfo");
 			debugInfo.toggle();
 			//debugInfo.trySetting("" + !debugInfo.getValue());

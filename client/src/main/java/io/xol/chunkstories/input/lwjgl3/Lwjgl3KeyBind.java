@@ -9,20 +9,16 @@ package io.xol.chunkstories.input.lwjgl3;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.glfwGetKey;
 
-import java.io.IOException;
-
 import io.xol.chunkstories.api.input.KeyboardKeyInput;
 import io.xol.chunkstories.api.util.Configuration.KeyBindOption;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.materials.GenericNamedConfigurable;
-import io.xol.chunkstories.util.config.ConfigurationImplementation;
-import io.xol.chunkstories.util.config.OptionIntImplementation;
-import io.xol.chunkstories.util.config.OptionUntyped;
+import io.xol.chunkstories.content.GenericNamedConfigurable;
+import io.xol.chunkstories.input.Pollable;
 
 /**
  * Describes a key assignated to some action
  */
-public class Lwjgl3KeyBind extends Lwjgl3Input implements KeyboardKeyInput, LWJGLPollable
+public class Lwjgl3KeyBind extends Lwjgl3Input implements KeyboardKeyInput, Pollable
 {
 	int GLFW_key;
 	

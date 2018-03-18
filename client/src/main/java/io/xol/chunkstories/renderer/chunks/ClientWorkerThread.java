@@ -22,7 +22,7 @@ import io.xol.chunkstories.api.rendering.world.chunk.vertexlayout.IntricateLayou
 import io.xol.chunkstories.api.rendering.world.chunk.vertexlayout.WholeBlocksLayoutBaker;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
 import io.xol.chunkstories.api.world.chunk.Chunk;
-import io.xol.chunkstories.workers.WorkerThread;
+import io.xol.chunkstories.task.WorkerThread;
 
 /** Client worker threads, with the added facility that they can do the chunk rendering ( they have more buffers ) */
 public class ClientWorkerThread extends WorkerThread implements BakeChunkTaskExecutor {

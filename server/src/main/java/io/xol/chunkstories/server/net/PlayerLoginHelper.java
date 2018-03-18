@@ -6,11 +6,11 @@
 
 package io.xol.chunkstories.server.net;
 
-import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.events.player.PlayerLoginEvent;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.net.http.SimplePostRequest;
 import io.xol.chunkstories.server.player.ServerPlayer;
+import io.xol.chunkstories.util.VersionInfo;
 
 /** Helper class to offload the login handling logic from ClientConnection */
 public class PlayerLoginHelper {

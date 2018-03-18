@@ -16,16 +16,18 @@ import io.xol.chunkstories.animation.BVHLibrary;
 import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.exceptions.content.mods.NotAllModsLoadedException;
 import io.xol.chunkstories.api.mesh.MeshLibrary;
+import io.xol.chunkstories.content.mods.ModsManagerImplementation;
+import io.xol.chunkstories.content.mods.ModsManagerImplementation.NonExistentCoreContent;
 import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.content.mods.ModsManager;
-import io.xol.chunkstories.content.ModsManagerImplementation.NonExistentCoreContent;
 import io.xol.chunkstories.entity.EntityDefinitionsStore;
 import io.xol.chunkstories.item.ItemDefinitionsStore;
-import io.xol.chunkstories.materials.MaterialsStore;
+import io.xol.chunkstories.localization.LocalizationManagerImplementation;
 import io.xol.chunkstories.mesh.MeshStore;
 import io.xol.chunkstories.net.PacketsStore;
-import io.xol.chunkstories.particles.ParticlesTypesStore;
+import io.xol.chunkstories.particle.ParticlesTypesStore;
 import io.xol.chunkstories.voxel.VoxelsStore;
+import io.xol.chunkstories.voxel.material.MaterialsStore;
 import io.xol.chunkstories.world.generator.WorldGeneratorsStore;
 
 public class GameContentStore implements Content
@@ -45,7 +47,7 @@ public class GameContentStore implements Content
 	
 	protected final MeshStore meshes;
 	
-	private final LocalizationManagerActual localizationManager;
+	private final LocalizationManagerImplementation localizationManager;
 	private final static Logger contentLogger = LoggerFactory.getLogger("content");
 
 	public GameContentStore(GameContext context, File coreContentLocation, String enabledModsLaunchArguments)
@@ -70,7 +72,7 @@ public class GameContentStore implements Content
 		
 		meshes = new MeshStore(this);
 		
-		localizationManager = new LocalizationManagerActual(this, "en");
+		localizationManager = new LocalizationManagerImplementation(this, "en");
 	}
 	
 	public void reload()

@@ -23,7 +23,7 @@ import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.WorldNetworked;
 import io.xol.chunkstories.content.translator.AbstractContentTranslator;
 import io.xol.chunkstories.net.LogicalPacketDatagram;
-import io.xol.chunkstories.net.PacketDefinitionImpl;
+import io.xol.chunkstories.net.PacketDefinitionImplementation;
 import io.xol.chunkstories.server.DedicatedServer;
 import io.xol.chunkstories.server.player.ServerPlayer;
 import io.xol.chunkstories.server.propagation.VirtualServerDecalsManager;
@@ -158,7 +158,7 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 				LogicalPacketDatagram datagram = incomming.datagram;
 				
 				try {
-					PacketDefinitionImpl definition = (PacketDefinitionImpl) datagram.packetDefinition; //this.getContentTranslator().getPacketForId(datagram.packetTypeId);
+					PacketDefinitionImplementation definition = (PacketDefinitionImplementation) datagram.packetDefinition; //this.getContentTranslator().getPacketForId(datagram.packetTypeId);
 					Packet packet = definition.createNew(false, this);
 					
 					if(definition.getGenre() != PacketGenre.WORLD || !(packet instanceof PacketWorld)) {

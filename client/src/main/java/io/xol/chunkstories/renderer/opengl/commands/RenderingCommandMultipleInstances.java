@@ -14,9 +14,9 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.shader.Shader;
 import io.xol.chunkstories.renderer.opengl.GLCalls;
 import io.xol.chunkstories.renderer.opengl.OpenGLStateMachine;
+import io.xol.chunkstories.renderer.opengl.shader.ShaderGL.InternalUniformsConfiguration;
 import io.xol.chunkstories.renderer.opengl.texture.TexturingConfigurationImplementation;
 import io.xol.chunkstories.renderer.opengl.vbo.AttributesConfigurationImplementation;
-import io.xol.chunkstories.renderer.shaders.ShaderProgram.InternalUniformsConfiguration;
 
 public class RenderingCommandMultipleInstances extends RenderingCommandSingleInstance{
 

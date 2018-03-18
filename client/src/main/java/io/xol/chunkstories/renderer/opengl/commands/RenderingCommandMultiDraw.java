@@ -16,10 +16,10 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.shader.Shader;
 import io.xol.chunkstories.renderer.opengl.GLCalls;
 import io.xol.chunkstories.renderer.opengl.OpenGLStateMachine;
+import io.xol.chunkstories.renderer.opengl.shader.ShaderGL;
+import io.xol.chunkstories.renderer.opengl.shader.ShaderGL.InternalUniformsConfiguration;
 import io.xol.chunkstories.renderer.opengl.texture.TexturingConfigurationImplementation;
 import io.xol.chunkstories.renderer.opengl.vbo.AttributesConfigurationImplementation;
-import io.xol.chunkstories.renderer.shaders.ShaderProgram;
-import io.xol.chunkstories.renderer.shaders.ShaderProgram.InternalUniformsConfiguration;
 
 public class RenderingCommandMultiDraw extends RenderingCommandImplementation {
 	Matrix4f objectMatrix;
@@ -38,7 +38,7 @@ public class RenderingCommandMultiDraw extends RenderingCommandImplementation {
 
 	protected void setup(RenderingInterface renderingInterface) throws RenderingException {
 		// Make sure to use the right shader
-		((ShaderProgram) shader).use();
+		((ShaderGL) shader).use();
 
 		// Setups vertex attributes
 		this.attributesConfiguration.setup(renderingInterface);
@@ -48,7 +48,7 @@ public class RenderingCommandMultiDraw extends RenderingCommandImplementation {
 
 		// Compute & send the object matrix
 		if (objectMatrix != null) {
-			((ShaderProgram) this.shader).applyUniformAttribute("objectMatrix", objectMatrix);
+			((ShaderGL) this.shader).applyUniformAttribute("objectMatrix", objectMatrix);
 			// this.Shader.setUniformMatrix4f("objectMatrix", objectMatrix);
 
 			objectMatrix.invert(temp);
@@ -68,7 +68,7 @@ public class RenderingCommandMultiDraw extends RenderingCommandImplementation {
 			normal.m20 = temp.m20();
 			normal.m21 = temp.m21();
 			normal.m22 = temp.m22();
-			((ShaderProgram) this.shader).applyUniformAttribute("objectMatrixNormal", normal);
+			((ShaderGL) this.shader).applyUniformAttribute("objectMatrixNormal", normal);
 			// this.Shader.setUniformMatrix3f("objectMatrixNormal", normal);
 		}
 
@@ -78,7 +78,7 @@ public class RenderingCommandMultiDraw extends RenderingCommandImplementation {
 		// Updates uniforms
 		this.uniformsConfiguration.setup(renderingInterface);
 
-		((ShaderProgram) this.shader).validate();
+		((ShaderGL) this.shader).validate();
 	}
 
 	public void render(RenderingInterface renderingInterface) throws RenderingException {

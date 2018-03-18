@@ -39,13 +39,14 @@ import io.xol.chunkstories.api.rendering.world.WorldRenderer;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.renderer.font.TrueTypeFontRenderer;
-import io.xol.chunkstories.renderer.lights.LightsRenderer;
+import io.xol.chunkstories.renderer.lightning.LightsRenderer;
 import io.xol.chunkstories.renderer.opengl.GLFWGameWindow;
 import io.xol.chunkstories.renderer.opengl.OpenGLStateMachine;
 import io.xol.chunkstories.renderer.opengl.commands.RenderingCommandMultiDraw;
 import io.xol.chunkstories.renderer.opengl.commands.RenderingCommandMultipleInstances;
 import io.xol.chunkstories.renderer.opengl.commands.RenderingCommandSingleInstance;
 import io.xol.chunkstories.renderer.opengl.fbo.OpenGLRenderTargetManager;
+import io.xol.chunkstories.renderer.opengl.shader.ShaderGL;
 import io.xol.chunkstories.renderer.opengl.texture.Texture2DRenderTargetGL;
 import io.xol.chunkstories.renderer.opengl.texture.Texture3DGL;
 import io.xol.chunkstories.renderer.opengl.texture.TextureGL;
@@ -53,14 +54,13 @@ import io.xol.chunkstories.renderer.opengl.texture.TexturingConfigurationImpleme
 import io.xol.chunkstories.renderer.opengl.util.GuiRendererImplementation;
 import io.xol.chunkstories.renderer.opengl.vbo.AttributesConfigurationImplementation;
 import io.xol.chunkstories.renderer.opengl.vbo.VertexBufferGL;
-import io.xol.chunkstories.renderer.shaders.ShaderProgram;
 import io.xol.chunkstories.renderer.shaders.ShadersStore;
 
 public class OpenGLRenderingContext implements RenderingInterface
 {
 	private GLFWGameWindow gameWindow;
 	
-	private ShaderProgram currentlyBoundShader = null;
+	private ShaderGL currentlyBoundShader = null;
 
 	private final Camera mainCamera = new Camera();
 	//private boolean isThisAShadowPass;
@@ -120,7 +120,7 @@ public class OpenGLRenderingContext implements RenderingInterface
 		return setCurrentShader(shaders().getShaderProgram(shaderName));
 	}
 
-	private Shader setCurrentShader(ShaderProgram shader)
+	private Shader setCurrentShader(ShaderGL shader)
 	{
 		if (shader != currentlyBoundShader) {
 			texturingConfiguration.clear();

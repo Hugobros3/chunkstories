@@ -8,7 +8,6 @@ package io.xol.chunkstories.gui.layer;
 
 import org.joml.Vector4f;
 
-import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
@@ -18,6 +17,7 @@ import io.xol.chunkstories.gui.layer.config.ModsSelection;
 import io.xol.chunkstories.gui.layer.config.OptionsScreen;
 import io.xol.chunkstories.gui.ng.LargeButton;
 import io.xol.chunkstories.gui.ng.LargeButtonIcon;
+import io.xol.chunkstories.util.VersionInfo;
 
 public class MainMenu extends Layer
 {

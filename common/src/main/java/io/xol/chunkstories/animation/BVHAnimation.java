@@ -24,8 +24,6 @@ import org.joml.Vector3f;
 import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 
-
-
 public class BVHAnimation implements SkeletalAnimation
 {
 	int frames = 0;

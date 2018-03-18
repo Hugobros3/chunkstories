@@ -18,8 +18,6 @@ import org.joml.Vector3f;
 
 import io.xol.chunkstories.api.math.Quaternion4d;
 
-
-
 public class BVHTreeBone implements SkeletonBone
 {
 	private final BVHAnimation bvh;

@@ -22,7 +22,7 @@ import io.xol.chunkstories.api.world.WorldClientNetworkedRemote;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ServerConnection;
 import io.xol.chunkstories.net.LogicalPacketDatagram;
-import io.xol.chunkstories.net.PacketDefinitionImpl;
+import io.xol.chunkstories.net.PacketDefinitionImplementation;
 import io.xol.chunkstories.net.PacketsContextCommon;
 import io.xol.chunkstories.world.io.IOTasksMultiplayerClient;
 
@@ -102,7 +102,7 @@ public class WorldClientRemote extends WorldClientCommon implements WorldClientN
 				LogicalPacketDatagram datagram = i.next();
 	
 				try {
-					PacketDefinitionImpl definition = (PacketDefinitionImpl) datagram.packetDefinition; //this.getContentTranslator().getPacketForId(datagram.packetTypeId);
+					PacketDefinitionImplementation definition = (PacketDefinitionImplementation) datagram.packetDefinition; //this.getContentTranslator().getPacketForId(datagram.packetTypeId);
 					Packet packet = definition.createNew(true, this);
 					if(definition.getGenre() != PacketGenre.WORLD || !(packet instanceof PacketWorld)) {
 						logger().error(definition + " isn't a PacketWorld");

@@ -17,8 +17,6 @@ import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.content.Content.AnimationsLibrary;
 import io.xol.chunkstories.content.GameContentStore;
 
-
-
 public class BVHLibrary implements AnimationsLibrary
 {
 	private final GameContentStore store;

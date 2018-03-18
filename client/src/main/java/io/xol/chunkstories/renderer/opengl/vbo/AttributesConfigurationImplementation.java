@@ -19,7 +19,7 @@ import io.xol.chunkstories.api.exceptions.rendering.AttributeNotPresentException
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.vertex.AttributeSource;
 import io.xol.chunkstories.api.rendering.vertex.AttributesConfiguration;
-import io.xol.chunkstories.renderer.shaders.ShaderProgram;
+import io.xol.chunkstories.renderer.opengl.shader.ShaderGL;
 
 public class AttributesConfigurationImplementation implements AttributesConfiguration
 {
@@ -61,7 +61,7 @@ public class AttributesConfigurationImplementation implements AttributesConfigur
 
 	public void setup(RenderingInterface renderingInterface)
 	{
-		ShaderProgram shaderProgram = (ShaderProgram) renderingInterface.currentShader();
+		ShaderGL shaderProgram = (ShaderGL) renderingInterface.currentShader();
 		
 		Set<Integer> unusedAttributes = enabledVertexAttributes;
 		enabledVertexAttributes = new HashSet<Integer>(enabledVertexAttributes);

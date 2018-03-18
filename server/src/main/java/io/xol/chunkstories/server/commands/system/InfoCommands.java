@@ -8,13 +8,13 @@ package io.xol.chunkstories.server.commands.system;
 
 import java.util.Iterator;
 
-import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.content.mods.Mod;
 import io.xol.chunkstories.api.plugin.ChunkStoriesPlugin;
 import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
 import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.server.commands.ServerCommandBasic;
+import io.xol.chunkstories.util.VersionInfo;
 
 /** Handles /uptime, /info commands */
 public class InfoCommands extends ServerCommandBasic{

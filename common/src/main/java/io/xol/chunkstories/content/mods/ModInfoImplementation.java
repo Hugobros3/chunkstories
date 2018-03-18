@@ -12,9 +12,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import io.xol.chunkstories.api.exceptions.content.mods.MalformedModTxtException;
+import io.xol.chunkstories.content.GenericConfigurable;
 import io.xol.chunkstories.api.content.mods.Mod;
 import io.xol.chunkstories.api.content.mods.ModInfo;
-import io.xol.chunkstories.materials.GenericConfigurable;
 
 public class ModInfoImplementation extends GenericConfigurable implements ModInfo
 {

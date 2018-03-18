@@ -13,57 +13,51 @@ import org.slf4j.Logger;
 
 import io.xol.chunkstories.api.client.ClientContent;
 import io.xol.chunkstories.api.client.ClientContent.ShadersLibrary;
+import io.xol.chunkstories.renderer.opengl.shader.ShaderGL;
 
-public class ShadersStore implements ShadersLibrary
-{
+public class ShadersStore implements ShadersLibrary {
 	final ClientContent clientContent;
-	final Map<String, ShaderProgram> loadedShaders = new HashMap<String, ShaderProgram>();
-	
+	final Map<String, ShaderGL> loadedShaders = new HashMap<String, ShaderGL>();
+
 	public ShadersStore(ClientContent clientContent) {
 		this.clientContent = clientContent;
 	}
-	
-	public ShaderProgram getShaderProgram(String name)
-	{
-		if(!loadedShaders.containsKey(name))
+
+	public ShaderGL getShaderProgram(String name) {
+		if (!loadedShaders.containsKey(name))
 			loadShader(name);
 		return loadedShaders.get(name);
 	}
-	
-	boolean loadShader(String name)
-	{
-		ShaderProgram subject = new ShaderProgram(clientContent.modsManager(), name);
+
+	boolean loadShader(String name) {
+		ShaderGL subject = new ShaderGL(clientContent.modsManager(), name);
 		loadedShaders.put(name, subject);
-		return subject.loadOK;
+		return subject.isLoadedCorrectly();
 	}
-	
-	public void preloadShaders()
-	{
-		//TODO support for external shaders !
-		/*File shadersDir = new File("res/shaders/");
-		if(shadersDir.exists() && shadersDir.isDirectory())
-			for(File f : shadersDir.listFiles())
-				if(f.isDirectory())
-					loadShader(f.getName());*/
+
+	public void preloadShaders() {
+		// TODO support for external shaders !
+		/*
+		 * File shadersDir = new File("res/shaders/"); if(shadersDir.exists() &&
+		 * shadersDir.isDirectory()) for(File f : shadersDir.listFiles())
+		 * if(f.isDirectory()) loadShader(f.getName());
+		 */
 	}
-	
-	public void reloadShader(String shaderName)
-	{
-		ShaderProgram s = loadedShaders.get(shaderName);
-		if(s != null)
+
+	public void reloadShader(String shaderName) {
+		ShaderGL shader = loadedShaders.get(shaderName);
+		if (shader != null)
+			shader.reload();
+	}
+
+	public void reloadAll() {
+		for (ShaderGL s : loadedShaders.values())
 			s.reload();
 	}
-	
-	public void reloadAll()
-	{
-		for(ShaderProgram s : loadedShaders.values())
-			s.reload();
-	}
-	
-	public void destroy()
-	{
-		for(ShaderProgram s : loadedShaders.values())
-			s.free();
+
+	public void destroy() {
+		for (ShaderGL shader : loadedShaders.values())
+			shader.destroy();
 		loadedShaders.clear();
 	}
 
@@ -74,6 +68,6 @@ public class ShadersStore implements ShadersLibrary
 
 	@Override
 	public Logger logger() {
-		return ShaderProgram.logger();
+		return ShaderGL.logger();
 	}
 }

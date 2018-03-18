@@ -24,12 +24,12 @@ import io.xol.chunkstories.api.net.PacketWorldStreaming;
 import io.xol.chunkstories.api.net.RemoteServer;
 import io.xol.chunkstories.api.net.packets.PacketText;
 import io.xol.chunkstories.client.net.ClientPacketsContext;
+import io.xol.chunkstories.client.net.ConnectionStep;
 import io.xol.chunkstories.client.net.RemoteServerImplementation;
 import io.xol.chunkstories.client.net.ServerConnection;
 import io.xol.chunkstories.net.Connection;
-import io.xol.chunkstories.net.ConnectionStep;
 import io.xol.chunkstories.net.LogicalPacketDatagram;
-import io.xol.chunkstories.net.PacketDefinitionImpl;
+import io.xol.chunkstories.net.PacketDefinitionImplementation;
 import io.xol.chunkstories.net.vanillasockets.SendQueue;
 import io.xol.chunkstories.net.vanillasockets.StreamGobbler;
 import io.xol.chunkstories.world.WorldClientRemote;
@@ -95,7 +95,7 @@ public class TCPServerConnection extends ServerConnection {
 
 	@Override
 	public void handleDatagram(LogicalPacketDatagram datagram) throws IOException, PacketProcessingException, IllegalPacketException {
-		PacketDefinitionImpl definition = (PacketDefinitionImpl) datagram.packetDefinition;//(PacketDefinitionImpl) getPacketsContext().getContentTranslator().getPacketForId(datagram.packetTypeId);
+		PacketDefinitionImplementation definition = (PacketDefinitionImplementation) datagram.packetDefinition;//(PacketDefinitionImpl) getPacketsContext().getContentTranslator().getPacketForId(datagram.packetTypeId);
 		if (definition.getGenre() == PacketGenre.GENERAL_PURPOSE) {
 			Packet packet = definition.createNew(true, null);
 			packet.process(getRemoteServer(), datagram.getData(), getPacketsContext());

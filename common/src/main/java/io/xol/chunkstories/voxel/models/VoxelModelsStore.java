@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.content.mods.AssetHierarchy;
+import io.xol.chunkstories.api.voxel.VoxelSides;
 import io.xol.chunkstories.api.voxel.models.VoxelModel;
 import io.xol.chunkstories.voxel.VoxelsStore;
 
@@ -25,8 +26,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-
 
 public class VoxelModelsStore implements Content.Voxels.VoxelModels
 {
@@ -46,24 +45,12 @@ public class VoxelModelsStore implements Content.Voxels.VoxelModels
 	public void resetAndLoadModels()
 	{
 		models.clear();
-		/*File vanillaFolder = new File("./res/voxels/blockmodels/");
-		for (File f : vanillaFolder.listFiles())
-		{
-			if (!f.isDirectory() && f.getName().endsWith(".model"))
-			{
-				readBlockModel(f);
-			}
-		}*/
+		
 		Iterator<AssetHierarchy> allFiles = voxels.parent().modsManager().getAllUniqueEntries();
-		//Iterator<Entry<String, Deque<File>>> allFiles = GameContent.getAllUniqueEntries();
-		AssetHierarchy entry;
-		Asset f;
-		while (allFiles.hasNext())
-		{
-			entry = allFiles.next();
-			if (entry.getName().startsWith("./voxels/blockmodels/") && entry.getName().endsWith(".model"))
-			{
-				f = entry.topInstance();
+		while (allFiles.hasNext()) {
+			AssetHierarchy entry = allFiles.next();
+			if (entry.getName().startsWith("./voxels/blockmodels/") && entry.getName().endsWith(".model")) {
+				Asset f = entry.topInstance();
 				readBlockModel(f);
 			}
 		}
@@ -73,11 +60,6 @@ public class VoxelModelsStore implements Content.Voxels.VoxelModels
 	private void readBlockModel(Asset asset)
 	{
 		logger().debug("Loading custom models file : " + asset);
-		
-		//logger().log("Loading custom models file : " + f.getAbsolutePath(), ChunkStoriesLoggerImplementation.LogType.GAMEMODE, ChunkStoriesLoggerImplementation.LogLevel.INFO);
-	
-		/*if (!voxelModelFile.exists())
-			return;*/
 		try
 		{
 			/*FileReader fileReader = new FileReader(voxelModelFile);*/
@@ -184,7 +166,7 @@ public class VoxelModelsStore implements Content.Voxels.VoxelModels
 								culling[i] = cullingTemp.get(i);
 							}
 
-							VoxelModelLoaded voxelModel = new VoxelModelLoaded(this, voxelModelName, vertices, texCoords, texturesNames, texturesOffsets, normals, extras, culling, jitterX, jitterY, jitterZ);
+							CustomVoxelModel voxelModel = new CustomVoxelModel(this, voxelModelName, vertices, texCoords, texturesNames, texturesOffsets, normals, extras, culling, jitterX, jitterY, jitterZ);
 							models.put(voxelModelName, voxelModel);
 
 							//Resets data accumulators
@@ -276,22 +258,22 @@ public class VoxelModelsStore implements Content.Voxels.VoxelModels
 							switch (face)
 							{
 							case "bottom":
-								currentCull[Face.BOTTOM] = true;
+								currentCull[VoxelSides.BOTTOM.ordinal()] = true;
 								break;
 							case "top":
-								currentCull[Face.TOP] = true;
+								currentCull[VoxelSides.TOP.ordinal()] = true;
 								break;
 							case "left":
-								currentCull[Face.LEFT] = true;
+								currentCull[VoxelSides.LEFT.ordinal()] = true;
 								break;
 							case "right":
-								currentCull[Face.RIGHT] = true;
+								currentCull[VoxelSides.RIGHT.ordinal()] = true;
 								break;
 							case "front":
-								currentCull[Face.FRONT] = true;
+								currentCull[VoxelSides.FRONT.ordinal()] = true;
 								break;
 							case "back":
-								currentCull[Face.BACK] = true;
+								currentCull[VoxelSides.BACK.ordinal()] = true;
 								break;
 							}
 						}
@@ -342,12 +324,12 @@ public class VoxelModelsStore implements Content.Voxels.VoxelModels
 		}
 	}
 
-	public VoxelModelLoaded getVoxelModelByName(String name)
+	public CustomVoxelModel getVoxelModelByName(String name)
 	{
 		if (name.endsWith(".default"))
 			name = name.substring(0, name.length() - 8);
 		if (models.containsKey(name))
-			return (VoxelModelLoaded)models.get(name);
+			return (CustomVoxelModel)models.get(name);
 		logger().warn("Couldn't serve voxel model : " + name);
 		return null;
 	}

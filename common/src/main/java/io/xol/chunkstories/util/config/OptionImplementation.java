@@ -7,7 +7,7 @@ import java.util.Map.Entry;
 import io.xol.chunkstories.api.events.config.OptionSetEvent;
 import io.xol.chunkstories.api.plugin.PluginManager;
 import io.xol.chunkstories.api.util.Configuration.Option;
-import io.xol.chunkstories.materials.GenericNamedConfigurable;
+import io.xol.chunkstories.content.GenericNamedConfigurable;
 
 public class OptionImplementation extends GenericNamedConfigurable implements Option {
 

@@ -22,7 +22,6 @@ import org.fusesource.jansi.AnsiConsole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.player.Player;
@@ -41,9 +40,10 @@ import io.xol.chunkstories.server.net.ClientsManager;
 import io.xol.chunkstories.server.net.announcer.ServerAnnouncerThread;
 import io.xol.chunkstories.server.net.vanillasockets.VanillaClientsManager;
 import io.xol.chunkstories.server.propagation.ServerModsProvider;
+import io.xol.chunkstories.task.WorkerThreadPool;
 import io.xol.chunkstories.util.LogbackSetupHelper;
-import io.xol.chunkstories.util.config.ConfigFile;
-import io.xol.chunkstories.workers.WorkerThreadPool;
+import io.xol.chunkstories.util.VersionInfo;
+import io.xol.chunkstories.util.config.OldStyleConfigFile;
 import io.xol.chunkstories.world.WorldInfoMaster;
 import io.xol.chunkstories.world.WorldServer;
 
@@ -99,7 +99,7 @@ public class DedicatedServer implements Runnable, DedicatedServerInterface {
 
 	private Logger logger = null;
 	private DedicatedServerConsole console = new DedicatedServerConsole(this);
-	private ConfigFile serverConfig = new ConfigFile("./config/server.cfg");
+	private OldStyleConfigFile serverConfig = new OldStyleConfigFile("./config/server.cfg");
 
 	private AtomicBoolean running = new AtomicBoolean(true);
 	private long initTimestamp = System.currentTimeMillis() / 1000;
@@ -298,7 +298,7 @@ public class DedicatedServer implements Runnable, DedicatedServerInterface {
 		return world;
 	}
 
-	public ConfigFile getServerConfig() {
+	public OldStyleConfigFile getServerConfig() {
 		return serverConfig;
 	}
 

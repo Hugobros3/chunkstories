@@ -13,8 +13,9 @@ import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse.MouseButton;
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.input.Pollable;
 
-public class Lwjgl3MouseButton implements MouseButton, LWJGLPollable
+public class Lwjgl3MouseButton implements MouseButton, Pollable
 {
 	private final Lwjgl3Mouse mouse;
 	private final String name;

@@ -32,7 +32,7 @@ import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemDefinition;
 import io.xol.chunkstories.api.net.PacketDefinition;
 import io.xol.chunkstories.api.voxel.Voxel;
-import io.xol.chunkstories.net.PacketDefinitionImpl;
+import io.xol.chunkstories.net.PacketDefinitionImplementation;
 
 /** Assigns IDs for everything that needs one */
 public abstract class AbstractContentTranslator implements OnlineContentTranslator {
@@ -98,7 +98,7 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 			packetMappings = new HashMap<>();
 		
 		content.packets().all().forEachRemaining(def -> {
-			PacketDefinitionImpl definition = (PacketDefinitionImpl)def;
+			PacketDefinitionImplementation definition = (PacketDefinitionImplementation)def;
 			
 			if(overwrite || packetMappings.get(definition) == null) {
 				
@@ -111,7 +111,7 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 		});
 		
 		content.packets().all().forEachRemaining(def -> {
-			PacketDefinitionImpl definition = (PacketDefinitionImpl)def;
+			PacketDefinitionImplementation definition = (PacketDefinitionImplementation)def;
 
 			if(overwrite || packetMappings.get(definition) == null) {
 				int packetId = definition.getFixedId();

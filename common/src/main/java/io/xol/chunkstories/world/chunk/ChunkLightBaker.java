@@ -20,10 +20,10 @@ import io.xol.chunkstories.api.workers.Task;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunkLightUpdater;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
-import io.xol.chunkstories.tools.WorldTool;
 import io.xol.chunkstories.util.concurrency.SimpleLock;
 import io.xol.chunkstories.util.concurrency.TrivialFence;
 import io.xol.chunkstories.world.WorldImplementation;
+import io.xol.chunkstories.world.WorldTool;
 import io.xol.chunkstories.world.cell.ScratchCell;
 
 //TODO use custom propagation for ALL propagation functions & cleanup this whole darn mess

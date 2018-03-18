@@ -61,7 +61,6 @@ import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.api.world.generator.WorldGenerator;
 import io.xol.chunkstories.api.world.heightmap.RegionSummary;
 import io.xol.chunkstories.content.sandbox.UnthrustedUserContentSecurityManager;
-import io.xol.chunkstories.content.sandbox.WorldLogicThread;
 import io.xol.chunkstories.content.translator.AbstractContentTranslator;
 import io.xol.chunkstories.content.translator.IncompatibleContentException;
 import io.xol.chunkstories.content.translator.InitialContentTranslator;
@@ -69,11 +68,12 @@ import io.xol.chunkstories.content.translator.LoadedContentTranslator;
 import io.xol.chunkstories.entity.EntityWorldIterator;
 import io.xol.chunkstories.entity.SerializedEntityFile;
 import io.xol.chunkstories.util.concurrency.CompoundFence;
-import io.xol.chunkstories.util.config.ConfigFile;
+import io.xol.chunkstories.util.config.OldStyleConfigFile;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.io.IOTasks;
 import io.xol.chunkstories.world.iterators.AABBVoxelIterator;
 import io.xol.chunkstories.world.iterators.WorldChunksIterator;
+import io.xol.chunkstories.world.logic.WorldLogicThread;
 import io.xol.chunkstories.world.region.HashMapWorldRegionsHolder;
 import io.xol.chunkstories.world.region.RegionImplementation;
 import io.xol.chunkstories.world.summary.WorldRegionSummariesHolder;
@@ -116,7 +116,7 @@ public abstract class WorldImplementation implements World
 	private WorldRegionSummariesHolder regionSummaries;
 
 	// Temporary entity list
-	protected final EntitiesHolder entities;
+	protected final WorldEntitiesHolder entities;
 
 	public ReadWriteLock entitiesLock = new ReentrantReadWriteLock(true);
 
@@ -141,7 +141,7 @@ public abstract class WorldImplementation implements World
 			this.regionSummaries = new WorldRegionSummariesHolder(this);
 			
 			//And for the citizens
-			this.entities = new EntitiesHolder(this);
+			this.entities = new WorldEntitiesHolder(this);
 	
 			if (this instanceof WorldMaster) // Master world initialization
 			{
@@ -181,7 +181,7 @@ public abstract class WorldImplementation implements World
 				this.masterContentTranslator.save(new File(this.getFolderPath() + "/content_mappings.dat"));
 
 				File internalDatFile = new File(folder.getPath()+"/internal.dat");
-				this.internalData = new ConfigFile(internalDatFile.getAbsolutePath());
+				this.internalData = new OldStyleConfigFile(internalDatFile.getAbsolutePath());
 				this.internalData.load();
 	
 				this.entitiesUUIDGenerator.set(internalData.getLong("entities-ids-counter", 0));
@@ -205,7 +205,7 @@ public abstract class WorldImplementation implements World
 			}
 			
 			this.generator = gameContext.getContent().generators().getWorldGenerator(info.getGeneratorName()).createForWorld(this);
-			this.collisionsManager = new BuiltInWorldCollisionsManager(this);
+			this.collisionsManager = new DefaultWorldCollisionsManager(this);
 			
 			//Start the world logic thread
 			this.worldThread = new WorldLogicThread(this, new UnthrustedUserContentSecurityManager());

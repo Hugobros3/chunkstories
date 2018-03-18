@@ -26,7 +26,7 @@ import io.xol.chunkstories.api.net.packets.PacketText;
 import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.net.Connection;
 import io.xol.chunkstories.net.LogicalPacketDatagram;
-import io.xol.chunkstories.net.PacketDefinitionImpl;
+import io.xol.chunkstories.net.PacketDefinitionImplementation;
 import io.xol.chunkstories.net.vanillasockets.SendQueue;
 import io.xol.chunkstories.net.vanillasockets.StreamGobbler;
 import io.xol.chunkstories.server.net.ClientConnection;
@@ -80,7 +80,7 @@ public class SocketedClientConnection extends ClientConnection {
 
 	@Override
 	public void handleDatagram(LogicalPacketDatagram datagram) throws IOException, PacketProcessingException, IllegalPacketException {
-		PacketDefinitionImpl definition = (PacketDefinitionImpl) datagram.packetDefinition;//getPacketsContext().getContentTranslator().getPacketForId(datagram.packetTypeId);
+		PacketDefinitionImplementation definition = (PacketDefinitionImplementation) datagram.packetDefinition;//getPacketsContext().getContentTranslator().getPacketForId(datagram.packetTypeId);
 		if (definition.getGenre() == PacketGenre.GENERAL_PURPOSE) {
 			Packet packet = definition.createNew(true, null);
 			packet.process(packetsProcessor.getInterlocutor(), datagram.getData(), getPacketsContext());

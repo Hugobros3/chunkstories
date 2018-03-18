@@ -86,7 +86,7 @@ public abstract class PacketsContextCommon implements PacketReceptionContext, Pa
 			packetTypeId = secondByte | (firstByte & 0x7F) << 8;
 		}
 		
-		PacketDefinitionImpl def = (PacketDefinitionImpl) this.getContentTranslator().getPacketForId(packetTypeId);
+		PacketDefinitionImplementation def = (PacketDefinitionImplementation) this.getContentTranslator().getPacketForId(packetTypeId);
 		if(def == null) {
 			throw new UnknowPacketException(packetTypeId);
 		}

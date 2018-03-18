@@ -28,8 +28,8 @@ import io.xol.chunkstories.content.GameContentStore;
 public class PacketsStore implements Content.PacketDefinitions {
 
 	private final GameContentStore store;
-	private final Map<String, PacketDefinitionImpl> byNames = new HashMap<String, PacketDefinitionImpl>();
-	private final Map<Class<? extends Packet>, PacketDefinitionImpl> byClasses = new HashMap<Class<? extends Packet>, PacketDefinitionImpl>();
+	private final Map<String, PacketDefinitionImplementation> byNames = new HashMap<String, PacketDefinitionImplementation>();
+	private final Map<Class<? extends Packet>, PacketDefinitionImplementation> byClasses = new HashMap<Class<? extends Packet>, PacketDefinitionImplementation>();
 
 	//private PacketDefinition textPacket, filePacket;
 	
@@ -77,7 +77,7 @@ public class PacketsStore implements Content.PacketDefinitions {
 		logger().debug("Reading packets definitions in : " + source);
 		try {
 			String line = "";
-			PacketDefinitionImpl packetType = null;
+			PacketDefinitionImplementation packetType = null;
 			while ((line = reader.readLine()) != null) {
 				line = line.replace("\t", "");
 				if (line.startsWith("#")) {
@@ -95,7 +95,7 @@ public class PacketsStore implements Content.PacketDefinitions {
 						String materialName = split[1];
 
 						try {
-							packetType = new PacketDefinitionImpl(store, materialName, reader);
+							packetType = new PacketDefinitionImplementation(store, materialName, reader);
 						} catch (IllegalPacketDeclarationException e) {
 							store.logger().error(e.getMessage());
 							continue;
@@ -129,7 +129,7 @@ public class PacketsStore implements Content.PacketDefinitions {
 	public PacketDefinition getPacketFromInstance(Packet packet) throws UnknowPacketException {
 		Class<? extends Packet> pclass = packet.getClass();
 		
-		PacketDefinitionImpl ptd = this.byClasses.get(pclass);
+		PacketDefinitionImplementation ptd = this.byClasses.get(pclass);
 		if(ptd != null)
 			return ptd;
 		
@@ -143,7 +143,7 @@ public class PacketsStore implements Content.PacketDefinitions {
 
 	@Override
 	public Iterator<PacketDefinition> all() {
-		Iterator<PacketDefinitionImpl> i = byNames.values().iterator();
+		Iterator<PacketDefinitionImplementation> i = byNames.values().iterator();
 		return new Iterator<PacketDefinition>() {
 
 			@Override

@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import io.xol.chunkstories.api.world.WorldInfo;
-import io.xol.chunkstories.materials.GenericConfigurable;
+import io.xol.chunkstories.content.GenericConfigurable;
 
 
 

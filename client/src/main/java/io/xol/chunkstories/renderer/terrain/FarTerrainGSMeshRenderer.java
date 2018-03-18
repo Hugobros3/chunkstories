@@ -25,7 +25,6 @@ import io.xol.chunkstories.api.rendering.shader.Shader;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
 import io.xol.chunkstories.api.rendering.world.WorldRenderer.FarTerrainRenderer;
-import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.ClientLimitations;
@@ -43,7 +42,7 @@ public class FarTerrainGSMeshRenderer implements FarTerrainRenderer {
 	final WorldClient world;
 	final WorldRendererImplementation worldRenderer;
 	
-	private VoxelTexturesColours colours;
+	private AverageVoxelColour colours;
 	
 	public FarTerrainGSMeshRenderer(WorldRendererImplementation worldRenderer) {
 		this.worldRenderer = worldRenderer;
@@ -53,7 +52,7 @@ public class FarTerrainGSMeshRenderer implements FarTerrainRenderer {
 			grids[i] = generateGrid(detailLevels[i]);
 		}
 		
-		colours = new VoxelTexturesColours(worldRenderer.getWorld());
+		colours = new AverageVoxelColour(worldRenderer.getWorld());
 	}
 	
 	@Override

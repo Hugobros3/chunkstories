@@ -18,7 +18,7 @@ import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemDefinition;
 import io.xol.chunkstories.api.rendering.item.ItemRenderer;
 import io.xol.chunkstories.api.rendering.item.NullItemRenderer;
-import io.xol.chunkstories.materials.GenericNamedConfigurable;
+import io.xol.chunkstories.content.GenericNamedConfigurable;
 
 public class ItemDefinitionImplementation extends GenericNamedConfigurable implements ItemDefinition
 {

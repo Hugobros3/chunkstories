@@ -43,8 +43,8 @@ import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
 import io.xol.chunkstories.api.plugin.commands.CommandHandler;
 import io.xol.chunkstories.api.plugin.commands.SystemCommand;
 import io.xol.chunkstories.api.util.IterableIterator;
-import io.xol.chunkstories.content.ModsManagerImplementation;
 import io.xol.chunkstories.content.GameDirectory;
+import io.xol.chunkstories.content.mods.ModsManagerImplementation;
 
 public abstract class DefaultPluginManager implements PluginManager
 {

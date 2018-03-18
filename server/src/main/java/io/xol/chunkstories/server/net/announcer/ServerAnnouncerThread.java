@@ -10,9 +10,9 @@ import java.net.Inet4Address;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.net.http.HttpRequests;
 import io.xol.chunkstories.server.DedicatedServer;
+import io.xol.chunkstories.util.VersionInfo;
 
 
 

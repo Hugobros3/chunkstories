@@ -30,7 +30,7 @@ import io.xol.chunkstories.server.net.ClientConnection;
 import io.xol.chunkstories.server.propagation.VirtualServerDecalsManager.ServerPlayerVirtualDecalsManager;
 import io.xol.chunkstories.server.propagation.VirtualServerParticlesManager.ServerPlayerVirtualParticlesManager;
 import io.xol.chunkstories.sound.VirtualSoundManager.ServerPlayerVirtualSoundManager;
-import io.xol.chunkstories.util.config.ConfigFile;
+import io.xol.chunkstories.util.config.OldStyleConfigFile;
 import io.xol.chunkstories.world.WorldServer;
 
 import java.util.Iterator;
@@ -46,7 +46,7 @@ public class ServerPlayer implements RemotePlayer {
 	protected final String name;
 	protected final ServerInterface server;
 
-	private ConfigFile playerDataFile;
+	private OldStyleConfigFile playerDataFile;
 
 	private WorldServer world;
 	private EntityControllable controlledEntity;
@@ -70,7 +70,7 @@ public class ServerPlayer implements RemotePlayer {
 
 		this.server = playerConnection.getContext();
 
-		this.playerDataFile = new ConfigFile("./players/" + name.toLowerCase() + ".cfg");
+		this.playerDataFile = new OldStyleConfigFile("./players/" + name.toLowerCase() + ".cfg");
 
 		this.serverInputsManager = new ServerInputsManager(this);
 

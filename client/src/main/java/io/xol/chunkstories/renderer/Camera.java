@@ -26,23 +26,25 @@ import io.xol.chunkstories.renderer.world.WorldRendererImplementation;
 public class Camera implements CameraInterface
 {
 	//Viewport size
-	public int viewportWidth, viewportHeight;
+	private int viewportWidth, viewportHeight;
 	
 	//Camera rotations
-	public float rotationX = 0.0f;
-	public float rotationY = 0.0f;
-	public float rotationZ = 0.0f;
+	private float rotationX = 0.0f;
+	private float rotationY = 0.0f;
+	private float rotationZ = 0.0f;
 	
 	private Vector3d position = new Vector3d();
 	private Vector3f up = new Vector3f();
+
+	private float fov = 45;
 	
 	//Mouse pointer tracking
 	float lastPX = -1f;
 	float lastPY = -1f;
 
 	//Matrices
-	public Matrix4f projectionMatrix4f = new Matrix4f();
-	public Matrix4f projectionMatrix4fInverted = new Matrix4f();
+	private Matrix4f projectionMatrix4f = new Matrix4f();
+	private Matrix4f projectionMatrix4fInverted = new Matrix4f();
 
 	public Matrix4f modelViewProjectionMatrix4f = new Matrix4f();
 	public Matrix4f modelViewProjectionMatrix4fInverted = new Matrix4f();
@@ -107,15 +109,13 @@ public class Camera implements CameraInterface
 		float b = (float) ((-rotV) / 180f * Math.PI);
 		Vector3f lookAt = new Vector3f((float) (Math.sin(a) * Math.cos(b)),(float)( Math.sin(b)) , (float)(Math.cos(a) * Math.cos(b)));
 		
-		Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
+		/*Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
 		
 		lookAt.cross(up, up);		
-		up.cross(lookAt, up);
+		up.cross(lookAt, up);*/
 		
 		Client.getInstance().getSoundManager().setListenerPosition((float)(double)position.x(), (float)(double)position.y(), (float)(double)position.z(), lookAt, up);
 	}
-
-	public float fov = 45;
 
 	/**
 	 * Computes inverted and derived matrices

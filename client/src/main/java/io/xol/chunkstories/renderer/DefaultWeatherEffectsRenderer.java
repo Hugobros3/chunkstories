@@ -25,34 +25,33 @@ import io.xol.chunkstories.api.rendering.world.WorldEffectsRenderer;
 import io.xol.chunkstories.api.rendering.world.WorldRenderer;
 import io.xol.chunkstories.api.sound.SoundSource;
 import io.xol.chunkstories.api.sound.SoundSource.Mode;
-import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;
-import io.xol.chunkstories.renderer.opengl.vbo.VertexBufferGL;
-import io.xol.chunkstories.world.WorldClientCommon;
+import io.xol.chunkstories.api.world.WorldClient;
 
 public class DefaultWeatherEffectsRenderer implements WorldEffectsRenderer
 {
 	private Random random = new Random();
-	private WorldClientCommon world;
-	
-	@SuppressWarnings("unused")
+	private WorldClient world;
 	private WorldRenderer worldRenderer;
 
-	public DefaultWeatherEffectsRenderer(WorldClientCommon world, WorldRenderer worldRenderer)
+	private VertexBuffer rainVerticesBuffer;
+	
+	public DefaultWeatherEffectsRenderer(WorldClient world, WorldRenderer worldRenderer)
 	{
 		this.world = world;
 		this.worldRenderer = worldRenderer;
+
+		rainVerticesBuffer = worldRenderer.getRenderingInterface().newVertexBuffer();
+		//raindropsData = ByteBuffer.allocateDirect(110000 * 6 * 4).asFloatBuffer();
+		raindropsData = BufferUtils.createFloatBuffer(110000 * 6 * 4);
 	}
 
 	//Every second regenerate the buffer with fresh vertices
-	float[] raindrops = new float[110000 * 6 * 4];
-	FloatBuffer raindropsData = BufferUtils.createFloatBuffer(110000 * 6 * 4);
-	// Array setup : 
-	int bufferOffset = 0;
-	int viewX, viewY, viewZ;
-	int lastX, lastY, lastZ;
-
-	VertexBuffer rainVerticesBuffer = new VertexBufferGL();
+	private float[] raindrops = new float[110000 * 6 * 4];
+	private FloatBuffer raindropsData;
+	
+	private int bufferOffset = 0;
+	private int viewX, viewY, viewZ;
+	private int lastX, lastZ;
 
 	private void generateRainForOneSecond(RenderingInterface renderingContex, float rainPresence)
 	{
@@ -121,7 +120,6 @@ public class DefaultWeatherEffectsRenderer implements WorldEffectsRenderer
 		rainVerticesBuffer.uploadData(raindropsData);
 
 		lastX = viewX;
-		lastY = viewY;
 		lastZ = viewZ;
 	}
 
@@ -149,10 +147,9 @@ public class DefaultWeatherEffectsRenderer implements WorldEffectsRenderer
 
 			float rainIntensity = rainPresence * 2.0f - 1.0f;
 
-			if (Client.getInstance().getPlayer().getControlledEntity() != null)
+			if (world.getClient().getPlayer().getControlledEntity() != null)
 			{
-				int interiour = world.peekSafely(Client.getInstance().getPlayer().getControlledEntity().getLocation()).getSunlight();
-				//world.getSunlightLevelLocation(Client.getInstance().getPlayer().getControlledEntity().getLocation());
+				int interiour = world.peekSafely(world.getClient().getPlayer().getControlledEntity().getLocation()).getSunlight();
 				rainIntensity *= 0.2f + 0.8f * (interiour / 15f);
 
 				rainIntensity *= 0.5;
@@ -180,7 +177,7 @@ public class DefaultWeatherEffectsRenderer implements WorldEffectsRenderer
 	//TODO configure
 	private float getSnowPresence()
 	{
-		Entity e = Client.getInstance().getPlayer().getControlledEntity();
+		Entity e = world.getClient().getPlayer().getControlledEntity();
 		if(e != null)
 		{
 			return world.getWeather()*Math2.clamp((e.getLocation().y() - 120) / 20, 0, 1);
@@ -239,7 +236,7 @@ public class DefaultWeatherEffectsRenderer implements WorldEffectsRenderer
 		//Spawn some snow arround
 		float snowPresence = getSnowPresence();
 		
-		Entity e = Client.getInstance().getPlayer().getControlledEntity();
+		Entity e = world.getClient().getPlayer().getControlledEntity();
 		if (e != null && world.getWorldRenderer() != null)
 		{
 			Location loc = e.getLocation();

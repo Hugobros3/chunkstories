@@ -23,19 +23,16 @@ import io.xol.chunkstories.api.rendering.StateMachine.BlendMode;
 import io.xol.chunkstories.api.rendering.shader.Shader;
 import io.xol.chunkstories.api.rendering.target.RenderTargetsConfiguration;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
-import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.opengl.fbo.FrameBufferObjectGL;
 import io.xol.chunkstories.renderer.opengl.texture.Texture2DGL;
 import io.xol.chunkstories.renderer.opengl.texture.Texture2DRenderTargetGL;
 import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;
 
-public class SkyBoxBackground extends Layer
-{
+public class SkyBoxBackground extends Layer {
 	// Stuff for rendering the background
-
 	String skyBox;
-	Camera cam = new Camera();
+	Camera camera = new Camera();
 
 	private Texture2DRenderTargetGL unblurred = new Texture2DRenderTargetGL(TextureFormat.RGBA_8BPP, gameWindow.getWidth(), gameWindow.getHeight());
 	private Texture2DRenderTargetGL blurredH = new Texture2DRenderTargetGL(TextureFormat.RGBA_8BPP, gameWindow.getWidth(), gameWindow.getHeight());
@@ -45,22 +42,13 @@ public class SkyBoxBackground extends Layer
 	private RenderTargetsConfiguration blurredHFBO = new FrameBufferObjectGL(null, blurredH);
 	private RenderTargetsConfiguration blurredVFBO = new FrameBufferObjectGL(null, blurredV);
 
-	// private String splashText = getRandomSplashScreen();
-
 	public SkyBoxBackground(GameWindow gameWindow)
 	{
 		super(gameWindow, null);
 		selectRandomSkybox();
-		
-		/*if(askForLogin)
-			gameWindow.setLayer(new LoginOverlay(gameWindow, this));
-			//currentOverlay = new LoginOverlay(this, null);
-		else
-			gameWindow.setLayer(new MainMenuOverlay(gameWindow, this));
-			//currentOverlay = new MainMenuOverlay(this, null);*/
 	}
 
-	void selectRandomSkybox()
+	private void selectRandomSkybox()
 	{
 		String[] possibleSkyboxes = (new File("./skyboxscreens/")).list();
 		if (possibleSkyboxes == null || possibleSkyboxes.length == 0)
@@ -76,16 +64,16 @@ public class SkyBoxBackground extends Layer
 		
 		//TODO uncuck this
 		skyBox = "./textures/skybox";
-		cam.rotationX = 25;
-		cam.rotationY = -45;
+		camera.setRotationX(25);
+		camera.setRotationY(-45);
 	}
 
-	String getRandomSplashScreen()
+	private String getRandomSplashScreen()
 	{
 		List<String> splashes = new ArrayList<String>();
 		try
 		{
-			InputStreamReader ipsr = new InputStreamReader(Client.getInstance().getContent().getAsset("./splash.txt").read(), "UTF-8");
+			InputStreamReader ipsr = new InputStreamReader(gameWindow.getClient().getContent().getAsset("./splash.txt").read(), "UTF-8");
 			BufferedReader br = new BufferedReader(ipsr);
 			String ligne;
 			while ((ligne = br.readLine()) != null)
@@ -122,7 +110,7 @@ public class SkyBoxBackground extends Layer
 	}
 
 	@Override
-	public void render(RenderingInterface renderingContext)
+	public void render(RenderingInterface renderer)
 	{
 		if(gameWindow.getLayer() == this)
 			gameWindow.setLayer( new MainMenu(gameWindow, this));
@@ -137,61 +125,61 @@ public class SkyBoxBackground extends Layer
 		}
 		
 		// Render this shit boy
-		renderingContext.getRenderTargetManager().setConfiguration(unblurredFBO);
-		cam.setupUsingScreenSize(gameWindow.getWidth(), gameWindow.getHeight());
-		Shader menuSkyBox = renderingContext.useShader("mainMenuSkyBox");
-		cam.setupShader(menuSkyBox);
+		renderer.getRenderTargetManager().setConfiguration(unblurredFBO);
+		camera.setupUsingScreenSize(gameWindow.getWidth(), gameWindow.getHeight());
+		Shader menuSkyBox = renderer.useShader("mainMenuSkyBox");
+		camera.setupShader(menuSkyBox);
 		
-		renderingContext.bindCubemap("skybox", TexturesHandler.getCubemap(skyBox));
-		cam.rotationX = 35 + (float) (Math.sin(cam.rotationY / 15)) * 5f;
-		cam.rotationY = (System.currentTimeMillis()%1000000)/200.0f;
-		renderingContext.drawFSQuad();
+		renderer.bindCubemap("skybox", TexturesHandler.getCubemap(skyBox));
+		camera.setRotationX(35 + (float) (Math.sin(camera.getRotationY() / 15)) * 5f);
+		camera.setRotationY((System.currentTimeMillis()%1000000)/200.0f);
+		renderer.drawFSQuad();
 		
-		renderingContext.getRenderTargetManager().setConfiguration(blurredHFBO);
-		Shader blurH = renderingContext.useShader("blurH");
+		renderer.getRenderTargetManager().setConfiguration(blurredHFBO);
+		Shader blurH = renderer.useShader("blurH");
 		blurH.setUniform2f("screenSize", gameWindow.getWidth(), gameWindow.getHeight());
 		
-		renderingContext.bindTexture2D("inputTexture", unblurred);
-		renderingContext.drawFSQuad();
+		renderer.bindTexture2D("inputTexture", unblurred);
+		renderer.drawFSQuad();
 
 		for (int i = 0; i < 1; i++)
 		{
-			renderingContext.getRenderTargetManager().setConfiguration(blurredVFBO);
-			Shader blurV = renderingContext.useShader("blurV");
+			renderer.getRenderTargetManager().setConfiguration(blurredVFBO);
+			Shader blurV = renderer.useShader("blurV");
 			blurV.setUniform1f("lookupScale", 1);
 			blurV.setUniform2f("screenSize", gameWindow.getWidth() / 2, gameWindow.getHeight() / 2);
 			
-			renderingContext.bindTexture2D("inputTexture", blurredH);
-			renderingContext.drawFSQuad();
+			renderer.bindTexture2D("inputTexture", blurredH);
+			renderer.drawFSQuad();
 
-			renderingContext.getRenderTargetManager().setConfiguration(blurredHFBO);
-			blurH = renderingContext.useShader("blurH");
+			renderer.getRenderTargetManager().setConfiguration(blurredHFBO);
+			blurH = renderer.useShader("blurH");
 			blurH.setUniform2f("screenSize", gameWindow.getWidth() / 2, gameWindow.getHeight() / 2);
-			renderingContext.bindTexture2D("inputTexture", blurredV);
-			renderingContext.drawFSQuad();
+			renderer.bindTexture2D("inputTexture", blurredV);
+			renderer.drawFSQuad();
 		}
 
-		renderingContext.getRenderTargetManager().setConfiguration(blurredVFBO);
-		Shader blurV = renderingContext.useShader("blurV");
+		renderer.getRenderTargetManager().setConfiguration(blurredVFBO);
+		Shader blurV = renderer.useShader("blurV");
 		blurV.setUniform2f("screenSize", gameWindow.getWidth(), gameWindow.getHeight());
-		renderingContext.bindTexture2D("inputTexture", blurredH);
-		renderingContext.drawFSQuad();
+		renderer.bindTexture2D("inputTexture", blurredH);
+		renderer.drawFSQuad();
 
-		renderingContext.getRenderTargetManager().setConfiguration(null);
-		Shader blit = renderingContext.useShader("background");
+		renderer.getRenderTargetManager().setConfiguration(null);
+		Shader blit = renderer.useShader("background");
 		blit.setUniform2f("screenSize", gameWindow.getWidth(), gameWindow.getHeight());
 		Texture2DGL backgroundTexture = TexturesHandler.getTexture("./textures/gui/darker.png");
 		backgroundTexture.setLinearFiltering(false);
-		renderingContext.bindTexture2D("diffuseTexture", backgroundTexture);
-		renderingContext.bindTexture2D("backgroundTexture", blurredV);
-		renderingContext.drawFSQuad();
+		renderer.bindTexture2D("diffuseTexture", backgroundTexture);
+		renderer.bindTexture2D("backgroundTexture", blurredV);
+		renderer.drawFSQuad();
 
 		Texture2DGL logoTexture = TexturesHandler.getTexture("./textures/gui/icon.png");
 		float alphaIcon = (float) (0.25 + Math.sin((System.currentTimeMillis() % (1000 * 60 * 60) / 3000f)) * 0.25f);
-		renderingContext.setBlendMode(BlendMode.MIX);
+		renderer.setBlendMode(BlendMode.MIX);
 		float diagonal = (float) Math.sqrt(gameWindow.getWidth() * gameWindow.getWidth() + gameWindow.getHeight() * gameWindow.getHeight());
 		float iconSize = (float) (diagonal / 3 + 50 * Math.sin((System.currentTimeMillis() % (1000 * 60 * 60) / 30000f)));
-		renderingContext.getGuiRenderer().drawBoxWindowsSpace(gameWindow.getWidth() / 2 - iconSize / 2, gameWindow.getHeight() / 2 - iconSize / 2, gameWindow.getWidth() / 2 + iconSize / 2, gameWindow.getHeight() / 2 + iconSize / 2, 0, 1, 1, 0, logoTexture, true, true, new Vector4f(1.0f, 1.0f, 1.0f, alphaIcon));
+		renderer.getGuiRenderer().drawBoxWindowsSpace(gameWindow.getWidth() / 2 - iconSize / 2, gameWindow.getHeight() / 2 - iconSize / 2, gameWindow.getWidth() / 2 + iconSize / 2, gameWindow.getHeight() / 2 + iconSize / 2, 0, 1, 1, 0, logoTexture, true, true, new Vector4f(1.0f, 1.0f, 1.0f, alphaIcon));
 		
 	}
 }

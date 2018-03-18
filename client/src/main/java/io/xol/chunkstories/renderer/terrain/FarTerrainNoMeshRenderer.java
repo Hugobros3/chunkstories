@@ -42,7 +42,7 @@ public class FarTerrainNoMeshRenderer implements FarTerrainRenderer {
 	final WorldClient world;
 	final WorldRendererImplementation worldRenderer;
 	
-	private VoxelTexturesColours colours;
+	private AverageVoxelColour colours;
 	
 	public FarTerrainNoMeshRenderer(WorldRendererImplementation worldRenderer) {
 		this.worldRenderer = worldRenderer;
@@ -52,7 +52,7 @@ public class FarTerrainNoMeshRenderer implements FarTerrainRenderer {
 			grids[i] = generateGrid(detailLevels[i]);
 		}
 		
-		colours = new VoxelTexturesColours(worldRenderer.getWorld());
+		colours = new AverageVoxelColour(worldRenderer.getWorld());
 	}
 	
 	@Override

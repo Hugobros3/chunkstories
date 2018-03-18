@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.xol.chunkstories.Constants;
-import io.xol.chunkstories.VersionInfo;
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.client.ClientSoundManager;
 import io.xol.chunkstories.api.gui.Layer;
@@ -23,8 +22,6 @@ import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.plugin.ClientPluginManager;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
-import io.xol.chunkstories.api.util.ConfigDeprecated;
-import io.xol.chunkstories.api.util.Configuration;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.workers.Tasks;
 import io.xol.chunkstories.api.world.WorldClient;
@@ -40,10 +37,9 @@ import io.xol.chunkstories.gui.layer.ingame.InventoryView;
 import io.xol.chunkstories.input.lwjgl3.Lwjgl3ClientInputsManager;
 import io.xol.chunkstories.renderer.chunks.ClientTasksPool;
 import io.xol.chunkstories.renderer.opengl.GLFWGameWindow;
-import io.xol.chunkstories.tools.DebugProfiler;
 import io.xol.chunkstories.util.LogbackSetupHelper;
+import io.xol.chunkstories.util.VersionInfo;
 import io.xol.chunkstories.util.concurrency.SimpleFence;
-import io.xol.chunkstories.util.config.ConfigFile;
 import io.xol.chunkstories.util.config.ConfigurationImplementation;
 import io.xol.chunkstories.world.WorldClientCommon;
 
@@ -74,9 +70,6 @@ public class Client implements ClientInterface
 	private Logger chatLogger = LoggerFactory.getLogger("game.chat");
 
 	private ConfigurationImplementation configuration;
-
-	//Debug
-	public static DebugProfiler profiler = new DebugProfiler();
 
 	public static void main(String[] args)
 	{
