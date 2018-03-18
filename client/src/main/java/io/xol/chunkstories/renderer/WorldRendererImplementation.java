@@ -6,11 +6,15 @@
 
 package io.xol.chunkstories.renderer;
 
+import java.util.Iterator;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.xol.chunkstories.api.client.ClientInterface;
+import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
+import io.xol.chunkstories.api.entity.interfaces.EntityOverlay;
 import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
@@ -153,23 +157,22 @@ public class WorldRendererImplementation implements WorldRenderer
 			renderingContext.bindTexture2D("diffuseTexture", finalTexture);
 
 			renderingContext.drawFSQuad();
-		}
-	}
-	
-	//Draw entities Huds
-	/*if(!hideGui) {
-		world.entitiesLock.readLock().lock();
-		Iterator<Entity> ei = world.getAllLoadedEntities();
-		Entity e;
-		while (ei.hasNext())
-		{
-			e = ei.next();
-			if (e instanceof EntityOverlay) {
-				((EntityOverlay) e).drawEntityOverlay(renderingContext);
+			
+			if(!hideGui) {
+				world.entitiesLock.readLock().lock();
+				Iterator<Entity> ei = world.getAllLoadedEntities();
+				Entity e;
+				while (ei.hasNext())
+				{
+					e = ei.next();
+					if (e instanceof EntityOverlay) {
+						((EntityOverlay) e).drawEntityOverlay(renderingContext);
+					}
+				}
+				world.entitiesLock.readLock().unlock();
 			}
 		}
-		world.entitiesLock.readLock().unlock();
-	}*/
+	}
 	
 	public void destroy()
 	{
