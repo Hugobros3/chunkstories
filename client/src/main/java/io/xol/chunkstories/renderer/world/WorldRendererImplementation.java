@@ -255,7 +255,7 @@ public class WorldRendererImplementation implements WorldRenderer
 
 	@Override
 	public RenderingInterface getRenderingInterface() {
-		return Client.getInstance().getGameWindow().getRenderingContext();
+		return Client.getInstance().getGameWindow().getRenderingInterface();
 	}
 
 	@Override

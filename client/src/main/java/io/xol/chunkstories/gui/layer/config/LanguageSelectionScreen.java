@@ -22,6 +22,7 @@ import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.input.Mouse.MouseScroll;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.elements.Button;
 import io.xol.chunkstories.renderer.opengl.util.CorneredBoxDrawer;
@@ -164,14 +165,10 @@ public class LanguageSelectionScreen extends Layer
 		{
 			width = 512;
 
-			if (isFocused() || isMouseOver())
-			{
-				CorneredBoxDrawer.drawCorneredBoxTiled(posx, posy, width, 128, 8, "./textures/gui/scalableButtonOver.png", 32, 2);
-			}
-			else
-			{
-				CorneredBoxDrawer.drawCorneredBoxTiled(posx, posy, width, 128, 8, "./textures/gui/scalableButton.png", 32, 2);
-			}
+			Texture2D texture = renderer.textures().getTexture((isFocused() || isMouseOver()) ?"./textures/gui/scalableButtonOver.png" : "./textures/gui/scalableButton.png");
+			texture.setLinearFiltering(false);
+			
+			CorneredBoxDrawer.drawCorneredBoxTiled_(posx, posy, width, 128, 8, texture, 32, scale());
 
 			ObjectRenderer.renderTexturedRect(posx - width / 2 + 80, posy, 128, 96, "./lang/" + translationCode + "/lang.png");
 			renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().getFont("LiberationSans-Regular", 11), posx - width / 2 + 150, posy, translationName, 3, 3, new Vector4f(1));

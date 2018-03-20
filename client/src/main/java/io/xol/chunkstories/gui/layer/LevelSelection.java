@@ -20,9 +20,11 @@ import io.xol.chunkstories.api.input.Mouse.MouseScroll;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
+import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.gui.elements.Button;
+import io.xol.chunkstories.gui.ng.BaseNgButton;
 import io.xol.chunkstories.gui.ng.LargeButtonIcon;
 import io.xol.chunkstories.renderer.opengl.util.CorneredBoxDrawer;
 import io.xol.chunkstories.renderer.opengl.util.ObjectRenderer;
@@ -136,7 +138,7 @@ public class LevelSelection extends Layer
 			
 			int maxWidth = renderer.getWindow().getWidth() - 64 * 2;
 			worldButton.setWidth(maxWidth);
-			worldButton.setPosition(64 + worldButton.getWidth() / 2, posY);
+			worldButton.setPosition(64, posY);
 			worldButton.render(renderer);
 			
 			posY -= 96;
@@ -163,41 +165,39 @@ public class LevelSelection extends Layer
 		return super.handleInput(input);
 	}
 	
-	public class LocalWorldButton extends Button
+	public class LocalWorldButton extends BaseNgButton
 	{
 		public WorldInfoMaster info;
 
 		public LocalWorldButton(int x, int y, WorldInfoMaster info)
 		{
-			super(LevelSelection.this, x, y, 0, "");
+			super(LevelSelection.this, x, y, "");
 			this.height = 64 + 8;
 			this.info = info;
 		}
 
-		@Override
+		/*@Override
 		public boolean isMouseOver(Mouse mouse)
 		{
-			return (mouse.getCursorX() >= xPosition - width / 2 - 4 && mouse.getCursorX() < xPosition + width / 2 + 4 && mouse.getCursorY() >= yPosition - height / 2 - 4 && mouse.getCursorY() <= yPosition + height / 2 + 4);
-		}
+			return (mouse.getCursorX() >= xPosition && mouse.getCursorX() < xPosition + width / 2 + 4 && mouse.getCursorY() >= yPosition - height / 2 - 4 && mouse.getCursorY() <= yPosition + height / 2 + 4);
+		}*/
 
 		@Override
 		public void render(RenderingInterface renderer)
 		{
-			if (isFocused() || isMouseOver())
-			{
-				CorneredBoxDrawer.drawCorneredBoxTiled(xPosition, yPosition, width, height, 8, "./textures/gui/scalableButtonOver.png", 32, 2);
-			}
-			else
-			{
-				CorneredBoxDrawer.drawCorneredBoxTiled(xPosition, yPosition, width, height, 8, "./textures/gui/scalableButton.png", 32, 2);
-			}
+			Texture2D texture = renderer.textures().getTexture((isFocused() || isMouseOver()) ?"./textures/gui/scalableButtonOver.png" : "./textures/gui/scalableButton.png");
+			texture.setLinearFiltering(false);
 			
-			ObjectRenderer.renderTexturedRect(xPosition - width / 2 + 32 + 4, yPosition, 64, 64, GameDirectory.getGameFolderPath()+"/worlds/" + info.getInternalName() + "/info.png");
+			this.height = 36;
+			
+			renderer.getGuiRenderer().drawCorneredBoxTiled(xPosition, yPosition, width, height * scale(), 8, texture, 32, scale());
+			
+			ObjectRenderer.renderTexturedRect(xPosition + 32 + 4, yPosition + 32 + 4, 64, 64, GameDirectory.getGameFolderPath()+"/worlds/" + info.getInternalName() + "/info.png");
 
 			Font font = renderer.getFontRenderer().getFont("LiberationSans-Regular", 11);
 			
-			renderer.getFontRenderer().drawStringWithShadow(font, xPosition - width / 2 + 72, yPosition, info.getName() + "#CCCCCC    Size : " + info.getSize().toString() + " ( " + info.getSize().sizeInChunks / 32 + "x" + info.getSize().sizeInChunks / 32 + " km )", 2, 2, width - 72, new Vector4f(1.0f));
-			renderer.getFontRenderer().drawStringWithShadow(font, xPosition - width / 2 + 72, yPosition - 32, info.getDescription(), 2, 2, -1, new Vector4f(1.0f));
+			renderer.getFontRenderer().drawStringWithShadow(font, xPosition + 72, yPosition + 34, info.getName() + "#CCCCCC    Size : " + info.getSize().toString() + " ( " + info.getSize().sizeInChunks / 32 + "x" + info.getSize().sizeInChunks / 32 + " km )", 2, 2, width - 72, new Vector4f(1.0f));
+			renderer.getFontRenderer().drawStringWithShadow(font, xPosition + 72, yPosition + 4, info.getDescription(), 2, 2, -1, new Vector4f(1.0f));
 			
 		}
 

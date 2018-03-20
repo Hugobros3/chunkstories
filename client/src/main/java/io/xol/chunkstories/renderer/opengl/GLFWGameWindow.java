@@ -138,8 +138,10 @@ import org.slf4j.LoggerFactory;
 import de.matthiasmann.twl.utils.PNGDecoder;
 import de.matthiasmann.twl.utils.PNGDecoder.Format;
 import io.xol.chunkstories.api.client.ClientInterface;
+import io.xol.chunkstories.api.gui.GuiRenderer;
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.rendering.GameWindow;
+import io.xol.chunkstories.api.rendering.text.FontRenderer;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.ClientLimitations;
@@ -742,16 +744,6 @@ public class GLFWGameWindow implements GameWindow
 		return instance;
 	}
 
-	public ALSoundManager getSoundEngine()
-	{
-		return soundManager;
-	}
-
-	public OpenGLRenderingContext getRenderingContext()
-	{
-		return renderingContext;
-	}
-
 	public boolean isMainGLWindow()
 	{
 		return getInstance().isInstanceMainGLWindow();
@@ -779,40 +771,6 @@ public class GLFWGameWindow implements GameWindow
 		public SynchronousTask(Runnable run) {
 			this.run = run;
 		}
-	}
-
-	@Override
-	public int getWidth() {
-		return windowWidth;
-	}
-
-	@Override
-	public int getHeight() {
-		return windowHeight;
-	}
-
-	public boolean hasFocus() {
-		return glfwGetWindowAttrib(glfwWindowHandle, GLFW_FOCUSED) == GLFW_TRUE;
-	}
-
-	@Override
-	public ClientInterface getClient() {
-		return client;
-	}
-
-	@Override
-	public Layer getLayer() {
-		return layer;
-	}
-
-	@Override
-	public void setLayer(Layer layer) {
-		this.layer = layer;
-		this.client.getInputsManager().getMouse().setGrabbed(false);
-	}
-
-	public Lwjgl3ClientInputsManager getInputsManager() {
-		return this.inputsManager;
 	}
 
 	@Override
@@ -853,6 +811,56 @@ public class GLFWGameWindow implements GameWindow
 			e.printStackTrace();
 			return "#FF0000Failed to take screenshot ! (" + e.toString() + ")";
 		}
+	}
+	
+	@Override
+	public int getWidth() {
+		return windowWidth;
+	}
+
+	@Override
+	public int getHeight() {
+		return windowHeight;
+	}
+
+	public boolean hasFocus() {
+		return glfwGetWindowAttrib(glfwWindowHandle, GLFW_FOCUSED) == GLFW_TRUE;
+	}
+
+	@Override
+	public ClientInterface getClient() {
+		return client;
+	}
+
+	@Override
+	public Layer getLayer() {
+		return layer;
+	}
+
+	@Override
+	public void setLayer(Layer layer) {
+		this.layer = layer;
+		this.client.getInputsManager().getMouse().setGrabbed(false);
+	}
+
+	public Lwjgl3ClientInputsManager getInputsManager() {
+		return this.inputsManager;
+	}
+
+	public ALSoundManager getSoundEngine() {
+		return soundManager;
+	}
+
+	public OpenGLRenderingContext getRenderingInterface() {
+		return renderingContext;
+	}
+
+	public FontRenderer getFontRenderer() {
+		return renderingContext.getFontRenderer();
+	}
+
+	public GuiRenderer getGuiRenderer() {
+		return renderingContext.getGuiRenderer();
 	}
 
 	@Override

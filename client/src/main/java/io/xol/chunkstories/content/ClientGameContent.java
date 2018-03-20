@@ -61,7 +61,7 @@ public class ClientGameContent extends GameContentStore implements ClientContent
 	public FontRenderer fonts() {
 		return Client.getInstance()
 				.getGameWindow()
-				.getRenderingContext().
+				.getRenderingInterface().
 				getFontRenderer();
 	}
 

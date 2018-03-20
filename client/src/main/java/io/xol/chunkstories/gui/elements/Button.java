@@ -14,8 +14,8 @@ import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.input.Mouse.MouseButton;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;
 import io.xol.chunkstories.renderer.opengl.util.CorneredBoxDrawer;
 
 public class Button extends FocusableGuiElement implements ClickableGuiElement
@@ -74,16 +74,11 @@ public class Button extends FocusableGuiElement implements ClickableGuiElement
 			width = textWidth;
 		}
 		float textDekal = -textWidth / 2f;
-		if (isFocused() || isMouseOver())
-		{
-			TexturesHandler.getTexture("./textures/gui/scalableButtonOver.png").setLinearFiltering(false);
-			CorneredBoxDrawer.drawCorneredBoxTiled(xPosition, yPosition, width + 8, getHeight() + 16, 4, "./textures/gui/scalableButtonOver.png", 32, scale());
-		}
-		else
-		{
-			TexturesHandler.getTexture("./textures/gui/scalableButton.png").setLinearFiltering(false);
-			CorneredBoxDrawer.drawCorneredBoxTiled(xPosition, yPosition, width + 8, getHeight() + 16, 4, "./textures/gui/scalableButton.png", 32, scale());
-		}
+		
+		Texture2D texture = renderer.textures().getTexture((isFocused() || isMouseOver()) ?"./textures/gui/scalableButtonOver.png" : "./textures/gui/scalableButton.png");
+		texture.setLinearFiltering(false);
+		
+		CorneredBoxDrawer.drawCorneredBoxTiled_(xPosition, yPosition, width + 8, getHeight() + 16, 4, texture, 32, scale());
 		
 		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), xPosition + textDekal, yPosition - height / 2, localizedText, scale(), scale(), new Vector4f(1.0f));
 	}

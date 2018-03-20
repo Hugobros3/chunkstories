@@ -84,7 +84,7 @@ public class PBOPacker
 		glBufferData(GL_PIXEL_PACK_BUFFER, width * height * 4 * 3 , GL_STREAM_COPY);
 
 		//Obtains ref to RTM
-		RenderTargets rtm = Client.getInstance().getGameWindow().getRenderingContext().getRenderTargetManager();
+		RenderTargets rtm = Client.getInstance().getGameWindow().getRenderingInterface().getRenderTargetManager();
 		
 		RenderTargetsConfiguration previousFB = rtm.getCurrentConfiguration();
 		rtm.setConfiguration(fbo);

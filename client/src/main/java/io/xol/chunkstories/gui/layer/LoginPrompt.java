@@ -26,8 +26,8 @@ import io.xol.chunkstories.renderer.opengl.util.ObjectRenderer;
 
 public class LoginPrompt extends Layer implements HttpRequester
 {
-	InputText usernameForm = new InputText(this, 0, 0, 500);
-	InputText passwordForm = new InputText(this, 0, 0, 500);
+	InputText usernameForm = new InputText(this, 0, 0, 250);
+	InputText passwordForm = new InputText(this, 0, 0, 250);
 	
 	Button loginButton = new Button(this, 0, 0, 128, "#{login.login}");
 	
@@ -36,6 +36,7 @@ public class LoginPrompt extends Layer implements HttpRequester
 		super(scene, parent);
 		
 		elements.add(usernameForm);
+		passwordForm.setPassword(true);
 		elements.add(passwordForm);
 		elements.add(loginButton);
 		
@@ -87,12 +88,12 @@ public class LoginPrompt extends Layer implements HttpRequester
 		
 		ObjectRenderer.renderTexturedRect(renderer.getWindow().getWidth() / 2, renderer.getWindow().getHeight() / 2 + 180, 512, 512, "./textures/logo.png");
 
-		loginButton.setPosition(usernameForm.getPositionX() + loginButton.getWidth() / 2f - 8, renderer.getWindow().getHeight() / 2 - 80);
+		loginButton.setPosition(usernameForm.getPositionX() + loginButton.getWidth() / 2f, renderer.getWindow().getHeight() / 2 - 80);
 
-		usernameForm.setPosition(renderer.getWindow().getWidth() / 2 - 250f, renderer.getWindow().getHeight() / 2 + 40);
-		usernameForm.drawWithBackGround(renderer);
-		passwordForm.setPosition(renderer.getWindow().getWidth() / 2 - 250f, renderer.getWindow().getHeight() / 2 - 40);
-		passwordForm.drawWithBackGroundPassworded(renderer);
+		usernameForm.setPosition(renderer.getWindow().getWidth() / 2 - 250f, renderer.getWindow().getHeight() / 2 + 32);
+		usernameForm.render(renderer);
+		passwordForm.setPosition(renderer.getWindow().getWidth() / 2 - 250f, renderer.getWindow().getHeight() / 2 - 48);
+		passwordForm.render(renderer);
 
 		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), renderer.getWindow().getWidth() / 2 - 250, renderer.getWindow().getHeight() / 2 + 74, Client.getInstance().getContent().localization().localize("#{login.username}"), 2, 2, new Vector4f(1.0f));
 		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), renderer.getWindow().getWidth() / 2 - 250, renderer.getWindow().getHeight() / 2 - 6, Client.getInstance().getContent().localization().localize("#{login.password}"), 2, 2, new Vector4f(1.0f));
@@ -131,7 +132,7 @@ public class LoginPrompt extends Layer implements HttpRequester
 	
 	void connect()
 	{
-		if (usernameForm.text.equals("OFFLINE"))
+		if (usernameForm.getText().equals("OFFLINE"))
 		{
 			Client.offline = true;
 			Client.username = "OfflineUser" + (int) (Math.random() * 1000);
@@ -141,7 +142,7 @@ public class LoginPrompt extends Layer implements HttpRequester
 		else
 		{
 			logging_in = true;
-			new HttpRequestThread(this, "login", "http://chunkstories.xyz/api/login.php", "user=" + usernameForm.text + "&pass=" + passwordForm.text);
+			new HttpRequestThread(this, "login", "http://chunkstories.xyz/api/login.php", "user=" + usernameForm.getText() + "&pass=" + passwordForm.getText());
 		}
 	}
 	
@@ -189,11 +190,11 @@ public class LoginPrompt extends Layer implements HttpRequester
 			if (result.startsWith("ok"))
 			{
 				String session = result.split(":")[1];
-				Client.username = usernameForm.text;
+				Client.username = usernameForm.getText();
 				Client.session_key = session;
 				Client.getInstance().getConfiguration().getOption("client.login.auto").trySetting("ok");
-				Client.getInstance().getConfiguration().getOption("client.login.username").trySetting(usernameForm.text);
-				Client.getInstance().getConfiguration().getOption("client.login.password").trySetting(passwordForm.text);
+				Client.getInstance().getConfiguration().getOption("client.login.username").trySetting(usernameForm.getText());
+				Client.getInstance().getConfiguration().getOption("client.login.password").trySetting(passwordForm.getText());
 				
 				if(Client.username.equals("Gobrosse") || Client.username.equals("kektest"))
 				{

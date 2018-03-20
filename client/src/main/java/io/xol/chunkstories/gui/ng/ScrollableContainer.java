@@ -17,8 +17,7 @@ import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.input.Mouse.MouseButton;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.renderer.opengl.texture.Texture2DGL;
-import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;
+import io.xol.chunkstories.api.rendering.textures.Texture2D;
 
 public class ScrollableContainer extends FocusableGuiElement implements ClickableGuiElement
 {
@@ -30,12 +29,7 @@ public class ScrollableContainer extends FocusableGuiElement implements Clickabl
 	}
 
 	public List<ContainerElement> elements = new ArrayList<ContainerElement>();
-	
-	//protected int width = 480, height = 1024;
-	
 	protected int scroll = 0;
-
-	//public int scale = 1;
 	
 	public void setDimensions(float width, float height)
 	{
@@ -120,13 +114,13 @@ public class ScrollableContainer extends FocusableGuiElement implements Clickabl
 		{
 			int s = ScrollableContainer.this.scale();
 			//Setup textures
-			Texture2DGL bgTexture = TexturesHandler.getTexture(isMouseOver(renderer.getClient().getInputsManager().getMouse()) ? "./textures/gui/genericOver.png" : "./textures/gui/generic.png");
+			Texture2D bgTexture = renderer.textures().getTexture(isMouseOver(renderer.getClient().getInputsManager().getMouse()) ? "./textures/gui/genericOver.png" : "./textures/gui/generic.png");
 			bgTexture.setLinearFiltering(false);
 			
 			//Render graphical base
 			renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX, positionY, width * s, height * s, 0, 1, 1, 0, bgTexture, true, false, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
 			//Render icon
-			renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX + 4 * s, positionY + 4 * s, 64 * s, 64 * s, 0, 1, 1, 0, TexturesHandler.getTexture(iconTextureLocation), true, false, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
+			renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX + 4 * s, positionY + 4 * s, 64 * s, 64 * s, 0, 1, 1, 0, renderer.textures().getTexture(iconTextureLocation), true, false, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
 			//Text !
 			if(name != null)
 				renderer.getFontRenderer().drawString(renderer.getFontRenderer().getFont("LiberationSans-Regular", 12), positionX + 70 * s, positionY + 54 * s, name, s, new Vector4f(0.0f, 0.0f, 0.0f, 1.0f));
@@ -147,8 +141,8 @@ public class ScrollableContainer extends FocusableGuiElement implements Clickabl
 		public boolean isMouseOver(Mouse mouse)
 		{
 			int s = ScrollableContainer.this.scale();
-			double mx = mouse.getCursorX();//Mouse.getX();
-			double my = mouse.getCursorY();//Mouse.getY();
+			double mx = mouse.getCursorX();
+			double my = mouse.getCursorY();
 			return mx >= positionX && mx <= positionX + width * s && my >= positionY && my <= positionY + height * s;
 		}
 	}

@@ -21,14 +21,13 @@ import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.input.Mouse.MouseButton;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.util.Configuration.Option;
 import io.xol.chunkstories.api.util.Configuration.OptionBoolean;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.ng.BaseNgButton;
 import io.xol.chunkstories.gui.ng.LargeButtonIcon;
 import io.xol.chunkstories.input.lwjgl3.Lwjgl3KeyBind.Lwjgl3KeyBindOption;
-import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;
-import io.xol.chunkstories.renderer.opengl.util.CorneredBoxDrawer;
 import io.xol.chunkstories.renderer.opengl.util.ObjectRenderer;
 import io.xol.chunkstories.util.config.OptionChoiceImplementation;
 import io.xol.chunkstories.util.config.OptionScaleImplementation;
@@ -204,8 +203,10 @@ public class OptionsScreen extends Layer
 				width = textWidth;
 			}
 			float textDekal = getWidth() / 2 - textWidth / 2;
-			TexturesHandler.getTexture("./textures/gui/scalableField.png").setLinearFiltering(false);
-			CorneredBoxDrawer.drawCorneredBoxTiled(xPosition + getWidth() / 2, yPosition + getHeight() / 2, getWidth(), getHeight(), 8, "./textures/gui/scalableField.png", 32, scale());
+			Texture2D texture = renderer.textures().getTexture("./textures/gui/scalableField.png");
+			texture.setLinearFiltering(false);
+			
+			renderer.getGuiRenderer().drawCorneredBoxTiled(xPosition, yPosition, getWidth(), getHeight(), 8, texture, 32, scale());
 			
 			ObjectRenderer.renderTexturedRect(
 					xPosition + this.width * scale() * (float)(option.getDoubleValue()-option.getMinimumValue())/(float)(option.getMaximumValue()-option.getMinimumValue()),

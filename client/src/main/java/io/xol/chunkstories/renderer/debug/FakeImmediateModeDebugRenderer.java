@@ -90,7 +90,7 @@ public class FakeImmediateModeDebugRenderer
 	
 	public static void glEnd()
 	{
-		OpenGLRenderingContext renderingContext = Client.getInstance().getGameWindow().getRenderingContext();
+		OpenGLRenderingContext renderingContext = Client.getInstance().getGameWindow().getRenderingInterface();
 		
 		renderingContext.setCullingMode(CullingMode.DISABLED);
 		renderingContext.setBlendMode(BlendMode.MIX);

@@ -8,17 +8,15 @@ package io.xol.chunkstories.renderer.opengl.util;
 
 import org.joml.Vector4f;
 
-import io.xol.chunkstories.api.rendering.GuiRenderer;
+import io.xol.chunkstories.api.gui.GuiRenderer;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.renderer.OpenGLRenderingContext;
-import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;
 
-public class CorneredBoxDrawer
-{
-	public static void drawCorneredBoxTiled(float posx, float posy, float width, float height, int cornerSize, Texture2D texture, int textureSize, int scale)
-	{
-		OpenGLRenderingContext renderingContext = Client.getInstance().getGameWindow().getRenderingContext();
+public class CorneredBoxDrawer {
+	public static void drawCorneredBoxTiled_(float posx, float posy, float width, float height, int cornerSize,
+			Texture2D texture, int textureSize, int scale) {
+		OpenGLRenderingContext renderingContext = Client.getInstance().getGameWindow().getRenderingInterface();
 		GuiRenderer guiRenderer = renderingContext.getGuiRenderer();
 		
 		float topLeftCornerX = posx - width / 2;
@@ -41,9 +39,8 @@ public class CorneredBoxDrawer
 		float texCoordInsideBottomRight = ((float)(textureSize - cornerSize)) / textureSize;
 		
 		//Fill the inside of the box
-		for(int fillerX = 0; fillerX < insideWidth; fillerX += textureSizeInternal * scale)
-			for(int fillerY = 0; fillerY < insideHeight; fillerY += textureSizeInternal * scale)
-			{
+		for (int fillerX = 0; fillerX < insideWidth; fillerX += textureSizeInternal * scale) {
+			for (int fillerY = 0; fillerY < insideHeight; fillerY += textureSizeInternal * scale) {
 				float toFillX = Math.min(textureSizeInternal * scale, insideWidth - fillerX);
 				float toFillY = Math.min(textureSizeInternal * scale, insideHeight - fillerY);
 				
@@ -53,10 +50,10 @@ public class CorneredBoxDrawer
 				guiRenderer.drawBoxWindowsSpace(startX, startY, startX + toFillX, startY + toFillY
 						, texCoordInsideTopLeft, texCoordInsideTopLeft + toFillY / textureSize / scale, texCoordInsideTopLeft + toFillX / textureSize / scale,  texCoordInsideTopLeft, texture, true, false, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
 			}
+		}
 		
 		//Fill the horizontal sides
-		for(int fillerX = 0; fillerX < insideWidth; fillerX += textureSizeInternal * scale)
-		{
+		for (int fillerX = 0; fillerX < insideWidth; fillerX += textureSizeInternal * scale) {
 			float toFillX = Math.min(textureSizeInternal * scale, insideWidth - fillerX);
 			
 			float startX = topLeftCornerX + cornerSizeScaled + fillerX;
@@ -67,12 +64,10 @@ public class CorneredBoxDrawer
 		
 			guiRenderer.drawBoxWindowsSpace(startX, startY, startX + toFillX, startY + cornerSizeScaled
 					, texCoordInsideTopLeft, 1.0f, texCoordInsideTopLeft + toFillX / textureSize / scale, texCoordInsideBottomRight, texture, true, false, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
-		
 		}
 		
 		//Fill the vertical sides
-		for(int fillerY = 0; fillerY < insideHeight; fillerY += textureSizeInternal * scale)
-		{
+		for (int fillerY = 0; fillerY < insideHeight; fillerY += textureSizeInternal * scale) {
 			float toFillY = Math.min(textureSizeInternal * scale, insideHeight - fillerY);
 			
 			float startY = topLeftCornerY + cornerSizeScaled + fillerY;
@@ -98,36 +93,5 @@ public class CorneredBoxDrawer
 		guiRenderer.drawBoxWindowsSpace(botRightCornerX - cornerSizeScaled, topLeftCornerY, botRightCornerX, topLeftCornerY + cornerSizeScaled
 				, texCoordInsideBottomRight, 1.0f, 1.0f, texCoordInsideBottomRight, texture, true, false, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
 		
-	}
-
-	public static void drawCorneredBoxTiled(float posx, float posy, float width, float height, int cornerSize, String textureName, int textureSize, int scale)
-	{
-		Texture2D texture = TexturesHandler.getTexture(textureName);
-		drawCorneredBoxTiled(posx, posy, width, height, cornerSize, texture, textureSize, scale);
-	}
-
-	public static void drawCorneredBox(float posx, float posy, float width, float height, float cornerSize, String texture)
-	{
-		// corner up-left
-		ObjectRenderer.renderTexturedRotatedRect(posx - width / 2, posy + height / 2, cornerSize * 2, cornerSize * 2, 0, 0, 0f, 1 / 4f, 1 / 4f, texture);
-		// corner up-right
-		ObjectRenderer.renderTexturedRotatedRect(posx + width / 2, posy + height / 2, cornerSize * 2, cornerSize * 2, 0, 3 / 4f, 0f, 1f, 1 / 4f, texture);
-
-		// left
-		ObjectRenderer.renderTexturedRotatedRect(posx - width / 2, posy, cornerSize * 2, height - cornerSize * 2, 0, 0, 1 / 4f, 1 / 4f, 3 / 4f, texture);
-		// up
-		ObjectRenderer.renderTexturedRotatedRect(posx, posy + height / 2, width - cornerSize * 2, cornerSize * 2, 0, 1 / 4f, 0f, 3 / 4f, 1 / 4f, texture);
-		// center
-		ObjectRenderer.renderTexturedRotatedRect(posx, posy, width - cornerSize * 2, height - cornerSize * 2, 0, 1 / 4f, 1 / 4f, 3 / 4f, 3 / 4f, texture);
-		// back
-		ObjectRenderer.renderTexturedRotatedRect(posx, posy - height / 2, width - cornerSize * 2, cornerSize * 2, 0, 1 / 4f, 3 / 4f, 3 / 4f, 1f, texture);
-		// left
-		ObjectRenderer.renderTexturedRotatedRect(posx + width / 2, posy, cornerSize * 2, height - cornerSize * 2, 0, 3 / 4f, 1 / 4f, 1f, 3 / 4f, texture);
-
-		// corner up-left
-		ObjectRenderer.renderTexturedRotatedRect(posx - width / 2, posy - height / 2, cornerSize * 2, cornerSize * 2, 0, 0, 3 / 4f, 1 / 4f, 1f, texture);
-		// corner up-right
-		ObjectRenderer.renderTexturedRotatedRect(posx + width / 2, posy - height / 2, cornerSize * 2, cornerSize * 2, 0, 3 / 4f, 3 / 4f, 1f, 1f, texture);
-
 	}
 }

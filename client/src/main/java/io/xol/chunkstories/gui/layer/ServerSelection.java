@@ -28,6 +28,7 @@ import io.xol.chunkstories.gui.elements.Button;
 import io.xol.chunkstories.gui.elements.InputText;
 import io.xol.chunkstories.gui.layer.ServerSelection.ServerSelectionZone.ServerGuiItem;
 import io.xol.chunkstories.gui.layer.ingame.ConnectionOverlay;
+import io.xol.chunkstories.gui.ng.BaseNgButton;
 import io.xol.chunkstories.gui.ng.LargeButtonIcon;
 import io.xol.chunkstories.gui.ng.ScrollableContainer;
 import io.xol.chunkstories.gui.ng.ScrollableContainer.ContainerElement;
@@ -36,10 +37,10 @@ import io.xol.chunkstories.net.http.HttpRequester;
 
 public class ServerSelection extends Layer implements HttpRequester
 {
-	InputText ipForm = new InputText(this, 0, 0, 500);
+	InputText ipForm = new InputText(this, 0, 0, 250);
 
 	LargeButtonIcon backOption = new LargeButtonIcon(this, "back");
-	Button connectButton = new Button(this, 0, 0, 128, "#{connection.connect}");
+	BaseNgButton connectButton = new BaseNgButton(this, 0, 0, 0, "#{connection.connect}");
 	
 	ServerSelectionZone serverSelectionZone = new ServerSelectionZone(this);
 	
@@ -54,28 +55,12 @@ public class ServerSelection extends Layer implements HttpRequester
 		elements.add(ipForm);
 		
 		this.setFocusedElement(ipForm);
-		//ipForm.setFocus(true);
 		
-		this.connectButton.setAction(new Runnable() {
-
-			@Override
-			public void run() {
-				login();
-			}
-			
-		});
-		
-		this.backOption.setAction(new Runnable() {
-
-			@Override
-			public void run() {
-				gameWindow.setLayer(parentLayer);
-				//this.mainScene.changeOverlay(this.parent);
-			}
-			
-		});
+		this.connectButton.setAction(() -> login());
+		this.backOption.setAction(() -> gameWindow.setLayer(parentLayer));
 		
 		elements.add(connectButton);
+		connectButton.setHeight(24);
 		elements.add(serverSelectionZone);
 		elements.add(backOption);
 		
@@ -95,7 +80,7 @@ public class ServerSelection extends Layer implements HttpRequester
 	{
 		parentLayer.getRootLayer().render(renderer);
 		
-		if (autologin && !ipForm.text.equals(""))
+		if (autologin && !ipForm.getText().equals(""))
 			login();
 
 		String instructions = "Select a server from the list or type in the address directly";
@@ -104,12 +89,12 @@ public class ServerSelection extends Layer implements HttpRequester
 		//FontRenderer2.drawTextUsingSpecificFontRVBA(32, renderer.getWindow().getHeight() - 32 * (1 + 1), 0, 32 + 1 * 16, , BitmapFont.SMALLFONTS, 1f, 1f, 1f, 1f);
 		
 		// gui
-		float txtbox = renderer.getWindow().getWidth() - connectButton.getWidth();
-		ipForm.setPosition(25, renderer.getWindow().getHeight() - 50 * (1 + 1));
-		ipForm.setWidth(txtbox);
-		ipForm.drawWithBackGround(renderer);
+		float txtbox = renderer.getWindow().getWidth() - connectButton.getWidth() - 48;
+		ipForm.setPosition(25, renderer.getWindow().getHeight() - 100);
+		ipForm.setWidth(txtbox / this.getGuiScale());
+		ipForm.render(renderer);
 		
-		connectButton.setPosition(txtbox + 96 + 12, renderer.getWindow().getHeight() - 50 - 16 - 18);
+		connectButton.setPosition(renderer.getWindow().getWidth() - connectButton.getWidth() - 16, renderer.getWindow().getHeight() - 100);
 		
 		connectButton.render(renderer);
 
@@ -157,7 +142,7 @@ public class ServerSelection extends Layer implements HttpRequester
 	// Takes care of connecting to a server
 	private void login()
 	{
-		String ip = ipForm.text;
+		String ip = ipForm.getText();
 		int port = 30410;
 		
 		if (ip.length() == 0)
@@ -193,7 +178,7 @@ public class ServerSelection extends Layer implements HttpRequester
 		if (movedInList)
 		{
 			movedInList = false;
-			ipForm.text = ((ServerGuiItem) serverSelectionZone.elements.get(currentServer)).ip + (((ServerGuiItem) serverSelectionZone.elements.get(currentServer)).port == 30410 ? "" : ((ServerGuiItem) serverSelectionZone.elements.get(currentServer)).port);
+			ipForm.setText(((ServerGuiItem) serverSelectionZone.elements.get(currentServer)).ip + (((ServerGuiItem) serverSelectionZone.elements.get(currentServer)).port == 30410 ? "" : ((ServerGuiItem) serverSelectionZone.elements.get(currentServer)).port));
 		}
 	}
 
@@ -238,7 +223,7 @@ public class ServerSelection extends Layer implements HttpRequester
 			public boolean handleClick(MouseButton mouseButton) {
 				if(sd != null && sd.infoLoaded)
 				{
-					ipForm.text = sd.ip + (sd.port == 30410 ? "" : sd.port);
+					ipForm.setText(sd.ip + (sd.port == 30410 ? "" : sd.port));
 					login();
 				}
 				

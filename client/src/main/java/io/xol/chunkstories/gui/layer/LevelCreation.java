@@ -45,12 +45,12 @@ public class LevelCreation extends Layer
 		this.createOption.setAction(new Runnable() {
 			@Override
 			public void run() {
-				WorldGeneratorDefinition worldGenerator = Client.getInstance().getContent().generators().getWorldGeneratorUnsafe(worldGenName.text);
+				WorldGeneratorDefinition worldGenerator = Client.getInstance().getContent().generators().getWorldGeneratorUnsafe(worldGenName.getText());
 				if (worldGenerator != null)
 				{
 					//String generator = "flat";
-					String internalName = levelName.text.replaceAll("[^\\w\\s]","_");
-					WorldInfoImplementation info = new WorldInfoImplementation(internalName, levelName.text, ""+System.currentTimeMillis(), "", WorldInfo.WorldSize.MEDIUM, worldGenName.text);
+					String internalName = levelName.getText().replaceAll("[^\\w\\s]","_");
+					WorldInfoImplementation info = new WorldInfoImplementation(internalName, levelName.getText(), ""+System.currentTimeMillis(), "", WorldInfo.WorldSize.MEDIUM, worldGenName.getText());
 					
 					try {
 						//WorldInfoFile.createNewWorld(new File(GameDirectory.getGameFolderPath() + "/worlds/" + internalName), 
@@ -68,7 +68,7 @@ public class LevelCreation extends Layer
 		elements.add(levelName);
 		elements.add(worldGenName);
 		
-		worldGenName.text = "flat";
+		worldGenName.setText("flat");
 		
 		int frame_border_size = 64;
 
@@ -80,12 +80,12 @@ public class LevelCreation extends Layer
 	}
 
 	@Override
-	public void render(RenderingInterface renderingContext)
+	public void render(RenderingInterface renderer)
 	{
 		if(parentLayer != null)
-			this.parentLayer.render(renderingContext);
+			this.parentLayer.render(renderer);
 		
-		renderingContext.getGuiRenderer().drawBox(-1.0f, -1.0f, 1.0f, 1.0f, 0, 0, 0, 0, null, true, false, new Vector4f(0.0f, 0.0f, 0.0f, 0.25f));
+		renderer.getGuiRenderer().drawBox(-1.0f, -1.0f, 1.0f, 1.0f, 0, 0, 0, 0, null, true, false, new Vector4f(0.0f, 0.0f, 0.0f, 0.25f));
 		
 		//int frame_border_size = 64;
 		
@@ -97,34 +97,34 @@ public class LevelCreation extends Layer
 		
 		float x = positionStartX + 20;
 		// int y = 48;
-		CorneredBoxDrawer.drawCorneredBoxTiled(positionStartX + width/2, positionStartY + height/2, width, height, 8, "./textures/gui/scalableButton.png", 32, 2);
+		renderer.getGuiRenderer().drawCorneredBoxTiled(positionStartX, positionStartY, width, height, 8, renderer.textures().getTexture("./textures/gui/scalableButton.png"), 32, 2);
 		
-		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("LiberationSans-Regular", 12), x, positionStartY + height - 64, "Create a new World", 3, 3, new Vector4f(1));
-		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("LiberationSans-Regular", 12), x, positionStartY + height - 64 - 32, "For use in singleplayer", 2, 2, width, new Vector4f(1));
+		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().getFont("LiberationSans-Regular", 12), x, positionStartY + height - 64, "Create a new World", 3, 3, new Vector4f(1));
+		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().getFont("LiberationSans-Regular", 12), x, positionStartY + height - 64 - 32, "For use in singleplayer", 2, 2, width, new Vector4f(1));
 		
 		
-		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("LiberationSans-Regular", 12), x, positionStartY + height - 64 - 96 - 4, "Level name", 2, 2, width, new Vector4f(1));
-		int lvlnm_l = renderingContext.getFontRenderer().getFont("LiberationSans-Regular", 12).getWidth("Level name") * 2;
+		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().getFont("LiberationSans-Regular", 12), x, positionStartY + height - 64 - 96 - 4, "Level name", 2, 2, width, new Vector4f(1));
+		int lvlnm_l = renderer.getFontRenderer().getFont("LiberationSans-Regular", 12).getWidth("Level name") * 2;
 		
 		levelName.setPosition(x + lvlnm_l + 20, positionStartY + height - 64 - 96);
 		levelName.setWidth(width - (x + lvlnm_l + 20) - 20);
-		levelName.drawWithBackGround(renderingContext);
+		levelName.render(renderer);
 		
 		String wg_string = "World generator to use";
-		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("LiberationSans-Regular", 12), x, positionStartY + height - 64 - 148 - 4, wg_string, 2, 2, width, new Vector4f(1));
-		int wg_sl = renderingContext.getFontRenderer().getFont("LiberationSans-Regular", 12).getWidth(wg_string) * 2;
+		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().getFont("LiberationSans-Regular", 12), x, positionStartY + height - 64 - 148 - 4, wg_string, 2, 2, width, new Vector4f(1));
+		int wg_sl = renderer.getFontRenderer().getFont("LiberationSans-Regular", 12).getWidth(wg_string) * 2;
 		
 		worldGenName.setPosition(x + wg_sl + 20, positionStartY + height - 64 - 148);
 		worldGenName.setWidth(width - (x + wg_sl + 20) - 20);
-		worldGenName.drawWithBackGround(renderingContext);
+		worldGenName.render(renderer);
 		
-		WorldGeneratorDefinition wg = Client.getInstance().getContent().generators().getWorldGeneratorUnsafe(worldGenName.text);
+		WorldGeneratorDefinition wg = Client.getInstance().getContent().generators().getWorldGeneratorUnsafe(worldGenName.getText());
 		String wg_validity_string;
 		if(wg == null) {
-			wg_validity_string = "#FF0000'" + worldGenName.text + "' wasnt found in the list of loaded world generators.";
+			wg_validity_string = "#FF0000'" + worldGenName.getText() + "' wasnt found in the list of loaded world generators.";
 		}
 		else {
-			wg_validity_string = "#00FF00'" + worldGenName.text + "' is a valid world generator !";
+			wg_validity_string = "#00FF00'" + worldGenName.getText() + "' is a valid world generator !";
 		}
 		
 		String wg_list = "Available world generators: ";
@@ -136,13 +136,13 @@ public class LevelCreation extends Layer
 				wg_list+=", ";
 		}
 		
-		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("LiberationSans-Regular", 12), x, positionStartY + height - 64 - 196 - 4, wg_validity_string, 2, 2, width, new Vector4f(1));
-		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("LiberationSans-Regular", 12), x, positionStartY + height - 64 - 196 - 4 - 32, wg_list, 2, 2, width, new Vector4f(1));
+		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().getFont("LiberationSans-Regular", 12), x, positionStartY + height - 64 - 196 - 4, wg_validity_string, 2, 2, width, new Vector4f(1));
+		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().getFont("LiberationSans-Regular", 12), x, positionStartY + height - 64 - 196 - 4 - 32, wg_list, 2, 2, width, new Vector4f(1));
 		
 		cancelOption.setPosition(x + 75, positionStartY + 20 + 16);
-		cancelOption.render(renderingContext);
+		cancelOption.render(renderer);
 
 		createOption.setPosition(width - 75 - 20, positionStartY + 20 + 16);
-		createOption.render(renderingContext);
+		createOption.render(renderer);
 	}
 }

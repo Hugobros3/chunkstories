@@ -12,16 +12,13 @@ import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
-import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;
-import io.xol.chunkstories.renderer.opengl.util.CorneredBoxDrawer;
 
 public class LargeButtonIcon extends BaseNgButton{
 
 	String iconName;
 	
 	public LargeButtonIcon(Layer layer, String text) {
-		super(layer, Client.getInstance().getGameWindow().getRenderingContext().getFontRenderer().getFont("LiberationSansNarrow-Bold__aa", 16f), 0, 0, text);
+		super(layer, layer.getGameWindow().getRenderingInterface().getFontRenderer().getFont("LiberationSansNarrow-Bold__aa", 16f), 0, 0, text);
 		this.width = 96;
 		this.height = 48;
 		
@@ -31,16 +28,16 @@ public class LargeButtonIcon extends BaseNgButton{
 
 	@Override
 	public void render(RenderingInterface renderer) {
-		String localizedText = Client.getInstance().getContent().localization().localize(text);
+		String localizedText = layer.getGameWindow().getClient().getContent().localization().localize(text);
 		
-		Texture2D buttonTexture = TexturesHandler.getTexture("./textures/gui/mainMenu.png");
+		Texture2D buttonTexture = renderer.textures().getTexture("./textures/gui/mainMenu.png");
 		if (isFocused() || isMouseOver())
-			buttonTexture = TexturesHandler.getTexture("./textures/gui/mainMenuOver.png");
+			buttonTexture = renderer.textures().getTexture("./textures/gui/mainMenuOver.png");
 			
 		buttonTexture.setLinearFiltering(false);
-		CorneredBoxDrawer.drawCorneredBoxTiled(xPosition + getWidth() / 2, yPosition + getHeight() / 2, getWidth(), getHeight(), 4 * scale(), buttonTexture, 32, scale());
+		renderer.getGuiRenderer().drawCorneredBoxTiled(xPosition, yPosition, getWidth(), getHeight(), 4 * scale(), buttonTexture, 32, scale());
 		
-		Font font = Client.getInstance().getGameWindow().getRenderingContext().getFontRenderer().getFont("LiberationSansNarrow-Bold__aa", 32f);
+		Font font = layer.getGameWindow().getFontRenderer().getFont("LiberationSansNarrow-Bold__aa", 32f);
 		float a = 0.5f;
 		//a = 1;
 		

@@ -240,7 +240,7 @@ public class Client implements ClientInterface
 			gameContent.reload();
 			configuration.reload();
 			gameWindow.getInputsManager().reload();
-			gameWindow.getRenderingContext().getFontRenderer().reloadFonts();
+			gameWindow.getRenderingInterface().getFontRenderer().reloadFonts();
 			configuration.load();
 			
 			waitForReload.signal();
@@ -442,6 +442,6 @@ public class Client implements ClientInterface
 
 	@Override
 	public RenderingInterface getRenderingInterface() {
-		return this.gameWindow.getRenderingContext();
+		return this.gameWindow.getRenderingInterface();
 	}
 }

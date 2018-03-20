@@ -95,7 +95,8 @@ public class ChatManager
 			parentLayer.render(renderer);
 
 			inputBox.setPosition(12, 192);
-			inputBox.drawWithBackGroundTransparent(renderer);
+			inputBox.setTransparent(true);
+			inputBox.render(renderer);
 		}
 
 		@Override
@@ -119,9 +120,9 @@ public class ChatManager
 					sentHistory++;
 				}
 				if (sentHistory > 0)
-					inputBox.text = sent.get(sentHistory - 1);
+					inputBox.setText(sent.get(sentHistory - 1));
 				else
-					inputBox.text = "";
+					inputBox.setText("");
 			}
 			else if (input.equals("uiDown"))
 			{
@@ -131,14 +132,14 @@ public class ChatManager
 					sentHistory--;
 				}
 				if (sentHistory > 0)
-					inputBox.text = sent.get(sentHistory - 1);
+					inputBox.setText(sent.get(sentHistory - 1));
 				else
-					inputBox.text = "";
+					inputBox.setText("");
 			}
 			else if (input.equals("enter"))
 			{
-				processTextInput(inputBox.text);
-				inputBox.text = "";
+				processTextInput(inputBox.getText());
+				inputBox.setText("");
 				sentHistory = 0;
 				gameWindow.setLayer(parentLayer);
 				return true;
