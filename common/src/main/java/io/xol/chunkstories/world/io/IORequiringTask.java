@@ -6,9 +6,7 @@
 
 package io.xol.chunkstories.world.io;
 
-import io.xol.chunkstories.api.world.chunk.Region;
-
-
+import io.xol.chunkstories.api.world.region.Region;
 
 public class IORequiringTask
 {

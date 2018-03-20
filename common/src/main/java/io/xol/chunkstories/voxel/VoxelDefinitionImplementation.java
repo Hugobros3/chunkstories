@@ -13,11 +13,11 @@ import java.lang.reflect.InvocationTargetException;
 
 import io.xol.chunkstories.api.content.Content.Voxels;
 import io.xol.chunkstories.api.exceptions.content.IllegalVoxelDeclarationException;
-import io.xol.chunkstories.api.voxel.materials.Material;
 import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelDefinition;
-import io.xol.chunkstories.api.voxel.VoxelSides;
+import io.xol.chunkstories.api.voxel.VoxelSide;
+import io.xol.chunkstories.api.voxel.materials.VoxelMaterial;
 import io.xol.chunkstories.api.voxel.models.VoxelModel;
 import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.content.GenericNamedConfigurable;
@@ -26,7 +26,7 @@ public class VoxelDefinitionImplementation extends GenericNamedConfigurable impl
 {
 	private final VoxelsStore store;
 	
-	private final Material material;
+	private final VoxelMaterial material;
 	private final VoxelModel model;
 	private final VoxelTexture[] textures = new VoxelTexture[6];
 	private final CollisionBox collisionBox;
@@ -51,11 +51,11 @@ public class VoxelDefinitionImplementation extends GenericNamedConfigurable impl
 		
 		//If a specific material was given, use that one, else use the voxel name
 		String matResolved = this.resolveProperty("material");
-		this.material = store.parent().materials().getMaterialByName(matResolved != null ? matResolved : name);
+		this.material = store.materials().getVoxelMaterial(matResolved != null ? matResolved : name);
 		
 		//If a special model is being used
 		String modelName = this.resolveProperty("model");
-		this.model = modelName == null ? null : store.models().getVoxelModelByName(modelName);
+		this.model = modelName == null ? null : store.models().getVoxelModel(modelName);
 		
 		//Is there an explicit list of textures ?
 		String texturesResolved = this.resolveProperty("textures");
@@ -67,12 +67,12 @@ public class VoxelDefinitionImplementation extends GenericNamedConfigurable impl
 			{
 				String textureName = sides[textureIndex].replace("[", "").replace("]", "").replace(" ", "");
 				//System.out.println("Voxel "+name+" texture"+textureIndex+" ="+textureName);
-				textures[textureIndex] = store.textures().getVoxelTextureByName(textureName);
+				textures[textureIndex] = store.textures().getVoxelTexture(textureName);
 			}
 		}
 		//Try the 'texture' (no s) tag and if all else fail, use the voxel name as the texture name
 		String textureResolved = this.resolveProperty("texture");
-		VoxelTexture textureToFill = store.textures().getVoxelTextureByName(textureResolved != null ? textureResolved : name);
+		VoxelTexture textureToFill = store.textures().getVoxelTexture(textureResolved != null ? textureResolved : name);
 		//Fill the remaining slots with whatever we found
 		while(textureIndex < 6)
 		{
@@ -146,7 +146,7 @@ public class VoxelDefinitionImplementation extends GenericNamedConfigurable impl
 	}
 
 	@Override
-	public Material getMaterial()
+	public VoxelMaterial getMaterial()
 	{
 		return material;
 	}
@@ -158,7 +158,7 @@ public class VoxelDefinitionImplementation extends GenericNamedConfigurable impl
 	}
 
 	@Override
-	public VoxelTexture getVoxelTexture(VoxelSides side)
+	public VoxelTexture getVoxelTexture(VoxelSide side)
 	{
 		return textures[side.ordinal()];
 	}

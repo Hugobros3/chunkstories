@@ -21,7 +21,6 @@ import org.lwjgl.BufferUtils;
 import io.xol.chunkstories.Constants;
 import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.rendering.CameraInterface;
-import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.StateMachine.BlendMode;
 import io.xol.chunkstories.api.rendering.StateMachine.CullingMode;
@@ -31,6 +30,7 @@ import io.xol.chunkstories.api.rendering.shader.Shader;
 import io.xol.chunkstories.api.rendering.textures.Texture1D;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
+import io.xol.chunkstories.api.rendering.vertex.Primitive;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
 import io.xol.chunkstories.api.rendering.world.WorldRenderer.FarTerrainRenderer;
 import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
@@ -41,7 +41,7 @@ import io.xol.chunkstories.renderer.terrain.FarTerrainBaker.RegionMesh;
 import io.xol.chunkstories.renderer.world.WorldRendererImplementation;
 import io.xol.chunkstories.voxel.VoxelTextureAtlased;
 import io.xol.chunkstories.world.WorldClientCommon;
-import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
+import io.xol.chunkstories.world.summary.HeightmapImplementation;
 
 
 
@@ -318,7 +318,7 @@ public class FarTerrainMeshRenderer implements FarTerrainRenderer
 			if(temp.size() == 0)
 				continue;
 			
-			RegionSummaryImplementation regionSummaryData = regionMesh.regionSummary;
+			HeightmapImplementation regionSummaryData = regionMesh.regionSummary;
 			
 			//Skip unloaded regions immediately
 			if(regionSummaryData.isUnloaded())
@@ -458,7 +458,7 @@ public class FarTerrainMeshRenderer implements FarTerrainRenderer
 					if (currentChunkX < 0 && currentChunkX % 8 != 0)
 						rx--;
 
-					RegionSummaryImplementation summary = world.getRegionsSummariesHolder().getRegionSummaryWorldCoordinates(currentChunkX * 32, currentChunkZ * 32);
+					HeightmapImplementation summary = world.getRegionsSummariesHolder().getHeightmapWorldCoordinates(currentChunkX * 32, currentChunkZ * 32);
 
 					if (summary == null || !summary.isLoaded())
 					{
@@ -743,7 +743,7 @@ public class FarTerrainMeshRenderer implements FarTerrainRenderer
 				
 			}
 			if (!rs.regionSummary.summaryLoaded.get())
-				rs.regionSummary = world.getRegionsSummariesHolder().getRegionSummaryWorldCoordinates(rs.regionSummary.getRegionX() * 256, rs.regionSummary.getRegionZ() * 256);
+				rs.regionSummary = world.getRegionsSummariesHolder().getHeightmapWorldCoordinates(rs.regionSummary.getRegionX() * 256, rs.regionSummary.getRegionZ() * 256);
 		}
 	}*/
 

@@ -13,27 +13,25 @@ import java.util.concurrent.Semaphore;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.util.concurrency.Fence;
+import io.xol.chunkstories.api.world.WorldUser;
 import io.xol.chunkstories.api.world.cell.CellData;
 import io.xol.chunkstories.api.world.cell.FutureCell;
-import io.xol.chunkstories.api.world.chunk.WorldUser;
-import io.xol.chunkstories.api.world.heightmap.RegionSummaries;
-import io.xol.chunkstories.api.world.heightmap.RegionSummary;
+import io.xol.chunkstories.api.world.heightmap.Heightmap;
+import io.xol.chunkstories.api.world.heightmap.WorldHeightmaps;
 import io.xol.chunkstories.util.concurrency.CompoundFence;
 import io.xol.chunkstories.world.WorldImplementation;
 
-
-
-public class WorldRegionSummariesHolder implements RegionSummaries
+public class WorldHeightmapsImplementation implements WorldHeightmaps
 {
 	private final WorldImplementation world;
 	private final int worldSize;
 	private final int worldSizeInChunks;
 	private final int worldSizeInRegions;
 	
-	private Map<Long, RegionSummaryImplementation> summaries = new ConcurrentHashMap<Long, RegionSummaryImplementation>();
+	private Map<Long, HeightmapImplementation> summaries = new ConcurrentHashMap<Long, HeightmapImplementation>();
 	protected Semaphore dontDeleteWhileCreating = new Semaphore(1);
 
-	public WorldRegionSummariesHolder(WorldImplementation world)
+	public WorldHeightmapsImplementation(WorldImplementation world)
 	{
 		this.world = world;
 		this.worldSize = world.getSizeInChunks() * 32;
@@ -49,9 +47,9 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 	}
 
 	@Override
-	public RegionSummaryImplementation aquireRegionSummary(WorldUser worldUser, int regionX, int regionZ)
+	public HeightmapImplementation aquireHeightmap(WorldUser worldUser, int regionX, int regionZ)
 	{
-		RegionSummaryImplementation summary;
+		HeightmapImplementation summary;
 		
 		regionX %= worldSizeInRegions;
 		regionZ %= worldSizeInRegions;
@@ -67,7 +65,7 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 			summary = summaries.get(i);
 		else
 		{
-			summary = new RegionSummaryImplementation(this, regionX, regionZ);
+			summary = new HeightmapImplementation(this, regionX, regionZ);
 			summaries.put(i, summary);
 		}
 		dontDeleteWhileCreating.release();
@@ -78,7 +76,7 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 	}
 
 	@Override
-	public RegionSummaryImplementation aquireRegionSummaryChunkCoordinates(WorldUser worldUser, int chunkX, int chunkZ)
+	public HeightmapImplementation aquireHeightmapChunkCoordinates(WorldUser worldUser, int chunkX, int chunkZ)
 	{
 		chunkX %= worldSizeInChunks;
 		chunkZ %= worldSizeInChunks;
@@ -87,49 +85,49 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 		if (chunkZ < 0)
 			chunkZ += worldSizeInChunks;
 		
-		return aquireRegionSummary(worldUser, chunkX / 8, chunkZ / 8);
+		return aquireHeightmap(worldUser, chunkX / 8, chunkZ / 8);
 	}
 
 	@Override
-	public RegionSummaryImplementation aquireRegionSummaryWorldCoordinates(WorldUser worldUser, int worldX, int worldZ)
+	public HeightmapImplementation aquireHeightmapWorldCoordinates(WorldUser worldUser, int worldX, int worldZ)
 	{
 		worldX = sanitizeHorizontalCoordinate(worldX);
 		worldZ = sanitizeHorizontalCoordinate(worldZ);
-		return aquireRegionSummary(worldUser, worldX / 256, worldZ / 256);
+		return aquireHeightmap(worldUser, worldX / 256, worldZ / 256);
 	}
 
 	@Override
-	public RegionSummaryImplementation aquireRegionSummaryLocation(WorldUser worldUser, Location location)
+	public HeightmapImplementation aquireHeightmapLocation(WorldUser worldUser, Location location)
 	{
-		return aquireRegionSummary(worldUser, (int)(double)location.x(), (int)(double)location.z());
+		return aquireHeightmap(worldUser, (int)(double)location.x(), (int)(double)location.z());
 	}
 	
 	@Override
-	public RegionSummary getRegionSummary(int regionX, int regionZ)
+	public Heightmap getHeightmap(int regionX, int regionZ)
 	{
-		return getRegionSummaryWorldCoordinates(regionX * 256, regionZ * 256);
+		return getHeightmapWorldCoordinates(regionX * 256, regionZ * 256);
 	}
 
 	@Override
-	public RegionSummary getRegionSummaryChunkCoordinates(int chunkX, int chunkZ)
+	public Heightmap getHeightmapChunkCoordinates(int chunkX, int chunkZ)
 	{
-		return getRegionSummaryWorldCoordinates(chunkX * 32, chunkZ * 32);
+		return getHeightmapWorldCoordinates(chunkX * 32, chunkZ * 32);
 	}
 
 	@Override
-	public RegionSummary getRegionSummaryLocation(Location location)
+	public Heightmap getHeightmapLocation(Location location)
 	{
-		return getRegionSummaryWorldCoordinates((int)(double)location.x(), (int)(double)location.z());
+		return getHeightmapWorldCoordinates((int)(double)location.x(), (int)(double)location.z());
 	}
 
-	public RegionSummaryImplementation getRegionSummaryWorldCoordinates(int worldX, int worldZ)
+	public HeightmapImplementation getHeightmapWorldCoordinates(int worldX, int worldZ)
 	{
 		worldX = sanitizeHorizontalCoordinate(worldX);
 		worldZ = sanitizeHorizontalCoordinate(worldZ);
 
 		long i = index(worldX, worldZ);
 		
-		RegionSummaryImplementation summary = summaries.get(i);
+		HeightmapImplementation summary = summaries.get(i);
 		if(summary == null)// || !summary.isLoaded())
 			return null;
 		else
@@ -144,9 +142,9 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 			x += worldSize;
 		if (z < 0)
 			z += worldSize;
-		RegionSummaryImplementation cs = getRegionSummaryWorldCoordinates(x, z);
+		HeightmapImplementation cs = getHeightmapWorldCoordinates(x, z);
 		if (cs == null)
-			return RegionSummary.NO_DATA;
+			return Heightmap.NO_DATA;
 		return cs.getHeightMipmapped(x % 256, z % 256, level);
 	}
 
@@ -158,7 +156,7 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 			x += worldSize;
 		if (z < 0)
 			z += worldSize;
-		RegionSummaryImplementation cs = getRegionSummaryWorldCoordinates(x, z);
+		HeightmapImplementation cs = getHeightmapWorldCoordinates(x, z);
 		if (cs == null)
 			return 0;
 		return cs.getDataMipmapped(x % 256, z % 256, level);
@@ -172,9 +170,9 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 			x += worldSize;
 		if (z < 0)
 			z += worldSize;
-		RegionSummaryImplementation cs = getRegionSummaryWorldCoordinates(x, z);
+		HeightmapImplementation cs = getHeightmapWorldCoordinates(x, z);
 		if (cs == null)
-			return RegionSummary.NO_DATA;
+			return Heightmap.NO_DATA;
 		return cs.getHeight(x % 256, z % 256);
 	}
 
@@ -186,7 +184,7 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 			x += worldSize;
 		if (z < 0)
 			z += worldSize;
-		RegionSummaryImplementation cs = getRegionSummaryWorldCoordinates(x, z);
+		HeightmapImplementation cs = getHeightmapWorldCoordinates(x, z);
 		if(cs == null)
 			return 0;
 		return cs.getRawVoxelData(x % 256, z % 256);
@@ -200,7 +198,7 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 			x += worldSize;
 		if (z < 0)
 			z += worldSize;
-		RegionSummaryImplementation cs = getRegionSummaryWorldCoordinates(x, z);
+		HeightmapImplementation cs = getHeightmapWorldCoordinates(x, z);
 		if(cs == null)
 			return null;
 		return cs.getTopCell(x, z);
@@ -214,7 +212,7 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 			x += worldSize;
 		if (z < 0)
 			z += worldSize;
-		RegionSummaryImplementation summary = getRegionSummaryWorldCoordinates(x, z);
+		HeightmapImplementation summary = getHeightmapWorldCoordinates(x, z);
 		
 		if(summary != null)
 			summary.updateOnBlockModification(x % 256, y, z % 256, future);
@@ -228,7 +226,7 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 	public Fence saveAllLoadedSummaries()
 	{
 		CompoundFence allSummariesSaves = new CompoundFence();
-		for (RegionSummaryImplementation cs : summaries.values())
+		for (HeightmapImplementation cs : summaries.values())
 		{
 			allSummariesSaves.add(cs.saveSummary());
 		}
@@ -244,25 +242,25 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 			x += worldSize;
 		if (z < 0)
 			z += worldSize;
-		RegionSummaryImplementation cs = getRegionSummaryWorldCoordinates(x, z);
+		HeightmapImplementation cs = getHeightmapWorldCoordinates(x, z);
 		cs.setHeightAndId(x % 256, y, z % 256, id);
 	}*/
 	
 	public void destroy()
 	{
-		for(RegionSummaryImplementation cs : summaries.values())
+		for(HeightmapImplementation cs : summaries.values())
 		{
 			cs.unloadSummary();
 		}
 		summaries.clear();
 	}
 
-	WorldImplementation getWorld()
+	public WorldImplementation getWorld()
 	{
 		return world;
 	}
 
-	boolean removeSummary(RegionSummaryImplementation regionSummary)
+	boolean removeSummary(HeightmapImplementation regionSummary)
 	{
 		try {
 			dontDeleteWhileCreating.acquireUninterruptibly();
@@ -280,7 +278,7 @@ public class WorldRegionSummariesHolder implements RegionSummaries
 		return coordinate;
 	}
 
-	public Collection<RegionSummaryImplementation> all() {
+	public Collection<HeightmapImplementation> all() {
 		return this.summaries.values();
 	}
 }

@@ -7,7 +7,6 @@
 package io.xol.chunkstories.content.mods;
 
 import java.io.File;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
@@ -19,9 +18,9 @@ import java.util.zip.ZipFile;
 
 import org.slf4j.LoggerFactory;
 
-import io.xol.chunkstories.api.exceptions.content.mods.ModLoadFailureException;
 import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.content.mods.Mod;
+import io.xol.chunkstories.api.exceptions.content.mods.ModLoadFailureException;
 import io.xol.chunkstories.api.util.IterableIterator;
 
 public class ModZip extends ModImplementation

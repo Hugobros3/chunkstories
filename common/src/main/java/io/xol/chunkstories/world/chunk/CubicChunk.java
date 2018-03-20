@@ -30,18 +30,18 @@ import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.util.IterableIteratorWrapper;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
-import io.xol.chunkstories.api.voxel.VoxelSides;
+import io.xol.chunkstories.api.voxel.VoxelSide;
 import io.xol.chunkstories.api.voxel.components.VoxelComponent;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldMaster;
+import io.xol.chunkstories.api.world.WorldUser;
 import io.xol.chunkstories.api.world.cell.Cell;
 import io.xol.chunkstories.api.world.cell.CellData;
 import io.xol.chunkstories.api.world.cell.FutureCell;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunkLightUpdater;
-import io.xol.chunkstories.api.world.chunk.Region;
-import io.xol.chunkstories.api.world.chunk.WorldUser;
-import io.xol.chunkstories.api.world.heightmap.RegionSummary;
+import io.xol.chunkstories.api.world.heightmap.Heightmap;
+import io.xol.chunkstories.api.world.region.Region;
 import io.xol.chunkstories.entity.EntitySerializer;
 import io.xol.chunkstories.util.concurrency.SimpleLock;
 import io.xol.chunkstories.voxel.components.CellComponentsHolder;
@@ -221,7 +221,7 @@ public class CubicChunk implements Chunk {
 			// Use the heightmap to figure out wether or not that cell should be skylit.
 			int sunlight = 0;
 			int groundHeight = world.getRegionsSummariesHolder().getHeightAtWorldCoordinates(chunkX * 32 + x, chunkZ * 32 + z);
-			if(groundHeight < y + chunkY * 32 && groundHeight != RegionSummary.NO_DATA)
+			if(groundHeight < y + chunkY * 32 && groundHeight != Heightmap.NO_DATA)
 				sunlight = 15;
 			
 			return VoxelFormat.format(0, 0, sunlight, 0);
@@ -551,7 +551,7 @@ public class CubicChunk implements Chunk {
 		@Override
 		public CellData getNeightbor(int side_int) {
 			// TODO Fast path for in-chunk neigtbor
-			VoxelSides side = VoxelSides.values()[side_int];
+			VoxelSide side = VoxelSide.values()[side_int];
 			return world.peekSafely(getX() + side.dx, getY() + side.dy, getZ() + side.dz);
 		}
 

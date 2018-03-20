@@ -6,27 +6,6 @@
 
 package io.xol.chunkstories.world.summary;
 
-import io.xol.chunkstories.api.server.RemotePlayer;
-import io.xol.chunkstories.api.util.IterableIterator;
-import io.xol.chunkstories.api.util.concurrency.Fence;
-import io.xol.chunkstories.api.voxel.Voxel;
-import io.xol.chunkstories.api.voxel.VoxelFormat;
-import io.xol.chunkstories.api.voxel.VoxelSides;
-import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.api.world.World.WorldCell;
-import io.xol.chunkstories.api.world.WorldClient;
-import io.xol.chunkstories.api.world.WorldMaster;
-import io.xol.chunkstories.api.world.cell.Cell;
-import io.xol.chunkstories.api.world.cell.CellData;
-import io.xol.chunkstories.api.world.cell.FutureCell;
-import io.xol.chunkstories.api.world.chunk.WorldUser;
-import io.xol.chunkstories.api.world.heightmap.RegionSummary;
-import io.xol.chunkstories.net.packets.PacketRegionSummary;
-import io.xol.chunkstories.util.concurrency.SimpleFence;
-import io.xol.chunkstories.util.concurrency.TrivialFence;
-import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.chunkstories.world.io.IOTasks.IOTask;
-
 import java.io.File;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -36,6 +15,26 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import io.xol.chunkstories.api.server.RemotePlayer;
+import io.xol.chunkstories.api.util.IterableIterator;
+import io.xol.chunkstories.api.util.concurrency.Fence;
+import io.xol.chunkstories.api.voxel.Voxel;
+import io.xol.chunkstories.api.voxel.VoxelFormat;
+import io.xol.chunkstories.api.voxel.VoxelSide;
+import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.api.world.World.WorldCell;
+import io.xol.chunkstories.api.world.WorldClient;
+import io.xol.chunkstories.api.world.WorldMaster;
+import io.xol.chunkstories.api.world.WorldUser;
+import io.xol.chunkstories.api.world.cell.Cell;
+import io.xol.chunkstories.api.world.cell.CellData;
+import io.xol.chunkstories.api.world.cell.FutureCell;
+import io.xol.chunkstories.api.world.heightmap.Heightmap;
+import io.xol.chunkstories.net.packets.PacketHeightmap;
+import io.xol.chunkstories.util.concurrency.SimpleFence;
+import io.xol.chunkstories.util.concurrency.TrivialFence;
+import io.xol.chunkstories.world.WorldImplementation;
+import io.xol.chunkstories.world.io.IOTasks.IOTask;
 import net.jpountz.lz4.LZ4Compressor;
 import net.jpountz.lz4.LZ4Factory;
 import net.jpountz.lz4.LZ4FastDecompressor;
@@ -45,9 +44,9 @@ import net.jpountz.lz4.LZ4FastDecompressor;
 /**
  * A region summary contains metadata about an 8x8 chunks ( or 256x256 blocks ) vertical slice of the world
  */
-public class RegionSummaryImplementation implements RegionSummary
+public class HeightmapImplementation implements Heightmap
 {
-	final WorldRegionSummariesHolder worldSummariesHolder;
+	final WorldHeightmapsImplementation worldSummariesHolder;
 	public final WorldImplementation world;
 	private final int regionX;
 	private final int regionZ;
@@ -86,7 +85,7 @@ public class RegionSummaryImplementation implements RegionSummary
 	/** The offsets in an array containing sequentially each mipmaps of a square texture of base size 128 */
 	public final static int[] minHeightMipmapOffsets = {0, 16384, 20480, 21504, 21760, 21824, 21840, 21844, 21845};
 
-	RegionSummaryImplementation(WorldRegionSummariesHolder worldSummariesHolder, int rx, int rz)
+	HeightmapImplementation(WorldHeightmapsImplementation worldSummariesHolder, int rx, int rz)
 	{
 		this.worldSummariesHolder = worldSummariesHolder;
 		this.world = worldSummariesHolder.getWorld();
@@ -95,7 +94,7 @@ public class RegionSummaryImplementation implements RegionSummary
 
 		if (world instanceof WorldMaster) {
 			handler = new File(world.getFolderPath() + "/summaries/" + rx + "." + rz + ".sum");
-			loadFence = this.world.ioHandler.requestRegionSummaryLoad(this);
+			loadFence = this.world.ioHandler.requestHeightmapLoad(this);
 		}
 		else {
 			handler = null;
@@ -116,7 +115,7 @@ public class RegionSummaryImplementation implements RegionSummary
 	}
 
 	@Override
-	public IterableIterator<WorldUser> getSummaryUsers()
+	public IterableIterator<WorldUser> getUsers()
 	{
 		return new IterableIterator<WorldUser>()
 		{
@@ -147,7 +146,7 @@ public class RegionSummaryImplementation implements RegionSummary
 				if(user instanceof RemotePlayer) {
 					RemotePlayer player = (RemotePlayer)user;
 					if(this.isLoaded()) {
-						player.pushPacket(new PacketRegionSummary(this));
+						player.pushPacket(new PacketHeightmap(this));
 					} else {
 						this.usersWaitingForIntialData.add(player);
 					}
@@ -210,7 +209,7 @@ public class RegionSummaryImplementation implements RegionSummary
 
 	public IOTask saveSummary()
 	{
-		return this.world.ioHandler.requestRegionSummarySave(this);
+		return this.world.ioHandler.requestHeightmapSave(this);
 	}
 
 	private int index(int x, int z)
@@ -232,7 +231,7 @@ public class RegionSummaryImplementation implements RegionSummary
 		//If we place something solid over the last solid thing
 		if ((cell.getVoxel().getDefinition().isSolid() || cell.getVoxel().getDefinition().isLiquid()))
 		{
-			if (height >= h || h == RegionSummary.NO_DATA)
+			if (height >= h || h == Heightmap.NO_DATA)
 			{
 				heights[index(worldX, worldZ)] = height;
 				ids[index(worldX, worldZ)] = cell.getData();
@@ -289,7 +288,7 @@ public class RegionSummaryImplementation implements RegionSummary
 	public int getHeight(int x, int z)
 	{
 		if(!this.isLoaded())
-			return RegionSummary.NO_DATA;
+			return Heightmap.NO_DATA;
 		
 		x &= 0xFF;
 		z &= 0xFF;
@@ -322,7 +321,7 @@ public class RegionSummaryImplementation implements RegionSummary
 
 		@Override
 		public CellData getNeightbor(int side_int) {
-			VoxelSides side = VoxelSides.values()[side_int];
+			VoxelSide side = VoxelSide.values()[side_int];
 			return getTopCell(x + side.dx, z + side.dz);
 		}
 		
@@ -402,9 +401,9 @@ public class RegionSummaryImplementation implements RegionSummary
 	public int getHeightMipmapped(int x, int z, int level)
 	{
 		if(!this.isLoaded())
-			return RegionSummary.NO_DATA;
+			return Heightmap.NO_DATA;
 		if (level > 8)
-			return RegionSummary.NO_DATA;
+			return Heightmap.NO_DATA;
 		int resolution = 256 >> level;
 		x >>= level;
 		z >>= level;
@@ -457,7 +456,7 @@ public class RegionSummaryImplementation implements RegionSummary
 		// Already have clients waiting for it ? Satisfy these messieurs
 		usersLock.lock();
 		for(RemotePlayer user : usersWaitingForIntialData) {
-			user.pushPacket(new PacketRegionSummary(this));
+			user.pushPacket(new PacketHeightmap(this));
 		}
 		usersWaitingForIntialData.clear();
 		usersLock.unlock();
@@ -503,6 +502,6 @@ public class RegionSummaryImplementation implements RegionSummary
 
 	@Override
 	public String toString() {
-		return "[RegionSummary x:"+regionX+" z:"+regionZ+" users: "+this.countUsers()+" loaded: "+this.isLoaded()+" zombie: "+this.isUnloaded()+"]";
+		return "[Heightmap x:"+regionX+" z:"+regionZ+" users: "+this.countUsers()+" loaded: "+this.isLoaded()+" zombie: "+this.isUnloaded()+"]";
 	}
 }

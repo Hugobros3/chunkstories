@@ -25,7 +25,7 @@ import io.xol.chunkstories.api.net.packets.PacketWorldUser.Type;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
-import io.xol.chunkstories.api.world.heightmap.RegionSummary;
+import io.xol.chunkstories.api.world.heightmap.Heightmap;
 import io.xol.chunkstories.world.WorldClientRemote;
 
 public class LocalClientLoadingAgent {
@@ -36,7 +36,7 @@ public class LocalClientLoadingAgent {
 	IntHashSet fastChunksMask = new IntHashSet();
 	//Set<Integer> fastChunksMask = new HashSet<Integer>();
 	Set<ChunkHolder> usedChunks = new HashSet<ChunkHolder>();
-	Set<RegionSummary> usedRegionSummaries = new HashSet<RegionSummary>();
+	Set<Heightmap> usedRegionSummaries = new HashSet<Heightmap>();
 	
 	Lock lock = new ReentrantLock();
 	
@@ -137,7 +137,7 @@ public class LocalClientLoadingAgent {
 						int regionZ = chunkZ / 8;
 						
 						//TODO bad to aquire each time!!!
-						RegionSummary regionSummary = world.getRegionsSummariesHolder().aquireRegionSummary(player, regionX, regionZ);
+						Heightmap regionSummary = world.getRegionsSummariesHolder().aquireHeightmap(player, regionX, regionZ);
 					
 						if(regionSummary != null) {
 							if(usedRegionSummaries.add(regionSummary)) {
@@ -159,10 +159,10 @@ public class LocalClientLoadingAgent {
 			int sizeInRegions = world.getSizeInChunks() / 8;
 			
 			//And we unload the ones we no longer need
-			Iterator<RegionSummary> iterator = usedRegionSummaries.iterator();
+			Iterator<Heightmap> iterator = usedRegionSummaries.iterator();
 			while (iterator.hasNext())
 			{
-				RegionSummary entry = iterator.next();
+				Heightmap entry = iterator.next();
 				int regionX = entry.getRegionX();
 				int regionZ = entry.getRegionZ();
 	
@@ -216,7 +216,7 @@ public class LocalClientLoadingAgent {
 						
 			//This is the same but for region summaries
 			} else if(packet.getType() == Type.UNREGISTER_SUMMARY) {
-				RegionSummary regionSummary = world.getRegionsSummariesHolder().getRegionSummary(packet.getX(), packet.getZ());
+				Heightmap regionSummary = world.getRegionsSummariesHolder().getHeightmap(packet.getX(), packet.getZ());
 				
 				if(regionSummary == null)
 					return;

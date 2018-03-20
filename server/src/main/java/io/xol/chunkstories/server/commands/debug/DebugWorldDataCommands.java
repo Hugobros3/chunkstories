@@ -11,10 +11,10 @@ import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
 import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.api.world.chunk.Chunk;
-import io.xol.chunkstories.api.world.heightmap.RegionSummary;
+import io.xol.chunkstories.api.world.heightmap.Heightmap;
 import io.xol.chunkstories.server.commands.ServerCommandBasic;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
+import io.xol.chunkstories.world.summary.HeightmapImplementation;
 
 public class DebugWorldDataCommands extends ServerCommandBasic {
 
@@ -22,8 +22,8 @@ public class DebugWorldDataCommands extends ServerCommandBasic {
 		super(serverConsole);
 		server.getPluginManager().registerCommand("chunk").setHandler(this);
 		server.getPluginManager().registerCommand("region").setHandler(this);
-		server.getPluginManager().registerCommand("summary").setHandler(this);
-		server.getPluginManager().registerCommand("summaries").setHandler(this);
+		server.getPluginManager().registerCommand("heightmap").setHandler(this);
+		server.getPluginManager().registerCommand("heightmaps").setHandler(this);
 	}
 
 	@Override
@@ -46,30 +46,30 @@ public class DebugWorldDataCommands extends ServerCommandBasic {
 				emitter.sendMessage("#00FFD0" + "not within a loaded chunk, so no parent region could be found.");
 			
 			return true;
-		} else if (command.getName().equals("summary") && emitter.hasPermission("server.debug")) {
-			RegionSummary sum;
+		} else if (command.getName().equals("heightmap") && emitter.hasPermission("server.debug")) {
+			Heightmap sum;
 
 			if(arguments.length == 2) {
 				int x = Integer.parseInt(arguments[0]);
 				int z = Integer.parseInt(arguments[1]);
-				sum = server.getWorld().getRegionsSummariesHolder().getRegionSummary(x, z);
+				sum = server.getWorld().getRegionsSummariesHolder().getHeightmap(x, z);
 			} else {
 
 				Player player = (Player) emitter;
-				sum = player.getWorld().getRegionsSummariesHolder().getRegionSummaryLocation(player.getLocation());
+				sum = player.getWorld().getRegionsSummariesHolder().getHeightmapLocation(player.getLocation());
 			}
 			
 			emitter.sendMessage("#00FFD0" + sum);
 			return true;
-		} else if (command.getName().equals("summaries") && emitter.hasPermission("server.debug")) {
-			dumpLoadedSummaries((WorldImplementation) server.getWorld(), emitter);
+		} else if (command.getName().equals("heightmaps") && emitter.hasPermission("server.debug")) {
+			dumpLoadedHeightmap((WorldImplementation) server.getWorld(), emitter);
 		}
 		return false;
 	}
 
-	private void dumpLoadedSummaries(WorldImplementation world, CommandEmitter emitter) {
+	private void dumpLoadedHeightmap(WorldImplementation world, CommandEmitter emitter) {
 		emitter.sendMessage("#00FFD0" + "Dumping all region summaries...");
-		for(RegionSummaryImplementation sum : world.getRegionsSummariesHolder().all()) {
+		for(HeightmapImplementation sum : world.getRegionsSummariesHolder().all()) {
 			emitter.sendMessage("#00FFD0" + sum);
 		}
 	}

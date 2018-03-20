@@ -15,10 +15,10 @@ import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.util.IterableIteratorWrapper;
 import io.xol.chunkstories.api.voxel.components.VoxelComponent;
 import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.api.world.WorldUser;
 import io.xol.chunkstories.api.world.cell.CellComponents;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.Chunk.ChunkCell;
-import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 
 public class CellComponentsHolder implements CellComponents {

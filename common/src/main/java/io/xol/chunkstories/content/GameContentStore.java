@@ -11,15 +11,15 @@ import java.io.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.animation.BVHLibrary;
 import io.xol.chunkstories.api.GameContext;
+import io.xol.chunkstories.api.content.Asset;
+import io.xol.chunkstories.api.content.Content;
+import io.xol.chunkstories.api.content.mods.ModsManager;
 import io.xol.chunkstories.api.exceptions.content.mods.NotAllModsLoadedException;
 import io.xol.chunkstories.api.mesh.MeshLibrary;
 import io.xol.chunkstories.content.mods.ModsManagerImplementation;
 import io.xol.chunkstories.content.mods.ModsManagerImplementation.NonExistentCoreContent;
-import io.xol.chunkstories.api.content.Asset;
-import io.xol.chunkstories.api.content.mods.ModsManager;
 import io.xol.chunkstories.entity.EntityDefinitionsStore;
 import io.xol.chunkstories.item.ItemDefinitionsStore;
 import io.xol.chunkstories.localization.LocalizationManagerImplementation;
@@ -27,7 +27,7 @@ import io.xol.chunkstories.mesh.MeshStore;
 import io.xol.chunkstories.net.PacketsStore;
 import io.xol.chunkstories.particle.ParticlesTypesStore;
 import io.xol.chunkstories.voxel.VoxelsStore;
-import io.xol.chunkstories.voxel.material.MaterialsStore;
+import io.xol.chunkstories.voxel.material.VoxelMaterialsStore;
 import io.xol.chunkstories.world.generator.WorldGeneratorsStore;
 
 public class GameContentStore implements Content
@@ -35,7 +35,6 @@ public class GameContentStore implements Content
 	private final GameContext context;
 	private final ModsManager modsManager;
 
-	private final MaterialsStore materials;
 	private final ItemDefinitionsStore items;
 	private final VoxelsStore voxels;
 	private final EntityDefinitionsStore entities;
@@ -60,7 +59,6 @@ public class GameContentStore implements Content
 			throw new RuntimeException("Throwing a RuntimeException to make the process crash and burn");
 		}
 
-		materials = new MaterialsStore(this);
 		items = new ItemDefinitionsStore(this);
 		voxels = new VoxelsStore(this);
 		entities = new EntityDefinitionsStore(this);
@@ -86,7 +84,6 @@ public class GameContentStore implements Content
 			e.printStackTrace();
 		}
 
-		materials.reload();
 		items.reload();
 		voxels.reload();
 		entities.reload();
@@ -99,12 +96,6 @@ public class GameContentStore implements Content
 		meshes.reload();
 		
 		localizationManager.reload();
-	}
-
-	@Override
-	public MaterialsStore materials()
-	{
-		return materials;
 	}
 
 	@Override

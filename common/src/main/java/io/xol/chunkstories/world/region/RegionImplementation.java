@@ -6,22 +6,6 @@
 
 package io.xol.chunkstories.world.region;
 
-import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.util.CompoundIterator;
-import io.xol.chunkstories.api.util.IterableIterator;
-import io.xol.chunkstories.api.world.WorldMaster;
-import io.xol.chunkstories.api.world.chunk.Chunk;
-import io.xol.chunkstories.api.world.chunk.ChunksIterator;
-import io.xol.chunkstories.api.world.chunk.Region;
-import io.xol.chunkstories.api.world.chunk.WorldUser;
-import io.xol.chunkstories.util.concurrency.SafeWriteLock;
-import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
-import io.xol.chunkstories.world.chunk.CompressedData;
-import io.xol.chunkstories.world.chunk.CubicChunk;
-import io.xol.chunkstories.world.io.IOTasks.IOTask;
-import io.xol.chunkstories.world.region.format.CSFRegionFile;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -33,6 +17,22 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.util.CompoundIterator;
+import io.xol.chunkstories.api.util.IterableIterator;
+import io.xol.chunkstories.api.world.WorldMaster;
+import io.xol.chunkstories.api.world.WorldUser;
+import io.xol.chunkstories.api.world.chunk.Chunk;
+import io.xol.chunkstories.api.world.chunk.ChunksIterator;
+import io.xol.chunkstories.api.world.region.Region;
+import io.xol.chunkstories.util.concurrency.SafeWriteLock;
+import io.xol.chunkstories.world.WorldImplementation;
+import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
+import io.xol.chunkstories.world.chunk.CompressedData;
+import io.xol.chunkstories.world.chunk.CubicChunk;
+import io.xol.chunkstories.world.io.IOTasks.IOTask;
+import io.xol.chunkstories.world.region.format.CSFRegionFile;
 
 
 
@@ -106,7 +106,7 @@ public class RegionImplementation implements Region
 	}
 
 	@Override
-	public IterableIterator<WorldUser> getChunkUsers()
+	public IterableIterator<WorldUser> getUsers()
 	{
 		return new IterableIterator<WorldUser>()
 		{

@@ -13,10 +13,10 @@ import java.util.concurrent.Semaphore;
 import io.xol.chunkstories.api.rendering.world.chunk.ChunkRenderable;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.world.WorldMaster;
+import io.xol.chunkstories.api.world.WorldUser;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
-import io.xol.chunkstories.api.world.chunk.Region;
-import io.xol.chunkstories.api.world.chunk.WorldUser;
+import io.xol.chunkstories.api.world.region.Region;
 import io.xol.chunkstories.util.concurrency.CompoundFence;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.CubicChunk;
@@ -129,21 +129,6 @@ public class HashMapWorldRegionsHolder
 		
 		return allRegionsFences;
 	}
-
-	/*public void clearAll()
-	{
-		Iterator<RegionImplementation> i = regions.values().iterator();
-		RegionImplementation holder;
-		while (i.hasNext())
-		{
-			holder = i.next();
-			if (holder != null)
-			{
-				holder.unload();
-			}
-		}
-		regions.clear();
-	}*/
 
 	public void markChunkForReRender(int chunkX, int chunkY, int chunkZ)
 	{

@@ -17,7 +17,7 @@ import io.xol.chunkstories.renderer.opengl.vbo.VertexBufferGL;
 import io.xol.chunkstories.renderer.terrain.HeightmapMesher.Surface;
 import io.xol.chunkstories.world.WorldClientCommon;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
+import io.xol.chunkstories.world.summary.HeightmapImplementation;
 
 public class FarTerrainBaker
 {
@@ -71,7 +71,7 @@ public class FarTerrainBaker
 				if (currentChunkX < 0 && currentChunkX % 8 != 0)
 					rx--;*/
 
-				RegionSummaryImplementation summary = world.getRegionsSummariesHolder().getRegionSummaryWorldCoordinates(currentChunkX * 32, currentChunkZ * 32);
+				HeightmapImplementation summary = world.getRegionsSummariesHolder().getHeightmapWorldCoordinates(currentChunkX * 32, currentChunkZ * 32);
 
 				if (summary == null || !summary.isLoaded())
 				{
@@ -359,13 +359,13 @@ public class FarTerrainBaker
 	{
 		int regionDisplayedX, regionDisplayedZ;
 		
-		RegionSummaryImplementation regionSummary;
+		HeightmapImplementation regionSummary;
 	
 		//Mesh (client renderer)
 		int[][] vertexSectionsOffsets, vertexSectionsSizes;
 		VertexBuffer verticesObject;
 	
-		public RegionMesh(RegionSummaryImplementation dataSource, byte[] vboContent, int[][] vertexSectionsOffsets, int[][] vertexSectionsSizes)
+		public RegionMesh(HeightmapImplementation dataSource, byte[] vboContent, int[][] vertexSectionsOffsets, int[][] vertexSectionsSizes)
 		{
 			this.regionSummary = dataSource;
 			

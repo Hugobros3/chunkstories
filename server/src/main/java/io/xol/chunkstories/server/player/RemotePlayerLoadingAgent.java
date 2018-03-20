@@ -16,7 +16,7 @@ import io.xol.chunkstories.api.net.packets.PacketWorldUser;
 import io.xol.chunkstories.api.net.packets.PacketWorldUser.Type;
 import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
-import io.xol.chunkstories.api.world.heightmap.RegionSummary;
+import io.xol.chunkstories.api.world.heightmap.Heightmap;
 import io.xol.chunkstories.world.region.RegionImplementation;
 
 /** 
@@ -34,7 +34,7 @@ public class RemotePlayerLoadingAgent {
 	Set<Integer> usedChunksHandles = new HashSet<Integer>();
 	Set<Integer> usedRegionHandles = new HashSet<Integer>();
 	
-	//Set<RegionSummary> usedRegionSummaries = new HashSet<RegionSummary>();
+	//Set<Heightmap> usedRegionSummaries = new HashSet<Heightmap>();
 	
 	Lock lock = new ReentrantLock();
 	boolean destroyed = false;
@@ -108,7 +108,7 @@ public class RemotePlayerLoadingAgent {
 				}
 				
 				if(usedRegionHandles.add(handle)) {
-					RegionSummary regionSummary = player.getWorld().getRegionsSummariesHolder().aquireRegionSummary(player, packet.getX(), packet.getZ());
+					Heightmap regionSummary = player.getWorld().getRegionsSummariesHolder().aquireHeightmap(player, packet.getX(), packet.getZ());
 					assert regionSummary != null; // assume it not being null because it's the supposed behaviour
 				}
 				else {
@@ -120,7 +120,7 @@ public class RemotePlayerLoadingAgent {
 				
 				//If we actually owned this handle
 				if(usedRegionHandles.remove(handle)) {
-					RegionSummary regionSummary = player.getWorld().getRegionsSummariesHolder().getRegionSummary(packet.getX(), packet.getZ());
+					Heightmap regionSummary = player.getWorld().getRegionsSummariesHolder().getHeightmap(packet.getX(), packet.getZ());
 					assert regionSummary != null; // We can assert the region summary exists because at this point it MUST be held by this very loading agent !
 					regionSummary.unregisterUser(player);
 				} else {
@@ -162,7 +162,7 @@ public class RemotePlayerLoadingAgent {
 
 			for(int handle : this.usedRegionHandles) {
 				int pos[] = summary(handle);
-				RegionSummary regionSummary = player.getWorld().getRegionsSummariesHolder().getRegionSummary(pos[0], pos[1]);
+				Heightmap regionSummary = player.getWorld().getRegionsSummariesHolder().getHeightmap(pos[0], pos[1]);
 				//assert regionSummary != null; // We can assert the region summary exists because at this point it MUST be held by this very loading agent !
 				if(regionSummary != null)
 					regionSummary.unregisterUser(player);

@@ -14,7 +14,7 @@ import io.xol.chunkstories.api.rendering.world.chunk.ChunkMeshDataSubtypes.LodLe
 import io.xol.chunkstories.api.rendering.world.chunk.ChunkMeshDataSubtypes.ShadingType;
 import io.xol.chunkstories.api.rendering.world.chunk.ChunkRenderer;
 import io.xol.chunkstories.api.rendering.world.chunk.ChunkRenderer.ChunkRenderContext;
-import io.xol.chunkstories.api.voxel.VoxelSides;
+import io.xol.chunkstories.api.voxel.VoxelSide;
 import io.xol.chunkstories.api.voxel.models.VoxelModel;
 import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.api.world.cell.CellData;
@@ -96,7 +96,7 @@ public class CustomVoxelModel implements VoxelRenderer, VoxelModel
 			
 			// If it is, don't draw it.
 			cullingCache[j] = adj.getVoxel().getDefinition().isOpaque() || 
-					adj.getVoxel().isFaceOpaque(VoxelSides.values()[j], adj.getMetaData()) || 
+					adj.getVoxel().isFaceOpaque(VoxelSide.values()[j], adj.getMetaData()) || 
 					info.getVoxel().getDefinition().isSelfOpaque() && adj.getVoxel().sameKind(info.getVoxel()) && adj.getMetaData() == info.getMetaData();
 		}
 
@@ -188,20 +188,20 @@ public class CustomVoxelModel implements VoxelRenderer, VoxelModel
 	private VoxelTexture selectsTextureFromIndex(CellData info, int modelTextureIndex)
 	{
 		if(this.texturesNames[modelTextureIndex].equals("_top"))
-			return info.getTexture(VoxelSides.TOP);
+			return info.getTexture(VoxelSide.TOP);
 		else if(this.texturesNames[modelTextureIndex].equals("_bottom"))
-			return info.getTexture(VoxelSides.BOTTOM);
+			return info.getTexture(VoxelSide.BOTTOM);
 		else if(this.texturesNames[modelTextureIndex].equals("_left"))
-			return info.getTexture(VoxelSides.LEFT);
+			return info.getTexture(VoxelSide.LEFT);
 		else if(this.texturesNames[modelTextureIndex].equals("_right"))
-			return info.getTexture(VoxelSides.RIGHT);
+			return info.getTexture(VoxelSide.RIGHT);
 		else if(this.texturesNames[modelTextureIndex].equals("_front"))
-			return info.getTexture(VoxelSides.FRONT);
+			return info.getTexture(VoxelSide.FRONT);
 		else if(this.texturesNames[modelTextureIndex].equals("_back"))
-			return info.getTexture(VoxelSides.BACK);
+			return info.getTexture(VoxelSide.BACK);
 		
 		//If none of this bs is going on
-		return store.parent().textures().getVoxelTextureByName(this.texturesNames[modelTextureIndex].replace("~", info.getVoxel().getName()));
+		return store.parent().textures().getVoxelTexture(this.texturesNames[modelTextureIndex].replace("~", info.getVoxel().getName()));
 	}
 	
 	@Override

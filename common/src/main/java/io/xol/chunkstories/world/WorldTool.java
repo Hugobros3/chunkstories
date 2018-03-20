@@ -8,10 +8,10 @@ package io.xol.chunkstories.world;
 
 import java.util.Iterator;
 
-import io.xol.chunkstories.api.GameContext;
 import org.joml.Vector3dc;
 import org.joml.Vector3fc;
 
+import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;

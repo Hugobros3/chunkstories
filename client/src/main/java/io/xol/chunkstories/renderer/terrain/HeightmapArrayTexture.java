@@ -23,21 +23,21 @@ import io.xol.chunkstories.api.rendering.textures.TextureFormat;
 import io.xol.chunkstories.api.rendering.world.WorldRenderer.SummariesTexturesHolder;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
-import io.xol.chunkstories.api.voxel.VoxelSides;
+import io.xol.chunkstories.api.voxel.VoxelSide;
 import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.api.world.heightmap.RegionSummary;
+import io.xol.chunkstories.api.world.heightmap.Heightmap;
 import io.xol.chunkstories.renderer.opengl.texture.ArrayTextureGL;
 import io.xol.chunkstories.voxel.VoxelTextureAtlased;
 import io.xol.chunkstories.world.cell.ScratchCell;
-import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
+import io.xol.chunkstories.world.summary.HeightmapImplementation;
 
-public class SummariesArrayTexture implements SummariesTexturesHolder {
+public class HeightmapArrayTexture implements SummariesTexturesHolder {
 	final ArrayTextureGL heights;
 	final ArrayTextureGL topVoxels;
 	final ClientInterface client;
 	final World world;
 	
-	public SummariesArrayTexture(ClientInterface client, World world) {
+	public HeightmapArrayTexture(ClientInterface client, World world) {
 		this.client = client;
 		this.world = world;
 		
@@ -129,25 +129,25 @@ public class SummariesArrayTexture implements SummariesTexturesHolder {
 					
 					//If data is not yet in the slot, check if the world has data for it
 					if(!arrayTextureContents[slot].hasData) {
-						RegionSummary sum = world.getRegionsSummariesHolder().getRegionSummary(arrayTextureContents[slot].regionX, arrayTextureContents[slot].regionZ);
+						Heightmap sum = world.getRegionsSummariesHolder().getHeightmap(arrayTextureContents[slot].regionX, arrayTextureContents[slot].regionZ);
 						if(sum != null && sum.isLoaded()) {
 
-							loadHeights((RegionSummaryImplementation)sum, bb, 0);
+							loadHeights((HeightmapImplementation)sum, bb, 0);
 							heights.uploadTextureData(slot, 0, bb);
 							//heights.computeMipmaps();
 							
 							for(int lod = 1; lod <= 8; lod++) {
-								loadHeights((RegionSummaryImplementation)sum, bb, lod);
+								loadHeights((HeightmapImplementation)sum, bb, lod);
 								heights.uploadTextureData(slot, lod, bb);
 							}
 							heights.setMipMapping(true);
 							heights.setMipmapLevelsRange(0, 8);
 
-							loadTopVoxels((RegionSummaryImplementation)sum, bb, 0);
+							loadTopVoxels((HeightmapImplementation)sum, bb, 0);
 							topVoxels.uploadTextureData(slot, 0, bb);
 							
 							for(int lod = 1; lod <= 8; lod++) {
-								loadTopVoxels((RegionSummaryImplementation)sum, bb, lod);
+								loadTopVoxels((HeightmapImplementation)sum, bb, lod);
 								topVoxels.uploadTextureData(slot, lod, bb);
 							}
 							topVoxels.setMipMapping(true);
@@ -171,25 +171,25 @@ public class SummariesArrayTexture implements SummariesTexturesHolder {
 	
 	int size[] = {256, 128, 64, 32, 16, 8, 4, 2, 1};
 	
-	private void loadHeights(RegionSummaryImplementation sum, ByteBuffer bb, int lod) {
+	private void loadHeights(HeightmapImplementation sum, ByteBuffer bb, int lod) {
 		bb.clear();
 		int heights[] = sum.getHeightData();
 		for (int i = 0; i < size[lod] * size[lod]; i++)
 		{
-			int j = RegionSummaryImplementation.mainMimpmapOffsets[lod] + i;
+			int j = HeightmapImplementation.mainMimpmapOffsets[lod] + i;
 			bb.putInt(heights[j]);
 		}
 		bb.flip();
 	}
 	
-	private void loadTopVoxels(RegionSummaryImplementation sum, ByteBuffer bb, int lod) {
+	private void loadTopVoxels(HeightmapImplementation sum, ByteBuffer bb, int lod) {
 		bb.clear();
 		int data[] = sum.getVoxelData();
 		ScratchCell cell = new ScratchCell(world);
 		cell.sunlight = 15;
 		for (int i = 0; i < size[lod] * size[lod]; i++)
 		{
-			int j = RegionSummaryImplementation.mainMimpmapOffsets[lod] + i;
+			int j = HeightmapImplementation.mainMimpmapOffsets[lod] + i;
 			
 			int raw_data = data[j];
 			Voxel v = world.getContentTranslator().getVoxelForId(VoxelFormat.id(raw_data));
@@ -198,7 +198,7 @@ public class SummariesArrayTexture implements SummariesTexturesHolder {
 			if (v.getDefinition().isLiquid())
 				bb.putInt(512);
 			else
-				bb.putInt(((VoxelTextureAtlased)v.getVoxelTexture(VoxelSides.TOP, cell)).positionInColorIndex);
+				bb.putInt(((VoxelTextureAtlased)v.getVoxelTexture(VoxelSide.TOP, cell)).positionInColorIndex);
 		}
 		bb.flip();
 	}

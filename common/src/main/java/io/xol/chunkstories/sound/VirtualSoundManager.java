@@ -11,10 +11,10 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import io.xol.chunkstories.api.Location;
 import org.joml.Vector3dc;
 import org.joml.Vector3fc;
 
+import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.sound.SoundSource;

@@ -18,7 +18,7 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.api.rendering.world.chunk.ChunkRenderable;
 import io.xol.chunkstories.api.util.IterableIterator;
-import io.xol.chunkstories.api.voxel.VoxelSides;
+import io.xol.chunkstories.api.voxel.VoxelSide;
 import io.xol.chunkstories.api.world.cell.CellData;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunksIterator;
@@ -84,7 +84,7 @@ public class DebugInfoRenderer {
 		int csh = world.getRegionsSummariesHolder().getHeightAtWorldCoordinates(bx, bz);
 		
 		//Obtain the angle the player is facing
-		VoxelSides side = VoxelSides.TOP;
+		VoxelSide side = VoxelSide.TOP;
 		float angleX = -1;
 		if (playerEntity != null && playerEntity instanceof EntityLiving)
 			angleX = Math.round(((EntityLiving) playerEntity).getEntityRotationComponent().getHorizontalRotation());
@@ -94,15 +94,15 @@ public class DebugInfoRenderer {
 
 		if (Math.abs(dx) > Math.abs(dz)) {
 			if (dx > 0)
-				side = VoxelSides.RIGHT;
+				side = VoxelSide.RIGHT;
 			else
-				side = VoxelSides.LEFT;
+				side = VoxelSide.LEFT;
 		}
 		else {
 			if (dz > 0)
-				side = VoxelSides.FRONT;
+				side = VoxelSide.FRONT;
 			else
-				side = VoxelSides.BACK;
+				side = VoxelSide.BACK;
 		}
 
 		//Count all the entities
@@ -159,7 +159,7 @@ public class DebugInfoRenderer {
 		renderingInterface.getFontRenderer().drawStringWithShadow(font, posx, posy, text, 1, 1, new Vector4f(1));
 
 		posy -= lineHeight;
-		text = "Current Summary : " + world.getRegionsSummariesHolder().getRegionSummaryChunkCoordinates(cx, cz);
+		text = "Current Summary : " + world.getRegionsSummariesHolder().getHeightmapChunkCoordinates(cx, cz);
 		renderingInterface.getFontRenderer().drawStringWithShadow(font, posx, posy, text, 1, 1, new Vector4f(1));
 		
 		posy -= lineHeight;

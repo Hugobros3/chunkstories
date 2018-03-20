@@ -6,18 +6,6 @@
 
 package io.xol.chunkstories.voxel.models;
 
-import io.xol.chunkstories.api.content.Content;
-import io.xol.chunkstories.api.content.Content.Voxels;
-import org.joml.Vector3f;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import io.xol.chunkstories.api.content.Asset;
-import io.xol.chunkstories.api.content.mods.AssetHierarchy;
-import io.xol.chunkstories.api.voxel.VoxelSides;
-import io.xol.chunkstories.api.voxel.models.VoxelModel;
-import io.xol.chunkstories.voxel.VoxelsStore;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
@@ -26,6 +14,18 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import org.joml.Vector3f;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.xol.chunkstories.api.content.Asset;
+import io.xol.chunkstories.api.content.Content;
+import io.xol.chunkstories.api.content.Content.Voxels;
+import io.xol.chunkstories.api.content.mods.AssetHierarchy;
+import io.xol.chunkstories.api.voxel.VoxelSide;
+import io.xol.chunkstories.api.voxel.models.VoxelModel;
+import io.xol.chunkstories.voxel.VoxelsStore;
 
 public class VoxelModelsStore implements Content.Voxels.VoxelModels
 {
@@ -258,22 +258,22 @@ public class VoxelModelsStore implements Content.Voxels.VoxelModels
 							switch (face)
 							{
 							case "bottom":
-								currentCull[VoxelSides.BOTTOM.ordinal()] = true;
+								currentCull[VoxelSide.BOTTOM.ordinal()] = true;
 								break;
 							case "top":
-								currentCull[VoxelSides.TOP.ordinal()] = true;
+								currentCull[VoxelSide.TOP.ordinal()] = true;
 								break;
 							case "left":
-								currentCull[VoxelSides.LEFT.ordinal()] = true;
+								currentCull[VoxelSide.LEFT.ordinal()] = true;
 								break;
 							case "right":
-								currentCull[VoxelSides.RIGHT.ordinal()] = true;
+								currentCull[VoxelSide.RIGHT.ordinal()] = true;
 								break;
 							case "front":
-								currentCull[VoxelSides.FRONT.ordinal()] = true;
+								currentCull[VoxelSide.FRONT.ordinal()] = true;
 								break;
 							case "back":
-								currentCull[VoxelSides.BACK.ordinal()] = true;
+								currentCull[VoxelSide.BACK.ordinal()] = true;
 								break;
 							}
 						}
@@ -287,7 +287,7 @@ public class VoxelModelsStore implements Content.Voxels.VoxelModels
 							{
 								String toInclude = splitted[1];
 								toInclude = toInclude.replace("~", voxelModelName.contains(".") ? voxelModelName.split("\\.")[0] : voxelModelName);
-								VoxelModel includeMeh = getVoxelModelByName(toInclude);
+								VoxelModel includeMeh = getVoxelModel(toInclude);
 								if (includeMeh != null)
 								{
 									//Iterates over included model
@@ -324,7 +324,8 @@ public class VoxelModelsStore implements Content.Voxels.VoxelModels
 		}
 	}
 
-	public CustomVoxelModel getVoxelModelByName(String name)
+	@Override
+	public CustomVoxelModel getVoxelModel(String name)
 	{
 		if (name.endsWith(".default"))
 			name = name.substring(0, name.length() - 8);

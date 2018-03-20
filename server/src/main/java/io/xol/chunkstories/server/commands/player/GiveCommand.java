@@ -53,7 +53,7 @@ public class GiveCommand extends ServerCommandBasic {
 		String itemName = arguments[0];
 
 		// Look for the item first
-		ItemDefinition type = gameContent.items().getItemTypeByName(itemName);
+		ItemDefinition type = gameContent.items().getItemDefinition(itemName);
 
 		// If the type was found we are simply trying to spawn an item
 		Item item = null;
@@ -68,11 +68,11 @@ public class GiveCommand extends ServerCommandBasic {
 			}
 
 			// Try to find a matching voxel
-			Voxel voxel = gameContent.voxels().getVoxelByName(itemName);
+			Voxel voxel = gameContent.voxels().getVoxel(itemName);
 
 			if (voxel != null) {
 				// Spawn new itemPile in his inventory
-				ItemVoxel itemVoxel = (ItemVoxel) gameContent.items().getItemTypeByName("item_voxel").newItem();
+				ItemVoxel itemVoxel = (ItemVoxel) gameContent.items().getItemDefinition("item_voxel").newItem();
 				itemVoxel.voxel = voxel;
 				itemVoxel.voxelMeta = voxelMeta;
 

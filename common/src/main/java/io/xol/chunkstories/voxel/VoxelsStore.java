@@ -6,49 +6,57 @@
 
 package io.xol.chunkstories.voxel;
 
-import io.xol.chunkstories.api.content.Content.Voxels;
-import io.xol.chunkstories.api.client.ClientContent;
-import io.xol.chunkstories.api.exceptions.content.IllegalVoxelDeclarationException;
-import io.xol.chunkstories.api.content.Asset;
-
-import io.xol.chunkstories.api.voxel.Voxel;
-import io.xol.chunkstories.api.rendering.voxel.VoxelRenderer;
-import io.xol.chunkstories.content.GameContentStore;
-import io.xol.chunkstories.voxel.models.VoxelModelsStore;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.xol.chunkstories.api.client.ClientContent;
+import io.xol.chunkstories.api.content.Asset;
+import io.xol.chunkstories.api.content.Content.Voxels;
+import io.xol.chunkstories.api.exceptions.content.IllegalVoxelDeclarationException;
+import io.xol.chunkstories.api.rendering.voxel.VoxelRenderer;
+import io.xol.chunkstories.api.voxel.Voxel;
+import io.xol.chunkstories.content.GameContentStore;
+import io.xol.chunkstories.voxel.material.VoxelMaterialsStore;
+import io.xol.chunkstories.voxel.models.VoxelModelsStore;
+
 public class VoxelsStore implements ClientContent.ClientVoxels
 {
-	public VoxelsStore(GameContentStore content)
-	{
-		this.content = content;
-		this.textures = new VoxelTexturesStoreAndAtlaser(this);
-		this.models = new VoxelModelsStore(this);
-		//this.reloadVoxelTypes();
-	}
-	
 	private final GameContentStore content;
+
+	private final VoxelMaterialsStore materials;
 	private final VoxelTexturesStoreAndAtlaser textures;
 	private final VoxelModelsStore models;
 	
 	private VoxelRenderer defaultVoxelRenderer;
 	
-	//public Voxel[] voxels = new Voxel[65536];
-	//public Set<Integer> attributedIds = new HashSet<Integer>();
 	public Map<String, Voxel> voxelsByName = new HashMap<String, Voxel>();
 	public int voxelTypes = 0;
 	public int lastAllocatedId;
 
 	private Voxel air;
 
+	public VoxelsStore(GameContentStore content)
+	{
+		this.content = content;
+
+		this.materials = new VoxelMaterialsStore(this);
+		this.textures = new VoxelTexturesStoreAndAtlaser(this);
+		this.models = new VoxelModelsStore(this);
+		//this.reloadVoxelTypes();
+	}
+	
+	@Override
+	public VoxelMaterialsStore materials() {
+		return materials;
+	}
+	
 	@Override
 	public VoxelTexturesStoreAndAtlaser textures()
 	{
@@ -63,6 +71,7 @@ public class VoxelsStore implements ClientContent.ClientVoxels
 	
 	public void reload()
 	{
+		this.materials.reload();
 		this.textures.buildTextureAtlas();
 		this.models.resetAndLoadModels();
 		
@@ -168,37 +177,11 @@ public class VoxelsStore implements ClientContent.ClientVoxels
 		}
 	}
 
-	/**
-	 * Get a voxel by it's id
-	 * @param voxelId The id of the voxel
-	 * @return
-	 */
-	/*public Voxel getVoxelById(int voxelId)
-	{
-		//Sanitize
-		voxelId = VoxelFormat.id(voxelId);
-		if (voxelId <= 0)
-			return voxels[0];
-		if (voxelId >= voxels.length)
-			return voxels[0];
-		Voxel v = voxels[voxelId];
-		if (v == null)
-		{
-			//System.out.println("Asked for unknown id : " + voxelId);
-			return voxels[0];
-		}
-		return v;
-	}*/
-
-	public Voxel getVoxelByName(String voxelName)
+	@Override
+	public Voxel getVoxel(String voxelName)
 	{
 		return voxelsByName.get(voxelName);
 	}
-
-	/*public Set<Integer> getAllLoadedVoxelIds()
-	{
-		return attributedIds;
-	}*/
 
 	@Override
 	public Iterator<Voxel> all()
@@ -226,4 +209,6 @@ public class VoxelsStore implements ClientContent.ClientVoxels
 	public Voxel air() {
 		return air;
 	}
+
+
 }

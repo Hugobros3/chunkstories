@@ -7,7 +7,7 @@
 package io.xol.chunkstories.world.cell;
 
 import io.xol.chunkstories.api.voxel.Voxel;
-import io.xol.chunkstories.api.voxel.VoxelSides;
+import io.xol.chunkstories.api.voxel.VoxelSide;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.cell.CellData;
 
@@ -66,7 +66,7 @@ public class ScratchCell implements CellData {
 	
 	@Override
 	public CellData getNeightbor(int side_int) {
-		VoxelSides side = VoxelSides.values()[side_int];
+		VoxelSide side = VoxelSide.values()[side_int];
 		return world.peekSafely(x + side.dx, y + side.dy, z + side.dz);
 	}
 }

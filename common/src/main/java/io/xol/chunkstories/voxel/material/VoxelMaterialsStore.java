@@ -15,26 +15,29 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.xol.chunkstories.api.content.Content;
-import io.xol.chunkstories.api.voxel.materials.Material;
 import io.xol.chunkstories.api.content.Asset;
+import io.xol.chunkstories.api.content.Content;
+import io.xol.chunkstories.api.voxel.materials.VoxelMaterial;
 import io.xol.chunkstories.content.GameContentStore;
+import io.xol.chunkstories.voxel.VoxelsStore;
 
-public class MaterialsStore implements Content.Materials
+public class VoxelMaterialsStore implements Content.Voxels.VoxelMaterials
 {
 	private final GameContentStore store;
+	private final VoxelsStore voxels;
 	
 	private static final Logger logger = LoggerFactory.getLogger("content.materials");
 	public Logger logger() {
 		return logger;
 	}
 	
-	public MaterialsStore(GameContentStore store)
+	public VoxelMaterialsStore(VoxelsStore voxels)
 	{
-		this.store = store;
+		this.voxels = voxels;
+		this.store = voxels.parent();
 	}
 	
-	Map<String, Material> materials = new HashMap<String, Material>();
+	Map<String, VoxelMaterial> materials = new HashMap<String, VoxelMaterial>();
 
 	public void reload()
 	{
@@ -44,11 +47,11 @@ public class MaterialsStore implements Content.Materials
 		while(i.hasNext())
 		{
 			Asset f = i.next();
-			readitemsDefinitions(f);
+			readDefinitions(f);
 		}
 	}
 
-	private void readitemsDefinitions(Asset f)
+	private void readDefinitions(Asset f)
 	{
 		if (f == null)
 			return;
@@ -57,7 +60,7 @@ public class MaterialsStore implements Content.Materials
 			BufferedReader reader = new BufferedReader(f.reader());
 			String line = "";
 
-			MaterialImplementation material = null;
+			VoxelMaterialImplementation material = null;
 			while ((line = reader.readLine()) != null)
 			{
 				line = line.replace("\t", "");
@@ -81,7 +84,7 @@ public class MaterialsStore implements Content.Materials
 						String[] split = line.split(" ");
 						String materialName = split[1];
 
-						material = new MaterialImplementation(materialName, reader);
+						material = new VoxelMaterialImplementation(materialName, reader);
 
 						//Eventually add the material
 						materials.put(material.getName(), material);
@@ -96,17 +99,17 @@ public class MaterialsStore implements Content.Materials
 		}
 	}
 	
-	public Material getMaterialByName(String name)
+	public VoxelMaterial getVoxelMaterial(String name)
 	{
-		Material material = materials.get(name);
+		VoxelMaterial material = materials.get(name);
 		if(material != null)
 			return material;
 		
-		return getMaterialByName("undefined");
+		return getVoxelMaterial("undefined");
 	}
 
 	@Override
-	public Iterator<Material> all()
+	public Iterator<VoxelMaterial> all()
 	{
 		return materials.values().iterator();
 	}

@@ -6,35 +6,33 @@
 
 package io.xol.chunkstories.net.packets;
 
-import io.xol.chunkstories.api.net.PacketDestinator;
-import io.xol.chunkstories.api.net.PacketSender;
-import io.xol.chunkstories.api.net.PacketSendingContext;
-import io.xol.chunkstories.api.net.PacketWorldStreaming;
-import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.api.net.PacketReceptionContext;
-import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import io.xol.chunkstories.api.net.PacketDestinator;
+import io.xol.chunkstories.api.net.PacketReceptionContext;
+import io.xol.chunkstories.api.net.PacketSender;
+import io.xol.chunkstories.api.net.PacketSendingContext;
+import io.xol.chunkstories.api.net.PacketWorldStreaming;
+import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.world.summary.HeightmapImplementation;
 
-
-public class PacketRegionSummary extends PacketWorldStreaming
+public class PacketHeightmap extends PacketWorldStreaming
 {
 	// Server-side
-	public RegionSummaryImplementation summary;
+	public HeightmapImplementation summary;
 	
 	// Client-side
 	public int rx, rz;
 	public byte[] compressedData;
 
-	public PacketRegionSummary(World world) {
+	public PacketHeightmap(World world) {
 		super(world);
 	}
 	
-	public PacketRegionSummary(RegionSummaryImplementation summary) {
+	public PacketHeightmap(HeightmapImplementation summary) {
 		super(summary.world);
 		this.summary = summary;
 	}
@@ -57,7 +55,7 @@ public class PacketRegionSummary extends PacketWorldStreaming
 		compressMe.flip();
 		byte[] unCompressed = new byte[compressMe.remaining()];
 		compressMe.get(unCompressed);
-		byte[] compressedData = RegionSummaryImplementation.compressor.compress(unCompressed);
+		byte[] compressedData = HeightmapImplementation.compressor.compress(unCompressed);
 		out.writeInt(compressedData.length);
 		out.write(compressedData);
 	}

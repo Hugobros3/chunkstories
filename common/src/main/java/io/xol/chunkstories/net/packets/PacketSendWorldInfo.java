@@ -6,16 +6,16 @@
 
 package io.xol.chunkstories.net.packets;
 
-import io.xol.chunkstories.api.net.Packet;
-import io.xol.chunkstories.api.net.PacketDestinator;
-import io.xol.chunkstories.api.net.PacketSender;
-import io.xol.chunkstories.api.net.PacketSendingContext;
-import io.xol.chunkstories.api.net.PacketReceptionContext;
-import io.xol.chunkstories.world.WorldInfoImplementation;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+
+import io.xol.chunkstories.api.net.Packet;
+import io.xol.chunkstories.api.net.PacketDestinator;
+import io.xol.chunkstories.api.net.PacketReceptionContext;
+import io.xol.chunkstories.api.net.PacketSender;
+import io.xol.chunkstories.api.net.PacketSendingContext;
+import io.xol.chunkstories.world.WorldInfoImplementation;
 
 
 

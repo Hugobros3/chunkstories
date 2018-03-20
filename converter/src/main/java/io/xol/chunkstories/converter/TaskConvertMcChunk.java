@@ -73,7 +73,7 @@ public class TaskConvertMcChunk extends Task {
 
 					//Ignore the summaries for now
 					
-					/*RegionSummary summary = csWorld.getRegionsSummariesHolder().aquireRegionSummaryWorldCoordinates(this, chunkStoriesCurrentChunkX, chunkStoriesCurrentChunkZ);
+					/*Heightmap summary = csWorld.getRegionsSummariesHolder().aquireRegionSummaryWorldCoordinates(this, chunkStoriesCurrentChunkX, chunkStoriesCurrentChunkZ);
 					if(summary != null)
 						registeredCS_Summaries.add(summary);*/
 

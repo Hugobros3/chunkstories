@@ -8,11 +8,11 @@ package io.xol.chunkstories.world;
 
 import java.util.Iterator;
 
-import io.xol.chunkstories.api.Location;
-import io.xol.chunkstories.api.entity.Entity;
 import org.joml.Vector3d;
 import org.joml.Vector3dc;
 
+import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.world.WorldCollisionsManager;
 import io.xol.chunkstories.api.world.cell.CellData;

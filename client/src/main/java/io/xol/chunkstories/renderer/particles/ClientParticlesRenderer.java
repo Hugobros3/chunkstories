@@ -27,15 +27,13 @@ import io.xol.chunkstories.api.particles.ParticleTypeHandler;
 import io.xol.chunkstories.api.particles.ParticleTypeHandler.ParticleData;
 import io.xol.chunkstories.api.particles.ParticleTypeHandler.ParticleTypeRenderer;
 import io.xol.chunkstories.api.particles.ParticlesRenderer;
-import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.StateMachine.BlendMode;
+import io.xol.chunkstories.api.rendering.vertex.Primitive;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.renderer.opengl.vbo.VertexBufferGL;
-
-
 
 public class ClientParticlesRenderer implements ParticlesRenderer
 {
@@ -79,7 +77,7 @@ public class ClientParticlesRenderer implements ParticlesRenderer
 
 	public void spawnParticleAtPositionWithVelocity(String particleTypeName, Vector3dc location, Vector3dc velocity)
 	{
-		ParticleTypeHandler particleType = store.getParticleTypeHandlerByName(particleTypeName);
+		ParticleTypeHandler particleType = store.getParticleType(particleTypeName);
 		if (particleType == null || location == null)
 			return;
 

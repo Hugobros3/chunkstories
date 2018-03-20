@@ -10,7 +10,7 @@ import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
-import io.xol.chunkstories.api.voxel.VoxelSides;
+import io.xol.chunkstories.api.voxel.VoxelSide;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.cell.CellData;
 
@@ -133,7 +133,7 @@ public class AABBVoxelIterator implements IterableIterator<CellData>, CellData{
 
 	@Override
 	public CellData getNeightbor(int side_int) {
-		VoxelSides side = VoxelSides.values()[side_int];
+		VoxelSide side = VoxelSide.values()[side_int];
 		return world.peekSafely(getX() + side.dx, getY() + side.dy, getZ() + side.dz);
 	}
 }

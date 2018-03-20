@@ -40,7 +40,7 @@ import io.xol.chunkstories.renderer.passes.RenderingGraph;
 import io.xol.chunkstories.renderer.terrain.FarTerrainGSMeshRenderer;
 import io.xol.chunkstories.renderer.terrain.FarTerrainMeshRenderer;
 //import io.xol.chunkstories.renderer.terrain.FarTerrainNoMeshRenderer;
-import io.xol.chunkstories.renderer.terrain.SummariesArrayTexture;
+import io.xol.chunkstories.renderer.terrain.HeightmapArrayTexture;
 import io.xol.chunkstories.world.WorldClientCommon;
 
 /** A tragically huge behemoth, held responsible of actually displaying all that mess */
@@ -80,7 +80,7 @@ public class WorldRendererImplementation implements WorldRenderer
 		this.entitiesRenderer = new CulledEntitiesRenderer(world);
 		this.particlesRenderer = new ClientParticlesRenderer(world);
 		this.farTerrainRenderer = new FarTerrainGSMeshRenderer(this);
-		this.summariesTexturesHolder = new SummariesArrayTexture(client, world);
+		this.summariesTexturesHolder = new HeightmapArrayTexture(client, world);
 		this.weatherEffectsRenderer = new DefaultWeatherEffectsRenderer(world, this);
 		this.decalsRenderer = new DecalsRendererImplementation(this);
 		
@@ -109,7 +109,7 @@ public class WorldRendererImplementation implements WorldRenderer
 	
 	public void renderWorld(RenderingInterface renderingInterface)
 	{
-		((SummariesArrayTexture) summariesTexturesHolder).update();
+		((HeightmapArrayTexture) summariesTexturesHolder).update();
 		
 		//if(RenderingConfig.doDynamicCubemaps)
 		//	cubemapRenderer.renderWorldCubemap(renderingInterface, renderBuffers.rbEnvironmentMap, 128, true);

@@ -15,9 +15,9 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.workers.Tasks;
 import io.xol.chunkstories.api.world.WorldInfo.WorldSize;
+import io.xol.chunkstories.api.world.WorldUser;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
-import io.xol.chunkstories.api.world.chunk.WorldUser;
-import io.xol.chunkstories.api.world.heightmap.RegionSummary;
+import io.xol.chunkstories.api.world.heightmap.Heightmap;
 import io.xol.chunkstories.util.concurrency.CompoundFence;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.WorldTool;
@@ -168,7 +168,7 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 		CompoundFence compoundFence = new CompoundFence();
 		for (int regionX = 0; regionX < size.sizeInChunks / 8; regionX++) {
 			for (int regionZ = 0; regionZ < size.sizeInChunks / 8; regionZ++) {
-				TaskBuildRegionSummary task = new TaskBuildRegionSummary(regionX, regionZ, csWorld);
+				TaskBuildHeightmap task = new TaskBuildHeightmap(regionX, regionZ, csWorld);
 				workers.scheduleTask(task);
 				compoundFence.traverse();
 				
@@ -223,7 +223,7 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 		long lastPercentageShow = System.currentTimeMillis();
 
 		Set<ChunkHolder> registeredCS_Holders = new HashSet<ChunkHolder>();
-		Set<RegionSummary> registeredCS_Summaries = new HashSet<RegionSummary>();
+		Set<Heightmap> registeredCS_Summaries = new HashSet<Heightmap>();
 
 		int chunksAquired = 0;
 		WorldUser worldUser = this;
@@ -239,7 +239,7 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 				
 				CompoundFence loadRelevantData = new CompoundFence();
 				
-				RegionSummary sum = csWorld.getRegionsSummariesHolder().aquireRegionSummaryChunkCoordinates(worldUser, chunkX, chunkZ);
+				Heightmap sum = csWorld.getRegionsSummariesHolder().aquireHeightmapChunkCoordinates(worldUser, chunkX, chunkZ);
 				registeredCS_Summaries.add(sum);
 				loadRelevantData.add(sum.waitForLoading());
 				
@@ -317,7 +317,7 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 							chunksAquired--;
 						}
 
-						for (RegionSummary summary : registeredCS_Summaries)
+						for (Heightmap summary : registeredCS_Summaries)
 							summary.unregisterUser(worldUser);
 
 						registeredCS_Summaries.clear();
@@ -339,7 +339,7 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 			chunksAquired--;
 		}
 
-		for (RegionSummary summary : registeredCS_Summaries)
+		for (Heightmap summary : registeredCS_Summaries)
 			summary.unregisterUser(worldUser);
 
 		registeredCS_Summaries.clear();

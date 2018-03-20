@@ -44,11 +44,12 @@ import io.xol.chunkstories.api.util.ConfigDeprecated;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.voxel.Voxel;
-import io.xol.chunkstories.api.voxel.VoxelSides;
+import io.xol.chunkstories.api.voxel.VoxelSide;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldCollisionsManager;
 import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.api.world.WorldMaster;
+import io.xol.chunkstories.api.world.WorldUser;
 import io.xol.chunkstories.api.world.cell.Cell;
 import io.xol.chunkstories.api.world.cell.CellData;
 import io.xol.chunkstories.api.world.cell.FutureCell;
@@ -56,10 +57,9 @@ import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.Chunk.ChunkCell;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.chunk.ChunksIterator;
-import io.xol.chunkstories.api.world.chunk.Region;
-import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.api.world.generator.WorldGenerator;
-import io.xol.chunkstories.api.world.heightmap.RegionSummary;
+import io.xol.chunkstories.api.world.heightmap.Heightmap;
+import io.xol.chunkstories.api.world.region.Region;
 import io.xol.chunkstories.content.sandbox.UnthrustedUserContentSecurityManager;
 import io.xol.chunkstories.content.translator.AbstractContentTranslator;
 import io.xol.chunkstories.content.translator.IncompatibleContentException;
@@ -76,7 +76,7 @@ import io.xol.chunkstories.world.iterators.WorldChunksIterator;
 import io.xol.chunkstories.world.logic.WorldLogicThread;
 import io.xol.chunkstories.world.region.HashMapWorldRegionsHolder;
 import io.xol.chunkstories.world.region.RegionImplementation;
-import io.xol.chunkstories.world.summary.WorldRegionSummariesHolder;
+import io.xol.chunkstories.world.summary.WorldHeightmapsImplementation;
 
 
 
@@ -113,7 +113,7 @@ public abstract class WorldImplementation implements World
 	private HashMapWorldRegionsHolder regions;
 
 	// Heightmap management
-	private WorldRegionSummariesHolder regionSummaries;
+	private WorldHeightmapsImplementation regionSummaries;
 
 	// Temporary entity list
 	protected final WorldEntitiesHolder entities;
@@ -138,7 +138,7 @@ public abstract class WorldImplementation implements World
 	
 			//Create holders for the world data
 			this.regions = new HashMapWorldRegionsHolder(this);
-			this.regionSummaries = new WorldRegionSummariesHolder(this);
+			this.regionSummaries = new WorldHeightmapsImplementation(this);
 			
 			//And for the citizens
 			this.entities = new WorldEntitiesHolder(this);
@@ -276,7 +276,7 @@ public abstract class WorldImplementation implements World
 			
 			//TODO EntitySimplePlayer ?
 			if(entity == null || ((entity instanceof EntityLiving) && (((EntityLiving) entity).isDead())))
-				entity = this.gameContext.getContent().entities().getEntityTypeByName("player").create(actualSpawnLocation);
+				entity = this.gameContext.getContent().entities().getEntityDefinition("player").create(actualSpawnLocation);
 				//entity = new EntityPlayer(this, 0d, 0d, 0d, player.getName()); //Default entity
 			else
 				entity.setUUID(-1);
@@ -448,7 +448,7 @@ public abstract class WorldImplementation implements World
 	}
 
 	@Override
-	public WorldRegionSummariesHolder getRegionsSummariesHolder()
+	public WorldHeightmapsImplementation getRegionsSummariesHolder()
 	{
 		return regionSummaries;
 	}
@@ -503,13 +503,13 @@ public abstract class WorldImplementation implements World
 			super(x, y, z, voxel, meta, blocklight, sunlight);
 			
 			int groundHeight = getRegionsSummariesHolder().getHeightAtWorldCoordinates(x, z);
-			if(groundHeight < y && groundHeight != RegionSummary.NO_DATA)
+			if(groundHeight < y && groundHeight != Heightmap.NO_DATA)
 				this.sunlight = 15;
 		}
 
 		@Override
 		public CellData getNeightbor(int side_int) {
-			VoxelSides side = VoxelSides.values()[side_int];
+			VoxelSide side = VoxelSide.values()[side_int];
 			return peekSafely(getX() + side.dx, getY() + side.dy, getZ() + side.dz);
 		}
 

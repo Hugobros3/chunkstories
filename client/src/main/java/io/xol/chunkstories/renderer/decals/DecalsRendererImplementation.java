@@ -20,10 +20,10 @@ import org.lwjgl.BufferUtils;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.events.rendering.WorldRenderingDecalsEvent;
-import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.effects.DecalsRenderer;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
+import io.xol.chunkstories.api.rendering.vertex.Primitive;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
 import io.xol.chunkstories.api.rendering.voxel.VoxelBakerCubic;
@@ -34,7 +34,7 @@ import io.xol.chunkstories.api.rendering.world.chunk.ChunkMeshDataSubtypes.LodLe
 import io.xol.chunkstories.api.rendering.world.chunk.ChunkMeshDataSubtypes.ShadingType;
 import io.xol.chunkstories.api.rendering.world.chunk.ChunkRenderer;
 import io.xol.chunkstories.api.voxel.Voxel;
-import io.xol.chunkstories.api.voxel.VoxelSides.Corners;
+import io.xol.chunkstories.api.voxel.VoxelSide.Corners;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.cell.CellData;
 import io.xol.chunkstories.api.world.chunk.Chunk;
@@ -136,7 +136,7 @@ public class DecalsRendererImplementation implements DecalsRenderer
 							VoxelRenderer model = voxel.getVoxelRenderer(cell);
 
 							if (model == null)
-								model = voxel.store().models().getVoxelModelByName("default");
+								model = voxel.store().models().getVoxelModel("default");
 
 							ChunkRenderer chunkRenderer = new ChunkRenderer() {
 

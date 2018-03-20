@@ -25,15 +25,15 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 
-import io.xol.chunkstories.api.content.Content.Voxels;
-import io.xol.chunkstories.api.client.ClientContent;
-import io.xol.chunkstories.api.client.ClientInterface;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.xol.chunkstories.api.client.ClientContent;
+import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.content.Asset;
+import io.xol.chunkstories.api.content.Content.Voxels;
 import io.xol.chunkstories.api.content.mods.AssetHierarchy;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
@@ -405,7 +405,7 @@ public class VoxelTexturesStoreAndAtlaser implements ClientContent.ClientVoxels.
 		}
 	}
 
-	public VoxelTexture getVoxelTextureByName(String textureName)
+	public VoxelTexture getVoxelTexture(String textureName)
 	{
 		//textureName = "kek";
 

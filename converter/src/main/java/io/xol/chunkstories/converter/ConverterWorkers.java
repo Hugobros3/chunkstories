@@ -14,9 +14,9 @@ import io.xol.chunkstories.api.workers.Task;
 import io.xol.chunkstories.api.workers.TaskExecutor;
 import io.xol.chunkstories.api.workers.Tasks;
 import io.xol.chunkstories.api.world.WorldInfo.WorldSize;
+import io.xol.chunkstories.api.world.WorldUser;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
-import io.xol.chunkstories.api.world.chunk.WorldUser;
-import io.xol.chunkstories.api.world.heightmap.RegionSummary;
+import io.xol.chunkstories.api.world.heightmap.Heightmap;
 import io.xol.chunkstories.task.TasksPool;
 import io.xol.chunkstories.util.concurrency.CompoundFence;
 import io.xol.chunkstories.util.concurrency.SimpleFence;
@@ -63,7 +63,7 @@ public class ConverterWorkers extends TasksPool<Task> implements Tasks
 		AtomicBoolean pleaseDrop = new AtomicBoolean(false);
 		
 		Set<ChunkHolder> registeredCS_Holders = new HashSet<ChunkHolder>();
-		Set<RegionSummary> registeredCS_Summaries = new HashSet<RegionSummary>();
+		Set<Heightmap> registeredCS_Summaries = new HashSet<Heightmap>();
 		
 		int chunksAquired = 0;
 		
@@ -126,7 +126,7 @@ public class ConverterWorkers extends TasksPool<Task> implements Tasks
 						chunksAquired--;
 					}
 
-					for (RegionSummary summary : registeredCS_Summaries)
+					for (Heightmap summary : registeredCS_Summaries)
 						summary.unregisterUser(this);
 
 					registeredCS_Summaries.clear();
@@ -188,7 +188,7 @@ public class ConverterWorkers extends TasksPool<Task> implements Tasks
 						cwt.chunksAquired--;
 					}
 
-					for (RegionSummary summary : cwt.registeredCS_Summaries)
+					for (Heightmap summary : cwt.registeredCS_Summaries)
 						summary.unregisterUser(cwt);
 
 					cwt.registeredCS_Summaries.clear();

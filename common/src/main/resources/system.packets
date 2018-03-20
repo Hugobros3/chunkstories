@@ -51,7 +51,7 @@ packet region_summary
 	allowedFrom: server
 	type: world_streaming
 	fixedId: 5
-	commonClass: io.xol.chunkstories.net.packets.PacketRegionSummary
+	commonClass: io.xol.chunkstories.net.packets.PacketHeightmap
 end
 
 packet world_user_requests

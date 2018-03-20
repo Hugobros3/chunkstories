@@ -11,7 +11,7 @@ import java.util.Iterator;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
 import io.xol.chunkstories.world.region.RegionImplementation;
-import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
+import io.xol.chunkstories.world.summary.HeightmapImplementation;
 
 public class IOTasksImmediate extends IOTasks {
 
@@ -67,7 +67,7 @@ public class IOTasksImmediate extends IOTasks {
 	}
 
 	@Override
-	public IOTaskLoadSummary requestRegionSummaryLoad(RegionSummaryImplementation summary)
+	public IOTaskLoadSummary requestHeightmapLoad(HeightmapImplementation summary)
 	{
 		IOTaskLoadSummary task = new IOTaskLoadSummary(summary);
 		runTask(task);
@@ -76,7 +76,7 @@ public class IOTasksImmediate extends IOTasks {
 	}
 
 	@Override
-	public IOTaskSaveSummary requestRegionSummarySave(RegionSummaryImplementation summary)
+	public IOTaskSaveSummary requestHeightmapSave(HeightmapImplementation summary)
 	{
 		IOTaskSaveSummary task = new IOTaskSaveSummary(summary);
 		runTask(task);

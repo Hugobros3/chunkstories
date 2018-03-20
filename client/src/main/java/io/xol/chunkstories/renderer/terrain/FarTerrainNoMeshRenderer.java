@@ -15,7 +15,6 @@ import org.lwjgl.system.MemoryUtil;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.player.Player;
-import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.StateMachine.BlendMode;
 import io.xol.chunkstories.api.rendering.StateMachine.CullingMode;
@@ -23,6 +22,7 @@ import io.xol.chunkstories.api.rendering.StateMachine.DepthTestMode;
 import io.xol.chunkstories.api.rendering.StateMachine.PolygonFillMode;
 import io.xol.chunkstories.api.rendering.shader.Shader;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
+import io.xol.chunkstories.api.rendering.vertex.Primitive;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
 import io.xol.chunkstories.api.rendering.world.WorldRenderer.FarTerrainRenderer;
 import io.xol.chunkstories.api.world.WorldClient;
@@ -32,7 +32,7 @@ import io.xol.chunkstories.client.util.MemFreeByteBuffer;
 import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;
 import io.xol.chunkstories.renderer.opengl.vbo.VertexBufferGL;
 import io.xol.chunkstories.renderer.world.WorldRendererImplementation;
-import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
+import io.xol.chunkstories.world.summary.HeightmapImplementation;
 
 /** Idea: stop with the idea of building meshes on the CPU. Just use pre-computed grids or a geometry shader and a big array texture with all the summaries
  * to draw this shit insanely fast.
@@ -204,7 +204,7 @@ public class FarTerrainNoMeshRenderer implements FarTerrainRenderer {
 					if(i < 4 && j < 4 && index11 == -1)
 						continue;
 					
-					RegionSummaryImplementation sum = (RegionSummaryImplementation) world.getRegionsSummariesHolder().getRegionSummary(regionI, regionJ);
+					HeightmapImplementation sum = (HeightmapImplementation) world.getRegionsSummariesHolder().getHeightmap(regionI, regionJ);
 					
 					//Early out
 					if(sum == null || !sum.isLoaded())

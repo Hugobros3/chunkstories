@@ -32,8 +32,8 @@ import io.xol.chunkstories.api.rendering.world.chunk.ChunkRenderer;
 import io.xol.chunkstories.api.rendering.world.chunk.ChunkRenderer.ChunkRenderContext;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
-import io.xol.chunkstories.api.voxel.VoxelSides;
-import io.xol.chunkstories.api.voxel.VoxelSides.Corners;
+import io.xol.chunkstories.api.voxel.VoxelSide;
+import io.xol.chunkstories.api.voxel.VoxelSide.Corners;
 import io.xol.chunkstories.api.workers.Task;
 import io.xol.chunkstories.api.workers.TaskExecutor;
 import io.xol.chunkstories.api.world.WorldClient;
@@ -336,9 +336,9 @@ public class TaskBakeChunk extends Task {
 		CubicChunk chunk;
 		
 		int lastBlockBaked = 0;
-		byte[] sunlightLevel = new byte[VoxelSides.Corners.values().length];
-		byte[] blocklightLevel = new byte[VoxelSides.Corners.values().length];
-		byte[] aoLevel = new byte[VoxelSides.Corners.values().length];
+		byte[] sunlightLevel = new byte[VoxelSide.Corners.values().length];
+		byte[] blocklightLevel = new byte[VoxelSide.Corners.values().length];
+		byte[] aoLevel = new byte[VoxelSide.Corners.values().length];
 		
 		public ChunkBakerRenderContext(CubicChunk chunk, int cx, int cy, int cz)
 		{
@@ -372,11 +372,11 @@ public class TaskBakeChunk extends Task {
 				
 				private byte interp(byte[] array, float x, float y, float z)
 				{
-					float interpBotFront = Math2.mix(array[VoxelSides.Corners.BOTTOM_FRONT_LEFT.ordinal()], array[VoxelSides.Corners.BOTTOM_FRONT_RIGHT.ordinal()], Math2.clamp(x, 0.0, 1.0));
-					float interpBotBack = Math2.mix(array[VoxelSides.Corners.BOTTOM_BACK_LEFT.ordinal()], array[VoxelSides.Corners.BOTTOM_BACK_RIGHT.ordinal()], Math2.clamp(x, 0.0, 1.0));
+					float interpBotFront = Math2.mix(array[VoxelSide.Corners.BOTTOM_FRONT_LEFT.ordinal()], array[VoxelSide.Corners.BOTTOM_FRONT_RIGHT.ordinal()], Math2.clamp(x, 0.0, 1.0));
+					float interpBotBack = Math2.mix(array[VoxelSide.Corners.BOTTOM_BACK_LEFT.ordinal()], array[VoxelSide.Corners.BOTTOM_BACK_RIGHT.ordinal()], Math2.clamp(x, 0.0, 1.0));
 
-					float interpTopFront = Math2.mix(array[VoxelSides.Corners.TOP_FRONT_LEFT.ordinal()], array[VoxelSides.Corners.TOP_FRONT_RIGHT.ordinal()], Math2.clamp(x, 0.0, 1.0));
-					float interpTopBack = Math2.mix(array[VoxelSides.Corners.TOP_BACK_LEFT.ordinal()], array[VoxelSides.Corners.TOP_BACK_RIGHT.ordinal()], Math2.clamp(x, 0.0, 1.0));
+					float interpTopFront = Math2.mix(array[VoxelSide.Corners.TOP_FRONT_LEFT.ordinal()], array[VoxelSide.Corners.TOP_FRONT_RIGHT.ordinal()], Math2.clamp(x, 0.0, 1.0));
+					float interpTopBack = Math2.mix(array[VoxelSide.Corners.TOP_BACK_LEFT.ordinal()], array[VoxelSide.Corners.TOP_BACK_RIGHT.ordinal()], Math2.clamp(x, 0.0, 1.0));
 					
 					float interpBot = Math2.mix(interpBotBack, interpBotFront, Math2.clamp(z, 0.0, 1.0));
 					float interpTop = Math2.mix(interpTopBack, interpTopFront, Math2.clamp(z, 0.0, 1.0));
@@ -479,28 +479,28 @@ public class TaskBakeChunk extends Task {
 			int blmmp = cmd.getBlocklight(chunk, i - 1, k - 1, j + 1);
 			int blmmm = cmd.getBlocklight(chunk, i - 1, k - 1, j - 1);
 			
-			bake(VoxelSides.Corners.TOP_FRONT_RIGHT.ordinal()   , sl000, slp00, sl0p0, sl00p, slpp0, sl0pp, slp0p, slppp
+			bake(VoxelSide.Corners.TOP_FRONT_RIGHT.ordinal()   , sl000, slp00, sl0p0, sl00p, slpp0, sl0pp, slp0p, slppp
 															    , bl000, blp00, bl0p0, bl00p, blpp0, bl0pp, blp0p, blppp);
 			
-			bake(VoxelSides.Corners.TOP_FRONT_LEFT.ordinal()    , sl000, slm00, sl0p0, sl00p, slmp0, sl0pp, slm0p, slmpp
+			bake(VoxelSide.Corners.TOP_FRONT_LEFT.ordinal()    , sl000, slm00, sl0p0, sl00p, slmp0, sl0pp, slm0p, slmpp
 					 										    , bl000, blm00, bl0p0, bl00p, blmp0, bl0pp, blm0p, blmpp);
 			
-			bake(VoxelSides.Corners.TOP_BACK_RIGHT.ordinal()    , sl000, slp00, sl0p0, sl00m, slpp0, sl0pm, slp0m, slppm
+			bake(VoxelSide.Corners.TOP_BACK_RIGHT.ordinal()    , sl000, slp00, sl0p0, sl00m, slpp0, sl0pm, slp0m, slppm
 					 										    , bl000, blp00, bl0p0, bl00m, blpp0, bl0pm, blp0m, blppm);
 
-			bake(VoxelSides.Corners.TOP_BACK_LEFT.ordinal()     , sl000, slm00, sl0p0, sl00m, slmp0, sl0pm, slm0m, slmpm
+			bake(VoxelSide.Corners.TOP_BACK_LEFT.ordinal()     , sl000, slm00, sl0p0, sl00m, slmp0, sl0pm, slm0m, slmpm
 														        , bl000, blm00, bl0p0, bl00m, blmp0, bl0pm, blm0m, blmpm);
 			
-			bake(VoxelSides.Corners.BOTTOM_FRONT_RIGHT.ordinal(), sl000, slp00, sl0m0, sl00p, slpm0, sl0mp, slp0p, slpmp
+			bake(VoxelSide.Corners.BOTTOM_FRONT_RIGHT.ordinal(), sl000, slp00, sl0m0, sl00p, slpm0, sl0mp, slp0p, slpmp
 															    , bl000, blp00, bl0m0, bl00p, blpm0, bl0mp, blp0p, blpmp);
 
-			bake(VoxelSides.Corners.BOTTOM_FRONT_LEFT.ordinal() , sl000, slm00, sl0m0, sl00p, slmm0, sl0mp, slm0p, slmmp
+			bake(VoxelSide.Corners.BOTTOM_FRONT_LEFT.ordinal() , sl000, slm00, sl0m0, sl00p, slmm0, sl0mp, slm0p, slmmp
 															    , bl000, blm00, bl0m0, bl00p, blmm0, bl0mp, blm0p, blmmp);
 
-			bake(VoxelSides.Corners.BOTTOM_BACK_RIGHT.ordinal() , sl000, slp00, sl0m0, sl00m, slpm0, sl0mm, slp0m, slpmm
+			bake(VoxelSide.Corners.BOTTOM_BACK_RIGHT.ordinal() , sl000, slp00, sl0m0, sl00m, slpm0, sl0mm, slp0m, slpmm
 															    , bl000, blp00, bl0m0, bl00m, blpm0, bl0mm, blp0m, blpmm);
 
-			bake(VoxelSides.Corners.BOTTOM_BACK_LEFT.ordinal()  , sl000, slm00, sl0m0, sl00m, slmm0, sl0mm, slm0m, slmmm
+			bake(VoxelSide.Corners.BOTTOM_BACK_LEFT.ordinal()  , sl000, slm00, sl0m0, sl00m, slmm0, sl0mm, slm0m, slmmm
 															    , bl000, blm00, bl0m0, bl00m, blmm0, bl0mm, blm0m, blmmm);
 			
 			//Update this

@@ -11,10 +11,10 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
-import io.xol.chunkstories.api.entity.Entity;
 import org.joml.Vector3d;
 import org.joml.Vector3dc;
 
+import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.world.WorldImplementation;
 
 public class EntityRayIterator implements Iterator<Entity>

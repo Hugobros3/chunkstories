@@ -10,16 +10,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
 import org.slf4j.LoggerFactory;
 
-import io.xol.chunkstories.api.exceptions.content.mods.ModLoadFailureException;
 import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.content.mods.Mod;
+import io.xol.chunkstories.api.exceptions.content.mods.ModLoadFailureException;
 import io.xol.chunkstories.api.util.IterableIterator;
 
 public class ModFolder extends ModImplementation

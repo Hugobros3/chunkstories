@@ -14,8 +14,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.world.serialization.OfflineSerializedData;
 import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.api.world.serialization.OfflineSerializedData;
 
 public class SerializedEntityFile implements OfflineSerializedData
 {

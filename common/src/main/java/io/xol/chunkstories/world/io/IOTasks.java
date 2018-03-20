@@ -6,23 +6,6 @@
 
 package io.xol.chunkstories.world.io;
 
-import io.xol.chunkstories.Constants;
-import io.xol.chunkstories.api.util.concurrency.Fence;
-import io.xol.chunkstories.api.workers.Task;
-import io.xol.chunkstories.api.workers.TaskExecutor;
-import io.xol.chunkstories.api.world.WorldMaster;
-import io.xol.chunkstories.api.world.chunk.Chunk;
-import io.xol.chunkstories.api.world.chunk.Region;
-import io.xol.chunkstories.api.world.heightmap.RegionSummary;
-import io.xol.chunkstories.util.concurrency.UniqueQueue;
-import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.chunkstories.world.WorldTool;
-import io.xol.chunkstories.world.region.RegionImplementation;
-import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
-import io.xol.chunkstories.world.chunk.CompressedData;
-import io.xol.chunkstories.world.chunk.CubicChunk;
-import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
@@ -37,6 +20,22 @@ import java.util.concurrent.Semaphore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.xol.chunkstories.Constants;
+import io.xol.chunkstories.api.util.concurrency.Fence;
+import io.xol.chunkstories.api.workers.Task;
+import io.xol.chunkstories.api.workers.TaskExecutor;
+import io.xol.chunkstories.api.world.WorldMaster;
+import io.xol.chunkstories.api.world.chunk.Chunk;
+import io.xol.chunkstories.api.world.heightmap.Heightmap;
+import io.xol.chunkstories.api.world.region.Region;
+import io.xol.chunkstories.util.concurrency.UniqueQueue;
+import io.xol.chunkstories.world.WorldImplementation;
+import io.xol.chunkstories.world.WorldTool;
+import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
+import io.xol.chunkstories.world.chunk.CompressedData;
+import io.xol.chunkstories.world.chunk.CubicChunk;
+import io.xol.chunkstories.world.region.RegionImplementation;
+import io.xol.chunkstories.world.summary.HeightmapImplementation;
 import net.jpountz.lz4.LZ4Factory;
 import net.jpountz.lz4.LZ4FastDecompressor;
 
@@ -337,7 +336,7 @@ public class IOTasks extends Thread implements TaskExecutor
 			//Else if no file exists
 			else
 			{
-				/*RegionSummaryImplementation regionSummary = world.getRegionsSummariesHolder().getRegionSummaryWorldCoordinates(region.regionX * 256, region.regionZ * 256);
+				/*HeightmapImplementation regionSummary = world.getRegionsSummariesHolder().getHeightmapWorldCoordinates(region.regionX * 256, region.regionZ * 256);
 				//Require a chunk summary to be generated first !
 				if (regionSummary == null || !regionSummary.isLoaded())
 				{
@@ -512,9 +511,9 @@ public class IOTasks extends Thread implements TaskExecutor
 
 	public class IOTaskLoadSummary extends IOTask
 	{
-		RegionSummaryImplementation summary;
+		HeightmapImplementation summary;
 
-		public IOTaskLoadSummary(RegionSummaryImplementation summary)
+		public IOTaskLoadSummary(HeightmapImplementation summary)
 		{
 			this.summary = summary;
 		}
@@ -581,7 +580,7 @@ public class IOTasks extends Thread implements TaskExecutor
 				int[] ids = new int[256*256];
 				
 				t = 0;
-				h = RegionSummary.NO_DATA;
+				h = Heightmap.NO_DATA;
 				for (int x = 0; x < 256; x++)
 					for (int z = 0; z < 256; z++)
 					{
@@ -620,7 +619,7 @@ public class IOTasks extends Thread implements TaskExecutor
 		}
 	}
 
-	public Fence requestRegionSummaryLoad(RegionSummaryImplementation summary)
+	public Fence requestHeightmapLoad(HeightmapImplementation summary)
 	{
 		IOTaskLoadSummary task = new IOTaskLoadSummary(summary);
 		scheduleTask(task);
@@ -630,9 +629,9 @@ public class IOTasks extends Thread implements TaskExecutor
 
 	public class IOTaskSaveSummary extends IOTask
 	{
-		RegionSummaryImplementation summary;
+		HeightmapImplementation summary;
 
-		public IOTaskSaveSummary(RegionSummaryImplementation summary)
+		public IOTaskSaveSummary(HeightmapImplementation summary)
 		{
 			this.summary = summary;
 		}
@@ -658,7 +657,7 @@ public class IOTasks extends Thread implements TaskExecutor
 				for (int i = 0; i < 256 * 256; i++)
 					writeMe.putInt(heights[i]);
 
-				byte[] compressed = RegionSummaryImplementation.compressor.compress(writeMe.array());
+				byte[] compressed = HeightmapImplementation.compressor.compress(writeMe.array());
 
 				int compressedSize = compressed.length;
 
@@ -670,7 +669,7 @@ public class IOTasks extends Thread implements TaskExecutor
 				for (int i = 0; i < 256 * 256; i++)
 					writeMe.putInt(ids[i]);
 
-				compressed = RegionSummaryImplementation.compressor.compress(writeMe.array());
+				compressed = HeightmapImplementation.compressor.compress(writeMe.array());
 				compressedSize = compressed.length;
 
 				size = ByteBuffer.allocate(4).putInt(compressedSize).array();
@@ -710,7 +709,7 @@ public class IOTasks extends Thread implements TaskExecutor
 		}
 	}
 
-	public IOTaskSaveSummary requestRegionSummarySave(RegionSummaryImplementation summary)
+	public IOTaskSaveSummary requestHeightmapSave(HeightmapImplementation summary)
 	{
 		IOTaskSaveSummary task = new IOTaskSaveSummary(summary);
 		scheduleTask(task);

@@ -6,16 +6,6 @@
 
 package io.xol.chunkstories.world.generator;
 
-import io.xol.chunkstories.api.content.Content;
-import io.xol.chunkstories.api.exceptions.content.IllegalWorldGeneratorDeclarationException;
-import io.xol.chunkstories.api.content.Asset;
-import io.xol.chunkstories.api.content.mods.ModsManager;
-import io.xol.chunkstories.api.world.generator.BlankWorldGenerator;
-import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.api.world.generator.WorldGenerator;
-import io.xol.chunkstories.content.GameContentStore;
-import io.xol.chunkstories.content.GenericNamedConfigurable;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -26,6 +16,16 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.xol.chunkstories.api.content.Asset;
+import io.xol.chunkstories.api.content.Content;
+import io.xol.chunkstories.api.content.mods.ModsManager;
+import io.xol.chunkstories.api.exceptions.content.IllegalWorldGeneratorDeclarationException;
+import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.api.world.generator.BlankWorldGenerator;
+import io.xol.chunkstories.api.world.generator.WorldGenerator;
+import io.xol.chunkstories.content.GameContentStore;
+import io.xol.chunkstories.content.GenericNamedConfigurable;
 
 public class WorldGeneratorsStore implements Content.WorldGenerators
 {

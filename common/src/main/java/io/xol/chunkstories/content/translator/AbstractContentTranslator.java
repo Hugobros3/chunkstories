@@ -17,11 +17,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Set;
 
 import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.content.OnlineContentTranslator;
@@ -186,15 +185,15 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 		
 		//Check every translatable definition has a match
 		for(Voxel voxel : voxelMappings.keySet())
-			if(content.voxels().getVoxelByName(voxel.getName()) == null)
+			if(content.voxels().getVoxel(voxel.getName()) == null)
 				return false;
 		
 		for(EntityDefinition entity : entityMappings.keySet())
-			if(content.entities().getEntityTypeByName(entity.getName()) == null)
+			if(content.entities().getEntityDefinition(entity.getName()) == null)
 				return false;
 		
 		for(ItemDefinition item : itemMappings.keySet())
-			if(content.items().getItemTypeByName(item.getName()) == null)
+			if(content.items().getItemDefinition(item.getName()) == null)
 				return false;
 		
 		for(PacketDefinition packet : packetMappings.keySet())

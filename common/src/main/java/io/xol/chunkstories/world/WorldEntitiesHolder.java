@@ -11,14 +11,14 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import io.xol.chunkstories.api.Location;
-import io.xol.chunkstories.api.entity.Entity;
 import org.joml.Vector3d;
 import org.joml.Vector3dc;
 
+import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.World.NearEntitiesIterator;
-import io.xol.chunkstories.api.world.chunk.Region;
+import io.xol.chunkstories.api.world.region.Region;
 
 public class WorldEntitiesHolder implements Iterable<Entity>
 {

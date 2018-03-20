@@ -6,16 +6,16 @@
 
 package io.xol.chunkstories.content;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 
 import org.junit.Test;
 
+import io.xol.chunkstories.api.content.mods.ModsManager;
 import io.xol.chunkstories.api.exceptions.content.mods.NotAllModsLoadedException;
 import io.xol.chunkstories.content.mods.ModsManagerImplementation;
 import io.xol.chunkstories.content.mods.ModsManagerImplementation.NonExistentCoreContent;
-import io.xol.chunkstories.api.content.mods.ModsManager;
 
 public class ModsManagerTest {
 	

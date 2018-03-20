@@ -6,8 +6,6 @@
 
 package io.xol.chunkstories.net.http;
 
-import io.xol.chunkstories.net.http.HttpRequester;
-
 public class HttpRequestThread extends Thread
 {
 	HttpRequester requester;

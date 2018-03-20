@@ -6,15 +6,6 @@
 
 package io.xol.chunkstories.item;
 
-import io.xol.chunkstories.api.content.Content;
-import io.xol.chunkstories.api.content.Content.ItemsDefinitions;
-import io.xol.chunkstories.api.exceptions.content.IllegalItemDeclarationException;
-import io.xol.chunkstories.api.item.Item;
-import io.xol.chunkstories.api.item.ItemDefinition;
-import io.xol.chunkstories.api.content.Asset;
-import io.xol.chunkstories.api.content.mods.ModsManager;
-import io.xol.chunkstories.content.GameContentStore;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -24,6 +15,15 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.xol.chunkstories.api.content.Asset;
+import io.xol.chunkstories.api.content.Content;
+import io.xol.chunkstories.api.content.Content.ItemsDefinitions;
+import io.xol.chunkstories.api.content.mods.ModsManager;
+import io.xol.chunkstories.api.exceptions.content.IllegalItemDeclarationException;
+import io.xol.chunkstories.api.item.Item;
+import io.xol.chunkstories.api.item.ItemDefinition;
+import io.xol.chunkstories.content.GameContentStore;
 
 public class ItemDefinitionsStore implements ItemsDefinitions
 {
@@ -57,11 +57,11 @@ public class ItemDefinitionsStore implements ItemsDefinitions
 		{
 			Asset f = i.next();
 			logger().debug("Reading items definitions in : " + f);
-			readitemsDefinitions(f);
+			readItemsDefinitions(f);
 		}
 	}
 
-	private void readitemsDefinitions(Asset f)
+	private void readItemsDefinitions(Asset f)
 	{
 		if (f == null)
 			return;
@@ -114,7 +114,8 @@ public class ItemDefinitionsStore implements ItemsDefinitions
 		}
 	}
 
-	public ItemDefinition getItemTypeByName(String itemName)// throws UndefinedItemTypeException
+	@Override
+	public ItemDefinition getItemDefinition(String itemName)// throws UndefinedItemTypeException
 	{
 		if (dictionary.containsKey(itemName))
 			return dictionary.get(itemName);

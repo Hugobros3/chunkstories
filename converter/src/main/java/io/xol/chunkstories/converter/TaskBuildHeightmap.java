@@ -15,14 +15,14 @@ import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.converter.ConverterWorkers.ConverterWorkerThread;
 import io.xol.chunkstories.util.concurrency.CompoundFence;
 import io.xol.chunkstories.world.WorldTool;
-import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
+import io.xol.chunkstories.world.summary.HeightmapImplementation;
 
-public class TaskBuildRegionSummary extends Task {
+public class TaskBuildHeightmap extends Task {
 
 	int regionX, regionZ;
 	WorldTool csWorld;
 	
-	public TaskBuildRegionSummary(int regionX, int regionZ, WorldTool csWorld) {
+	public TaskBuildHeightmap(int regionX, int regionZ, WorldTool csWorld) {
 		super();
 		this.regionX = regionX;
 		this.regionZ = regionZ;
@@ -37,7 +37,7 @@ public class TaskBuildRegionSummary extends Task {
 		//We wait on a bunch of stuff to load everytime
 		CompoundFence loadRelevantData = new CompoundFence();
 		
-		RegionSummaryImplementation summary = csWorld.getRegionsSummariesHolder().aquireRegionSummary(cwt, regionX, regionZ);
+		HeightmapImplementation summary = csWorld.getRegionsSummariesHolder().aquireHeightmap(cwt, regionX, regionZ);
 		loadRelevantData.add(summary.waitForLoading());
 
 		//Aquires the chunks we want to make the summaries of.

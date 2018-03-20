@@ -98,7 +98,7 @@ public class ConverterMapping {
 							chunkStoriesName = cs;
 						}
 						
-						Voxel voxel = context.getContent().voxels().getVoxelByName(chunkStoriesName);
+						Voxel voxel = context.getContent().voxels().getVoxel(chunkStoriesName);
 						if(voxel == null) {
 							System.out.println("Error: Voxel '"+chunkStoriesName+"' is nowhere to be found in the loaded content.");
 							System.out.println("Skipping line : '"+line+"'.");
@@ -108,17 +108,7 @@ public class ConverterMapping {
 						Mapper mapper;
 						if(special == null) {
 							mapper = new TrivialMapper(voxel, chunkStoriesMeta);
-						} /*else if(special.equals("keepmeta")) {
-							mapper = new KeepMeta(voxel);
-						} else if(special.equals("slab")) {
-							mapper = new Slab(voxel);
-						} else if(special.equals("door")) {
-							mapper = new Door(voxel);
-						} else if(special.equals("sign")) {
-							mapper = new Sign(voxel);
-						} else if(special.equals("chest")) {
-							mapper = new Chest(voxel);
-						} */else {
+						} else {
 							
 							Constructor<? extends Mapper> mapperConstructor = customMappers.get(special);
 							

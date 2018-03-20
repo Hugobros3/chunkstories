@@ -13,9 +13,9 @@ import org.joml.Matrix4f;
 import io.xol.chunkstories.api.animation.SkeletonAnimator;
 import io.xol.chunkstories.api.exceptions.rendering.RenderingException;
 import io.xol.chunkstories.api.mesh.MultiPartMesh;
-import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.mesh.RenderableMultiPartAnimatableMesh;
+import io.xol.chunkstories.api.rendering.vertex.Primitive;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
 
 public class MultiPartMeshRenderableImpl extends MeshRenderableImpl implements RenderableMultiPartAnimatableMesh {

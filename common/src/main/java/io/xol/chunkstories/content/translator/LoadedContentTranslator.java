@@ -47,17 +47,17 @@ public class LoadedContentTranslator extends AbstractContentTranslator {
 				
 				switch(defType) {
 					case "voxel":
-						Voxel voxel = content.voxels().getVoxelByName(defName);
+						Voxel voxel = content.voxels().getVoxel(defName);
 						failIfNull(voxel, "Missing voxel definition "+defName);
 						voxelMappings.put(voxel, id);
 						break;
 					case "entity":
-						EntityDefinition entityDef = content.entities().getEntityTypeByName(defName);
+						EntityDefinition entityDef = content.entities().getEntityDefinition(defName);
 						failIfNull(entityDef, "Missing entity definition "+defName);
 						entityMappings.put(entityDef, id);
 						break;
 					case "item":
-						ItemDefinition itemDef = content.items().getItemTypeByName(defName);
+						ItemDefinition itemDef = content.items().getItemDefinition(defName);
 						failIfNull(itemDef, "Missing item definition "+defName);
 						itemMappings.put(itemDef, id);
 						break;

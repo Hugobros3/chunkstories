@@ -6,13 +6,6 @@
 
 package io.xol.chunkstories.entity;
 
-import io.xol.chunkstories.api.content.Content;
-import io.xol.chunkstories.api.content.Content.EntityDefinitions;
-import io.xol.chunkstories.api.entity.EntityDefinition;
-import io.xol.chunkstories.api.exceptions.content.IllegalEntityDeclarationException;
-import io.xol.chunkstories.api.content.Asset;
-import io.xol.chunkstories.content.GameContentStore;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.HashMap;
@@ -21,6 +14,13 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.xol.chunkstories.api.content.Asset;
+import io.xol.chunkstories.api.content.Content;
+import io.xol.chunkstories.api.content.Content.EntityDefinitions;
+import io.xol.chunkstories.api.entity.EntityDefinition;
+import io.xol.chunkstories.api.exceptions.content.IllegalEntityDeclarationException;
+import io.xol.chunkstories.content.GameContentStore;
 
 
 
@@ -101,89 +101,11 @@ public class EntityDefinitionsStore implements EntityDefinitions
 			e.printStackTrace();
 		}
 	}
-
-	/*class EntityTypeLoaded implements EntityDefinition {
-
-		public EntityTypeLoaded(String name, String className, Constructor<? extends Entity> constructor, short id)
-		{
-			super();
-			this.name = name;
-			this.className = className;
-			this.constructor = constructor;
-			this.id = id;
-		}
-
-		@Override
-		public String toString()
-		{
-			return "EntityDefined [name=" + name + ", className=" + className + ", constructor=" + constructor + ", id=" + id + "]";
-		}
-
-		final String name;
-		final String className;
-		final Constructor<? extends Entity> constructor;
-		final short id;
-		
-		@Override
-		public String getName()
-		{
-			return name;
-		}
-
-		@Override
-		public short getId()
-		{
-			return id;
-		}
-
-		@Override
-		public Entity create(World world)
-		{
-			Object[] parameters = { this, world, 0d, 0d, 0d };
-			try
-			{
-				return constructor.newInstance(parameters);
-			}
-			catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
-			{
-				//This is bad
-				logger().log("Couldn't instanciate entity "+this+" in world "+world);
-				e.printStackTrace();
-				e.printStackTrace(logger().getPrintWriter());
-				return null;
-			}
-		}
-		
-	}*/
-
-	/*@Override
-	public EntityDefinition getEntityTypeById(short entityId)
-	{
-		return EntityDefinitionsById.get(entityId);
-	}*/
 	
 	@Override
-	public EntityDefinition getEntityTypeByName(String entityName)
+	public EntityDefinition getEntityDefinition(String entityName)
 	{
 		return EntityDefinitionsByName.get(entityName);
-	}
-
-	@Deprecated
-	public EntityDefinition getEntityTypeByClassname(String className)
-	{
-		throw new UnsupportedOperationException();
-		//return EntityDefinitionsByClassname.get(className);
-	}
-
-	@Deprecated
-	public short getEntityIdByClassname(String className)
-	{
-		throw new UnsupportedOperationException();
-		/*
-		EntityDefinition type = EntityDefinitionsByClassname.get(className);
-		if(type == null)
-			return -1;
-		return type.getId();*/
 	}
 
 	@Override
@@ -197,10 +119,4 @@ public class EntityDefinitionsStore implements EntityDefinitions
 	{
 		return content;
 	}
-
-	/*@Override
-	public EntityComponentsStore components()
-	{
-		return entityComponents;
-	}*/
 }

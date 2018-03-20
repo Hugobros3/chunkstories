@@ -33,17 +33,17 @@ import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.voxel.components.VoxelComponent;
 import io.xol.chunkstories.api.world.WorldClient;
+import io.xol.chunkstories.api.world.WorldUser;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
-import io.xol.chunkstories.world.io.IOTasks.IOTask;
-import io.xol.chunkstories.world.region.RegionImplementation;
-import net.jpountz.lz4.LZ4Compressor;
-import net.jpountz.lz4.LZ4Factory;
-import io.xol.chunkstories.api.world.chunk.WorldUser;
 import io.xol.chunkstories.entity.EntitySerializer;
 import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
 import io.xol.chunkstories.util.concurrency.SafeWriteLock;
 import io.xol.chunkstories.util.concurrency.TrivialFence;
 import io.xol.chunkstories.voxel.components.CellComponentsHolder;
+import io.xol.chunkstories.world.io.IOTasks.IOTask;
+import io.xol.chunkstories.world.region.RegionImplementation;
+import net.jpountz.lz4.LZ4Compressor;
+import net.jpountz.lz4.LZ4Factory;
 
 public class ChunkHolderImplementation implements ChunkHolder
 {

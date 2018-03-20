@@ -14,10 +14,10 @@ import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 
-import io.xol.chunkstories.api.rendering.Primitive;
 import io.xol.chunkstories.api.rendering.StateMachine;
 import io.xol.chunkstories.api.rendering.shader.Shader;
 import io.xol.chunkstories.api.rendering.vertex.AttributesConfiguration;
+import io.xol.chunkstories.api.rendering.vertex.Primitive;
 import io.xol.chunkstories.renderer.opengl.OpenGLStateMachine;
 import io.xol.chunkstories.renderer.opengl.shader.ShaderGL.InternalUniformsConfiguration;
 import io.xol.chunkstories.renderer.opengl.texture.TexturingConfigurationImplementation;

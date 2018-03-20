@@ -18,11 +18,11 @@ import io.xol.chunkstories.api.workers.TaskExecutor;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ServerConnection;
 import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
-import io.xol.chunkstories.net.packets.PacketRegionSummary;
+import io.xol.chunkstories.net.packets.PacketHeightmap;
 import io.xol.chunkstories.world.WorldClientRemote;
 import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
 import io.xol.chunkstories.world.region.RegionImplementation;
-import io.xol.chunkstories.world.summary.RegionSummaryImplementation;
+import io.xol.chunkstories.world.summary.HeightmapImplementation;
 
 
 
@@ -72,11 +72,11 @@ public class IOTasksMultiplayerClient extends IOTasks
 		holder.setDiskDataLoaded(true);
 	}
 
-	public class IOTaskProcessCompressedRegionSummaryArrival extends IOTask
+	public class IOTaskProcessCompressedHeightmapArrival extends IOTask
 	{
-		PacketRegionSummary packet;
+		PacketHeightmap packet;
 
-		public IOTaskProcessCompressedRegionSummaryArrival(PacketRegionSummary packet)
+		public IOTaskProcessCompressedHeightmapArrival(PacketHeightmap packet)
 		{
 			this.packet = packet;
 		}
@@ -84,7 +84,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 		@Override
 		public boolean task(TaskExecutor taskExecutor)
 		{
-			RegionSummaryImplementation summary = world.getRegionsSummariesHolder().getRegionSummaryWorldCoordinates(packet.rx * 256, packet.rz * 256);
+			HeightmapImplementation summary = world.getRegionsSummariesHolder().getHeightmapWorldCoordinates(packet.rx * 256, packet.rz * 256);
 			if(summary == null)
 			{
 				logger().error("Summary data arrived for "+packet.rx+ ": "+packet.rz + "but there was no region summary waiting for it ?");
@@ -95,7 +95,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 			int[] ids = new int[256*256];
 			
 			byte[] unCompressedSummaries = unCompressedSummariesData.get();
-			unCompressedSummaries = RegionSummaryImplementation.decompressor.decompress(packet.compressedData, 256 * 256 * 4 * 2);
+			unCompressedSummaries = HeightmapImplementation.decompressor.decompress(packet.compressedData, 256 * 256 * 4 * 2);
 			IntBuffer ib = ByteBuffer.wrap(unCompressedSummaries).asIntBuffer();
 			ib.get(heights, 0, 256 * 256);
 			ib.get(ids, 0, 256 * 256);
@@ -119,14 +119,14 @@ public class IOTasksMultiplayerClient extends IOTasks
 		}
 	}
 
-	public void requestRegionSummaryProcess(PacketRegionSummary packet)
+	public void requestHeightmapProcess(PacketHeightmap packet)
 	{
-		IOTaskProcessCompressedRegionSummaryArrival task = new IOTaskProcessCompressedRegionSummaryArrival(packet);
+		IOTaskProcessCompressedHeightmapArrival task = new IOTaskProcessCompressedHeightmapArrival(packet);
 		scheduleTask(task);
 	}
 
 	@Override
-	public Fence requestRegionSummaryLoad(RegionSummaryImplementation summary)
+	public Fence requestHeightmapLoad(HeightmapImplementation summary)
 	{
 		return null;
 	}
@@ -134,8 +134,8 @@ public class IOTasksMultiplayerClient extends IOTasks
 	public void handlePacketWorldStreaming(PacketWorldStreaming packet) throws IllegalPacketException {
 		
 		//Region summaries
-		if(packet instanceof PacketRegionSummary) {
-			this.requestRegionSummaryProcess((PacketRegionSummary) packet);
+		if(packet instanceof PacketHeightmap) {
+			this.requestHeightmapProcess((PacketHeightmap) packet);
 		//Chunk data
 		} else if(packet instanceof PacketChunkCompressedData) {
 			RegionImplementation region = world.getRegionChunkCoordinates(((PacketChunkCompressedData) packet).x, ((PacketChunkCompressedData) packet).y, ((PacketChunkCompressedData) packet).z);
