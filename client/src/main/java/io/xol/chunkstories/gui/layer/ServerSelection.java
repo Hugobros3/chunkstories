@@ -60,17 +60,14 @@ public class ServerSelection extends Layer implements HttpRequester
 		this.backOption.setAction(() -> gameWindow.setLayer(parentLayer));
 		
 		elements.add(connectButton);
-		connectButton.setHeight(24);
 		elements.add(serverSelectionZone);
 		elements.add(backOption);
 		
 		autologin = a;
 		String lastServer = Client.getInstance().getConfiguration().getStringOption("client.game.last-server");
 		if (!lastServer.equals(""))
-		{
 			ipForm.setText(lastServer);
-			// System.out.println("ls-load:"+autologin);
-		}
+		
 		//Create the HTTP request to poll actives servers.
 		new HttpRequestThread(this, "serversList", "http://chunkstories.xyz/api/listServers.php", "");
 	}
@@ -79,6 +76,7 @@ public class ServerSelection extends Layer implements HttpRequester
 	public void render(RenderingInterface renderer)
 	{
 		parentLayer.getRootLayer().render(renderer);
+		float scale = this.getGuiScale();
 		
 		if (autologin && !ipForm.getText().equals(""))
 			login();
@@ -89,12 +87,12 @@ public class ServerSelection extends Layer implements HttpRequester
 		//FontRenderer2.drawTextUsingSpecificFontRVBA(32, renderer.getWindow().getHeight() - 32 * (1 + 1), 0, 32 + 1 * 16, , BitmapFont.SMALLFONTS, 1f, 1f, 1f, 1f);
 		
 		// gui
-		float txtbox = renderer.getWindow().getWidth() - connectButton.getWidth() - 48;
+		float txtbox = renderer.getWindow().getWidth() - connectButton.getWidth() - 48 - 8 * scale;
 		ipForm.setPosition(25, renderer.getWindow().getHeight() - 100);
 		ipForm.setWidth(txtbox / this.getGuiScale());
 		ipForm.render(renderer);
 		
-		connectButton.setPosition(renderer.getWindow().getWidth() - connectButton.getWidth() - 16, renderer.getWindow().getHeight() - 100);
+		connectButton.setPosition(ipForm.getPositionX() + ipForm.getWidth() + 4 * scale, renderer.getWindow().getHeight() - 100);
 		
 		connectButton.render(renderer);
 

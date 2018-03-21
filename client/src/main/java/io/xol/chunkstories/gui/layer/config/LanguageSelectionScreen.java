@@ -25,6 +25,7 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.elements.Button;
+import io.xol.chunkstories.gui.ng.BaseNgButton;
 import io.xol.chunkstories.renderer.opengl.util.CorneredBoxDrawer;
 import io.xol.chunkstories.renderer.opengl.util.ObjectRenderer;
 
@@ -86,6 +87,7 @@ public class LanguageSelectionScreen extends Layer
 	@Override
 	public void render(RenderingInterface renderingContext)
 	{
+		float scale = this.getGuiScale();
 		if (scroll < 0)
 			scroll = 0;
 
@@ -113,7 +115,7 @@ public class LanguageSelectionScreen extends Layer
 			langButton.width = maxWidth;
 			langButton.setPosition(64 + langButton.width / 2, posY);
 			langButton.render(renderingContext);
-			posY -= 128;
+			posY -= langButton.getHeight() + (4) * scale;
 		}
 
 		if (allowBackButton)
@@ -123,7 +125,7 @@ public class LanguageSelectionScreen extends Layer
 		}
 	}
 
-	public class LanguageButton extends Button
+	public class LanguageButton extends BaseNgButton
 	{
 		int posx;
 		int posy;
@@ -155,12 +157,6 @@ public class LanguageSelectionScreen extends Layer
 		}
 
 		@Override
-		public boolean isMouseOver(Mouse mouse)
-		{
-			return (mouse.getCursorX() >= posx - width / 2 - 4 && mouse.getCursorX() < posx + width / 2 + 4 && mouse.getCursorY() >= posy - height / 2 - 4 && mouse.getCursorY() <= posy + height / 2 + 4);
-		}
-
-		@Override
 		public void render(RenderingInterface renderer)
 		{
 			width = 512;
@@ -168,7 +164,7 @@ public class LanguageSelectionScreen extends Layer
 			Texture2D texture = renderer.textures().getTexture((isFocused() || isMouseOver()) ?"./textures/gui/scalableButtonOver.png" : "./textures/gui/scalableButton.png");
 			texture.setLinearFiltering(false);
 			
-			CorneredBoxDrawer.drawCorneredBoxTiled_(posx, posy, width, 128, 8, texture, 32, scale());
+			renderer.getGuiRenderer().drawCorneredBoxTiled(posx, posy, getWidth(), getHeight(), 4, texture, 32, scale());
 
 			ObjectRenderer.renderTexturedRect(posx - width / 2 + 80, posy, 128, 96, "./lang/" + translationCode + "/lang.png");
 			renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().getFont("LiberationSans-Regular", 11), posx - width / 2 + 150, posy, translationName, 3, 3, new Vector4f(1));

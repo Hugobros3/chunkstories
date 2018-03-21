@@ -8,6 +8,7 @@ package io.xol.chunkstories.gui.layer;
 
 import org.joml.Vector4f;
 
+import ch.qos.logback.classic.Logger;
 import io.xol.chunkstories.api.gui.FocusableGuiElement;
 import io.xol.chunkstories.api.gui.GuiElement;
 import io.xol.chunkstories.api.gui.Layer;
@@ -20,47 +21,16 @@ import io.xol.chunkstories.client.ClientLimitations;
 import io.xol.chunkstories.gui.elements.InputText;
 import io.xol.chunkstories.gui.layer.config.LanguageSelectionScreen;
 import io.xol.chunkstories.gui.ng.BaseNgButton;
-import io.xol.chunkstories.net.http.HttpRequestThread;
-import io.xol.chunkstories.net.http.HttpRequester;
+import io.xol.chunkstories.net.http.RequestResultAction;
+import io.xol.chunkstories.net.http.SimplePostRequest;
 import io.xol.chunkstories.renderer.opengl.util.ObjectRenderer;
 
-public class LoginPrompt extends Layer implements HttpRequester
+public class LoginPrompt extends Layer
 {
 	InputText usernameForm = new InputText(this, 0, 0, 250);
 	InputText passwordForm = new InputText(this, 0, 0, 250);
 	
 	BaseNgButton loginButton = new BaseNgButton(this, 0, 0, 64, "#{login.login}");
-	
-	public LoginPrompt(GameWindow scene, Layer parent)
-	{
-		super(scene, parent);
-		
-		elements.add(usernameForm);
-		passwordForm.setPassword(true);
-		elements.add(passwordForm);
-		elements.add(loginButton);
-		
-		//Autologin fills in the forms automagically
-		//TODO Secure storage of password
-		if (Client.getInstance().getConfiguration().getStringOption("client.login.auto").equals("ok"))
-		{
-			usernameForm.setText(Client.getInstance().getConfiguration().getStringOption("client.login.username"));
-			passwordForm.setText(Client.getInstance().getConfiguration().getStringOption("client.login.password"));
-			autologin = true;
-		}
-		
-		loginButton.setAction(new Runnable() {
-			@Override
-			public void run() {
-				connect();
-			}
-		});
-		
-		this.setFocusedElement(usernameForm);
-		startCounter = System.currentTimeMillis();
-	}
-
-	//GuiElementsHandler guiHandler = new GuiElementsHandler();
 
 	boolean logging_in = false;
 	boolean autologin = false;
@@ -72,10 +42,35 @@ public class LoginPrompt extends Layer implements HttpRequester
 	private boolean can_next = false;
 	private boolean failed_login;
 	
+	public LoginPrompt(GameWindow gameWindow, Layer parent)
+	{
+		super(gameWindow, parent);
+		
+		elements.add(usernameForm);
+		passwordForm.setPassword(true);
+		elements.add(passwordForm);
+		elements.add(loginButton);
+		
+		//Autologin fills in the forms automagically
+		//TODO Secure storage of password
+		if (gameWindow.getClient().getConfiguration().getStringOption("client.login.auto").equals("ok"))
+		{
+			usernameForm.setText(Client.getInstance().getConfiguration().getStringOption("client.login.username"));
+			passwordForm.setText(Client.getInstance().getConfiguration().getStringOption("client.login.password"));
+			autologin = true;
+		}
+		
+		loginButton.setAction(() -> connect() );
+		
+		this.setFocusedElement(usernameForm);
+		startCounter = System.currentTimeMillis();
+	}
+	
 	@Override
 	public void render(RenderingInterface renderer)
 	{
 		parentLayer.render(renderer);
+		float scale = this.getGuiScale();
 		
 		if(Client.getInstance().getConfiguration().getStringOption("client.game.language").equals("undefined"))
 		{
@@ -86,36 +81,41 @@ public class LoginPrompt extends Layer implements HttpRequester
 		if (can_next)
 			gameWindow.setLayer(new MainMenu(gameWindow, parentLayer));
 		
-		ObjectRenderer.renderTexturedRect(renderer.getWindow().getWidth() / 2, renderer.getWindow().getHeight() / 2 + 180, 512, 512, "./textures/logo.png");
+		ObjectRenderer.renderTexturedRect(renderer.getWindow().getWidth() / 2, renderer.getWindow().getHeight() / 2 + 90 * scale, 256 * scale, 256 * scale, "./textures/logo.png");
 
-		loginButton.setPosition(usernameForm.getPositionX(), renderer.getWindow().getHeight() / 2 - 100);
 
-		usernameForm.setPosition(renderer.getWindow().getWidth() / 2 - 250f, renderer.getWindow().getHeight() / 2 + 32);
+		usernameForm.setPosition(renderer.getWindow().getWidth() / 2 - 125 * scale, renderer.getWindow().getHeight() / 2 + 16 * scale);
 		usernameForm.render(renderer);
-		passwordForm.setPosition(renderer.getWindow().getWidth() / 2 - 250f, renderer.getWindow().getHeight() / 2 - 48);
+		passwordForm.setPosition(usernameForm.getPositionX(), usernameForm.getPositionY() - usernameForm.getHeight() - (20 + 4) * scale);
 		passwordForm.render(renderer);
+		
+		loginButton.setPosition(usernameForm.getPositionX(), passwordForm.getPositionY() - 30 * scale);
 
-		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), renderer.getWindow().getWidth() / 2 - 250, renderer.getWindow().getHeight() / 2 + 74, Client.getInstance().getContent().localization().localize("#{login.username}"), 2, 2, new Vector4f(1.0f));
-		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), renderer.getWindow().getWidth() / 2 - 250, renderer.getWindow().getHeight() / 2 - 6, Client.getInstance().getContent().localization().localize("#{login.password}"), 2, 2, new Vector4f(1.0f));
+		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(),
+				usernameForm.getPositionX(), usernameForm.getPositionY() + usernameForm.getHeight() + 4 * scale, 
+				Client.getInstance().getContent().localization().localize("#{login.username}"), scale, scale, new Vector4f(1.0f));
+		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(),
+				passwordForm.getPositionX(), passwordForm.getPositionY() + usernameForm.getHeight() + 4 * scale,
+				Client.getInstance().getContent().localization().localize("#{login.password}"), scale, scale, new Vector4f(1.0f));
 		
 		if (logging_in) {
 			renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(),
 					renderer.getWindow().getWidth() / 2 - 230, renderer.getWindow().getHeight() / 2 - 90,
-					Client.getInstance().getContent().localization().localize("#{login.loggingIn}"), 2, 2,
+					Client.getInstance().getContent().localization().localize("#{login.loggingIn}"), scale, scale,
 					new Vector4f(1.0f));
 		} else {
 			float decal_lb = loginButton.getWidth();
 			loginButton.render(renderer);
 
 			renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(),
-					usernameForm.getPositionX() + 16 + decal_lb, renderer.getWindow().getHeight() / 2 - 95,
-					Client.getInstance().getContent().localization().localize("#{login.register}"), 2, 2,
+					loginButton.getPositionX() + 4 * scale + decal_lb, loginButton.getPositionY() + 2 * scale,
+					Client.getInstance().getContent().localization().localize("#{login.register}"), scale, scale,
 					new Vector4f(1.0f));
 
 			if (failed_login)
 				renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(),
 						renderer.getWindow().getWidth() / 2 - 250, renderer.getWindow().getHeight() / 2 - 160, message,
-						2, 2, new Vector4f(1.0f, 0.0f, 0.0f, 1.0f));
+						scale, scale, new Vector4f(1.0f, 0.0f, 0.0f, 1.0f));
 		}
 
 		if (autologin) {
@@ -131,7 +131,7 @@ public class LoginPrompt extends Layer implements HttpRequester
 			}
 		}
 		
-		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), 12, 12 , "2015-2018 XolioWare Interactive", 2, 2, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
+		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), 12, 12 , "2015-2018 XolioWare Interactive", scale, scale, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
 	}
 	
 	void connect() {
@@ -141,8 +141,56 @@ public class LoginPrompt extends Layer implements HttpRequester
 			gameWindow.setLayer(new MainMenu(gameWindow, parentLayer));
 		} else {
 			logging_in = true;
-			new HttpRequestThread(this, "login", "http://chunkstories.xyz/api/login.php",
-					"user=" + usernameForm.getText() + "&pass=" + passwordForm.getText());
+			
+			RequestResultAction postAction = (result) -> {
+				gameWindow.getClient().logger().debug("Received login answer");
+				
+				logging_in = false;
+				if (result == null)
+				{
+					failed_login = true;
+					message = "Can't connect to server.";
+					return;
+				}
+				if (result.startsWith("ok"))
+				{
+					String session = result.split(":")[1];
+					Client.username = usernameForm.getText();
+					Client.session_key = session;
+					Client.getInstance().getConfiguration().getOption("client.login.auto").trySetting("ok");
+					Client.getInstance().getConfiguration().getOption("client.login.username").trySetting(usernameForm.getText());
+					Client.getInstance().getConfiguration().getOption("client.login.password").trySetting(passwordForm.getText());
+					
+					if(Client.username.equals("Gobrosse") || Client.username.equals("kektest"))
+					{
+						ClientLimitations.isDebugAllowed = true;
+					}
+					
+					//If the user didn't opt-out, look for crash files and upload those
+					if(Client.getInstance().getConfiguration().getStringOption("client.game.log-policy").equals("send"))
+					{
+						JavaCrashesUploader t = new JavaCrashesUploader(Client.getInstance());
+						t.start();
+					}
+					
+					can_next = true;
+				}
+				else if (result.startsWith("ko"))
+				{
+					failed_login = true;
+					String reason = result.split(":")[1];
+					if (reason.equals("notpremium"))
+						message = ("User is not premium");
+					else if (reason.equals("invalidcredentials"))
+						message = ("Invalid credentials");
+				}
+				else
+				{
+					message = ("Unknown error");
+				}
+			};
+			
+			new SimplePostRequest("https://chunkstories.xyz/api/login.php", "user=" + usernameForm.getText() + "&pass=" + passwordForm.getText(), postAction);
 		}
 	}
 	
@@ -173,56 +221,5 @@ public class LoginPrompt extends Layer implements HttpRequester
 		}
 		
 		return super.handleInput(input);
-	}
-
-	@Override
-	public void handleHttpRequest(String info, String result)
-	{
-		if (info.equals("login"))
-		{
-			logging_in = false;
-			if (result == null)
-			{
-				failed_login = true;
-				message = "Can't connect to server.";
-				return;
-			}
-			if (result.startsWith("ok"))
-			{
-				String session = result.split(":")[1];
-				Client.username = usernameForm.getText();
-				Client.session_key = session;
-				Client.getInstance().getConfiguration().getOption("client.login.auto").trySetting("ok");
-				Client.getInstance().getConfiguration().getOption("client.login.username").trySetting(usernameForm.getText());
-				Client.getInstance().getConfiguration().getOption("client.login.password").trySetting(passwordForm.getText());
-				
-				if(Client.username.equals("Gobrosse") || Client.username.equals("kektest"))
-				{
-					ClientLimitations.isDebugAllowed = true;
-				}
-				
-				//If the user didn't opt-out, look for crash files and upload those
-				if(Client.getInstance().getConfiguration().getStringOption("client.game.log-policy").equals("send"))
-				{
-					JavaCrashesUploader t = new JavaCrashesUploader(Client.getInstance());
-					t.start();
-				}
-				
-				can_next = true;
-			}
-			else if (result.startsWith("ko"))
-			{
-				failed_login = true;
-				String reason = result.split(":")[1];
-				if (reason.equals("notpremium"))
-					message = ("User is not premium");
-				else if (reason.equals("invalidcredentials"))
-					message = ("Invalid credentials");
-			}
-			else
-			{
-				message = ("Unknown error");
-			}
-		}
 	}
 }

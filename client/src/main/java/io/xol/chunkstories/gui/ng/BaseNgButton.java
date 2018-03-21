@@ -18,10 +18,11 @@ import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 
 public class BaseNgButton extends FocusableGuiElement implements ClickableGuiElement {
-	public String text;
-	public Font font;
+	protected String text;
+	protected Font font;
+	protected float fontScaler = 1.0f;
 	
-	private Runnable action;
+	protected Runnable action;
 	
 	public BaseNgButton(Layer layer, int x, int y, String text) {
 		this(layer, x, y, text, null);
@@ -44,7 +45,7 @@ public class BaseNgButton extends FocusableGuiElement implements ClickableGuiEle
 		this.xPosition = x;
 		this.yPosition = y;
 		this.text = text;
-		this.height = 24;
+		this.height = 22;
 	}
 	
 	protected int scale() {
@@ -54,7 +55,7 @@ public class BaseNgButton extends FocusableGuiElement implements ClickableGuiEle
 	public float getWidth()
 	{
 		String localizedText = layer.getGameWindow().getClient().getContent().localization().localize(text);
-		float width = font.getWidth(localizedText) + 8;
+		float width = font.getWidth(localizedText) * fontScaler + 8;
 		
 		if(this.width > width)
 			width = this.width;
@@ -82,8 +83,7 @@ public class BaseNgButton extends FocusableGuiElement implements ClickableGuiEle
 			
 		buttonTexture.setLinearFiltering(false);
 		renderer.getGuiRenderer().drawCorneredBoxTiled(xPosition, yPosition, width, getHeight(), 4 * scale(), buttonTexture, 32, scale());
-		
-		renderer.getFontRenderer().drawString(font, xPosition + 4 * scale(), yPosition, localizedText, scale(), new Vector4f(76/255f, 76/255f, 76/255f, 1));
+		renderer.getFontRenderer().drawString(font, xPosition + 4 * scale(), yPosition, localizedText, fontScaler * scale(), new Vector4f(0,0,0,1));//new Vector4f(76/255f, 76/255f, 76/255f, 1));
 	}
 
 	@Override

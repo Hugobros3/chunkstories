@@ -331,7 +331,7 @@ public class OptionsScreen extends Layer
 		}
 		
 		public float getWidth() {
-			return super.getWidth() + 8 * scale();
+			return super.getWidth();// + 8 * scale();
 		}
 	}
 

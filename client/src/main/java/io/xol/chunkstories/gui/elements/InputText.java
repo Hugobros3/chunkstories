@@ -35,7 +35,7 @@ public class InputText extends FocusableGuiElement implements TextInputGuiElemen
 		xPosition = x;
 		yPosition = y;
 		this.width = width;
-		this.height = 16;
+		this.height = 22;
 		
 		this.ttfFont = font;
 	}
@@ -99,8 +99,8 @@ public class InputText extends FocusableGuiElement implements TextInputGuiElemen
 			
 		backgroundTexture.setLinearFiltering(false);
 		
-		renderer.getGuiRenderer().drawCorneredBoxTiled(xPosition, yPosition, getWidth() + 8 * scale(), getHeight() + 8 * scale(), 4, backgroundTexture, 32, scale());
-		renderer.getFontRenderer().drawStringWithShadow(ttfFont, xPosition + 6 * scale(), yPosition + 2 * scale(), text + ((isFocused() && System.currentTimeMillis() % 1000 > 500) ? "|" : ""), scale(), scale(), new Vector4f(1.0f));
+		renderer.getGuiRenderer().drawCorneredBoxTiled(xPosition - 0 * scale(), yPosition - 0 * scale(), getWidth() + 0 * scale(), getHeight() + 0 * scale(), 4, backgroundTexture, 32, scale());
+		renderer.getFontRenderer().drawStringWithShadow(ttfFont, xPosition + 4 * scale(), yPosition + 1 * scale(), text + ((isFocused() && System.currentTimeMillis() % 1000 > 500) ? "|" : ""), scale(), scale(), new Vector4f(1.0f));
 	
 	}
 

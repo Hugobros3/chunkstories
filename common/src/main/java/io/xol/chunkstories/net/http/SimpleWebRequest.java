@@ -22,20 +22,16 @@ public class SimpleWebRequest extends Thread {
 	final Semaphore doneFence = new Semaphore(0);
 	String result = null;
 	
-	final OnceDone postRequestAction;
+	final RequestResultAction postRequestAction;
 
 	public SimpleWebRequest(String url) {
 		this(url, null);
 	}
 	
-	public SimpleWebRequest(String url, OnceDone postRequestAction) {
+	public SimpleWebRequest(String url, RequestResultAction postRequestAction) {
 		this.url = url;
 		this.postRequestAction = postRequestAction;
 		this.start();
-	}
-	
-	public interface OnceDone {
-		public void action(String result);
 	}
 	
 	public void run() {
