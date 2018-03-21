@@ -60,9 +60,18 @@ public class GenericConfigurable {
 	
 	private static Random random = new Random();
 	
-	public String resolveProperty(String propertyName)
+	public String resolveProperty(String propertyName) {
+
+		String result = resolvePropertyInternal(propertyName);
+		if(result != null)
+			return result;
+		propertyName = propertyName.toLowerCase();
+		
+		return resolvePropertyInternal(propertyName);
+	}
+	
+	private String resolvePropertyInternal(String propertyName)
 	{
-		//propertyName = propertyName.toLowerCase();
 		
 		String resolved = properties.get(propertyName);
 		if(resolved == null)
