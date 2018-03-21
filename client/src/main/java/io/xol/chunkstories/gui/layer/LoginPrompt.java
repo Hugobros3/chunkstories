@@ -17,9 +17,9 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.bugsreporter.JavaCrashesUploader;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.ClientLimitations;
-import io.xol.chunkstories.gui.elements.Button;
 import io.xol.chunkstories.gui.elements.InputText;
 import io.xol.chunkstories.gui.layer.config.LanguageSelectionScreen;
+import io.xol.chunkstories.gui.ng.BaseNgButton;
 import io.xol.chunkstories.net.http.HttpRequestThread;
 import io.xol.chunkstories.net.http.HttpRequester;
 import io.xol.chunkstories.renderer.opengl.util.ObjectRenderer;
@@ -29,7 +29,7 @@ public class LoginPrompt extends Layer implements HttpRequester
 	InputText usernameForm = new InputText(this, 0, 0, 250);
 	InputText passwordForm = new InputText(this, 0, 0, 250);
 	
-	Button loginButton = new Button(this, 0, 0, 128, "#{login.login}");
+	BaseNgButton loginButton = new BaseNgButton(this, 0, 0, 64, "#{login.login}");
 	
 	public LoginPrompt(GameWindow scene, Layer parent)
 	{
@@ -88,7 +88,7 @@ public class LoginPrompt extends Layer implements HttpRequester
 		
 		ObjectRenderer.renderTexturedRect(renderer.getWindow().getWidth() / 2, renderer.getWindow().getHeight() / 2 + 180, 512, 512, "./textures/logo.png");
 
-		loginButton.setPosition(usernameForm.getPositionX() + loginButton.getWidth() / 2f, renderer.getWindow().getHeight() / 2 - 80);
+		loginButton.setPosition(usernameForm.getPositionX(), renderer.getWindow().getHeight() / 2 - 100);
 
 		usernameForm.setPosition(renderer.getWindow().getWidth() / 2 - 250f, renderer.getWindow().getHeight() / 2 + 32);
 		usernameForm.render(renderer);
@@ -98,23 +98,27 @@ public class LoginPrompt extends Layer implements HttpRequester
 		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), renderer.getWindow().getWidth() / 2 - 250, renderer.getWindow().getHeight() / 2 + 74, Client.getInstance().getContent().localization().localize("#{login.username}"), 2, 2, new Vector4f(1.0f));
 		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), renderer.getWindow().getWidth() / 2 - 250, renderer.getWindow().getHeight() / 2 - 6, Client.getInstance().getContent().localization().localize("#{login.password}"), 2, 2, new Vector4f(1.0f));
 		
-		if (logging_in)
-		{
-			renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), renderer.getWindow().getWidth() / 2 - 230, renderer.getWindow().getHeight() / 2 - 90, Client.getInstance().getContent().localization().localize("#{login.loggingIn}"), 2, 2, new Vector4f(1.0f));
-		}
-		else
-		{
+		if (logging_in) {
+			renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(),
+					renderer.getWindow().getWidth() / 2 - 230, renderer.getWindow().getHeight() / 2 - 90,
+					Client.getInstance().getContent().localization().localize("#{login.loggingIn}"), 2, 2,
+					new Vector4f(1.0f));
+		} else {
 			float decal_lb = loginButton.getWidth();
 			loginButton.render(renderer);
 
-			renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), usernameForm.getPositionX() + 16 + decal_lb, renderer.getWindow().getHeight() / 2 - 95, Client.getInstance().getContent().localization().localize("#{login.register}"), 2, 2, new Vector4f(1.0f));
-		
+			renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(),
+					usernameForm.getPositionX() + 16 + decal_lb, renderer.getWindow().getHeight() / 2 - 95,
+					Client.getInstance().getContent().localization().localize("#{login.register}"), 2, 2,
+					new Vector4f(1.0f));
+
 			if (failed_login)
-				renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), renderer.getWindow().getWidth() / 2 - 250, renderer.getWindow().getHeight() / 2 - 160, message, 2, 2, new Vector4f(1.0f, 0.0f, 0.0f, 1.0f));
+				renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(),
+						renderer.getWindow().getWidth() / 2 - 250, renderer.getWindow().getHeight() / 2 - 160, message,
+						2, 2, new Vector4f(1.0f, 0.0f, 0.0f, 1.0f));
 		}
 
-		if (autologin)
-		{
+		if (autologin) {
 			int seconds = 10;
 			String autologin2 = Client.getInstance().getContent().localization().localize("#{login.auto1} "+(seconds-(System.currentTimeMillis()-startCounter)/1000)+" #{login.auto2}");
 			
@@ -130,19 +134,15 @@ public class LoginPrompt extends Layer implements HttpRequester
 		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), 12, 12 , "2015-2018 XolioWare Interactive", 2, 2, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
 	}
 	
-	void connect()
-	{
-		if (usernameForm.getText().equals("OFFLINE"))
-		{
+	void connect() {
+		if (usernameForm.getText().equals("OFFLINE")) {
 			Client.offline = true;
 			Client.username = "OfflineUser" + (int) (Math.random() * 1000);
 			gameWindow.setLayer(new MainMenu(gameWindow, parentLayer));
-			//this.mainScene.changeOverlay(new MainMenuOverlay(mainScene, null));//eng.changeScene(new MainMenu(eng));
-		}
-		else
-		{
+		} else {
 			logging_in = true;
-			new HttpRequestThread(this, "login", "http://chunkstories.xyz/api/login.php", "user=" + usernameForm.getText() + "&pass=" + passwordForm.getText());
+			new HttpRequestThread(this, "login", "http://chunkstories.xyz/api/login.php",
+					"user=" + usernameForm.getText() + "&pass=" + passwordForm.getText());
 		}
 	}
 	

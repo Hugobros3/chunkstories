@@ -16,7 +16,6 @@ import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
-import io.xol.chunkstories.client.Client;
 
 public class InputText extends FocusableGuiElement implements TextInputGuiElement
 {
@@ -28,7 +27,7 @@ public class InputText extends FocusableGuiElement implements TextInputGuiElemen
 	private boolean password = false;
 
 	public InputText(Layer layer, int x, int y, int width) {
-		this(layer, x, y, width, Client.getInstance().getContent().fonts().defaultFont());
+		this(layer, x, y, width, layer.getGameWindow().getFontRenderer().defaultFont());
 	}
 	
 	public InputText(Layer layer, int x, int y, int width, Font font) {

@@ -44,7 +44,7 @@ public class BaseNgButton extends FocusableGuiElement implements ClickableGuiEle
 		this.xPosition = x;
 		this.yPosition = y;
 		this.text = text;
-		this.height = 32;
+		this.height = 24;
 	}
 	
 	protected int scale() {
