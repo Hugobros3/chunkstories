@@ -72,9 +72,9 @@ public class PauseMenu extends Layer
 		String pauseText = renderer.getClient().getContent().localization().getLocalizedString("ingame.pause");
 		renderer.getFontRenderer().drawStringWithShadow(font, renderer.getWindow().getWidth() / 2 - font.getWidth(pauseText) *1.5f, renderer.getWindow().getHeight() / 2 + 48 * 3, pauseText, 3, 3, new Vector4f(1));
 		
-		resumeButton.setPosition(renderer.getWindow().getWidth()/2, renderer.getWindow().getHeight()/2 + 48 * 2);
-		optionsButton.setPosition(renderer.getWindow().getWidth()/2, renderer.getWindow().getHeight()/2 + 48 * 1);
-		exitButton.setPosition(renderer.getWindow().getWidth()/2, renderer.getWindow().getHeight()/2 - 48);
+		resumeButton.setPosition(renderer.getWindow().getWidth()/2, renderer.getWindow().getHeight()/2 + 24 * 2 * getGuiScale());
+		optionsButton.setPosition(renderer.getWindow().getWidth()/2, renderer.getWindow().getHeight()/2 + 24 * getGuiScale());
+		exitButton.setPosition(renderer.getWindow().getWidth()/2, renderer.getWindow().getHeight()/2 - 24 * getGuiScale());
 		
 		resumeButton.render(renderer);
 		optionsButton.render(renderer);

@@ -62,7 +62,7 @@ public class GenericConfigurable {
 	
 	public String resolveProperty(String propertyName)
 	{
-		propertyName = propertyName.toLowerCase();
+		//propertyName = propertyName.toLowerCase();
 		
 		String resolved = properties.get(propertyName);
 		if(resolved == null)
