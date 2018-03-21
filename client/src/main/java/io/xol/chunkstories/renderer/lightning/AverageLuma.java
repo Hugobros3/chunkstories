@@ -61,16 +61,18 @@ public class AverageLuma
 			{
 
 				ByteBuffer minMipmapBuffer = illuminationDownloadInProgress.readPBO();
-				minMipmapBuffer.flip();
-
-				//System.out.println("Obtained: "+minMipmapBuffer);
-				averageColorForAllFrame = new Vector3f(0.0f);
-				for (int i = 0; i < downloadSize; i++)
-					averageColorForAllFrame.add(minMipmapBuffer.getFloat(), minMipmapBuffer.getFloat(), minMipmapBuffer.getFloat());
-
-				averageColorForAllFrame.mul(1.0f / downloadSize);
-				//System.out.println(averageColorForAllFrame.length());
-
+				if(minMipmapBuffer != null) {
+				
+					minMipmapBuffer.flip();
+	
+					//System.out.println("Obtained: "+minMipmapBuffer);
+					averageColorForAllFrame = new Vector3f(0.0f);
+					for (int i = 0; i < downloadSize; i++)
+						averageColorForAllFrame.add(minMipmapBuffer.getFloat(), minMipmapBuffer.getFloat(), minMipmapBuffer.getFloat());
+	
+					averageColorForAllFrame.mul(1.0f / downloadSize);
+					//System.out.println(averageColorForAllFrame.length());
+				}
 				//Throw that out
 				illuminationDownloadInProgress = null;
 			}
