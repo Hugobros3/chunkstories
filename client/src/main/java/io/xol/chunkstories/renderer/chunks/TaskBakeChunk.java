@@ -36,7 +36,9 @@ import io.xol.chunkstories.api.voxel.VoxelSide;
 import io.xol.chunkstories.api.voxel.VoxelSide.Corners;
 import io.xol.chunkstories.api.workers.Task;
 import io.xol.chunkstories.api.workers.TaskExecutor;
+import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClient;
+import io.xol.chunkstories.api.world.cell.CellData;
 import io.xol.chunkstories.client.util.MemFreeByteBuffer;
 import io.xol.chunkstories.renderer.chunks.ChunkMeshDataSections.DynamicallyRenderedVoxelType;
 import io.xol.chunkstories.renderer.chunks.ClientWorkerThread.ChunkMeshingBuffers;
@@ -48,6 +50,7 @@ public class TaskBakeChunk extends Task {
 
 	protected final Logger logger = LoggerFactory.getLogger("renderer.chunksbaker");
 	protected final ClientChunk chunk;
+	protected final int chunkX, chunkY, chunkZ;
 	
 	private final WorldClient world;
 	
@@ -61,6 +64,9 @@ public class TaskBakeChunk extends Task {
 		super();
 		//this.baker = baker;
 		this.chunk = chunk;
+		this.chunkX = chunk.getChunkX();
+		this.chunkY = chunk.getChunkY();
+		this.chunkZ = chunk.getChunkZ();
 		
 		//Degenerate case for DIE object 
 		if(chunk == null) {
@@ -195,7 +201,7 @@ public class TaskBakeChunk extends Task {
 		
 		Map<Voxel, DynamicallyRenderedVoxelType> dynamicVoxels = new HashMap<>();
 		
-		ScratchCell cell = new ScratchCell(world);
+		BakeChunkScratchCell cell = new BakeChunkScratchCell(world);
 		//Render the fucking thing!
 		for (i = 0; i < 32; i++)
 		{
@@ -306,17 +312,55 @@ public class TaskBakeChunk extends Task {
 		
 		//Wait until data is actually uploaded to not accidentally OOM while it struggles uploading it
 		//if(Client.getInstance().configDeprecated().getBoolean("waitForChunkMeshDataUploadBeforeStartingTheNext", true))
-		newRenderData.fence.traverse();
+		//newRenderData.fence.traverse();
 		
 		return true;
 	}
 	
-	private void peek(int x, int y, int z, ScratchCell cell) {
-		cell.x = (x & 0x1F) + (chunk.getChunkX() << 5);
-		cell.y = (y & 0x1F) + (chunk.getChunkY() << 5);
-		cell.z = (z & 0x1F) + (chunk.getChunkZ() << 5);
+	class BakeChunkScratchCell extends ScratchCell {
+
+		public BakeChunkScratchCell(World world) {
+			super(world);
+		}
 		
-		int rawData = world.peekRaw(cell.x, cell.y, cell.z);
+		@Override
+		public CellData getNeightbor(int side_int) {
+			VoxelSide side = VoxelSide.values()[side_int];
+			
+			// Fast path for in-chunk neigtbor
+			if(    (side == VoxelSide.LEFT && x > 0) || (side == VoxelSide.RIGHT && x < 31)
+				|| (side == VoxelSide.BOTTOM && y > 0) || (side == VoxelSide.TOP && y < 31)
+				|| (side == VoxelSide.BACK && z > 0) || (side == VoxelSide.FRONT && z < 31)
+				) {
+				return chunk.peek(x + side.dx, y + side.dy, z + side.dz);
+			}
+			
+			return world.peekSafely(getX() + side.dx, getY() + side.dy, getZ() + side.dz);
+		}
+
+
+		@Override
+		public int getX() {
+			return x + (chunkX << 5);
+		}
+
+		@Override
+		public int getY() {
+			return y + (chunkY << 5);
+		}
+
+		@Override
+		public int getZ() {
+			return z + (chunkZ << 5);
+		}
+	}
+	
+	private void peek(int x, int y, int z, BakeChunkScratchCell cell) {
+		cell.x = (x & 0x1F);// + (chunk.getChunkX() << 5);
+		cell.y = (y & 0x1F);// + (chunk.getChunkY() << 5);
+		cell.z = (z & 0x1F);// + (chunk.getChunkZ() << 5);
+		
+		int rawData = chunk.peekRaw(cell.x, cell.y, cell.z);
 		cell.voxel = world.getContentTranslator().getVoxelForId(VoxelFormat.id(rawData));
 		cell.sunlight = VoxelFormat.sunlight(rawData);
 		cell.blocklight = VoxelFormat.blocklight(rawData);

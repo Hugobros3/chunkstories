@@ -10,6 +10,7 @@ import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelSide;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.cell.CellData;
+import io.xol.chunkstories.world.chunk.CubicChunk;
 
 /** Used to recycle results of a peek command */
 public class ScratchCell implements CellData {

@@ -124,10 +124,12 @@ public class CubicChunk implements Chunk {
 						
 						// Call the block's onPlace method as to make it spawn the necessary components
 						FreshChunkCell peek = peek(components.getX(), components.getY(), components.getZ());
+						//System.out.println("peek"+peek);
 						FreshFutureCell future = new FreshFutureCell(peek);
+						//System.out.println("future"+future);
 						
-						//peek.getVoxel().onPlace(future, null);
 						peek.getVoxel().whenPlaced(future);
+						//System.out.println("future comps"+future.components().getX() + ":" + future.components().getY() + ": " + future.components().getZ());
 						
 						String componentName = dis.readUTF();
 						while (!componentName.equals("\n")) {
@@ -489,7 +491,7 @@ public class CubicChunk implements Chunk {
 		int raw_data;
 
 		public ActualChunkVoxelContext(int x, int y, int z, int data) {
-			super((x & 0x1F) + (chunkX << 5), (y & 0x1F) + (chunkY << 5), (z & 0x1F) + (chunkZ << 5), 
+			super((x & 0x1F), (y & 0x1F), (z & 0x1F), 
 					world.getContentTranslator().getVoxelForId(VoxelFormat.id(data)), 
 					VoxelFormat.meta(data), VoxelFormat.blocklight(data), VoxelFormat.sunlight(data));
 			
@@ -507,6 +509,21 @@ public class CubicChunk implements Chunk {
 		@Override
 		public World getWorld() {
 			return world;
+		}
+
+		@Override
+		public int getX() {
+			return x + (chunkX << 5);
+		}
+
+		@Override
+		public int getY() {
+			return y + (chunkY << 5);
+		}
+
+		@Override
+		public int getZ() {
+			return z + (chunkZ << 5);
 		}
 
 		@Override
@@ -550,8 +567,16 @@ public class CubicChunk implements Chunk {
 
 		@Override
 		public CellData getNeightbor(int side_int) {
-			// TODO Fast path for in-chunk neigtbor
 			VoxelSide side = VoxelSide.values()[side_int];
+			
+			// Fast path for in-chunk neigtbor
+			if(    (side == VoxelSide.LEFT && x > 0) || (side == VoxelSide.RIGHT && x < 31)
+				|| (side == VoxelSide.BOTTOM && y > 0) || (side == VoxelSide.TOP && y < 31)
+				|| (side == VoxelSide.BACK && z > 0) || (side == VoxelSide.FRONT && z < 31)
+				) {
+				return CubicChunk.this.peek(x + side.dx, y + side.dy, z + side.dz);
+			}
+			
 			return world.peekSafely(getX() + side.dx, getY() + side.dy, getZ() + side.dz);
 		}
 

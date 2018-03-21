@@ -78,6 +78,9 @@ public class TaskComputeChunkOcclusion extends Task {
 		// System.out.println("Computing occlusion table ...");
 		boolean[][] occlusionSides = new boolean[6][6];
 
+		if(true)
+			return occlusionSides;
+		
 		IntDeque deque = occlusionFaces.get();
 		deque.clear();
 

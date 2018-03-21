@@ -173,6 +173,9 @@ public class PBOPacker
 			//Map the buffer and read it
 			ByteBuffer gpuBuffer = glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY, null);
 			
+			if(gpuBuffer == null)
+				return null;
+			
 			ByteBuffer freeBuffer = BufferUtils.createByteBuffer(gpuBuffer.capacity());
 			freeBuffer.put(gpuBuffer);
 			//System.out.println("Read "+(free - freeNow)+" bytes from the PBO in "+(endT-startT)/1000+" µs");
