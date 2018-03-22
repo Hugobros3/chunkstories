@@ -8,7 +8,6 @@ package io.xol.chunkstories.gui.layer;
 
 import org.joml.Vector4f;
 
-import ch.qos.logback.classic.Logger;
 import io.xol.chunkstories.api.gui.FocusableGuiElement;
 import io.xol.chunkstories.api.gui.GuiElement;
 import io.xol.chunkstories.api.gui.Layer;
@@ -134,7 +133,7 @@ public class LoginPrompt extends Layer
 		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), 12, 12 , "2015-2018 XolioWare Interactive", scale, scale, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
 	}
 	
-	void connect() {
+	private void connect() {
 		if (usernameForm.getText().equals("OFFLINE")) {
 			Client.offline = true;
 			Client.username = "OfflineUser" + (int) (Math.random() * 1000);

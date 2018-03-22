@@ -13,7 +13,6 @@ import io.xol.chunkstories.api.item.inventory.BasicInventory;
 import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.layer.config.LogPolicyAsk;
 import io.xol.chunkstories.gui.layer.config.ModsSelection;
 import io.xol.chunkstories.gui.layer.config.OptionsScreen;
@@ -58,7 +57,7 @@ public class MainMenu extends Layer
 	{
 		parentLayer.render(renderingContext);
 		
-		if(gameWindow.getLayer() == this && Client.getInstance().getConfiguration().getStringOption("client.game.log-policy").equals("undefined"))
+		if(gameWindow.getLayer() == this && gameWindow.getClient().getConfiguration().getStringOption("client.game.log-policy").equals("undefined"))
 			gameWindow.setLayer(new LogPolicyAsk(gameWindow, this));
 
 		float spacing = 8;

@@ -15,7 +15,6 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import org.joml.Vector4f;
 
 import io.xol.chunkstories.api.content.mods.Mod;
-import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse.MouseScroll;
@@ -29,10 +28,8 @@ import io.xol.chunkstories.client.ClientLimitations;
 import io.xol.chunkstories.gui.elements.InputText;
 import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.chunkstories.world.WorldClientRemote;
-import io.xol.chunkstories.world.WorldImplementation;
 
-public class ChatManager
-{
+public class ChatManager {
 	private final Ingame ingame;
 
 	private int chatHistorySize = 150;
@@ -43,15 +40,12 @@ public class ChatManager
 	private int sentMessages = 0;
 	private int sentHistory = 0;
 
-	public ChatManager(Ingame ingame)
-	{
+	public ChatManager(Ingame ingame) {
 		this.ingame = ingame;
 	}
 
-	private class ChatLine
-	{
-		public ChatLine(String text)
-		{
+	private class ChatLine {
+		public ChatLine(String text) {
 			if (text == null)
 				text = "";
 			this.text = text;
@@ -62,20 +56,17 @@ public class ChatManager
 		public String text;
 
 		@SuppressWarnings("unused")
-		public void clickRelative(int x, int y)
-		{
-			//TODO clickable text, urls etc
+		public void clickRelative(int x, int y) {
+			// TODO clickable text, urls etc
 		}
 	}
 
-	public class ChatPanelOverlay extends Layer
-	{
+	public class ChatPanelOverlay extends Layer {
 		InputText inputBox;
-		
+
 		long delay;
-		
-		public ChatPanelOverlay(GameWindow scene, Layer parent)
-		{
+
+		public ChatPanelOverlay(GameWindow scene, Layer parent) {
 			super(scene, parent);
 
 			//Add the inputBox
@@ -172,7 +163,7 @@ public class ChatManager
 
 	int scroll = 0;
 
-	public void draw(RenderingInterface renderer)
+	public void render(RenderingInterface renderer)
 	{	
 		while (chat.size() > chatHistorySize)
 			chat.removeLast();
@@ -217,8 +208,7 @@ public class ChatManager
 		
 	}
 
-	public void insert(String t)
-	{
+	public void insert(String t) {
 		chat.addFirst(new ChatLine(t));
 	}
 	
@@ -226,8 +216,7 @@ public class ChatManager
 		
 		String username = ingame.getGameWindow().getClient().username();
 		
-		if (input.startsWith("/"))
-		{
+		if (input.startsWith("/")) {
 			String chatMsg = input;
 
 			chatMsg = chatMsg.substring(1, chatMsg.length());
@@ -293,32 +282,15 @@ public class ChatManager
 			}
 		}
 
-		if (input.equals("/locclear"))
-		{
+		if (input.equals("/locclear")) {
 			chat.clear();
-		}
-		else if (input.equals("I am Mr Debug"))
-		{
+		} else if (input.equals("I am Mr Debug")) {
+			//it was you this whole time
 			ClientLimitations.isDebugAllowed = true;
 		}
-		else if (input.equals("_-"))
-		{
-			Entity e = Client.getInstance().getPlayer().getControlledEntity();
-			int cx = ((int)(double)e.getLocation().x())/32;
-			int cy = ((int)(double)e.getLocation().y())/32;
-			int cz = ((int)(double)e.getLocation().z())/32;
-			
-			insert("No fuck you"+((WorldImplementation)Client.getInstance().getWorld()).getRegionsHolder().getRegionChunkCoordinates(cx, cy, cz));
-		}
-		/*else if(input.equals("/reloadLocalContent"))
-		{
-			//Rebuild the mod FS
-			Client.getInstance().reloadAssets();
-			//Mark some caches dirty
-			((WorldRendererImplementation) Client.getInstance().getWorld().getWorldRenderer()).reloadContentSpecificStuff();
-		}
-		else */if (ingame.getWorld() instanceof WorldClientRemote)
-			((WorldClientRemote) ingame.getWorld()).getConnection().sendTextMessage("chat/" + input);
+		
+		if (ingame.getGameWindow().getClient().getWorld() instanceof WorldClientRemote)
+			((WorldClientRemote) ingame.getGameWindow().getClient().getWorld()).getConnection().sendTextMessage("chat/" + input);
 		else
 			insert(ColorsTools.getUniqueColorPrefix(username) + username + "#FFFFFF > " + input);
 

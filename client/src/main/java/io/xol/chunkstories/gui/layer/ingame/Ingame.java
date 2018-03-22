@@ -8,6 +8,7 @@ package io.xol.chunkstories.gui.layer.ingame;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.client.ClientInterface;
+import io.xol.chunkstories.api.client.LocalPlayer;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityLiving;
 import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
@@ -21,31 +22,29 @@ import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse.MouseScroll;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.player.Player;
+import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.util.Configuration.OptionBoolean;
 import io.xol.chunkstories.api.util.concurrency.Fence;
-import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldMaster;
-import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.entity.SerializedEntityFile;
-import io.xol.chunkstories.gui.InventoryDrawer;
+import io.xol.chunkstories.gui.InventoryGridRenderer;
 import io.xol.chunkstories.gui.layer.ingame.ChatManager.ChatPanelOverlay;
 import io.xol.chunkstories.renderer.debug.DebugInfoRenderer;
 import io.xol.chunkstories.renderer.debug.PhysicsWireframeDebugger;
 import io.xol.chunkstories.renderer.decals.VoxelOverlays;
-import io.xol.chunkstories.renderer.opengl.GLFWGameWindow;
 import io.xol.chunkstories.renderer.particles.ClientParticlesRenderer;
 import io.xol.chunkstories.world.WorldClientCommon;
 import io.xol.chunkstories.world.WorldClientRemote;
 
-public class Ingame extends Layer
-{
+/** The main layer that hosts the gameplay: renders the world, inventory and most gui elements */
+public class Ingame extends Layer {
 	private final ClientInterface client;
 	private final WorldClientCommon world;
 
 	// Renderer & client interface components
 	private final VoxelOverlays selectionRenderer;
-	private InventoryDrawer inventoryBarDrawer = null;
+	private InventoryGridRenderer inventoryBarDrawer = null;
 	private final PhysicsWireframeDebugger wireframeDebugger;
 	private final DebugInfoRenderer debugInfoRenderer;
 	public final ChatManager chatManager;
@@ -56,12 +55,10 @@ public class Ingame extends Layer
 
 	//TODO: Move to config, just like f3
 	private boolean guiHidden = false;
-	
-	//Hack
-	private boolean shouldTakeACubemap = false;
 
-	public Ingame(GLFWGameWindow window, WorldClientCommon world)
-	{
+	float pauseOverlayFade = 0.0f;
+
+	public Ingame(GameWindow window, WorldClientCommon world) {
 		super(window, null);
 		this.world = world;
 		this.client = world.getClient();
@@ -70,52 +67,43 @@ public class Ingame extends Layer
 
 		//Creates the rendering stuff
 		this.selectionRenderer = new VoxelOverlays();
+		
+		//TODO MOVE AWAY ?
 		this.wireframeDebugger = new PhysicsWireframeDebugger(window.getClient(), world);
+		
 		this.debugInfoRenderer = new DebugInfoRenderer(window.getClient(), world);
 		
-		//Hacky job because the client is a global state and the ingame scene is per-world
-		//Client.getInstance().setClientPluginManager(pluginManager);
-		//pluginManager.reloadPlugins();
-		
+		//TODO MOVE AWAY
 		//Spawn manually the player if we're in Singleplayer
 		if (world instanceof WorldMaster)
-			world.spawnPlayer(Client.getInstance().getPlayer());
+			world.spawnPlayer(gameWindow.getClient().getPlayer());
 
 		//Give focus
 		focus(true);
 	}
 
-	public World getWorld()
-	{
-		return world;
+	private LocalPlayer getPlayer() {
+		return gameWindow.getClient().getPlayer();
 	}
-	
-	public boolean isCovered() {
+
+	private boolean isCovered() {
 		return !gameWindow.getLayer().equals(this);
 	}
-	
-	public boolean hasFocus()
-	{
-		if(isCovered())
-		//if(gameWindow.getLayer() != this)
-		//if (this.currentOverlay != null)
+
+	public boolean hasFocus() {
+		if (isCovered())
 			return false;
 		return focus2;
 	}
 
-	float pauseOverlayFade = 0.0f;
-
 	@Override
-	public void render(RenderingInterface renderingContext)
-	{
+	public void render(RenderingInterface renderer) {
 		// Update client entity
-		if ((playerEntity == null || playerEntity != Client.getInstance().getPlayer().getControlledEntity()) && Client.getInstance().getPlayer().getControlledEntity() != null)
-		{
-			playerEntity = Client.getInstance().getPlayer().getControlledEntity();
-			
+		if ((playerEntity == null || playerEntity != getPlayer().getControlledEntity()) && getPlayer().getControlledEntity() != null) {
+			playerEntity = getPlayer().getControlledEntity();
 			
 			if (playerEntity instanceof EntityWithSelectedItem)
-				inventoryBarDrawer = ((EntityWithSelectedItem) playerEntity).getInventory() == null ? null : new InventoryDrawer((EntityWithSelectedItem) playerEntity);
+				inventoryBarDrawer = ((EntityWithSelectedItem) playerEntity).getInventory() == null ? null : new InventoryGridRenderer((EntityWithSelectedItem) playerEntity);
 			else
 				inventoryBarDrawer = null;
 		}
@@ -125,33 +113,26 @@ public class Ingame extends Layer
 
 		// Update the player
 		if (playerEntity instanceof EntityControllable)
-			((EntityControllable) playerEntity).onEachFrame(Client.getInstance().getPlayer());
+			((EntityControllable) playerEntity).onEachFrame(getPlayer());
 		
 
 		Location selectedBlock = null;
 		if (playerEntity instanceof EntityControllable)
 			selectedBlock = ((EntityControllable) playerEntity).getBlockLookingAt(true);
 		
-		world.getPluginManager().fireEvent(new CameraSetupEvent(renderingContext.getCamera()));
+		world.getPluginManager().fireEvent(new CameraSetupEvent(renderer.getCamera()));
 
 		//Main render call
-		world.getWorldRenderer().renderWorld(renderingContext);
+		world.getWorldRenderer().renderWorld(renderer);
 
 		//Debug draws
 		if (client.getConfiguration().getBooleanOption("client.debug.physicsVisualization") && playerEntity != null) {
-			wireframeDebugger.render(renderingContext);
+			wireframeDebugger.render(renderer);
 		}
 		
 		if (!guiHidden && selectedBlock != null && playerEntity instanceof EntityCreative && ((EntityCreative) playerEntity).getCreativeModeComponent().get())
-			selectionRenderer.drawSelectionBox(renderingContext, selectedBlock);
+			selectionRenderer.drawSelectionBox(renderer, selectedBlock);
 		
-		//Cubemap rendering trigger (can't run it while main render is occuring)
-		//TODO reimplement cubemaps screenshots
-		if (shouldTakeACubemap) {
-			shouldTakeACubemap = false;
-			//world.getWorldRenderer().getCubemapRenderer().renderWorldCubemap(renderingContext, null, 1024, false);
-		}
-
 		//Fades in & out the overlay
 		if (!isCovered()) {
 			if (pauseOverlayFade > 0.0)
@@ -165,25 +146,22 @@ public class Ingame extends Layer
 		}
 		
 		//Blit the final 3d image
-		world.getWorldRenderer().blitFinalImage(renderingContext, guiHidden);
+		world.getWorldRenderer().blitFinalImage(renderer, guiHidden);
 
 		//Draw the GUI
-		if (!guiHidden)
-		{
-			// Draw chat
-			// chatManager.update();
-			chatManager.draw(renderingContext);
+		if (!guiHidden) {
+			chatManager.render(renderer);
 
 			//Draw inventory
 			if (playerEntity != null && inventoryBarDrawer != null)
-				inventoryBarDrawer.drawPlayerInventorySummary(renderingContext, renderingContext.getWindow().getWidth() / 2 - 7, 64 + 64);
+				inventoryBarDrawer.drawPlayerInventorySummary(renderer, renderer.getWindow().getWidth() / 2 - 7, 64 + 64);
 
 			//Draw debug info
 			if (client.getConfiguration().getBooleanOption("client.debug.showDebugInfo"))
-				debugInfoRenderer.drawF3debugMenu(renderingContext);
+				debugInfoRenderer.drawF3debugMenu(renderer);
 			
-			renderingContext.getGuiRenderer().drawBoxWindowsSpaceWithSize(getGameWindow().getWidth() / 2 - 8, getGameWindow().getHeight() / 2 - 8, 16, 16, 0, 1, 1, 0,
-					renderingContext.textures().getTexture("./textures/gui/cursor.png"), false, true, null);
+			renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(getGameWindow().getWidth() / 2 - 8, getGameWindow().getHeight() / 2 - 8, 16, 16, 0, 1, 1, 0,
+					renderer.textures().getTexture("./textures/gui/cursor.png"), false, true, null);
 		}
 		
 		//Lack of overlay should infer autofocus
@@ -191,22 +169,19 @@ public class Ingame extends Layer
 			focus(true);
 
 		// Check connection didn't died and change scene if it has
-		if (world instanceof WorldClientRemote)
-		{
+		if (world instanceof WorldClientRemote) {
 			if (!((WorldClientRemote) world).getConnection().isOpen())
-				Client.getInstance().exitToMainMenu("Connection terminated : " + "(TODO: not this way)");
+				gameWindow.getClient().exitToMainMenu("Connection terminated : " + "(TODO: not this way)");
 		}
 
-		//Auto-switch to pause if it detects the game isn't in focus anymore
-		if (!gameWindow.hasFocus() && !isCovered())
-		{
+		// Auto-switch to pause if it detects the game isn't in focus anymore
+		if (!gameWindow.hasFocus() && !isCovered()) {
 			focus(false);
 			gameWindow.setLayer(new PauseMenu(gameWindow, gameWindow.getLayer()));
 		}
 	}
 
-	public void focus(boolean f)
-	{
+	public void focus(boolean f) {
 		gameWindow.getInputsManager().getMouse().setGrabbed(f);
 		if (f && !focus2)
 			gameWindow.getInputsManager().getMouse().setMouseCursorLocation(Math.floor(gameWindow.getWidth() / 2.0f), Math.floor(gameWindow.getHeight() / 2.0f));
@@ -214,66 +189,45 @@ public class Ingame extends Layer
 	}
 
 	@Override
-	public boolean handleInput(Input input)
-	{
-		if (!guiHidden)// && keyBind != null)
-		{
-			//Block inputs if chatting
-			if (input.equals("chat"))
-			{
-				gameWindow.setLayer(chatManager.new ChatPanelOverlay(gameWindow, this));
-				focus(false);
-				return true;
-			}
-
-			//if(Client.getInstance().getInputsManager().onInputPressed(keyBind) == true)
-			//	return true;
-		}
-
-		//Function keys
-		if (input.equals("hideGui"))
-		{
+	public boolean handleInput(Input input) {
+		//Block inputs if chatting
+		if (input.equals("chat")) {
+			gameWindow.setLayer(chatManager.new ChatPanelOverlay(gameWindow, this));
+			focus(false);
+			guiHidden = false;
+			return true;
+		} else if (input.equals("hideGui")) {
 			guiHidden = !guiHidden;
-		}
-		else if (input.equals("screenshot"))
-		{
+			return true;
+		} else if (input.equals("screenshot")) {
 			chatManager.insert(world.getWorldRenderer().screenShot());
-		}
-		else if (input.equals("toggleDebugInfo"))
-		{
+		} else if (input.equals("toggleDebugInfo")) {
 			OptionBoolean debugInfo = (OptionBoolean) client.getConfiguration().getOption("client.debug.showDebugInfo");
 			debugInfo.toggle();
-			//debugInfo.trySetting("" + !debugInfo.getValue());
-			
-			//gameWindow.getClient().configDeprecated().setString("showDebugInfo", gameWindow.getClient().configDeprecated().getBoolean("showDebugInfo", false) ? "false" : "true");
-			//RenderingConfig.define();
-			//RenderingConfig.showDebugInfo = !RenderingConfig.showDebugInfo;
-		}
-		else if (input.equals("takeCubemap"))
-			shouldTakeACubemap = true;
+			guiHidden = false;
+			return true;
+		} else if (input.equals("takeCubemap")) {
+			//shouldTakeACubemap = true;
+			return true;
 		//CTRL-F12 reloads
-		else if (input.equals("reloadContent"))//(Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL)) && keyCode == Keyboard.KEY_F12)
-		{
+		} else if (input.equals("reloadContent")) {
 			//Rebuild the mod FS
-			Client.getInstance().reloadAssets();
+			gameWindow.getClient().reloadAssets();
 			
 			//Reload plugins
 			world.getPluginManager().reloadPlugins();
 			
 			//Mark some caches dirty
 			world.getWorldRenderer().reloadContentSpecificStuff();
-		}
+			return true;
 		//CTRL-R redraws chunks
-		else if (input.equals("redrawChunks"))//(Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL)) && keyCode == 19)
-		{
+		} else if (input.equals("redrawChunks")) {
 			((ClientParticlesRenderer) world.getParticlesManager()).cleanAllParticles();
 			world.redrawEverything();
 			world.getWorldRenderer().flagChunksModified();
 			return true;
-		}
 		//Item slots selection
-		else if (input.getName().startsWith("inventorySlot"))
-		{
+		} else if (input.getName().startsWith("inventorySlot")) {
 			int requestedInventorySlot = Integer.parseInt(input.getName().replace("inventorySlot", ""));
 			//Match zero onto last slot
 			if (requestedInventorySlot == 0)
@@ -282,8 +236,7 @@ public class Ingame extends Layer
 			//Map to zero-indexed inventory
 			requestedInventorySlot--;
 
-			if (playerEntity != null && playerEntity instanceof EntityWithSelectedItem)
-			{
+			if (playerEntity != null && playerEntity instanceof EntityWithSelectedItem) {
 				//Do not accept request to select non-existent inventories slots
 				if (requestedInventorySlot > ((EntityWithInventory) playerEntity).getInventory().getWidth())
 					return false;
@@ -292,36 +245,28 @@ public class Ingame extends Layer
 				if (p != null)
 					requestedInventorySlot = p.getX();
 				((EntityWithSelectedItem) playerEntity).setSelectedItemIndex(requestedInventorySlot);
-
-				return true;
 			}
-		}
-		//Exit brings up the pause menu
-		else if (input.equals("exit"))
-		{
+			return true;
+		} else if (input.equals("exit")) /* Exit brings up the pause menu */ {
 			focus(false);
 			guiHidden = false;
 			gameWindow.setLayer(new PauseMenu(gameWindow, this));
-		}
-		else if(input instanceof MouseScroll) {
+			return true;
+		} else if(input instanceof MouseScroll) {
 			MouseScroll ms = (MouseScroll)input;
 			
-			if (playerEntity != null && playerEntity instanceof EntityWithSelectedItem)
-			{
+			if (playerEntity != null && playerEntity instanceof EntityWithSelectedItem) {
 				ItemPile selected = null;
 				int selectedInventorySlot = ((EntityWithSelectedItem) playerEntity).getSelectedItemIndex();
 				int originalSlot = selectedInventorySlot;
-				if (ms.amount() < 0)
-				{
+				if (ms.amount() < 0) {
 					selectedInventorySlot %= ((EntityWithInventory) playerEntity).getInventory().getWidth();
 					selected = ((EntityWithInventory) playerEntity).getInventory().getItemPileAt(selectedInventorySlot, 0);
 					if (selected != null)
 						selectedInventorySlot += selected.getItem().getDefinition().getSlotsWidth();
 					else
 						selectedInventorySlot++;
-				}
-				else
-				{
+				} else {
 					selectedInventorySlot--;
 					if (selectedInventorySlot < 0)
 						selectedInventorySlot += ((EntityWithInventory) playerEntity).getInventory().getWidth();
@@ -332,6 +277,8 @@ public class Ingame extends Layer
 				//Switch slot
 				if (originalSlot != selectedInventorySlot)
 					((EntityWithSelectedItem) playerEntity).setSelectedItemIndex(selectedInventorySlot);
+				
+				return true;
 			}
 		}
 		return false;
@@ -339,33 +286,26 @@ public class Ingame extends Layer
 
 	@Override
 	public void onResize(int newWidth, int newHeight) {
-		world.getWorldRenderer().setupRenderSize();
+		world.getWorldRenderer().setupRenderSize(newWidth, newHeight);
 	}
 
-	/**
-	 * Destroys and frees everything
-	 */
 	@Override
-	public void destroy()
-	{
+	public void destroy() {
 		//Logout sequence: Save the player entity
-		if(world instanceof WorldMaster)
-		{
-			Player player = Client.getInstance().getPlayer();
+		if(world instanceof WorldMaster) {
+			Player player = getPlayer();
 			
 			PlayerLogoutEvent playerDisconnectionEvent = new PlayerLogoutEvent(player);
 			world.getPluginManager().fireEvent(playerDisconnectionEvent);
 	
-			if(this.playerEntity != null)
-			{
-				SerializedEntityFile playerEntityFile = new SerializedEntityFile(world.getFolderPath() + "/players/" + Client.getInstance().getPlayer().getName().toLowerCase() + ".csf");
+			if(this.playerEntity != null) {
+				SerializedEntityFile playerEntityFile = new SerializedEntityFile(world.getFolderPath() + "/players/" + getPlayer().getName().toLowerCase() + ".csf");
 				playerEntityFile.write(this.playerEntity);
 			}
 		}
 		
 		//Stop the game logic and save
 		if(world instanceof WorldMaster) {
-			
 			//TODO: Stop simulation
 			Fence fence = ((WorldMaster)world).stopLogic();
 			
@@ -387,5 +327,5 @@ public class Ingame extends Layer
 
 	public float getPauseOverlayFade() {
 		return pauseOverlayFade;
-	}
+	}	
 }

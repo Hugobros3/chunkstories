@@ -22,6 +22,7 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.StateMachine.BlendMode;
 import io.xol.chunkstories.api.rendering.shader.Shader;
 import io.xol.chunkstories.api.rendering.target.RenderTargetsConfiguration;
+import io.xol.chunkstories.api.rendering.textures.Texture2DRenderTarget;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
 import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.opengl.fbo.FrameBufferObjectGL;
@@ -34,22 +35,24 @@ public class SkyBoxBackground extends Layer {
 	String skyBox;
 	Camera camera = new Camera();
 
-	private Texture2DRenderTargetGL unblurred = new Texture2DRenderTargetGL(TextureFormat.RGBA_8BPP, gameWindow.getWidth(), gameWindow.getHeight());
-	private Texture2DRenderTargetGL blurredH = new Texture2DRenderTargetGL(TextureFormat.RGBA_8BPP, gameWindow.getWidth(), gameWindow.getHeight());
-	private Texture2DRenderTargetGL blurredV = new Texture2DRenderTargetGL(TextureFormat.RGBA_8BPP, gameWindow.getWidth(), gameWindow.getHeight());
-
-	private RenderTargetsConfiguration unblurredFBO = new FrameBufferObjectGL(null, unblurred);
-	private RenderTargetsConfiguration blurredHFBO = new FrameBufferObjectGL(null, blurredH);
-	private RenderTargetsConfiguration blurredVFBO = new FrameBufferObjectGL(null, blurredV);
-
-	public SkyBoxBackground(GameWindow gameWindow)
-	{
+	private Texture2DRenderTarget unblurred, blurredH, blurredV;
+	private RenderTargetsConfiguration unblurredFBO, blurredHFBO, blurredVFBO;
+	
+	public SkyBoxBackground(GameWindow gameWindow) {
 		super(gameWindow, null);
+
+		unblurred = new Texture2DRenderTargetGL(TextureFormat.RGBA_8BPP, gameWindow.getWidth(), gameWindow.getHeight());
+		blurredH = new Texture2DRenderTargetGL(TextureFormat.RGBA_8BPP, gameWindow.getWidth(), gameWindow.getHeight());
+		blurredV = new Texture2DRenderTargetGL(TextureFormat.RGBA_8BPP, gameWindow.getWidth(), gameWindow.getHeight());
+
+		unblurredFBO = new FrameBufferObjectGL(null, unblurred);
+		blurredHFBO = new FrameBufferObjectGL(null, blurredH);
+		blurredVFBO = new FrameBufferObjectGL(null, blurredV);
+		
 		selectRandomSkybox();
 	}
 
-	private void selectRandomSkybox()
-	{
+	private void selectRandomSkybox() {
 		String[] possibleSkyboxes = (new File("./skyboxscreens/")).list();
 		if (possibleSkyboxes == null || possibleSkyboxes.length == 0)
 		{
@@ -81,16 +84,14 @@ public class SkyBoxBackground extends Layer {
 				splashes.add(ligne);
 			}
 			br.close();
-		} catch (IOException e)
-		{
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		if (splashes.size() > 0)
-		{
+		if (splashes.size() > 0) {
 			Random rnd = new Random();
 			return splashes.get(rnd.nextInt(splashes.size()));
 		}
-		return "en vrai j'ai jamais trop joué à pokémon";
+		return "en vrai j'ai jamais trop jouÃ© Ã  pokÃ©mon";
 	}
 
 	@Override
@@ -99,14 +100,6 @@ public class SkyBoxBackground extends Layer {
 		unblurredFBO.resize(gameWindow.getWidth(), gameWindow.getHeight());
 		blurredHFBO.resize(gameWindow.getWidth(), gameWindow.getHeight());
 		blurredVFBO.resize(gameWindow.getWidth(), gameWindow.getHeight());
-	}
-
-	@Override
-	public void destroy()
-	{
-		unblurredFBO.destroy();
-		blurredHFBO.destroy();
-		blurredVFBO.destroy();
 	}
 
 	@Override
@@ -181,5 +174,12 @@ public class SkyBoxBackground extends Layer {
 		float iconSize = (float) (diagonal / 3 + 50 * Math.sin((System.currentTimeMillis() % (1000 * 60 * 60) / 30000f)));
 		renderer.getGuiRenderer().drawBoxWindowsSpace(gameWindow.getWidth() / 2 - iconSize / 2, gameWindow.getHeight() / 2 - iconSize / 2, gameWindow.getWidth() / 2 + iconSize / 2, gameWindow.getHeight() / 2 + iconSize / 2, 0, 1, 1, 0, logoTexture, true, true, new Vector4f(1.0f, 1.0f, 1.0f, alphaIcon));
 		
+	}
+
+	@Override
+	public void destroy() {
+		unblurredFBO.destroy();
+		blurredHFBO.destroy();
+		blurredVFBO.destroy();
 	}
 }

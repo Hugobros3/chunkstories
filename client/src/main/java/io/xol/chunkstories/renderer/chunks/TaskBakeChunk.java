@@ -64,9 +64,16 @@ public class TaskBakeChunk extends Task {
 		super();
 		//this.baker = baker;
 		this.chunk = chunk;
-		this.chunkX = chunk.getChunkX();
-		this.chunkY = chunk.getChunkY();
-		this.chunkZ = chunk.getChunkZ();
+		
+		if(chunk != null) {
+			this.chunkX = chunk.getChunkX();
+			this.chunkY = chunk.getChunkY();
+			this.chunkZ = chunk.getChunkZ();
+		} else {
+			this.chunkX = -1;
+			this.chunkY = -1;
+			this.chunkZ = -1;
+		}
 		
 		//Degenerate case for DIE object 
 		if(chunk == null) {

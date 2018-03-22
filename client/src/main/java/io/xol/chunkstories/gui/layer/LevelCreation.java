@@ -18,11 +18,11 @@ import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.elements.Button;
 import io.xol.chunkstories.gui.elements.InputText;
-import io.xol.chunkstories.renderer.opengl.util.CorneredBoxDrawer;
 import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.chunkstories.world.WorldInfoImplementation;
 import io.xol.chunkstories.world.WorldLoadingException;
 
+/** GUI for creating new levels */
 public class LevelCreation extends Layer
 {
 	Button cancelOption = new Button(this, 0, 0, 150, "Cancel");

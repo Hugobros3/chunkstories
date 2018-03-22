@@ -209,10 +209,10 @@ public class RenderingGraph implements RenderPasses {
 			
 			shouldRebuildGraph = false;
 			
-			System.out.println("----------");
+			logger.debug("Printing resolved passes order:\n----------");
 			if(executionOrder != null) {
 				for(RenderPass pass : executionOrder) {
-					System.out.println("pass:" +pass.name + pass.getClass().getName());
+					logger.debug("pass:" +pass.name + pass.getClass().getName());
 				}
 			}
 		}
