@@ -185,7 +185,6 @@ public class Camera implements CameraInterface
 		projectionMatrix4f.m33(0);
 		
 		// Grab the generated matrix
-		
 		modelViewMatrix4f.identity();
 		modelViewMatrix4f.rotate((float) (rotationZ / 180 * Math.PI), new Vector3f( 0.0f, 0.0f, 1.0f));
 		modelViewMatrix4f.rotate((float) (rotationX / 180 * Math.PI), new Vector3f( 1.0f, 0.0f, 0.0f));
@@ -241,15 +240,6 @@ public class Camera implements CameraInterface
 		float fh = 3000f  * tang;
 		float fw = fh * ratio;
 		
-		// Recreate the 3 vectors for the algorithm
-
-		//Vector3m<Float> position = pos.castToSinglePrecision();
-		//position = position.negate();
-		
-		//System.out.println(position);
-		
-		//Vector3f position = new Vector3f((float)-camPosX, (float)-camPosY, (float)-camPosZ);
-		
 		float rotH = rotationY;
 		float rotV = rotationX;
 		float a = (float) ((180-rotH) / 180f * Math.PI);
@@ -259,45 +249,37 @@ public class Camera implements CameraInterface
 		Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
 		
 		lookAt.cross(up, up);
-		//VectorCrossProduct.cross33(lookAt, up, up);
 		
 		up.cross(lookAt, up);
-		//VectorCrossProduct.cross33(up, lookAt, up);
 		
 		lookAt.add(new Vector3f((float)this.position.x, (float)this.position.y, (float)this.position.z));
-		//Vector3f.add(position, lookAt, lookAt);
 		
 		// Create the 6 frustrum planes
 		Vector3f Z = new Vector3f((float)this.position.x, (float)this.position.y, (float)this.position.z);
 		
 		Z.sub(lookAt);
-		//Vector3f.sub(position, lookAt, Z);
 		Z.normalize();
 		
 		Vector3f X = new Vector3f();
 		
 		up.cross(Z, X);
-		//VectorCrossProduct.cross33(up, Z, X);
 		X.normalize();
 
 		Vector3f Y = new Vector3f();
 		
 		Z.cross(X, Y);
-		//VectorCrossProduct.cross33(Z, X, Y);
 		
 		Vector3f nearCenterPoint = new Vector3f((float)this.position.x, (float)this.position.y, (float)this.position.z);
 		temp = new Vector3f(Z);
 		temp.mul(0.1f);
 		
 		nearCenterPoint.sub(temp);
-		//Vector3f.sub(position, temp, nearCenterPoint);
-
+		
 		Vector3f farCenterPoint = new Vector3f((float)this.position.x, (float)this.position.y, (float)this.position.z);
 		temp = new Vector3f(Z);
 		temp.mul(3000f);
 		
 		farCenterPoint.sub(temp);
-		//Vector3f.sub(position, temp, farCenterPoint);
 		
 		// Eventually the fucking points
 		Vector3f nearTopLeft = vadd(nearCenterPoint, vsub(smult(Y, nh), smult(X, nw)));
@@ -316,39 +298,32 @@ public class Camera implements CameraInterface
 		cameraPlanes[3] = new CollisionPlane(nearBottomRight, nearTopRight, farBottomRight);
 		cameraPlanes[4] = new CollisionPlane(nearTopLeft, nearTopRight, nearBottomRight);
 		cameraPlanes[5] = new CollisionPlane(farTopRight, farTopLeft, farBottomLeft);
-		
-		//cache that
-		for(int i = 0; i < 2; i++)
-		{
-			for(int j = 0; j < 2; j++)
-			{
-				for(int k = 0; k < 2; k++)
-				{
+
+		// cache that
+		for (int i = 0; i < 2; i++) {
+			for (int j = 0; j < 2; j++) {
+				for (int k = 0; k < 2; k++) {
 					corners[i * 4 + j * 2 + k] = new Vector3f();
 				}
 			}
 		}
 	}
-	
-	//Convinience methods, why wouldn't java allow operator overloading is beyond me.
-	private Vector3f vadd(Vector3f a, Vector3f b)
-	{
+
+	// Convinience methods, why wouldn't java allow operator overloading is beyond
+	// me.
+	private Vector3f vadd(Vector3f a, Vector3f b) {
 		Vector3f out = new Vector3f(a);
 		out.add(b);
-		//Vector3f.add(a, b, out);
 		return out;
 	}
-	
-	private Vector3f vsub(Vector3f a, Vector3f b)
-	{
+
+	private Vector3f vsub(Vector3f a, Vector3f b) {
 		Vector3f out = new Vector3f(a);
 		out.sub(b);
-		//Vector3f.sub(a, b, out);
 		return out;
 	}
-	
-	private Vector3f smult(Vector3f in, float scale)
-	{
+
+	private Vector3f smult(Vector3f in, float scale) {
 		Vector3f out = new Vector3f(in);
 		out.mul(scale);
 		return out;
@@ -356,9 +331,6 @@ public class Camera implements CameraInterface
 
 	Vector3f corners[] = new Vector3f[8];
 	
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.renderer.CameraInterface#isBoxInFrustrum(io.xol.chunkstories.api.math.Vector3f, io.xol.chunkstories.api.math.Vector3f)
-	 */
 	@Override
 	public boolean isBoxInFrustrum(Vector3fc center, Vector3fc dimensions)
 	{
@@ -440,15 +412,13 @@ public class Camera implements CameraInterface
 		return true;
 	}
 
-	private double toRad(double d)
-	{
+	private double toRad(double d) {
 		return d / 360 * 2 * Math.PI;
 	}
 
-	private void translateCamera()
-	{
+	private void translateCamera() {
 		untranslatedMVP4f.set(modelViewMatrix4f);
-		
+	
 		untranslatedMVP4f.invert(untranslatedMVP4fInv);
 		//Matrix4f.invert(untranslatedMVP4f, untranslatedMVP4fInv);
 
@@ -457,12 +427,8 @@ public class Camera implements CameraInterface
 		updateMatricesForShaderUniforms();
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.renderer.CameraInterface#setupShader(io.xol.engine.graphics.shaders.ShaderProgram)
-	 */
 	@Override
-	public void setupShader(Shader shader)
-	{
+	public void setupShader(Shader shader) {
 		// Helper function to clean code from messy bits :)
 		shader.setUniformMatrix4f("projectionMatrix", projectionMatrix4f);
 		shader.setUniformMatrix4f("projectionMatrixInv", projectionMatrix4fInverted);
@@ -496,25 +462,14 @@ public class Camera implements CameraInterface
 			shader.setUniform1f("apertureModifier", 1.0f);
 	}
 	
-	public Vector3f transform3DCoordinate(Vector3fc in)
-	{
+	public Vector3f transform3DCoordinate(Vector3fc in) {
 		return transform3DCoordinate(new Vector4f(in.x(), in.y(), in.z(), 1f));
 	}
-	
-	/**
-	 * Spits out where some point in world coordinates ends up on the screen
-	 * @param in
-	 * @return
-	 */
-	public Vector3f transform3DCoordinate(Vector4fc in)
-	{
-		//position = new Vector4f(-(float)e.posX, -(float)e.posY, -(float)e.posZ, 1f);
-		//position = new Vector4f(1f, 1f, 1f, 1);
+
+	public Vector3f transform3DCoordinate(Vector4fc in) {
 		Matrix4f mvm = this.modelViewMatrix4f;
 		Matrix4f pm = this.projectionMatrix4f;
 
-		//Matrix4f combined = Matrix4f.mul(pm, mvm, null);
-		
 		Vector4f transormed = new Vector4f();
 		mvm.transform(in, transormed);
 		
@@ -540,71 +495,67 @@ public class Camera implements CameraInterface
 	}
 
 	@Override
-	public Vector3dc getCameraPosition()
-	{
+	public Vector3dc getCameraPosition() {
 		return this.position;
 	}
 
 	@Override
-	public void setCameraPosition(Vector3dc pos)
-	{
-		this.position.x = pos.x();
-		this.position.y = pos.y();
-		this.position.z = pos.z();
+	public void setCameraPosition(Vector3dc pos) {
+		this.position.set(pos);
 	}
 
+	private ThreadLocal<Vector3f> tr_FrustrumCheckBoxOrigin = ThreadLocal.withInitial(() -> new Vector3f(0));
+	private ThreadLocal<Vector3f> tr_FrustrumCheckBoxSize = ThreadLocal.withInitial(() -> new Vector3f(0));
+	
 	@Override
 	public boolean isBoxInFrustrum(CollisionBox box)
 	{
-		//TODO don't create fucking objects
-		return this.isBoxInFrustrum(new Vector3f((float)(box.xpos + box.xw / 2),(float)( box.ypos + box.h / 2),(float)( box.zpos + box.zw / 2)), new Vector3f((float)box.xw, (float)box.h, (float)box.zw));
+		Vector3f frustrumCheckBoxOrigin = tr_FrustrumCheckBoxOrigin.get();
+		frustrumCheckBoxOrigin.set((float)(box.xpos + box.xw / 2),(float)( box.ypos + box.h / 2),(float)( box.zpos + box.zw / 2));
+
+		Vector3f frustrumCheckBoxSize = tr_FrustrumCheckBoxSize.get();
+		frustrumCheckBoxSize.set((float)box.xw, (float)box.h, (float)box.zw);
+		
+		return this.isBoxInFrustrum(frustrumCheckBoxOrigin, frustrumCheckBoxSize);
 	}
 
 	@Override
-	public float getFOV()
-	{
+	public float getFOV() {
 		return fov;
 	}
 
 	@Override
-	public void setFOV(float fov)
-	{
+	public void setFOV(float fov) {
 		this.fov = fov;
 	}
 
 	@Override
-	public float getRotationX()
-	{
+	public float getRotationX() {
 		return rotationX;
 	}
 
 	@Override
-	public void setRotationX(float rotationX)
-	{
+	public void setRotationX(float rotationX) {
 		this.rotationX = rotationX;
 	}
 
 	@Override
-	public float getRotationY()
-	{
+	public float getRotationY() {
 		return rotationY;
 	}
 
 	@Override
-	public void setRotationY(float rotationY)
-	{
+	public void setRotationY(float rotationY) {
 		this.rotationY = rotationY;
 	}
 
 	@Override
-	public float getRotationZ()
-	{
+	public float getRotationZ() {
 		return rotationZ;
 	}
 
 	@Override
-	public void setRotationZ(float rotationZ)
-	{
+	public void setRotationZ(float rotationZ) {
 		this.rotationZ = rotationZ;
 	}
 }
