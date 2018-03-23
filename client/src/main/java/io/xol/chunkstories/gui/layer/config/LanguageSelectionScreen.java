@@ -91,7 +91,7 @@ public class LanguageSelectionScreen extends Layer
 		
 		int posY = (int) (renderingContext.getWindow().getHeight() - scale * (64 + 32));
 		
-		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("LiberationSans-Regular", 11), 64, renderingContext.getWindow().getHeight() - 32 * scale, "Welcome - Bienvenue - Wilkomen - Etc", 3, 3, new Vector4f(1));
+		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("LiberationSans-Regular", 11 * scale), 8 * scale, renderingContext.getWindow().getHeight() - 32 * scale, "Welcome - Bienvenue - Wilkomen - Etc", 2, 2, new Vector4f(1));
 		
 		int remainingSpace = (int) Math.floor(renderingContext.getWindow().getHeight() / 96 - 2);
 
@@ -153,9 +153,10 @@ public class LanguageSelectionScreen extends Layer
 			
 			renderer.getGuiRenderer().drawCorneredBoxTiled(xPosition, yPosition, getWidth(), getHeight(), 4, texture, 32, scale());
 
-			ObjectRenderer.renderTexturedRect(xPosition - 0 * width / 2 + 80, yPosition + 32 * scale(), 128, 96, "./lang/" + translationCode + "/lang.png");
-			renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().getFont("LiberationSans-Regular", 11),
-					xPosition + 64 * scale() + 16 * scale(), yPosition + 32 * scale(), translationName, 3, 3, new Vector4f(1));
+			ObjectRenderer.renderTexturedRect(xPosition + 40 * scale(), yPosition + 32 * scale(), 64 * scale(), 48 * scale(), "./lang/" + translationCode + "/lang.png");
+			
+			renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().getFont("LiberationSans-Regular", 11 * scale()),
+					xPosition + 64 * scale() + 16 * scale(), yPosition + 32 * scale(), translationName, 2, 2, new Vector4f(1));
 		}
 	}
 
