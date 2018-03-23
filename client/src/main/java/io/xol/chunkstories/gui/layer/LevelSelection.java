@@ -22,8 +22,8 @@ import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.GameDirectory;
-import io.xol.chunkstories.gui.ng.BaseNgButton;
-import io.xol.chunkstories.gui.ng.LargeButtonIcon;
+import io.xol.chunkstories.gui.elements.BaseButton;
+import io.xol.chunkstories.gui.elements.LargeButtonIcon;
 import io.xol.chunkstories.renderer.opengl.util.ObjectRenderer;
 import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.chunkstories.world.WorldInfoMaster;
@@ -163,7 +163,7 @@ public class LevelSelection extends Layer
 		return super.handleInput(input);
 	}
 	
-	public class LocalWorldButton extends BaseNgButton
+	public class LocalWorldButton extends BaseButton
 	{
 		public WorldInfoMaster info;
 

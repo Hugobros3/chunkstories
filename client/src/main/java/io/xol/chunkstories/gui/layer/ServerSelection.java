@@ -24,13 +24,13 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.GameDirectory;
+import io.xol.chunkstories.gui.elements.BaseButton;
 import io.xol.chunkstories.gui.elements.InputText;
+import io.xol.chunkstories.gui.elements.LargeButtonIcon;
+import io.xol.chunkstories.gui.elements.ScrollableContainer;
+import io.xol.chunkstories.gui.elements.ScrollableContainer.ContainerElement;
 import io.xol.chunkstories.gui.layer.ServerSelection.ServerSelectionZone.ServerGuiItem;
 import io.xol.chunkstories.gui.layer.ingame.ConnectionOverlay;
-import io.xol.chunkstories.gui.ng.BaseNgButton;
-import io.xol.chunkstories.gui.ng.LargeButtonIcon;
-import io.xol.chunkstories.gui.ng.ScrollableContainer;
-import io.xol.chunkstories.gui.ng.ScrollableContainer.ContainerElement;
 import io.xol.chunkstories.net.http.HttpRequestThread;
 import io.xol.chunkstories.net.http.HttpRequester;
 
@@ -39,7 +39,7 @@ public class ServerSelection extends Layer implements HttpRequester
 	InputText ipForm = new InputText(this, 0, 0, 250);
 
 	LargeButtonIcon backOption = new LargeButtonIcon(this, "back");
-	BaseNgButton connectButton = new BaseNgButton(this, 0, 0, 0, "#{connection.connect}");
+	BaseButton connectButton = new BaseButton(this, 0, 0, 0, "#{connection.connect}");
 	
 	ServerSelectionZone serverSelectionZone = new ServerSelectionZone(this);
 	

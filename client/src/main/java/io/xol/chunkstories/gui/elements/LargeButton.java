@@ -4,7 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.chunkstories.gui.ng;
+package io.xol.chunkstories.gui.elements;
 
 import org.joml.Vector4f;
 
@@ -13,7 +13,7 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 
-public class LargeButton extends BaseNgButton{
+public class LargeButton extends BaseButton{
 	
 	public LargeButton(Layer layer, String text) {
 		super(layer, layer.getGameWindow().getFontRenderer().getFont("LiberationSansNarrow-Bold__aa", 18.666f), 0, 0, text);

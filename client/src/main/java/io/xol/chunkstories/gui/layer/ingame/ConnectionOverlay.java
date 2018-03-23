@@ -14,13 +14,13 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ConnectionSequence;
-import io.xol.chunkstories.gui.ng.BaseNgButton;
+import io.xol.chunkstories.gui.elements.BaseButton;
 
 /** GUI overlay that tells you about the progress of connecting to a server */
 public class ConnectionOverlay extends Layer {
 	ConnectionSequence connectionSequence;
 
-	BaseNgButton exitButton = new BaseNgButton(this, 0, 0, 160, "#{connection.cancel}");
+	BaseButton exitButton = new BaseButton(this, 0, 0, 160, "#{connection.cancel}");
 
 	public ConnectionOverlay(GameWindow scene, Layer parent, String ip, int port) {
 		super(scene, parent);

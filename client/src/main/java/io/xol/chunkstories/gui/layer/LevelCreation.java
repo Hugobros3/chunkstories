@@ -16,8 +16,8 @@ import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.gui.elements.BaseButton;
 import io.xol.chunkstories.gui.elements.InputText;
-import io.xol.chunkstories.gui.ng.BaseNgButton;
 import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.chunkstories.world.WorldInfoImplementation;
 import io.xol.chunkstories.world.WorldLoadingException;
@@ -25,8 +25,8 @@ import io.xol.chunkstories.world.WorldLoadingException;
 /** GUI for creating new levels */
 public class LevelCreation extends Layer
 {
-	BaseNgButton cancelOption = new BaseNgButton(this, 0, 0, 75, "Cancel");
-	BaseNgButton createOption = new BaseNgButton(this, 0, 0, 75, "Create");
+	BaseButton cancelOption = new BaseButton(this, 0, 0, 75, "Cancel");
+	BaseButton createOption = new BaseButton(this, 0, 0, 75, "Create");
 	
 	InputText levelName = new InputText(this, 0, 0, 100);
 	InputText worldGenName = new InputText(this, 0, 0, 100);

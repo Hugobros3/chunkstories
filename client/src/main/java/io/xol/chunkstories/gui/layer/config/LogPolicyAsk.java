@@ -13,12 +13,12 @@ import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.gui.ng.BaseNgButton;
+import io.xol.chunkstories.gui.elements.BaseButton;
 
 public class LogPolicyAsk extends Layer
 {
-	BaseNgButton acceptButton = new BaseNgButton(this, 0, 0, 150, "#{logpolicy.accept}");
-	BaseNgButton refuseButton = new BaseNgButton(this, 0, 0, 150, "#{logpolicy.deny}");
+	BaseButton acceptButton = new BaseButton(this, 0, 0, 150, "#{logpolicy.accept}");
+	BaseButton refuseButton = new BaseButton(this, 0, 0, 150, "#{logpolicy.deny}");
 	
 	String message = Client.getInstance().getContent().localization().getLocalizedString("logpolicy.asktext");
 	

@@ -25,8 +25,8 @@ import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.util.Configuration.Option;
 import io.xol.chunkstories.api.util.Configuration.OptionBoolean;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.gui.ng.BaseNgButton;
-import io.xol.chunkstories.gui.ng.LargeButtonIcon;
+import io.xol.chunkstories.gui.elements.BaseButton;
+import io.xol.chunkstories.gui.elements.LargeButtonIcon;
 import io.xol.chunkstories.input.lwjgl3.Lwjgl3KeyBind.Lwjgl3KeyBindOption;
 import io.xol.chunkstories.renderer.opengl.util.ObjectRenderer;
 import io.xol.chunkstories.util.config.OptionChoiceImplementation;
@@ -44,7 +44,7 @@ public class OptionsScreen extends Layer
 	
 	//private RenderingInterface renderer;
 
-	abstract class ConfigButton extends BaseNgButton
+	abstract class ConfigButton extends BaseButton
 	{
 		Runnable run = null;
 	
@@ -323,7 +323,7 @@ public class OptionsScreen extends Layer
 		}
 	}
 	
-	class TabButton extends BaseNgButton {
+	class TabButton extends BaseButton {
 		TabButton(OptionsScreen layer, ConfigTab tab) {
 			super(layer, 0, 0, tab.name);
 			

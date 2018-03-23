@@ -18,12 +18,12 @@ import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.api.world.WorldClientNetworkedRemote;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.gui.ng.BaseNgButton;
+import io.xol.chunkstories.gui.elements.BaseButton;
 
 /** The screen shown when you die */
 public class DeathScreen extends Layer {
-	BaseNgButton respawnButton = new BaseNgButton(this, 0, 0, 160, "#{ingame.respawn}");
-	BaseNgButton exitButton = new BaseNgButton(this, 0, 0, 160, "#{ingame.exit}");
+	BaseButton respawnButton = new BaseButton(this, 0, 0, 160, "#{ingame.respawn}");
+	BaseButton exitButton = new BaseButton(this, 0, 0, 160, "#{ingame.exit}");
 
 	public DeathScreen(GameWindow scene, Layer parent) {
 		super(scene, parent);

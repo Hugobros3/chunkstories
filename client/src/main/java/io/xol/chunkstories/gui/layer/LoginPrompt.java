@@ -17,9 +17,9 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.bugsreporter.JavaCrashesUploader;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.ClientLimitations;
+import io.xol.chunkstories.gui.elements.BaseButton;
 import io.xol.chunkstories.gui.elements.InputText;
 import io.xol.chunkstories.gui.layer.config.LanguageSelectionScreen;
-import io.xol.chunkstories.gui.ng.BaseNgButton;
 import io.xol.chunkstories.net.http.RequestResultAction;
 import io.xol.chunkstories.net.http.SimplePostRequest;
 import io.xol.chunkstories.renderer.opengl.util.ObjectRenderer;
@@ -29,7 +29,7 @@ public class LoginPrompt extends Layer
 	InputText usernameForm = new InputText(this, 0, 0, 250);
 	InputText passwordForm = new InputText(this, 0, 0, 250);
 	
-	BaseNgButton loginButton = new BaseNgButton(this, 0, 0, 64, "#{login.login}");
+	BaseButton loginButton = new BaseButton(this, 0, 0, 64, "#{login.login}");
 
 	boolean logging_in = false;
 	boolean autologin = false;

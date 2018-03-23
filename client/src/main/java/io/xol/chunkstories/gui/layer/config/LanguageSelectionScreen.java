@@ -23,8 +23,8 @@ import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.gui.ng.BaseNgButton;
-import io.xol.chunkstories.gui.ng.LargeButtonIcon;
+import io.xol.chunkstories.gui.elements.BaseButton;
+import io.xol.chunkstories.gui.elements.LargeButtonIcon;
 import io.xol.chunkstories.renderer.opengl.util.ObjectRenderer;
 
 public class LanguageSelectionScreen extends Layer
@@ -120,7 +120,7 @@ public class LanguageSelectionScreen extends Layer
 		}
 	}
 
-	public class LanguageButton extends BaseNgButton
+	public class LanguageButton extends BaseButton
 	{
 		String translationCode;
 		String translationName;

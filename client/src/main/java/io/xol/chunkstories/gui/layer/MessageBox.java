@@ -11,11 +11,11 @@ import org.joml.Vector4f;
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.gui.ng.BaseNgButton;
+import io.xol.chunkstories.gui.elements.BaseButton;
 
 public class MessageBox extends Layer
 {
-	BaseNgButton okButton = new BaseNgButton(this, 0, 0, 150, "#{menu.ok}");
+	BaseButton okButton = new BaseButton(this, 0, 0, 150, "#{menu.ok}");
 	String message;
 	
 	public MessageBox(GameWindow scene, Layer parent, String message)

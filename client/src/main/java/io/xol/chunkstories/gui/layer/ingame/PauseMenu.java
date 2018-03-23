@@ -13,16 +13,16 @@ import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
+import io.xol.chunkstories.gui.elements.BaseButton;
 import io.xol.chunkstories.gui.layer.config.ModsSelection;
 import io.xol.chunkstories.gui.layer.config.OptionsScreen;
-import io.xol.chunkstories.gui.ng.BaseNgButton;
 
 /** The GUI code for the basic pause menu you bring about by pressing ESC */
 public class PauseMenu extends Layer {
-	BaseNgButton resumeButton = new BaseNgButton(this, 0, 0, 160, "#{menu.resume}");
-	BaseNgButton optionsButton = new BaseNgButton(this, 0, 0, 160, "#{menu.options}");
-	BaseNgButton modsButton = new BaseNgButton(this, -100, 0, 160, "#{menu.mods}");
-	BaseNgButton exitButton = new BaseNgButton(this, 0, 0, 160, "#{menu.backto}");
+	BaseButton resumeButton = new BaseButton(this, 0, 0, 160, "#{menu.resume}");
+	BaseButton optionsButton = new BaseButton(this, 0, 0, 160, "#{menu.options}");
+	BaseButton modsButton = new BaseButton(this, -100, 0, 160, "#{menu.mods}");
+	BaseButton exitButton = new BaseButton(this, 0, 0, 160, "#{menu.backto}");
 
 	public PauseMenu(GameWindow scene, Layer parent) {
 		super(scene, parent);

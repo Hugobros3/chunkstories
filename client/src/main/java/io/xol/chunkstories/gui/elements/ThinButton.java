@@ -4,12 +4,12 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.chunkstories.gui.ng;
+package io.xol.chunkstories.gui.elements;
 
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 
-public class ThinButton extends BaseNgButton {
+public class ThinButton extends BaseButton {
 
 	public ThinButton(Layer layer, Font font, int x, int y, String text) {
 		super(layer, font, x, y, text);

@@ -4,7 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.chunkstories.gui.ng;
+package io.xol.chunkstories.gui.elements;
 
 import java.util.ArrayList;
 import java.util.List;

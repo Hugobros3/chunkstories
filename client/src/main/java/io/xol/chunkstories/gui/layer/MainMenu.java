@@ -13,14 +13,14 @@ import io.xol.chunkstories.api.item.inventory.BasicInventory;
 import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.gui.elements.LargeButton;
+import io.xol.chunkstories.gui.elements.LargeButtonIcon;
 import io.xol.chunkstories.gui.layer.config.LanguageSelectionScreen;
 import io.xol.chunkstories.gui.layer.config.LogPolicyAsk;
 import io.xol.chunkstories.gui.layer.config.ModsSelection;
 import io.xol.chunkstories.gui.layer.config.OptionsScreen;
 import io.xol.chunkstories.gui.layer.ingame.DeathScreen;
 import io.xol.chunkstories.gui.layer.ingame.InventoryView;
-import io.xol.chunkstories.gui.ng.LargeButton;
-import io.xol.chunkstories.gui.ng.LargeButtonIcon;
 import io.xol.chunkstories.util.VersionInfo;
 
 /** Gives quick access to the main features of the game */

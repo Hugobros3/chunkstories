@@ -4,7 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.chunkstories.gui.ng;
+package io.xol.chunkstories.gui.elements;
 
 import org.joml.Vector4f;
 
@@ -17,28 +17,28 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 
-public class BaseNgButton extends FocusableGuiElement implements ClickableGuiElement {
+public class BaseButton extends FocusableGuiElement implements ClickableGuiElement {
 	protected String text;
 	protected Font font;
 	protected float fontScaler = 1.0f;
 	
 	protected Runnable action;
 	
-	public BaseNgButton(Layer layer, int x, int y, String text) {
+	public BaseButton(Layer layer, int x, int y, String text) {
 		this(layer, x, y, text, null);
 	}
 	
-	public BaseNgButton(Layer layer, int x, int y, int width, String text) {
+	public BaseButton(Layer layer, int x, int y, int width, String text) {
 		this(layer, x, y, text, null);
 		this.setWidth(width);
 	}
 
-	public BaseNgButton(Layer layer, int x, int y, String text, Runnable action) {
+	public BaseButton(Layer layer, int x, int y, String text, Runnable action) {
 		this(layer, layer.getGameWindow().getFontRenderer().getFont("LiberationSans-Regular", 12), x, y, text);
 		this.action = action;
 	}
 
-	public BaseNgButton(Layer layer, Font font, int x, int y, String text) {
+	public BaseButton(Layer layer, Font font, int x, int y, String text) {
 		super(layer);
 		this.font = font;
 		
