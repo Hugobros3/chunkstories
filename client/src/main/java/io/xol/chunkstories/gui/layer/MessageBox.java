@@ -11,11 +11,11 @@ import org.joml.Vector4f;
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.gui.elements.Button;
+import io.xol.chunkstories.gui.ng.BaseNgButton;
 
 public class MessageBox extends Layer
 {
-	Button okButton = new Button(this, 0, 0, 300, "#{menu.ok}");
+	BaseNgButton okButton = new BaseNgButton(this, 0, 0, 150, "#{menu.ok}");
 	String message;
 	
 	public MessageBox(GameWindow scene, Layer parent, String message)
@@ -38,14 +38,17 @@ public class MessageBox extends Layer
 	}
 
 	@Override
-	public void render(RenderingInterface renderingContext)
+	public void render(RenderingInterface renderer)
 	{
-		parentLayer.render(renderingContext);
+		parentLayer.render(renderer);
 		
-		float dekal = renderingContext.getFontRenderer().defaultFont().getWidth(message);
-		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().defaultFont(), renderingContext.getWindow().getWidth()/2-dekal*1.5f, renderingContext.getWindow().getHeight() / 2 + 64, message, 3f, 3f, new Vector4f(1,0.2f,0.2f,1));
+		renderer.getGuiRenderer().drawBoxWindowsSpace(0, 0, renderer.getWindow().getWidth(),
+				renderer.getWindow().getHeight(), 0, 0, 0, 0, null, false, true, new Vector4f(0.0f, 0.0f, 0.0f, 0.5f));
 		
-		okButton.setPosition(renderingContext.getWindow().getWidth()/2, renderingContext.getWindow().getHeight() / 2 - 32);
-		okButton.render(renderingContext);
+		float dekal = renderer.getFontRenderer().defaultFont().getWidth(message);
+		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), renderer.getWindow().getWidth()/2-dekal*1.5f, renderer.getWindow().getHeight() / 2 + 64, message, 3f, 3f, new Vector4f(1,0.2f,0.2f,1));
+		
+		okButton.setPosition(renderer.getWindow().getWidth()/2 - okButton.getWidth() /2, renderer.getWindow().getHeight() / 2 - 32);
+		okButton.render(renderer);
 	}
 }

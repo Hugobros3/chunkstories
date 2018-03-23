@@ -18,12 +18,12 @@ import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.api.world.WorldClientNetworkedRemote;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.gui.elements.Button;
+import io.xol.chunkstories.gui.ng.BaseNgButton;
 
 /** The screen shown when you die */
 public class DeathScreen extends Layer {
-	Button respawnButton = new Button(this, 0, 0, 320, "#{ingame.respawn}");
-	Button exitButton = new Button(this, 0, 0, 320, "#{ingame.exit}");
+	BaseNgButton respawnButton = new BaseNgButton(this, 0, 0, 160, "#{ingame.respawn}");
+	BaseNgButton exitButton = new BaseNgButton(this, 0, 0, 160, "#{ingame.exit}");
 
 	public DeathScreen(GameWindow scene, Layer parent) {
 		super(scene, parent);
@@ -62,11 +62,11 @@ public class DeathScreen extends Layer {
 				renderer.getWindow().getWidth() / 2 - font.getWidth("YOU DIEDED") * 3f,
 				renderer.getWindow().getHeight() / 2 + 48 * 3, "#FF0000YOU DIEDED", 6, 6, new Vector4f(1));
 		renderer.getFontRenderer().drawStringWithShadow(font,
-				renderer.getWindow().getWidth() / 2 - font.getWidth("git gud scrub") * 1.5f,
-				renderer.getWindow().getHeight() / 2 + 36 * 3, color + "git gud scrub", 3, 3, new Vector4f(1));
+				renderer.getWindow().getWidth() / 2 - font.getWidth("git --gud scrub") * 1.5f,
+				renderer.getWindow().getHeight() / 2 + 36 * 3, color + "git --gud scrub", 3, 3, new Vector4f(1));
 
-		respawnButton.setPosition(renderer.getWindow().getWidth() / 2, renderer.getWindow().getHeight() / 2 + 48);
-		exitButton.setPosition(renderer.getWindow().getWidth() / 2, renderer.getWindow().getHeight() / 2 - 24);
+		respawnButton.setPosition(renderer.getWindow().getWidth() / 2 - respawnButton.getWidth() / 2, renderer.getWindow().getHeight() / 2 + 48);
+		exitButton.setPosition(renderer.getWindow().getWidth() / 2 - exitButton.getWidth() / 2, renderer.getWindow().getHeight() / 2 - 24);
 
 		respawnButton.render(renderer);
 		exitButton.render(renderer);
