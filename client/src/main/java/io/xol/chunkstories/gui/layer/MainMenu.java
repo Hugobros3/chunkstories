@@ -9,12 +9,12 @@ package io.xol.chunkstories.gui.layer;
 import org.joml.Vector4f;
 
 import io.xol.chunkstories.api.gui.Layer;
+import io.xol.chunkstories.api.gui.elements.LargeButton;
+import io.xol.chunkstories.api.gui.elements.LargeButtonIcon;
 import io.xol.chunkstories.api.item.inventory.BasicInventory;
 import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.gui.elements.LargeButton;
-import io.xol.chunkstories.gui.elements.LargeButtonIcon;
 import io.xol.chunkstories.gui.layer.config.LanguageSelectionScreen;
 import io.xol.chunkstories.gui.layer.config.LogPolicyAsk;
 import io.xol.chunkstories.gui.layer.config.ModsSelection;

@@ -9,12 +9,12 @@ package io.xol.chunkstories.gui.layer.ingame;
 import org.joml.Vector4f;
 
 import io.xol.chunkstories.api.gui.Layer;
+import io.xol.chunkstories.api.gui.elements.BaseButton;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ConnectionSequence;
-import io.xol.chunkstories.gui.elements.BaseButton;
 
 /** GUI overlay that tells you about the progress of connecting to a server */
 public class ConnectionOverlay extends Layer {

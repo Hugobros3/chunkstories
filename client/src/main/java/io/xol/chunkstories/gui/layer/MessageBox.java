@@ -9,9 +9,9 @@ package io.xol.chunkstories.gui.layer;
 import org.joml.Vector4f;
 
 import io.xol.chunkstories.api.gui.Layer;
+import io.xol.chunkstories.api.gui.elements.BaseButton;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.gui.elements.BaseButton;
 
 public class MessageBox extends Layer
 {

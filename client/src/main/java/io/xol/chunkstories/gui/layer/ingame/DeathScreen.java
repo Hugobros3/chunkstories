@@ -9,6 +9,7 @@ package io.xol.chunkstories.gui.layer.ingame;
 import org.joml.Vector4f;
 
 import io.xol.chunkstories.api.gui.Layer;
+import io.xol.chunkstories.api.gui.elements.BaseButton;
 import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.math.HexTools;
 import io.xol.chunkstories.api.net.packets.PacketText;
@@ -18,7 +19,6 @@ import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.api.world.WorldClientNetworkedRemote;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.gui.elements.BaseButton;
 
 /** The screen shown when you die */
 public class DeathScreen extends Layer {

@@ -17,14 +17,14 @@ import org.joml.Vector4f;
 import org.lwjgl.glfw.GLFW;
 
 import io.xol.chunkstories.api.gui.Layer;
+import io.xol.chunkstories.api.gui.elements.BaseButton;
+import io.xol.chunkstories.api.gui.elements.LargeButtonIcon;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse.MouseScroll;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.gui.elements.BaseButton;
-import io.xol.chunkstories.gui.elements.LargeButtonIcon;
 import io.xol.chunkstories.renderer.opengl.util.ObjectRenderer;
 
 public class LanguageSelectionScreen extends Layer

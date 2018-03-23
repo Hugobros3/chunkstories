@@ -16,6 +16,7 @@ import org.joml.Vector4f;
 
 import io.xol.chunkstories.api.content.mods.Mod;
 import io.xol.chunkstories.api.gui.Layer;
+import io.xol.chunkstories.api.gui.elements.InputText;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse.MouseScroll;
 import io.xol.chunkstories.api.plugin.ChunkStoriesPlugin;
@@ -25,7 +26,6 @@ import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.api.util.ColorsTools;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.ClientLimitations;
-import io.xol.chunkstories.gui.elements.InputText;
 import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.chunkstories.world.WorldClientRemote;
 

@@ -12,12 +12,12 @@ import org.joml.Vector4f;
 
 import io.xol.chunkstories.api.content.Content.WorldGenerators.WorldGeneratorDefinition;
 import io.xol.chunkstories.api.gui.Layer;
+import io.xol.chunkstories.api.gui.elements.BaseButton;
+import io.xol.chunkstories.api.gui.elements.InputText;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.gui.elements.BaseButton;
-import io.xol.chunkstories.gui.elements.InputText;
 import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.chunkstories.world.WorldInfoImplementation;
 import io.xol.chunkstories.world.WorldLoadingException;
