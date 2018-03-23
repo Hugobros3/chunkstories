@@ -26,12 +26,13 @@ import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.gui.elements.Button;
 import io.xol.chunkstories.gui.ng.BaseNgButton;
+import io.xol.chunkstories.gui.ng.LargeButtonIcon;
 import io.xol.chunkstories.renderer.opengl.util.CorneredBoxDrawer;
 import io.xol.chunkstories.renderer.opengl.util.ObjectRenderer;
 
 public class LanguageSelectionScreen extends Layer
 {
-	Button backOption = new Button(this, 0, 0, 300, "#{menu.back}");
+	LargeButtonIcon backOption = new LargeButtonIcon(this, "back");
 	List<LanguageButton> languages = new ArrayList<LanguageButton>();
 
 	boolean allowBackButton;
@@ -75,8 +76,6 @@ public class LanguageSelectionScreen extends Layer
 				
 			});
 			
-			// System.out.println(worldButton.toString());
-			langButton.height = 64 + 8;
 			elements.add(langButton);
 			languages.add(langButton);
 		}
@@ -93,9 +92,9 @@ public class LanguageSelectionScreen extends Layer
 
 		this.parentLayer.getRootLayer().render(renderingContext);
 		
-		int posY = renderingContext.getWindow().getHeight() - 128;
+		int posY = (int) (renderingContext.getWindow().getHeight() - scale * (64 + 32));
 		
-		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("LiberationSans-Regular", 11), 64, posY + 64, "Welcome - Bienvenue - Wilkomen - Etc", 3, 3, new Vector4f(1));
+		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("LiberationSans-Regular", 11), 64, renderingContext.getWindow().getHeight() - 32 * scale, "Welcome - Bienvenue - Wilkomen - Etc", 3, 3, new Vector4f(1));
 		
 		int remainingSpace = (int) Math.floor(renderingContext.getWindow().getHeight() / 96 - 2);
 
@@ -112,46 +111,36 @@ public class LanguageSelectionScreen extends Layer
 
 			
 			int maxWidth = renderingContext.getWindow().getWidth() - 64 * 2;
-			langButton.width = maxWidth;
-			langButton.setPosition(64 + langButton.width / 2, posY);
+			langButton.setWidth(256);// maxWidth / scale);
+			langButton.setPosition(renderingContext.getWindow().getWidth() / 2 - langButton.getWidth() / 2, posY);
 			langButton.render(renderingContext);
 			posY -= langButton.getHeight() + (4) * scale;
 		}
 
-		if (allowBackButton)
-		{
-			backOption.setPosition(xPosition + 192, 48);
+		if (allowBackButton) {
+			backOption.setPosition(8, 8);
 			backOption.render(renderingContext);
 		}
 	}
 
 	public class LanguageButton extends BaseNgButton
 	{
-		int posx;
-		int posy;
-
 		String translationCode;
 		String translationName;
 
-		public int width, height;
-
-		public LanguageButton(Layer layer, int x, int y, String info)
-		{
+		public LanguageButton(Layer layer, int x, int y, String info) {
 			super(layer, x, y, 0, "");
-			posx = x;
-			posy = y;
 			this.translationCode = info;
 
-			try
-			{
+			this.height = 32;
+
+			try {
 				InputStream is = Client.getInstance().getContent().getAsset("./lang/" + translationCode + "/lang.info").read();
 				BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF8"));
-				
+
 				translationName = reader.readLine();
 				reader.close();
-			}
-			catch (IOException e)
-			{
+			} catch (IOException e) {
 
 			}
 		}
@@ -159,22 +148,17 @@ public class LanguageSelectionScreen extends Layer
 		@Override
 		public void render(RenderingInterface renderer)
 		{
-			width = 512;
+			//width = 256;
+			this.height = 64;
 
-			Texture2D texture = renderer.textures().getTexture((isFocused() || isMouseOver()) ?"./textures/gui/scalableButtonOver.png" : "./textures/gui/scalableButton.png");
+			Texture2D texture = renderer.textures().getTexture((isFocused() || isMouseOver()) ? "./textures/gui/scalableButtonOver.png" : "./textures/gui/scalableButton.png");
 			texture.setLinearFiltering(false);
 			
-			renderer.getGuiRenderer().drawCorneredBoxTiled(posx, posy, getWidth(), getHeight(), 4, texture, 32, scale());
+			renderer.getGuiRenderer().drawCorneredBoxTiled(xPosition, yPosition, getWidth(), getHeight(), 4, texture, 32, scale());
 
-			ObjectRenderer.renderTexturedRect(posx - width / 2 + 80, posy, 128, 96, "./lang/" + translationCode + "/lang.png");
-			renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().getFont("LiberationSans-Regular", 11), posx - width / 2 + 150, posy, translationName, 3, 3, new Vector4f(1));
-		}
-
-		@Override
-		public void setPosition(float f, float g)
-		{
-			posx = (int) f;
-			posy = (int) g;
+			ObjectRenderer.renderTexturedRect(xPosition - 0 * width / 2 + 80, yPosition + 32 * scale(), 128, 96, "./lang/" + translationCode + "/lang.png");
+			renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().getFont("LiberationSans-Regular", 11),
+					xPosition + 64 * scale() + 16 * scale(), yPosition + 32 * scale(), translationName, 3, 3, new Vector4f(1));
 		}
 	}
 

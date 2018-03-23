@@ -84,7 +84,6 @@ public class ServerSelection extends Layer implements HttpRequester
 		String instructions = "Select a server from the list or type in the address directly";
 		Font font = renderer.getFontRenderer().getFont("LiberationSans-Regular", 11);
 		renderer.getFontRenderer().drawStringWithShadow(font, 32, renderer.getWindow().getHeight() - 32 * 2, instructions, 3, 3, new Vector4f(1));
-		//FontRenderer2.drawTextUsingSpecificFontRVBA(32, renderer.getWindow().getHeight() - 32 * (1 + 1), 0, 32 + 1 * 16, , BitmapFont.SMALLFONTS, 1f, 1f, 1f, 1f);
 		
 		// gui
 		float txtbox = renderer.getWindow().getWidth() - connectButton.getWidth() - 48 - 8 * scale;
@@ -102,8 +101,10 @@ public class ServerSelection extends Layer implements HttpRequester
 		updateServers();
 		int s = Client.getInstance().getGameWindow().getGuiScale();
 		
-		serverSelectionZone.setPosition((width - 480 * s) / 2, 32);
-		serverSelectionZone.setDimensions(480 * s, height - 32 - 128);
+		float offsetForButtons = backOption.getPositionY() + backOption.getHeight() + 8 * scale;
+		float offsetForHeaderText = 32 * scale + ipForm.getHeight();
+		serverSelectionZone.setPosition((width - 480 * scale) / 2, offsetForButtons);
+		serverSelectionZone.setDimensions(480 * scale, height - (offsetForButtons + offsetForHeaderText));
 		serverSelectionZone.render(renderer);
 	}
 

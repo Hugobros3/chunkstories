@@ -26,6 +26,8 @@ import io.xol.chunkstories.api.input.Mouse.MouseButton;
 import io.xol.chunkstories.api.input.Mouse.MouseScroll;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
+import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.content.mods.ModFolder;
@@ -62,12 +64,7 @@ public class ModsSelection extends Layer
 		elements.add(backOption);
 		elements.add(applyMods);
 		
-		this.backOption.setAction(new Runnable() {
-			@Override
-			public void run() {
-				gameWindow.setLayer(parentLayer);
-			}
-		});
+		this.backOption.setAction(() -> gameWindow.setLayer(parentLayer));
 		
 		this.applyMods.setAction(new Runnable() {
 			@Override
@@ -86,8 +83,7 @@ public class ModsSelection extends Layer
 				String[] ok = new String[modsEnabled.size()];
 				modsEnabled.toArray(ok);
 				Client.getInstance().getContent().modsManager().setEnabledMods(ok);
-				/*ModsManager.reload();
-				ModsManager.reloadClientContent();*/
+				
 				Client.getInstance().reloadAssets();
 				buildModsList();
 			}
@@ -156,17 +152,23 @@ public class ModsSelection extends Layer
 	}
 
 	@Override
-	public void render(RenderingInterface renderingContext)
+	public void render(RenderingInterface renderer)
 	{
-		parentLayer.getRootLayer().render(renderingContext);
+		parentLayer.getRootLayer().render(renderer);
+		int scale = Client.getInstance().getGameWindow().getGuiScale();
+		
+		String instructions = "Select the mods you want to use";
+		Font font = renderer.getFontRenderer().getFont("LiberationSans-Regular", 16 * scale);
+		renderer.getFontRenderer().drawStringWithShadow(font, 32, renderer.getWindow().getHeight() - 24 * scale, instructions, 1, 1, new Vector4f(1));
+		
 		
 		backOption.setPosition(xPosition + 8, 8);
-		backOption.render(renderingContext);
+		backOption.render(renderer);
 
 		// Display buttons
 		
 		float totalLengthOfButtons = 0;
-		float spacing = -1;
+		float spacing = 2 * scale;
 		
 		totalLengthOfButtons += applyMods.getWidth();
 		totalLengthOfButtons += spacing;
@@ -177,26 +179,26 @@ public class ModsSelection extends Layer
 		//totalLengthOfButtons += openModsFolder.getWidth();
 		//totalLengthOfButtons += spacing;
 		
-		float buttonDisplayX = renderingContext.getWindow().getWidth() / 2 - totalLengthOfButtons / 2;
+		float buttonDisplayX = renderer.getWindow().getWidth() / 2 - totalLengthOfButtons / 2;
 		float buttonDisplayY = 8;
 
 		locateExtMod.setPosition(buttonDisplayX, buttonDisplayY);
 		buttonDisplayX += locateExtMod.getWidth() + spacing;
-		locateExtMod.render(renderingContext);
+		locateExtMod.render(renderer);
 
 		openModsFolder.setPosition(buttonDisplayX, buttonDisplayY);
 		buttonDisplayX += openModsFolder.getWidth() + spacing;
-		openModsFolder.render(renderingContext);
+		openModsFolder.render(renderer);
 		
 		applyMods.setPosition(this.getWidth() - applyMods.getWidth() - 8, 8);
 		buttonDisplayX += applyMods.getWidth() + spacing;
-		applyMods.render(renderingContext);
+		applyMods.render(renderer);
 		
-		int s = Client.getInstance().getGameWindow().getGuiScale();
-		
-		modsContainer.setPosition((width - 480 * s) / 2, 32);
-		modsContainer.setDimensions(480 * s, height - 32 - 32 * s);
-		modsContainer.render(renderingContext);
+		float offsetForButtons = applyMods.getPositionY() + applyMods.getHeight() + 8 * scale;
+		float offsetForHeaderText = 32 * scale;
+		modsContainer.setPosition((width - 480 * scale) / 2, offsetForButtons);
+		modsContainer.setDimensions(480 * scale, height - (offsetForButtons + offsetForHeaderText));
+		modsContainer.render(renderer);
 	}
 	
 	@Override
@@ -223,14 +225,12 @@ public class ModsSelection extends Layer
 			String text = "Showing elements ";
 			
 			text += scroll;
-			text +="->";
+			text +="-";
 			text += scroll;
 			
 			text+=" out of "+elements.size();
 			int dekal = renderer.getFontRenderer().getFont("LiberationSans-Regular", 12).getWidth(text) / 2;
-			renderer.getFontRenderer().drawString(renderer.getFontRenderer().getFont("LiberationSans-Regular", 12), xPosition + width / 2 - dekal * scale(), yPosition + 16 / scale(), text, scale(), new Vector4f(0.0f, 0.0f, 0.0f, 1.0f));
-			
-			//return r;
+			renderer.getFontRenderer().drawString(renderer.getFontRenderer().getFont("LiberationSans-Regular", 12), xPosition + width / 2 - dekal * scale(), yPosition - 128 / scale(), text, scale(), new Vector4f(0.0f, 0.0f, 0.0f, 1.0f));
 		}
 		
 		class ModItem extends ContainerElement {
@@ -242,7 +242,7 @@ public class ModsSelection extends Layer
 			
 			public ModItem(Mod mod2, boolean enabled)
 			{
-				super(mod2.getModInfo().getName(), mod2.getModInfo().getDescription());
+				super(mod2.getModInfo().getName(), mod2.getModInfo().getDescription().replace("\\n", "\n"));
 				this.mod = mod2;
 				this.enabled = enabled;
 				this.topRightString = mod2.getModInfo().getVersion();
@@ -334,18 +334,26 @@ public class ModsSelection extends Layer
 				
 				int s = ModsScrollableContainer.this.scale();
 				//Setup textures
-				Texture2DGL bgTexture = TexturesHandler.getTexture(isMouseOver(mouse) ? "./textures/gui/modsOver.png" : "./textures/gui/mods.png");
+				Texture2D bgTexture = renderer.textures().getTexture(isMouseOver(mouse) ? "./textures/gui/modsOver.png" : "./textures/gui/mods.png");
 				bgTexture.setLinearFiltering(false);
 				
-				Texture2DGL upArrowTexture = TexturesHandler.getTexture("./textures/gui/modsArrowUp.png");
+				Texture2D upArrowTexture = renderer.textures().getTexture("./textures/gui/modsArrowUp.png");
 				upArrowTexture.setLinearFiltering(false);
-				Texture2DGL downArrowTexture = TexturesHandler.getTexture("./textures/gui/modsArrowDown.png");
+				Texture2D downArrowTexture = renderer.textures().getTexture("./textures/gui/modsArrowDown.png");
 				downArrowTexture.setLinearFiltering(false);
-				Texture2DGL enableDisableTexture = TexturesHandler.getTexture("./textures/gui/modsEnableDisable.png");
+				
+				Texture2D enableDisableTexture = renderer.textures().getTexture(enabled ? "./textures/gui/modsDisable.png" : "./textures/gui/modsEnable.png");
 				enableDisableTexture.setLinearFiltering(false);
 				
 				//Render graphical base
-				renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX, positionY, width * s, height * s, 0, 1, 1, 0, bgTexture, true, false, enabled ? new Vector4f(1.0f, 1.0f, 1.0f, 1.0f) : new Vector4f(1.0f, 0.5f, 0.5f, 1.0f));
+				renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX, positionY, width * s, height * s, 0, 1, 1, 0, bgTexture, true, false, 
+						enabled ? new Vector4f(1.0f, 1.0f, 1.0f, 1.0f) : new Vector4f(1f, 1f, 1f, 0.5f));
+				if(enabled) {
+					Texture2D enabledTexture = renderer.textures().getTexture("./textures/gui/modsEnabled.png");
+					enabledTexture.setLinearFiltering(false);
+					renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX, positionY, width * s, height * s, 0, 1, 1, 0, enabledTexture, true, false, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
+				}
+				
 				//Render subbuttons
 				if(isOverUpButton(mouse))
 					renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX, positionY, width * s, height * s, 0, 1, 1, 0, upArrowTexture, true, false, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));

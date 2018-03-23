@@ -59,13 +59,13 @@ public class ScrollableContainer extends FocusableGuiElement implements Clickabl
 				break;
 			ContainerElement element = elements.get(i);
 			startY -= element.height * scale();
-			if(startY - element.height * scale() < this.yPosition)
+			if(startY < this.yPosition)
 				break;
-			startY -= 4 * scale();
 			i++;
 			
 			element.setPosition(this.xPosition, startY);
 			element.render(renderer);
+			startY -= 4 * scale();
 		}
 		
 		//return r;

@@ -13,6 +13,7 @@ import io.xol.chunkstories.api.item.inventory.BasicInventory;
 import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.gui.layer.config.LanguageSelectionScreen;
 import io.xol.chunkstories.gui.layer.config.LogPolicyAsk;
 import io.xol.chunkstories.gui.layer.config.ModsSelection;
 import io.xol.chunkstories.gui.layer.config.OptionsScreen;
@@ -22,6 +23,7 @@ import io.xol.chunkstories.gui.ng.LargeButton;
 import io.xol.chunkstories.gui.ng.LargeButtonIcon;
 import io.xol.chunkstories.util.VersionInfo;
 
+/** Gives quick access to the main features of the game */
 public class MainMenu extends Layer
 {
 	LargeButtonIcon largeOnline = new LargeButtonIcon(this, "online");
@@ -29,21 +31,15 @@ public class MainMenu extends Layer
 	
 	LargeButton largeSingleplayer = new LargeButton(this, "singleplayer");
 	LargeButton largeOptions = new LargeButton(this, "options");
-	
-	//NgButton k = new NgButton(this, 0, 0, "Singleplayer");
 
 	public MainMenu(GameWindow scene, Layer parent)
 	{
 		super(scene, parent);
-		// Gui buttons
+		
 		this.largeSingleplayer.setAction(() -> gameWindow.setLayer(new LevelSelection(gameWindow, MainMenu.this)) );
-		
 		this.largeOnline.setAction(() -> gameWindow.setLayer(new ServerSelection(gameWindow, MainMenu.this, false)) );
-		
 		this.largeMods.setAction(() -> gameWindow.setLayer(new ModsSelection(gameWindow, MainMenu.this)) );
-		
 		this.largeOptions.setAction(() -> gameWindow.setLayer(new OptionsScreen(gameWindow, MainMenu.this)) );
-		
 		
 		elements.add(largeOnline);
 		elements.add(largeMods);
@@ -102,6 +98,8 @@ public class MainMenu extends Layer
 			gameWindow.setLayer(new DeathScreen(gameWindow, this));
 		} else if (c == 'r') {
 			gameWindow.setLayer(new MessageBox(gameWindow, this, "Error : error"));
+		} else if (c == 'l') {
+			gameWindow.setLayer(new LanguageSelectionScreen(gameWindow, this, true));
 		} else if (c == 'c') {
 			// Fabricated crash
 			throw new RuntimeException("Epic crash");

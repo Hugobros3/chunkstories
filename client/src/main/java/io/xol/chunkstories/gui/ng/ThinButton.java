@@ -23,7 +23,7 @@ public class ThinButton extends BaseNgButton {
 
 	@Override
 	public float getWidth() {
-		return super.getWidth() + 8 * scale();
+		return super.getWidth();
 	}
 
 }
