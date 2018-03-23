@@ -206,11 +206,8 @@ public class FarTerrainGSMeshRenderer implements FarTerrainRenderer {
 					int index10 = worldRenderer.getSummariesTexturesHolder().getSummaryIndex(regionI + 1, regionJ);
 					int index01 = worldRenderer.getSummariesTexturesHolder().getSummaryIndex(regionI, regionJ + 1);
 					int index11 = worldRenderer.getSummariesTexturesHolder().getSummaryIndex(regionI + 1, regionJ + 1);
-					if(i < 4 && index10 == -1)
-						continue;
-					if(j < 4 && index01 == -1)
-						continue;
-					if(i < 4 && j < 4 && index11 == -1)
+					
+					if(index10 == -1 || index01 == -1 || index11 == -1)
 						continue;
 					
 					HeightmapImplementation sum = (HeightmapImplementation) world.getRegionsSummariesHolder().getHeightmap(regionI, regionJ);
