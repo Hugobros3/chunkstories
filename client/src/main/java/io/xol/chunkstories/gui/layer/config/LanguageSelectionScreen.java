@@ -18,16 +18,13 @@ import org.lwjgl.glfw.GLFW;
 
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.input.Input;
-import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.input.Mouse.MouseScroll;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.gui.elements.Button;
 import io.xol.chunkstories.gui.ng.BaseNgButton;
 import io.xol.chunkstories.gui.ng.LargeButtonIcon;
-import io.xol.chunkstories.renderer.opengl.util.CorneredBoxDrawer;
 import io.xol.chunkstories.renderer.opengl.util.ObjectRenderer;
 
 public class LanguageSelectionScreen extends Layer

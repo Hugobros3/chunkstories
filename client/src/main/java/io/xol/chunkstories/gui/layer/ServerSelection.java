@@ -24,7 +24,6 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.GameDirectory;
-import io.xol.chunkstories.gui.elements.Button;
 import io.xol.chunkstories.gui.elements.InputText;
 import io.xol.chunkstories.gui.layer.ServerSelection.ServerSelectionZone.ServerGuiItem;
 import io.xol.chunkstories.gui.layer.ingame.ConnectionOverlay;

@@ -11,13 +11,14 @@ import org.joml.Vector4f;
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.gui.elements.Button;
+import io.xol.chunkstories.gui.ng.BaseNgButton;
 
 public class LogPolicyAsk extends Layer
 {
-	Button acceptButton = new Button(this, 0, 0, 300, "#{logpolicy.accept}");
-	Button refuseButton = new Button(this, 0, 0, 300, "#{logpolicy.deny}");
+	BaseNgButton acceptButton = new BaseNgButton(this, 0, 0, 150, "#{logpolicy.accept}");
+	BaseNgButton refuseButton = new BaseNgButton(this, 0, 0, 150, "#{logpolicy.deny}");
 	
 	String message = Client.getInstance().getContent().localization().getLocalizedString("logpolicy.asktext");
 	
@@ -52,25 +53,29 @@ public class LogPolicyAsk extends Layer
 	}
 	
 	@Override
-	public void render(RenderingInterface renderingContext)
+	public void render(RenderingInterface renderer)
 	{
-		parentLayer.render(renderingContext);
+		parentLayer.render(renderer);
+		float scale = gameWindow.getGuiScale();
 		
-		renderingContext.getGuiRenderer().drawBoxWindowsSpace(0, 0, renderingContext.getWindow().getWidth(), renderingContext.getWindow().getHeight(), 0, 0, 0, 0, null, false, true, new Vector4f(0.0f, 0.0f, 0.0f, 0.5f));
+		renderer.getGuiRenderer().drawBoxWindowsSpace(0, 0, renderer.getWindow().getWidth(), renderer.getWindow().getHeight(), 0, 0, 0, 0, null, false, true, new Vector4f(0.0f, 0.0f, 0.0f, 0.5f));
 		
-		renderingContext.getFontRenderer().drawStringWithShadow(renderingContext.getFontRenderer().getFont("LiberationSans-Regular", 11), 30, renderingContext.getWindow().getHeight()-64, Client.getInstance().getContent().localization().getLocalizedString("logpolicy.title"), 3, 3, new Vector4f(1));
+		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().getFont("LiberationSans-Regular__aa", 16 * scale),
+				30, renderer.getWindow().getHeight()-64, Client.getInstance().getContent().localization().getLocalizedString("logpolicy.title"), 1, 1, new Vector4f(1));
 		
-		int linesTaken = renderingContext.getFontRenderer().defaultFont().getLinesHeight(message, (width-128) / 2 );
-		float scaling = 2;
-		if(linesTaken*32 > height)
-			scaling  = 1f;
+		Font logPolicyTextFont = renderer.getFontRenderer().getFont("LiberationSans-Regular__aa", 12 * scale);
 		
-		renderingContext.getFontRenderer().drawString(renderingContext.getFontRenderer().defaultFont(), 30, renderingContext.getWindow().getHeight()-128, message, scaling, width-128);
 		
-		acceptButton.setPosition(renderingContext.getWindow().getWidth()/2 - 256, renderingContext.getWindow().getHeight() / 4 - 32);
-		acceptButton.render(renderingContext);
 		
-		refuseButton.setPosition(renderingContext.getWindow().getWidth()/2 + 256, renderingContext.getWindow().getHeight() / 4 - 32);
-		refuseButton.render(renderingContext);
+		renderer.getFontRenderer().drawString(logPolicyTextFont, 30, renderer.getWindow().getHeight()-128, message, 1, width-60);
+		
+		float seperation = 4 * scale;
+		float groupSize = acceptButton.getWidth() + refuseButton.getWidth() + seperation;
+		
+		acceptButton.setPosition(renderer.getWindow().getWidth()/2 - groupSize / 2, renderer.getWindow().getHeight() / 4 - 32);
+		acceptButton.render(renderer);
+		
+		refuseButton.setPosition(renderer.getWindow().getWidth()/2 - groupSize / 2 + seperation + acceptButton.getWidth(), renderer.getWindow().getHeight() / 4 - 32);
+		refuseButton.render(renderer);
 	}
 }

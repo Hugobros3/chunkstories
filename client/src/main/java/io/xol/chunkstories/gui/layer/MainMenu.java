@@ -100,6 +100,8 @@ public class MainMenu extends Layer
 			gameWindow.setLayer(new MessageBox(gameWindow, this, "Error : error"));
 		} else if (c == 'l') {
 			gameWindow.setLayer(new LanguageSelectionScreen(gameWindow, this, true));
+		} else if (c == 'o') {
+			gameWindow.setLayer(new LogPolicyAsk(gameWindow, this));
 		} else if (c == 'c') {
 			// Fabricated crash
 			throw new RuntimeException("Epic crash");
