@@ -16,8 +16,8 @@ import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.client.Client;
-import io.xol.chunkstories.gui.elements.Button;
 import io.xol.chunkstories.gui.elements.InputText;
+import io.xol.chunkstories.gui.ng.BaseNgButton;
 import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.chunkstories.world.WorldInfoImplementation;
 import io.xol.chunkstories.world.WorldLoadingException;
@@ -25,11 +25,11 @@ import io.xol.chunkstories.world.WorldLoadingException;
 /** GUI for creating new levels */
 public class LevelCreation extends Layer
 {
-	Button cancelOption = new Button(this, 0, 0, 150, "Cancel");
-	Button createOption = new Button(this, 0, 0, 150, "Create");
+	BaseNgButton cancelOption = new BaseNgButton(this, 0, 0, 75, "Cancel");
+	BaseNgButton createOption = new BaseNgButton(this, 0, 0, 75, "Create");
 	
-	InputText levelName = new InputText(this, 0, 0, 500);
-	InputText worldGenName = new InputText(this, 0, 0, 500);
+	InputText levelName = new InputText(this, 0, 0, 100);
+	InputText worldGenName = new InputText(this, 0, 0, 100);
 	
 	public LevelCreation(GameWindow scene, Layer parent)
 	{
@@ -84,6 +84,7 @@ public class LevelCreation extends Layer
 	{
 		if(parentLayer != null)
 			this.parentLayer.render(renderer);
+		int scale = gameWindow.getGuiScale();
 		
 		renderer.getGuiRenderer().drawBox(-1.0f, -1.0f, 1.0f, 1.0f, 0, 0, 0, 0, null, true, false, new Vector4f(0.0f, 0.0f, 0.0f, 0.25f));
 		
@@ -107,7 +108,7 @@ public class LevelCreation extends Layer
 		int lvlnm_l = renderer.getFontRenderer().getFont("LiberationSans-Regular", 12).getWidth("Level name") * 2;
 		
 		levelName.setPosition(x + lvlnm_l + 20, positionStartY + height - 64 - 96);
-		levelName.setWidth(width - (x + lvlnm_l + 20) - 20);
+		levelName.setWidth((width - (x + lvlnm_l + 20) - 20) / 2);
 		levelName.render(renderer);
 		
 		String wg_string = "World generator to use";
@@ -115,7 +116,7 @@ public class LevelCreation extends Layer
 		int wg_sl = renderer.getFontRenderer().getFont("LiberationSans-Regular", 12).getWidth(wg_string) * 2;
 		
 		worldGenName.setPosition(x + wg_sl + 20, positionStartY + height - 64 - 148);
-		worldGenName.setWidth(width - (x + wg_sl + 20) - 20);
+		worldGenName.setWidth((width - (x + wg_sl + 20) - 20) / 2);
 		worldGenName.render(renderer);
 		
 		WorldGeneratorDefinition wg = Client.getInstance().getContent().generators().getWorldGeneratorUnsafe(worldGenName.getText());
@@ -139,10 +140,10 @@ public class LevelCreation extends Layer
 		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().getFont("LiberationSans-Regular", 12), x, positionStartY + height - 64 - 196 - 4, wg_validity_string, 2, 2, width, new Vector4f(1));
 		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().getFont("LiberationSans-Regular", 12), x, positionStartY + height - 64 - 196 - 4 - 32, wg_list, 2, 2, width, new Vector4f(1));
 		
-		cancelOption.setPosition(x + 75, positionStartY + 20 + 16);
+		cancelOption.setPosition(positionStartX + 20 * scale, positionStartY + 20 * scale);
 		cancelOption.render(renderer);
 
-		createOption.setPosition(width - 75 - 20, positionStartY + 20 + 16);
+		createOption.setPosition(positionStartX + width - createOption.getWidth() - 20 * scale, positionStartY + 20 * scale);
 		createOption.render(renderer);
 	}
 }
