@@ -157,13 +157,16 @@ subprojects { subproject ->
 		dependencies {
 			compile "org.lwjgl:lwjgl:${lwjglVersion}"
 			compile "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}"
+			compile "org.lwjgl:lwjgl-assimp:${lwjglVersion}"
 			//When running on our debug computer, it's safe to assume the OS that will run the game is the same than the one who'll compile it.
 			runtime "org.lwjgl:lwjgl:${lwjglVersion}:${lwjglNatives}"
 			runtime "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}:${lwjglNatives}"
+			runtime "org.lwjgl:lwjgl-assimp:${lwjglVersion}:${lwjglNatives}"
 			//When compiling a redistribuable jar, we need ALL natives in it!
 			project.ext.natives.each {
 				multiplatform ("org.lwjgl:lwjgl:${lwjglVersion}:" + it)
 				multiplatform "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}:" + it
+				multiplatform "org.lwjgl:lwjgl-assimp:${lwjglVersion}:" + it
 			}
 		}
 		

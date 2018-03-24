@@ -84,7 +84,7 @@ public class ModZip extends ModImplementation
 		return assets.get(name);
 	}
 
-	class ModZipAsset implements Asset
+	public class ModZipAsset implements Asset
 	{
 		String assetName;
 		ZipEntry entry;

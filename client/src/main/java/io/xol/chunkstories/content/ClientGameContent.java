@@ -66,7 +66,7 @@ public class ClientGameContent extends GameContentStore implements ClientContent
 	}
 
 	@Override
-	public ClientInterface getClient() {
+	public ClientInterface getContext() {
 		return client;
 	}
 

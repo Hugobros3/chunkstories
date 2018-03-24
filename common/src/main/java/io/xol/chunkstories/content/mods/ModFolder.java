@@ -79,7 +79,7 @@ public class ModFolder extends ModImplementation
 		return assets.get(name);
 	}
 
-	class ModFolderAsset implements Asset
+	public class ModFolderAsset implements Asset
 	{
 		String assetName;
 		File file;
@@ -120,6 +120,10 @@ public class ModFolder extends ModImplementation
 		public String toString()
 		{
 			return "[Asset: "+assetName+" from mod "+ModFolder.this+"]";
+		}
+
+		public File getFile() {
+			return file;
 		}
 	}
 	

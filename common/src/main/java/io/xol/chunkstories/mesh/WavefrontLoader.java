@@ -26,27 +26,6 @@ import io.xol.chunkstories.api.mesh.MultiPartMesh;
 
 public class WavefrontLoader implements MeshLoader
 {
-	//TODO per-thread
-	//private static List<float[]> vertices = new ArrayList<float[]>();
-	//private static List<float[]> texcoords = new ArrayList<float[]>();
-	//private static List<float[]> normals = new ArrayList<float[]>();
-
-	/*public static ObjMeshComplete loadWavefrontFormatMesh(Asset asset)
-	{
-		return (ObjMeshComplete) loadWavefrontFormatMeshInternal(asset, LoadInto.OBJ_MESH);
-	}
-	
-	public static ObjMeshRenderable loadWavefrontFormatMeshRenderable(Asset asset)
-	{
-		return (ObjMeshRenderable) loadWavefrontFormatMeshInternal(asset, LoadInto.OBJ_MESH_ONLY_RENDERABLE);
-	}*/
-
-	//Various ways of calling the same function
-	/*private enum LoadInto
-	{
-		OBJ_MESH, OBJ_MESH_ONLY_RENDERABLE, VOXEL_MODEL, FLOAT_BUFFER
-	}*/
-
 	private static final Logger logger = LoggerFactory.getLogger("content.meshes.obj");
 	public Logger logger() {
 		return logger;
@@ -167,38 +146,6 @@ public class WavefrontLoader implements MeshLoader
 			}
 			reader.close();
 
-			/*if(mode == LoadInto.OBJ_MESH)
-			{
-				//Create 3 buffers for each type
-				FloatBuffer verticesBuffer = BufferUtils.createFloatBuffer(3 * totalVertices);
-				FloatBuffer textureCoordinatesBuffer = BufferUtils.createFloatBuffer(2 * totalVertices);
-				FloatBuffer normalsBuffer = BufferUtils.createFloatBuffer(3 * totalVertices);
-
-				// Iterates over each group name in order of apparition
-				for (String gName : tempGroups.keySet())
-				{
-					for (float[] gData : tempGroups.get(gName))
-					{
-						verticesBuffer.put(gData[0]);
-						verticesBuffer.put(gData[1]);
-						verticesBuffer.put(gData[2]);
-						textureCoordinatesBuffer.put(gData[3]);
-						textureCoordinatesBuffer.put(gData[4]);
-						normalsBuffer.put(gData[5]);
-						normalsBuffer.put(gData[6]);
-						normalsBuffer.put(gData[7]);
-					}
-				}
-
-				verticesBuffer.flip();
-				textureCoordinatesBuffer.flip();
-				normalsBuffer.flip();
-
-				return new ObjMeshComplete(totalVertices, verticesBuffer, textureCoordinatesBuffer, normalsBuffer, groupsSizesMap);
-			}
-			else if(mode == LoadInto.OBJ_MESH_ONLY_RENDERABLE)
-			{*/
-				//Create 3 buffers for each type
 				
 			FloatBuffer verticesBuffer = ByteBuffer.allocateDirect(3 * totalVertices * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();//BufferUtils.createFloatBuffer(3 * totalVertices);
 			FloatBuffer textureCoordinatesBuffer =  ByteBuffer.allocateDirect(2 * totalVertices * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();//BufferUtils.createFloatBuffer(2 * totalVertices);
