@@ -41,6 +41,11 @@ public class MainMenu extends Layer
 		this.largeMods.setAction(() -> gameWindow.setLayer(new ModsSelection(gameWindow, MainMenu.this)) );
 		this.largeOptions.setAction(() -> gameWindow.setLayer(new OptionsScreen(gameWindow, MainMenu.this)) );
 		
+		largeOnline.setWidth(104);
+		largeSingleplayer.setWidth(104);
+		largeMods.setWidth(104);
+		largeOptions.setWidth(104);
+		
 		elements.add(largeOnline);
 		elements.add(largeMods);
 		
@@ -56,13 +61,13 @@ public class MainMenu extends Layer
 		if(gameWindow.getLayer() == this && gameWindow.getClient().getConfiguration().getStringOption("client.game.log-policy").equals("undefined"))
 			gameWindow.setLayer(new LogPolicyAsk(gameWindow, this));
 
-		float spacing = 8;
-		float buttonsAreaSize = (96 * 2 + spacing) * this.getGuiScale();
+		float spacing = 4;
+		float buttonsAreaSize = largeSingleplayer.getWidth() * 2 + spacing * this.getGuiScale();
 		
-		float leftButtonX = this.getWidth() / 2 - buttonsAreaSize / 2;
+		float leftButtonX = this.getWidth() / 2 - buttonsAreaSize / 2 + 0.0f;
 		
 		float ySmall = (12) * this.getGuiScale();
-		float yBig = ySmall + (24 + spacing) * this.getGuiScale();
+		float yBig = ySmall + largeSingleplayer.getHeight() + (spacing) * this.getGuiScale();
 		
 		largeOnline.setPosition(leftButtonX, yBig);
 		largeOnline.render(renderingContext);
@@ -70,7 +75,7 @@ public class MainMenu extends Layer
 		largeSingleplayer.setPosition(leftButtonX, ySmall);
 		largeSingleplayer.render(renderingContext);
 		
-		float rightButtonX = leftButtonX + (spacing + 96) * this.getGuiScale();
+		float rightButtonX = leftButtonX + largeSingleplayer.getWidth() + (spacing) * this.getGuiScale();
 		
 		largeMods.setPosition(rightButtonX, yBig);
 		largeMods.render(renderingContext);
