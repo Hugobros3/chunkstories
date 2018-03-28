@@ -11,9 +11,8 @@ subprojects {
 		mavenLocal()
 		mavenCentral()
 		jcenter()
-		maven {
-			url "http://maven.xol.io/repository/public/"
-		}
+		maven { url "http://maven.xol.io/repository/public/" }
+		maven { url 'https://jitpack.io' }
 	}
 	
 	buildscript {
