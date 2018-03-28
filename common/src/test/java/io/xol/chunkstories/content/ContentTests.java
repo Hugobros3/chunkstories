@@ -17,7 +17,7 @@ public class ContentTests {
 			Asset a = testContext.getContent().getAsset("./models/human_all_animations.dae");
 			//Asset a = testContext.getContent().getAsset("./animations/human/ded.bvh");
 			
-			//new NativeAssimpMesh(a, testContext.getContent().meshes());
+			new NativeAssimpMesh(a, testContext.getContent().meshes());
 			new AssimpMesh(a, testContext.getContent().meshes());
 		} catch (MeshLoadException e) {
 			// TODO Auto-generated catch block

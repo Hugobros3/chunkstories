@@ -1,6 +1,9 @@
 package io.xol.chunkstories.mesh;
 
 import java.io.BufferedReader;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import assimp.IOStream;
 import assimp.IOSystem;
@@ -15,17 +18,17 @@ public class AssetIOSystem implements IOSystem {
 	}
 
 	@Override
-	public void Close(IOStream arg0) {
+	public void close(IOStream arg0) {
 		//osef
 	}
 
 	@Override
-	public boolean Exists(String arg0) {
+	public boolean exists(String arg0) {
 		return	content.getAsset(arg0) != null;
 	}
 
 	@Override
-	public IOStream Open(String arg0) {
+	public IOStream open(String arg0) {
 		Asset asset = content.getAsset(arg0);
 		return new AssetIOStream(asset);
 	}
@@ -50,7 +53,16 @@ public class AssetIOSystem implements IOSystem {
 		}
 
 		@Override
-		public BufferedReader read() {
+		public InputStream read() {
+			//System.out.println("read:"+a);
+			//Thread.dumpStack();
+			return a.read();
+		}
+
+		@Override
+		public BufferedReader reader() {
+			//System.out.println("reader:"+a);
+			//Thread.dumpStack();
 			return new BufferedReader(a.reader());
 		}
 
