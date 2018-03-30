@@ -14,9 +14,9 @@ import io.xol.chunkstories.api.mesh.Mesh;
 import io.xol.chunkstories.api.mesh.MultiPartMesh;
 import io.xol.chunkstories.api.rendering.mesh.ClientMeshLibrary;
 import io.xol.chunkstories.api.rendering.mesh.RenderableMesh;
-import io.xol.chunkstories.api.rendering.mesh.RenderableMultiPartAnimatableMesh;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.renderer.debug.FakeImmediateModeDebugRenderer;
+import io.xol.chunkstories.renderer.mesh.BonedRenderer;
 
 public class ClientMeshStore implements ClientMeshLibrary {
 	
@@ -53,7 +53,7 @@ public class ClientMeshStore implements ClientMeshLibrary {
 			}
 			
 			if(mesh instanceof MultiPartMesh)
-				rm = new MultiPartMeshRenderableImpl((MultiPartMesh)mesh);
+				rm = new BonedRenderer((MultiPartMesh)mesh);
 			else
 				rm = new MeshRenderableImpl(mesh);
 			
@@ -63,10 +63,10 @@ public class ClientMeshStore implements ClientMeshLibrary {
 	}
 
 	@Override
-	public RenderableMultiPartAnimatableMesh getRenderableMultiPartAnimatableMeshByName(String meshName) {
+	public BonedRenderer getRenderableMultiPartAnimatableMeshByName(String meshName) {
 		RenderableMesh rm = this.getRenderableMeshByName(meshName);
 		
-		return rm instanceof RenderableMultiPartAnimatableMesh ? (RenderableMultiPartAnimatableMesh)rm : null;
+		return rm instanceof BonedRenderer ? (BonedRenderer)rm : null;
 	}
 
 	@Override

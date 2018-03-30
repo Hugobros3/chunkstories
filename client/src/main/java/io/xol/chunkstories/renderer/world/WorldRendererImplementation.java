@@ -21,6 +21,7 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.StateMachine.BlendMode;
 import io.xol.chunkstories.api.rendering.StateMachine.DepthTestMode;
 import io.xol.chunkstories.api.rendering.pass.RenderPasses;
+import io.xol.chunkstories.api.rendering.shader.Shader;
 import io.xol.chunkstories.api.rendering.textures.Texture;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.rendering.world.SkyRenderer;
@@ -43,18 +44,20 @@ import io.xol.chunkstories.renderer.terrain.FarTerrainMeshRenderer;
 import io.xol.chunkstories.renderer.terrain.HeightmapArrayTexture;
 import io.xol.chunkstories.world.WorldClientCommon;
 
-/** A tragically huge behemoth, held responsible of actually displaying all that mess */
-public class WorldRendererImplementation implements WorldRenderer
-{
+/**
+ * A tragically huge behemoth, held responsible of actually displaying all that
+ * mess
+ */
+public class WorldRendererImplementation implements WorldRenderer {
 	protected final Logger logger = LoggerFactory.getLogger("renderer.world");
-	
+
 	private final GameWindow gameWindow;
 	private final WorldClientCommon world;
-	
+
 	private ChunkMeshesRenderer chunksRenderer;
-	
+
 	private RenderingGraph renderingGraph;
-	
+
 	CulledEntitiesRenderer entitiesRenderer;
 	SkyRenderer skyRenderer;
 	DecalsRendererImplementation decalsRenderer;
@@ -62,43 +65,40 @@ public class WorldRendererImplementation implements WorldRenderer
 	FarTerrainRenderer farTerrainRenderer;
 	SummariesTexturesHolder summariesTexturesHolder;
 	WorldEffectsRenderer weatherEffectsRenderer;
-	//CubemapRenderer cubemapRenderer;
+	// CubemapRenderer cubemapRenderer;
 
 	AverageLuma averageLuma;
-	
+
 	float animationTimer = 0.0f;
 	float apertureModifier = 1.0f;
 
-	public WorldRendererImplementation(WorldClientCommon world, ClientInterface client)
-	{
+	public WorldRendererImplementation(WorldClientCommon world, ClientInterface client) {
 		this.world = world;
 		this.gameWindow = client.getGameWindow();
 
-		//Creates subsystems
+		// Creates subsystems
 		this.chunksRenderer = new ChunkMeshesRenderer(this);
-		
-		this.entitiesRenderer = new CulledEntitiesRenderer(world);
+
+		this.entitiesRenderer = new CulledEntitiesRenderer(this);
 		this.particlesRenderer = new ClientParticlesRenderer(world);
 		this.farTerrainRenderer = new FarTerrainGSMeshRenderer(this);
 		this.summariesTexturesHolder = new HeightmapArrayTexture(client, world);
 		this.weatherEffectsRenderer = new DefaultWeatherEffectsRenderer(world, this);
 		this.decalsRenderer = new DecalsRendererImplementation(this);
-		
+
 		this.averageLuma = new AverageLuma();
-		//this.cubemapRenderer = new CubemapRenderer(this);
-		
+		// this.cubemapRenderer = new CubemapRenderer(this);
+
 		this.renderingGraph = new RenderingGraph(this.getRenderingInterface());
 	}
 
 	@Override
-	public WorldClient getWorld()
-	{
+	public WorldClient getWorld() {
 		return world;
 	}
 
 	@Override
-	public SkyRenderer getSkyRenderer()
-	{
+	public SkyRenderer getSkyRenderer() {
 		return skyRenderer;
 	}
 
@@ -106,49 +106,47 @@ public class WorldRendererImplementation implements WorldRenderer
 	public void setSkyRenderer(SkyRenderer skyRenderer) {
 		this.skyRenderer = skyRenderer;
 	}
-	
-	public void renderWorld(RenderingInterface renderingInterface)
-	{
+
+	public void renderWorld(RenderingInterface renderingInterface) {
 		((HeightmapArrayTexture) summariesTexturesHolder).update();
-		
-		//if(RenderingConfig.doDynamicCubemaps)
-		//	cubemapRenderer.renderWorldCubemap(renderingInterface, renderBuffers.rbEnvironmentMap, 128, true);
-		
-		//Step one, set the camera to the proper spot
+
+		// if(RenderingConfig.doDynamicCubemaps)
+		// cubemapRenderer.renderWorldCubemap(renderingInterface,
+		// renderBuffers.rbEnvironmentMap, 128, true);
+
+		// Step one, set the camera to the proper spot
 		CameraInterface mainCamera = renderingInterface.getCamera();
 		EntityControllable entity = world.getClient().getPlayer().getControlledEntity();
-		
-		if(entity != null)
+		if (entity != null)
 			entity.setupCamera(renderingInterface);
+
+		animationTimer = ((float) (System.currentTimeMillis() & 0x7FFF)) / 100.0f;
+
+		FakeImmediateModeDebugRenderer.setCamera(mainCamera);// TODO remove entirely
 		
-		animationTimer = ((float)(System.currentTimeMillis() & 0x7FFF)) / 100.0f;
-		
-		//TODO remove entirely
-		FakeImmediateModeDebugRenderer.setCamera(mainCamera);
 		chunksRenderer.updatePVSSet(mainCamera);
-		
+
 		// Prepare matrices
 		mainCamera.setupUsingScreenSize(gameWindow.getWidth(), gameWindow.getHeight());
-		
+
 		this.renderWorldInternal(renderingInterface);
 	}
-	
+
 	protected void renderWorldInternal(RenderingInterface renderingInterface) {
 		this.renderingGraph.render(renderingInterface);
-		
+
 		Texture finalBuffer = this.renderingGraph.getRenderPass("forward").resolvedOutputs.get("shadedBuffer");
-		if(finalBuffer != null && finalBuffer instanceof Texture2DRenderTargetGL) {
+		if (finalBuffer != null && finalBuffer instanceof Texture2DRenderTargetGL) {
 			this.averageLuma.computeAverageLuma((Texture2DRenderTargetGL) finalBuffer);
 		}
 	}
-	
-	public void blitFinalImage(RenderingInterface renderingContext, boolean hideGui)
-	{
+
+	public void blitFinalImage(RenderingInterface renderingContext, boolean hideGui) {
 		Texture finalBuffer = this.renderingGraph.getRenderPass("final").resolvedOutputs.get("finalBuffer");
-		
-		if(finalBuffer != null && finalBuffer instanceof Texture2D) {
-			final Texture2D finalTexture = (Texture2D)(finalBuffer);
-			
+
+		if (finalBuffer != null && finalBuffer instanceof Texture2D) {
+			final Texture2D finalTexture = (Texture2D) (finalBuffer);
+
 			// We render to the screen.
 			renderingContext.getRenderTargetManager().setConfiguration(null);
 
@@ -156,17 +154,16 @@ public class WorldRendererImplementation implements WorldRenderer
 			renderingContext.setBlendMode(BlendMode.DISABLED);
 
 			renderingContext.useShader("blit");
-			
+
 			renderingContext.bindTexture2D("diffuseTexture", finalTexture);
 
 			renderingContext.drawFSQuad();
-			
-			if(!hideGui) {
+
+			if (!hideGui) {
 				world.entitiesLock.readLock().lock();
 				Iterator<Entity> ei = world.getAllLoadedEntities();
 				Entity e;
-				while (ei.hasNext())
-				{
+				while (ei.hasNext()) {
 					e = ei.next();
 					if (e instanceof EntityOverlay) {
 						((EntityOverlay) e).drawEntityOverlay(renderingContext);
@@ -176,75 +173,64 @@ public class WorldRendererImplementation implements WorldRenderer
 			}
 		}
 	}
-	
-	public void destroy()
-	{
+
+	public void destroy() {
 		particlesRenderer.destroy();
 		farTerrainRenderer.destroy();
 		summariesTexturesHolder.destroy();
 		entitiesRenderer.clearLoadedEntitiesRenderers();
 		chunksRenderer.destroy();
-		
+
 		averageLuma.destroy();
-	}
-	
-	@Override
-	public void flagChunksModified()
-	{
-		//Nothing. We do our PVS every frame anyways
 	}
 
 	@Override
-	public void setupRenderSize()
-	{
+	public void flagChunksModified() {
+		// Nothing. We do our PVS every frame anyways
+	}
+
+	/*@Override
+	public void setupRenderSize() {
 		int width = gameWindow.getWidth();
 		int height = gameWindow.getHeight();
 		this.setupRenderSize(width, height);
-	}
-	
+	}*/
+
 	public void setupRenderSize(int width, int height) {
 		this.renderingGraph.resize(width, height);
 	}
 
 	/** Debug-related, usually not called in gameplay */
-	public void reloadContentSpecificStuff()
-	{
-		//TODO REMOVE REMOVE REMOVE
-		if(farTerrainRenderer instanceof FarTerrainMeshRenderer)
+	public void reloadContentSpecificStuff() {
+		// TODO REMOVE REMOVE REMOVE
+		if (farTerrainRenderer instanceof FarTerrainMeshRenderer)
 			((FarTerrainMeshRenderer) farTerrainRenderer).markVoxelTexturesSummaryDirty();
-		
+
 		entitiesRenderer.clearLoadedEntitiesRenderers();
 	}
 
-	//Component getters
-	
 	@Override
-	public FarTerrainRenderer getFarTerrainRenderer()
-	{
+	public FarTerrainRenderer getFarTerrainRenderer() {
 		return this.farTerrainRenderer;
 	}
 
 	@Override
-	public DecalsRendererImplementation getDecalsRenderer()
-	{
+	public DecalsRendererImplementation getDecalsRenderer() {
 		return this.decalsRenderer;
 	}
 
 	@Override
-	public ClientParticlesRenderer getParticlesRenderer()
-	{
+	public ClientParticlesRenderer getParticlesRenderer() {
 		return this.particlesRenderer;
 	}
 
 	@Override
-	public WorldEffectsRenderer getWorldEffectsRenderer()
-	{
+	public WorldEffectsRenderer getWorldEffectsRenderer() {
 		return this.weatherEffectsRenderer;
 	}
 
 	@Override
-	public String screenShot()
-	{
+	public String screenShot() {
 		return gameWindow.takeScreenshot();
 	}
 
@@ -267,12 +253,11 @@ public class WorldRendererImplementation implements WorldRenderer
 	public RenderPasses renderPasses() {
 		return renderingGraph;
 	}
-	
+
 	@Override
 	public float getAnimationTimer() {
 		return this.animationTimer;
 	}
-	
 
 	@Override
 	public ChunkMeshesRenderer getChunksRenderer() {
@@ -286,5 +271,11 @@ public class WorldRendererImplementation implements WorldRenderer
 
 	public float getApertureModifier() {
 		return averageLuma.getApertureModifier();
+	}
+	
+	@Override
+	public void setupShaderUniforms(Shader shader) {
+		shader.setUniform1f("animationTimer", getAnimationTimer());
+		shader.setUniform1f("overcastFactor", world.getWeather());
 	}
 }

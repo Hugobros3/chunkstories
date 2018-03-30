@@ -20,6 +20,8 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
+import io.xol.chunkstories.api.rendering.shader.Shader;
+import io.xol.chunkstories.api.rendering.world.WorldRenderer;
 import io.xol.chunkstories.api.rendering.world.WorldRenderer.EntitiesRenderer;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.world.WorldImplementation;
@@ -28,11 +30,13 @@ public class CulledEntitiesRenderer implements EntitiesRenderer
 {
 	Map<EntityDefinition, EntityRenderer<? extends EntityRenderable>> entityRenderers = new HashMap<EntityDefinition, EntityRenderer<? extends EntityRenderable>>();
 
-	World world;
+	final WorldRenderer worldRenderer;
+	final World world;
 
-	public CulledEntitiesRenderer(World world)
+	public CulledEntitiesRenderer(WorldRenderer worldRenderer)
 	{
-		this.world = world;
+		this.worldRenderer = worldRenderer;
+		this.world = worldRenderer.getWorld();
 	}
 
 	public void clearLoadedEntitiesRenderers()
@@ -44,7 +48,7 @@ public class CulledEntitiesRenderer implements EntitiesRenderer
 		entityRenderers.clear();
 	}
 
-	public int renderEntities(RenderingInterface renderingContext)
+	public int renderEntities(RenderingInterface renderer)
 	{
 		((WorldImplementation) world).entitiesLock.readLock().lock();
 
@@ -76,24 +80,16 @@ public class CulledEntitiesRenderer implements EntitiesRenderer
 				entityRenderers.put(entry.getKey(), entities.get(0).getEntityRenderer());
 
 			EntityRenderer<? extends EntityRenderable> entityRenderer = entityRenderers.get(entry.getKey());
-			//EntityRenderer<? extends EntityRenderable> entityRenderer = entities.get(0).getEntityRenderer();
 
 			if (entityRenderer == null)
 				continue;
 
-			//entityRenderer.setupRender(renderingContext);
-
-			try
-			{
-				int e = entityRenderer.renderEntities(renderingContext, new EntitiesRendererIterator<>(renderingContext, entities));
-				
-				entitiesRendered+=e;
-				
-				//renderingContext.flush();
-			}
-			catch (Throwable e)
-			{
-				System.out.println("Exception rendering entities "+entities.get(0).getClass().getSimpleName()+" using "+entityRenderer.getClass().getSimpleName());
+			try {
+				int e = entityRenderer.renderEntities(renderer, new EntitiesRendererIterator<>(renderer, entities));
+				entitiesRendered += e;
+			} catch (Throwable e) {
+				System.out.println(
+						"Exception rendering entities " + entities.get(0).getClass().getSimpleName() + " using " + entityRenderer.getClass().getSimpleName());
 				e.printStackTrace();
 			}
 		}

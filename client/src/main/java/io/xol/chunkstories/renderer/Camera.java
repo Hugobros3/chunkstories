@@ -450,16 +450,13 @@ public class Camera implements CameraInterface
 		shader.setUniform3f("camPos", getCameraPosition());
 		shader.setUniform3f("camUp", up);
 
-		WorldRenderer wr = Client.getInstance().getRenderingInterface().getWorldRenderer();
-		if(wr != null) {
-			WorldRendererImplementation wri = (WorldRendererImplementation) wr;
-			float am = wri.getApertureModifier();
-
-			shader.setUniform1f("apertureModifier", am);
-			//System.out.println(am);
+		//Q: Why isn't this in worldRenderer.setupShaderUniforms ?
+		//A: Because aperture is an eye property ! I think.
+		WorldRenderer worldRenderer = Client.getInstance().getRenderingInterface().getWorldRenderer();
+		if(worldRenderer != null) {
+			WorldRendererImplementation wrImplementation = (WorldRendererImplementation) worldRenderer;
+			shader.setUniform1f("apertureModifier", wrImplementation.getApertureModifier());
 		}
-		else 
-			shader.setUniform1f("apertureModifier", 1.0f);
 	}
 	
 	public Vector3f transform3DCoordinate(Vector3fc in) {

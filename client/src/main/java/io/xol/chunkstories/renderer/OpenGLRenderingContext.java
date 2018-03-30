@@ -128,8 +128,10 @@ public class OpenGLRenderingContext implements RenderingInterface
 			currentlyBoundShader = shader;
 			
 			RenderPass currentPass = this.getCurrentPass();
-			if(currentPass != null)
+			if(currentPass != null) {
+				currentPass.setupShader(this, shader);
 				currentPass.autoBindInputs(this, shader);
+			}
 		}
 		return currentlyBoundShader;
 	}

@@ -36,23 +36,6 @@ public class MeshRenderableImpl implements RenderableMesh
 		uploadFloatBuffers(mesh.getVertices(), mesh.getTextureCoordinates(), mesh.getNormals());
 	}
 
-	/*private MeshRenderableImpl(int verticesCount, FloatBuffer vertices, FloatBuffer textureCoordinates, FloatBuffer normalMapCoordinates, Map<String, Integer> boneGroups)
-	{
-		this.verticesCount = verticesCount;
-		this.boneGroups = boneGroups;
-
-		uploadFloatBuffers(vertices, textureCoordinates, normalMapCoordinates);
-	}*/
-
-	/*ObjMeshRenderable(int verticesCount, VertexBuffer verticesDataOnGpu, VertexBuffer texCoordDataOnGpu, VertexBuffer normalsDataOnGpu, Map<String, Integer> boneGroups)
-	{
-		this.verticesCount = verticesCount;
-		this.verticesDataOnGpu = verticesDataOnGpu;
-		this.texCoordDataOnGpu = texCoordDataOnGpu;
-		this.normalsDataOnGpu = normalsDataOnGpu;
-		this.boneGroups = boneGroups;
-	}*/
-
 	protected void uploadFloatBuffers(FloatBuffer vertices, FloatBuffer textureCoordinates, FloatBuffer normals)
 	{
 		verticesDataOnGpu = new VertexBufferGL();

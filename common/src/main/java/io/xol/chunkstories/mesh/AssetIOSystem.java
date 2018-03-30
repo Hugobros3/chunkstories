@@ -1,4 +1,4 @@
-package io.xol.chunkstories.mesh;
+/*package io.xol.chunkstories.mesh;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -80,3 +80,4 @@ public class AssetIOSystem implements IOSystem {
 	}
 
 }
+*/

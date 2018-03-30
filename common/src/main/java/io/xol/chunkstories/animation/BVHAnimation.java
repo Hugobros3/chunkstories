@@ -166,8 +166,8 @@ public class BVHAnimation implements SkeletalAnimation
 
 		matrix = getBone(boneName).getTransformationMatrixInterpolatedRecursive(frameLower, frameUpper, interp);
 
-		System.out.println("lel unused");
-		transformBlenderBVHExportToChunkStoriesWorldSpace(matrix);
+		//System.out.println("lel unused");
+		//transformBlenderBVHExportToChunkStoriesWorldSpace(matrix);
 		
 		return matrix;
 	}
