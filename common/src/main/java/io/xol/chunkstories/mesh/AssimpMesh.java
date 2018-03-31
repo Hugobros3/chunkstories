@@ -2,12 +2,13 @@ package io.xol.chunkstories.mesh;
 
 import org.joml.Matrix4f;
 
-/*import assimp.AiBone;
+import assimp.AiBone;
 import assimp.AiMaterial;
 import assimp.AiMesh;
 import assimp.AiScene;
 import assimp.Importer;
-import glm_.mat4x4.Mat4;*/
+import glm_.mat4x4.Mat4;
+
 import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.exceptions.content.MeshLoadException;
 import io.xol.chunkstories.api.mesh.MeshLibrary;
@@ -20,7 +21,7 @@ public class AssimpMesh {
 		this.mainAsset = mainAsset;
 		this.store = store;
 		
-		/*Importer im = new Importer();
+		Importer im = new Importer();
 		assimp.SettingsKt.setASSIMP_LOAD_TEXTURES(false);
 		
 		im.setIoHandler(new AssetIOSystem(store.parent()));
@@ -37,15 +38,14 @@ public class AssimpMesh {
 			
 			System.out.println("bones: "+mesh.getNumBones());
 			for(AiBone bone : mesh.getBones()) {
-				System.out.println(bone.getName());
+				System.out.println(bone.getName().substring(bone.getName().lastIndexOf('_') + 1));
 				System.out.println(bone.getNumWeights());
 				System.out.println(tomat4(bone.getOffsetMatrix()));
 			}
-			
-		}*/
+		}
 	}
 
-	/*private Matrix4f tomat4(Mat4 mat4) {
+	private Matrix4f tomat4(Mat4 mat4) {
 		Matrix4f mat = new Matrix4f();
 		mat.m00(mat4.v00());
 		mat.m01(mat4.v01());
@@ -69,5 +69,5 @@ public class AssimpMesh {
 		
 		mat.transpose();
 		return mat;
-	}*/
+	}
 }	

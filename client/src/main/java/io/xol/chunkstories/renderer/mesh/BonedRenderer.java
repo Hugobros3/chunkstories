@@ -87,7 +87,7 @@ public class BonedRenderer implements RenderableMultiPartAnimatableMesh
 			boneIds.put((byte)0x0);
 			boneIds.put((byte)0x0);
 			
-			boneWeights.put((byte)0x255);
+			boneWeights.put((byte)0xFF);
 			boneWeights.put((byte)0x0);
 			boneWeights.put((byte)0x0);
 			boneWeights.put((byte)0x0);
@@ -186,8 +186,14 @@ public class BonedRenderer implements RenderableMultiPartAnimatableMesh
 		if (skeleton != null)
 		{
 			for(int i = 0; i < boneName.length; i++) {
-				Matrix4fc boneMatrix = skeleton.getBoneHierarchyTransformationMatrixWithOffset(boneName[i], animationTime < 0 ? 0 : animationTime);
-				shader.setUniformMatrix4f("bones["+i+"]", boneMatrix);
+				if(skeleton.shouldHideBone(renderingContext, boneName[i])) {
+					Matrix4f boneMatrix = new Matrix4f();
+					boneMatrix.translate(50000, 50000, 50000);
+					shader.setUniformMatrix4f("bones["+i+"]", boneMatrix);
+				} else {
+					Matrix4fc boneMatrix = skeleton.getBoneHierarchyTransformationMatrixWithOffset(boneName[i], animationTime < 0 ? 0 : animationTime);
+					shader.setUniformMatrix4f("bones["+i+"]", boneMatrix);
+				}
 			}
 		}
 		renderingContext.draw(Primitive.TRIANGLE, 0, verticesCount);
