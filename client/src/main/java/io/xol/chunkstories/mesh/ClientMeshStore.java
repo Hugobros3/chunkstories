@@ -10,8 +10,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.xol.chunkstories.api.client.ClientContent;
+import io.xol.chunkstories.api.mesh.AnimatableMesh;
 import io.xol.chunkstories.api.mesh.Mesh;
-import io.xol.chunkstories.api.mesh.MultiPartMesh;
 import io.xol.chunkstories.api.rendering.mesh.ClientMeshLibrary;
 import io.xol.chunkstories.api.rendering.mesh.RenderableMesh;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
@@ -32,28 +32,28 @@ public class ClientMeshStore implements ClientMeshLibrary {
 	}
 
 	@Override
-	public Mesh getMeshByName(String meshName) {
-		return store.getMeshByName(meshName);
+	public Mesh getMesh(String meshName) {
+		return store.getMesh(meshName);
 	}
 
 	@Override
-	public MultiPartMesh getMultiPartMeshByName(String meshName) {
-		return store.getMultiPartMeshByName(meshName);
+	public AnimatableMesh getAnimatableMesh(String meshName) {
+		return store.getAnimatableMesh(meshName);
 	}
 
 	@Override
-	public RenderableMesh getRenderableMeshByName(String meshName) {
+	public RenderableMesh getRenderableMesh(String meshName) {
 		RenderableMesh rm = renderableMeshes.get(meshName);
 		
 		if(rm == null) {
-			Mesh mesh = this.getMeshByName(meshName);
+			Mesh mesh = this.getMesh(meshName);
 			if(mesh == null) {
 				//Really not found!
-				return getRenderableMeshByName("./models/error.obj");
+				return getRenderableMesh("./models/error.obj");
 			}
 			
-			if(mesh instanceof MultiPartMesh)
-				rm = new BonedRenderer((MultiPartMesh)mesh);
+			if(mesh instanceof AnimatableMesh)
+				rm = new BonedRenderer((AnimatableMesh)mesh);
 			else
 				rm = new MeshRenderableImpl(mesh);
 			
@@ -63,8 +63,8 @@ public class ClientMeshStore implements ClientMeshLibrary {
 	}
 
 	@Override
-	public BonedRenderer getRenderableMultiPartAnimatableMeshByName(String meshName) {
-		RenderableMesh rm = this.getRenderableMeshByName(meshName);
+	public BonedRenderer getRenderableAnimatableMesh(String meshName) {
+		RenderableMesh rm = this.getRenderableMesh(meshName);
 		
 		return rm instanceof BonedRenderer ? (BonedRenderer)rm : null;
 	}

@@ -22,7 +22,6 @@ import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.exceptions.content.MeshLoadException;
 import io.xol.chunkstories.api.mesh.Mesh;
 import io.xol.chunkstories.api.mesh.MeshLoader;
-import io.xol.chunkstories.api.mesh.MultiPartMesh;
 
 public class WavefrontLoader implements MeshLoader
 {
@@ -174,7 +173,7 @@ public class WavefrontLoader implements MeshLoader
 			normalsBuffer.flip();
 
 			if(hasGroups)
-				return new MultiPartMesh(verticesBuffer, textureCoordinatesBuffer, normalsBuffer, groupsSizesMap);
+				return null;//new MultiPartMesh(verticesBuffer, textureCoordinatesBuffer, normalsBuffer, groupsSizesMap);
 			else
 				return new Mesh(verticesBuffer, textureCoordinatesBuffer, normalsBuffer);
 			//return new ObjMeshRenderable(totalVertices, verticesBuffer, textureCoordinatesBuffer, normalsBuffer, groupsSizesMap);

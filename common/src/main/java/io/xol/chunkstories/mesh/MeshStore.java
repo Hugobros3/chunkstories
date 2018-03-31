@@ -16,10 +16,10 @@ import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.content.mods.ModsManager;
 import io.xol.chunkstories.api.exceptions.content.MeshLoadException;
+import io.xol.chunkstories.api.mesh.AnimatableMesh;
 import io.xol.chunkstories.api.mesh.Mesh;
 import io.xol.chunkstories.api.mesh.MeshLibrary;
 import io.xol.chunkstories.api.mesh.MeshLoader;
-import io.xol.chunkstories.api.mesh.MultiPartMesh;
 import io.xol.chunkstories.content.GameContentStore;
 
 public class MeshStore implements MeshLibrary {
@@ -29,7 +29,8 @@ public class MeshStore implements MeshLibrary {
 	
 	protected Map<String, Mesh> meshes = new HashMap<String, Mesh>();
 	
-	protected Map<String, MeshLoader> loaders = new HashMap<String, MeshLoader>();
+	AssimpMeshLoader loader = new AssimpMeshLoader(this);
+	//protected Map<String, MeshLoader> loaders = new HashMap<String, MeshLoader>();
 	
 	public MeshStore(GameContentStore gameContentStore)
 	{
@@ -38,8 +39,8 @@ public class MeshStore implements MeshLibrary {
 		
 		//Default .obj loader
 		//TODO add custom ones ?
-		MeshLoader waveFrontLoader = new WavefrontLoader();
-		loaders.put(waveFrontLoader.getExtension(), waveFrontLoader);
+		//MeshLoader waveFrontLoader = new WavefrontLoader();
+		//loaders.put(waveFrontLoader.getExtension(), waveFrontLoader);
 
 		//reload();
 	}
@@ -49,14 +50,14 @@ public class MeshStore implements MeshLibrary {
 	}
 
 	@Override
-	public Mesh getMeshByName(String meshName) {
+	public Mesh getMesh(String meshName) {
 		
 		Mesh mesh = meshes.get(meshName);
 		
 		if(mesh == null)
 		{
 			Asset a = modsManager.getAsset(meshName);
-			String s[] = a.getName().split("[.]");
+			/*String s[] = a.getName().split("[.]");
 			
 			if(s.length <= 1)
 			{
@@ -72,9 +73,11 @@ public class MeshStore implements MeshLibrary {
 				logger().warn("There is no MeshLoader to load mesh "+meshName+" using extension "+suffix+ ".");
 				return null;
 			}
+			*/
 
 			try { 
-				mesh = loader.loadMeshFromAsset(a);
+				//mesh = loader.loadMeshFromAsset(a);
+				mesh = loader.load(a);
 			} catch (MeshLoadException e) {
 				e.printStackTrace();
 				logger().error("Mesh "+meshName+" couldn't be load using MeshLoader "+loader.getClass().getName()+ " ,stack trace above.");
@@ -88,14 +91,14 @@ public class MeshStore implements MeshLibrary {
 	}
 
 	@Override
-	public MultiPartMesh getMultiPartMeshByName(String meshName) {
+	public AnimatableMesh getAnimatableMesh(String meshName) {
 		
-		Mesh mesh = this.getMeshByName(meshName);
+		Mesh mesh = this.getMesh(meshName);
 		
-		if(mesh == null || !(mesh instanceof MultiPartMesh))
+		if(mesh == null || !(mesh instanceof AnimatableMesh))
 			return null;
 		
-		return (MultiPartMesh)mesh;
+		return (AnimatableMesh)mesh;
 	}
 
 	@Override

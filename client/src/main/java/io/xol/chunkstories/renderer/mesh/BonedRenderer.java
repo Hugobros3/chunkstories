@@ -18,11 +18,10 @@ import org.lwjgl.system.MemoryUtil;
 
 import io.xol.chunkstories.api.animation.SkeletonAnimator;
 import io.xol.chunkstories.api.exceptions.rendering.RenderingException;
-import io.xol.chunkstories.api.mesh.MultiPartMesh;
+import io.xol.chunkstories.api.mesh.AnimatableMesh;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
+import io.xol.chunkstories.api.rendering.mesh.RenderableAnimatableMesh;
 import io.xol.chunkstories.api.rendering.mesh.RenderableMesh;
-import io.xol.chunkstories.api.rendering.mesh.RenderableMultiPartAnimatableMesh;
-import io.xol.chunkstories.api.rendering.mesh.RenderableMultiPartMesh;
 import io.xol.chunkstories.api.rendering.shader.Shader;
 import io.xol.chunkstories.api.rendering.vertex.Primitive;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
@@ -30,17 +29,24 @@ import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
 import io.xol.chunkstories.client.util.MemFreeByteBuffer;
 import io.xol.chunkstories.renderer.opengl.vbo.VertexBufferGL;
 
-public class BonedRenderer implements RenderableMultiPartAnimatableMesh
+public class BonedRenderer implements RenderableAnimatableMesh
 {
-	protected int verticesCount;
-	protected Map<String, Integer> boneGroups = new HashMap<String, Integer>();
+	protected final int verticesCount;
+	//protected Map<String, Integer> boneGroups = new HashMap<String, Integer>();
 	
 	/*protected VertexBuffer verticesDataOnGpu;
 	protected VertexBuffer texCoordDataOnGpu;
 	protected VertexBuffer normalsDataOnGpu;*/
 	protected VertexBuffer meshDataOnGPU;
 	
-	public BonedRenderer(MultiPartMesh mesh)
+	public BonedRenderer(AnimatableMesh mesh) {
+		this.boneName = mesh.getBoneNames();
+		this.verticesCount = mesh.getVerticesCount();
+		
+		this.uploadFloatBuffers(mesh.getVertices(), mesh.getTextureCoordinates(), mesh.getNormals(), mesh.getBoneIds(), mesh.getBoneWeights());
+	}
+	
+	/*public BonedRenderer(AnimatableMesh mesh)
 	{
 		this(mesh.getVerticesCount(), mesh.getVertices(), mesh.getTextureCoordinates(), mesh.getNormals(), mesh.partsMap());
 	}
@@ -99,9 +105,11 @@ public class BonedRenderer implements RenderableMultiPartAnimatableMesh
 		MemoryUtil.memFree(boneWeights);
 	}
 
-	final String[] boneName;
 	final int[] boneStartVertex;
 	final int[] boneGroupSize;
+	*/
+	
+	final String[] boneName;
 	
 	final int FLOAT_SIZE = 4; //a float
 	final int WEIGHT_SIZE = 1; //normalized byte 0-1
@@ -146,39 +154,20 @@ public class BonedRenderer implements RenderableMultiPartAnimatableMesh
 		
 		meshDataOnGPU.uploadData(new MemFreeByteBuffer(buffer));
 		//memfree(meshDataOnGPU) uneeded ^
-		
-		/*verticesDataOnGpu = new VertexBufferGL();
-		texCoordDataOnGpu = new VertexBufferGL();
-		normalsDataOnGpu = new VertexBufferGL();
-
-		verticesDataOnGpu.uploadData(vertices);
-		texCoordDataOnGpu.uploadData(textureCoordinates);
-		normalsDataOnGpu.uploadData(normals);*/
 	}
 
 	@Override
 	public void render(RenderingInterface renderingContext)
 	{
-		internalRenderer(renderingContext, null, 0.0, false, (String[]) null);
-	}
-
-	@Override
-	public void render(RenderingInterface renderingInterface, String... parts) throws RenderingException
-	{
-		internalRenderer(renderingInterface, null, 0.0, false, parts);
+		internalRenderer(renderingContext, null, 0.0);
 	}
 
 	public void render(RenderingInterface renderingContext, SkeletonAnimator skeleton, double animationTime)
 	{
-		internalRenderer(renderingContext, skeleton, animationTime, false, (String[]) null);
-	}
-	
-	public void render(RenderingInterface renderingContext, SkeletonAnimator skeleton, double animationTime, String... parts)
-	{
-		internalRenderer(renderingContext, skeleton, animationTime, false, parts);
+		internalRenderer(renderingContext, skeleton, animationTime);
 	}
 
-	private void internalRenderer(RenderingInterface renderingContext, SkeletonAnimator skeleton, double animationTime, boolean exclude, String... parts) {
+	private void internalRenderer(RenderingInterface renderingContext, SkeletonAnimator skeleton, double animationTime) {
 		prepareDraw(renderingContext);
 
 		Shader shader = renderingContext.currentShader();
@@ -215,10 +204,5 @@ public class BonedRenderer implements RenderableMultiPartAnimatableMesh
 		offset += BONE_ID_SIZE * 4;
 		renderer.bindAttribute("boneWeightsIn", meshDataOnGPU.asAttributeSource(VertexFormat.NORMALIZED_UBYTE, 4, TOTAL_STRUCT_SIZE, offset));
 		//System.out.println("angery"+offset+" "+TOTAL_STRUCT_SIZE);
-	}
-
-	@Override
-	public Iterable<String> allParts() {
-		return this.boneGroups.keySet();
 	}
 }
