@@ -37,11 +37,14 @@ import io.xol.chunkstories.gui.layer.ingame.InventoryView;
 import io.xol.chunkstories.input.lwjgl3.Lwjgl3ClientInputsManager;
 import io.xol.chunkstories.renderer.chunks.ClientTasksPool;
 import io.xol.chunkstories.renderer.opengl.GLFWGameWindow;
+import io.xol.chunkstories.server.commands.InstallServerCommands;
+import io.xol.chunkstories.server.commands.content.ReloadContentCommand;
 import io.xol.chunkstories.util.LogbackSetupHelper;
 import io.xol.chunkstories.util.VersionInfo;
 import io.xol.chunkstories.util.concurrency.SimpleFence;
 import io.xol.chunkstories.util.config.ConfigurationImplementation;
 import io.xol.chunkstories.world.WorldClientCommon;
+import io.xol.chunkstories.world.WorldClientLocal;
 
 public class Client implements ClientInterface
 {
@@ -302,6 +305,12 @@ public class Client implements ClientInterface
 				//Setup the new world and make a controller for it
 				Client.this.world = world;
 				player = new PlayerClientImplementation(Client.this, world);
+				
+				pluginManager.reloadPlugins();
+				new ReloadContentCommand(Client.this);
+				if(world instanceof WorldClientLocal) {
+					new InstallServerCommands(((WorldClientLocal) world).getLocalServer());
+				}
 
 				//Change the scene
 				Ingame ingameScene = new Ingame(gameWindow, world);

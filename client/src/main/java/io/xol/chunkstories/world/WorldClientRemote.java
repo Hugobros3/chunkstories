@@ -20,6 +20,7 @@ import io.xol.chunkstories.api.net.RemoteServer;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.world.WorldClientNetworkedRemote;
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.client.ClientSlavePluginManager;
 import io.xol.chunkstories.client.net.ServerConnection;
 import io.xol.chunkstories.net.LogicalPacketDatagram;
 import io.xol.chunkstories.net.PacketDefinitionImplementation;
@@ -48,6 +49,9 @@ public class WorldClientRemote extends WorldClientCommon implements WorldClientN
 		
 		ioHandler = mpIOHandler;
 		ioHandler.start();
+
+		ClientSlavePluginManager pluginManager = new ClientSlavePluginManager(Client.getInstance());
+		client.setClientPluginManager(pluginManager);
 	}
 	
 	public OnlineContentTranslator getContentTranslator() {

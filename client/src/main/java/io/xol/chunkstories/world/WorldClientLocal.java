@@ -15,74 +15,76 @@ import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.server.LocalServerContext;
 import io.xol.chunkstories.world.io.IOTasks;
 
+public class WorldClientLocal extends WorldClientCommon implements WorldMaster {
+	protected LocalServerContext localServer;
 
-
-public class WorldClientLocal extends WorldClientCommon implements WorldMaster
-{
-	public WorldClientLocal(Client client, WorldInfoImplementation info) throws WorldLoadingException
-	{
+	public WorldClientLocal(Client client, WorldInfoImplementation info) throws WorldLoadingException {
 		super(client, info);
-		
+
 		ioHandler = new IOTasks(this);
 		ioHandler.start();
+		
+		localServer = new LocalServerContext(Client.getInstance());
+		client.setClientPluginManager(localServer.getPluginManager());
+	}
+
+	public LocalServerContext getLocalServer() {
+		return localServer;
 	}
 
 	@Override
-	public Client getClient()
-	{
+	public Client getClient() {
 		return Client.getInstance();
 	}
 
 	@Override
-	public SoundManager getSoundManager()
-	{
-		//TODO when implementing server/client combo make sure we use something to mix behaviours of WorldServer and this
+	public SoundManager getSoundManager() {
+		// TODO when implementing server/client combo make sure we use something to mix
+		// behaviours of WorldServer and this
 		return Client.getInstance().getSoundManager();
 	}
 
 	@Override
 	public void tick() {
-		//TODO: processIncommingPackets();
-		//TODO: flush all
+		// TODO: processIncommingPackets();
+		// TODO: flush all
 		super.tick();
-	}
-	
-	@Override
-	public IterableIterator<Player> getPlayers()
-	{
-		Set<Player> players = new HashSet<Player>();
-		if(Client.getInstance().getPlayer().hasSpawned())
-			players.add(Client.getInstance().getPlayer());
-			
-		return new IterableIterator<Player>()
-				{
-					Iterator<Player> i = players.iterator();
-					@Override
-					public boolean hasNext()
-					{
-						return i.hasNext();
-					}
-					@Override
-					public Player next()
-					{
-						return i.next();
-					}
-					@Override
-					public Iterator<Player> iterator()
-					{
-						return this;
-					}
-			
-				};
-		//throw new UnsupportedOperationException("getPlayers");
 	}
 
 	@Override
-	public Player getPlayerByName(String playerName)
-	{
-		if(playerName.equals(Client.username))
+	public IterableIterator<Player> getPlayers() {
+		Set<Player> players = new HashSet<Player>();
+		if (Client.getInstance().getPlayer().hasSpawned())
+			players.add(Client.getInstance().getPlayer());
+
+		return new IterableIterator<Player>() {
+			Iterator<Player> i = players.iterator();
+
+			@Override
+			public boolean hasNext() {
+				return i.hasNext();
+			}
+
+			@Override
+			public Player next() {
+				return i.next();
+			}
+
+			@Override
+			public Iterator<Player> iterator() {
+				return this;
+			}
+
+		};
+		// throw new UnsupportedOperationException("getPlayers");
+	}
+
+	@Override
+	public Player getPlayerByName(String playerName) {
+		if (playerName.equals(Client.username))
 			return Client.getInstance().getPlayer();
 		return null;
 	}

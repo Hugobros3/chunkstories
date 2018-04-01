@@ -26,7 +26,6 @@ import io.xol.chunkstories.server.commands.content.ReloadContentCommand;
 public abstract class WorldClientCommon extends WorldImplementation implements WorldClient {
 	protected WorldRendererImplementation renderer;
 
-	private  LocalServerContext localServer;
 	//private ClientPluginManager pluginManager;
 	
 	public WorldClientCommon(Client client, WorldInfoImplementation info) throws WorldLoadingException {
@@ -37,26 +36,19 @@ public abstract class WorldClientCommon extends WorldImplementation implements W
 			throws WorldLoadingException {
 		super(client, info, translator);
 
-		ClientPluginManager pluginManager;
+		/*ClientPluginManager pluginManager;
 		
 		//Start a mini server
 		if(this instanceof WorldMaster)
 		{
-			localServer = new LocalServerContext(Client.getInstance());
-			pluginManager = localServer.getPluginManager();
-
-			pluginManager.reloadPlugins();
 			client.setClientPluginManager(pluginManager);
-			
-			new InstallServerCommands(localServer);
-			new ReloadContentCommand(Client.getInstance());
 		}
 		else
 		{
 			localServer = null;
 			pluginManager = new ClientSlavePluginManager(Client.getInstance());
 			new ReloadContentCommand(Client.getInstance());
-		}
+		}*/
 		
 		this.renderer = new WorldRendererImplementation(this, client);
 	}
