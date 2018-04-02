@@ -14,6 +14,7 @@ import java.lang.reflect.InvocationTargetException;
 import io.xol.chunkstories.api.content.Content.Voxels;
 import io.xol.chunkstories.api.exceptions.content.IllegalVoxelDeclarationException;
 import io.xol.chunkstories.api.physics.CollisionBox;
+import io.xol.chunkstories.api.rendering.voxel.VoxelRenderer;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelDefinition;
 import io.xol.chunkstories.api.voxel.VoxelSide;
@@ -27,7 +28,7 @@ public class VoxelDefinitionImplementation extends GenericNamedConfigurable impl
 	private final VoxelsStore store;
 	
 	private final VoxelMaterial material;
-	private final VoxelModel model;
+	private final VoxelRenderer model;
 	private final VoxelTexture[] textures = new VoxelTexture[6];
 	private final CollisionBox collisionBox;
 	
@@ -152,7 +153,7 @@ public class VoxelDefinitionImplementation extends GenericNamedConfigurable impl
 	}
 	
 	@Override
-	public VoxelModel getVoxelModel()
+	public VoxelRenderer getVoxelModel()
 	{
 		return model;
 	}

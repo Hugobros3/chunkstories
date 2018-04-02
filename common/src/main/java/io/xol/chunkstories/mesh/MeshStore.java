@@ -19,7 +19,6 @@ import io.xol.chunkstories.api.exceptions.content.MeshLoadException;
 import io.xol.chunkstories.api.mesh.AnimatableMesh;
 import io.xol.chunkstories.api.mesh.Mesh;
 import io.xol.chunkstories.api.mesh.MeshLibrary;
-import io.xol.chunkstories.api.mesh.MeshLoader;
 import io.xol.chunkstories.content.GameContentStore;
 
 public class MeshStore implements MeshLibrary {

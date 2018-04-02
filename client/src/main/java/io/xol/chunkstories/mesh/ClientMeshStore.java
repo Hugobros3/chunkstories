@@ -55,7 +55,7 @@ public class ClientMeshStore implements ClientMeshLibrary {
 			if(mesh instanceof AnimatableMesh)
 				rm = new BonedRenderer((AnimatableMesh)mesh);
 			else
-				rm = new MeshRenderableImpl(mesh);
+				rm = new MeshRenderer(mesh);
 			
 			renderableMeshes.put(meshName, rm);
 		}

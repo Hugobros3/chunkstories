@@ -86,4 +86,15 @@ public class FoldersUtils
 			fe.printStackTrace();
 		}
 	}
+	
+	/** Resolves backpedalling (../) in path b relative to a */
+	public static String combineNames(String a, String b) {
+		while(b.startsWith("../")) {
+			a = a.substring(0, a.lastIndexOf('/')); //Remove last /
+			a = a.substring(0, a.lastIndexOf('/')); //Remove second to last / and everything after (the folder we're escaping)
+			a += '/'; //add back last /
+			b = b.substring(3); //strip ../ from B
+		}
+		return a + b;
+	}
 }

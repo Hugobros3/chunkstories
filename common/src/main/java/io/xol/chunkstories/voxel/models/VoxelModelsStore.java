@@ -23,29 +23,27 @@ import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.content.Content.Voxels;
 import io.xol.chunkstories.api.content.mods.AssetHierarchy;
+import io.xol.chunkstories.api.rendering.voxel.VoxelRenderer;
 import io.xol.chunkstories.api.voxel.VoxelSide;
 import io.xol.chunkstories.api.voxel.models.VoxelModel;
 import io.xol.chunkstories.voxel.VoxelsStore;
 
-public class VoxelModelsStore implements Content.Voxels.VoxelModels
-{
+public class VoxelModelsStore implements Content.Voxels.VoxelModels {
 	private final VoxelsStore voxels;
 
 	private Map<String, VoxelModel> models = new HashMap<String, VoxelModel>();
-	
+
 	private final static Logger logger = LoggerFactory.getLogger("content.voxels.models");
 
-	public VoxelModelsStore(VoxelsStore voxelsLoader)
-	{
+	public VoxelModelsStore(VoxelsStore voxelsLoader) {
 		this.voxels = voxelsLoader;
 
 		resetAndLoadModels();
 	}
 
-	public void resetAndLoadModels()
-	{
+	public void resetAndLoadModels() {
 		models.clear();
-		
+
 		Iterator<AssetHierarchy> allFiles = voxels.parent().modsManager().getAllUniqueEntries();
 		while (allFiles.hasNext()) {
 			AssetHierarchy entry = allFiles.next();
@@ -314,36 +312,32 @@ public class VoxelModelsStore implements Content.Voxels.VoxelModels
 				}
 				ln++;
 			}
-			//ChunkStoriesLogger.getInstance().log("Debug : Parsed file " + f + " correctly, loading " + loadedBM + " blockmodels.", ChunkStoriesLogger.LogType.GAMEMODE, ChunkStoriesLogger.LogLevel.DEBUG);
-
 			reader.close();
-		}
-		catch (IOException e)
-		{
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
 	@Override
-	public CustomVoxelModel getVoxelModel(String name)
-	{
+	public CustomVoxelModel getVoxelModel(String name) {
 		if (name.endsWith(".default"))
 			name = name.substring(0, name.length() - 8);
-		if (models.containsKey(name))
-			return (CustomVoxelModel)models.get(name);
+		if (models.containsKey(name)) {
+			CustomVoxelModel renderer = (CustomVoxelModel) models.get(name);
+			if(renderer != null)
+				return renderer;
+		}
 		logger().warn("Couldn't serve voxel model : " + name);
 		return null;
 	}
 
 	@Override
-	public Iterator<VoxelModel> all()
-	{
+	public Iterator<VoxelModel> all() {
 		return models.values().iterator();
 	}
 
 	@Override
-	public Voxels parent()
-	{
+	public Voxels parent() {
 		return voxels;
 	}
 

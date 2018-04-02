@@ -3,6 +3,7 @@ package io.xol.chunkstories.mesh;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,8 @@ import com.carrotsearch.hppc.ByteArrayList;
 import com.carrotsearch.hppc.FloatArrayList;
 
 import assimp.AiBone;
+import assimp.AiMaterial;
+import assimp.AiMaterial.Texture;
 import assimp.AiMesh;
 import assimp.AiScene;
 import assimp.AiVertexWeight;
@@ -27,6 +30,8 @@ import io.xol.chunkstories.api.exceptions.content.MeshLoadException;
 import io.xol.chunkstories.api.mesh.AnimatableMesh;
 import io.xol.chunkstories.api.mesh.Mesh;
 import io.xol.chunkstories.api.mesh.MeshLibrary;
+import io.xol.chunkstories.api.mesh.MeshMaterial;
+import io.xol.chunkstories.util.FoldersUtils;
 
 public class AssimpMeshLoader {
 
@@ -52,9 +57,12 @@ public class AssimpMeshLoader {
 		
 		im.setIoHandler(new AssetIOSystem(store.parent()));
 		AiScene scene = im.readFile(mainAsset.getName(), im.getIoHandler(), 0);
-		/*System.out.println(scene);
-		
-		for(AiMesh mesh : scene.getMeshes()) {
+
+		if(scene == null) {
+			logger.error("Could not load meshes from asset: "+mainAsset);
+			return null;
+		}
+		/*for(AiMesh mesh : scene.getMeshes()) {
 			System.out.println(mesh.getName());
 			System.out.println(mesh.getFaces().size());
 			
@@ -69,10 +77,6 @@ public class AssimpMeshLoader {
 				System.out.println(tomat4(bone.getOffsetMatrix()));
 			}
 		}*/
-		if(scene == null) {
-			logger.error("Could not load meshes from asset: "+mainAsset);
-			return null;
-		}
 		if(scene.getMeshes() == null || scene.getMeshes().size() == 0) {
 			logger.error("Loaded mesh did not contain any mesh data.");
 			return null;
@@ -86,13 +90,61 @@ public class AssimpMeshLoader {
 		ByteArrayList boneIds = new ByteArrayList();
 		ByteArrayList boneWeights = new ByteArrayList();
 		
+		List<MeshMaterialLoaded> meshMaterials = new ArrayList<>();
+		
 		boolean has_bones = scene.getMeshes().get(0).getHasBones();
 		Map<Integer, VertexBoneWeights> boneWeightsForeachVertex = null;
 		if(has_bones)
 			boneWeightsForeachVertex = new HashMap<>();
 		
+		String assetFolder = mainAsset.getName().substring(0, mainAsset.getName().lastIndexOf('/') + 1);
+		//System.out.println("asset folder: "+assetFolder);
+		
 		for(AiMesh mesh : scene.getMeshes()) {
 			int existing_vertices = vertices.size() / 3;
+		
+			AiMaterial material = scene.getMaterials().get(mesh.getMaterialIndex());
+			MeshMaterialLoaded mml = new MeshMaterialLoaded(null, material.getName(), existing_vertices, -1, "./textures/notex.png", "./textures/normalnormal.png", "./textures/defaultmaterial.png");
+			for(AiMaterial.Texture tex : material.getTextures()) {
+				switch(tex.getType()) {
+				case ambient:
+					break;
+				case diffuse:
+					mml.albedoTextureName = FoldersUtils.combineNames(assetFolder, tex.getFile());
+					break;
+				case displacement:
+					break;
+				case emissive:
+					break;
+				case height:
+					break;
+				case lightmap:
+					break;
+				case none:
+					break;
+				case normals:
+					mml.normalTextureName = FoldersUtils.combineNames(assetFolder, tex.getFile());
+					break;
+				case opacity:
+					break;
+				case reflection:
+					break;
+				case shininess:
+					break;
+				case specular:
+					mml.specularTextureName = FoldersUtils.combineNames(assetFolder, tex.getFile());
+					break;
+				case unknown:
+					break;
+				default:
+					break;
+				
+				}
+				//System.out.println(tex.getFile()+":"+tex.getType());
+			}
+			
+			meshMaterials.add(mml);
+			
 			if(has_bones) {
 				for(int i = 0; i < mesh.getNumVertices(); i++) {
 					boneWeightsForeachVertex.put(i + existing_vertices, new VertexBoneWeights());
@@ -151,6 +203,8 @@ public class AssimpMeshLoader {
 				} else
 					logger.warn("Should triangulate! (face="+face.size()+")");
 			}
+			
+			mml.lastVertex = vertices.size() / 3 - 1;
 		}
 		
 		FloatBuffer verticesBuffer = toFloatBuffer(vertices);
@@ -165,10 +219,22 @@ public class AssimpMeshLoader {
 			boneNamesArray[e.getValue()] = e.getKey();
 		}
 		
+		Mesh mesh;
+
+		//Hacky but whatever you get the point, we fill the data structure
+		MeshMaterial materialsArray[] = new MeshMaterial[meshMaterials.size()];
+		
 		if(has_bones)
-			return new AnimatableMesh(verticesBuffer, texcoordsBuffer, normalsBuffer, boneNamesArray, boneIdsBuffer, boneWeightsBuffer);
+			mesh = new AnimatableMesh(verticesBuffer, texcoordsBuffer, normalsBuffer, boneNamesArray, boneIdsBuffer, boneWeightsBuffer, materialsArray);
 		else
-			return new Mesh(verticesBuffer, texcoordsBuffer, normalsBuffer);
+			mesh = new Mesh(verticesBuffer, texcoordsBuffer, normalsBuffer, materialsArray);
+		
+		for(int i = 0; i < materialsArray.length; i++) {
+			meshMaterials.get(i).mesh = mesh;
+			materialsArray[i] = meshMaterials.get(i);
+		}
+		
+		return mesh;
 	}
 
 	private FloatBuffer toFloatBuffer(FloatArrayList array) {
