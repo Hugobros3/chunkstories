@@ -18,7 +18,6 @@ import com.carrotsearch.hppc.FloatArrayList;
 
 import assimp.AiBone;
 import assimp.AiMaterial;
-import assimp.AiMaterial.Texture;
 import assimp.AiMesh;
 import assimp.AiScene;
 import assimp.AiVertexWeight;
@@ -100,6 +99,7 @@ public class AssimpMeshLoader {
 		String assetFolder = mainAsset.getName().substring(0, mainAsset.getName().lastIndexOf('/') + 1);
 		//System.out.println("asset folder: "+assetFolder);
 		
+		int[] order = {0,1,2};
 		for(AiMesh mesh : scene.getMeshes()) {
 			int existing_vertices = vertices.size() / 3;
 		
@@ -178,13 +178,14 @@ public class AssimpMeshLoader {
 			}
 			for(List<Integer> face : mesh.getFaces()) {
 				if(face.size() == 3) {
-					for(int i = 0; i < 3; i++ ) {
+					for(int i : order) { //swap 
 						Vec3 vertex = mesh.getVertices().get(face.get(i));
 						Vec3 normal = mesh.getNormals().get(face.get(i));
 						float[] texcoord = mesh.getTextureCoords().get(0).get(face.get(i));
 						
-						vertices.add(vertex.x, vertex.y, vertex.z);
-						normals.add(normal.x, normal.y, normal.z);
+						//swap Y and Z axises
+						vertices.add(vertex.x, vertex.z, -vertex.y);
+						normals.add(normal.x, normal.z, -normal.y);
 						texcoords.add(texcoord[0], 1.0f - texcoord[1]);
 						
 						if(has_bones) {
