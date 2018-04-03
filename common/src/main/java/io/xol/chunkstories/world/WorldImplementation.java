@@ -436,15 +436,6 @@ public abstract class WorldImplementation implements World
 	public Entity getEntityByUUID(long entityID)
 	{
 		return entities.getEntityByUUID(entityID);
-		/*Iterator<Entity> ie = getAllLoadedEntities();
-		Entity e;
-		while (ie.hasNext())
-		{
-			e = ie.next();
-			if (e.getUUID() == entityID)
-				return e;
-		}
-		return null;*/
 	}
 
 	@Override

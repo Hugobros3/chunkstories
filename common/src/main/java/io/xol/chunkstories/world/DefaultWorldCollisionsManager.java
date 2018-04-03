@@ -225,6 +225,9 @@ public class DefaultWorldCollisionsManager implements WorldCollisionsManager
 		Vector3d direction = new Vector3d(delta);
 		direction.normalize();
 
+		//collideWithEntities = false;
+		//System.out.println("nul");
+		
 		//Iterate over every box
 		for (int eCB = 0; eCB < entity.getCollisionBoxes().length; eCB++) {
 			// Make a normalized double vector and keep the original length

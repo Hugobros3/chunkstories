@@ -6,6 +6,7 @@
 
 package io.xol.chunkstories.world;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,8 +17,11 @@ import org.joml.Vector3dc;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.physics.CollisionBox;
+import io.xol.chunkstories.api.util.CompoundIterator;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.World.NearEntitiesIterator;
+import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.region.Region;
 
 public class WorldEntitiesHolder implements Iterable<Entity>
@@ -53,7 +57,119 @@ public class WorldEntitiesHolder implements Iterable<Entity>
 		return backing.get(uuid);
 	}
 	
+
 	public NearEntitiesIterator getEntitiesInBox(Vector3dc center, Vector3dc boxSize) {
+		int centerVoxel_x = (int)(double)center.x();
+		int centerVoxel_y = (int)(double)center.y();
+		int centerVoxel_z = (int)(double)center.z();
+		
+		int box_ceil_x = (int)Math.ceil((double) boxSize.x());
+		int box_ceil_y = (int)Math.ceil((double) boxSize.y());
+		int box_ceil_z = (int)Math.ceil((double) boxSize.z());
+		
+		int box_start_x = sanitizeHorizontalCoordinate(centerVoxel_x - box_ceil_x);
+		int box_start_y = sanitizeVerticalCoordinate(centerVoxel_y - box_ceil_y);
+		int box_start_z = sanitizeHorizontalCoordinate(centerVoxel_z - box_ceil_z);
+		
+		int box_end_x = sanitizeHorizontalCoordinate(centerVoxel_x + box_ceil_x);
+		int box_end_y = sanitizeVerticalCoordinate(centerVoxel_y + box_ceil_y);
+		int box_end_z = sanitizeHorizontalCoordinate(centerVoxel_z + box_ceil_z);
+		
+		// Chunk-relative
+		
+		int csx = box_start_x >> 5;
+		int csy = box_start_y >> 5;
+		int csz = box_start_z >> 5;
+
+		int cex = box_end_x >> 5;
+		int cey = box_end_y >> 5;
+		int cez = box_end_z >> 5;
+		
+		CollisionBox box = new CollisionBox(box_start_x, box_start_y, box_start_z, box_end_x - box_start_x, box_end_y - box_start_y, box_end_z - box_start_z);
+		//System.out.println(box.xw+":"+box.h+":"+box.zw);
+		//Vector3d boxc = new Vector3d(box.xpos, box.ypos, box.zpos);
+		//System.out.println(boxc+":"+center+":"+boxc.sub(center));
+		
+		//Fast path #1: it's all in one chunk!
+		if(csx == cex && csy == cey && csz == cez) {
+			Chunk chunk = world.getChunk(csx, csy, csz);
+			return new DistanceCheckedIterator(chunk.getEntitiesWithinChunk(), box);
+		}
+		
+		int rsx = csx >> 3;
+		int rsy = csy >> 3;
+		int rsz = csz >> 3;
+		
+		int rex = cex >> 3;
+		int rey = cey >> 3;
+		int rez = cez >> 3;
+		
+		//Fast path #2: all chunks in the same region
+		if(rsx == rex && rsy == rey && rsz == rez) {
+			ArrayList<Iterator<Entity>> iterators = new ArrayList<>();
+			for(int cx = csx; cx <= cex; cx++)
+				for(int cy = csy; cy <= cey; cy++)
+					for(int cz = csz; cz <= cez; cz++) {
+						//System.out.println(center.x() / 32+":"+center.y() / 32+":"+center.z() / 32);
+						//System.out.println(cx+":"+cy+":"+cz);
+						Chunk chunk = world.getChunk(cx, cy, cz);
+						if(chunk != null)
+							iterators.add(chunk.getEntitiesWithinChunk());
+					}
+			
+			return new DistanceCheckedIterator(new CompoundIterator<>(iterators), box);
+		}
+		
+		//Slow (and old) path
+		return getEntitiesInBoxSlow(center, boxSize);
+	}
+	
+	class DistanceCheckedIterator implements NearEntitiesIterator {
+
+		public DistanceCheckedIterator(Iterator<Entity> i, CollisionBox box) {
+			this.i = i;
+			this.box = box;
+			
+			produce();
+		}
+
+		final Iterator<Entity> i;
+		final CollisionBox box;
+		Entity next = null;
+		double distance;
+		
+		@Override
+		public boolean hasNext() {
+			produce();
+			return next != null;
+		}
+		
+		private void produce() {
+			while(next == null && i.hasNext()) {
+				Entity candidate = i.next();
+				if(box.isPointInside(candidate.getLocation())) {
+					next = candidate;
+					distance = candidate.getLocation().distance(new Vector3d(box.xpos, box.ypos, box.zpos));
+				}
+			}
+		}
+
+		@Override
+		public Entity next() {
+			Entity oldnext = next;
+			next = null;
+			produce();
+			return oldnext;
+		}
+
+		@Override
+		public double distance() {
+			return distance;
+		}
+		
+	}
+	
+	private NearEntitiesIterator getEntitiesInBoxSlow(Vector3dc center, Vector3dc boxSize) {
 		
 		return new NearEntitiesIterator() {
 		
