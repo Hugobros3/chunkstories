@@ -183,9 +183,14 @@ public class AssimpMeshLoader {
 						Vec3 normal = mesh.getNormals().get(face.get(i));
 						float[] texcoord = mesh.getTextureCoords().get(0).get(face.get(i));
 						
-						//swap Y and Z axises
-						vertices.add(vertex.x, vertex.z, -vertex.y);
-						normals.add(normal.x, normal.z, -normal.y);
+						if(mainAsset.getName().endsWith("dae")) {
+							//swap Y and Z axises
+							vertices.add(vertex.x, vertex.z, -vertex.y);
+							normals.add(normal.x, normal.z, -normal.y);
+						} else {
+							vertices.add(vertex.x, vertex.y, vertex.z);
+							normals.add(normal.x, normal.y, normal.z);
+						}
 						texcoords.add(texcoord[0], 1.0f - texcoord[1]);
 						
 						if(has_bones) {
