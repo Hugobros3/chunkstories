@@ -184,7 +184,7 @@ public class ChunkRenderDataHolder implements ChunkMeshUpdater
 	
 	int array[] = new int[4];
 	
-	public int renderSection(RenderingInterface renderingContext, VertexLayout vertexLayout, RenderLodLevel renderLodLevel, ShadingType renderPass)
+	public int renderSection(RenderingInterface renderer, VertexLayout vertexLayout, RenderLodLevel renderLodLevel, ShadingType renderPass)
 	{
 		LodLevel any = LodLevel.ANY;
 		LodLevel also = renderLodLevel.equals(RenderLodLevel.HIGH) ? LodLevel.HIGH : LodLevel.LOW; 
@@ -212,20 +212,22 @@ public class ChunkRenderDataHolder implements ChunkMeshUpdater
 		case WHOLE_BLOCKS:
 			// Raw blocks ( integer faces coordinates ) alignment :
 			// Vertex data : [VERTEX_POS(4b)][TEXCOORD(4b)][COLORS(4b)][NORMALS(4b)] Stride 16 bits
-			renderingContext.bindAttribute("vertexIn", verticesObject.asAttributeSource(VertexFormat.UBYTE, 4, 16, offset + 0));
-			renderingContext.bindAttribute("texCoordIn", verticesObject.asAttributeSource(VertexFormat.USHORT, 2, 16, offset + 4));
-			renderingContext.bindAttribute("colorIn", verticesObject.asAttributeSource(VertexFormat.NORMALIZED_UBYTE, 4, 16, offset + 8));
-			renderingContext.bindAttribute("normalIn", verticesObject.asAttributeSource(VertexFormat.U1010102, 4, 16, offset + 12));
+			renderer.bindAttribute("vertexIn", verticesObject.asAttributeSource(VertexFormat.UBYTE, 4, 16, offset + 0));
+			renderer.bindAttribute("texCoordIn", verticesObject.asAttributeSource(VertexFormat.USHORT, 2, 16, offset + 4));
+			renderer.bindAttribute("colorIn", verticesObject.asAttributeSource(VertexFormat.NORMALIZED_UBYTE, 4, 16, offset + 8));
+			renderer.bindAttribute("materialFlagsIn", verticesObject.asIntegerAttributeSource(VertexFormat.UBYTE, 4, 16, offset + 8, 0));
+			renderer.bindAttribute("normalIn", verticesObject.asAttributeSource(VertexFormat.U1010102, 4, 16, offset + 12));
 			//renderingContext.draw(Primitive.TRIANGLE, 0, size);
 			//return size; 
 			break;
 		case INTRICATE:
 			// Complex blocks ( fp faces coordinates ) alignment :
 			// Vertex data : [VERTEX_POS(12b)][TEXCOORD(4b)][COLORS(4b)][NORMALS(4b)] Stride 24 bits
-			renderingContext.bindAttribute("vertexIn", verticesObject.asAttributeSource(VertexFormat.FLOAT, 3, 24, offset + 0));
-			renderingContext.bindAttribute("texCoordIn", verticesObject.asAttributeSource(VertexFormat.USHORT, 2, 24, offset + 12));
-			renderingContext.bindAttribute("colorIn", verticesObject.asAttributeSource(VertexFormat.NORMALIZED_UBYTE, 4, 24, offset + 16));
-			renderingContext.bindAttribute("normalIn", verticesObject.asAttributeSource(VertexFormat.U1010102, 4, 24, offset + 20));
+			renderer.bindAttribute("vertexIn", verticesObject.asAttributeSource(VertexFormat.FLOAT, 3, 24, offset + 0));
+			renderer.bindAttribute("texCoordIn", verticesObject.asAttributeSource(VertexFormat.USHORT, 2, 24, offset + 12));
+			renderer.bindAttribute("colorIn", verticesObject.asAttributeSource(VertexFormat.NORMALIZED_UBYTE, 4, 24, offset + 16));
+			renderer.bindAttribute("materialFlagsIn", verticesObject.asIntegerAttributeSource(VertexFormat.UBYTE, 4, 24, offset + 16, 0));
+			renderer.bindAttribute("normalIn", verticesObject.asAttributeSource(VertexFormat.U1010102, 4, 24, offset + 20));
 			//renderingContext.draw(Primitive.TRIANGLE, 0, size);
 			//return size;
 			break;
@@ -234,11 +236,11 @@ public class ChunkRenderDataHolder implements ChunkMeshUpdater
 		}
 		
 		if(sizeAlso == 0) {
-			renderingContext.draw(Primitive.TRIANGLE, offsetAny / vertexLayout.bytesPerVertex, sizeAny);
+			renderer.draw(Primitive.TRIANGLE, offsetAny / vertexLayout.bytesPerVertex, sizeAny);
 			return sizeAny;
 		}
 		else if(sizeAny == 0) {
-			renderingContext.draw(Primitive.TRIANGLE, offsetAlso / vertexLayout.bytesPerVertex, sizeAlso);
+			renderer.draw(Primitive.TRIANGLE, offsetAlso / vertexLayout.bytesPerVertex, sizeAlso);
 			return sizeAlso;
 		}
 		else {
@@ -246,7 +248,7 @@ public class ChunkRenderDataHolder implements ChunkMeshUpdater
 			array[2] = offsetAlso / vertexLayout.bytesPerVertex;
 			array[1] = sizeAny;
 			array[3] = sizeAlso;
-			renderingContext.drawMany(Primitive.TRIANGLE, array);
+			renderer.drawMany(Primitive.TRIANGLE, array);
 			return sizeAny + sizeAlso;
 		}
 		

@@ -65,7 +65,7 @@ public class CustomVoxelModel implements VoxelRenderer, VoxelModel
 		return name;
 	}
 	
-	public int renderInto(VoxelBakerHighPoly baker, ChunkRenderContext bakingContext, CellData info, Chunk chunk, int x, int y, int z)
+	public int renderInto(VoxelBakerHighPoly baker, ChunkRenderContext bakingContext, CellData cell, Chunk chunk, int x, int y, int z)
 	{
 		//int lightLevelSun = chunk.getSunLight(x, y, z);
 		//int lightLevelVoxel = chunk.getBlockLight(x, y, z);
@@ -79,7 +79,7 @@ public class CustomVoxelModel implements VoxelRenderer, VoxelModel
 		VoxelTexture currentVoxelTexture = null;
 		
 		//Selects an appropriate texture
-		currentVoxelTexture = selectsTextureFromIndex(info, modelTextureIndex);
+		currentVoxelTexture = selectsTextureFromIndex(cell, modelTextureIndex);
 		baker.usingTexture(currentVoxelTexture);
 		
 		int maxVertexIndexToUseThisTextureFor = this.texturesOffsets[modelTextureIndex];
@@ -92,12 +92,12 @@ public class CustomVoxelModel implements VoxelRenderer, VoxelModel
 		boolean[] cullingCache = new boolean[6];
 		for (int j = 0; j < 6; j++)
 		{
-			CellData adj = info.getNeightbor(j);
+			CellData adj = cell.getNeightbor(j);
 			
 			// If it is, don't draw it.
 			cullingCache[j] = adj.getVoxel().getDefinition().isOpaque() || 
 					adj.getVoxel().isFaceOpaque(VoxelSide.values()[j], adj.getMetaData()) || 
-					info.getVoxel().getDefinition().isSelfOpaque() && adj.getVoxel().sameKind(info.getVoxel()) && adj.getMetaData() == info.getMetaData();
+					cell.getVoxel().getDefinition().isSelfOpaque() && adj.getVoxel().sameKind(cell.getVoxel()) && adj.getMetaData() == cell.getMetaData();
 		}
 
 		//Generate some jitter if it is enabled
@@ -109,6 +109,8 @@ public class CustomVoxelModel implements VoxelRenderer, VoxelModel
 		if (this.jitterZ != 0.0f)
 			dz = (float) ((Math.random() * 2.0 - 1.0) * this.jitterZ);
 
+		baker.setMaterialFlags(Byte.parseByte(cell.getVoxel().getDefinition().resolveProperty("materialFlags", "0")));
+		
 		//int drewVertices = 0;
 		drawVertex:
 		for (int i_currentVertex = 0; i_currentVertex < this.vertices.length / 3; i_currentVertex++)
@@ -118,7 +120,7 @@ public class CustomVoxelModel implements VoxelRenderer, VoxelModel
 				modelTextureIndex++;
 				
 				//Selects an appropriate texture
-				currentVoxelTexture = selectsTextureFromIndex(info, modelTextureIndex);
+				currentVoxelTexture = selectsTextureFromIndex(cell, modelTextureIndex);
 				
 				maxVertexIndexToUseThisTextureFor = this.texturesOffsets[modelTextureIndex];
 				
