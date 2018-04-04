@@ -91,9 +91,9 @@ public class GameContentStore implements Content
 		particles.reload();
 		generators.reload();
 		
-		bvhLibrary.reload();
+		bvhLibrary.reloadAll();
 		
-		meshes.reload();
+		meshes.reloadAll();
 		
 		localizationManager.reload();
 	}

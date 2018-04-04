@@ -19,14 +19,13 @@ import io.xol.chunkstories.renderer.debug.FakeImmediateModeDebugRenderer;
 import io.xol.chunkstories.renderer.mesh.BonedRenderer;
 
 public class ClientMeshStore implements ClientMeshLibrary {
-	
+
 	private final MeshStore store;
 	private final ClientContent content;
-	
+
 	private final Map<String, RenderableMesh> renderableMeshes = new HashMap<String, RenderableMesh>();
-	
-	public ClientMeshStore(ClientContent content, MeshStore store)
-	{
+
+	public ClientMeshStore(ClientContent content, MeshStore store) {
 		this.store = store;
 		this.content = content;
 	}
@@ -44,19 +43,19 @@ public class ClientMeshStore implements ClientMeshLibrary {
 	@Override
 	public RenderableMesh getRenderableMesh(String meshName) {
 		RenderableMesh rm = renderableMeshes.get(meshName);
-		
-		if(rm == null) {
+
+		if (rm == null) {
 			Mesh mesh = this.getMesh(meshName);
-			if(mesh == null) {
-				//Really not found!
+			if (mesh == null) {
+				// Really not found!
 				return getRenderableMesh("./models/error.obj");
 			}
-			
-			if(mesh instanceof AnimatableMesh)
-				rm = new BonedRenderer((AnimatableMesh)mesh);
+
+			if (mesh instanceof AnimatableMesh)
+				rm = new BonedRenderer((AnimatableMesh) mesh);
 			else
 				rm = new MeshRenderer(mesh);
-			
+
 			renderableMeshes.put(meshName, rm);
 		}
 		return rm;
@@ -65,17 +64,18 @@ public class ClientMeshStore implements ClientMeshLibrary {
 	@Override
 	public BonedRenderer getRenderableAnimatableMesh(String meshName) {
 		RenderableMesh rm = this.getRenderableMesh(meshName);
-		
-		return rm instanceof BonedRenderer ? (BonedRenderer)rm : null;
+
+		return rm instanceof BonedRenderer ? (BonedRenderer) rm : null;
 	}
 
 	@Override
 	public ClientContent parent() {
-		
+
 		return content;
 	}
 
-	public void reload() {
+	public void reloadAll() {
+		store.reloadAll();
 		renderableMeshes.clear();
 	}
 

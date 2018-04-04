@@ -16,46 +16,41 @@ import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.content.Content.AnimationsLibrary;
 import io.xol.chunkstories.content.GameContentStore;
 
-public class BVHLibrary implements AnimationsLibrary
-{
+public class BVHLibrary implements AnimationsLibrary {
 	private final GameContentStore store;
-	
+
 	private static final Logger logger = LoggerFactory.getLogger("content.animations");
+
 	public Logger logger() {
 		return logger;
 	}
-	
-	public BVHLibrary(GameContentStore store)
-	{
+
+	public BVHLibrary(GameContentStore store) {
 		this.store = store;
-		//this.modsManager = store.modsManager();
-		
-		//reload();
+		// this.modsManager = store.modsManager();
+
+		// reload();
 	}
-	
+
 	Map<String, BVHAnimation> animations = new HashMap<String, BVHAnimation>();
-	
-	public BVHAnimation loadAnimation(String name)
-	{
+
+	public BVHAnimation loadAnimation(String name) {
 		BVHAnimation anim = new BVHAnimation(store.getAsset(name));
 		animations.put(name, anim);
 		return anim;
 	}
 
-	public BVHAnimation getAnimation(String name)
-	{
+	public BVHAnimation getAnimation(String name) {
 		if (animations.containsKey(name))
 			return animations.get(name);
-		else
-		{
+		else {
 			return loadAnimation(name);
 		}
 	}
 
-	public void reload()
-	{
-		//for (BVHAnimation a : animations.values())
-		//	a.destroy();
+	public void reloadAll() {
+		// for (BVHAnimation a : animations.values())
+		// a.destroy();
 		animations.clear();
 	}
 

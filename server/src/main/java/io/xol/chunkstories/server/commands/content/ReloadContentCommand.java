@@ -7,6 +7,7 @@
 package io.xol.chunkstories.server.commands.content;
 
 import io.xol.chunkstories.api.GameContext;
+import io.xol.chunkstories.api.client.ClientContent.ShadersLibrary;
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
@@ -21,8 +22,8 @@ public class ReloadContentCommand implements CommandHandler{
 		gameContext.getPluginManager().registerCommand("reload").setHandler(this);
 	}
 	
-	final String[] serverHotReloadableStuff = {};
-	final String[] clientHotReloadableStuff = {"shaders", "textures"};
+	//final String[] serverHotReloadableStuff = {};
+	//final String[] clientHotReloadableStuff = {"shaders", "textures"};
 
 	@Override
 	public boolean handleCommand(CommandEmitter emitter, Command command, String[] arguments) {
@@ -47,6 +48,18 @@ public class ReloadContentCommand implements CommandHandler{
 				else if(arguments[0].equals("textures")) {
 					reloadTextures(emitter);
 				}
+				else if(arguments[0].equals("meshes")) {
+					reloadMeshes(emitter);
+				}
+				else if(arguments[0].equals("animations")) {
+					reloadAnimations(emitter);
+				}
+				else if(arguments[0].equals("assets")) {
+					reloadShaders(emitter);
+					reloadTextures(emitter);
+					reloadMeshes(emitter);
+					reloadAnimations(emitter);
+				}
 				//TODO plugins
 			}
 			return true;
@@ -67,6 +80,22 @@ public class ReloadContentCommand implements CommandHandler{
 			ClientInterface client = (ClientInterface)gameContext;
 			client.getContent().textures().reloadAll();
 			emitter.sendMessage("#00FFD0" + "Reloaded textures.");
+		}
+	}
+	
+	private void reloadMeshes(CommandEmitter emitter) {
+		if(this.gameContext instanceof ClientInterface) {
+			ClientInterface client = (ClientInterface)gameContext;
+			client.getContent().meshes().reloadAll();
+			emitter.sendMessage("#00FFD0" + "Reloaded meshes.");
+		}
+	}
+	
+	private void reloadAnimations(CommandEmitter emitter) {
+		if(this.gameContext instanceof ClientInterface) {
+			ClientInterface client = (ClientInterface)gameContext;
+			client.getContent().getAnimationsLibrary().reloadAll();
+			emitter.sendMessage("#00FFD0" + "Reloaded animations.");
 		}
 	}
 }
