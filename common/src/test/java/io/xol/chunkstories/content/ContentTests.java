@@ -10,7 +10,7 @@ public class ContentTests {
 	public void testAssimpMeshes() {
 		TestGameContext testContext = new TestGameContext(null);
 		
-		Mesh m = testContext.getContent().meshes().getMesh("./models/human.dae");
+		Mesh m = testContext.getContent().meshes().getMesh("./models/human/human.dae");
 		System.out.println(m.getVerticesCount()+" lol:"+m.getClass());
 		
 		//m = testContext.getContent().meshes().getMesh("./models/human.obj");
