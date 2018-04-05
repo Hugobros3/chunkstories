@@ -15,8 +15,8 @@ dependencies {
 	//We need the core content distribution zip to be able to run the game !!!
 	coreContent group: 'io.xol.chunkstories', name: 'core', version: contentRevisionBuiltAgainst, ext: 'zip'
 	
-	//implementation 'com.github.Hugobros3:assimp:no-lwjgl-SNAPSHOT'
-	implementation 'com.github.kotlin-graphics:assimp:unspecified'
+	implementation 'com.github.Hugobros3:assimp:no-lwjgl-SNAPSHOT'
+	//implementation 'com.github.kotlin-graphics:assimp:unspecified'
 }
 
 test {
