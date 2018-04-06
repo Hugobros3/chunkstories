@@ -214,22 +214,18 @@ public class ChunkRenderDataHolder implements ChunkMeshUpdater
 			// Vertex data : [VERTEX_POS(4b)][TEXCOORD(4b)][COLORS(4b)][NORMALS(4b)] Stride 16 bits
 			renderer.bindAttribute("vertexIn", verticesObject.asAttributeSource(VertexFormat.UBYTE, 4, 16, offset + 0));
 			renderer.bindAttribute("texCoordIn", verticesObject.asAttributeSource(VertexFormat.USHORT, 2, 16, offset + 4));
-			renderer.bindAttribute("colorIn", verticesObject.asAttributeSource(VertexFormat.NORMALIZED_UBYTE, 4, 16, offset + 8));
-			renderer.bindAttribute("materialFlagsIn", verticesObject.asIntegerAttributeSource(VertexFormat.UBYTE, 4, 16, offset + 8, 0));
+			//renderer.bindAttribute("colorIn", verticesObject.asAttributeSource(VertexFormat.NORMALIZED_UBYTE, 4, 16, offset + 8));
+			renderer.bindAttribute("colorAndMaterialIn", verticesObject.asIntegerAttributeSource(VertexFormat.UBYTE, 4, 16, offset + 8, 0));
 			renderer.bindAttribute("normalIn", verticesObject.asAttributeSource(VertexFormat.U1010102, 4, 16, offset + 12));
-			//renderingContext.draw(Primitive.TRIANGLE, 0, size);
-			//return size; 
 			break;
 		case INTRICATE:
 			// Complex blocks ( fp faces coordinates ) alignment :
 			// Vertex data : [VERTEX_POS(12b)][TEXCOORD(4b)][COLORS(4b)][NORMALS(4b)] Stride 24 bits
 			renderer.bindAttribute("vertexIn", verticesObject.asAttributeSource(VertexFormat.FLOAT, 3, 24, offset + 0));
 			renderer.bindAttribute("texCoordIn", verticesObject.asAttributeSource(VertexFormat.USHORT, 2, 24, offset + 12));
-			renderer.bindAttribute("colorIn", verticesObject.asAttributeSource(VertexFormat.NORMALIZED_UBYTE, 4, 24, offset + 16));
-			renderer.bindAttribute("materialFlagsIn", verticesObject.asIntegerAttributeSource(VertexFormat.UBYTE, 4, 24, offset + 16, 0));
+			//renderer.bindAttribute("colorIn", verticesObject.asAttributeSource(VertexFormat.NORMALIZED_UBYTE, 4, 24, offset + 16));
+			renderer.bindAttribute("colorAndMaterialIn", verticesObject.asIntegerAttributeSource(VertexFormat.UBYTE, 4, 24, offset + 16, 0));
 			renderer.bindAttribute("normalIn", verticesObject.asAttributeSource(VertexFormat.U1010102, 4, 24, offset + 20));
-			//renderingContext.draw(Primitive.TRIANGLE, 0, size);
-			//return size;
 			break;
 		default:
 			throw new RuntimeException("Unsupported vertex layout in "+this);
