@@ -5,11 +5,16 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.xol.chunkstories.api.workers.TaskExecutor;
 import io.xol.chunkstories.world.region.RegionImplementation;
+import io.xol.chunkstories.world.region.format.CSFRegionFile;
 
 public class IOTaskLoadRegion extends IOTask
 {
+	private static final Logger logger = LoggerFactory.getLogger("world.io");
 	RegionImplementation region;
 
 	public IOTaskLoadRegion(RegionImplementation holder)
@@ -28,7 +33,9 @@ public class IOTaskLoadRegion extends IOTask
 			return false;
 		}*/
 
-		if (region.handler.exists())
+		region.handler = CSFRegionFile.determineVersionAndCreate(region);
+		
+		if (region.file.exists())
 		{
 			try
 			{
@@ -44,6 +51,7 @@ public class IOTaskLoadRegion extends IOTask
 			}
 			catch (IOException e)
 			{
+				logger.warn("Error loading file"+region.handler.file);
 				e.printStackTrace();
 				return true;
 			}

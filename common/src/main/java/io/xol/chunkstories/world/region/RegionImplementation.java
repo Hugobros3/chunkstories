@@ -6,6 +6,7 @@
 
 package io.xol.chunkstories.world.region;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -58,8 +59,10 @@ public class RegionImplementation implements Region {
 	public final Lock usersLock = new ReentrantLock();
 	
 	//Only relevant on Master worlds
-	public final CSFRegionFile handler;
-
+	//public final CSFRegionFile handler;
+	public final File file;
+	public CSFRegionFile handler;
+	
 	private AtomicLong unloadCooldown = new AtomicLong();
 	private boolean unloadedFlag = false;
 
@@ -98,12 +101,13 @@ public class RegionImplementation implements Region {
 		//Only the WorldMaster has a concept of files
 		if (world instanceof WorldMaster)
 		{
-			handler = CSFRegionFile.determineVersionAndCreate(this);
+			file = new File(world.getFolderPath() + "/regions/" + regionX + "." + regionY + "." + regionZ + ".csf");
+			//CSFRegionFile.determineVersionAndCreate(this);
 			world.ioHandler.requestRegionLoad(this);
 		}
 		else
 		{
-			handler = null;
+			file = null;
 			isDiskDataLoaded.set(true);
 		}
 	}

@@ -8,6 +8,7 @@ package io.xol.chunkstories.world.region.format;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 
@@ -46,9 +47,13 @@ public class CSFRegionFile0x2C extends CSFRegionFile
 						//Compressed data was found, load it
 						if (compressedDataSize > 0) {
 							byte[] buffer = new byte[compressedDataSize];
-							in.readFully(buffer, 0, compressedDataSize);
+							try {
+								in.readFully(buffer, 0, compressedDataSize);
+								owner.getChunkHolder(a, b, c).setCompressedData(new CompressedData(buffer, null, null));
+							} catch(EOFException e) {
+								owner.getChunkHolder(a, b, c).setCompressedData(new CompressedData(null, null, null));
+							}
 							
-							owner.getChunkHolder(a, b, c).setCompressedData(new CompressedData(buffer, null, null));
 						}
 						else if(compressedDataSize == air_chunk_magic_number) {
 							owner.getChunkHolder(a, b, c).setCompressedData(new CompressedData(null, null, null));

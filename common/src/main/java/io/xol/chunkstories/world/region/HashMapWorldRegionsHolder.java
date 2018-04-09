@@ -258,8 +258,9 @@ public class HashMapWorldRegionsHolder
 	 */
 	void removeRegion(RegionImplementation region)
 	{
+		this.regionsLock.writeLock().lock();
 		int key = (region.getRegionX() * sizeInRegions + region.getRegionZ()) * heightInRegions + region.getRegionY();
-		//regions.remove(new RegionLocation(region.getRegionX(), region.getRegionY(), region.getRegionZ()));
 		regions.remove(key);
+		this.regionsLock.writeLock().unlock();
 	}
 }

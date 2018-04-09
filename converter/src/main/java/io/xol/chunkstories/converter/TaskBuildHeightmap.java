@@ -76,7 +76,7 @@ public class TaskBuildHeightmap extends Task {
 				}
 			}
 		
-		Fence waitForSummarySave = summary.saveSummary();
+		Fence waitForSummarySave = summary.save();
 		//cwt.converter().verbose("Waiting for summary saving...");
 		waitForSummarySave.traverse();
 		//cwt.converter().verbose("Done.");

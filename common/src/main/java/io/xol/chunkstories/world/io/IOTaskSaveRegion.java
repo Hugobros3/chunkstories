@@ -24,13 +24,15 @@ public class IOTaskSaveRegion extends IOTask {
 
 		try {
 			// Create the necessary directory structure if needed
-			region.handler.file.getParentFile().mkdirs();
+			region.file.getParentFile().mkdirs();
 
 			// Create the output stream
 			FileOutputStream outputFileStream = new FileOutputStream(region.handler.file);
 			DataOutputStream dos = new DataOutputStream(outputFileStream);
 
 			region.handler.save(dos);
+			
+			outputFileStream.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -40,8 +42,8 @@ public class IOTaskSaveRegion extends IOTask {
 		// Let go
 		this.region.handler.savingOperations.decrementAndGet();
 
-		synchronized (region.handler) {
-			region.handler.notifyAll();
+		synchronized (region.file) {
+			region.file.notifyAll();
 		}
 		return true;
 	}

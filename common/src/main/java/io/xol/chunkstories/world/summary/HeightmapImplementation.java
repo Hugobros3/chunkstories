@@ -35,6 +35,7 @@ import io.xol.chunkstories.util.concurrency.SimpleFence;
 import io.xol.chunkstories.util.concurrency.TrivialFence;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.io.IOTask;
+import io.xol.chunkstories.world.io.TaskGenerateWorldSlice;
 import net.jpountz.lz4.LZ4Compressor;
 import net.jpountz.lz4.LZ4Factory;
 import net.jpountz.lz4.LZ4FastDecompressor;
@@ -94,6 +95,10 @@ public class HeightmapImplementation implements Heightmap
 
 		if (world instanceof WorldMaster) {
 			handler = new File(world.getFolderPath() + "/summaries/" + rx + "." + rz + ".sum");
+			
+			if(!handler.exists())
+				world.getGameContext().tasks().scheduleTask(new TaskGenerateWorldSlice(world, this));
+			
 			loadFence = this.world.ioHandler.requestHeightmapLoad(this);
 		}
 		else {
@@ -207,7 +212,7 @@ public class HeightmapImplementation implements Heightmap
 		return users.size();
 	}
 
-	public IOTask saveSummary()
+	public IOTask save()
 	{
 		return this.world.ioHandler.requestHeightmapSave(this);
 	}
@@ -462,7 +467,7 @@ public class HeightmapImplementation implements Heightmap
 		usersLock.unlock();
 	}
 	
-	private void recomputeMetadata() {
+	public void recomputeMetadata() {
 		this.computeHeightMetadata();
 		this.computeMinMax();
 		

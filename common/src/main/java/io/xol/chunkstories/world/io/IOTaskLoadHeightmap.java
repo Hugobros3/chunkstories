@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import io.xol.chunkstories.api.workers.TaskExecutor;
 import io.xol.chunkstories.api.world.heightmap.Heightmap;
+import io.xol.chunkstories.util.concurrency.CompoundFence;
 import io.xol.chunkstories.world.summary.HeightmapImplementation;
 import net.jpountz.lz4.LZ4Factory;
 import net.jpountz.lz4.LZ4FastDecompressor;
@@ -17,20 +18,28 @@ import net.jpountz.lz4.LZ4FastDecompressor;
 public class IOTaskLoadHeightmap extends IOTask {
 	private static final Logger logger = LoggerFactory.getLogger("world.io");
 
+	private final boolean shouldGenerateMap;
+	
 	protected LZ4Factory factory = LZ4Factory.fastestInstance();
 	protected LZ4FastDecompressor decompressor = factory.fastDecompressor();
 
 	HeightmapImplementation heightmap;
+	
+	TaskGenerateWorldThinSlice generationTask;
 
 	public IOTaskLoadHeightmap(HeightmapImplementation heightmap) {
 		this.heightmap = heightmap;
+		
+		this.shouldGenerateMap = !heightmap.handler.exists();
 	}
 
 	@Override
 	public boolean task(TaskExecutor taskExecutor) {
 		if (heightmap.isLoaded())
 			return true;
-		if (heightmap.handler.exists()) {
+		
+		if (!shouldGenerateMap) {
+			
 			try {
 				FileInputStream in = new FileInputStream(heightmap.handler);
 
@@ -70,7 +79,7 @@ public class IOTaskLoadHeightmap extends IOTask {
 				e.printStackTrace();
 			}
 		} else {
-			// Generate world HERE actually!
+			// Just blank out the stuff so the real job can be done
 			int h, t;
 
 			int[] heights = new int[256 * 256];
@@ -85,6 +94,16 @@ public class IOTaskLoadHeightmap extends IOTask {
 				}
 
 			heightmap.setData(heights, ids);
+			
+			/*for(int relative_chunkX = 0; relative_chunkX < 8; relative_chunkX++) {
+				CompoundFence f = new CompoundFence();
+				for(int relative_chunkZ = 0; relative_chunkZ < 8; relative_chunkZ++) {
+					TaskGenerateWorldThinSlice task = new TaskGenerateWorldThinSlice(heightmap.world, heightmap.getRegionX() * 8 + relative_chunkX,heightmap.getRegionZ() * 8 + relative_chunkZ, heightmap);
+					heightmap.world.getGameContext().tasks().scheduleTask(task);
+					f.add(task);
+				}
+				f.traverse();
+			}*/
 		}
 		return true;
 	}

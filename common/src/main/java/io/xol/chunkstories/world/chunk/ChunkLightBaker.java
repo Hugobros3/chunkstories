@@ -34,7 +34,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 	final CubicChunk chunk;
 	//final CubicChunk leftChunk, rightChunk, topChunk, bottomChunk, frontChunk, backChunk;
 
-	final AtomicInteger unbakedUpdates = new AtomicInteger(0);
+	public final AtomicInteger unbakedUpdates = new AtomicInteger(0);
 	public final SimpleLock onlyOneUpdateAtATime = new SimpleLock();
 
 	protected TaskLightChunk task = null;
@@ -129,7 +129,7 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 		}
 	};
 
-	int computeVoxelLightningInternal(boolean adjacent) {
+	public int computeVoxelLightningInternal(boolean adjacent) {
 		// Checks first if chunk contains blocks
 		if (chunk.chunkVoxelData == null)
 			return 0; // Nothing to do

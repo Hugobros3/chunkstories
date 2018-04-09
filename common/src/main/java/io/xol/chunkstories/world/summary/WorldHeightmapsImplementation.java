@@ -228,7 +228,7 @@ public class WorldHeightmapsImplementation implements WorldHeightmaps
 		CompoundFence allSummariesSaves = new CompoundFence();
 		for (HeightmapImplementation cs : summaries.values())
 		{
-			allSummariesSaves.add(cs.saveSummary());
+			allSummariesSaves.add(cs.save());
 		}
 		
 		return allSummariesSaves;

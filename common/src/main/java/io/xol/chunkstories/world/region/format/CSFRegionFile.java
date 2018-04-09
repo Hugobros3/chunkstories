@@ -64,13 +64,12 @@ public abstract class CSFRegionFile implements OfflineSerializedData {
 			}
 	}
 
-	public static CSFRegionFile determineVersionAndCreate(RegionImplementation holder) {
-		File file = new File(holder.world.getFolderPath() + "/regions/" + holder.regionX + "." + holder.regionY + "." + holder.regionZ + ".csf");
-		
-		if(file.exists()) {
+	public static CSFRegionFile determineVersionAndCreate(RegionImplementation region) {
+
+		if(region.file.exists()) {
 			
 			try {
-				FileInputStream fist = new FileInputStream(file);
+				FileInputStream fist = new FileInputStream(region.file);
 				DataInputStream in = new DataInputStream(fist);
 				
 				//Read jsut the first 12 bytes of data
@@ -85,7 +84,7 @@ public abstract class CSFRegionFile implements OfflineSerializedData {
 				// chnkstrs in ascii
 				if(magicNumber == 6003953969960732739L) {
 					if(versionNumber == 0x2D)
-						return new CSFRegionFile0x2D(holder, file);
+						return new CSFRegionFile0x2D(region, region.file);
 					else
 						throw new RuntimeException("Unhandled file format revision: " + versionNumber);
 				}
@@ -96,9 +95,14 @@ public abstract class CSFRegionFile implements OfflineSerializedData {
 			}
 		}
 		else
-			return new CSFRegionFile0x2D(holder, file);
+			return new CSFRegionFile0x2D(region, region.file);
 		
-		return new CSFRegionFile0x2C(holder, file);
+		System.out.println(region.file);
+		System.out.println(region.file.exists());
+		Thread.currentThread().dumpStack();
+		System.exit(-1);
+		
+		return new CSFRegionFile0x2C(region, region.file);
 	}
 
 }
