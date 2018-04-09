@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.content.Content;
+import io.xol.chunkstories.api.converter.MinecraftBlocksTranslator;
 import io.xol.chunkstories.api.plugin.PluginManager;
 import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.api.world.WorldInfo.WorldSize;
@@ -136,7 +137,7 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser {
 
 	protected final String mcWorldName;
 	
-	protected final ConverterMapping mappers;
+	protected final MinecraftBlocksTranslator mappers;
 	
 	public OfflineWorldConverter(boolean verboseMode, File mcFolder, File csFolder, String mcWorldName, String csWorldName, WorldSize size, int minecraftOffsetX, int minecraftOffsetZ, File coreContentLocation) throws IOException
 	{
@@ -160,7 +161,7 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser {
 
 		verbose("Loading converter_mapping.txt");
 		File file = new File("converter_mapping.txt");
-		mappers = new ConverterMapping(this, file);
+		mappers = new MinecraftBlocksTranslator(this, file);
 		verbose("Done, took " + (System.nanoTime() - System.nanoTime()) / 1000 + " µs");
 		
 		//Loads the Minecraft World

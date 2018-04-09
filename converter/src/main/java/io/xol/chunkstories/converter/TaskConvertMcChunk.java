@@ -6,6 +6,7 @@
 
 package io.xol.chunkstories.converter;
 
+import io.xol.chunkstories.api.converter.MinecraftBlocksTranslator;
 import io.xol.chunkstories.api.converter.mappings.Mapper;
 import io.xol.chunkstories.api.converter.mappings.NonTrivialMapper;
 import io.xol.chunkstories.api.workers.Task;
@@ -31,14 +32,14 @@ public class TaskConvertMcChunk extends Task {
 	private int minecraftRegionX;
 	private int minecraftRegionZ;
 
-	private ConverterMapping mappers;
+	private MinecraftBlocksTranslator mappers;
 
 	private MinecraftChunk minecraftChunk;
 	
 	public TaskConvertMcChunk(MinecraftRegion minecraftRegion, MinecraftChunk minecraftChunk, int chunkStoriesCurrentChunkX,
 			int chunkStoriesCurrentChunkZ, int minecraftCurrentChunkXinsideRegion,
 			int minecraftCuurrentChunkZinsideRegion, int minecraftRegionX, int minecraftRegionZ,
-			ConverterMapping quickConversion) {
+			MinecraftBlocksTranslator quickConversion) {
 		this.minecraftRegion = minecraftRegion;
 		this.minecraftChunk = minecraftChunk;
 		

@@ -18,41 +18,45 @@ public class TaskGenerateWorldThinSlice extends Task implements WorldUser {
 	final World world;
 	final int chunkX, chunkZ;
 	ChunkHolder holders[];
+	
+	private final int maxGenerationHeight, maxGenerationHeightInChunks;
+	private WorldGenerator generator;
 
 	public TaskGenerateWorldThinSlice(World world, int chunkX, int chunkZ, Heightmap heightmap) {
 		this.world = world;
 		this.heightmap = heightmap;
 		this.chunkX = chunkX;
 		this.chunkZ = chunkZ;
+
+		generator = world.getGenerator();
+		maxGenerationHeight = Integer.parseInt(generator.getDefinition().resolveProperty("maxGenerationHeight", "1024"));
+		maxGenerationHeightInChunks = (int)Math.ceil(maxGenerationHeight / 32.0);
+		//System.out.println(maxGenerationHeightInChunks);
 		
-		int worldHeightInChunks = world.getMaxHeight() / 32;
-		holders = new ChunkHolder[worldHeightInChunks];
-		for(int chunkY = 0; chunkY < worldHeightInChunks; chunkY ++) {
+		holders = new ChunkHolder[maxGenerationHeightInChunks];
+		for(int chunkY = 0; chunkY < maxGenerationHeightInChunks; chunkY ++) {
 			holders[chunkY] = world.aquireChunkHolder(this, chunkX, chunkY, chunkZ);
 		}
 	}
 
 	@Override
 	protected boolean task(TaskExecutor taskExecutor) {
-		int worldHeightInChunks = world.getMaxHeight() / 32;
-		for(int chunkY = 0; chunkY < worldHeightInChunks; chunkY ++) {
+		for(int chunkY = 0; chunkY < maxGenerationHeightInChunks; chunkY ++) {
 			
 			//System.out.println("howdy"+holders[chunkY].isChunkLoaded());
 			if(!holders[chunkY].isChunkLoaded() || holders[chunkY].getChunk() == null)
 				return false;
 		}
-
-		WorldGenerator generator = world.getGenerator();
 		
 		//Doing the lord's work
-		for(int chunkY = 0; chunkY < worldHeightInChunks; chunkY ++) {
+		for(int chunkY = 0; chunkY < maxGenerationHeightInChunks; chunkY ++) {
 			generator.generateChunk(holders[chunkY].getChunk());
 		}
 
 		//Build the heightmap from that
 		for(int x = 0; x < 32; x++)
 			for(int z = 0; z < 32; z++) {
-				int y = world.getMaxHeight() - 1;
+				int y = maxGenerationHeight - 1;
 				while(y >= 0) {
 					CellData cell = holders[y / 32].getChunk().peek(x, y, z);
 					if(cell.getVoxel().getDefinition().isSolid() || cell.getVoxel().getDefinition().isLiquid()) {
@@ -65,7 +69,7 @@ public class TaskGenerateWorldThinSlice extends Task implements WorldUser {
 		
 
 		//Let there be light
-		for(int chunkY = 0; chunkY < worldHeightInChunks; chunkY ++) {
+		for(int chunkY = 0; chunkY < maxGenerationHeightInChunks; chunkY ++) {
 			((ChunkLightBaker)holders[chunkY].getChunk().lightBaker()).unbakedUpdates.incrementAndGet();
 			
 			TaskLightChunk lighter = new TaskLightChunk((CubicChunk) holders[chunkY].getChunk(), true);
@@ -73,7 +77,7 @@ public class TaskGenerateWorldThinSlice extends Task implements WorldUser {
 		}
 		
 		//Let go the world data now
-		for(int chunkY = 0; chunkY < worldHeightInChunks; chunkY ++) {
+		for(int chunkY = 0; chunkY < maxGenerationHeightInChunks; chunkY ++) {
 			holders[chunkY].unregisterUser(this);
 		}
 		
