@@ -6,13 +6,16 @@
 
 package io.xol.chunkstories.world.region;
 
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Semaphore;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import io.xol.chunkstories.api.rendering.world.chunk.ChunkRenderable;
 import io.xol.chunkstories.api.util.concurrency.Fence;
-import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.WorldUser;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
@@ -21,14 +24,13 @@ import io.xol.chunkstories.util.concurrency.CompoundFence;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 
-
-
 public class HashMapWorldRegionsHolder
 {
 	private WorldImplementation world;
 
-	private Semaphore noConcurrentRegionCreationDestruction = new Semaphore(1);
-	private ConcurrentHashMap<Integer, RegionImplementation> regions = new ConcurrentHashMap<Integer, RegionImplementation>(8, 0.9f, 1);
+	//private Semaphore noConcurrentRegionCreationDestruction = new Semaphore(1);
+	private final ReadWriteLock regionsLock = new ReentrantReadWriteLock();
+	private final Map<Integer, RegionImplementation> regions = new HashMap<>(); //new ConcurrentHashMap<Integer, RegionImplementation>(8, 0.9f, 1);
 
 	private final int sizeInRegions, heightInRegions;
 
@@ -40,63 +42,34 @@ public class HashMapWorldRegionsHolder
 		sizeInRegions = world.getWorldInfo().getSize().sizeInChunks / 8;
 	}
 
-	public Iterator<RegionImplementation> getLoadedRegions()
-	{
-		return regions.values().iterator();
+	public Iterator<RegionImplementation> internalGetLoadedRegions() {
+		//Iterators are sort of unsafe so we quickly build a list and let them iterate that
+		try {
+			regionsLock.readLock().lock();
+			List<RegionImplementation> list = new LinkedList<>();
+			for(RegionImplementation r : regions.values()) {
+				list.add(r);
+			}
+		
+			return list.iterator();
+		} finally {
+			regionsLock.readLock().unlock();
+		}
+		//return regions.values().iterator();
 	}
 
-	public RegionImplementation getRegionChunkCoordinates(int chunkX, int chunkY, int chunkZ)
-	{
+	public RegionImplementation getRegionChunkCoordinates(int chunkX, int chunkY, int chunkZ) {
 		return getRegion(chunkX / 8, chunkY / 8, chunkZ / 8);
 	}
 
-	public RegionImplementation getRegion(int regionX, int regionY, int regionZ)
-	{
-		int key = (regionX * sizeInRegions + regionZ) * heightInRegions + regionY;
-		//RegionLocation key = new RegionLocation(regionX, regionY, regionZ);
-		return regions.get(key);
-	}
-	
-	/**
-	 * Only aquiring either the region or one of it's chunkholders should trigger a creation of a region
-	 */
-	private RegionImplementation getOrCreateRegion(int regionX, int regionY, int regionZ)
-	{
-		RegionImplementation holder = null;
-
-		int key = (regionX * sizeInRegions + regionZ) * heightInRegions + regionY;
-		//RegionLocation key = new RegionLocation(regionX, regionY, regionZ);
-
-		//Lock to avoid any issues with another thread making another region while we handle this
-		//Note lock was moved to a semaphore in public
-		holder = regions.get(key);
-
-		//Make a new region if we can't find it
-		if (holder == null && regionY < heightInRegions * 8 && regionY >= 0)
-		{
-			holder = new RegionImplementation(world, regionX, regionY, regionZ, this);
+	public RegionImplementation getRegion(int regionX, int regionY, int regionZ) {
+		try {
+			regionsLock.readLock().lock();
+			int key = (regionX * sizeInRegions + regionZ) * heightInRegions + regionY;
+			return regions.get(key);
+		} finally {
+			regionsLock.readLock().unlock();
 		}
-
-		return holder;
-	}
-
-	/**
-	 * The Region constructor also loads it, and in the case of offline/immediate worlds it does so immediatly ( single-thread ), the issue
-	 * is that while loading the entities it might try to read voxel data, triggering a chunk load operation, itself triggering a region lookup.
-	 * This is an issue because if we add the Region to the hashmap after having executed the constructor we might end up in a infinite loop
-	 * So to avoid that we do this
-	 */
-	protected void regionConstructorCallBack(RegionImplementation region)
-	{
-		int key = (region.getRegionX() * sizeInRegions + region.getRegionZ()) * heightInRegions + region.getRegionY();
-		//RegionLocation key = new RegionLocation(region.regionX, region.regionY, region.regionZ);
-
-		//System.out.println("Built region: "+region);
-		//System.out.println("Key: "+key);
-		
-		//If it's not still saving an older version
-		if (world.ioHandler.isDoneSavingRegion(region))
-			regions.putIfAbsent(key, region);
 	}
 
 	long prout = 0;
@@ -190,7 +163,63 @@ public class HashMapWorldRegionsHolder
 		return c;
 	}
 	
-	public Fence unloadsUselessData()
+	/** Atomically adds an user to a region itself, and creates it if it was previously unused */
+	public RegionImplementation aquireRegion(WorldUser user, int regionX, int regionY, int regionZ) {
+		if (regionY < 0 || regionY > world.getMaxHeight() / 256)
+			return null;
+
+		int key = (regionX * sizeInRegions + regionZ) * heightInRegions + regionY;
+		
+		this.regionsLock.writeLock().lock();
+
+		RegionImplementation region = regions.get(key);
+		boolean fresh = false;
+		if(region == null) {
+			region = new RegionImplementation(world, regionX, regionY, regionZ);
+			fresh = true;
+		}
+		
+		boolean userAdded = region.registerUser(user);
+
+		if(fresh)
+			regions.put(key, region);
+		
+		this.regionsLock.writeLock().unlock();
+
+		return userAdded ? region : null;
+	}
+
+	/** Atomically adds an user to a region's chunk, and creates the region if it was previously unused */
+	public ChunkHolder aquireChunkHolder(WorldUser user, int chunkX, int chunkY, int chunkZ) {
+		if (chunkY < 0 || chunkY > world.getMaxHeight() / 32)
+			return null;
+
+		int regionX = chunkX >> 3;
+		int regionY = chunkY >> 3;
+		int regionZ = chunkZ >> 3;
+		int key = (regionX * sizeInRegions + regionZ) * heightInRegions + regionY;
+		
+		this.regionsLock.writeLock().lock();
+
+		RegionImplementation region = regions.get(key);
+		boolean fresh = false;
+		if(region == null) {
+			region = new RegionImplementation(world, regionX, regionY, regionZ);
+			fresh = true;
+		}
+		
+		ChunkHolder chunkHolder = region.getChunkHolder(chunkX, chunkY, chunkZ);
+		boolean userAdded = chunkHolder.registerUser(user);
+
+		if(fresh)
+			regions.put(key, region);
+		
+		this.regionsLock.writeLock().unlock();
+
+		return userAdded ? chunkHolder : chunkHolder;
+	}
+	
+	/*public Fence unloadsUselessData()
 	{
 		//We might want to wait for a few things
 		CompoundFence compoundFence = new CompoundFence();
@@ -222,45 +251,12 @@ public class HashMapWorldRegionsHolder
 		noConcurrentRegionCreationDestruction.release();
 		
 		return compoundFence;
-	}
-
-	/**
-	 * Atomically grabs or create a region and registers the asked holder
-	 */
-	public ChunkHolder aquireChunkHolder(WorldUser user, int chunkX, int chunkY, int chunkZ)
-	{
-		if(chunkY < 0 || chunkY > world.getMaxHeight() / 32)
-			return null;
-		
-		noConcurrentRegionCreationDestruction.acquireUninterruptibly();
-		
-		ChunkHolder holder = this.getOrCreateRegion(chunkX / 8, chunkY / 8, chunkZ / 8).getChunkHolder(chunkX, chunkY, chunkZ);
-		boolean userAdded = holder.registerUser(user);
-		
-		noConcurrentRegionCreationDestruction.release();
-		
-		return userAdded ? holder : holder;
-	}
-
-	public RegionImplementation aquireRegion(WorldUser user, int regionX, int regionY, int regionZ)
-	{
-		if(regionY < 0 || regionY > world.getMaxHeight() / 256)
-			return null;
-		
-		noConcurrentRegionCreationDestruction.acquireUninterruptibly();
-		
-		RegionImplementation region = this.getOrCreateRegion(regionX, regionY, regionZ);
-		boolean userAdded = region.registerUser(user);
-		
-		noConcurrentRegionCreationDestruction.release();
-		
-		return userAdded ? region : null;
-	}
+	}*/
 	
 	/**
 	 * Callback by the holder's unload() method to remove himself from this list.
 	 */
-	public void removeRegion(RegionImplementation region)
+	void removeRegion(RegionImplementation region)
 	{
 		int key = (region.getRegionX() * sizeInRegions + region.getRegionZ()) * heightInRegions + region.getRegionY();
 		//regions.remove(new RegionLocation(region.getRegionX(), region.getRegionY(), region.getRegionZ()));

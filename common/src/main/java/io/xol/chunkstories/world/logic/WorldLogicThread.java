@@ -98,14 +98,14 @@ public class WorldLogicThread extends Thread implements GameLogic {
 				// System.gc();
 
 				// Compresses pending chunk summaries
-				Iterator<RegionImplementation> loadedChunksHolders = world.getRegionsHolder().getLoadedRegions();
+				Iterator<RegionImplementation> loadedChunksHolders = world.getRegionsHolder().internalGetLoadedRegions();
 				while (loadedChunksHolders.hasNext()) {
 					RegionImplementation region = loadedChunksHolders.next();
 					region.compressChangedChunks();
 				}
 
 				// Delete unused world data
-				world.unloadUselessData();
+				// world.unloadUselessData();
 			}
 			// nanoCheckStep(1, "unload");
 

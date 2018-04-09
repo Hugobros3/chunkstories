@@ -49,8 +49,6 @@ import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.WorldTool;
 import io.xol.chunkstories.world.region.RegionImplementation;
 
-
-
 /**
  * Essential class that holds actual chunk voxel data, entities and voxel
  * component !

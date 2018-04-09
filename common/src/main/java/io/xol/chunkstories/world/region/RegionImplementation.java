@@ -8,6 +8,7 @@ package io.xol.chunkstories.world.region;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -31,22 +32,30 @@ import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
 import io.xol.chunkstories.world.chunk.CompressedData;
 import io.xol.chunkstories.world.chunk.CubicChunk;
-import io.xol.chunkstories.world.io.IOTasks.IOTask;
+import io.xol.chunkstories.world.io.IOTask;
 import io.xol.chunkstories.world.region.format.CSFRegionFile;
 
-
-
-public class RegionImplementation implements Region
-{
+public class RegionImplementation implements Region {
 	public final WorldImplementation world;
 	public final int regionX, regionY, regionZ;
 	public final long uuid;
-	//private final HashMapWorldRegionsHolder worldChunksHolder;
 	
-	protected Collection<CubicChunk> loadedChunks = ConcurrentHashMap.newKeySet();//new LinkedBlockingQueue<CubicChunk>();
+	protected Collection<CubicChunk> loadedChunks = ConcurrentHashMap.newKeySet();
 	
-	private final Set<WorldUser> users = ConcurrentHashMap.newKeySet();//new HashSet<WorldUser>();
-	private final Lock usersLock = new ReentrantLock();
+	/** Contains the users that registered to this region using world.aquireRegion or region.registerUser */
+	public final Set<WorldUser> users = new HashSet<>();
+	
+	/** 
+	 * Keeps track of the number of users of this region. 
+	 * Warning: this includes users of not only the region itself, but ALSO
+	 * the chunks that make up this region. An user registered in 3 chunks for
+	 * instance, will be counted three times. When this counter reaches zero,
+	 * the region is unloaded.
+	 */
+	public int usersCount = 0;
+	
+	/** Lock shared with the chunk holders to ensure consistency for the above fields */
+	public final Lock usersLock = new ReentrantLock();
 	
 	//Only relevant on Master worlds
 	public final CSFRegionFile handler;
@@ -61,19 +70,15 @@ public class RegionImplementation implements Region
 	private ChunkHolderImplementation[] chunkHolders;
 	private AtomicBoolean isDiskDataLoaded = new AtomicBoolean(false);
 
-	//Local entities
-	//private Set<Entity> localEntities = ConcurrentHashMap.newKeySet();
-
 	private static Random random = new Random();
 
-	public RegionImplementation(WorldImplementation world, int regionX, int regionY, int regionZ, HashMapWorldRegionsHolder worldChunksHolder)
+	public RegionImplementation(WorldImplementation world, int regionX, int regionY, int regionZ)
 	{
 		this.world = world;
 		this.regionX = regionX;
 		this.regionY = regionY;
 		this.regionZ = regionZ;
-		//this.worldChunksHolder = worldChunksHolder;
-
+		
 		if(regionX < 0 || regionY < 0 || regionZ < 0)
 			throw new RuntimeException("Regions aren't allowed negative coordinates.");
 		
@@ -87,15 +92,13 @@ public class RegionImplementation implements Region
 		//Unique UUID
 		uuid = random.nextLong();
 
-		worldChunksHolder.regionConstructorCallBack(this);
-
 		//Set the initial cooldown delay
 		unloadCooldown.set(System.currentTimeMillis());
 
 		//Only the WorldMaster has a concept of files
 		if (world instanceof WorldMaster)
 		{
-			handler = CSFRegionFile.determineVersionAndCreate(this);//new CSFRegionFile0x2D(this);
+			handler = CSFRegionFile.determineVersionAndCreate(this);
 			world.ioHandler.requestRegionLoad(this);
 		}
 		else
@@ -132,7 +135,12 @@ public class RegionImplementation implements Region
 	{
 		try {
 			usersLock.lock();
-			return users.add(user);
+			boolean notRedundant = users.add(user);
+			
+			if(notRedundant)
+				usersCount++;
+			
+			return notRedundant;
 		} finally {
 			usersLock.unlock();
 		}
@@ -142,28 +150,26 @@ public class RegionImplementation implements Region
 	/**
 	 * Unregisters user and if there is no remaining user, unloads the chunk
 	 */
-	public boolean unregisterUser(WorldUser user)
-	{
+	public boolean unregisterUser(WorldUser user) {
 		try {
 			usersLock.lock();
-			users.remove(user);
-		
-			if(users.isEmpty())
-			{
-				//unloadChunk();
+			if(users.remove(user))
+				usersCount--;
+
+			if (usersCount == 0) {
+				internalUnload();
 				return true;
 			}
-			
+
 			return false;
 		} finally {
 			usersLock.unlock();
 		}
-		
+
 	}
 
-	public int countUsers()
-	{
-		return users.size();
+	public int countUsers() {
+		return usersCount;
 	}
 	
 	public CompressedData getCompressedData(int chunkX, int chunkY, int chunkZ)
@@ -227,36 +233,34 @@ public class RegionImplementation implements Region
 		isDiskDataLoaded.set(b);
 	}
 
-	public void unload()
+	public void internalUnload()
 	{
+		if(/* should save */ world instanceof WorldMaster) {
+			this.save();
+		}
+		
 		//Before unloading the holder we want to make sure we finish all saving operations
-		if (handler != null)
-			handler.finishSavingOperations();
+		//if (handler != null)
+		//	handler.finishSavingOperations();
 
 		//Set unloaded flag to true so we are not using again an unloaded holder
 		unloadedFlag = true;
-
-		//No need to unload chunks, this is assumed when we unload the holder
-		//unloadAllChunks();
-
-		//world.entitiesLock.unlock();
 
 		//Remove the reference in the world to this
 		this.getWorld().getRegionsHolder().removeRegion(this);
 	}
 
 	@Override
-	public IOTask save()
-	{
+	public IOTask save() {
 		return world.ioHandler.requestRegionSave(this);
 	}
 
-	@Override
+	/*@Override
 	public IOTask unloadAndSave()
 	{
 		unload();
 		return world.ioHandler.requestRegionSave(this);
-	}
+	}*/
 
 	@Override
 	public String toString()
@@ -355,7 +359,7 @@ public class RegionImplementation implements Region
 	/**
 	 * Unloads unused chunks, returns true if all chunks were unloaded
 	 */
-	public boolean unloadsUnusedChunks()
+	/*public boolean unloadsUnusedChunks()
 	{
 		int loadedChunks = 0;
 		
@@ -369,13 +373,13 @@ public class RegionImplementation implements Region
 				}
 		
 		return loadedChunks == 0;
-	}
+	}*/
 
-	@Override
+	//@Override
 	/**
 	 * Returns true if no one uses the region or one of it's chunk holders
 	 */
-	public boolean isUnused()
+	/*public boolean isUnused()
 	{
 		int usedChunks = 0;
 		
@@ -392,5 +396,5 @@ public class RegionImplementation implements Region
 		//	System.out.println(usedChunks + " vs " + this.countUsers());
 		
 		return usedChunks == 0 && this.countUsers() == 0;
-	}
+	}*/
 }

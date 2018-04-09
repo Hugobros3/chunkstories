@@ -24,7 +24,7 @@ public class WorldChunksIterator implements ChunksIterator
 
 	public WorldChunksIterator(WorldImplementation world)
 	{
-		regionsIterator = world.getRegionsHolder().getLoadedRegions();
+		regionsIterator = world.getRegionsHolder().internalGetLoadedRegions();
 	}
 
 	@Override

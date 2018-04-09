@@ -100,7 +100,7 @@ public class IOTasksMultiplayerClient extends IOTasks
 			ib.get(heights, 0, 256 * 256);
 			ib.get(ids, 0, 256 * 256);
 			
-			summary.setSummaryData(heights, ids);
+			summary.setData(heights, ids);
 			
 			return true;
 		}

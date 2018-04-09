@@ -67,18 +67,18 @@ public class IOTasksImmediate extends IOTasks {
 	}
 
 	@Override
-	public IOTaskLoadSummary requestHeightmapLoad(HeightmapImplementation summary)
+	public IOTaskLoadHeightmap requestHeightmapLoad(HeightmapImplementation summary)
 	{
-		IOTaskLoadSummary task = new IOTaskLoadSummary(summary);
+		IOTaskLoadHeightmap task = new IOTaskLoadHeightmap(summary);
 		runTask(task);
 		
 		return task;
 	}
 
 	@Override
-	public IOTaskSaveSummary requestHeightmapSave(HeightmapImplementation summary)
+	public IOTaskSaveHeightmap requestHeightmapSave(HeightmapImplementation summary)
 	{
-		IOTaskSaveSummary task = new IOTaskSaveSummary(summary);
+		IOTaskSaveHeightmap task = new IOTaskSaveHeightmap(summary);
 		runTask(task);
 		
 		return task;

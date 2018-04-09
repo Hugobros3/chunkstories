@@ -34,7 +34,7 @@ import io.xol.chunkstories.net.packets.PacketHeightmap;
 import io.xol.chunkstories.util.concurrency.SimpleFence;
 import io.xol.chunkstories.util.concurrency.TrivialFence;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.chunkstories.world.io.IOTasks.IOTask;
+import io.xol.chunkstories.world.io.IOTask;
 import net.jpountz.lz4.LZ4Compressor;
 import net.jpountz.lz4.LZ4Factory;
 import net.jpountz.lz4.LZ4FastDecompressor;
@@ -434,7 +434,7 @@ public class HeightmapImplementation implements Heightmap
 		return ids;
 	}
 	
-	public void setSummaryData(int[] heightData, int[] voxelData)
+	public void setData(int[] heightData, int[] voxelData)
 	{
 		//texturesUpToDate.set(false);
 		

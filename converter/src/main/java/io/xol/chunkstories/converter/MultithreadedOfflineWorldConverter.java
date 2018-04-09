@@ -121,7 +121,7 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 					waitForTheBoys.traverse();
 					
 					workers.dropAll();
-					csWorld.unloadUselessData().traverse();
+					//csWorld.unloadUselessData().traverse();
 					
 					//Close region
 					if (minecraftRegion != null)
@@ -148,7 +148,7 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 			e.printStackTrace();
 		}
 
-		csWorld.unloadUselessData();
+		//csWorld.unloadUselessData();
 	}
 
 	protected void stepTwoCreateSummaryData(WorldTool csWorld) {
@@ -195,17 +195,16 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 					//Drop all unsued chunk data
 					workers.dropAll();
 					
-					csWorld.unloadUselessData().traverse();
+					//csWorld.unloadUselessData().traverse();
 				}
 			}
 		}
 		compoundFence.traverse();
-
-		//Drop all unsued chunk data
-		workers.dropAll();
 		
 		verbose("Saving unused chunk data...");
-		csWorld.unloadUselessData().traverse();
+		//Drop all unsued chunk data
+		workers.dropAll();
+		//csWorld.unloadUselessData().traverse();
 		verbose("Done.");
 	}
 
@@ -323,7 +322,7 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 						registeredCS_Summaries.clear();
 						registeredCS_Holders.clear();
 
-						csWorld.unloadUselessData().traverse();
+						//csWorld.unloadUselessData().traverse();
 						// verbose("Done.");
 					}
 				}
@@ -345,7 +344,7 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 		registeredCS_Summaries.clear();
 		registeredCS_Holders.clear();
 
-		csWorld.unloadUselessData().traverse();
+		//csWorld.unloadUselessData().traverse();
 		
 		/*csWorld.saveEverything();
 		for (ChunkHolder holder : registeredCS_Holders)

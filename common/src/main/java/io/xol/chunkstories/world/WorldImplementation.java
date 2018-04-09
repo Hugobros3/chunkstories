@@ -976,14 +976,14 @@ public abstract class WorldImplementation implements World
 	}
 
 	//TODO remove completely ?
-	public Fence unloadUselessData()
+	/*public Fence unloadUselessData()
 	{
 		Fence onlyThisHasAFence = this.getRegionsHolder().unloadsUselessData();
 		//this.getRegionsSummariesHolder().unloadsUselessData();
 		
 		return onlyThisHasAFence;
 		//return new TrivialFence();
-	}
+	}*/
 
 	private static final Logger logger = LoggerFactory.getLogger("world");
 	public Logger logger() {
