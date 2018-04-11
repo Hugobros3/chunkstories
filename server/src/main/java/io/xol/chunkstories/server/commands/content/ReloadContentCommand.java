@@ -7,7 +7,6 @@
 package io.xol.chunkstories.server.commands.content;
 
 import io.xol.chunkstories.api.GameContext;
-import io.xol.chunkstories.api.client.ClientContent.ShadersLibrary;
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;

@@ -1,3 +1,9 @@
+//
+// This file is a part of the Chunk Stories Implementation codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.chunkstories.world.io;
 
 import java.io.FileInputStream;
@@ -10,7 +16,6 @@ import org.slf4j.LoggerFactory;
 
 import io.xol.chunkstories.api.workers.TaskExecutor;
 import io.xol.chunkstories.api.world.heightmap.Heightmap;
-import io.xol.chunkstories.util.concurrency.CompoundFence;
 import io.xol.chunkstories.world.summary.HeightmapImplementation;
 import net.jpountz.lz4.LZ4Factory;
 import net.jpountz.lz4.LZ4FastDecompressor;

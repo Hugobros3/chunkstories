@@ -12,10 +12,8 @@ import java.io.IOException;
 import io.xol.chunkstories.api.voxel.materials.VoxelMaterial;
 import io.xol.chunkstories.content.GenericNamedConfigurable;
 
-public class VoxelMaterialImplementation extends GenericNamedConfigurable implements VoxelMaterial
-{	
-	public VoxelMaterialImplementation(String name, BufferedReader reader) throws IOException
-	{
+public class VoxelMaterialImplementation extends GenericNamedConfigurable implements VoxelMaterial {
+	public VoxelMaterialImplementation(String name, BufferedReader reader) throws IOException {
 		super(name, reader);
 	}
 }

@@ -107,7 +107,7 @@ public class LanguageSelectionScreen extends Layer
 				break;
 
 			
-			int maxWidth = renderingContext.getWindow().getWidth() - 64 * 2;
+			//int maxWidth = renderingContext.getWindow().getWidth() - 64 * 2;
 			langButton.setWidth(256);// maxWidth / scale);
 			langButton.setPosition(renderingContext.getWindow().getWidth() / 2 - langButton.getWidth() / 2, posY);
 			langButton.render(renderingContext);

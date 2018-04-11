@@ -98,7 +98,6 @@ public class ServerSelection extends Layer implements HttpRequester
 		backOption.render(renderer);
 
 		updateServers();
-		int s = Client.getInstance().getGameWindow().getGuiScale();
 		
 		float offsetForButtons = backOption.getPositionY() + backOption.getHeight() + 8 * scale;
 		float offsetForHeaderText = 32 * scale + ipForm.getHeight();

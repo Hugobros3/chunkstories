@@ -11,11 +11,9 @@ import static org.lwjgl.system.MemoryUtil.memCopy;
 import static org.lwjgl.system.MemoryUtil.memUTF8;
 
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 
 import org.joml.Matrix4f;
 import org.lwjgl.assimp.AIBone;
-import org.lwjgl.assimp.AIFace;
 import org.lwjgl.assimp.AIFile;
 import org.lwjgl.assimp.AIFileIO;
 import org.lwjgl.assimp.AIMaterial;
@@ -31,6 +29,7 @@ import io.xol.chunkstories.api.exceptions.content.MeshLoadException;
 import io.xol.chunkstories.api.mesh.MeshLibrary;
 import io.xol.chunkstories.content.AssetToByteBufferHelper;
 
+/** Experimental loader test for LWJGL3's assimp bindings (unused) */
 public class NativeAssimpMesh {
 	protected final Asset mainAsset;
 	protected final MeshLibrary store;
@@ -123,8 +122,8 @@ public class NativeAssimpMesh {
 				System.out.println(aiMesh.mNumVertices());
 				System.out.println(aiMesh.mNumFaces());
 				
-				AIFace.Buffer buf = aiMesh.mFaces();
-				/*for(int j = 0; j < aiMesh.mNumFaces(); j++) {
+				/*AIFace.Buffer buf = aiMesh.mFaces();
+				for(int j = 0; j < aiMesh.mNumFaces(); j++) {
 					IntBuffer indices = buf.get(j).mIndices();
 					for(int k = 0; k < buf.get(j).mNumIndices(); k++) {
 						System.out.println(indices.get(k));
@@ -164,7 +163,6 @@ public class NativeAssimpMesh {
 				
 				System.out.println(propertyType + " " + semantic + " " + property.mKey().dataString());//+": "+property.mData().toString());
 				
-				String lol = Assimp._AI_MATKEY_TEXTURE_BASE;
 				/*switch(propertyType) {
 				case Assimp.AI_BOOL:
 					boolean boolValue = property.mData().get(0) == 0 ? false : true;

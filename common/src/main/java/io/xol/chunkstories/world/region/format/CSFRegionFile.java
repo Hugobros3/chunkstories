@@ -99,7 +99,7 @@ public abstract class CSFRegionFile implements OfflineSerializedData {
 		
 		System.out.println(region.file);
 		System.out.println(region.file.exists());
-		Thread.currentThread().dumpStack();
+		Thread.dumpStack();
 		System.exit(-1);
 		
 		return new CSFRegionFile0x2C(region, region.file);

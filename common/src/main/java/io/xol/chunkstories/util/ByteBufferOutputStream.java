@@ -4,7 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.chunkstories.world.chunk;
+package io.xol.chunkstories.util;
 
 import java.io.IOException;
 import java.io.OutputStream;

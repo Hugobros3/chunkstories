@@ -27,7 +27,6 @@ import io.xol.chunkstories.mesh.MeshStore;
 import io.xol.chunkstories.net.PacketsStore;
 import io.xol.chunkstories.particle.ParticlesTypesStore;
 import io.xol.chunkstories.voxel.VoxelsStore;
-import io.xol.chunkstories.voxel.material.VoxelMaterialsStore;
 import io.xol.chunkstories.world.generator.WorldGeneratorsStore;
 
 public class GameContentStore implements Content

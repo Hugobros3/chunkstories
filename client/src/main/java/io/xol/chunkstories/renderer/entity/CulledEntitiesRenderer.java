@@ -20,7 +20,6 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
-import io.xol.chunkstories.api.rendering.shader.Shader;
 import io.xol.chunkstories.api.rendering.world.WorldRenderer;
 import io.xol.chunkstories.api.rendering.world.WorldRenderer.EntitiesRenderer;
 import io.xol.chunkstories.api.world.World;

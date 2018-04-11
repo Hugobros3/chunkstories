@@ -1,10 +1,14 @@
+//
+// This file is a part of the Chunk Stories Implementation codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.chunkstories.world.io;
 
 import io.xol.chunkstories.api.workers.TaskExecutor;
-import io.xol.chunkstories.api.world.region.Region;
 import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
 import io.xol.chunkstories.world.chunk.CompressedData;
-import io.xol.chunkstories.world.chunk.CubicChunk;
 
 public class IOTaskLoadChunk extends IOTask {
 	ChunkHolderImplementation chunkSlot;
@@ -39,22 +43,17 @@ public class IOTaskLoadChunk extends IOTask {
 			return false;
 
 		CompressedData compressedData = chunkSlot.getCompressedData();
-		//Not yet generated chunk; call the generator
 		if (compressedData == null) {
 			/*Chunk chunk = */chunkSlot.createChunk();
+			//Don't generate the chunks here, actually.
 			//world.getGenerator().generateChunk(chunk);
 		}
 		//Normal voxel data is present, uncompressed it then load it to the chunk
 		else {
-			CubicChunk chunk = chunkSlot.createChunk(compressedData);
+			/*CubicChunk chunk = */chunkSlot.createChunk(compressedData);
 			//Postprocess ?
 		}
 
-		//chunkSlot.setChunk(result);
-		/*synchronized (chunkSlot)
-		{
-			chunkSlot.notifyAll();
-		}*/
 		return true;
 	}
 

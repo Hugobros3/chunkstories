@@ -1,15 +1,20 @@
+//
+// This file is a part of the Chunk Stories Implementation codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.chunkstories.mesh;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 import assimp.IOStream;
 import assimp.IOSystem;
 import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.content.Content;
 
+/** Helper class to translate chunkstories virtual FS into something assimp understands */
 public class AssetIOSystem implements IOSystem {
 
 	final Content content;

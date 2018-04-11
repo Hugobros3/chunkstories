@@ -21,7 +21,6 @@ import io.xol.chunkstories.api.rendering.vertex.Primitive;
 import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
 import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
 import io.xol.chunkstories.api.util.ColorsTools;
-import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.renderer.OpenGLRenderingContext;
 import io.xol.chunkstories.renderer.opengl.texture.Texture2DGL;
 import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;

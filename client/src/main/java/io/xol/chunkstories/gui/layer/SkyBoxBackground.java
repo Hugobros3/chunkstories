@@ -71,7 +71,7 @@ public class SkyBoxBackground extends Layer {
 		camera.setRotationY(-45);
 	}
 
-	private String getRandomSplashScreen()
+	public String getRandomSplashScreen()
 	{
 		List<String> splashes = new ArrayList<String>();
 		try
@@ -91,7 +91,7 @@ public class SkyBoxBackground extends Layer {
 			Random rnd = new Random();
 			return splashes.get(rnd.nextInt(splashes.size()));
 		}
-		return "en vrai j'ai jamais trop jouÃ© Ã  pokÃ©mon";
+		return "en vrai j'ai jamais trop joué à pokémon";
 	}
 
 	@Override

@@ -1,3 +1,9 @@
+//
+// This file is a part of the Chunk Stories Implementation codebase
+// Check out README.md for more information
+// Website: http://chunkstories.xyz
+//
+
 package io.xol.chunkstories.mesh;
 
 import java.nio.ByteBuffer;
@@ -9,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.joml.Matrix4f;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +27,6 @@ import assimp.AiMesh;
 import assimp.AiScene;
 import assimp.AiVertexWeight;
 import assimp.Importer;
-import glm_.mat4x4.Mat4;
 import glm_.vec3.Vec3;
 import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.exceptions.content.MeshLoadException;
@@ -263,7 +267,7 @@ public class AssimpMeshLoader {
 		return bb;
 	}
 
-	private Matrix4f tomat4(Mat4 mat4) {
+	/*private Matrix4f tomat4(Mat4 mat4) {
 		Matrix4f mat = new Matrix4f();
 		mat.m00(mat4.v00());
 		mat.m01(mat4.v01());
@@ -287,5 +291,5 @@ public class AssimpMeshLoader {
 		
 		mat.transpose();
 		return mat;
-	}
+	}*/
 }	
