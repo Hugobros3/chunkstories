@@ -93,7 +93,27 @@ public class WorldEntitiesHolder implements Iterable<Entity>
 		//Fast path #1: it's all in one chunk!
 		if(csx == cex && csy == cey && csz == cez) {
 			Chunk chunk = world.getChunk(csx, csy, csz);
-			return new DistanceCheckedIterator(chunk.getEntitiesWithinChunk(), box);
+			if(chunk != null)
+				return new DistanceCheckedIterator(chunk.getEntitiesWithinChunk(), box);
+			else
+				return new NearEntitiesIterator() {
+
+					@Override
+					public boolean hasNext() {
+						return false;
+					}
+
+					@Override
+					public Entity next() {
+						throw new UnsupportedOperationException();
+					}
+
+					@Override
+					public double distance() {
+						return -1;
+					}
+				
+			};
 		}
 		
 		int rsx = csx >> 3;
