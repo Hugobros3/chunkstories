@@ -10,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.joml.Vector3f;
@@ -31,9 +32,9 @@ public class VoxelModelLoader {
 
 	private final static Logger logger = LoggerFactory.getLogger("content.voxels.models");
 	
-	public CustomVoxelModel readBlockModel(Asset asset)
+	public Collection<CustomVoxelModel> readBlockModel(Asset asset)
 	{
-		CustomVoxelModel voxelModel = null;
+		List<CustomVoxelModel> list = new ArrayList<>();
 		
 		logger().debug("Loading custom models file : " + asset);
 		try
@@ -142,7 +143,7 @@ public class VoxelModelLoader {
 								culling[i] = cullingTemp.get(i);
 							}
 
-							voxelModel = new CustomVoxelModel(store, voxelModelName, vertices, texCoords, texturesNames, texturesOffsets, normals, extras, culling, jitterX, jitterY, jitterZ);
+							list.add(new CustomVoxelModel(store, voxelModelName, vertices, texCoords, texturesNames, texturesOffsets, normals, extras, culling, jitterX, jitterY, jitterZ));
 							//models.put(voxelModelName, voxelModel);
 
 							//Resets data accumulators
@@ -295,7 +296,7 @@ public class VoxelModelLoader {
 			e.printStackTrace();
 		}
 		
-		return voxelModel;
+		return list;
 	}
 
 	public Logger logger() {

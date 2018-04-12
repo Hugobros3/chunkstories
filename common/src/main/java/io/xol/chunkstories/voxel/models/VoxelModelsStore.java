@@ -42,9 +42,7 @@ public class VoxelModelsStore implements Content.Voxels.VoxelModels {
 			AssetHierarchy entry = allFiles.next();
 			if (entry.getName().startsWith("./voxels/blockmodels/") && entry.getName().endsWith(".model")) {
 				Asset f = entry.topInstance();
-				VoxelModel model = loader.readBlockModel(f);
-				if(model != null)
-					models.put(model.getName(), model);
+				loader.readBlockModel(f).forEach(model -> models.put(model.getName(), model));
 			}
 		}
 
