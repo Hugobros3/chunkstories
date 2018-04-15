@@ -42,6 +42,18 @@ public class Camera implements CameraInterface
 	float lastPX = -1f;
 	float lastPY = -1f;
 
+	public Camera() {
+
+		// cache that
+		for (int i = 0; i < 2; i++) {
+			for (int j = 0; j < 2; j++) {
+				for (int k = 0; k < 2; k++) {
+					corners[i * 4 + j * 2 + k] = new Vector3f();
+				}
+			}
+		}
+	}
+	
 	//Matrices
 	private Matrix4f projectionMatrix4f = new Matrix4f();
 	private Matrix4f projectionMatrix4fInverted = new Matrix4f();
@@ -298,15 +310,6 @@ public class Camera implements CameraInterface
 		cameraPlanes[3] = new CollisionPlane(nearBottomRight, nearTopRight, farBottomRight);
 		cameraPlanes[4] = new CollisionPlane(nearTopLeft, nearTopRight, nearBottomRight);
 		cameraPlanes[5] = new CollisionPlane(farTopRight, farTopLeft, farBottomLeft);
-
-		// cache that
-		for (int i = 0; i < 2; i++) {
-			for (int j = 0; j < 2; j++) {
-				for (int k = 0; k < 2; k++) {
-					corners[i * 4 + j * 2 + k] = new Vector3f();
-				}
-			}
-		}
 	}
 
 	// Convinience methods, why wouldn't java allow operator overloading is beyond
