@@ -46,6 +46,8 @@ _mappings
 18 leaves
 18:1 pineleaves
 18:2 birchleaves
+18:5 pineleaves
+18:6 birchleaves
 #19 sponge
 20 glass
 #Lapis stuff
