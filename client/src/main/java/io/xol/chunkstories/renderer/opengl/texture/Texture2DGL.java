@@ -304,12 +304,13 @@ public abstract class Texture2DGL extends TextureGL implements RenderTarget, Tex
 		int height = this.height;
 
 		int level = 0;
-		while (width != 1 && height != 1) {
-			if (width == 0 || height == 0)
-				break;
+		while (true) {
 			width /= 2;
 			height /= 2;
 
+			if (width == 0 || height == 0)
+				break;
+			
 			level++;
 		}
 

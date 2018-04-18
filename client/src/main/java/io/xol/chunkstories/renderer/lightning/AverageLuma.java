@@ -65,7 +65,6 @@ public class AverageLuma
 				frameLumaDownloadDelay--;
 			else
 			{
-
 				ByteBuffer minMipmapBuffer = illuminationDownloadInProgress.readPBO();
 				if(minMipmapBuffer != null) {
 				
@@ -77,7 +76,7 @@ public class AverageLuma
 						averageColorForAllFrame.add(minMipmapBuffer.getFloat(), minMipmapBuffer.getFloat(), minMipmapBuffer.getFloat());
 	
 					averageColorForAllFrame.mul(1.0f / downloadSize);
-					//System.out.println(averageColorForAllFrame.length());
+					//System.out.println(mipWidth + ":" + mipHeight);
 				}
 				//Throw that out
 				illuminationDownloadInProgress = null;
