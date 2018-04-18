@@ -70,13 +70,13 @@ import io.xol.chunkstories.entity.SerializedEntityFile;
 import io.xol.chunkstories.util.concurrency.CompoundFence;
 import io.xol.chunkstories.util.config.OldStyleConfigFile;
 import io.xol.chunkstories.world.chunk.CubicChunk;
+import io.xol.chunkstories.world.heightmap.WorldHeightmapsImplementation;
 import io.xol.chunkstories.world.io.IOTasks;
 import io.xol.chunkstories.world.iterators.AABBVoxelIterator;
 import io.xol.chunkstories.world.iterators.WorldChunksIterator;
 import io.xol.chunkstories.world.logic.WorldLogicThread;
 import io.xol.chunkstories.world.region.HashMapWorldRegionsHolder;
 import io.xol.chunkstories.world.region.RegionImplementation;
-import io.xol.chunkstories.world.summary.WorldHeightmapsImplementation;
 
 
 

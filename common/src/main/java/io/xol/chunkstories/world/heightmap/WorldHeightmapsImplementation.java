@@ -4,7 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.chunkstories.world.summary;
+package io.xol.chunkstories.world.heightmap;
 
 import java.util.Collection;
 import java.util.Map;

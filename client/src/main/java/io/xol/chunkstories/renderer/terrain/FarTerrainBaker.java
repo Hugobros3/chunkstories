@@ -17,7 +17,7 @@ import io.xol.chunkstories.renderer.opengl.vbo.VertexBufferGL;
 import io.xol.chunkstories.renderer.terrain.HeightmapMesher.Surface;
 import io.xol.chunkstories.world.WorldClientCommon;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.chunkstories.world.summary.HeightmapImplementation;
+import io.xol.chunkstories.world.heightmap.HeightmapImplementation;
 
 public class FarTerrainBaker
 {

@@ -19,8 +19,8 @@ import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.workers.TaskExecutor;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
+import io.xol.chunkstories.world.heightmap.HeightmapImplementation;
 import io.xol.chunkstories.world.region.RegionImplementation;
-import io.xol.chunkstories.world.summary.HeightmapImplementation;
 
 /**
  * This thread does I/O work in queue. Extended by IOTaskMultiplayerClient and IOTaskMultiplayerServer for the client/server model.

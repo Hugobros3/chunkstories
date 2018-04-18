@@ -29,7 +29,7 @@ import io.xol.chunkstories.api.world.heightmap.Heightmap;
 import io.xol.chunkstories.renderer.opengl.texture.ArrayTextureGL;
 import io.xol.chunkstories.voxel.VoxelTextureAtlased;
 import io.xol.chunkstories.world.cell.ScratchCell;
-import io.xol.chunkstories.world.summary.HeightmapImplementation;
+import io.xol.chunkstories.world.heightmap.HeightmapImplementation;
 
 public class HeightmapArrayTexture implements SummariesTexturesHolder {
 	final ArrayTextureGL heights;

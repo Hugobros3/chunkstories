@@ -4,7 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.chunkstories.world.summary;
+package io.xol.chunkstories.world.heightmap;
 
 import java.io.File;
 import java.util.HashSet;
@@ -39,8 +39,6 @@ import io.xol.chunkstories.world.io.IOTask;
 import net.jpountz.lz4.LZ4Compressor;
 import net.jpountz.lz4.LZ4Factory;
 import net.jpountz.lz4.LZ4FastDecompressor;
-
-
 
 /**
  * A region summary contains metadata about an 8x8 chunks ( or 256x256 blocks ) vertical slice of the world

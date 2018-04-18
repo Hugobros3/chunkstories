@@ -21,8 +21,8 @@ import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
 import io.xol.chunkstories.net.packets.PacketHeightmap;
 import io.xol.chunkstories.world.WorldClientRemote;
 import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
+import io.xol.chunkstories.world.heightmap.HeightmapImplementation;
 import io.xol.chunkstories.world.region.RegionImplementation;
-import io.xol.chunkstories.world.summary.HeightmapImplementation;
 
 
 

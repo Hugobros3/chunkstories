@@ -41,7 +41,7 @@ import io.xol.chunkstories.renderer.terrain.FarTerrainBaker.RegionMesh;
 import io.xol.chunkstories.renderer.world.WorldRendererImplementation;
 import io.xol.chunkstories.voxel.VoxelTextureAtlased;
 import io.xol.chunkstories.world.WorldClientCommon;
-import io.xol.chunkstories.world.summary.HeightmapImplementation;
+import io.xol.chunkstories.world.heightmap.HeightmapImplementation;
 
 
 

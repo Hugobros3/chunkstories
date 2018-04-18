@@ -10,7 +10,7 @@ import java.io.FileOutputStream;
 import java.nio.ByteBuffer;
 
 import io.xol.chunkstories.api.workers.TaskExecutor;
-import io.xol.chunkstories.world.summary.HeightmapImplementation;
+import io.xol.chunkstories.world.heightmap.HeightmapImplementation;
 
 public class IOTaskSaveHeightmap extends IOTask {
 	HeightmapImplementation heightmap;

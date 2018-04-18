@@ -17,7 +17,7 @@ import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketSendingContext;
 import io.xol.chunkstories.api.net.PacketWorldStreaming;
 import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.world.summary.HeightmapImplementation;
+import io.xol.chunkstories.world.heightmap.HeightmapImplementation;
 
 public class PacketHeightmap extends PacketWorldStreaming
 {

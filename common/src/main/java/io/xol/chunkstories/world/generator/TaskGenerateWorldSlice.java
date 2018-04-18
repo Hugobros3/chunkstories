@@ -11,7 +11,7 @@ import io.xol.chunkstories.api.workers.TaskExecutor;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldUser;
 import io.xol.chunkstories.api.world.heightmap.Heightmap;
-import io.xol.chunkstories.world.summary.HeightmapImplementation;
+import io.xol.chunkstories.world.heightmap.HeightmapImplementation;
 
 /** Generates a world 'slice' (the voxel cell data represented by a heightmap) using smaller tasks */
 public class TaskGenerateWorldSlice extends Task implements WorldUser {

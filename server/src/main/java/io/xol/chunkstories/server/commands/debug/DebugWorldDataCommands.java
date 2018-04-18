@@ -14,7 +14,7 @@ import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.heightmap.Heightmap;
 import io.xol.chunkstories.server.commands.ServerCommandBasic;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.chunkstories.world.summary.HeightmapImplementation;
+import io.xol.chunkstories.world.heightmap.HeightmapImplementation;
 
 public class DebugWorldDataCommands extends ServerCommandBasic {
 

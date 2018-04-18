@@ -32,7 +32,7 @@ import io.xol.chunkstories.client.util.MemFreeByteBuffer;
 import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;
 import io.xol.chunkstories.renderer.opengl.vbo.VertexBufferGL;
 import io.xol.chunkstories.renderer.world.WorldRendererImplementation;
-import io.xol.chunkstories.world.summary.HeightmapImplementation;
+import io.xol.chunkstories.world.heightmap.HeightmapImplementation;
 
 /** Idea: stop with the idea of building meshes on the CPU. Just use pre-computed grids or a geometry shader and a big array texture with all the summaries
  * to draw this shit insanely fast.

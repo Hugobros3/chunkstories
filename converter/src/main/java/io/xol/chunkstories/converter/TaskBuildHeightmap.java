@@ -15,7 +15,7 @@ import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.converter.ConverterWorkers.ConverterWorkerThread;
 import io.xol.chunkstories.util.concurrency.CompoundFence;
 import io.xol.chunkstories.world.WorldTool;
-import io.xol.chunkstories.world.summary.HeightmapImplementation;
+import io.xol.chunkstories.world.heightmap.HeightmapImplementation;
 
 public class TaskBuildHeightmap extends Task {
 
