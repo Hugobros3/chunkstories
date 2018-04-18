@@ -9,6 +9,7 @@ package io.xol.chunkstories.world.generator;
 import io.xol.chunkstories.api.workers.Task;
 import io.xol.chunkstories.api.workers.TaskExecutor;
 import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldUser;
 import io.xol.chunkstories.api.world.heightmap.Heightmap;
 import io.xol.chunkstories.world.heightmap.HeightmapImplementation;
@@ -38,7 +39,16 @@ public class TaskGenerateWorldSlice extends Task implements WorldUser {
 			return false; //wait until that is done
 		
 		if(relative_chunkX == 8) {
+			if(!isWorkDone()) //not QUITE done yet!
+				return false;
+			
 			((HeightmapImplementation) this.heightmap).recomputeMetadata();
+			
+			//Once the region & it's heightmap has been generated, tell the game client to rebuild them
+			if(world instanceof WorldClient) {
+				((WorldClient)world).getWorldRenderer().getSummariesTexturesHolder().warnDataHasArrived(heightmap.getRegionX(), heightmap.getRegionZ());
+			}
+			
 			this.heightmap.save().traverse();
 			this.heightmap.unregisterUser(this);
 			return true;
