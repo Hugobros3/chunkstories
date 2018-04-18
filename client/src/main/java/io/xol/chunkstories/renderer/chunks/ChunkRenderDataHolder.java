@@ -344,4 +344,9 @@ public class ChunkRenderDataHolder implements ChunkMeshUpdater
 	public int pendingUpdates() {
 		return this.unbakedUpdates.get();
 	}
+
+	@Override
+	public void incrementPendingUpdates() {
+		unbakedUpdates.incrementAndGet();
+	}
 }

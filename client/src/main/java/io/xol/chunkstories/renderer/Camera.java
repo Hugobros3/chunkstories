@@ -27,6 +27,9 @@ public class Camera implements CameraInterface
 {
 	//Viewport size
 	private int viewportWidth, viewportHeight;
+
+	Vector3f corners[] = new Vector3f[8];
+	CollisionPlane[] cameraPlanes = new CollisionPlane[6];
 	
 	//Camera rotations
 	private float rotationX = 0.0f;
@@ -52,6 +55,9 @@ public class Camera implements CameraInterface
 				}
 			}
 		}
+
+		for (int i = 0; i < 6; i++)
+			cameraPlanes[i] = new CollisionPlane(up, up, up);
 	}
 	
 	//Matrices
@@ -238,8 +244,6 @@ public class Camera implements CameraInterface
 		translateCamera();
 		alUpdate();
 	}
-
-	CollisionPlane[] cameraPlanes = new CollisionPlane[6];
 	
 	private void computeFrustrumPlanes()
 	{
@@ -331,8 +335,6 @@ public class Camera implements CameraInterface
 		out.mul(scale);
 		return out;
 	}
-
-	Vector3f corners[] = new Vector3f[8];
 	
 	@Override
 	public boolean isBoxInFrustrum(Vector3fc center, Vector3fc dimensions)

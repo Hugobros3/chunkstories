@@ -1251,4 +1251,9 @@ public class ChunkLightBaker implements ChunkLightUpdater {
 		if (task != null)
 			task.cancel();
 	}
+
+	@Override
+	public void incrementPendingUpdates() {
+		unbakedUpdates.incrementAndGet();
+	}
 }

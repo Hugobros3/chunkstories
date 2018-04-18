@@ -658,4 +658,9 @@ public class CubicChunk implements Chunk {
 	public ChunkLightUpdater lightBaker() {
 		return lightBaker;
 	}
+
+	@Override
+	public ChunkOcclusionManager occlusion() {
+		return occlusion;
+	}
 }

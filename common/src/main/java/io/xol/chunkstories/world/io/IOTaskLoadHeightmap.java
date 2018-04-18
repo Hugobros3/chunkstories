@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import io.xol.chunkstories.api.workers.TaskExecutor;
 import io.xol.chunkstories.api.world.heightmap.Heightmap;
+import io.xol.chunkstories.world.generator.TaskGenerateWorldThinSlice;
 import io.xol.chunkstories.world.summary.HeightmapImplementation;
 import net.jpountz.lz4.LZ4Factory;
 import net.jpountz.lz4.LZ4FastDecompressor;

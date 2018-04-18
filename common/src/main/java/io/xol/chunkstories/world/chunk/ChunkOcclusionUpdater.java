@@ -12,9 +12,10 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.workers.Task;
+import io.xol.chunkstories.api.world.chunk.Chunk.ChunkOcclusionManager;
 import io.xol.chunkstories.util.concurrency.SimpleLock;
 
-public class ChunkOcclusionUpdater {
+public class ChunkOcclusionUpdater implements ChunkOcclusionManager {
 
 	final CubicChunk chunk;
 	
@@ -71,5 +72,10 @@ public class ChunkOcclusionUpdater {
 		Task task = this.task;
 		if(task != null)
 			task.cancel();
+	}
+
+	@Override
+	public void incrementPendingUpdates() {
+		unbakedUpdates.incrementAndGet();
 	}
 }
