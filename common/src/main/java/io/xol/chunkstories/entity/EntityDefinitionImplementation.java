@@ -19,18 +19,18 @@ import io.xol.chunkstories.api.exceptions.content.IllegalEntityDeclarationExcept
 import io.xol.chunkstories.content.GenericNamedConfigurable;
 
 public class EntityDefinitionImplementation extends GenericNamedConfigurable implements EntityDefinition {
-	
-	//final String name;
-	//final String className;
 	final EntityDefinitionsStore store;
-	
 	final Constructor<? extends Entity> constructor;
+	
+	final boolean collidesWithEntities;
 
 	@SuppressWarnings("unchecked")
 	public EntityDefinitionImplementation(EntityDefinitionsStore store, String name, BufferedReader reader) throws IllegalEntityDeclarationException, IOException
 	{
 		super(name, reader);
 		this.store = store;
+		
+		collidesWithEntities = this.resolveProperty("collidesWithEntities", "false").equals("true");
 		
 		String className = this.resolveProperty("class", null);
 		if(className == null)
@@ -91,5 +91,10 @@ public class EntityDefinitionImplementation extends GenericNamedConfigurable imp
 	@Override
 	public EntityDefinitions store() {
 		return store;
+	}
+
+	@Override
+	public boolean collidesWithEntities() {
+		return collidesWithEntities;
 	}
 }

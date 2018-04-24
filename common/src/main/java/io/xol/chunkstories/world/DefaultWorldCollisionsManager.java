@@ -284,7 +284,7 @@ public class DefaultWorldCollisionsManager implements WorldCollisionsManager
 					}
 					
 					if(collideWithEntities)
-						world.getEntitiesInBox(entitiesCenter, entitiesRadius).forEach(e -> { if(e != entity) addAllSafeAndTranslate(boxes, e.getCollisionBoxes(), e.getLocation()); });
+						world.getEntitiesInBox(entitiesCenter, entitiesRadius).forEach(e -> { if(e != entity && e.getDefinition().collidesWithEntities()) addAllSafeAndTranslate(boxes, e.getCollisionBoxes(), e.getLocation()); });
 					
 					for (CollisionBox box : boxes) {
 						if (checkerZ.collidesWith(box)) {
@@ -319,7 +319,7 @@ public class DefaultWorldCollisionsManager implements WorldCollisionsManager
 					}
 					
 					if(collideWithEntities)
-						world.getEntitiesInBox(entitiesCenter, entitiesRadius).forEach(e -> { if(e != entity) { addAllSafeAndTranslate(boxes, e.getCollisionBoxes(), e.getLocation());} });
+						world.getEntitiesInBox(entitiesCenter, entitiesRadius).forEach(e -> { if(e != entity && e.getDefinition().collidesWithEntities() ) { addAllSafeAndTranslate(boxes, e.getCollisionBoxes(), e.getLocation());} });
 					
 					for (CollisionBox box : boxes) {
 						if (checkerX.collidesWith(box)) {
@@ -357,7 +357,7 @@ public class DefaultWorldCollisionsManager implements WorldCollisionsManager
 					}
 					
 					if(collideWithEntities)
-						world.getEntitiesInBox(entitiesCenter, entitiesRadius).forEach(e -> { if(e != entity) addAllSafeAndTranslate(boxes, e.getCollisionBoxes(), e.getLocation()); });
+						world.getEntitiesInBox(entitiesCenter, entitiesRadius).forEach(e -> { if(e != entity && e.getDefinition().collidesWithEntities()) addAllSafeAndTranslate(boxes, e.getCollisionBoxes(), e.getLocation()); });
 					
 					for (CollisionBox box : boxes) {
 						if (checkerY.collidesWith(box)) {
