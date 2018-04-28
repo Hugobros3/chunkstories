@@ -9,9 +9,8 @@ package io.xol.chunkstories.server.player;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.EntityBase;
-import io.xol.chunkstories.api.entity.components.EntityComponentInventory;
-import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
+import io.xol.chunkstories.api.entity.components.EntityController;
+import io.xol.chunkstories.api.entity.components.EntityInventory;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.packets.PacketOpenInventory;
 import io.xol.chunkstories.api.particles.ParticlesManager;
@@ -39,8 +38,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.joml.Vector3d;
 
-
-
 public class ServerPlayer implements RemotePlayer {
 	protected final ClientConnection connection;
 	protected final String name;
@@ -49,7 +46,7 @@ public class ServerPlayer implements RemotePlayer {
 	private OldStyleConfigFile playerDataFile;
 
 	private WorldServer world;
-	private EntityControllable controlledEntity;
+	private Entity controlledEntity;
 
 	// Streaming control
 	private Set<Entity> subscribedEntities = ConcurrentHashMap.newKeySet();
@@ -120,7 +117,7 @@ public class ServerPlayer implements RemotePlayer {
 	}
 
 	public boolean hasSpawned() {
-		if (controlledEntity != null && controlledEntity.exists())
+		if (controlledEntity != null && !controlledEntity.entityLocation.wasRemoved())
 			return true;
 		return false;
 	}
@@ -135,7 +132,7 @@ public class ServerPlayer implements RemotePlayer {
 	@Override
 	public void setLocation(Location l) {
 		if (this.controlledEntity != null)
-			this.controlledEntity.setLocation(l);
+			this.controlledEntity.entityLocation.set(l);
 	}
 
 	public Location getLastPosition() {
@@ -155,20 +152,21 @@ public class ServerPlayer implements RemotePlayer {
 
 	// Entity control
 	@Override
-	public EntityControllable getControlledEntity() {
+	public Entity getControlledEntity() {
 		return controlledEntity;
 	}
 
 	@Override
-	public boolean setControlledEntity(EntityControllable entity) {
-		if (entity instanceof EntityControllable) {
+	public boolean setControlledEntity(Entity entity) {
+		//TODO lock for safety
+		EntityController ec = entity != null ? entity.components.get(EntityController.class) : null;
+		if (entity != null && ec != null) {
 			this.subscribe(entity);
 
-			EntityControllable controllableEntity = (EntityControllable) entity;
-			controllableEntity.getControllerComponent().setController(this);
-			controlledEntity = controllableEntity;
-		} else if (entity == null && getControlledEntity() != null) {
-			getControlledEntity().getControllerComponent().setController(null);
+			ec.setController(this);
+			controlledEntity = entity;
+		} else if (entity == null && controlledEntity != null) {
+			controlledEntity.components.with(EntityController.class, ec2 -> ec2.setController(null));
 			controlledEntity = null;
 		}
 
@@ -179,11 +177,9 @@ public class ServerPlayer implements RemotePlayer {
 	public void openInventory(Inventory inventory) {
 		Entity entity = this.getControlledEntity();
 		if (inventory.isAccessibleTo(entity)) {
-			if (inventory instanceof EntityComponentInventory.EntityInventory) {
-				// this.sendMessage("Notice: Pushing this inventory to you so you can see the
-				// contents");
-				EntityComponentInventory.EntityInventory i = (EntityComponentInventory.EntityInventory) inventory;
-				i.asComponent().pushComponent(this);
+			if (inventory instanceof EntityInventory) {
+				EntityInventory i = (EntityInventory) inventory;
+				i.pushComponent(this);
 			}
 
 			// this.sendMessage("Sending you the open inventory request.");
@@ -196,7 +192,7 @@ public class ServerPlayer implements RemotePlayer {
 
 	// Entity tracking
 	public void updateTrackedEntities() {
-		EntityControllable controlledEntity = this.controlledEntity;
+		Entity controlledEntity = this.controlledEntity;
 		if (controlledEntity == null)
 			return;
 
@@ -212,7 +208,7 @@ public class ServerPlayer implements RemotePlayer {
 		while (inRangeEntitiesIterator.hasNext()) {
 			Entity e = inRangeEntitiesIterator.next();
 
-			boolean shouldTrack = e.shouldBeTrackedBy(this);// && chunk != null;
+			boolean shouldTrack = true;//e.shouldBeTrackedBy(this);
 			boolean contains = subscribedEntities.contains(e);
 
 			if (shouldTrack && !contains)
@@ -238,7 +234,7 @@ public class ServerPlayer implements RemotePlayer {
 			// System.out.println(inRange);
 
 			// Reasons other than distance to stop tracking this entity
-			if (!e.shouldBeTrackedBy(this) || !inRange)
+			if (/*!e.shouldBeTrackedBy(this) || */!inRange)
 				this.unsubscribe(e);
 
 			// No need to do anything as the component system handles the updates
@@ -253,10 +249,10 @@ public class ServerPlayer implements RemotePlayer {
 	@Override
 	public boolean subscribe(Entity entity) {
 		if (subscribedEntities.add(entity)) {
-			((EntityBase) entity).subscribe(this);
+			entity.subscribers.register(this);
 
 			// Only the server should ever push all components to a client
-			entity.getComponents().pushAllComponents(this);
+			entity.components.all().forEach(c -> c.pushComponent(this));
 			return true;
 		}
 		return false;
@@ -266,7 +262,7 @@ public class ServerPlayer implements RemotePlayer {
 	public boolean unsubscribe(Entity entity) {
 		// Thread.dumpStack();
 		// System.out.println("sub4sub");
-		if (((EntityBase) entity).unsubscribe(this)) // TODO REMOVE ENTITY EXISTENCE COMPONENT IT'S STUPID AND WRONG
+		if (entity.subscribers.unregister(this)) // TODO REMOVE ENTITY EXISTENCE COMPONENT IT'S STUPID AND WRONG
 		{
 			subscribedEntities.remove(entity);
 			return true;
@@ -280,16 +276,16 @@ public class ServerPlayer implements RemotePlayer {
 		while (iterator.hasNext()) {
 			Entity entity = iterator.next();
 			// If one of the entities is controllable ...
-			if (entity instanceof EntityControllable) {
-				EntityControllable controllableEntity = (EntityControllable) entity;
-				Controller entityController = controllableEntity.getControllerComponent().getController();
+			entity.components.with(EntityController.class, ec -> {
+				Controller entityController = ec.getController();
 				// If said entity is controlled by this subscriber/player
 				if (entityController == this) {
 					// Set the controller to null
-					controllableEntity.getControllerComponent().setController(null);
+					ec.setController(null);
 				}
-			}
-			((EntityBase) entity).unsubscribe(this);
+			});
+			
+			entity.subscribers.unregister(this);
 			iterator.remove();
 		}
 	}

@@ -14,9 +14,10 @@ import org.joml.Vector4f;
 
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.EntityLiving;
-import io.xol.chunkstories.api.entity.EntityLiving.HitBox;
+import io.xol.chunkstories.api.entity.traits.TraitCollidable;
+import io.xol.chunkstories.api.entity.traits.TraitHitboxes;
 import io.xol.chunkstories.api.physics.CollisionBox;
+import io.xol.chunkstories.api.physics.EntityHitbox;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.cell.CellData;
@@ -71,12 +72,11 @@ public class PhysicsWireframeDebugger {
 			Entity e = ie.next();
 			
 			//Entities with hitboxes see all of those being drawn
-			if(e instanceof EntityLiving) {
-				EntityLiving eli = (EntityLiving)e;
-				for(HitBox hitbox: eli.getHitBoxes()) {
+			e.traits.with(TraitHitboxes.class, t -> {
+				for(EntityHitbox hitbox: t.getHitBoxes()) {
 					hitbox.draw(renderer);
 				}
-			}
+			});
 			
 			//Get the entity bounding box
 			if(e.getTranslatedBoundingBox().lineIntersection(cameraPosition, new Vector3d(renderer.getCamera().getViewDirection())) != null)
@@ -84,11 +84,14 @@ public class PhysicsWireframeDebugger {
 			else
 				FakeImmediateModeDebugRenderer.renderCollisionBox(e.getTranslatedBoundingBox(), new Vector4f(0, 1f, 1f, 1.0f));
 			
-			//And the collision box
-			for(CollisionBox box : e.getCollisionBoxes()) {
-				box.translate(e.getLocation());
-				FakeImmediateModeDebugRenderer.renderCollisionBox(box, new Vector4f(0, 1, 0.5f, 1.0f));
-			}
+			e.traits.with(TraitCollidable.class	, t -> {
+				//And the collision box
+				for(CollisionBox box : t.getCollisionBoxes()) {
+					box.translate(e.getLocation());
+					FakeImmediateModeDebugRenderer.renderCollisionBox(box, new Vector4f(0, 1, 0.5f, 1.0f));
+				}
+			});
+			
 		}
 	}
 }

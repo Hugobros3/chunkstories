@@ -23,8 +23,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.lwjgl.system.MemoryUtil;
 
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
-import io.xol.chunkstories.api.entity.interfaces.EntityUnsaveable;
+import io.xol.chunkstories.api.entity.components.EntityController;
+import io.xol.chunkstories.api.entity.traits.TraitDontSave;
 import io.xol.chunkstories.api.server.RemotePlayer;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.util.concurrency.Fence;
@@ -200,7 +200,7 @@ public class ChunkHolderImplementation implements ChunkHolder
 		for(Entity entity : chunk.localEntities) {
 			
 			//Don't save controllable entities
-			if (entity.exists() && !(entity instanceof EntityUnsaveable && !((EntityUnsaveable) entity).shouldSaveIntoRegion()))
+			if (!entity.entityLocation.wasRemoved() && !(entity.traits.has(TraitDontSave.class)))
 			{
 				EntitySerializer.writeEntityToStream(daos, region.handler, entity);
 			}
@@ -248,8 +248,9 @@ public class ChunkHolderImplementation implements ChunkHolder
 		while (i.hasNext())
 		{
 			Entity entity = i.next();
-			if(entity instanceof EntityControllable && ((EntityControllable) entity).getController() != null) {
+			if(entity.components.tryWith(EntityController.class, ec -> ec.getController()) != null) {
 				continue; // give grace to controlled entities
+				//TODO this is sloppy!
 			} else {
 				region.world.removeEntityFromList(entity);
 			}

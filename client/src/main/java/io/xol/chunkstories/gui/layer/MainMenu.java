@@ -98,7 +98,7 @@ public class MainMenu extends Layer
 	@Override
 	public boolean handleTextInput(char c) {
 		if (c == 'e') {
-			gameWindow.setLayer(new InventoryView(gameWindow, this, new Inventory[]{new BasicInventory(null, 10, 4) }));
+			gameWindow.setLayer(new InventoryView(gameWindow, this, new Inventory[]{new BasicInventory(10, 4) }));
 		} else if (c == 'd') {
 			gameWindow.setLayer(new DeathScreen(gameWindow, this));
 		} else if (c == 'r') {

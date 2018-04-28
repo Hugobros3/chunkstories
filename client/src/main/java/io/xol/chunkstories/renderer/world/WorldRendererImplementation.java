@@ -13,8 +13,8 @@ import org.slf4j.LoggerFactory;
 
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
-import io.xol.chunkstories.api.entity.interfaces.EntityOverlay;
+import io.xol.chunkstories.api.entity.traits.TraitHasOverlay;
+import io.xol.chunkstories.api.entity.traits.TraitWhenControlled;
 import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
@@ -116,9 +116,9 @@ public class WorldRendererImplementation implements WorldRenderer {
 
 		// Step one, set the camera to the proper spot
 		CameraInterface mainCamera = renderingInterface.getCamera();
-		EntityControllable entity = world.getClient().getPlayer().getControlledEntity();
+		Entity entity = world.getClient().getPlayer().getControlledEntity();
 		if (entity != null)
-			entity.setupCamera(renderingInterface);
+			entity.traits.with(TraitWhenControlled.class, twc -> twc.setupCamera(renderingInterface));
 
 		animationTimer = ((float) (System.currentTimeMillis() & 0x7FFF)) / 100.0f;
 
@@ -165,9 +165,7 @@ public class WorldRendererImplementation implements WorldRenderer {
 				Entity e;
 				while (ei.hasNext()) {
 					e = ei.next();
-					if (e instanceof EntityOverlay) {
-						((EntityOverlay) e).drawEntityOverlay(renderingContext);
-					}
+					e.traits.with(TraitHasOverlay.class, t -> t.drawEntityOverlay(renderingContext));
 				}
 				world.entitiesLock.readLock().unlock();
 			}

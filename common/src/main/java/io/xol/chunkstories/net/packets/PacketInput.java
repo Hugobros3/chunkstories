@@ -10,7 +10,10 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
+import io.xol.chunkstories.api.entity.Controller;
+import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.components.EntityController;
+import io.xol.chunkstories.api.entity.traits.TraitWhenControlled;
 import io.xol.chunkstories.api.events.player.PlayerInputPressedEvent;
 import io.xol.chunkstories.api.events.player.PlayerInputReleasedEvent;
 import io.xol.chunkstories.api.input.Input;
@@ -49,7 +52,7 @@ public class PacketInput extends PacketWorld {
 			ServerPlayerPacketsProcessor sppc = (ServerPlayerPacketsProcessor) processor;
 
 			// Look for the controller handling this buisness
-			EntityControllable entity = (EntityControllable) sppc.getPlayer().getControlledEntity();
+			Entity entity = sppc.getPlayer().getControlledEntity();
 			
 			if (entity != null) {
 				// Get input of the client
@@ -70,7 +73,14 @@ public class PacketInput extends PacketWorld {
 					entity.getWorld().getGameLogic().getPluginsManager().fireEvent(event);
 
 					if (!event.isCancelled())
-						entity.onControllerInput(input, entity.getControllerComponent().getController());
+						entity.components.with(EntityController.class, ec -> {
+							Controller controller = ec.getController();
+							entity.traits.with(TraitWhenControlled.class, t -> {
+								t.onControllerInput(input, controller);
+							});
+						});
+						
+					//entity.onControllerInput(input, entity.getControllerComponent().getController());
 				} else {
 					PlayerInputReleasedEvent event = new PlayerInputReleasedEvent(
 							sppc.getPlayer(), input);

@@ -15,9 +15,9 @@ import java.util.Map.Entry;
 
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.EntityDefinition;
+import io.xol.chunkstories.api.entity.traits.TraitRenderable;
 import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.entity.EntityRenderable;
 import io.xol.chunkstories.api.rendering.entity.EntityRenderer;
 import io.xol.chunkstories.api.rendering.entity.RenderingIterator;
 import io.xol.chunkstories.api.rendering.world.WorldRenderer;
@@ -27,7 +27,7 @@ import io.xol.chunkstories.world.WorldImplementation;
 
 public class CulledEntitiesRenderer implements EntitiesRenderer
 {
-	Map<EntityDefinition, EntityRenderer<? extends EntityRenderable>> entityRenderers = new HashMap<EntityDefinition, EntityRenderer<? extends EntityRenderable>>();
+	Map<EntityDefinition, EntityRenderer<? extends Entity>> entityRenderers = new HashMap<>();
 
 	final WorldRenderer worldRenderer;
 	final World world;
@@ -40,7 +40,7 @@ public class CulledEntitiesRenderer implements EntitiesRenderer
 
 	public void clearLoadedEntitiesRenderers()
 	{
-		for (EntityRenderer<? extends EntityRenderable> entityRenderer : entityRenderers.values())
+		for (EntityRenderer<? extends Entity> entityRenderer : entityRenderers.values())
 			if (entityRenderer != null)
 				entityRenderer.freeRessources();
 
@@ -52,33 +52,34 @@ public class CulledEntitiesRenderer implements EntitiesRenderer
 		((WorldImplementation) world).entitiesLock.readLock().lock();
 
 		//Sort them by type
-		Map<EntityDefinition, List<EntityRenderable>> renderableEntitiesTypes = new HashMap<EntityDefinition, List<EntityRenderable>>();
+		Map<EntityDefinition, List<Entity>> renderableEntitiesTypes = new HashMap<EntityDefinition, List<Entity>>();
 		for (Entity entity : world.getAllLoadedEntities())
 		{
-			if (entity instanceof EntityRenderable)
-			{
-				EntityRenderable entityRenderable = (EntityRenderable) entity;
-				List<EntityRenderable> entitiesOfThisType = renderableEntitiesTypes.get(entityRenderable.getDefinition());
+			entity.traits.with(TraitRenderable.class, tr -> {
+				Entity Entity = (Entity) entity;
+				List<Entity> entitiesOfThisType = renderableEntitiesTypes.get(Entity.getDefinition());
+				
+				//Create a list if there isn't one yet
 				if (entitiesOfThisType == null)
 				{
-					renderableEntitiesTypes.put(entityRenderable.getDefinition(), new ArrayList<EntityRenderable>());
-					entitiesOfThisType = renderableEntitiesTypes.get(entityRenderable.getDefinition());
+					renderableEntitiesTypes.put(Entity.getDefinition(), new ArrayList<Entity>());
+					entitiesOfThisType = renderableEntitiesTypes.get(Entity.getDefinition());
 				}
-				entitiesOfThisType.add(entityRenderable);
-			}
+				entitiesOfThisType.add(Entity);
+			});
 		}
 
 		int entitiesRendered = 0;
 
-		for (Entry<EntityDefinition, List<EntityRenderable>> entry : renderableEntitiesTypes.entrySet())
+		for (Entry<EntityDefinition, List<Entity>> entry : renderableEntitiesTypes.entrySet())
 		{
-			List<EntityRenderable> entities = entry.getValue();
+			List<Entity> entities = entry.getValue();
 
 			//Caches entity renderers until we f12
 			if (!entityRenderers.containsKey(entry.getKey()))
-				entityRenderers.put(entry.getKey(), entities.get(0).getEntityRenderer());
+				entityRenderers.put(entry.getKey(), entities.get(0).traits.get(TraitRenderable.class).getFactory().getRenderer());
 
-			EntityRenderer<? extends EntityRenderable> entityRenderer = entityRenderers.get(entry.getKey());
+			EntityRenderer<? extends Entity> entityRenderer = entityRenderers.get(entry.getKey());
 
 			if (entityRenderer == null)
 				continue;
@@ -99,15 +100,15 @@ public class CulledEntitiesRenderer implements EntitiesRenderer
 	}
 
 	@SuppressWarnings("unchecked")
-	private class EntitiesRendererIterator<E extends EntityRenderable> implements RenderingIterator<E>
+	private class EntitiesRendererIterator<E extends Entity> implements RenderingIterator<E>
 	{
 		private RenderingInterface renderingContext;
 
-		private List<EntityRenderable> entities;
-		protected Iterator<EntityRenderable> iterator;
-		protected EntityRenderable currentEntity;
+		private List<Entity> entities;
+		protected Iterator<Entity> iterator;
+		protected Entity currentEntity;
 
-		public EntitiesRendererIterator(RenderingInterface renderingContext, List<EntityRenderable> entities)
+		public EntitiesRendererIterator(RenderingInterface renderingContext, List<Entity> entities)
 		{
 			this.renderingContext = renderingContext;
 			this.entities = entities;
@@ -203,9 +204,9 @@ public class CulledEntitiesRenderer implements EntitiesRenderer
 
 		private class FrustrumCulledRenderingIterator<S extends E> extends EntitiesRendererIterator<S>
 		{
-			EntityRenderable currentRenderableEntity = null;
+			Entity currentRenderableEntity = null;
 
-			public FrustrumCulledRenderingIterator(RenderingInterface renderingContext, List<EntityRenderable> entities)
+			public FrustrumCulledRenderingIterator(RenderingInterface renderingContext, List<Entity> entities)
 			{
 				super(renderingContext, entities);
 			}

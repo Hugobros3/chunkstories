@@ -6,7 +6,8 @@
 
 package io.xol.chunkstories.server.commands.player;
 
-import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
+import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.components.EntityInventory;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
@@ -20,11 +21,10 @@ public class ClearCommand extends ServerCommandBasic {
 		super(serverConsole);
 		server.getPluginManager().registerCommand("clear").setHandler(this);
 	}
-	
+
 	@Override
 	public boolean handleCommand(CommandEmitter emitter, Command command, String[] arguments) {
-		if(!emitter.hasPermission("self.clearinventory"))
-		{
+		if (!emitter.hasPermission("self.clearinventory")) {
 			emitter.sendMessage("You don't have the permission.");
 			return true;
 		}
@@ -33,13 +33,16 @@ public class ClearCommand extends ServerCommandBasic {
 			return true;
 		}
 
-		//TODO check the player's entity has an inventory
+		// TODO check the player's entity has an inventory
 		Player player = (Player) emitter;
+		Entity entity = player.getControlledEntity();
+		if (entity != null) {
+			entity.components.with(EntityInventory.class, ei -> {
 
-		player.sendMessage(
-				"#FF969BRemoving " + ((EntityWithInventory) player.getControlledEntity()).getInventory().size()
-						+ " items from your inventory.");
-		((EntityWithInventory) player.getControlledEntity()).getInventory().clear();
+				player.sendMessage("#FF969BRemoving " + ei.size() + " items from your inventory.");
+				ei.clear();
+			});
+		}
 
 		return true;
 	}

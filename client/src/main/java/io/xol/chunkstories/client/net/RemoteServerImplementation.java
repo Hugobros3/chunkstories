@@ -11,7 +11,6 @@ import java.util.Iterator;
 import java.util.Set;
 
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.EntityBase;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.RemoteServer;
 
@@ -45,7 +44,7 @@ public class RemoteServerImplementation implements RemoteServer {
 	public boolean subscribe(Entity entity)
 	{
 		assert controlledEntity.size() == 0;
-		((EntityBase) entity).subscribe(this);
+		entity.subscribers.register(this);
 		return controlledEntity.add(entity);
 	}
 
@@ -53,7 +52,7 @@ public class RemoteServerImplementation implements RemoteServer {
 	public boolean unsubscribe(Entity entity)
 	{
 		assert controlledEntity.size() == 1;
-		((EntityBase) entity).unsubscribe(this);
+		entity.subscribers.unregister(this);
 		return controlledEntity.remove(entity);
 	}
 

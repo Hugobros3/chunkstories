@@ -7,7 +7,7 @@
 package io.xol.chunkstories.server.commands.player;
 
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
+import io.xol.chunkstories.api.entity.components.EntityCreativeMode;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
@@ -38,17 +38,16 @@ public class CreativeCommand extends ServerCommandBasic {
 			return true;
 		}
 		
-		Entity controlledEntity = player.getControlledEntity();
-		if (controlledEntity != null && controlledEntity instanceof EntityCreative)
-		{
-			boolean state = ((EntityCreative) controlledEntity).getCreativeModeComponent().get();
+		Entity entity = player.getControlledEntity();
+		if(!entity.components.tryWithBoolean(EntityCreativeMode.class, fm -> {
+			boolean state = fm.get();
 			state = !state;
 			player.sendMessage("Creative mode set to: " + state);
-			((EntityCreative) controlledEntity).getCreativeModeComponent().set(state);
+			fm.set(state);
+			
 			return true;
-		}
-		
-		emitter.sendMessage("This action doesn't apply to your current entity.");
+		}))
+			emitter.sendMessage("This action doesn't apply to your current entity.");
 		
 		return true;
 	}

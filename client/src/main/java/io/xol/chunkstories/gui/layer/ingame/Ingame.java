@@ -10,11 +10,11 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.client.LocalPlayer;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.EntityLiving;
-import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
-import io.xol.chunkstories.api.entity.interfaces.EntityCreative;
-import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
-import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
+import io.xol.chunkstories.api.entity.components.EntityHealth;
+import io.xol.chunkstories.api.entity.components.EntityInventory;
+import io.xol.chunkstories.api.entity.components.EntitySelectedItem;
+import io.xol.chunkstories.api.entity.traits.TraitVoxelSelection;
+import io.xol.chunkstories.api.entity.traits.TraitWhenControlled;
 import io.xol.chunkstories.api.events.player.PlayerLogoutEvent;
 import io.xol.chunkstories.api.events.rendering.CameraSetupEvent;
 import io.xol.chunkstories.api.gui.Layer;
@@ -102,23 +102,23 @@ public class Ingame extends Layer {
 		if ((playerEntity == null || playerEntity != getPlayer().getControlledEntity()) && getPlayer().getControlledEntity() != null) {
 			playerEntity = getPlayer().getControlledEntity();
 			
-			if (playerEntity instanceof EntityWithSelectedItem)
-				inventoryBarDrawer = ((EntityWithSelectedItem) playerEntity).getInventory() == null ? null : new InventoryGridRenderer((EntityWithSelectedItem) playerEntity);
+			EntityInventory inv = playerEntity.components.get(EntityInventory.class);
+			if(inv != null)
+				inventoryBarDrawer = new InventoryGridRenderer(inv);
 			else
 				inventoryBarDrawer = null;
 		}
 		
-		if (playerEntity != null && ((EntityLiving) playerEntity).isDead() && !(gameWindow.getLayer() instanceof DeathScreen))
+		//TODO MOVE MOVE MOVE
+		if ((playerEntity != null && playerEntity.components.tryWithBoolean(EntityHealth.class, eh -> eh.isDead())) && !(gameWindow.getLayer() instanceof DeathScreen))
 			gameWindow.setLayer(new DeathScreen(gameWindow, this));
 
 		// Update the player
-		if (playerEntity instanceof EntityControllable)
-			((EntityControllable) playerEntity).onEachFrame(getPlayer());
-		
-
 		Location selectedBlock = null;
-		if (playerEntity instanceof EntityControllable)
-			selectedBlock = ((EntityControllable) playerEntity).getBlockLookingAt(true);
+		if(playerEntity != null) {
+			playerEntity.traits.with(TraitWhenControlled.class, twc -> twc.onEachFrame(getPlayer()));
+			selectedBlock = playerEntity.traits.tryWith(TraitVoxelSelection.class, tvs -> tvs.getBlockLookingAt(true, false));
+		}
 		
 		world.getPluginManager().fireEvent(new CameraSetupEvent(renderer.getCamera()));
 
@@ -130,7 +130,7 @@ public class Ingame extends Layer {
 			wireframeDebugger.render(renderer);
 		}
 		
-		if (!guiHidden && selectedBlock != null && playerEntity instanceof EntityCreative && ((EntityCreative) playerEntity).getCreativeModeComponent().get())
+		if (!guiHidden && selectedBlock != null)
 			selectionRenderer.drawSelectionBox(renderer, selectedBlock);
 		
 		//Fades in & out the overlay
@@ -153,7 +153,7 @@ public class Ingame extends Layer {
 			chatManager.render(renderer);
 
 			//Draw inventory
-			if (playerEntity != null && inventoryBarDrawer != null)
+			if (inventoryBarDrawer != null)
 				inventoryBarDrawer.drawPlayerInventorySummary(renderer, renderer.getWindow().getWidth() / 2 - 7, 64 + 64);
 
 			//Draw debug info
@@ -236,17 +236,29 @@ public class Ingame extends Layer {
 			//Map to zero-indexed inventory
 			requestedInventorySlot--;
 
-			if (playerEntity != null && playerEntity instanceof EntityWithSelectedItem) {
-				//Do not accept request to select non-existent inventories slots
-				if (requestedInventorySlot > ((EntityWithInventory) playerEntity).getInventory().getWidth())
+			if(playerEntity != null) {
+				EntityInventory playerInventory = playerEntity.components.get(EntityInventory.class);
+				if(playerInventory == null)
 					return false;
-
-				ItemPile p = ((EntityWithInventory) playerEntity).getInventory().getItemPileAt(requestedInventorySlot, 0);
-				if (p != null)
-					requestedInventorySlot = p.getX();
-				((EntityWithSelectedItem) playerEntity).setSelectedItemIndex(requestedInventorySlot);
+				
+				//java lambda nonsense :(
+				final int passedrequestedInventorySlot = requestedInventorySlot;
+				return playerEntity.components.tryWithBoolean(EntitySelectedItem.class, esi -> {
+					//Do not accept request to select non-existent inventories slots
+					int slot = passedrequestedInventorySlot;
+					
+					if (slot > playerInventory.getWidth())
+						return false;
+	
+					ItemPile p = playerInventory.getItemPileAt(slot, 0);
+					if (p != null)
+						slot = p.getX();
+					esi.setSelectedSlot(slot);
+					return true;
+				});
 			}
-			return true;
+			
+			return false;
 		} else if (input.equals("exit")) /* Exit brings up the pause menu */ {
 			focus(false);
 			guiHidden = false;
@@ -255,28 +267,35 @@ public class Ingame extends Layer {
 		} else if(input instanceof MouseScroll) {
 			MouseScroll ms = (MouseScroll)input;
 			
-			if (playerEntity != null && playerEntity instanceof EntityWithSelectedItem) {
-				ItemPile selected = null;
-				int selectedInventorySlot = ((EntityWithSelectedItem) playerEntity).getSelectedItemIndex();
-				int originalSlot = selectedInventorySlot;
-				if (ms.amount() < 0) {
-					selectedInventorySlot %= ((EntityWithInventory) playerEntity).getInventory().getWidth();
-					selected = ((EntityWithInventory) playerEntity).getInventory().getItemPileAt(selectedInventorySlot, 0);
-					if (selected != null)
-						selectedInventorySlot += selected.getItem().getDefinition().getSlotsWidth();
-					else
-						selectedInventorySlot++;
-				} else {
-					selectedInventorySlot--;
-					if (selectedInventorySlot < 0)
-						selectedInventorySlot += ((EntityWithInventory) playerEntity).getInventory().getWidth();
-					selected = ((EntityWithInventory) playerEntity).getInventory().getItemPileAt(selectedInventorySlot, 0);
-					if (selected != null)
-						selectedInventorySlot = selected.getX();
-				}
-				//Switch slot
-				if (originalSlot != selectedInventorySlot)
-					((EntityWithSelectedItem) playerEntity).setSelectedItemIndex(selectedInventorySlot);
+			if (playerEntity != null) {
+				EntityInventory playerInventory = playerEntity.components.get(EntityInventory.class);
+				if(playerInventory == null)
+					return false;
+				
+				playerEntity.components.with(EntitySelectedItem.class, esi -> {
+					ItemPile selected = null;
+					int selectedInventorySlot = esi.getSelectedSlot();
+					int originalSlot = selectedInventorySlot;
+					if (ms.amount() < 0) {
+						selectedInventorySlot %= playerInventory.getWidth();
+						selected = playerInventory.getItemPileAt(selectedInventorySlot, 0);
+						if (selected != null)
+							selectedInventorySlot += selected.getItem().getDefinition().getSlotsWidth();
+						else
+							selectedInventorySlot++;
+					} else {
+						selectedInventorySlot--;
+						if (selectedInventorySlot < 0)
+							selectedInventorySlot += playerInventory.getWidth();
+						selected = playerInventory.getItemPileAt(selectedInventorySlot, 0);
+						if (selected != null)
+							selectedInventorySlot = selected.getX();
+					}
+					//Switch slot
+					if (originalSlot != selectedInventorySlot)
+						esi.setSelectedSlot(selectedInventorySlot);
+					
+				});
 				
 				return true;
 			}

@@ -74,7 +74,7 @@ public class SpawnEntityCommand extends ServerCommandBasic {
 		}
 		
 		Entity entity = entityType.create(loc);
-		entity.setLocation(loc);
+		entity.entityLocation.set(loc);
 		
 		loc.getWorld().addEntity(entity);
 

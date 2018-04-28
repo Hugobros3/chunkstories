@@ -14,8 +14,8 @@ import io.xol.chunkstories.api.client.ClientInputsManager;
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.client.LocalPlayer;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
-import io.xol.chunkstories.api.entity.interfaces.EntityWithInventory;
+import io.xol.chunkstories.api.entity.components.EntityController;
+import io.xol.chunkstories.api.entity.components.EntityInventory;
 import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.particles.ParticlesManager;
@@ -27,14 +27,12 @@ import io.xol.chunkstories.api.world.WorldClientNetworkedRemote;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.world.WorldClientCommon;
 
-
-
 public class PlayerClientImplementation implements LocalPlayer
 {
 	final Client client;
 	final WorldClientCommon world;
 	
-	private EntityControllable controlledEntity;
+	private Entity controlledEntity;
 	
 	public final LocalClientLoadingAgent loadingAgent;
 	
@@ -53,48 +51,44 @@ public class PlayerClientImplementation implements LocalPlayer
 	}
 
 	@Override
-	public EntityControllable getControlledEntity()
+	public Entity getControlledEntity()
 	{
 		return controlledEntity;
 	}
 
 	@Override
-	public boolean setControlledEntity(EntityControllable entity)
+	public boolean setControlledEntity(Entity entity)
 	{
-		if (entity instanceof EntityControllable)
+		EntityController ec = entity != null ? entity.components.get(EntityController.class) : null;
+		if (entity != null && ec != null)
 		{
 			this.subscribe(entity);
-
-			EntityControllable controllableEntity = (EntityControllable) entity;
 			
 			//If a world master, directly set the entity's controller
 			if(world instanceof WorldMaster)
-				controllableEntity.getControllerComponent().setController(this);
-		
+				ec.setController(this);
 			//In remote networked worlds, we need to subscribe the server to our player actions to the controlled entity so he gets updates
-			if(entity.getWorld() instanceof WorldClientNetworkedRemote)
+			else if(entity.getWorld() instanceof WorldClientNetworkedRemote)
 			{
 				//When changing controlled entity, first unsubscribe the remote server from the one we no longer own
-				if(controlledEntity != null && controllableEntity != controlledEntity)
+				if(controlledEntity != null && entity != controlledEntity)
 					((WorldClientNetworkedRemote) controlledEntity.getWorld()).getRemoteServer().unsubscribe(controlledEntity);
 				
 				//Let know the server of new changes
-				((WorldClientNetworkedRemote) controllableEntity.getWorld()).getRemoteServer().subscribe(controllableEntity);
+				((WorldClientNetworkedRemote) entity.getWorld()).getRemoteServer().subscribe(entity);
 			}
 			
-			controlledEntity = controllableEntity;
+			controlledEntity = entity;
 		}
-		else if (entity == null && getControlledEntity() != null)
+		else if (entity == null && controlledEntity != null)
 		{
 			//Directly unset it
 			if(world instanceof WorldMaster)
-				getControlledEntity().getControllerComponent().setController(null);
-
+				controlledEntity.components.with(EntityController.class, ec2 -> ec2.setController(null));
 			//When loosing control over an entity, stop sending the server info about it
-			if(controlledEntity != null)
-				if(controlledEntity.getWorld() instanceof WorldClientNetworkedRemote)
+			else if(controlledEntity.getWorld() instanceof WorldClientNetworkedRemote)
 					((WorldClientNetworkedRemote) controlledEntity.getWorld()).getRemoteServer().unsubscribe(controlledEntity);
-			
+
 			controlledEntity = null;
 		}
 		
@@ -204,7 +198,7 @@ public class PlayerClientImplementation implements LocalPlayer
 	{
 		Entity controlledEntity = this.controlledEntity;
 		if(controlledEntity != null)
-			controlledEntity.setLocation(l);
+			controlledEntity.entityLocation.set(l);
 	}
 
 	@Override
@@ -269,13 +263,15 @@ public class PlayerClientImplementation implements LocalPlayer
 	public void openInventory(Inventory inventory)
 	{
 		Entity entity = this.getControlledEntity();
-		if (inventory.isAccessibleTo(entity))
+		if (entity != null && inventory.isAccessibleTo(entity))
 		{
 			//Directly open it without further concern
 			//Client.getInstance().openInventories(inventory);
 			
-			if(entity != null && entity instanceof EntityWithInventory)
-				Client.getInstance().openInventories(((EntityWithInventory) entity).getInventory(), inventory);
+			EntityInventory entityInventory = entity.components.get(EntityInventory.class);
+					
+			if(entityInventory != null)
+				Client.getInstance().openInventories(entityInventory, inventory);
 			else
 				Client.getInstance().openInventories(inventory);
 		}

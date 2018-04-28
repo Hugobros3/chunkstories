@@ -8,7 +8,8 @@ package io.xol.chunkstories.gui;
 
 import org.joml.Vector4f;
 
-import io.xol.chunkstories.api.entity.interfaces.EntityWithSelectedItem;
+import io.xol.chunkstories.api.entity.components.EntityInventory;
+import io.xol.chunkstories.api.entity.components.EntitySelectedItem;
 import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
@@ -19,14 +20,9 @@ import io.xol.chunkstories.gui.layer.ingame.InventoryView;
 /** Helps with rendering the inventory grid */
 public class InventoryGridRenderer {
 	private Inventory inventory;
-	private EntityWithSelectedItem entity;
 
 	public InventoryGridRenderer(Inventory entityInventories) {
 		this.inventory = entityInventories;
-	}
-
-	public InventoryGridRenderer(EntityWithSelectedItem entity) {
-		this.entity = entity;
 	}
 
 	public void drawInventoryCentered(RenderingInterface renderer, int x, int y, int scale, boolean summary,
@@ -48,11 +44,15 @@ public class InventoryGridRenderer {
 	}
 
 	public void drawPlayerInventorySummary(RenderingInterface renderer, int x, int y) {
-		// Don't draw inventory only
-		if (entity == null)
-			return;
+		int selectedSlot = -1;
+		if(inventory instanceof EntityInventory) {
+			EntitySelectedItem esi = ((EntityInventory)inventory).entity.components.get(EntitySelectedItem.class);
+			if(esi != null)
+				selectedSlot = esi.getSelectedSlot();
+		}
+		
 		drawInventory(renderer, x - slotsWidth(getInventory().getWidth(), 2) / 2,
-				y - slotsHeight(getInventory().getHeight(), 2, true, 0) / 2, 2, true, 0, entity.getSelectedItemIndex());
+				y - slotsHeight(getInventory().getHeight(), 2, true, 0) / 2, 2, true, 0, selectedSlot);
 	}
 
 	public void drawInventory(RenderingInterface renderer, int x, int y, int scale, boolean summary, int blankLines,
@@ -244,8 +244,6 @@ public class InventoryGridRenderer {
 	}
 
 	public Inventory getInventory() {
-		if (entity == null)
-			return inventory;
-		return entity.getInventory();
+		return inventory;
 	}
 }

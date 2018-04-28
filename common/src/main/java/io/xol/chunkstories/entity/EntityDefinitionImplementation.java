@@ -75,14 +75,15 @@ public class EntityDefinitionImplementation extends GenericNamedConfigurable imp
 		Object[] parameters = { this, location };
 		try
 		{
-			return constructor.newInstance(parameters);
+			Entity entity = constructor.newInstance(parameters);
+			entity.afterIntialization();
+			return entity;
 		}
 		catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
 		{
 			//This is bad
-			store().logger().error("Couldn't instanciate entity "+this+" at " + location);
-			store().logger().error("{}",e.getMessage());
-			//e.printStackTrace();
+			store().logger().error("Couldn't instanciate entity "+this+" at " + location, e);
+			e.printStackTrace();
 			//e.printStackTrace(logger().getPrintWriter());
 			return null;
 		}

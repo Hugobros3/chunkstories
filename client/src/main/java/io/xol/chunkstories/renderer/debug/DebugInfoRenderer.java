@@ -11,8 +11,8 @@ import org.joml.Vector4f;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.EntityLiving;
-import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
+import io.xol.chunkstories.api.entity.components.EntityRotation;
+import io.xol.chunkstories.api.entity.traits.TraitVoxelSelection;
 import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
@@ -64,13 +64,11 @@ public class DebugInfoRenderer {
 		int lx = bx, ly = by, lz = bz;
 		
 		//If the player can look use that
-		if(playerEntity != null && playerEntity instanceof EntityControllable) {
-			Location loc = ((EntityControllable) playerEntity).getBlockLookingAt(true);
-			if(loc != null) {
-				lx = (int)loc.x();
-				ly = (int)loc.y();
-				lz = (int)loc.z();
-			}
+		Location blockLookingAt = playerEntity != null ? playerEntity.traits.tryWith(TraitVoxelSelection.class, tvc ->  tvc.getBlockLookingAt(true, false) ) : null;
+		if(blockLookingAt != null) {
+			lx = (int)blockLookingAt.x();
+			ly = (int)blockLookingAt.y();
+			lz = (int)blockLookingAt.z();
 		}
 		
 		int raw_data = world.peekRaw(lx, ly, lz);
@@ -85,9 +83,8 @@ public class DebugInfoRenderer {
 		
 		//Obtain the angle the player is facing
 		VoxelSide side = VoxelSide.TOP;
-		float angleX = -1;
-		if (playerEntity != null && playerEntity instanceof EntityLiving)
-			angleX = Math.round(((EntityLiving) playerEntity).getEntityRotationComponent().getHorizontalRotation());
+		EntityRotation er = playerEntity != null ? playerEntity.components.get(EntityRotation.class) : null;
+		float angleX = er != null ? Math.round(er.getHorizontalRotation()) : 0;
 		
 		double dx = Math.sin(angleX / 360 * 2.0 * Math.PI);
 		double dz = Math.cos(angleX / 360 * 2.0 * Math.PI);

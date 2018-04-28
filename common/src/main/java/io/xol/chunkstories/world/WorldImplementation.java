@@ -26,10 +26,8 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.content.ContentTranslator;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.EntityBase;
-import io.xol.chunkstories.api.entity.EntityLiving;
-import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
-import io.xol.chunkstories.api.entity.interfaces.EntityNameable;
+import io.xol.chunkstories.api.entity.components.EntityHealth;
+import io.xol.chunkstories.api.entity.components.EntityName;
 import io.xol.chunkstories.api.events.player.PlayerSpawnEvent;
 import io.xol.chunkstories.api.events.voxel.WorldModificationCause;
 import io.xol.chunkstories.api.exceptions.world.ChunkNotLoadedException;
@@ -77,8 +75,6 @@ import io.xol.chunkstories.world.iterators.WorldChunksIterator;
 import io.xol.chunkstories.world.logic.WorldLogicThread;
 import io.xol.chunkstories.world.region.HashMapWorldRegionsHolder;
 import io.xol.chunkstories.world.region.RegionImplementation;
-
-
 
 public abstract class WorldImplementation implements World
 {
@@ -258,40 +254,45 @@ public abstract class WorldImplementation implements World
 		SerializedEntityFile playerEntityFile = new SerializedEntityFile(this.getFolderPath() + "/players/" + player.getName().toLowerCase() + ".csf");
 		if(playerEntityFile.exists())
 			savedEntity = playerEntityFile.read(this);
-		
+
 		Location previousLocation = null;
 		if(savedEntity != null)
 			previousLocation = savedEntity.getLocation();
 		
 		PlayerSpawnEvent playerSpawnEvent = new PlayerSpawnEvent(player, (WorldMaster) this, savedEntity, previousLocation);
 		getGameContext().getPluginManager().fireEvent(playerSpawnEvent);
-		
+
 		if(!playerSpawnEvent.isCancelled())
 		{
+			System.out.println("k");
 			Entity entity = playerSpawnEvent.getEntity();
 			
 			Location actualSpawnLocation = playerSpawnEvent.getSpawnLocation();
 			if(actualSpawnLocation == null)
 				actualSpawnLocation = this.getDefaultSpawnLocation();
 			
-			//TODO EntitySimplePlayer ?
-			if(entity == null || ((entity instanceof EntityLiving) && (((EntityLiving) entity).isDead())))
+			if(entity == null || entity.components.tryWithBoolean(EntityHealth.class,eh -> eh.isDead()))
 				entity = this.gameContext.getContent().entities().getEntityDefinition("player").create(actualSpawnLocation);
 				//entity = new EntityPlayer(this, 0d, 0d, 0d, player.getName()); //Default entity
 			else
 				entity.setUUID(-1);
 			
-			//Name your player !
-			if(entity instanceof EntityNameable)
-				((EntityNameable)entity).getNameComponent().setName(player.getName());
+			System.out.println("m");
 			
-			entity.setLocation(actualSpawnLocation);
+			//Name your player !
+			entity.components.with(EntityName.class, en -> en.setName(player.getName()));
+			
+			entity.entityLocation.set(actualSpawnLocation);
 			
 			addEntity(entity);
-			if(entity instanceof EntityControllable)
-				player.setControlledEntity((EntityControllable) entity);
-			else
-				System.out.println("Error : entity is not controllable");
+			
+			player.setControlledEntity(entity);
+			System.out.println("poo");
+			//entity.components.with(EntityController.class, ec -> ec.setController(player))
+			//if(entity instanceof EntityControllable)
+			//	player.setControlledEntity((EntityControllable) entity);
+			//else
+			//	System.out.println("Error : entity is not controllable");
 		}
 	}
 
@@ -315,14 +316,14 @@ public abstract class WorldImplementation implements World
 		}
 
 		//Add it to the world
-		((EntityBase) entity).markHasSpawned();
+		entity.entityLocation.onSpawn();
 		
 		assert entity.getWorld() == this;
 
-		Chunk chunk = this.getChunkWorldCoordinates(entity.getLocation());
+		/*Chunk chunk = this.getChunkWorldCoordinates(entity.getLocation());
 		if(chunk != null) {
 			((EntityBase)entity).positionComponent.trySnappingToChunk();
-		}
+		}*/
 		
 		this.entities.insertEntity(entity);
 	}
@@ -334,23 +335,12 @@ public abstract class WorldImplementation implements World
 			entitiesLock.writeLock().lock();
 			if (entity != null)
 			{
-				EntityBase ent = (EntityBase)entity;
+				entity.entityLocation.onRemoval();
+				
+				//Actually removes it from the world list
+				removeEntityFromList(entity);
 
-				//Only once
-				if (ent.getComponentExistence().exists())
-				{
-					//Destroys it
-					ent.getComponentExistence().destroyEntity();
-
-					//Removes it's reference within the region
-					if (ent.positionComponent.getChunkWithin() != null)
-						ent.positionComponent.getChunkWithin().removeEntity(entity);
-
-					//Actually removes it from the world list
-					removeEntityFromList(entity);
-
-					return true;
-				}
+				return true;
 			}
 
 			return false;
@@ -380,9 +370,6 @@ public abstract class WorldImplementation implements World
 	{
 		//Remove the entity from the world first
 		boolean result = entities.removeEntity(entity);
-		
-		//Tell anyone still subscribed to this entity to sod off
-		((EntityBase)entity).getAllSubscribers().forEach(subscriber -> { subscriber.unsubscribe(entity); });
 		return result;
 	}
 
@@ -400,12 +387,12 @@ public abstract class WorldImplementation implements World
 				entity = iter.next();
 
 				//Check entity's region is loaded
-				if (entity.getChunk() != null)
+				//if (entity.entityLocation.getChunk() != null)
 					entity.tick();
 				
 				//Tries to snap the entity to the region if it ends up being loaded
-				else
-					((EntityBase)entity).positionComponent.trySnappingToChunk();
+				//else
+				//	((EntityBase)entity).positionComponent.trySnappingToChunk();
 
 			}
 		} finally {

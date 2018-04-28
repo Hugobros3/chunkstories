@@ -31,7 +31,8 @@ import org.slf4j.LoggerFactory;
 
 import io.xol.chunkstories.api.client.ClientInputsManager;
 import io.xol.chunkstories.api.client.LocalPlayer;
-import io.xol.chunkstories.api.entity.interfaces.EntityControllable;
+import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.traits.TraitWhenControlled;
 import io.xol.chunkstories.api.events.client.ClientInputPressedEvent;
 import io.xol.chunkstories.api.events.client.ClientInputReleasedEvent;
 import io.xol.chunkstories.api.events.player.PlayerInputPressedEvent;
@@ -358,7 +359,7 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 		if(player == null)
 			return false;
 		
-		final EntityControllable entityControlled = player.getControlledEntity();
+		final Entity entityControlled = player.getControlledEntity();
 
 		//There has to be a controlled entity for sending inputs to make sense.
 		if(entityControlled == null)
@@ -376,7 +377,9 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 				connection.pushPacket(packet);
 			}
 			
-			return entityControlled.onControllerInput(input, Client.getInstance().getPlayer());
+			return entityControlled.traits.tryWithBoolean(TraitWhenControlled.class, t -> {
+				return t.onControllerInput(input, gameWindow.getClient().getPlayer());
+			});
 		} else {
 			PlayerInputPressedEvent event2 = new PlayerInputPressedEvent(Client.getInstance().getPlayer(), input);
 			cpm.fireEvent(event2);
@@ -387,7 +390,9 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 		}
 
 		//Handle interaction locally
-		return entityControlled.onControllerInput(input, Client.getInstance().getPlayer());
+		return entityControlled.traits.tryWithBoolean(TraitWhenControlled.class, t -> {
+			return t.onControllerInput(input, gameWindow.getClient().getPlayer());
+		});
 	}
 
 	@Override
@@ -403,7 +408,7 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
 		if(player == null)
 			return false;
 		
-		final EntityControllable entityControlled = player.getControlledEntity();
+		final Entity entityControlled = player.getControlledEntity();
 
 		//There has to be a controlled entity for sending inputs to make sense.
 		if(entityControlled == null)

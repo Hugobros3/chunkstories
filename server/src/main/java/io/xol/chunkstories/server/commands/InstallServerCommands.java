@@ -35,7 +35,6 @@ public class InstallServerCommands {
 		new ClearCommand(server);
 		new CreativeCommand(server);
 		new FlyCommand(server);
-		new FoodCommand(server);
 		new GiveCommand(server);
 		new HealthCommand(server);
 		new SpawnCommand(server);
