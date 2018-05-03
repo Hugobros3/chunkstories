@@ -9,6 +9,7 @@ package io.xol.chunkstories.input.lwjgl3;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.glfwGetKey;
 
+import io.xol.chunkstories.api.client.LocalPlayer;
 import io.xol.chunkstories.api.input.KeyboardKeyInput;
 import io.xol.chunkstories.api.util.Configuration.KeyBindOption;
 import io.xol.chunkstories.client.Client;
@@ -20,20 +21,21 @@ import io.xol.chunkstories.input.Pollable;
  */
 public class Lwjgl3KeyBind extends Lwjgl3Input implements KeyboardKeyInput, Pollable
 {
+	Lwjgl3ClientInputsManager lwjgl3im;
+	
 	int GLFW_key;
+	int defaultKey;
 	
-	boolean isDown;
-	
+	boolean isDown = false;
 	boolean editable = true;
 	boolean repeat = false;
-	
-	int defaultKey;
 	
 	Lwjgl3KeyBindOption option;
 	
 	public Lwjgl3KeyBind(Lwjgl3ClientInputsManager im, String name, String defaultKeyName)
 	{
 		super(im, name);
+		this.lwjgl3im = im;
 		this.defaultKey = GLFWKeyIndexHelper.getGlfwKeyByName(defaultKeyName);
 		this.GLFW_key = defaultKey;
 		
@@ -97,7 +99,10 @@ public class Lwjgl3KeyBind extends Lwjgl3Input implements KeyboardKeyInput, Poll
 	@Override
 	public boolean isPressed()
 	{
-		return isDown;
+		LocalPlayer player = this.lwjgl3im.gameWindow.getClient().getPlayer();
+		if(player != null)
+			return isDown && player.hasFocus();
+		return isDown;// && this.lwjgl3im.gameWindow.hasFocus();
 	}
 
 	/**
