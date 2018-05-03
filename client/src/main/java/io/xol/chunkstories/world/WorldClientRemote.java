@@ -118,10 +118,10 @@ public class WorldClientRemote extends WorldClientCommon implements WorldClientN
 					}
 				}
 				catch(IOException | PacketProcessingException e) {
-					logger().warn("Networking Exception while processing datagram: "+e.getMessage());
+					logger().warn("Networking Exception while processing datagram: "+e);
 				}
 				catch(Exception e) {
-					logger().warn("Exception while processing datagram: "+e.getMessage());
+					logger().warn("Exception while processing datagram: "+e.toString() + " " + e.getMessage());
 				}
 				
 				datagram.dispose();

@@ -54,6 +54,8 @@ public class AssimpMeshLoader {
 	}
 	
 	public Mesh load(Asset mainAsset) throws MeshLoadException {
+		if(mainAsset == null)
+			throw new MeshLoadException(mainAsset);
 		
 		Importer im = new Importer();
 		assimp.SettingsKt.setASSIMP_LOAD_TEXTURES(false);
@@ -63,7 +65,7 @@ public class AssimpMeshLoader {
 
 		if(scene == null) {
 			logger.error("Could not load meshes from asset: "+mainAsset);
-			return null;
+			throw new MeshLoadException(mainAsset);
 		}
 		/*for(AiMesh mesh : scene.getMeshes()) {
 			System.out.println(mesh.getName());
