@@ -265,6 +265,13 @@ public class VoxelModelLoader {
 								String toInclude = splitted[1];
 								toInclude = toInclude.replace("~", voxelModelName.contains(".") ? voxelModelName.split("\\.")[0] : voxelModelName);
 								VoxelModel includeMeh = store.getVoxelModel(toInclude);
+								if(includeMeh == null) {
+									for(CustomVoxelModel model : list) {
+										if(model.name.endsWith(toInclude))
+											includeMeh = model;
+									}
+								}
+								
 								if (includeMeh != null)
 								{
 									//Iterates over included model
@@ -280,7 +287,6 @@ public class VoxelModelLoader {
 									for (boolean cul[] : includeMeh.getCulling())
 										cullingTemp.add(cul);
 								}
-								else
 									logger().warn("Can't require '" + toInclude + "'");
 
 							}
