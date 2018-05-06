@@ -1,4 +1,4 @@
-_Game folders relevant to a specific installation_
+# Game folders relevant to a specific installation
 
 worlds/
 /config/
@@ -13,24 +13,24 @@ mods/
 screenshots/
 skyboxscreens/
 
-_Caches_
+# Caches
 res/textures/tiles_merged*
 cache/
 converter_ids_cache.csv
 converter.jar
 server-icon.png
 
-_Logs_
+# Logs
 *.log
 
-_Don't include build stuff_
+# Don't include build stuff
 bin/
 */build/
 *.class
 scripts/
 version.txt
 
-_Random utility/built jars no one cares about_
+# Random utility/built jars no one cares about
 counter.jar
 genbench.txt
 launcher.jar
@@ -38,7 +38,7 @@ chunkstories.jar
 server.jar
 logs-reporter.jar
 
-_Debug stuff is hidden too_
+# Debug stuff is hidden too
 
 apitrace/
 wrappers/
@@ -48,15 +48,15 @@ hs_err_pid*
 *.cap
 injectee.dll
 
-_Hide eclipse projects_
+# Hide eclipse projects
 .classpath
 .project
 .*
 
-_Fuck off Windows_
+# Fuck off Windows
 *Thumbs.db
 
-_Content creation personal crap_
+# Content creation personal crap
 *.exe
 dz4cs/
 dogez_content.zip
@@ -67,3 +67,10 @@ namalsk-map/
 core_content.zip
 debug-server-*
 /convert-namalsk.bat
+
+# IntelliJ
+.idea/
+out/
+*.iml
+*.ipr
+*.iws
