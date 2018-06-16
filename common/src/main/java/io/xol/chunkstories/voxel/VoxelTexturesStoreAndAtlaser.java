@@ -42,8 +42,6 @@ import io.xol.chunkstories.content.GameContentStore;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.util.CasterIterator;
 
-
-
 public class VoxelTexturesStoreAndAtlaser implements ClientContent.ClientVoxels.ClientVoxelTextures
 {
 	Map<String, VoxelTextureAtlased> texMap = new HashMap<String, VoxelTextureAtlased>();
@@ -64,26 +62,21 @@ public class VoxelTexturesStoreAndAtlaser implements ClientContent.ClientVoxels.
 	public Logger logger() {
 		return logger;
 	}
-	
-	public VoxelTexturesStoreAndAtlaser(VoxelsStore voxels)
-	{
+
+	public VoxelTexturesStoreAndAtlaser(VoxelsStore voxels) {
 		this.content = voxels.parent();
 		this.voxels = voxels;
 
 		this.buildTextureAtlas();
 	}
 
-	public void buildTextureAtlas()
-	{
-		try
-		{
+	public void buildTextureAtlas() {
+		try {
 			// Clear previous values
 			texMap.clear();
-			//colors.clear();
 
 			// Compute all sizes first.
 			int totalSurfacedNeeded = 0;
-			//File folder = new File("./res/voxels/textures/");
 			// Get all sizes :
 			List<VoxelTextureAtlased> voxelTexturesSortedBySize = new ArrayList<VoxelTextureAtlased>();
 
@@ -97,16 +90,23 @@ public class VoxelTexturesStoreAndAtlaser implements ClientContent.ClientVoxels.
 				if (entry.getName().startsWith("./voxels/textures/"))
 				{
 					String name = entry.getName().replace("./voxels/textures/", "");
-					if (name.contains("/"))
-						continue;
+					
 					f = entry.topInstance();
-					if (f.getName().endsWith(".png"))
+					if (f.getName().endsWith(".png")) // For now only PNG is supported TODO: .hdr and more ?
 					{
-						String textureName = name.replace(".png", "");
-						//System.out.println("texName:"+textureName+" "+entry.getKey());
+						String textureName = name.replace(".png", "").replace("/", ".").replace("\\", ".");
+						if(textureName.endsWith("_normal") || textureName.endsWith("_roughness") || textureName.endsWith("_metalness")
+							|| textureName.endsWith("_n") || textureName.endsWith("_r") || textureName.endsWith("_m")) {
+							//Don't create entries for complementary textures!
+							continue;
+						}
+						
+						if(f.getName().contains("/_"))
+							continue; //ignore directories starting with _
+						
 						if (!texMap.containsKey(textureName))
 						{
-							VoxelTextureAtlased voxelTexture = new VoxelTextureAtlased(textureName, uniquesIds);
+							VoxelTextureAtlased voxelTexture = new VoxelTextureAtlased(textureName, f, uniquesIds);
 							uniquesIds++;
 
 							voxelTexture.imageFileDimensions = getImageSize(f);
@@ -158,10 +158,11 @@ public class VoxelTexturesStoreAndAtlaser implements ClientContent.ClientVoxels.
 			File materialTextureFile = new File(GameDirectory.getGameFolderPath()+"/cache/tiles_merged_material.png");
 			if (materialTextureFile.exists())
 				materialTextureFile.delete();
+			
 			// Build the new one
 			boolean loadedOK = false;
 
-			while (!loadedOK && sizeRequired <= 8192) // Security to prevend
+			while (!loadedOK && sizeRequired <= 16384) // Security to prevend
 														// HUGE-ASS textures
 			{
 				// We need this
@@ -184,9 +185,13 @@ public class VoxelTexturesStoreAndAtlaser implements ClientContent.ClientVoxels.
 					logger.debug("This is a client so we'll make the texture atlas");
 				}
 
-				BufferedImage imageBuffer;
+				BufferedImage tileAlbedoBuffer;
+				BufferedImage tileNormalBuffer;
+				
+				BufferedImage tileRoughnessBuffer;
+				BufferedImage tileMetalnessBuffer;
 
-				for (VoxelTextureAtlased vt : voxelTexturesSortedBySize)
+				for (VoxelTextureAtlased voxelTexture : voxelTexturesSortedBySize)
 				{
 					// Find a free spot on the atlas
 					boolean foundSpot = false;
@@ -194,26 +199,25 @@ public class VoxelTexturesStoreAndAtlaser implements ClientContent.ClientVoxels.
 					for (int a = 0; (a < sizeRequired / 16 && !foundSpot); a++)
 						for (int b = 0; (b < sizeRequired / 16 && !foundSpot); b++)
 						{
-							if (used[a][b] == false && a + vt.imageFileDimensions / 16 <= sizeRequired / 16 && b + vt.imageFileDimensions / 16 <= sizeRequired / 16) // Unused
+							if (used[a][b] == false && a + voxelTexture.imageFileDimensions / 16 <= sizeRequired / 16 && b + voxelTexture.imageFileDimensions / 16 <= sizeRequired / 16) // Unused
 							{
 								boolean usedAlready = false;
 								// Not pretty loops that do clamped space checks
-								for (int i = 0; (i < vt.imageFileDimensions / 16 && a + i < sizeRequired / 16); i++)
-									for (int j = 0; (j < vt.imageFileDimensions / 16 && b + j < sizeRequired / 16); j++)
-										if (used[a + i][b + j] == true) // Well
-																			// fuck
-																		// it
+								for (int i = 0; (i < voxelTexture.imageFileDimensions / 16 && a + i < sizeRequired / 16); i++)
+									for (int j = 0; (j < voxelTexture.imageFileDimensions / 16 && b + j < sizeRequired / 16); j++)
+										if (used[a + i][b + j] == true)
 											usedAlready = true;
+								
 								if (!usedAlready)
 								{
 									spotX = a * 16;
 									spotY = b * 16;
-									vt.setAtlasS(spotX * BLOCK_ATLAS_FACTOR);
-									vt.setAtlasT(spotY * BLOCK_ATLAS_FACTOR);
-									vt.setAtlasOffset(vt.imageFileDimensions * BLOCK_ATLAS_FACTOR);
+									voxelTexture.setAtlasS(spotX * BLOCK_ATLAS_FACTOR);
+									voxelTexture.setAtlasT(spotY * BLOCK_ATLAS_FACTOR);
+									voxelTexture.setAtlasOffset(voxelTexture.imageFileDimensions * BLOCK_ATLAS_FACTOR);
 									foundSpot = true;
-									for (int i = 0; (i < vt.imageFileDimensions / 16 && a + i < sizeRequired / 16); i++)
-										for (int j = 0; (j < vt.imageFileDimensions / 16 && b + j < sizeRequired / 16); j++)
+									for (int i = 0; (i < voxelTexture.imageFileDimensions / 16 && a + i < sizeRequired / 16); i++)
+										for (int j = 0; (j < voxelTexture.imageFileDimensions / 16 && b + j < sizeRequired / 16); j++)
 											used[a + i][b + j] = true;
 								}
 							}
@@ -225,17 +229,27 @@ public class VoxelTexturesStoreAndAtlaser implements ClientContent.ClientVoxels.
 						break;
 					}
 
-					imageBuffer = ImageIO.read(content.modsManager().getAsset("./voxels/textures/" + vt.getName() + ".png").read());
+
+					String assetName = voxelTexture.getAsset().getName();
+					String strippedAssetName = assetName.substring(0, assetName.length() - ".png".length()); //Removes the suffix, to upgrade later
+					System.out.println("Stripped asset name : "+strippedAssetName);
+					
+					try {
+					tileAlbedoBuffer = ImageIO.read(content.modsManager().getAsset(strippedAssetName + ".png").read());
+					} catch(NullPointerException e) {
+						System.out.println("./voxels/textures/" + voxelTexture.getName() + ".png");
+						throw e;
+					}
 					//imageBuffer = ImageIO.read(GameContent.getTextureFileLocation());
 
 					float alphaTotal = 0;
 					int nonNullPixels = 0;
 					Vector3f color = new Vector3f();
-					for (int x = 0; x < vt.imageFileDimensions; x++)
+					for (int x = 0; x < voxelTexture.imageFileDimensions; x++)
 					{
-						for (int y = 0; y < vt.imageFileDimensions; y++)
+						for (int y = 0; y < voxelTexture.imageFileDimensions; y++)
 						{
-							int rgb = imageBuffer.getRGB(x, y);
+							int rgb = tileAlbedoBuffer.getRGB(x, y);
 							
 							if(diffuseTextureImage != null)
 								diffuseTextureImage.setRGB(spotX + x, spotY + y, rgb);
@@ -258,37 +272,57 @@ public class VoxelTexturesStoreAndAtlaser implements ClientContent.ClientVoxels.
 					if (nonNullPixels > 0)
 						alphaTotal /= nonNullPixels;
 
-					vt.setColor(new Vector4f(color.x(), color.y(), color.z(), alphaTotal));
+					voxelTexture.setColor(new Vector4f(color.x(), color.y(), color.z(), alphaTotal));
 
 					//Don't bother if it's not a Client context
 					if(diffuseTextureImage == null)
 						continue;
 					
 					// Do also the normal maps !
-					Asset normalMap = content.modsManager().getAsset("./voxels/textures/normal/" + vt.getName() + ".png");
+					Asset normalMap = content.modsManager().getAsset(strippedAssetName + "_normal.png");
 					if (normalMap == null)
-						normalMap = content.modsManager().getAsset("./voxels/textures/normal/notex.png");
+						normalMap = content.modsManager().getAsset(strippedAssetName + "_n.png");
+					if (normalMap == null)
+						normalMap = content.modsManager().getAsset("./voxels/textures/notex_normal.png");
 
-					imageBuffer = ImageIO.read(normalMap.read());
-					for (int x = 0; x < vt.imageFileDimensions; x++)
+					tileNormalBuffer = ImageIO.read(normalMap.read());
+					for (int x = 0; x < voxelTexture.imageFileDimensions; x++)
 					{
-						for (int y = 0; y < vt.imageFileDimensions; y++)
+						for (int y = 0; y < voxelTexture.imageFileDimensions; y++)
 						{
-							int rgb = imageBuffer.getRGB(x % imageBuffer.getWidth(), y % imageBuffer.getHeight());
+							int rgb = tileNormalBuffer.getRGB(x % tileNormalBuffer.getWidth(), y % tileNormalBuffer.getHeight());
 							normalTextureImage.setRGB(spotX + x, spotY + y, rgb);
 						}
 					}
-					// And the materials !
-					Asset materialMap = content.modsManager().getAsset("./voxels/textures/material/" + vt.getName() + ".png");
-					if (materialMap == null)
-						materialMap = content.modsManager().getAsset("./voxels/textures/material/notex.png");
+					
+					Asset roughnessMap = content.modsManager().getAsset(strippedAssetName + "_roughness.png");
+					if (roughnessMap == null)
+						roughnessMap = content.modsManager().getAsset(strippedAssetName + "_r.png");
+					if (roughnessMap == null)
+						roughnessMap = content.modsManager().getAsset("./voxels/textures/notex_roughness.png");
 
-					imageBuffer = ImageIO.read(materialMap.read());
-					for (int x = 0; x < vt.imageFileDimensions; x++)
+					tileRoughnessBuffer = ImageIO.read(roughnessMap.read());
+					
+					Asset metalnessMap = content.modsManager().getAsset(strippedAssetName + "_metalness.png");
+					if (metalnessMap == null)
+						metalnessMap = content.modsManager().getAsset(strippedAssetName + "_m.png");
+					if (metalnessMap == null)
+						metalnessMap = content.modsManager().getAsset("./voxels/textures/notex_metalness.png");
+
+					tileMetalnessBuffer = ImageIO.read(metalnessMap.read());
+					
+					for (int x = 0; x < voxelTexture.imageFileDimensions; x++)
 					{
-						for (int y = 0; y < vt.imageFileDimensions; y++)
+						for (int y = 0; y < voxelTexture.imageFileDimensions; y++)
 						{
-							int rgb = imageBuffer.getRGB(x % imageBuffer.getWidth(), y % imageBuffer.getHeight());
+							int roughnessInt = (tileRoughnessBuffer.getRGB(x % tileRoughnessBuffer.getWidth(), y % tileRoughnessBuffer.getHeight()) & 0xFF0000) >> 16;
+							int metalnessInt = (tileMetalnessBuffer.getRGB(x % tileMetalnessBuffer.getWidth(), y % tileMetalnessBuffer.getHeight()) & 0xFF0000) >> 16;
+							
+							float roughness = roughnessInt / 255f;
+							float metalness = metalnessInt / 255f;
+									
+							//int rgb = imageBuffer.getRGB(x % imageBuffer.getWidth(), y % imageBuffer.getHeight());
+							int rgb = roughnessInt << 16 | metalnessInt << 8 | 0xFF << 24;
 							materialTextureImage.setRGB(spotX + x, spotY + y, rgb);
 						}
 					}

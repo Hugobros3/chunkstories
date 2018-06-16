@@ -23,14 +23,14 @@ import io.xol.chunkstories.world.heightmap.HeightmapImplementation;
 import io.xol.chunkstories.world.region.RegionImplementation;
 
 /**
- * This thread does I/O work in queue. Extended by IOTaskMultiplayerClient and IOTaskMultiplayerServer for the client/server model.
+ * This thread does I/O work in queue. Extended by IOTaskMultiplayerClient and
+ * IOTaskMultiplayerServer for the client/server model.
  */
-public class IOTasks extends Thread implements TaskExecutor
-{
+public class IOTasks extends Thread implements TaskExecutor {
 	protected WorldImplementation world;
 
 	protected final Deque<IOTask> tasks = new ConcurrentLinkedDeque<>();
-	//protected UniqueQueue<IOTask> tasks = new UniqueQueue<IOTask>();
+	// protected UniqueQueue<IOTask> tasks = new UniqueQueue<IOTask>();
 	private final Semaphore tasksCounter = new Semaphore(0);
 
 	private IOTask DIE = new IOTask() {
@@ -41,39 +41,34 @@ public class IOTasks extends Thread implements TaskExecutor
 		}
 	};
 
-	public IOTasks(WorldImplementation world)
-	{
+	public IOTasks(WorldImplementation world) {
 		this.world = world;
 	}
 
-	public boolean scheduleTask(IOTask task)
-	{
+	public boolean scheduleTask(IOTask task) {
 		boolean code = tasks.add(task);
-		//if(code) {
-			tasksCounter.release();
-		//}
+		// if(code) {
+		tasksCounter.release();
+		// }
 		return code;
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		return "[IO :" + getSize() + " in queue.]";
 	}
 
 	@Override
-	public void run()
-	{
-		logger().info("IO Thread started for '"+this.world.getWorldInfo().getName()+"'");
+	public void run() {
+		logger().info("IO Thread started for '" + this.world.getWorldInfo().getName() + "'");
 
 		this.setPriority(Constants.IO_THREAD_PRIOTITY);
-		this.setName("IO thread for '"+this.world.getWorldInfo().getName()+"'");
-		while (true)
-		{
+		this.setName("IO thread for '" + this.world.getWorldInfo().getName() + "'");
+		while (true) {
 			IOTask task = null;
 
 			tasksCounter.acquireUninterruptibly();
-			
+
 			task = tasks.poll();
 			if (task == null) {
 				// Crash and burn
@@ -84,14 +79,12 @@ public class IOTasks extends Thread implements TaskExecutor
 			} else {
 				try {
 					boolean taskSuccessfull = task.run(this);
-					
+
 					// If it returns false, requeue it.
-					if(taskSuccessfull == false)
+					if (taskSuccessfull == false)
 						rescheduleTask(task);
 
-				}
-				catch (Exception e)
-				{
+				} catch (Exception e) {
 					logger().warn("Exception occured when processing task : " + task);
 					e.printStackTrace();
 				}
@@ -100,17 +93,14 @@ public class IOTasks extends Thread implements TaskExecutor
 		logger.info("IOTasks worker thread stopped");
 	}
 
-	void rescheduleTask(IOTask task)
-	{
+	void rescheduleTask(IOTask task) {
 		tasks.add(task);
 		tasksCounter.release();
 	}
-	
-	public int getSize()
-	{
+
+	public int getSize() {
 		int i = 0;
-		synchronized (tasks)
-		{
+		synchronized (tasks) {
 			i = tasks.size();
 		}
 		return i;
@@ -119,37 +109,22 @@ public class IOTasks extends Thread implements TaskExecutor
 	/**
 	 * Loads the content of a region chunk slot
 	 */
-	public IOTask requestChunkLoad(ChunkHolderImplementation chunkSlot)
-	{
+	public IOTask requestChunkLoad(ChunkHolderImplementation chunkSlot) {
 		IOTaskLoadChunk task = new IOTaskLoadChunk(chunkSlot);
 		if (scheduleTask(task))
 			return task;
 		return null;
 	}
 
-	/*public boolean isDoneSavingRegion(RegionImplementation holder)
-	{
-		if (!(this.world instanceof WorldMaster))
-			return true;
-
-		//Check no saving operations are occuring
-		IOTaskSaveRegion saveRegionTask = new IOTaskSaveRegion(holder);
-		if (tasks != null && tasks.contains(saveRegionTask))
-			return false;
-		return true;
-	}*/
-
-	public void requestRegionLoad(RegionImplementation holder)
-	{
-		//if (!isDoneSavingRegion(holder))
-		//	return;
+	public void requestRegionLoad(RegionImplementation holder) {
+		// if (!isDoneSavingRegion(holder))
+		// return;
 
 		IOTask task = new IOTaskLoadRegion(holder);
 		scheduleTask(task);
 	}
-	
-	public IOTask requestRegionSave(RegionImplementation holder)
-	{
+
+	public IOTask requestRegionSave(RegionImplementation holder) {
 		if (!holder.isDiskDataLoaded())
 			return null;
 
@@ -158,72 +133,62 @@ public class IOTasks extends Thread implements TaskExecutor
 		return task;
 	}
 
-	public Fence requestHeightmapLoad(HeightmapImplementation summary)
-	{
+	public Fence requestHeightmapLoad(HeightmapImplementation summary) {
 		IOTaskLoadHeightmap task = new IOTaskLoadHeightmap(summary);
 		scheduleTask(task);
-		
+
 		return task;
 	}
 
-	public IOTaskSaveHeightmap requestHeightmapSave(HeightmapImplementation summary)
-	{
+	public IOTaskSaveHeightmap requestHeightmapSave(HeightmapImplementation summary) {
 		IOTaskSaveHeightmap task = new IOTaskSaveHeightmap(summary);
 		scheduleTask(task);
-		
+
 		return task;
 	}
 
-	public void kill()
-	{
+	public void kill() {
 		scheduleTask(DIE);
-		synchronized (this)
-		{
+		synchronized (this) {
 			notifyAll();
 		}
 	}
 
-	public void waitThenKill()
-	{
-		synchronized (this)
-		{
+	public void waitThenKill() {
+		synchronized (this) {
 			notifyAll();
 		}
-		
-		//Wait for it to finish what it's doing
-		while (this.tasks.size() > 0)
-		{
-			try
-			{
+
+		// Wait for it to finish what it's doing
+		while (this.tasks.size() > 0) {
+			try {
 				sleep(150L);
-			}
-			catch (InterruptedException e)
-			{
+			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
-		
+
 		scheduleTask(DIE);
 	}
 
-	public void dumpIOTaks()
-	{
+	public void dumpIOTaks() {
 		System.out.println("dumping io tasks");
-		
-		//Hardcoding a security because you can fill the queue faster than you can iterate it
+
+		// Hardcoding a security because you can fill the queue faster than you can
+		// iterate it
 		int hardLimit = 500;
 		Iterator<IOTask> i = this.tasks.iterator();
-		while (i.hasNext())
-		{
+		while (i.hasNext()) {
 			IOTask task = i.next();
 			hardLimit--;
-			if(hardLimit < 0)
+			if (hardLimit < 0)
 				return;
 			System.out.println(task);
 		}
 	}
-	
+
 	private static final Logger logger = LoggerFactory.getLogger("world.io");
+
 	public Logger logger() {
 		return logger;
 	}
