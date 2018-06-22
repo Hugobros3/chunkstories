@@ -23,6 +23,7 @@ import io.xol.chunkstories.api.rendering.StateMachine.PolygonFillMode;
 import io.xol.chunkstories.api.rendering.mesh.ClientMeshLibrary;
 import io.xol.chunkstories.api.rendering.pass.RenderPass;
 import io.xol.chunkstories.api.rendering.shader.Shader;
+import io.xol.chunkstories.api.rendering.shader.ShaderBuffer;
 import io.xol.chunkstories.api.rendering.target.RenderTargets;
 import io.xol.chunkstories.api.rendering.textures.ArrayTexture;
 import io.xol.chunkstories.api.rendering.textures.Cubemap;
@@ -47,6 +48,7 @@ import io.xol.chunkstories.renderer.opengl.commands.RenderingCommandMultipleInst
 import io.xol.chunkstories.renderer.opengl.commands.RenderingCommandSingleInstance;
 import io.xol.chunkstories.renderer.opengl.fbo.OpenGLRenderTargetManager;
 import io.xol.chunkstories.renderer.opengl.shader.ShaderGL;
+import io.xol.chunkstories.renderer.opengl.shader.UBOGL;
 import io.xol.chunkstories.renderer.opengl.texture.Texture2DRenderTargetGL;
 import io.xol.chunkstories.renderer.opengl.texture.Texture3DGL;
 import io.xol.chunkstories.renderer.opengl.texture.TextureGL;
@@ -417,5 +419,10 @@ public class OpenGLRenderingContext implements RenderingInterface
 	public RenderPass getCurrentPass() {
 		WorldRenderer worldRenderer = this.getWorldRenderer();
 		return worldRenderer == null ? null : worldRenderer.renderPasses().getCurrentPass();
+	}
+
+	@Override
+	public ShaderBuffer newUBO() {
+		return new UBOGL();
 	}
 }
