@@ -49,10 +49,10 @@ public class LocalServerContext implements ClientInterface, ServerInterface
 	private FileBasedUsersPrivileges usersPrivilege = new FileBasedUsersPrivileges();
 	private PermissionsManager permissionsManager;
 	
-	public LocalServerContext(Client client)
+	public LocalServerContext(Client client, WorldClientLocal clientworld)
 	{
 		this.client = client;
-		this.world = (WorldClientLocal) client.getWorld();
+		this.world = clientworld;
 		
 		this.pluginsManager = new ClientMasterPluginManager(this);
 		

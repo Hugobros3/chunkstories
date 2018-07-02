@@ -27,7 +27,7 @@ public class WorldClientLocal extends WorldClientCommon implements WorldMaster {
 		ioHandler = new IOTasks(this);
 		ioHandler.start();
 		
-		localServer = new LocalServerContext(Client.getInstance());
+		localServer = new LocalServerContext(client, this);
 		client.setClientPluginManager(localServer.getPluginManager());
 	}
 
