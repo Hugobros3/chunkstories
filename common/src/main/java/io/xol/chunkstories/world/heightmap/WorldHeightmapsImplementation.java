@@ -47,6 +47,12 @@ public class WorldHeightmapsImplementation implements WorldHeightmaps
 	}
 
 	@Override
+	public HeightmapImplementation aquireHeightmap(WorldUser worldUser, int regionX, int regionZ)
+	{
+		return aquireHeightmap(worldUser, regionX, regionZ, 1, 1);
+	}
+
+	@Override
 	public HeightmapImplementation aquireHeightmap(WorldUser worldUser, int regionX, int regionZ, int dirX, int dirZ)
 	{
 		HeightmapImplementation summary;
@@ -85,7 +91,7 @@ public class WorldHeightmapsImplementation implements WorldHeightmaps
 		if (chunkZ < 0)
 			chunkZ += worldSizeInChunks;
 		
-		return aquireHeightmap(worldUser, chunkX / 8, chunkZ / 8, 1, 1);
+		return aquireHeightmap(worldUser, chunkX / 8, chunkZ / 8);
 	}
 
 	@Override
@@ -93,13 +99,13 @@ public class WorldHeightmapsImplementation implements WorldHeightmaps
 	{
 		worldX = sanitizeHorizontalCoordinate(worldX);
 		worldZ = sanitizeHorizontalCoordinate(worldZ);
-		return aquireHeightmap(worldUser, worldX / 256, worldZ / 256, 1, 1);
+		return aquireHeightmap(worldUser, worldX / 256, worldZ / 256);
 	}
 
 	@Override
 	public HeightmapImplementation aquireHeightmapLocation(WorldUser worldUser, Location location)
 	{
-		return aquireHeightmap(worldUser, (int)(double)location.x(), (int)(double)location.z(), 1, 1);
+		return aquireHeightmap(worldUser, (int)(double)location.x(), (int)(double)location.z());
 	}
 	
 	@Override
