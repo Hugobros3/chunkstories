@@ -17,16 +17,21 @@ import io.xol.chunkstories.world.heightmap.HeightmapImplementation;
 /** Generates a world 'slice' (the voxel cell data represented by a heightmap) using smaller tasks */
 public class TaskGenerateWorldSlice extends Task implements WorldUser {
 
-	public TaskGenerateWorldSlice(World world, Heightmap heightmap) {
+	public TaskGenerateWorldSlice(World world, Heightmap heightmap, int directionX, int directionZ) {
 		this.world = world;
 		this.heightmap = heightmap;
 		
 		this.heightmap.registerUser(this);
+
+		this.directionX = directionX;
+		this.directionZ = directionZ;
 	}
 	
 	final World world;
 	final Heightmap heightmap;
 	int relative_chunkX = 0;
+	int directionX;
+	int directionZ;
 	private Task[] f;
 	
 	@Override
@@ -55,9 +60,24 @@ public class TaskGenerateWorldSlice extends Task implements WorldUser {
 		}
 		
 		if(f == null || isWorkDone()) {
+			int directed_relative_chunkX;
+			int directed_relative_chunkZ;
+
 			f = new Task[8];
 			for(int relative_chunkZ = 0; relative_chunkZ < 8; relative_chunkZ++) {
-				TaskGenerateWorldThinSlice task = new TaskGenerateWorldThinSlice(world, heightmap.getRegionX() * 8 + relative_chunkX,heightmap.getRegionZ() * 8 + relative_chunkZ, heightmap);
+				if (directionX < 0) {
+					directed_relative_chunkX = 7 - relative_chunkX;
+				} else {
+					directed_relative_chunkX = relative_chunkX;
+				}
+
+				if (directionZ < 0) {
+					directed_relative_chunkZ = 7 - relative_chunkZ;
+				} else {
+					directed_relative_chunkZ = relative_chunkZ;
+				}
+
+				TaskGenerateWorldThinSlice task = new TaskGenerateWorldThinSlice(world, heightmap.getRegionX() * 8 + directed_relative_chunkX, heightmap.getRegionZ() * 8 + directed_relative_chunkZ, heightmap);
 				world.getGameContext().tasks().scheduleTask(task);
 				f[relative_chunkZ] = task;
 			}

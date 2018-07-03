@@ -108,7 +108,7 @@ public class RemotePlayerLoadingAgent {
 				}
 				
 				if(usedRegionHandles.add(handle)) {
-					Heightmap regionSummary = player.getWorld().getRegionsSummariesHolder().aquireHeightmap(player, packet.getX(), packet.getZ());
+					Heightmap regionSummary = player.getWorld().getRegionsSummariesHolder().aquireHeightmap(player, packet.getX(), packet.getZ(), 1, 1);
 					assert regionSummary != null; // assume it not being null because it's the supposed behaviour
 				}
 				else {

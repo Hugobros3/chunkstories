@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 
 import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.math.Math2;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.world.WorldUser;
 import io.xol.chunkstories.api.world.cell.CellData;
@@ -47,10 +48,10 @@ public class WorldHeightmapsImplementation implements WorldHeightmaps
 	}
 
 	@Override
-	public HeightmapImplementation aquireHeightmap(WorldUser worldUser, int regionX, int regionZ)
+	public HeightmapImplementation aquireHeightmap(WorldUser worldUser, int regionX, int regionZ, int dirX, int dirZ)
 	{
 		HeightmapImplementation summary;
-		
+
 		regionX %= worldSizeInRegions;
 		regionZ %= worldSizeInRegions;
 		if (regionX < 0)
@@ -65,7 +66,7 @@ public class WorldHeightmapsImplementation implements WorldHeightmaps
 			summary = summaries.get(i);
 		else
 		{
-			summary = new HeightmapImplementation(this, regionX, regionZ);
+			summary = new HeightmapImplementation(this, regionX, regionZ, dirX, dirZ);
 			summaries.put(i, summary);
 		}
 		dontDeleteWhileCreating.release();
@@ -85,7 +86,7 @@ public class WorldHeightmapsImplementation implements WorldHeightmaps
 		if (chunkZ < 0)
 			chunkZ += worldSizeInChunks;
 		
-		return aquireHeightmap(worldUser, chunkX / 8, chunkZ / 8);
+		return aquireHeightmap(worldUser, chunkX / 8, chunkZ / 8, 1, 1);
 	}
 
 	@Override
@@ -93,13 +94,13 @@ public class WorldHeightmapsImplementation implements WorldHeightmaps
 	{
 		worldX = sanitizeHorizontalCoordinate(worldX);
 		worldZ = sanitizeHorizontalCoordinate(worldZ);
-		return aquireHeightmap(worldUser, worldX / 256, worldZ / 256);
+		return aquireHeightmap(worldUser, worldX / 256, worldZ / 256, 1, 1);
 	}
 
 	@Override
 	public HeightmapImplementation aquireHeightmapLocation(WorldUser worldUser, Location location)
 	{
-		return aquireHeightmap(worldUser, (int)(double)location.x(), (int)(double)location.z());
+		return aquireHeightmap(worldUser, (int)(double)location.x(), (int)(double)location.z(), 1, 1);
 	}
 	
 	@Override

@@ -84,7 +84,7 @@ public class HeightmapImplementation implements Heightmap
 	/** The offsets in an array containing sequentially each mipmaps of a square texture of base size 128 */
 	public final static int[] minHeightMipmapOffsets = {0, 16384, 20480, 21504, 21760, 21824, 21840, 21844, 21845};
 
-	HeightmapImplementation(WorldHeightmapsImplementation worldSummariesHolder, int rx, int rz)
+	HeightmapImplementation(WorldHeightmapsImplementation worldSummariesHolder, int rx, int rz, int dirx, int dirz)
 	{
 		this.worldSummariesHolder = worldSummariesHolder;
 		this.world = worldSummariesHolder.getWorld();
@@ -95,7 +95,7 @@ public class HeightmapImplementation implements Heightmap
 			handler = new File(world.getFolderPath() + "/summaries/" + rx + "." + rz + ".sum");
 			
 			if(!handler.exists())
-				world.getGameContext().tasks().scheduleTask(new TaskGenerateWorldSlice(world, this));
+				world.getGameContext().tasks().scheduleTask(new TaskGenerateWorldSlice(world, this, dirx, dirz));
 			
 			loadFence = this.world.ioHandler.requestHeightmapLoad(this);
 		}
