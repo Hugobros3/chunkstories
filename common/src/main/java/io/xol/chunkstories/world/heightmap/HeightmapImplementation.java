@@ -15,6 +15,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import io.xol.chunkstories.api.math.Math2;
+import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.server.RemotePlayer;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.util.concurrency.Fence;
@@ -45,7 +47,7 @@ import net.jpountz.lz4.LZ4FastDecompressor;
  */
 public class HeightmapImplementation implements Heightmap
 {
-	final WorldHeightmapsImplementation worldSummariesHolder;
+	final WorldHeightmapsImplementation heightmapsHolder;
 	public final WorldImplementation world;
 	private final int regionX;
 	private final int regionZ;
@@ -84,18 +86,40 @@ public class HeightmapImplementation implements Heightmap
 	/** The offsets in an array containing sequentially each mipmaps of a square texture of base size 128 */
 	public final static int[] minHeightMipmapOffsets = {0, 16384, 20480, 21504, 21760, 21824, 21840, 21844, 21845};
 
-	HeightmapImplementation(WorldHeightmapsImplementation worldSummariesHolder, int rx, int rz, int dirx, int dirz)
+	HeightmapImplementation(WorldHeightmapsImplementation heightmapsHolder, int rx, int rz, WorldUser firstUser)
 	{
-		this.worldSummariesHolder = worldSummariesHolder;
-		this.world = worldSummariesHolder.getWorld();
+		this.heightmapsHolder = heightmapsHolder;
+		this.world = heightmapsHolder.getWorld();
 		this.regionX = rx;
 		this.regionZ = rz;
+		
+		this.registerUser(firstUser);
+
+		int dirX = 0;
+		int dirZ = 0;
+
+		if (firstUser instanceof Player) {
+			Player player = (Player)firstUser;
+
+			int playerRegionX = Math2.floor((player.getControlledEntity().getLocation().x()) / 256);
+			int playerRegionZ = Math2.floor((player.getControlledEntity().getLocation().z()) / 256);
+
+			if (regionX < playerRegionX)
+				dirX = -1;
+			if (regionX > playerRegionX)
+				dirX = 1;
+
+			if (regionZ < playerRegionZ)
+				dirZ = -1;
+			if (regionZ > playerRegionZ)
+				dirZ = 1;
+		}
 
 		if (world instanceof WorldMaster) {
 			handler = new File(world.getFolderPath() + "/summaries/" + rx + "." + rz + ".sum");
 			
 			if(!handler.exists())
-				world.getGameContext().tasks().scheduleTask(new TaskGenerateWorldSlice(world, this, dirx, dirz));
+				world.getGameContext().tasks().scheduleTask(new TaskGenerateWorldSlice(world, this, dirX, dirZ));
 			
 			loadFence = this.world.ioHandler.requestHeightmapLoad(this);
 		}
@@ -338,9 +362,9 @@ public class HeightmapImplementation implements Heightmap
 			if(loadFence instanceof SimpleFence)
 				((SimpleFence) loadFence).signal();
 
-			if (!worldSummariesHolder.removeSummary(this))
+			if (!heightmapsHolder.removeSummary(this))
 			{
-				System.out.println(this+" failed to be removed from the holder "+worldSummariesHolder);
+				System.out.println(this+" failed to be removed from the holder "+heightmapsHolder);
 			}
 		}
 	}
