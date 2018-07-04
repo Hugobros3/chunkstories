@@ -37,20 +37,20 @@ public class TaskBuildHeightmap extends Task {
 		//We wait on a bunch of stuff to load everytime
 		CompoundFence loadRelevantData = new CompoundFence();
 		
-		HeightmapImplementation summary = csWorld.getRegionsSummariesHolder().aquireHeightmap(cwt, regionX, regionZ);
+		HeightmapImplementation summary = csWorld.getRegionsSummariesHolder().acquireHeightmap(cwt, regionX, regionZ);
 		loadRelevantData.add(summary.waitForLoading());
 
-		//Aquires the chunks we want to make the summaries of.
+		//acquires the chunks we want to make the summaries of.
 		for (int innerCX = 0; innerCX < 8; innerCX++)
 			for (int innerCZ = 0; innerCZ < 8; innerCZ++)
 				for (int chunkY = 0; chunkY < OfflineWorldConverter.mcWorldHeight / 32; chunkY++)
 				{
-					ChunkHolder holder = csWorld.aquireChunkHolder(cwt, regionX * 8 + innerCX, chunkY, regionZ * 8 + innerCZ);
+					ChunkHolder holder = csWorld.acquireChunkHolder(cwt, regionX * 8 + innerCX, chunkY, regionZ * 8 + innerCZ);
 					if (holder != null) {
 						loadRelevantData.add(holder.waitForLoading());
 						
 						if(cwt.registeredCS_Holders.add(holder))
-							cwt.chunksAquired++;
+							cwt.chunksAcquired++;
 					}
 				}
 		

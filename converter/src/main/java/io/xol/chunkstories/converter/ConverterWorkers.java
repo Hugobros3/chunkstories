@@ -65,7 +65,7 @@ public class ConverterWorkers extends TasksPool<Task> implements Tasks
 		Set<ChunkHolder> registeredCS_Holders = new HashSet<ChunkHolder>();
 		Set<Heightmap> registeredCS_Summaries = new HashSet<Heightmap>();
 		
-		int chunksAquired = 0;
+		int chunksAcquired = 0;
 		
 		ConverterWorkerThread(int id)
 		{
@@ -89,7 +89,7 @@ public class ConverterWorkers extends TasksPool<Task> implements Tasks
 		{
 			while(true)
 			{
-				//Aquire a work permit
+				//acquire a work permit
 				tasksCounter.acquireUninterruptibly();
 				
 				//If one such permit was found to exist, assert a task is readily avaible
@@ -112,7 +112,7 @@ public class ConverterWorkers extends TasksPool<Task> implements Tasks
 				
 				//We have a security to prevent gobbling up too much ram
 				//Also serves as a mechanism to clear loaded data when finishing a step.
-				if (chunksAquired > converter().targetChunksToKeepInRam || pleaseDrop.compareAndSet(true, false))
+				if (chunksAcquired > converter().targetChunksToKeepInRam || pleaseDrop.compareAndSet(true, false))
 				{
 					//Save world
 					converter().verbose("More than "+converter().targetChunksToKeepInRam+" chunks already in memory, giving them up to clean afterwards");
@@ -123,7 +123,7 @@ public class ConverterWorkers extends TasksPool<Task> implements Tasks
 
 					for (ChunkHolder holder : registeredCS_Holders) {
 						holder.unregisterUser(this);
-						chunksAquired--;
+						chunksAcquired--;
 					}
 
 					for (Heightmap summary : registeredCS_Summaries)
@@ -185,7 +185,7 @@ public class ConverterWorkers extends TasksPool<Task> implements Tasks
 
 					for (ChunkHolder holder : cwt.registeredCS_Holders) {
 						holder.unregisterUser(cwt);
-						cwt.chunksAquired--;
+						cwt.chunksAcquired--;
 					}
 
 					for (Heightmap summary : cwt.registeredCS_Summaries)

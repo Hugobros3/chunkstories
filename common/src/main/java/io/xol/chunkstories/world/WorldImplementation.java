@@ -766,13 +766,13 @@ public abstract class WorldImplementation implements World
 	}
 
 	@Override
-	public ChunkHolder aquireChunkHolderLocation(WorldUser user, Location location)
+	public ChunkHolder acquireChunkHolderLocation(WorldUser user, Location location)
 	{
-		return aquireChunkHolder(user, (int) (double) location.x(), (int) (double) location.y(), (int) (double) location.z());
+		return acquireChunkHolder(user, (int) (double) location.x(), (int) (double) location.y(), (int) (double) location.z());
 	}
 
 	@Override
-	public ChunkHolder aquireChunkHolder(WorldUser user, int chunkX, int chunkY, int chunkZ)
+	public ChunkHolder acquireChunkHolder(WorldUser user, int chunkX, int chunkY, int chunkZ)
 	{
 		//Sanitation of input data
 		chunkX = chunkX % getSizeInChunks();
@@ -781,17 +781,17 @@ public abstract class WorldImplementation implements World
 			chunkX += getSizeInChunks();
 		if (chunkZ < 0)
 			chunkZ += getSizeInChunks();
-		return this.getRegionsHolder().aquireChunkHolder(user, chunkX, chunkY, chunkZ);
+		return this.getRegionsHolder().acquireChunkHolder(user, chunkX, chunkY, chunkZ);
 	}
 
 	@Override
-	public ChunkHolder aquireChunkHolderWorldCoordinates(WorldUser user, int worldX, int worldY, int worldZ)
+	public ChunkHolder acquireChunkHolderWorldCoordinates(WorldUser user, int worldX, int worldY, int worldZ)
 	{
 		worldX = sanitizeHorizontalCoordinate(worldX);
 		worldY = sanitizeVerticalCoordinate(worldY);
 		worldZ = sanitizeHorizontalCoordinate(worldZ);
 
-		return this.getRegionsHolder().aquireChunkHolder(user, worldX / 32, worldY / 32, worldZ / 32);
+		return this.getRegionsHolder().acquireChunkHolder(user, worldX / 32, worldY / 32, worldZ / 32);
 	}
 
 	@Override
@@ -853,31 +853,31 @@ public abstract class WorldImplementation implements World
 	}
 
 	@Override
-	public RegionImplementation aquireRegion(WorldUser user, int regionX, int regionY, int regionZ)
+	public RegionImplementation acquireRegion(WorldUser user, int regionX, int regionY, int regionZ)
 	{
-		return this.getRegionsHolder().aquireRegion(user, regionX, regionY, regionZ);
+		return this.getRegionsHolder().acquireRegion(user, regionX, regionY, regionZ);
 	}
 
 	@Override
-	public RegionImplementation aquireRegionChunkCoordinates(WorldUser user, int chunkX, int chunkY, int chunkZ)
+	public RegionImplementation acquireRegionChunkCoordinates(WorldUser user, int chunkX, int chunkY, int chunkZ)
 	{
-		return aquireRegion(user, chunkX / 8, chunkY / 8, chunkZ / 8);
+		return acquireRegion(user, chunkX / 8, chunkY / 8, chunkZ / 8);
 	}
 
 	@Override
-	public RegionImplementation aquireRegionWorldCoordinates(WorldUser user, int worldX, int worldY, int worldZ)
+	public RegionImplementation acquireRegionWorldCoordinates(WorldUser user, int worldX, int worldY, int worldZ)
 	{
 		worldX = sanitizeHorizontalCoordinate(worldX);
 		worldY = sanitizeVerticalCoordinate(worldY);
 		worldZ = sanitizeHorizontalCoordinate(worldZ);
 
-		return aquireRegion(user, worldX / 256, worldY / 256, worldZ / 256);
+		return acquireRegion(user, worldX / 256, worldY / 256, worldZ / 256);
 	}
 
 	@Override
-	public RegionImplementation aquireRegionLocation(WorldUser user, Location location)
+	public RegionImplementation acquireRegionLocation(WorldUser user, Location location)
 	{
-		return aquireRegionWorldCoordinates(user, (int) (double) location.x(), (int) (double) location.y(), (int) (double) location.z());
+		return acquireRegionWorldCoordinates(user, (int) (double) location.x(), (int) (double) location.y(), (int) (double) location.z());
 	}
 
 	@Override

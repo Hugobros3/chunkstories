@@ -42,7 +42,7 @@ public class TaskGenerateWorldThinSlice extends Task implements WorldUser {
 		
 		holders = new ChunkHolder[maxGenerationHeightInChunks];
 		for(int chunkY = 0; chunkY < maxGenerationHeightInChunks; chunkY ++) {
-			holders[chunkY] = world.aquireChunkHolder(this, chunkX, chunkY, chunkZ);
+			holders[chunkY] = world.acquireChunkHolder(this, chunkX, chunkY, chunkZ);
 		}
 	}
 

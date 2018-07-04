@@ -164,7 +164,7 @@ public class HashMapWorldRegionsHolder
 	}
 	
 	/** Atomically adds an user to a region itself, and creates it if it was previously unused */
-	public RegionImplementation aquireRegion(WorldUser user, int regionX, int regionY, int regionZ) {
+	public RegionImplementation acquireRegion(WorldUser user, int regionX, int regionY, int regionZ) {
 		if (regionY < 0 || regionY > world.getMaxHeight() / 256)
 			return null;
 
@@ -190,7 +190,7 @@ public class HashMapWorldRegionsHolder
 	}
 
 	/** Atomically adds an user to a region's chunk, and creates the region if it was previously unused */
-	public ChunkHolder aquireChunkHolder(WorldUser user, int chunkX, int chunkY, int chunkZ) {
+	public ChunkHolder acquireChunkHolder(WorldUser user, int chunkX, int chunkY, int chunkZ) {
 		if (chunkY < 0 || chunkY > world.getMaxHeight() / 32)
 			return null;
 
@@ -224,7 +224,7 @@ public class HashMapWorldRegionsHolder
 		//We might want to wait for a few things
 		CompoundFence compoundFence = new CompoundFence();
 		
-		//Prevents unloading a region whilst one of it's chunk holders is being aquired
+		//Prevents unloading a region whilst one of it's chunk holders is being acquired
 		noConcurrentRegionCreationDestruction.acquireUninterruptibly();
 		
 		//Iterates over loaded regions and unloads unused ones

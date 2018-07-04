@@ -79,7 +79,7 @@ public class LocalClientLoadingAgent {
 						if(fastChunksMask.contains(summed))
 							continue;
 						
-						ChunkHolder holder = world.aquireChunkHolder(player, chunkX, chunkY, chunkZ);
+						ChunkHolder holder = world.acquireChunkHolder(player, chunkX, chunkY, chunkZ);
 						
 						assert holder != null;
 						
@@ -136,8 +136,8 @@ public class LocalClientLoadingAgent {
 						int regionX = chunkX / 8;
 						int regionZ = chunkZ / 8;
 
-						//TODO bad to aquire each time!!!
-						Heightmap regionSummary = world.getRegionsSummariesHolder().aquireHeightmap(player, regionX, regionZ);
+						//TODO bad to acquire each time!!!
+						Heightmap regionSummary = world.getRegionsSummariesHolder().acquireHeightmap(player, regionX, regionZ);
 					
 						if(regionSummary != null) {
 							if(usedRegionSummaries.add(regionSummary)) {

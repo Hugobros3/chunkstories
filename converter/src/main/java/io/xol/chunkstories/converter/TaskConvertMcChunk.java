@@ -74,7 +74,7 @@ public class TaskConvertMcChunk extends Task {
 
 					//Ignore the summaries for now
 					
-					/*Heightmap summary = csWorld.getRegionsSummariesHolder().aquireRegionSummaryWorldCoordinates(this, chunkStoriesCurrentChunkX, chunkStoriesCurrentChunkZ);
+					/*Heightmap summary = csWorld.getRegionsSummariesHolder().acquireRegionSummaryWorldCoordinates(this, chunkStoriesCurrentChunkX, chunkStoriesCurrentChunkZ);
 					if(summary != null)
 						registeredCS_Summaries.add(summary);*/
 
@@ -83,12 +83,12 @@ public class TaskConvertMcChunk extends Task {
 					//Then the chunks
 					for (int y = 0; y < OfflineWorldConverter.mcWorldHeight; y += 32)
 					{
-						ChunkHolder holder = csWorld.aquireChunkHolderWorldCoordinates(cwt, chunkStoriesCurrentChunkX, y, chunkStoriesCurrentChunkZ);
+						ChunkHolder holder = csWorld.acquireChunkHolderWorldCoordinates(cwt, chunkStoriesCurrentChunkX, y, chunkStoriesCurrentChunkZ);
 						if (holder != null) {
 							loadRelevantData.add(holder.waitForLoading());
 							
 							if(cwt.registeredCS_Holders.add(holder))
-								cwt.chunksAquired++;
+								cwt.chunksAcquired++;
 						}
 					}
 					

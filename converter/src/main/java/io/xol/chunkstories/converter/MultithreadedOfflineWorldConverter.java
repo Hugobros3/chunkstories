@@ -224,7 +224,7 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 		Set<ChunkHolder> registeredCS_Holders = new HashSet<ChunkHolder>();
 		Set<Heightmap> registeredCS_Summaries = new HashSet<Heightmap>();
 
-		int chunksAquired = 0;
+		int chunksacquired = 0;
 		WorldUser worldUser = this;
 		
 		int waveSize = this.threadsCount * 32;
@@ -238,7 +238,7 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 				
 				CompoundFence loadRelevantData = new CompoundFence();
 				
-				Heightmap sum = csWorld.getRegionsSummariesHolder().aquireHeightmapChunkCoordinates(worldUser, chunkX, chunkZ);
+				Heightmap sum = csWorld.getRegionsSummariesHolder().acquireHeightmapChunkCoordinates(worldUser, chunkX, chunkZ);
 				registeredCS_Summaries.add(sum);
 				loadRelevantData.add(sum.waitForLoading());
 				
@@ -246,17 +246,17 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 				for (int i = -1; i < 2; i++) {
 					for (int j = -1; j < 2; j++) {
 						for (int chunkY = 0; chunkY <= maxHeightPossible / 32; chunkY++) {
-							ChunkHolder chunkHolder = csWorld.aquireChunkHolder(worldUser, chunkX + i, chunkY, chunkZ + j);
+							ChunkHolder chunkHolder = csWorld.acquireChunkHolder(worldUser, chunkX + i, chunkY, chunkZ + j);
 							if (chunkHolder != null) {
 								loadRelevantData.add(chunkHolder.waitForLoading());
 								if (registeredCS_Holders.add(chunkHolder))
-									chunksAquired++;
+									chunksacquired++;
 							}
 						}
 					}
 				}
 				
-				assert chunksAquired == registeredCS_Holders.size();
+				assert chunksacquired == registeredCS_Holders.size();
 				
 				//Wait for everything to actually load
 				loadRelevantData.traverse();
@@ -313,7 +313,7 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 
 						for (ChunkHolder holder : registeredCS_Holders) {
 							holder.unregisterUser(worldUser);
-							chunksAquired--;
+							chunksacquired--;
 						}
 
 						for (Heightmap summary : registeredCS_Summaries)
@@ -335,7 +335,7 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 		//Terminate
 		for (ChunkHolder holder : registeredCS_Holders) {
 			holder.unregisterUser(worldUser);
-			chunksAquired--;
+			chunksacquired--;
 		}
 
 		for (Heightmap summary : registeredCS_Summaries)

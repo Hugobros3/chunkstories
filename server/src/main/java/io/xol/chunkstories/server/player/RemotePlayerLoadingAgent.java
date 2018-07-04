@@ -77,7 +77,7 @@ public class RemotePlayerLoadingAgent {
 			if(packet.getType() == Type.REGISTER_CHUNK) {
 				int handle = chunkHandle(packet.getX(), packet.getY(), packet.getZ());
 				if(usedChunksHandles.add(handle)) {
-					ChunkHolder holder = player.getWorld().aquireChunkHolder(player, packet.getX(), packet.getY(), packet.getZ());
+					ChunkHolder holder = player.getWorld().acquireChunkHolder(player, packet.getX(), packet.getY(), packet.getZ());
 					assert holder != null; // assume it not being null because it's the supposed behaviour
 				}
 				else {
@@ -108,7 +108,7 @@ public class RemotePlayerLoadingAgent {
 				}
 				
 				if(usedRegionHandles.add(handle)) {
-					Heightmap regionSummary = player.getWorld().getRegionsSummariesHolder().aquireHeightmap(player, packet.getX(), packet.getZ());
+					Heightmap regionSummary = player.getWorld().getRegionsSummariesHolder().acquireHeightmap(player, packet.getX(), packet.getZ());
 					assert regionSummary != null; // assume it not being null because it's the supposed behaviour
 				}
 				else {
