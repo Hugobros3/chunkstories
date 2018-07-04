@@ -127,8 +127,6 @@ public class LocalClientLoadingAgent {
 			}
 	
 			//We load the region summaries we fancy
-			int chunkRegionX = Math2.floor((controlledEntity.getLocation().x()) / 256);
-			int chunkRegionZ = Math2.floor((controlledEntity.getLocation().z()) / 256);
 			int summaryDistance = (int) (world.getClient().getConfiguration().getIntOption("client.rendering.viewDistance") / 24);
 			for (int chunkX = (cameraChunkX - summaryDistance); chunkX < cameraChunkX + summaryDistance; chunkX++)
 				for (int chunkZ = (cameraChunkZ - summaryDistance); chunkZ < cameraChunkZ + summaryDistance; chunkZ++)
@@ -138,15 +136,8 @@ public class LocalClientLoadingAgent {
 						int regionX = chunkX / 8;
 						int regionZ = chunkZ / 8;
 
-						int dirX = 1;
-						int dirZ = 1;
-						if (regionX < chunkRegionX)
-							dirX = -1;
-						if (regionZ < chunkRegionZ)
-							dirZ = -1;
-						
 						//TODO bad to aquire each time!!!
-						Heightmap regionSummary = world.getRegionsSummariesHolder().aquireHeightmap(player, regionX, regionZ, dirX, dirZ);
+						Heightmap regionSummary = world.getRegionsSummariesHolder().aquireHeightmap(player, regionX, regionZ);
 					
 						if(regionSummary != null) {
 							if(usedRegionSummaries.add(regionSummary)) {
