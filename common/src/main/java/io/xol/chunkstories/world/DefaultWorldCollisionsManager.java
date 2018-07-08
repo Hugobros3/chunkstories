@@ -23,50 +23,41 @@ import io.xol.chunkstories.api.world.cell.CellData;
 import io.xol.chunkstories.world.iterators.EntityRayIterator;
 
 /** Responsible for handling the 'pixel-perfect' AABB collisions */
-public class DefaultWorldCollisionsManager implements WorldCollisionsManager
-{
+public class DefaultWorldCollisionsManager implements WorldCollisionsManager {
 	private final WorldImplementation world;
-	
+
 	public DefaultWorldCollisionsManager(WorldImplementation world) {
 		this.world = world;
 	}
-	
+
 	@Override
-	public Location raytraceSolid(Vector3dc initialPosition, Vector3dc direction, double limit)
-	{
+	public Location raytraceSolid(Vector3dc initialPosition, Vector3dc direction, double limit) {
 		return raytraceSolid(initialPosition, direction, limit, false, false);
 	}
 
 	@Override
-	public Location raytraceSolidOuter(Vector3dc initialPosition, Vector3dc direction, double limit)
-	{
+	public Location raytraceSolidOuter(Vector3dc initialPosition, Vector3dc direction, double limit) {
 		return raytraceSolid(initialPosition, direction, limit, true, false);
 	}
 
 	@Override
-	public Location raytraceSelectable(Location initialPosition, Vector3dc direction, double limit)
-	{
+	public Location raytraceSelectable(Location initialPosition, Vector3dc direction, double limit) {
 		return raytraceSolid(initialPosition, direction, limit, false, true);
 	}
 
-	private Location raytraceSolid(Vector3dc initialPosition, Vector3dc directionIn, double limit, boolean outer, boolean selectable)
-	{
+	private Location raytraceSolid(Vector3dc initialPosition, Vector3dc directionIn, double limit, boolean outer, boolean selectable) {
 		Vector3d direction = new Vector3d();
 		directionIn.normalize(direction);
-		
-		//direction.scale(0.02);
 
-		//float distance = 0f;
 		CellData cell;
-		//Voxel vox;
 		int x, y, z;
 		x = (int) Math.floor(initialPosition.x());
 		y = (int) Math.floor(initialPosition.y());
 		z = (int) Math.floor(initialPosition.z());
 
-		//DDA algorithm
+		// DDA algorithm
 
-		//It requires double arrays because it works using loops over each dimension
+		// It requires double arrays because it works using loops over each dimension
 		double[] rayOrigin = new double[3];
 		double[] rayDirection = new double[3];
 		rayOrigin[0] = initialPosition.x();
@@ -82,34 +73,27 @@ public class DefaultWorldCollisionsManager implements WorldCollisionsManager
 		int step[] = new int[3];
 
 		int side = 0;
-		//Prepare distances
-		for (int i = 0; i < 3; ++i)
-		{
+		// Prepare distances
+		for (int i = 0; i < 3; ++i) {
 			double deltaX = rayDirection[0] / rayDirection[i];
 			double deltaY = rayDirection[1] / rayDirection[i];
 			double deltaZ = rayDirection[2] / rayDirection[i];
 			deltaDist[i] = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
-			if (rayDirection[i] < 0.f)
-			{
+			if (rayDirection[i] < 0.f) {
 				step[i] = -1;
 				next[i] = (rayOrigin[i] - voxelCoords[i]) * deltaDist[i];
-			}
-			else
-			{
+			} else {
 				step[i] = 1;
 				next[i] = (voxelCoords[i] + 1.f - rayOrigin[i]) * deltaDist[i];
 			}
 		}
 
-		do
-		{
-			
-			//DDA steps
+		do {
+
+			// DDA steps
 			side = 0;
-			for (int i = 1; i < 3; ++i)
-			{
-				if (next[side] > next[i])
-				{
+			for (int i = 1; i < 3; ++i) {
+				if (next[side] > next[i]) {
 					side = i;
 				}
 			}
@@ -121,28 +105,22 @@ public class DefaultWorldCollisionsManager implements WorldCollisionsManager
 			y = voxelCoords[1];
 			z = voxelCoords[2];
 			cell = world.peekSafely(x, y, z);
-			if (cell.getVoxel().getDefinition().isSolid() || (selectable && cell.getVoxel().getDefinition().isSelectable()))
-			{
+			if (cell.getVoxel().getDefinition().isSolid() || (selectable && cell.getVoxel().getDefinition().isSelectable())) {
 				boolean collides = false;
-				for (CollisionBox box : cell.getTranslatedCollisionBoxes())
-				{
-					//System.out.println(box);
+				for (CollisionBox box : cell.getTranslatedCollisionBoxes()) {
+					// System.out.println(box);
 					Vector3dc collisionPoint = box.lineIntersection(initialPosition, direction);
-					if (collisionPoint != null)
-					{
+					if (collisionPoint != null) {
 						collides = true;
-						//System.out.println("collides @ "+collisionPoint);
+						// System.out.println("collides @ "+collisionPoint);
 					}
 				}
-				if (collides)
-				{
+				if (collides) {
 					if (!outer)
 						return new Location(world, x, y, z);
-					else
-					{
-						//Back off a bit
-						switch (side)
-						{
+					else {
+						// Back off a bit
+						switch (side) {
 						case 0:
 							x -= step[side];
 							break;
@@ -157,17 +135,15 @@ public class DefaultWorldCollisionsManager implements WorldCollisionsManager
 					}
 				}
 			}
-			
-			//distance += deltaDist[side];
 
-		}
-		while (voxelDelta[0] * voxelDelta[0] + voxelDelta[1] * voxelDelta[1] + voxelDelta[2] * voxelDelta[2] < limit * limit);
+			// distance += deltaDist[side];
+
+		} while (voxelDelta[0] * voxelDelta[0] + voxelDelta[1] * voxelDelta[1] + voxelDelta[2] * voxelDelta[2] < limit * limit);
 		return null;
 	}
 
 	@Override
-	public Iterator<Entity> rayTraceEntities(Vector3dc initialPosition, Vector3dc direction, double limit)
-	{
+	public Iterator<Entity> rayTraceEntities(Vector3dc initialPosition, Vector3dc direction, double limit) {
 		double blocksLimit = limit;
 
 		Vector3d blocksCollision = this.raytraceSolid(initialPosition, direction, limit);
@@ -178,15 +154,15 @@ public class DefaultWorldCollisionsManager implements WorldCollisionsManager
 	}
 
 	@Override
-	public Iterator<Entity> raytraceEntitiesIgnoringVoxels(Vector3dc initialPosition, Vector3dc direction, double limit)
-	{
+	public Iterator<Entity> raytraceEntitiesIgnoringVoxels(Vector3dc initialPosition, Vector3dc direction, double limit) {
 		return new EntityRayIterator(world, initialPosition, direction, limit);
 	}
-	
-	/** 
-	 * Does a complicated check to see how far the entity can go using the delta direction, from the 'start' position.
-	 * Does not actually move anything
-	 * Returns the remaining distance in each dimension if it got stuck ( with vec3(0.0, 0.0, 0.0) meaning it can safely move without colliding with anything )
+
+	/**
+	 * Does a complicated check to see how far the entity can go using the delta
+	 * direction, from the 'start' position. Does not actually move anything Returns
+	 * the remaining distance in each dimension if it got stuck ( with vec3(0.0,
+	 * 0.0, 0.0) meaning it can safely move without colliding with anything )
 	 */
 	public Vector3d runEntityAgainstWorldVoxels(Entity entity, Vector3dc from, Vector3dc delta) {
 		return runEntityAgainst(entity, from, delta, false);
@@ -196,16 +172,16 @@ public class DefaultWorldCollisionsManager implements WorldCollisionsManager
 	public Vector3d runEntityAgainstWorldVoxelsAndEntities(Entity entity, Vector3dc from, Vector3dc delta) {
 		return runEntityAgainst(entity, from, delta, true);
 	}
-	
+
 	final ReentrantLock lock = new ReentrantLock();
-	
+
 	public Vector3dc tryMovingEntityWithCollisions(Entity entity, Vector3dc from, Vector3dc delta) {
 		try {
 			lock.lock();
 			Vector3d travel = new Vector3d(delta);
 			Vector3d blocked = runEntityAgainst(entity, from, delta, true);
 			travel.sub(blocked);
-			
+
 			entity.traits.with(TraitCollidable.class, t -> t.moveWithCollisionRestrain(travel));
 			return blocked;
 		} finally {
@@ -216,21 +192,21 @@ public class DefaultWorldCollisionsManager implements WorldCollisionsManager
 	public Vector3d runEntityAgainst(Entity entity, Vector3dc from, Vector3dc delta, boolean collideWithEntities) {
 		CellData cell;
 		ArrayList<CollisionBox> boxes = new ArrayList<>();
-		
-		//Extract the current position
+
+		// Extract the current position
 		Vector3d pos = new Vector3d(from);
 
-		//Keep biggest distanceToTravel for each dimension collisionBox of our entity
+		// Keep biggest distanceToTravel for each dimension collisionBox of our entity
 		Vector3d maxDistanceToTravel = new Vector3d(0.0);
 
 		Vector3d direction = new Vector3d(delta);
 		direction.normalize();
 
 		TraitCollidable e_coli = entity.traits.get(TraitCollidable.class);
-		if(e_coli == null)
+		if (e_coli == null)
 			return new Vector3d(delta);
-		
-		//Iterate over every box
+
+		// Iterate over every box
 		for (int eCB = 0; eCB < e_coli.getCollisionBoxes().length; eCB++) {
 			// Make a normalized double vector and keep the original length
 			Vector3d vec = new Vector3d(delta);
@@ -238,7 +214,7 @@ public class DefaultWorldCollisionsManager implements WorldCollisionsManager
 			double len = vec.length();
 			vec.normalize();
 			vec.mul(0.25d);
-			
+
 			// Do it block per block, face per face
 			double distanceTraveled = 0;
 			CollisionBox checkerX = e_coli.getCollisionBoxes()[eCB].translate(pos.x(), pos.y(), pos.z());
@@ -246,14 +222,10 @@ public class DefaultWorldCollisionsManager implements WorldCollisionsManager
 			CollisionBox checkerZ = e_coli.getCollisionBoxes()[eCB].translate(pos.x(), pos.y(), pos.z());
 
 			double stepDistanceX, stepDistanceY, stepDistanceZ;
-			
-			Vector3d entitiesCenter = new Vector3d(
-					pos.x() - e_coli.getCollisionBoxes()[eCB].xw, 
-					pos.y() - e_coli.getCollisionBoxes()[eCB].h - 2, 
-					pos.z() - e_coli.getCollisionBoxes()[eCB].zw );
-			Vector3d entitiesRadius = new Vector3d(
-					e_coli.getCollisionBoxes()[eCB].xw * 5, 
-					e_coli.getCollisionBoxes()[eCB].h * 5, 
+
+			Vector3d entitiesCenter = new Vector3d(pos.x() - e_coli.getCollisionBoxes()[eCB].xw, pos.y() - e_coli.getCollisionBoxes()[eCB].h - 2,
+					pos.z() - e_coli.getCollisionBoxes()[eCB].zw);
+			Vector3d entitiesRadius = new Vector3d(e_coli.getCollisionBoxes()[eCB].xw * 5, e_coli.getCollisionBoxes()[eCB].h * 5,
 					e_coli.getCollisionBoxes()[eCB].zw * 5);
 
 			while (distanceTraveled < len) {
@@ -284,10 +256,13 @@ public class DefaultWorldCollisionsManager implements WorldCollisionsManager
 							}
 						}
 					}
-					
-					if(collideWithEntities)
-						world.getEntitiesInBox(entitiesCenter, entitiesRadius).forEach(e -> { if(e != entity && e.getDefinition().collidesWithEntities()) addAllSafeAndTranslate(boxes, e, e.getLocation()); });
-					
+
+					if (collideWithEntities)
+						world.getEntitiesInBox(entitiesCenter, entitiesRadius).forEach(e -> {
+							if (e != entity && e.getDefinition().collidesWithEntities())
+								addAllSafeAndTranslate(boxes, e, e.getLocation());
+						});
+
 					for (CollisionBox box : boxes) {
 						if (checkerZ.collidesWith(box)) {
 							stepDistanceZ = 0;
@@ -302,7 +277,7 @@ public class DefaultWorldCollisionsManager implements WorldCollisionsManager
 							checkerZ = e_coli.getCollisionBoxes()[eCB].translate(pos.x(), pos.y(), pos.z() + stepDistanceZ);
 						}
 					}
-					
+
 					distanceToTravel.z = (distanceToTravel.z() - stepDistanceZ);
 					pos.z = (pos.z() + stepDistanceZ);
 				}
@@ -319,10 +294,14 @@ public class DefaultWorldCollisionsManager implements WorldCollisionsManager
 							}
 						}
 					}
-					
-					if(collideWithEntities)
-						world.getEntitiesInBox(entitiesCenter, entitiesRadius).forEach(e -> { if(e != entity && e.getDefinition().collidesWithEntities() ) { addAllSafeAndTranslate(boxes, e, e.getLocation());} });
-					
+
+					if (collideWithEntities)
+						world.getEntitiesInBox(entitiesCenter, entitiesRadius).forEach(e -> {
+							if (e != entity && e.getDefinition().collidesWithEntities()) {
+								addAllSafeAndTranslate(boxes, e, e.getLocation());
+							}
+						});
+
 					for (CollisionBox box : boxes) {
 						if (checkerX.collidesWith(box)) {
 							stepDistanceX = 0;
@@ -340,11 +319,11 @@ public class DefaultWorldCollisionsManager implements WorldCollisionsManager
 						}
 
 					}
-					
+
 					pos.x = (pos.x() + stepDistanceX);
 					distanceToTravel.x = (distanceToTravel.x() - stepDistanceX);
 				}
-				
+
 				if (delta.y() != 0.0) {
 					boxes.clear();
 					checkerY = e_coli.getCollisionBoxes()[eCB].translate(pos.x(), pos.y() + stepDistanceY, pos.z());
@@ -357,10 +336,13 @@ public class DefaultWorldCollisionsManager implements WorldCollisionsManager
 							}
 						}
 					}
-					
-					if(collideWithEntities)
-						world.getEntitiesInBox(entitiesCenter, entitiesRadius).forEach(e -> { if(e != entity && e.getDefinition().collidesWithEntities()) addAllSafeAndTranslate(boxes, e, e.getLocation()); });
-					
+
+					if (collideWithEntities)
+						world.getEntitiesInBox(entitiesCenter, entitiesRadius).forEach(e -> {
+							if (e != entity && e.getDefinition().collidesWithEntities())
+								addAllSafeAndTranslate(boxes, e, e.getLocation());
+						});
+
 					for (CollisionBox box : boxes) {
 						if (checkerY.collidesWith(box)) {
 							stepDistanceY = 0;
@@ -378,7 +360,7 @@ public class DefaultWorldCollisionsManager implements WorldCollisionsManager
 						}
 
 					}
-					
+
 					pos.y = (pos.y() + stepDistanceY);
 					distanceToTravel.y = (distanceToTravel.y() - stepDistanceY);
 				}
@@ -398,18 +380,18 @@ public class DefaultWorldCollisionsManager implements WorldCollisionsManager
 
 	private void addAllSafeAndTranslate(ArrayList<CollisionBox> l, Entity e, Location t) {
 		TraitCollidable col = e != null ? e.traits.get(TraitCollidable.class) : null;
-		
-		if(col != null) {
-			for(CollisionBox b : col.getCollisionBoxes()) {
+
+		if (col != null) {
+			for (CollisionBox b : col.getCollisionBoxes()) {
 				b.translate(t);
-				//System.out.println(b);
+				// System.out.println(b);
 				l.add(b);
 			}
 		}
 	}
 
 	private <T> void addAllSafe(ArrayList<T> l, T[] e) {
-		if(e != null)
+		if (e != null)
 			Collections.addAll(l, e);
 	}
 }
