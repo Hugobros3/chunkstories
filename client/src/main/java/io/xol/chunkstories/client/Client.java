@@ -80,6 +80,9 @@ public class Client implements ClientInterface
 		GameDirectory.check();
 		GameDirectory.initClientPath();
 
+		//osx dirty fix
+		System.setProperty("java.awt.headless", "true");
+
 		File coreContentLocation = new File("core_content.zip");
 		
 		String modsStringArgument = null;
