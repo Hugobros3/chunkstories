@@ -15,5 +15,5 @@ public abstract class ServerCommandBasic implements CommandHandler {
 	public ServerCommandBasic(ServerInterface server) {
 		this.server = server;
 	}
-	
+
 }

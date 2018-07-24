@@ -19,24 +19,22 @@ public class TpCommand extends ServerCommandBasic {
 		super(serverConsole);
 		server.getPluginManager().registerCommand("tp").setHandler(this);
 	}
-	
+
 	@Override
 	public boolean handleCommand(CommandEmitter emitter, Command command, String[] arguments) {
-		
-		if(!emitter.hasPermission("server.tp"))
-		{
+
+		if (!emitter.hasPermission("server.tp")) {
 			emitter.sendMessage("You don't have the permission.");
 			return true;
 		}
-		
-		if(!(emitter instanceof Player))
-		{
+
+		if (!(emitter instanceof Player)) {
 			emitter.sendMessage("You need to be a player to use this command.");
 			return true;
 		}
-		
-		Player who = (Player)emitter;
-		
+
+		Player who = (Player) emitter;
+
 		Location to = null;
 
 		if (arguments.length == 1) {
@@ -78,9 +76,9 @@ public class TpCommand extends ServerCommandBasic {
 			who.setLocation(to);
 			return true;
 		}
-		
+
 		emitter.sendMessage("#FF8966Usage: /tp [who] (<x> <y> <z>)|(to)");
-		
+
 		return true;
 	}
 

@@ -18,27 +18,27 @@ import io.xol.chunkstories.renderer.opengl.shader.ShaderGL.InternalUniformsConfi
 import io.xol.chunkstories.renderer.opengl.texture.TexturingConfigurationImplementation;
 import io.xol.chunkstories.renderer.opengl.vbo.AttributesConfigurationImplementation;
 
-public class RenderingCommandMultipleInstances extends RenderingCommandSingleInstance{
+public class RenderingCommandMultipleInstances extends RenderingCommandSingleInstance {
 
 	final int instances;
-	
+
 	public RenderingCommandMultipleInstances(Primitive primitive, Shader Shader,
-			TexturingConfigurationImplementation texturingConfiguration, AttributesConfigurationImplementation attributesConfiguration,
-			InternalUniformsConfiguration uniformsConfiguration, OpenGLStateMachine StateMachine,
-			Matrix4f objectMatrix, int start, int count, int instances) {
-		
-		super(primitive, Shader, texturingConfiguration, attributesConfiguration, uniformsConfiguration,
-				StateMachine, objectMatrix, start, count);
-		
+			TexturingConfigurationImplementation texturingConfiguration,
+			AttributesConfigurationImplementation attributesConfiguration,
+			InternalUniformsConfiguration uniformsConfiguration, OpenGLStateMachine StateMachine, Matrix4f objectMatrix,
+			int start, int count, int instances) {
+
+		super(primitive, Shader, texturingConfiguration, attributesConfiguration, uniformsConfiguration, StateMachine,
+				objectMatrix, start, count);
+
 		this.instances = instances;
 	}
 
 	@Override
-	public void render(RenderingInterface renderingInterface) throws RenderingException
-	{
+	public void render(RenderingInterface renderingInterface) throws RenderingException {
 		setup(renderingInterface);
 
-		//Do the draw call
+		// Do the draw call
 		GLCalls.DrawArraysInstanced(modes[primitive.ordinal()], start, count, instances);
 	}
 

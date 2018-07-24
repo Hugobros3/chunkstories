@@ -16,50 +16,42 @@ import io.xol.chunkstories.world.region.RegionImplementation;
 /**
  * Iterates over an entire world and gives all *loaded* chunks of it
  */
-public class WorldChunksIterator implements ChunksIterator
-{
+public class WorldChunksIterator implements ChunksIterator {
 	Iterator<RegionImplementation> regionsIterator;
 	RegionImplementation currentRegion;
 	ChunksIterator currentRegionChunksIterator;
 
-	public WorldChunksIterator(WorldImplementation world)
-	{
+	public WorldChunksIterator(WorldImplementation world) {
 		regionsIterator = world.getRegionsHolder().internalGetLoadedRegions();
 	}
 
 	@Override
-	public boolean hasNext()
-	{
-		//We always want to ask a non-null, non-empty chunk holder
-		while (currentRegion == null || !currentRegionChunksIterator.hasNext())
-		{
-			if (regionsIterator.hasNext())
-			{
+	public boolean hasNext() {
+		// We always want to ask a non-null, non-empty chunk holder
+		while (currentRegion == null || !currentRegionChunksIterator.hasNext()) {
+			if (regionsIterator.hasNext()) {
 				currentRegion = regionsIterator.next();
 				if (!(currentRegion == null))
 					currentRegionChunksIterator = currentRegion.iterator();
 			}
-			//We ran out of chunks holder
+			// We ran out of chunks holder
 			else
 				break;
 		}
-		//Does it have something for us ?
+		// Does it have something for us ?
 		return (currentRegion != null && currentRegionChunksIterator.hasNext());
 	}
 
 	@Override
-	public Chunk next()
-	{
-		//We always want to ask a non-null, non-empty chunk holder
-		while (currentRegion == null || !currentRegionChunksIterator.hasNext())
-		{
-			if (regionsIterator.hasNext())
-			{
+	public Chunk next() {
+		// We always want to ask a non-null, non-empty chunk holder
+		while (currentRegion == null || !currentRegionChunksIterator.hasNext()) {
+			if (regionsIterator.hasNext()) {
 				currentRegion = regionsIterator.next();
 				if (!(currentRegion == null))
 					currentRegionChunksIterator = currentRegion.iterator();
 			}
-			//We ran out of chunks holder
+			// We ran out of chunks holder
 			else
 				break;
 		}
@@ -69,8 +61,7 @@ public class WorldChunksIterator implements ChunksIterator
 	}
 
 	@Override
-	public void remove()
-	{
+	public void remove() {
 		currentRegionChunksIterator.remove();
 	}
 

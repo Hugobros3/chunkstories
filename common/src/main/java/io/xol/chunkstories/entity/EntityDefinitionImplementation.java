@@ -21,70 +21,63 @@ import io.xol.chunkstories.content.GenericNamedConfigurable;
 public class EntityDefinitionImplementation extends GenericNamedConfigurable implements EntityDefinition {
 	final EntityDefinitionsStore store;
 	final Constructor<? extends Entity> constructor;
-	
+
 	final boolean collidesWithEntities;
 
 	@SuppressWarnings("unchecked")
-	public EntityDefinitionImplementation(EntityDefinitionsStore store, String name, BufferedReader reader) throws IllegalEntityDeclarationException, IOException
-	{
+	public EntityDefinitionImplementation(EntityDefinitionsStore store, String name, BufferedReader reader)
+			throws IllegalEntityDeclarationException, IOException {
 		super(name, reader);
 		this.store = store;
-		
+
 		collidesWithEntities = this.resolveProperty("collidesWithEntities", "false").equals("true");
-		
+
 		String className = this.resolveProperty("class", null);
-		if(className == null)
-			throw new IllegalEntityDeclarationException("'class' property isn't set for entity "+name);
-		
-		try
-		{
+		if (className == null)
+			throw new IllegalEntityDeclarationException("'class' property isn't set for entity " + name);
+
+		try {
 			Class<?> entityClass = store.parent().modsManager().getClassByName(className);
-			if(entityClass == null)
-			{
-				throw new IllegalEntityDeclarationException("Entity class " + className + " does not exist in codebase.");
-			}
-			else if (!(Entity.class.isAssignableFrom(entityClass)))
-			{
-				throw new IllegalEntityDeclarationException("Entity class " + entityClass + " is not implementing the Entity interface.");
-			}
-			else
-			{
+			if (entityClass == null) {
+				throw new IllegalEntityDeclarationException(
+						"Entity class " + className + " does not exist in codebase.");
+			} else if (!(Entity.class.isAssignableFrom(entityClass))) {
+				throw new IllegalEntityDeclarationException(
+						"Entity class " + entityClass + " is not implementing the Entity interface.");
+			} else {
 				@SuppressWarnings("rawtypes")
-				Class[] types = { EntityDefinition.class, Location.class  };
-				
+				Class[] types = { EntityDefinition.class, Location.class };
+
 				this.constructor = (Constructor<? extends Entity>) entityClass.getConstructor(types);
-				
-				if(constructor == null)
-				{
-					throw new IllegalEntityDeclarationException("Entity "+name+" does not provide a valid constructor.");
+
+				if (constructor == null) {
+					throw new IllegalEntityDeclarationException(
+							"Entity " + name + " does not provide a valid constructor.");
 				}
 			}
 
-		}
-		catch (NoSuchMethodException | SecurityException | IllegalArgumentException e)
-		{
+		} catch (NoSuchMethodException | SecurityException | IllegalArgumentException e) {
 			e.printStackTrace();
-			//e.printStackTrace(store.parent().logger().getPrintWriter());
+			// e.printStackTrace(store.parent().logger().getPrintWriter());
 
-			throw new IllegalEntityDeclarationException("Entity "+name+" failed to provide an acceptable constructor, exception="+e.getMessage());
+			throw new IllegalEntityDeclarationException(
+					"Entity " + name + " failed to provide an acceptable constructor, exception=" + e.getMessage());
 		}
 	}
-	
+
 	@Override
 	public Entity create(Location location) {
 		Object[] parameters = { this, location };
-		try
-		{
+		try {
 			Entity entity = constructor.newInstance(parameters);
 			entity.afterIntialization();
 			return entity;
-		}
-		catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
-		{
-			//This is bad
-			store().logger().error("Couldn't instanciate entity "+this+" at " + location, e);
+		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+				| InvocationTargetException e) {
+			// This is bad
+			store().logger().error("Couldn't instanciate entity " + this + " at " + location, e);
 			e.printStackTrace();
-			//e.printStackTrace(logger().getPrintWriter());
+			// e.printStackTrace(logger().getPrintWriter());
 			return null;
 		}
 	}

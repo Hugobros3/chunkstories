@@ -25,17 +25,17 @@ public class IOTaskLoadHeightmap extends IOTask {
 	private static final Logger logger = LoggerFactory.getLogger("world.io");
 
 	private final boolean shouldGenerateMap;
-	
+
 	protected LZ4Factory factory = LZ4Factory.fastestInstance();
 	protected LZ4FastDecompressor decompressor = factory.fastDecompressor();
 
 	HeightmapImplementation heightmap;
-	
+
 	TaskGenerateWorldThinSlice generationTask;
 
 	public IOTaskLoadHeightmap(HeightmapImplementation heightmap) {
 		this.heightmap = heightmap;
-		
+
 		this.shouldGenerateMap = !heightmap.handler.exists();
 	}
 
@@ -43,9 +43,9 @@ public class IOTaskLoadHeightmap extends IOTask {
 	public boolean task(TaskExecutor taskExecutor) {
 		if (heightmap.isLoaded())
 			return true;
-		
+
 		if (!shouldGenerateMap) {
-			
+
 			try {
 				FileInputStream in = new FileInputStream(heightmap.handler);
 
@@ -100,16 +100,16 @@ public class IOTaskLoadHeightmap extends IOTask {
 				}
 
 			heightmap.setData(heights, ids);
-			
-			/*for(int relative_chunkX = 0; relative_chunkX < 8; relative_chunkX++) {
-				CompoundFence f = new CompoundFence();
-				for(int relative_chunkZ = 0; relative_chunkZ < 8; relative_chunkZ++) {
-					TaskGenerateWorldThinSlice task = new TaskGenerateWorldThinSlice(heightmap.world, heightmap.getRegionX() * 8 + relative_chunkX,heightmap.getRegionZ() * 8 + relative_chunkZ, heightmap);
-					heightmap.world.getGameContext().tasks().scheduleTask(task);
-					f.add(task);
-				}
-				f.traverse();
-			}*/
+
+			/*
+			 * for(int relative_chunkX = 0; relative_chunkX < 8; relative_chunkX++) {
+			 * CompoundFence f = new CompoundFence(); for(int relative_chunkZ = 0;
+			 * relative_chunkZ < 8; relative_chunkZ++) { TaskGenerateWorldThinSlice task =
+			 * new TaskGenerateWorldThinSlice(heightmap.world, heightmap.getRegionX() * 8 +
+			 * relative_chunkX,heightmap.getRegionZ() * 8 + relative_chunkZ, heightmap);
+			 * heightmap.world.getGameContext().tasks().scheduleTask(task); f.add(task); }
+			 * f.traverse(); }
+			 */
 		}
 		return true;
 	}

@@ -17,61 +17,49 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.serialization.OfflineSerializedData;
 
-public class SerializedEntityFile implements OfflineSerializedData
-{
+public class SerializedEntityFile implements OfflineSerializedData {
 	private final File file;
-	
-	public SerializedEntityFile(String string)
-	{
+
+	public SerializedEntityFile(String string) {
 		file = new File(string);
 	}
-	
-	public boolean exists()
-	{
+
+	public boolean exists() {
 		return file.exists();
 	}
-	
-	public String toString()
-	{
-		return "[CSF File: "+file.toString()+"]";
+
+	public String toString() {
+		return "[CSF File: " + file.toString() + "]";
 	}
-	
-	public Entity read(World world)
-	{
-		try
-		{
+
+	public Entity read(World world) {
+		try {
 			DataInputStream in = new DataInputStream(new FileInputStream(file));
-			
+
 			Entity entity = EntitySerializer.readEntityFromStream(in, this, world);
-			
+
 			in.close();
-			
+
 			return entity;
-		}
-		catch (IOException e)
-		{
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		return null;
 	}
 
-	public void write(Entity entity)
-	{
-		try
-		{
+	public void write(Entity entity) {
+		try {
 			file.getParentFile().mkdirs();
-			
+
 			DataOutputStream out = new DataOutputStream(new FileOutputStream(file));
-			
+
 			EntitySerializer.writeEntityToStream(out, this, entity);
-			
+
 			out.flush();
 			out.close();
-			
-			System.out.println("Wrote serialized entity to : "+file);
-		}
-		catch (IOException e)
-		{
+
+			System.out.println("Wrote serialized entity to : " + file);
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}

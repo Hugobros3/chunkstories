@@ -20,8 +20,7 @@ public class SaveCommand extends ServerCommandBasic {
 
 	@Override
 	public boolean handleCommand(CommandEmitter emitter, Command command, String[] arguments) {
-		if (command.getName().equals("save") && emitter.hasPermission("server.admin.forcesave"))
-		{
+		if (command.getName().equals("save") && emitter.hasPermission("server.admin.forcesave")) {
 			emitter.sendMessage("#00FFD0Saving the world...");
 			server.getWorld().saveEverything();
 			return true;

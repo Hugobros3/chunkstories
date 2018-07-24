@@ -25,11 +25,10 @@ public class GiveCommand extends ServerCommandBasic {
 		super(serverConsole);
 		server.getPluginManager().registerCommand("give").setHandler(this);
 	}
-	
+
 	@Override
 	public boolean handleCommand(CommandEmitter emitter, Command command, String[] arguments) {
-		if(!emitter.hasPermission("server.give"))
-		{
+		if (!emitter.hasPermission("server.give")) {
 			emitter.sendMessage("You don't have the permission.");
 			return true;
 		}
@@ -37,7 +36,7 @@ public class GiveCommand extends ServerCommandBasic {
 			emitter.sendMessage("You need to be a player to use this command.");
 			return true;
 		}
-		
+
 		Content gameContent = server.getContent();
 
 		Player player = (Player) emitter;
@@ -89,8 +88,8 @@ public class GiveCommand extends ServerCommandBasic {
 			amount = Integer.parseInt(arguments[1]);
 		}
 		if (arguments.length >= 3) {
-			if(gameContent instanceof ServerInterface)
-				to = ((ServerInterface)gameContent).getPlayerByName(arguments[2]);
+			if (gameContent instanceof ServerInterface)
+				to = ((ServerInterface) gameContent).getPlayerByName(arguments[2]);
 			else {
 				player.sendMessage("#FF969BThis is a singleplayer world - there are no other players");
 				return true;
@@ -105,12 +104,13 @@ public class GiveCommand extends ServerCommandBasic {
 
 		final int amountFinal = amount;
 		final Player to2 = to;
-		
+
 		to.getControlledEntity().traits.with(TraitInventory.class, ei -> {
 			ei.addItemPile(itemPile);
-			player.sendMessage("#FF969BGave " + (amountFinal > 1 ? amountFinal + "x " : "" ) + "#4CFF00" + itemPile.getItem().getName() + " #FF969Bto " + to2.getDisplayName());
+			player.sendMessage("#FF969BGave " + (amountFinal > 1 ? amountFinal + "x " : "") + "#4CFF00"
+					+ itemPile.getItem().getName() + " #FF969Bto " + to2.getDisplayName());
 		});
-		
+
 		return true;
 	}
 

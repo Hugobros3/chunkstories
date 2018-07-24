@@ -11,13 +11,14 @@ import io.xol.chunkstories.api.mesh.MeshMaterial;
 
 public class MeshMaterialLoaded implements MeshMaterial {
 	final String name;
-	
+
 	Mesh mesh;
 	int firstVertex, lastVertex;
-	
+
 	String albedoTextureName, normalTextureName, specularTextureName;
 
-	public MeshMaterialLoaded(Mesh mesh, String name, int firstVertex, int lastVertex, String albedoTextureName, String normalTextureName, String specularTextureName) {
+	public MeshMaterialLoaded(Mesh mesh, String name, int firstVertex, int lastVertex, String albedoTextureName,
+			String normalTextureName, String specularTextureName) {
 		this.mesh = mesh;
 		this.name = name;
 		this.firstVertex = firstVertex;
@@ -54,5 +55,5 @@ public class MeshMaterialLoaded implements MeshMaterial {
 	public String getSpecularTextureName() {
 		return specularTextureName;
 	}
-		
+
 }

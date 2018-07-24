@@ -28,28 +28,26 @@ public class DebugWorldDataCommands extends ServerCommandBasic {
 
 	@Override
 	public boolean handleCommand(CommandEmitter emitter, Command command, String[] arguments) {
-		if (command.getName().equals("chunk") && emitter.hasPermission("server.debug"))
-		{
+		if (command.getName().equals("chunk") && emitter.hasPermission("server.debug")) {
 			Player player = (Player) emitter;
 
 			emitter.sendMessage("#00FFD0" + player.getControlledEntity().entityLocation.getChunk());
 			return true;
-		} else if (command.getName().equals("region") && emitter.hasPermission("server.debug"))
-		{
+		} else if (command.getName().equals("region") && emitter.hasPermission("server.debug")) {
 			Player player = (Player) emitter;
 
 			Chunk chunk = player.getControlledEntity().entityLocation.getChunk();
-			
-			if(chunk != null)
+
+			if (chunk != null)
 				emitter.sendMessage("#00FFD0" + chunk.getRegion());
 			else
 				emitter.sendMessage("#00FFD0" + "not within a loaded chunk, so no parent region could be found.");
-			
+
 			return true;
 		} else if (command.getName().equals("heightmap") && emitter.hasPermission("server.debug")) {
 			Heightmap sum;
 
-			if(arguments.length == 2) {
+			if (arguments.length == 2) {
 				int x = Integer.parseInt(arguments[0]);
 				int z = Integer.parseInt(arguments[1]);
 				sum = server.getWorld().getRegionsSummariesHolder().getHeightmap(x, z);
@@ -58,7 +56,7 @@ public class DebugWorldDataCommands extends ServerCommandBasic {
 				Player player = (Player) emitter;
 				sum = player.getWorld().getRegionsSummariesHolder().getHeightmapLocation(player.getLocation());
 			}
-			
+
 			emitter.sendMessage("#00FFD0" + sum);
 			return true;
 		} else if (command.getName().equals("heightmaps") && emitter.hasPermission("server.debug")) {
@@ -69,7 +67,7 @@ public class DebugWorldDataCommands extends ServerCommandBasic {
 
 	private void dumpLoadedHeightmap(WorldImplementation world, CommandEmitter emitter) {
 		emitter.sendMessage("#00FFD0" + "Dumping all region summaries...");
-		for(HeightmapImplementation sum : world.getRegionsSummariesHolder().all()) {
+		for (HeightmapImplementation sum : world.getRegionsSummariesHolder().all()) {
 			emitter.sendMessage("#00FFD0" + sum);
 		}
 	}

@@ -10,22 +10,19 @@ import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.plugin.ClientPluginManager;
 import io.xol.chunkstories.plugin.DefaultPluginManager;
 
-public class ClientSlavePluginManager extends DefaultPluginManager implements ClientPluginManager
-{
+public class ClientSlavePluginManager extends DefaultPluginManager implements ClientPluginManager {
 	ClientInterface client;
-	
-	public ClientSlavePluginManager(Client client)
-	{
+
+	public ClientSlavePluginManager(Client client) {
 		super(client);
 		this.client = client;
-		
+
 		client.setClientPluginManager(this);
 		this.reloadPlugins();
 	}
 
 	@Override
-	public ClientInterface getClientInterface()
-	{
+	public ClientInterface getClientInterface() {
 		return client;
 	}
 

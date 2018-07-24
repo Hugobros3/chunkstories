@@ -39,8 +39,10 @@ public abstract class RenderingCommandImplementation {
 	protected static Matrix4f temp = new Matrix4f();
 	protected static Matrix3f normal = new Matrix3f();
 
-	public RenderingCommandImplementation(Primitive primitive, Shader Shader, TexturingConfigurationImplementation texturingConfiguration,
-			AttributesConfigurationImplementation attributesConfiguration, InternalUniformsConfiguration uniformsConfiguration,
+	public RenderingCommandImplementation(Primitive primitive, Shader Shader,
+			TexturingConfigurationImplementation texturingConfiguration,
+			AttributesConfigurationImplementation attributesConfiguration,
+			InternalUniformsConfiguration uniformsConfiguration,
 			OpenGLStateMachine StateMachine/* , Matrix4f objectMatrix */) {
 		this.primitive = primitive;
 

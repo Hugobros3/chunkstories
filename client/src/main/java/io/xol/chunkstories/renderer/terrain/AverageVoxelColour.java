@@ -20,19 +20,18 @@ import io.xol.chunkstories.voxel.VoxelTextureAtlased;
 public class AverageVoxelColour {
 
 	private Texture1DGL blockTexturesSummary;
-	
+
 	public AverageVoxelColour(World world) {
 		blockTexturesSummary = new Texture1DGL(TextureFormat.RGBA_8BPP);
-		
+
 		int size = 512;
 		ByteBuffer bb = ByteBuffer.allocateDirect(size * 4);
 		bb.order(ByteOrder.LITTLE_ENDIAN);
 
 		int counter = 0;
 		Iterator<VoxelTexture> i = world.getContent().voxels().textures().all();
-		while (i.hasNext() && counter < size)
-		{
-			VoxelTextureAtlased voxelTexture = (VoxelTextureAtlased)i.next();
+		while (i.hasNext() && counter < size) {
+			VoxelTextureAtlased voxelTexture = (VoxelTextureAtlased) i.next();
 
 			bb.put((byte) (voxelTexture.getColor().x() * 255));
 			bb.put((byte) (voxelTexture.getColor().y() * 255));
@@ -43,9 +42,8 @@ public class AverageVoxelColour {
 			counter++;
 		}
 
-		//Padding
-		while (counter < size)
-		{
+		// Padding
+		while (counter < size) {
 			bb.put((byte) (0));
 			bb.put((byte) (0));
 			bb.put((byte) (0));
@@ -58,7 +56,7 @@ public class AverageVoxelColour {
 		blockTexturesSummary.uploadTextureData(size, bb);
 		blockTexturesSummary.setLinearFiltering(false);
 	}
-	
+
 	public Texture1D get() {
 		return blockTexturesSummary;
 	}

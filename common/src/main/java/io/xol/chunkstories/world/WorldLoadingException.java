@@ -16,8 +16,8 @@ public class WorldLoadingException extends Exception {
 
 	@Override
 	public String getMessage() {
-		if(getCause() != null)
-			return super.getMessage()+": "+getCause().getClass().getSimpleName()+"\n"+getCause().getMessage();
+		if (getCause() != null)
+			return super.getMessage() + ": " + getCause().getClass().getSimpleName() + "\n" + getCause().getMessage();
 		return super.getMessage();
 	}
 

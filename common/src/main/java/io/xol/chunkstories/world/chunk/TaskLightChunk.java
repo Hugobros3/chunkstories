@@ -17,9 +17,9 @@ public class TaskLightChunk extends Task {
 	final CubicChunk chunk;
 	final int chunkX, chunkY, chunkZ;
 	final CubicChunk leftChunk, rightChunk, topChunk, bottomChunk, frontChunk, backChunk;
-	
+
 	final boolean updateAdjacentChunks;
-	
+
 	public TaskLightChunk(CubicChunk chunk, boolean updateAdjacentChunks) {
 		this.chunk = chunk;
 		this.world = chunk.world;
@@ -28,7 +28,7 @@ public class TaskLightChunk extends Task {
 		this.chunkX = chunk.chunkX;
 		this.chunkY = chunk.chunkY;
 		this.chunkZ = chunk.chunkZ;
-		
+
 		// Checks if the adjacent chunks are done loading
 		topChunk = world.getChunk(chunkX, chunkY + 1, chunkZ);
 		bottomChunk = world.getChunk(chunkX, chunkY - 1, chunkZ);
@@ -40,41 +40,40 @@ public class TaskLightChunk extends Task {
 
 	@Override
 	protected boolean task(TaskExecutor taskExecutor) {
-		
+
 		try {
-			//Lock this
+			// Lock this
 			chunk.lightBaker.onlyOneUpdateAtATime.lock();
 			int updatesNeeded = chunk.lightBaker.unbakedUpdates.get();
-			if(updatesNeeded == 0)
+			if (updatesNeeded == 0)
 				return true;
-			
-			//Actual computation takes place here
+
+			// Actual computation takes place here
 			int mods = chunk.lightBaker.computeVoxelLightningInternal(updateAdjacentChunks);
-			
-			//Blocks have changed ?
-			if(mods > 0 && chunk instanceof ChunkRenderable)
-				((ChunkRenderable)chunk).meshUpdater().requestMeshUpdate();
-			
-			//Remove however many updates were pending
+
+			// Blocks have changed ?
+			if (mods > 0 && chunk instanceof ChunkRenderable)
+				((ChunkRenderable) chunk).meshUpdater().requestMeshUpdate();
+
+			// Remove however many updates were pending
 			chunk.lightBaker.unbakedUpdates.addAndGet(-updatesNeeded);
-			
+
 			return true;
-		}
-		finally {
+		} finally {
 			chunk.lightBaker.taskLock.lock();
-			
-			//Re-schedule a new task immediately if updates happened while we worked
-			if(chunk.lightBaker.unbakedUpdates.get() > 0) {
+
+			// Re-schedule a new task immediately if updates happened while we worked
+			if (chunk.lightBaker.unbakedUpdates.get() > 0) {
 				chunk.lightBaker.task = new TaskLightChunk(chunk, true);
 				chunk.getWorld().getGameContext().tasks().scheduleTask(chunk.lightBaker.task);
 			}
-			//Set the task reference to null so a new task can be spawned as needed
+			// Set the task reference to null so a new task can be spawned as needed
 			else {
 				chunk.lightBaker.task = null;
 			}
 			chunk.lightBaker.taskLock.unlock();
-			
-			//Unlock that
+
+			// Unlock that
 			chunk.lightBaker.onlyOneUpdateAtATime.unlock();
 		}
 	}

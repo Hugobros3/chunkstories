@@ -11,13 +11,12 @@ import org.joml.Vector3dc;
 import io.xol.chunkstories.api.exceptions.SoundEffectNotFoundException;
 import io.xol.chunkstories.sound.SoundsLibrary;
 
-public class ALBufferedSoundSource extends ALSoundSource
-{
-	public ALBufferedSoundSource(String soundEffect, Vector3dc position, float pitch, float gain, float attStart, float attEnd) throws SoundEffectNotFoundException
-	{
+public class ALBufferedSoundSource extends ALSoundSource {
+	public ALBufferedSoundSource(String soundEffect, Vector3dc position, float pitch, float gain, float attStart,
+			float attEnd) throws SoundEffectNotFoundException {
 		super(Mode.STREAMED, position, pitch, gain, attStart, attEnd);
 		this.soundData = SoundsLibrary.obtainBufferedSample(soundEffect);
-		if(soundData == null)
+		if (soundData == null)
 			throw new SoundEffectNotFoundException();
 	}
 }

@@ -45,12 +45,12 @@ public class InventoryGridRenderer {
 
 	public void drawPlayerInventorySummary(RenderingInterface renderer, int x, int y) {
 		int selectedSlot = -1;
-		if(inventory instanceof TraitInventory) {
-			TraitSelectedItem esi = ((TraitInventory)inventory).entity.traits.get(TraitSelectedItem.class);
-			if(esi != null)
+		if (inventory instanceof TraitInventory) {
+			TraitSelectedItem esi = ((TraitInventory) inventory).entity.traits.get(TraitSelectedItem.class);
+			if (esi != null)
 				selectedSlot = esi.getSelectedSlot();
 		}
-		
+
 		drawInventory(renderer, x - slotsWidth(getInventory().getWidth(), 2) / 2,
 				y - slotsHeight(getInventory().getHeight(), 2, true, 0) / 2, 2, true, 0, selectedSlot);
 	}
@@ -74,8 +74,8 @@ public class InventoryGridRenderer {
 
 		Vector4f color = new Vector4f(1f, 1f, 1f, summary ? 0.5f : 1f);
 		// All 8 corners
-		renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(x, y + internalHeight + cornerSize, cornerSize, cornerSize,
-				0, 0.03125f, 0.03125f, 0, inventoryTexture, true, true, color);
+		renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(x, y + internalHeight + cornerSize, cornerSize,
+				cornerSize, 0, 0.03125f, 0.03125f, 0, inventoryTexture, true, true, color);
 		renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(x + cornerSize, y + internalHeight + cornerSize,
 				internalWidth, cornerSize, 0.03125f, 0.03125f, 0.96875f, 0, inventoryTexture, true, true, color);
 		renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(x + cornerSize + internalWidth,
@@ -83,14 +83,15 @@ public class InventoryGridRenderer {
 				true, true, color);
 		renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(x, y, cornerSize, cornerSize, 0, 1f, 0.03125f, 248 / 256f,
 				inventoryTexture, true, true, color);
-		renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(x + cornerSize, y, internalWidth, cornerSize, 0.03125f, 1f,
-				0.96875f, 248 / 256f, inventoryTexture, true, true, color);
+		renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(x + cornerSize, y, internalWidth, cornerSize, 0.03125f,
+				1f, 0.96875f, 248 / 256f, inventoryTexture, true, true, color);
 		renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(x + cornerSize + internalWidth, y, cornerSize, cornerSize,
 				0.96875f, 1f, 1f, 248 / 256f, inventoryTexture, true, true, color);
 		renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(x, y + cornerSize, cornerSize, internalHeight, 0,
 				248f / 256f, 0.03125f, 8f / 256f, inventoryTexture, true, true, color);
-		renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(x + cornerSize + internalWidth, y + cornerSize, cornerSize,
-				internalHeight, 248 / 256f, 248f / 256f, 1f, 8f / 256f, inventoryTexture, true, true, color);
+		renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(x + cornerSize + internalWidth, y + cornerSize,
+				cornerSize, internalHeight, 248 / 256f, 248f / 256f, 1f, 8f / 256f, inventoryTexture, true, true,
+				color);
 		// Actual inventory slots
 		int sumSlots2HL = 0;
 		selectedSlot = null;
@@ -139,7 +140,7 @@ public class InventoryGridRenderer {
 				}
 			}
 		}
-		
+
 		// Blank part ( usefull for special inventories, ie player )
 		for (int j = getInventory().getHeight(); j < getInventory().getHeight() + blankLines; j++) {
 			for (int i = 0; i < getInventory().getWidth(); i++) {
@@ -189,9 +190,10 @@ public class InventoryGridRenderer {
 					y + cornerSize + internalHeight - slotSize, slotSize, slotSize, 224f / 256f, 32f / 256f,
 					248f / 256f, 8f / 256f, inventoryTexture, true, true, color);
 
-			renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().getFont("LiberationSans-Bold", 12),
-					x + cornerSize + 6, y + cornerSize + internalHeight - slotSize + 2 * scale,
-					getInventory().getInventoryName(), scale, scale, new Vector4f(1, 1, 1, 1));
+			renderer.getFontRenderer().drawStringWithShadow(
+					renderer.getFontRenderer().getFont("LiberationSans-Bold", 12), x + cornerSize + 6,
+					y + cornerSize + internalHeight - slotSize + 2 * scale, getInventory().getInventoryName(), scale,
+					scale, new Vector4f(1, 1, 1, 1));
 		}
 
 		// Get rid of any remaining GUI elements or else they will draw on top of the

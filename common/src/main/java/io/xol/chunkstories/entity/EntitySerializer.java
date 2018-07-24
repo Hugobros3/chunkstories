@@ -98,7 +98,8 @@ public class EntitySerializer {
 
 					boolean found = false;
 					for (Trait trait : entity.traits.all()) {
-						if (trait instanceof TraitSerializable && ((TraitSerializable) trait).name.equals(componentName)) {
+						if (trait instanceof TraitSerializable
+								&& ((TraitSerializable) trait).name.equals(componentName)) {
 							try {
 								((TraitSerializable) trait).tryPull(source, in);
 							} catch (IOException e) {
@@ -118,7 +119,7 @@ public class EntitySerializer {
 					// Read int32 component id
 					try {
 						Trait trait = entity.traits.byId()[componentId];
-						if(trait instanceof TraitSerializable)
+						if (trait instanceof TraitSerializable)
 							((TraitSerializable) trait).tryPull(source, in);
 						// entity.getComponents().tryPullComponentInStream(componentId, source, in);
 					} catch (IOException e) {

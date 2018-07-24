@@ -16,17 +16,16 @@ import java.util.List;
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
-public class JPanelBackground extends JPanel{
-	
+public class JPanelBackground extends JPanel {
+
 	private static final long serialVersionUID = -8043479868116876680L;
 
 	static BufferedImage logo;
 	static BufferedImage bg;
-	
+
 	List<Image> backgroundImages = new ArrayList<Image>();
-	
-	public JPanelBackground()
-	{
+
+	public JPanelBackground() {
 		super();
 
 		try {
@@ -37,14 +36,13 @@ public class JPanelBackground extends JPanel{
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Override
-    public void paintComponent(Graphics g) {
-        super.paintComponent(g);  //THIS LINE WAS ADDED
-        if(logo != null)
-        {
-            g.drawImage(bg, 0, 360, null); // see javadoc for more info on the parameters
-            g.drawImage(logo, 0+0, 360+16, null); // see javadoc for more info on the parameters
-        }
-    }
+	public void paintComponent(Graphics g) {
+		super.paintComponent(g); // THIS LINE WAS ADDED
+		if (logo != null) {
+			g.drawImage(bg, 0, 360, null); // see javadoc for more info on the parameters
+			g.drawImage(logo, 0 + 0, 360 + 16, null); // see javadoc for more info on the parameters
+		}
+	}
 }

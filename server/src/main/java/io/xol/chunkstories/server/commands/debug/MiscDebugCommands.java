@@ -20,8 +20,7 @@ public class MiscDebugCommands extends ServerCommandBasic {
 
 	@Override
 	public boolean handleCommand(CommandEmitter emitter, Command command, String[] arguments) {
-		if (command.getName().equals("gc") && emitter.hasPermission("server.debug.gc"))
-		{
+		if (command.getName().equals("gc") && emitter.hasPermission("server.debug.gc")) {
 			emitter.sendMessage("Performing gc...");
 			System.gc();
 			return true;

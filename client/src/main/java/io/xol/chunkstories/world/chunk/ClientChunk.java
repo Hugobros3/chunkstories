@@ -19,46 +19,44 @@ public class ClientChunk extends CubicChunk implements ChunkRenderable {
 	// Used in client rendering
 	public final ChunkRenderDataHolder chunkRenderData;
 
-	//public AtomicBoolean need_render = new AtomicBoolean(true);
-	//public AtomicBoolean need_render_fast = new AtomicBoolean(false);
-	//public AtomicBoolean requestable = new AtomicBoolean(true);
-	
+	// public AtomicBoolean need_render = new AtomicBoolean(true);
+	// public AtomicBoolean need_render_fast = new AtomicBoolean(false);
+	// public AtomicBoolean requestable = new AtomicBoolean(true);
+
 	public ClientChunk(ChunkHolderImplementation holder, int chunkX, int chunkY, int chunkZ) {
 		super(holder, chunkX, chunkY, chunkZ);
-		
+
 		assert world instanceof WorldClient;
-		
-		this.chunkRenderData = new ChunkRenderDataHolder(this, ((WorldClient)world).getWorldRenderer());
+
+		this.chunkRenderData = new ChunkRenderDataHolder(this, ((WorldClient) world).getWorldRenderer());
 	}
 
 	public ClientChunk(ChunkHolderImplementation holder, int chunkX, int chunkY, int chunkZ, CompressedData data) {
 		super(holder, chunkX, chunkY, chunkZ, data);
-		
+
 		assert world instanceof WorldClient;
-		
-		this.chunkRenderData = new ChunkRenderDataHolder(this, ((WorldClient)world).getWorldRenderer());
+
+		this.chunkRenderData = new ChunkRenderDataHolder(this, ((WorldClient) world).getWorldRenderer());
 	}
 
 	@Override
-	public void destroy()
-	{
+	public void destroy() {
 		super.destroy();
 		chunkRenderData.destroy();
 	}
 
 	@Override
-	public String toString()
-	{
-		return "[ClientChunk x:" + this.chunkX + " y:" + this.chunkY + " z:" + this.chunkZ + " air:" + isAirChunk() + " ls:" + this.lightBaker + "]";
+	public String toString() {
+		return "[ClientChunk x:" + this.chunkX + " y:" + this.chunkY + " z:" + this.chunkZ + " air:" + isAirChunk()
+				+ " ls:" + this.lightBaker + "]";
 	}
-	
-	public ChunkRenderDataHolder getChunkRenderData()
-	{
+
+	public ChunkRenderDataHolder getChunkRenderData() {
 		return chunkRenderData;
 	}
 
-	public int renderPass(RenderingInterface renderingInterface, RenderLodLevel renderLodLevel, ShadingType renderPass)
-	{
+	public int renderPass(RenderingInterface renderingInterface, RenderLodLevel renderLodLevel,
+			ShadingType renderPass) {
 		return chunkRenderData.renderPass(renderingInterface, renderLodLevel, renderPass);
 	}
 

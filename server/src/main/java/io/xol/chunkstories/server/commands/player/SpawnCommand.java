@@ -20,7 +20,7 @@ public class SpawnCommand extends ServerCommandBasic {
 		super(serverConsole);
 		server.getPluginManager().registerCommand("spawn").setHandler(this);
 	}
-	
+
 	@Override
 	public boolean handleCommand(CommandEmitter emitter, Command command, String[] arguments) {
 
@@ -28,34 +28,29 @@ public class SpawnCommand extends ServerCommandBasic {
 			emitter.sendMessage("You need to be a player to use this command.");
 			return true;
 		}
-		
+
 		Player player = (Player) emitter;
-		if(command.getName().equals("spawn"))
-		{
-			if(!emitter.hasPermission("world.spawn"))
-			{
+		if (command.getName().equals("spawn")) {
+			if (!emitter.hasPermission("world.spawn")) {
 				emitter.sendMessage("You don't have the permission.");
 				return true;
 			}
-			
+
 			Location loc = player.getWorld().getDefaultSpawnLocation();
 			player.setLocation(loc);
-			
+
 			emitter.sendMessage("#00FFD0Teleported to spawn");
 			return true;
-		}
-		else if(command.getName().equals("setspawn"))
-		{
-			if(!emitter.hasPermission("world.spawn.set"))
-			{
+		} else if (command.getName().equals("setspawn")) {
+			if (!emitter.hasPermission("world.spawn.set")) {
 				emitter.sendMessage("You don't have the permission.");
 				return true;
 			}
-			
+
 			Location loc = player.getLocation();
 			player.getWorld().setDefaultSpawnLocation(loc);
-			
-			emitter.sendMessage("#00FFD0Set default spawn to : "+loc);
+
+			emitter.sendMessage("#00FFD0Set default spawn to : " + loc);
 			return true;
 		}
 

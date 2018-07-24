@@ -27,7 +27,7 @@ import io.xol.chunkstories.client.Client;
 public class Lwjgl3Mouse implements Mouse {
 
 	Lwjgl3ClientInputsManager im;
-	
+
 	public Lwjgl3Mouse(Lwjgl3ClientInputsManager lwjgl2ClientInputsManager) {
 		this.im = lwjgl2ClientInputsManager;
 	}
@@ -46,9 +46,8 @@ public class Lwjgl3Mouse implements Mouse {
 	public MouseButton getMiddleButton() {
 		return im.MIDDLE;
 	}
-	
-	public Vector2d getMousePosition()
-	{
+
+	public Vector2d getMousePosition() {
 		DoubleBuffer b1 = MemoryUtil.memAllocDouble(1);
 		DoubleBuffer b2 = MemoryUtil.memAllocDouble(1);
 		glfwGetCursorPos(im.gameWindow.glfwWindowHandle, b1, b2);
@@ -81,7 +80,8 @@ public class Lwjgl3Mouse implements Mouse {
 
 	@Override
 	public void setGrabbed(boolean grabbed) {
-		glfwSetInputMode(this.im.gameWindow.glfwWindowHandle, GLFW_CURSOR, grabbed ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+		glfwSetInputMode(this.im.gameWindow.glfwWindowHandle, GLFW_CURSOR,
+				grabbed ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
 	}
 
 	public MouseScroll scroll(double yoffset) {
@@ -109,30 +109,26 @@ public class Lwjgl3Mouse implements Mouse {
 
 			@Override
 			public int amount() {
-				return (int)yoffset;
+				return (int) yoffset;
 			}
-			
 
 			@Override
-			public boolean equals(Object o)
-			{
-				if(o == null)
+			public boolean equals(Object o) {
+				if (o == null)
 					return false;
-				else if(o instanceof Input) {
-					return ((Input)o).getName().equals(getName());
-				}
-				else if(o instanceof String) {
-					return ((String)o).equals(this.getName());
+				else if (o instanceof Input) {
+					return ((Input) o).getName().equals(getName());
+				} else if (o instanceof String) {
+					return ((String) o).equals(this.getName());
 				}
 				return false;
 			}
-			
+
 			@Override
-			public int hashCode()
-			{
+			public int hashCode() {
 				return getName().hashCode();
 			}
-			
+
 		};
 	}
 

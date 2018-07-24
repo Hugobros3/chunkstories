@@ -101,7 +101,7 @@ public class CubicChunk implements Chunk {
 				.getWorldInfo().getSize().bitlengthOfHorizontalChunksCoordinates | chunkZ;
 
 		lightBaker = new ChunkLightBaker(this);
-		
+
 		if (data != null) {
 			try {
 				this.chunkVoxelData = data.getVoxelData();
@@ -119,19 +119,20 @@ public class CubicChunk implements Chunk {
 						int index = dis.readInt();
 						CellComponentsHolder components = new CellComponentsHolder(this, index);
 						allCellComponents.put(index, components);
-						
+
 						// Call the block's onPlace method as to make it spawn the necessary components
 						FreshChunkCell peek = peek(components.getX(), components.getY(), components.getZ());
-						//System.out.println("peek"+peek);
+						// System.out.println("peek"+peek);
 						FreshFutureCell future = new FreshFutureCell(peek);
-						//System.out.println("future"+future);
-						
+						// System.out.println("future"+future);
+
 						peek.getVoxel().whenPlaced(future);
-						//System.out.println("future comps"+future.components().getX() + ":" + future.components().getY() + ": " + future.components().getZ());
-						
+						// System.out.println("future comps"+future.components().getX() + ":" +
+						// future.components().getY() + ": " + future.components().getZ());
+
 						String componentName = dis.readUTF();
 						while (!componentName.equals("\n")) {
-							//System.out.println("componentName: "+componentName);
+							// System.out.println("componentName: "+componentName);
 
 							// Read however many bytes this component wrote
 							int bytes = dis.readShort();
@@ -139,13 +140,14 @@ public class CubicChunk implements Chunk {
 
 							VoxelComponent component = components.get(componentName);
 							if (component == null) {
-								System.out.println("Error, a component named " + componentName + " was saved, but it was not recreated by the voxel whenPlaced() method.");
+								System.out.println("Error, a component named " + componentName
+										+ " was saved, but it was not recreated by the voxel whenPlaced() method.");
 							} else {
 								// Hope for the best
-								//System.out.println("called pull on "+component.getClass());
+								// System.out.println("called pull on "+component.getClass());
 								component.pull(holder.getRegion().handler, dias);
 							}
-							
+
 							dias.reset();
 							componentName = dis.readUTF();
 						}
@@ -215,19 +217,20 @@ public class CubicChunk implements Chunk {
 		x = sanitizeCoordinate(x);
 		y = sanitizeCoordinate(y);
 		z = sanitizeCoordinate(z);
-		
+
 		if (chunkVoxelData == null) {
-			// Empty chunk ? 
+			// Empty chunk ?
 			// Use the heightmap to figure out wether or not that cell should be skylit.
 			int sunlight = 0;
-			int groundHeight = world.getRegionsSummariesHolder().getHeightAtWorldCoordinates(chunkX * 32 + x, chunkZ * 32 + z);
-			if(groundHeight < y + chunkY * 32 && groundHeight != Heightmap.NO_DATA)
+			int groundHeight = world.getRegionsSummariesHolder().getHeightAtWorldCoordinates(chunkX * 32 + x,
+					chunkZ * 32 + z);
+			if (groundHeight < y + chunkY * 32 && groundHeight != Heightmap.NO_DATA)
 				sunlight = 15;
-			
+
 			return VoxelFormat.format(0, 0, sunlight, 0);
 		} else {
-			//Thread.dumpStack();
-			//System.out.println(x+":"+y+":"+z);
+			// Thread.dumpStack();
+			// System.out.println(x+":"+y+":"+z);
 			return chunkVoxelData[x * 32 * 32 + y * 32 + z];
 		}
 	}
@@ -273,12 +276,13 @@ public class CubicChunk implements Chunk {
 		public void registerComponent(String name, VoxelComponent component) {
 			components().put(name, component);
 		}
-		
+
 	}
-	
+
 	/**
 	 * The 'core' of the core, this private function is responsible for placing and
-	 * keeping everyone up to snuff on block modifications. It all comes back to this really.
+	 * keeping everyone up to snuff on block modifications. It all comes back to
+	 * this really.
 	 */
 	private ActualChunkVoxelContext pokeInternal(final int worldX, final int worldY, final int worldZ, Voxel newVoxel,
 			final int sunlight, final int blocklight, final int metadata, int raw_data, final boolean use_raw_data,
@@ -290,7 +294,7 @@ public class CubicChunk implements Chunk {
 		ActualChunkVoxelContext cell_pre = peek(x, y, z);
 		Voxel formerVoxel = cell_pre.getVoxel();
 		assert formerVoxel != null;
-		
+
 		FreshFutureCell future = new FreshFutureCell(cell_pre);
 
 		if (use_raw_data) {
@@ -334,7 +338,7 @@ public class CubicChunk implements Chunk {
 			// Abort !
 			if (return_context)
 				return cell_pre;
-				//throw e;
+			// throw e;
 			else
 				return null;
 		}
@@ -344,8 +348,8 @@ public class CubicChunk implements Chunk {
 			chunkVoxelData = atomicalyCreateInternalData();
 
 		chunkVoxelData[x * 32 * 32 + y * 32 + z] = raw_data;
-		
-		if(newVoxel != null && !formerVoxel.equals(newVoxel))
+
+		if (newVoxel != null && !formerVoxel.equals(newVoxel))
 			newVoxel.whenPlaced(future);
 
 		// Update lightning
@@ -427,9 +431,9 @@ public class CubicChunk implements Chunk {
 		x &= 0x1f;
 		y &= 0x1f;
 		z &= 0x1f;
-		
+
 		int index = x * 1024 + y * 32 + z;
-		//System.out.println(index);
+		// System.out.println(index);
 
 		CellComponentsHolder components = allCellComponents.get(index);
 		if (components == null) {
@@ -489,19 +493,18 @@ public class CubicChunk implements Chunk {
 		int raw_data;
 
 		public ActualChunkVoxelContext(int x, int y, int z, int data) {
-			super((x & 0x1F), (y & 0x1F), (z & 0x1F), 
-					world.getContentTranslator().getVoxelForId(VoxelFormat.id(data)), 
+			super((x & 0x1F), (y & 0x1F), (z & 0x1F), world.getContentTranslator().getVoxelForId(VoxelFormat.id(data)),
 					VoxelFormat.meta(data), VoxelFormat.blocklight(data), VoxelFormat.sunlight(data));
-			
+
 			this.raw_data = data;
-			
-			//System.out.println(chunkX << 5);
-			//System.out.println(x+":"+y+":"+z);
-			//System.out.println(this.getZ() - z);
-			/*this.x = x & 0x1F;
-			this.y = y & 0x1F;
-			this.z = z & 0x1F;
-			this.voxel = world.getContentTranslator().getVoxelForId(data);*/
+
+			// System.out.println(chunkX << 5);
+			// System.out.println(x+":"+y+":"+z);
+			// System.out.println(this.getZ() - z);
+			/*
+			 * this.x = x & 0x1F; this.y = y & 0x1F; this.z = z & 0x1F; this.voxel =
+			 * world.getContentTranslator().getVoxelForId(data);
+			 */
 		}
 
 		@Override
@@ -566,15 +569,14 @@ public class CubicChunk implements Chunk {
 		@Override
 		public CellData getNeightbor(int side_int) {
 			VoxelSide side = VoxelSide.values()[side_int];
-			
+
 			// Fast path for in-chunk neigtbor
-			if(    (side == VoxelSide.LEFT && x > 0) || (side == VoxelSide.RIGHT && x < 31)
-				|| (side == VoxelSide.BOTTOM && y > 0) || (side == VoxelSide.TOP && y < 31)
-				|| (side == VoxelSide.BACK && z > 0) || (side == VoxelSide.FRONT && z < 31)
-				) {
+			if ((side == VoxelSide.LEFT && x > 0) || (side == VoxelSide.RIGHT && x < 31)
+					|| (side == VoxelSide.BOTTOM && y > 0) || (side == VoxelSide.TOP && y < 31)
+					|| (side == VoxelSide.BACK && z > 0) || (side == VoxelSide.FRONT && z < 31)) {
 				return CubicChunk.this.peek(x + side.dx, y + side.dy, z + side.dz);
 			}
-			
+
 			return world.peekSafely(getX() + side.dx, getY() + side.dy, getZ() + side.dz);
 		}
 
@@ -605,11 +607,11 @@ public class CubicChunk implements Chunk {
 			poke();
 			peek();
 		}
-		
+
 		private void peek() {
 			raw_data = CubicChunk.this.peekRaw(x, y, z);
 		}
-		
+
 		private void poke() {
 			CubicChunk.this.pokeSimple(x, y, z, voxel, sunlight, blocklight, metadata);
 		}

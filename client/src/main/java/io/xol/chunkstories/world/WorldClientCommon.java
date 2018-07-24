@@ -20,7 +20,7 @@ import io.xol.chunkstories.renderer.world.WorldRendererImplementation;
  */
 public abstract class WorldClientCommon extends WorldImplementation implements WorldClient {
 	protected WorldRendererImplementation renderer;
-	
+
 	public WorldClientCommon(Client client, WorldInfoImplementation info) throws WorldLoadingException {
 		this(client, info, null);
 	}

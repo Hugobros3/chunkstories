@@ -14,7 +14,7 @@ import java.nio.ByteBuffer;
 public class ByteBufferOutputStream extends OutputStream {
 
 	final ByteBuffer outputBuffer;
-	
+
 	public ByteBufferOutputStream(ByteBuffer outputBuffer) {
 		this.outputBuffer = outputBuffer;
 	}

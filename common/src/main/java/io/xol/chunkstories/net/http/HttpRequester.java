@@ -6,9 +6,6 @@
 
 package io.xol.chunkstories.net.http;
 
-
-
-public interface HttpRequester
-{
+public interface HttpRequester {
 	public void handleHttpRequest(String info, String result);
 }

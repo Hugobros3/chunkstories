@@ -65,8 +65,10 @@ public class DeathScreen extends Layer {
 				renderer.getWindow().getWidth() / 2 - font.getWidth("git --gud scrub") * 1.5f,
 				renderer.getWindow().getHeight() / 2 + 36 * 3, color + "git --gud scrub", 3, 3, new Vector4f(1));
 
-		respawnButton.setPosition(renderer.getWindow().getWidth() / 2 - respawnButton.getWidth() / 2, renderer.getWindow().getHeight() / 2 + 48);
-		exitButton.setPosition(renderer.getWindow().getWidth() / 2 - exitButton.getWidth() / 2, renderer.getWindow().getHeight() / 2 - 24);
+		respawnButton.setPosition(renderer.getWindow().getWidth() / 2 - respawnButton.getWidth() / 2,
+				renderer.getWindow().getHeight() / 2 + 48);
+		exitButton.setPosition(renderer.getWindow().getWidth() / 2 - exitButton.getWidth() / 2,
+				renderer.getWindow().getHeight() / 2 - 24);
 
 		respawnButton.render(renderer);
 		exitButton.render(renderer);

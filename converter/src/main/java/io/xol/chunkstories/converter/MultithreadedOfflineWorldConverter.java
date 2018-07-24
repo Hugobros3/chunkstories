@@ -31,39 +31,43 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 
 	private final int threadsCount;
 	private final ConverterWorkers workers;
-	
-	public MultithreadedOfflineWorldConverter(boolean verboseMode, File mcFolder, File csFolder, String mcWorldName, String csWorldName, WorldSize size, int minecraftOffsetX, int minecraftOffsetZ, File coreContentLocation, int threadsCount) throws IOException {
-		super(verboseMode, mcFolder, csFolder, mcWorldName, csWorldName, size, minecraftOffsetX, minecraftOffsetZ, coreContentLocation);
-		
+
+	public MultithreadedOfflineWorldConverter(boolean verboseMode, File mcFolder, File csFolder, String mcWorldName,
+			String csWorldName, WorldSize size, int minecraftOffsetX, int minecraftOffsetZ, File coreContentLocation,
+			int threadsCount) throws IOException {
+		super(verboseMode, mcFolder, csFolder, mcWorldName, csWorldName, size, minecraftOffsetX, minecraftOffsetZ,
+				coreContentLocation);
+
 		this.threadsCount = threadsCount;
 		this.workers = new ConverterWorkers(this, this.csWorld, threadsCount);
 	}
 
 	public void run() {
 		long benchmarkingStart = System.currentTimeMillis();
-		
-		//Step one: copy the entire world data
+
+		// Step one: copy the entire world data
 		stepOneCopyWorldData(mcWorld, csWorld, minecraftOffsetX, minecraftOffsetZ);
-		//Step two: make the summary data for chunk stories
+		// Step two: make the summary data for chunk stories
 		stepTwoCreateSummaryData(csWorld);
-		//Step three: redo the lightning of the entire map
+		// Step three: redo the lightning of the entire map
 		stepThreeSpreadLightning(csWorld);
-		//Step four: fluff
+		// Step four: fluff
 		stetFourTidbits(mcWorld, csWorld);
-		
+
 		long timeTook = System.currentTimeMillis() - benchmarkingStart;
 		double timeTookSeconds = timeTook / 1000.0;
-		
-		//Destroy the workers or it won't do shit
+
+		// Destroy the workers or it won't do shit
 		this.workers.destroy();
-		
-		logger.info("Done converting "+mcWorldName + ", took "+timeTookSeconds + " seconds.");
+
+		logger.info("Done converting " + mcWorldName + ", took " + timeTookSeconds + " seconds.");
 	}
 
-	protected void stepOneCopyWorldData(MinecraftWorld mcWorld, WorldImplementation csWorld, int minecraftOffsetX, int minecraftOffsetZ) {
+	protected void stepOneCopyWorldData(MinecraftWorld mcWorld, WorldImplementation csWorld, int minecraftOffsetX,
+			int minecraftOffsetZ) {
 		verbose("Entering step one: converting raw block data");
 
-		//Prepares the loops
+		// Prepares the loops
 		WorldSize size = csWorld.getWorldInfo().getSize();
 
 		int mcRegionStartX = MinecraftWorld.blockToRegionCoordinates(minecraftOffsetX);
@@ -73,10 +77,11 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 		int mcRegionEndZ = MinecraftWorld.blockToRegionCoordinates(minecraftOffsetZ + size.sizeInChunks * 32);
 
 		int minecraftChunksImported = 0;
-		long minecraftChunksToImport = ((long)(size.sizeInChunks * 32) * (long)(size.sizeInChunks * 32)) / (16 * 16);
+		long minecraftChunksToImport = ((long) (size.sizeInChunks * 32) * (long) (size.sizeInChunks * 32)) / (16 * 16);
 
-		//System.out.println(size + " " + size.sizeInChunks + " " + minecraftChunksToImport);
-		
+		// System.out.println(size + " " + size.sizeInChunks + " " +
+		// minecraftChunksToImport);
+
 		double completion = 0.0;
 		long lastPercentageShow = System.currentTimeMillis();
 
@@ -89,55 +94,62 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 					MinecraftRegion minecraftRegion = mcWorld.getRegion(minecraftRegionX, minecraftRegionZ);
 
 					CompoundFence waitForTheBoys = new CompoundFence();
-					
-					//Iterate over each chunk within the minecraft region
-					//TODO Good candidate for task-ifying
-					for (int minecraftCurrentChunkXinsideRegion = 0; minecraftCurrentChunkXinsideRegion < 32; minecraftCurrentChunkXinsideRegion++)
-					{
-						for (int minecraftCuurrentChunkZinsideRegion = 0; minecraftCuurrentChunkZinsideRegion < 32; minecraftCuurrentChunkZinsideRegion++)
-						{
-							//Map minecraft chunk-space to chunk stories's
-							int chunkStoriesCurrentChunkX = (minecraftCurrentChunkXinsideRegion + minecraftRegionX * 32) * 16 - minecraftOffsetX;
-							int chunkStoriesCurrentChunkZ = (minecraftCuurrentChunkZinsideRegion + minecraftRegionZ * 32) * 16 - minecraftOffsetZ;
 
-							//Is it within our borders ?
-							if (chunkStoriesCurrentChunkX >= 0 && chunkStoriesCurrentChunkX < csWorld.getWorldInfo().getSize().sizeInChunks * 32 && chunkStoriesCurrentChunkZ >= 0 && chunkStoriesCurrentChunkZ < csWorld.getWorldInfo().getSize().sizeInChunks * 32)
-							{
+					// Iterate over each chunk within the minecraft region
+					// TODO Good candidate for task-ifying
+					for (int minecraftCurrentChunkXinsideRegion = 0; minecraftCurrentChunkXinsideRegion < 32; minecraftCurrentChunkXinsideRegion++) {
+						for (int minecraftCuurrentChunkZinsideRegion = 0; minecraftCuurrentChunkZinsideRegion < 32; minecraftCuurrentChunkZinsideRegion++) {
+							// Map minecraft chunk-space to chunk stories's
+							int chunkStoriesCurrentChunkX = (minecraftCurrentChunkXinsideRegion + minecraftRegionX * 32)
+									* 16 - minecraftOffsetX;
+							int chunkStoriesCurrentChunkZ = (minecraftCuurrentChunkZinsideRegion
+									+ minecraftRegionZ * 32) * 16 - minecraftOffsetZ;
+
+							// Is it within our borders ?
+							if (chunkStoriesCurrentChunkX >= 0
+									&& chunkStoriesCurrentChunkX < csWorld.getWorldInfo().getSize().sizeInChunks * 32
+									&& chunkStoriesCurrentChunkZ >= 0
+									&& chunkStoriesCurrentChunkZ < csWorld.getWorldInfo().getSize().sizeInChunks * 32) {
 
 								if (minecraftRegion != null) {
-									MinecraftChunk minecraftChunk = minecraftRegion.getChunk(minecraftCurrentChunkXinsideRegion, minecraftCuurrentChunkZinsideRegion);
-								
-									TaskConvertMcChunk task = new TaskConvertMcChunk(minecraftRegion, minecraftChunk, chunkStoriesCurrentChunkX, chunkStoriesCurrentChunkZ, minecraftCurrentChunkXinsideRegion, minecraftCuurrentChunkZinsideRegion, minecraftRegionX, minecraftRegionZ, mappers);
+									MinecraftChunk minecraftChunk = minecraftRegion.getChunk(
+											minecraftCurrentChunkXinsideRegion, minecraftCuurrentChunkZinsideRegion);
+
+									TaskConvertMcChunk task = new TaskConvertMcChunk(minecraftRegion, minecraftChunk,
+											chunkStoriesCurrentChunkX, chunkStoriesCurrentChunkZ,
+											minecraftCurrentChunkXinsideRegion, minecraftCuurrentChunkZinsideRegion,
+											minecraftRegionX, minecraftRegionZ, mappers);
 									workers.scheduleTask(task);
 									waitForTheBoys.add(task);
 								}
 							}
-							
+
 						}
 					}
-					
-					//System.out.println("Waiting on "+waitForTheBoys.size() + " async tasks...");
-					//This code is mysoginistic, hang it
+
+					// System.out.println("Waiting on "+waitForTheBoys.size() + " async tasks...");
+					// This code is mysoginistic, hang it
 					waitForTheBoys.traverse();
-					
+
 					workers.dropAll();
-					//csWorld.unloadUselessData().traverse();
-					
-					//Close region
+					// csWorld.unloadUselessData().traverse();
+
+					// Close region
 					if (minecraftRegion != null)
 						minecraftRegion.close();
 					System.gc();
-					
-					//Display progress
-					minecraftChunksImported+=32*32;
-					if (Math.floor(((double) minecraftChunksImported / (double) minecraftChunksToImport) * 100) > completion)
-					{
-						completion = Math.floor(((double) minecraftChunksImported / (double) minecraftChunksToImport) * 100);
 
-						if (completion >= 100.0 || (System.currentTimeMillis() - lastPercentageShow > 5000))
-						{
-							verbose(completion + "% ... (" + csWorld.getRegionsHolder().countChunks() + " chunks loaded ) using " + Runtime.getRuntime().freeMemory() / 1024 / 1024 + "/" + Runtime.getRuntime().maxMemory() / 1024 / 1024
-									+ "Mb ");
+					// Display progress
+					minecraftChunksImported += 32 * 32;
+					if (Math.floor(
+							((double) minecraftChunksImported / (double) minecraftChunksToImport) * 100) > completion) {
+						completion = Math
+								.floor(((double) minecraftChunksImported / (double) minecraftChunksToImport) * 100);
+
+						if (completion >= 100.0 || (System.currentTimeMillis() - lastPercentageShow > 5000)) {
+							verbose(completion + "% ... (" + csWorld.getRegionsHolder().countChunks()
+									+ " chunks loaded ) using " + Runtime.getRuntime().freeMemory() / 1024 / 1024 + "/"
+									+ Runtime.getRuntime().maxMemory() / 1024 / 1024 + "Mb ");
 							lastPercentageShow = System.currentTimeMillis();
 						}
 					}
@@ -148,7 +160,7 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 			e.printStackTrace();
 		}
 
-		//csWorld.unloadUselessData();
+		// csWorld.unloadUselessData();
 	}
 
 	protected void stepTwoCreateSummaryData(WorldTool csWorld) {
@@ -161,27 +173,27 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 
 		double completion = 0.0;
 		long lastPercentageShow = System.currentTimeMillis();
-		
+
 		int wavesSize = this.threadsCount * 4;
 		int wave = 0;
-		
+
 		CompoundFence compoundFence = new CompoundFence();
 		for (int regionX = 0; regionX < size.sizeInChunks / 8; regionX++) {
 			for (int regionZ = 0; regionZ < size.sizeInChunks / 8; regionZ++) {
 				TaskBuildHeightmap task = new TaskBuildHeightmap(regionX, regionZ, csWorld);
 				workers.scheduleTask(task);
 				compoundFence.traverse();
-				
+
 				if (wave < wavesSize) {
 					wave++;
 				} else {
 					compoundFence.traverse();
 					compoundFence.clear();
-					
+
 					wave = 0;
 					done += wavesSize;
-					
-					//Display progress...
+
+					// Display progress...
 					if (Math.floor(((double) done / (double) todo) * 100) > completion) {
 						completion = Math.floor(((double) done / (double) todo) * 100);
 
@@ -192,26 +204,26 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 						}
 					}
 
-					//Drop all unsued chunk data
+					// Drop all unsued chunk data
 					workers.dropAll();
-					
-					//csWorld.unloadUselessData().traverse();
+
+					// csWorld.unloadUselessData().traverse();
 				}
 			}
 		}
 		compoundFence.traverse();
-		
+
 		verbose("Saving unused chunk data...");
-		//Drop all unsued chunk data
+		// Drop all unsued chunk data
 		workers.dropAll();
-		//csWorld.unloadUselessData().traverse();
+		// csWorld.unloadUselessData().traverse();
 		verbose("Done.");
 	}
 
 	protected void stepThreeSpreadLightning(WorldTool csWorld) {
 		verbose("Entering step three: spreading light");
 		csWorld.setLightning(true);
-		
+
 		WorldSize size = csWorld.getWorldInfo().getSize();
 		int maxHeightPossible = 256;
 
@@ -226,27 +238,29 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 
 		int chunksacquired = 0;
 		WorldUser worldUser = this;
-		
+
 		int waveSize = this.threadsCount * 32;
 		int wave = 0;
 
 		CompoundFence waveFence = new CompoundFence();
-		
+
 		for (int chunkX = 0; chunkX < size.sizeInChunks; chunkX++) {
 			for (int chunkZ = 0; chunkZ < size.sizeInChunks; chunkZ++) {
 				wave++;
-				
+
 				CompoundFence loadRelevantData = new CompoundFence();
-				
-				Heightmap sum = csWorld.getRegionsSummariesHolder().acquireHeightmapChunkCoordinates(worldUser, chunkX, chunkZ);
+
+				Heightmap sum = csWorld.getRegionsSummariesHolder().acquireHeightmapChunkCoordinates(worldUser, chunkX,
+						chunkZ);
 				registeredCS_Summaries.add(sum);
 				loadRelevantData.add(sum.waitForLoading());
-				
+
 				// Loads 3x3 arround relevant chunks
 				for (int i = -1; i < 2; i++) {
 					for (int j = -1; j < 2; j++) {
 						for (int chunkY = 0; chunkY <= maxHeightPossible / 32; chunkY++) {
-							ChunkHolder chunkHolder = csWorld.acquireChunkHolder(worldUser, chunkX + i, chunkY, chunkZ + j);
+							ChunkHolder chunkHolder = csWorld.acquireChunkHolder(worldUser, chunkX + i, chunkY,
+									chunkZ + j);
 							if (chunkHolder != null) {
 								loadRelevantData.add(chunkHolder.waitForLoading());
 								if (registeredCS_Holders.add(chunkHolder))
@@ -255,30 +269,30 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 						}
 					}
 				}
-				
+
 				assert chunksacquired == registeredCS_Holders.size();
-				
-				//Wait for everything to actually load
+
+				// Wait for everything to actually load
 				loadRelevantData.traverse();
 
-				//Spreads lightning, from top to botton
+				// Spreads lightning, from top to botton
 				for (int chunkY = maxHeightPossible / 32; chunkY >= 0; chunkY--) {
 					CubicChunk chunk = csWorld.getChunk(chunkX, chunkY, chunkZ);
 					Fence fence = chunk.lightBaker.requestLightningUpdate();
-					//TaskLightChunk task = new TaskLightChunk(chunk, true);
-					//workers.scheduleTask(task);
+					// TaskLightChunk task = new TaskLightChunk(chunk, true);
+					// workers.scheduleTask(task);
 					waveFence.add(fence);
 				}
-					
+
 				if (wave >= waveSize) {
 					waveFence.traverse();
 					waveFence.clear();
-					
-					while(true) {
-						if(workers.size() > 0)  {
-							//we actually wait for the workers to chew through all their tasks
-							//hopefully nothing cocks about in the lightning code and spawns
-							//endless tasks
+
+					while (true) {
+						if (workers.size() > 0) {
+							// we actually wait for the workers to chew through all their tasks
+							// hopefully nothing cocks about in the lightning code and spawns
+							// endless tasks
 							try {
 								Thread.sleep(50L);
 							} catch (InterruptedException e) {
@@ -288,11 +302,11 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 						} else
 							break;
 					}
-					
+
 					wave = 0;
-					
-					//Show progress
-					done+= waveSize;
+
+					// Show progress
+					done += waveSize;
 					if (Math.floor(((double) done / (double) todo) * 100) > completion) {
 						completion = Math.floor(((double) done / (double) todo) * 100);
 
@@ -302,10 +316,11 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 							lastPercentageShow = System.currentTimeMillis();
 						}
 					}
-				
+
 					if (registeredCS_Holders.size() > targetChunksToKeepInRam) {
 						// Save world
-						// verbose("More than "+targetChunksToKeepInRam+" chunks already in memory, saving and unloading before continuing");
+						// verbose("More than "+targetChunksToKeepInRam+" chunks already in memory,
+						// saving and unloading before continuing");
 
 						// csWorld.saveEverything();
 						// for(Region region : registeredCS_Regions)
@@ -322,7 +337,7 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 						registeredCS_Summaries.clear();
 						registeredCS_Holders.clear();
 
-						//csWorld.unloadUselessData().traverse();
+						// csWorld.unloadUselessData().traverse();
 						// verbose("Done.");
 					}
 				}
@@ -331,8 +346,8 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 
 		waveFence.traverse();
 		wave = 0;
-		
-		//Terminate
+
+		// Terminate
 		for (ChunkHolder holder : registeredCS_Holders) {
 			holder.unregisterUser(worldUser);
 			chunksacquired--;
@@ -344,29 +359,29 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 		registeredCS_Summaries.clear();
 		registeredCS_Holders.clear();
 
-		//csWorld.unloadUselessData().traverse();
-		
-		/*csWorld.saveEverything();
-		for (ChunkHolder holder : registeredCS_Holders)
-			holder.unregisterUser(worldUser);
+		// csWorld.unloadUselessData().traverse();
 
-		csWorld.unloadUselessData().traverse();*/
+		/*
+		 * csWorld.saveEverything(); for (ChunkHolder holder : registeredCS_Holders)
+		 * holder.unregisterUser(worldUser);
+		 * 
+		 * csWorld.unloadUselessData().traverse();
+		 */
 	}
 
-	protected void stetFourTidbits(MinecraftWorld mcWorld, WorldImplementation csWorld)
-	{
+	protected void stetFourTidbits(MinecraftWorld mcWorld, WorldImplementation csWorld) {
 		verbose("Entering step four: tidbits");
-		
+
 		int spawnX = ((NBTInt) mcWorld.getLevelDotDat().getRoot().getTag("Data.SpawnX")).getData();
 		int spawnY = ((NBTInt) mcWorld.getLevelDotDat().getRoot().getTag("Data.SpawnY")).getData();
 		int spawnZ = ((NBTInt) mcWorld.getLevelDotDat().getRoot().getTag("Data.SpawnZ")).getData();
-		
+
 		csWorld.setDefaultSpawnLocation(new Location(csWorld, spawnX, spawnY, spawnZ));
 		csWorld.saveEverything().traverse();
-		
+
 		csWorld.destroy();
 	}
-	
+
 	@Override
 	public Tasks tasks() {
 		return workers;

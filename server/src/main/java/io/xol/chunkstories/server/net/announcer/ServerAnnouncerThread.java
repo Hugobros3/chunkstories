@@ -14,15 +14,12 @@ import io.xol.chunkstories.net.http.HttpRequests;
 import io.xol.chunkstories.server.DedicatedServer;
 import io.xol.chunkstories.util.VersionInfo;
 
-
-
 //TODO Use proper way to http stuff instead of this ugly ass hack
 /**
- * Small background thread that is tasked with putting and keeping up to date 
+ * Small background thread that is tasked with putting and keeping up to date
  * the server's entry in the global list
  */
-public class ServerAnnouncerThread extends Thread
-{
+public class ServerAnnouncerThread extends Thread {
 	AtomicBoolean run = new AtomicBoolean(true);
 
 	int lolcode = 0;
@@ -32,14 +29,12 @@ public class ServerAnnouncerThread extends Thread
 	public String srv_desc;
 
 	DedicatedServer server;
-	
-	public ServerAnnouncerThread(DedicatedServer server)
-	{
+
+	public ServerAnnouncerThread(DedicatedServer server) {
 		this.server = server;
-		
+
 		lolcode = server.getServerConfig().getInteger("lolcode", 0);
-		if (lolcode == 0L)
-		{
+		if (lolcode == 0L) {
 			Random rnd = new Random();
 			lolcode = rnd.nextInt(Integer.MAX_VALUE);
 			server.getServerConfig().setInteger("lolcode", lolcode);
@@ -51,34 +46,29 @@ public class ServerAnnouncerThread extends Thread
 		setName("Multiverse thread");
 	}
 
-	public void stopAnnouncer()
-	{
+	public void stopAnnouncer() {
 		run.set(false);
 	}
 
 	@Override
-	public void run()
-	{
-		try
-		{
+	public void run() {
+		try {
 			String internalIp = Inet4Address.getLocalHost().getHostAddress();
 			String externalIp = HttpRequests.sendPost("httpss://chunkstories.xyz/api/sayMyName.php?ip=1", "");
-			
-			while (run.get())
-			{
+
+			while (run.get()) {
 				// System.out.println("Updating server data on Multiverse.");
-				if (server.getServerConfig().getString("enable-multiverse", "false").equals("true"))
-				{
-					HttpRequests.sendPost("https://chunkstories.xyz/api/serverAnnounce.php", "srvname=" + srv_name + "&desc=" + srv_desc + "&ip=" + externalIp + "&iip=" + internalIp + "&mu=" + server.getHandler().getMaxClients() + "&u="
-							+ server.getHandler().getPlayersNumber() + "&n=0&w=default&p=1&v=" + VersionInfo.version + "&lolcode=" + lolcode);
+				if (server.getServerConfig().getString("enable-multiverse", "false").equals("true")) {
+					HttpRequests.sendPost("https://chunkstories.xyz/api/serverAnnounce.php",
+							"srvname=" + srv_name + "&desc=" + srv_desc + "&ip=" + externalIp + "&iip=" + internalIp
+									+ "&mu=" + server.getHandler().getMaxClients() + "&u="
+									+ server.getHandler().getPlayersNumber() + "&n=0&w=default&p=1&v="
+									+ VersionInfo.version + "&lolcode=" + lolcode);
 					sleep(updatedelay);
-				}
-				else
+				} else
 					sleep(6000);
 			}
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			server.getLogger().error("An unexpected error happened during multiverse stuff. More info below.");
 			e.printStackTrace();
 		}

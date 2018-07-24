@@ -13,10 +13,11 @@ import io.xol.chunkstories.api.util.Configuration.ScaleOption;
 public class OptionScaleImplementation extends OptionDoubleImplementation implements ScaleOption {
 
 	double min, max, granularity;
-	
-	public OptionScaleImplementation(ConfigurationImplementation config, OptionUntyped loadFromThat) throws IOException {
+
+	public OptionScaleImplementation(ConfigurationImplementation config, OptionUntyped loadFromThat)
+			throws IOException {
 		super(config, loadFromThat);
-		
+
 		this.min = parse(this.resolveProperty("min", "0.0"));
 		this.max = parse(this.resolveProperty("max", "1.0"));
 		this.granularity = parse(this.resolveProperty("granularity", "0.1"));

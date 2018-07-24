@@ -26,11 +26,12 @@ public class ClientPacketWorldUser extends PacketWorldUser {
 	@Override
 	public void process(PacketSender sender, DataInputStream in, PacketReceptionContext context) throws IOException {
 		super.process(sender, in, context);
-		
+
 		System.out.println("weeiiird");
-		if(context instanceof ClientPacketsContext) {
+		if (context instanceof ClientPacketsContext) {
 			try {
-				((PlayerClientImplementation)((ClientPacketsContext)context).getContext().getPlayer()).loadingAgent.handleServerResponse(this);
+				((PlayerClientImplementation) ((ClientPacketsContext) context).getContext().getPlayer()).loadingAgent
+						.handleServerResponse(this);
 			} catch (IllegalPacketException e) {
 				e.printStackTrace();
 			}

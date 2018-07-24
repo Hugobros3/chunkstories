@@ -24,7 +24,7 @@ public class OptionIntImplementation extends OptionImplementation implements Opt
 	private int parse(String s) {
 		try {
 			return Integer.parseInt(s);
-		} catch(NumberFormatException e) {
+		} catch (NumberFormatException e) {
 			return 0;
 		}
 	}

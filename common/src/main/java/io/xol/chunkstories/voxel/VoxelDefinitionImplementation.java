@@ -22,203 +22,184 @@ import io.xol.chunkstories.api.voxel.materials.VoxelMaterial;
 import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.content.GenericNamedConfigurable;
 
-public class VoxelDefinitionImplementation extends GenericNamedConfigurable implements VoxelDefinition
-{
+public class VoxelDefinitionImplementation extends GenericNamedConfigurable implements VoxelDefinition {
 	private final VoxelsStore store;
-	
+
 	private final VoxelMaterial material;
 	private final VoxelRenderer model;
 	private final VoxelTexture[] textures = new VoxelTexture[6];
 	private final CollisionBox collisionBox;
-	
+
 	private final boolean solid;
 	private final boolean opaque;
 	private final boolean selfOpaque;
 	private final boolean liquid;
 	private final boolean billboard;
 	private final boolean isSelectable;
-	
+
 	private final byte emittingLightLevel;
 	private final byte shadingLightLevel;
-	
+
 	private final Voxel voxel;
-	
-	public VoxelDefinitionImplementation(VoxelsStore store, String name, BufferedReader reader) throws IOException, IllegalVoxelDeclarationException
-	{
+
+	public VoxelDefinitionImplementation(VoxelsStore store, String name, BufferedReader reader)
+			throws IOException, IllegalVoxelDeclarationException {
 		super(name, reader);
-		
+
 		this.store = store;
-		
-		//If a specific material was given, use that one, else use the voxel name
+
+		// If a specific material was given, use that one, else use the voxel name
 		String matResolved = this.resolveProperty("material");
 		this.material = store.materials().getVoxelMaterial(matResolved != null ? matResolved : name);
-		
-		//If a special model is being used
+
+		// If a special model is being used
 		String modelName = this.resolveProperty("model");
 		this.model = modelName == null ? null : store.models().getVoxelModel(modelName);
-		
-		//Is there an explicit list of textures ?
+
+		// Is there an explicit list of textures ?
 		String texturesResolved = this.resolveProperty("textures");
 		int textureIndex = 0;
-		if(texturesResolved != null)
-		{
+		if (texturesResolved != null) {
 			String sides[] = texturesResolved.split(",");
-			for (; textureIndex < sides.length; textureIndex++)
-			{
+			for (; textureIndex < sides.length; textureIndex++) {
 				String textureName = sides[textureIndex].replace("[", "").replace("]", "").replace(" ", "");
-				//System.out.println("Voxel "+name+" texture"+textureIndex+" ="+textureName);
+				// System.out.println("Voxel "+name+" texture"+textureIndex+" ="+textureName);
 				textures[textureIndex] = store.textures().getVoxelTexture(textureName);
 			}
 		}
-		//Try the 'texture' (no s) tag and if all else fail, use the voxel name as the texture name
+		// Try the 'texture' (no s) tag and if all else fail, use the voxel name as the
+		// texture name
 		String textureResolved = this.resolveProperty("texture");
 		VoxelTexture textureToFill = store.textures().getVoxelTexture(textureResolved != null ? textureResolved : name);
-		//Fill the remaining slots with whatever we found
-		while(textureIndex < 6)
-		{
+		// Fill the remaining slots with whatever we found
+		while (textureIndex < 6) {
 			textures[textureIndex] = textureToFill;
 			textureIndex++;
 		}
-		
-		//Load the collision box if it's defined
+
+		// Load the collision box if it's defined
 		String collisionBoxResolved = this.resolveProperty("collisionBox");
-		if(collisionBoxResolved != null)
-		{
+		if (collisionBoxResolved != null) {
 			String sizes[] = (collisionBoxResolved.replace("(", "").replace(")", "")).split(",");
 
-			collisionBox = new CollisionBox(Float.parseFloat(sizes[3]), Float.parseFloat(sizes[4]), Float.parseFloat(sizes[5]));
+			collisionBox = new CollisionBox(Float.parseFloat(sizes[3]), Float.parseFloat(sizes[4]),
+					Float.parseFloat(sizes[5]));
 			collisionBox.translate(Float.parseFloat(sizes[0]), Float.parseFloat(sizes[1]), Float.parseFloat(sizes[2]));
-		}
-		else
+		} else
 			collisionBox = new CollisionBox(1, 1, 1);
-		
-		//Load a few trivial properties
+
+		// Load a few trivial properties
 		solid = getBoolean("solid", true);
 		opaque = getBoolean("opaque", true);
 		selfOpaque = getBoolean("selfOpaque", false);
 		liquid = getBoolean("liquid", false);
 		billboard = getBoolean("billboard", false);
 		isSelectable = getBoolean("isSelectable", !name.equals("air") && !liquid);
-		
-		emittingLightLevel = getByte("emitting", (byte)0);
-		shadingLightLevel = getByte("shading", (byte)0);
-		
-		//Once ALL that is done, we call the proper class and make a Voxel object
+
+		emittingLightLevel = getByte("emitting", (byte) 0);
+		shadingLightLevel = getByte("shading", (byte) 0);
+
+		// Once ALL that is done, we call the proper class and make a Voxel object
 		String className = this.resolveProperty("customClass", "io.xol.chunkstories.api.voxel.Voxel");
-		try
-		{
+		try {
 			Class<?> rawClass = store.parent().modsManager().getClassByName(className);
 			if (rawClass == null)
 				throw new IllegalVoxelDeclarationException("Voxel " + this.getName() + " does not exist in codebase.");
 			else if (!(Voxel.class.isAssignableFrom(rawClass)))
-				throw new IllegalVoxelDeclarationException("Voxel " + this.getName() + " is not extending the Voxel class.");
-			else
-			{
+				throw new IllegalVoxelDeclarationException(
+						"Voxel " + this.getName() + " is not extending the Voxel class.");
+			else {
 				@SuppressWarnings("unchecked")
 				Class<? extends Voxel> voxelClass = (Class<? extends Voxel>) rawClass;
 				Class<?>[] types = { VoxelDefinition.class };
 				Constructor<? extends Voxel> constructor = voxelClass.getConstructor(types);
 
 				if (constructor == null)
-					throw new IllegalVoxelDeclarationException("Voxel " + this.getName() + " does not provide a valid constructor.");
+					throw new IllegalVoxelDeclarationException(
+							"Voxel " + this.getName() + " does not provide a valid constructor.");
 
 				Object[] parameters = { this };
 				voxel = (Voxel) constructor.newInstance(parameters);
 			}
-		}
-		catch (NoSuchMethodException | SecurityException | IllegalArgumentException | InstantiationException | IllegalAccessException | InvocationTargetException e)
-		{
+		} catch (NoSuchMethodException | SecurityException | IllegalArgumentException | InstantiationException
+				| IllegalAccessException | InvocationTargetException e) {
 			e.printStackTrace();
-			throw new IllegalVoxelDeclarationException("Voxel " + this.getName() + " has an issue with it's constructor: " + e.getMessage());
+			throw new IllegalVoxelDeclarationException(
+					"Voxel " + this.getName() + " has an issue with it's constructor: " + e.getMessage());
 		}
 	}
 
-	private boolean getBoolean(String propertyName, boolean defaultValue)
-	{
+	private boolean getBoolean(String propertyName, boolean defaultValue) {
 		String resolved = this.resolveProperty(propertyName);
 		return resolved == null ? defaultValue : resolved.equals("true");
 	}
-	
-	private byte getByte(String propertyName, byte defaultValue)
-	{
+
+	private byte getByte(String propertyName, byte defaultValue) {
 		String resolved = this.resolveProperty(propertyName);
 		return resolved == null ? defaultValue : Byte.parseByte(resolved);
 	}
 
 	@Override
-	public VoxelMaterial getMaterial()
-	{
+	public VoxelMaterial getMaterial() {
 		return material;
 	}
-	
+
 	@Override
-	public VoxelRenderer getVoxelModel()
-	{
+	public VoxelRenderer getVoxelModel() {
 		return model;
 	}
 
 	@Override
-	public VoxelTexture getVoxelTexture(VoxelSide side)
-	{
+	public VoxelTexture getVoxelTexture(VoxelSide side) {
 		return textures[side.ordinal()];
 	}
 
 	@Override
-	public CollisionBox getCollisionBox()
-	{
+	public CollisionBox getCollisionBox() {
 		return collisionBox;
 	}
 
 	@Override
-	public boolean isSolid()
-	{
+	public boolean isSolid() {
 		return solid;
 	}
 
 	@Override
-	public boolean isOpaque()
-	{
+	public boolean isOpaque() {
 		return opaque;
 	}
 
 	@Override
-	public boolean isSelfOpaque()
-	{
+	public boolean isSelfOpaque() {
 		return selfOpaque;
 	}
 
 	@Override
-	public boolean isLiquid()
-	{
+	public boolean isLiquid() {
 		return liquid;
 	}
 
 	@Override
-	public boolean isBillboard()
-	{
+	public boolean isBillboard() {
 		return billboard;
 	}
 
 	@Override
-	public byte getEmittedLightLevel()
-	{
+	public byte getEmittedLightLevel() {
 		return emittingLightLevel;
 	}
 
 	@Override
-	public byte getShadingLightLevel()
-	{
+	public byte getShadingLightLevel() {
 		return shadingLightLevel;
 	}
 
 	@Override
-	public Voxels store()
-	{
+	public Voxels store() {
 		return store;
 	}
-	
-	public Voxel getVoxelObject()
-	{
+
+	public Voxel getVoxelObject() {
 		return voxel;
 	}
 

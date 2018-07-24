@@ -37,7 +37,7 @@ public class IOTaskSaveRegion extends IOTask {
 			DataOutputStream dos = new DataOutputStream(outputFileStream);
 
 			region.handler.save(dos);
-			
+
 			outputFileStream.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();

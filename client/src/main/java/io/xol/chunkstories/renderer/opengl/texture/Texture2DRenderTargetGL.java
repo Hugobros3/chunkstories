@@ -41,9 +41,8 @@ public class Texture2DRenderTargetGL extends Texture2DGL implements Texture2DRen
 
 	@Override
 	public void computeMipmaps() {
-		mipmapsUpToDate = false; 
+		mipmapsUpToDate = false;
 		super.computeMipmaps();
 	}
-	
-	
+
 }

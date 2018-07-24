@@ -18,63 +18,54 @@ import io.xol.chunkstories.api.workers.TaskExecutor;
 import io.xol.chunkstories.world.region.RegionImplementation;
 import io.xol.chunkstories.world.region.format.CSFRegionFile;
 
-public class IOTaskLoadRegion extends IOTask
-{
+public class IOTaskLoadRegion extends IOTask {
 	private static final Logger logger = LoggerFactory.getLogger("world.io");
 	RegionImplementation region;
 
-	public IOTaskLoadRegion(RegionImplementation holder)
-	{
+	public IOTaskLoadRegion(RegionImplementation holder) {
 		this.region = holder;
 	}
 
 	@Override
-	public boolean task(TaskExecutor taskExecutor)
-	{
-		//Check no saving operations are occuring
-		/*IOTaskSaveRegion saveRegionTask = new IOTaskSaveRegion(region);
-		if (tasks != null && tasks.contains(saveRegionTask))
-		{
-			//System.out.println("A save operation is still running on " + holder + ", waiting for it to complete.");
-			return false;
-		}*/
+	public boolean task(TaskExecutor taskExecutor) {
+		// Check no saving operations are occuring
+		/*
+		 * IOTaskSaveRegion saveRegionTask = new IOTaskSaveRegion(region); if (tasks !=
+		 * null && tasks.contains(saveRegionTask)) {
+		 * //System.out.println("A save operation is still running on " + holder +
+		 * ", waiting for it to complete."); return false; }
+		 */
 
 		region.handler = CSFRegionFile.determineVersionAndCreate(region);
-		
-		if (region.file.exists())
-		{
-			try
-			{
+
+		if (region.file.exists()) {
+			try {
 				FileInputStream fist = new FileInputStream(region.handler.file);
 				DataInputStream in = new DataInputStream(fist);
-				
+
 				region.handler.load(in);
-			}
-			catch (FileNotFoundException e)
-			{
+			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 				return true;
-			}
-			catch (IOException e)
-			{
-				logger.warn("Error loading file"+region.handler.file);
+			} catch (IOException e) {
+				logger.warn("Error loading file" + region.handler.file);
 				e.printStackTrace();
 				return true;
 			}
 		}
-		//Else if no file exists
-		else
-		{
-			//Generate this crap !
-			//region.generateAll();
-			//Pre bake phase 1 lightning
+		// Else if no file exists
+		else {
+			// Generate this crap !
+			// region.generateAll();
+			// Pre bake phase 1 lightning
 		}
 
-		//Marking the holder as loaded allows the game to remove it and unload it, so we set the timer to have a time frame until it naturally unloads.
+		// Marking the holder as loaded allows the game to remove it and unload it, so
+		// we set the timer to have a time frame until it naturally unloads.
 		region.resetUnloadCooldown();
 		region.setDiskDataLoaded(true);
 
-		//world.unloadsUselessData();
+		// world.unloadsUselessData();
 		return true;
 	}
 }

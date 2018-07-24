@@ -20,8 +20,7 @@ import io.xol.chunkstories.api.rendering.item.ItemRenderer;
 import io.xol.chunkstories.api.rendering.item.NullItemRenderer;
 import io.xol.chunkstories.content.GenericNamedConfigurable;
 
-public class ItemDefinitionImplementation extends GenericNamedConfigurable implements ItemDefinition
-{
+public class ItemDefinitionImplementation extends GenericNamedConfigurable implements ItemDefinition {
 	private final ItemDefinitionsStore store;
 
 	private final int slotsWidth;
@@ -31,164 +30,150 @@ public class ItemDefinitionImplementation extends GenericNamedConfigurable imple
 	private final Constructor<? extends Item> itemConstructor;
 	private final ItemRenderer itemRenderer;
 
-	public ItemDefinitionImplementation(ItemDefinitionsStore store, String name, BufferedReader reader) throws IllegalItemDeclarationException, IOException
-	{
+	public ItemDefinitionImplementation(ItemDefinitionsStore store, String name, BufferedReader reader)
+			throws IllegalItemDeclarationException, IOException {
 		super(name, reader);
 		this.store = store;
 
-		//Loads the items properties
-		try
-		{
+		// Loads the items properties
+		try {
 			this.slotsWidth = Integer.parseInt(this.resolveProperty("width", "1"));
 			this.slotsHeight = Integer.parseInt(this.resolveProperty("height", "1"));
 
 			this.maxStackSize = Integer.parseInt(this.resolveProperty("maxStackSize", "100"));
-		}
-		catch (NumberFormatException e)
-		{
+		} catch (NumberFormatException e) {
 			throw new IllegalItemDeclarationException("Item " + this.getName() + " has a misformed number.");
 		}
 
-		//Loads up a custom class if one is defined
+		// Loads up a custom class if one is defined
 		String className = this.resolveProperty("customClass", "io.xol.chunkstories.api.item.Item");
-		
-		//Two syntaxes are possible
-		if(className.equals("io.xol.chunkstories.api.item.Item"))
+
+		// Two syntaxes are possible
+		if (className.equals("io.xol.chunkstories.api.item.Item"))
 			className = this.resolveProperty("class", "io.xol.chunkstories.api.item.Item");
-		
-		try
-		{
+
+		try {
 			Class<?> rawClass = store.parent().modsManager().getClassByName(className);
-			if (rawClass == null)
-			{
-				//ChunkStoriesLogger.getInstance().warning("Item class " + className + " does not exist in codebase.");
+			if (rawClass == null) {
+				// ChunkStoriesLogger.getInstance().warning("Item class " + className + " does
+				// not exist in codebase.");
 				throw new IllegalItemDeclarationException("Item " + this.getName() + " does not exist in codebase.");
-			}
-			else if (!(Item.class.isAssignableFrom(rawClass)))
-			{
-				//ChunkStoriesLogger.getInstance().warning("Item class " + className + " is not extending the Item class.");
-				throw new IllegalItemDeclarationException("Item " + this.getName() + " is not extending the Item class.");
-			}
-			else
-			{
+			} else if (!(Item.class.isAssignableFrom(rawClass))) {
+				// ChunkStoriesLogger.getInstance().warning("Item class " + className + " is not
+				// extending the Item class.");
+				throw new IllegalItemDeclarationException(
+						"Item " + this.getName() + " is not extending the Item class.");
+			} else {
 				@SuppressWarnings("unchecked")
 				Class<? extends Item> itemClass = (Class<? extends Item>) rawClass;
 				Class<?>[] types = { ItemDefinition.class };
 				Constructor<? extends Item> constructor = itemClass.getConstructor(types);
 
-				if (constructor == null)
-				{
-					throw new IllegalItemDeclarationException("Item " + this.getName() + " does not provide a valid constructor.");
+				if (constructor == null) {
+					throw new IllegalItemDeclarationException(
+							"Item " + this.getName() + " does not provide a valid constructor.");
 				}
 
 				this.itemConstructor = constructor;
 			}
-		}
-		catch (NoSuchMethodException | SecurityException | IllegalArgumentException e)
-		{
+		} catch (NoSuchMethodException | SecurityException | IllegalArgumentException e) {
 			e.printStackTrace();
-			throw new IllegalItemDeclarationException("Item " + this.getName() + " has an issue with it's constructor: " + e.getMessage());
+			throw new IllegalItemDeclarationException(
+					"Item " + this.getName() + " has an issue with it's constructor: " + e.getMessage());
 		}
 
-		if (store.parent() instanceof ClientContent)
-		{
+		if (store.parent() instanceof ClientContent) {
 			ItemRenderer defaultItemRenderer;
 			try {
-				Class<?> defaultItemRendererClass = store.parent().modsManager().getClassByName("io.xol.chunkstories.core.item.renderer.DefaultItemRenderer");
-				Constructor<?> defaultItemRendererConstructor = defaultItemRendererClass.getConstructor(ItemDefinition.class, ClientContent.class);
-				defaultItemRenderer = (ItemRenderer)defaultItemRendererConstructor.newInstance(this, (ClientContent)store.parent());
-			}
-			catch(Exception e) {
-				//TODO obtain the constructor once ?
-				store().parent().logger().error("Could not instanciate DefaultItemRenderer: "+e);
-				//e.printStackTrace();
-				//e.printStackTrace(store().parent().logger().getPrintWriter());
-				store().parent().logger().warn("Using NullItemRenderer(). "+e);
+				Class<?> defaultItemRendererClass = store.parent().modsManager()
+						.getClassByName("io.xol.chunkstories.core.item.renderer.DefaultItemRenderer");
+				Constructor<?> defaultItemRendererConstructor = defaultItemRendererClass
+						.getConstructor(ItemDefinition.class, ClientContent.class);
+				defaultItemRenderer = (ItemRenderer) defaultItemRendererConstructor.newInstance(this,
+						(ClientContent) store.parent());
+			} catch (Exception e) {
+				// TODO obtain the constructor once ?
+				store().parent().logger().error("Could not instanciate DefaultItemRenderer: " + e);
+				// e.printStackTrace();
+				// e.printStackTrace(store().parent().logger().getPrintWriter());
+				store().parent().logger().warn("Using NullItemRenderer(). " + e);
 				defaultItemRenderer = new NullItemRenderer(null);
 			}
-			
-			//ItemRenderer defaultItemRenderer = new DefaultItemRenderer(this, (ClientContent)store.parent());
-			
+
+			// ItemRenderer defaultItemRenderer = new DefaultItemRenderer(this,
+			// (ClientContent)store.parent());
+
 			Item sampleItem = this.newItem();
 			ItemRenderer customItemRenderer = sampleItem.getCustomItemRenderer(defaultItemRenderer);
-			
+
 			this.itemRenderer = customItemRenderer == null ? defaultItemRenderer : customItemRenderer;
 			this.store().logger().debug("Initialized itemRenderer to " + this.itemRenderer);
 		}
-		//There are no Item renderers on a server !
+		// There are no Item renderers on a server !
 		else
 			this.itemRenderer = null;
 	}
-	
+
 	@Override
-	public ItemRenderer getRenderer()
-	{
+	public ItemRenderer getRenderer() {
 		return itemRenderer;
 	}
 
 	@Override
-	public String getInternalName()
-	{
+	public String getInternalName() {
 		return super.getName();
 	}
 
 	@Override
-	public int getSlotsWidth()
-	{
+	public int getSlotsWidth() {
 		return slotsWidth;
 	}
 
-	/*public final void setSlotsWidth(int slotsWidth)
-	{
-		this.slotsWidth = slotsWidth;
-	}*/
+	/*
+	 * public final void setSlotsWidth(int slotsWidth) { this.slotsWidth =
+	 * slotsWidth; }
+	 */
 
 	@Override
-	public int getSlotsHeight()
-	{
+	public int getSlotsHeight() {
 		return slotsHeight;
 	}
 
-	/*public final void setSlotsHeight(int slotsHeight)
-	{
-		this.slotsHeight = slotsHeight;
-	}*/
+	/*
+	 * public final void setSlotsHeight(int slotsHeight) { this.slotsHeight =
+	 * slotsHeight; }
+	 */
 
 	@Override
-	public int getMaxStackSize()
-	{
+	public int getMaxStackSize() {
 		return maxStackSize;
 	}
 
-	/*public final void setMaxStackSize(int maxStackSize)
-	{
-		this.maxStackSize = maxStackSize;
-	}*/
+	/*
+	 * public final void setMaxStackSize(int maxStackSize) { this.maxStackSize =
+	 * maxStackSize; }
+	 */
 
 	@Override
-	public Item newItem()
-	{
+	public Item newItem() {
 		Object[] parameters = { this };
-		try
-		{
+		try {
 			return this.itemConstructor.newInstance(parameters);
-		}
-		catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
-		{
+		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+				| InvocationTargetException e) {
 			store().logger().warn("Could not spawn : " + this);
 			store.logger().warn("{}", e);
 			return null;
 		}
 	}
 
-	public String toString()
-	{
-		return "[ItemDefinition" + " name:" + getInternalName() + " w:" + this.getSlotsWidth() + " h:" + this.getSlotsHeight() + " max:" + this.getMaxStackSize() + "]";
+	public String toString() {
+		return "[ItemDefinition" + " name:" + getInternalName() + " w:" + this.getSlotsWidth() + " h:"
+				+ this.getSlotsHeight() + " max:" + this.getMaxStackSize() + "]";
 	}
 
 	@Override
-	public ItemsDefinitions store()
-	{
+	public ItemsDefinitions store() {
 		return store;
 	}
 }

@@ -21,7 +21,7 @@ public class CreativeCommand extends ServerCommandBasic {
 		super(serverConsole);
 		server.getPluginManager().registerCommand("creative").setHandler(this);
 	}
-	
+
 	@Override
 	public boolean handleCommand(CommandEmitter emitter, Command command, String[] arguments) {
 
@@ -31,24 +31,23 @@ public class CreativeCommand extends ServerCommandBasic {
 		}
 
 		Player player = (Player) emitter;
-		
-		if(!emitter.hasPermission("self.toggleCreative"))
-		{
+
+		if (!emitter.hasPermission("self.toggleCreative")) {
 			emitter.sendMessage("You don't have the permission.");
 			return true;
 		}
-		
+
 		Entity entity = player.getControlledEntity();
-		if(!entity.traits.tryWithBoolean(TraitCreativeMode.class, fm -> {
+		if (!entity.traits.tryWithBoolean(TraitCreativeMode.class, fm -> {
 			boolean state = fm.get();
 			state = !state;
 			player.sendMessage("Creative mode set to: " + state);
 			fm.set(state);
-			
+
 			return true;
 		}))
 			emitter.sendMessage("This action doesn't apply to your current entity.");
-		
+
 		return true;
 	}
 

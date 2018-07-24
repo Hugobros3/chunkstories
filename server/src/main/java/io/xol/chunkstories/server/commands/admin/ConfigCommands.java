@@ -20,8 +20,7 @@ public class ConfigCommands extends ServerCommandBasic {
 
 	@Override
 	public boolean handleCommand(CommandEmitter emitter, Command command, String[] arguments) {
-		if (command.getName().equals("reloadconfig") && emitter.hasPermission("server.reloadConfig"))
-		{
+		if (command.getName().equals("reloadconfig") && emitter.hasPermission("server.reloadConfig")) {
 			server.reloadConfig();
 			emitter.sendMessage("Config reloaded.");
 			return true;

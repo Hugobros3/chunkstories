@@ -24,24 +24,21 @@ import io.xol.chunkstories.renderer.font.TrueTypeFont;
 import io.xol.chunkstories.renderer.font.TrueTypeFontRenderer;
 import io.xol.chunkstories.renderer.opengl.vbo.VertexBufferGL;
 
-public class TextMeshObject implements TextMesh
-{
+public class TextMeshObject implements TextMesh {
 	private final String text;
 	private final TrueTypeFont font;
-	
+
 	private boolean done = false;
 	private List<VertexBufferGL> verticesObjects = new LinkedList<VertexBufferGL>();
 
-	public TextMeshObject(TrueTypeFontRenderer ttfRenderer, TrueTypeFont font, String text)
-	{
+	public TextMeshObject(TrueTypeFontRenderer ttfRenderer, TrueTypeFont font, String text) {
 		this.text = text;
 		this.font = font;
-		
+
 		ttfRenderer.drawStringIngame(font, 0, 0, text, 2.0f, 256, this);
 	}
 
-	public List<VertexBufferGL> getVerticesObjects()
-	{
+	public List<VertexBufferGL> getVerticesObjects() {
 		return verticesObjects;
 	}
 
@@ -51,23 +48,22 @@ public class TextMeshObject implements TextMesh
 	private Texture2D currentTexture;
 	private Vector4f currentColor;
 
-	public void setState(Texture2D texture, Vector4f color)
-	{
-		//If we changed texture, render the temp stuff
-		//TODO: This is retarded, we don't even record the != textures yet (UTF-8 support bitchez)
+	public void setState(Texture2D texture, Vector4f color) {
+		// If we changed texture, render the temp stuff
+		// TODO: This is retarded, we don't even record the != textures yet (UTF-8
+		// support bitchez)
 		if (currentTexture != null && !texture.equals(currentTexture))
 			finalizeTemp();
-		
-		//Useless as colours are recorded per-vertex.
-		//else if (currentColor != null && !color.equals(currentColor))
-		//	finalizeTemp();
+
+		// Useless as colours are recorded per-vertex.
+		// else if (currentColor != null && !color.equals(currentColor))
+		// finalizeTemp();
 
 		currentTexture = texture;
 		currentColor = color;
 	}
 
-	private void finalizeTemp()
-	{
+	private void finalizeTemp() {
 		if (done)
 			return;
 		if (temp <= 0)
@@ -75,18 +71,19 @@ public class TextMeshObject implements TextMesh
 
 		VertexBufferGL verticesObject = new VertexBufferGL();
 		tempBuffer.flip();
-		//System.out.println("Cucking"+temp);
+		// System.out.println("Cucking"+temp);
 		verticesObject.uploadData(tempBuffer);
 
-		//System.out.println("Added " + verticesObject.getVramUsage() + " bytes worth of verticesObject");
+		// System.out.println("Added " + verticesObject.getVramUsage() + " bytes worth
+		// of verticesObject");
 		verticesObjects.add(verticesObject);
 
 		tempBuffer = BufferUtils.createByteBuffer(4 * (3 + 2 + 4) * 6 * 128);
 		temp = 0;
 	}
 
-	public void drawQuad(float startX, float startY, float width, float height, float textureStartX, float textureStartY, float textureEndX, float textureEndY)
-	{
+	public void drawQuad(float startX, float startY, float width, float height, float textureStartX,
+			float textureStartY, float textureEndX, float textureEndY) {
 		if (tempBuffer.position() == tempBuffer.capacity())
 			finalizeTemp();
 
@@ -104,56 +101,56 @@ public class TextMeshObject implements TextMesh
 		temp += 6;
 	}
 
-	private void addVertice(float startX, float startY, float textureStartX, float textureStartY)
-	{
-		//Vertex
+	private void addVertice(float startX, float startY, float textureStartX, float textureStartY) {
+		// Vertex
 		tempBuffer.putFloat(startX / 256f - 0.5f);
 		tempBuffer.putFloat(startY / 256f - 0.5f);
 		tempBuffer.putFloat(0f);
-		//Texcoord
+		// Texcoord
 		tempBuffer.putFloat(textureStartX);
 		tempBuffer.putFloat(textureStartY);
-		//Color
+		// Color
 		tempBuffer.putFloat(currentColor.x());
 		tempBuffer.putFloat(currentColor.y());
 		tempBuffer.putFloat(currentColor.z());
 		tempBuffer.putFloat(currentColor.w());
-		//Normals
+		// Normals
 		tempBuffer.putFloat(0f);
 		tempBuffer.putFloat(0f);
 		tempBuffer.putFloat(1f);
 	}
 
-	public void done()
-	{
+	public void done() {
 		finalizeTemp();
 		done = true;
 	}
 
-	public void render(RenderingInterface renderingContext)
-	{
-		//TODO use texture pages
+	public void render(RenderingInterface renderingContext) {
+		// TODO use texture pages
 		renderingContext.bindAlbedoTexture(font.glTextures[0]);
-		
+
 		renderingContext.setCullingMode(CullingMode.DISABLED);
-		//glDisable(GL_CULL_FACE);
-		//renderingContext.disableVertexAttribute("normalIn");
-		
-		//renderingContext.currentShader().setUniform1f("useNormalIn", 0f);
-		
-		//TODO use texture pages
-		for (VertexBuffer verticesObject : verticesObjects)
-		{
-			int stride = 4 * ( 3 + 2 + 4 + 3);
-			renderingContext.bindAttribute("vertexIn", verticesObject.asAttributeSource(VertexFormat.FLOAT, 3, stride, 0));
-			renderingContext.bindAttribute("texCoordIn", verticesObject.asAttributeSource(VertexFormat.FLOAT, 2, stride, 4 * 3));
-			renderingContext.bindAttribute("colorIn", verticesObject.asAttributeSource(VertexFormat.FLOAT, 4, stride, 4 * ( 3 + 2)));
-			renderingContext.bindAttribute("normalIn", verticesObject.asAttributeSource(VertexFormat.FLOAT, 4, stride, 4 * ( 3 + 2 + 4)));
-			
+		// glDisable(GL_CULL_FACE);
+		// renderingContext.disableVertexAttribute("normalIn");
+
+		// renderingContext.currentShader().setUniform1f("useNormalIn", 0f);
+
+		// TODO use texture pages
+		for (VertexBuffer verticesObject : verticesObjects) {
+			int stride = 4 * (3 + 2 + 4 + 3);
+			renderingContext.bindAttribute("vertexIn",
+					verticesObject.asAttributeSource(VertexFormat.FLOAT, 3, stride, 0));
+			renderingContext.bindAttribute("texCoordIn",
+					verticesObject.asAttributeSource(VertexFormat.FLOAT, 2, stride, 4 * 3));
+			renderingContext.bindAttribute("colorIn",
+					verticesObject.asAttributeSource(VertexFormat.FLOAT, 4, stride, 4 * (3 + 2)));
+			renderingContext.bindAttribute("normalIn",
+					verticesObject.asAttributeSource(VertexFormat.FLOAT, 4, stride, 4 * (3 + 2 + 4)));
+
 			renderingContext.draw(Primitive.TRIANGLE, 0, (int) (verticesObject.getVramUsage() / stride));
 		}
-		
-		//renderingContext.currentShader().setUniform1f("useNormalIn", 1f);
+
+		// renderingContext.currentShader().setUniform1f("useNormalIn", 1f);
 	}
 
 	@Override
@@ -163,7 +160,7 @@ public class TextMeshObject implements TextMesh
 
 	@Override
 	public void destroy() {
-		for(VertexBuffer vf : verticesObjects) {
+		for (VertexBuffer vf : verticesObjects) {
 			vf.destroy();
 		}
 	}

@@ -24,7 +24,7 @@ import io.xol.chunkstories.net.LogicalPacketDatagram;
 public abstract class StreamGobbler extends Thread {
 	private final Connection connection;
 	private final DataInputStream in;
-	
+
 	protected static final Logger logger = LoggerFactory.getLogger("client.net.connection.in");
 
 	public StreamGobbler(Connection connection, DataInputStream in) {
@@ -35,20 +35,20 @@ public abstract class StreamGobbler extends Thread {
 	@Override
 	public void run() {
 		try {
-			while(connection.isOpen()) {
+			while (connection.isOpen()) {
 				LogicalPacketDatagram datagram = connection.getPacketsContext().digestIncommingPacket(in);
 				connection.handleDatagram(datagram);
 			}
-			
-		} catch(SocketException e) { //Natural
-			if(connection.isOpen()) {
+
+		} catch (SocketException e) { // Natural
+			if (connection.isOpen()) {
 				logger.info("Closing socket.");
 			}
 			connection.close();
-		} catch(EOFException e) { //Natural too
+		} catch (EOFException e) { // Natural too
 			connection.close();
 			logger.info("Connection closed");
-		} catch(IOException e) {
+		} catch (IOException e) {
 			connection.close();
 			logger.info("Connection error", e);
 		} catch (UnknowPacketException e) {

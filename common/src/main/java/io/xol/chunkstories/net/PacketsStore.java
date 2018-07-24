@@ -31,17 +31,18 @@ public class PacketsStore implements Content.PacketDefinitions {
 	private final Map<String, PacketDefinitionImplementation> byNames = new HashMap<String, PacketDefinitionImplementation>();
 	private final Map<Class<? extends Packet>, PacketDefinitionImplementation> byClasses = new HashMap<Class<? extends Packet>, PacketDefinitionImplementation>();
 
-	//private PacketDefinition textPacket, filePacket;
-	
+	// private PacketDefinition textPacket, filePacket;
+
 	private static final Logger logger = LoggerFactory.getLogger("content.packets");
+
 	public Logger logger() {
 		return logger;
 	}
-	
+
 	public PacketsStore(GameContentStore store) {
 		this.store = store;
 
-		//reload();
+		// reload();
 	}
 
 	public void reload() {
@@ -49,7 +50,7 @@ public class PacketsStore implements Content.PacketDefinitions {
 		byNames.clear();
 		byClasses.clear();
 
-		//Load system.packets
+		// Load system.packets
 		InputStream is = getClass().getResourceAsStream("/system.packets");
 		readPacketsDefinitions(new BufferedReader(new InputStreamReader(is)), new Object() {
 			@Override
@@ -57,8 +58,8 @@ public class PacketsStore implements Content.PacketDefinitions {
 				return "system.packets";
 			}
 		});
-		
-		//Load packets from content
+
+		// Load packets from content
 		Iterator<Asset> i = store.modsManager().getAllAssetsByExtension("packets");
 		while (i.hasNext()) {
 			Asset f = i.next();
@@ -72,7 +73,7 @@ public class PacketsStore implements Content.PacketDefinitions {
 		BufferedReader reader = new BufferedReader(f.reader());
 		readPacketsDefinitions(reader, f);
 	}
-	
+
 	private void readPacketsDefinitions(BufferedReader reader, Object source) {
 		logger().debug("Reading packets definitions in : " + source);
 		try {
@@ -86,8 +87,7 @@ public class PacketsStore implements Content.PacketDefinitions {
 				// We shouldn't come accross end tags by ourselves, this is
 				// dealt with in the constructors
 				else if (line.startsWith("end")) {
-					logger()
-							.warn("Syntax error in file : " + source + " : Unexpected 'end' tag.");
+					logger().warn("Syntax error in file : " + source + " : Unexpected 'end' tag.");
 					continue;
 				} else if (line.startsWith("packet")) {
 					if (line.contains(" ")) {
@@ -103,13 +103,13 @@ public class PacketsStore implements Content.PacketDefinitions {
 
 						// Eventually add the packet type
 						byNames.put(packetType.getName(), packetType);
-						
-						//Add quick-resolve hashmap entries
-						if(packetType.clientClass != null)
+
+						// Add quick-resolve hashmap entries
+						if (packetType.clientClass != null)
 							this.byClasses.put(packetType.clientClass, packetType);
-						if(packetType.serverClass != null)
+						if (packetType.serverClass != null)
 							this.byClasses.put(packetType.serverClass, packetType);
-						if(packetType.commonClass != null)
+						if (packetType.commonClass != null)
 							this.byClasses.put(packetType.commonClass, packetType);
 					}
 				}
@@ -128,11 +128,11 @@ public class PacketsStore implements Content.PacketDefinitions {
 	@Override
 	public PacketDefinition getPacketFromInstance(Packet packet) throws UnknowPacketException {
 		Class<? extends Packet> pclass = packet.getClass();
-		
+
 		PacketDefinitionImplementation ptd = this.byClasses.get(pclass);
-		if(ptd != null)
+		if (ptd != null)
 			return ptd;
-		
+
 		throw new UnknowPacketException(packet);
 	}
 
@@ -155,17 +155,13 @@ public class PacketsStore implements Content.PacketDefinitions {
 			public PacketDefinition next() {
 				return i.next();
 			}
-			
+
 		};
 	}
 
-	/*@Override
-	public PacketDefinition getTextPacket() {
-		return textPacket;
-	}
-
-	@Override
-	public PacketDefinition getFilePacket() {
-		return filePacket;
-	}*/
+	/*
+	 * @Override public PacketDefinition getTextPacket() { return textPacket; }
+	 * 
+	 * @Override public PacketDefinition getFilePacket() { return filePacket; }
+	 */
 }

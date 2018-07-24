@@ -6,9 +6,8 @@
 
 package io.xol.chunkstories.client;
 
-public class ClientLimitations
-{
-	//Open GL limitations
+public class ClientLimitations {
+	// Open GL limitations
 	public static int gl_MaxTextureUnits;
 	public static int gl_MaxTextureArraySize;
 	public static boolean gl_IsInstancingSupported;
@@ -18,6 +17,6 @@ public class ClientLimitations
 
 	public static boolean debugOpenGL = false;
 	public static boolean ignoreObsoleteHardware = false;
-	
+
 	public static boolean isDebugAllowed = false;
 }

@@ -17,8 +17,6 @@ import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketSendingContext;
 import io.xol.chunkstories.world.WorldInfoImplementation;
 
-
-
 public class PacketSendWorldInfo extends Packet {
 	public WorldInfoImplementation info;
 

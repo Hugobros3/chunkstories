@@ -31,36 +31,38 @@ import io.xol.chunkstories.world.WorldTool;
 import io.xol.enklume.MinecraftWorld;
 
 public abstract class OfflineWorldConverter implements GameContext, WorldUser {
-	
+
 	public static void main(String arguments[]) throws IOException {
 		// Parse arguments first
 		if (arguments.length < 5) {
 			String helpText = "Chunk stories Minecraft map importer(converter) cmd line.\n";
-			
+
 			helpText += "Usage : anvil-export anvilWorldDir csWorldDir <size> <x-start> <z-start> [void-fill] [-vr]\n";
 			helpText += "anvilWorldDir is the directory containing the Minecraft level ( the one with level.dat inside )\n";
 			helpText += "csWorldDir is the export destination.\n";
-			helpText += "Target size for chunk stories world, avaible sizes : " + WorldInfo.WorldSize.getAllSizes() + "\n";
-			helpText += "<x-start> and <z-start> are the two coordinates (in mc world) from where we will take the data, " + "going up in the coordinates to fill the world size.\n Exemple : anvil-export mc cs TINY -512 -512 will take the"
+			helpText += "Target size for chunk stories world, avaible sizes : " + WorldInfo.WorldSize.getAllSizes()
+					+ "\n";
+			helpText += "<x-start> and <z-start> are the two coordinates (in mc world) from where we will take the data, "
+					+ "going up in the coordinates to fill the world size.\n Exemple : anvil-export mc cs TINY -512 -512 will take the"
 					+ "minecraft portion between X:-512 and Z:-512 to fill a 1024x1024 cs level.\n";
 			helpText += "void-fill designates how you want the void chunks ( : not generated in minecraft) to be filled. default : air\n";
-			
+
 			helpText += "-v : verbose mode\n";
 			helpText += "-r : delete and rewrite destination if already present\n";
-			
+
 			helpText += "--core=whaterverfolder/ or --core=whatever.zip Tells the game to use some specific folder or archive as it's base content.";
-			//TODO implement these for real
+			// TODO implement these for real
 			helpText += "--mods=xxx,yyy | -mods=* Tells the converter to start with those mods enabled\n";
 			helpText += "--dir=whatever Tells the game not to look for .chunkstories at it's normal location and instead use the argument\n";
-			
+
 			System.out.println(helpText);
 			return;
 		}
 
-		//Modifiers
+		// Modifiers
 		boolean verboseMode = false;
 		boolean deleteAndRewrite = false;
-		
+
 		int threadCount = -1;
 
 		File coreContentLocation = new File("we.zip");
@@ -82,7 +84,7 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser {
 				coreContentLocation = new File(coreContentLocationPath);
 			}
 		}
-		
+
 		String mcWorldName = arguments[0];
 		File mcWorldDir = new File(mcWorldName);
 		if (!mcWorldDir.exists() || !mcWorldDir.isDirectory()) {
@@ -93,8 +95,10 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser {
 		String csWorldName = arguments[1];
 		File csWorldDir = new File("worlds/" + csWorldName + "/");
 		if (csWorldDir.exists() && !deleteAndRewrite) {
-			System.out.println("Destination world " + csWorldName + " already exists in worlds/" + csWorldName + ", aborting.");
-			System.out.println("To force deleting and rewriting of this world, at your risk of loosing data, plese use the -r flag.");
+			System.out.println(
+					"Destination world " + csWorldName + " already exists in worlds/" + csWorldName + ", aborting.");
+			System.out.println(
+					"To force deleting and rewriting of this world, at your risk of loosing data, plese use the -r flag.");
 			return;
 		} else if (csWorldDir.exists() && deleteAndRewrite) {
 			System.out.println("Deleting older world " + csWorldDir);
@@ -114,48 +118,52 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser {
 			return;
 		}
 
-		//Finally start the conversion
-		MultithreadedOfflineWorldConverter converter = new MultithreadedOfflineWorldConverter(verboseMode, mcWorldDir, csWorldDir, mcWorldName, csWorldName, size, minecraftOffsetX, minecraftOffsetZ, coreContentLocation, threadCount);
+		// Finally start the conversion
+		MultithreadedOfflineWorldConverter converter = new MultithreadedOfflineWorldConverter(verboseMode, mcWorldDir,
+				csWorldDir, mcWorldName, csWorldName, size, minecraftOffsetX, minecraftOffsetZ, coreContentLocation,
+				threadCount);
 		converter.run();
 	}
 
-	//TODO Does standard vanilla minecraft even support 512 and more worlds now ? No information to be found on the wiki apparently
+	// TODO Does standard vanilla minecraft even support 512 and more worlds now ?
+	// No information to be found on the wiki apparently
 	public static final int mcWorldHeight = 256;
-	
+
 	protected final boolean verboseMode;
 	protected final GameContentStore content;
 	protected Logger logger;
-	
-	//TODO make these configurable
+
+	// TODO make these configurable
 	protected final int targetChunksToKeepInRam = 4096;
 
 	protected final MinecraftWorld mcWorld;
 	protected final WorldTool csWorld;
-	
+
 	protected final int minecraftOffsetX;
 	protected final int minecraftOffsetZ;
 
 	protected final String mcWorldName;
-	
+
 	protected final MinecraftBlocksTranslator mappers;
-	
-	public OfflineWorldConverter(boolean verboseMode, File mcFolder, File csFolder, String mcWorldName, String csWorldName, WorldSize size, int minecraftOffsetX, int minecraftOffsetZ, File coreContentLocation) throws IOException
-	{
+
+	public OfflineWorldConverter(boolean verboseMode, File mcFolder, File csFolder, String mcWorldName,
+			String csWorldName, WorldSize size, int minecraftOffsetX, int minecraftOffsetZ, File coreContentLocation)
+			throws IOException {
 		this.verboseMode = verboseMode;
 		this.minecraftOffsetX = minecraftOffsetX;
 		this.minecraftOffsetZ = minecraftOffsetZ;
 		this.mcWorldName = mcWorldName;
 
-		//Start logs
+		// Start logs
 		Calendar cal = Calendar.getInstance();
 		SimpleDateFormat sdf = new SimpleDateFormat("YYYY.MM.dd HH.mm.ss");
 		String time = sdf.format(cal.getTime());
-		
+
 		logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-		
+
 		String loggingFilename = "./logs/converter_" + time + ".log";
-        new LogbackSetupHelper(loggingFilename);
-		
+		new LogbackSetupHelper(loggingFilename);
+
 		content = new GameContentStore(this, coreContentLocation, null);
 		content.reload();
 
@@ -163,22 +171,23 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser {
 		File file = new File("converter_mapping.txt");
 		mappers = new MinecraftBlocksTranslator(this, file);
 		verbose("Done, took " + (System.nanoTime() - System.nanoTime()) / 1000 + " µs");
-		
-		//Loads the Minecraft World
+
+		// Loads the Minecraft World
 		mcWorld = new MinecraftWorld(mcFolder);
-		
+
 		String worldGenerator = "blank";
-		
-		//String csWorldName = "converted_" + mcWorldName;
-		String internalName = csWorldName.replaceAll("[^\\w\\s]","_");
-		
-		String description = "Automatic conversion of the Minecraft map '"+mcWorldName+"'";
-		
+
+		// String csWorldName = "converted_" + mcWorldName;
+		String internalName = csWorldName.replaceAll("[^\\w\\s]", "_");
+
+		String description = "Automatic conversion of the Minecraft map '" + mcWorldName + "'";
+
 		Random random = new Random();
-		
-		//IO is NOT blocking here, good luck.
+
+		// IO is NOT blocking here, good luck.
 		try {
-			csWorld = new WorldTool(this, new WorldInfoImplementation(internalName, csWorldName, random.nextLong() + "", description, size, worldGenerator), false);
+			csWorld = new WorldTool(this, new WorldInfoImplementation(internalName, csWorldName, random.nextLong() + "",
+					description, size, worldGenerator), false);
 		} catch (WorldLoadingException e) {
 			throw new RuntimeException("Error creating world", e);
 		}

@@ -16,22 +16,19 @@ import io.xol.chunkstories.api.workers.Task;
 /**
  * A task pool receives tasks and dispatches them
  */
-public abstract class TasksPool<T extends Task>
-{
+public abstract class TasksPool<T extends Task> {
 	protected Deque<T> tasksQueue = new ConcurrentLinkedDeque<T>();
 	protected Semaphore tasksCounter = new Semaphore(0);
 	protected AtomicInteger tasksQueueSize = new AtomicInteger(0);
-	
-	public void scheduleTask(T task)
-	{
-		//Add the tasks BEFORE doing the thing
+
+	public void scheduleTask(T task) {
+		// Add the tasks BEFORE doing the thing
 		tasksQueue.add(task);
 		tasksCounter.release();
 		tasksQueueSize.incrementAndGet();
 	}
-	
-	public int size()
-	{
+
+	public int size() {
 		return tasksQueueSize.get();
 	}
 }

@@ -69,7 +69,7 @@ public class TCPServerConnection extends ServerConnection {
 
 		try {
 			socket = new Socket(remoteAddress, port);
-			
+
 			in = new DataInputStream(socket.getInputStream());
 			streamGobbler = new ClientGobbler(this, in);
 
@@ -77,7 +77,7 @@ public class TCPServerConnection extends ServerConnection {
 			sendQueue = new SendQueue(this, out);
 
 			connected = true;
-			
+
 			streamGobbler.start();
 			sendQueue.start();
 			return true;
@@ -94,8 +94,10 @@ public class TCPServerConnection extends ServerConnection {
 	}
 
 	@Override
-	public void handleDatagram(LogicalPacketDatagram datagram) throws IOException, PacketProcessingException, IllegalPacketException {
-		PacketDefinitionImplementation definition = (PacketDefinitionImplementation) datagram.packetDefinition;//(PacketDefinitionImpl) getPacketsContext().getContentTranslator().getPacketForId(datagram.packetTypeId);
+	public void handleDatagram(LogicalPacketDatagram datagram)
+			throws IOException, PacketProcessingException, IllegalPacketException {
+		PacketDefinitionImplementation definition = (PacketDefinitionImplementation) datagram.packetDefinition;// (PacketDefinitionImpl)
+																												// getPacketsContext().getContentTranslator().getPacketForId(datagram.packetTypeId);
 		if (definition.getGenre() == PacketGenre.GENERAL_PURPOSE) {
 			Packet packet = definition.createNew(true, null);
 			packet.process(getRemoteServer(), datagram.getData(), getPacketsContext());

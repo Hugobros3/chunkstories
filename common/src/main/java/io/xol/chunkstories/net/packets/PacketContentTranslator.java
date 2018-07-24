@@ -28,15 +28,15 @@ import io.xol.chunkstories.net.PacketsContextCommon;
 public class PacketContentTranslator extends Packet {
 
 	public PacketContentTranslator() {
-		
+
 	}
-	
+
 	private String serializedText;
-	
+
 	public PacketContentTranslator(AbstractContentTranslator sendme) {
 		this.serializedText = sendme.toString(true);
 	}
-	
+
 	@Override
 	public void send(PacketDestinator destinator, DataOutputStream out, PacketSendingContext context)
 			throws IOException {
@@ -47,21 +47,21 @@ public class PacketContentTranslator extends Packet {
 	public void process(PacketSender sender, DataInputStream in, PacketReceptionContext context)
 			throws IOException, PacketProcessingException {
 		this.serializedText = in.readUTF();
-		
+
 		ByteArrayInputStream bais = new ByteArrayInputStream(serializedText.getBytes("UTF-8"));
 		BufferedReader reader = new BufferedReader(new InputStreamReader(bais, "UTF-8"));
 		try {
 			OnlineContentTranslator translator = new LoadedContentTranslator(context.getContext().getContent(), reader);
-			PacketsContextCommon cCommon = (PacketsContextCommon)context;
+			PacketsContextCommon cCommon = (PacketsContextCommon) context;
 			cCommon.setContentTranslator(translator);
 			context.logger().info("Successfully installed content translator");
 			cCommon.getConnection().handleSystemRequest("world/translator_ok");
-			
+
 		} catch (IncompatibleContentException e) {
 			e.printStackTrace();
 		}
 		reader.close();
-		
+
 	}
 
 }

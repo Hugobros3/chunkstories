@@ -33,7 +33,8 @@ import io.xol.chunkstories.renderer.opengl.texture.Texture2DGL;
 import io.xol.chunkstories.renderer.opengl.texture.Texture2DRenderTargetGL;
 
 /**
- * A TrueType font implementation originally for Slick, edited for Bobjob's Engine, edited for Chunk Stories engine
+ * A TrueType font implementation originally for Slick, edited for Bobjob's
+ * Engine, edited for Chunk Stories engine
  * 
  * @original author James Chambers (Jimmy)
  * @original author Jeremy Adams (elias4444)
@@ -43,8 +44,7 @@ import io.xol.chunkstories.renderer.opengl.texture.Texture2DRenderTargetGL;
  * @new version edited by Hugo Devillers (gobrosse)
  */
 //TODO: rip out this bullshit and just use STB like every other cool kid
-public class TrueTypeFont implements FontRenderer.Font
-{
+public class TrueTypeFont implements FontRenderer.Font {
 	public final static int ALIGN_LEFT = 0, ALIGN_RIGHT = 1, ALIGN_CENTER = 2;
 	/** Array that holds necessary information about the font characters */
 
@@ -72,23 +72,22 @@ public class TrueTypeFont implements FontRenderer.Font
 	/** The font metrics for our Java AWT font */
 	private FontMetrics fontMetrics;
 
-	TrueTypeFont()
-	{
+	TrueTypeFont() {
 		glTextures = new Texture2DGL[256];
 		glyphs = new Glyph[65536];
 	}
-	
+
 	private static final Logger logger = LoggerFactory.getLogger("rendering.fonts");
+
 	public Logger logger() {
 		return logger;
 	}
 
-	public TrueTypeFont(Asset fontAsset, float sizeInPX, boolean antiAlias) throws FontFormatException, IOException
-	{
+	public TrueTypeFont(Asset fontAsset, float sizeInPX, boolean antiAlias) throws FontFormatException, IOException {
 		this();
-		logger().debug("Loading font:"+ fontAsset + "fontSize: " + sizeInPX);
+		logger().debug("Loading font:" + fontAsset + "fontSize: " + sizeInPX);
 		font = Font.createFont(Font.TRUETYPE_FONT, fontAsset.read()).deriveFont(sizeInPX);
-		
+
 		this.fontSize = font.getSize();
 
 		this.antiAlias = antiAlias;
@@ -100,8 +99,7 @@ public class TrueTypeFont implements FontRenderer.Font
 			fontHeight = 1;
 	}
 
-	private BufferedImage getFontImage(char ch)
-	{
+	private BufferedImage getFontImage(char ch) {
 		// Create a temporary image to extract the character's size
 		BufferedImage tempfontImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D tempFontGraphics = (Graphics2D) tempfontImage.getGraphics();
@@ -114,18 +112,17 @@ public class TrueTypeFont implements FontRenderer.Font
 		tempFontGraphics.setFont(font);
 		fontMetrics = tempFontGraphics.getFontMetrics();
 		int charwidth = fontMetrics.charWidth(ch);
-		if (charwidth <= 0)
-		{
+		if (charwidth <= 0) {
 			charwidth = 7;
 		}
 		int charheight = fontMetrics.getHeight() + 3;
-		if (charheight <= 0)
-		{
+		if (charheight <= 0) {
 			charheight = fontSize;
 		}
 
-		//if(font.getFontName().contains("LiberationSans-Regular"))
-		//	System.out.println("Glyph "+ch+" width:" + charwidth + " height:"+(charheight));
+		// if(font.getFontName().contains("LiberationSans-Regular"))
+		// System.out.println("Glyph "+ch+" width:" + charwidth + "
+		// height:"+(charheight));
 
 		// Create another image holding the character we are creating
 		BufferedImage fontImage;
@@ -146,13 +143,12 @@ public class TrueTypeFont implements FontRenderer.Font
 
 	}
 
-	public Texture2DGL createPage(int offset)
-	{
+	public Texture2DGL createPage(int offset) {
 		// If there are custom chars then I expand the font texture twice
 
 		/*
-		 * if (customCharsArray != null && customCharsArray.length > 0) {
-		 * textureWidth *= 2; }
+		 * if (customCharsArray != null && customCharsArray.length > 0) { textureWidth
+		 * *= 2; }
 		 */
 
 		// In any case this should be done in other way. Texture with size
@@ -160,8 +156,7 @@ public class TrueTypeFont implements FontRenderer.Font
 		// can maintain only 256 characters with resolution of 32x32. The
 		// texture
 		// size should be calculated dynamicaly by looking at character sizes.
-		try
-		{
+		try {
 			BufferedImage imgTemp = new BufferedImage(textureWidth, textureHeight, BufferedImage.TYPE_INT_ARGB);
 			Graphics2D g = (Graphics2D) imgTemp.getGraphics();
 
@@ -176,8 +171,7 @@ public class TrueTypeFont implements FontRenderer.Font
 			// int customCharsLength = (customCharsArray != null) ?
 			// customCharsArray.length : 0;
 
-			for (int i = offset * 256; i < offset * 256 + 256; i++)
-			{
+			for (int i = offset * 256; i < offset * 256 + 256; i++) {
 				// get 0-255 characters and then custom characters
 				char ch = (char) i;
 
@@ -188,8 +182,7 @@ public class TrueTypeFont implements FontRenderer.Font
 				glyph.width = fontImage.getWidth();
 				glyph.height = fontImage.getHeight();
 
-				if (positionX + glyph.width + 1 >= textureWidth)
-				{
+				if (positionX + glyph.width + 1 >= textureWidth) {
 					positionX = 0;
 					positionY += rowHeight;
 					rowHeight = 0;
@@ -198,13 +191,11 @@ public class TrueTypeFont implements FontRenderer.Font
 				glyph.x = positionX;
 				glyph.y = positionY;
 
-				if (glyph.height > fontHeight)
-				{
+				if (glyph.height > fontHeight) {
 					fontHeight = glyph.height;
 				}
 
-				if (glyph.height > rowHeight)
-				{
+				if (glyph.height > rowHeight) {
 					rowHeight = glyph.height;
 				}
 
@@ -219,33 +210,30 @@ public class TrueTypeFont implements FontRenderer.Font
 			}
 
 			glTextures[offset] = loadImageIntoOpenGLTexture(offset, imgTemp);
-			/*File outputfile = new File(font.getFontName() + "saved.png");
-			ImageIO.write(imgTemp, "png", outputfile);*/
+			/*
+			 * File outputfile = new File(font.getFontName() + "saved.png");
+			 * ImageIO.write(imgTemp, "png", outputfile);
+			 */
 
 			return glTextures[offset];
 
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			System.err.println("Failed to create font.");
 			e.printStackTrace();
 		}
 		return null;
 	}
 
-	public int getWidth(String whatchars)
-	{
+	public int getWidth(String whatchars) {
 		int totalwidth = 0;
 		Glyph glyph = null;
 		int currentChar = 0;
-		for (int i = 0; i < whatchars.length(); i++)
-		{
+		for (int i = 0; i < whatchars.length(); i++) {
 			currentChar = whatchars.charAt(i);
 
 			glyph = glyphs[currentChar];
 
-			if (glyph != null)
-			{
+			if (glyph != null) {
 				if (glyph.width < 3)
 					totalwidth += 1;
 				totalwidth += glyph.width;
@@ -254,24 +242,21 @@ public class TrueTypeFont implements FontRenderer.Font
 		return totalwidth;
 	}
 
-	public int getLinesHeight(String whatchars)
-	{
+	public int getLinesHeight(String whatchars) {
 		return getLinesHeight(whatchars, -1);
 	}
 
-	public int getLinesHeight(String whatchars, float clipX)
-	{
-		if(whatchars == null)
+	public int getLinesHeight(String whatchars, float clipX) {
+		if (whatchars == null)
 			return 0;
-		
+
 		boolean clip = clipX != -1;
 		int lines = 1;
 		int i = 0;
 		char charCurrent;
 		Glyph glyph;
 		int totalwidth = 0;
-		while (i < whatchars.length())
-		{
+		while (i < whatchars.length()) {
 			charCurrent = whatchars.charAt(i);
 
 			Texture2D pageTexture = glTextures[charCurrent / 256];
@@ -280,25 +265,18 @@ public class TrueTypeFont implements FontRenderer.Font
 
 			glyph = glyphs[charCurrent];
 
-			if (glyph != null)
-			{
-				if (charCurrent == '#' && whatchars.length() - i - 1 >= 6 && (whatchars.toCharArray()[i + 1] != '#') && HexTools.isHexOnly(whatchars.substring(i + 1, i + 7)))
-				{
-					if (!(i > 1 && whatchars.toCharArray()[i - 1] == '#'))
-					{
+			if (glyph != null) {
+				if (charCurrent == '#' && whatchars.length() - i - 1 >= 6 && (whatchars.toCharArray()[i + 1] != '#')
+						&& HexTools.isHexOnly(whatchars.substring(i + 1, i + 7))) {
+					if (!(i > 1 && whatchars.toCharArray()[i - 1] == '#')) {
 						i += 7;
 						continue;
 					}
-				}
-				else if (charCurrent == '\n')
-				{
+				} else if (charCurrent == '\n') {
 					totalwidth = 0;
 					lines++;
-				}
-				else
-				{
-					if (clip && (totalwidth + (glyph.width)) > clipX)
-					{
+				} else {
+					if (clip && (totalwidth + (glyph.width)) > clipX) {
 						lines++;
 						totalwidth = 0;
 						continue;
@@ -314,37 +292,30 @@ public class TrueTypeFont implements FontRenderer.Font
 		return lines;
 	}
 
-	public int getHeight()
-	{
+	public int getHeight() {
 		return fontHeight;
 	}
 
-	public int getHeight(String HeightString)
-	{
+	public int getHeight(String HeightString) {
 		return fontHeight;
 	}
 
-	public int getLineHeight()
-	{
+	public int getLineHeight() {
 		return fontHeight;
 	}
 
-	public static Texture2DGL loadImageIntoOpenGLTexture(int offset, BufferedImage bufferedImage)
-	{
-		try
-		{
+	public static Texture2DGL loadImageIntoOpenGLTexture(int offset, BufferedImage bufferedImage) {
+		try {
 			short width = (short) bufferedImage.getWidth();
 			short height = (short) bufferedImage.getHeight();
 
 			int bpp = (byte) bufferedImage.getColorModel().getPixelSize();
 			ByteBuffer byteBuffer;
 			DataBuffer db = bufferedImage.getData().getDataBuffer();
-			if (db instanceof DataBufferInt)
-			{
+			if (db instanceof DataBufferInt) {
 				int intI[] = ((DataBufferInt) (bufferedImage.getData().getDataBuffer())).getData();
 				byte newI[] = new byte[intI.length * 4];
-				for (int i = 0; i < intI.length; i++)
-				{
+				for (int i = 0; i < intI.length; i++) {
 					byte b[] = intToByteArray(intI[i]);
 					int newIndex = i * 4;
 
@@ -354,11 +325,11 @@ public class TrueTypeFont implements FontRenderer.Font
 					newI[newIndex + 3] = b[0];
 				}
 
-				byteBuffer = ByteBuffer.allocateDirect(width * height * (bpp / 8)).order(ByteOrder.nativeOrder()).put(newI);
-			}
-			else
-			{
-				byteBuffer = ByteBuffer.allocateDirect(width * height * (bpp / 8)).order(ByteOrder.nativeOrder()).put(((DataBufferByte) (bufferedImage.getData().getDataBuffer())).getData());
+				byteBuffer = ByteBuffer.allocateDirect(width * height * (bpp / 8)).order(ByteOrder.nativeOrder())
+						.put(newI);
+			} else {
+				byteBuffer = ByteBuffer.allocateDirect(width * height * (bpp / 8)).order(ByteOrder.nativeOrder())
+						.put(((DataBufferByte) (bufferedImage.getData().getDataBuffer())).getData());
 			}
 			byteBuffer.flip();
 
@@ -370,9 +341,7 @@ public class TrueTypeFont implements FontRenderer.Font
 
 			return texture;
 
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(-1);
 		}
@@ -380,33 +349,27 @@ public class TrueTypeFont implements FontRenderer.Font
 		return null;
 	}
 
-	public static boolean isSupported(String fontname)
-	{
+	public static boolean isSupported(String fontname) {
 		Font font[] = getFonts();
-		for (int i = font.length - 1; i >= 0; i--)
-		{
+		for (int i = font.length - 1; i >= 0; i--) {
 			if (font[i].getName().equalsIgnoreCase(fontname))
 				return true;
 		}
 		return false;
 	}
 
-	public static Font[] getFonts()
-	{
+	public static Font[] getFonts() {
 		return GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts();
 	}
 
-	public static byte[] intToByteArray(int value)
-	{
+	public static byte[] intToByteArray(int value) {
 		return new byte[] { (byte) (value >>> 24), (byte) (value >>> 16), (byte) (value >>> 8), (byte) value };
 	}
 
-	public void destroy()
-	{
+	public void destroy() {
 
 	}
 
-	
 	@Override
 	public float size() {
 		return fontSize;

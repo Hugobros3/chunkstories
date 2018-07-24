@@ -16,8 +16,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 
-public class BugsReporter
-{
+public class BugsReporter {
 
 	static ReportThread thread;
 	public static JLabel label = new JLabel();
@@ -25,12 +24,11 @@ public class BugsReporter
 	static JButton cancel = new JButton("Cancel");
 	public static JProgressBar progress = new JProgressBar();
 
-	public static void main(String[] args)
-	{
+	public static void main(String[] args) {
 		panel = new JPanel();
 
 		JFrame window = new JFrame();
-		//window.setUndecorated(true); // Remove title bar
+		// window.setUndecorated(true); // Remove title bar
 		window.setSize(540, 240);
 		window.setTitle("Chunk Stories Bugs reporter");
 		window.setLocationRelativeTo(null);
@@ -39,8 +37,7 @@ public class BugsReporter
 		window.setResizable(false);
 		window.setLayout(null);
 
-		if (args.length == 2)
-		{
+		if (args.length == 2) {
 			File file = new File(args[1]);
 			thread = new ReportThread(args[0], file, progress);
 
@@ -62,11 +59,9 @@ public class BugsReporter
 			window.setVisible(true);
 
 			thread.start();
-		}
-		else
-		{
+		} else {
 			JOptionPane.showMessageDialog(null, "Invalid arguments.");
-			System.out.println("Fuck off");	
+			System.out.println("Fuck off");
 		}
 	}
 }

@@ -18,12 +18,12 @@ import io.xol.chunkstories.content.mods.ModsManagerImplementation;
 import io.xol.chunkstories.content.mods.ModsManagerImplementation.NonExistentCoreContent;
 
 public class ModsManagerTest {
-	
-	@Test 
-	public void testModsManager()
-	{
-		String coreContentLocation = System.getProperty("coreContentLocation", "../chunkstories-core/build/distributions/core_content.zip");
-		
+
+	@Test
+	public void testModsManager() {
+		String coreContentLocation = System.getProperty("coreContentLocation",
+				"../chunkstories-core/build/distributions/core_content.zip");
+
 		try {
 			ModsManager modsManager = new ModsManagerImplementation(new File(coreContentLocation));
 			modsManager.loadEnabledMods();

@@ -6,20 +6,16 @@
 
 package io.xol.chunkstories.renderer.font;
 
-
-
-public class Glyph
-{
-	public Glyph(char c)
-	{
+public class Glyph {
+	public Glyph(char c) {
 		this.c = c;
 	}
-	
+
 	public char c;
-	
+
 	public int width;
 	public int height;
-	
+
 	public int x;
 	public int y;
 }

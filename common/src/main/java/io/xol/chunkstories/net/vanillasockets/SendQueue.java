@@ -22,8 +22,6 @@ import io.xol.chunkstories.net.PacketOutgoing;
 import io.xol.chunkstories.util.concurrency.SimpleFence;
 import io.xol.chunkstories.util.concurrency.TrivialFence;
 
-
-
 /**
  * The job of this thread is to write datagrams to an output stream. Not much in
  * the way of complexity there

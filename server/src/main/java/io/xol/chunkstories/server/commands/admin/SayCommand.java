@@ -20,14 +20,12 @@ public class SayCommand extends ServerCommandBasic {
 
 	@Override
 	public boolean handleCommand(CommandEmitter emitter, Command command, String[] arguments) {
-		if (command.getName().equals("say") && emitter.hasPermission("server.admin"))
-		{
+		if (command.getName().equals("say") && emitter.hasPermission("server.admin")) {
 			String message = "";
-			for(String a : arguments)
-			{
-				message+=a+" ";
+			for (String a : arguments) {
+				message += a + " ";
 			}
-			server.broadcastMessage("#FFFF00SERVER: "+message);
+			server.broadcastMessage("#FFFF00SERVER: " + message);
 		}
 		return false;
 	}

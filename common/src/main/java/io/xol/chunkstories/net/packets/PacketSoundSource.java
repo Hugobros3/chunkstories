@@ -25,38 +25,33 @@ import io.xol.chunkstories.api.sound.SoundSource.Mode;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.sound.source.SoundSourceVirtual;
 
-public class PacketSoundSource extends PacketWorld
-{
+public class PacketSoundSource extends PacketWorld {
 	public SoundSourceVirtual soundSourceToSend;
 
-	public PacketSoundSource(World world)
-	{
+	public PacketSoundSource(World world) {
 		super(world);
 	}
-	
-	public PacketSoundSource(World world, SoundSourceVirtual soundSource)
-	{
+
+	public PacketSoundSource(World world, SoundSourceVirtual soundSource) {
 		this(world);
 		this.soundSourceToSend = soundSource;
 	}
 
 	@Override
-	public void send(PacketDestinator destinator, DataOutputStream out, PacketSendingContext ctx) throws IOException
-	{
+	public void send(PacketDestinator destinator, DataOutputStream out, PacketSendingContext ctx) throws IOException {
 		out.writeUTF(soundSourceToSend.getSoundName());
 		out.writeLong(soundSourceToSend.getUUID());
 		Vector3dc position = soundSourceToSend.getPosition();
-		if(position != null) {
+		if (position != null) {
 			out.writeBoolean(true);
 			out.writeFloat((float) position.x());
 			out.writeFloat((float) position.y());
 			out.writeFloat((float) position.z());
-		}
-		else
+		} else
 			out.writeBoolean(false);
-		//out.writeBoolean(soundSourceToSend.loop);
-		//out.writeBoolean(soundSourceToSend.isAmbient);
-		//out.writeBoolean(soundSourceToSend.buffered);
+		// out.writeBoolean(soundSourceToSend.loop);
+		// out.writeBoolean(soundSourceToSend.isAmbient);
+		// out.writeBoolean(soundSourceToSend.buffered);
 		out.writeByte(soundSourceToSend.getMode().ordinal());
 		out.writeBoolean(soundSourceToSend.stopped);
 		out.writeFloat(soundSourceToSend.getPitch());
@@ -66,53 +61,54 @@ public class PacketSoundSource extends PacketWorld
 	}
 
 	@Override
-	public void process(PacketSender sender, DataInputStream in, PacketReceptionContext processor) throws IOException, PacketProcessingException
-	{
+	public void process(PacketSender sender, DataInputStream in, PacketReceptionContext processor)
+			throws IOException, PacketProcessingException {
 		String soundName = in.readUTF();
 		long UUID = in.readLong();
-		
+
 		boolean hasPosition = in.readBoolean();
 		Vector3dc position = null;
-		if(hasPosition) {
+		if (hasPosition) {
 			position = new Vector3d(in.readFloat(), in.readFloat(), in.readFloat());
 		}
-		
-		//boolean loop = in.readBoolean();
-		//boolean isAmbient = in.readBoolean();
-		//boolean buffered = in.readBoolean();
-		
+
+		// boolean loop = in.readBoolean();
+		// boolean isAmbient = in.readBoolean();
+		// boolean buffered = in.readBoolean();
+
 		byte modeByte = in.readByte();
 		Mode mode = Mode.values()[modeByte];
-		
+
 		boolean stopped = in.readBoolean();
 		float pitch = in.readFloat();
 		float gain = in.readFloat();
 		float attenuationStart = in.readFloat();
 		float attenuationEnd = in.readFloat();
 
-		if(!(processor instanceof ClientPacketsProcessor))
+		if (!(processor instanceof ClientPacketsProcessor))
 			return;
-		
-		ClientPacketsProcessor cpe = (ClientPacketsProcessor)processor;
-		
+
+		ClientPacketsProcessor cpe = (ClientPacketsProcessor) processor;
+
 		SoundSource soundSource = cpe.getContext().getSoundManager().getSoundSourceByUUID(UUID);
-		
-		//ALSoundSource soundSource = (ALSoundSource) Client.getInstance().getSoundManager().getSoundSourceByUUID(UUID);
+
+		// ALSoundSource soundSource = (ALSoundSource)
+		// Client.getInstance().getSoundManager().getSoundSourceByUUID(UUID);
 		if (soundSource == null && stopped)
 			return;
 
 		if (soundSource == null) {
-			
-			soundSource = cpe.getContext().getSoundManager().replicateServerSoundSource(soundName, mode, position, pitch, gain, attenuationStart, attenuationEnd, UUID);
+
+			soundSource = cpe.getContext().getSoundManager().replicateServerSoundSource(soundName, mode, position,
+					pitch, gain, attenuationStart, attenuationEnd, UUID);
 			return;
 		}
-		if(stopped)
-		{
+		if (stopped) {
 			soundSource.stop();
 			return;
 		}
 
-		//Update the soundSource with all we can
+		// Update the soundSource with all we can
 		soundSource.setPosition(position);
 		soundSource.setPitch(pitch);
 		soundSource.setGain(gain);

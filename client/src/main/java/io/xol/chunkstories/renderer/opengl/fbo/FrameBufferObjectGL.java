@@ -30,15 +30,13 @@ import io.xol.chunkstories.api.rendering.target.RenderTarget;
 import io.xol.chunkstories.api.rendering.target.RenderTargetsConfiguration;
 import io.xol.chunkstories.client.Client;
 
-public class FrameBufferObjectGL implements RenderTargetsConfiguration
-{
+public class FrameBufferObjectGL implements RenderTargetsConfiguration {
 	RenderTarget[] colorAttachements;
 	RenderTarget depthAttachement;
 
 	int glId;
 
-	public FrameBufferObjectGL(RenderTarget depth, RenderTarget... colors)
-	{
+	public FrameBufferObjectGL(RenderTarget depth, RenderTarget... colors) {
 		glId = glGenFramebuffers();
 		glBindFramebuffer(GL_FRAMEBUFFER, glId);
 		allocatedIds.put(glId, new WeakReference<>(this));
@@ -47,187 +45,163 @@ public class FrameBufferObjectGL implements RenderTargetsConfiguration
 		colorAttachements = colors;
 
 		// Initialize color output buffers
-		if (colors != null && colors.length > 0)
-		{
+		if (colors != null && colors.length > 0) {
 			scratchBuffer = BufferUtils.createIntBuffer(colors.length);
 			int i = 0;
-			for (RenderTarget texture : colors)
-			{
+			for (RenderTarget texture : colors) {
 				texture.attachAsColor(i);
-				//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, texture.getID(), 0);
+				// glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i,
+				// GL_TEXTURE_2D, texture.getID(), 0);
 				scratchBuffer.put(i, GL_COLOR_ATTACHMENT0 + i);
 				i++;
 			}
 			glDrawBuffers(scratchBuffer);
-		}
-		else
-		{
+		} else {
 			glDrawBuffers(GL_NONE);
 		}
 		// Initialize depth output buffer
 		if (depthAttachement != null)
 			depthAttachement.attachAsDepth();
-			//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthAttachement.getID(), 0);
+		// glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
+		// depthAttachement.getID(), 0);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
 	IntBuffer scratchBuffer;
 	List<Integer> drawBuffers = new ArrayList<Integer>();
-	
+
 	@Override
-	public void setEnabledRenderTargets(boolean... targets)
-	{
+	public void setEnabledRenderTargets(boolean... targets) {
 		bind();
 		// ???
 		if (depthAttachement != null)
 			depthAttachement.attachAsDepth();
-		if (targets.length == 0)
-		{
+		if (targets.length == 0) {
 			// If no arguments set ALL to renderable
 			scratchBuffer.clear();
 			int i = 0;
-			for (RenderTarget texture : colorAttachements)
-			{
+			for (RenderTarget texture : colorAttachements) {
 				texture.attachAsColor(i);
-				//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, texture.getID(), 0);
+				// glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i,
+				// GL_TEXTURE_2D, texture.getID(), 0);
 				scratchBuffer.put(i, GL_COLOR_ATTACHMENT0 + i);
 				i++;
 			}
 			glDrawBuffers(scratchBuffer);
-		}
-		else
-		{
+		} else {
 			drawBuffers.clear();
 			int i = 0;
-			for (boolean b : targets)
-			{
+			for (boolean b : targets) {
 				if (b)
 					drawBuffers.add(GL_COLOR_ATTACHMENT0 + i);
 				i++;
 			}
-			if (drawBuffers.size() > 0)
-			{
+			if (drawBuffers.size() > 0) {
 				IntBuffer scratchBuffer = BufferUtils.createIntBuffer(drawBuffers.size());
 				i = 0;
-				for (int b : drawBuffers)
-				{
+				for (int b : drawBuffers) {
 					scratchBuffer.put(i, b);
 					i++;
 				}
 				glDrawBuffers(scratchBuffer);
-			}
-			else
+			} else
 				glDrawBuffers(GL_NONE);
 		}
 	}
 
 	@Override
-	public void setDepthAttachement(RenderTarget depthAttachement)
-	{
+	public void setDepthAttachement(RenderTarget depthAttachement) {
 		this.depthAttachement = depthAttachement;
-		if(depthAttachement != null)
+		if (depthAttachement != null)
 			depthAttachement.attachAsDepth();
 	}
 
 	@Override
-	public void setColorAttachement(int index, RenderTarget colorAttachement)
-	{
+	public void setColorAttachement(int index, RenderTarget colorAttachement) {
 		this.colorAttachements[index] = colorAttachement;
-		if(colorAttachement != null)
+		if (colorAttachement != null)
 			colorAttachement.attachAsColor(index);
 	}
 
 	@Override
-	public void setColorAttachements(RenderTarget... colorAttachements)
-	{
+	public void setColorAttachements(RenderTarget... colorAttachements) {
 		scratchBuffer = BufferUtils.createIntBuffer(colorAttachements.length);
 		this.colorAttachements = colorAttachements;
-		
+
 		int i = 0;
-		for (RenderTarget colorAttachement : colorAttachements)
-		{
+		for (RenderTarget colorAttachement : colorAttachements) {
 			colorAttachement.attachAsColor(i);
-			//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, texture.getID(), 0);
+			// glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i,
+			// GL_TEXTURE_2D, texture.getID(), 0);
 			scratchBuffer.put(i, GL_COLOR_ATTACHMENT0 + i);
 			i++;
 		}
 	}
 
 	@Override
-	public void resize(int w, int h)
-	{
-		if (depthAttachement != null)
-		{
+	public void resize(int w, int h) {
+		if (depthAttachement != null) {
 			depthAttachement.resize(w, h);
 		}
-		if (colorAttachements != null)
-		{
-			for (RenderTarget t : colorAttachements)
-			{
+		if (colorAttachements != null) {
+			for (RenderTarget t : colorAttachements) {
 				t.resize(w, h);
 			}
 		}
 	}
 
-	void bind()
-	{
-		//Don't rebind twice
-		if(glId == bound)
+	void bind() {
+		// Don't rebind twice
+		if (glId == bound)
 			return;
 		glBindFramebuffer(GL_FRAMEBUFFER, glId);
-		RenderTarget ok = this.depthAttachement != null ? depthAttachement : (this.colorAttachements != null && this.colorAttachements.length > 0 ? this.colorAttachements[0] : null);
-		if(ok != null)
+		RenderTarget ok = this.depthAttachement != null ? depthAttachement
+				: (this.colorAttachements != null && this.colorAttachements.length > 0 ? this.colorAttachements[0]
+						: null);
+		if (ok != null)
 			glViewport(0, 0, ok.getWidth(), ok.getHeight());
 		else
 			System.out.println("fck off");
 		bound = glId;
 	}
 
-	static void unbind()
-	{
+	static void unbind() {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glViewport(0, 0, Client.getInstance().getGameWindow().getWidth(), Client.getInstance().getGameWindow().getHeight());
+		glViewport(0, 0, Client.getInstance().getGameWindow().getWidth(),
+				Client.getInstance().getGameWindow().getHeight());
 		bound = 0;
 	}
-	
+
 	static int bound = 0;
 
 	@Override
-	public void destroy()
-	{
+	public void destroy() {
 		allocatedIds.remove(glId);
 		glDeleteFramebuffers(glId);
-		/*if (texturesToo)
-		{
-			if (depthAttachement != null)
-				depthAttachement.destroy();
-			for (RenderTarget tex : colorAttachements)
-			{
-				if (tex != null)
-					tex.destroy();
-			}
-		}*/
+		/*
+		 * if (texturesToo) { if (depthAttachement != null) depthAttachement.destroy();
+		 * for (RenderTarget tex : colorAttachements) { if (tex != null) tex.destroy();
+		 * } }
+		 */
 	}
 
 	public static void updateFrameBufferObjects() {
-		
+
 		Iterator<Entry<Integer, WeakReference<FrameBufferObjectGL>>> i = allocatedIds.entrySet().iterator();
-		while (i.hasNext())
-		{
+		while (i.hasNext()) {
 			Entry<Integer, WeakReference<FrameBufferObjectGL>> entry = i.next();
 			int glId = entry.getKey();
 			WeakReference<FrameBufferObjectGL> weakReference = entry.getValue();
 			FrameBufferObjectGL fbo = weakReference.get();
-	
-			if (fbo == null)
-			{
-				//Gives back orphan objects
+
+			if (fbo == null) {
+				// Gives back orphan objects
 				glDeleteFramebuffers(glId);
 				i.remove();
 			}
 		}
 	}
-	
+
 	protected static Map<Integer, WeakReference<FrameBufferObjectGL>> allocatedIds = new ConcurrentHashMap<>();
 }

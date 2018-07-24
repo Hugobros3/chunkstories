@@ -50,8 +50,6 @@ import io.xol.chunkstories.util.config.OldStyleConfigFile;
 import io.xol.chunkstories.world.WorldInfoMaster;
 import io.xol.chunkstories.world.WorldServer;
 
-
-
 /**
  * The server class handles and make the link between all server components It
  * also takes care of the command line input as it's the main thread, thought
@@ -135,9 +133,10 @@ public class DedicatedServer implements Runnable, DedicatedServerInterface {
 			logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 
 			String loggingFilename = GameDirectory.getGameFolderPath() + "/serverlogs/" + time + ".log";
-	        new LogbackSetupHelper(loggingFilename);
+			new LogbackSetupHelper(loggingFilename);
 
-			logger.info("Starting Chunkstories server " + VersionInfo.version + " network protocol version "+ VersionInfo.networkProtocolVersion);
+			logger.info("Starting Chunkstories server " + VersionInfo.version + " network protocol version "
+					+ VersionInfo.networkProtocolVersion);
 
 			// Loads the mods/build filesystem
 			gameContent = new GameContentStore(this, coreContentLocation, modsString);
@@ -282,8 +281,7 @@ public class DedicatedServer implements Runnable, DedicatedServerInterface {
 		txt += "ChunkStories server " + VersionInfo.version;
 		txt += " | fps:" + world.getGameLogic().getSimulationFps();
 		txt += " | ent:" + ec;
-		txt += " | players:" + this.clientsManager.getPlayersNumber() + "/"
-				+ this.clientsManager.getMaxClients();
+		txt += " | players:" + this.clientsManager.getPlayersNumber() + "/" + this.clientsManager.getMaxClients();
 		txt += " | lc:" + this.world.getRegionsHolder().getStats() + " ls:"
 				+ this.world.getRegionsSummariesHolder().countSummaries();
 		txt += " | ram:" + usedRam + "/" + maxRam;

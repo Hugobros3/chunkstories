@@ -111,7 +111,7 @@ public class ServerPlayer implements RemotePlayer {
 
 	public void setWorld(WorldServer world) {
 		this.world = world;
-		
+
 		this.virtualSoundManager = world.getSoundManager().new ServerPlayerVirtualSoundManager(this);
 		this.virtualParticlesManager = world.getParticlesManager().new ServerPlayerVirtualParticlesManager(this);
 		this.virtualDecalsManager = world.getDecalsManager().new ServerPlayerVirtualDecalsManager(this);
@@ -159,7 +159,7 @@ public class ServerPlayer implements RemotePlayer {
 
 	@Override
 	public boolean setControlledEntity(Entity entity) {
-		//TODO lock for safety
+		// TODO lock for safety
 		TraitController ec = entity != null ? entity.traits.get(TraitController.class) : null;
 		if (entity != null && ec != null) {
 			this.subscribe(entity);
@@ -203,13 +203,12 @@ public class ServerPlayer implements RemotePlayer {
 
 		double ENTITY_VISIBILITY_SIZE = 192;
 
-		Iterator<Entity> inRangeEntitiesIterator = controlledEntity.getWorld().getEntitiesInBox(
-				controlledTraitLocation,
+		Iterator<Entity> inRangeEntitiesIterator = controlledEntity.getWorld().getEntitiesInBox(controlledTraitLocation,
 				new Vector3d(ENTITY_VISIBILITY_SIZE, ENTITY_VISIBILITY_SIZE, ENTITY_VISIBILITY_SIZE));
 		while (inRangeEntitiesIterator.hasNext()) {
 			Entity e = inRangeEntitiesIterator.next();
 
-			boolean shouldTrack = true;//e.shouldBeTrackedBy(this);
+			boolean shouldTrack = true;// e.shouldBeTrackedBy(this);
 			boolean contains = subscribedEntities.contains(e);
 
 			if (shouldTrack && !contains)
@@ -235,7 +234,7 @@ public class ServerPlayer implements RemotePlayer {
 			// System.out.println(inRange);
 
 			// Reasons other than distance to stop tracking this entity
-			if (/*!e.shouldBeTrackedBy(this) || */!inRange)
+			if (/* !e.shouldBeTrackedBy(this) || */!inRange)
 				this.unsubscribe(e);
 
 			// No need to do anything as the component system handles the updates
@@ -253,7 +252,10 @@ public class ServerPlayer implements RemotePlayer {
 			entity.subscribers.register(this);
 
 			// Only the server should ever push all components to a client
-			entity.traits.all().forEach(c -> {if(c instanceof TraitSerializable) ((TraitSerializable) c).pushComponent(this); });
+			entity.traits.all().forEach(c -> {
+				if (c instanceof TraitSerializable)
+					((TraitSerializable) c).pushComponent(this);
+			});
 			return true;
 		}
 		return false;
@@ -285,7 +287,7 @@ public class ServerPlayer implements RemotePlayer {
 					ec.setController(null);
 				}
 			});
-			
+
 			entity.subscribers.unregister(this);
 			iterator.remove();
 		}

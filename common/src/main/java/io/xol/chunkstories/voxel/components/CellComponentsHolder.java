@@ -25,9 +25,9 @@ public class CellComponentsHolder implements CellComponents {
 
 	final CubicChunk chunk;
 	final int index;
-	
+
 	Map<String, VoxelComponent> map = new HashMap<String, VoxelComponent>();
-	
+
 	public CellComponentsHolder(CubicChunk chunk, int index) {
 		this.chunk = chunk;
 		this.index = index;
@@ -52,7 +52,7 @@ public class CellComponentsHolder implements CellComponents {
 	public int getZ() {
 		return chunk.getChunkZ() * 32 + (index % 32);
 	}
-	
+
 	public int getIndex() {
 		return index;
 	}
@@ -92,14 +92,14 @@ public class CellComponentsHolder implements CellComponents {
 
 	@Override
 	public String name(VoxelComponent component) {
-		//Reverse lookup
+		// Reverse lookup
 		Iterator<Entry<String, VoxelComponent>> i = all();
-		while(i.hasNext()) {
+		while (i.hasNext()) {
 			Entry<String, VoxelComponent> e = i.next();
-			if(e.getValue() == component)
+			if (e.getValue() == component)
 				return e.getKey();
 		}
-		
+
 		return null;
 	}
 

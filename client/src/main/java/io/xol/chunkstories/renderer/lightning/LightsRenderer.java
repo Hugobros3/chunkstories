@@ -20,52 +20,44 @@ import io.xol.chunkstories.api.rendering.lightning.SpotLight;
 import io.xol.chunkstories.api.rendering.shader.Shader;
 import io.xol.chunkstories.renderer.OpenGLRenderingContext;
 
-public class LightsRenderer implements LightsAccumulator
-{
-	//private final RenderingContext renderingContext;
-	
+public class LightsRenderer implements LightsAccumulator {
+	// private final RenderingContext renderingContext;
+
 	int lightsBuffer = 0;
 	Shader lightShader;
 	private List<Light> lights = new LinkedList<Light>();
 
-	public LightsRenderer(OpenGLRenderingContext renderingContext)
-	{
-		//this.renderingContext = renderingContext;
+	public LightsRenderer(OpenGLRenderingContext renderingContext) {
+		// this.renderingContext = renderingContext;
 	}
 
-	public void queueLight(Light light)
-	{
+	public void queueLight(Light light) {
 		lights.add(light);
 	}
 
-	public Iterator<Light> getAllLights()
-	{
+	public Iterator<Light> getAllLights() {
 		return lights.iterator();
 	}
-	
-	public void renderPendingLights(RenderingInterface renderingContext)
-	{
-		lightShader = renderingContext.currentShader(); //renderingContext.useShader("light");
+
+	public void renderPendingLights(RenderingInterface renderingContext) {
+		lightShader = renderingContext.currentShader(); // renderingContext.useShader("light");
 		lightsBuffer = 0;
-		//Render entities lights
+		// Render entities lights
 		Iterator<Light> lightsIterator = lights.iterator();
-		while(lightsIterator.hasNext())
-		{
+		while (lightsIterator.hasNext()) {
 			renderDefferedLight(renderingContext, lightsIterator.next());
 			lightsIterator.remove();
 		}
-		//Render particles's lights
-		//Client.world.particlesHolder.renderLights(this);
+		// Render particles's lights
+		// Client.world.particlesHolder.renderLights(this);
 		// Render remaining lights
-		if (lightsBuffer > 0)
-		{
+		if (lightsBuffer > 0) {
 			lightShader.setUniform1i("lightsToRender", lightsBuffer);
 			renderingContext.drawFSQuad();
 		}
 	}
-	
-	private void renderDefferedLight(RenderingInterface renderingContext, Light light)
-	{
+
+	private void renderDefferedLight(RenderingInterface renderingContext, Light light) {
 		// Light culling
 		if (!lightInFrustrum(renderingContext, light))
 			return;
@@ -73,30 +65,30 @@ public class LightsRenderer implements LightsAccumulator
 		lightShader.setUniform1f("lightDecay[" + lightsBuffer + "]", light.getDecay());
 		lightShader.setUniform3f("lightPos[" + lightsBuffer + "]", light.getPosition());
 		lightShader.setUniform3f("lightColor[" + lightsBuffer + "]", light.getColor());
-		if (light instanceof SpotLight)
-		{
-			SpotLight spotlight = (SpotLight)light;
+		if (light instanceof SpotLight) {
+			SpotLight spotlight = (SpotLight) light;
 			lightShader.setUniform3f("lightDir[" + lightsBuffer + "]", spotlight.getDirection());
-			lightShader.setUniform1f("lightAngle[" + lightsBuffer + "]", (float) (spotlight.getAngle() / 180 * Math.PI));
-		}
-		else
+			lightShader.setUniform1f("lightAngle[" + lightsBuffer + "]",
+					(float) (spotlight.getAngle() / 180 * Math.PI));
+		} else
 			lightShader.setUniform1f("lightAngle[" + lightsBuffer + "]", 0f);
 
 		lightsBuffer++;
-		if (lightsBuffer == 64)
-		{
+		if (lightsBuffer == 64) {
 			lightShader.setUniform1i("lightsToRender", lightsBuffer);
 			renderingContext.drawFSQuad();
-			//drawFSQuad();
+			// drawFSQuad();
 			lightsBuffer = 0;
 		}
 	}
 
-	private boolean lightInFrustrum(RenderingInterface renderingContext, Light light)
-	{
-		if(renderingContext.getCamera().getCameraPosition().distance(new Vector3d(light.position)) <= light.decay)
+	private boolean lightInFrustrum(RenderingInterface renderingContext, Light light) {
+		if (renderingContext.getCamera().getCameraPosition().distance(new Vector3d(light.position)) <= light.decay)
 			return true;
-		
-		return renderingContext.getCamera().isBoxInFrustrum(new Vector3f(light.getPosition().x() - light.getDecay(), light.getPosition().y() - light.getDecay(), light.getPosition().z() - light.getDecay()), new Vector3f(light.getDecay() * 2f, light.getDecay() * 2f, light.getDecay() * 2f));
+
+		return renderingContext.getCamera().isBoxInFrustrum(
+				new Vector3f(light.getPosition().x() - light.getDecay(), light.getPosition().y() - light.getDecay(),
+						light.getPosition().z() - light.getDecay()),
+				new Vector3f(light.getDecay() * 2f, light.getDecay() * 2f, light.getDecay() * 2f));
 	}
 }

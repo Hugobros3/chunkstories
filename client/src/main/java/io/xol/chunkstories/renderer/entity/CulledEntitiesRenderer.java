@@ -25,21 +25,18 @@ import io.xol.chunkstories.api.rendering.world.WorldRenderer.EntitiesRenderer;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.world.WorldImplementation;
 
-public class CulledEntitiesRenderer implements EntitiesRenderer
-{
+public class CulledEntitiesRenderer implements EntitiesRenderer {
 	Map<EntityDefinition, EntityRenderer<? extends Entity>> entityRenderers = new HashMap<>();
 
 	final WorldRenderer worldRenderer;
 	final World world;
 
-	public CulledEntitiesRenderer(WorldRenderer worldRenderer)
-	{
+	public CulledEntitiesRenderer(WorldRenderer worldRenderer) {
 		this.worldRenderer = worldRenderer;
 		this.world = worldRenderer.getWorld();
 	}
 
-	public void clearLoadedEntitiesRenderers()
-	{
+	public void clearLoadedEntitiesRenderers() {
 		for (EntityRenderer<? extends Entity> entityRenderer : entityRenderers.values())
 			if (entityRenderer != null)
 				entityRenderer.freeRessources();
@@ -47,21 +44,18 @@ public class CulledEntitiesRenderer implements EntitiesRenderer
 		entityRenderers.clear();
 	}
 
-	public int renderEntities(RenderingInterface renderer)
-	{
+	public int renderEntities(RenderingInterface renderer) {
 		((WorldImplementation) world).entitiesLock.readLock().lock();
 
-		//Sort them by type
+		// Sort them by type
 		Map<EntityDefinition, List<Entity>> renderableEntitiesTypes = new HashMap<EntityDefinition, List<Entity>>();
-		for (Entity entity : world.getAllLoadedEntities())
-		{
+		for (Entity entity : world.getAllLoadedEntities()) {
 			entity.traits.with(TraitRenderable.class, tr -> {
 				Entity Entity = (Entity) entity;
 				List<Entity> entitiesOfThisType = renderableEntitiesTypes.get(Entity.getDefinition());
-				
-				//Create a list if there isn't one yet
-				if (entitiesOfThisType == null)
-				{
+
+				// Create a list if there isn't one yet
+				if (entitiesOfThisType == null) {
 					renderableEntitiesTypes.put(Entity.getDefinition(), new ArrayList<Entity>());
 					entitiesOfThisType = renderableEntitiesTypes.get(Entity.getDefinition());
 				}
@@ -71,13 +65,13 @@ public class CulledEntitiesRenderer implements EntitiesRenderer
 
 		int entitiesRendered = 0;
 
-		for (Entry<EntityDefinition, List<Entity>> entry : renderableEntitiesTypes.entrySet())
-		{
+		for (Entry<EntityDefinition, List<Entity>> entry : renderableEntitiesTypes.entrySet()) {
 			List<Entity> entities = entry.getValue();
 
-			//Caches entity renderers until we f12
+			// Caches entity renderers until we f12
 			if (!entityRenderers.containsKey(entry.getKey()))
-				entityRenderers.put(entry.getKey(), entities.get(0).traits.get(TraitRenderable.class).getFactory().getRenderer());
+				entityRenderers.put(entry.getKey(),
+						entities.get(0).traits.get(TraitRenderable.class).getFactory().getRenderer());
 
 			EntityRenderer<? extends Entity> entityRenderer = entityRenderers.get(entry.getKey());
 
@@ -88,8 +82,8 @@ public class CulledEntitiesRenderer implements EntitiesRenderer
 				int e = entityRenderer.renderEntities(renderer, new EntitiesRendererIterator<>(renderer, entities));
 				entitiesRendered += e;
 			} catch (Throwable e) {
-				System.out.println(
-						"Exception rendering entities " + entities.get(0).getClass().getSimpleName() + " using " + entityRenderer.getClass().getSimpleName());
+				System.out.println("Exception rendering entities " + entities.get(0).getClass().getSimpleName()
+						+ " using " + entityRenderer.getClass().getSimpleName());
 				e.printStackTrace();
 			}
 		}
@@ -100,75 +94,67 @@ public class CulledEntitiesRenderer implements EntitiesRenderer
 	}
 
 	@SuppressWarnings("unchecked")
-	private class EntitiesRendererIterator<E extends Entity> implements RenderingIterator<E>
-	{
+	private class EntitiesRendererIterator<E extends Entity> implements RenderingIterator<E> {
 		private RenderingInterface renderingContext;
 
 		private List<Entity> entities;
 		protected Iterator<Entity> iterator;
 		protected Entity currentEntity;
 
-		public EntitiesRendererIterator(RenderingInterface renderingContext, List<Entity> entities)
-		{
+		public EntitiesRendererIterator(RenderingInterface renderingContext, List<Entity> entities) {
 			this.renderingContext = renderingContext;
 			this.entities = entities;
 			this.iterator = entities.iterator();
 		}
 
 		@Override
-		public boolean hasNext()
-		{
+		public boolean hasNext() {
 			if (currentEntity != null)
 				return true;
-			else if (iterator.hasNext())
-			{
+			else if (iterator.hasNext()) {
 				if (currentEntity == null)
 					currentEntity = iterator.next();
 				return true;
-			}
-			else
+			} else
 				return false;
 		}
 
 		@Override
-		public E next()
-		{
+		public E next() {
 			E cache = (E) currentEntity;
 
-			//Here fancy rendering tech
-			if (isCurrentElementInViewFrustrum())
-			{
-				//TODO instancing friendly way of providing those
-				
-				//renderingContext.currentShader().setUniform3f("objectPosition", currentEntity.getLocation());
-				
-				/*Location loc = currentEntity.getLocation();
-				Region r = currentEntity.getRegion();
-				int wrx = ((int)loc.x()) - (r.getRegionX() << 8);
-				int wry = ((int)loc.y()) - (r.getRegionY() << 8);
-				int wrz = ((int)loc.z()) - (r.getRegionZ() << 8);
-				
-				ChunkHolder ch = r.getChunkHolder(wrx / 8, wry / 8, wrz / 8);
-				Chunk chunk = ch.getChunk();
-				
-				int sunLight = -1, blockLight = 0;
-				int data;
-				if(chunk != null) {
-					int wcx = wrx & 0x1F;
-					int wcy = wry & 0x1F;
-					int wcz = wrz & 0x1F;
-					
-					data = chunk.getVoxelData(wcx, wcy, wcz);
-					
-					sunLight = VoxelFormat.sunlight(data);
-					blockLight = VoxelFormat.blocklight(data);
-				}
-				else {
-					data = (world.getRegionsSummariesHolder().getHeightAtWorldCoordinates((int)loc.x(), (int)loc.z()) <= loc.z()) ? 0 : VoxelFormat.format(1, 0, 15, 0);
-				}
-				
-				renderingContext.currentShader().setUniform2f("worldLightIn", blockLight, sunLight);*/
-				//renderingContext.currentShader().setUniform2f("worldLightIn", world.getBlocklightLevelLocation(currentEntity.getLocation()), world.getSunlightLevelLocation(currentEntity.getLocation()));
+			// Here fancy rendering tech
+			if (isCurrentElementInViewFrustrum()) {
+				// TODO instancing friendly way of providing those
+
+				// renderingContext.currentShader().setUniform3f("objectPosition",
+				// currentEntity.getLocation());
+
+				/*
+				 * Location loc = currentEntity.getLocation(); Region r =
+				 * currentEntity.getRegion(); int wrx = ((int)loc.x()) - (r.getRegionX() << 8);
+				 * int wry = ((int)loc.y()) - (r.getRegionY() << 8); int wrz = ((int)loc.z()) -
+				 * (r.getRegionZ() << 8);
+				 * 
+				 * ChunkHolder ch = r.getChunkHolder(wrx / 8, wry / 8, wrz / 8); Chunk chunk =
+				 * ch.getChunk();
+				 * 
+				 * int sunLight = -1, blockLight = 0; int data; if(chunk != null) { int wcx =
+				 * wrx & 0x1F; int wcy = wry & 0x1F; int wcz = wrz & 0x1F;
+				 * 
+				 * data = chunk.getVoxelData(wcx, wcy, wcz);
+				 * 
+				 * sunLight = VoxelFormat.sunlight(data); blockLight =
+				 * VoxelFormat.blocklight(data); } else { data =
+				 * (world.getRegionsSummariesHolder().getHeightAtWorldCoordinates((int)loc.x(),
+				 * (int)loc.z()) <= loc.z()) ? 0 : VoxelFormat.format(1, 0, 15, 0); }
+				 * 
+				 * renderingContext.currentShader().setUniform2f("worldLightIn", blockLight,
+				 * sunLight);
+				 */
+				// renderingContext.currentShader().setUniform2f("worldLightIn",
+				// world.getBlocklightLevelLocation(currentEntity.getLocation()),
+				// world.getSunlightLevelLocation(currentEntity.getLocation()));
 			}
 
 			currentEntity = null;
@@ -176,82 +162,74 @@ public class CulledEntitiesRenderer implements EntitiesRenderer
 		}
 
 		@Override
-		public boolean isCurrentElementInViewFrustrum()
-		{
+		public boolean isCurrentElementInViewFrustrum() {
 			if (currentEntity == null)
 				return false;
 
 			CollisionBox box = currentEntity.getTranslatedBoundingBox();
 
-			if (renderingContext.getWorldRenderer().renderPasses().getCurrentPass().name.startsWith("shadow") || renderingContext.getCamera().isBoxInFrustrum(box))//new Vector3f(box.xpos - box.xw, box.ypos - box.h, box.zpos - box.zw), new Vector3f(box.xw, box.h, box.zw)))
+			if (renderingContext.getWorldRenderer().renderPasses().getCurrentPass().name.startsWith("shadow")
+					|| renderingContext.getCamera().isBoxInFrustrum(box))// new Vector3f(box.xpos - box.xw, box.ypos -
+																			// box.h, box.zpos - box.zw), new
+																			// Vector3f(box.xw, box.h, box.zw)))
 			{
 				return true;
 			}
-			
+
 			return false;
 		}
 
 		@Override
-		public RenderingIterator<E> getElementsInFrustrumOnly()
-		{
+		public RenderingIterator<E> getElementsInFrustrumOnly() {
 			return new FrustrumCulledRenderingIterator<E>(renderingContext, entities);
 		}
 
-		public EntitiesRendererIterator<E> clone()
-		{
+		public EntitiesRendererIterator<E> clone() {
 			return new EntitiesRendererIterator<E>(renderingContext, entities);
 		}
 
-		private class FrustrumCulledRenderingIterator<S extends E> extends EntitiesRendererIterator<S>
-		{
+		private class FrustrumCulledRenderingIterator<S extends E> extends EntitiesRendererIterator<S> {
 			Entity currentRenderableEntity = null;
 
-			public FrustrumCulledRenderingIterator(RenderingInterface renderingContext, List<Entity> entities)
-			{
+			public FrustrumCulledRenderingIterator(RenderingInterface renderingContext, List<Entity> entities) {
 				super(renderingContext, entities);
 			}
 
 			@Override
-			public RenderingIterator<S> getElementsInFrustrumOnly()
-			{
+			public RenderingIterator<S> getElementsInFrustrumOnly() {
 				return this;
 			}
 
 			@Override
-			public boolean hasNext()
-			{
-				//If a cull-checked entity is already present just return null
+			public boolean hasNext() {
+				// If a cull-checked entity is already present just return null
 				if (currentRenderableEntity != null)
 					return true;
 
-				//Else loop until we find one
-				while (iterator.hasNext())
-				{
+				// Else loop until we find one
+				while (iterator.hasNext()) {
 					currentEntity = iterator.next();
-					if (isCurrentElementInViewFrustrum())
-					{
+					if (isCurrentElementInViewFrustrum()) {
 						currentRenderableEntity = currentEntity;
 						return true;
 					}
 				}
 
-				//We failed.
+				// We failed.
 				return false;
 			}
 
 			@Override
-			public S next()
-			{
+			public S next() {
 				currentEntity = currentRenderableEntity;
 				S s = super.next();
 
-				//Null-out reference for future call
+				// Null-out reference for future call
 				currentRenderableEntity = null;
 				return s;
 			}
 
-			public FrustrumCulledRenderingIterator<S> clone()
-			{
+			public FrustrumCulledRenderingIterator<S> clone() {
 				return new FrustrumCulledRenderingIterator<S>(renderingContext, entities);
 			}
 		}

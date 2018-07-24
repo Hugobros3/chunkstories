@@ -17,7 +17,7 @@ public class PlayerLoginHelper {
 	final ClientConnection connection;
 
 	String name, token, version;
-	
+
 	boolean logged_in = false;
 
 	public PlayerLoginHelper(ClientConnection connection) {
@@ -25,9 +25,9 @@ public class PlayerLoginHelper {
 	}
 
 	public boolean handleLogin(String loginRequest) {
-		if(logged_in)
+		if (logged_in)
 			return false;
-		
+
 		if (loginRequest.startsWith("username:")) {
 			this.name = loginRequest.replace("username:", "");
 			return true;
@@ -63,7 +63,7 @@ public class PlayerLoginHelper {
 				afterLoginValidation();
 				return true;
 			} else {
-				//Send an async https request & notify of the results later
+				// Send an async https request & notify of the results later
 				new SimplePostRequest("https://chunkstories.xyz/api/serverTokenChecker.php",
 						"username=" + this.name + "&token=" + token, (result) -> {
 							if (result != null && result.equals("ok"))

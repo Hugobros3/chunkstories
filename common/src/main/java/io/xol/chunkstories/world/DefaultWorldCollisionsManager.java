@@ -45,7 +45,8 @@ public class DefaultWorldCollisionsManager implements WorldCollisionsManager {
 		return raytraceSolid(initialPosition, direction, limit, false, true);
 	}
 
-	private Location raytraceSolid(Vector3dc initialPosition, Vector3dc directionIn, double limit, boolean outer, boolean selectable) {
+	private Location raytraceSolid(Vector3dc initialPosition, Vector3dc directionIn, double limit, boolean outer,
+			boolean selectable) {
 		Vector3d direction = new Vector3d();
 		directionIn.normalize(direction);
 
@@ -105,7 +106,8 @@ public class DefaultWorldCollisionsManager implements WorldCollisionsManager {
 			y = voxelCoords[1];
 			z = voxelCoords[2];
 			cell = world.peekSafely(x, y, z);
-			if (cell.getVoxel().getDefinition().isSolid() || (selectable && cell.getVoxel().getDefinition().isSelectable())) {
+			if (cell.getVoxel().getDefinition().isSolid()
+					|| (selectable && cell.getVoxel().getDefinition().isSelectable())) {
 				boolean collides = false;
 				for (CollisionBox box : cell.getTranslatedCollisionBoxes()) {
 					// System.out.println(box);
@@ -138,7 +140,8 @@ public class DefaultWorldCollisionsManager implements WorldCollisionsManager {
 
 			// distance += deltaDist[side];
 
-		} while (voxelDelta[0] * voxelDelta[0] + voxelDelta[1] * voxelDelta[1] + voxelDelta[2] * voxelDelta[2] < limit * limit);
+		} while (voxelDelta[0] * voxelDelta[0] + voxelDelta[1] * voxelDelta[1] + voxelDelta[2] * voxelDelta[2] < limit
+				* limit);
 		return null;
 	}
 
@@ -154,7 +157,8 @@ public class DefaultWorldCollisionsManager implements WorldCollisionsManager {
 	}
 
 	@Override
-	public Iterator<Entity> raytraceEntitiesIgnoringVoxels(Vector3dc initialPosition, Vector3dc direction, double limit) {
+	public Iterator<Entity> raytraceEntitiesIgnoringVoxels(Vector3dc initialPosition, Vector3dc direction,
+			double limit) {
 		return new EntityRayIterator(world, initialPosition, direction, limit);
 	}
 
@@ -223,10 +227,10 @@ public class DefaultWorldCollisionsManager implements WorldCollisionsManager {
 
 			double stepDistanceX, stepDistanceY, stepDistanceZ;
 
-			Vector3d entitiesCenter = new Vector3d(pos.x() - e_coli.getCollisionBoxes()[eCB].xw, pos.y() - e_coli.getCollisionBoxes()[eCB].h - 2,
-					pos.z() - e_coli.getCollisionBoxes()[eCB].zw);
-			Vector3d entitiesRadius = new Vector3d(e_coli.getCollisionBoxes()[eCB].xw * 5, e_coli.getCollisionBoxes()[eCB].h * 5,
-					e_coli.getCollisionBoxes()[eCB].zw * 5);
+			Vector3d entitiesCenter = new Vector3d(pos.x() - e_coli.getCollisionBoxes()[eCB].xw,
+					pos.y() - e_coli.getCollisionBoxes()[eCB].h - 2, pos.z() - e_coli.getCollisionBoxes()[eCB].zw);
+			Vector3d entitiesRadius = new Vector3d(e_coli.getCollisionBoxes()[eCB].xw * 5,
+					e_coli.getCollisionBoxes()[eCB].h * 5, e_coli.getCollisionBoxes()[eCB].zw * 5);
 
 			while (distanceTraveled < len) {
 				if (len - distanceTraveled > 0.25) {
@@ -249,7 +253,8 @@ public class DefaultWorldCollisionsManager implements WorldCollisionsManager {
 					checkerZ = e_coli.getCollisionBoxes()[eCB].translate(pos.x(), pos.y(), pos.z() + stepDistanceZ);
 					for (int i = (int) Math.floor(pos.x()) - 1; i < (int) Math.ceil(pos.x() + checkerX.xw); i++) {
 						for (int j = (int) Math.floor(pos.y()) - 1; j < (int) Math.ceil(pos.y() + checkerX.h); j++) {
-							for (int k = (int) Math.floor(pos.z()) - 1; k < (int) Math.ceil(pos.z() + checkerX.zw); k++) {
+							for (int k = (int) Math.floor(pos.z()) - 1; k < (int) Math
+									.ceil(pos.z() + checkerX.zw); k++) {
 								cell = world.peekSafely(i, j, k);
 								if (cell.getVoxel().getDefinition().isSolid())
 									addAllSafe(boxes, cell.getTranslatedCollisionBoxes());
@@ -274,7 +279,8 @@ public class DefaultWorldCollisionsManager implements WorldCollisionsManager {
 								stepDistanceZ = north;
 							}
 							vec.z = (0d);
-							checkerZ = e_coli.getCollisionBoxes()[eCB].translate(pos.x(), pos.y(), pos.z() + stepDistanceZ);
+							checkerZ = e_coli.getCollisionBoxes()[eCB].translate(pos.x(), pos.y(),
+									pos.z() + stepDistanceZ);
 						}
 					}
 
@@ -287,7 +293,8 @@ public class DefaultWorldCollisionsManager implements WorldCollisionsManager {
 					checkerX = e_coli.getCollisionBoxes()[eCB].translate(pos.x() + stepDistanceX, pos.y(), pos.z());
 					for (int i = (int) Math.floor(pos.x()) - 1; i < (int) Math.ceil(pos.x() + checkerY.xw); i++) {
 						for (int j = (int) Math.floor(pos.y()) - 1; j < (int) Math.ceil(pos.y() + checkerY.h); j++) {
-							for (int k = (int) Math.floor(pos.z()) - 1; k < (int) Math.ceil(pos.z() + checkerY.zw); k++) {
+							for (int k = (int) Math.floor(pos.z()) - 1; k < (int) Math
+									.ceil(pos.z() + checkerY.zw); k++) {
 								cell = world.peekSafely(i, j, k);
 								if (cell.getVoxel().getDefinition().isSolid())
 									addAllSafe(boxes, cell.getTranslatedCollisionBoxes());
@@ -315,7 +322,8 @@ public class DefaultWorldCollisionsManager implements WorldCollisionsManager {
 								stepDistanceX = right;
 							}
 							vec.x = (0d);
-							checkerX = e_coli.getCollisionBoxes()[eCB].translate(pos.x() + stepDistanceX, pos.y(), pos.z());
+							checkerX = e_coli.getCollisionBoxes()[eCB].translate(pos.x() + stepDistanceX, pos.y(),
+									pos.z());
 						}
 
 					}
@@ -328,8 +336,10 @@ public class DefaultWorldCollisionsManager implements WorldCollisionsManager {
 					boxes.clear();
 					checkerY = e_coli.getCollisionBoxes()[eCB].translate(pos.x(), pos.y() + stepDistanceY, pos.z());
 					for (int i = (int) Math.floor(pos.x()) - 1; i < (int) Math.ceil(pos.x() + checkerZ.xw); i++) {
-						for (int j = (int) Math.floor(pos.y()) - 1; j < (int) Math.ceil(pos.y() + checkerZ.h) + 1; j++) {
-							for (int k = (int) Math.floor(pos.z()) - 1; k < (int) Math.ceil(pos.z() + checkerZ.zw); k++) {
+						for (int j = (int) Math.floor(pos.y()) - 1; j < (int) Math.ceil(pos.y() + checkerZ.h)
+								+ 1; j++) {
+							for (int k = (int) Math.floor(pos.z()) - 1; k < (int) Math
+									.ceil(pos.z() + checkerZ.zw); k++) {
 								cell = world.peekSafely(i, j, k);
 								if (cell.getVoxel().getDefinition().isSolid())
 									addAllSafe(boxes, cell.getTranslatedCollisionBoxes());
@@ -356,7 +366,8 @@ public class DefaultWorldCollisionsManager implements WorldCollisionsManager {
 								stepDistanceY = bot;
 							}
 							vec.y = (0d);
-							checkerY = e_coli.getCollisionBoxes()[eCB].translate(pos.x(), pos.y() + stepDistanceY, pos.z());
+							checkerY = e_coli.getCollisionBoxes()[eCB].translate(pos.x(), pos.y() + stepDistanceY,
+									pos.z());
 						}
 
 					}

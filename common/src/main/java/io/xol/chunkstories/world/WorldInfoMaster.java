@@ -18,7 +18,7 @@ import io.xol.chunkstories.content.GameDirectory;
 public class WorldInfoMaster extends WorldInfoImplementation {
 
 	private File worldInfoFile;
-	
+
 	public WorldInfoMaster(File file) throws IOException {
 		this(new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8")));
 		this.worldInfoFile = file;
@@ -31,28 +31,26 @@ public class WorldInfoMaster extends WorldInfoImplementation {
 	}
 
 	public WorldInfoMaster(WorldInfoImplementation worldInfo) {
-		super(worldInfo.getInternalName(), worldInfo.getName(), worldInfo.getSeed(), worldInfo.getDescription(), worldInfo.getSize(), worldInfo.getGeneratorName());
-		worldInfoFile = new File(GameDirectory.getGameFolderPath() + "/worlds/" + worldInfo.getInternalName() + "/info.world");
+		super(worldInfo.getInternalName(), worldInfo.getName(), worldInfo.getSeed(), worldInfo.getDescription(),
+				worldInfo.getSize(), worldInfo.getGeneratorName());
+		worldInfoFile = new File(
+				GameDirectory.getGameFolderPath() + "/worlds/" + worldInfo.getInternalName() + "/info.world");
 		worldInfo.getProperties().forEach((key, value) -> this.setProperty(key, value));
 	}
 
 	public File getFile() {
 		return worldInfoFile;
 	}
-	
-	public void save()
-	{
-		try
-		{
-			if(!worldInfoFile.getParentFile().exists())
+
+	public void save() {
+		try {
+			if (!worldInfoFile.getParentFile().exists())
 				worldInfoFile.getParentFile().mkdirs();
-			
+
 			FileOutputStream output = new FileOutputStream(worldInfoFile);
 			saveInStream(output);
 			output.close();
-		}
-		catch (IOException e)
-		{
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}

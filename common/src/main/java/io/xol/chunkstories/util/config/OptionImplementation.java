@@ -18,26 +18,27 @@ import io.xol.chunkstories.content.GenericNamedConfigurable;
 public class OptionImplementation extends GenericNamedConfigurable implements Option {
 
 	final ConfigurationImplementation config;
-	
-	public OptionImplementation(ConfigurationImplementation config, String name, BufferedReader reader) throws IOException {
+
+	public OptionImplementation(ConfigurationImplementation config, String name, BufferedReader reader)
+			throws IOException {
 		super(name, reader);
 		this.config = config;
-		
-		if(config == null)
+
+		if (config == null)
 			throw new NullPointerException();
 	}
-	
+
 	public OptionImplementation(ConfigurationImplementation config, OptionUntyped loadFromThat) throws IOException {
 		super(loadFromThat.getName());
 		this.config = config;
 
-		if(config == null)
+		if (config == null)
 			throw new NullPointerException();
-		
-		for(Entry<String, String> e : loadFromThat.properties.entrySet()) {
+
+		for (Entry<String, String> e : loadFromThat.properties.entrySet()) {
 			this.properties.put(e.getKey(), e.getValue());
 		}
-		
+
 		this.defaultValue = this.resolveProperty("default", "undefined");
 		this.value = null;
 	}
@@ -60,21 +61,20 @@ public class OptionImplementation extends GenericNamedConfigurable implements Op
 		String previousValue = value;
 		this.value = value;
 		config.bake();
-		
+
 		PluginManager pm = config.getContext().getPluginManager();
-		if(pm != null) {
+		if (pm != null) {
 			OptionSetEvent event = new OptionSetEvent(this);
 			pm.fireEvent(event);
-			
-			if(event.isCancelled()) {
+
+			if (event.isCancelled()) {
 				this.value = previousValue;
 				config.bake();
 				return;
 			}
 		}
-		
+
 		config.bake();
 	}
-
 
 }

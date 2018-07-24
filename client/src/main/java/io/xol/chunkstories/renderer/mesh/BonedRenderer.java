@@ -28,7 +28,7 @@ import io.xol.chunkstories.renderer.opengl.vbo.VertexBufferGL;
 
 public class BonedRenderer implements RenderableAnimatableMesh {
 	protected final AnimatableMesh mesh;
-	
+
 	protected final int verticesCount;
 	protected final String[] boneName;
 
@@ -36,13 +36,14 @@ public class BonedRenderer implements RenderableAnimatableMesh {
 
 	public BonedRenderer(AnimatableMesh mesh) {
 		this.mesh = mesh;
-		
+
 		this.boneName = mesh.getBoneNames();
 		this.verticesCount = mesh.getVerticesCount();
 
-		this.uploadFloatBuffers(mesh.getVertices(), mesh.getTextureCoordinates(), mesh.getNormals(), mesh.getBoneIds(), mesh.getBoneWeights());
+		this.uploadFloatBuffers(mesh.getVertices(), mesh.getTextureCoordinates(), mesh.getNormals(), mesh.getBoneIds(),
+				mesh.getBoneWeights());
 	}
-	
+
 	public VertexBuffer getMeshDataOnGPU() {
 		return meshDataOnGPU;
 	}
@@ -59,9 +60,11 @@ public class BonedRenderer implements RenderableAnimatableMesh {
 	final int TEXCOORD_STRUCT_SIZE = FLOAT_SIZE * 2;
 	final int ANIMATIONS_STRUCT_SIZE = BONE_ID_SIZE * 4 + WEIGHT_SIZE * 4;
 
-	final int TOTAL_STRUCT_SIZE = VERTEX_STRUCT_SIZE + NORMALS_STRUCT_SIZE + TEXCOORD_STRUCT_SIZE + ANIMATIONS_STRUCT_SIZE;
+	final int TOTAL_STRUCT_SIZE = VERTEX_STRUCT_SIZE + NORMALS_STRUCT_SIZE + TEXCOORD_STRUCT_SIZE
+			+ ANIMATIONS_STRUCT_SIZE;
 
-	private void uploadFloatBuffers(FloatBuffer vertices, FloatBuffer textureCoordinates, FloatBuffer normals, ByteBuffer boneIds, ByteBuffer boneWeights) {
+	private void uploadFloatBuffers(FloatBuffer vertices, FloatBuffer textureCoordinates, FloatBuffer normals,
+			ByteBuffer boneIds, ByteBuffer boneWeights) {
 		meshDataOnGPU = new VertexBufferGL();
 
 		int buffer_size = verticesCount * TOTAL_STRUCT_SIZE;
@@ -110,25 +113,32 @@ public class BonedRenderer implements RenderableAnimatableMesh {
 	}
 
 	@Override
-	public void renderUsingMaterials(RenderingInterface renderer, SkeletonAnimator skeleton, double animationTime) throws RenderingException {
+	public void renderUsingMaterials(RenderingInterface renderer, SkeletonAnimator skeleton, double animationTime)
+			throws RenderingException {
 		internalRenderer(renderer, skeleton, animationTime, true);
 	}
 
 	private void prepareDraw(RenderingInterface renderer) {
 		// Make sure vertex data is avaible
 		renderer.unbindAttributes();
-		renderer.bindAttribute("vertexIn", meshDataOnGPU.asAttributeSource(VertexFormat.FLOAT, 3, TOTAL_STRUCT_SIZE, 0));
+		renderer.bindAttribute("vertexIn",
+				meshDataOnGPU.asAttributeSource(VertexFormat.FLOAT, 3, TOTAL_STRUCT_SIZE, 0));
 		int offset = VERTEX_STRUCT_SIZE;
-		renderer.bindAttribute("normalIn", meshDataOnGPU.asAttributeSource(VertexFormat.FLOAT, 3, TOTAL_STRUCT_SIZE, offset));
+		renderer.bindAttribute("normalIn",
+				meshDataOnGPU.asAttributeSource(VertexFormat.FLOAT, 3, TOTAL_STRUCT_SIZE, offset));
 		offset += NORMALS_STRUCT_SIZE;
-		renderer.bindAttribute("texCoordIn", meshDataOnGPU.asAttributeSource(VertexFormat.FLOAT, 2, TOTAL_STRUCT_SIZE, offset));
+		renderer.bindAttribute("texCoordIn",
+				meshDataOnGPU.asAttributeSource(VertexFormat.FLOAT, 2, TOTAL_STRUCT_SIZE, offset));
 		offset += TEXCOORD_STRUCT_SIZE;
-		renderer.bindAttribute("boneIdIn", meshDataOnGPU.asIntegerAttributeSource(VertexFormat.BYTE, 4, TOTAL_STRUCT_SIZE, offset, 0));
+		renderer.bindAttribute("boneIdIn",
+				meshDataOnGPU.asIntegerAttributeSource(VertexFormat.BYTE, 4, TOTAL_STRUCT_SIZE, offset, 0));
 		offset += BONE_ID_SIZE * 4;
-		renderer.bindAttribute("boneWeightsIn", meshDataOnGPU.asAttributeSource(VertexFormat.NORMALIZED_UBYTE, 4, TOTAL_STRUCT_SIZE, offset));
+		renderer.bindAttribute("boneWeightsIn",
+				meshDataOnGPU.asAttributeSource(VertexFormat.NORMALIZED_UBYTE, 4, TOTAL_STRUCT_SIZE, offset));
 	}
-	
-	private void internalRenderer(RenderingInterface renderer, SkeletonAnimator skeleton, double animationTime, boolean useMaterials) {
+
+	private void internalRenderer(RenderingInterface renderer, SkeletonAnimator skeleton, double animationTime,
+			boolean useMaterials) {
 		prepareDraw(renderer);
 
 		Shader shader = renderer.currentShader();
@@ -140,22 +150,24 @@ public class BonedRenderer implements RenderableAnimatableMesh {
 					boneMatrix.translate(50000, 50000, 50000);
 					shader.setUniformMatrix4f("bones[" + i + "]", boneMatrix);
 				} else {
-					Matrix4fc boneMatrix = skeleton.getBoneHierarchyTransformationMatrixWithOffset(boneName[i], animationTime < 0 ? 0 : animationTime);
+					Matrix4fc boneMatrix = skeleton.getBoneHierarchyTransformationMatrixWithOffset(boneName[i],
+							animationTime < 0 ? 0 : animationTime);
 					shader.setUniformMatrix4f("bones[" + i + "]", boneMatrix);
 				}
 			}
 		}
-		
-		if(useMaterials) {
-			for(MeshMaterial material : mesh.getMaterials()) {
+
+		if (useMaterials) {
+			for (MeshMaterial material : mesh.getMaterials()) {
 				renderer.bindAlbedoTexture(renderer.textures().getTexture(material.getAlbedoTextureName()));
 				renderer.bindNormalTexture(renderer.textures().getTexture(material.getNormalTextureName()));
-				renderer.bindTexture2D("specularTexture", renderer.textures().getTexture(material.getSpecularTextureName()));
-				//renderer.bindSpecularTexture(renderer.textures().getTexture(material.getSpecularTextureName()));
-				renderer.draw(Primitive.TRIANGLE, material.firstVertex(), material.lastVertex()-material.firstVertex());
+				renderer.bindTexture2D("specularTexture",
+						renderer.textures().getTexture(material.getSpecularTextureName()));
+				// renderer.bindSpecularTexture(renderer.textures().getTexture(material.getSpecularTextureName()));
+				renderer.draw(Primitive.TRIANGLE, material.firstVertex(),
+						material.lastVertex() - material.firstVertex());
 			}
-		}
-		else
+		} else
 			renderer.draw(Primitive.TRIANGLE, 0, verticesCount);
 	}
 }

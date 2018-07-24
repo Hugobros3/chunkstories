@@ -58,79 +58,72 @@ import io.xol.chunkstories.renderer.opengl.vbo.AttributesConfigurationImplementa
 import io.xol.chunkstories.renderer.opengl.vbo.VertexBufferGL;
 import io.xol.chunkstories.renderer.shaders.ShadersStore;
 
-public class OpenGLRenderingContext implements RenderingInterface
-{
+public class OpenGLRenderingContext implements RenderingInterface {
 	private GLFWGameWindow gameWindow;
-	
+
 	private ShaderGL currentlyBoundShader = null;
 
 	private final Camera mainCamera = new Camera();
-	//private boolean isThisAShadowPass;
-	
+	// private boolean isThisAShadowPass;
+
 	private LightsRenderer lightsRenderers = new LightsRenderer(this);
 
 	private GuiRendererImplementation guiRenderer;
 	private TrueTypeFontRenderer trueTypeFontRenderer;
 
-	//Texturing
+	// Texturing
 	private TexturingConfigurationImplementation texturingConfiguration = new TexturingConfigurationImplementation();
-	//Object matrix
+	// Object matrix
 	private Matrix4f currentObjectMatrix = null;
-	
-	//Pipeline config
+
+	// Pipeline config
 	private final OpenGLStateMachine stateMachine = OpenGLStateMachine.DEFAULT;
 	private final AttributesConfigurationImplementation attributesConfiguration = new AttributesConfigurationImplementation();
 	private final RenderTargets renderTargetManager;
-	
-	//private Deque<RenderingCommandImplementation> commands = new ArrayDeque<RenderingCommandImplementation>();
 
-	public OpenGLRenderingContext(GLFWGameWindow windows)
-	{
+	// private Deque<RenderingCommandImplementation> commands = new
+	// ArrayDeque<RenderingCommandImplementation>();
+
+	public OpenGLRenderingContext(GLFWGameWindow windows) {
 		gameWindow = windows;
-		
+
 		renderTargetManager = new OpenGLRenderTargetManager(this);
-		
+
 		guiRenderer = new GuiRendererImplementation(this);
 		trueTypeFontRenderer = new TrueTypeFontRenderer(this);
 	}
 
-	public String toString()
-	{
-		/*String attributes = "";
-		for (int i : enabledAttributes)
-		{
-			attributes += i;
-		}
-		attributes += " (" + enabledAttributes.size() + ")";
-		return "[RenderingContext shadow:" + isThisAShadowPass + " enabledAttributes: " + attributes + " lights: " + lights.size() + " shader:" + currentShader() + " ]";
+	public String toString() {
+		/*
+		 * String attributes = ""; for (int i : enabledAttributes) { attributes += i; }
+		 * attributes += " (" + enabledAttributes.size() + ")"; return
+		 * "[RenderingContext shadow:" + isThisAShadowPass + " enabledAttributes: " +
+		 * attributes + " lights: " + lights.size() + " shader:" + currentShader() +
+		 * " ]";
 		 */
 		return "wip";
 	}
 
-	public Camera getCamera()
-	{
+	public Camera getCamera() {
 		return mainCamera;
 	}
 
-	public GLFWGameWindow getWindow()
-	{
+	public GLFWGameWindow getWindow() {
 		return gameWindow;
 	}
-	
-	public Shader useShader(String shaderName)
-	{
+
+	public Shader useShader(String shaderName) {
 		return setCurrentShader(shaders().getShaderProgram(shaderName));
 	}
 
-	private Shader setCurrentShader(ShaderGL shader)
-	{
+	private Shader setCurrentShader(ShaderGL shader) {
 		if (shader != currentlyBoundShader) {
 			texturingConfiguration.clear();
 			attributesConfiguration.clear();
 			currentlyBoundShader = shader;
-			
+
 			RenderPass currentPass = this.getCurrentPass();
-			if(currentPass != null) {
+			if (currentPass != null) {
 				currentPass.setupShader(this, shader);
 				currentPass.autoBindInputs(this, shader);
 			}
@@ -138,8 +131,7 @@ public class OpenGLRenderingContext implements RenderingInterface
 		return currentlyBoundShader;
 	}
 
-	public Shader currentShader()
-	{
+	public Shader currentShader() {
 		return currentlyBoundShader;
 	}
 
@@ -183,26 +175,22 @@ public class OpenGLRenderingContext implements RenderingInterface
 	}
 
 	@Override
-	public Matrix4f setObjectMatrix(Matrix4f objectMatrix)
-	{
+	public Matrix4f setObjectMatrix(Matrix4f objectMatrix) {
 		if (objectMatrix == null)
 			objectMatrix = new Matrix4f();
 		currentObjectMatrix = new Matrix4f(objectMatrix);
 		return this.currentObjectMatrix;
 	}
 
-	public Matrix4f getObjectMatrix()
-	{
+	public Matrix4f getObjectMatrix() {
 		return this.currentObjectMatrix;
 	}
 
 	static VertexBuffer fsQuadVertices = null;
 	static AttributeSource fsQuadAttrib;
 
-	public void drawFSQuad()
-	{
-		if (fsQuadVertices == null)
-		{
+	public void drawFSQuad() {
+		if (fsQuadVertices == null) {
 			fsQuadVertices = new VertexBufferGL();
 			FloatBuffer fsQuadBuffer = BufferUtils.createFloatBuffer(6 * 2);
 			fsQuadBuffer.put(new float[] { 1f, 1f, -1f, -1f, 1f, -1f, 1f, 1f, -1f, 1f, -1f, -1f });
@@ -246,131 +234,107 @@ public class OpenGLRenderingContext implements RenderingInterface
 	}
 
 	@Override
-	public AttributesConfiguration bindAttribute(String attributeName, AttributeSource attributeSource) throws AttributeNotPresentException
-	{
-		//TODO check in shader if attribute exists
+	public AttributesConfiguration bindAttribute(String attributeName, AttributeSource attributeSource)
+			throws AttributeNotPresentException {
+		// TODO check in shader if attribute exists
 		attributesConfiguration.bindAttribute(attributeName, attributeSource);
 		return this.attributesConfiguration;
 	}
 
 	@Override
-	public AttributesConfiguration unbindAttributes()
-	{
+	public AttributesConfiguration unbindAttributes() {
 		attributesConfiguration.clear();
 		return this.attributesConfiguration;
 	}
 
 	@Override
-	public void draw(Primitive p, int startAt, int count)
-	{
-		RenderingCommandSingleInstance command = new RenderingCommandSingleInstance(p, currentlyBoundShader, texturingConfiguration, attributesConfiguration, currentlyBoundShader.getUniformsConfiguration(), stateMachine, currentObjectMatrix,
-				startAt, count);
+	public void draw(Primitive p, int startAt, int count) {
+		RenderingCommandSingleInstance command = new RenderingCommandSingleInstance(p, currentlyBoundShader,
+				texturingConfiguration, attributesConfiguration, currentlyBoundShader.getUniformsConfiguration(),
+				stateMachine, currentObjectMatrix, startAt, count);
 
 		command.render(this);
-		//queue(command);
+		// queue(command);
 
-		//return command;
+		// return command;
 	}
-	
+
 	@Override
-	public void draw(Primitive p, int startAt, int count, int instances)
-	{
-		RenderingCommandMultipleInstances command = new RenderingCommandMultipleInstances(p, currentlyBoundShader, texturingConfiguration, attributesConfiguration, currentlyBoundShader.getUniformsConfiguration(), stateMachine, currentObjectMatrix,
-				startAt, count, instances);
+	public void draw(Primitive p, int startAt, int count, int instances) {
+		RenderingCommandMultipleInstances command = new RenderingCommandMultipleInstances(p, currentlyBoundShader,
+				texturingConfiguration, attributesConfiguration, currentlyBoundShader.getUniformsConfiguration(),
+				stateMachine, currentObjectMatrix, startAt, count, instances);
 
 		command.render(this);
-		//queue(command);
+		// queue(command);
 
-		//return command;
+		// return command;
 	}
-	
+
 	@Override
-	public void drawMany(Primitive p, int... startAndCountPairs)
-	{
-		if(startAndCountPairs.length == 0)
+	public void drawMany(Primitive p, int... startAndCountPairs) {
+		if (startAndCountPairs.length == 0)
 			return;// null;
-		if(startAndCountPairs.length % 2 == 1)
+		if (startAndCountPairs.length % 2 == 1)
 			throw new IllegalArgumentException("Non-pair amount of integers provided");
-		
+
 		int nb_arguments = startAndCountPairs.length / 2;
 		IntBuffer starts = BufferUtils.createIntBuffer(nb_arguments);
 		IntBuffer counts = BufferUtils.createIntBuffer(nb_arguments);
-		
-		for(int i = 0; i < nb_arguments; i++)
-		{
-			starts.put(startAndCountPairs[i*2]);
-			counts.put(startAndCountPairs[i*2 + 1]);
+
+		for (int i = 0; i < nb_arguments; i++) {
+			starts.put(startAndCountPairs[i * 2]);
+			counts.put(startAndCountPairs[i * 2 + 1]);
 		}
-		
+
 		starts.flip();
 		counts.flip();
-		
-		RenderingCommandMultiDraw command = new RenderingCommandMultiDraw(p, currentlyBoundShader, texturingConfiguration, attributesConfiguration, currentlyBoundShader.getUniformsConfiguration(), stateMachine, currentObjectMatrix, starts, counts);
+
+		RenderingCommandMultiDraw command = new RenderingCommandMultiDraw(p, currentlyBoundShader,
+				texturingConfiguration, attributesConfiguration, currentlyBoundShader.getUniformsConfiguration(),
+				stateMachine, currentObjectMatrix, starts, counts);
 
 		command.render(this);
-		//queue(command);
+		// queue(command);
 
-		//return command;
+		// return command;
 	}
 
-	/*private void queue(RenderingCommandImplementation command)
-	{
-		//Limit to how many commands it may stack
-		if (queuedCommandsIndex >= 1024)
-			flush();
-
-		queuedCommands[queuedCommandsIndex] = command;
-		queuedCommandsIndex++;
-	}
-
-	@Override
-	public void flush()
-	{
-		try
-		{
-			int kek = 0;
-			while (kek < queuedCommandsIndex)
-			{
-				queuedCommands[kek].render(this);
-				queuedCommands[kek] = null;
-				kek++;
-			}
-		}
-		catch (RenderingException e)
-		{
-			e.printStackTrace();
-		}
-
-		queuedCommandsIndex = 0;
-	}*/
+	/*
+	 * private void queue(RenderingCommandImplementation command) { //Limit to how
+	 * many commands it may stack if (queuedCommandsIndex >= 1024) flush();
+	 * 
+	 * queuedCommands[queuedCommandsIndex] = command; queuedCommandsIndex++; }
+	 * 
+	 * @Override public void flush() { try { int kek = 0; while (kek <
+	 * queuedCommandsIndex) { queuedCommands[kek].render(this); queuedCommands[kek]
+	 * = null; kek++; } } catch (RenderingException e) { e.printStackTrace(); }
+	 * 
+	 * queuedCommandsIndex = 0; }
+	 */
 
 	@Override
-	public long getVertexDataVramUsage()
-	{
+	public long getVertexDataVramUsage() {
 		return this.gameWindow.vramUsageVerticesObjects;
 	}
 
 	@Override
-	public long getTextureDataVramUsage()
-	{
+	public long getTextureDataVramUsage() {
 		return TextureGL.getTotalVramUsage();
 	}
 
 	@Override
-	public RenderTargets getRenderTargetManager()
-	{
+	public RenderTargets getRenderTargetManager() {
 		return renderTargetManager;
 	}
 
 	@Override
-	public LightsRenderer getLightsRenderer()
-	{
+	public LightsRenderer getLightsRenderer() {
 		return lightsRenderers;
 	}
 
 	@Override
-	public WorldRenderer getWorldRenderer()
-	{
+	public WorldRenderer getWorldRenderer() {
 		WorldClient world = Client.getInstance().getWorld();
 		return world == null ? null : world.getWorldRenderer();
 	}
@@ -379,7 +343,7 @@ public class OpenGLRenderingContext implements RenderingInterface
 	public Texture2DRenderTargetGL newTexture2D(TextureFormat type, int width, int height) {
 		return new Texture2DRenderTargetGL(type, width, height);
 	}
-	
+
 	@Override
 	public Texture3DGL newTexture3D(TextureFormat type, int width, int height, int depth) {
 		return new Texture3DGL(type, width, height, depth);

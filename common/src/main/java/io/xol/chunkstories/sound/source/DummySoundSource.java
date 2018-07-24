@@ -10,67 +10,57 @@ import org.joml.Vector3dc;
 
 import io.xol.chunkstories.api.sound.SoundSource;
 
-public class DummySoundSource implements SoundSource
-{
+public class DummySoundSource implements SoundSource {
 
 	@Override
-	public String getSoundName()
-	{
+	public String getSoundName() {
 		// TODO Auto-generated method stub
 		return "dummy";
 	}
 
 	@Override
-	public long getUUID()
-	{
+	public long getUUID() {
 		return -1;
 	}
 
 	@Override
-	public SoundSource setPitch(float pitch)
-	{
+	public SoundSource setPitch(float pitch) {
 		// TODO Auto-generated method stub
 		return this;
 	}
 
 	@Override
-	public SoundSource setGain(float gain)
-	{
+	public SoundSource setGain(float gain) {
 		// TODO Auto-generated method stub
 		return this;
 	}
 
 	@Override
-	public SoundSource setAttenuationStart(float start)
-	{
+	public SoundSource setAttenuationStart(float start) {
 		// TODO Auto-generated method stub
 		return this;
 	}
 
 	@Override
-	public SoundSource setAttenuationEnd(float end)
-	{
+	public SoundSource setAttenuationEnd(float end) {
 		// TODO Auto-generated method stub
 		return this;
 	}
 
 	@Override
-	public SoundSource setPosition(float x, float y, float z)
-	{
+	public SoundSource setPosition(float x, float y, float z) {
 		// TODO Auto-generated method stub
 		return this;
 	}
 
 	@Override
-	public void stop()
-	{
+	public void stop() {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public boolean isDonePlaying()
-	{
+	public boolean isDonePlaying() {
 		// TODO Auto-generated method stub
 		return true;
 	}
