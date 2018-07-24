@@ -7,7 +7,7 @@
 package io.xol.chunkstories.server.commands.player;
 
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.components.EntityInventory;
+import io.xol.chunkstories.api.entity.traits.serializable.TraitInventory;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
@@ -37,7 +37,7 @@ public class ClearCommand extends ServerCommandBasic {
 		Player player = (Player) emitter;
 		Entity entity = player.getControlledEntity();
 		if (entity != null) {
-			entity.components.with(EntityInventory.class, ei -> {
+			entity.traits.with(TraitInventory.class, ei -> {
 
 				player.sendMessage("#FF969BRemoving " + ei.size() + " items from your inventory.");
 				ei.clear();

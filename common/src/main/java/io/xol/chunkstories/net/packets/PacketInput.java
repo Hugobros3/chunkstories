@@ -12,8 +12,8 @@ import java.io.IOException;
 
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.components.EntityController;
 import io.xol.chunkstories.api.entity.traits.TraitWhenControlled;
+import io.xol.chunkstories.api.entity.traits.serializable.TraitController;
 import io.xol.chunkstories.api.events.player.PlayerInputPressedEvent;
 import io.xol.chunkstories.api.events.player.PlayerInputReleasedEvent;
 import io.xol.chunkstories.api.input.Input;
@@ -73,7 +73,7 @@ public class PacketInput extends PacketWorld {
 					entity.getWorld().getGameLogic().getPluginsManager().fireEvent(event);
 
 					if (!event.isCancelled())
-						entity.components.with(EntityController.class, ec -> {
+						entity.traits.with(TraitController.class, ec -> {
 							Controller controller = ec.getController();
 							entity.traits.with(TraitWhenControlled.class, t -> {
 								t.onControllerInput(input, controller);

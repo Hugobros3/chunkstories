@@ -14,8 +14,8 @@ import io.xol.chunkstories.api.client.ClientInputsManager;
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.client.LocalPlayer;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.components.EntityController;
-import io.xol.chunkstories.api.entity.components.EntityInventory;
+import io.xol.chunkstories.api.entity.traits.serializable.TraitController;
+import io.xol.chunkstories.api.entity.traits.serializable.TraitInventory;
 import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.particles.ParticlesManager;
@@ -59,7 +59,7 @@ public class PlayerClientImplementation implements LocalPlayer
 	@Override
 	public boolean setControlledEntity(Entity entity)
 	{
-		EntityController ec = entity != null ? entity.components.get(EntityController.class) : null;
+		TraitController ec = entity != null ? entity.traits.get(TraitController.class) : null;
 		if (entity != null && ec != null)
 		{
 			this.subscribe(entity);
@@ -84,7 +84,7 @@ public class PlayerClientImplementation implements LocalPlayer
 		{
 			//Directly unset it
 			if(world instanceof WorldMaster)
-				controlledEntity.components.with(EntityController.class, ec2 -> ec2.setController(null));
+				controlledEntity.traits.with(TraitController.class, ec2 -> ec2.setController(null));
 			//When loosing control over an entity, stop sending the server info about it
 			else if(controlledEntity.getWorld() instanceof WorldClientNetworkedRemote)
 					((WorldClientNetworkedRemote) controlledEntity.getWorld()).getRemoteServer().unsubscribe(controlledEntity);
@@ -268,10 +268,10 @@ public class PlayerClientImplementation implements LocalPlayer
 			//Directly open it without further concern
 			//Client.getInstance().openInventories(inventory);
 			
-			EntityInventory entityInventory = entity.components.get(EntityInventory.class);
+			TraitInventory TraitInventory = entity.traits.get(TraitInventory.class);
 					
-			if(entityInventory != null)
-				Client.getInstance().openInventories(entityInventory, inventory);
+			if(TraitInventory != null)
+				Client.getInstance().openInventories(TraitInventory, inventory);
 			else
 				Client.getInstance().openInventories(inventory);
 		}

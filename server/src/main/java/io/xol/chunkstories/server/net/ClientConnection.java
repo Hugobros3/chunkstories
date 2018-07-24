@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.xol.chunkstories.api.entity.components.EntityHealth;
+import io.xol.chunkstories.api.entity.traits.serializable.TraitHealth;
 import io.xol.chunkstories.api.events.player.PlayerChatEvent;
 import io.xol.chunkstories.api.events.player.PlayerLogoutEvent;
 import io.xol.chunkstories.api.net.Interlocutor;
@@ -141,7 +141,7 @@ public abstract class ClientConnection extends Connection implements Interlocuto
 				
 			} else if (message.equals("respawn")) {
 				// Only allow to respawn if the current entity is null or dead
-				if (player.getControlledEntity() == null || player.getControlledEntity().components.tryWithBoolean(EntityHealth.class,eh -> eh.isDead())) {
+				if (player.getControlledEntity() == null || player.getControlledEntity().traits.tryWithBoolean(TraitHealth.class,eh -> eh.isDead())) {
 					world.spawnPlayer(player);
 					player.sendMessage("Respawning ...");
 				} else

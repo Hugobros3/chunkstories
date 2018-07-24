@@ -16,9 +16,9 @@ import java.util.Set;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.InputsManager;
 import io.xol.chunkstories.input.InputVirtual;
+import io.xol.chunkstories.input.InputsLoaderHelper;
 import io.xol.chunkstories.input.InputsManagerLoader;
 import io.xol.chunkstories.server.player.ServerPlayer;
-import io.xol.chunkstories.input.InputsLoaderHelper;
 
 public class ServerInputsManager implements InputsManager, InputsManagerLoader
 {

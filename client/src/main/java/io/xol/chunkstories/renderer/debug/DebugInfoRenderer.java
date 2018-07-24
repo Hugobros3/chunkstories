@@ -11,8 +11,8 @@ import org.joml.Vector4f;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.components.EntityRotation;
 import io.xol.chunkstories.api.entity.traits.TraitVoxelSelection;
+import io.xol.chunkstories.api.entity.traits.serializable.TraitRotation;
 import io.xol.chunkstories.api.rendering.CameraInterface;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
@@ -83,7 +83,7 @@ public class DebugInfoRenderer {
 		
 		//Obtain the angle the player is facing
 		VoxelSide side = VoxelSide.TOP;
-		EntityRotation er = playerEntity != null ? playerEntity.components.get(EntityRotation.class) : null;
+		TraitRotation er = playerEntity != null ? playerEntity.traits.get(TraitRotation.class) : null;
 		float angleX = er != null ? Math.round(er.getHorizontalRotation()) : 0;
 		
 		double dx = Math.sin(angleX / 360 * 2.0 * Math.PI);

@@ -15,7 +15,8 @@ import org.slf4j.LoggerFactory;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.components.EntityComponent;
+import io.xol.chunkstories.api.entity.traits.Trait;
+import io.xol.chunkstories.api.entity.traits.serializable.TraitSerializable;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.serialization.OfflineSerializedData;
 import io.xol.chunkstories.entity.LengthAwareBufferedIOHelper.LengthAwareOutputStream;
@@ -38,14 +39,16 @@ public class EntitySerializer {
 			dos.writeShort(entity.getWorld().getContentTranslator().getIdForEntity(entity));
 
 			// Write all components we wanna update
-			for (EntityComponent c : entity.components.all()) {
-				LengthAwareOutputStream out = LengthAwareBufferedIOHelper.getLengthAwareOutput();
-				c.pushComponentInStream(destination, out);
-				
-				if(out.size() > 0)
-					out.writeTheStuffPrecededByLength(dos);
-				else {
-					logger.warn("Component "+c+" wrote nothing.");
+			for (Trait trait : entity.traits.all()) {
+				if (trait instanceof TraitSerializable) {
+					LengthAwareOutputStream out = LengthAwareBufferedIOHelper.getLengthAwareOutput();
+					((TraitSerializable) trait).pushComponentInStream(destination, out);
+
+					if (out.size() > 0)
+						out.writeTheStuffPrecededByLength(dos);
+					else {
+						logger.warn("Component " + trait + " wrote nothing.");
+					}
 				}
 			}
 
@@ -53,7 +56,7 @@ public class EntitySerializer {
 			dos.writeInt((int) -1);
 
 			// Flush the deal
-			//out.writeTheStuffPrecededByLength(dos);
+			// out.writeTheStuffPrecededByLength(dos);
 		} catch (NullPointerException e) {
 			System.out.println(entity.getClass().getName());
 			System.out.println(entity.getDefinition());
@@ -65,17 +68,19 @@ public class EntitySerializer {
 
 	public static Entity readEntityFromStream(DataInputStream dis, OfflineSerializedData source, World world) {
 		try {
-			/*int entityDataLength = dis.readInt();
-
-			if (entityDataLength == -1)
-				return null;*/
+			/*
+			 * int entityDataLength = dis.readInt();
+			 * 
+			 * if (entityDataLength == -1) return null;
+			 */
 			byte presence = dis.readByte();
-			if(presence == 0)
+			if (presence == 0)
 				return null;
 
 			long entityUUID = dis.readLong();
 			short entityTypeID = dis.readShort();
-			Entity entity = world.getContentTranslator().getEntityForId(entityTypeID).create(new Location(world, 0d, 0d, 0d));
+			Entity entity = world.getContentTranslator().getEntityForId(entityTypeID)
+					.create(new Location(world, 0d, 0d, 0d));
 			entity.setUUID(entityUUID);
 
 			// Loop throught all components
@@ -83,19 +88,19 @@ public class EntitySerializer {
 				int componentLength = dis.readInt();
 				if (componentLength == -1) // End of components to read
 					break;
-				
+
 				DataInputStream in = LengthAwareBufferedIOHelper.getLengthAwareInput(componentLength, dis);
-				
+
 				int componentId = in.readInt();
 				if (componentId == -1) {
 					// Read UTF-8 component name
 					String componentName = in.readUTF();
 
 					boolean found = false;
-					for (EntityComponent c : entity.components.all()) {
-						if (c.name.equals(componentName)) {
+					for (Trait trait : entity.traits.all()) {
+						if (trait instanceof TraitSerializable && ((TraitSerializable) trait).name.equals(componentName)) {
 							try {
-								c.tryPull(source, in);
+								((TraitSerializable) trait).tryPull(source, in);
 							} catch (IOException e) {
 								logger().warn("Failure reading component " + componentName + " from " + source);
 								logger().warn(e.getMessage());
@@ -104,15 +109,17 @@ public class EntitySerializer {
 							break;
 						}
 					}
-					
-					if(!found) {
-						logger.error("Error: could not find a reader for component: "+componentName);
+
+					if (!found) {
+						logger.error("Error: could not find a reader for component: " + componentName);
 					}
 
 				} else {
 					// Read int32 component id
 					try {
-						entity.components.byId()[componentId].tryPull(source, in);
+						Trait trait = entity.traits.byId()[componentId];
+						if(trait instanceof TraitSerializable)
+							((TraitSerializable) trait).tryPull(source, in);
 						// entity.getComponents().tryPullComponentInStream(componentId, source, in);
 					} catch (IOException e) {
 						logger().warn("Failure reading component #" + componentId + " from " + source);

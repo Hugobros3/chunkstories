@@ -16,7 +16,6 @@ import static org.lwjgl.opengl.ARBSync.GL_WAIT_FAILED;
 import static org.lwjgl.opengl.ARBSync.glClientWaitSync;
 import static org.lwjgl.opengl.ARBSync.glDeleteSync;
 import static org.lwjgl.opengl.ARBSync.glFenceSync;
-
 import static org.lwjgl.opengl.GL11.GL_FLOAT;
 import static org.lwjgl.opengl.GL11.GL_RGB;
 import static org.lwjgl.opengl.GL11.glReadBuffer;

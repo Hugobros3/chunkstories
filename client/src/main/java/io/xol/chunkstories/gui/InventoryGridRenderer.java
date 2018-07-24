@@ -8,8 +8,8 @@ package io.xol.chunkstories.gui;
 
 import org.joml.Vector4f;
 
-import io.xol.chunkstories.api.entity.components.EntityInventory;
-import io.xol.chunkstories.api.entity.components.EntitySelectedItem;
+import io.xol.chunkstories.api.entity.traits.serializable.TraitInventory;
+import io.xol.chunkstories.api.entity.traits.serializable.TraitSelectedItem;
 import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
@@ -45,8 +45,8 @@ public class InventoryGridRenderer {
 
 	public void drawPlayerInventorySummary(RenderingInterface renderer, int x, int y) {
 		int selectedSlot = -1;
-		if(inventory instanceof EntityInventory) {
-			EntitySelectedItem esi = ((EntityInventory)inventory).entity.components.get(EntitySelectedItem.class);
+		if(inventory instanceof TraitInventory) {
+			TraitSelectedItem esi = ((TraitInventory)inventory).entity.traits.get(TraitSelectedItem.class);
 			if(esi != null)
 				selectedSlot = esi.getSelectedSlot();
 		}

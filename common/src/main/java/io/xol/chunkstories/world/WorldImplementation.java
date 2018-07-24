@@ -26,8 +26,8 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.content.ContentTranslator;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.components.EntityHealth;
-import io.xol.chunkstories.api.entity.components.EntityName;
+import io.xol.chunkstories.api.entity.traits.serializable.TraitHealth;
+import io.xol.chunkstories.api.entity.traits.serializable.TraitName;
 import io.xol.chunkstories.api.events.player.PlayerSpawnEvent;
 import io.xol.chunkstories.api.events.voxel.WorldModificationCause;
 import io.xol.chunkstories.api.exceptions.world.ChunkNotLoadedException;
@@ -76,19 +76,18 @@ import io.xol.chunkstories.world.logic.WorldLogicThread;
 import io.xol.chunkstories.world.region.HashMapWorldRegionsHolder;
 import io.xol.chunkstories.world.region.RegionImplementation;
 
-public abstract class WorldImplementation implements World
-{
+public abstract class WorldImplementation implements World {
 	protected final GameContext gameContext;
-	
+
 	private final ContentTranslator contentTranslator;
 	private final AbstractContentTranslator masterContentTranslator;
-	
+
 	protected final WorldInfoImplementation worldInfo;
 	private final WorldInfoMaster worldInfoMaster;
-	
+
 	private final File folder;
 
-	//protected final boolean client;
+	// protected final boolean client;
 	private final ConfigDeprecated internalData;
 
 	private WorldGenerator generator;
@@ -98,11 +97,11 @@ public abstract class WorldImplementation implements World
 	// Let's say that the game world runs at 60Ticks per second
 	public long worldTicksCounter = 0;
 
-	//Timecycle counter
+	// Timecycle counter
 	private long worldTime = 5000;
 	private float overcastFactor = 0.2f;
 
-	//Who does the actual work
+	// Who does the actual work
 	public IOTasks ioHandler;
 	private WorldLogicThread worldThread;
 
@@ -120,66 +119,70 @@ public abstract class WorldImplementation implements World
 	private ParticlesManager particlesHolder;
 	private final WorldCollisionsManager collisionsManager;
 
-	//Entity IDS counter
+	// Entity IDS counter
 	AtomicLong entitiesUUIDGenerator = new AtomicLong();
-	
+
 	public WorldImplementation(GameContext gameContext, WorldInfoImplementation info) throws WorldLoadingException {
 		this(gameContext, info, null);
 	}
-	
-	public WorldImplementation(GameContext gameContext, WorldInfoImplementation info, ContentTranslator initialContentTranslator) throws WorldLoadingException {
+
+	public WorldImplementation(GameContext gameContext, WorldInfoImplementation info,
+			ContentTranslator initialContentTranslator) throws WorldLoadingException {
 		try {
 			this.gameContext = gameContext;
 			this.worldInfo = info;
-	
-			//Create holders for the world data
+
+			// Create holders for the world data
 			this.regions = new HashMapWorldRegionsHolder(this);
 			this.regionSummaries = new WorldHeightmapsImplementation(this);
-			
-			//And for the citizens
+
+			// And for the citizens
 			this.entities = new WorldEntitiesHolder(this);
-	
+
 			if (this instanceof WorldMaster) // Master world initialization
 			{
 				boolean new_world = false;
 				// WorldInfoMaster are backed by a file. If we pass the World constructor a
 				// simple WorldInfo, we consider being asked to create a new world
-				if(worldInfo instanceof WorldInfoMaster) {
-					worldInfoMaster = (WorldInfoMaster)worldInfo;
+				if (worldInfo instanceof WorldInfoMaster) {
+					worldInfoMaster = (WorldInfoMaster) worldInfo;
 				} else {
 					worldInfoMaster = new WorldInfoMaster(worldInfo);
 					worldInfoMaster.save();
 					new_world = true;
 				}
-				
-				//Obtain the parent folder
+
+				// Obtain the parent folder
 				this.folder = worldInfoMaster.getFile().getParentFile();
-				
-				//Check for an existing content translator
-				File contentTranslatorFile = new File(folder.getPath()+"/content_mappings.dat");
-				if(contentTranslatorFile.exists()) {
-					this.masterContentTranslator = LoadedContentTranslator.loadFromFile(gameContext.getContent(), contentTranslatorFile);
+
+				// Check for an existing content translator
+				File contentTranslatorFile = new File(folder.getPath() + "/content_mappings.dat");
+				if (contentTranslatorFile.exists()) {
+					this.masterContentTranslator = LoadedContentTranslator.loadFromFile(gameContext.getContent(),
+							contentTranslatorFile);
 				} else {
-					if(!new_world) {
-						//Legacy world! Use the default mappings from when ids where dynamically allocated.
+					if (!new_world) {
+						// Legacy world! Use the default mappings from when ids where dynamically
+						// allocated.
 						logger.warn("Loading a legacy (pre-automagic ids allocation), trying default mappings...");
 						InputStream is = getClass().getResourceAsStream("/legacy_mappings.dat");
-						this.masterContentTranslator = new LoadedContentTranslator(gameContext.getContent(), new BufferedReader(new InputStreamReader(is)));
+						this.masterContentTranslator = new LoadedContentTranslator(gameContext.getContent(),
+								new BufferedReader(new InputStreamReader(is)));
 						this.masterContentTranslator.test();
 					} else {
-						//Build a new content translator
+						// Build a new content translator
 						this.masterContentTranslator = new InitialContentTranslator(gameContext.getContent());
 					}
 				}
-				
-				//Copy the reference of the loaded content translator and save it immediately
+
+				// Copy the reference of the loaded content translator and save it immediately
 				this.contentTranslator = this.masterContentTranslator;
 				this.masterContentTranslator.save(new File(this.getFolderPath() + "/content_mappings.dat"));
 
-				File internalDatFile = new File(folder.getPath()+"/internal.dat");
+				File internalDatFile = new File(folder.getPath() + "/internal.dat");
 				this.internalData = new OldStyleConfigFile(internalDatFile.getAbsolutePath());
 				this.internalData.load();
-	
+
 				this.entitiesUUIDGenerator.set(internalData.getLong("entities-ids-counter", 0));
 				this.worldTime = internalData.getLong("worldTime", 5000);
 				this.worldTicksCounter = internalData.getLong("worldTimeInternal", 0);
@@ -187,48 +190,47 @@ public abstract class WorldImplementation implements World
 			}
 			// Slave world initialization
 			else {
-				if(initialContentTranslator == null) {
-					throw new WorldLoadingException("No ContentTranslator providen and none could be found on disk since this is a Slave World.");
+				if (initialContentTranslator == null) {
+					throw new WorldLoadingException(
+							"No ContentTranslator providen and none could be found on disk since this is a Slave World.");
 				} else {
 					this.contentTranslator = initialContentTranslator;
 				}
-				
-				//Null-out final fields meant for master worlds
+
+				// Null-out final fields meant for master worlds
 				this.worldInfoMaster = null;
 				this.folder = null;
 				this.internalData = null;
 				this.masterContentTranslator = null;
 			}
-			
-			this.generator = gameContext.getContent().generators().getWorldGenerator(info.getGeneratorName()).createForWorld(this);
+
+			this.generator = gameContext.getContent().generators().getWorldGenerator(info.getGeneratorName())
+					.createForWorld(this);
 			this.collisionsManager = new DefaultWorldCollisionsManager(this);
-			
-			//Start the world logic thread
+
+			// Start the world logic thread
 			this.worldThread = new WorldLogicThread(this, new UnthrustedUserContentSecurityManager());
-		} catch(IOException e) {
+		} catch (IOException e) {
 			throw new WorldLoadingException("Couldn't load world ", e);
 		} catch (IncompatibleContentException e) {
 			throw new WorldLoadingException("Couldn't load world ", e);
 		}
 	}
 
-	public void startLogic()
-	{
+	public void startLogic() {
 		worldThread.start();
 	}
-	
+
 	public Fence stopLogic() {
 		return worldThread.stopLogicThread();
 	}
 
 	@Override
-	public WorldInfo getWorldInfo()
-	{
+	public WorldInfo getWorldInfo() {
 		return worldInfo;
 	}
 
-	public File getFolderFile()
-	{
+	public File getFolderFile() {
 		return folder;
 	}
 
@@ -237,122 +239,113 @@ public abstract class WorldImplementation implements World
 	 * 
 	 * @return
 	 */
-	public String getFolderPath()
-	{
+	public String getFolderPath() {
 		if (folder != null)
 			return folder.getAbsolutePath();
 		return null;
 	}
 
-	public void spawnPlayer(Player player)
-	{
-		if(!(this instanceof WorldMaster))
+	public void spawnPlayer(Player player) {
+		if (!(this instanceof WorldMaster))
 			throw new UnsupportedOperationException("Only Master Worlds can do this");
-		
+
 		Entity savedEntity = null;
-		
-		SerializedEntityFile playerEntityFile = new SerializedEntityFile(this.getFolderPath() + "/players/" + player.getName().toLowerCase() + ".csf");
-		if(playerEntityFile.exists())
+
+		SerializedEntityFile playerEntityFile = new SerializedEntityFile(
+				this.getFolderPath() + "/players/" + player.getName().toLowerCase() + ".csf");
+		if (playerEntityFile.exists())
 			savedEntity = playerEntityFile.read(this);
 
 		Location previousLocation = null;
-		if(savedEntity != null)
+		if (savedEntity != null)
 			previousLocation = savedEntity.getLocation();
-		
-		PlayerSpawnEvent playerSpawnEvent = new PlayerSpawnEvent(player, (WorldMaster) this, savedEntity, previousLocation);
+
+		PlayerSpawnEvent playerSpawnEvent = new PlayerSpawnEvent(player, (WorldMaster) this, savedEntity,
+				previousLocation);
 		getGameContext().getPluginManager().fireEvent(playerSpawnEvent);
 
-		if(!playerSpawnEvent.isCancelled())
-		{
-			System.out.println("k");
+		if (!playerSpawnEvent.isCancelled()) {
 			Entity entity = playerSpawnEvent.getEntity();
-			
+
 			Location actualSpawnLocation = playerSpawnEvent.getSpawnLocation();
-			if(actualSpawnLocation == null)
+			if (actualSpawnLocation == null)
 				actualSpawnLocation = this.getDefaultSpawnLocation();
-			
-			if(entity == null || entity.components.tryWithBoolean(EntityHealth.class,eh -> eh.isDead()))
-				entity = this.gameContext.getContent().entities().getEntityDefinition("player").create(actualSpawnLocation);
-				//entity = new EntityPlayer(this, 0d, 0d, 0d, player.getName()); //Default entity
+
+			if (entity == null || entity.traits.tryWithBoolean(TraitHealth.class, eh -> eh.isDead()))
+				entity = this.gameContext.getContent().entities().getEntityDefinition("player")
+						.create(actualSpawnLocation);
+			// entity = new EntityPlayer(this, 0d, 0d, 0d, player.getName()); //Default
+			// entity
 			else
 				entity.setUUID(-1);
-			
-			System.out.println("m");
-			
-			//Name your player !
-			entity.components.with(EntityName.class, en -> en.setName(player.getName()));
-			
+
+			// Name your player !
+			entity.traits.with(TraitName.class, en -> en.setName(player.getName()));
+
 			entity.entityLocation.set(actualSpawnLocation);
-			
+
 			addEntity(entity);
-			
+
 			player.setControlledEntity(entity);
-			System.out.println("poo");
-			//entity.components.with(EntityController.class, ec -> ec.setController(player))
-			//if(entity instanceof EntityControllable)
-			//	player.setControlledEntity((EntityControllable) entity);
-			//else
-			//	System.out.println("Error : entity is not controllable");
+			// entity.traits.with(TraitController.class, ec -> ec.setController(player))
+			// if(entity instanceof EntityControllable)
+			// player.setControlledEntity((EntityControllable) entity);
+			// else
+			// System.out.println("Error : entity is not controllable");
 		}
 	}
 
 	@Override
-	public void addEntity(final Entity entity)
-	{
-		//Assign an UUID to entities lacking one
-		if (this instanceof WorldMaster && entity.getUUID() == -1)
-		{
+	public void addEntity(final Entity entity) {
+		// Assign an UUID to entities lacking one
+		if (this instanceof WorldMaster && entity.getUUID() == -1) {
 			long nextUUID = nextEntityId();
 			entity.setUUID(nextUUID);
 		}
 
 		Entity check = this.getEntityByUUID(entity.getUUID());
-		if (check != null)
-		{
-			logger().error("Added an entity twice "+check+" conflits with "+entity + " UUID: "+entity.getUUID());
-			//logger().save();
+		if (check != null) {
+			logger().error(
+					"Added an entity twice " + check + " conflits with " + entity + " UUID: " + entity.getUUID());
+			// logger().save();
 			Thread.dumpStack();
-			return;//System.exit(-1);
+			return;// System.exit(-1);
 		}
 
-		//Add it to the world
+		// Add it to the world
 		entity.entityLocation.onSpawn();
-		
+
 		assert entity.getWorld() == this;
 
-		/*Chunk chunk = this.getChunkWorldCoordinates(entity.getLocation());
-		if(chunk != null) {
-			((EntityBase)entity).positionComponent.trySnappingToChunk();
-		}*/
-		
+		/*
+		 * Chunk chunk = this.getChunkWorldCoordinates(entity.getLocation()); if(chunk
+		 * != null) { ((EntityBase)entity).positionComponent.trySnappingToChunk(); }
+		 */
+
 		this.entities.insertEntity(entity);
 	}
 
 	@Override
-	public boolean removeEntity(Entity entity)
-	{
+	public boolean removeEntity(Entity entity) {
 		try {
 			entitiesLock.writeLock().lock();
-			if (entity != null)
-			{
+			if (entity != null) {
 				entity.entityLocation.onRemoval();
-				
-				//Actually removes it from the world list
+
+				// Actually removes it from the world list
 				removeEntityFromList(entity);
 
 				return true;
 			}
 
 			return false;
-		}
-		finally {
+		} finally {
 			entitiesLock.writeLock().unlock();
 		}
 	}
 
 	@Override
-	public boolean removeEntityByUUID(long uuid)
-	{
+	public boolean removeEntityByUUID(long uuid) {
 		Entity entityFound = this.getEntityByUUID(uuid);
 
 		if (entityFound != null)
@@ -362,115 +355,107 @@ public abstract class WorldImplementation implements World
 	}
 
 	/**
-	 * Internal methods that actually removes the entity from the list after having removed it's reference from elsewere.
+	 * Internal methods that actually removes the entity from the list after having
+	 * removed it's reference from elsewere.
 	 * 
 	 * @return
 	 */
-	public boolean removeEntityFromList(Entity entity)
-	{
-		//Remove the entity from the world first
+	public boolean removeEntityFromList(Entity entity) {
+		// Remove the entity from the world first
 		boolean result = entities.removeEntity(entity);
 		return result;
 	}
 
 	@Override
-	public void tick()
-	{
-		//Iterates over every entity
-		try
-		{
+	public void tick() {
+		// Iterates over every entity
+		try {
 			entitiesLock.writeLock().lock();
 			Iterator<Entity> iter = this.getAllLoadedEntities();
 			Entity entity;
-			while (iter.hasNext())
-			{
+			while (iter.hasNext()) {
 				entity = iter.next();
 
-				//Check entity's region is loaded
-				//if (entity.entityLocation.getChunk() != null)
-					entity.tick();
-				
-				//Tries to snap the entity to the region if it ends up being loaded
-				//else
-				//	((EntityBase)entity).positionComponent.trySnappingToChunk();
+				// Check entity's region is loaded
+				// if (entity.TraitLocation.getChunk() != null)
+				entity.tick();
+
+				// Tries to snap the entity to the region if it ends up being loaded
+				// else
+				// ((EntityBase)entity).positionComponent.trySnappingToChunk();
 
 			}
 		} finally {
 			entitiesLock.writeLock().unlock();
 		}
 
-		//Increase the ticks counter
+		// Increase the ticks counter
 		worldTicksCounter++;
 
-		//Time cycle
+		// Time cycle
 		if (this instanceof WorldMaster && internalData.getBoolean("doTimeCycle", true))
 			if (worldTicksCounter % 60 == 0)
 				worldTime++;
 	}
 
 	@Override
-	public IterableIterator<Entity> getAllLoadedEntities()
-	{
+	public IterableIterator<Entity> getAllLoadedEntities() {
 		return new EntityWorldIterator(entities.iterator());
 	}
-	
-	public NearEntitiesIterator getEntitiesInBox(Vector3dc center, Vector3dc boxSize)
-	{
+
+	public NearEntitiesIterator getEntitiesInBox(Vector3dc center, Vector3dc boxSize) {
 		return entities.getEntitiesInBox(center, boxSize);
 	}
 
 	@Override
-	public Entity getEntityByUUID(long entityID)
-	{
+	public Entity getEntityByUUID(long entityID) {
 		return entities.getEntityByUUID(entityID);
 	}
 
 	@Override
-	public WorldHeightmapsImplementation getRegionsSummariesHolder()
-	{
+	public WorldHeightmapsImplementation getRegionsSummariesHolder() {
 		return regionSummaries;
 	}
-	
+
 	@Override
-	public ChunkCell peek(Vector3dc location) throws WorldException
-	{
+	public ChunkCell peek(Vector3dc location) throws WorldException {
 		return peek((int) (double) location.x(), (int) (double) location.y(), (int) (double) location.z());
 	}
-	
+
 	@Override
 	/** Fancy get method that throws exceptions when the world isn't loaded */
 	public ChunkCell peek(int x, int y, int z) throws WorldException {
 		x = sanitizeHorizontalCoordinate(x);
 		y = sanitizeVerticalCoordinate(y);
 		z = sanitizeHorizontalCoordinate(z);
-		
+
 		Region region = this.getRegionWorldCoordinates(x, y, z);
-		if(region == null)
+		if (region == null)
 			throw new RegionNotLoadedException(this, x / 256, y / 256, z / 256);
-			
+
 		Chunk chunk = region.getChunk((x / 32) % 8, (y / 32) % 8, (z / 32) % 8);
-		if(chunk == null)
+		if (chunk == null)
 			throw new ChunkNotLoadedException(region, (x / 32) % 8, (y / 32) % 8, (z / 32) % 8);
-		
+
 		return chunk.peek(x, y, z);
 	}
 
 	@Override
 	public WorldCell peekSafely(int x, int y, int z) {
-		
+
 		x = sanitizeHorizontalCoordinate(x);
 		y = sanitizeVerticalCoordinate(y);
 		z = sanitizeHorizontalCoordinate(z);
-		
+
 		Region region = this.getRegionWorldCoordinates(x, y, z);
-		if(region == null) {
+		if (region == null) {
 			return new UnloadedWorldCell(x, y, z, this.getGameContext().getContent().voxels().air(), 0, 0, 0);
 		}
-			
+
 		Chunk chunk = region.getChunk((x / 32) % 8, (y / 32) % 8, (z / 32) % 8);
-		if(chunk == null)
+		if (chunk == null)
 			return new UnloadedWorldCell(x, y, z, this.getGameContext().getContent().voxels().air(), 0, 0, 0);
-		
+
 		return chunk.peek(x, y, z);
 	}
 
@@ -479,9 +464,9 @@ public abstract class WorldImplementation implements World
 
 		public UnloadedWorldCell(int x, int y, int z, Voxel voxel, int meta, int blocklight, int sunlight) {
 			super(x, y, z, voxel, meta, blocklight, sunlight);
-			
+
 			int groundHeight = getRegionsSummariesHolder().getHeightAtWorldCoordinates(x, z);
-			if(groundHeight < y && groundHeight != Heightmap.NO_DATA)
+			if (groundHeight < y && groundHeight != Heightmap.NO_DATA)
 				this.sunlight = 15;
 		}
 
@@ -516,7 +501,7 @@ public abstract class WorldImplementation implements World
 			logger.warn("Trying to edit a UnloadedWorldCell." + this);
 		}
 	}
-	
+
 	@Override
 	public WorldCell peekSafely(Vector3dc location) {
 		return peekSafely((int) (double) location.x(), (int) (double) location.y(), (int) (double) location.z());
@@ -527,48 +512,49 @@ public abstract class WorldImplementation implements World
 		x = sanitizeHorizontalCoordinate(x);
 		y = sanitizeVerticalCoordinate(y);
 		z = sanitizeHorizontalCoordinate(z);
-		
+
 		Chunk chunk = this.getChunkWorldCoordinates(x, y, z);
-		if(chunk == null)
+		if (chunk == null)
 			return gameContext.getContent().voxels().air();
 		else
 			return chunk.peekSimple(x, y, z);
 	}
-	
+
 	@Override
 	public int peekRaw(int x, int y, int z) {
 		x = sanitizeHorizontalCoordinate(x);
 		y = sanitizeVerticalCoordinate(y);
 		z = sanitizeHorizontalCoordinate(z);
-		
+
 		Chunk chunk = this.getChunkWorldCoordinates(x, y, z);
-		if(chunk == null)
+		if (chunk == null)
 			return 0x00000000;
 		else
 			return chunk.peekRaw(x, y, z);
 	}
 
 	@Override
-	public ChunkCell poke(int x, int y, int z, Voxel voxel, int sunlight, int blocklight, int metadata, WorldModificationCause cause)
-			throws WorldException {
+	public ChunkCell poke(int x, int y, int z, Voxel voxel, int sunlight, int blocklight, int metadata,
+			WorldModificationCause cause) throws WorldException {
 		x = sanitizeHorizontalCoordinate(x);
 		y = sanitizeVerticalCoordinate(y);
 		z = sanitizeHorizontalCoordinate(z);
-		
+
 		Region region = this.getRegionWorldCoordinates(x, y, z);
-		if(region == null)
+		if (region == null)
 			throw new RegionNotLoadedException(this, x / 256, y / 256, z / 256);
-			
+
 		Chunk chunk = region.getChunk((x / 32) % 8, (y / 32) % 8, (z / 32) % 8);
-		if(chunk == null)
+		if (chunk == null)
 			throw new ChunkNotLoadedException(region, (x / 32) % 8, (y / 32) % 8, (z / 32) % 8);
-		
+
 		return chunk.poke(x, y, z, voxel, sunlight, blocklight, metadata, cause);
 	}
-	
+
 	@Override
 	public ChunkCell poke(FutureCell future, WorldModificationCause cause) throws WorldException {
-		return poke(future.getX(), future.getY(), future.getZ(), future.getVoxel(), future.getSunlight(), future.getBlocklight(), future.getMetaData(), cause);
+		return poke(future.getX(), future.getY(), future.getZ(), future.getVoxel(), future.getSunlight(),
+				future.getBlocklight(), future.getMetaData(), cause);
 	}
 
 	@Override
@@ -576,15 +562,16 @@ public abstract class WorldImplementation implements World
 		x = sanitizeHorizontalCoordinate(x);
 		y = sanitizeVerticalCoordinate(y);
 		z = sanitizeHorizontalCoordinate(z);
-		
+
 		Chunk chunk = this.getChunkWorldCoordinates(x, y, z);
-		if(chunk != null)
+		if (chunk != null)
 			chunk.pokeSimple(x, y, z, voxel, sunlight, blocklight, metadata);
 	}
-	
+
 	@Override
 	public void pokeSimple(FutureCell future) {
-		pokeSimple(future.getX(), future.getY(), future.getZ(), future.getVoxel(), future.getSunlight(), future.getBlocklight(), future.getMetaData());
+		pokeSimple(future.getX(), future.getY(), future.getZ(), future.getVoxel(), future.getSunlight(),
+				future.getBlocklight(), future.getMetaData());
 	}
 
 	@Override
@@ -592,55 +579,53 @@ public abstract class WorldImplementation implements World
 		x = sanitizeHorizontalCoordinate(x);
 		y = sanitizeVerticalCoordinate(y);
 		z = sanitizeHorizontalCoordinate(z);
-		
+
 		Chunk chunk = this.getChunkWorldCoordinates(x, y, z);
-		if(chunk != null)
+		if (chunk != null)
 			chunk.pokeSimpleSilently(x, y, z, voxel, sunlight, blocklight, metadata);
 	}
-	
+
 	@Override
 	public void pokeSimpleSilently(FutureCell future) {
-		pokeSimpleSilently(future.getX(), future.getY(), future.getZ(), future.getVoxel(), future.getSunlight(), future.getBlocklight(), future.getMetaData());
+		pokeSimpleSilently(future.getX(), future.getY(), future.getZ(), future.getVoxel(), future.getSunlight(),
+				future.getBlocklight(), future.getMetaData());
 	}
-	
+
 	@Override
 	public void pokeRaw(int x, int y, int z, int raw_data) {
 		x = sanitizeHorizontalCoordinate(x);
 		y = sanitizeVerticalCoordinate(y);
 		z = sanitizeHorizontalCoordinate(z);
-		
+
 		Chunk chunk = this.getChunkWorldCoordinates(x, y, z);
-		if(chunk != null)
+		if (chunk != null)
 			chunk.pokeRaw(x, y, z, raw_data);
 	}
-	
+
 	@Override
 	public void pokeRawSilently(int x, int y, int z, int raw_data) {
 		x = sanitizeHorizontalCoordinate(x);
 		y = sanitizeVerticalCoordinate(y);
 		z = sanitizeHorizontalCoordinate(z);
-		
+
 		Chunk chunk = this.getChunkWorldCoordinates(x, y, z);
-		if(chunk != null)
+		if (chunk != null)
 			chunk.pokeRawSilently(x, y, z, raw_data);
 	}
-	
+
 	@Override
 	public IterableIterator<CellData> getVoxelsWithin(CollisionBox boundingBox) {
 		return new AABBVoxelIterator(this, boundingBox);
 	}
 
 	@Override
-	//TODO move to client
-	public synchronized void redrawEverything()
-	{
+	// TODO move to client
+	public synchronized void redrawEverything() {
 		ChunksIterator i = this.getAllLoadedChunks();
 		Chunk c;
-		while (i.hasNext())
-		{
+		while (i.hasNext()) {
 			c = i.next();
-			if (c instanceof ChunkRenderable)
-			{
+			if (c instanceof ChunkRenderable) {
 				ChunkRenderable c2 = (ChunkRenderable) c;
 				c2.lightBaker().requestLightningUpdate();
 				c2.meshUpdater().requestMeshUpdate();
@@ -649,49 +634,44 @@ public abstract class WorldImplementation implements World
 	}
 
 	@Override
-	public Fence saveEverything()
-	{
+	public Fence saveEverything() {
 		CompoundFence ioOperationsFence = new CompoundFence();
-		
-		logger.info("Saving all parts of world "+worldInfo.getName());
+
+		logger.info("Saving all parts of world " + worldInfo.getName());
 		ioOperationsFence.add(regions.saveAll());
 		ioOperationsFence.add(getRegionsSummariesHolder().saveAllLoadedSummaries());
 
-		if(worldInfoMaster != null)
+		if (worldInfoMaster != null)
 			this.worldInfoMaster.save();
-		
+
 		this.internalData.setLong("entities-ids-counter", entitiesUUIDGenerator.get());
 		this.internalData.setLong("worldTime", worldTime);
 		this.internalData.setLong("worldTimeInternal", worldTicksCounter);
 		this.internalData.setFloat("overcastFactor", overcastFactor);
 		this.internalData.save();
-		
-		if(masterContentTranslator != null)
+
+		if (masterContentTranslator != null)
 			this.masterContentTranslator.save(new File(this.getFolderPath() + "/content_mappings.dat"));
-		
+
 		return ioOperationsFence;
 	}
 
 	@Override
-	public float getWeather()
-	{
+	public float getWeather() {
 		return overcastFactor;
 	}
 
-	public long nextEntityId()
-	{
+	public long nextEntityId() {
 		return entitiesUUIDGenerator.getAndIncrement();
 	}
 
 	@Override
-	public void setWeather(float overcastFactor)
-	{
+	public void setWeather(float overcastFactor) {
 		this.overcastFactor = overcastFactor;
 	}
 
 	@Override
-	public Location getDefaultSpawnLocation()
-	{
+	public Location getDefaultSpawnLocation() {
 		double dx = internalData.getDouble("defaultSpawnX", 0.0);
 		double dy = internalData.getDouble("defaultSpawnY", 100.0);
 		double dz = internalData.getDouble("defaultSpawnZ", 0.0);
@@ -699,8 +679,7 @@ public abstract class WorldImplementation implements World
 	}
 
 	@Override
-	public void setDefaultSpawnLocation(Location location)
-	{
+	public void setDefaultSpawnLocation(Location location) {
 		internalData.setDouble("defaultSpawnX", location.x());
 		internalData.setDouble("defaultSpawnY", location.y());
 		internalData.setDouble("defaultSpawnZ", location.z());
@@ -708,20 +687,17 @@ public abstract class WorldImplementation implements World
 	}
 
 	@Override
-	public void setTime(long time)
-	{
+	public void setTime(long time) {
 		this.worldTime = time;
 	}
 
 	@Override
-	public WorldGenerator getGenerator()
-	{
+	public WorldGenerator getGenerator() {
 		return generator;
 	}
 
 	@Override
-	public boolean handleInteraction(Entity entity, Location voxelLocation, Input input)
-	{
+	public boolean handleInteraction(Entity entity, Location voxelLocation, Input input) {
 		if (voxelLocation == null)
 			return false;
 
@@ -732,49 +708,44 @@ public abstract class WorldImplementation implements World
 			// Will not accept interacting with unloaded blocks
 			return false;
 		}
-		
+
 		return peek.getVoxel().handleInteraction(entity, (ChunkCell) peek, input);
 	}
 
-	private int sanitizeHorizontalCoordinate(int coordinate)
-	{
+	private int sanitizeHorizontalCoordinate(int coordinate) {
 		coordinate = coordinate % (getSizeInChunks() * 32);
 		if (coordinate < 0)
 			coordinate += getSizeInChunks() * 32;
 		return coordinate;
 	}
 
-	private int sanitizeVerticalCoordinate(int coordinate)
-	{
+	private int sanitizeVerticalCoordinate(int coordinate) {
 		if (coordinate < 0)
 			coordinate = 0;
 		if (coordinate >= worldInfo.getSize().heightInChunks * 32)
 			coordinate = worldInfo.getSize().heightInChunks * 32 - 1;
 		return coordinate;
 	}
-	
+
 	@Override
-	public WorldCollisionsManager collisionsManager()
-	{
+	public WorldCollisionsManager collisionsManager() {
 		return collisionsManager;
 	}
 
 	@Override
-	public ParticlesManager getParticlesManager()
-	{
+	public ParticlesManager getParticlesManager() {
 		return particlesHolder;
 	}
 
 	@Override
-	public ChunkHolder acquireChunkHolderLocation(WorldUser user, Location location)
-	{
-		return acquireChunkHolder(user, (int) (double) location.x(), (int) (double) location.y(), (int) (double) location.z());
+	public ChunkHolder acquireChunkHolderLocation(WorldUser user, Location location) {
+		return acquireChunkHolder(user, (int) (double) location.x(), (int) (double) location.y(),
+				(int) (double) location.z());
 	}
 
 	@Override
-	public ChunkHolder acquireChunkHolder(WorldUser user, int chunkX, int chunkY, int chunkZ)
-	{
-		//Sanitation of input data
+	public ChunkHolder acquireChunkHolder(WorldUser user, int chunkX, int chunkY, int chunkZ) {
+		// Sanitation of input data
 		chunkX = chunkX % getSizeInChunks();
 		chunkZ = chunkZ % getSizeInChunks();
 		if (chunkX < 0)
@@ -785,8 +756,7 @@ public abstract class WorldImplementation implements World
 	}
 
 	@Override
-	public ChunkHolder acquireChunkHolderWorldCoordinates(WorldUser user, int worldX, int worldY, int worldZ)
-	{
+	public ChunkHolder acquireChunkHolderWorldCoordinates(WorldUser user, int worldX, int worldY, int worldZ) {
 		worldX = sanitizeHorizontalCoordinate(worldX);
 		worldY = sanitizeVerticalCoordinate(worldY);
 		worldZ = sanitizeHorizontalCoordinate(worldZ);
@@ -795,39 +765,36 @@ public abstract class WorldImplementation implements World
 	}
 
 	@Override
-	public boolean isChunkLoaded(int chunkX, int chunkY, int chunkZ)
-	{
-		//Sanitation of input data
+	public boolean isChunkLoaded(int chunkX, int chunkY, int chunkZ) {
+		// Sanitation of input data
 		chunkX = chunkX % getSizeInChunks();
 		chunkZ = chunkZ % getSizeInChunks();
 		if (chunkX < 0)
 			chunkX += getSizeInChunks();
 		if (chunkZ < 0)
 			chunkZ += getSizeInChunks();
-		//Out of bounds checks
+		// Out of bounds checks
 		if (chunkY < 0)
 			return false;
 		if (chunkY >= worldInfo.getSize().heightInChunks)
 			return false;
-		//If it doesn't return null then it exists
+		// If it doesn't return null then it exists
 		return this.regions.getChunk(chunkX, chunkY, chunkZ) != null;
 	}
 
 	@Override
-	public CubicChunk getChunkWorldCoordinates(Location location)
-	{
-		return getChunkWorldCoordinates((int) (double) location.x(), (int) (double) location.y(), (int) (double) location.z());
+	public CubicChunk getChunkWorldCoordinates(Location location) {
+		return getChunkWorldCoordinates((int) (double) location.x(), (int) (double) location.y(),
+				(int) (double) location.z());
 	}
 
 	@Override
-	public CubicChunk getChunkWorldCoordinates(int worldX, int worldY, int worldZ)
-	{
+	public CubicChunk getChunkWorldCoordinates(int worldX, int worldY, int worldZ) {
 		return getChunk(worldX / 32, worldY / 32, worldZ / 32);
 	}
 
 	@Override
-	public CubicChunk getChunk(int chunkX, int chunkY, int chunkZ)
-	{
+	public CubicChunk getChunk(int chunkX, int chunkY, int chunkZ) {
 		chunkX = chunkX % getSizeInChunks();
 		chunkZ = chunkZ % getSizeInChunks();
 		if (chunkX < 0)
@@ -842,31 +809,26 @@ public abstract class WorldImplementation implements World
 	}
 
 	@Override
-	public ChunksIterator getAllLoadedChunks()
-	{
+	public ChunksIterator getAllLoadedChunks() {
 		return new WorldChunksIterator(this);
 	}
 
-	public HashMapWorldRegionsHolder getRegionsHolder()
-	{
+	public HashMapWorldRegionsHolder getRegionsHolder() {
 		return regions;
 	}
 
 	@Override
-	public RegionImplementation acquireRegion(WorldUser user, int regionX, int regionY, int regionZ)
-	{
+	public RegionImplementation acquireRegion(WorldUser user, int regionX, int regionY, int regionZ) {
 		return this.getRegionsHolder().acquireRegion(user, regionX, regionY, regionZ);
 	}
 
 	@Override
-	public RegionImplementation acquireRegionChunkCoordinates(WorldUser user, int chunkX, int chunkY, int chunkZ)
-	{
+	public RegionImplementation acquireRegionChunkCoordinates(WorldUser user, int chunkX, int chunkY, int chunkZ) {
 		return acquireRegion(user, chunkX / 8, chunkY / 8, chunkZ / 8);
 	}
 
 	@Override
-	public RegionImplementation acquireRegionWorldCoordinates(WorldUser user, int worldX, int worldY, int worldZ)
-	{
+	public RegionImplementation acquireRegionWorldCoordinates(WorldUser user, int worldX, int worldY, int worldZ) {
 		worldX = sanitizeHorizontalCoordinate(worldX);
 		worldY = sanitizeVerticalCoordinate(worldY);
 		worldZ = sanitizeHorizontalCoordinate(worldZ);
@@ -875,20 +837,19 @@ public abstract class WorldImplementation implements World
 	}
 
 	@Override
-	public RegionImplementation acquireRegionLocation(WorldUser user, Location location)
-	{
-		return acquireRegionWorldCoordinates(user, (int) (double) location.x(), (int) (double) location.y(), (int) (double) location.z());
+	public RegionImplementation acquireRegionLocation(WorldUser user, Location location) {
+		return acquireRegionWorldCoordinates(user, (int) (double) location.x(), (int) (double) location.y(),
+				(int) (double) location.z());
 	}
 
 	@Override
-	public RegionImplementation getRegionLocation(Location location)
-	{
-		return getRegionWorldCoordinates((int) (double) location.x(), (int) (double) location.y(), (int) (double) location.z());
+	public RegionImplementation getRegionLocation(Location location) {
+		return getRegionWorldCoordinates((int) (double) location.x(), (int) (double) location.y(),
+				(int) (double) location.z());
 	}
 
 	@Override
-	public RegionImplementation getRegionWorldCoordinates(int worldX, int worldY, int worldZ)
-	{
+	public RegionImplementation getRegionWorldCoordinates(int worldX, int worldY, int worldZ) {
 		worldX = sanitizeHorizontalCoordinate(worldX);
 		worldY = sanitizeVerticalCoordinate(worldY);
 		worldZ = sanitizeHorizontalCoordinate(worldZ);
@@ -897,41 +858,35 @@ public abstract class WorldImplementation implements World
 	}
 
 	@Override
-	public RegionImplementation getRegionChunkCoordinates(int chunkX, int chunkY, int chunkZ)
-	{
+	public RegionImplementation getRegionChunkCoordinates(int chunkX, int chunkY, int chunkZ) {
 		return getRegion(chunkX / 8, chunkY / 8, chunkZ / 8);
 	}
 
 	@Override
-	public RegionImplementation getRegion(int regionX, int regionY, int regionZ)
-	{
+	public RegionImplementation getRegion(int regionX, int regionY, int regionZ) {
 		return regions.getRegion(regionX, regionY, regionZ);
 	}
 
 	@Override
-	public long getTime()
-	{
+	public long getTime() {
 		return worldTime;
 	}
 
 	@Override
-	public long getTicksElapsed()
-	{
+	public long getTicksElapsed() {
 		return this.worldTicksCounter;
 	}
 
 	@Override
-	public GameLogic getGameLogic()
-	{
+	public GameLogic getGameLogic() {
 		return worldThread;
 	}
-	
+
 	@Override
-	public GameContext getGameContext()
-	{
+	public GameContext getGameContext() {
 		return gameContext;
 	}
-	
+
 	@Override
 	public Content getContent() {
 		return gameContext.getContent();
@@ -943,36 +898,25 @@ public abstract class WorldImplementation implements World
 	}
 
 	@Override
-	public void destroy()
-	{
-		//Stop the game logic first
+	public void destroy() {
+		// Stop the game logic first
 		worldThread.stopLogicThread().traverse();
 
 		this.regions.destroy();
 		this.getRegionsSummariesHolder().destroy();
-		
-		//Always, ALWAYS save this.
-		if (this instanceof WorldMaster)
-		{
+
+		// Always, ALWAYS save this.
+		if (this instanceof WorldMaster) {
 			this.internalData.setLong("entities-ids-counter", entitiesUUIDGenerator.get());
 			this.internalData.save();
 		}
 
-		//Kill the IO handler
+		// Kill the IO handler
 		ioHandler.kill();
 	}
 
-	//TODO remove completely ?
-	/*public Fence unloadUselessData()
-	{
-		Fence onlyThisHasAFence = this.getRegionsHolder().unloadsUselessData();
-		//this.getRegionsSummariesHolder().unloadsUselessData();
-		
-		return onlyThisHasAFence;
-		//return new TrivialFence();
-	}*/
-
 	private static final Logger logger = LoggerFactory.getLogger("world");
+
 	public Logger logger() {
 		return logger;
 	}
