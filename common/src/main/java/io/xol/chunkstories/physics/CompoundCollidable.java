@@ -10,31 +10,26 @@ import org.joml.Vector3dc;
 
 import io.xol.chunkstories.api.physics.Collidable;
 
-public final class CompoundCollidable implements Collidable
-{
+public final class CompoundCollidable implements Collidable {
 	public final Collidable[] elements;
-	
-	public CompoundCollidable(Collidable[] elements)
-	{
+
+	public CompoundCollidable(Collidable[] elements) {
 		this.elements = elements;
 	}
 
 	@Override
-	public boolean collidesWith(Collidable box)
-	{
-		for(Collidable c : elements)
-			if(c.collidesWith(box))
+	public boolean collidesWith(Collidable box) {
+		for (Collidable c : elements)
+			if (c.collidesWith(box))
 				return true;
 		return false;
 	}
 
 	@Override
-	public Vector3dc lineIntersection(Vector3dc lineStart, Vector3dc lineDirection)
-	{
-		for(Collidable c : elements)
-		{
+	public Vector3dc lineIntersection(Vector3dc lineStart, Vector3dc lineDirection) {
+		for (Collidable c : elements) {
 			Vector3dc intersection = c.lineIntersection(lineStart, lineDirection);
-			if(intersection != null)
+			if (intersection != null)
 				return intersection;
 		}
 		return null;

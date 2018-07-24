@@ -50,7 +50,8 @@ public class MeshStore implements MeshLibrary {
 				mesh = loader.load(a);
 			} catch (MeshLoadException e) {
 				e.printStackTrace();
-				logger().error("Mesh " + meshName + " couldn't be load using MeshLoader " + loader.getClass().getName() + " ,stack trace above.");
+				logger().error("Mesh " + meshName + " couldn't be load using MeshLoader " + loader.getClass().getName()
+						+ " ,stack trace above.");
 				return null;
 			}
 

@@ -12,7 +12,7 @@ import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
 import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.server.commands.ServerCommandBasic;
 
-public class WeatherCommand  extends ServerCommandBasic {
+public class WeatherCommand extends ServerCommandBasic {
 
 	public WeatherCommand(ServerInterface serverConsole) {
 		super(serverConsole);
@@ -21,8 +21,7 @@ public class WeatherCommand  extends ServerCommandBasic {
 
 	@Override
 	public boolean handleCommand(CommandEmitter emitter, Command command, String[] arguments) {
-		if(!emitter.hasPermission("world.weather"))
-		{
+		if (!emitter.hasPermission("world.weather")) {
 			emitter.sendMessage("You don't have the permission.");
 			return true;
 		}

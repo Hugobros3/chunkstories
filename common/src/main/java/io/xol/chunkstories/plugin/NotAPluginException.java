@@ -10,16 +10,14 @@ import java.io.File;
 
 import io.xol.chunkstories.api.exceptions.plugins.PluginLoadException;
 
-public class NotAPluginException extends PluginLoadException
-{
+public class NotAPluginException extends PluginLoadException {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 67219582600393761L;
 
-	public NotAPluginException(File file)
-	{
+	public NotAPluginException(File file) {
 	}
 
 }

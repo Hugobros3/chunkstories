@@ -11,34 +11,29 @@ import java.util.Iterator;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.util.IterableIterator;
 
-public class EntityWorldIterator implements IterableIterator<Entity>
-{
+public class EntityWorldIterator implements IterableIterator<Entity> {
 	Iterator<Entity> ie;
 	Entity currentEntity;
 
-	public EntityWorldIterator(Iterator<Entity> ie)
-	{
+	public EntityWorldIterator(Iterator<Entity> ie) {
 		this.ie = ie;
 	}
 
 	@Override
-	public boolean hasNext()
-	{
+	public boolean hasNext() {
 		return ie.hasNext();
 	}
 
 	@Override
-	public Entity next()
-	{
+	public Entity next() {
 		currentEntity = ie.next();
-		//System.out.println(currentEntity);
+		// System.out.println(currentEntity);
 		return currentEntity;
 	}
 
 	@Override
-	public void remove()
-	{
-		//Remove it from the world set
+	public void remove() {
+		// Remove it from the world set
 		ie.remove();
 	}
 }

@@ -12,7 +12,7 @@ import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.server.commands.ServerCommandBasic;
 import io.xol.chunkstories.task.WorkerThreadPool;
 
-public class DebugTasksCommand extends ServerCommandBasic{
+public class DebugTasksCommand extends ServerCommandBasic {
 
 	public DebugTasksCommand(ServerInterface serverConsole) {
 		super(serverConsole);
@@ -21,8 +21,7 @@ public class DebugTasksCommand extends ServerCommandBasic{
 
 	@Override
 	public boolean handleCommand(CommandEmitter emitter, Command command, String[] arguments) {
-		if (command.getName().equals("tasks") && emitter.hasPermission("server.debug"))
-		{
+		if (command.getName().equals("tasks") && emitter.hasPermission("server.debug")) {
 			emitter.sendMessage("#00FFD0Tasks in the pipeline: " + server.tasks().submittedTasks());
 			((WorkerThreadPool) server.tasks()).dumpTasks();
 			return true;

@@ -27,33 +27,32 @@ import io.xol.chunkstories.net.PacketDefinitionImplementation;
 import io.xol.chunkstories.net.PacketsContextCommon;
 import io.xol.chunkstories.world.io.IOTasksMultiplayerClient;
 
-public class WorldClientRemote extends WorldClientCommon implements WorldClientNetworkedRemote
-{
+public class WorldClientRemote extends WorldClientCommon implements WorldClientNetworkedRemote {
 	private final ServerConnection connection;
 	private final PacketsContextCommon packetsProcessor;
 
 	private final IOTasksMultiplayerClient mpIOHandler;
-	
+
 	private final OnlineContentTranslator translator;
-	
-	public WorldClientRemote(Client client, WorldInfoImplementation info, OnlineContentTranslator translator, ServerConnection connection) throws WorldLoadingException
-	{
+
+	public WorldClientRemote(Client client, WorldInfoImplementation info, OnlineContentTranslator translator,
+			ServerConnection connection) throws WorldLoadingException {
 		super(client, info, translator);
 
 		this.connection = connection;
 		this.packetsProcessor = connection.getPacketsContext();
 
 		this.translator = translator;
-		
+
 		mpIOHandler = new IOTasksMultiplayerClient(this);
-		
+
 		ioHandler = mpIOHandler;
 		ioHandler.start();
 
 		ClientSlavePluginManager pluginManager = new ClientSlavePluginManager(Client.getInstance());
 		client.setClientPluginManager(pluginManager);
 	}
-	
+
 	public OnlineContentTranslator getContentTranslator() {
 		return translator;
 	}
@@ -62,18 +61,16 @@ public class WorldClientRemote extends WorldClientCommon implements WorldClientN
 	public RemoteServer getRemoteServer() {
 		return connection.getRemoteServer();
 	}
-	
-	public ServerConnection getConnection()
-	{
+
+	public ServerConnection getConnection() {
 		return connection;
 	}
 
 	@Override
-	public SoundManager getSoundManager()
-	{
+	public SoundManager getSoundManager() {
 		return Client.getInstance().getSoundManager();
 	}
-	
+
 	@Override
 	public void destroy() {
 		super.destroy();
@@ -82,50 +79,47 @@ public class WorldClientRemote extends WorldClientCommon implements WorldClientN
 
 	@Override
 	public void tick() {
-		//Specific MP stuff
+		// Specific MP stuff
 		processIncommingPackets();
-		
+
 		super.tick();
-		
+
 		getConnection().flush();
 	}
-	
+
 	Deque<LogicalPacketDatagram> incommingDatagrams = new ConcurrentLinkedDeque<>();
 
-	//Accepts and processes synched packets
-	public void processIncommingPackets()
-	{
+	// Accepts and processes synched packets
+	public void processIncommingPackets() {
 		try {
-		entitiesLock.writeLock().lock();
-			
+			entitiesLock.writeLock().lock();
+
 			@SuppressWarnings("unused")
 			int packetsThisTick = 0;
-			
+
 			Iterator<LogicalPacketDatagram> i = incommingDatagrams.iterator();
 			while (i.hasNext()) {
 				LogicalPacketDatagram datagram = i.next();
-	
+
 				try {
-					PacketDefinitionImplementation definition = (PacketDefinitionImplementation) datagram.packetDefinition; //this.getContentTranslator().getPacketForId(datagram.packetTypeId);
+					PacketDefinitionImplementation definition = (PacketDefinitionImplementation) datagram.packetDefinition; // this.getContentTranslator().getPacketForId(datagram.packetTypeId);
 					Packet packet = definition.createNew(true, this);
-					if(definition.getGenre() != PacketGenre.WORLD || !(packet instanceof PacketWorld)) {
+					if (definition.getGenre() != PacketGenre.WORLD || !(packet instanceof PacketWorld)) {
 						logger().error(definition + " isn't a PacketWorld");
 					} else {
 						PacketWorld packetWorld = (PacketWorld) packet;
-						
-						//packetsProcessor.getSender() is equivalent to getRemoteServer() here
+
+						// packetsProcessor.getSender() is equivalent to getRemoteServer() here
 						packetWorld.process(packetsProcessor.getInterlocutor(), datagram.getData(), packetsProcessor);
 					}
+				} catch (IOException | PacketProcessingException e) {
+					logger().warn("Networking Exception while processing datagram: " + e);
+				} catch (Exception e) {
+					logger().warn("Exception while processing datagram: " + e.toString() + " " + e.getMessage());
 				}
-				catch(IOException | PacketProcessingException e) {
-					logger().warn("Networking Exception while processing datagram: "+e);
-				}
-				catch(Exception e) {
-					logger().warn("Exception while processing datagram: "+e.toString() + " " + e.getMessage());
-				}
-				
+
 				datagram.dispose();
-				
+
 				i.remove();
 				packetsThisTick++;
 			}
@@ -133,13 +127,12 @@ public class WorldClientRemote extends WorldClientCommon implements WorldClientN
 			entitiesLock.writeLock().unlock();
 		}
 	}
-	
+
 	public void queueDatagram(LogicalPacketDatagram datagram) {
 		this.incommingDatagrams.add(datagram);
 	}
-	
-	public IOTasksMultiplayerClient ioHandler()
-	{
+
+	public IOTasksMultiplayerClient ioHandler() {
 		return mpIOHandler;
 	}
 }

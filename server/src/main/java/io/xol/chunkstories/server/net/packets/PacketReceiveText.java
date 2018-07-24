@@ -13,14 +13,10 @@ import io.xol.chunkstories.api.net.PacketReceptionContext;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.packets.PacketText;
 
-
-
-public class PacketReceiveText extends PacketText
-{
-	public void process(PacketSender sender, DataInputStream in, PacketReceptionContext processor) throws IOException
-	{
+public class PacketReceiveText extends PacketText {
+	public void process(PacketSender sender, DataInputStream in, PacketReceptionContext processor) throws IOException {
 		super.process(sender, in, processor);
-		//((ClientPacketsContext)processor).getConnection().handle(text);
-		//((ClientPacketsProcessorImplementation)processor).getConnection().handleTextPacket(text);
+		// ((ClientPacketsContext)processor).getConnection().handle(text);
+		// ((ClientPacketsProcessorImplementation)processor).getConnection().handleTextPacket(text);
 	}
 }

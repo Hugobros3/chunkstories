@@ -22,7 +22,7 @@ public class PacketDefinitionImplementation extends GenericNamedConfigurable imp
 
 	final AllowedFrom allowedFrom;
 	final PacketGenre genre;
-	
+
 	final boolean streamed;
 	final int fixedId;
 	final Class<? extends Packet> clientClass;
@@ -34,14 +34,14 @@ public class PacketDefinitionImplementation extends GenericNamedConfigurable imp
 	final Constructor<? extends Packet> commonClassConstructor;
 
 	private boolean constructorTakesWorld = false; // True if the Packet constructor takes a World parameter
-	
+
 	public PacketDefinitionImplementation(GameContentStore store, String name, BufferedReader reader)
 			throws IllegalPacketDeclarationException, IOException {
 		super(name, reader);
 
 		streamed = Boolean.parseBoolean(this.resolveProperty("streamed", "false"));
 		fixedId = Integer.parseInt(this.resolveProperty("fixedId", "-1"));
-		
+
 		String afs = this.resolveProperty("allowedFrom", "all");
 		if (afs.equals("all"))
 			allowedFrom = AllowedFrom.ALL;
@@ -53,19 +53,20 @@ public class PacketDefinitionImplementation extends GenericNamedConfigurable imp
 			throw new IllegalPacketDeclarationException("allowedFrom can only take one of {all, client, server}.");
 
 		String tys = this.resolveProperty("type", "general");
-		if(tys.equals("general"))
+		if (tys.equals("general"))
 			genre = PacketGenre.GENERAL_PURPOSE;
-		else if(tys.equals("system"))
+		else if (tys.equals("system"))
 			genre = PacketGenre.SYSTEM;
-		else if(tys.equals("world")) {
+		else if (tys.equals("world")) {
 			genre = PacketGenre.WORLD;
 			constructorTakesWorld = true;
-		} else if(tys.equals("world_streaming")) {
+		} else if (tys.equals("world_streaming")) {
 			genre = PacketGenre.WORLD_STREAMING;
 			constructorTakesWorld = true;
-		} else 
-			throw new IllegalPacketDeclarationException("type can only take one of {general, systme, world, world_streaming}.");
-		
+		} else
+			throw new IllegalPacketDeclarationException(
+					"type can only take one of {general, systme, world, world_streaming}.");
+
 		// First obtain the classes dedicated to a specific side
 		String clientClass = this.resolveProperty("clientClass");
 		if (clientClass != null)
@@ -113,10 +114,12 @@ public class PacketDefinitionImplementation extends GenericNamedConfigurable imp
 		Class<?> rawClass = store.modsManager().getClassByName(className);
 		if (rawClass == null) {
 			return null;
-			//throw new IllegalPacketDeclarationException("Packet class " + this.getName() + " does not exist in codebase.");
+			// throw new IllegalPacketDeclarationException("Packet class " + this.getName()
+			// + " does not exist in codebase.");
 		} else if (!(Packet.class.isAssignableFrom(rawClass))) {
 			return null;
-			//throw new IllegalPacketDeclarationException("Class " + this.getName() + " is not extending the Packet class.");
+			// throw new IllegalPacketDeclarationException("Class " + this.getName() + " is
+			// not extending the Packet class.");
 		}
 
 		@SuppressWarnings("unchecked")
@@ -131,7 +134,7 @@ public class PacketDefinitionImplementation extends GenericNamedConfigurable imp
 		if (packetClass == null)
 			return null;
 
-		Class<?>[] types = constructorTakesWorld ? new Class[]{World.class} : new Class[]{};
+		Class<?>[] types = constructorTakesWorld ? new Class[] { World.class } : new Class[] {};
 		Constructor<? extends Packet> constructor;
 		try {
 			constructor = packetClass.getConstructor(types);
@@ -150,18 +153,18 @@ public class PacketDefinitionImplementation extends GenericNamedConfigurable imp
 	public int getFixedId() {
 		return fixedId;
 	}
-	
+
 	public Packet createNew(boolean client, World world) {
 		try {
-			Object[] parameters = constructorTakesWorld ? new Object[]{world} : new Object[]{};
-			
+			Object[] parameters = constructorTakesWorld ? new Object[] { world } : new Object[] {};
+
 			if (client && clientClass != null)
 				return clientClassConstructor.newInstance(parameters);
 			else if (!client && serverClass != null)
 				return serverClassConstructor.newInstance(parameters);
 			else
 				return commonClassConstructor.newInstance(parameters);
-			
+
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
 				| InvocationTargetException e) {
 			e.printStackTrace();

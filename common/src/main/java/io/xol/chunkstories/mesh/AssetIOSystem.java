@@ -14,22 +14,26 @@ import assimp.IOSystem;
 import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.content.Content;
 
-/** Helper class to translate chunkstories virtual FS into something assimp understands */
+/**
+ * Helper class to translate chunkstories virtual FS into something assimp
+ * understands
+ */
 public class AssetIOSystem implements IOSystem {
 
 	final Content content;
+
 	public AssetIOSystem(Content content) {
 		this.content = content;
 	}
 
 	@Override
 	public void close(IOStream arg0) {
-		//osef
+		// osef
 	}
 
 	@Override
 	public boolean exists(String arg0) {
-		return	content.getAsset(arg0) != null;
+		return content.getAsset(arg0) != null;
 	}
 
 	@Override
@@ -37,7 +41,7 @@ public class AssetIOSystem implements IOSystem {
 		Asset asset = content.getAsset(arg0);
 		return new AssetIOStream(asset);
 	}
-	
+
 	class AssetIOStream implements IOStream {
 		final Asset a;
 
@@ -59,15 +63,15 @@ public class AssetIOSystem implements IOSystem {
 
 		@Override
 		public InputStream read() {
-			//System.out.println("read:"+a);
-			//Thread.dumpStack();
+			// System.out.println("read:"+a);
+			// Thread.dumpStack();
 			return a.read();
 		}
 
 		@Override
 		public BufferedReader reader() {
-			//System.out.println("reader:"+a);
-			//Thread.dumpStack();
+			// System.out.println("reader:"+a);
+			// Thread.dumpStack();
 			return new BufferedReader(a.reader());
 		}
 

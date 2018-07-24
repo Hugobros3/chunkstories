@@ -12,7 +12,8 @@ import io.xol.chunkstories.api.util.Configuration.OptionBoolean;
 
 public class OptionToggleImplementation extends OptionImplementation implements OptionBoolean {
 
-	public OptionToggleImplementation(ConfigurationImplementation config, OptionUntyped loadFromThat) throws IOException {
+	public OptionToggleImplementation(ConfigurationImplementation config, OptionUntyped loadFromThat)
+			throws IOException {
 		super(config, loadFromThat);
 	}
 
@@ -29,7 +30,7 @@ public class OptionToggleImplementation extends OptionImplementation implements 
 	private boolean parse(String s) {
 		try {
 			return Boolean.parseBoolean(s);
-		} catch(NumberFormatException e) {
+		} catch (NumberFormatException e) {
 			return false;
 		}
 	}

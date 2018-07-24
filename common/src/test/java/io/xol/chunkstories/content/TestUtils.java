@@ -17,14 +17,15 @@ public class TestUtils {
 	@Test
 	public void testPackpedalling() {
 		assert FoldersUtils.combineNames("./nique/du/saucisson/", "../../tamere.jpg").equals("./nique/tamere.jpg");
-		
+
 		assert FoldersUtils.combineNames("./nique/du/saucisson", "../../tamere.jpg").equals("./tamere.jpg");
-		
+
 		try {
-			assert FoldersUtils.combineNames("./nique/du/saucisson/", "../../../../2deep4u.jpg").equals("./nique/tamere.jpg");
+			assert FoldersUtils.combineNames("./nique/du/saucisson/", "../../../../2deep4u.jpg")
+					.equals("./nique/tamere.jpg");
 			fail();
-		} catch(IndexOutOfBoundsException e) {
-			
+		} catch (IndexOutOfBoundsException e) {
+
 		}
 	}
 }

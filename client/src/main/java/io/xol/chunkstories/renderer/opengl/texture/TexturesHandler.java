@@ -14,41 +14,33 @@ import io.xol.chunkstories.api.rendering.textures.Cubemap;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.client.Client;
 
-public class TexturesHandler
-{
+public class TexturesHandler {
 	static Texture2DGL nullTexture;
-	
+
 	static ConcurrentHashMap<String, CubemapGL> loadedCubemaps = new ConcurrentHashMap<String, CubemapGL>();
 	static Cubemap currentCubemap;
-	
+
 	static ConcurrentHashMap<String, Texture2DGL> loadedTextures = new ConcurrentHashMap<String, Texture2DGL>();
 	static Texture2D currentTexture;
 
-	public static Texture2DGL getTexture(String name)
-	{
-		if(loadedTextures.containsKey(name))
-		{
+	public static Texture2DGL getTexture(String name) {
+		if (loadedTextures.containsKey(name)) {
 			return loadedTextures.get(name);
-		}
-		else
-		{
-			if(name.startsWith("./"))
-			{
+		} else {
+			if (name.startsWith("./")) {
 				Asset asset = Client.getInstance().getContent().getAsset(name);
-				if(asset == null)
+				if (asset == null)
 					return nullTexture();
-				
+
 				Texture2DGL texture = new Texture2DAsset(asset);
 				loadedTextures.put(name, texture);
 				return texture;
-			}
-			else
-			{
-				//TODO check we are allowed to do this !
+			} else {
+				// TODO check we are allowed to do this !
 				File file = new File(name);
-				if(file == null || !file.exists())
+				if (file == null || !file.exists())
 					return nullTexture();
-				
+
 				Texture2DGL texture = new Texture2DFile(file);
 				loadedTextures.put(name, texture);
 				return texture;
@@ -56,56 +48,43 @@ public class TexturesHandler
 		}
 	}
 
-	public static Cubemap getCubemap(String name)
-	{
-		if(loadedCubemaps.containsKey(name))
-		{
+	public static Cubemap getCubemap(String name) {
+		if (loadedCubemaps.containsKey(name)) {
 			return loadedCubemaps.get(name);
-		}
-		else
-		{
+		} else {
 			CubemapGL cubemap = new CubemapGL(name);
 			loadedCubemaps.put(name, cubemap);
 			return cubemap;
 		}
 	}
-	
-	public static void reloadAll()
-	{
-		for(Texture2DGL texture : loadedTextures.values())
-		{
-			if(texture instanceof Texture2DAsset)
-			{
+
+	public static void reloadAll() {
+		for (Texture2DGL texture : loadedTextures.values()) {
+			if (texture instanceof Texture2DAsset) {
 				Asset newAsset = Client.getInstance().getContent().getAsset(((Texture2DAsset) texture).getName());
-				if(newAsset != null)
-				{
+				if (newAsset != null) {
 					((Texture2DAsset) texture).setAsset(newAsset);
 					((Texture2DAsset) texture).loadTextureFromAsset();
 				}
-				//If the asset is no longer avaible, don't update the texture and delete it
-				else
-				{
+				// If the asset is no longer avaible, don't update the texture and delete it
+				else {
 					texture.destroy();
 					loadedTextures.remove(((Texture2DAsset) texture).getName());
 				}
-			}
-			else if(texture instanceof Texture2DFile)
-			{
+			} else if (texture instanceof Texture2DFile) {
 				((Texture2DFile) texture).loadTextureFromFile();
 			}
 		}
 
-		for(CubemapGL cubemap : loadedCubemaps.values())
-		{
+		for (CubemapGL cubemap : loadedCubemaps.values()) {
 			cubemap.loadCubemapFromDisk();
-			//Asset newAsset = Mods.getAsset(cubemap.getName());
-			//cubemap.setAsset(newAsset);
+			// Asset newAsset = Mods.getAsset(cubemap.getName());
+			// cubemap.setAsset(newAsset);
 		}
 	}
 
-	public static Texture2DGL nullTexture()
-	{
-		if(nullTexture == null)
+	public static Texture2DGL nullTexture() {
+		if (nullTexture == null)
 			nullTexture = TexturesHandler.getTexture("./textures/notex.png");
 		return nullTexture;
 	}

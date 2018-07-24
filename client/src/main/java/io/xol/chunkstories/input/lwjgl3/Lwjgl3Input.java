@@ -10,21 +10,20 @@ import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.input.InputsLoaderHelper;
 
 public abstract class Lwjgl3Input implements Input {
-	
+
 	public Lwjgl3Input(Lwjgl3ClientInputsManager im, String name) {
 		this.im = im;
 		this.name = name;
-		
+
 		computeHash(name);
 	}
-	
+
 	protected final Lwjgl3ClientInputsManager im;
 	protected final String name;
-	
+
 	private long hash;
-	
-	private void computeHash(String name2)
-	{
+
+	private void computeHash(String name2) {
 		byte[] digested = InputsLoaderHelper.md.digest(name2.getBytes());
 		hash = (hash & 0x0FFFFFFFFFFFFFFFL) | (((long) digested[0] & 0xF) << 60);
 		hash = (hash & 0xF0FFFFFFFFFFFFFFL) | (((long) digested[1] & 0xF) << 56);
@@ -43,37 +42,32 @@ public abstract class Lwjgl3Input implements Input {
 		hash = (hash & 0xFFFFFFFFFFFFFF0FL) | (((long) digested[14] & 0xF) << 4);
 		hash = (hash & 0xFFFFFFFFFFFFFFF0L) | (((long) digested[15] & 0xF) << 0);
 	}
-	
+
 	@Override
-	public String getName()
-	{
+	public String getName() {
 		return name;
 	}
-	
-	public long getHash()
-	{
+
+	public long getHash() {
 		return hash;
 	}
-	
+
 	@Override
-	public boolean equals(Object o)
-	{
-		if(o == null)
+	public boolean equals(Object o) {
+		if (o == null)
 			return false;
-		else if(o instanceof Lwjgl3Input) {
-			return ((Lwjgl3Input)o).getName().equals(getName());
-		}
-		else if(o instanceof String) {
-			return ((String)o).equals(this.getName());
+		else if (o instanceof Lwjgl3Input) {
+			return ((Lwjgl3Input) o).getName().equals(getName());
+		} else if (o instanceof String) {
+			return ((String) o).equals(this.getName());
 		}
 		return false;
 	}
-	
+
 	@Override
-	public int hashCode()
-	{
+	public int hashCode() {
 		return getName().hashCode();
 	}
-	
+
 	public abstract void reload();
 }

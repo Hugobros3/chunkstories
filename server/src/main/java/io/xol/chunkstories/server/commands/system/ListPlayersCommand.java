@@ -23,14 +23,12 @@ public class ListPlayersCommand extends ServerCommandBasic {
 
 	@Override
 	public boolean handleCommand(CommandEmitter emitter, Command command, String[] arguments) {
-		if (command.getName().equals("list"))
-		{
+		if (command.getName().equals("list")) {
 			String list = "";
 
 			int playersCount = 0;
 			Iterator<Player> iterator = server.getConnectedPlayers();
-			while (iterator.hasNext())
-			{
+			while (iterator.hasNext()) {
 				playersCount++;
 
 				list += iterator.next().getDisplayName();
@@ -41,7 +39,7 @@ public class ListPlayersCommand extends ServerCommandBasic {
 			emitter.sendMessage("#00FFD0" + playersCount + " players connected : " + list);
 			return true;
 		}
-		
+
 		return false;
 	}
 

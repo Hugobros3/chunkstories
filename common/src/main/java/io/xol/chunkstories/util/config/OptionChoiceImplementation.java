@@ -16,14 +16,15 @@ import io.xol.chunkstories.api.util.Configuration.ChoiceOption;
 public class OptionChoiceImplementation extends OptionImplementation implements ChoiceOption {
 
 	List<String> choices = new ArrayList<>();
-	
-	public OptionChoiceImplementation(ConfigurationImplementation config, OptionUntyped loadFromThat) throws IOException {
+
+	public OptionChoiceImplementation(ConfigurationImplementation config, OptionUntyped loadFromThat)
+			throws IOException {
 		super(config, loadFromThat);
-		
+
 		String choicesString = this.resolveProperty("choices");
 		String choicesArray[] = choicesString.split(",");
-		
-		for(String choice : choicesArray) {
+
+		for (String choice : choicesArray) {
 			this.choices.add(choice.replace(" ", ""));
 		}
 	}

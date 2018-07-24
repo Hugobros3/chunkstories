@@ -25,43 +25,39 @@ import io.xol.chunkstories.world.WorldLoadingException;
 
 public class PacketInitializeRemoteWorld extends PacketSendWorldInfo {
 
-	public void process(PacketSender sender, DataInputStream in, PacketReceptionContext processor) throws IOException
-	{
+	public void process(PacketSender sender, DataInputStream in, PacketReceptionContext processor) throws IOException {
 		String initializationString = in.readUTF();
-		
+
 		ByteArrayInputStream bais = new ByteArrayInputStream(initializationString.getBytes("UTF-8"));
 		BufferedReader reader = new BufferedReader(new InputStreamReader(bais, "UTF-8"));
 		info = new WorldInfoImplementation(reader);
-		
-		if (processor instanceof ClientPacketsContext)
-		{
+
+		if (processor instanceof ClientPacketsContext) {
 			processor.logger().info("Received World initialization packet");
-			ClientPacketsContext cpp = (ClientPacketsContext)processor;
-			
+			ClientPacketsContext cpp = (ClientPacketsContext) processor;
+
 			OnlineContentTranslator contentTranslator = cpp.getContentTranslator();
 			if (contentTranslator == null) {
 				processor.logger().error("Can't initialize a world without a ContentTranslator initialized first!");
 				return;
 			}
-			
-			Client client = (Client)cpp.getContext(); //TODO should we expose this to the interface ?
-			Fence fence = client.getGameWindow().queueSynchronousTask(new Runnable()
-			{
+
+			Client client = (Client) cpp.getContext(); // TODO should we expose this to the interface ?
+			Fence fence = client.getGameWindow().queueSynchronousTask(new Runnable() {
 				@Override
-				public void run()
-				{
+				public void run() {
 					WorldClientRemote world;
 					try {
 						world = new WorldClientRemote(client, info, contentTranslator, cpp.getConnection());
 						client.changeWorld(world);
-						
+
 						cpp.getConnection().handleSystemRequest("world/ok");
 					} catch (WorldLoadingException e) {
 						client.exitToMainMenu(e.getMessage());
 					}
 				}
 			});
-			
+
 			fence.traverse();
 		}
 	}

@@ -35,7 +35,7 @@ import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.util.Configuration;
 
 public class ConfigurationImplementation implements Configuration {
-	
+
 	Map<String, Option> options = new HashMap<>();
 	Map<String, Integer> bakedInts = new HashMap<>();
 	Map<String, Double> bakedDoubles = new HashMap<>();
@@ -45,18 +45,18 @@ public class ConfigurationImplementation implements Configuration {
 	private final GameContext context;
 	private final Content content;
 	private final File configFile;
-	
+
 	private static final Logger logger = LoggerFactory.getLogger("configuration");
+
 	public Logger logger() {
 		return logger;
 	}
-	
-	public ConfigurationImplementation(GameContext context, File configFile)
-	{
+
+	public ConfigurationImplementation(GameContext context, File configFile) {
 		this.context = context;
 		this.content = context.getContent();
 		this.configFile = configFile;
-		
+
 		reload();
 		load();
 	}
@@ -64,94 +64,77 @@ public class ConfigurationImplementation implements Configuration {
 	public GameContext getContext() {
 		return context;
 	}
-	
-	public void reload()
-	{
+
+	public void reload() {
 		options.clear();
 
 		Iterator<Asset> i = content.modsManager().getAllAssetsByExtension("options");
-		while (i.hasNext())
-		{
+		while (i.hasNext()) {
 			Asset f = i.next();
 			logger().debug("Reading options definitions in : " + f);
 			readOptionsDefinitions(f);
 		}
-		
+
 		options.values().forEach(o -> System.out.println(o.getName()));
-		
+
 		bake();
 	}
 
-	private void readOptionsDefinitions(Asset f)
-	{
+	private void readOptionsDefinitions(Asset f) {
 		if (f == null)
 			return;
-		try
-		{
+		try {
 			BufferedReader reader = new BufferedReader(f.reader());
 			String line = "";
 
-			//ItemTypeImpl currentItemType = null;
-			while ((line = reader.readLine()) != null)
-			{
+			// ItemTypeImpl currentItemType = null;
+			while ((line = reader.readLine()) != null) {
 				line = line.replace("\t", "");
-				if (line.startsWith("#"))
-				{
+				if (line.startsWith("#")) {
 					// It's a comment, ignore.
-				}
-				else if (line.startsWith("end"))
-				{
-					//if (currentItemType == null)
+				} else if (line.startsWith("end")) {
+					// if (currentItemType == null)
 					{
 						logger().warn("Syntax error in file : " + f + " : ");
 						continue;
 					}
-				}
-				else if (line.startsWith("option"))
-				{
-					if (line.contains(" "))
-					{
+				} else if (line.startsWith("option")) {
+					if (line.contains(" ")) {
 						String[] split = line.split(" ");
 						String itemName = split[1];
 
-						try
-						{
+						try {
 							OptionUntyped fakeOption = new OptionUntyped(this, itemName, reader);
 							OptionImplementation option;
-							
-							if(fakeOption.resolveProperty("type").equals("scale"))
+
+							if (fakeOption.resolveProperty("type").equals("scale"))
 								option = new OptionScaleImplementation(this, fakeOption);
-							else if(fakeOption.resolveProperty("type").equals("toggle"))
+							else if (fakeOption.resolveProperty("type").equals("toggle"))
 								option = new OptionToggleImplementation(this, fakeOption);
-							else if(fakeOption.resolveProperty("type").equals("choice"))
+							else if (fakeOption.resolveProperty("type").equals("choice"))
 								option = new OptionChoiceImplementation(this, fakeOption);
-							else if(fakeOption.resolveProperty("type").equals("int"))
+							else if (fakeOption.resolveProperty("type").equals("int"))
 								option = new OptionIntImplementation(this, fakeOption);
-							else if(fakeOption.resolveProperty("type").equals("double"))
+							else if (fakeOption.resolveProperty("type").equals("double"))
 								option = new OptionDoubleImplementation(this, fakeOption);
-							//else if(option.resolveProperty("type").equals("string"))
+							// else if(option.resolveProperty("type").equals("string"))
 							else
 								option = new OptionImplementation(this, fakeOption);
-							
+
 							options.put(option.getName(), option);
-						}
-						catch (Throwable e)
-						{
+						} catch (Throwable e) {
 							e.printStackTrace();
 						}
 					}
 				}
 			}
 			reader.close();
-		}
-		catch (IOException e)
-		{
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-	
-	public void load()
-	{
+
+	public void load() {
 		if (!configFile.exists())
 			return;
 		try {
@@ -164,7 +147,7 @@ public class ConfigurationImplementation implements Configuration {
 					Option option = (Option) this.getOption(line.split("=")[0]);
 					if (option != null) {
 						option.trySetting(line.split("=")[1]);
-						System.out.println("set "+option.getName() + "to "+line.split("=")[1]);
+						System.out.println("set " + option.getName() + "to " + line.split("=")[1]);
 					}
 				}
 			}
@@ -172,48 +155,39 @@ public class ConfigurationImplementation implements Configuration {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		this.bake();
 	}
 
-	public void save()
-	{
+	public void save() {
 		File parentFolder = this.configFile.getParentFile();
 		parentFolder.mkdirs();
-		
-		try
-		{
+
+		try {
 			Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(configFile), "UTF-8"));
-			
+
 			Map<String, String> props = new HashMap<>();
 			this.allOptions().forEach(o -> props.put(o.getName(), o.getValue()));
-			
+
 			Set<String> unsortedKeys = props.keySet();
 			List<String> sortedKeys = new ArrayList<String>(unsortedKeys);
-			sortedKeys.sort(new Comparator<String>()
-			{
+			sortedKeys.sort(new Comparator<String>() {
 				@Override
-				public int compare(String arg0, String arg1)
-				{
+				public int compare(String arg0, String arg1) {
 					return arg0.compareTo(arg1);
 				}
 
 			});
-			for (String key : sortedKeys)
-			{
+			for (String key : sortedKeys) {
 				out.write(key + "=" + props.get(key) + "\n");
 			}
 			out.close();
-		}
-		catch (FileNotFoundException e)
-		{
-		}
-		catch (IOException e)
-		{
+		} catch (FileNotFoundException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Override
 	public Option getOption(String optionName) {
 		return options.get(optionName);
@@ -244,27 +218,30 @@ public class ConfigurationImplementation implements Configuration {
 		this.bakedInts.clear();
 		this.bakedDoubles.clear();
 		this.bakedString.clear();
-		
-		for(Option o : allOptions()) {
+
+		for (Option o : allOptions()) {
 			try {
 				boolean casted = Boolean.parseBoolean(o.getValue());
 				bakedBools.put(o.getName(), casted);
-			} catch (NumberFormatException nfe) {}
-			
+			} catch (NumberFormatException nfe) {
+			}
+
 			try {
 				int casted = Integer.parseInt(o.getValue());
 				bakedInts.put(o.getName(), casted);
-			} catch (NumberFormatException nfe) {}
-			
+			} catch (NumberFormatException nfe) {
+			}
+
 			try {
 				double casted = Double.parseDouble(o.getValue());
 				bakedDoubles.put(o.getName(), casted);
-			} catch (NumberFormatException nfe) {}
-			
+			} catch (NumberFormatException nfe) {
+			}
+
 			bakedString.put(o.getName(), o.getValue());
 		}
 	}
-	
+
 	@Override
 	public Collection<Option> allOptions() {
 		return options.values();

@@ -25,9 +25,8 @@ import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.renderer.OpenGLRenderingContext;
 import io.xol.chunkstories.renderer.opengl.vbo.VertexBufferGL;
 
-public class FakeImmediateModeDebugRenderer
-{
-	//Emulates legacy OpenGL 1.x pipeline for debug functions
+public class FakeImmediateModeDebugRenderer {
+	// Emulates legacy OpenGL 1.x pipeline for debug functions
 
 	public static int GL_TEXTURE_2D, GL_BLEND, GL_CULL_FACE;
 
@@ -35,46 +34,40 @@ public class FakeImmediateModeDebugRenderer
 
 	/**
 	 * This class requires knowledge of the camera object
+	 * 
 	 * @param camera
 	 */
-	public static void setCamera(CameraInterface camera)
-	{
+	public static void setCamera(CameraInterface camera) {
 		FakeImmediateModeDebugRenderer.camera = camera;
 	}
 
-	public static void glEnable(int cap)
-	{
+	public static void glEnable(int cap) {
 
 	}
 
-	public static void glDisable(int cap)
-	{
+	public static void glDisable(int cap) {
 
 	}
 
-	public static void glColor4f(float r, float g, float b, float a)
-	{
+	public static void glColor4f(float r, float g, float b, float a) {
 		color = new Vector4f(r, g, b, a);
 	}
 
 	public static int GL_LINES = GL11.GL_LINES;
 	public static int GL_TRIANGLES = GL11.GL_TRIANGLES;
 
-	public static void glBegin(int mode)
-	{
+	public static void glBegin(int mode) {
 		FakeImmediateModeDebugRenderer.mode = mode;
 	}
 
-	public static void glVertex3d(double x, double y, double z)
-	{
+	public static void glVertex3d(double x, double y, double z) {
 		glVertex3f((float) x, (float) y, (float) z);
 	}
 
-	public static void glVertex3f(float x, float y, float z)
-	{
-		if(data.position() == data.limit())
+	public static void glVertex3f(float x, float y, float z) {
+		if (data.position() == data.limit())
 			glEnd();
-		//	return;
+		// return;
 		data.put(x);
 		data.put(y);
 		data.put(z);
@@ -87,67 +80,47 @@ public class FakeImmediateModeDebugRenderer
 	static int mode = 0;
 
 	static VertexBufferGL vertexBuffer = new VertexBufferGL();
-	
-	public static void glEnd()
-	{
+
+	public static void glEnd() {
 		OpenGLRenderingContext renderingContext = Client.getInstance().getGameWindow().getRenderingInterface();
-		
+
 		renderingContext.setCullingMode(CullingMode.DISABLED);
 		renderingContext.setBlendMode(BlendMode.MIX);
 		renderingContext.setDepthTestMode(DepthTestMode.LESS_OR_EQUAL);
-		
-		Shader overlayProgram = renderingContext.useShader("overlay");//ShadersLibrary.getShaderProgram("overlay");
+
+		Shader overlayProgram = renderingContext.useShader("overlay");// ShadersLibrary.getShaderProgram("overlay");
 		camera.setupShader(overlayProgram);
 		overlayProgram.setUniform4f("colorIn", color);
-		
+
 		data.flip();
-		
+
 		vertexBuffer.uploadData(data);
-		
+
 		renderingContext.bindAttribute("vertexIn", vertexBuffer.asAttributeSource(VertexFormat.FLOAT, 3));
-		//renderingContext.bindAttribute("vertexIn", new FloatBufferAttributeSource(data, 3));
-		
+		// renderingContext.bindAttribute("vertexIn", new
+		// FloatBufferAttributeSource(data, 3));
+
 		renderingContext.draw(mode == GL_TRIANGLES ? Primitive.TRIANGLE : Primitive.LINE, 0, size);
 		renderingContext.setBlendMode(BlendMode.DISABLED);
 		data.clear();
 		size = 0;
 	}
-	
+
 	static VertexBuffer cube = null;
-	public static VertexBuffer getCube()
-	{
-		if(cube == null)
-		{
+
+	public static VertexBuffer getCube() {
+		if (cube == null) {
 			cube = new VertexBufferGL();
-			float[] cubeData = new float[]{
-					//Base face
-					0.0f, 0.0f, 0.0f,
-					0.0f, 1.0f, 0.0f,
-					0.0f, 0.0f, 0.0f,
-					0.0f, 0.0f, 1.0f,
-					0.0f, 1.0f, 0.0f,
-					0.0f, 1.0f, 1.0f,
-					0.0f, 0.0f, 1.0f,
-					0.0f, 1.0f, 1.0f,
-					//Top face
-					1.0f, 0.0f, 0.0f,
-					1.0f, 1.0f, 0.0f,
-					1.0f, 0.0f, 0.0f,
-					1.0f, 0.0f, 1.0f,
-					1.0f, 1.0f, 0.0f,
-					1.0f, 1.0f, 1.0f,
-					1.0f, 0.0f, 1.0f,
-					1.0f, 1.0f, 1.0f,
-					//Vertical segments
-					0.0f, 0.0f, 0.0f,
-					1.0f, 0.0f, 0.0f,
-					0.0f, 0.0f, 1.0f,
-					1.0f, 0.0f, 1.0f,
-					0.0f, 1.0f, 0.0f,
-					1.0f, 1.0f, 0.0f,
-					0.0f, 1.0f, 1.0f,
-					1.0f, 1.0f, 1.0f,
-			};
+			float[] cubeData = new float[] {
+					// Base face
+					0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+					1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+					// Top face
+					1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
+					1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+					// Vertical segments
+					0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+					1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, };
 			FloatBuffer dataToUpload = BufferUtils.createFloatBuffer(cubeData.length);
 			dataToUpload.put(cubeData);
 			dataToUpload.flip();
@@ -157,37 +130,37 @@ public class FakeImmediateModeDebugRenderer
 	}
 
 	private static final Vector4f defaultColor = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
-	
+
 	public static void renderCollisionBox(CollisionBox box, Vector4f color) {
-		if(color == null)
+		if (color == null)
 			color = defaultColor;
-		
+
 		glColor4f(color.x(), color.y(), color.z(), color.w());
 		glDisable(GL_CULL_FACE);
-		
+
 		glBegin(GL_LINES);
-		glVertex3d(box.xpos , box.ypos, box.zpos);
+		glVertex3d(box.xpos, box.ypos, box.zpos);
 		glVertex3d(box.xpos + box.xw, box.ypos, box.zpos);
-		glVertex3d(box.xpos , box.ypos, box.zpos + box.zw);
+		glVertex3d(box.xpos, box.ypos, box.zpos + box.zw);
 		glVertex3d(box.xpos + box.xw, box.ypos, box.zpos + box.zw);
 		glVertex3d(box.xpos + box.xw, box.ypos, box.zpos + box.zw);
 		glVertex3d(box.xpos + box.xw, box.ypos, box.zpos);
-		glVertex3d(box.xpos , box.ypos, box.zpos);
-		glVertex3d(box.xpos , box.ypos, box.zpos + box.zw);
+		glVertex3d(box.xpos, box.ypos, box.zpos);
+		glVertex3d(box.xpos, box.ypos, box.zpos + box.zw);
 
-		glVertex3d(box.xpos , box.ypos + box.h, box.zpos);
+		glVertex3d(box.xpos, box.ypos + box.h, box.zpos);
 		glVertex3d(box.xpos + box.xw, box.ypos + box.h, box.zpos);
-		glVertex3d(box.xpos , box.ypos + box.h, box.zpos + box.zw);
+		glVertex3d(box.xpos, box.ypos + box.h, box.zpos + box.zw);
 		glVertex3d(box.xpos + box.xw, box.ypos + box.h, box.zpos + box.zw);
 		glVertex3d(box.xpos + box.xw, box.ypos + box.h, box.zpos + box.zw);
 		glVertex3d(box.xpos + box.xw, box.ypos + box.h, box.zpos);
-		glVertex3d(box.xpos , box.ypos + box.h, box.zpos);
-		glVertex3d(box.xpos , box.ypos + box.h, box.zpos + box.zw);
+		glVertex3d(box.xpos, box.ypos + box.h, box.zpos);
+		glVertex3d(box.xpos, box.ypos + box.h, box.zpos + box.zw);
 
-		glVertex3d(box.xpos , box.ypos, box.zpos);
-		glVertex3d(box.xpos , box.ypos + box.h, box.zpos);
-		glVertex3d(box.xpos , box.ypos, box.zpos + box.zw);
-		glVertex3d(box.xpos , box.ypos + box.h, box.zpos + box.zw);
+		glVertex3d(box.xpos, box.ypos, box.zpos);
+		glVertex3d(box.xpos, box.ypos + box.h, box.zpos);
+		glVertex3d(box.xpos, box.ypos, box.zpos + box.zw);
+		glVertex3d(box.xpos, box.ypos + box.h, box.zpos + box.zw);
 		glVertex3d(box.xpos + box.xw, box.ypos, box.zpos);
 		glVertex3d(box.xpos + box.xw, box.ypos + box.h, box.zpos);
 		glVertex3d(box.xpos + box.xw, box.ypos, box.zpos + box.zw);

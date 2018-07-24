@@ -64,12 +64,12 @@ public abstract class Texture2DGL extends TextureGL implements RenderTarget, Tex
 	protected Texture2DGL(TextureFormat type) {
 		super(type);
 	}
-	
+
 	@Override
 	public boolean uploadTextureData(int width, int height, ByteBuffer data) {
 		return uploadTextureData(width, height, 0, data);
 	}
-	
+
 	@Override
 	public boolean uploadTextureData(int width, int height, int level, ByteBuffer data) {
 		if (Client.getInstance().getGameWindow().isMainGLWindow())
@@ -98,7 +98,8 @@ public abstract class Texture2DGL extends TextureGL implements RenderTarget, Tex
 		this.width = width;
 		this.height = height;
 
-		glTexImage2D(GL_TEXTURE_2D, 0, type.getInternalFormat(), width, height, 0, type.getFormat(), type.getType(), (ByteBuffer) data);
+		glTexImage2D(GL_TEXTURE_2D, 0, type.getInternalFormat(), width, height, 0, type.getFormat(), type.getType(),
+				(ByteBuffer) data);
 
 		computeMipmaps();
 		applyTextureWrapping();
@@ -124,7 +125,8 @@ public abstract class Texture2DGL extends TextureGL implements RenderTarget, Tex
 
 		// Don't bother
 		if (glId == -2) {
-			logger().error("Critical mess-up: Tried to bind a destroyed Texture2D " + this + ". Terminating process immediately.");
+			logger().error("Critical mess-up: Tried to bind a destroyed Texture2D " + this
+					+ ". Terminating process immediately.");
 			Thread.dumpStack();
 			System.exit(-801);
 			// throw new RuntimeException("Tryed to bind a destroyed VerticesBuffer");
@@ -148,7 +150,8 @@ public abstract class Texture2DGL extends TextureGL implements RenderTarget, Tex
 
 	@Override
 	public String toString() {
-		return "[" + getClass().getSimpleName() + " id: " + glId + " size:" + width + "x" + height + " format:" + type.name() + "]";
+		return "[" + getClass().getSimpleName() + " id: " + glId + " size:" + width + "x" + height + " format:"
+				+ type.name() + "]";
 	}
 
 	@Override
@@ -167,7 +170,7 @@ public abstract class Texture2DGL extends TextureGL implements RenderTarget, Tex
 		bind();
 		applyTextureWrapping();
 	}
-	
+
 	protected void applyTextureWrapping() {
 		if (!wrapping) {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -177,7 +180,7 @@ public abstract class Texture2DGL extends TextureGL implements RenderTarget, Tex
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		}
 	}
-	
+
 	@Override
 	public void setLinearFiltering(boolean on) {
 		if (glId < 0) // Don't bother with invalid textures
@@ -200,7 +203,7 @@ public abstract class Texture2DGL extends TextureGL implements RenderTarget, Tex
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 		}
-		
+
 		if (mipmapping) {
 			if (linearFiltering) {
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
@@ -237,7 +240,7 @@ public abstract class Texture2DGL extends TextureGL implements RenderTarget, Tex
 		if (!applyParameters)
 			return;
 		bind();
-		
+
 		applyFiltering();
 		computeMipmaps();
 	}
@@ -246,17 +249,17 @@ public abstract class Texture2DGL extends TextureGL implements RenderTarget, Tex
 	public void computeMipmaps() {
 		if (mipmapping && !mipmapsUpToDate) {
 			bind();
-	
+
 			// Regenerate the mipmaps only when necessary
 			if (ClientLimitations.gl_openGL3Capable)
 				GL30.glGenerateMipmap(GL_TEXTURE_2D);
 			else if (ClientLimitations.gl_fbExtCapable)
 				ARBFramebufferObject.glGenerateMipmap(GL_TEXTURE_2D);
-	
+
 			mipmapsUpToDate = true;
 		}
 	}
-	
+
 	@Override
 	public void setMipmapLevelsRange(int baseLevel, int maxLevel) {
 		if (glId < 0) // Don't bother with invalid textures
@@ -270,7 +273,8 @@ public abstract class Texture2DGL extends TextureGL implements RenderTarget, Tex
 			maxLevel = actualMaxMipLevelPossible;
 		}
 
-		if (this.baseMipmapLevel != baseLevel || this.maxMipmapLevel != maxLevel) // We changed something so we redo them
+		if (this.baseMipmapLevel != baseLevel || this.maxMipmapLevel != maxLevel) // We changed something so we redo
+																					// them
 			applyParameters = true;
 
 		baseMipmapLevel = baseLevel;
@@ -310,13 +314,13 @@ public abstract class Texture2DGL extends TextureGL implements RenderTarget, Tex
 
 			if (width == 0 || height == 0)
 				break;
-			
+
 			level++;
 		}
 
 		return level;
 	}
-	
+
 	@Override
 	public void resize(int w, int h) {
 		bind();
@@ -328,11 +332,12 @@ public abstract class Texture2DGL extends TextureGL implements RenderTarget, Tex
 			logger().warn("Tried to resize texture with negative size!");
 			return;
 		}
-		
+
 		this.width = w;
 		this.height = h;
-		
-		glTexImage2D(GL_TEXTURE_2D, 0, type.getInternalFormat(), w, h, 0, type.getFormat(), type.getType(), (ByteBuffer) null);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, type.getInternalFormat(), w, h, 0, type.getFormat(), type.getType(),
+				(ByteBuffer) null);
 
 		applyFiltering();
 		applyTextureWrapping();
@@ -366,7 +371,8 @@ public abstract class Texture2DGL extends TextureGL implements RenderTarget, Tex
 
 			@Override
 			public void attachAsColor(int colorAttachement) {
-				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + colorAttachement, GL_TEXTURE_2D, getId(), mipLevel);
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + colorAttachement, GL_TEXTURE_2D, getId(),
+						mipLevel);
 			}
 
 			@Override

@@ -19,34 +19,32 @@ import io.xol.chunkstories.input.Pollable;
 /**
  * Describes a key assignated to some action
  */
-public class Lwjgl3KeyBind extends Lwjgl3Input implements KeyboardKeyInput, Pollable
-{
+public class Lwjgl3KeyBind extends Lwjgl3Input implements KeyboardKeyInput, Pollable {
 	Lwjgl3ClientInputsManager lwjgl3im;
-	
+
 	int GLFW_key;
 	int defaultKey;
-	
+
 	boolean isDown = false;
 	boolean editable = true;
 	boolean repeat = false;
-	
+
 	Lwjgl3KeyBindOption option;
-	
-	public Lwjgl3KeyBind(Lwjgl3ClientInputsManager im, String name, String defaultKeyName)
-	{
+
+	public Lwjgl3KeyBind(Lwjgl3ClientInputsManager im, String name, String defaultKeyName) {
 		super(im, name);
 		this.lwjgl3im = im;
 		this.defaultKey = GLFWKeyIndexHelper.getGlfwKeyByName(defaultKeyName);
 		this.GLFW_key = defaultKey;
-		
+
 		option = new Lwjgl3KeyBindOption("client.input.bind." + name);
 		Client.getInstance().getConfiguration().addOption(option);
 	}
-	
+
 	public Lwjgl3KeyBindOption getOption() {
 		return option;
 	}
-	
+
 	public class Lwjgl3KeyBindOption extends GenericNamedConfigurable implements KeyBindOption {
 
 		public Lwjgl3KeyBindOption(String name) {
@@ -78,29 +76,28 @@ public class Lwjgl3KeyBind extends Lwjgl3Input implements KeyboardKeyInput, Poll
 			return Lwjgl3KeyBind.this;
 		}
 	}
-	
+
 	private int parse(String s) {
 		try {
 			return Integer.parseInt(s);
-		} catch(NumberFormatException e) {
+		} catch (NumberFormatException e) {
 			return 0;
 		}
 	}
-	
+
 	/**
 	 * Internal to the engine, should not be interfered with by external mods
+	 * 
 	 * @return
 	 */
-	public int getLWJGL3xKey()
-	{
+	public int getLWJGL3xKey() {
 		return GLFW_key;
 	}
-	
+
 	@Override
-	public boolean isPressed()
-	{
+	public boolean isPressed() {
 		LocalPlayer player = this.lwjgl3im.gameWindow.getClient().getPlayer();
-		if(player != null)
+		if (player != null)
 			return isDown && player.hasFocus();
 		return isDown;// && this.lwjgl3im.gameWindow.hasFocus();
 	}
@@ -108,27 +105,24 @@ public class Lwjgl3KeyBind extends Lwjgl3Input implements KeyboardKeyInput, Poll
 	/**
 	 * When reloading from the config file (options changed)
 	 */
-	public void reload()
-	{
-		//this.GLFW_key = Client.getInstance().getConfig().getInteger("bind."+name, -1);
+	public void reload() {
+		// this.GLFW_key = Client.getInstance().getConfig().getInteger("bind."+name,
+		// -1);
 	}
-	
+
 	@Override
-	public void updateStatus()
-	{
-		isDown = glfwGetKey(im.gameWindow.glfwWindowHandle, GLFW_key) == GLFW_PRESS;//Keyboard.isKeyDown(LWJGL2_key);
+	public void updateStatus() {
+		isDown = glfwGetKey(im.gameWindow.glfwWindowHandle, GLFW_key) == GLFW_PRESS;// Keyboard.isKeyDown(LWJGL2_key);
 	}
-	
+
 	/**
 	 * Is this key bind editable in the controls
 	 */
-	public boolean isEditable()
-	{
+	public boolean isEditable() {
 		return editable;
 	}
 
-	public void setEditable(boolean editable)
-	{
+	public void setEditable(boolean editable) {
 		this.editable = editable;
 	}
 }

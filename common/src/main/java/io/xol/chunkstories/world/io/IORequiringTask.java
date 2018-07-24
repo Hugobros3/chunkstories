@@ -8,10 +8,8 @@ package io.xol.chunkstories.world.io;
 
 import io.xol.chunkstories.api.world.region.Region;
 
-public class IORequiringTask
-{
-	public boolean run(Region holder)
-	{
+public class IORequiringTask {
+	public boolean run(Region holder) {
 		System.out.println("Unparameteized IORequiringTask was ran !");
 		return true;
 	}

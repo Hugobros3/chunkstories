@@ -14,62 +14,55 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.RemoteServer;
 
-/** 
- * Represents the Remote server from the client point of view. 
- * See RemoteServer in the API for more details on the concept behind this.
+/**
+ * Represents the Remote server from the client point of view. See RemoteServer
+ * in the API for more details on the concept behind this.
  */
 public class RemoteServerImplementation implements RemoteServer {
 
 	final ServerConnection connection;
-	
+
 	public RemoteServerImplementation(ServerConnection connection) {
 		this.connection = connection;
 	}
-	
+
 	@Override
-	public long getUUID()
-	{
+	public long getUUID() {
 		return -1;
 	}
 
 	Set<Entity> controlledEntity = new HashSet<Entity>(1);
-	
+
 	@Override
-	public Iterator<Entity> getSubscribedToList()
-	{
+	public Iterator<Entity> getSubscribedToList() {
 		return controlledEntity.iterator();
 	}
 
 	@Override
-	public boolean subscribe(Entity entity)
-	{
+	public boolean subscribe(Entity entity) {
 		assert controlledEntity.size() == 0;
 		entity.subscribers.register(this);
 		return controlledEntity.add(entity);
 	}
 
 	@Override
-	public boolean unsubscribe(Entity entity)
-	{
+	public boolean unsubscribe(Entity entity) {
 		assert controlledEntity.size() == 1;
 		entity.subscribers.unregister(this);
 		return controlledEntity.remove(entity);
 	}
 
 	@Override
-	public void unsubscribeAll()
-	{
+	public void unsubscribeAll() {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public void pushPacket(Packet packet)
-	{
+	public void pushPacket(Packet packet) {
 		this.connection.pushPacket(packet);
 	}
 
-	public boolean isSubscribedTo(Entity entity)
-	{
+	public boolean isSubscribedTo(Entity entity) {
 		return controlledEntity.contains(entity);
 	}
 
@@ -85,7 +78,7 @@ public class RemoteServerImplementation implements RemoteServer {
 
 	@Override
 	public void disconnect(String disconnectionReason) {
-		//TODO send reason if possible
+		// TODO send reason if possible
 		this.connection.close();
 	}
 }

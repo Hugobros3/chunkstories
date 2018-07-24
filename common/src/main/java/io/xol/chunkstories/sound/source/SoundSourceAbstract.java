@@ -14,19 +14,18 @@ import org.joml.Vector3dc;
 import io.xol.chunkstories.api.sound.SoundSource;
 import io.xol.chunkstories.util.concurrency.SimpleLock;
 
-public abstract class SoundSourceAbstract implements SoundSource
-{
+public abstract class SoundSourceAbstract implements SoundSource {
 	protected long soundStartTime;
 	protected long soundSourceUUID = -1;
-	
+
 	private final Mode mode;
 
 	protected final Vector3d position;
-	
+
 	protected float pitch;
 	protected float gain;
-	//public boolean loop = false;
-	//public boolean isAmbient = false;
+	// public boolean loop = false;
+	// public boolean isAmbient = false;
 
 	protected float attenuationStart = 1f;
 	protected float attenuationEnd = 25f;
@@ -35,34 +34,31 @@ public abstract class SoundSourceAbstract implements SoundSource
 	protected boolean updateProperties = true;
 
 	static Random random = new Random();
-	
-	public SoundSourceAbstract(Mode mode, Vector3dc position, float pitch, float gain, float attStart, float attEnd)
-	{
+
+	public SoundSourceAbstract(Mode mode, Vector3dc position, float pitch, float gain, float attStart, float attEnd) {
 		soundSourceUUID = random.nextLong();
-		
+
 		this.mode = mode;
-		
-		if(position != null)
+
+		if (position != null)
 			this.position = new Vector3d(position);
 		else
 			this.position = null;
-		
-		
+
 		this.gain = gain;
 		this.pitch = pitch;
-		
+
 		this.attenuationStart = attStart;
 		this.attenuationEnd = attEnd;
 	}
-	
+
 	@Override
 	public Mode getMode() {
 		return mode;
 	}
 
 	@Override
-	public long getUUID()
-	{
+	public long getUUID() {
 		return soundSourceUUID;
 	}
 
@@ -93,8 +89,7 @@ public abstract class SoundSourceAbstract implements SoundSource
 	 * @return
 	 */
 	@Override
-	public SoundSource setPitch(float pitch)
-	{
+	public SoundSource setPitch(float pitch) {
 		lock.lock();
 		if (this.pitch != pitch)
 			updateProperties = true;
@@ -104,21 +99,18 @@ public abstract class SoundSourceAbstract implements SoundSource
 	}
 
 	/**
-	 * Ambient SoundSources have the special property of always being "on" the listener, thus never getting attenuated and not suffering from directional distorsions.
+	 * Ambient SoundSources have the special property of always being "on" the
+	 * listener, thus never getting attenuated and not suffering from directional
+	 * distorsions.
 	 * 
 	 * @param ambient
 	 * @return
 	 */
-	/*@Override
-	public SoundSource setAmbient(boolean ambient)
-	{
-		lock.lock();
-		if (isAmbient != ambient)
-			updateProperties = true;
-		this.isAmbient = ambient;
-		lock.unlock();
-		return this;
-	}*/
+	/*
+	 * @Override public SoundSource setAmbient(boolean ambient) { lock.lock(); if
+	 * (isAmbient != ambient) updateProperties = true; this.isAmbient = ambient;
+	 * lock.unlock(); return this; }
+	 */
 
 	/**
 	 * Sets the gain of the source
@@ -127,8 +119,7 @@ public abstract class SoundSourceAbstract implements SoundSource
 	 * @return
 	 */
 	@Override
-	public SoundSource setGain(float gain)
-	{
+	public SoundSource setGain(float gain) {
 		lock.lock();
 		if (this.gain != gain)
 			updateProperties = true;
@@ -146,14 +137,13 @@ public abstract class SoundSourceAbstract implements SoundSource
 	 * @return The working SoundSource
 	 */
 	@Override
-	public SoundSource setPosition(float x, float y, float z)
-	{
+	public SoundSource setPosition(float x, float y, float z) {
 		lock.lock();
 		this.position.set(x, y, z);
 		lock.unlock();
 		return this;
 	}
-	
+
 	@Override
 	public SoundSource setPosition(Vector3dc position) {
 		lock.lock();
@@ -163,8 +153,7 @@ public abstract class SoundSourceAbstract implements SoundSource
 	}
 
 	@Override
-	public SoundSource setAttenuationStart(float start)
-	{
+	public SoundSource setAttenuationStart(float start) {
 		lock.lock();
 		if (this.attenuationStart != start)
 			updateProperties = true;
@@ -174,14 +163,13 @@ public abstract class SoundSourceAbstract implements SoundSource
 	}
 
 	@Override
-	public SoundSource setAttenuationEnd(float end)
-	{
+	public SoundSource setAttenuationEnd(float end) {
 		lock.lock();
 		if (this.attenuationEnd != end)
 			updateProperties = true;
 		this.attenuationEnd = end;
 		lock.unlock();
-		
+
 		return this;
 	}
 }

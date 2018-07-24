@@ -21,47 +21,40 @@ import de.matthiasmann.twl.utils.PNGDecoder.Format;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
 import io.xol.chunkstories.client.Client;
 
-public class Texture2DFile extends Texture2DGL
-{
+public class Texture2DFile extends Texture2DGL {
 	private File file;
 
 	protected boolean scheduledForLoad = false;
 
-	public Texture2DFile(File file)
-	{
+	public Texture2DFile(File file) {
 		super(TextureFormat.RGBA_8BPP);
 		this.file = file;
 
 		loadTextureFromFile();
 	}
 
-	public void bind()
-	{
+	public void bind() {
 		super.bind();
-		
-		if (scheduledForLoad && file != null && file.exists())
-		{
+
+		if (scheduledForLoad && file != null && file.exists()) {
 			long ms = System.currentTimeMillis();
 			System.out.print("main thread called, actually loading the texture ... ");
 			this.loadTextureFromFile();
-			System.out.print((System.currentTimeMillis()-ms) + "ms \n");
+			System.out.print((System.currentTimeMillis() - ms) + "ms \n");
 		}
 	}
 
-	public int loadTextureFromFile()
-	{
-		if (!Client.getInstance().getGameWindow().isMainGLWindow())
-		{
+	public int loadTextureFromFile() {
+		if (!Client.getInstance().getGameWindow().isMainGLWindow()) {
 			System.out.println("isn't main thread, scheduling load");
 			scheduledForLoad = true;
 			return -1;
 		}
 		scheduledForLoad = false;
 
-		//TODO we probably don't need half this shit
+		// TODO we probably don't need half this shit
 		bind();
-		try
-		{
+		try {
 			InputStream is = new FileInputStream(file);
 			PNGDecoder decoder = new PNGDecoder(is);
 			width = decoder.getWidth();
@@ -69,22 +62,21 @@ public class Texture2DFile extends Texture2DGL
 			ByteBuffer temp = ByteBuffer.allocateDirect(4 * width * height);
 			decoder.decode(temp, width * 4, Format.RGBA);
 			is.close();
-			
-			//ChunkStoriesLogger.getInstance().log("decoded " + width + " by " + height + " pixels (" + name + ")", ChunkStoriesLogger.LogType.RENDERING, ChunkStoriesLogger.LogLevel.DEBUG);
+
+			// ChunkStoriesLogger.getInstance().log("decoded " + width + " by " + height + "
+			// pixels (" + name + ")", ChunkStoriesLogger.LogType.RENDERING,
+			// ChunkStoriesLogger.LogLevel.DEBUG);
 			temp.flip();
 			bind();
-			glTexImage2D(GL_TEXTURE_2D, 0, type.getInternalFormat(), width, height, 0, type.getFormat(), type.getType(), (ByteBuffer) temp);
-		
+			glTexImage2D(GL_TEXTURE_2D, 0, type.getInternalFormat(), width, height, 0, type.getFormat(), type.getType(),
+					(ByteBuffer) temp);
+
 			this.applyTextureWrapping();
 			this.applyFiltering();
 			this.computeMipmaps();
-		}
-		catch (FileNotFoundException e)
-		{
+		} catch (FileNotFoundException e) {
 			logger().warn("Couldn't find file : " + e.getMessage());
-		}
-		catch (IOException e)
-		{
+		} catch (IOException e) {
 			logger().error("Error loading file : " + e.getMessage());
 			e.printStackTrace();
 		}
@@ -92,8 +84,7 @@ public class Texture2DFile extends Texture2DGL
 		return glId;
 	}
 
-	public String getName()
-	{
+	public String getName() {
 		return file.getAbsolutePath();
 	}
 

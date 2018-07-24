@@ -29,14 +29,14 @@ import io.xol.chunkstories.content.GameDirectory;
 public class GameLauncher implements ActionListener {
 
 	Semaphore noLineCrosstalk = new Semaphore(1);
-	
+
 	class StreamGobbler extends Thread {
 		InputStream in;
 		DataOutputStream out;
 		String type;
 
 		final long t = System.currentTimeMillis();
-		
+
 		StreamGobbler(InputStream is, DataOutputStream out, String type) {
 			this.in = is;
 			this.out = out;
@@ -50,21 +50,22 @@ public class GameLauncher implements ActionListener {
 				String line = null;
 				while ((line = br.readLine()) != null) {
 					System.out.println(type + line);
-					
-					//If we get this error less than 5s after starting the game, it's fucked !
-					if(line.contains("This Java instance does not support a 64-bit JVM") && (System.currentTimeMillis() - t) < 5000 ) {
+
+					// If we get this error less than 5s after starting the game, it's fucked !
+					if (line.contains("This Java instance does not support a 64-bit JVM")
+							&& (System.currentTimeMillis() - t) < 5000) {
 						wrongJVM = true;
 					}
-					
+
 					noLineCrosstalk.acquireUninterruptibly();
-					
+
 					try {
-						if(out != null)
+						if (out != null)
 							out.write((type + line + "\n").getBytes("UTF-8"));
 					} catch (IOException ioe) {
 						ioe.printStackTrace();
 					}
-					
+
 					noLineCrosstalk.release();
 				}
 			} catch (IOException ioe) {
@@ -78,14 +79,14 @@ public class GameLauncher implements ActionListener {
 	public GameLauncher(JFrame window) {
 		this.window = window;
 	}
-	
-	boolean wrongJVM = false; //Set to 'true' if we are running a 32-bit JVM
+
+	boolean wrongJVM = false; // Set to 'true' if we are running a 32-bit JVM
 
 	@Override
 	public void actionPerformed(ActionEvent ee) {
 		try {
-			//TODO make it configurable
-			//TODO mod support
+			// TODO make it configurable
+			// TODO mod support
 			Process process = Runtime.getRuntime().exec("java -d64 -Xmx2048M -jar chunkstories.jar", null,
 					new File(GameDirectory.getGameFolderPath()));
 
@@ -98,17 +99,17 @@ public class GameLauncher implements ActionListener {
 
 			FileOutputStream fos = null;
 			DataOutputStream dos = null;
-			
+
 			try {
 				fos = new FileOutputStream(launcherLog);
 				dos = new DataOutputStream(fos);
-			} catch(FileNotFoundException e) {
+			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			}
-			
+
 			// any error message?
 			StreamGobbler errorGobbler = new StreamGobbler(process.getErrorStream(), dos, "ERROR:");
-			
+
 			// any output?
 			StreamGobbler outputGobbler = new StreamGobbler(process.getInputStream(), dos, "");
 
@@ -133,13 +134,13 @@ public class GameLauncher implements ActionListener {
 
 			System.out.println("ExitValue: " + exitVal);
 
-			if(wrongJVM) {
-				JOptionPane.showMessageDialog(null, "Non 64 bit JVM detected. Please install 64-bit Java to run Chunk Stories.");
-			}
-			else if (exitVal != 0) {
+			if (wrongJVM) {
+				JOptionPane.showMessageDialog(null,
+						"Non 64 bit JVM detected. Please install 64-bit Java to run Chunk Stories.");
+			} else if (exitVal != 0) {
 				int dialogButton = JOptionPane.YES_NO_OPTION;
-				int dialogResult = JOptionPane.showConfirmDialog(null,
-						"The game crashed (exitval=" + exitVal + "), do you want to upload the log ? It surely will help us figure out where it went wrong.",
+				int dialogResult = JOptionPane.showConfirmDialog(null, "The game crashed (exitval=" + exitVal
+						+ "), do you want to upload the log ? It surely will help us figure out where it went wrong.",
 						"The game crashed x_x", dialogButton);
 				if (dialogResult == JOptionPane.YES_OPTION) {
 

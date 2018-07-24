@@ -32,7 +32,7 @@ import io.xol.chunkstories.input.InputVirtual;
 public class PacketInput extends PacketWorld {
 	public Input input;
 	public boolean isPressed;
-	
+
 	public PacketInput(World world) {
 		super(world);
 	}
@@ -40,7 +40,7 @@ public class PacketInput extends PacketWorld {
 	@Override
 	public void send(PacketDestinator destinator, DataOutputStream out, PacketSendingContext ctx) throws IOException {
 		out.writeLong(input.getHash());
-		
+
 		out.writeBoolean(isPressed);
 	}
 
@@ -53,7 +53,7 @@ public class PacketInput extends PacketWorld {
 
 			// Look for the controller handling this buisness
 			Entity entity = sppc.getPlayer().getControlledEntity();
-			
+
 			if (entity != null) {
 				// Get input of the client
 				input = sppc.getPlayer().getInputsManager().getInputFromHash(code);
@@ -68,8 +68,7 @@ public class PacketInput extends PacketWorld {
 
 				// Fire appropriate event
 				if (pressed) {
-					PlayerInputPressedEvent event = new PlayerInputPressedEvent(
-							sppc.getPlayer(), input);
+					PlayerInputPressedEvent event = new PlayerInputPressedEvent(sppc.getPlayer(), input);
 					entity.getWorld().getGameLogic().getPluginsManager().fireEvent(event);
 
 					if (!event.isCancelled())
@@ -79,15 +78,15 @@ public class PacketInput extends PacketWorld {
 								t.onControllerInput(input, controller);
 							});
 						});
-						
-					//entity.onControllerInput(input, entity.getControllerComponent().getController());
+
+					// entity.onControllerInput(input,
+					// entity.getControllerComponent().getController());
 				} else {
-					PlayerInputReleasedEvent event = new PlayerInputReleasedEvent(
-							sppc.getPlayer(), input);
+					PlayerInputReleasedEvent event = new PlayerInputReleasedEvent(sppc.getPlayer(), input);
 					entity.getWorld().getGameLogic().getPluginsManager().fireEvent(event);
 				}
 
-				//TODO why is this disabled and still there ?
+				// TODO why is this disabled and still there ?
 				// If we pressed the input, apply game logic
 				// if(pressed)
 				// entity.handleInteraction(input,

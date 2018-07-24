@@ -19,40 +19,35 @@ import io.xol.chunkstories.api.net.PacketReceptionContext;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketSendingContext;
 
-public class PacketSendFile extends Packet
-{
+public class PacketSendFile extends Packet {
 	public String fileTag;
 	public File file;
 
 	@Override
-	public void send(PacketDestinator destinator, DataOutputStream out, PacketSendingContext ctx) throws IOException
-	{
+	public void send(PacketDestinator destinator, DataOutputStream out, PacketSendingContext ctx) throws IOException {
 		out.writeUTF(fileTag);
 
-		if (file.exists())
-		{
+		if (file.exists()) {
 			out.writeLong(file.length());
 			FileInputStream fis = new FileInputStream(file);
 			byte[] buffer = new byte[4096];
 			int read;
-			while(true)
-			{
+			while (true) {
 				read = fis.read(buffer);
-				//System.out.println("read"+read);
-				if(read > 0)
+				// System.out.println("read"+read);
+				if (read > 0)
 					out.write(buffer, 0, read);
 				else
 					break;
 			}
 			fis.close();
-		}
-		else
+		} else
 			out.writeLong(0L);
 	}
 
 	@Override
-	public void process(PacketSender sender, DataInputStream in, PacketReceptionContext processor) throws IOException, PacketProcessingException
-	{
-		//Ignore packets incomming
+	public void process(PacketSender sender, DataInputStream in, PacketReceptionContext processor)
+			throws IOException, PacketProcessingException {
+		// Ignore packets incomming
 	}
 }

@@ -18,10 +18,10 @@ public class TimeCommand extends ServerCommandBasic {
 		super(serverConsole);
 		server.getPluginManager().registerCommand("time").setHandler(this);
 	}
+
 	@Override
 	public boolean handleCommand(CommandEmitter emitter, Command command, String[] arguments) {
-		if(!emitter.hasPermission("world.time"))
-		{
+		if (!emitter.hasPermission("world.time")) {
 			emitter.sendMessage("You don't have the permission.");
 			return true;
 		}

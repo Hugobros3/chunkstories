@@ -16,28 +16,28 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.FileAppender;
 
 public class Log4jTest {
-	
-	@Test 
-	public void testLog4j()
-	{
+
+	@Test
+	public void testLog4j() {
 		LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-        PatternLayoutEncoder ple = new PatternLayoutEncoder();
+		PatternLayoutEncoder ple = new PatternLayoutEncoder();
 
-        ple.setPattern("%date %level [%logger] [%thread] [%file:%line] %msg%n");
-        ple.setContext(lc);
-        ple.start();
-        FileAppender<ILoggingEvent> fileAppender = new FileAppender<ILoggingEvent>();
-        fileAppender.setFile("prout.log");
-        fileAppender.setEncoder(ple);
-        fileAppender.setContext(lc);
-        fileAppender.start();
+		ple.setPattern("%date %level [%logger] [%thread] [%file:%line] %msg%n");
+		ple.setContext(lc);
+		ple.start();
+		FileAppender<ILoggingEvent> fileAppender = new FileAppender<ILoggingEvent>();
+		fileAppender.setFile("prout.log");
+		fileAppender.setEncoder(ple);
+		fileAppender.setContext(lc);
+		fileAppender.start();
 
-        ch.qos.logback.classic.Logger rootLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-        rootLogger.addAppender(fileAppender);
-		
+		ch.qos.logback.classic.Logger rootLogger = (ch.qos.logback.classic.Logger) LoggerFactory
+				.getLogger(Logger.ROOT_LOGGER_NAME);
+		rootLogger.addAppender(fileAppender);
+
 		Logger logger = LoggerFactory.getLogger("content");
-	    logger.info("Hello World");
-	    
-	    LoggerFactory.getLogger("content.voxels").debug("Failed to load");
+		logger.info("Hello World");
+
+		LoggerFactory.getLogger("content.voxels").debug("Failed to load");
 	}
 }

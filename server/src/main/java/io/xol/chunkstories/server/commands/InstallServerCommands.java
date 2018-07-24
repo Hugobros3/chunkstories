@@ -33,22 +33,22 @@ import io.xol.chunkstories.server.commands.world.WeatherCommand;
 public class InstallServerCommands {
 
 	public InstallServerCommands(ServerInterface server) {
-		
-		//Administration
+
+		// Administration
 		new ConfigCommands(server);
 		new ModerationCommands(server);
 		new SaveCommand(server);
 		new SayCommand(server);
 		new StopTheFuckingTree(server);
-		
-		//Debug
+
+		// Debug
 		new DebugIOCommand(server);
 		new DebugTasksCommand(server);
 		new DebugWorldDataCommands(server);
 		new EntitiesDebugCommands(server);
 		new MiscDebugCommands(server);
-		
-		//Player
+
+		// Player
 		new ClearCommand(server);
 		new CreativeCommand(server);
 		new FlyCommand(server);
@@ -56,12 +56,12 @@ public class InstallServerCommands {
 		new HealthCommand(server);
 		new SpawnCommand(server);
 		new TpCommand(server);
-		
-		//System
+
+		// System
 		new InfoCommands(server);
 		new ListPlayersCommand(server);
-		
-		//World
+
+		// World
 		new SpawnEntityCommand(server);
 		new TimeCommand(server);
 		new WeatherCommand(server);

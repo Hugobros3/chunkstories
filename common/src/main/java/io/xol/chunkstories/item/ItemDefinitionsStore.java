@@ -25,8 +25,7 @@ import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemDefinition;
 import io.xol.chunkstories.content.GameContentStore;
 
-public class ItemDefinitionsStore implements ItemsDefinitions
-{
+public class ItemDefinitionsStore implements ItemsDefinitions {
 	Map<Short, Constructor<? extends Item>> ItemDefinitions = new HashMap<Short, Constructor<? extends Item>>();
 	public Map<String, ItemDefinition> dictionary = new HashMap<String, ItemDefinition>();
 	public int itemTypes = 0;
@@ -36,80 +35,65 @@ public class ItemDefinitionsStore implements ItemsDefinitions
 	private final ModsManager modsManager;
 
 	private static final Logger logger = LoggerFactory.getLogger("content.items");
+
 	public Logger logger() {
 		return logger;
 	}
-	
-	public ItemDefinitionsStore(GameContentStore gameContentStore)
-	{
+
+	public ItemDefinitionsStore(GameContentStore gameContentStore) {
 		this.content = gameContentStore;
 		this.modsManager = gameContentStore.modsManager();
 
-		//reload();
+		// reload();
 	}
 
-	public void reload()
-	{
+	public void reload() {
 		dictionary.clear();
 
 		Iterator<Asset> i = modsManager.getAllAssetsByExtension("items");
-		while (i.hasNext())
-		{
+		while (i.hasNext()) {
 			Asset f = i.next();
 			logger().debug("Reading items definitions in : " + f);
 			readItemsDefinitions(f);
 		}
 	}
 
-	private void readItemsDefinitions(Asset f)
-	{
+	private void readItemsDefinitions(Asset f) {
 		if (f == null)
 			return;
-		try
-		{
+		try {
 			BufferedReader reader = new BufferedReader(f.reader());
 			String line = "";
 
-			//ItemTypeImpl currentItemType = null;
-			while ((line = reader.readLine()) != null)
-			{
+			// ItemTypeImpl currentItemType = null;
+			while ((line = reader.readLine()) != null) {
 				line = line.replace("\t", "");
-				if (line.startsWith("#"))
-				{
+				if (line.startsWith("#")) {
 					// It's a comment, ignore.
-				}
-				else if (line.startsWith("end"))
-				{
-					//if (currentItemType == null)
+				} else if (line.startsWith("end")) {
+					// if (currentItemType == null)
 					{
 						logger().warn("Syntax error in file : " + f + " : ");
 						continue;
 					}
-				}
-				else if (line.startsWith("item"))
-				{
-					if (line.contains(" "))
-					{
+				} else if (line.startsWith("item")) {
+					if (line.contains(" ")) {
 						String[] split = line.split(" ");
 						String itemName = split[1];
 
-						try
-						{
-							ItemDefinitionImplementation itemType = new ItemDefinitionImplementation(this, itemName, reader);
+						try {
+							ItemDefinitionImplementation itemType = new ItemDefinitionImplementation(this, itemName,
+									reader);
 
 							dictionary.put(itemType.getInternalName(), itemType);
-						}
-						catch (IllegalItemDeclarationException e)
-						{
+						} catch (IllegalItemDeclarationException e) {
 							e.printStackTrace();
 						}
 					}
 				}
 			}
 			reader.close();
-		}
-		catch (IOException e)
-		{
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
@@ -123,14 +107,12 @@ public class ItemDefinitionsStore implements ItemsDefinitions
 	}
 
 	@Override
-	public Iterator<ItemDefinition> all()
-	{
+	public Iterator<ItemDefinition> all() {
 		return dictionary.values().iterator();
 	}
 
 	@Override
-	public Content parent()
-	{
+	public Content parent() {
 		return content;
 	}
 }

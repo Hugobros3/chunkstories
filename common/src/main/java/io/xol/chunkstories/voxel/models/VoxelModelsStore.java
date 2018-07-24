@@ -54,7 +54,7 @@ public class VoxelModelsStore implements Content.Voxels.VoxelModels {
 			name = name.substring(0, name.length() - 8);
 		if (models.containsKey(name)) {
 			CustomVoxelModel renderer = (CustomVoxelModel) models.get(name);
-			if(renderer != null)
+			if (renderer != null)
 				return renderer;
 		}
 		logger().warn("Couldn't serve voxel model : " + name);

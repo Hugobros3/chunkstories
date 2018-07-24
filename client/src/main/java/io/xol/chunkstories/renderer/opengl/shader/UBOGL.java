@@ -13,22 +13,22 @@ import io.xol.chunkstories.api.rendering.shader.ShaderBuffer;
 
 public class UBOGL implements ShaderBuffer {
 	protected int glId = -1;
-	
+
 	public UBOGL() {
 		glId = glGenBuffers();
 	}
-	
+
 	private void bind() {
 		glBindBuffer(GL_UNIFORM_BUFFER, glId);
 	}
-	
+
 	@Override
 	public void upload(ByteBuffer data) {
 		bind();
 		data.flip();
 		glBufferData(GL_UNIFORM_BUFFER, data, GL_STATIC_DRAW);
 	}
-	
+
 	@Override
 	public void destroy() {
 		glDeleteBuffers(glId);

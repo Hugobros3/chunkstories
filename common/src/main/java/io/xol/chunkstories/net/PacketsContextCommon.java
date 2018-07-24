@@ -29,13 +29,15 @@ import io.xol.chunkstories.api.net.packets.PacketText;
 import io.xol.chunkstories.api.world.WorldNetworked;
 import io.xol.chunkstories.net.packets.PacketSendFile;
 
-/** The task of the packet processor is to decode & sort incomming packets by ID and to send outcoming packets with the right packet ID. */
-public abstract class PacketsContextCommon implements PacketReceptionContext, PacketSendingContext
-{
+/**
+ * The task of the packet processor is to decode & sort incomming packets by ID
+ * and to send outcoming packets with the right packet ID.
+ */
+public abstract class PacketsContextCommon implements PacketReceptionContext, PacketSendingContext {
 	protected final GameContext gameContext;
 	protected final Content.PacketDefinitions store;
 	protected final Connection connection;
-	
+
 	protected OnlineContentTranslator contentTranslator;
 
 	public PacketsContextCommon(GameContext gameContext, Connection connection) {
@@ -46,9 +48,9 @@ public abstract class PacketsContextCommon implements PacketReceptionContext, Pa
 
 	/** Represents whoever we're discussing with */
 	public abstract Interlocutor getInterlocutor();
-	
+
 	public abstract WorldNetworked getWorld();
-	
+
 	public OnlineContentTranslator getContentTranslator() {
 		return contentTranslator;
 	}
@@ -56,42 +58,43 @@ public abstract class PacketsContextCommon implements PacketReceptionContext, Pa
 	public void setContentTranslator(OnlineContentTranslator contentTranslator) {
 		this.contentTranslator = contentTranslator;
 	}
-	
+
 	public Connection getConnection() {
 		return connection;
 	}
-	
+
 	/**
-	 * Read 1 or 2 bytes to get the next packet ID and returns a packet of this type if it exists
+	 * Read 1 or 2 bytes to get the next packet ID and returns a packet of this type
+	 * if it exists
 	 * 
 	 * @param in The InputStream of the connection
 	 * @return A valid Packet
-	 * @throws IOException If the stream dies when we process it
-	 * @throws UnknowPacketException If the packet id we obtain is invalid
-	 * @throws IllegalPacketException If the packet we obtain is illegal ( if we're not supposed to receive or send it )
-	 * @throws PacketProcessingException 
+	 * @throws IOException               If the stream dies when we process it
+	 * @throws UnknowPacketException     If the packet id we obtain is invalid
+	 * @throws IllegalPacketException    If the packet we obtain is illegal ( if
+	 *                                   we're not supposed to receive or send it )
+	 * @throws PacketProcessingException
 	 */
-	public LogicalPacketDatagram digestIncommingPacket(DataInputStream in) throws IOException, UnknowPacketException
-	{
+	public LogicalPacketDatagram digestIncommingPacket(DataInputStream in) throws IOException, UnknowPacketException {
 		int firstByte = in.readByte();
 		int packetTypeId = 0;
-		//If it is under 127 unsigned it's a 1-byte packet [0.firstByte(1.7)]
+		// If it is under 127 unsigned it's a 1-byte packet [0.firstByte(1.7)]
 		if ((firstByte & 0x80) == 0)
 			packetTypeId = firstByte;
-		else
-		{
-			//It's a 2-byte packet [0.firstByte(1.7)][secondByte(0.8)]
+		else {
+			// It's a 2-byte packet [0.firstByte(1.7)][secondByte(0.8)]
 			int secondByte = in.readByte();
 			secondByte = secondByte & 0xFF;
 			packetTypeId = secondByte | (firstByte & 0x7F) << 8;
 		}
-		
-		PacketDefinitionImplementation def = (PacketDefinitionImplementation) this.getContentTranslator().getPacketForId(packetTypeId);
-		if(def == null) {
+
+		PacketDefinitionImplementation def = (PacketDefinitionImplementation) this.getContentTranslator()
+				.getPacketForId(packetTypeId);
+		if (def == null) {
 			throw new UnknowPacketException(packetTypeId);
 		}
-		
-		if(def.isStreamed() || def.getName().equals("file")) {
+
+		if (def.isStreamed() || def.getName().equals("file")) {
 			System.out.println("is streamed" + def.isStreamed());
 			return new LogicalPacketDatagram(def, -1) {
 
@@ -102,19 +105,19 @@ public abstract class PacketsContextCommon implements PacketReceptionContext, Pa
 
 				@Override
 				public void dispose() {
-					
+
 				}
-				
+
 			};
 		}
-		
+
 		int packetLength = in.readInt();
 		byte[] bitme = new byte[packetLength];
 		in.readFully(bitme);
-		
+
 		return new PacketIngoingBuffered(def, packetLength, bitme);
 	}
-	
+
 	private void writePacketIdHeader(DataOutputStream out, short id) throws IOException {
 		if (id < 127)
 			out.writeByte((byte) id);
@@ -127,7 +130,7 @@ public abstract class PacketsContextCommon implements PacketReceptionContext, Pa
 	public PacketOutgoing buildOutgoingPacket(Packet packet) throws UnknowPacketException, IOException {
 		try {
 			short packet_id = findIdForPacket(packet);
-			if(packet instanceof PacketSendFile) {
+			if (packet instanceof PacketSendFile) {
 				return new PacketOutgoing() {
 
 					@Override
@@ -135,20 +138,21 @@ public abstract class PacketsContextCommon implements PacketReceptionContext, Pa
 						writePacketIdHeader(out, packet_id);
 						packet.send(getInterlocutor(), out, PacketsContextCommon.this);
 					}
-					
+
 				};
 			}
-			
+
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			DataOutputStream dos = new DataOutputStream(baos);
-			
+
 			packet.send(getInterlocutor(), dos, this);
-			
-			PacketOutgoingBuffered buffered = new PacketOutgoingBuffered(this, packet_id, baos.size(), baos.toByteArray());
+
+			PacketOutgoingBuffered buffered = new PacketOutgoingBuffered(this, packet_id, baos.size(),
+					baos.toByteArray());
 			return buffered;
 		} catch (IOException | UnknowPacketException e) {
 			logger().error("Error : unable to buffer Packet " + packet, e);
-			//e.printStackTrace(logger().getPrintWriter());
+			// e.printStackTrace(logger().getPrintWriter());
 		}
 		return null;
 	}
@@ -164,12 +168,12 @@ public abstract class PacketsContextCommon implements PacketReceptionContext, Pa
 				throw new UnknowPacketException(0xFF);
 		} else {
 			PacketDefinition def = world.getContent().packets().getPacketFromInstance(packet);
-			if(def == null)
-				logger.error("Could not find the definition of packet "+packet);
+			if (def == null)
+				logger.error("Could not find the definition of packet " + packet);
 			short id = (short) world.getContentTranslator().getIdForPacket(def);
-			if(id == -1) {
-				logger.error("Could not find the id of packet definition "+def.getName());
-				//((AbstractContentTranslator)world.getContentTranslator()).test();
+			if (id == -1) {
+				logger.error("Could not find the id of packet definition " + def.getName());
+				// ((AbstractContentTranslator)world.getContentTranslator()).test();
 				throw new UnknowPacketException(packet);
 			}
 			return id;
@@ -177,6 +181,7 @@ public abstract class PacketsContextCommon implements PacketReceptionContext, Pa
 	}
 
 	public static final Logger logger = LoggerFactory.getLogger("net.packetsProcessor");
+
 	public Logger logger() {
 		return logger;
 	}

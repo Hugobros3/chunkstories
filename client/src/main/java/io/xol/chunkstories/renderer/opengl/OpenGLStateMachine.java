@@ -37,17 +37,17 @@ import io.xol.chunkstories.api.rendering.StateMachine;
 /**
  * Abstracts the OpenGL state machine, reduces state changes by tracking them
  */
-public final class OpenGLStateMachine implements StateMachine
-{
-	public static OpenGLStateMachine DEFAULT = new OpenGLStateMachine(DepthTestMode.LESS_OR_EQUAL, BlendMode.DISABLED, CullingMode.COUNTERCLOCKWISE, PolygonFillMode.FILL);
+public final class OpenGLStateMachine implements StateMachine {
+	public static OpenGLStateMachine DEFAULT = new OpenGLStateMachine(DepthTestMode.LESS_OR_EQUAL, BlendMode.DISABLED,
+			CullingMode.COUNTERCLOCKWISE, PolygonFillMode.FILL);
 
 	private DepthTestMode depthTestMode;
 	private BlendMode blendMode;
 	private CullingMode cullingMode;
 	private PolygonFillMode polygonFillMode;
 
-	public OpenGLStateMachine(DepthTestMode depthTestMode, BlendMode blendMode, CullingMode cullingMode, PolygonFillMode polygonFillMode)
-	{
+	public OpenGLStateMachine(DepthTestMode depthTestMode, BlendMode blendMode, CullingMode cullingMode,
+			PolygonFillMode polygonFillMode) {
 		this.depthTestMode = depthTestMode;
 		this.blendMode = blendMode;
 		this.cullingMode = cullingMode;
@@ -90,13 +90,11 @@ public final class OpenGLStateMachine implements StateMachine
 		this.polygonFillMode = polygonFillMode;
 	}
 
-	public void setup(RenderingInterface renderingInterface)
-	{
-		switch (depthTestMode)
-		{
+	public void setup(RenderingInterface renderingInterface) {
+		switch (depthTestMode) {
 		case DISABLED:
 			depth(false);
-			//depthFunc(-1);
+			// depthFunc(-1);
 			break;
 		case ALWAYS:
 			depth(true);
@@ -124,23 +122,22 @@ public final class OpenGLStateMachine implements StateMachine
 			break;
 		}
 
-		switch (blendMode)
-		{
+		switch (blendMode) {
 		case DISABLED:
-			//alphaTest(false);
+			// alphaTest(false);
 			blend(false);
 			break;
-		//case ALPHA_TEST:
-		//	alphaTest(true);
-		//	blend(false);
-		//	break;
+		// case ALPHA_TEST:
+		// alphaTest(true);
+		// blend(false);
+		// break;
 		case MIX:
-			//alphaTest(false);
+			// alphaTest(false);
 			blend(true);
 			blendFunc(blendMode);
 			break;
 		case ADD:
-			//alphaTest(true);
+			// alphaTest(true);
 			blend(true);
 			blendFunc(blendMode);
 			break;
@@ -149,9 +146,8 @@ public final class OpenGLStateMachine implements StateMachine
 			blendFunc(blendMode);
 		}
 
-		//Culling mode
-		switch (cullingMode)
-		{
+		// Culling mode
+		switch (cullingMode) {
 		case DISABLED:
 			cull(false);
 			break;
@@ -165,10 +161,8 @@ public final class OpenGLStateMachine implements StateMachine
 			break;
 		}
 
-		if (polygonFillMode != currentPolygonFillMode)
-		{
-			switch (polygonFillMode)
-			{
+		if (polygonFillMode != currentPolygonFillMode) {
+			switch (polygonFillMode) {
 			case FILL:
 				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 				break;
@@ -186,13 +180,11 @@ public final class OpenGLStateMachine implements StateMachine
 		}
 	}
 
-	private void blendFunc(BlendMode blendMode)
-	{
+	private void blendFunc(BlendMode blendMode) {
 		if (blendMode.ordinal() == currentBlendFunc)
 			return;
 
-		switch (blendMode)
-		{
+		switch (blendMode) {
 		case ADD:
 			glBlendFunc(GL_ONE, GL_ONE);
 			break;
@@ -209,64 +201,48 @@ public final class OpenGLStateMachine implements StateMachine
 		currentBlendFunc = blendMode.ordinal();
 	}
 
-	private void depth(boolean on)
-	{
-		if (on)
-		{
+	private void depth(boolean on) {
+		if (on) {
 			if (!isBlendEnabled)
 				glEnable(GL_DEPTH_TEST);
-		}
-		else
-		{
+		} else {
 			if (isBlendEnabled)
 				glDisable(GL_DEPTH_TEST);
 		}
 		isBlendEnabled = on;
 	}
 
-	private void depthFunc(int depthFunc)
-	{
-		if (depthFunc != currentDepthFunc)
-		{
+	private void depthFunc(int depthFunc) {
+		if (depthFunc != currentDepthFunc) {
 			glDepthFunc(depthFunc);
 			currentDepthFunc = depthFunc;
 		}
 	}
 
-	private void blend(boolean on)
-	{
-		if (on)
-		{
+	private void blend(boolean on) {
+		if (on) {
 			if (!isBlendingEnabled)
 				glEnable(GL_BLEND);
-		}
-		else
-		{
+		} else {
 			if (isBlendingEnabled)
 				glDisable(GL_BLEND);
 		}
 		isBlendingEnabled = on;
 	}
 
-	private void cull(boolean on)
-	{
-		if (on)
-		{
+	private void cull(boolean on) {
+		if (on) {
 			if (!isCullingEnabled)
 				glEnable(GL_CULL_FACE);
-		}
-		else
-		{
+		} else {
 			if (isCullingEnabled)
 				glDisable(GL_CULL_FACE);
 		}
 		isCullingEnabled = on;
 	}
 
-	private void cullFF(int mode)
-	{
-		if (mode != currentCullFunc)
-		{
+	private void cullFF(int mode) {
+		if (mode != currentCullFunc) {
 			glFrontFace(mode);
 			currentCullFunc = mode;
 		}

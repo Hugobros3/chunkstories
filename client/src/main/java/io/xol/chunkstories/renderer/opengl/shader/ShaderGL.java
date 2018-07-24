@@ -72,13 +72,13 @@ import io.xol.chunkstories.api.content.mods.ModsManager;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.shader.Shader;
 import io.xol.chunkstories.api.rendering.shader.ShaderBuffer;
+
 /**
  * Handles a GLSL shader
  */
-public class ShaderGL implements Shader
-{
+public class ShaderGL implements Shader {
 	private final ModsManager modsManager;
-	
+
 	private final String shaderName;
 
 	private int shaderProgramId;
@@ -97,7 +97,7 @@ public class ShaderGL implements Shader
 
 	private HashMap<String, Object> uncommitedUniforms = new HashMap<String, Object>();
 	private HashMap<String, Object> commitedUniforms = new HashMap<String, Object>();
-	
+
 	private HashMap<String, SamplerType> samplers = new HashMap<>();
 
 	public ShaderGL(ModsManager modsManager, String shaderName) {
@@ -138,16 +138,19 @@ public class ShaderGL implements Shader
 			logger().error("Exception: {}", e);
 			return;
 		}
-		
+
 		vertexShaderId = glCreateShader(GL_VERTEX_SHADER);
 		fragShaderId = glCreateShader(GL_FRAGMENT_SHADER);
-		
-		if(geometrySource != null)
+
+		if (geometrySource != null)
 			geometryShaderId = glCreateShader(GL_GEOMETRY_SHADER);
 
-		//Anti-AMD bullshit : AMD drivers have this stupid design decision of attributing vertex attributes by lexicographical order instead of
-		//order of apparition, leading to these annoying issues where an optional attribute is in index zero and disabling it screws the drawcalls
-		//To counter this, this piece of code forces the attributes locations to be declared in proper order
+		// Anti-AMD bullshit : AMD drivers have this stupid design decision of
+		// attributing vertex attributes by lexicographical order instead of
+		// order of apparition, leading to these annoying issues where an optional
+		// attribute is in index zero and disabling it screws the drawcalls
+		// To counter this, this piece of code forces the attributes locations to be
+		// declared in proper order
 		int i = 0;
 		for (String line : vertexSource.toString().split("\n")) {
 			if (line.startsWith("in ")) {
@@ -160,53 +163,55 @@ public class ShaderGL implements Shader
 		glShaderSource(vertexShaderId, vertexSource);
 		glCompileShader(vertexShaderId);
 
-		//Parse the fragment shader to look for outputs and assign them locations based on their order of appearance
-		//Also look for samplers
+		// Parse the fragment shader to look for outputs and assign them locations based
+		// on their order of appearance
+		// Also look for samplers
 		int j = 0;
 		for (String line : fragSource.toString().split("\n")) {
 			if (line.startsWith("out ")) {
 				String outputName = line.split(" ")[2].replace(";", "");
-				if(outputName.equals("gl_FragDepth")) {
+				if (outputName.equals("gl_FragDepth")) {
 					logger.info("Writing to depth in frag enabled");
 					continue;
 				}
 				glBindFragDataLocation(shaderProgramId, j, outputName);
 				j++;
-			} else if(line.startsWith("uniform ")) {
+			} else if (line.startsWith("uniform ")) {
 				String tokens[] = line.split(" ");
-				if(tokens.length >= 3) {
-					if(tokens[1].startsWith("sampler") || tokens[1].startsWith("usampler") || tokens[1].startsWith("isampler")) {
+				if (tokens.length >= 3) {
+					if (tokens[1].startsWith("sampler") || tokens[1].startsWith("usampler")
+							|| tokens[1].startsWith("isampler")) {
 						SamplerType type = null;
 
-						if(tokens[1].endsWith("Shadow"))
+						if (tokens[1].endsWith("Shadow"))
 							tokens[1] = tokens[1].substring(0, tokens[1].length() - 6);
-						
-						if(tokens[1].endsWith("1D"))
+
+						if (tokens[1].endsWith("1D"))
 							type = SamplerType.TEXTURE_1D;
-						else if(tokens[1].endsWith("2D"))
+						else if (tokens[1].endsWith("2D"))
 							type = SamplerType.TEXTURE_2D;
-						else if(tokens[1].endsWith("3D"))
+						else if (tokens[1].endsWith("3D"))
 							type = SamplerType.TEXTURE_3D;
-						else if(tokens[1].endsWith("Cube"))
+						else if (tokens[1].endsWith("Cube"))
 							type = SamplerType.CUBEMAP;
-						else if(tokens[1].endsWith("2DArray"))
+						else if (tokens[1].endsWith("2DArray"))
 							type = SamplerType.ARRAY_TEXTURE_2D;
 						else {
-							logger.error("Could not recognize the sampler type: "+tokens[1]);
+							logger.error("Could not recognize the sampler type: " + tokens[1]);
 						}
-						
+
 						tokens[2] = tokens[2].substring(0, tokens[2].length() - 1);
-						if(type != null) {
+						if (type != null) {
 							samplers.put(tokens[2], type);
 						}
 					}
 				}
 			}
 		}
-		
+
 		glShaderSource(fragShaderId, fragSource);
 		glCompileShader(fragShaderId);
-		
+
 		if (geometrySource != null) {
 			glShaderSource(geometryShaderId, geometrySource);
 			glCompileShader(geometryShaderId);
@@ -262,7 +267,7 @@ public class ShaderGL implements Shader
 			}
 			return;
 		}
-		
+
 		if (geometrySource != null && glGetShaderi(geometryShaderId, GL_COMPILE_STATUS) == GL_FALSE) {
 			logger().error("Failed to compile shader program " + shaderName + " (geometry)");
 
@@ -288,7 +293,7 @@ public class ShaderGL implements Shader
 			}
 			return;
 		}
-		
+
 		glAttachShader(shaderProgramId, vertexShaderId);
 		glAttachShader(shaderProgramId, fragShaderId);
 
@@ -316,6 +321,7 @@ public class ShaderGL implements Shader
 	}
 
 	private static final Logger logger = LoggerFactory.getLogger("rendering.shaders");
+
 	public static Logger logger() {
 		return logger;
 	}
@@ -406,7 +412,8 @@ public class ShaderGL implements Shader
 
 	@Override
 	public void setUniform4f(String uniformName, Vector4dc uniformData) {
-		setUniform4f(uniformName, (float)uniformData.x(), (float)uniformData.y(), (float)uniformData.z(), (float)uniformData.w());
+		setUniform4f(uniformName, (float) uniformData.x(), (float) uniformData.y(), (float) uniformData.z(),
+				(float) uniformData.w());
 	}
 
 	@Override
@@ -439,19 +446,21 @@ public class ShaderGL implements Shader
 		int uniformLocation = getUniformLocation(uniformName);
 		if (uniformLocation == -1)
 			return;
-		
-		if(uniformData instanceof Float)
-			glUniform1f(uniformLocation, (Float)uniformData);
-		if(uniformData instanceof Double)
-			glUniform1f(uniformLocation, (Float)((Double)uniformData).floatValue());
-		else if(uniformData instanceof Integer)
-			glUniform1i(uniformLocation, (Integer)uniformData);
-		else if(uniformData instanceof Vector2fc)
-			glUniform2f(uniformLocation, ((Vector2fc)uniformData).x(), ((Vector2fc)uniformData).y());
-		else if(uniformData instanceof Vector3fc)
-			glUniform3f(uniformLocation, ((Vector3fc)uniformData).x(), ((Vector3fc)uniformData).y(), ((Vector3fc)uniformData).z());
-		else if(uniformData instanceof Vector4fc)
-			glUniform4f(uniformLocation, ((Vector4fc) uniformData).x(), ((Vector4fc) uniformData).y(), ((Vector4fc) uniformData).z(), ((Vector4fc) uniformData).w());
+
+		if (uniformData instanceof Float)
+			glUniform1f(uniformLocation, (Float) uniformData);
+		if (uniformData instanceof Double)
+			glUniform1f(uniformLocation, (Float) ((Double) uniformData).floatValue());
+		else if (uniformData instanceof Integer)
+			glUniform1i(uniformLocation, (Integer) uniformData);
+		else if (uniformData instanceof Vector2fc)
+			glUniform2f(uniformLocation, ((Vector2fc) uniformData).x(), ((Vector2fc) uniformData).y());
+		else if (uniformData instanceof Vector3fc)
+			glUniform3f(uniformLocation, ((Vector3fc) uniformData).x(), ((Vector3fc) uniformData).y(),
+					((Vector3fc) uniformData).z());
+		else if (uniformData instanceof Vector4fc)
+			glUniform4f(uniformLocation, ((Vector4fc) uniformData).x(), ((Vector4fc) uniformData).y(),
+					((Vector4fc) uniformData).z(), ((Vector4fc) uniformData).w());
 
 		else if (uniformData instanceof Matrix4fc) {
 			((Matrix4fc) uniformData).get(matrix4fBuffer);
@@ -507,18 +516,18 @@ public class ShaderGL implements Shader
 			return location;
 		}
 	}
-	
+
 	@Override
 	public void attachUBO(String bindingPoint, ShaderBuffer buf) {
-		UBOGL ubo = (UBOGL)buf;
-		
+		UBOGL ubo = (UBOGL) buf;
+
 		int shader_bind_point = glGetUniformBlockIndex(this.shaderProgramId, bindingPoint);
-		if(shader_bind_point < 0)
+		if (shader_bind_point < 0)
 			return;
-		
+
 		int TODO = 0;
 		glUniformBlockBinding(this.shaderProgramId, shader_bind_point, TODO);
-		
+
 		glBindBufferBase(GL_UNIFORM_BUFFER, TODO, ubo.glId);
 	}
 

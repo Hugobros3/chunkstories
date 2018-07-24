@@ -26,142 +26,126 @@ import io.xol.chunkstories.content.GameContentStore;
 import io.xol.chunkstories.voxel.material.VoxelMaterialsStore;
 import io.xol.chunkstories.voxel.models.VoxelModelsStore;
 
-public class VoxelsStore implements ClientContent.ClientVoxels
-{
+public class VoxelsStore implements ClientContent.ClientVoxels {
 	private final GameContentStore content;
 
 	private final VoxelMaterialsStore materials;
 	private final VoxelTexturesStoreAndAtlaser textures;
 	private final VoxelModelsStore models;
-	
+
 	private VoxelRenderer defaultVoxelRenderer;
-	
+
 	public Map<String, Voxel> voxelsByName = new HashMap<String, Voxel>();
 	public int voxelTypes = 0;
 	public int lastAllocatedId;
 
 	private Voxel air;
 
-	public VoxelsStore(GameContentStore content)
-	{
+	public VoxelsStore(GameContentStore content) {
 		this.content = content;
 
 		this.materials = new VoxelMaterialsStore(this);
 		this.textures = new VoxelTexturesStoreAndAtlaser(this);
 		this.models = new VoxelModelsStore(this);
-		//this.reloadVoxelTypes();
+		// this.reloadVoxelTypes();
 	}
-	
+
 	@Override
 	public VoxelMaterialsStore materials() {
 		return materials;
 	}
-	
+
 	@Override
-	public VoxelTexturesStoreAndAtlaser textures()
-	{
+	public VoxelTexturesStoreAndAtlaser textures() {
 		return textures;
 	}
 
 	@Override
-	public VoxelModelsStore models()
-	{
+	public VoxelModelsStore models() {
 		return models;
 	}
-	
-	public void reload()
-	{
+
+	public void reload() {
 		this.materials.reload();
 		this.textures.buildTextureAtlas();
 		this.models.resetAndLoadModels();
-		
+
 		this.reloadVoxelTypes();
 	}
-	
+
 	@SuppressWarnings("unchecked")
-	private void reloadVoxelTypes()
-	{
-		//Discard previous voxels
-		//Arrays.fill(voxels, null);
-		//attributedIds.clear();
+	private void reloadVoxelTypes() {
+		// Discard previous voxels
+		// Arrays.fill(voxels, null);
+		// attributedIds.clear();
 		voxelsByName.clear();
-		
-		//First load the default voxel renderer
+
+		// First load the default voxel renderer
 		try {
-			Class<VoxelRenderer> defaultVoxelRendererClass = (Class<VoxelRenderer>) content.modsManager().getClassByName("io.xol.chunkstories.core.voxel.renderers.DefaultVoxelRenderer");
-			Constructor<VoxelRenderer> defaultVoxelRendererConstructor = defaultVoxelRendererClass.getConstructor(Voxels.class);
+			Class<VoxelRenderer> defaultVoxelRendererClass = (Class<VoxelRenderer>) content.modsManager()
+					.getClassByName("io.xol.chunkstories.core.voxel.renderers.DefaultVoxelRenderer");
+			Constructor<VoxelRenderer> defaultVoxelRendererConstructor = defaultVoxelRendererClass
+					.getConstructor(Voxels.class);
 			defaultVoxelRenderer = defaultVoxelRendererConstructor.newInstance(this);
-		}
-		catch(Exception e) {
+		} catch (Exception e) {
 			System.out.println("could not instanciate the default voxel renderer");
 			System.exit(-900);
 		}
-		
+
 		Iterator<Asset> i = content.modsManager().getAllAssetsByExtension("voxels");
-		while (i.hasNext())
-		{
+		while (i.hasNext()) {
 			Asset f = i.next();
 			logger().debug("Reading voxels definitions in : " + f);
 			readVoxelsDefinitions(f);
 		}
 	}
-	
-	private void readVoxelsDefinitions(Asset f)
-	{
+
+	private void readVoxelsDefinitions(Asset f) {
 		if (f == null)
 			return;
-		try
-		{
+		try {
 			BufferedReader reader = new BufferedReader(f.reader());
 
 			String line = "";
 
-			//Voxel voxel = null;
+			// Voxel voxel = null;
 			int ln = 0;
 			int loadedVoxels = 0;
-			while ((line = reader.readLine()) != null)
-			{
+			while ((line = reader.readLine()) != null) {
 				line = line.replace("\t", "");
-				if (line.startsWith("#"))
-				{
+				if (line.startsWith("#")) {
 					// It's a comment, ignore.
-				}
-				else
-				{
-					if (line.startsWith("voxel"))
-					{
+				} else {
+					if (line.startsWith("voxel")) {
 						String splitted[] = line.split(" ");
-						
-						if(splitted.length < 2)
-						{
-							logger().warn("Parse error in file " + f + ", line " + ln + ", malformed voxel tag. Aborting read.");
+
+						if (splitted.length < 2) {
+							logger().warn("Parse error in file " + f + ", line " + ln
+									+ ", malformed voxel tag. Aborting read.");
 							break;
 						}
-						
-						//int id = Integer.parseInt(splitted[2]);
-						String name = splitted[1];
-						
-						//if (voxels[id] != null)
-						//	logger().warn("Voxel redefinition in file " + f + ", line " + ln + ", overriding id " + id + " with " + name);
 
-						try
-						{
-							VoxelDefinitionImplementation voxelType = new VoxelDefinitionImplementation(this, name, reader);
+						// int id = Integer.parseInt(splitted[2]);
+						String name = splitted[1];
+
+						// if (voxels[id] != null)
+						// logger().warn("Voxel redefinition in file " + f + ", line " + ln + ",
+						// overriding id " + id + " with " + name);
+
+						try {
+							VoxelDefinitionImplementation voxelType = new VoxelDefinitionImplementation(this, name,
+									reader);
 							Voxel voxel = voxelType.getVoxelObject();
-							
+
 							voxelsByName.put(voxel.getName(), voxel);
 							loadedVoxels++;
-							
-							if(name.equals("air"))
+
+							if (name.equals("air"))
 								air = voxel;
-						}
-						catch (IllegalVoxelDeclarationException e)
-						{
+						} catch (IllegalVoxelDeclarationException e) {
 							e.printStackTrace();
 						}
-					}
-					else if (line.startsWith("end"))
-					{
+					} else if (line.startsWith("end")) {
 						logger().warn("Parse error in file " + f + ", line " + ln + ", unexpected 'end' token.");
 					}
 				}
@@ -170,28 +154,23 @@ public class VoxelsStore implements ClientContent.ClientVoxels
 			logger().debug("Parsed file " + f + " correctly, loading " + loadedVoxels + " voxels.");
 
 			reader.close();
-		}
-		catch (IOException e)
-		{
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
 	@Override
-	public Voxel getVoxel(String voxelName)
-	{
+	public Voxel getVoxel(String voxelName) {
 		return voxelsByName.get(voxelName);
 	}
 
 	@Override
-	public Iterator<Voxel> all()
-	{
+	public Iterator<Voxel> all() {
 		return voxelsByName.values().iterator();
 	}
 
 	@Override
-	public GameContentStore parent()
-	{
+	public GameContentStore parent() {
 		return content;
 	}
 
@@ -199,8 +178,9 @@ public class VoxelsStore implements ClientContent.ClientVoxels
 	public VoxelRenderer getDefaultVoxelRenderer() {
 		return defaultVoxelRenderer;
 	}
-	
+
 	private static final Logger logger = LoggerFactory.getLogger("content.voxels");
+
 	public Logger logger() {
 		return logger;
 	}
@@ -209,6 +189,5 @@ public class VoxelsStore implements ClientContent.ClientVoxels
 	public Voxel air() {
 		return air;
 	}
-
 
 }

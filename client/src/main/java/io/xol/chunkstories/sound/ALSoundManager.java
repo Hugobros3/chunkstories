@@ -56,78 +56,70 @@ import io.xol.chunkstories.sound.source.ALBufferedSoundSource;
 import io.xol.chunkstories.sound.source.ALSoundSource;
 import io.xol.chunkstories.sound.source.DummySoundSource;
 
-
-
-public class ALSoundManager implements ClientSoundManager
-{
+public class ALSoundManager implements ClientSoundManager {
 	protected Queue<ALSoundSource> playingSoundSources = new ConcurrentLinkedQueue<ALSoundSource>();
 	Random rng;
 
 	Thread contextThread;
 	// Are we allowed to use EFX effects
 	public static boolean efxOn = false;
-	
+
 	private AtomicBoolean shutdownState = new AtomicBoolean(false);
 
 	int[] auxEffectsSlotsId;
-	
+
 	private long device;
 	private long context;
-	
+
 	public final static Logger logger = LoggerFactory.getLogger("sound");
 
-	public ALSoundManager()
-	{
+	public ALSoundManager() {
 		rng = new Random();
-		try
-		{
-			device = alcOpenDevice((ByteBuffer)null);
-	        if (device == MemoryUtil.NULL) {
-	            throw new IllegalStateException("Failed to open the default device.");
-	        }
+		try {
+			device = alcOpenDevice((ByteBuffer) null);
+			if (device == MemoryUtil.NULL) {
+				throw new IllegalStateException("Failed to open the default device.");
+			}
 
-	        ALCCapabilities deviceCaps = ALC.createCapabilities(device);
+			ALCCapabilities deviceCaps = ALC.createCapabilities(device);
 
-	        logger.info("OpenALC10: " + deviceCaps.OpenALC10);
-	        logger.info("OpenALC11: " + deviceCaps.OpenALC11);
-	        logger.info("caps.ALC_EXT_EFX = " + deviceCaps.ALC_EXT_EFX);
+			logger.info("OpenALC10: " + deviceCaps.OpenALC10);
+			logger.info("OpenALC11: " + deviceCaps.OpenALC11);
+			logger.info("caps.ALC_EXT_EFX = " + deviceCaps.ALC_EXT_EFX);
 
-	        if (deviceCaps.OpenALC11) {
-	            List<String> devices = ALUtil.getStringList(MemoryUtil.NULL, ALC_ALL_DEVICES_SPECIFIER);
-	            if (devices == null) {
-	                //checkALCError(MemoryUtil.NULL);
-	            } else {
-	                for (int i = 0; i < devices.size(); i++) {
-	                 	logger.debug(i + ": " + devices.get(i));
-	                }
-	            }
-	        }
+			if (deviceCaps.OpenALC11) {
+				List<String> devices = ALUtil.getStringList(MemoryUtil.NULL, ALC_ALL_DEVICES_SPECIFIER);
+				if (devices == null) {
+					// checkALCError(MemoryUtil.NULL);
+				} else {
+					for (int i = 0; i < devices.size(); i++) {
+						logger.debug(i + ": " + devices.get(i));
+					}
+				}
+			}
 
-	        String defaultDeviceSpecifier = alcGetString(MemoryUtil.NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
-	        logger.info("Default device: " + defaultDeviceSpecifier);
+			String defaultDeviceSpecifier = alcGetString(MemoryUtil.NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
+			logger.info("Default device: " + defaultDeviceSpecifier);
 
-	        context = alcCreateContext(device, (IntBuffer)null);
-	        alcMakeContextCurrent(context);
-	        //alcSetThreadContext(context);
-	       
-	        AL.createCapabilities(deviceCaps);
+			context = alcCreateContext(device, (IntBuffer) null);
+			alcMakeContextCurrent(context);
+			// alcSetThreadContext(context);
 
-			
+			AL.createCapabilities(deviceCaps);
+
 			alDistanceModel(AL_LINEAR_DISTANCE_CLAMPED);
 			String alVersion = alGetString(AL_VERSION);
 			String alExtensions = alGetString(AL_EXTENSIONS);
 			contextThread = Thread.currentThread();
 			logger().info("OpenAL context successfully created, version = " + alVersion);
 			logger().info("OpenAL Extensions avaible : " + alExtensions);
-			efxOn = false;//EFXUtil.isEfxSupported();
+			efxOn = false;// EFXUtil.isEfxSupported();
 			logger().info("EFX extension support : " + (efxOn ? "yes" : "no"));
-			if (efxOn)
-			{
-				//Reset error
+			if (efxOn) {
+				// Reset error
 				alGetError();
 				List<Integer> auxSlotsIds = new ArrayList<Integer>();
-				while (true)
-				{
+				while (true) {
 					int generated_id = alGenAuxiliaryEffectSlots();
 					int error = alGetError();
 					if (error != AL_NO_ERROR)
@@ -136,26 +128,21 @@ public class ALSoundManager implements ClientSoundManager
 				}
 				auxEffectsSlotsId = new int[auxSlotsIds.size()];
 				int j = 0;
-				for (int i : auxSlotsIds)
-				{
+				for (int i : auxSlotsIds) {
 					auxEffectsSlotsId[j] = i;
 					j++;
 				}
-				//auxEffectsSlots = new SoundEffect[auxSlotsIds.size()];
-				//logger().info(auxEffectsSlots.length + " avaible auxiliary effects slots.");
+				// auxEffectsSlots = new SoundEffect[auxSlotsIds.size()];
+				// logger().info(auxEffectsSlots.length + " avaible auxiliary effects slots.");
 			}
 
-			Runtime.getRuntime().addShutdownHook(new Thread()
-			{
+			Runtime.getRuntime().addShutdownHook(new Thread() {
 				@Override
-				public void run()
-				{
-		            shutdown();
+				public void run() {
+					shutdown();
 				}
 			});
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			logger.error("Failed to start sound system !");
 			e.printStackTrace();
 		}
@@ -165,31 +152,28 @@ public class ALSoundManager implements ClientSoundManager
 		return logger;
 	}
 
-	public void destroy()
-	{
+	public void destroy() {
 		for (SoundSource ss : playingSoundSources)
 			ss.stop();
 
 		shutdown();
 	}
-	
+
 	private void shutdown() {
-		if(shutdownState.compareAndSet(false, true)) {
-	        alcDestroyContext(context);
-	        alcCloseDevice(device);
+		if (shutdownState.compareAndSet(false, true)) {
+			alcDestroyContext(context);
+			alcCloseDevice(device);
 			logger.info("OpenAL properly shut down.");
 		}
 	}
 
-	public void update()
-	{
+	public void update() {
 		int result;
 		if ((result = alGetError()) != AL_NO_ERROR)
 			logger.error("error at iter :" + SoundDataOggSample.getALErrorString(result));
 		removeUnplayingSources();
 		Iterator<ALSoundSource> i = playingSoundSources.iterator();
-		while (i.hasNext())
-		{
+		while (i.hasNext()) {
 			ALSoundSource soundSource = i.next();
 			soundSource.update(this);
 		}
@@ -198,59 +182,52 @@ public class ALSoundManager implements ClientSoundManager
 	public float x, y, z;
 
 	@Override
-	public void setListenerPosition(float x, float y, float z, Vector3fc lookAt, Vector3fc up)
-	{
+	public void setListenerPosition(float x, float y, float z, Vector3fc lookAt, Vector3fc up) {
 		this.x = x;
 		this.y = y;
 		this.z = z;
 		FloatBuffer posScratch = MemoryUtil.memAllocFloat(3).put(new float[] { x, y, z });
 		posScratch.flip();
 		alListenerfv(AL_POSITION, posScratch);
-		//AL10.alListener(AL10.AL_VELOCITY, xxx);
-		
+		// AL10.alListener(AL10.AL_VELOCITY, xxx);
 
-		FloatBuffer rotScratch = MemoryUtil.memAllocFloat(6).put(new float[] { lookAt.x(), lookAt.y(), lookAt.z(), up.x(), up.y(), up.z() });
+		FloatBuffer rotScratch = MemoryUtil.memAllocFloat(6)
+				.put(new float[] { lookAt.x(), lookAt.y(), lookAt.z(), up.x(), up.y(), up.z() });
 		rotScratch.flip();
 		alListenerfv(AL_ORIENTATION, rotScratch);
-		//FloatBuffer listenerOri = BufferUtils.createFloatBuffer(6).put(new float[] { 0.0f, 0.0f, -1.0f,  0.0f, 1.0f, 0.0f });
+		// FloatBuffer listenerOri = BufferUtils.createFloatBuffer(6).put(new float[] {
+		// 0.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f });
 	}
 
-	public void addSoundSource(ALSoundSource soundSource)
-	{
+	public void addSoundSource(ALSoundSource soundSource) {
 		soundSource.play();
 		playingSoundSources.add(soundSource);
 	}
 
 	@Override
-	public SoundSource playSoundEffect(String soundEffect, Mode mode, Vector3dc position, float pitch, float gain, float attStart, float attEnd)
-	{
-		try
-		{
+	public SoundSource playSoundEffect(String soundEffect, Mode mode, Vector3dc position, float pitch, float gain,
+			float attStart, float attEnd) {
+		try {
 			ALSoundSource ss;
-			if(mode == Mode.STREAMED)
+			if (mode == Mode.STREAMED)
 				ss = new ALBufferedSoundSource(soundEffect, position, pitch, gain, attStart, attEnd);
 			else
 				ss = new ALSoundSource(soundEffect, mode, position, pitch, gain, attStart, attEnd);
-			
+
 			addSoundSource(ss);
 			return ss;
-		}
-		catch (SoundEffectNotFoundException e)
-		{
-			logger.warn("Sound not found "+soundEffect);
+		} catch (SoundEffectNotFoundException e) {
+			logger.warn("Sound not found " + soundEffect);
 		}
 		return new DummySoundSource();
 	}
 
 	@Override
-	public void stopAnySound(String sfx)
-	{
+	public void stopAnySound(String sfx) {
 		Iterator<ALSoundSource> i = playingSoundSources.iterator();
-		while (i.hasNext())
-		{
+		while (i.hasNext()) {
 			ALSoundSource soundSource = i.next();
-			if (soundSource.soundData.getName().indexOf(sfx) != -1)
-			{
+			if (soundSource.soundData.getName().indexOf(sfx) != -1) {
 				soundSource.stop();
 				i.remove();
 			}
@@ -258,22 +235,18 @@ public class ALSoundManager implements ClientSoundManager
 	}
 
 	@Override
-	public void stopAnySound()
-	{
+	public void stopAnySound() {
 		for (SoundSource ss : playingSoundSources)
 			ss.stop();
 		playingSoundSources.clear();
 	}
 
-	int removeUnplayingSources()
-	{
+	int removeUnplayingSources() {
 		int j = 0;
 		Iterator<ALSoundSource> i = playingSoundSources.iterator();
-		while (i.hasNext())
-		{
+		while (i.hasNext()) {
 			SoundSource soundSource = i.next();
-			if (soundSource.isDonePlaying())
-			{
+			if (soundSource.isDonePlaying()) {
 				soundSource.stop();
 				i.remove();
 				j++;
@@ -283,45 +256,42 @@ public class ALSoundManager implements ClientSoundManager
 	}
 
 	@Override
-	public Iterator<SoundSource> getAllPlayingSounds()
-	{
-		return new Iterator<SoundSource>()
-		{
+	public Iterator<SoundSource> getAllPlayingSounds() {
+		return new Iterator<SoundSource>() {
 			Iterator<ALSoundSource> i = playingSoundSources.iterator();
 
 			@Override
-			public boolean hasNext()
-			{
+			public boolean hasNext() {
 				return i.hasNext();
 			}
 
 			@Override
-			public SoundSource next()
-			{
+			public SoundSource next() {
 				return i.next();
 			}
 		};
 	}
 
 	@Override
-	public SoundSource replicateServerSoundSource(String soundName, Mode mode, Vector3dc position, float pitch, float gain, float attenuationStart, float attenuationEnd, long UUID) {
+	public SoundSource replicateServerSoundSource(String soundName, Mode mode, Vector3dc position, float pitch,
+			float gain, float attenuationStart, float attenuationEnd, long UUID) {
 		try {
 			ALSoundSource soundSource = null;
-				
+
 			if (mode == Mode.STREAMED)
-				soundSource = new ALBufferedSoundSource(soundName, position, pitch, gain, attenuationStart, attenuationEnd);
+				soundSource = new ALBufferedSoundSource(soundName, position, pitch, gain, attenuationStart,
+						attenuationEnd);
 			else
-				soundSource = new ALSoundSource(soundName, mode, position, pitch, gain, attenuationStart, attenuationEnd);
-			
-			//Match the UUIDs
+				soundSource = new ALSoundSource(soundName, mode, position, pitch, gain, attenuationStart,
+						attenuationEnd);
+
+			// Match the UUIDs
 			soundSource.setUUID(UUID);
 			addSoundSource(soundSource);
-			
+
 			return soundSource;
-		}
-		catch (SoundEffectNotFoundException e)
-		{
-			logger.warn("Sound not found "+soundName);
+		} catch (SoundEffectNotFoundException e) {
+			logger.warn("Sound not found " + soundName);
 			return null;
 		}
 	}

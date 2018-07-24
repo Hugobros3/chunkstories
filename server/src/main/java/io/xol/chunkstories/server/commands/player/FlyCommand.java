@@ -21,7 +21,7 @@ public class FlyCommand extends ServerCommandBasic {
 		super(serverConsole);
 		server.getPluginManager().registerCommand("fly").setHandler(this);
 	}
-	
+
 	@Override
 	public boolean handleCommand(CommandEmitter emitter, Command command, String[] arguments) {
 
@@ -31,24 +31,23 @@ public class FlyCommand extends ServerCommandBasic {
 		}
 
 		Player player = (Player) emitter;
-		
-		if(!emitter.hasPermission("self.toggleFly"))
-		{
+
+		if (!emitter.hasPermission("self.toggleFly")) {
 			emitter.sendMessage("You don't have the permission.");
 			return true;
 		}
-		
+
 		Entity entity = player.getControlledEntity();
-		if(!entity.traits.tryWithBoolean(TraitFlyingMode.class, fm -> {
+		if (!entity.traits.tryWithBoolean(TraitFlyingMode.class, fm -> {
 			boolean state = fm.get();
 			state = !state;
 			player.sendMessage("Flying mode set to: " + state);
 			fm.set(state);
-			
+
 			return true;
 		}))
 			emitter.sendMessage("This action doesn't apply to your current entity.");
-		
+
 		return true;
 	}
 

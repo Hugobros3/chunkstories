@@ -31,17 +31,17 @@ public class BusyMainThreadLoop extends Thread {
 
 	BusyMainThreadLoop(GLFWGameWindow window) {
 		this.window = window;
-		
+
 		this.start();
 	}
-	
+
 	@Override
 	public void run() {
 		glfwMakeContextCurrent(window.glfwWindowHandle);
-		//GL.createCapabilities();
+		// GL.createCapabilities();
 		GL.setCapabilities(window.capabilities);
-		
-		while(!controlRequested.get() && !glfwWindowShouldClose(window.glfwWindowHandle)) {
+
+		while (!controlRequested.get() && !glfwWindowShouldClose(window.glfwWindowHandle)) {
 
 			glDrawBuffer(GL_FRONT);
 			glViewport(0, 0, 1024, 768);
@@ -50,22 +50,22 @@ public class BusyMainThreadLoop extends Thread {
 
 			glfwSwapBuffers(window.glfwWindowHandle);
 			glfwPollEvents();
-			
+
 			System.out.println("Waity waity");
-			
-			//30fps
+
+			// 30fps
 			try {
 				Thread.sleep(303L);
 			} catch (InterruptedException e) {
 			}
 		}
-		
-		glClearColor((float)Math.random(), 0, 0, 1.0f);
+
+		glClearColor((float) Math.random(), 0, 0, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
-		
+
 		fence.signal();
 	}
-	
+
 	public void takeControl() {
 		controlRequested.set(true);
 		fence.traverse();

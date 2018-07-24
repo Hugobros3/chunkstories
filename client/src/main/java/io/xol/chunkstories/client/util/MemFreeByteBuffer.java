@@ -12,11 +12,13 @@ import org.lwjgl.system.MemoryUtil;
 
 import io.xol.chunkstories.api.rendering.vertex.RecyclableByteBuffer;
 
-/** A wrapper that automatically recycles JEmalloc-issued ByteBuffers from LWJGL3 */
+/**
+ * A wrapper that automatically recycles JEmalloc-issued ByteBuffers from LWJGL3
+ */
 public class MemFreeByteBuffer implements RecyclableByteBuffer {
 
 	private final ByteBuffer byteBuffer;
-	
+
 	public MemFreeByteBuffer(ByteBuffer byteBuffer) {
 		this.byteBuffer = byteBuffer;
 	}

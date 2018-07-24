@@ -36,83 +36,75 @@ import io.xol.chunkstories.client.ClientMasterPluginManager;
 import io.xol.chunkstories.world.WorldClientLocal;
 
 /**
- * Bridges over Client and Server
- * TODO: Make this share behaviour with an actual Server
+ * Bridges over Client and Server TODO: Make this share behaviour with an actual
+ * Server
  */
-public class LocalServerContext implements ClientInterface, ServerInterface
-{
+public class LocalServerContext implements ClientInterface, ServerInterface {
 	private final Client client;
 	private final WorldClientLocal world;
 	private final ClientMasterPluginManager pluginsManager;
-	
-	//TODO SAVE IT
+
+	// TODO SAVE IT
 	private FileBasedUsersPrivileges usersPrivilege = new FileBasedUsersPrivileges();
 	private PermissionsManager permissionsManager;
-	
-	public LocalServerContext(Client client, WorldClientLocal clientworld)
-	{
+
+	public LocalServerContext(Client client, WorldClientLocal clientworld) {
 		this.client = client;
 		this.world = clientworld;
-		
+
 		this.pluginsManager = new ClientMasterPluginManager(this);
-		
+
 		this.permissionsManager = new PermissionsManager() {
 
 			@Override
-			public boolean hasPermission(Player player, String permissionNode)
-			{
-				//if (UsersPrivileges.isUserAdmin(player.getName()))
-				//	return true;
+			public boolean hasPermission(Player player, String permissionNode) {
+				// if (UsersPrivileges.isUserAdmin(player.getName()))
+				// return true;
 				return true;
 			}
-			
+
 		};
 	}
-	
+
 	@Override
-	public ClientContent getContent()
-	{
+	public ClientContent getContent() {
 		return client.getContent();
 	}
 
 	@Override
-	public ClientPluginManager getPluginManager()
-	{
+	public ClientPluginManager getPluginManager() {
 		return pluginsManager;
 	}
 
 	@Override
-	public void print(String message)
-	{
+	public void print(String message) {
 		client.print(message);
 	}
 
 	@Override
-	public IterableIterator<Player> getConnectedPlayers()
-	{
+	public IterableIterator<Player> getConnectedPlayers() {
 		Set<Player> players = new HashSet<Player>();
 		players.add(Client.getInstance().getPlayer());
-			
-		return new IterableIterator<Player>()
-				{
-					Iterator<Player> i = players.iterator();
-					@Override
-					public boolean hasNext()
-					{
-						return i.hasNext();
-					}
-					@Override
-					public Player next()
-					{
-						return i.next();
-					}
-					@Override
-					public Iterator<Player> iterator()
-					{
-						return this;
-					}
-			
-				};
+
+		return new IterableIterator<Player>() {
+			Iterator<Player> i = players.iterator();
+
+			@Override
+			public boolean hasNext() {
+				return i.hasNext();
+			}
+
+			@Override
+			public Player next() {
+				return i.next();
+			}
+
+			@Override
+			public Iterator<Player> iterator() {
+				return this;
+			}
+
+		};
 	}
 
 	@Override
@@ -122,123 +114,104 @@ public class LocalServerContext implements ClientInterface, ServerInterface
 	}
 
 	@Override
-	public Player getPlayerByName(String string)
-	{
+	public Player getPlayerByName(String string) {
 		return world.getPlayerByName(string);
 	}
 
 	@Override
-	public Player getPlayerByUUID(long UUID)
-	{
-		if((long)Client.username.hashCode() == UUID)
+	public Player getPlayerByUUID(long UUID) {
+		if ((long) Client.username.hashCode() == UUID)
 			return Client.getInstance().getPlayer();
-		
-		System.out.println("player by uuid not found"+UUID);
+
+		System.out.println("player by uuid not found" + UUID);
 		return null;
 	}
 
 	@Override
-	public void broadcastMessage(String message)
-	{
+	public void broadcastMessage(String message) {
 		printChat(message);
 	}
 
 	@Override
-	public WorldClientLocal getWorld()
-	{
+	public WorldClientLocal getWorld() {
 		return (WorldClientLocal) Client.getInstance().getWorld();
 	}
 
 	@Override
-	public LocalPlayer getPlayer()
-	{
+	public LocalPlayer getPlayer() {
 		return Client.getInstance().getPlayer();
 	}
 
 	@Override
-	public void printChat(String textToPrint)
-	{
+	public void printChat(String textToPrint) {
 		client.printChat(textToPrint);
 	}
 
 	@Override
-	public void changeWorld(WorldClient world)
-	{
+	public void changeWorld(WorldClient world) {
 		client.changeWorld(world);
 	}
 
 	@Override
-	public void exitToMainMenu()
-	{
+	public void exitToMainMenu() {
 		client.exitToMainMenu();
 	}
 
 	@Override
-	public void exitToMainMenu(String errorMessage)
-	{
+	public void exitToMainMenu(String errorMessage) {
 		client.exitToMainMenu(errorMessage);
 	}
 
 	@Override
-	public void openInventories(Inventory... otherInventory)
-	{
+	public void openInventories(Inventory... otherInventory) {
 		client.openInventories(otherInventory);
 	}
 
 	@Override
-	public boolean hasFocus()
-	{
+	public boolean hasFocus() {
 		return client.hasFocus();
 	}
 
 	@Override
-	public void reloadAssets()
-	{
+	public void reloadAssets() {
 		client.reloadAssets();
 	}
 
 	@Override
-	public ClientSoundManager getSoundManager()
-	{
+	public ClientSoundManager getSoundManager() {
 		return client.getSoundManager();
 	}
 
 	@Override
-	public ClientInputsManager getInputsManager()
-	{
+	public ClientInputsManager getInputsManager() {
 		return client.getInputsManager();
 	}
 
 	@Override
-	public ParticlesManager getParticlesManager()
-	{
+	public ParticlesManager getParticlesManager() {
 		return client.getParticlesManager();
 	}
 
 	@Override
-	public DecalsManager getDecalsManager()
-	{
+	public DecalsManager getDecalsManager() {
 		return client.getDecalsManager();
 	}
 
 	@Override
-	public GameWindow getGameWindow()
-	{
+	public GameWindow getGameWindow() {
 		return client.getGameWindow();
 	}
 
 	@Override
-	public PermissionsManager getPermissionsManager()
-	{
+	public PermissionsManager getPermissionsManager() {
 		// TODO Auto-generated method stub
 		// TODO Grant-all permissions system ?
 		return permissionsManager;
 	}
 
 	@Override
-	public void installPermissionsManager(PermissionsManager permissionsManager)
-	{
-		
+	public void installPermissionsManager(PermissionsManager permissionsManager) {
+
 	}
 
 	@Override

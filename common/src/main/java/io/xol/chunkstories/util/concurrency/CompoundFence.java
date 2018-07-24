@@ -17,8 +17,8 @@ public class CompoundFence extends LinkedList<Fence> implements Fence {
 	@Override
 	/** Traverse-all :) */
 	public void traverse() {
-		for(Fence f : this) {
-			if(f != null)
+		for (Fence f : this) {
+			if (f != null)
 				f.traverse();
 		}
 	}

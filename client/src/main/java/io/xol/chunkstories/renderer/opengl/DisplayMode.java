@@ -9,10 +9,10 @@ package io.xol.chunkstories.renderer.opengl;
 import org.lwjgl.glfw.GLFWVidMode;
 
 public class DisplayMode {
-	
+
 	final int monitorId;
 	final GLFWVidMode videoMode;
-	
+
 	public DisplayMode(int monitorId, GLFWVidMode videoMode) {
 		super();
 		this.monitorId = monitorId;
@@ -20,6 +20,6 @@ public class DisplayMode {
 	}
 
 	public String toString() {
-		return monitorId+":"+videoMode.width()+":"+videoMode.height()+":"+videoMode.refreshRate();
+		return monitorId + ":" + videoMode.width() + ":" + videoMode.height() + ":" + videoMode.refreshRate();
 	}
 }

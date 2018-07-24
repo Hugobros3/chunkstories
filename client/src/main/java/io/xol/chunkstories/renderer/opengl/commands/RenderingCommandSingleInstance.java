@@ -24,9 +24,11 @@ public class RenderingCommandSingleInstance extends RenderingCommandImplementati
 	int sunLight, blockLight;
 	int start, count;
 
-	public RenderingCommandSingleInstance(Primitive primitive, Shader Shader, TexturingConfigurationImplementation texturingConfiguration,
-			AttributesConfigurationImplementation attributesConfiguration, InternalUniformsConfiguration uniformsConfiguration, OpenGLStateMachine StateMachine,
-			Matrix4f objectMatrix, int start, int count) {
+	public RenderingCommandSingleInstance(Primitive primitive, Shader Shader,
+			TexturingConfigurationImplementation texturingConfiguration,
+			AttributesConfigurationImplementation attributesConfiguration,
+			InternalUniformsConfiguration uniformsConfiguration, OpenGLStateMachine StateMachine, Matrix4f objectMatrix,
+			int start, int count) {
 		super(primitive, Shader, texturingConfiguration, attributesConfiguration, uniformsConfiguration, StateMachine);
 		this.objectMatrix = objectMatrix;
 

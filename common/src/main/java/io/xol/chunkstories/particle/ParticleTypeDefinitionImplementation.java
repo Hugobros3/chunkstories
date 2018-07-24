@@ -23,7 +23,7 @@ public class ParticleTypeDefinitionImplementation extends GenericNamedConfigurab
 
 	private final float billBoardSize;
 	private final String renderPass;
-	
+
 	private final ParticleTypeHandler handler;
 
 	@Override
@@ -35,53 +35,51 @@ public class ParticleTypeDefinitionImplementation extends GenericNamedConfigurab
 			throws IllegalParticleDeclarationException, IOException {
 		super(particleName, reader);
 		this.store = store;
-		
-		/*String rt = this.resolveProperty("renderTime", "forward");
-		if(rt.equals("forward"))
-			renderTime = RenderTime.FORWARD;
-		else if(rt.equals("gbuffer"))
-			renderTime = RenderTime.GBUFFER;
-		else if(rt.endsWith("never"))
-			renderTime = RenderTime.NEVER;
-		else
-			throw new IllegalParticleDeclarationException("renderTime has to be any of {forward, gbuffer, never}");*/
+
+		/*
+		 * String rt = this.resolveProperty("renderTime", "forward");
+		 * if(rt.equals("forward")) renderTime = RenderTime.FORWARD; else
+		 * if(rt.equals("gbuffer")) renderTime = RenderTime.GBUFFER; else
+		 * if(rt.endsWith("never")) renderTime = RenderTime.NEVER; else throw new
+		 * IllegalParticleDeclarationException("renderTime has to be any of {forward, gbuffer, never}"
+		 * );
+		 */
 		this.renderPass = this.resolveProperty("renderPass", "forward");
-		
+
 		try {
 			this.billBoardSize = Float.parseFloat(this.resolveProperty("billboardSize", "1.0"));
-			
+
 			String handlerClassName = this.resolveProperty("handlerClass");
-			if(handlerClassName == null)
+			if (handlerClassName == null)
 				throw new IllegalParticleDeclarationException("handlerClass isn't set !");
 
 			Class<?> rawClass = store.parent().modsManager().getClassByName(handlerClassName);
-			if (rawClass == null)
-			{
-				throw new IllegalParticleDeclarationException("ParticleTypeHandler " + this.getName() + " does not exist in codebase.");
-			}
-			else if (!(ParticleTypeHandler.class.isAssignableFrom(rawClass)))
-			{
-				throw new IllegalParticleDeclarationException("Class " + this.getName() + " is not extending the ParticleTypeHandler class.");
-			}
-			else
-			{
+			if (rawClass == null) {
+				throw new IllegalParticleDeclarationException(
+						"ParticleTypeHandler " + this.getName() + " does not exist in codebase.");
+			} else if (!(ParticleTypeHandler.class.isAssignableFrom(rawClass))) {
+				throw new IllegalParticleDeclarationException(
+						"Class " + this.getName() + " is not extending the ParticleTypeHandler class.");
+			} else {
 				@SuppressWarnings("unchecked")
 				Class<? extends ParticleTypeHandler> handlerClass = (Class<? extends ParticleTypeHandler>) rawClass;
 				Class<?>[] types = { ParticleTypeDefinition.class };
 				Constructor<? extends ParticleTypeHandler> constructor = handlerClass.getConstructor(types);
 
-				if (constructor == null)
-				{
-					throw new IllegalParticleDeclarationException("ParticleTypeHandler " + this.getName() + " does not provide a valid constructor.");
+				if (constructor == null) {
+					throw new IllegalParticleDeclarationException(
+							"ParticleTypeHandler " + this.getName() + " does not provide a valid constructor.");
 				}
-				
+
 				handler = constructor.newInstance(this);
 			}
-			
+
 		} catch (NumberFormatException e) {
 			throw new IllegalParticleDeclarationException("Billboard size must be a number.");
-		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-			throw new IllegalParticleDeclarationException("Error isntanciating the ParticleTypeHandler : "+e.getMessage());
+		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
+				| NoSuchMethodException | SecurityException e) {
+			throw new IllegalParticleDeclarationException(
+					"Error isntanciating the ParticleTypeHandler : " + e.getMessage());
 		}
 	}
 

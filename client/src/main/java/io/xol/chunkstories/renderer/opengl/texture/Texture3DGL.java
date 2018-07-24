@@ -99,7 +99,8 @@ public class Texture3DGL extends TextureGL implements Texture3D {
 		this.width = width;
 		this.height = height;
 
-		glTexImage3D(GL_TEXTURE_3D, 0, type.getInternalFormat(), width, height, depth, 0, type.getFormat(), type.getType(), (ByteBuffer) data);
+		glTexImage3D(GL_TEXTURE_3D, 0, type.getInternalFormat(), width, height, depth, 0, type.getFormat(),
+				type.getType(), (ByteBuffer) data);
 
 		computeMipmaps();
 		applyTextureWrapping();
@@ -125,7 +126,8 @@ public class Texture3DGL extends TextureGL implements Texture3D {
 
 		// Don't bother
 		if (glId == -2) {
-			logger().error("Critical mess-up: Tried to bind a destroyed Texture3D " + this + ". Terminating process immediately.");
+			logger().error("Critical mess-up: Tried to bind a destroyed Texture3D " + this
+					+ ". Terminating process immediately.");
 			Thread.dumpStack();
 			System.exit(-801);
 			// throw new RuntimeException("Tryed to bind a destroyed VerticesBuffer");
@@ -149,7 +151,8 @@ public class Texture3DGL extends TextureGL implements Texture3D {
 
 	@Override
 	public String toString() {
-		return "[" + getClass().getSimpleName() + " id: " + glId + " size:" + width + "x" + height + " format:" + type.name() + "]";
+		return "[" + getClass().getSimpleName() + " id: " + glId + " size:" + width + "x" + height + " format:"
+				+ type.name() + "]";
 	}
 
 	@Override
@@ -271,7 +274,8 @@ public class Texture3DGL extends TextureGL implements Texture3D {
 			maxLevel = actualMaxMipLevelPossible;
 		}
 
-		if (this.baseMipmapLevel != baseLevel || this.maxMipmapLevel != maxLevel) // We changed something so we redo them
+		if (this.baseMipmapLevel != baseLevel || this.maxMipmapLevel != maxLevel) // We changed something so we redo
+																					// them
 			applyParameters = true;
 
 		baseMipmapLevel = baseLevel;
@@ -338,7 +342,8 @@ public class Texture3DGL extends TextureGL implements Texture3D {
 		this.height = h;
 		this.depth = d;
 
-		glTexImage3D(GL_TEXTURE_3D, 0, type.getInternalFormat(), w, h, d, 0, type.getFormat(), type.getType(), (ByteBuffer) null);
+		glTexImage3D(GL_TEXTURE_3D, 0, type.getInternalFormat(), w, h, d, 0, type.getFormat(), type.getType(),
+				(ByteBuffer) null);
 
 		applyFiltering();
 		applyTextureWrapping();

@@ -24,138 +24,126 @@ import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
 import io.xol.chunkstories.world.heightmap.HeightmapImplementation;
 import io.xol.chunkstories.world.region.RegionImplementation;
 
-
-
-public class IOTasksMultiplayerClient extends IOTasks
-{
+public class IOTasksMultiplayerClient extends IOTasks {
 	Client client;
 	ServerConnection connection;
-	
-	public IOTasksMultiplayerClient(WorldClientRemote world)
-	{
+
+	public IOTasksMultiplayerClient(WorldClientRemote world) {
 		super(world);
 		this.connection = world.getConnection();
 		this.client = world.getClient();
-		
-		try
-		{
+
+		try {
 			md = MessageDigest.getInstance("MD5");
-		}
-		catch (NoSuchAlgorithmException e)
-		{
+		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		}
 	}
 
 	MessageDigest md = null;
 
-	static ThreadLocal<byte[]> unCompressedSummariesData = new ThreadLocal<byte[]>()
-	{
+	static ThreadLocal<byte[]> unCompressedSummariesData = new ThreadLocal<byte[]>() {
 		@Override
-		protected byte[] initialValue()
-		{
-			//Buffer for summaries
+		protected byte[] initialValue() {
+			// Buffer for summaries
 			return new byte[256 * 256 * 4 * 2];
 		}
 	};
-	
+
 	@Override
-	public IOTask requestChunkLoad(ChunkHolderImplementation slot)
-	{
-		//connection.sendTextMessage("world/getChunkCompressed:" + slot.getChunkCoordinateX() + ":" + slot.getChunkCoordinateY() + ":" + slot.getChunkCoordinateZ());
+	public IOTask requestChunkLoad(ChunkHolderImplementation slot) {
+		// connection.sendTextMessage("world/getChunkCompressed:" +
+		// slot.getChunkCoordinateX() + ":" + slot.getChunkCoordinateY() + ":" +
+		// slot.getChunkCoordinateZ());
 		return null;
 	}
-	
+
 	@Override
-	public void requestRegionLoad(RegionImplementation holder)
-	{
+	public void requestRegionLoad(RegionImplementation holder) {
 		holder.setDiskDataLoaded(true);
 	}
 
-	public class IOTaskProcessCompressedHeightmapArrival extends IOTask
-	{
+	public class IOTaskProcessCompressedHeightmapArrival extends IOTask {
 		PacketHeightmap packet;
 
-		public IOTaskProcessCompressedHeightmapArrival(PacketHeightmap packet)
-		{
+		public IOTaskProcessCompressedHeightmapArrival(PacketHeightmap packet) {
 			this.packet = packet;
 		}
 
 		@Override
-		public boolean task(TaskExecutor taskExecutor)
-		{
-			HeightmapImplementation summary = world.getRegionsSummariesHolder().getHeightmapWorldCoordinates(packet.rx * 256, packet.rz * 256);
-			if(summary == null)
-			{
-				logger().error("Summary data arrived for "+packet.rx+ ": "+packet.rz + "but there was no region summary waiting for it ?");
+		public boolean task(TaskExecutor taskExecutor) {
+			HeightmapImplementation summary = world.getRegionsSummariesHolder()
+					.getHeightmapWorldCoordinates(packet.rx * 256, packet.rz * 256);
+			if (summary == null) {
+				logger().error("Summary data arrived for " + packet.rx + ": " + packet.rz
+						+ "but there was no region summary waiting for it ?");
 				return true;
 			}
-			
-			int[] heights = new int[256*256];
-			int[] ids = new int[256*256];
-			
+
+			int[] heights = new int[256 * 256];
+			int[] ids = new int[256 * 256];
+
 			byte[] unCompressedSummaries = unCompressedSummariesData.get();
-			unCompressedSummaries = HeightmapImplementation.decompressor.decompress(packet.compressedData, 256 * 256 * 4 * 2);
+			unCompressedSummaries = HeightmapImplementation.decompressor.decompress(packet.compressedData,
+					256 * 256 * 4 * 2);
 			IntBuffer ib = ByteBuffer.wrap(unCompressedSummaries).asIntBuffer();
 			ib.get(heights, 0, 256 * 256);
 			ib.get(ids, 0, 256 * 256);
-			
+
 			summary.setData(heights, ids);
-			
+
 			return true;
 		}
 
-		/*@Override
-		public boolean equals(Object o)
-		{
-			//All packets are unique
-			return false;
-		}*/
+		/*
+		 * @Override public boolean equals(Object o) { //All packets are unique return
+		 * false; }
+		 */
 
 		@Override
-		public int hashCode()
-		{
+		public int hashCode() {
 			return 8792;
 		}
 	}
 
-	public void requestHeightmapProcess(PacketHeightmap packet)
-	{
+	public void requestHeightmapProcess(PacketHeightmap packet) {
 		IOTaskProcessCompressedHeightmapArrival task = new IOTaskProcessCompressedHeightmapArrival(packet);
 		scheduleTask(task);
 	}
 
 	@Override
-	public Fence requestHeightmapLoad(HeightmapImplementation summary)
-	{
+	public Fence requestHeightmapLoad(HeightmapImplementation summary) {
 		return null;
 	}
 
 	public void handlePacketWorldStreaming(PacketWorldStreaming packet) throws IllegalPacketException {
-		
-		//Region summaries
-		if(packet instanceof PacketHeightmap) {
-			this.requestHeightmapProcess((PacketHeightmap) packet);
-		//Chunk data
-		} else if(packet instanceof PacketChunkCompressedData) {
-			RegionImplementation region = world.getRegionChunkCoordinates(((PacketChunkCompressedData) packet).x, ((PacketChunkCompressedData) packet).y, ((PacketChunkCompressedData) packet).z);
-			
-			//This *can* happen, ie if the player flies fucking fast and the server sends the chunk but he's already fucking gone
-			if(region == null)
-				return;
-			region.getChunkHolder(((PacketChunkCompressedData) packet).x, ((PacketChunkCompressedData) packet).y, ((PacketChunkCompressedData) packet).z).
-				createChunk(((PacketChunkCompressedData) packet).data);
-		}
-		
-		//Else
-		else throw new IllegalPacketException(packet) {
-			private static final long serialVersionUID = 7843266994553911002L;
 
-			@Override
-			public String getMessage()
-			{
-				return "Illegal packet received : This type of World streaming packet isn't recognized ( "+packet.getClass().getName()+" )";
-			}
-		};
+		// Region summaries
+		if (packet instanceof PacketHeightmap) {
+			this.requestHeightmapProcess((PacketHeightmap) packet);
+			// Chunk data
+		} else if (packet instanceof PacketChunkCompressedData) {
+			RegionImplementation region = world.getRegionChunkCoordinates(((PacketChunkCompressedData) packet).x,
+					((PacketChunkCompressedData) packet).y, ((PacketChunkCompressedData) packet).z);
+
+			// This *can* happen, ie if the player flies fucking fast and the server sends
+			// the chunk but he's already fucking gone
+			if (region == null)
+				return;
+			region.getChunkHolder(((PacketChunkCompressedData) packet).x, ((PacketChunkCompressedData) packet).y,
+					((PacketChunkCompressedData) packet).z).createChunk(((PacketChunkCompressedData) packet).data);
+		}
+
+		// Else
+		else
+			throw new IllegalPacketException(packet) {
+				private static final long serialVersionUID = 7843266994553911002L;
+
+				@Override
+				public String getMessage() {
+					return "Illegal packet received : This type of World streaming packet isn't recognized ( "
+							+ packet.getClass().getName() + " )";
+				}
+			};
 	}
 }

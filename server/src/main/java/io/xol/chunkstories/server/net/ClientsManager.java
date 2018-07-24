@@ -22,14 +22,14 @@ public abstract class ClientsManager {
 
 	protected final DedicatedServer server;
 	protected final ServerPacketsProcessorImplementation packetsProcessor;
-	
+
 	protected String hostname;
 	protected String externalIP;
-	
+
 	protected int maxClients;
 
 	protected Set<ClientConnection> clients = ConcurrentHashMap.newKeySet();
-	
+
 	protected Map<String, ServerPlayer> players = new ConcurrentHashMap<>();
 	protected Map<Long, ServerPlayer> playersByUUID = new ConcurrentHashMap<>();
 
@@ -39,14 +39,14 @@ public abstract class ClientsManager {
 
 		externalIP = HttpRequests.sendPost("https://chunkstories.xyz/api/sayMyName.php?ip=1", "");
 		hostname = HttpRequests.sendPost("https://chunkstories.xyz/api/sayMyName.php?host=1", "");
-		
+
 		this.maxClients = server.getServerConfig().getInteger("maxusers", 100);
 	}
 
 	public DedicatedServer getServer() {
 		return server;
 	}
-	
+
 	public abstract boolean open();
 
 	public void flushAll() {
@@ -60,10 +60,10 @@ public abstract class ClientsManager {
 			ClientConnection client = clientsIterator.next();
 			// Remove the client first to avoid concurrent mod exception
 			clientsIterator.remove();
-			
+
 			client.disconnect("Server is closing.");
 		}
-		
+
 		return true;
 	}
 
@@ -96,36 +96,36 @@ public abstract class ClientsManager {
 	}
 
 	public IterableIterator<Player> getPlayers() {
-		return new IterableIterator<Player>()
-		{
+		return new IterableIterator<Player>() {
 			Iterator<ServerPlayer> authClients = players.values().iterator();
 
 			@Override
-			public boolean hasNext()
-			{
+			public boolean hasNext() {
 				return authClients.hasNext();
 			}
 
 			@Override
-			public ServerPlayer next()
-			{
+			public ServerPlayer next() {
 				return authClients.next();
 			}
 		};
 	}
 
 	public void sendServerInfo(ClientConnection clientConnection) {
-		clientConnection.sendTextMessage("info/name:" + getServer().getServerConfig().getString("server-name", "unnamedserver@" + getHostname()));
-		clientConnection.sendTextMessage("info/motd:" + getServer().getServerConfig().getString("server-desc", "Default description."));
+		clientConnection.sendTextMessage("info/name:"
+				+ getServer().getServerConfig().getString("server-name", "unnamedserver@" + getHostname()));
+		clientConnection.sendTextMessage(
+				"info/motd:" + getServer().getServerConfig().getString("server-desc", "Default description."));
 		clientConnection.sendTextMessage("info/connected:" + getPlayersNumber() + ":" + getMaxClients());
 		clientConnection.sendTextMessage("info/version:" + VersionInfo.version);
 		clientConnection.sendTextMessage("info/mods:" + getServer().getModsProvider().getModsString());
 		clientConnection.sendTextMessage("info/done");
-		
-		//We flush because since the potential player isn't registered, the automatic flush at world ticking doesn't apply to them
+
+		// We flush because since the potential player isn't registered, the automatic
+		// flush at world ticking doesn't apply to them
 		clientConnection.flush();
 	}
-	
+
 	/** Used by ClientConnection after a successfull login procedure */
 	void registerPlayer(ClientConnection clientConnection) {
 		ServerPlayer player = clientConnection.getPlayer();
@@ -136,9 +136,9 @@ public abstract class ClientsManager {
 	/** Used by ClientConnection during the close() method */
 	void removeClient(ClientConnection clientConnection) {
 		this.clients.remove(clientConnection);
-		
+
 		ServerPlayer player = clientConnection.getPlayer();
-		if(player != null) {
+		if (player != null) {
 			this.players.remove(player.getName());
 			this.playersByUUID.remove(player.getUUID());
 		}

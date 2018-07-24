@@ -16,40 +16,36 @@ import io.xol.chunkstories.mesh.ClientMeshStore;
 import io.xol.chunkstories.renderer.shaders.ShadersStore;
 import io.xol.chunkstories.sound.SoundsLibrary;
 
-public class ClientGameContent extends GameContentStore implements ClientContent
-{
+public class ClientGameContent extends GameContentStore implements ClientContent {
 	private final ClientInterface client;
-	
+
 	private final ClientMeshStore meshes;
 	private final TexturesLibrary textures;
 	private final ShadersStore shaders;
-	
-	public ClientGameContent(ClientInterface client, File coreContentLocation, String modsStringArgument)
-	{
+
+	public ClientGameContent(ClientInterface client, File coreContentLocation, String modsStringArgument) {
 		super(client, coreContentLocation, modsStringArgument);
 		this.client = client;
-		
+
 		this.meshes = new ClientMeshStore(this, super.meshes);
-		
+
 		this.textures = new ClientTexturesLibrary(this);
 		this.shaders = new ShadersStore(this);
 	}
 
 	@Override
-	public void reload()
-	{
+	public void reload() {
 		super.reload();
-		
-		//TexturesHandler.reloadAll();
+
+		// TexturesHandler.reloadAll();
 		SoundsLibrary.clean();
-		
+
 		this.meshes.reloadAll();
 		this.shaders.reloadAll();
 		this.textures.reloadAll();
 	}
 
-	public ClientMeshStore meshes()
-	{
+	public ClientMeshStore meshes() {
 		return meshes;
 	}
 
@@ -59,10 +55,7 @@ public class ClientGameContent extends GameContentStore implements ClientContent
 	}
 
 	public FontRenderer fonts() {
-		return Client.getInstance()
-				.getGameWindow()
-				.getRenderingInterface().
-				getFontRenderer();
+		return Client.getInstance().getGameWindow().getRenderingInterface().getFontRenderer();
 	}
 
 	@Override

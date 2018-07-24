@@ -33,7 +33,7 @@ public abstract class ClientConnection extends Connection implements Interlocuto
 	protected final ClientsManager clientsManager;
 
 	protected final Logger logger;
-	
+
 	private PlayerLoginHelper loginHelper;
 
 	protected ClientPacketsContext packetsProcessor;
@@ -52,7 +52,7 @@ public abstract class ClientConnection extends Connection implements Interlocuto
 
 		// This way we can tell the logs from one use to the next
 		this.logger = LoggerFactory.getLogger("server.net.users." + usersCount.getAndIncrement());
-		
+
 		this.loginHelper = new PlayerLoginHelper(this);
 	}
 
@@ -75,15 +75,15 @@ public abstract class ClientConnection extends Connection implements Interlocuto
 		if (message.startsWith("info")) {
 			this.clientsManager.sendServerInfo(this);
 			return true;
-			
+
 		} else if (message.startsWith("login/")) {
 			return loginHelper.handleLogin(message.substring(6, message.length()));
-			
+
 		} else if (message.equals("mods")) {
 			sendTextMessage("info/mods:" + clientsManager.getServer().getModsProvider().getModsString());
 			this.flush();
 			return true;
-			
+
 		} else if (message.equals("icon-file")) {
 			PacketSendFile iconPacket = new PacketSendFile();
 			iconPacket.file = new File("server-icon.png");
@@ -92,7 +92,7 @@ public abstract class ClientConnection extends Connection implements Interlocuto
 			this.flush();
 			return true;
 		}
-		
+
 		// Any other commands need an authentificated player !
 		if (player == null)
 			return false;
@@ -100,7 +100,7 @@ public abstract class ClientConnection extends Connection implements Interlocuto
 		// Login-mandatory requests ( you need to be authentificated to use them )
 		if (message.equals("co/off")) {
 			this.disconnect("Client-terminated connection");
-			
+
 		} else if (message.startsWith("send-mod/")) {
 			String modDescriptor = message.substring(9);
 
@@ -118,12 +118,13 @@ public abstract class ClientConnection extends Connection implements Interlocuto
 				modUploadPacket.fileTag = modDescriptor;
 				this.pushPacket(modUploadPacket);
 			}
-			
+
 		} else if (message.startsWith("world/")) {
-			//TODO this bit will obviously need to be rewritten when I get arround to doing multiworld support
+			// TODO this bit will obviously need to be rewritten when I get arround to doing
+			// multiworld support
 			WorldServer world = clientsManager.getServer().getWorld();
 			message = message.substring(6, message.length());
-			
+
 			if (message.equals("enter")) {
 				player.setWorld(world);
 				// Sends the construction info for the world, and then the player entity
@@ -133,27 +134,29 @@ public abstract class ClientConnection extends Connection implements Interlocuto
 				// TODO only spawn the player when he asks to
 				world.spawnPlayer(player);
 				return true;
-				
+
 			} else if (message.equals("translator")) {
-				PacketContentTranslator packet = new PacketContentTranslator((AbstractContentTranslator) world.getContentTranslator());
+				PacketContentTranslator packet = new PacketContentTranslator(
+						(AbstractContentTranslator) world.getContentTranslator());
 				player.pushPacket(packet);
 				return true;
-				
+
 			} else if (message.equals("respawn")) {
 				// Only allow to respawn if the current entity is null or dead
-				if (player.getControlledEntity() == null || player.getControlledEntity().traits.tryWithBoolean(TraitHealth.class,eh -> eh.isDead())) {
+				if (player.getControlledEntity() == null
+						|| player.getControlledEntity().traits.tryWithBoolean(TraitHealth.class, eh -> eh.isDead())) {
 					world.spawnPlayer(player);
 					player.sendMessage("Respawning ...");
 				} else
 					player.sendMessage("You're not dead, or you are controlling a non-living entity.");
 				return true;
 			}
-			
+
 			return false;
 		} else if (message.startsWith("chat/")) {
 			String chatMessage = message.substring(5, message.length());
 
-			//Messages starting with / are commands
+			// Messages starting with / are commands
 			if (chatMessage.startsWith("/")) {
 				chatMessage = chatMessage.substring(1, chatMessage.length());
 
@@ -166,14 +169,14 @@ public abstract class ClientConnection extends Connection implements Interlocuto
 
 				clientsManager.getServer().getConsole().dispatchCommand(player, cmdName, args);
 				return true;
-			//The rest is just normal chat
+				// The rest is just normal chat
 			} else if (chatMessage.length() > 0) {
 				PlayerChatEvent event = new PlayerChatEvent(player, chatMessage);
 				clientsManager.getServer().getPluginManager().fireEvent(event);
 
 				if (!event.isCancelled())
 					server.broadcastMessage(event.getFormattedMessage());
-				
+
 				return true;
 			} else {
 				return true; // Ignore empty messages
@@ -185,19 +188,19 @@ public abstract class ClientConnection extends Connection implements Interlocuto
 	@Override
 	public void sendTextMessage(String string) {
 		super.sendTextMessage(string);
-		if(player == null) // Flush the pipe automatically when the player isn't yet logged in
+		if (player == null) // Flush the pipe automatically when the player isn't yet logged in
 			this.flush();
 	}
 
 	public void setPlayer(ServerPlayer player) {
-		if(this.player == null) {
+		if (this.player == null) {
 			this.player = player;
 			this.packetsProcessor = this.packetsProcessor.toPlayer(player);
-			
+
 			clientsManager.registerPlayer(this);
 		}
 	}
-	
+
 	public ServerPlayer getPlayer() {
 		return player;
 	}
@@ -217,7 +220,7 @@ public abstract class ClientConnection extends Connection implements Interlocuto
 	@Override
 	public boolean close() {
 		clientsManager.removeClient(this);
-		
+
 		if (player != null) {
 			PlayerLogoutEvent playerDisconnectionEvent = new PlayerLogoutEvent(player);
 			clientsManager.getServer().getPluginManager().fireEvent(playerDisconnectionEvent);

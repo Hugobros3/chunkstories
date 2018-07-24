@@ -17,56 +17,47 @@ import io.xol.chunkstories.server.DedicatedServer;
 import io.xol.chunkstories.server.player.ServerPlayer;
 import io.xol.chunkstories.world.WorldServer;
 
-public class VirtualServerDecalsManager implements DecalsManager
-{
+public class VirtualServerDecalsManager implements DecalsManager {
 	WorldServer worldServer;
 
-	public VirtualServerDecalsManager(WorldServer worldServer, DedicatedServer server)
-	{
+	public VirtualServerDecalsManager(WorldServer worldServer, DedicatedServer server) {
 		this.worldServer = worldServer;
 	}
-	
-	public class ServerPlayerVirtualDecalsManager implements DecalsManager
-	{
+
+	public class ServerPlayerVirtualDecalsManager implements DecalsManager {
 		ServerPlayer serverPlayer;
 
-		public ServerPlayerVirtualDecalsManager(ServerPlayer serverPlayer)
-		{
+		public ServerPlayerVirtualDecalsManager(ServerPlayer serverPlayer) {
 			this.serverPlayer = serverPlayer;
 		}
 
 		@Override
-		public void drawDecal(Vector3dc position, Vector3dc orientation, Vector3dc size, String decalName)
-		{
+		public void drawDecal(Vector3dc position, Vector3dc orientation, Vector3dc size, String decalName) {
 			Iterator<Player> i = worldServer.getPlayers();
-			while(i.hasNext())
-			{
+			while (i.hasNext()) {
 				Player player = i.next();
-				if(!player.equals(serverPlayer))
+				if (!player.equals(serverPlayer))
 					tellPlayer(player, position, orientation, size, decalName);
 			}
 		}
 
 	}
-	
-	void tellPlayer(Player player, Vector3dc position, Vector3dc orientation, Vector3dc size, String decalName)
-	{
+
+	void tellPlayer(Player player, Vector3dc position, Vector3dc orientation, Vector3dc size, String decalName) {
 		PacketDecal packet = new PacketDecal(worldServer, decalName, position, orientation, size);
-		
-		/*packet.decalName = decalName;
-		packet.position = position;
-		packet.orientation = orientation;
-		packet.size = size;*/
-		
+
+		/*
+		 * packet.decalName = decalName; packet.position = position; packet.orientation
+		 * = orientation; packet.size = size;
+		 */
+
 		player.pushPacket(packet);
 	}
-	
+
 	@Override
-	public void drawDecal(Vector3dc position, Vector3dc orientation, Vector3dc size, String decalName)
-	{
+	public void drawDecal(Vector3dc position, Vector3dc orientation, Vector3dc size, String decalName) {
 		Iterator<Player> i = worldServer.getPlayers();
-		while(i.hasNext())
-		{
+		while (i.hasNext()) {
 			Player player = i.next();
 			tellPlayer(player, position, orientation, size, decalName);
 		}

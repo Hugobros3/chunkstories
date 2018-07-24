@@ -23,13 +23,13 @@ public class TestGameContext implements GameContext {
 
 	public TestGameContext(String mods) {
 		logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-		
+
 		String coreContentLocation = System.getProperty("coreContentLocation", "../chunkstories-core/res/");
-		
+
 		content = new GameContentStore(this, new File(coreContentLocation), mods);
 		content.reload();
 	}
-	
+
 	@Override
 	public Content getContent() {
 		return content;

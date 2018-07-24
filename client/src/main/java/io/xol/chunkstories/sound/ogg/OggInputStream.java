@@ -22,12 +22,11 @@ import com.jcraft.jorbis.Comment;
 import com.jcraft.jorbis.DspState;
 import com.jcraft.jorbis.Info;
 
-public class OggInputStream extends InputStream
-{
+public class OggInputStream extends InputStream {
 	InputStream inputStream;
 
 	boolean reachedEnd = true;
-	
+
 	SyncState syncState = new SyncState();
 	StreamState streamState = new StreamState();
 	Page page = new Page();
@@ -36,9 +35,8 @@ public class OggInputStream extends InputStream
 	Comment comment = new Comment();
 	DspState dspState = new DspState();
 	Block currentBlock = new Block(dspState);
-	
-	public OggInputStream(InputStream inputStream) throws IOException
-	{
+
+	public OggInputStream(InputStream inputStream) throws IOException {
 		this.inputStream = inputStream;
 		if (inputStream == null)
 			throw new IOException("Null input stream !");
@@ -48,25 +46,25 @@ public class OggInputStream extends InputStream
 
 	byte[] buffer;
 	int bytes;
-	
+
 	int convsize = 8192;
 	private byte[] convbuffer = new byte[convsize];
-	
+
 	private boolean getPageAndPacket() {
-		// grab some data at the head of the stream.  We want the first page
+		// grab some data at the head of the stream. We want the first page
 		// (which is guaranteed to be small and only contain the Vorbis
 		// stream initial header) We need the first page to get the stream
 		// serialno.
 
 		// submit a 4k block to libvorbis' Ogg layer
 		int index = syncState.buffer(4096);
-		
+
 		buffer = syncState.data;
 		if (buffer == null) {
 			reachedEnd = true;
 			return false;
 		}
-		
+
 		try {
 			bytes = inputStream.read(buffer, index, 4096);
 		} catch (Exception e) {
@@ -79,11 +77,11 @@ public class OggInputStream extends InputStream
 
 		// Get the first page.
 		if (syncState.pageout(page) != 1) {
-			// have we simply run out of data?  If so, we're done.
+			// have we simply run out of data? If so, we're done.
 			if (bytes < 4096)
 				return false;
 
-			// error case.  Must not be Vorbis data
+			// error case. Must not be Vorbis data
 			System.out.println("Input does not appear to be an Ogg bitstream.");
 			reachedEnd = true;
 			return false;
@@ -124,14 +122,14 @@ public class OggInputStream extends InputStream
 			return false;
 		}
 
-		// At this point, we're sure we're Vorbis.  We've set up the logical
-		// (Ogg) bitstream decoder.  Get the comment and codebook headers and
+		// At this point, we're sure we're Vorbis. We've set up the logical
+		// (Ogg) bitstream decoder. Get the comment and codebook headers and
 		// set up the Vorbis decoder
 
 		// The next two packets in order are the comment and codebook headers.
-		// They're likely large and may span multiple pages.  Thus we reead
+		// They're likely large and may span multiple pages. Thus we reead
 		// and submit data until we get our two pacakets, watching that no
-		// pages are missing.  If a page is missing, error out; losing a
+		// pages are missing. If a page is missing, error out; losing a
 		// header page is the only place where missing data is fatal. */
 
 		int i = 0;
@@ -141,7 +139,7 @@ public class OggInputStream extends InputStream
 				int result = syncState.pageout(page);
 				if (result == 0)
 					break; // Need more data
-				// Don't complain about missing or corrupt data yet.  We'll
+				// Don't complain about missing or corrupt data yet. We'll
 				// catch it at the packet output phase
 
 				if (result == 1) {
@@ -154,12 +152,12 @@ public class OggInputStream extends InputStream
 							break;
 						if (result == -1) {
 							// Uh oh; data at some point was corrupted or missing!
-							// We can't tolerate that in a header.  Die.
+							// We can't tolerate that in a header. Die.
 							System.out.println("Corrupt secondary header.  Exiting.");
 							reachedEnd = true;
 							return false;
 						}
-						
+
 						info.synthesis_headerin(comment, packet);
 						i++;
 					}
@@ -187,23 +185,23 @@ public class OggInputStream extends InputStream
 		convsize = 4096 / info.channels;
 
 		// OK, got and parsed all three headers. Initialize the Vorbis
-		//  packet->PCM decoder.
+		// packet->PCM decoder.
 		dspState.synthesis_init(info); // central decode state
 		currentBlock.init(dspState); // local state for most of the decode
 		// so multiple block decodes can
-		// proceed in parallel.  We could init
+		// proceed in parallel. We could init
 		// multiple vorbis_block structures
 		// for vd here
-		
+
 		return true;
 	}
-	
+
 	boolean inited = false;
 	boolean bigEndian = ByteOrder.nativeOrder().equals(ByteOrder.BIG_ENDIAN);
-	
+
 	private void readPCM() throws IOException {
 		boolean wrote = false;
-		
+
 		while (true) { // we repeat if the bitstream is chained
 			if (reachedEnd) {
 				if (!getPageAndPacket()) {
@@ -216,18 +214,18 @@ public class OggInputStream extends InputStream
 				inited = true;
 				return;
 			}
-			
+
 			float[][][] _pcm = new float[1][][];
 			int[] _index = new int[info.channels];
 			// The rest is just a straight decode loop until end of stream
 			while (!reachedEnd) {
 				while (!reachedEnd) {
 					int result = syncState.pageout(page);
-					
+
 					if (result == 0) {
 						break; // need more data
 					}
-					
+
 					if (result == -1) { // missing or corrupt data at this page position
 						System.out.println("Corrupt or missing data in bitstream; continuing...");
 					} else {
@@ -241,29 +239,27 @@ public class OggInputStream extends InputStream
 							if (result == -1) { // missing or corrupt data at this page position
 								// no reason to complain; already complained above
 							} else {
-								// we have a packet.  Decode it
+								// we have a packet. Decode it
 								int samples;
 								if (currentBlock.synthesis(packet) == 0) { // test for success!
 									dspState.synthesis_blockin(currentBlock);
 								}
 
-								// **pcm is a multichannel float vector.  In stereo, for
-								// example, pcm[0] is left, and pcm[1] is right.  samples is
-								// the size of each channel.  Convert the float values
+								// **pcm is a multichannel float vector. In stereo, for
+								// example, pcm[0] is left, and pcm[1] is right. samples is
+								// the size of each channel. Convert the float values
 								// (-1.<=range<=1.) to whatever PCM format and write it out
 
-								while ((samples = dspState.synthesis_pcmout(_pcm,
-										_index)) > 0) {
+								while ((samples = dspState.synthesis_pcmout(_pcm, _index)) > 0) {
 									float[][] pcm = _pcm[0];
-									//boolean clipflag = false;
-									int bout = (samples < convsize ? samples
-											: convsize);
+									// boolean clipflag = false;
+									int bout = (samples < convsize ? samples : convsize);
 
 									// convert floats to 16 bit signed ints (host order) and
 									// interleave
 									for (int i = 0; i < info.channels; i++) {
 										int ptr = i * 2;
-										//int ptr=i;
+										// int ptr=i;
 										int mono = _index[i];
 										for (int j = 0; j < bout; j++) {
 											int val = (int) (pcm[i][mono + j] * 32767.);
@@ -276,7 +272,7 @@ public class OggInputStream extends InputStream
 											}
 											if (val < 0)
 												val = val | 0x8000;
-				
+
 											if (bigEndian) {
 												convbuffer[ptr] = (byte) (val >>> 8);
 												convbuffer[ptr + 1] = (byte) (val);
@@ -290,11 +286,12 @@ public class OggInputStream extends InputStream
 
 									int bytesToWrite = 2 * info.channels * bout;
 									if (bytesToWrite >= pcmBuffer.remaining()) {
-										System.out.println("Read block from OGG that was too big to be buffered: " + bytesToWrite);
+										System.out.println(
+												"Read block from OGG that was too big to be buffered: " + bytesToWrite);
 									} else {
 										pcmBuffer.put(convbuffer, 0, bytesToWrite);
 									}
-									
+
 									wrote = true;
 									dspState.synthesis_read(bout); // tell libvorbis how
 									// many samples we
@@ -304,8 +301,8 @@ public class OggInputStream extends InputStream
 						}
 						if (page.eos() != 0) {
 							reachedEnd = true;
-						} 
-						
+						}
+
 						if ((!reachedEnd) && (wrote)) {
 							return;
 						}
@@ -340,7 +337,7 @@ public class OggInputStream extends InputStream
 			streamState.clear();
 
 			// ogg_page and ogg_packet structs always point to storage in
-			// libvorbis.  They're never freed or manipulated directly
+			// libvorbis. They're never freed or manipulated directly
 
 			currentBlock.clear();
 			dspState.clear();
@@ -354,7 +351,7 @@ public class OggInputStream extends InputStream
 
 	private int readIndex;
 	private ByteBuffer pcmBuffer = BufferUtils.createByteBuffer(4096 * 500);
-	
+
 	@Override
 	public int read() throws IOException {
 		if (readIndex >= pcmBuffer.position()) {
@@ -371,29 +368,28 @@ public class OggInputStream extends InputStream
 			value = 256 + value;
 		}
 		readIndex++;
-		
+
 		return value;
 	}
-	
+
 	public boolean atEnd() {
 		return reachedEnd && (readIndex >= pcmBuffer.position());
 	}
 
 	@Override
-	public int read(byte[] b) throws IOException
-	{
+	public int read(byte[] b) throws IOException {
 		return read(b, 0, b.length);
 	}
-	
+
 	@Override
 	public int read(byte[] b, int off, int len) throws IOException {
-		for (int i=0;i<len;i++) {
+		for (int i = 0; i < len; i++) {
 			try {
 				int value = read();
 				if (value >= 0) {
 					b[i] = (byte) value;
 				} else {
-					if (i == 0) {						
+					if (i == 0) {
 						return -1;
 					} else {
 						return i;
@@ -404,17 +400,15 @@ public class OggInputStream extends InputStream
 				return i;
 			}
 		}
-		
+
 		return len;
 	}
 
-	public int getChannel()
-	{
+	public int getChannel() {
 		return info.channels;
 	}
 
-	public int getRate()
-	{
+	public int getRate() {
 		return info.rate;
 	}
 }

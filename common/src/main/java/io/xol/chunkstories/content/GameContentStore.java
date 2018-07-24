@@ -29,8 +29,7 @@ import io.xol.chunkstories.particle.ParticlesTypesStore;
 import io.xol.chunkstories.voxel.VoxelsStore;
 import io.xol.chunkstories.world.generator.WorldGeneratorsStore;
 
-public class GameContentStore implements Content
-{
+public class GameContentStore implements Content {
 	private final GameContext context;
 	private final ModsManager modsManager;
 
@@ -40,21 +39,20 @@ public class GameContentStore implements Content
 	private final PacketsStore packets;
 	private final ParticlesTypesStore particles;
 	private final WorldGeneratorsStore generators;
-	
+
 	private final BVHLibrary bvhLibrary;
-	
+
 	protected final MeshStore meshes;
-	
+
 	private final LocalizationManagerImplementation localizationManager;
 	private final static Logger contentLogger = LoggerFactory.getLogger("content");
 
-	public GameContentStore(GameContext context, File coreContentLocation, String enabledModsLaunchArguments)
-	{
+	public GameContentStore(GameContext context, File coreContentLocation, String enabledModsLaunchArguments) {
 		this.context = context;
 		try {
 			this.modsManager = new ModsManagerImplementation(coreContentLocation, enabledModsLaunchArguments);
 		} catch (NonExistentCoreContent e) {
-			logger().error("Could not find core content at the location: "+coreContentLocation.getAbsolutePath());
+			logger().error("Could not find core content at the location: " + coreContentLocation.getAbsolutePath());
 			throw new RuntimeException("Throwing a RuntimeException to make the process crash and burn");
 		}
 
@@ -64,22 +62,18 @@ public class GameContentStore implements Content
 		packets = new PacketsStore(this);
 		particles = new ParticlesTypesStore(this);
 		generators = new WorldGeneratorsStore(this);
-		
+
 		bvhLibrary = new BVHLibrary(this);
-		
+
 		meshes = new MeshStore(this);
-		
+
 		localizationManager = new LocalizationManagerImplementation(this, "en");
 	}
-	
-	public void reload()
-	{
-		try
-		{
+
+	public void reload() {
+		try {
 			modsManager.loadEnabledMods();
-		}
-		catch (NotAllModsLoadedException e)
-		{
+		} catch (NotAllModsLoadedException e) {
 			e.printStackTrace();
 		}
 
@@ -89,76 +83,65 @@ public class GameContentStore implements Content
 		packets.reload();
 		particles.reload();
 		generators.reload();
-		
+
 		bvhLibrary.reloadAll();
-		
+
 		meshes.reloadAll();
-		
+
 		localizationManager.reload();
 	}
 
 	@Override
-	public VoxelsStore voxels()
-	{
+	public VoxelsStore voxels() {
 		return voxels;
 	}
 
 	@Override
-	public ItemDefinitionsStore items()
-	{
+	public ItemDefinitionsStore items() {
 		return items;
 	}
 
 	@Override
-	public EntityDefinitionsStore entities()
-	{
+	public EntityDefinitionsStore entities() {
 		return entities;
 	}
 
 	@Override
-	public ParticlesTypesStore particles()
-	{
+	public ParticlesTypesStore particles() {
 		return particles;
 	}
 
 	@Override
-	public PacketsStore packets()
-	{
+	public PacketsStore packets() {
 		return packets;
 	}
 
-	public GameContext getContext()
-	{
+	public GameContext getContext() {
 		return context;
 	}
 
 	@Override
-	public ModsManager modsManager()
-	{
+	public ModsManager modsManager() {
 		return modsManager;
 	}
 
 	@Override
-	public Asset getAsset(String assetName)
-	{
+	public Asset getAsset(String assetName) {
 		return modsManager.getAsset(assetName);
 	}
 
 	@Override
-	public WorldGeneratorsStore generators()
-	{
+	public WorldGeneratorsStore generators() {
 		return generators;
 	}
 
 	@Override
-	public BVHLibrary getAnimationsLibrary()
-	{
+	public BVHLibrary getAnimationsLibrary() {
 		return bvhLibrary;
 	}
 
 	@Override
-	public LocalizationManager localization()
-	{
+	public LocalizationManager localization() {
 		return localizationManager;
 	}
 

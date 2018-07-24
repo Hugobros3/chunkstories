@@ -13,7 +13,7 @@ import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.server.commands.ServerCommandBasic;
 
 /** A long-dead meme */
-public class StopTheFuckingTree extends ServerCommandBasic{
+public class StopTheFuckingTree extends ServerCommandBasic {
 
 	public StopTheFuckingTree(ServerInterface serverConsole) {
 		super(serverConsole);
@@ -22,14 +22,12 @@ public class StopTheFuckingTree extends ServerCommandBasic{
 
 	@Override
 	public boolean handleCommand(CommandEmitter emitter, Command command, String[] arguments) {
-		if (command.getName().equals("stop") && emitter.hasPermission("server.stop"))
-		{
-			if(server instanceof DedicatedServerInterface) {
+		if (command.getName().equals("stop") && emitter.hasPermission("server.stop")) {
+			if (server instanceof DedicatedServerInterface) {
 				emitter.sendMessage("Stopping server.");
 				((DedicatedServerInterface) server).stop();
 				return true;
-			}
-			else {
+			} else {
 				emitter.sendMessage("This isn't a dedicated server.");
 				return true;
 			}

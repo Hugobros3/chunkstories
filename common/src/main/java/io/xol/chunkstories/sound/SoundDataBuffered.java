@@ -6,7 +6,6 @@
 
 package io.xol.chunkstories.sound;
 
-public abstract class SoundDataBuffered extends SoundData
-{
+public abstract class SoundDataBuffered extends SoundData {
 	public abstract int uploadNextPage(int alId);
 }

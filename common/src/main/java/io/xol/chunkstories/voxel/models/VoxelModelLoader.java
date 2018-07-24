@@ -25,21 +25,19 @@ import io.xol.chunkstories.api.voxel.models.VoxelModel;
 
 public class VoxelModelLoader {
 	private final Content.Voxels.VoxelModels store;
-	
+
 	public VoxelModelLoader(VoxelModels store) {
 		this.store = store;
 	}
 
 	private final static Logger logger = LoggerFactory.getLogger("content.voxels.models");
-	
-	public Collection<CustomVoxelModel> readBlockModel(Asset asset)
-	{
+
+	public Collection<CustomVoxelModel> readBlockModel(Asset asset) {
 		List<CustomVoxelModel> list = new ArrayList<>();
-		
+
 		logger().debug("Loading custom models file : " + asset);
-		try
-		{
-			/*FileReader fileReader = new FileReader(voxelModelFile);*/
+		try {
+			/* FileReader fileReader = new FileReader(voxelModelFile); */
 			Reader fileReader = asset.reader();
 			BufferedReader reader = new BufferedReader(fileReader);
 
@@ -67,46 +65,37 @@ public class VoxelModelLoader {
 			float jitterZ = 0;
 
 			int verticesCounter = 0;
-			while ((line = reader.readLine()) != null)
-			{
+			while ((line = reader.readLine()) != null) {
 				line = line.replace("\t", "");
-				if (line.startsWith("#"))
-				{
+				if (line.startsWith("#")) {
 					// It's a comment, ignore.
-				}
-				else
-				{
-					if (voxelModelName == null && !line.equals(""))
-					{
-						voxelModelName = asset.getName().substring(asset.getName().lastIndexOf("/") + 1).replace(".model", "");
+				} else {
+					if (voxelModelName == null && !line.equals("")) {
+						voxelModelName = asset.getName().substring(asset.getName().lastIndexOf("/") + 1)
+								.replace(".model", "");
 						if (!line.equals("default"))
 							voxelModelName += "." + line;
 
-						//Textures calculator
+						// Textures calculator
 						currentTexture = "_top";
-					}
-					else if (line.startsWith("end"))
-					{
-						if (voxelModelName != null)
-						{
-							//Security:
-							if (verticesTemp.size() % 3 != 0)
-							{
-								System.out.println(voxelModelName+" -> "+verticesTemp.size());
+					} else if (line.startsWith("end")) {
+						if (voxelModelName != null) {
+							// Security:
+							if (verticesTemp.size() % 3 != 0) {
+								System.out.println(voxelModelName + " -> " + verticesTemp.size());
 								System.exit(-1);
 							}
 
-							//Add last used texture
+							// Add last used texture
 							texturesNamesTemp.add(currentTexture);
 							texturesOffsetsTemp.add(verticesTemp.size());
 
-							//Build list of them with offsets
+							// Build list of them with offsets
 							String[] texturesNames = new String[texturesNamesTemp.size()];
 							int[] texturesOffsets = new int[texturesNamesTemp.size()];
 
 							int indexInTextures = 0;
-							for (String textureName : texturesNamesTemp)
-							{
+							for (String textureName : texturesNamesTemp) {
 								texturesNames[indexInTextures] = textureName;
 								texturesOffsets[indexInTextures] = texturesOffsetsTemp.get(indexInTextures);
 
@@ -118,15 +107,13 @@ public class VoxelModelLoader {
 							float[] normals = new float[verticesTemp.size() * 3];
 							byte[] extras = new byte[extrasTemps.size()];
 
-							if (verticesTemp.size() != extrasTemps.size())
-							{
+							if (verticesTemp.size() != extrasTemps.size()) {
 								System.out.println("FUCK OFF" + verticesTemp.size() + "+" + extrasTemps.size());
 								System.exit(-111);
 							}
 
 							boolean[][] culling = new boolean[verticesTemp.size()][6];
-							for (int i = 0; i < verticesTemp.size(); i++)
-							{
+							for (int i = 0; i < verticesTemp.size(); i++) {
 								vertices[i * 3 + 0] = verticesTemp.get(i)[0];
 								vertices[i * 3 + 1] = verticesTemp.get(i)[1];
 								vertices[i * 3 + 2] = verticesTemp.get(i)[2];
@@ -138,53 +125,49 @@ public class VoxelModelLoader {
 
 								extras[i] = extrasTemps.get(i);
 							}
-							for (int i = 0; i < verticesTemp.size() / 3; i++)
-							{
+							for (int i = 0; i < verticesTemp.size() / 3; i++) {
 								culling[i] = cullingTemp.get(i);
 							}
 
-							list.add(new CustomVoxelModel(store, voxelModelName, vertices, texCoords, texturesNames, texturesOffsets, normals, extras, culling, jitterX, jitterY, jitterZ));
-							//models.put(voxelModelName, voxelModel);
+							list.add(new CustomVoxelModel(store, voxelModelName, vertices, texCoords, texturesNames,
+									texturesOffsets, normals, extras, culling, jitterX, jitterY, jitterZ));
+							// models.put(voxelModelName, voxelModel);
 
-							//Resets data accumulators
+							// Resets data accumulators
 							verticesTemp.clear();
 							texcoordsTemp.clear();
 							normalsTemp.clear();
 							cullingTemp.clear();
 							extrasTemps.clear();
 
-							//Resets textures
+							// Resets textures
 							texturesNamesTemp.clear();
 							texturesOffsetsTemp.clear();
 
-							//Resets culling engine
+							// Resets culling engine
 							currentCull = new boolean[6];
 
-							//Reset fields
+							// Reset fields
 							jitterX = 0;
 							jitterY = 0;
 							jitterZ = 0;
-						}
-						else
-							logger().warn("Parse error in asset " + asset + ", line " + ln + ", unexpected 'end' token.");
+						} else
+							logger().warn(
+									"Parse error in asset " + asset + ", line " + ln + ", unexpected 'end' token.");
 
 						voxelModelName = null;
-					}
-					else if (line.startsWith("texture"))
-					{
+					} else if (line.startsWith("texture")) {
 						if (voxelModelName == null)
 							continue;
 
 						String[] splitted = line.split(" ");
 						String newTextureName = splitted[1].replace("\'", "");
-						//It can't crash from here so we can safely add the textures
+						// It can't crash from here so we can safely add the textures
 						texturesNamesTemp.add(currentTexture);
 						texturesOffsetsTemp.add(verticesTemp.size());
 
 						currentTexture = newTextureName;
-					}
-					else if (line.startsWith("jitter"))
-					{
+					} else if (line.startsWith("jitter")) {
 						if (voxelModelName == null)
 							continue;
 						String[] splitted = line.split(" ");
@@ -192,21 +175,20 @@ public class VoxelModelLoader {
 						jitterX = Float.parseFloat(splitted[1]);
 						jitterY = Float.parseFloat(splitted[2]);
 						jitterZ = Float.parseFloat(splitted[3]);
-					}
-					else if (line.startsWith("v"))
-					{
-						if (voxelModelName != null)
-						{
+					} else if (line.startsWith("v")) {
+						if (voxelModelName != null) {
 							// System.out.println("vv"+vertices.size());
 							String[] splitted = line.split(" ");
 							String[] vert = splitted[1].split(",");
 							String[] tex = splitted[2].split(",");
 							String[] nor = splitted[3].split(",");
-							verticesTemp.add(new float[] { Float.parseFloat(vert[0]), Float.parseFloat(vert[1]), Float.parseFloat(vert[2]) });
+							verticesTemp.add(new float[] { Float.parseFloat(vert[0]), Float.parseFloat(vert[1]),
+									Float.parseFloat(vert[2]) });
 							texcoordsTemp.add(new float[] { Float.parseFloat(tex[0]), Float.parseFloat(tex[1]) });
 
-							//Normalizes normal at loading time
-							Vector3f normalizeMe = new Vector3f(Float.parseFloat(nor[0]), Float.parseFloat(nor[1]), Float.parseFloat(nor[2]));
+							// Normalizes normal at loading time
+							Vector3f normalizeMe = new Vector3f(Float.parseFloat(nor[0]), Float.parseFloat(nor[1]),
+									Float.parseFloat(nor[2]));
 							normalizeMe.normalize();
 
 							normalsTemp.add(new float[] { normalizeMe.x(), normalizeMe.y(), normalizeMe.z() });
@@ -218,22 +200,16 @@ public class VoxelModelLoader {
 							extrasTemps.add(extra);
 
 							verticesCounter++;
-							if (verticesCounter >= 3)
-							{
+							if (verticesCounter >= 3) {
 								cullingTemp.add(currentCull);
 								verticesCounter = 0;
 							}
-						}
-						else
+						} else
 							logger().warn("Parse error in asset " + asset + ", line " + ln + ", unexpected parameter.");
-					}
-					else if (line.startsWith("cull"))
-					{
+					} else if (line.startsWith("cull")) {
 						currentCull = new boolean[6];
-						for (String face : line.split(" "))
-						{
-							switch (face)
-							{
+						for (String face : line.split(" ")) {
+							switch (face) {
 							case "bottom":
 								currentCull[VoxelSide.BOTTOM.ordinal()] = true;
 								break;
@@ -254,50 +230,48 @@ public class VoxelModelLoader {
 								break;
 							}
 						}
-					}
-					else if (line.startsWith("require"))
-					{
-						if (voxelModelName != null)
-						{
+					} else if (line.startsWith("require")) {
+						if (voxelModelName != null) {
 							String[] splitted = line.split(" ");
-							if (splitted.length == 2)
-							{
+							if (splitted.length == 2) {
 								String toInclude = splitted[1];
-								toInclude = toInclude.replace("~", voxelModelName.contains(".") ? voxelModelName.split("\\.")[0] : voxelModelName);
-								if(toInclude.endsWith(".default"))
+								toInclude = toInclude.replace("~",
+										voxelModelName.contains(".") ? voxelModelName.split("\\.")[0] : voxelModelName);
+								if (toInclude.endsWith(".default"))
 									toInclude = toInclude.substring(0, toInclude.length() - 8);
-								
-								VoxelModel includeMeh = null;//store.getVoxelModel(toInclude);
-								if(includeMeh == null) {
-									for(CustomVoxelModel model : list) {
-										if(model.name.equals(toInclude)) {
+
+								VoxelModel includeMeh = null;// store.getVoxelModel(toInclude);
+								if (includeMeh == null) {
+									for (CustomVoxelModel model : list) {
+										if (model.name.equals(toInclude)) {
 											includeMeh = model;
 											break;
 										}
 									}
 								}
-								
-								if (includeMeh != null)
-								{
-									//Iterates over included model
-									for (int i = 0; i < includeMeh.getSizeInVertices(); i++)
-									{
-										verticesTemp.add(new float[] { includeMeh.getVertices()[i * 3 + 0], includeMeh.getVertices()[i * 3 + 1], includeMeh.getVertices()[i * 3 + 2] });
-										texcoordsTemp.add(new float[] { includeMeh.getTexCoords()[i * 2 + 0], includeMeh.getTexCoords()[i * 2 + 1] });
-										normalsTemp.add(new float[] { includeMeh.getNormals()[i * 3 + 0], includeMeh.getNormals()[i * 3 + 1], includeMeh.getNormals()[i * 3 + 2] });
+
+								if (includeMeh != null) {
+									// Iterates over included model
+									for (int i = 0; i < includeMeh.getSizeInVertices(); i++) {
+										verticesTemp.add(new float[] { includeMeh.getVertices()[i * 3 + 0],
+												includeMeh.getVertices()[i * 3 + 1],
+												includeMeh.getVertices()[i * 3 + 2] });
+										texcoordsTemp.add(new float[] { includeMeh.getTexCoords()[i * 2 + 0],
+												includeMeh.getTexCoords()[i * 2 + 1] });
+										normalsTemp.add(new float[] { includeMeh.getNormals()[i * 3 + 0],
+												includeMeh.getNormals()[i * 3 + 1],
+												includeMeh.getNormals()[i * 3 + 2] });
 										extrasTemps.add(includeMeh.getExtra()[i]);
 									}
 
-									//TODO it doesn't import their textures settings !
+									// TODO it doesn't import their textures settings !
 									for (boolean cul[] : includeMeh.getCulling())
 										cullingTemp.add(cul);
-								}
-								else
+								} else
 									logger().warn("Can't require '" + toInclude + "'");
 
 							}
-						}
-						else
+						} else
 							logger().warn("Parse error in asset " + asset + ", line " + ln + ", unexpected parameter.");
 					}
 				}
@@ -307,7 +281,7 @@ public class VoxelModelLoader {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		return list;
 	}
 

@@ -14,6 +14,7 @@ import io.xol.chunkstories.api.net.PacketDefinition;
 public class PacketIngoingBuffered extends LogicalPacketDatagram {
 
 	DataInputStream dis;
+
 	public PacketIngoingBuffered(PacketDefinition packetDefinition, int packetSize, byte[] data) {
 		super(packetDefinition, packetSize);
 		this.dis = new DataInputStream(new ByteArrayInputStream(data));
@@ -26,6 +27,6 @@ public class PacketIngoingBuffered extends LogicalPacketDatagram {
 
 	@Override
 	public void dispose() {
-		
+
 	}
 }

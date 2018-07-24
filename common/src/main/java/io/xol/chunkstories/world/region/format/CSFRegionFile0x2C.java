@@ -17,115 +17,100 @@ import io.xol.chunkstories.entity.EntitySerializer;
 import io.xol.chunkstories.world.chunk.CompressedData;
 import io.xol.chunkstories.world.region.RegionImplementation;
 
-/** This version adds support for distinguishing between generated empty and ungenerated chunks */
-public class CSFRegionFile0x2C extends CSFRegionFile
-{
-	public CSFRegionFile0x2C(RegionImplementation holder, File file)
-	{
+/**
+ * This version adds support for distinguishing between generated empty and
+ * ungenerated chunks
+ */
+public class CSFRegionFile0x2C extends CSFRegionFile {
+	public CSFRegionFile0x2C(RegionImplementation holder, File file) {
 		super(holder, file);
 	}
 
 	static final int air_chunk_magic_number = 0xFFFFFFFF;
-	
-	public void load(DataInputStream in) throws IOException
-	{
+
+	public void load(DataInputStream in) throws IOException {
 		try {
 			// First load the compressed chunk data sizes
 			int[] chunksSizes = new int[8 * 8 * 8];
-			for (int a = 0; a < 8 * 8 * 8; a++)
-			{
+			for (int a = 0; a < 8 * 8 * 8; a++) {
 				chunksSizes[a] = in.readInt();
 			}
-	
-			//Load in the compressed chunks
+
+			// Load in the compressed chunks
 			for (int a = 0; a < 8; a++)
 				for (int b = 0; b < 8; b++)
-					for (int c = 0; c < 8; c++)
-					{
+					for (int c = 0; c < 8; c++) {
 						int compressedDataSize = chunksSizes[a * 8 * 8 + b * 8 + c];
-						
-						//Compressed data was found, load it
+
+						// Compressed data was found, load it
 						if (compressedDataSize > 0) {
 							byte[] buffer = new byte[compressedDataSize];
 							try {
 								in.readFully(buffer, 0, compressedDataSize);
 								owner.getChunkHolder(a, b, c).setCompressedData(new CompressedData(buffer, null, null));
-							} catch(EOFException e) {
+							} catch (EOFException e) {
 								owner.getChunkHolder(a, b, c).setCompressedData(new CompressedData(null, null, null));
 							}
-							
-						}
-						else if(compressedDataSize == air_chunk_magic_number) {
+
+						} else if (compressedDataSize == air_chunk_magic_number) {
 							owner.getChunkHolder(a, b, c).setCompressedData(new CompressedData(null, null, null));
-						}
-						else if(compressedDataSize == 0x00000000){
+						} else if (compressedDataSize == 0x00000000) {
 							owner.getChunkHolder(a, b, c).setCompressedData(null);
-						}
-						else {
-							throw new RuntimeException("Unexpected negative length for compressed chunk size: "+compressedDataSize);
+						} else {
+							throw new RuntimeException(
+									"Unexpected negative length for compressed chunk size: " + compressedDataSize);
 						}
 					}
-	
-			//We pretend it's loaded sooner so we can add the entities and they will load their voxel data if needed
+
+			// We pretend it's loaded sooner so we can add the entities and they will load
+			// their voxel data if needed
 			owner.setDiskDataLoaded(true);
-	
-			//don't tick the world entities until we get this straight
+
+			// don't tick the world entities until we get this straight
 			owner.world.entitiesLock.writeLock().lock();
-	
-			//Older version case - TODO write a version mechanism that prevents from checking this
-			if (in.available() <= 0)
-			{
+
+			// Older version case - TODO write a version mechanism that prevents from
+			// checking this
+			if (in.available() <= 0) {
 				owner.world.entitiesLock.writeLock().unlock();
 				return;
 			}
-	
-			try
-			{
-				//Read entities until we hit -1
+
+			try {
+				// Read entities until we hit -1
 				Entity entity = null;
-				do
-				{
+				do {
 					entity = EntitySerializer.readEntityFromStream(in, this, owner.world);
 					if (entity != null)
 						owner.world.addEntity(entity);
-				}
-				while (entity != null);
-	
-			}
-			catch (Exception e)
-			{
-				logger().error("Error while loading "+file);
+				} while (entity != null);
+
+			} catch (Exception e) {
+				logger().error("Error while loading " + file);
 				logger().error("Exception: {}", e);
-				//e.printStackTrace(logger().getPrintWriter());
-				//e.printStackTrace();
+				// e.printStackTrace(logger().getPrintWriter());
+				// e.printStackTrace();
 			}
-	
+
 			owner.world.entitiesLock.writeLock().unlock();
-			
-		}
-		finally {
+
+		} finally {
 			in.close();
 		}
 	}
 
-	public void save(DataOutputStream dos) throws IOException
-	{
+	public void save(DataOutputStream dos) throws IOException {
 		throw new UnsupportedOperationException("Saving in older formats isn't supported.");
 	}
 
-	public void finishSavingOperations()
-	{
-		//Waits out saving operations.
+	public void finishSavingOperations() {
+		// Waits out saving operations.
 		while (savingOperations.get() > 0)
-			//System.out.println(savingOperations.get());
-			synchronized (this)
-			{
-				try
-				{
+			// System.out.println(savingOperations.get());
+			synchronized (this) {
+				try {
 					wait(20L);
-				}
-				catch (InterruptedException e)
-				{
+				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
 			}

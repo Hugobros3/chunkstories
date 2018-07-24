@@ -26,8 +26,6 @@ import java.util.List;
 
 import io.xol.chunkstories.api.server.UserPrivileges;
 
-
-
 public class FileBasedUsersPrivileges implements UserPrivileges {
 	// Takes care of the admins/banned/whitelisted people lists
 	public FileBasedUsersPrivileges() {

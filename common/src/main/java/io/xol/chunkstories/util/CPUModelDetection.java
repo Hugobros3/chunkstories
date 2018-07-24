@@ -10,32 +10,23 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-public class CPUModelDetection
-{
-	public static String detectModel()
-	{
+public class CPUModelDetection {
+	public static String detectModel() {
 		String command = "";
 
 		String cpuName = "";
 		String cpuFreq = "unknown";
 
-		if (OSHelper.isLinux())
-		{
+		if (OSHelper.isLinux()) {
 			command = "cat /proc/cpuinfo";
-		}
-		else if (OSHelper.isWindows())
-		{
+		} else if (OSHelper.isWindows()) {
 			command = "cmd /C WMIC CPU Get /Format:List <NUL";
-		}
-		else
+		} else
 			return "Mac, not implemented, workarround";
 		Process process = null;
-		try
-		{
+		try {
 			process = Runtime.getRuntime().exec(command);
-		}
-		catch (IOException e)
-		{
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
@@ -43,31 +34,26 @@ public class CPUModelDetection
 
 		BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 		String line;
-		try
-		{
-			while ((line = reader.readLine()) != null)
-			{
-				//line = reader.readLine();
-				
-				if(line.startsWith("Name="))
+		try {
+			while ((line = reader.readLine()) != null) {
+				// line = reader.readLine();
+
+				if (line.startsWith("Name="))
 					cpuName = line.split("=")[1];
-				if(line.startsWith("model name"))
-				{
+				if (line.startsWith("model name")) {
 					cpuName = line.split(":")[1];
 					// On linux we count cores
 					cores++;
 				}
-				if(line.startsWith("NumberOfCores="))
+				if (line.startsWith("NumberOfCores="))
 					cores += Integer.parseInt(line.split("=")[1]);
-				
-				if(line.startsWith("CurrentClockSpeed"))
+
+				if (line.startsWith("CurrentClockSpeed"))
 					cpuFreq = line.split("=")[1];
-				if(line.startsWith("cpu MHz"))
+				if (line.startsWith("cpu MHz"))
 					cpuFreq = line.split(":")[1];
 			}
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			e.printStackTrace();
 			return "Crashed during detection";
 		}

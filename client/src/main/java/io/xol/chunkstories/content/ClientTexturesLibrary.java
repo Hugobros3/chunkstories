@@ -21,7 +21,7 @@ import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;
 public class ClientTexturesLibrary implements TexturesLibrary {
 
 	private final ClientGameContent clientGameContent;
-	
+
 	public ClientTexturesLibrary(ClientGameContent clientGameContent) {
 		this.clientGameContent = clientGameContent;
 	}

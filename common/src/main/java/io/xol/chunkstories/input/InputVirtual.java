@@ -8,56 +8,52 @@ package io.xol.chunkstories.input;
 
 import io.xol.chunkstories.api.input.Input;
 
-/** An input not linked to actual hardware directly, either representing a remote input or an input used for internal purposes ( like actions buttons, 'pressed' by the
- * client to tell the master what they did with fancy semantics, see shootGun in res/virtual.inputs */
+/**
+ * An input not linked to actual hardware directly, either representing a remote
+ * input or an input used for internal purposes ( like actions buttons,
+ * 'pressed' by the client to tell the master what they did with fancy
+ * semantics, see shootGun in res/virtual.inputs
+ */
 public class InputVirtual implements Input// implements KeyboardKeyInput
 {
 	private String name;
 	private long hash;
-	
+
 	private boolean pressed = false;
 
-	public InputVirtual(String name)
-	{
+	public InputVirtual(String name) {
 		this.name = name;
 		computeHash();
 	}
 
-	public InputVirtual(String name, long hash)
-	{
+	public InputVirtual(String name, long hash) {
 		this.name = name;
 		this.hash = hash;
 	}
-	
+
 	@Override
-	public String getName()
-	{
+	public String getName() {
 		return name;
 	}
 
-	public void setPressed(boolean pressed)
-	{
+	public void setPressed(boolean pressed) {
 		this.pressed = pressed;
 	}
-	
+
 	@Override
-	public boolean isPressed()
-	{
+	public boolean isPressed() {
 		return pressed;
 	}
 
-	public String toString()
-	{
+	public String toString() {
 		return "[KeyBindVirtual: " + name + "]";
 	}
-	
-	public long getHash()
-	{
+
+	public long getHash() {
 		return hash;
 	}
-	
-	private void computeHash()
-	{
+
+	private void computeHash() {
 		byte[] digested = InputsLoaderHelper.md.digest(name.getBytes());
 		hash = (hash & 0x0FFFFFFFFFFFFFFFL) | (((long) digested[0] & 0xF) << 60);
 		hash = (hash & 0xF0FFFFFFFFFFFFFFL) | (((long) digested[1] & 0xF) << 56);
@@ -78,22 +74,19 @@ public class InputVirtual implements Input// implements KeyboardKeyInput
 	}
 
 	@Override
-	public boolean equals(Object o)
-	{
-		if(o == null)
+	public boolean equals(Object o) {
+		if (o == null)
 			return false;
-		else if(o instanceof Input) {
-			return ((Input)o).getName().equals(getName());
-		}
-		else if(o instanceof String) {
-			return ((String)o).equals(this.getName());
+		else if (o instanceof Input) {
+			return ((Input) o).getName().equals(getName());
+		} else if (o instanceof String) {
+			return ((String) o).equals(this.getName());
 		}
 		return false;
 	}
-	
+
 	@Override
-	public int hashCode()
-	{
+	public int hashCode() {
 		return getName().hashCode();
 	}
 }

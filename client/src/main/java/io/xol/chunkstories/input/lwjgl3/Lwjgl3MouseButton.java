@@ -15,42 +15,36 @@ import io.xol.chunkstories.api.input.Mouse.MouseButton;
 import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.input.Pollable;
 
-public class Lwjgl3MouseButton implements MouseButton, Pollable
-{
+public class Lwjgl3MouseButton implements MouseButton, Pollable {
 	private final Lwjgl3Mouse mouse;
 	private final String name;
 	private final int button;
-	
+
 	private boolean isDown = false;
-	
-	public Lwjgl3MouseButton(Lwjgl3Mouse mouse, String name, int button)
-	{
+
+	public Lwjgl3MouseButton(Lwjgl3Mouse mouse, String name, int button) {
 		this.mouse = mouse;
-		
+
 		this.name = name;
 		this.button = button;
 	}
-	
+
 	@Override
-	public String getName()
-	{
+	public String getName() {
 		return name;
 	}
 
 	@Override
-	public boolean isPressed()
-	{
+	public boolean isPressed() {
 		return isDown;
 	}
-	
-	public long getHash()
-	{
+
+	public long getHash() {
 		return button;
 	}
 
 	@Override
-	public void updateStatus()
-	{
+	public void updateStatus() {
 		isDown = glfwGetMouseButton(mouse.im.gameWindow.glfwWindowHandle, button) == GLFW_PRESS;
 	}
 
@@ -63,24 +57,21 @@ public class Lwjgl3MouseButton implements MouseButton, Pollable
 	public Lwjgl3Mouse getMouse() {
 		return mouse;
 	}
-	
+
 	@Override
-	public boolean equals(Object o)
-	{
-		if(o == null)
+	public boolean equals(Object o) {
+		if (o == null)
 			return false;
-		else if(o instanceof Input) {
-			return ((Input)o).getName().equals(getName());
-		}
-		else if(o instanceof String) {
-			return ((String)o).equals(this.getName());
+		else if (o instanceof Input) {
+			return ((Input) o).getName().equals(getName());
+		} else if (o instanceof String) {
+			return ((String) o).equals(this.getName());
 		}
 		return false;
 	}
-	
+
 	@Override
-	public int hashCode()
-	{
+	public int hashCode() {
 		return getName().hashCode();
 	}
 

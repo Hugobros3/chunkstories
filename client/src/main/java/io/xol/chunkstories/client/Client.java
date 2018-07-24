@@ -46,25 +46,24 @@ import io.xol.chunkstories.util.config.ConfigurationImplementation;
 import io.xol.chunkstories.world.WorldClientCommon;
 import io.xol.chunkstories.world.WorldClientLocal;
 
-public class Client implements ClientInterface
-{
-	private static Client staticClientReference; //Self-reference for static access
-	
-	//Base client data
-	//private final ConfigDeprecated clientConfig;
+public class Client implements ClientInterface {
+	private static Client staticClientReference; // Self-reference for static access
+
+	// Base client data
+	// private final ConfigDeprecated clientConfig;
 	private final Logger logger;
 	private final ClientGameContent gameContent;
 
-	//Windowing/Rendering
+	// Windowing/Rendering
 	private final GLFWGameWindow gameWindow;
-	//private final RenderingConfig renderingConfig = new RenderingConfig();
-	
-	//Login data
+	// private final RenderingConfig renderingConfig = new RenderingConfig();
+
+	// Login data
 	public static String username = "Unknow";
 	public static String session_key = "";
 	public static boolean offline = false;
-	
-	//Gameplay data
+
+	// Gameplay data
 	private WorldClientCommon world;
 	private PlayerClientImplementation player;
 
@@ -74,86 +73,80 @@ public class Client implements ClientInterface
 
 	private ConfigurationImplementation configuration;
 
-	public static void main(String[] args)
-	{
+	public static void main(String[] args) {
 		// Check for folder
 		GameDirectory.check();
 		GameDirectory.initClientPath();
 
 		File coreContentLocation = new File("core_content.zip");
-		
+
 		String modsStringArgument = null;
 		for (String s : args) // Debug arguments
 		{
 			if (s.equals("--forceobsolete")) {
-				
+
 				ClientLimitations.ignoreObsoleteHardware = false;
-				System.out.println("Ignoring OpenGL detection. This is absolutely definitely not going to make the game run, proceed at your own risk of imminent failure."
-						+ "You are stripped of any tech support rights when running the game using this.");
-			}
-			else if (s.contains("--mods")) {
+				System.out.println(
+						"Ignoring OpenGL detection. This is absolutely definitely not going to make the game run, proceed at your own risk of imminent failure."
+								+ "You are stripped of any tech support rights when running the game using this.");
+			} else if (s.contains("--mods")) {
 				modsStringArgument = s.replace("--mods=", "");
-			}
-			else if (s.contains("--dir")) {
+			} else if (s.contains("--dir")) {
 				GameDirectory.set(s.replace("--dir=", ""));
-			}
-			else if (s.contains("--core")) {
+			} else if (s.contains("--core")) {
 				String coreContentLocationPath = s.replace("--core=", "");
 				coreContentLocation = new File(coreContentLocationPath);
-			}
-			else if(s.contains("--gldebug")) {
+			} else if (s.contains("--gldebug")) {
 				ClientLimitations.debugOpenGL = true;
 				System.out.println("OpenGL debug output ENABLED");
-			}
-			else {
-				String helpText = "Chunk Stories client "+VersionInfo.version+"\n";
-				
-				if(s.equals("-h") || s.equals("--help"))
+			} else {
+				String helpText = "Chunk Stories client " + VersionInfo.version + "\n";
+
+				if (s.equals("-h") || s.equals("--help"))
 					helpText += "Command line help: \n";
 				else
-					helpText += "Unrecognized command: "+s + "\n";
-				
+					helpText += "Unrecognized command: " + s + "\n";
+
 				helpText += "--forceobsolete Forces the game to run even if requirements aren't met. !NO SUPPORT! \n";
 				helpText += "--mods=xxx,yyy | -mods=* Tells the game to start with those mods enabled\n";
 				helpText += "--dir=whatever Tells the game not to look for .chunkstories at it's normal location and instead use the argument\n";
 				helpText += "--gldebug Enables OpenGL debug output to the console\n";
 				helpText += "--core=whaterverfolder/ or --core=whatever.zip Tells the game to use some specific folder or archive as it's base content.\n";
-			
+
 				System.out.println(helpText);
 				return;
 			}
 		}
-		
+
 		new Client(coreContentLocation, modsStringArgument);
 
-		//Not supposed to happen, gets there when Client crashes badly.
+		// Not supposed to happen, gets there when Client crashes badly.
 		System.exit(-1);
 	}
 
-	Client(File coreContentLocation, String modsStringArgument)
-	{
+	Client(File coreContentLocation, String modsStringArgument) {
 		staticClientReference = this;
-		
-		//Name the thread
+
+		// Name the thread
 		Thread.currentThread().setName("Main OpenGL Rendering thread");
 		Thread.currentThread().setPriority(Constants.MAIN_GL_THREAD_PRIORITY);
-		
+
 		// Start logging system
 		Calendar cal = Calendar.getInstance();
 		SimpleDateFormat sdf = new SimpleDateFormat("YYYY.MM.dd HH.mm.ss");
 		String time = sdf.format(cal.getTime());
-		
+
 		logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-		
+
 		String loggingFilename = GameDirectory.getGameFolderPath() + "/logs/" + time + ".log";
-        new LogbackSetupHelper(loggingFilename);
-		
-		//Get configuration right
-		//clientConfig = new ConfigFile("./config/client.cfg");
-		
+		new LogbackSetupHelper(loggingFilename);
+
+		// Get configuration right
+		// clientConfig = new ConfigFile("./config/client.cfg");
+
 		// Creates game window, no use of any user content up to this point
 		gameWindow = new GLFWGameWindow(this, "Chunk Stories " + VersionInfo.version);
-		
+
 		// Create game content manager
 		gameContent = new ClientGameContent(this, coreContentLocation, modsStringArgument);
 		gameContent.reload();
@@ -161,81 +154,74 @@ public class Client implements ClientInterface
 		configuration = new ClientConfigurationImplementation(this, new File("./config/client.cfg"));
 		gameWindow.stage_2_init();
 		configuration.load();
-		
+
 		// Spawns worker threads
 		int nbThreads = -1;
 		String configThreads = getConfiguration().getStringOption("workersThreads");
-		if(!configThreads.equals("auto")) {
+		if (!configThreads.equals("auto")) {
 			try {
 				nbThreads = Integer.parseInt(configThreads);
+			} catch (NumberFormatException e) {
 			}
-			catch(NumberFormatException e) {}
 		}
-		
-		if(nbThreads <= 0) {
+
+		if (nbThreads <= 0) {
 			nbThreads = Runtime.getRuntime().availableProcessors() / 2;
-			
-			//Fail-safe
-			if(nbThreads < 1)
+
+			// Fail-safe
+			if (nbThreads < 1)
 				nbThreads = 1;
 		}
-		
+
 		workers = new ClientTasksPool(this, nbThreads);
 		workers.start();
-		
-		//Load the correct language
+
+		// Load the correct language
 		String lang = getConfiguration().getStringOption("client.game.language");
-		if(!lang.equals("undefined"))
+		if (!lang.equals("undefined"))
 			gameContent.localization().loadTranslation(lang);
 
-		//Initlializes windows screen to main menu ( and ask for login )
+		// Initlializes windows screen to main menu ( and ask for login )
 		gameWindow.setLayer(new LoginPrompt(gameWindow, new SkyBoxBackground(gameWindow)));
-		
-		//Pass control to the windows for main game loop
+
+		// Pass control to the windows for main game loop
 		gameWindow.run();
 	}
 
-	public static Client getInstance()
-	{
+	public static Client getInstance() {
 		return staticClientReference;
 	}
 
 	@Override
-	public ClientSoundManager getSoundManager()
-	{
+	public ClientSoundManager getSoundManager() {
 		return gameWindow.getSoundEngine();
 	}
 
 	@Override
-	public ParticlesManager getParticlesManager()
-	{
+	public ParticlesManager getParticlesManager() {
 		return world.getParticlesManager();
 	}
 
 	@Override
-	public DecalsManager getDecalsManager()
-	{
+	public DecalsManager getDecalsManager() {
 		return world.getDecalsManager();
 	}
 
-	public void onClose()
-	{
+	public void onClose() {
 		workers.destroy();
-		
+
 		configuration.save();
 	}
 
 	@Override
-	public boolean hasFocus()
-	{
+	public boolean hasFocus() {
 		if (gameWindow.getLayer() instanceof Ingame)
 			return ((Ingame) gameWindow.getLayer()).hasFocus();
 		return false;
 	}
 
 	@Override
-	public void reloadAssets()
-	{
+	public void reloadAssets() {
 		SimpleFence waitForReload = new SimpleFence();
 
 		Runnable reload = () -> {
@@ -245,10 +231,10 @@ public class Client implements ClientInterface
 			gameWindow.getInputsManager().reload();
 			gameWindow.getRenderingInterface().getFontRenderer().reloadFonts();
 			configuration.load();
-			
+
 			waitForReload.signal();
 		};
-		
+
 		if (gameWindow.isMainGLWindow())
 			reload.run();
 		else
@@ -258,21 +244,16 @@ public class Client implements ClientInterface
 	}
 
 	@Override
-	public void printChat(String textToPrint)
-	{
+	public void printChat(String textToPrint) {
 		if (gameWindow.getLayer().getRootLayer() instanceof Ingame)
 			((Ingame) gameWindow.getLayer().getRootLayer()).chatManager.insert(textToPrint);
 	}
 
-	public void openInventories(Inventory... inventories)
-	{
-		gameWindow.queueSynchronousTask(new Runnable()
-		{
+	public void openInventories(Inventory... inventories) {
+		gameWindow.queueSynchronousTask(new Runnable() {
 			@Override
-			public void run()
-			{
-				if (gameWindow.getLayer().getRootLayer() instanceof Ingame)
-				{
+			public void run() {
+				if (gameWindow.getLayer().getRootLayer() instanceof Ingame) {
 					Ingame gmp = (Ingame) gameWindow.getLayer().getRootLayer();
 					gameWindow.setLayer(new InventoryView(gameWindow, gmp, inventories));
 					gmp.focus(false);
@@ -282,150 +263,132 @@ public class Client implements ClientInterface
 	}
 
 	@Override
-	public PlayerClientImplementation getPlayer()
-	{
+	public PlayerClientImplementation getPlayer() {
 		return player;
 	}
 
 	@Override
-	public WorldClient getWorld()
-	{
+	public WorldClient getWorld() {
 		return world;
 	}
 
 	@Override
-	public void changeWorld(WorldClient world2)
-	{
-		WorldClientCommon world = (WorldClientCommon)world2;
-		
+	public void changeWorld(WorldClient world2) {
+		WorldClientCommon world = (WorldClientCommon) world2;
+
 		Runnable job = new Runnable() {
 			@Override
-			public void run()
-			{
-				//Setup the new world and make a controller for it
+			public void run() {
+				// Setup the new world and make a controller for it
 				Client.this.world = world;
 				player = new PlayerClientImplementation(Client.this, world);
-				
+
 				pluginManager.reloadPlugins();
 				new ReloadContentCommand(Client.this);
-				if(world instanceof WorldClientLocal) {
+				if (world instanceof WorldClientLocal) {
 					new InstallServerCommands(((WorldClientLocal) world).getLocalServer());
 				}
 
-				//Change the scene
+				// Change the scene
 				Ingame ingameScene = new Ingame(gameWindow, world);
 
-				//We want to keep the connection overlay when getting into a server
-				if (gameWindow.getLayer() instanceof ConnectionOverlay)
-				{
+				// We want to keep the connection overlay when getting into a server
+				if (gameWindow.getLayer() instanceof ConnectionOverlay) {
 					ConnectionOverlay overlay = (ConnectionOverlay) gameWindow.getLayer();
-					//If that happen, we want this connection overlay to forget he was originated from a server browser or whatever
+					// If that happen, we want this connection overlay to forget he was originated
+					// from a server browser or whatever
 					overlay.setParentScene(ingameScene);
-				}
-				else
+				} else
 					gameWindow.setLayer(ingameScene);
-				
-				//Switch scene but keep the overlay
-				//ingameScene.changeOverlay(overlay);
-				
-				//Start only the logic after all that
+
+				// Switch scene but keep the overlay
+				// ingameScene.changeOverlay(overlay);
+
+				// Start only the logic after all that
 				world.startLogic();
 			}
 		};
-		
-		if(gameWindow.isInstanceMainGLWindow())
+
+		if (gameWindow.isInstanceMainGLWindow())
 			job.run();
 		else {
 			Fence fence = gameWindow.queueSynchronousTask(job);
 			fence.traverse();
 		}
-		
+
 	}
 
 	@Override
-	public void exitToMainMenu()
-	{
-		gameWindow.queueSynchronousTask(new Runnable()
-		{
+	public void exitToMainMenu() {
+		gameWindow.queueSynchronousTask(new Runnable() {
 			@Override
-			public void run()
-			{
+			public void run() {
 				Layer currentRootLayer = gameWindow.getLayer().getRootLayer();
-				if(currentRootLayer != null && currentRootLayer instanceof Ingame) {
+				if (currentRootLayer != null && currentRootLayer instanceof Ingame) {
 					currentRootLayer.destroy();
 				}
-				
+
 				gameWindow.setLayer(new MainMenu(gameWindow, new SkyBoxBackground(gameWindow)));
-				
-				if (world != null)
-				{
+
+				if (world != null) {
 					Client.this.world.destroy();
 					Client.this.world = null;
 				}
 				player = null;
-				
+
 				Client.this.getSoundManager().stopAnySound();
 			}
 		});
 	}
 
-	public void exitToMainMenu(String errorMessage)
-	{
-		gameWindow.queueSynchronousTask(new Runnable()
-		{
+	public void exitToMainMenu(String errorMessage) {
+		gameWindow.queueSynchronousTask(new Runnable() {
 			@Override
-			public void run()
-			{
+			public void run() {
 				gameWindow.setLayer(new MessageBox(gameWindow, new SkyBoxBackground(gameWindow), errorMessage));
-				
-				if (world != null)
-				{
+
+				if (world != null) {
 					Client.this.world.destroy();
 					Client.this.world = null;
 				}
 				player = null;
-				
+
 				Client.this.getSoundManager().stopAnySound();
 			}
 		});
 	}
 
 	@Override
-	public void print(String message)
-	{
+	public void print(String message) {
 		chatLogger.info(message);
 		printChat(message);
 	}
 
 	@Override
-	public ClientGameContent getContent()
-	{
+	public ClientGameContent getContent() {
 		return gameContent;
 	}
 
 	private ClientPluginManager pluginManager = null;
-	
-	//We have to set a reference from Ingame via a callback since stuff called from within it's very constructor rely on this global reference.
-	//TODO it shouldn't I guess ?
-	public void setClientPluginManager(ClientPluginManager pl)
-	{
+
+	// We have to set a reference from Ingame via a callback since stuff called from
+	// within it's very constructor rely on this global reference.
+	// TODO it shouldn't I guess ?
+	public void setClientPluginManager(ClientPluginManager pl) {
 		this.pluginManager = pl;
 	}
-	
+
 	@Override
-	public ClientPluginManager getPluginManager()
-	{
+	public ClientPluginManager getPluginManager() {
 		return pluginManager;
 	}
-	
+
 	@Override
-	public Lwjgl3ClientInputsManager getInputsManager()
-	{
+	public Lwjgl3ClientInputsManager getInputsManager() {
 		return gameWindow.getInputsManager();
 	}
 
-	public GLFWGameWindow getGameWindow()
-	{
+	public GLFWGameWindow getGameWindow() {
 		return gameWindow;
 	}
 

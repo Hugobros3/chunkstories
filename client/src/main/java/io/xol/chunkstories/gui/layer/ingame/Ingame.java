@@ -37,7 +37,10 @@ import io.xol.chunkstories.renderer.particles.ClientParticlesRenderer;
 import io.xol.chunkstories.world.WorldClientCommon;
 import io.xol.chunkstories.world.WorldClientRemote;
 
-/** The main layer that hosts the gameplay: renders the world, inventory and most gui elements */
+/**
+ * The main layer that hosts the gameplay: renders the world, inventory and most
+ * gui elements
+ */
 public class Ingame extends Layer {
 	private final ClientInterface client;
 	private final WorldClientCommon world;
@@ -48,12 +51,12 @@ public class Ingame extends Layer {
 	private final PhysicsWireframeDebugger wireframeDebugger;
 	private final DebugInfoRenderer debugInfoRenderer;
 	public final ChatManager chatManager;
-	
-	//Convinience references
+
+	// Convinience references
 	private boolean focus2 = true;
 	private Entity playerEntity;
 
-	//TODO: Move to config, just like f3
+	// TODO: Move to config, just like f3
 	private boolean guiHidden = false;
 
 	float pauseOverlayFade = 0.0f;
@@ -62,23 +65,23 @@ public class Ingame extends Layer {
 		super(window, null);
 		this.world = world;
 		this.client = world.getClient();
-		
+
 		this.chatManager = new ChatManager(this);
 
-		//Creates the rendering stuff
+		// Creates the rendering stuff
 		this.selectionRenderer = new VoxelOverlays();
-		
-		//TODO MOVE AWAY ?
+
+		// TODO MOVE AWAY ?
 		this.wireframeDebugger = new PhysicsWireframeDebugger(window.getClient(), world);
-		
+
 		this.debugInfoRenderer = new DebugInfoRenderer(window.getClient(), world);
-		
-		//TODO MOVE AWAY
-		//Spawn manually the player if we're in Singleplayer
+
+		// TODO MOVE AWAY
+		// Spawn manually the player if we're in Singleplayer
 		if (world instanceof WorldMaster)
 			world.spawnPlayer(gameWindow.getClient().getPlayer());
 
-		//Give focus
+		// Give focus
 		focus(true);
 	}
 
@@ -99,41 +102,44 @@ public class Ingame extends Layer {
 	@Override
 	public void render(RenderingInterface renderer) {
 		// Update client entity
-		if ((playerEntity == null || playerEntity != getPlayer().getControlledEntity()) && getPlayer().getControlledEntity() != null) {
+		if ((playerEntity == null || playerEntity != getPlayer().getControlledEntity())
+				&& getPlayer().getControlledEntity() != null) {
 			playerEntity = getPlayer().getControlledEntity();
-			
+
 			TraitInventory inv = playerEntity.traits.get(TraitInventory.class);
-			if(inv != null)
+			if (inv != null)
 				inventoryBarDrawer = new InventoryGridRenderer(inv);
 			else
 				inventoryBarDrawer = null;
 		}
-		
-		//TODO MOVE MOVE MOVE
-		if ((playerEntity != null && playerEntity.traits.tryWithBoolean(TraitHealth.class, eh -> eh.isDead())) && !(gameWindow.getLayer() instanceof DeathScreen))
+
+		// TODO MOVE MOVE MOVE
+		if ((playerEntity != null && playerEntity.traits.tryWithBoolean(TraitHealth.class, eh -> eh.isDead()))
+				&& !(gameWindow.getLayer() instanceof DeathScreen))
 			gameWindow.setLayer(new DeathScreen(gameWindow, this));
 
 		// Update the player
 		Location selectedBlock = null;
-		if(playerEntity != null) {
+		if (playerEntity != null) {
 			playerEntity.traits.with(TraitWhenControlled.class, twc -> twc.onEachFrame(getPlayer()));
-			selectedBlock = playerEntity.traits.tryWith(TraitVoxelSelection.class, tvs -> tvs.getBlockLookingAt(true, false));
+			selectedBlock = playerEntity.traits.tryWith(TraitVoxelSelection.class,
+					tvs -> tvs.getBlockLookingAt(true, false));
 		}
-		
+
 		world.getPluginManager().fireEvent(new CameraSetupEvent(renderer.getCamera()));
 
-		//Main render call
+		// Main render call
 		world.getWorldRenderer().renderWorld(renderer);
 
-		//Debug draws
+		// Debug draws
 		if (client.getConfiguration().getBooleanOption("client.debug.physicsVisualization") && playerEntity != null) {
 			wireframeDebugger.render(renderer);
 		}
-		
+
 		if (!guiHidden && selectedBlock != null)
 			selectionRenderer.drawSelectionBox(renderer, selectedBlock);
-		
-		//Fades in & out the overlay
+
+		// Fades in & out the overlay
 		if (!isCovered()) {
 			if (pauseOverlayFade > 0.0)
 				pauseOverlayFade -= 0.1;
@@ -144,27 +150,29 @@ public class Ingame extends Layer {
 			if (pauseOverlayFade < maxFade)
 				pauseOverlayFade += 0.1;
 		}
-		
-		//Blit the final 3d image
+
+		// Blit the final 3d image
 		world.getWorldRenderer().blitFinalImage(renderer, guiHidden);
 
-		//Draw the GUI
+		// Draw the GUI
 		if (!guiHidden) {
 			chatManager.render(renderer);
 
-			//Draw inventory
+			// Draw inventory
 			if (inventoryBarDrawer != null)
-				inventoryBarDrawer.drawPlayerInventorySummary(renderer, renderer.getWindow().getWidth() / 2 - 7, 64 + 64);
+				inventoryBarDrawer.drawPlayerInventorySummary(renderer, renderer.getWindow().getWidth() / 2 - 7,
+						64 + 64);
 
-			//Draw debug info
+			// Draw debug info
 			if (client.getConfiguration().getBooleanOption("client.debug.showDebugInfo"))
 				debugInfoRenderer.drawF3debugMenu(renderer);
-			
-			renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(getGameWindow().getWidth() / 2 - 8, getGameWindow().getHeight() / 2 - 8, 16, 16, 0, 1, 1, 0,
+
+			renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(getGameWindow().getWidth() / 2 - 8,
+					getGameWindow().getHeight() / 2 - 8, 16, 16, 0, 1, 1, 0,
 					renderer.textures().getTexture("./textures/gui/cursor.png"), false, true, null);
 		}
-		
-		//Lack of overlay should infer autofocus
+
+		// Lack of overlay should infer autofocus
 		if (!isCovered())
 			focus(true);
 
@@ -184,13 +192,14 @@ public class Ingame extends Layer {
 	public void focus(boolean f) {
 		gameWindow.getInputsManager().getMouse().setGrabbed(f);
 		if (f && !focus2)
-			gameWindow.getInputsManager().getMouse().setMouseCursorLocation(Math.floor(gameWindow.getWidth() / 2.0f), Math.floor(gameWindow.getHeight() / 2.0f));
+			gameWindow.getInputsManager().getMouse().setMouseCursorLocation(Math.floor(gameWindow.getWidth() / 2.0f),
+					Math.floor(gameWindow.getHeight() / 2.0f));
 		focus2 = f;
 	}
 
 	@Override
 	public boolean handleInput(Input input) {
-		//Block inputs if chatting
+		// Block inputs if chatting
 		if (input.equals("chat")) {
 			gameWindow.setLayer(chatManager.new ChatPanelOverlay(gameWindow, this));
 			focus(false);
@@ -207,49 +216,49 @@ public class Ingame extends Layer {
 			guiHidden = false;
 			return true;
 		} else if (input.equals("takeCubemap")) {
-			//shouldTakeACubemap = true;
+			// shouldTakeACubemap = true;
 			return true;
-		//CTRL-F12 reloads
+			// CTRL-F12 reloads
 		} else if (input.equals("reloadContent")) {
-			//Rebuild the mod FS
+			// Rebuild the mod FS
 			gameWindow.getClient().reloadAssets();
-			
-			//Reload plugins
+
+			// Reload plugins
 			world.getPluginManager().reloadPlugins();
-			
-			//Mark some caches dirty
+
+			// Mark some caches dirty
 			world.getWorldRenderer().reloadContentSpecificStuff();
 			return true;
-		//CTRL-R redraws chunks
+			// CTRL-R redraws chunks
 		} else if (input.equals("redrawChunks")) {
 			((ClientParticlesRenderer) world.getParticlesManager()).cleanAllParticles();
 			world.redrawEverything();
 			world.getWorldRenderer().flagChunksModified();
 			return true;
-		//Item slots selection
+			// Item slots selection
 		} else if (input.getName().startsWith("inventorySlot")) {
 			int requestedInventorySlot = Integer.parseInt(input.getName().replace("inventorySlot", ""));
-			//Match zero onto last slot
+			// Match zero onto last slot
 			if (requestedInventorySlot == 0)
 				requestedInventorySlot = 10;
 
-			//Map to zero-indexed inventory
+			// Map to zero-indexed inventory
 			requestedInventorySlot--;
 
-			if(playerEntity != null) {
+			if (playerEntity != null) {
 				TraitInventory playerInventory = playerEntity.traits.get(TraitInventory.class);
-				if(playerInventory == null)
+				if (playerInventory == null)
 					return false;
-				
-				//java lambda nonsense :(
+
+				// java lambda nonsense :(
 				final int passedrequestedInventorySlot = requestedInventorySlot;
 				return playerEntity.traits.tryWithBoolean(TraitSelectedItem.class, esi -> {
-					//Do not accept request to select non-existent inventories slots
+					// Do not accept request to select non-existent inventories slots
 					int slot = passedrequestedInventorySlot;
-					
+
 					if (slot > playerInventory.getWidth())
 						return false;
-	
+
 					ItemPile p = playerInventory.getItemPileAt(slot, 0);
 					if (p != null)
 						slot = p.getX();
@@ -257,21 +266,21 @@ public class Ingame extends Layer {
 					return true;
 				});
 			}
-			
+
 			return false;
 		} else if (input.equals("exit")) /* Exit brings up the pause menu */ {
 			focus(false);
 			guiHidden = false;
 			gameWindow.setLayer(new PauseMenu(gameWindow, this));
 			return true;
-		} else if(input instanceof MouseScroll) {
-			MouseScroll ms = (MouseScroll)input;
-			
+		} else if (input instanceof MouseScroll) {
+			MouseScroll ms = (MouseScroll) input;
+
 			if (playerEntity != null) {
 				TraitInventory playerInventory = playerEntity.traits.get(TraitInventory.class);
-				if(playerInventory == null)
+				if (playerInventory == null)
 					return false;
-				
+
 				playerEntity.traits.with(TraitSelectedItem.class, esi -> {
 					ItemPile selected = null;
 					int selectedInventorySlot = esi.getSelectedSlot();
@@ -291,12 +300,12 @@ public class Ingame extends Layer {
 						if (selected != null)
 							selectedInventorySlot = selected.getX();
 					}
-					//Switch slot
+					// Switch slot
 					if (originalSlot != selectedInventorySlot)
 						esi.setSelectedSlot(selectedInventorySlot);
-					
+
 				});
-				
+
 				return true;
 			}
 		}
@@ -310,41 +319,42 @@ public class Ingame extends Layer {
 
 	@Override
 	public void destroy() {
-		//Logout sequence: Save the player entity
-		if(world instanceof WorldMaster) {
+		// Logout sequence: Save the player entity
+		if (world instanceof WorldMaster) {
 			Player player = getPlayer();
-			
+
 			PlayerLogoutEvent playerDisconnectionEvent = new PlayerLogoutEvent(player);
 			world.getPluginManager().fireEvent(playerDisconnectionEvent);
-	
-			if(this.playerEntity != null) {
-				SerializedEntityFile playerEntityFile = new SerializedEntityFile(world.getFolderPath() + "/players/" + getPlayer().getName().toLowerCase() + ".csf");
+
+			if (this.playerEntity != null) {
+				SerializedEntityFile playerEntityFile = new SerializedEntityFile(
+						world.getFolderPath() + "/players/" + getPlayer().getName().toLowerCase() + ".csf");
 				playerEntityFile.write(this.playerEntity);
 			}
 		}
-		
-		//Stop the game logic and save
-		if(world instanceof WorldMaster) {
-			//TODO: Stop simulation
-			Fence fence = ((WorldMaster)world).stopLogic();
-			
-			//exitButton.text = "#{world.saving}";
-			
+
+		// Stop the game logic and save
+		if (world instanceof WorldMaster) {
+			// TODO: Stop simulation
+			Fence fence = ((WorldMaster) world).stopLogic();
+
+			// exitButton.text = "#{world.saving}";
+
 			fence.traverse();
 			fence = world.saveEverything();
-			
-			//exitButton.text = "#{world.saving}";
-			
+
+			// exitButton.text = "#{world.saving}";
+
 			fence.traverse();
 		}
-		
-		//Disables plugins
+
+		// Disables plugins
 		world.getPluginManager().disablePlugins();
-		
+
 		this.world.getWorldRenderer().destroy();
 	}
 
 	public float getPauseOverlayFade() {
 		return pauseOverlayFade;
-	}	
+	}
 }

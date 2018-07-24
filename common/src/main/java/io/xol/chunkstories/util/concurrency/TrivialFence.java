@@ -12,7 +12,7 @@ public class TrivialFence implements Fence {
 
 	@Override
 	public void traverse() {
-		//Do absolutely nothing
+		// Do absolutely nothing
 	}
 
 }

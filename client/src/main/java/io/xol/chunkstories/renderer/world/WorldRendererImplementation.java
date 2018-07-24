@@ -123,7 +123,7 @@ public class WorldRendererImplementation implements WorldRenderer {
 		animationTimer = ((float) (System.currentTimeMillis() & 0x7FFF)) / 100.0f;
 
 		FakeImmediateModeDebugRenderer.setCamera(mainCamera);// TODO remove entirely
-		
+
 		chunksRenderer.updatePVSSet(mainCamera);
 
 		// Prepare matrices
@@ -187,12 +187,10 @@ public class WorldRendererImplementation implements WorldRenderer {
 		// Nothing. We do our PVS every frame anyways
 	}
 
-	/*@Override
-	public void setupRenderSize() {
-		int width = gameWindow.getWidth();
-		int height = gameWindow.getHeight();
-		this.setupRenderSize(width, height);
-	}*/
+	/*
+	 * @Override public void setupRenderSize() { int width = gameWindow.getWidth();
+	 * int height = gameWindow.getHeight(); this.setupRenderSize(width, height); }
+	 */
 
 	public void setupRenderSize(int width, int height) {
 		this.renderingGraph.resize(width, height);
@@ -270,7 +268,7 @@ public class WorldRendererImplementation implements WorldRenderer {
 	public float getApertureModifier() {
 		return averageLuma.getApertureModifier();
 	}
-	
+
 	@Override
 	public void setupShaderUniforms(Shader shader) {
 		shader.setUniform1f("animationTimer", getAnimationTimer());

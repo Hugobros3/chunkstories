@@ -39,7 +39,7 @@ public class VoxelTextureAtlased implements VoxelTexture {
 	public String getName() {
 		return name;
 	}
-	
+
 	public Asset getAsset() {
 		return asset;
 	}

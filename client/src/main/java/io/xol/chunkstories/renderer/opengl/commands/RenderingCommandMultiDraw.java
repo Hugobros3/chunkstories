@@ -26,9 +26,11 @@ public class RenderingCommandMultiDraw extends RenderingCommandImplementation {
 	int sunLight, blockLight;
 	IntBuffer starts, counts;
 
-	public RenderingCommandMultiDraw(Primitive primitive, Shader Shader, TexturingConfigurationImplementation texturingConfiguration,
-			AttributesConfigurationImplementation attributesConfiguration, InternalUniformsConfiguration uniformsConfiguration, OpenGLStateMachine StateMachine,
-			Matrix4f objectMatrix, IntBuffer starts, IntBuffer counts) {
+	public RenderingCommandMultiDraw(Primitive primitive, Shader Shader,
+			TexturingConfigurationImplementation texturingConfiguration,
+			AttributesConfigurationImplementation attributesConfiguration,
+			InternalUniformsConfiguration uniformsConfiguration, OpenGLStateMachine StateMachine, Matrix4f objectMatrix,
+			IntBuffer starts, IntBuffer counts) {
 		super(primitive, Shader, texturingConfiguration, attributesConfiguration, uniformsConfiguration, StateMachine);
 		this.objectMatrix = objectMatrix;
 

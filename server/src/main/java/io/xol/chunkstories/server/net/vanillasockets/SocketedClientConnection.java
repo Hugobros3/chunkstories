@@ -37,19 +37,20 @@ public class SocketedClientConnection extends ClientConnection {
 
 	final ClientsManager clientsManager;
 	final Socket socket;
-	
+
 	private AtomicBoolean closeOnce = new AtomicBoolean(false);
 	private boolean disconnected = false;
 
 	private StreamGobbler streamGobbler;
 	private SendQueue sendQueue;
-	
-	public SocketedClientConnection(ServerInterface server, ClientsManager clientsManager, Socket socket) throws IOException {
+
+	public SocketedClientConnection(ServerInterface server, ClientsManager clientsManager, Socket socket)
+			throws IOException {
 		super(server, clientsManager, socket.getInetAddress().getHostAddress(), socket.getPort());
 		this.clientsManager = clientsManager;
 		this.socket = socket;
-		
-		//We get exceptions early if this fails
+
+		// We get exceptions early if this fails
 		InputStream socketInputStream = socket.getInputStream();
 		OutputStream socketOutputStream = socket.getOutputStream();
 
@@ -60,17 +61,17 @@ public class SocketedClientConnection extends ClientConnection {
 
 		streamGobbler = new ServerClientGobbler(this, inputDataStream);
 		streamGobbler.start();
-		
+
 		sendQueue = new SendQueue(this, dataOutputStream);
 		sendQueue.start();
 	}
-	
+
 	class ServerClientGobbler extends StreamGobbler {
 
 		public ServerClientGobbler(Connection connection, DataInputStream in) {
 			super(connection, in);
 		}
-		
+
 	}
 
 	@Override
@@ -79,8 +80,9 @@ public class SocketedClientConnection extends ClientConnection {
 	}
 
 	@Override
-	public void handleDatagram(LogicalPacketDatagram datagram) throws IOException, PacketProcessingException, IllegalPacketException {
-		PacketDefinitionImplementation definition = (PacketDefinitionImplementation) datagram.packetDefinition;//getPacketsContext().getContentTranslator().getPacketForId(datagram.packetTypeId);
+	public void handleDatagram(LogicalPacketDatagram datagram)
+			throws IOException, PacketProcessingException, IllegalPacketException {
+		PacketDefinitionImplementation definition = (PacketDefinitionImplementation) datagram.packetDefinition;// getPacketsContext().getContentTranslator().getPacketForId(datagram.packetTypeId);
 		if (definition.getGenre() == PacketGenre.GENERAL_PURPOSE) {
 			Packet packet = definition.createNew(true, null);
 			packet.process(packetsProcessor.getInterlocutor(), datagram.getData(), getPacketsContext());
@@ -95,17 +97,17 @@ public class SocketedClientConnection extends ClientConnection {
 			datagram.dispose();
 
 		} else if (definition.getGenre() == PacketGenre.WORLD) {
-			//Queue packets for a specific world
-			if(player != null) {
+			// Queue packets for a specific world
+			if (player != null) {
 				WorldServer world = player.getWorld();
-				if(world != null) {
+				if (world != null) {
 					world.queueDatagram(datagram, player);
 				}
 			}
 		} else if (definition.getGenre() == PacketGenre.WORLD_STREAMING) {
-			//Server doesn't expect world streaming updates from the client
-			//it does, however, listen to world_user_requests packets to keep
-			//track of the client's world data
+			// Server doesn't expect world streaming updates from the client
+			// it does, however, listen to world_user_requests packets to keep
+			// track of the client's world data
 			WorldServer world = getPacketsContext().getWorld();
 			PacketWorldStreaming packet = (PacketWorldStreaming) definition.createNew(false, world);
 			packet.process(packetsProcessor.getInterlocutor(), datagram.getData(), getPacketsContext());

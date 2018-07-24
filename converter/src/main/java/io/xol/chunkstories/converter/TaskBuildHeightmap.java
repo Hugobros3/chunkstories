@@ -21,7 +21,7 @@ public class TaskBuildHeightmap extends Task {
 
 	int regionX, regionZ;
 	WorldTool csWorld;
-	
+
 	public TaskBuildHeightmap(int regionX, int regionZ, WorldTool csWorld) {
 		super();
 		this.regionX = regionX;
@@ -32,66 +32,63 @@ public class TaskBuildHeightmap extends Task {
 	@Override
 	protected boolean task(TaskExecutor taskExecutor) {
 
-		ConverterWorkerThread cwt = (ConverterWorkerThread)taskExecutor;
-		
-		//We wait on a bunch of stuff to load everytime
+		ConverterWorkerThread cwt = (ConverterWorkerThread) taskExecutor;
+
+		// We wait on a bunch of stuff to load everytime
 		CompoundFence loadRelevantData = new CompoundFence();
-		
+
 		HeightmapImplementation summary = csWorld.getRegionsSummariesHolder().acquireHeightmap(cwt, regionX, regionZ);
 		loadRelevantData.add(summary.waitForLoading());
 
 		int heightInChunks = OfflineWorldConverter.mcWorldHeight / 32;
 		ChunkHolder[] holders = new ChunkHolder[8 * 8 * heightInChunks];
-		//acquires the chunks we want to make the summaries of.
+		// acquires the chunks we want to make the summaries of.
 		for (int innerCX = 0; innerCX < 8; innerCX++)
 			for (int innerCZ = 0; innerCZ < 8; innerCZ++)
-				for (int chunkY = 0; chunkY < heightInChunks; chunkY++)
-				{
-					ChunkHolder holder = csWorld.acquireChunkHolder(cwt, regionX * 8 + innerCX, chunkY, regionZ * 8 + innerCZ);
-					if (holder != null) { //TODO assert instead of if ? weird
-						
+				for (int chunkY = 0; chunkY < heightInChunks; chunkY++) {
+					ChunkHolder holder = csWorld.acquireChunkHolder(cwt, regionX * 8 + innerCX, chunkY,
+							regionZ * 8 + innerCZ);
+					if (holder != null) { // TODO assert instead of if ? weird
+
 						holders[(innerCX * 8 + chunkY) * heightInChunks + innerCZ] = holder;
 						loadRelevantData.add(holder.waitForLoading());
-						
-						if(cwt.registeredCS_Holders.add(holder))
+
+						if (cwt.registeredCS_Holders.add(holder))
 							cwt.chunksAcquired++;
 					}
 				}
-		
-		//Wait until all of that crap loads
+
+		// Wait until all of that crap loads
 		loadRelevantData.traverse();
 
-		//Descend from top
+		// Descend from top
 		for (int i = 0; i < 256; i++)
-			for (int j = 0; j < 256; j++)
-			{
-				for (int h = OfflineWorldConverter.mcWorldHeight - 1; h >= 0; h--)
-				{
+			for (int j = 0; j < 256; j++) {
+				for (int h = OfflineWorldConverter.mcWorldHeight - 1; h >= 0; h--) {
 					int cx = i / 32;
 					int cy = h / 32;
 					int cz = j / 32;
-					CellData data = holders[(cx * 8 + cy) * heightInChunks + cz].getChunk().peek(i % 32, h % 32, j % 32);
-					//CellData data = csWorld.peekSafely(regionX * 256 + i, h, regionZ * 256 + j);
-					if (!data.getVoxel().isAir())
-					{
+					CellData data = holders[(cx * 8 + cy) * heightInChunks + cz].getChunk().peek(i % 32, h % 32,
+							j % 32);
+					// CellData data = csWorld.peekSafely(regionX * 256 + i, h, regionZ * 256 + j);
+					if (!data.getVoxel().isAir()) {
 						Voxel vox = data.getVoxel();
-						if (vox.getDefinition().isSolid() || vox.getDefinition().isLiquid())
-						{
+						if (vox.getDefinition().isSolid() || vox.getDefinition().isLiquid()) {
 							summary.setTopCell(data);
 							break;
 						}
 					}
 				}
 			}
-		
+
 		Fence waitForSummarySave = summary.save();
-		//cwt.converter().verbose("Waiting for summary saving...");
+		// cwt.converter().verbose("Waiting for summary saving...");
 		waitForSummarySave.traverse();
-		//cwt.converter().verbose("Done.");
-		
-		//We don't need the summary anymore
+		// cwt.converter().verbose("Done.");
+
+		// We don't need the summary anymore
 		summary.unregisterUser(cwt);
-		
+
 		return true;
 	}
 

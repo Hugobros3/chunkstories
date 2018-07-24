@@ -12,7 +12,7 @@ import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.server.commands.ServerCommandBasic;
 import io.xol.chunkstories.world.WorldImplementation;
 
-public class DebugIOCommand extends ServerCommandBasic{
+public class DebugIOCommand extends ServerCommandBasic {
 
 	public DebugIOCommand(ServerInterface serverConsole) {
 		super(serverConsole);
@@ -21,10 +21,9 @@ public class DebugIOCommand extends ServerCommandBasic{
 
 	@Override
 	public boolean handleCommand(CommandEmitter emitter, Command command, String[] arguments) {
-		if (command.getName().equals("io") && emitter.hasPermission("server.debug"))
-		{
-			emitter.sendMessage("#00FFD0" + ((WorldImplementation)server.getWorld()).ioHandler);
-			((WorldImplementation)server.getWorld()).ioHandler.dumpIOTaks();
+		if (command.getName().equals("io") && emitter.hasPermission("server.debug")) {
+			emitter.sendMessage("#00FFD0" + ((WorldImplementation) server.getWorld()).ioHandler);
+			((WorldImplementation) server.getWorld()).ioHandler.dumpIOTaks();
 			return true;
 		}
 		return false;

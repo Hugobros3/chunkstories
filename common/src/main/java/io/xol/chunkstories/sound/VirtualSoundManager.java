@@ -23,81 +23,72 @@ import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.net.packets.PacketSoundSource;
 import io.xol.chunkstories.sound.source.SoundSourceVirtual;
 
-public class VirtualSoundManager implements SoundManager
-{
+public class VirtualSoundManager implements SoundManager {
 	WorldMaster worldServer;
 
-	//We weakly keep track of playing sounds, the server has no idea of the actual sound data and this does not keeps track of played sounds !
+	// We weakly keep track of playing sounds, the server has no idea of the actual
+	// sound data and this does not keeps track of played sounds !
 	Set<WeakReference<SoundSourceVirtual>> allPlayingSoundSources = ConcurrentHashMap.newKeySet();
 
-	//Each player has his own instance of the soundManager
+	// Each player has his own instance of the soundManager
 	Set<ServerPlayerVirtualSoundManager> playersSoundManagers = ConcurrentHashMap.newKeySet();
 
-	public class ServerPlayerVirtualSoundManager implements SoundManager
-	{
+	public class ServerPlayerVirtualSoundManager implements SoundManager {
 		Player serverPlayer;
 
-		//As above, individual players have their playing sound sources kept track of
+		// As above, individual players have their playing sound sources kept track of
 		Set<WeakReference<SoundSourceVirtual>> playingSoundSources = ConcurrentHashMap.newKeySet();
 
-		public ServerPlayerVirtualSoundManager(Player serverPlayer)
-		{
+		public ServerPlayerVirtualSoundManager(Player serverPlayer) {
 			this.serverPlayer = serverPlayer;
 			playersSoundManagers.add(this);
 		}
 
-		void update()
-		{
-			//Stops caring when the player is disconnected
-			if (!serverPlayer.isConnected())
-			{
+		void update() {
+			// Stops caring when the player is disconnected
+			if (!serverPlayer.isConnected()) {
 				playersSoundManagers.remove(this);
 			}
 
-			//TODO:
-			//Player should only be aware of sound's existence if close enought, this will be ensured later
+			// TODO:
+			// Player should only be aware of sound's existence if close enought, this will
+			// be ensured later
 		}
 
-		protected void addSourceToPlayer(SoundSourceVirtual soundSource)
-		{
+		protected void addSourceToPlayer(SoundSourceVirtual soundSource) {
 			playingSoundSources.add(new WeakReference<SoundSourceVirtual>(soundSource));
 		}
 
 		@Override
-		public SoundSource playSoundEffect(String soundEffect, Mode mode, Vector3dc position, float pitch, float gain, float attStart, float attEnd)
-		{
-			SoundSourceVirtual soundSource = new SoundSourceVirtual(VirtualSoundManager.this, soundEffect, mode, position, pitch, gain, attStart, attEnd);
-			//Play the sound effect for everyone
+		public SoundSource playSoundEffect(String soundEffect, Mode mode, Vector3dc position, float pitch, float gain,
+				float attStart, float attEnd) {
+			SoundSourceVirtual soundSource = new SoundSourceVirtual(VirtualSoundManager.this, soundEffect, mode,
+					position, pitch, gain, attStart, attEnd);
+			// Play the sound effect for everyone
 			addSourceToEveryone(soundSource, this);
 			return soundSource;
 		}
 
 		@Override
-		public SoundSource playSoundEffect(String soundEffect)
-		{
+		public SoundSource playSoundEffect(String soundEffect) {
 			return null;
 		}
 
 		@Override
-		public void stopAnySound(String soundEffect)
-		{
+		public void stopAnySound(String soundEffect) {
 			Iterator<SoundSource> i = getAllPlayingSounds();
-			while (i.hasNext())
-			{
+			while (i.hasNext()) {
 				SoundSource s = i.next();
-				if (s.getSoundName().indexOf(soundEffect) != -1)
-				{
+				if (s.getSoundName().indexOf(soundEffect) != -1) {
 					s.stop();
 				}
 			}
 		}
 
 		@Override
-		public void stopAnySound()
-		{
+		public void stopAnySound() {
 			Iterator<SoundSource> i = getAllPlayingSounds();
-			while (i.hasNext())
-			{
+			while (i.hasNext()) {
 				i.next().stop();
 			}
 		}
@@ -106,25 +97,20 @@ public class VirtualSoundManager implements SoundManager
 		 * Alls sounds we kept track of playing for this player
 		 */
 		@Override
-		public Iterator<SoundSource> getAllPlayingSounds()
-		{
-			return new Iterator<SoundSource>()
-			{
+		public Iterator<SoundSource> getAllPlayingSounds() {
+			return new Iterator<SoundSource>() {
 				Iterator<WeakReference<SoundSourceVirtual>> iterator = playingSoundSources.iterator();
 				SoundSource next = null;
 
 				@Override
-				public boolean hasNext()
-				{
+				public boolean hasNext() {
 					if (next != null)
 						return true;
 
-					while (iterator.hasNext() && next == null)
-					{
+					while (iterator.hasNext() && next == null) {
 						WeakReference<SoundSourceVirtual> weakReference = iterator.next();
 						SoundSourceVirtual soundSource = weakReference.get();
-						if (soundSource == null || soundSource.isDonePlaying())
-						{
+						if (soundSource == null || soundSource.isDonePlaying()) {
 							iterator.remove();
 							continue;
 						}
@@ -136,8 +122,7 @@ public class VirtualSoundManager implements SoundManager
 				}
 
 				@Override
-				public SoundSource next()
-				{
+				public SoundSource next() {
 					if (next == null)
 						hasNext();
 
@@ -150,161 +135,140 @@ public class VirtualSoundManager implements SoundManager
 		}
 
 		@Override
-		public void setListenerPosition(float x, float y, float z, Vector3fc lookAt, Vector3fc up)
-		{
+		public void setListenerPosition(float x, float y, float z, Vector3fc lookAt, Vector3fc up) {
 			throw new UnsupportedOperationException("Irrelevant");
 		}
 
-		public boolean couldHearSource(SoundSourceVirtual soundSource)
-		{
-			if(soundSource.getPosition() == null)
+		public boolean couldHearSource(SoundSourceVirtual soundSource) {
+			if (soundSource.getPosition() == null)
 				return true;
-			
-			if(soundSource.getGain() <= 0)
+
+			if (soundSource.getGain() <= 0)
 				return true;
-			
-			//special case, we want to make sure the players always know when we shut up a source
-			if(soundSource.stopped)
+
+			// special case, we want to make sure the players always know when we shut up a
+			// source
+			if (soundSource.stopped)
 				return true;
-			
+
 			Location loc = serverPlayer.getLocation();
-			
-			//Null location == Not spawned == No positional sounds for you
-			if(loc == null)
+
+			// Null location == Not spawned == No positional sounds for you
+			if (loc == null)
 				return false;
-			
+
 			return loc.distance(soundSource.getPosition()) < soundSource.getAttenuationEnd() + 1.0;
 		}
 	}
 
-	public VirtualSoundManager(WorldMaster worldServer)
-	{
+	public VirtualSoundManager(WorldMaster worldServer) {
 		this.worldServer = worldServer;
-		//this.server = server;
+		// this.server = server;
 	}
 
-	public void update()
-	{
-		//System.out.println("update srv sounds");
+	public void update() {
+		// System.out.println("update srv sounds");
 		Iterator<ServerPlayerVirtualSoundManager> i = playersSoundManagers.iterator();
-		while (i.hasNext())
-		{
+		while (i.hasNext()) {
 			ServerPlayerVirtualSoundManager playerSoundManager = i.next();
 			playerSoundManager.update();
 		}
 	}
 
-	private void addSourceToEveryone(SoundSourceVirtual soundSource, ServerPlayerVirtualSoundManager exceptHim)
-	{
-		//Create the sound creation packet
+	private void addSourceToEveryone(SoundSourceVirtual soundSource, ServerPlayerVirtualSoundManager exceptHim) {
+		// Create the sound creation packet
 		PacketSoundSource packet = new PacketSoundSource(worldServer, soundSource);
-		
+
 		Iterator<ServerPlayerVirtualSoundManager> i = playersSoundManagers.iterator();
-		while (i.hasNext())
-		{
+		while (i.hasNext()) {
 			ServerPlayerVirtualSoundManager playerSoundManager = i.next();
-			//Send it to all players than could hear it
-			if (exceptHim == null || !playerSoundManager.equals(exceptHim))
-			{
-				if(!playerSoundManager.couldHearSource(soundSource))
+			// Send it to all players than could hear it
+			if (exceptHim == null || !playerSoundManager.equals(exceptHim)) {
+				if (!playerSoundManager.couldHearSource(soundSource))
 					continue;
-				
-				//Creates the soundSource and adds it weakly to the player's list
+
+				// Creates the soundSource and adds it weakly to the player's list
 				playerSoundManager.serverPlayer.pushPacket(packet);
-				//TODO maybe not relevant since for updating we iterate over all players then do a distance check 
+				// TODO maybe not relevant since for updating we iterate over all players then
+				// do a distance check
 				playerSoundManager.addSourceToPlayer(soundSource);
 			}
 		}
 
 		allPlayingSoundSources.add(new WeakReference<SoundSourceVirtual>(soundSource));
 	}
-	
-	public void updateSourceForEveryone(SoundSourceVirtual soundSource, ServerPlayerVirtualSoundManager exceptHim)
-	{
-		//Create the update packet
+
+	public void updateSourceForEveryone(SoundSourceVirtual soundSource, ServerPlayerVirtualSoundManager exceptHim) {
+		// Create the update packet
 		PacketSoundSource packet = new PacketSoundSource(worldServer, soundSource);
-		
+
 		Iterator<ServerPlayerVirtualSoundManager> i = playersSoundManagers.iterator();
-		while (i.hasNext())
-		{
+		while (i.hasNext()) {
 			ServerPlayerVirtualSoundManager playerSoundManager = i.next();
-			//Send it to all players than could hear it
-			if (exceptHim == null || !playerSoundManager.equals(exceptHim))
-			{
-				if(!playerSoundManager.couldHearSource(soundSource))
+			// Send it to all players than could hear it
+			if (exceptHim == null || !playerSoundManager.equals(exceptHim)) {
+				if (!playerSoundManager.couldHearSource(soundSource))
 					continue;
-				
-				//Updates the soundSource
+
+				// Updates the soundSource
 				playerSoundManager.serverPlayer.pushPacket(packet);
 			}
 		}
 	}
 
 	@Override
-	public SoundSource playSoundEffect(String soundEffect, Mode mode, Vector3dc position, float pitch, float gain, float attStart, float attEnd)
-	{
-		SoundSourceVirtual soundSource = new SoundSourceVirtual(VirtualSoundManager.this, soundEffect, mode, position, pitch, gain, attStart, attEnd);
-		//Play the sound effect for everyone
+	public SoundSource playSoundEffect(String soundEffect, Mode mode, Vector3dc position, float pitch, float gain,
+			float attStart, float attEnd) {
+		SoundSourceVirtual soundSource = new SoundSourceVirtual(VirtualSoundManager.this, soundEffect, mode, position,
+				pitch, gain, attStart, attEnd);
+		// Play the sound effect for everyone
 		addSourceToEveryone(soundSource, null);
 		return soundSource;
 	}
 
-	/*@Override
-	public SoundSource playSoundEffect(String soundEffect)
-	{
-		// TODO Have yet to specify on playing GUI sounds for everyone 
-		return null;
-	}*/
+	/*
+	 * @Override public SoundSource playSoundEffect(String soundEffect) { // TODO
+	 * Have yet to specify on playing GUI sounds for everyone return null; }
+	 */
 
 	@Override
-	public void stopAnySound(String soundEffect)
-	{
+	public void stopAnySound(String soundEffect) {
 		Iterator<SoundSource> i = getAllPlayingSounds();
-		while (i.hasNext())
-		{
+		while (i.hasNext()) {
 			SoundSource s = i.next();
-			if (s.getSoundName().indexOf(soundEffect) != -1)
-			{
+			if (s.getSoundName().indexOf(soundEffect) != -1) {
 				s.stop();
 			}
 		}
 	}
 
 	@Override
-	public void stopAnySound()
-	{
+	public void stopAnySound() {
 		Iterator<SoundSource> i = getAllPlayingSounds();
-		while (i.hasNext())
-		{
+		while (i.hasNext()) {
 			i.next().stop();
 		}
 	}
 
 	@Override
-	public void setListenerPosition(float x, float y, float z, Vector3fc lookAt, Vector3fc up)
-	{
+	public void setListenerPosition(float x, float y, float z, Vector3fc lookAt, Vector3fc up) {
 	}
 
 	@Override
-	public Iterator<SoundSource> getAllPlayingSounds()
-	{
-		return new Iterator<SoundSource>()
-		{
+	public Iterator<SoundSource> getAllPlayingSounds() {
+		return new Iterator<SoundSource>() {
 			Iterator<WeakReference<SoundSourceVirtual>> iterator = allPlayingSoundSources.iterator();
 			SoundSource next = null;
 
 			@Override
-			public boolean hasNext()
-			{
+			public boolean hasNext() {
 				if (next != null)
 					return true;
 
-				while (iterator.hasNext() && next == null)
-				{
+				while (iterator.hasNext() && next == null) {
 					WeakReference<SoundSourceVirtual> weakReference = iterator.next();
 					SoundSourceVirtual soundSource = weakReference.get();
-					if (soundSource == null || soundSource.isDonePlaying())
-					{
+					if (soundSource == null || soundSource.isDonePlaying()) {
 						iterator.remove();
 						continue;
 					}
@@ -316,8 +280,7 @@ public class VirtualSoundManager implements SoundManager
 			}
 
 			@Override
-			public SoundSource next()
-			{
+			public SoundSource next() {
 				if (next == null)
 					hasNext();
 

@@ -59,153 +59,155 @@ public class PBOPacker {
 	}
 
 	public PBOPackerResult copyTexure(Texture2DGL texture, int level) {
-		if(alreadyReading)
-			throw new RuntimeException("You asked this PBO downloader to download a texture but you did not finish the last read.");
-		
+		if (alreadyReading)
+			throw new RuntimeException(
+					"You asked this PBO downloader to download a texture but you did not finish the last read.");
+
 		alreadyReading = true;
-	
+
 		glBindBuffer(GL_PIXEL_PACK_BUFFER, bufferId);
-		//glBindTexture(GL_TEXTURE_2D, texture.getId());
-		
+		// glBindTexture(GL_TEXTURE_2D, texture.getId());
+
 		int width = texture.getWidth();
 		int height = texture.getHeight();
-		
-		double pow = Math.pow(2, level);
-		width =  (int)Math.ceil(width / pow);
-		height = (int)Math.ceil(height / pow);
-		//System.out.println(width+":"+height);
-		
-		//Allocates space for the read
-		glBufferData(GL_PIXEL_PACK_BUFFER, width * height * 4 * 3 , GL_STREAM_COPY);
 
-		//Obtains ref to RTM
+		double pow = Math.pow(2, level);
+		width = (int) Math.ceil(width / pow);
+		height = (int) Math.ceil(height / pow);
+		// System.out.println(width+":"+height);
+
+		// Allocates space for the read
+		glBufferData(GL_PIXEL_PACK_BUFFER, width * height * 4 * 3, GL_STREAM_COPY);
+
+		// Obtains ref to RTM
 		RenderTargets rtm = Client.getInstance().getGameWindow().getRenderingInterface().getRenderTargetManager();
-		
+
 		RenderTargetsConfiguration previousFB = rtm.getCurrentConfiguration();
 		rtm.setConfiguration(fbo);
 		fbo.setColorAttachements(texture.getMipLevelAsRenderTarget(level));
 		fbo.setEnabledRenderTargets(true);
-		
-		//rtm.clearBoundRenderTargetAll();
+
+		// rtm.clearBoundRenderTargetAll();
 		glReadBuffer(GL_COLOR_ATTACHMENT0);
-		
-		//Reads the pixels of the texture to the PBO.
+
+		// Reads the pixels of the texture to the PBO.
 		glReadPixels(0, 0, width, height, GL_RGB, GL_FLOAT, 0);
-		
-		//slower method: 
-		/*TextureFormat format = texture.getType();
-		System.out.println(format.getBytesPerTexel());
-		glGetTexImage(GL_TEXTURE_2D, level, format.getFormat(), format.getType(), 0);*/
+
+		// slower method:
+		/*
+		 * TextureFormat format = texture.getType();
+		 * System.out.println(format.getBytesPerTexel()); glGetTexImage(GL_TEXTURE_2D,
+		 * level, format.getFormat(), format.getType(), 0);
+		 */
 
 		final long fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0x00);
-		if(fence == 0) {
+		if (fence == 0) {
 			throw new RuntimeException("Failed to create fence for GPU sync :(");
 		}
-		//System.out.println(fence);
-		
-		//Puts everything back into place
+		// System.out.println(fence);
+
+		// Puts everything back into place
 		glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 		rtm.setConfiguration(previousFB);
-		
-		//System.out.println((endT-startT)/1000+"µs");
-		
+
+		// System.out.println((endT-startT)/1000+"µs");
+
 		return new PBOPackerResult(fence);
 	}
-	
+
 	public class PBOPackerResult implements Fence {
 		final long fence;
 		boolean isTraversable = false;
 		boolean readAlready = false;
-		
-		PBOPackerResult(long fence)
-		{
+
+		PBOPackerResult(long fence) {
 			this.fence = fence;
 		}
 
 		@Override
-		public void traverse()
-		{
-			while(!isTraversable)
-			{
-				//Asks for wether the sync completed and timeouts in 1000ns or 1µs
+		public void traverse() {
+			while (!isTraversable) {
+				// Asks for wether the sync completed and timeouts in 1000ns or 1µs
 				int waitReturnValue = glClientWaitSync(fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
-				
-				//System.out.println("Waiting on GL fence");
-				
-				if(waitReturnValue == GL_WAIT_FAILED)
+
+				// System.out.println("Waiting on GL fence");
+
+				if (waitReturnValue == GL_WAIT_FAILED)
 					System.out.println("GL_WAIT_FAILED");
-				
-				//Errors are considered ok
-				if(waitReturnValue == GL_ALREADY_SIGNALED || waitReturnValue == GL_CONDITION_SATISFIED || waitReturnValue == GL_WAIT_FAILED)
+
+				// Errors are considered ok
+				if (waitReturnValue == GL_ALREADY_SIGNALED || waitReturnValue == GL_CONDITION_SATISFIED
+						|| waitReturnValue == GL_WAIT_FAILED)
 					break;
 			}
 		}
-		
-		public boolean isTraversable()
-		{
-			//Don't do these calls for nothing
-			if(isTraversable)
+
+		public boolean isTraversable() {
+			// Don't do these calls for nothing
+			if (isTraversable)
 				return true;
-			
-			try(MemoryStack stack = MemoryStack.stackPush()) {
+
+			try (MemoryStack stack = MemoryStack.stackPush()) {
 				boolean isGud;
 				// this does NOT work under LWJGL3 and NVidia
 				// causes random crashes once in a while
 				// bad!
-				/*IntBuffer ib = stack.mallocInt(1);
-				glGetSynci(fence, GL_SYNC_STATUS, ib);
-				isGud = ib.get(0) == GL_SIGNALED;*/
-				
+				/*
+				 * IntBuffer ib = stack.mallocInt(1); glGetSynci(fence, GL_SYNC_STATUS, ib);
+				 * isGud = ib.get(0) == GL_SIGNALED;
+				 */
+
 				int[] ret = new int[1];
 				ARBSync.glGetSynciv(fence, GL_SYNC_STATUS, new int[1], ret);
 				isGud = (ret[0] == GL_SIGNALED);
-				
-				//int waitReturnValue = glClientWaitSync(fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
-				//isGud = (waitReturnValue == GL_ALREADY_SIGNALED || waitReturnValue == GL_CONDITION_SATISFIED || waitReturnValue == GL_WAIT_FAILED);
-				
-				//System.out.println(ib.get(0) + ":" + ret[0] + ":" + waitReturnValue + ":" + isGud);
+
+				// int waitReturnValue = glClientWaitSync(fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
+				// isGud = (waitReturnValue == GL_ALREADY_SIGNALED || waitReturnValue ==
+				// GL_CONDITION_SATISFIED || waitReturnValue == GL_WAIT_FAILED);
+
+				// System.out.println(ib.get(0) + ":" + ret[0] + ":" + waitReturnValue + ":" +
+				// isGud);
 				isTraversable = isGud;
 			}
-			
+
 			return isTraversable;
 		}
-		
-		public ByteBuffer readPBO()
-		{
-			if(readAlready)
+
+		public ByteBuffer readPBO() {
+			if (readAlready)
 				throw new RuntimeException("Tried to read a PBOPackerResult twice !");
-			
-			//Traverses the sync object first
+
+			// Traverses the sync object first
 			traverse();
-			
+
 			glBindBuffer(GL_PIXEL_PACK_BUFFER, bufferId);
-			
-			//Map the buffer and read it
+
+			// Map the buffer and read it
 			ByteBuffer gpuBuffer = glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY, null);
-			
-			if(gpuBuffer == null)
+
+			if (gpuBuffer == null)
 				return null;
-			
+
 			ByteBuffer freeBuffer = BufferUtils.createByteBuffer(gpuBuffer.capacity());
 			freeBuffer.put(gpuBuffer);
-			//System.out.println("Read "+(free - freeNow)+" bytes from the PBO in "+(endT-startT)/1000+" µs");
-			
-			//Unmpapps the buffer 
-		    glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+			// System.out.println("Read "+(free - freeNow)+" bytes from the PBO in
+			// "+(endT-startT)/1000+" µs");
+
+			// Unmpapps the buffer
+			glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
 			glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-			
-			//Destroys the useless fence
+
+			// Destroys the useless fence
 			glDeleteSync(fence);
-			
+
 			PBOPacker.this.alreadyReading = false;
 			this.readAlready = true;
-			
+
 			return freeBuffer;
 		}
 	}
-	
-	public void destroy()
-	{
+
+	public void destroy() {
 		glDeleteBuffers(bufferId);
 		fbo.destroy();
 	}

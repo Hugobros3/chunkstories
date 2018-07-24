@@ -22,7 +22,7 @@ import io.xol.chunkstories.world.WorldServer;
 public class ServerPacketsProcessorImplementation implements ServerPacketsProcessor {
 
 	final DedicatedServer server;
-	
+
 	public ServerPacketsProcessorImplementation(DedicatedServer server) {
 		this.server = server;
 	}
@@ -36,38 +36,36 @@ public class ServerPacketsProcessorImplementation implements ServerPacketsProces
 	public WorldServer getWorld() {
 		return server.getWorld();
 	}
-	
-	public ClientPacketsContext forConnection(ClientConnection connection)
-	{
+
+	public ClientPacketsContext forConnection(ClientConnection connection) {
 		return new ClientPacketsContext(server, connection);
 	}
-	
+
 	public class ClientPacketsContext extends PacketsContextCommon implements ServerPacketsProcessor {
-		
+
 		final ClientConnection connection;
-		
+
 		public Logger logger() {
 			return logger;
 		}
-		
+
 		public ClientPacketsContext(GameContext gameContext, ClientConnection connection) {
 			super(gameContext, connection);
 			this.connection = connection;
 		}
-		
+
 		public OnlineContentTranslator getContentTranslator() {
 			return getWorld().getContentTranslator();
 		}
-		
-		public ClientConnection getConnection()
-		{
+
+		public ClientConnection getConnection() {
 			return connection;
 		}
-		
+
 		public PlayerPacketsProcessor toPlayer(ServerPlayer player) {
 			return new PlayerPacketsProcessor(player);
 		}
-		
+
 		@Override
 		public WorldServer getWorld() {
 			return ServerPacketsProcessorImplementation.this.getWorld();
@@ -88,10 +86,10 @@ public class ServerPacketsProcessorImplementation implements ServerPacketsProces
 			return connection;
 		}
 	}
-	
+
 	public class PlayerPacketsProcessor extends ClientPacketsContext implements ServerPlayerPacketsProcessor {
 		final ServerPlayer player;
-		
+
 		public PlayerPacketsProcessor(ServerPlayer player) {
 			super(player.getContext(), player.getPlayerConnection());
 			this.player = player;
@@ -101,7 +99,7 @@ public class ServerPacketsProcessorImplementation implements ServerPacketsProces
 		public Player getPlayer() {
 			return player;
 		}
-		
+
 		@Override
 		public Interlocutor getInterlocutor() {
 			return player;

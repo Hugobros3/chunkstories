@@ -20,8 +20,7 @@ import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.api.world.cell.CellData;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 
-public class CustomVoxelModel implements VoxelRenderer, VoxelModel
-{
+public class CustomVoxelModel implements VoxelRenderer, VoxelModel {
 	private final Content.Voxels.VoxelModels store;
 	protected final String name;
 
@@ -31,20 +30,21 @@ public class CustomVoxelModel implements VoxelRenderer, VoxelModel
 	protected final int texturesOffsets[];
 	protected final float[] normals;
 	protected final byte[] extra;
-	
+
 	protected boolean[][] culling;
 
 	protected final float jitterX;
 	protected final float jitterY;
 	protected final float jitterZ;
 
-	public CustomVoxelModel(VoxelModels store, String name, float[] vertices, float[] texCoords, String[] texturesNames, int[] texturesOffsets, float[] normals, byte[] extra, boolean[][] culling)
-	{
+	public CustomVoxelModel(VoxelModels store, String name, float[] vertices, float[] texCoords, String[] texturesNames,
+			int[] texturesOffsets, float[] normals, byte[] extra, boolean[][] culling) {
 		this(store, name, vertices, texCoords, texturesNames, texturesOffsets, normals, extra, culling, 0, 0, 0);
 	}
 
-	public CustomVoxelModel(VoxelModels store, String name, float[] vertices, float[] texCoords, String[] texturesNames, int[] texturesOffsets, float[] normals, byte[] extra, boolean[][] culling, float jitterX, float jitterY, float jitterZ)
-	{
+	public CustomVoxelModel(VoxelModels store, String name, float[] vertices, float[] texCoords, String[] texturesNames,
+			int[] texturesOffsets, float[] normals, byte[] extra, boolean[][] culling, float jitterX, float jitterY,
+			float jitterZ) {
 		this.store = store;
 		this.name = name;
 		this.texturesNames = texturesNames;
@@ -58,49 +58,52 @@ public class CustomVoxelModel implements VoxelRenderer, VoxelModel
 		this.jitterY = jitterY;
 		this.jitterZ = jitterZ;
 	}
-	
+
 	@Override
-	public String getName()
-	{
+	public String getName() {
 		return name;
 	}
-	
-	public int renderInto(VoxelBakerHighPoly baker, ChunkRenderContext bakingContext, CellData cell, Chunk chunk, int x, int y, int z)
-	{
-		//int lightLevelSun = chunk.getSunLight(x, y, z);
-		//int lightLevelVoxel = chunk.getBlockLight(x, y, z);
 
-		//Obtains the light amount (sun/voxel) for this model
-		//TODO interpolation w/ neighbors
-		//float[] lightColors = bakeLightColors(lightLevelVoxel, lightLevelVoxel, lightLevelVoxel, lightLevelVoxel, lightLevelSun, lightLevelSun, lightLevelSun, lightLevelSun);
-		
-		//We have an array of textures and we jump to the next based on baked offsets and vertice counting
+	public int renderInto(VoxelBakerHighPoly baker, ChunkRenderContext bakingContext, CellData cell, Chunk chunk, int x,
+			int y, int z) {
+		// int lightLevelSun = chunk.getSunLight(x, y, z);
+		// int lightLevelVoxel = chunk.getBlockLight(x, y, z);
+
+		// Obtains the light amount (sun/voxel) for this model
+		// TODO interpolation w/ neighbors
+		// float[] lightColors = bakeLightColors(lightLevelVoxel, lightLevelVoxel,
+		// lightLevelVoxel, lightLevelVoxel, lightLevelSun, lightLevelSun,
+		// lightLevelSun, lightLevelSun);
+
+		// We have an array of textures and we jump to the next based on baked offsets
+		// and vertice counting
 		int modelTextureIndex = 0;
 		VoxelTexture currentVoxelTexture = null;
-		
-		//Selects an appropriate texture
+
+		// Selects an appropriate texture
 		currentVoxelTexture = selectsTextureFromIndex(cell, modelTextureIndex);
 		baker.usingTexture(currentVoxelTexture);
-		
-		int maxVertexIndexToUseThisTextureFor = this.texturesOffsets[modelTextureIndex];
-		
-		//Actual coordinates in the Atlas
-		//int textureS = currentVoxelTexture.getAtlasS();
-		//int textureT = currentVoxelTexture.getAtlasT();
 
-		//We look the 6 adjacent faces to determine wether or not we should consider them culled
+		int maxVertexIndexToUseThisTextureFor = this.texturesOffsets[modelTextureIndex];
+
+		// Actual coordinates in the Atlas
+		// int textureS = currentVoxelTexture.getAtlasS();
+		// int textureT = currentVoxelTexture.getAtlasT();
+
+		// We look the 6 adjacent faces to determine wether or not we should consider
+		// them culled
 		boolean[] cullingCache = new boolean[6];
-		for (int j = 0; j < 6; j++)
-		{
+		for (int j = 0; j < 6; j++) {
 			CellData adj = cell.getNeightbor(j);
-			
+
 			// If it is, don't draw it.
-			cullingCache[j] = adj.getVoxel().getDefinition().isOpaque() || 
-					adj.getVoxel().isFaceOpaque(VoxelSide.values()[j], adj.getMetaData()) || 
-					cell.getVoxel().getDefinition().isSelfOpaque() && adj.getVoxel().sameKind(cell.getVoxel()) && adj.getMetaData() == cell.getMetaData();
+			cullingCache[j] = adj.getVoxel().getDefinition().isOpaque()
+					|| adj.getVoxel().isFaceOpaque(VoxelSide.values()[j], adj.getMetaData())
+					|| cell.getVoxel().getDefinition().isSelfOpaque() && adj.getVoxel().sameKind(cell.getVoxel())
+							&& adj.getMetaData() == cell.getMetaData();
 		}
 
-		//Generate some jitter if it is enabled
+		// Generate some jitter if it is enabled
 		float dx = 0f, dy = 0f, dz = 0f;
 		if (this.jitterX != 0.0f)
 			dx = (float) ((Math.random() * 2.0 - 1.0) * this.jitterX);
@@ -110,102 +113,106 @@ public class CustomVoxelModel implements VoxelRenderer, VoxelModel
 			dz = (float) ((Math.random() * 2.0 - 1.0) * this.jitterZ);
 
 		baker.setMaterialFlags(Byte.parseByte(cell.getVoxel().getDefinition().resolveProperty("materialFlags", "0")));
-		
-		//int drewVertices = 0;
-		drawVertex:
-		for (int i_currentVertex = 0; i_currentVertex < this.vertices.length / 3; i_currentVertex++)
-		{
-			if(i_currentVertex >= maxVertexIndexToUseThisTextureFor)
-			{
+
+		// int drewVertices = 0;
+		drawVertex: for (int i_currentVertex = 0; i_currentVertex < this.vertices.length / 3; i_currentVertex++) {
+			if (i_currentVertex >= maxVertexIndexToUseThisTextureFor) {
 				modelTextureIndex++;
-				
-				//Selects an appropriate texture
+
+				// Selects an appropriate texture
 				currentVoxelTexture = selectsTextureFromIndex(cell, modelTextureIndex);
-				
+
 				maxVertexIndexToUseThisTextureFor = this.texturesOffsets[modelTextureIndex];
-				
+
 				baker.usingTexture(currentVoxelTexture);
-				//textureS = currentVoxelTexture.getAtlasS();// +mod(sx,texture.textureScale)*offset;
-				//textureT = currentVoxelTexture.getAtlasT();// +mod(sz,texture.textureScale)*offset;
+				// textureS = currentVoxelTexture.getAtlasS();//
+				// +mod(sx,texture.textureScale)*offset;
+				// textureT = currentVoxelTexture.getAtlasT();//
+				// +mod(sz,texture.textureScale)*offset;
 			}
-			
+
 			/*
-			 * How culling works :
-			 * culling[][] array contains [vertices.len/3][faces (6)] booleans
-			 * for each triangle (vert/3) it checks for i 0 -> 6 that either ![v][i] or [v][i] && info.neightbours[i] is solid
-			 * if any cull condition fails then it doesn't render this triangle.<
+			 * How culling works : culling[][] array contains [vertices.len/3][faces (6)]
+			 * booleans for each triangle (vert/3) it checks for i 0 -> 6 that either
+			 * ![v][i] or [v][i] && info.neightbours[i] is solid if any cull condition fails
+			 * then it doesn't render this triangle.<
 			 */
 			int cullIndex = i_currentVertex / 3;
-			//boolean drawFace = true;
-			for (int j = 0; j < 6; j++)
-			{
+			// boolean drawFace = true;
+			for (int j = 0; j < 6; j++) {
 				// Is culling enabled on this face, on this vertex ?
-				if (this.culling[cullIndex][j])
-				{
-					//Oh shit it should - we skip the next two vertices already
-					//TODO possible optimization : skip to the next culling spec label
-					if (cullingCache[j])
-					{
+				if (this.culling[cullIndex][j]) {
+					// Oh shit it should - we skip the next two vertices already
+					// TODO possible optimization : skip to the next culling spec label
+					if (cullingCache[j]) {
 						i_currentVertex += 2;
 						continue drawVertex;
 					}
 				}
 			}
-			
-			float vertX = this.vertices[i_currentVertex*3+0];
-			float vertY = this.vertices[i_currentVertex*3+1];
-			float vertZ = this.vertices[i_currentVertex*3+2];
-			
+
+			float vertX = this.vertices[i_currentVertex * 3 + 0];
+			float vertY = this.vertices[i_currentVertex * 3 + 1];
+			float vertZ = this.vertices[i_currentVertex * 3 + 2];
+
 			baker.beginVertex(vertX + x + dx, vertY + y + dy, vertZ + z + dz);
-			//renderByteBuffer.addVerticeFloat(vertX + x + dx, vertY + y + dy, vertZ + z + dz);
-			
-			baker.setTextureCoordinates(this.texCoords[i_currentVertex*2+0], this.texCoords[i_currentVertex*2+1]);
-			//renderByteBuffer.addTexCoordInt((int) (textureS + this.texCoords[i_currentVertex*2+0] * currentVoxelTexture.getAtlasOffset()), (int) (textureT + this.texCoords[i_currentVertex*2+1] * currentVoxelTexture.getAtlasOffset()));
-			
+			// renderByteBuffer.addVerticeFloat(vertX + x + dx, vertY + y + dy, vertZ + z +
+			// dz);
+
+			baker.setTextureCoordinates(this.texCoords[i_currentVertex * 2 + 0],
+					this.texCoords[i_currentVertex * 2 + 1]);
+			// renderByteBuffer.addTexCoordInt((int) (textureS +
+			// this.texCoords[i_currentVertex*2+0] * currentVoxelTexture.getAtlasOffset()),
+			// (int) (textureT + this.texCoords[i_currentVertex*2+1] *
+			// currentVoxelTexture.getAtlasOffset()));
+
 			byte sunLight, blockLight, ao;
 			sunLight = bakingContext.getCurrentVoxelLighter().getSunlightLevelInterpolated(vertX, vertY, vertZ);
 			blockLight = bakingContext.getCurrentVoxelLighter().getBlocklightLevelInterpolated(vertX, vertY, vertZ);
 			ao = bakingContext.getCurrentVoxelLighter().getAoLevelInterpolated(vertX, vertY, vertZ);
-			
+
 			baker.setVoxelLight(sunLight, blockLight, ao);
-			//renderByteBuffer.addColors(sunLight, blockLight, ao);
-			
-			baker.setNormal(normals[i_currentVertex*3+0], normals[i_currentVertex*3+1], normals[i_currentVertex*3+2]);
+			// renderByteBuffer.addColors(sunLight, blockLight, ao);
+
+			baker.setNormal(normals[i_currentVertex * 3 + 0], normals[i_currentVertex * 3 + 1],
+					normals[i_currentVertex * 3 + 2]);
 			baker.setWavyFlag(this.extra[i_currentVertex] != 0);
-			//renderByteBuffer.addNormalsInt(intifyNormal(this.normals[i_currentVertex*3+0]), intifyNormal(this.normals[i_currentVertex*3+1]), intifyNormal(this.normals[i_currentVertex*3+2]), this.extra[i_currentVertex]);
-		
+			// renderByteBuffer.addNormalsInt(intifyNormal(this.normals[i_currentVertex*3+0]),
+			// intifyNormal(this.normals[i_currentVertex*3+1]),
+			// intifyNormal(this.normals[i_currentVertex*3+2]),
+			// this.extra[i_currentVertex]);
+
 			baker.endVertex();
-			//drewVertices++;
+			// drewVertices++;
 		}
-		
+
 		return this.vertices.length;
 	}
-	
+
 	/** Helper method to convert to engine internal format */
-	public static int intifyNormal(float n)
-	{
+	public static int intifyNormal(float n) {
 		return (int) ((n + 1) * 511.5f);
 	}
 
-	private VoxelTexture selectsTextureFromIndex(CellData info, int modelTextureIndex)
-	{
-		if(this.texturesNames[modelTextureIndex].equals("_top"))
+	private VoxelTexture selectsTextureFromIndex(CellData info, int modelTextureIndex) {
+		if (this.texturesNames[modelTextureIndex].equals("_top"))
 			return info.getTexture(VoxelSide.TOP);
-		else if(this.texturesNames[modelTextureIndex].equals("_bottom"))
+		else if (this.texturesNames[modelTextureIndex].equals("_bottom"))
 			return info.getTexture(VoxelSide.BOTTOM);
-		else if(this.texturesNames[modelTextureIndex].equals("_left"))
+		else if (this.texturesNames[modelTextureIndex].equals("_left"))
 			return info.getTexture(VoxelSide.LEFT);
-		else if(this.texturesNames[modelTextureIndex].equals("_right"))
+		else if (this.texturesNames[modelTextureIndex].equals("_right"))
 			return info.getTexture(VoxelSide.RIGHT);
-		else if(this.texturesNames[modelTextureIndex].equals("_front"))
+		else if (this.texturesNames[modelTextureIndex].equals("_front"))
 			return info.getTexture(VoxelSide.FRONT);
-		else if(this.texturesNames[modelTextureIndex].equals("_back"))
+		else if (this.texturesNames[modelTextureIndex].equals("_back"))
 			return info.getTexture(VoxelSide.BACK);
-		
-		//If none of this bs is going on
-		return store.parent().textures().getVoxelTexture(this.texturesNames[modelTextureIndex].replace("~", info.getVoxel().getName()));
+
+		// If none of this bs is going on
+		return store.parent().textures()
+				.getVoxelTexture(this.texturesNames[modelTextureIndex].replace("~", info.getVoxel().getName()));
 	}
-	
+
 	@Override
 	public int getSizeInVertices() {
 		return vertices.length / 3;
@@ -223,7 +230,7 @@ public class CustomVoxelModel implements VoxelRenderer, VoxelModel
 	public Content.Voxels.VoxelModels getStore() {
 		return store;
 	}
-	
+
 	@Override
 	public String[] getTexturesNames() {
 		return texturesNames;
@@ -275,9 +282,9 @@ public class CustomVoxelModel implements VoxelRenderer, VoxelModel
 	}
 
 	@Override
-	public int bakeInto(ChunkRenderer chunkRenderer, ChunkRenderContext bakingContext, Chunk chunk, CellData cell)
-	{
+	public int bakeInto(ChunkRenderer chunkRenderer, ChunkRenderContext bakingContext, Chunk chunk, CellData cell) {
 		VoxelBakerHighPoly renderByteBuffer = chunkRenderer.getHighpolyBakerFor(LodLevel.ANY, ShadingType.OPAQUE);
-		return this.renderInto(renderByteBuffer, bakingContext, cell, chunk, cell.getX() & 0x1F, cell.getY() & 0x1F, cell.getZ() & 0x1F);
+		return this.renderInto(renderByteBuffer, bakingContext, cell, chunk, cell.getX() & 0x1F, cell.getY() & 0x1F,
+				cell.getZ() & 0x1F);
 	}
 }

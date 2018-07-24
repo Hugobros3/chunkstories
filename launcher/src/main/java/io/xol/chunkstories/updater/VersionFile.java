@@ -23,27 +23,27 @@ import javax.net.ssl.HttpsURLConnection;
 public class VersionFile {
 	final String version;
 	final Map<String, String> informations = new HashMap<>();
-	
+
 	public VersionFile(String string) {
 		string.replace("\r", "");
-		if(string.startsWith("version:")) {
-			for(String line : string.split("\n")) {
-				if(line.contains(": ")) {
+		if (string.startsWith("version:")) {
+			for (String line : string.split("\n")) {
+				if (line.contains(": ")) {
 					String propertyName = line.substring(0, line.indexOf(": "));
 					String propertyValue = line.substring(line.indexOf(": ") + 2);
 					informations.put(propertyName, propertyValue);
 				}
-					
+
 			}
-			
+
 			version = informations.get("version");
-			
+
 		} else {
 			version = string.replace("\n", "");
-			System.out.println("Oldstyle version file"+version);
+			System.out.println("Oldstyle version file" + version);
 		}
 	}
-	
+
 	public static VersionFile loadFromFile(File f) {
 		String read = "";
 		if (f.exists()) {
@@ -61,10 +61,10 @@ public class VersionFile {
 			}
 		} else
 			read = "unknown";
-		
+
 		return new VersionFile(read);
 	}
-	
+
 	public static VersionFile loadFromOnline() throws IOException {
 		URL url = new URL("https://chunkstories.xyz/api/updater/current/version.txt");
 		HttpsURLConnection htc = (HttpsURLConnection) url.openConnection();
@@ -75,36 +75,34 @@ public class VersionFile {
 		htc.setConnectTimeout(5000);
 		htc.setReadTimeout(15000);
 		DataOutputStream out = new DataOutputStream(htc.getOutputStream());
-		//out.writeBytes(params);
+		// out.writeBytes(params);
 		out.flush();
 		out.close();
-		//get response
+		// get response
 		BufferedReader in = new BufferedReader(new InputStreamReader(htc.getInputStream()));
 		StringBuffer rslt = new StringBuffer();
 		String line;
-		while((line = in.readLine()) != null)
-		{
+		while ((line = in.readLine()) != null) {
 			rslt.append(line);
 			rslt.append("\n");
 		}
 		in.close();
-		
+
 		return new VersionFile(rslt.toString());
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if(obj instanceof VersionFile) {
-			VersionFile ver = (VersionFile)obj;
-			if(ver.informations.get("commit") != null) {
-				if(!ver.informations.get("commit").equals(this.informations.get("commit")))
+		if (obj instanceof VersionFile) {
+			VersionFile ver = (VersionFile) obj;
+			if (ver.informations.get("commit") != null) {
+				if (!ver.informations.get("commit").equals(this.informations.get("commit")))
 					return false;
 			}
-			
+
 			return ver.version.equals(version);
 		}
 		return false;
 	}
-	
-	
+
 }

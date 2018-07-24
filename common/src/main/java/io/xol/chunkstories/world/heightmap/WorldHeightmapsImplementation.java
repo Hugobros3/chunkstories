@@ -21,26 +21,23 @@ import io.xol.chunkstories.api.world.heightmap.WorldHeightmaps;
 import io.xol.chunkstories.util.concurrency.CompoundFence;
 import io.xol.chunkstories.world.WorldImplementation;
 
-public class WorldHeightmapsImplementation implements WorldHeightmaps
-{
+public class WorldHeightmapsImplementation implements WorldHeightmaps {
 	private final WorldImplementation world;
 	private final int worldSize;
 	private final int worldSizeInChunks;
 	private final int worldSizeInRegions;
-	
+
 	private Map<Long, HeightmapImplementation> summaries = new ConcurrentHashMap<Long, HeightmapImplementation>();
 	protected Semaphore dontDeleteWhileCreating = new Semaphore(1);
 
-	public WorldHeightmapsImplementation(WorldImplementation world)
-	{
+	public WorldHeightmapsImplementation(WorldImplementation world) {
 		this.world = world;
 		this.worldSize = world.getSizeInChunks() * 32;
 		this.worldSizeInChunks = world.getSizeInChunks();
 		this.worldSizeInRegions = world.getSizeInChunks() / 8;
 	}
 
-	long index(int x, int z)
-	{
+	long index(int x, int z) {
 		x /= 256;
 		z /= 256;
 		return x * worldSizeInRegions + z;
@@ -73,66 +70,58 @@ public class WorldHeightmapsImplementation implements WorldHeightmaps
 	}
 
 	@Override
-	public HeightmapImplementation acquireHeightmapChunkCoordinates(WorldUser worldUser, int chunkX, int chunkZ)
-	{
+	public HeightmapImplementation acquireHeightmapChunkCoordinates(WorldUser worldUser, int chunkX, int chunkZ) {
 		chunkX %= worldSizeInChunks;
 		chunkZ %= worldSizeInChunks;
 		if (chunkX < 0)
 			chunkX += worldSizeInChunks;
 		if (chunkZ < 0)
 			chunkZ += worldSizeInChunks;
-		
+
 		return acquireHeightmap(worldUser, chunkX / 8, chunkZ / 8);
 	}
 
 	@Override
-	public HeightmapImplementation acquireHeightmapWorldCoordinates(WorldUser worldUser, int worldX, int worldZ)
-	{
+	public HeightmapImplementation acquireHeightmapWorldCoordinates(WorldUser worldUser, int worldX, int worldZ) {
 		worldX = sanitizeHorizontalCoordinate(worldX);
 		worldZ = sanitizeHorizontalCoordinate(worldZ);
 		return acquireHeightmap(worldUser, worldX / 256, worldZ / 256);
 	}
 
 	@Override
-	public HeightmapImplementation acquireHeightmapLocation(WorldUser worldUser, Location location)
-	{
-		return acquireHeightmap(worldUser, (int)(double)location.x(), (int)(double)location.z());
+	public HeightmapImplementation acquireHeightmapLocation(WorldUser worldUser, Location location) {
+		return acquireHeightmap(worldUser, (int) (double) location.x(), (int) (double) location.z());
 	}
-	
+
 	@Override
-	public Heightmap getHeightmap(int regionX, int regionZ)
-	{
+	public Heightmap getHeightmap(int regionX, int regionZ) {
 		return getHeightmapWorldCoordinates(regionX * 256, regionZ * 256);
 	}
 
 	@Override
-	public Heightmap getHeightmapChunkCoordinates(int chunkX, int chunkZ)
-	{
+	public Heightmap getHeightmapChunkCoordinates(int chunkX, int chunkZ) {
 		return getHeightmapWorldCoordinates(chunkX * 32, chunkZ * 32);
 	}
 
 	@Override
-	public Heightmap getHeightmapLocation(Location location)
-	{
-		return getHeightmapWorldCoordinates((int)(double)location.x(), (int)(double)location.z());
+	public Heightmap getHeightmapLocation(Location location) {
+		return getHeightmapWorldCoordinates((int) (double) location.x(), (int) (double) location.z());
 	}
 
-	public HeightmapImplementation getHeightmapWorldCoordinates(int worldX, int worldZ)
-	{
+	public HeightmapImplementation getHeightmapWorldCoordinates(int worldX, int worldZ) {
 		worldX = sanitizeHorizontalCoordinate(worldX);
 		worldZ = sanitizeHorizontalCoordinate(worldZ);
 
 		long i = index(worldX, worldZ);
-		
+
 		HeightmapImplementation summary = summaries.get(i);
-		if(summary == null)// || !summary.isLoaded())
+		if (summary == null)// || !summary.isLoaded())
 			return null;
 		else
 			return summary;
 	}
 
-	public int getHeightMipmapped(int x, int z, int level)
-	{
+	public int getHeightMipmapped(int x, int z, int level) {
 		x %= worldSize;
 		z %= worldSize;
 		if (x < 0)
@@ -145,8 +134,7 @@ public class WorldHeightmapsImplementation implements WorldHeightmaps
 		return cs.getHeightMipmapped(x % 256, z % 256, level);
 	}
 
-	public int getDataMipmapped(int x, int z, int level)
-	{
+	public int getDataMipmapped(int x, int z, int level) {
 		x %= worldSize;
 		z %= worldSize;
 		if (x < 0)
@@ -159,8 +147,7 @@ public class WorldHeightmapsImplementation implements WorldHeightmaps
 		return cs.getDataMipmapped(x % 256, z % 256, level);
 	}
 
-	public int getHeightAtWorldCoordinates(int x, int z)
-	{
+	public int getHeightAtWorldCoordinates(int x, int z) {
 		x %= worldSize;
 		z %= worldSize;
 		if (x < 0)
@@ -173,8 +160,7 @@ public class WorldHeightmapsImplementation implements WorldHeightmaps
 		return cs.getHeight(x % 256, z % 256);
 	}
 
-	public int getRawDataAtWorldCoordinates(int x, int z)
-	{
+	public int getRawDataAtWorldCoordinates(int x, int z) {
 		x %= worldSize;
 		z %= worldSize;
 		if (x < 0)
@@ -182,11 +168,11 @@ public class WorldHeightmapsImplementation implements WorldHeightmaps
 		if (z < 0)
 			z += worldSize;
 		HeightmapImplementation cs = getHeightmapWorldCoordinates(x, z);
-		if(cs == null)
+		if (cs == null)
 			return 0;
 		return cs.getRawVoxelData(x % 256, z % 256);
 	}
-	
+
 	@Override
 	public CellData getTopCellAtWorldCoordinates(int x, int z) {
 		x %= worldSize;
@@ -196,13 +182,12 @@ public class WorldHeightmapsImplementation implements WorldHeightmaps
 		if (z < 0)
 			z += worldSize;
 		HeightmapImplementation cs = getHeightmapWorldCoordinates(x, z);
-		if(cs == null)
+		if (cs == null)
 			return null;
 		return cs.getTopCell(x, z);
 	}
 
-	public void updateOnBlockPlaced(int x, int y, int z, FutureCell future)
-	{
+	public void updateOnBlockPlaced(int x, int y, int z, FutureCell future) {
 		x %= worldSize;
 		z %= worldSize;
 		if (x < 0)
@@ -210,65 +195,53 @@ public class WorldHeightmapsImplementation implements WorldHeightmaps
 		if (z < 0)
 			z += worldSize;
 		HeightmapImplementation summary = getHeightmapWorldCoordinates(x, z);
-		
-		if(summary != null)
+
+		if (summary != null)
 			summary.updateOnBlockModification(x % 256, y, z % 256, future);
 	}
 
-	public int countSummaries()
-	{
+	public int countSummaries() {
 		return summaries.size();
 	}
 
-	public Fence saveAllLoadedSummaries()
-	{
+	public Fence saveAllLoadedSummaries() {
 		CompoundFence allSummariesSaves = new CompoundFence();
-		for (HeightmapImplementation cs : summaries.values())
-		{
+		for (HeightmapImplementation cs : summaries.values()) {
 			allSummariesSaves.add(cs.save());
 		}
-		
+
 		return allSummariesSaves;
 	}
 
-	/*public void setHeightAndId(int x, int z, int y, int id)
-	{
-		x %= worldSize;
-		z %= worldSize;
-		if (x < 0)
-			x += worldSize;
-		if (z < 0)
-			z += worldSize;
-		HeightmapImplementation cs = getHeightmapWorldCoordinates(x, z);
-		cs.setHeightAndId(x % 256, y, z % 256, id);
-	}*/
-	
-	public void destroy()
-	{
-		for(HeightmapImplementation cs : summaries.values())
-		{
+	/*
+	 * public void setHeightAndId(int x, int z, int y, int id) { x %= worldSize; z
+	 * %= worldSize; if (x < 0) x += worldSize; if (z < 0) z += worldSize;
+	 * HeightmapImplementation cs = getHeightmapWorldCoordinates(x, z);
+	 * cs.setHeightAndId(x % 256, y, z % 256, id); }
+	 */
+
+	public void destroy() {
+		for (HeightmapImplementation cs : summaries.values()) {
 			cs.unloadSummary();
 		}
 		summaries.clear();
 	}
 
-	public WorldImplementation getWorld()
-	{
+	public WorldImplementation getWorld() {
 		return world;
 	}
 
-	boolean removeSummary(HeightmapImplementation regionSummary)
-	{
+	boolean removeSummary(HeightmapImplementation regionSummary) {
 		try {
 			dontDeleteWhileCreating.acquireUninterruptibly();
-			return summaries.remove(this.index(regionSummary.getRegionX() * 256, regionSummary.getRegionZ() * 256)) != null;
+			return summaries
+					.remove(this.index(regionSummary.getRegionX() * 256, regionSummary.getRegionZ() * 256)) != null;
 		} finally {
 			dontDeleteWhileCreating.release();
 		}
 	}
-	
-	private int sanitizeHorizontalCoordinate(int coordinate)
-	{
+
+	private int sanitizeHorizontalCoordinate(int coordinate) {
 		coordinate = coordinate % (world.getSizeInChunks() * 32);
 		if (coordinate < 0)
 			coordinate += world.getSizeInChunks() * 32;

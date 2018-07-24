@@ -21,25 +21,21 @@ import io.xol.chunkstories.api.rendering.target.RenderTargets;
 import io.xol.chunkstories.api.rendering.target.RenderTargetsConfiguration;
 import io.xol.chunkstories.renderer.OpenGLRenderingContext;
 
-public class OpenGLRenderTargetManager implements RenderTargets
-{
+public class OpenGLRenderTargetManager implements RenderTargets {
 	final OpenGLRenderingContext renderingContext;
 	RenderTargetsConfiguration fbo = null;
 
-	public OpenGLRenderTargetManager(OpenGLRenderingContext renderingContext)
-	{
+	public OpenGLRenderTargetManager(OpenGLRenderingContext renderingContext) {
 		this.renderingContext = renderingContext;
 	}
 
 	@Override
-	public RenderTargetsConfiguration getCurrentConfiguration()
-	{
+	public RenderTargetsConfiguration getCurrentConfiguration() {
 		return fbo;
 	}
 
 	@Override
-	public void setConfiguration(RenderTargetsConfiguration fbo)
-	{
+	public void setConfiguration(RenderTargetsConfiguration fbo) {
 		if (fbo == null)
 			FrameBufferObjectGL.unbind();
 		else
@@ -51,34 +47,30 @@ public class OpenGLRenderTargetManager implements RenderTargets
 	private boolean depthMask = true;
 
 	@Override
-	public void setDepthMask(boolean depthMask)
-	{
-		if(this.depthMask != depthMask)
+	public void setDepthMask(boolean depthMask) {
+		if (this.depthMask != depthMask)
 			glDepthMask(depthMask);
 		this.depthMask = depthMask;
 	}
 
 	@Override
-	public boolean getDepthMask()
-	{
+	public boolean getDepthMask() {
 		return depthMask;
 	}
 
 	float depthClearDepth = 1.0f;
 	Vector4fc colorClearColor = new Vector4f(0);
 
-	private void setClearDepth(float depthClearDepth)
-	{
+	private void setClearDepth(float depthClearDepth) {
 		if (depthClearDepth != depthClearDepth)
 			glClearDepth(depthClearDepth);
 		this.depthClearDepth = depthClearDepth;
 	}
 
-	private void setClearColor(Vector4fc colorClearColor)
-	{
-		if(colorClearColor == null)
+	private void setClearColor(Vector4fc colorClearColor) {
+		if (colorClearColor == null)
 			colorClearColor = new Vector4f(0);
-		
+
 		if (!this.colorClearColor.equals(colorClearColor))
 			glClearColor(colorClearColor.x(), colorClearColor.y(), colorClearColor.z(), colorClearColor.w());
 
@@ -86,25 +78,22 @@ public class OpenGLRenderTargetManager implements RenderTargets
 	}
 
 	@Override
-	public void clearBoundRenderTargetAll()
-	{	
-		//Resets those to default values
+	public void clearBoundRenderTargetAll() {
+		// Resets those to default values
 		setClearDepth(1);
 		setClearColor(new Vector4f(0));
-		
+
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
 	@Override
-	public void clearBoundRenderTargetZ(float z)
-	{
+	public void clearBoundRenderTargetZ(float z) {
 		setClearDepth(z);
 		glClear(GL_DEPTH_BUFFER_BIT);
 	}
 
 	@Override
-	public void clearBoundRenderTargetColor(Vector4fc color)
-	{	
+	public void clearBoundRenderTargetColor(Vector4fc color) {
 		setClearColor(color);
 		glClear(GL_COLOR_BUFFER_BIT);
 	}

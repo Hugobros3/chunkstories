@@ -24,81 +24,71 @@ import io.xol.chunkstories.sound.source.DummySoundSource;
 import io.xol.chunkstories.world.io.IOTasks;
 import io.xol.chunkstories.world.io.IOTasksImmediate;
 
-public class WorldTool extends WorldImplementation implements WorldMaster
-{
+public class WorldTool extends WorldImplementation implements WorldMaster {
 	private final GameContext toolContext;
-	
+
 	private boolean isLightningEnabled = false;
-	
+
 	public WorldTool(GameContext toolContext, WorldInfoImplementation info) throws WorldLoadingException {
 		this(toolContext, info, true);
 	}
-	
-	public WorldTool(GameContext toolContext, WorldInfoImplementation info, boolean immediateIO) throws WorldLoadingException
-	{
+
+	public WorldTool(GameContext toolContext, WorldInfoImplementation info, boolean immediateIO)
+			throws WorldLoadingException {
 		super(toolContext, info);
 
 		this.toolContext = toolContext;
-		
-		if(immediateIO)
+
+		if (immediateIO)
 			ioHandler = new IOTasksImmediate(this);
 		else {
-			//Normal IO.
+			// Normal IO.
 			ioHandler = new IOTasks(this);
 			ioHandler.start();
 		}
-		//ioHandler.start();
+		// ioHandler.start();
 	}
 
-	/*public WorldTool(GameContext toolContext, File csWorldDir)
-	{
-		this(toolContext, csWorldDir.getAbsolutePath());
-	}*/
-	
-	public GameContext getGameContext()
-	{
+	/*
+	 * public WorldTool(GameContext toolContext, File csWorldDir) {
+	 * this(toolContext, csWorldDir.getAbsolutePath()); }
+	 */
+
+	public GameContext getGameContext() {
 		return toolContext;
 	}
 
 	@Override
-	public SoundManager getSoundManager()
-	{
+	public SoundManager getSoundManager() {
 		return nullSoundManager;
 	}
 
 	NullSoundManager nullSoundManager = new NullSoundManager();
 
-	class NullSoundManager implements SoundManager
-	{
-
+	class NullSoundManager implements SoundManager {
 
 		@Override
-		public SoundSource playSoundEffect(String soundEffect)
-		{
+		public SoundSource playSoundEffect(String soundEffect) {
 
 			return null;
 		}
 
 		@Override
-		public void stopAnySound(String soundEffect)
-		{
+		public void stopAnySound(String soundEffect) {
 
 		}
 
 		@Override
-		public void stopAnySound()
-		{
+		public void stopAnySound() {
 		}
 
 		@Override
-		public Iterator<SoundSource> getAllPlayingSounds()
-		{
+		public Iterator<SoundSource> getAllPlayingSounds() {
 			return null;
 		}
 
 		@Override
-		public void setListenerPosition(float x, float y, float z, Vector3fc lookAt, Vector3fc up)
-		{
+		public void setListenerPosition(float x, float y, float z, Vector3fc lookAt, Vector3fc up) {
 		}
 
 		@Override
@@ -111,73 +101,64 @@ public class WorldTool extends WorldImplementation implements WorldMaster
 	}
 
 	@Override
-	public ParticlesManager getParticlesManager()
-	{
+	public ParticlesManager getParticlesManager() {
 		return nullParticlesManager;
 	}
 
 	NullParticlesManager nullParticlesManager = new NullParticlesManager();
 
-	class NullParticlesManager implements ParticlesManager
-	{
+	class NullParticlesManager implements ParticlesManager {
 
 		@Override
-		public void spawnParticleAtPosition(String particleTypeName, Vector3dc location)
-		{
+		public void spawnParticleAtPosition(String particleTypeName, Vector3dc location) {
 			// TODO Auto-generated method stub
-			
+
 		}
 
 		@Override
-		public void spawnParticleAtPositionWithVelocity(String particleTypeName, Vector3dc location, Vector3dc velocity)
-		{
+		public void spawnParticleAtPositionWithVelocity(String particleTypeName, Vector3dc location,
+				Vector3dc velocity) {
 			// TODO Auto-generated method stub
-			
+
 		}
 	}
 
 	@Override
-	public DecalsManager getDecalsManager()
-	{
+	public DecalsManager getDecalsManager() {
 		return nullDecalsManager;
 	}
-	
+
 	NullDecalsManager nullDecalsManager = new NullDecalsManager();
-	
-	class NullDecalsManager implements DecalsManager 
-	{
+
+	class NullDecalsManager implements DecalsManager {
 
 		@Override
-		public void drawDecal(Vector3dc position, Vector3dc orientation, Vector3dc size, String decalName)
-		{
+		public void drawDecal(Vector3dc position, Vector3dc orientation, Vector3dc size, String decalName) {
 			// TODO Auto-generated method stub
-			
+
 		}
-		
+
 	}
 
 	@Override
-	public void spawnPlayer(Player player)
-	{
+	public void spawnPlayer(Player player) {
 		throw new UnsupportedOperationException("spawnPlayer");
 	}
 
 	@Override
-	public IterableIterator<Player> getPlayers()
-	{
+	public IterableIterator<Player> getPlayers() {
 		throw new UnsupportedOperationException("getPlayers");
 	}
 
 	@Override
-	public Player getPlayerByName(String playerName)
-	{
+	public Player getPlayerByName(String playerName) {
 		throw new UnsupportedOperationException("getPlayers");
 	}
 
 	public boolean isLightningEnabled() {
 		return isLightningEnabled;
 	}
-	
+
 	public void setLightning(boolean e) {
 		isLightningEnabled = e;
 	}

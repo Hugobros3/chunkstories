@@ -26,21 +26,18 @@ import io.xol.chunkstories.api.rendering.textures.Texture1D;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
 import io.xol.chunkstories.client.Client;
 
-public class Texture1DGL extends TextureGL implements Texture1D
-{
+public class Texture1DGL extends TextureGL implements Texture1D {
 	String name;
 	int width;
 	boolean wrapping = true;
 	boolean linearFiltering = true;
 
-	public Texture1DGL(TextureFormat type)
-	{
+	public Texture1DGL(TextureFormat type) {
 		super(type);
-		//allTextureObjects.add(new WeakReference<Texture1D>(this));
+		// allTextureObjects.add(new WeakReference<Texture1D>(this));
 	}
 
-	public TextureFormat getType()
-	{
+	public TextureFormat getType() {
 		return type;
 	}
 
@@ -49,63 +46,61 @@ public class Texture1DGL extends TextureGL implements Texture1D
 	 * 
 	 * @return
 	 */
-	public int getID()
-	{
+	public int getID() {
 		return glId;
 	}
-	
-	public void bind()
-	{
+
+	public void bind() {
 		if (!Client.getInstance().getGameWindow().isMainGLWindow())
 			throw new IllegalRenderingThreadException();
-		
-		//Don't bother
-		if (glId == -2)
-		{
-			logger().error("Critical mess-up: Tried to bind a destroyed Texture1D "+this+". Terminating process immediately.");
+
+		// Don't bother
+		if (glId == -2) {
+			logger().error("Critical mess-up: Tried to bind a destroyed Texture1D " + this
+					+ ". Terminating process immediately.");
 			Thread.dumpStack();
 			System.exit(-802);
-			//throw new RuntimeException("Tryed to bind a destroyed VerticesBuffer");
+			// throw new RuntimeException("Tryed to bind a destroyed VerticesBuffer");
 		}
-		
-		if(glId == -1)
+
+		if (glId == -1)
 			aquireID();
-		
+
 		glBindTexture(GL_TEXTURE_1D, glId);
 	}
 
-	/*public synchronized boolean destroy()
-	{
-		if (glId >= 0)
-		{
-			glDeleteTextures(glId);
-			totalTextureObjects--;
-		}
-		glId = -1;
-	}*/
+	/*
+	 * public synchronized boolean destroy() { if (glId >= 0) {
+	 * glDeleteTextures(glId); totalTextureObjects--; } glId = -1; }
+	 */
 
 	// Texture modifications
 
-	/* (non-Javadoc)
-	 * @see io.xol.engine.graphics.textures.Texture1D#uploadTextureData(int, java.nio.ByteBuffer)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see io.xol.engine.graphics.textures.Texture1D#uploadTextureData(int,
+	 * java.nio.ByteBuffer)
 	 */
 	@Override
-	public boolean uploadTextureData(int width, ByteBuffer data)
-	{
+	public boolean uploadTextureData(int width, ByteBuffer data) {
 		bind();
 		this.width = width;
-		//glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA, width, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-		glTexImage1D(GL_TEXTURE_1D, 0, type.getInternalFormat(), width, 0, type.getFormat(), type.getType(), (ByteBuffer) data);
-		
+		// glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA, width, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+		// data);
+		glTexImage1D(GL_TEXTURE_1D, 0, type.getInternalFormat(), width, 0, type.getFormat(), type.getType(),
+				(ByteBuffer) data);
+
 		return true;
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see io.xol.engine.graphics.textures.Texture1D#setTextureWrapping(boolean)
 	 */
 	@Override
-	public void setTextureWrapping(boolean on)
-	{
+	public void setTextureWrapping(boolean on) {
 		if (glId < 0) // Don't bother with invalid textures
 			return;
 		boolean applyParameters = false;
@@ -118,24 +113,22 @@ public class Texture1DGL extends TextureGL implements Texture1D
 		if (!applyParameters)
 			return;
 		bind();
-		if (!on)
-		{
+		if (!on) {
 			glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		}
-		else
-		{
+		} else {
 			glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 			glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		}
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see io.xol.engine.graphics.textures.Texture1D#setLinearFiltering(boolean)
 	 */
 	@Override
-	public void setLinearFiltering(boolean on)
-	{
+	public void setLinearFiltering(boolean on) {
 		if (glId < 0) // Don't bother with invalid textures
 			return;
 		boolean applyParameters = false;
@@ -152,59 +145,51 @@ public class Texture1DGL extends TextureGL implements Texture1D
 	}
 
 	// Private function that sets both filering scheme and mipmap usage.
-	private void setFiltering()
-	{
-		if (linearFiltering)
-		{
+	private void setFiltering() {
+		if (linearFiltering) {
 			glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		}
-		else
-		{
+		} else {
 			glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see io.xol.engine.graphics.textures.Texture1D#getWidth()
 	 */
 	@Override
-	public int getWidth()
-	{
+	public int getWidth() {
 		return width;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see io.xol.engine.graphics.textures.Texture1D#getVramUsage()
 	 */
 	@Override
-	public long getVramUsage()
-	{
+	public long getVramUsage() {
 		int surface = getWidth();
 		return surface * type.getBytesPerTexel();
 	}
 
-	/*public static long getTotalVramUsage()
-	{
-		long vram = 0;
-
-		//Iterates over every instance reference, removes null ones and add up valid ones
-		Iterator<WeakReference<Texture1D>> i = allTextureObjects.iterator();
-		while (i.hasNext())
-		{
-			WeakReference<Texture1D> reference = i.next();
-
-			Texture1D object = reference.get();
-			if (object != null)
-				vram += object.getVramUsage();
-			else
-				i.remove();
-		}
-
-		return vram;
-	}
-
-	private static int totalTextureObjects = 0;
-	private static BlockingQueue<WeakReference<Texture1D>> allTextureObjects = new LinkedBlockingQueue<WeakReference<Texture1D>>();*/
+	/*
+	 * public static long getTotalVramUsage() { long vram = 0;
+	 * 
+	 * //Iterates over every instance reference, removes null ones and add up valid
+	 * ones Iterator<WeakReference<Texture1D>> i = allTextureObjects.iterator();
+	 * while (i.hasNext()) { WeakReference<Texture1D> reference = i.next();
+	 * 
+	 * Texture1D object = reference.get(); if (object != null) vram +=
+	 * object.getVramUsage(); else i.remove(); }
+	 * 
+	 * return vram; }
+	 * 
+	 * private static int totalTextureObjects = 0; private static
+	 * BlockingQueue<WeakReference<Texture1D>> allTextureObjects = new
+	 * LinkedBlockingQueue<WeakReference<Texture1D>>();
+	 */
 }

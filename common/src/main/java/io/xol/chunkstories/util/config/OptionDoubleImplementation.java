@@ -12,7 +12,8 @@ import io.xol.chunkstories.api.util.Configuration.OptionDouble;
 
 public class OptionDoubleImplementation extends OptionImplementation implements OptionDouble {
 
-	public OptionDoubleImplementation(ConfigurationImplementation config, OptionUntyped loadFromThat) throws IOException {
+	public OptionDoubleImplementation(ConfigurationImplementation config, OptionUntyped loadFromThat)
+			throws IOException {
 		super(config, loadFromThat);
 	}
 
@@ -24,7 +25,7 @@ public class OptionDoubleImplementation extends OptionImplementation implements 
 	protected double parse(String s) {
 		try {
 			return Double.parseDouble(s);
-		} catch(NumberFormatException e) {
+		} catch (NumberFormatException e) {
 			return 0.0;
 		}
 	}

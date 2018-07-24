@@ -13,25 +13,22 @@ import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.plugin.DefaultPluginManager;
 import io.xol.chunkstories.server.LocalServerContext;
 
-public class ClientMasterPluginManager extends DefaultPluginManager implements ClientPluginManager, ServerPluginManager
-{
+public class ClientMasterPluginManager extends DefaultPluginManager
+		implements ClientPluginManager, ServerPluginManager {
 	LocalServerContext localServerContext;
-	
-	public ClientMasterPluginManager(LocalServerContext localServerContext)
-	{
+
+	public ClientMasterPluginManager(LocalServerContext localServerContext) {
 		super(localServerContext);
 		this.localServerContext = localServerContext;
 	}
 
 	@Override
-	public ClientInterface getClientInterface()
-	{
+	public ClientInterface getClientInterface() {
 		return localServerContext;
 	}
 
 	@Override
-	public ServerInterface getServerInterface()
-	{
+	public ServerInterface getServerInterface() {
 		return localServerContext;
 	}
 

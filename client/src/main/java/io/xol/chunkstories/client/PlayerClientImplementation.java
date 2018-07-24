@@ -27,256 +27,224 @@ import io.xol.chunkstories.api.world.WorldClientNetworkedRemote;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.world.WorldClientCommon;
 
-public class PlayerClientImplementation implements LocalPlayer
-{
+public class PlayerClientImplementation implements LocalPlayer {
 	final Client client;
 	final WorldClientCommon world;
-	
+
 	private Entity controlledEntity;
-	
+
 	public final LocalClientLoadingAgent loadingAgent;
-	
-	PlayerClientImplementation(Client client, WorldClientCommon world)
-	{
+
+	PlayerClientImplementation(Client client, WorldClientCommon world) {
 		this.client = client;
 		this.world = world;
-		
+
 		this.loadingAgent = new LocalClientLoadingAgent(client, this, world);
 	}
 
 	@Override
-	public ClientInputsManager getInputsManager()
-	{
+	public ClientInputsManager getInputsManager() {
 		return Client.getInstance().getInputsManager();
 	}
 
 	@Override
-	public Entity getControlledEntity()
-	{
+	public Entity getControlledEntity() {
 		return controlledEntity;
 	}
 
 	@Override
-	public boolean setControlledEntity(Entity entity)
-	{
+	public boolean setControlledEntity(Entity entity) {
 		TraitController ec = entity != null ? entity.traits.get(TraitController.class) : null;
-		if (entity != null && ec != null)
-		{
+		if (entity != null && ec != null) {
 			this.subscribe(entity);
-			
-			//If a world master, directly set the entity's controller
-			if(world instanceof WorldMaster)
+
+			// If a world master, directly set the entity's controller
+			if (world instanceof WorldMaster)
 				ec.setController(this);
-			//In remote networked worlds, we need to subscribe the server to our player actions to the controlled entity so he gets updates
-			else if(entity.getWorld() instanceof WorldClientNetworkedRemote)
-			{
-				//When changing controlled entity, first unsubscribe the remote server from the one we no longer own
-				if(controlledEntity != null && entity != controlledEntity)
-					((WorldClientNetworkedRemote) controlledEntity.getWorld()).getRemoteServer().unsubscribe(controlledEntity);
-				
-				//Let know the server of new changes
+			// In remote networked worlds, we need to subscribe the server to our player
+			// actions to the controlled entity so he gets updates
+			else if (entity.getWorld() instanceof WorldClientNetworkedRemote) {
+				// When changing controlled entity, first unsubscribe the remote server from the
+				// one we no longer own
+				if (controlledEntity != null && entity != controlledEntity)
+					((WorldClientNetworkedRemote) controlledEntity.getWorld()).getRemoteServer()
+							.unsubscribe(controlledEntity);
+
+				// Let know the server of new changes
 				((WorldClientNetworkedRemote) entity.getWorld()).getRemoteServer().subscribe(entity);
 			}
-			
+
 			controlledEntity = entity;
-		}
-		else if (entity == null && controlledEntity != null)
-		{
-			//Directly unset it
-			if(world instanceof WorldMaster)
+		} else if (entity == null && controlledEntity != null) {
+			// Directly unset it
+			if (world instanceof WorldMaster)
 				controlledEntity.traits.with(TraitController.class, ec2 -> ec2.setController(null));
-			//When loosing control over an entity, stop sending the server info about it
-			else if(controlledEntity.getWorld() instanceof WorldClientNetworkedRemote)
-					((WorldClientNetworkedRemote) controlledEntity.getWorld()).getRemoteServer().unsubscribe(controlledEntity);
+			// When loosing control over an entity, stop sending the server info about it
+			else if (controlledEntity.getWorld() instanceof WorldClientNetworkedRemote)
+				((WorldClientNetworkedRemote) controlledEntity.getWorld()).getRemoteServer()
+						.unsubscribe(controlledEntity);
 
 			controlledEntity = null;
 		}
-		
+
 		return true;
 	}
 
 	@Override
-	public SoundManager getSoundManager()
-	{
+	public SoundManager getSoundManager() {
 		return Client.getInstance().getSoundManager();
 	}
 
 	@Override
-	public ParticlesManager getParticlesManager()
-	{
+	public ParticlesManager getParticlesManager() {
 		return world.getParticlesManager();
 	}
 
 	@Override
-	public DecalsManager getDecalsManager()
-	{
+	public DecalsManager getDecalsManager() {
 		return world.getDecalsManager();
 	}
 
 	@Override
-	public long getUUID()
-	{
+	public long getUUID() {
 		return Client.username.hashCode();
 	}
 
 	@Override
-	public Iterator<Entity> getSubscribedToList()
-	{
+	public Iterator<Entity> getSubscribedToList() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public boolean subscribe(Entity entity)
-	{
+	public boolean subscribe(Entity entity) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean unsubscribe(Entity entity)
-	{
+	public boolean unsubscribe(Entity entity) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public void unsubscribeAll()
-	{
+	public void unsubscribeAll() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
-	public void pushPacket(Packet packet)
-	{
+	public void pushPacket(Packet packet) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
-	public boolean isSubscribedTo(Entity entity)
-	{
+	public boolean isSubscribedTo(Entity entity) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean hasFocus()
-	{
+	public boolean hasFocus() {
 		return client.hasFocus();
 	}
 
 	@Override
-	public String getName()
-	{
+	public String getName() {
 		return Client.username;
 	}
 
 	@Override
-	public String getDisplayName()
-	{
+	public String getDisplayName() {
 		return getName();
 	}
 
 	@Override
-	public void sendMessage(String msg)
-	{
+	public void sendMessage(String msg) {
 		client.printChat(msg);
 	}
 
 	@Override
-	public Location getLocation()
-	{
+	public Location getLocation() {
 		Entity controlledEntity = this.controlledEntity;
-		if(controlledEntity != null)
+		if (controlledEntity != null)
 			return controlledEntity.getLocation();
 		return null;
 	}
 
 	@Override
-	public void setLocation(Location l)
-	{
+	public void setLocation(Location l) {
 		Entity controlledEntity = this.controlledEntity;
-		if(controlledEntity != null)
+		if (controlledEntity != null)
 			controlledEntity.entityLocation.set(l);
 	}
 
 	@Override
-	public boolean isConnected()
-	{
+	public boolean isConnected() {
 		return true;
 	}
 
 	@Override
-	public boolean hasSpawned()
-	{
+	public boolean hasSpawned() {
 		return controlledEntity != null;
 	}
 
 	@Override
-	public GameContext getContext()
-	{
+	public GameContext getContext() {
 		return this.client;
 	}
 
 	@Override
-	public World getWorld()
-	{
+	public World getWorld() {
 		Entity controlledEntity = this.controlledEntity;
-		if(controlledEntity != null)
+		if (controlledEntity != null)
 			return controlledEntity.getWorld();
 		return null;
 	}
 
 	@Override
-	public boolean hasPermission(String permissionNode)
-	{
+	public boolean hasPermission(String permissionNode) {
 		return true;
 	}
 
 	@Override
-	public void flush()
-	{
+	public void flush() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
-	public void disconnect()
-	{
-		
+	public void disconnect() {
+
 	}
 
 	@Override
-	public void disconnect(String disconnectionReason)
-	{
-		
+	public void disconnect(String disconnectionReason) {
+
 	}
-	
+
 	@Override
-	public GameWindow getWindow()
-	{
+	public GameWindow getWindow() {
 		return this.client.getGameWindow();
 	}
 
 	@Override
-	public void openInventory(Inventory inventory)
-	{
+	public void openInventory(Inventory inventory) {
 		Entity entity = this.getControlledEntity();
-		if (entity != null && inventory.isAccessibleTo(entity))
-		{
-			//Directly open it without further concern
-			//Client.getInstance().openInventories(inventory);
-			
+		if (entity != null && inventory.isAccessibleTo(entity)) {
+			// Directly open it without further concern
+			// Client.getInstance().openInventories(inventory);
+
 			TraitInventory TraitInventory = entity.traits.get(TraitInventory.class);
-					
-			if(TraitInventory != null)
+
+			if (TraitInventory != null)
 				Client.getInstance().openInventories(TraitInventory, inventory);
 			else
 				Client.getInstance().openInventories(inventory);
 		}
-		//else
-		//	this.sendMessage("Notice: You don't have access to this inventory.");
+		// else
+		// this.sendMessage("Notice: You don't have access to this inventory.");
 	}
 
 	@Override

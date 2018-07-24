@@ -51,7 +51,8 @@ public class ChunkMeshesRenderer implements ChunksRenderer {
 		this.world = worldRenderer.getWorld();
 
 		int nbThreads = -1;
-		String configThreads = world.getClient().getConfiguration().getStringOption("client.game.workersThreads");//Client.getInstance().configDeprecated().getString("workersThreads", "auto");
+		String configThreads = world.getClient().getConfiguration().getStringOption("client.game.workersThreads");// Client.getInstance().configDeprecated().getString("workersThreads",
+																													// "auto");
 		if (!configThreads.equals("auto")) {
 			try {
 				nbThreads = Integer.parseInt(configThreads);
@@ -205,8 +206,7 @@ public class ChunkMeshesRenderer implements ChunksRenderer {
 
 				if ((sideFrom == -1 || occlusionSides[sideFrom][4]) && chunkY < world.getMaxHeight() / 32
 						&& (chunkY - cameraChunkY) < verticalDistance
-						&& !floodFillMask[indexInto(chunkX, chunkY + 1, chunkZ, maxDistance)])
-				{
+						&& !floodFillMask[indexInto(chunkX, chunkY + 1, chunkZ, maxDistance)]) {
 					floodFillDeque.addLast(ajustedChunkX);
 					floodFillDeque.addLast(chunkY + 1);
 					floodFillDeque.addLast(ajustedChunkZ);
@@ -214,8 +214,7 @@ public class ChunkMeshesRenderer implements ChunksRenderer {
 				}
 				if ((sideFrom == -1 || occlusionSides[sideFrom][5]) && chunkY > 0
 						&& (cameraChunkY - chunkY) < verticalDistance
-						&& !floodFillMask[indexInto(chunkX, chunkY - 1, chunkZ, maxDistance)])
-				{
+						&& !floodFillMask[indexInto(chunkX, chunkY - 1, chunkZ, maxDistance)]) {
 					floodFillDeque.addLast(ajustedChunkX);
 					floodFillDeque.addLast(chunkY - 1);
 					floodFillDeque.addLast(ajustedChunkZ);
@@ -224,8 +223,7 @@ public class ChunkMeshesRenderer implements ChunksRenderer {
 
 				if ((sideFrom == -1 || occlusionSides[sideFrom][1])
 						&& LoopingMathHelper.moduloDistance(chunkZ, cameraChunkZ, worldSizeInChunks) < maxDistance
-						&& !floodFillMask[indexInto(chunkX, chunkY, chunkZ + 1, maxDistance)])
-				{
+						&& !floodFillMask[indexInto(chunkX, chunkY, chunkZ + 1, maxDistance)]) {
 					floodFillDeque.addLast(ajustedChunkX);
 					floodFillDeque.addLast(chunkY);
 					floodFillDeque.addLast(ajustedChunkZ + 1);
@@ -233,8 +231,7 @@ public class ChunkMeshesRenderer implements ChunksRenderer {
 				}
 				if ((sideFrom == -1 || occlusionSides[sideFrom][3])
 						&& LoopingMathHelper.moduloDistance(chunkZ, cameraChunkZ, worldSizeInChunks) < maxDistance
-						&& !floodFillMask[indexInto(chunkX, chunkY, chunkZ - 1, maxDistance)])
-				{
+						&& !floodFillMask[indexInto(chunkX, chunkY, chunkZ - 1, maxDistance)]) {
 					floodFillDeque.addLast(ajustedChunkX);
 					floodFillDeque.addLast(chunkY);
 					floodFillDeque.addLast(ajustedChunkZ - 1);
@@ -276,7 +273,8 @@ public class ChunkMeshesRenderer implements ChunksRenderer {
 	@Override
 	public void renderChunks(RenderingInterface renderingInterface) {
 		RenderPass currentPass = renderingInterface.getCurrentPass();
-		List<ChunkRenderCommand> culledChunks = currentPass.name.startsWith("shadow") ? culledChunksShadow : culledChunksNormal;
+		List<ChunkRenderCommand> culledChunks = currentPass.name.startsWith("shadow") ? culledChunksShadow
+				: culledChunksNormal;
 
 		ShadingType shadingType = currentPass.name.startsWith("water") ? ShadingType.LIQUIDS : ShadingType.OPAQUE;
 
@@ -295,8 +293,11 @@ public class ChunkMeshesRenderer implements ChunksRenderer {
 			double distance = renderingInterface.getCamera().getCameraPosition().distance(chunkPos);
 
 			RenderLodLevel lodToUse;
-			
-			lodToUse = distance < Math.max(64, world.getClient().getConfiguration().getIntOption("client.rendering.viewDistance") / 4.0) ? RenderLodLevel.HIGH : RenderLodLevel.LOW;
+
+			lodToUse = distance < Math.max(64,
+					world.getClient().getConfiguration().getIntOption("client.rendering.viewDistance") / 4.0)
+							? RenderLodLevel.HIGH
+							: RenderLodLevel.LOW;
 
 			((ClientChunk) command.chunk).getChunkRenderData().renderPass(renderingInterface, lodToUse, shadingType);
 		}
@@ -343,7 +344,8 @@ public class ChunkMeshesRenderer implements ChunksRenderer {
 				int dz = LoopingMathHelper.moduloDistance(chunk.getChunkZ(), vz, chunk.getWorld().getSizeInChunks());
 				int dy = Math.abs(chunk.getChunkY() - vy);
 
-				int chunksViewDistance = (int) (world.getClient().getConfiguration().getIntOption("client.rendering.viewDistance") / 32);
+				int chunksViewDistance = (int) (world.getClient().getConfiguration()
+						.getIntOption("client.rendering.viewDistance") / 32);
 
 				if (dx <= chunksViewDistance && dz <= chunksViewDistance && dy <= 2)
 					this.chunk.meshUpdater().spawnUpdateTaskIfNeeded();
@@ -375,7 +377,9 @@ public class ChunkMeshesRenderer implements ChunksRenderer {
 
 	@Override
 	public RenderedChunksMask getRenderedChunksMask(CameraInterface camera) {
-		return new RenderedChunksMask(camera, Math.max(2, (int) (world.getClient().getConfiguration().getIntOption("client.rendering.viewDistance") / 32f) - 1), 5);
+		return new RenderedChunksMask(camera, Math.max(2,
+				(int) (world.getClient().getConfiguration().getIntOption("client.rendering.viewDistance") / 32f) - 1),
+				5);
 	}
 
 	public class RenderedChunksMask implements ReadyVoxelMeshesMask {

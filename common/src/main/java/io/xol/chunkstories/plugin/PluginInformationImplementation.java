@@ -34,9 +34,10 @@ import io.xol.chunkstories.api.plugin.commands.PluginCommand;
 import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.content.GameDirectory;
 
-/** Loads the plugin definition from it's Jar file and allows to instanciate it */
-public class PluginInformationImplementation extends URLClassLoader implements PluginInformation
-{
+/**
+ * Loads the plugin definition from it's Jar file and allows to instanciate it
+ */
+public class PluginInformationImplementation extends URLClassLoader implements PluginInformation {
 	private String pluginName;
 	private String authors;
 	private String pluginVersion;
@@ -51,140 +52,126 @@ public class PluginInformationImplementation extends URLClassLoader implements P
 	private final Constructor<? extends ChunkStoriesPlugin> entryPointConstructor;
 
 	@SuppressWarnings("serial")
-	public PluginInformationImplementation(File file, ClassLoader parentLoader) throws PluginLoadException, IOException
-	{
+	public PluginInformationImplementation(File file, ClassLoader parentLoader)
+			throws PluginLoadException, IOException {
 		super(new URL[] { file.toURI().toURL() }, parentLoader);
 
-		//Opens the jar and grabs plugin.info
+		// Opens the jar and grabs plugin.info
 		JarFile jar = new JarFile(file);
-		
+
 		InputStream pluginInfo = getRessourceFromJar(jar, "plugin.info");
-		
-		if(pluginInfo == null)
+
+		if (pluginInfo == null)
 			throw new NotAPluginException(file);
-		
+
 		loadInformation(pluginInfo);
 		jar.close();
 
-		try
-		{
+		try {
 			Class<?> entryPointClassUnchecked = Class.forName(entryPointClassName, true, this);
 
-			//Checks for class fitness as an entry point
+			// Checks for class fitness as an entry point
 			if (!ChunkStoriesPlugin.class.isAssignableFrom(entryPointClassUnchecked))
-				throw new PluginLoadException()
-				{
-					public String getMessage()
-					{
+				throw new PluginLoadException() {
+					public String getMessage() {
 						return "Entry point not implementing ChunkStoriesPlugin or a subtype :" + entryPointClassName;
 					}
 				};
 
-			//Casts
+			// Casts
 			entryPointClass = entryPointClassUnchecked.asSubclass(ChunkStoriesPlugin.class);
 
-			//Determines the plugin type and obtains the suitable constructor
-			if (ClientPlugin.class.isAssignableFrom(entryPointClassUnchecked))
-			{
+			// Determines the plugin type and obtains the suitable constructor
+			if (ClientPlugin.class.isAssignableFrom(entryPointClassUnchecked)) {
 				pluginType = PluginType.CLIENT_ONLY;
 
 				Class<?>[] types = new Class[] { PluginInformation.class, ClientInterface.class };
 				entryPointConstructor = entryPointClass.getConstructor(types);
-			}
-			else if (ServerPlugin.class.isAssignableFrom(entryPointClassUnchecked))
-			{
+			} else if (ServerPlugin.class.isAssignableFrom(entryPointClassUnchecked)) {
 				pluginType = PluginType.MASTER;
 
 				Class<?>[] types = new Class[] { PluginInformation.class, ServerInterface.class };
 				entryPointConstructor = entryPointClass.getConstructor(types);
 			}
-			//If it's not a derivative of either ClientPlugin or ServerPlugin, it's then a UniversalPlugin
-			else
-			{
+			// If it's not a derivative of either ClientPlugin or ServerPlugin, it's then a
+			// UniversalPlugin
+			else {
 				pluginType = PluginType.UNIVERSAL;
 
 				Class<?>[] types = new Class[] { PluginInformation.class, GameContext.class };
 				entryPointConstructor = entryPointClass.getConstructor(types);
 			}
 
-		}
-		catch (ClassNotFoundException e)
-		{
-			throw new PluginLoadException()
-			{
-				public String getMessage()
-				{
+		} catch (ClassNotFoundException e) {
+			throw new PluginLoadException() {
+				public String getMessage() {
 					return "Entry point class not found :" + entryPointClassName;
 				}
 			};
-		}
-		catch (NoSuchMethodException | SecurityException e)
-		{
-			throw new PluginLoadException()
-			{
-				public String getMessage()
-				{
-					return "Suitable constructor for plugin type " + pluginType + " not found in class :" + entryPointClassName;
+		} catch (NoSuchMethodException | SecurityException e) {
+			throw new PluginLoadException() {
+				public String getMessage() {
+					return "Suitable constructor for plugin type " + pluginType + " not found in class :"
+							+ entryPointClassName;
 				}
 			};
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see io.xol.chunkstories.plugin.PluginInformation#getName()
 	 */
 	@Override
-	public String getName()
-	{
+	public String getName() {
 		return this.pluginName;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see io.xol.chunkstories.plugin.PluginInformation#getPluginVersion()
 	 */
 	@Override
-	public String getPluginVersion()
-	{
+	public String getPluginVersion() {
 		return this.pluginVersion;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see io.xol.chunkstories.plugin.PluginInformation#getAuthor()
 	 */
 	@Override
-	public String getAuthor()
-	{
+	public String getAuthor() {
 		return this.authors;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see io.xol.chunkstories.plugin.PluginInformation#getPluginType()
 	 */
 	@Override
-	public PluginType getPluginType()
-	{
+	public PluginType getPluginType() {
 		return pluginType;
 	}
 
-	private void loadInformation(InputStream inputStream) throws PluginInfoException, IOException
-	{
+	private void loadInformation(InputStream inputStream) throws PluginInfoException, IOException {
 		if (inputStream == null)
 			throw new PluginInfoException();
 
 		InputStreamReader ipsr = new InputStreamReader(inputStream, "UTF-8");
 		BufferedReader br = new BufferedReader(ipsr);
 		String line;
-		while ((line = br.readLine()) != null)
-		{
-			if (!line.startsWith("#"))
-			{
-				if (line.contains(": "))
-				{
+		while ((line = br.readLine()) != null) {
+			if (!line.startsWith("#")) {
+				if (line.contains(": ")) {
 					String[] s = line.split(": ");
 					String variable = s[0];
 					String value = s[1];
-					switch (variable)
-					{
+					switch (variable) {
 					default:
 						System.out.println("Unknown plugin variable : " + variable);
 						break;
@@ -214,103 +201,94 @@ public class PluginInformationImplementation extends URLClassLoader implements P
 			}
 		}
 
-		//System.out.println("Loaded info : " + pluginName + " version " + pluginVersion + " by " + authors + " EP:" + entryPoint);
+		// System.out.println("Loaded info : " + pluginName + " version " +
+		// pluginVersion + " by " + authors + " EP:" + entryPoint);
 		br.close();
 	}
 
 	@Override
-	public String toString()
-	{
-		return "[Plugin " + this.pluginType + " | " + this.pluginName + " " + this.pluginVersion + " by " + this.authors + "]";
+	public String toString() {
+		return "[Plugin " + this.pluginType + " | " + this.pluginName + " " + this.pluginVersion + " by " + this.authors
+				+ "]";
 	}
 
-	/* (non-Javadoc)
-	 * @see io.xol.chunkstories.plugin.PluginInformation#createInstance(io.xol.chunkstories.api.GameContext)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see io.xol.chunkstories.plugin.PluginInformation#createInstance(io.xol.
+	 * chunkstories.api.GameContext)
 	 */
 	@Override
 	@SuppressWarnings("serial")
-	public ChunkStoriesPlugin createInstance(GameContext pluginExecutionContext) throws PluginCreationException
-	{
-		try
-		{
-			switch (pluginType)
-			{
+	public ChunkStoriesPlugin createInstance(GameContext pluginExecutionContext) throws PluginCreationException {
+		try {
+			switch (pluginType) {
 			case CLIENT_ONLY:
 				if (!(pluginExecutionContext instanceof ClientInterface))
-					throw new IllegalArgumentException()
-					{
-						public String getMessage()
-						{
+					throw new IllegalArgumentException() {
+						public String getMessage() {
 							return "Attempted to create a clientside-only plugin without using a ClientInterface as a PluginExecutionContext";
 						}
 					};
 
 				ClientInterface clientInterface = (ClientInterface) pluginExecutionContext;
-				return (ClientPlugin)entryPointConstructor.newInstance(new Object[] { this, clientInterface });
+				return (ClientPlugin) entryPointConstructor.newInstance(new Object[] { this, clientInterface });
 			case MASTER:
 				if (!(pluginExecutionContext instanceof ServerInterface))
-					throw new IllegalArgumentException()
-					{
-						public String getMessage()
-						{
+					throw new IllegalArgumentException() {
+						public String getMessage() {
 							return "Attempted to create a serverside-only plugin without using a ServerInterface as a PluginExecutionContext";
 						}
 					};
 
 				ServerInterface serverInterface = (ServerInterface) pluginExecutionContext;
-				return (ServerPlugin)entryPointConstructor.newInstance(new Object[] { this, serverInterface });
+				return (ServerPlugin) entryPointConstructor.newInstance(new Object[] { this, serverInterface });
 			default:
-				return (ChunkStoriesPlugin)entryPointConstructor.newInstance(new Object[] { this, pluginExecutionContext });
+				return (ChunkStoriesPlugin) entryPointConstructor
+						.newInstance(new Object[] { this, pluginExecutionContext });
 			}
 		}
-		//Catch-all for plugin creation failure
-		catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
-		{
+		// Catch-all for plugin creation failure
+		catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+				| InvocationTargetException e) {
 			e.printStackTrace();
-			throw new PluginCreationException()
-			{
-				public String getMessage()
-				{
+			throw new PluginCreationException() {
+				public String getMessage() {
 					return "Failed to call constructor for:" + entryPointClassName;
 				}
 			};
 		}
 	}
 
-	private InputStream getRessourceFromJar(JarFile jar, String ressource)
-	{
-		try
-		{
+	private InputStream getRessourceFromJar(JarFile jar, String ressource) {
+		try {
 			JarEntry entry = jar.getJarEntry(ressource);
 			return jar.getInputStream(entry);
-		}
-		catch (Exception e)
-		{
-			//System.out.println("Unable to get ressource '" + ressource + "' from jar '" + jar + "'");
-			//e.printStackTrace();
+		} catch (Exception e) {
+			// System.out.println("Unable to get ressource '" + ressource + "' from jar '" +
+			// jar + "'");
+			// e.printStackTrace();
 		}
 		return null;
 	}
 
 	@Override
-	protected Class<?> findClass(String name) throws ClassNotFoundException
-	{
-		//System.out.println("Looking for class "+name + " in plugin "+jar);
+	protected Class<?> findClass(String name) throws ClassNotFoundException {
+		// System.out.println("Looking for class "+name + " in plugin "+jar);
 		return super.findClass(name);
 	}
 
 	@Override
-	public Collection<PluginCommand> getCommands()
-	{
+	public Collection<PluginCommand> getCommands() {
 		return commands;
 	}
 
 	@Override
 	public File getDirectory() {
-		
-		File file = new File(GameDirectory.getGameFolderPath()+"/"+this.getName()+"/");
+
+		File file = new File(GameDirectory.getGameFolderPath() + "/" + this.getName() + "/");
 		file.mkdirs();
-		
+
 		return file;
 	}
 }

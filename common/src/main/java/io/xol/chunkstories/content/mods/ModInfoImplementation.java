@@ -16,59 +16,52 @@ import io.xol.chunkstories.api.content.mods.ModInfo;
 import io.xol.chunkstories.api.exceptions.content.mods.MalformedModTxtException;
 import io.xol.chunkstories.content.GenericConfigurable;
 
-public class ModInfoImplementation extends GenericConfigurable implements ModInfo
-{
+public class ModInfoImplementation extends GenericConfigurable implements ModInfo {
 	private Mod mod;
-	
+
 	private final String internalName;
 	private String name;
 	private String version;// = "undefined";
 	private String description;// = "No description given";
-	
-	public Mod getMod()
-	{
+
+	public Mod getMod() {
 		return mod;
 	}
-	
+
 	@Override
-	public String getName()
-	{
+	public String getName() {
 		return name;
 	}
-	
+
 	@Override
-	public String getVersion()
-	{
+	public String getVersion() {
 		return version;
 	}
 
 	@Override
-	public String getDescription()
-	{
+	public String getDescription() {
 		return description;
 	}
-	
-	public ModInfoImplementation(Mod mod, InputStream inputStream) throws MalformedModTxtException
-	{
+
+	public ModInfoImplementation(Mod mod, InputStream inputStream) throws MalformedModTxtException {
 		super();
-		
-		if(inputStream == null)
+
+		if (inputStream == null)
 			throw new MalformedModTxtException(this);
-		
+
 		try {
 			load(new BufferedReader(new InputStreamReader(inputStream)));
-		}
-		catch(IOException e) {
+		} catch (IOException e) {
 			throw new MalformedModTxtException(this);
 		}
-		
+
 		this.internalName = this.resolveProperty("internalName", null);
 		this.name = this.resolveProperty("name", "<internalName>");
 		this.version = this.resolveProperty("version", "1.0");
 		this.description = this.resolveProperty("description", "Please provide a description in your mod.txt");
 
-		//Requires a name to be set, at least
-		if(this.internalName == null)
+		// Requires a name to be set, at least
+		if (this.internalName == null)
 			throw new MalformedModTxtException(this);
 	}
 
