@@ -10,11 +10,11 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.client.LocalPlayer;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.components.EntityHealth;
-import io.xol.chunkstories.api.entity.components.EntityInventory;
-import io.xol.chunkstories.api.entity.components.EntitySelectedItem;
 import io.xol.chunkstories.api.entity.traits.TraitVoxelSelection;
 import io.xol.chunkstories.api.entity.traits.TraitWhenControlled;
+import io.xol.chunkstories.api.entity.traits.serializable.TraitHealth;
+import io.xol.chunkstories.api.entity.traits.serializable.TraitInventory;
+import io.xol.chunkstories.api.entity.traits.serializable.TraitSelectedItem;
 import io.xol.chunkstories.api.events.player.PlayerLogoutEvent;
 import io.xol.chunkstories.api.events.rendering.CameraSetupEvent;
 import io.xol.chunkstories.api.gui.Layer;
@@ -102,7 +102,7 @@ public class Ingame extends Layer {
 		if ((playerEntity == null || playerEntity != getPlayer().getControlledEntity()) && getPlayer().getControlledEntity() != null) {
 			playerEntity = getPlayer().getControlledEntity();
 			
-			EntityInventory inv = playerEntity.components.get(EntityInventory.class);
+			TraitInventory inv = playerEntity.traits.get(TraitInventory.class);
 			if(inv != null)
 				inventoryBarDrawer = new InventoryGridRenderer(inv);
 			else
@@ -110,7 +110,7 @@ public class Ingame extends Layer {
 		}
 		
 		//TODO MOVE MOVE MOVE
-		if ((playerEntity != null && playerEntity.components.tryWithBoolean(EntityHealth.class, eh -> eh.isDead())) && !(gameWindow.getLayer() instanceof DeathScreen))
+		if ((playerEntity != null && playerEntity.traits.tryWithBoolean(TraitHealth.class, eh -> eh.isDead())) && !(gameWindow.getLayer() instanceof DeathScreen))
 			gameWindow.setLayer(new DeathScreen(gameWindow, this));
 
 		// Update the player
@@ -237,13 +237,13 @@ public class Ingame extends Layer {
 			requestedInventorySlot--;
 
 			if(playerEntity != null) {
-				EntityInventory playerInventory = playerEntity.components.get(EntityInventory.class);
+				TraitInventory playerInventory = playerEntity.traits.get(TraitInventory.class);
 				if(playerInventory == null)
 					return false;
 				
 				//java lambda nonsense :(
 				final int passedrequestedInventorySlot = requestedInventorySlot;
-				return playerEntity.components.tryWithBoolean(EntitySelectedItem.class, esi -> {
+				return playerEntity.traits.tryWithBoolean(TraitSelectedItem.class, esi -> {
 					//Do not accept request to select non-existent inventories slots
 					int slot = passedrequestedInventorySlot;
 					
@@ -268,11 +268,11 @@ public class Ingame extends Layer {
 			MouseScroll ms = (MouseScroll)input;
 			
 			if (playerEntity != null) {
-				EntityInventory playerInventory = playerEntity.components.get(EntityInventory.class);
+				TraitInventory playerInventory = playerEntity.traits.get(TraitInventory.class);
 				if(playerInventory == null)
 					return false;
 				
-				playerEntity.components.with(EntitySelectedItem.class, esi -> {
+				playerEntity.traits.with(TraitSelectedItem.class, esi -> {
 					ItemPile selected = null;
 					int selectedInventorySlot = esi.getSelectedSlot();
 					int originalSlot = selectedInventorySlot;

@@ -7,7 +7,10 @@
 package io.xol.chunkstories.server;
 
 import static org.fusesource.jansi.Ansi.ansi;
-import static org.fusesource.jansi.Ansi.Color.*;
+import static org.fusesource.jansi.Ansi.Color.BLACK;
+import static org.fusesource.jansi.Ansi.Color.CYAN;
+import static org.fusesource.jansi.Ansi.Color.RED;
+import static org.fusesource.jansi.Ansi.Color.WHITE;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -31,9 +34,9 @@ import io.xol.chunkstories.api.server.UserPrivileges;
 import io.xol.chunkstories.api.util.ColorsTools;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.workers.Tasks;
+import io.xol.chunkstories.content.GameContentStore;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.plugin.DefaultPluginManager;
-import io.xol.chunkstories.content.GameContentStore;
 import io.xol.chunkstories.server.commands.DedicatedServerConsole;
 import io.xol.chunkstories.server.commands.InstallServerCommands;
 import io.xol.chunkstories.server.net.ClientsManager;

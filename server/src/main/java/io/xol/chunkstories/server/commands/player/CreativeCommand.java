@@ -7,7 +7,7 @@
 package io.xol.chunkstories.server.commands.player;
 
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.components.EntityCreativeMode;
+import io.xol.chunkstories.api.entity.traits.serializable.TraitCreativeMode;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
@@ -39,7 +39,7 @@ public class CreativeCommand extends ServerCommandBasic {
 		}
 		
 		Entity entity = player.getControlledEntity();
-		if(!entity.components.tryWithBoolean(EntityCreativeMode.class, fm -> {
+		if(!entity.traits.tryWithBoolean(TraitCreativeMode.class, fm -> {
 			boolean state = fm.get();
 			state = !state;
 			player.sendMessage("Creative mode set to: " + state);

@@ -6,15 +6,15 @@
 
 package io.xol.chunkstories.server.net.vanillasockets;
 
-import io.xol.chunkstories.server.DedicatedServer;
-import io.xol.chunkstories.server.net.ClientConnection;
-import io.xol.chunkstories.server.net.ClientsManager;
-
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import io.xol.chunkstories.server.DedicatedServer;
+import io.xol.chunkstories.server.net.ClientConnection;
+import io.xol.chunkstories.server.net.ClientsManager;
 
 
 

@@ -103,9 +103,9 @@ public class EntityDefinitionsStore implements EntityDefinitions
 	}
 	
 	@Override
-	public EntityDefinition getEntityDefinition(String entityName)
+	public EntityDefinition getEntityDefinition(String TraitName)
 	{
-		return EntityDefinitionsByName.get(entityName);
+		return EntityDefinitionsByName.get(TraitName);
 	}
 
 	@Override

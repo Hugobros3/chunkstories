@@ -6,11 +6,21 @@
 
 package io.xol.chunkstories.server.player;
 
+import java.util.Iterator;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.joml.Vector3d;
+
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.components.EntityController;
-import io.xol.chunkstories.api.entity.components.EntityInventory;
+import io.xol.chunkstories.api.entity.traits.serializable.TraitController;
+import io.xol.chunkstories.api.entity.traits.serializable.TraitInventory;
+import io.xol.chunkstories.api.entity.traits.serializable.TraitSerializable;
+import io.xol.chunkstories.api.input.InputsManager;
+import io.xol.chunkstories.api.item.inventory.Inventory;
+import io.xol.chunkstories.api.math.LoopingMathHelper;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.packets.PacketOpenInventory;
 import io.xol.chunkstories.api.particles.ParticlesManager;
@@ -20,9 +30,6 @@ import io.xol.chunkstories.api.server.ServerInterface;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.util.ColorsTools;
 import io.xol.chunkstories.api.world.WorldMaster;
-import io.xol.chunkstories.api.input.InputsManager;
-import io.xol.chunkstories.api.item.inventory.Inventory;
-import io.xol.chunkstories.api.math.LoopingMathHelper;
 import io.xol.chunkstories.entity.SerializedEntityFile;
 import io.xol.chunkstories.server.ServerInputsManager;
 import io.xol.chunkstories.server.net.ClientConnection;
@@ -31,12 +38,6 @@ import io.xol.chunkstories.server.propagation.VirtualServerParticlesManager.Serv
 import io.xol.chunkstories.sound.VirtualSoundManager.ServerPlayerVirtualSoundManager;
 import io.xol.chunkstories.util.config.OldStyleConfigFile;
 import io.xol.chunkstories.world.WorldServer;
-
-import java.util.Iterator;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.joml.Vector3d;
 
 public class ServerPlayer implements RemotePlayer {
 	protected final ClientConnection connection;
@@ -159,14 +160,14 @@ public class ServerPlayer implements RemotePlayer {
 	@Override
 	public boolean setControlledEntity(Entity entity) {
 		//TODO lock for safety
-		EntityController ec = entity != null ? entity.components.get(EntityController.class) : null;
+		TraitController ec = entity != null ? entity.traits.get(TraitController.class) : null;
 		if (entity != null && ec != null) {
 			this.subscribe(entity);
 
 			ec.setController(this);
 			controlledEntity = entity;
 		} else if (entity == null && controlledEntity != null) {
-			controlledEntity.components.with(EntityController.class, ec2 -> ec2.setController(null));
+			controlledEntity.traits.with(TraitController.class, ec2 -> ec2.setController(null));
 			controlledEntity = null;
 		}
 
@@ -177,8 +178,8 @@ public class ServerPlayer implements RemotePlayer {
 	public void openInventory(Inventory inventory) {
 		Entity entity = this.getControlledEntity();
 		if (inventory.isAccessibleTo(entity)) {
-			if (inventory instanceof EntityInventory) {
-				EntityInventory i = (EntityInventory) inventory;
+			if (inventory instanceof TraitInventory) {
+				TraitInventory i = (TraitInventory) inventory;
 				i.pushComponent(this);
 			}
 
@@ -198,12 +199,12 @@ public class ServerPlayer implements RemotePlayer {
 
 		// Cache (idk if HotSpot makes it redudant but whatever)
 		double world_size = controlledEntity.getWorld().getWorldSize();
-		Location controlledEntityLocation = controlledEntity.getLocation();
+		Location controlledTraitLocation = controlledEntity.getLocation();
 
 		double ENTITY_VISIBILITY_SIZE = 192;
 
 		Iterator<Entity> inRangeEntitiesIterator = controlledEntity.getWorld().getEntitiesInBox(
-				controlledEntityLocation,
+				controlledTraitLocation,
 				new Vector3d(ENTITY_VISIBILITY_SIZE, ENTITY_VISIBILITY_SIZE, ENTITY_VISIBILITY_SIZE));
 		while (inRangeEntitiesIterator.hasNext()) {
 			Entity e = inRangeEntitiesIterator.next();
@@ -225,9 +226,9 @@ public class ServerPlayer implements RemotePlayer {
 			Location loc = e.getLocation();
 
 			// Distance calculations
-			double dx = LoopingMathHelper.moduloDistance(controlledEntityLocation.x(), loc.x(), world_size);
-			double dy = Math.abs(controlledEntityLocation.y() - loc.y());
-			double dz = LoopingMathHelper.moduloDistance(controlledEntityLocation.z(), loc.z(), world_size);
+			double dx = LoopingMathHelper.moduloDistance(controlledTraitLocation.x(), loc.x(), world_size);
+			double dy = Math.abs(controlledTraitLocation.y() - loc.y());
+			double dz = LoopingMathHelper.moduloDistance(controlledTraitLocation.z(), loc.z(), world_size);
 			boolean inRange = (dx < ENTITY_VISIBILITY_SIZE && dz < ENTITY_VISIBILITY_SIZE
 					&& dy < ENTITY_VISIBILITY_SIZE);
 
@@ -252,7 +253,7 @@ public class ServerPlayer implements RemotePlayer {
 			entity.subscribers.register(this);
 
 			// Only the server should ever push all components to a client
-			entity.components.all().forEach(c -> c.pushComponent(this));
+			entity.traits.all().forEach(c -> {if(c instanceof TraitSerializable) ((TraitSerializable) c).pushComponent(this); });
 			return true;
 		}
 		return false;
@@ -276,10 +277,10 @@ public class ServerPlayer implements RemotePlayer {
 		while (iterator.hasNext()) {
 			Entity entity = iterator.next();
 			// If one of the entities is controllable ...
-			entity.components.with(EntityController.class, ec -> {
-				Controller entityController = ec.getController();
+			entity.traits.with(TraitController.class, ec -> {
+				Controller TraitController = ec.getController();
 				// If said entity is controlled by this subscriber/player
-				if (entityController == this) {
+				if (TraitController == this) {
 					// Set the controller to null
 					ec.setController(null);
 				}
@@ -360,14 +361,14 @@ public class ServerPlayer implements RemotePlayer {
 
 		if (controlledEntity != null) {
 			// Useless, kept for admin easyness, scripts, whatnot
-			Location controlledEntityLocation = controlledEntity.getLocation();
+			Location controlledTraitLocation = controlledEntity.getLocation();
 
 			// Safely assumes as a SERVER the world will be master ;)
-			WorldMaster world = (WorldMaster) controlledEntityLocation.getWorld();
+			WorldMaster world = (WorldMaster) controlledTraitLocation.getWorld();
 
-			playerDataFile.setDouble("posX", controlledEntityLocation.x());
-			playerDataFile.setDouble("posY", controlledEntityLocation.y());
-			playerDataFile.setDouble("posZ", controlledEntityLocation.z());
+			playerDataFile.setDouble("posX", controlledTraitLocation.x());
+			playerDataFile.setDouble("posY", controlledTraitLocation.y());
+			playerDataFile.setDouble("posZ", controlledTraitLocation.z());
 			playerDataFile.setString("world", world.getWorldInfo().getInternalName());
 
 			// Serializes the whole player entity !!!

@@ -7,7 +7,7 @@
 package io.xol.chunkstories.server.commands.player;
 
 import io.xol.chunkstories.api.content.Content;
-import io.xol.chunkstories.api.entity.components.EntityInventory;
+import io.xol.chunkstories.api.entity.traits.serializable.TraitInventory;
 import io.xol.chunkstories.api.item.Item;
 import io.xol.chunkstories.api.item.ItemDefinition;
 import io.xol.chunkstories.api.item.ItemVoxel;
@@ -106,7 +106,7 @@ public class GiveCommand extends ServerCommandBasic {
 		final int amountFinal = amount;
 		final Player to2 = to;
 		
-		to.getControlledEntity().components.with(EntityInventory.class, ei -> {
+		to.getControlledEntity().traits.with(TraitInventory.class, ei -> {
 			ei.addItemPile(itemPile);
 			player.sendMessage("#FF969BGave " + (amountFinal > 1 ? amountFinal + "x " : "" ) + "#4CFF00" + itemPile.getItem().getName() + " #FF969Bto " + to2.getDisplayName());
 		});

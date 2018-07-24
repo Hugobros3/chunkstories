@@ -23,8 +23,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.lwjgl.system.MemoryUtil;
 
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.components.EntityController;
 import io.xol.chunkstories.api.entity.traits.TraitDontSave;
+import io.xol.chunkstories.api.entity.traits.serializable.TraitController;
 import io.xol.chunkstories.api.server.RemotePlayer;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.util.concurrency.Fence;
@@ -248,7 +248,7 @@ public class ChunkHolderImplementation implements ChunkHolder
 		while (i.hasNext())
 		{
 			Entity entity = i.next();
-			if(entity.components.tryWith(EntityController.class, ec -> ec.getController()) != null) {
+			if(entity.traits.tryWith(TraitController.class, ec -> ec.getController()) != null) {
 				continue; // give grace to controlled entities
 				//TODO this is sloppy!
 			} else {
