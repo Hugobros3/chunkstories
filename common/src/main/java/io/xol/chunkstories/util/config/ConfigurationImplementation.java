@@ -75,7 +75,7 @@ public class ConfigurationImplementation implements Configuration {
 			readOptionsDefinitions(f);
 		}
 
-		options.values().forEach(o -> System.out.println(o.getName()));
+		//options.values().forEach(o -> System.out.println(o.getName()));
 
 		bake();
 	}
@@ -147,7 +147,7 @@ public class ConfigurationImplementation implements Configuration {
 					Option option = (Option) this.getOption(line.split("=")[0]);
 					if (option != null) {
 						option.trySetting(line.split("=")[1]);
-						System.out.println("set " + option.getName() + "to " + line.split("=")[1]);
+						//System.out.println("set " + option.getName() + "to " + line.split("=")[1]);
 					}
 				}
 			}

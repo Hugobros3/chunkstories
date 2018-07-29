@@ -59,7 +59,7 @@ public class ForeignCodeClassLoader extends URLClassLoader {
 						if (className.contains("$"))
 							continue;
 
-						logger.debug("Found class " + className + " in jarfile, loading it...");
+						//logger.debug("Found class " + className + " in jarfile, loading it...");
 
 						try {
 							// OpenJDK weirdness: Unlike Oracle's implementation, OpenJDK loads the

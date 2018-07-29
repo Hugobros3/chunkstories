@@ -107,7 +107,7 @@ public class ItemDefinitionImplementation extends GenericNamedConfigurable imple
 			ItemRenderer customItemRenderer = sampleItem.getCustomItemRenderer(defaultItemRenderer);
 
 			this.itemRenderer = customItemRenderer == null ? defaultItemRenderer : customItemRenderer;
-			this.store().logger().debug("Initialized itemRenderer to " + this.itemRenderer);
+			//this.store().logger().debug("Initialized itemRenderer to " + this.itemRenderer);
 		}
 		// There are no Item renderers on a server !
 		else

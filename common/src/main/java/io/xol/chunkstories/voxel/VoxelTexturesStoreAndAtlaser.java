@@ -91,12 +91,11 @@ public class VoxelTexturesStoreAndAtlaser implements ClientContent.ClientVoxels.
 					String name = entry.getName().replace("./voxels/textures/", "");
 
 					f = entry.topInstance();
-					if (f.getName().endsWith(".png")) // For now only PNG is supported TODO: .hdr and more ?
-					{
+					// For now only PNG is supported TODO: .hdr and more ?
+					if (f.getName().endsWith(".png")) {
 						String textureName = name.replace(".png", "").replace("/", ".").replace("\\", ".");
-						if (textureName.endsWith("_normal") || textureName.endsWith("_roughness")
-								|| textureName.endsWith("_metalness") || textureName.endsWith("_n")
-								|| textureName.endsWith("_r") || textureName.endsWith("_m")) {
+						if (textureName.endsWith("_normal") || textureName.endsWith("_roughness") || textureName.endsWith("_metalness")
+								|| textureName.endsWith("_n") || textureName.endsWith("_r") || textureName.endsWith("_m")) {
 							// Don't create entries for complementary textures!
 							continue;
 						}
@@ -197,10 +196,8 @@ public class VoxelTexturesStoreAndAtlaser implements ClientContent.ClientVoxels.
 							{
 								boolean usedAlready = false;
 								// Not pretty loops that do clamped space checks
-								for (int i = 0; (i < voxelTexture.imageFileDimensions / 16
-										&& a + i < sizeRequired / 16); i++)
-									for (int j = 0; (j < voxelTexture.imageFileDimensions / 16
-											&& b + j < sizeRequired / 16); j++)
+								for (int i = 0; (i < voxelTexture.imageFileDimensions / 16 && a + i < sizeRequired / 16); i++)
+									for (int j = 0; (j < voxelTexture.imageFileDimensions / 16 && b + j < sizeRequired / 16); j++)
 										if (used[a + i][b + j] == true)
 											usedAlready = true;
 
@@ -211,38 +208,29 @@ public class VoxelTexturesStoreAndAtlaser implements ClientContent.ClientVoxels.
 									voxelTexture.setAtlasT(spotY * BLOCK_ATLAS_FACTOR);
 									voxelTexture.setAtlasOffset(voxelTexture.imageFileDimensions * BLOCK_ATLAS_FACTOR);
 									foundSpot = true;
-									for (int i = 0; (i < voxelTexture.imageFileDimensions / 16
-											&& a + i < sizeRequired / 16); i++)
-										for (int j = 0; (j < voxelTexture.imageFileDimensions / 16
-												&& b + j < sizeRequired / 16); j++)
+									for (int i = 0; (i < voxelTexture.imageFileDimensions / 16 && a + i < sizeRequired / 16); i++)
+										for (int j = 0; (j < voxelTexture.imageFileDimensions / 16 && b + j < sizeRequired / 16); j++)
 											used[a + i][b + j] = true;
 								}
 							}
 						}
 					if (!foundSpot) {
-						System.out.println(
-								"Failed to find a space to place the texture in. Retrying with a larger atlas.");
+						this.logger().warn("Failed to find a space to place the texture in. Retrying with a larger atlas.");
 						loadedOK = false;
 						break;
 					}
 
 					String assetName = voxelTexture.getAsset().getName();
-					String strippedAssetName = assetName.substring(0, assetName.length() - ".png".length()); // Removes
-																												// the
-																												// suffix,
-																												// to
-																												// upgrade
-																												// later
-					System.out.println("Stripped asset name : " + strippedAssetName);
+
+					// Removes the file extension
+					String strippedAssetName = assetName.substring(0, assetName.length() - ".png".length());
 
 					try {
-						tileAlbedoBuffer = ImageIO
-								.read(content.modsManager().getAsset(strippedAssetName + ".png").read());
+						tileAlbedoBuffer = ImageIO.read(content.modsManager().getAsset(strippedAssetName + ".png").read());
 					} catch (NullPointerException e) {
 						System.out.println("./voxels/textures/" + voxelTexture.getName() + ".png");
 						throw e;
 					}
-					// imageBuffer = ImageIO.read(GameContent.getTextureFileLocation());
 
 					float alphaTotal = 0;
 					int nonNullPixels = 0;
@@ -288,8 +276,7 @@ public class VoxelTexturesStoreAndAtlaser implements ClientContent.ClientVoxels.
 					tileNormalBuffer = ImageIO.read(normalMap.read());
 					for (int x = 0; x < voxelTexture.imageFileDimensions; x++) {
 						for (int y = 0; y < voxelTexture.imageFileDimensions; y++) {
-							int rgb = tileNormalBuffer.getRGB(x % tileNormalBuffer.getWidth(),
-									y % tileNormalBuffer.getHeight());
+							int rgb = tileNormalBuffer.getRGB(x % tileNormalBuffer.getWidth(), y % tileNormalBuffer.getHeight());
 							normalTextureImage.setRGB(spotX + x, spotY + y, rgb);
 						}
 					}
@@ -312,10 +299,10 @@ public class VoxelTexturesStoreAndAtlaser implements ClientContent.ClientVoxels.
 
 					for (int x = 0; x < voxelTexture.imageFileDimensions; x++) {
 						for (int y = 0; y < voxelTexture.imageFileDimensions; y++) {
-							int roughnessInt = (tileRoughnessBuffer.getRGB(x % tileRoughnessBuffer.getWidth(),
-									y % tileRoughnessBuffer.getHeight()) & 0xFF0000) >> 16;
-							int metalnessInt = (tileMetalnessBuffer.getRGB(x % tileMetalnessBuffer.getWidth(),
-									y % tileMetalnessBuffer.getHeight()) & 0xFF0000) >> 16;
+							int roughnessInt = (tileRoughnessBuffer.getRGB(x % tileRoughnessBuffer.getWidth(), y % tileRoughnessBuffer.getHeight())
+									& 0xFF0000) >> 16;
+							int metalnessInt = (tileMetalnessBuffer.getRGB(x % tileMetalnessBuffer.getWidth(), y % tileMetalnessBuffer.getHeight())
+									& 0xFF0000) >> 16;
 
 							float roughness = roughnessInt / 255f;
 							float metalness = metalnessInt / 255f;
@@ -346,6 +333,8 @@ public class VoxelTexturesStoreAndAtlaser implements ClientContent.ClientVoxels.
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		//this.texMap.entrySet().forEach(entry -> System.out.println("Available voxel texture: "+entry.getValue().getName() + " as "+entry.getKey()));
 	}
 
 	private void readTexturesMeta(Asset asset) {
@@ -364,8 +353,7 @@ public class VoxelTexturesStoreAndAtlaser implements ClientContent.ClientVoxels.
 				} else {
 					if (line.startsWith("texture")) {
 						if (vt != null)
-							logger.warn(
-									"Parse error in file " + asset + ", line " + ln + ", unexpected 'texture' token.");
+							logger.warn("Parse error in file " + asset + ", line " + ln + ", unexpected 'texture' token.");
 						String splitted[] = line.split(" ");
 						String name = splitted[1];
 
@@ -386,8 +374,7 @@ public class VoxelTexturesStoreAndAtlaser implements ClientContent.ClientVoxels.
 								vt.setTextureScale(Integer.parseInt(parameterValue));
 								break;
 							default:
-								logger.warn("Parse error in file " + asset + ", line " + ln + ", unknown parameter '"
-										+ parameterName + "'");
+								logger.warn("Parse error in file " + asset + ", line " + ln + ", unknown parameter '" + parameterName + "'");
 								break;
 							}
 						} else
@@ -416,12 +403,9 @@ public class VoxelTexturesStoreAndAtlaser implements ClientContent.ClientVoxels.
 	}
 
 	public VoxelTexture getVoxelTexture(String textureName) {
-		// textureName = "kek";
-
 		if (texMap.containsKey(textureName))
 			return texMap.get(textureName);
 		return texMap.get("notex");
-		// return new VoxelTextureAtlased(null, "notex");
 	}
 
 	public Iterator<VoxelTexture> all() {
@@ -453,8 +437,7 @@ public class VoxelTexturesStoreAndAtlaser implements ClientContent.ClientVoxels.
 
 		buffer.flip();
 
-		Texture2D texture = ((ClientContent) parent().parent()).textures().newTexture2D(TextureFormat.RGBA_8BPP,
-				image.getWidth(), image.getHeight());
+		Texture2D texture = ((ClientContent) parent().parent()).textures().newTexture2D(TextureFormat.RGBA_8BPP, image.getWidth(), image.getHeight());
 		texture.uploadTextureData(image.getWidth(), image.getHeight(), buffer);
 
 		return texture;
