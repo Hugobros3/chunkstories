@@ -11,6 +11,7 @@ import static org.lwjgl.glfw.GLFW.glfwGetKeyName;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.xol.chunkstories.client.ClientImplementation;
 import org.joml.Vector4f;
 
 import io.xol.chunkstories.api.content.Content.LocalizationManager;
@@ -26,7 +27,6 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.util.Configuration.Option;
 import io.xol.chunkstories.api.util.Configuration.OptionBoolean;
-import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.input.lwjgl3.Lwjgl3KeyBind.Lwjgl3KeyBindOption;
 import io.xol.chunkstories.renderer.opengl.util.ObjectRenderer;
 import io.xol.chunkstories.util.config.OptionChoiceImplementation;
@@ -179,8 +179,8 @@ public class OptionsScreen extends Layer {
 
 			this.text = locMgr.getLocalizedString(option.getName()) + " : " + String.format("%." + 3 + "G", scaled);// Keyboard.getKeyName(Integer.parseInt(value));
 
-			String localizedText = Client.getInstance().getContent().localization().localize(text);
-			int textWidth = Client.getInstance().getContent().fonts().defaultFont().getWidth(localizedText) * scale();
+			String localizedText = ClientImplementation.getInstance().getContent().localization().localize(text);
+			int textWidth = ClientImplementation.getInstance().getContent().fonts().defaultFont().getWidth(localizedText) * scale();
 			if (width < 0) {
 				width = textWidth;
 			}
@@ -223,13 +223,13 @@ public class OptionsScreen extends Layer {
 	public OptionsScreen(GameWindow scene, Layer parent) {
 		super(scene, parent);
 
-		locMgr = Client.getInstance().getContent().localization();
+		locMgr = ClientImplementation.getInstance().getContent().localization();
 
 		exitButton.setAction(new Runnable() {
 
 			@Override
 			public void run() {
-				Client.getInstance().getConfiguration().save();
+				ClientImplementation.getInstance().getConfiguration().save();
 				gameWindow.setLayer(parentLayer);
 			}
 
@@ -370,7 +370,7 @@ public class OptionsScreen extends Layer {
 				renderer.getFontRenderer().getFont("LiberationSans-Regular", 11),
 				renderer.getWindow().getWidth() / 2 - optionsPanelSize / 2 + 16 * this.getGuiScale(),
 				renderer.getWindow().getHeight() - 32 * this.getGuiScale(),
-				Client.getInstance().getContent().localization().getLocalizedString("options.title"), 3, 3,
+				ClientImplementation.getInstance().getContent().localization().getLocalizedString("options.title"), 3, 3,
 				new Vector4f(1));
 
 		exitButton.setPosition(8, 8);
@@ -380,7 +380,7 @@ public class OptionsScreen extends Layer {
 	@Override
 	public boolean handleInput(Input input) {
 		if (input.getName().equals("exit")) {
-			Client.getInstance().getConfiguration().save();
+			ClientImplementation.getInstance().getConfiguration().save();
 			gameWindow.setLayer(parentLayer);
 			return true;
 		} else if (input instanceof MouseButton) {

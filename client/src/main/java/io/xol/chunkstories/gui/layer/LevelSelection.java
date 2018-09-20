@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.xol.chunkstories.client.ClientImplementation;
 import org.joml.Vector4f;
 
 import io.xol.chunkstories.api.gui.Layer;
@@ -22,7 +23,6 @@ import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
-import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.renderer.opengl.util.ObjectRenderer;
 import io.xol.chunkstories.world.WorldClientLocal;
@@ -76,7 +76,7 @@ public class LevelSelection extends Layer {
 					 * WorldInfoImplementation(infoTxt, f.getName())); reader.close();
 					 */
 				} catch (IOException e) {
-					Client.getInstance().logger().error("Could not load world declaration file " + infoTxt);
+					ClientImplementation.getInstance().logger().error("Could not load world declaration file " + infoTxt);
 				}
 			}
 		}
@@ -86,7 +86,7 @@ public class LevelSelection extends Layer {
 				@Override
 				public void run() {
 					try {
-						Client.getInstance().changeWorld(new WorldClientLocal(Client.getInstance(), worldButton.info));
+						ClientImplementation.getInstance().changeWorld(new WorldClientLocal(ClientImplementation.getInstance(), worldButton.info));
 					} catch (WorldLoadingException e) {
 						gameWindow.getClient().exitToMainMenu(e.getMessage());
 					}

@@ -6,6 +6,7 @@
 
 package io.xol.chunkstories.gui.layer.ingame;
 
+import io.xol.chunkstories.client.ClientImplementation;
 import org.joml.Vector4f;
 
 import io.xol.chunkstories.api.gui.Layer;
@@ -13,7 +14,6 @@ import io.xol.chunkstories.api.gui.elements.BaseButton;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
-import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.net.ConnectionSequence;
 
 /** GUI overlay that tells you about the progress of connecting to a server */
@@ -29,7 +29,7 @@ public class ConnectionOverlay extends Layer {
 		this.exitButton.setAction(new Runnable() {
 			@Override
 			public void run() {
-				Client.getInstance().exitToMainMenu();
+				ClientImplementation.getInstance().exitToMainMenu();
 			}
 		});
 
@@ -68,7 +68,7 @@ public class ConnectionOverlay extends Layer {
 
 		String fail = connectionSequence.wasAborted();
 		if (fail != null)
-			Client.getInstance().exitToMainMenu(fail);
+			ClientImplementation.getInstance().exitToMainMenu(fail);
 	}
 
 	public void setParentScene(Layer layer) {

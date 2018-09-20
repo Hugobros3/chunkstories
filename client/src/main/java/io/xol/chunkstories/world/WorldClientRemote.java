@@ -19,7 +19,7 @@ import io.xol.chunkstories.api.net.PacketWorld;
 import io.xol.chunkstories.api.net.RemoteServer;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.world.WorldClientNetworkedRemote;
-import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.client.ClientImplementation;
 import io.xol.chunkstories.client.ClientSlavePluginManager;
 import io.xol.chunkstories.client.net.ServerConnection;
 import io.xol.chunkstories.net.LogicalPacketDatagram;
@@ -35,8 +35,8 @@ public class WorldClientRemote extends WorldClientCommon implements WorldClientN
 
 	private final OnlineContentTranslator translator;
 
-	public WorldClientRemote(Client client, WorldInfoImplementation info, OnlineContentTranslator translator,
-			ServerConnection connection) throws WorldLoadingException {
+	public WorldClientRemote(ClientImplementation client, WorldInfoImplementation info, OnlineContentTranslator translator,
+                             ServerConnection connection) throws WorldLoadingException {
 		super(client, info, translator);
 
 		this.connection = connection;
@@ -49,7 +49,7 @@ public class WorldClientRemote extends WorldClientCommon implements WorldClientN
 		ioHandler = mpIOHandler;
 		ioHandler.start();
 
-		ClientSlavePluginManager pluginManager = new ClientSlavePluginManager(Client.getInstance());
+		ClientSlavePluginManager pluginManager = new ClientSlavePluginManager(ClientImplementation.getInstance());
 		client.setClientPluginManager(pluginManager);
 	}
 
@@ -68,7 +68,7 @@ public class WorldClientRemote extends WorldClientCommon implements WorldClientN
 
 	@Override
 	public SoundManager getSoundManager() {
-		return Client.getInstance().getSoundManager();
+		return ClientImplementation.getInstance().getSoundManager();
 	}
 
 	@Override

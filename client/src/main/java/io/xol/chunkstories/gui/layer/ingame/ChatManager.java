@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
+import io.xol.chunkstories.client.ClientImplementation;
 import org.joml.Vector4f;
 
 import io.xol.chunkstories.api.content.mods.Mod;
@@ -24,7 +25,6 @@ import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.api.util.ColorsTools;
-import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.ClientLimitations;
 import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.chunkstories.world.WorldClientRemote;
@@ -175,9 +175,9 @@ public class ChatManager {
 			font = renderer.getFontRenderer().getFont("LiberationSans-Regular__aa", 18);
 			scale = 1.0f;
 
-			int chatWidth = Math.max(750, Client.getInstance().getGameWindow().getWidth() / 4 * 3);
+			int chatWidth = Math.max(750, ClientImplementation.getInstance().getGameWindow().getWidth() / 4 * 3);
 
-			String localizedLine = Client.getInstance().getContent().localization().localize(line.text);
+			String localizedLine = ClientImplementation.getInstance().getContent().localization().localize(line.text);
 
 			int actualLines = font.getLinesHeight(localizedLine, chatWidth / scale);
 			linesDrew += actualLines;
@@ -214,7 +214,7 @@ public class ChatManager {
 				args = chatMsg.substring(chatMsg.indexOf(" ") + 1, chatMsg.length()).split(" ");
 			}
 
-			if (ingame.getGameWindow().getClient().getPluginManager().dispatchCommand(Client.getInstance().getPlayer(),
+			if (ingame.getGameWindow().getClient().getPluginManager().dispatchCommand(ClientImplementation.getInstance().getPlayer(),
 					cmdName, args)) {
 				if (sent.size() == 0 || !sent.get(0).equals(input)) {
 					sent.add(0, input);
@@ -230,7 +230,7 @@ public class ChatManager {
 					list += plugin.getName() + (i.hasNext() ? ", " : "");
 				}
 
-				if (Client.getInstance().getWorld() instanceof WorldClientLocal)
+				if (ClientImplementation.getInstance().getWorld() instanceof WorldClientLocal)
 					insert("#00FFD0" + i + " active client [master] plugins : " + list);
 				else
 					insert("#74FFD0" + i + " active client [remote] plugins : " + list);
@@ -242,14 +242,14 @@ public class ChatManager {
 			} else if (cmdName.equals("mods")) {
 				String list = "";
 				int i = 0;
-				for (Mod mod : Client.getInstance().getContent().modsManager().getCurrentlyLoadedMods()) {
+				for (Mod mod : ClientImplementation.getInstance().getContent().modsManager().getCurrentlyLoadedMods()) {
 					i++;
 					list += mod.getModInfo().getName()
-							+ (i == Client.getInstance().getContent().modsManager().getCurrentlyLoadedMods().size() ? ""
+							+ (i == ClientImplementation.getInstance().getContent().modsManager().getCurrentlyLoadedMods().size() ? ""
 									: ", ");
 				}
 
-				if (Client.getInstance().getWorld() instanceof WorldClientLocal)
+				if (ClientImplementation.getInstance().getWorld() instanceof WorldClientLocal)
 					insert("#FF0000" + i + " active client [master] mods : " + list);
 				else
 					insert("#FF7070" + i + " active client [remote] mods : " + list);

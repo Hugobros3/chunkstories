@@ -16,13 +16,13 @@ import static org.lwjgl.glfw.GLFW.glfwSetInputMode;
 
 import java.nio.DoubleBuffer;
 
+import io.xol.chunkstories.client.ClientImplementation;
 import org.joml.Vector2d;
 import org.lwjgl.system.MemoryUtil;
 
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse;
-import io.xol.chunkstories.client.Client;
 
 public class Lwjgl3Mouse implements Mouse {
 
@@ -89,7 +89,7 @@ public class Lwjgl3Mouse implements Mouse {
 
 			@Override
 			public ClientInterface getClient() {
-				return Client.getInstance();
+				return ClientImplementation.getInstance();
 			}
 
 			@Override

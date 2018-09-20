@@ -4,6 +4,7 @@
  * Messy file, lots of plugins used. Applies a few of those to the subprojects
  */
 
+import org.gradle.internal.os.OperatingSystem
 import java.text.SimpleDateFormat
 
 subprojects {
@@ -41,6 +42,8 @@ subprojects {
 }
 
 buildscript {
+	ext.kotlin_version = '1.2.60'
+
 	repositories {
 		maven {
 			url "https://plugins.gradle.org/m2/"
@@ -49,6 +52,7 @@ buildscript {
 	dependencies {
 		classpath "org.ajoberstar:grgit:2.1.0"
 		classpath "gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.14.0"
+		classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 	}
 }
 
@@ -60,10 +64,10 @@ description = 'A voxel game engine'
 group = 'io.xol.chunkstories'
 
 ext {
-	apiRevisionBuiltAgainst = '123'
-	contentRevisionBuiltAgainst = '130'
+	apiRevisionBuiltAgainst = '200'
+	//contentRevisionBuiltAgainst = '130'
 	
-	useEclipseCompiler = true
+	useEclipseCompiler = false
 	
 	actualContentLocation = "core_content.zip" // Changed by the setupContentLocation task in common/ !!! Do not remove.
 }
@@ -109,10 +113,8 @@ if(ext.useEclipseCompiler) {
 	println "Using ECJ compiler"
 }
 
-import org.gradle.internal.os.OperatingSystem
-		
-//For all subprojects...
 subprojects { subproject ->
+
 	//Put them all in the io.xol.chunkstories group.
 	group = rootProject.group
 
@@ -122,7 +124,7 @@ subprojects { subproject ->
 		if(rootProject.ext.useEclipseCompiler) {
 			subproject.apply plugin: 'de.johni0702.ecj'
 		}
-	
+
 		//Setups compilation args
 		compileJava.options.compilerArgs << '-Xlint:-deprecation'
 		compileJava.options.compilerArgs << '-Xlint:none'
@@ -132,6 +134,12 @@ subprojects { subproject ->
 		sourceCompatibility = '1.8'
 		targetCompatibility = '1.8'
 
+		subproject.apply plugin: 'kotlin'
+		dependencies {
+			implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+		}
+
+		/** LWJGL Configuration */
 		switch ( OperatingSystem.current() ) {
 			case OperatingSystem.WINDOWS:
 				project.ext.lwjglNatives = "natives-windows"
@@ -145,7 +153,7 @@ subprojects { subproject ->
 		}
 
 		project.ext.natives = ["natives-windows", "natives-linux", "natives-macos"];
-		project.ext.lwjglVersion = "3.1.1"
+		project.ext.lwjglVersion = "3.1.6"
 
 		configurations {
 			multiplatform {
@@ -153,14 +161,17 @@ subprojects { subproject ->
 			}
 		}
 
+		/** LWJGL dependencies */
 		dependencies {
 			compile "org.lwjgl:lwjgl:${lwjglVersion}"
 			compile "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}"
 			compile "org.lwjgl:lwjgl-assimp:${lwjglVersion}"
+
 			//When running on our debug computer, it's safe to assume the OS that will run the game is the same than the one who'll compile it.
 			runtime "org.lwjgl:lwjgl:${lwjglVersion}:${lwjglNatives}"
 			runtime "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}:${lwjglNatives}"
 			runtime "org.lwjgl:lwjgl-assimp:${lwjglVersion}:${lwjglNatives}"
+
 			//When compiling a redistribuable jar, we need ALL natives in it!
 			project.ext.natives.each {
 				multiplatform ("org.lwjgl:lwjgl:${lwjglVersion}:" + it)
@@ -168,8 +179,8 @@ subprojects { subproject ->
 				multiplatform "org.lwjgl:lwjgl-assimp:${lwjglVersion}:" + it
 			}
 		}
-		
-		//Global dependencies
+
+		/** Other dependencies */
 		dependencies {
 			compile group: 'org.fusesource.jansi', name: 'jansi', version: '1.15'
 			compile group: 'org.l33tlabs.twl', name: 'pngdecoder', version: '1.0'

@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import io.xol.chunkstories.client.ClientImplementation;
 import org.joml.Vector4f;
 
 import io.xol.chunkstories.api.content.Asset;
@@ -32,7 +33,6 @@ import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
-import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.content.mods.ModFolder;
 import io.xol.chunkstories.content.mods.ModImplementation;
@@ -79,9 +79,9 @@ public class ModsSelection extends Layer {
 
 				String[] ok = new String[modsEnabled.size()];
 				modsEnabled.toArray(ok);
-				Client.getInstance().getContent().modsManager().setEnabledMods(ok);
+				ClientImplementation.getInstance().getContent().modsManager().setEnabledMods(ok);
 
-				Client.getInstance().reloadAssets();
+				ClientImplementation.getInstance().reloadAssets();
 				buildModsList();
 			}
 		});
@@ -92,11 +92,11 @@ public class ModsSelection extends Layer {
 	private void buildModsList() {
 		modsContainer.elements.clear();
 		Collection<String> currentlyEnabledMods = Arrays
-				.asList(Client.getInstance().getContent().modsManager().getEnabledModsString());
+				.asList(ClientImplementation.getInstance().getContent().modsManager().getEnabledModsString());
 
 		Set<String> uniqueMods = new HashSet<String>();
 		// First put in already loaded mods
-		for (Mod mod : Client.getInstance().getContent().modsManager().getCurrentlyLoadedMods()) {
+		for (Mod mod : ClientImplementation.getInstance().getContent().modsManager().getCurrentlyLoadedMods()) {
 			// Should use md5 hash instead ;)
 			if (uniqueMods.add(mod.getModInfo().getName().toLowerCase()))
 				modsContainer.elements.add(modsContainer.new ModItem(mod, true));
@@ -142,7 +142,7 @@ public class ModsSelection extends Layer {
 	@Override
 	public void render(RenderingInterface renderer) {
 		parentLayer.getRootLayer().render(renderer);
-		int scale = Client.getInstance().getGameWindow().getGuiScale();
+		int scale = ClientImplementation.getInstance().getGameWindow().getGuiScale();
 
 		String instructions = "Select the mods you want to use";
 		Font font = renderer.getFontRenderer().getFont("LiberationSans-Regular", 16 * scale);

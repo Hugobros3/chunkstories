@@ -13,6 +13,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.xol.chunkstories.client.ClientImplementation;
 import org.joml.Vector4f;
 import org.lwjgl.glfw.GLFW;
 
@@ -24,7 +25,6 @@ import io.xol.chunkstories.api.input.Mouse.MouseScroll;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.textures.Texture2D;
-import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.renderer.opengl.util.ObjectRenderer;
 
 public class LanguageSelectionScreen extends Layer {
@@ -49,7 +49,7 @@ public class LanguageSelectionScreen extends Layer {
 		if (allowBackButton)
 			elements.add(backOption);
 
-		for (String loc : Client.getInstance().getContent().localization().listTranslations()) {
+		for (String loc : ClientImplementation.getInstance().getContent().localization().listTranslations()) {
 			LanguageButton langButton = new LanguageButton(this, 0, 0, loc);
 			langButton.setAction(new Runnable() {
 
@@ -59,15 +59,15 @@ public class LanguageSelectionScreen extends Layer {
 					// English as a language
 					if (!allowBackButton && langButton.translationCode.endsWith("fr")) {
 						// azerty mode enabled
-						Client.getInstance().getConfiguration().getOption("client.input.bind.forward")
+						ClientImplementation.getInstance().getConfiguration().getOption("client.input.bind.forward")
 								.trySetting("" + GLFW.GLFW_KEY_Z);
-						Client.getInstance().getConfiguration().getOption("client.input.bind.left")
+						ClientImplementation.getInstance().getConfiguration().getOption("client.input.bind.left")
 								.trySetting("" + GLFW.GLFW_KEY_Q);
 					}
 
-					Client.getInstance().getConfiguration().getOption("client.game.language")
+					ClientImplementation.getInstance().getConfiguration().getOption("client.game.language")
 							.trySetting(langButton.translationCode);
-					Client.getInstance().getContent().localization().loadTranslation(langButton.translationCode);
+					ClientImplementation.getInstance().getContent().localization().loadTranslation(langButton.translationCode);
 					gameWindow.setLayer(parentLayer);
 				}
 
@@ -131,7 +131,7 @@ public class LanguageSelectionScreen extends Layer {
 			this.height = 32;
 
 			try {
-				InputStream is = Client.getInstance().getContent().getAsset("./lang/" + translationCode + "/lang.info")
+				InputStream is = ClientImplementation.getInstance().getContent().getAsset("./lang/" + translationCode + "/lang.info")
 						.read();
 				BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF8"));
 

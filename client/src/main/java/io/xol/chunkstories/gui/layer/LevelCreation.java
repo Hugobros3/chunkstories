@@ -8,6 +8,7 @@ package io.xol.chunkstories.gui.layer;
 
 import java.util.Iterator;
 
+import io.xol.chunkstories.client.ClientImplementation;
 import org.joml.Vector4f;
 
 import io.xol.chunkstories.api.content.Content.WorldGenerators.WorldGeneratorDefinition;
@@ -17,7 +18,6 @@ import io.xol.chunkstories.api.gui.elements.InputText;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.world.WorldInfo;
-import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.chunkstories.world.WorldInfoImplementation;
 import io.xol.chunkstories.world.WorldLoadingException;
@@ -43,7 +43,7 @@ public class LevelCreation extends Layer {
 		this.createOption.setAction(new Runnable() {
 			@Override
 			public void run() {
-				WorldGeneratorDefinition worldGenerator = Client.getInstance().getContent().generators()
+				WorldGeneratorDefinition worldGenerator = ClientImplementation.getInstance().getContent().generators()
 						.getWorldGeneratorUnsafe(worldGenName.getText());
 				if (worldGenerator != null) {
 					// String generator = "flat";
@@ -54,7 +54,7 @@ public class LevelCreation extends Layer {
 					try {
 						// WorldInfoFile.createNewWorld(new File(GameDirectory.getGameFolderPath() +
 						// "/worlds/" + internalName),
-						Client.getInstance().changeWorld(new WorldClientLocal(Client.getInstance(), info));
+						ClientImplementation.getInstance().changeWorld(new WorldClientLocal(ClientImplementation.getInstance(), info));
 					} catch (WorldLoadingException e) {
 						gameWindow.getClient().exitToMainMenu(e.getMessage());
 					}
@@ -127,7 +127,7 @@ public class LevelCreation extends Layer {
 		worldGenName.setWidth((width - (x + wg_sl + 20) - 20) / 2);
 		worldGenName.render(renderer);
 
-		WorldGeneratorDefinition wg = Client.getInstance().getContent().generators()
+		WorldGeneratorDefinition wg = ClientImplementation.getInstance().getContent().generators()
 				.getWorldGeneratorUnsafe(worldGenName.getText());
 		String wg_validity_string;
 		if (wg == null) {
@@ -138,7 +138,7 @@ public class LevelCreation extends Layer {
 		}
 
 		String wg_list = "Available world generators: ";
-		Iterator<WorldGeneratorDefinition> iwg = Client.getInstance().getContent().generators().all();
+		Iterator<WorldGeneratorDefinition> iwg = ClientImplementation.getInstance().getContent().generators().all();
 		while (iwg != null && iwg.hasNext()) {
 			WorldGeneratorDefinition wgt = iwg.next();
 			wg_list += wgt.getName();

@@ -131,8 +131,7 @@ public class LocalClientLoadingAgent {
 			}
 
 			// We load the region summaries we fancy
-			int summaryDistance = (int) (world.getClient().getConfiguration()
-					.getIntOption("client.rendering.viewDistance") / 24);
+			int summaryDistance = 32;//(int) (world.getClient().getConfiguration().getIntOption("client.rendering.viewDistance") / 24);
 			for (int chunkX = (cameraChunkX - summaryDistance); chunkX < cameraChunkX + summaryDistance; chunkX++)
 				for (int chunkZ = (cameraChunkZ - summaryDistance); chunkZ < cameraChunkZ + summaryDistance; chunkZ++) {
 					if (chunkX % 8 == 0 && chunkZ % 8 == 0) {

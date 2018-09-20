@@ -13,27 +13,26 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import io.xol.chunkstories.api.content.Content;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.xol.chunkstories.api.client.ClientContent;
 import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.content.Content.Voxels;
 import io.xol.chunkstories.api.exceptions.content.IllegalVoxelDeclarationException;
-import io.xol.chunkstories.api.rendering.voxel.VoxelRenderer;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.content.GameContentStore;
 import io.xol.chunkstories.voxel.material.VoxelMaterialsStore;
 import io.xol.chunkstories.voxel.models.VoxelModelsStore;
 
-public class VoxelsStore implements ClientContent.ClientVoxels {
+public class VoxelsStore implements Content.Voxels {
 	private final GameContentStore content;
 
 	private final VoxelMaterialsStore materials;
 	private final VoxelTexturesStoreAndAtlaser textures;
-	private final VoxelModelsStore models;
+	//private final VoxelModelsStore models;
 
-	private VoxelRenderer defaultVoxelRenderer;
+	//private VoxelRenderer defaultVoxelRenderer;
 
 	public Map<String, Voxel> voxelsByName = new HashMap<String, Voxel>();
 	public int voxelTypes = 0;
@@ -46,7 +45,7 @@ public class VoxelsStore implements ClientContent.ClientVoxels {
 
 		this.materials = new VoxelMaterialsStore(this);
 		this.textures = new VoxelTexturesStoreAndAtlaser(this);
-		this.models = new VoxelModelsStore(this);
+		//this.models = new VoxelModelsStore(this);
 		// this.reloadVoxelTypes();
 	}
 
@@ -60,15 +59,15 @@ public class VoxelsStore implements ClientContent.ClientVoxels {
 		return textures;
 	}
 
-	@Override
+	/*@Override
 	public VoxelModelsStore models() {
 		return models;
-	}
+	}*/
 
 	public void reload() {
 		this.materials.reload();
 		this.textures.buildTextureAtlas();
-		this.models.resetAndLoadModels();
+		//this.models.resetAndLoadModels();
 
 		this.reloadVoxelTypes();
 	}
@@ -79,18 +78,6 @@ public class VoxelsStore implements ClientContent.ClientVoxels {
 		// Arrays.fill(voxels, null);
 		// attributedIds.clear();
 		voxelsByName.clear();
-
-		// First load the default voxel renderer
-		try {
-			Class<VoxelRenderer> defaultVoxelRendererClass = (Class<VoxelRenderer>) content.modsManager()
-					.getClassByName("io.xol.chunkstories.core.voxel.renderers.DefaultVoxelRenderer");
-			Constructor<VoxelRenderer> defaultVoxelRendererConstructor = defaultVoxelRendererClass
-					.getConstructor(Voxels.class);
-			defaultVoxelRenderer = defaultVoxelRendererConstructor.newInstance(this);
-		} catch (Exception e) {
-			System.out.println("could not instanciate the default voxel renderer");
-			System.exit(-900);
-		}
 
 		Iterator<Asset> i = content.modsManager().getAllAssetsByExtension("voxels");
 		while (i.hasNext()) {
@@ -174,10 +161,10 @@ public class VoxelsStore implements ClientContent.ClientVoxels {
 		return content;
 	}
 
-	@Override
+	/*@Override
 	public VoxelRenderer getDefaultVoxelRenderer() {
 		return defaultVoxelRenderer;
-	}
+	}*/
 
 	private static final Logger logger = LoggerFactory.getLogger("content.voxels");
 

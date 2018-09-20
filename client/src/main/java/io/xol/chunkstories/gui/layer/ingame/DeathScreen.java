@@ -6,6 +6,7 @@
 
 package io.xol.chunkstories.gui.layer.ingame;
 
+import io.xol.chunkstories.client.ClientImplementation;
 import org.joml.Vector4f;
 
 import io.xol.chunkstories.api.gui.Layer;
@@ -18,7 +19,6 @@ import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.api.world.WorldClientNetworkedRemote;
 import io.xol.chunkstories.api.world.WorldMaster;
-import io.xol.chunkstories.client.Client;
 
 /** The screen shown when you die */
 public class DeathScreen extends Layer {
@@ -30,7 +30,7 @@ public class DeathScreen extends Layer {
 
 		this.respawnButton.setAction(() -> {
 			if (gameWindow.getClient().getWorld() instanceof WorldMaster)
-				((WorldMaster) gameWindow.getClient().getWorld()).spawnPlayer(Client.getInstance().getPlayer());
+				((WorldMaster) gameWindow.getClient().getWorld()).spawnPlayer(ClientImplementation.getInstance().getPlayer());
 			else
 				((WorldClientNetworkedRemote) gameWindow.getClient().getWorld()).getRemoteServer()
 						.pushPacket(new PacketText("world/respawn"));
@@ -74,7 +74,7 @@ public class DeathScreen extends Layer {
 		exitButton.render(renderer);
 
 		// When the new entity arrives
-		if (Client.getInstance().getPlayer().getControlledEntity() != null)
+		if (ClientImplementation.getInstance().getPlayer().getControlledEntity() != null)
 			gameWindow.setLayer(parentLayer);
 
 		// Make sure to ungrab the mouse

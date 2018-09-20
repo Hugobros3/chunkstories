@@ -6,6 +6,7 @@
 
 package io.xol.chunkstories.gui.layer.config;
 
+import io.xol.chunkstories.client.ClientImplementation;
 import org.joml.Vector4f;
 
 import io.xol.chunkstories.api.gui.Layer;
@@ -13,13 +14,12 @@ import io.xol.chunkstories.api.gui.elements.BaseButton;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
-import io.xol.chunkstories.client.Client;
 
 public class LogPolicyAsk extends Layer {
 	BaseButton acceptButton = new BaseButton(this, 0, 0, 150, "#{logpolicy.accept}");
 	BaseButton refuseButton = new BaseButton(this, 0, 0, 150, "#{logpolicy.deny}");
 
-	String message = Client.getInstance().getContent().localization().getLocalizedString("logpolicy.asktext");
+	String message = ClientImplementation.getInstance().getContent().localization().getLocalizedString("logpolicy.asktext");
 
 	public LogPolicyAsk(GameWindow gameWindow, Layer parent) {
 		super(gameWindow, parent);
@@ -28,8 +28,8 @@ public class LogPolicyAsk extends Layer {
 
 			@Override
 			public void run() {
-				Client.getInstance().getConfiguration().getOption("client.game.log-policy").trySetting("send");
-				Client.getInstance().getConfiguration().save();
+				ClientImplementation.getInstance().getConfiguration().getOption("client.game.log-policy").trySetting("send");
+				ClientImplementation.getInstance().getConfiguration().save();
 				gameWindow.setLayer(parentLayer);
 			}
 
@@ -39,8 +39,8 @@ public class LogPolicyAsk extends Layer {
 
 			@Override
 			public void run() {
-				Client.getInstance().getConfiguration().getOption("client.game.log-policy").trySetting("dont");
-				Client.getInstance().getConfiguration().save();
+				ClientImplementation.getInstance().getConfiguration().getOption("client.game.log-policy").trySetting("dont");
+				ClientImplementation.getInstance().getConfiguration().save();
 				gameWindow.setLayer(parentLayer);
 			}
 
@@ -61,7 +61,7 @@ public class LogPolicyAsk extends Layer {
 		renderer.getFontRenderer().drawStringWithShadow(
 				renderer.getFontRenderer().getFont("LiberationSans-Regular__aa", 16 * scale), 30,
 				renderer.getWindow().getHeight() - 64,
-				Client.getInstance().getContent().localization().getLocalizedString("logpolicy.title"), 1, 1,
+				ClientImplementation.getInstance().getContent().localization().getLocalizedString("logpolicy.title"), 1, 1,
 				new Vector4f(1));
 
 		Font logPolicyTextFont = renderer.getFontRenderer().getFont("LiberationSans-Regular__aa", 12 * scale);

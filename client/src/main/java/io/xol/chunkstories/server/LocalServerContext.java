@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import io.xol.chunkstories.client.ClientImplementation;
 import org.slf4j.Logger;
 
 import io.xol.chunkstories.api.client.ClientContent;
@@ -31,16 +32,15 @@ import io.xol.chunkstories.api.util.Configuration;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.workers.Tasks;
 import io.xol.chunkstories.api.world.WorldClient;
-import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.client.ClientMasterPluginManager;
 import io.xol.chunkstories.world.WorldClientLocal;
 
 /**
- * Bridges over Client and Server TODO: Make this share behaviour with an actual
+ * Bridges over ClientImplementation and Server TODO: Make this share behaviour with an actual
  * Server
  */
 public class LocalServerContext implements ClientInterface, ServerInterface {
-	private final Client client;
+	private final ClientImplementation client;
 	private final WorldClientLocal world;
 	private final ClientMasterPluginManager pluginsManager;
 
@@ -48,7 +48,7 @@ public class LocalServerContext implements ClientInterface, ServerInterface {
 	private FileBasedUsersPrivileges usersPrivilege = new FileBasedUsersPrivileges();
 	private PermissionsManager permissionsManager;
 
-	public LocalServerContext(Client client, WorldClientLocal clientworld) {
+	public LocalServerContext(ClientImplementation client, WorldClientLocal clientworld) {
 		this.client = client;
 		this.world = clientworld;
 
@@ -84,7 +84,7 @@ public class LocalServerContext implements ClientInterface, ServerInterface {
 	@Override
 	public IterableIterator<Player> getConnectedPlayers() {
 		Set<Player> players = new HashSet<Player>();
-		players.add(Client.getInstance().getPlayer());
+		players.add(ClientImplementation.getInstance().getPlayer());
 
 		return new IterableIterator<Player>() {
 			Iterator<Player> i = players.iterator();
@@ -120,8 +120,8 @@ public class LocalServerContext implements ClientInterface, ServerInterface {
 
 	@Override
 	public Player getPlayerByUUID(long UUID) {
-		if ((long) Client.username.hashCode() == UUID)
-			return Client.getInstance().getPlayer();
+		if ((long) ClientImplementation.username.hashCode() == UUID)
+			return ClientImplementation.getInstance().getPlayer();
 
 		System.out.println("player by uuid not found" + UUID);
 		return null;
@@ -134,12 +134,12 @@ public class LocalServerContext implements ClientInterface, ServerInterface {
 
 	@Override
 	public WorldClientLocal getWorld() {
-		return (WorldClientLocal) Client.getInstance().getWorld();
+		return (WorldClientLocal) ClientImplementation.getInstance().getWorld();
 	}
 
 	@Override
 	public LocalPlayer getPlayer() {
-		return Client.getInstance().getPlayer();
+		return ClientImplementation.getInstance().getPlayer();
 	}
 
 	@Override

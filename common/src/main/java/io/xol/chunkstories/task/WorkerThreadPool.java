@@ -76,14 +76,13 @@ public class WorkerThreadPool extends TasksPool<Task> implements Tasks {
 	public void dumpTasks() {
 		System.out.println("dumping tasks");
 
-		// Hardcoding a security because you can fill the queue faster than you can
-		// iterate it
-		int hardLimit = 500;
+		// a security because you can fill the queue faster than you can iterate on it
+		int antiInfiniteLoop = 500;
 		Iterator<Task> i = this.tasksQueue.iterator();
 		while (i.hasNext()) {
 			Task task = i.next();
-			hardLimit--;
-			if (hardLimit < 0)
+			antiInfiniteLoop--;
+			if (antiInfiniteLoop < 0)
 				return;
 			System.out.println(task);
 		}

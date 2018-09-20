@@ -12,7 +12,7 @@ import static org.lwjgl.glfw.GLFW.glfwGetKey;
 import io.xol.chunkstories.api.client.LocalPlayer;
 import io.xol.chunkstories.api.input.KeyboardKeyInput;
 import io.xol.chunkstories.api.util.Configuration.KeyBindOption;
-import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.client.ClientImplementation;
 import io.xol.chunkstories.content.GenericNamedConfigurable;
 import io.xol.chunkstories.input.Pollable;
 
@@ -38,7 +38,7 @@ public class Lwjgl3KeyBind extends Lwjgl3Input implements KeyboardKeyInput, Poll
 		this.GLFW_key = defaultKey;
 
 		option = new Lwjgl3KeyBindOption("client.input.bind." + name);
-		Client.getInstance().getConfiguration().addOption(option);
+		ClientImplementation.getInstance().getConfiguration().addOption(option);
 	}
 
 	public Lwjgl3KeyBindOption getOption() {
@@ -106,7 +106,7 @@ public class Lwjgl3KeyBind extends Lwjgl3Input implements KeyboardKeyInput, Poll
 	 * When reloading from the config file (options changed)
 	 */
 	public void reload() {
-		// this.GLFW_key = Client.getInstance().getConfig().getInteger("bind."+name,
+		// this.GLFW_key = ClientImplementation.getInstance().getConfig().getInteger("bind."+name,
 		// -1);
 	}
 

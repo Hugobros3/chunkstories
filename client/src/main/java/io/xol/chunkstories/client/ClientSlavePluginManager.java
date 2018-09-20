@@ -6,14 +6,14 @@
 
 package io.xol.chunkstories.client;
 
-import io.xol.chunkstories.api.client.ClientInterface;
+import io.xol.chunkstories.api.client.Client;
 import io.xol.chunkstories.api.plugin.ClientPluginManager;
 import io.xol.chunkstories.plugin.DefaultPluginManager;
 
 public class ClientSlavePluginManager extends DefaultPluginManager implements ClientPluginManager {
-	ClientInterface client;
+	Client client;
 
-	public ClientSlavePluginManager(Client client) {
+	public ClientSlavePluginManager(ClientImplementation client) {
 		super(client);
 		this.client = client;
 
@@ -22,7 +22,7 @@ public class ClientSlavePluginManager extends DefaultPluginManager implements Cl
 	}
 
 	@Override
-	public ClientInterface getClientInterface() {
+	public Client getClient() {
 		return client;
 	}
 

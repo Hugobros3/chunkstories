@@ -14,14 +14,14 @@ import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.world.WorldMaster;
-import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.client.ClientImplementation;
 import io.xol.chunkstories.server.LocalServerContext;
 import io.xol.chunkstories.world.io.IOTasks;
 
 public class WorldClientLocal extends WorldClientCommon implements WorldMaster {
 	protected LocalServerContext localServer;
 
-	public WorldClientLocal(Client client, WorldInfoImplementation info) throws WorldLoadingException {
+	public WorldClientLocal(ClientImplementation client, WorldInfoImplementation info) throws WorldLoadingException {
 		super(client, info);
 
 		ioHandler = new IOTasks(this);
@@ -36,15 +36,15 @@ public class WorldClientLocal extends WorldClientCommon implements WorldMaster {
 	}
 
 	@Override
-	public Client getClient() {
-		return Client.getInstance();
+	public ClientImplementation getClient() {
+		return ClientImplementation.getInstance();
 	}
 
 	@Override
 	public SoundManager getSoundManager() {
 		// TODO when implementing server/client combo make sure we use something to mix
 		// behaviours of WorldServer and this
-		return Client.getInstance().getSoundManager();
+		return ClientImplementation.getInstance().getSoundManager();
 	}
 
 	@Override
@@ -57,8 +57,8 @@ public class WorldClientLocal extends WorldClientCommon implements WorldMaster {
 	@Override
 	public IterableIterator<Player> getPlayers() {
 		Set<Player> players = new HashSet<Player>();
-		if (Client.getInstance().getPlayer().hasSpawned())
-			players.add(Client.getInstance().getPlayer());
+		if (ClientImplementation.getInstance().getPlayer().hasSpawned())
+			players.add(ClientImplementation.getInstance().getPlayer());
 
 		return new IterableIterator<Player>() {
 			Iterator<Player> i = players.iterator();
@@ -84,8 +84,8 @@ public class WorldClientLocal extends WorldClientCommon implements WorldMaster {
 
 	@Override
 	public Player getPlayerByName(String playerName) {
-		if (playerName.equals(Client.username))
-			return Client.getInstance().getPlayer();
+		if (playerName.equals(ClientImplementation.username))
+			return ClientImplementation.getInstance().getPlayer();
 		return null;
 	}
 }

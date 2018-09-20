@@ -9,7 +9,7 @@ package io.xol.chunkstories.sound;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.client.ClientImplementation;
 import io.xol.chunkstories.sound.ogg.SoundDataOggSample;
 import io.xol.chunkstories.sound.ogg.SoundDataOggStream;
 
@@ -19,7 +19,7 @@ public class SoundsLibrary {
 	static Map<String, SoundData> soundsData = new HashMap<String, SoundData>();
 
 	public static SoundData obtainOggSample(String soundEffect) {
-		SoundDataOggSample sd = new SoundDataOggSample(Client.getInstance().getContent().getAsset(soundEffect));
+		SoundDataOggSample sd = new SoundDataOggSample(ClientImplementation.getInstance().getContent().getAsset(soundEffect));
 		sd.name = soundEffect;
 		if (sd.loadedOk())
 			return sd;
@@ -75,7 +75,7 @@ public class SoundsLibrary {
 	private static SoundDataBuffered obtainOggStream(String musicName) {
 		SoundDataOggStream sd;
 
-		sd = new SoundDataOggStream(Client.getInstance().getContent().getAsset(musicName).read());
+		sd = new SoundDataOggStream(ClientImplementation.getInstance().getContent().getAsset(musicName).read());
 		sd.name = musicName;
 		if (sd.loadedOk())
 			return sd;

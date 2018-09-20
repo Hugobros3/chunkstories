@@ -83,7 +83,7 @@ public class MainMenu extends Layer {
 
 		// Notices
 		Vector4f noticeColor = new Vector4f(0.5f);
-		String version = "Chunk Stories Client " + VersionInfo.version;
+		String version = "Chunk Stories ClientImplementation " + VersionInfo.version;
 		renderingContext.getFontRenderer().defaultFont().getWidth(version);
 		renderingContext.getFontRenderer().drawString(renderingContext.getFontRenderer().defaultFont(), 4, 0, version,
 				this.getGuiScale(), noticeColor);

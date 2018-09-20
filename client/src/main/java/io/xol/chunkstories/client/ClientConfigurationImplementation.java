@@ -18,9 +18,9 @@ import io.xol.chunkstories.util.config.OptionUntyped;
 
 public class ClientConfigurationImplementation extends ConfigurationImplementation {
 
-	final Client client;
+	final ClientImplementation client;
 
-	public ClientConfigurationImplementation(Client client, File configFile) {
+	public ClientConfigurationImplementation(ClientImplementation client, File configFile) {
 		super(client, configFile);
 
 		this.client = client;

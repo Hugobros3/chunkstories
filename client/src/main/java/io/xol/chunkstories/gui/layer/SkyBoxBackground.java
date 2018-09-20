@@ -24,7 +24,6 @@ import io.xol.chunkstories.api.rendering.shader.Shader;
 import io.xol.chunkstories.api.rendering.target.RenderTargetsConfiguration;
 import io.xol.chunkstories.api.rendering.textures.Texture2DRenderTarget;
 import io.xol.chunkstories.api.rendering.textures.TextureFormat;
-import io.xol.chunkstories.renderer.Camera;
 import io.xol.chunkstories.renderer.opengl.fbo.FrameBufferObjectGL;
 import io.xol.chunkstories.renderer.opengl.texture.Texture2DGL;
 import io.xol.chunkstories.renderer.opengl.texture.Texture2DRenderTargetGL;
@@ -87,7 +86,7 @@ public class SkyBoxBackground extends Layer {
 			Random rnd = new Random();
 			return splashes.get(rnd.nextInt(splashes.size()));
 		}
-		return "en vrai j'ai jamais trop joué à pokémon";
+		return "en vrai j'ai jamais trop jouï¿½ ï¿½ pokï¿½mon";
 	}
 
 	@Override

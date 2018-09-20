@@ -10,17 +10,17 @@ import java.util.Iterator;
 
 import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.client.Client;
 import io.xol.chunkstories.api.client.ClientInputsManager;
-import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.client.LocalPlayer;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.traits.serializable.TraitController;
 import io.xol.chunkstories.api.entity.traits.serializable.TraitInventory;
+import io.xol.chunkstories.api.graphics.Window;
+import io.xol.chunkstories.api.graphics.systems.dispatching.DecalsManager;
 import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.particles.ParticlesManager;
-import io.xol.chunkstories.api.rendering.GameWindow;
-import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClientNetworkedRemote;
@@ -28,14 +28,14 @@ import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.world.WorldClientCommon;
 
 public class PlayerClientImplementation implements LocalPlayer {
-	final Client client;
+	final ClientImplementation client;
 	final WorldClientCommon world;
 
 	private Entity controlledEntity;
 
 	public final LocalClientLoadingAgent loadingAgent;
 
-	PlayerClientImplementation(Client client, WorldClientCommon world) {
+	PlayerClientImplementation(ClientImplementation client, WorldClientCommon world) {
 		this.client = client;
 		this.world = world;
 
@@ -44,7 +44,7 @@ public class PlayerClientImplementation implements LocalPlayer {
 
 	@Override
 	public ClientInputsManager getInputsManager() {
-		return Client.getInstance().getInputsManager();
+		return client.getInputsManager();
 	}
 
 	@Override
@@ -92,7 +92,7 @@ public class PlayerClientImplementation implements LocalPlayer {
 
 	@Override
 	public SoundManager getSoundManager() {
-		return Client.getInstance().getSoundManager();
+		return client.getSoundManager();
 	}
 
 	@Override
@@ -107,7 +107,7 @@ public class PlayerClientImplementation implements LocalPlayer {
 
 	@Override
 	public long getUUID() {
-		return Client.username.hashCode();
+		return client.username.hashCode();
 	}
 
 	@Override
@@ -147,12 +147,12 @@ public class PlayerClientImplementation implements LocalPlayer {
 
 	@Override
 	public boolean hasFocus() {
-		return client.hasFocus();
+		return client.getGui().hasFocus();
 	}
 
 	@Override
 	public String getName() {
-		return Client.username;
+		return client.username;
 	}
 
 	@Override
@@ -225,8 +225,8 @@ public class PlayerClientImplementation implements LocalPlayer {
 	}
 
 	@Override
-	public GameWindow getWindow() {
-		return this.client.getGameWindow();
+	public Window getWindow() {
+		return client.getGameWindow();
 	}
 
 	@Override
@@ -234,21 +234,21 @@ public class PlayerClientImplementation implements LocalPlayer {
 		Entity entity = this.getControlledEntity();
 		if (entity != null && inventory.isAccessibleTo(entity)) {
 			// Directly open it without further concern
-			// Client.getInstance().openInventories(inventory);
+			// client.openInventories(inventory);
 
 			TraitInventory TraitInventory = entity.traits.get(TraitInventory.class);
 
 			if (TraitInventory != null)
-				Client.getInstance().openInventories(TraitInventory, inventory);
+				client.openInventories(TraitInventory, inventory);
 			else
-				Client.getInstance().openInventories(inventory);
+				client.openInventories(inventory);
 		}
 		// else
 		// this.sendMessage("Notice: You don't have access to this inventory.");
 	}
 
 	@Override
-	public ClientInterface getClient() {
-		return this.client;
+	public Client getClient() {
+		return client;
 	}
 }

@@ -12,7 +12,7 @@ import static org.lwjgl.glfw.GLFW.glfwGetMouseButton;
 import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse.MouseButton;
-import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.client.ClientImplementation;
 import io.xol.chunkstories.input.Pollable;
 
 public class Lwjgl3MouseButton implements MouseButton, Pollable {
@@ -50,7 +50,7 @@ public class Lwjgl3MouseButton implements MouseButton, Pollable {
 
 	@Override
 	public ClientInterface getClient() {
-		return Client.getInstance();
+		return ClientImplementation.getInstance();
 	}
 
 	@Override

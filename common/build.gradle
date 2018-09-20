@@ -13,7 +13,7 @@ configurations {
 
 dependencies {
 	//We need the core content distribution zip to be able to run the game !!!
-	coreContent group: 'io.xol.chunkstories', name: 'core', version: contentRevisionBuiltAgainst, ext: 'zip'
+	//coreContent group: 'io.xol.chunkstories', name: 'core', version: contentRevisionBuiltAgainst, ext: 'zip'
 	
 	implementation 'com.github.Hugobros3:assimp:no-lwjgl-SNAPSHOT'
 	//implementation 'com.github.kotlin-graphics:assimp:unspecified'
@@ -41,8 +41,9 @@ task setupContentLocation() {
 	if(project.hasProperty('contentLocation')) {
 		actualContentLocation = contentLocation
 	} else {
-		//Automagically grab the location within the maven local repo
-		actualContentLocation = "${configurations.coreContent.singleFile}";
+		// Automagically grab the location within the maven local repo
+		// actualContentLocation = "${configurations.coreContent.singleFile}";
+		actualContentLocation = "../chunkstories-core/"
 	}
 	
 	rootProject.ext.actualContentLocation = actualContentLocation

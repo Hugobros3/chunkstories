@@ -9,7 +9,7 @@ package io.xol.chunkstories.world;
 import io.xol.chunkstories.api.content.ContentTranslator;
 import io.xol.chunkstories.api.plugin.ClientPluginManager;
 import io.xol.chunkstories.api.world.WorldClient;
-import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.client.ClientImplementation;
 import io.xol.chunkstories.renderer.debug.WorldLogicTimeRenderer;
 import io.xol.chunkstories.renderer.decals.DecalsRendererImplementation;
 import io.xol.chunkstories.renderer.particles.ClientParticlesRenderer;
@@ -21,11 +21,11 @@ import io.xol.chunkstories.renderer.world.WorldRendererImplementation;
 public abstract class WorldClientCommon extends WorldImplementation implements WorldClient {
 	protected WorldRendererImplementation renderer;
 
-	public WorldClientCommon(Client client, WorldInfoImplementation info) throws WorldLoadingException {
+	public WorldClientCommon(ClientImplementation client, WorldInfoImplementation info) throws WorldLoadingException {
 		this(client, info, null);
 	}
 
-	public WorldClientCommon(Client client, WorldInfoImplementation info, ContentTranslator translator)
+	public WorldClientCommon(ClientImplementation client, WorldInfoImplementation info, ContentTranslator translator)
 			throws WorldLoadingException {
 		super(client, info, translator);
 
@@ -33,15 +33,15 @@ public abstract class WorldClientCommon extends WorldImplementation implements W
 	}
 
 	public ClientPluginManager getPluginManager() {
-		return Client.getInstance().getPluginManager();
+		return ClientImplementation.getInstance().getPluginManager();
 	}
 
 	@Override
-	public Client getClient() {
-		return Client.getInstance();
+	public ClientImplementation getClient() {
+		return ClientImplementation.getInstance();
 	}
 
-	public Client getGameContext() {
+	public ClientImplementation getGameContext() {
 		return getClient();
 	}
 

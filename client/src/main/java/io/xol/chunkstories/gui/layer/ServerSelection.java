@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.net.Socket;
 
+import io.xol.chunkstories.client.ClientImplementation;
 import org.joml.Vector4f;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +28,6 @@ import io.xol.chunkstories.api.input.Mouse.MouseButton;
 import io.xol.chunkstories.api.rendering.GameWindow;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
-import io.xol.chunkstories.client.Client;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.gui.layer.ServerSelection.ServerSelectionZone.ServerGuiItem;
 import io.xol.chunkstories.gui.layer.ingame.ConnectionOverlay;
@@ -61,7 +61,7 @@ public class ServerSelection extends Layer implements HttpRequester {
 		elements.add(backOption);
 
 		autologin = a;
-		String lastServer = Client.getInstance().getConfiguration().getStringOption("client.game.last-server");
+		String lastServer = ClientImplementation.getInstance().getConfiguration().getStringOption("client.game.last-server");
 		if (!lastServer.equals(""))
 			ipForm.setText(lastServer);
 
@@ -138,15 +138,15 @@ public class ServerSelection extends Layer implements HttpRequester {
 		if (ip.length() == 0)
 			return;
 
-		Client.getInstance().getConfiguration().getOption("client.game.last-server").trySetting(ip);
-		Client.getInstance().getConfiguration().save();
+		ClientImplementation.getInstance().getConfiguration().getOption("client.game.last-server").trySetting(ip);
+		ClientImplementation.getInstance().getConfiguration().save();
 
 		if (ip.contains(":")) {
 			port = Integer.parseInt(ip.split(":")[1]);
 			ip = ip.split(":")[0];
 		}
 
-		// Client.world = null;
+		// ClientImplementation.world = null;
 
 		gameWindow.setLayer(new ConnectionOverlay(gameWindow, this, ip, port));
 	}

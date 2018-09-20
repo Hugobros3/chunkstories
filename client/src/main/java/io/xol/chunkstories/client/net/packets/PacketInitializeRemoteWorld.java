@@ -16,7 +16,7 @@ import io.xol.chunkstories.api.content.OnlineContentTranslator;
 import io.xol.chunkstories.api.net.PacketReceptionContext;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.util.concurrency.Fence;
-import io.xol.chunkstories.client.Client;
+import io.xol.chunkstories.client.ClientImplementation;
 import io.xol.chunkstories.client.net.ClientPacketsContext;
 import io.xol.chunkstories.net.packets.PacketSendWorldInfo;
 import io.xol.chunkstories.world.WorldClientRemote;
@@ -42,7 +42,7 @@ public class PacketInitializeRemoteWorld extends PacketSendWorldInfo {
 				return;
 			}
 
-			Client client = (Client) cpp.getContext(); // TODO should we expose this to the interface ?
+			ClientImplementation client = (ClientImplementation) cpp.getContext(); // TODO should we expose this to the interface ?
 			Fence fence = client.getGameWindow().queueSynchronousTask(new Runnable() {
 				@Override
 				public void run() {
