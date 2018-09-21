@@ -6,6 +6,8 @@
 
 package io.xol.chunkstories.gui.layer;
 
+import io.xol.chunkstories.api.gui.Gui;
+import io.xol.chunkstories.api.gui.GuiDrawer;
 import org.joml.Vector4f;
 
 import io.xol.chunkstories.api.gui.Layer;
@@ -31,7 +33,7 @@ public class MainMenu extends Layer {
 	LargeButton largeSingleplayer = new LargeButton(this, "singleplayer");
 	LargeButton largeOptions = new LargeButton(this, "options");
 
-	public MainMenu(GameWindow scene, Layer parent) {
+	public MainMenu(Gui scene, Layer parent) {
 		super(scene, parent);
 
 		this.largeSingleplayer.setAction(() -> gameWindow.setLayer(new LevelSelection(gameWindow, MainMenu.this)));
@@ -52,7 +54,7 @@ public class MainMenu extends Layer {
 	}
 
 	@Override
-	public void render(RenderingInterface renderingContext) {
+	public void render(GuiDrawer renderingContext) {
 		parentLayer.render(renderingContext);
 
 		if (gameWindow.getLayer() == this && gameWindow.getClient().getConfiguration()

@@ -9,72 +9,53 @@ package io.xol.chunkstories.world;
 import io.xol.chunkstories.api.content.ContentTranslator;
 import io.xol.chunkstories.api.plugin.ClientPluginManager;
 import io.xol.chunkstories.api.world.WorldClient;
-import io.xol.chunkstories.client.ClientImplementation;
-import io.xol.chunkstories.renderer.debug.WorldLogicTimeRenderer;
-import io.xol.chunkstories.renderer.decals.DecalsRendererImplementation;
-import io.xol.chunkstories.renderer.particles.ClientParticlesRenderer;
-import io.xol.chunkstories.renderer.world.WorldRendererImplementation;
+import io.xol.chunkstories.api.world.WorldInfo;
+import io.xol.chunkstories.client.ingame.IngameClientImplementation;
+
+import java.io.File;
 
 /**
  * Mostly the common methods of WorldClientRemote and WorldClientLocal
  */
 public abstract class WorldClientCommon extends WorldImplementation implements WorldClient {
-	protected WorldRendererImplementation renderer;
 
-	public WorldClientCommon(ClientImplementation client, WorldInfoImplementation info) throws WorldLoadingException {
-		this(client, info, null);
-	}
+    protected final IngameClientImplementation client;
 
-	public WorldClientCommon(ClientImplementation client, WorldInfoImplementation info, ContentTranslator translator)
-			throws WorldLoadingException {
-		super(client, info, translator);
+    public WorldClientCommon(IngameClientImplementation client, WorldInfo info, ContentTranslator translator, File folder)
+            throws WorldLoadingException {
+        super(client, info, translator, folder);
+        this.client = client;
+    }
 
-		this.renderer = new WorldRendererImplementation(this, client);
-	}
+    public ClientPluginManager getPluginManager() {
+        return client.getPluginManager();
+    }
 
-	public ClientPluginManager getPluginManager() {
-		return ClientImplementation.getInstance().getPluginManager();
-	}
+    @Override
+    public IngameClientImplementation getClient() {
+        return client;
+    }
 
-	@Override
-	public ClientImplementation getClient() {
-		return ClientImplementation.getInstance();
-	}
+    public IngameClientImplementation getGameContext() {
+        return getClient();
+    }
 
-	public ClientImplementation getGameContext() {
-		return getClient();
-	}
 
-	@Override
-	public WorldRendererImplementation getWorldRenderer() {
-		return renderer;
-	}
+    @Override
+    public void tick() {
+        super.tick();
 
-	@Override
-	public DecalsRendererImplementation getDecalsManager() {
-		return renderer.getDecalsRenderer();
-	}
+        // Update used map bits
+        getClient().getPlayer().loadingAgent.updateUsedWorldBits();
 
-	@Override
-	public ClientParticlesRenderer getParticlesManager() {
-		return renderer.getParticlesRenderer();
-	}
+        // Update world timing graph
+        //WorldLogicTimeRenderer.tickWorld();
 
-	@Override
-	public void tick() {
-		super.tick();
+        // Update world effects
+        //getWorldRenderer().getWorldEffectsRenderer().tick();
 
-		// Update used map bits
-		getClient().getPlayer().loadingAgent.updateUsedWorldBits();
-
-		// Update world timing graph
-		WorldLogicTimeRenderer.tickWorld();
-
-		// Update world effects
-		getWorldRenderer().getWorldEffectsRenderer().tick();
-
-		// Update particles subsystem if it exists
-		if (getParticlesManager() != null && getParticlesManager() instanceof ClientParticlesRenderer)
-			((ClientParticlesRenderer) getParticlesManager()).updatePhysics();
-	}
+        // Update particles subsystem if it exists
+        //if (getParticlesManager() != null && getParticlesManager() instanceof ClientParticlesRenderer)
+        //	((ClientParticlesRenderer) getParticlesManager()).updatePhysics();
+    }
 }

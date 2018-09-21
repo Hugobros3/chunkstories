@@ -6,7 +6,8 @@
 
 package io.xol.chunkstories.client.net;
 
-import io.xol.chunkstories.api.client.ClientInterface;
+import io.xol.chunkstories.api.client.IngameClient;
+import io.xol.chunkstories.api.client.LocalPlayer;
 import io.xol.chunkstories.api.client.net.ClientPacketsProcessor;
 import io.xol.chunkstories.api.net.Interlocutor;
 import io.xol.chunkstories.api.player.Player;
@@ -16,10 +17,10 @@ import io.xol.chunkstories.world.WorldClientRemote;
 
 public class ClientPacketsContext extends PacketsContextCommon implements ClientPacketsProcessor {
 
-	final ClientInterface client;
+	final IngameClient client;
 	final ServerConnection clientConnection;
 
-	public ClientPacketsContext(ClientInterface gameContext, ServerConnection clientConnection) {
+	public ClientPacketsContext(IngameClient gameContext, ServerConnection clientConnection) {
 		super(gameContext, clientConnection);
 
 		this.client = gameContext;
@@ -41,7 +42,7 @@ public class ClientPacketsContext extends PacketsContextCommon implements Client
 	}
 
 	@Override
-	public ClientInterface getContext() {
+	public IngameClient getContext() {
 		return client;
 	}
 
@@ -51,7 +52,7 @@ public class ClientPacketsContext extends PacketsContextCommon implements Client
 	}
 
 	@Override
-	public Player getPlayer() {
+	public LocalPlayer getPlayer() {
 		return client.getPlayer();
 	}
 

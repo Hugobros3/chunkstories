@@ -4,14 +4,14 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.chunkstories.client;
+package io.xol.chunkstories.client.ingame;
 
 import java.util.Iterator;
 
 import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.Location;
-import io.xol.chunkstories.api.client.Client;
 import io.xol.chunkstories.api.client.ClientInputsManager;
+import io.xol.chunkstories.api.client.IngameClient;
 import io.xol.chunkstories.api.client.LocalPlayer;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.traits.serializable.TraitController;
@@ -25,17 +25,19 @@ import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClientNetworkedRemote;
 import io.xol.chunkstories.api.world.WorldMaster;
+import io.xol.chunkstories.client.LocalClientLoadingAgent;
+import io.xol.chunkstories.client.ingame.IngameClientImplementation;
 import io.xol.chunkstories.world.WorldClientCommon;
 
-public class PlayerClientImplementation implements LocalPlayer {
-	final ClientImplementation client;
+public class LocalPlayerImplementation implements LocalPlayer {
+	final IngameClientImplementation client;
 	final WorldClientCommon world;
 
 	private Entity controlledEntity;
 
 	public final LocalClientLoadingAgent loadingAgent;
 
-	PlayerClientImplementation(ClientImplementation client, WorldClientCommon world) {
+	public LocalPlayerImplementation(IngameClientImplementation client, WorldClientCommon world) {
 		this.client = client;
 		this.world = world;
 
@@ -107,7 +109,7 @@ public class PlayerClientImplementation implements LocalPlayer {
 
 	@Override
 	public long getUUID() {
-		return client.username.hashCode();
+		return client.getUser().getName().hashCode();
 	}
 
 	@Override
@@ -152,7 +154,7 @@ public class PlayerClientImplementation implements LocalPlayer {
 
 	@Override
 	public String getName() {
-		return client.username;
+		return client.getUser().getName();
 	}
 
 	@Override
@@ -162,7 +164,7 @@ public class PlayerClientImplementation implements LocalPlayer {
 
 	@Override
 	public void sendMessage(String msg) {
-		client.printChat(msg);
+		client.print(msg);
 	}
 
 	@Override
@@ -177,7 +179,7 @@ public class PlayerClientImplementation implements LocalPlayer {
 	public void setLocation(Location l) {
 		Entity controlledEntity = this.controlledEntity;
 		if (controlledEntity != null)
-			controlledEntity.entityLocation.set(l);
+			controlledEntity.traitLocation.set(l);
 	}
 
 	@Override
@@ -239,16 +241,16 @@ public class PlayerClientImplementation implements LocalPlayer {
 			TraitInventory TraitInventory = entity.traits.get(TraitInventory.class);
 
 			if (TraitInventory != null)
-				client.openInventories(TraitInventory, inventory);
+				client.getGui().openInventories(TraitInventory, inventory);
 			else
-				client.openInventories(inventory);
+				client.getGui().openInventories(inventory);
 		}
 		// else
 		// this.sendMessage("Notice: You don't have access to this inventory.");
 	}
 
 	@Override
-	public Client getClient() {
+	public IngameClient getClient() {
 		return client;
 	}
 }

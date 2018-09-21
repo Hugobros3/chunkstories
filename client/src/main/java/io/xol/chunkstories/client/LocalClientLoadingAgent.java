@@ -14,7 +14,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import com.carrotsearch.hppc.IntHashSet;
 
-import io.xol.chunkstories.api.client.ClientInterface;
+import io.xol.chunkstories.api.client.Client;
 import io.xol.chunkstories.api.client.LocalPlayer;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.exceptions.net.IllegalPacketException;
@@ -24,23 +24,24 @@ import io.xol.chunkstories.api.net.packets.PacketWorldUser;
 import io.xol.chunkstories.api.net.packets.PacketWorldUser.Type;
 import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldInfo;
+import io.xol.chunkstories.api.world.WorldSize;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.heightmap.Heightmap;
 import io.xol.chunkstories.world.WorldClientRemote;
 
 public class LocalClientLoadingAgent {
-	final ClientInterface client;
-	final LocalPlayer player;
-	final WorldClient world;
+	private final Client client;
+	private final LocalPlayer player;
+	private final WorldClient world;
 
-	IntHashSet fastChunksMask = new IntHashSet();
+	private IntHashSet fastChunksMask = new IntHashSet();
 	// Set<Integer> fastChunksMask = new HashSet<Integer>();
-	Set<ChunkHolder> usedChunks = new HashSet<ChunkHolder>();
-	Set<Heightmap> usedRegionSummaries = new HashSet<Heightmap>();
+	private Set<ChunkHolder> usedChunks = new HashSet<ChunkHolder>();
+	private Set<Heightmap> usedRegionSummaries = new HashSet<Heightmap>();
 
-	Lock lock = new ReentrantLock();
+	private Lock lock = new ReentrantLock();
 
-	public LocalClientLoadingAgent(ClientInterface client, LocalPlayer player, WorldClient world) {
+	public LocalClientLoadingAgent(Client client, LocalPlayer player, WorldClient world) {
 		this.client = client;
 		this.player = player;
 		this.world = world;
@@ -68,7 +69,7 @@ public class LocalClientLoadingAgent {
 						+ 1; chunkZ++)
 					for (int chunkY = cameraChunkY - 3; chunkY <= cameraChunkY + 3; chunkY++) {
 						WorldInfo worldInfo = world.getWorldInfo();
-						WorldInfo.WorldSize size = worldInfo.getSize();
+						WorldSize size = worldInfo.getSize();
 
 						int filteredChunkX = chunkX & (size.maskForChunksCoordinates);
 						int filteredChunkY = Math2.clampi(chunkY, 0, 31);
@@ -108,7 +109,7 @@ public class LocalClientLoadingAgent {
 								world.getSizeInChunks()) > chunksViewDistance + 1)
 						|| (Math.abs(holder.getChunkCoordinateY() - cameraChunkY) > 4)) {
 					WorldInfo worldInfo = world.getWorldInfo();
-					WorldInfo.WorldSize size = worldInfo.getSize();
+					WorldSize size = worldInfo.getSize();
 
 					int filteredChunkX = holder.getChunkCoordinateX() & (size.maskForChunksCoordinates);
 					int filteredChunkY = Math2.clampi(holder.getChunkCoordinateY(), 0, 31);
@@ -201,7 +202,7 @@ public class LocalClientLoadingAgent {
 					return;
 
 				WorldInfo worldInfo = world.getWorldInfo();
-				WorldInfo.WorldSize size = worldInfo.getSize();
+				WorldSize size = worldInfo.getSize();
 
 				int filteredChunkX = holder.getChunkCoordinateX() & (size.maskForChunksCoordinates);
 				int filteredChunkY = Math2.clampi(holder.getChunkCoordinateY(), 0, 31);

@@ -6,23 +6,22 @@
 
 package io.xol.chunkstories.client;
 
-import io.xol.chunkstories.api.client.Client;
+import io.xol.chunkstories.api.client.IngameClient;
 import io.xol.chunkstories.api.plugin.ClientPluginManager;
 import io.xol.chunkstories.plugin.DefaultPluginManager;
 
 public class ClientSlavePluginManager extends DefaultPluginManager implements ClientPluginManager {
-	Client client;
+	IngameClient client;
 
-	public ClientSlavePluginManager(ClientImplementation client) {
+	public ClientSlavePluginManager(IngameClient client) {
 		super(client);
 		this.client = client;
 
-		client.setClientPluginManager(this);
 		this.reloadPlugins();
 	}
 
 	@Override
-	public Client getClient() {
+	public IngameClient getClient() {
 		return client;
 	}
 

@@ -7,7 +7,9 @@
 package io.xol.chunkstories.gui.layer.ingame;
 
 import io.xol.chunkstories.api.Location;
+import io.xol.chunkstories.api.client.Client;
 import io.xol.chunkstories.api.client.ClientInterface;
+import io.xol.chunkstories.api.client.IngameClient;
 import io.xol.chunkstories.api.client.LocalPlayer;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.entity.traits.TraitVoxelSelection;
@@ -17,6 +19,8 @@ import io.xol.chunkstories.api.entity.traits.serializable.TraitInventory;
 import io.xol.chunkstories.api.entity.traits.serializable.TraitSelectedItem;
 import io.xol.chunkstories.api.events.player.PlayerLogoutEvent;
 import io.xol.chunkstories.api.events.rendering.CameraSetupEvent;
+import io.xol.chunkstories.api.gui.Gui;
+import io.xol.chunkstories.api.gui.GuiDrawer;
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse.MouseScroll;
@@ -42,14 +46,15 @@ import io.xol.chunkstories.world.WorldClientRemote;
  * gui elements
  */
 public class Ingame extends Layer {
-	private final ClientInterface client;
-	private final WorldClientCommon world;
+	private final IngameClient client;
+	private final LocalPlayer player;
+	//private final WorldClientCommon world;
 
 	// Renderer & client interface components
-	private final VoxelOverlays selectionRenderer;
+	//private final VoxelOverlays selectionRenderer;
 	private InventoryGridRenderer inventoryBarDrawer = null;
-	private final PhysicsWireframeDebugger wireframeDebugger;
-	private final DebugInfoRenderer debugInfoRenderer;
+	//private final PhysicsWireframeDebugger wireframeDebugger;
+	//private final DebugInfoRenderer debugInfoRenderer;
 	public final ChatManager chatManager;
 
 	// Convinience references
@@ -61,36 +66,19 @@ public class Ingame extends Layer {
 
 	float pauseOverlayFade = 0.0f;
 
-	public Ingame(GameWindow window, WorldClientCommon world) {
+	public Ingame(Gui window, IngameClient client) {
 		super(window, null);
-		this.world = world;
-		this.client = world.getClient();
-
+		this.client = client;
+		this.player = client.player;
+		
 		this.chatManager = new ChatManager(this);
-
-		// Creates the rendering stuff
-		this.selectionRenderer = new VoxelOverlays();
-
-		// TODO MOVE AWAY ?
-		this.wireframeDebugger = new PhysicsWireframeDebugger(window.getClient(), world);
-
-		this.debugInfoRenderer = new DebugInfoRenderer(window.getClient(), world);
-
-		// TODO MOVE AWAY
-		// Spawn manually the player if we're in Singleplayer
-		if (world instanceof WorldMaster)
-			world.spawnPlayer(gameWindow.getClient().getPlayer());
 
 		// Give focus
 		focus(true);
 	}
 
-	private LocalPlayer getPlayer() {
-		return gameWindow.getClient().getPlayer();
-	}
-
 	private boolean isCovered() {
-		return !gameWindow.getLayer().equals(this);
+		return gui.getTopLayer() != this;
 	}
 
 	public boolean hasFocus() {
@@ -100,11 +88,11 @@ public class Ingame extends Layer {
 	}
 
 	@Override
-	public void render(RenderingInterface renderer) {
+	public void render(GuiDrawer renderer) {
 		// Update client entity
-		if ((playerEntity == null || playerEntity != getPlayer().getControlledEntity())
-				&& getPlayer().getControlledEntity() != null) {
-			playerEntity = getPlayer().getControlledEntity();
+		if ((playerEntity == null || playerEntity != player.getControlledEntity())
+				&& player.getControlledEntity() != null) {
+			playerEntity = player.getControlledEntity();
 
 			TraitInventory inv = playerEntity.traits.get(TraitInventory.class);
 			if (inv != null)
@@ -115,13 +103,13 @@ public class Ingame extends Layer {
 
 		// TODO MOVE MOVE MOVE
 		if ((playerEntity != null && playerEntity.traits.tryWithBoolean(TraitHealth.class, eh -> eh.isDead()))
-				&& !(gameWindow.getLayer() instanceof DeathScreen))
-			gameWindow.setLayer(new DeathScreen(gameWindow, this));
+				&& !(gui.getTopLayer() instanceof DeathScreen))
+			gui.setTopLayer(new DeathScreen(gui, this));
 
 		// Update the player
 		Location selectedBlock = null;
 		if (playerEntity != null) {
-			playerEntity.traits.with(TraitWhenControlled.class, twc -> twc.onEachFrame(getPlayer()));
+			playerEntity.traits.with(TraitWhenControlled.class, twc -> twc.onEachFrame(player));
 			selectedBlock = playerEntity.traits.tryWith(TraitVoxelSelection.class,
 					tvs -> tvs.getBlockLookingAt(true, false));
 		}
@@ -314,44 +302,12 @@ public class Ingame extends Layer {
 
 	@Override
 	public void onResize(int newWidth, int newHeight) {
-		world.getWorldRenderer().setupRenderSize(newWidth, newHeight);
+		//world.getWorldRenderer().setupRenderSize(newWidth, newHeight);
 	}
 
 	@Override
 	public void destroy() {
-		// Logout sequence: Save the player entity
-		if (world instanceof WorldMaster) {
-			Player player = getPlayer();
 
-			PlayerLogoutEvent playerDisconnectionEvent = new PlayerLogoutEvent(player);
-			world.getPluginManager().fireEvent(playerDisconnectionEvent);
-
-			if (this.playerEntity != null) {
-				SerializedEntityFile playerEntityFile = new SerializedEntityFile(
-						world.getFolderPath() + "/players/" + getPlayer().getName().toLowerCase() + ".csf");
-				playerEntityFile.write(this.playerEntity);
-			}
-		}
-
-		// Stop the game logic and save
-		if (world instanceof WorldMaster) {
-			// TODO: Stop simulation
-			Fence fence = ((WorldMaster) world).stopLogic();
-
-			// exitButton.text = "#{world.saving}";
-
-			fence.traverse();
-			fence = world.saveEverything();
-
-			// exitButton.text = "#{world.saving}";
-
-			fence.traverse();
-		}
-
-		// Disables plugins
-		world.getPluginManager().disablePlugins();
-
-		this.world.getWorldRenderer().destroy();
 	}
 
 	public float getPauseOverlayFade() {

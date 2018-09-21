@@ -14,7 +14,7 @@ import io.xol.chunkstories.api.net.PacketReceptionContext;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.packets.PacketWorldUser;
 import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.client.PlayerClientImplementation;
+import io.xol.chunkstories.client.ingame.LocalPlayerImplementation;
 import io.xol.chunkstories.client.net.ClientPacketsContext;
 
 public class ClientPacketWorldUser extends PacketWorldUser {
@@ -30,7 +30,7 @@ public class ClientPacketWorldUser extends PacketWorldUser {
 		System.out.println("weeiiird");
 		if (context instanceof ClientPacketsContext) {
 			try {
-				((PlayerClientImplementation) ((ClientPacketsContext) context).getContext().getPlayer()).loadingAgent
+				((LocalPlayerImplementation) ((ClientPacketsContext) context).getContext().getPlayer()).loadingAgent
 						.handleServerResponse(this);
 			} catch (IllegalPacketException e) {
 				e.printStackTrace();

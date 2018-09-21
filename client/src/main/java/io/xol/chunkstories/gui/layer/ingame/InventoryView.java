@@ -6,6 +6,8 @@
 
 package io.xol.chunkstories.gui.layer.ingame;
 
+import io.xol.chunkstories.api.gui.Gui;
+import io.xol.chunkstories.api.gui.GuiDrawer;
 import org.joml.Vector4f;
 
 import io.xol.chunkstories.api.Location;
@@ -35,8 +37,8 @@ public class InventoryView extends Layer {
 	public static ItemPile selectedItem;
 	public static int selectedItemAmount;
 
-	public InventoryView(GameWindow scene, Layer parent, Inventory[] entityInventories) {
-		super(scene, parent);
+	public InventoryView(Gui gui, Layer parent, Inventory[] entityInventories) {
+		super(gui, parent);
 		this.inventories = entityInventories;
 		this.drawers = new InventoryGridRenderer[entityInventories.length];
 		for (int i = 0; i < drawers.length; i++)
@@ -44,7 +46,7 @@ public class InventoryView extends Layer {
 	}
 
 	@Override
-	public void render(RenderingInterface renderer) {
+	public void render(GuiDrawer renderer) {
 		parentLayer.render(renderer);
 
 		Mouse mouse = renderer.getClient().getInputsManager().getMouse();

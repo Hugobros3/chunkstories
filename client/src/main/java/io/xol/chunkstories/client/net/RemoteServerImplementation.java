@@ -15,7 +15,7 @@ import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.RemoteServer;
 
 /**
- * Represents the Remote server from the client point of view. See RemoteServer
+ * Represents the Remote server from the ingameClient point of view. See RemoteServer
  * in the API for more details on the concept behind this.
  */
 public class RemoteServerImplementation implements RemoteServer {

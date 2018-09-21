@@ -11,6 +11,7 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
+import io.xol.chunkstories.api.client.IngameClient;
 import io.xol.chunkstories.api.content.OnlineContentTranslator;
 import io.xol.chunkstories.api.exceptions.PacketProcessingException;
 import io.xol.chunkstories.api.net.Packet;
@@ -19,8 +20,10 @@ import io.xol.chunkstories.api.net.PacketWorld;
 import io.xol.chunkstories.api.net.RemoteServer;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.world.WorldClientNetworkedRemote;
+import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.client.ClientImplementation;
 import io.xol.chunkstories.client.ClientSlavePluginManager;
+import io.xol.chunkstories.client.ingame.IngameClientRemoteHost;
 import io.xol.chunkstories.client.net.ServerConnection;
 import io.xol.chunkstories.net.LogicalPacketDatagram;
 import io.xol.chunkstories.net.PacketDefinitionImplementation;
@@ -35,9 +38,9 @@ public class WorldClientRemote extends WorldClientCommon implements WorldClientN
 
 	private final OnlineContentTranslator translator;
 
-	public WorldClientRemote(ClientImplementation client, WorldInfoImplementation info, OnlineContentTranslator translator,
-                             ServerConnection connection) throws WorldLoadingException {
-		super(client, info, translator);
+	public WorldClientRemote(IngameClientRemoteHost client, WorldInfo info, OnlineContentTranslator translator,
+							 ServerConnection connection) throws WorldLoadingException {
+		super(client, info, translator, null);
 
 		this.connection = connection;
 		this.packetsProcessor = connection.getPacketsContext();
@@ -48,9 +51,6 @@ public class WorldClientRemote extends WorldClientCommon implements WorldClientN
 
 		ioHandler = mpIOHandler;
 		ioHandler.start();
-
-		ClientSlavePluginManager pluginManager = new ClientSlavePluginManager(ClientImplementation.getInstance());
-		client.setClientPluginManager(pluginManager);
 	}
 
 	public OnlineContentTranslator getContentTranslator() {
@@ -68,7 +68,7 @@ public class WorldClientRemote extends WorldClientCommon implements WorldClientN
 
 	@Override
 	public SoundManager getSoundManager() {
-		return ClientImplementation.getInstance().getSoundManager();
+		return getClient().getSoundManager();
 	}
 
 	@Override

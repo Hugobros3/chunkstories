@@ -13,6 +13,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import io.xol.chunkstories.client.ClientImplementation;
+import io.xol.chunkstories.client.ingame.IngameClientImplementation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,11 +25,12 @@ import io.xol.chunkstories.net.http.SimplePostRequest;
 import io.xol.chunkstories.util.VersionInfo;
 
 /**
- * The job of the ConnectionSequence is to execute the required steps to login
+ * The job of the ClientConnectionSequence is to execute the required steps to login
  * in a server, while monitoring back progress to the main thread
  */
-public class ConnectionSequence extends Thread {
-	ServerConnection connection;
+public class ClientConnectionSequence extends Thread {
+	final IngameClientImplementation ingameClient;
+	final ServerConnection connection;
 	boolean isDone = false;
 
 	ConnectionStep status;
@@ -46,8 +48,10 @@ public class ConnectionSequence extends Thread {
 
 	private static final Logger logger = LoggerFactory.getLogger("net");
 
-	public ConnectionSequence(String ip, int port) {
-		this.connection = new TCPServerConnection(ClientImplementation.getInstance(), ip, port) {
+	public ClientConnectionSequence(IngameClientImplementation client, String ip, int port) {
+		this.ingameClient = client;
+		
+		this.connection = new TCPServerConnection(client, ip, port) {
 
 			@Override
 			public boolean handleSystemRequest(String msg) {
@@ -81,9 +85,9 @@ public class ConnectionSequence extends Thread {
 			if (!connection.connect())
 				abort("Failed to establish connection");
 
-			if (ClientImplementation.offline) {
+			/*if (ClientImplementation.getOffline()) {
 				connection.sendTextMessage("login/start");
-				connection.sendTextMessage("login/username:" + ClientImplementation.username);
+				connection.sendTextMessage("login/username:" + ClientImplementation.getUsername());
 				connection.sendTextMessage("login/logintoken:nopenopenopenopenope");
 				connection.sendTextMessage("login/version:" + VersionInfo.networkProtocolVersion);
 				connection.sendTextMessage("login/confirm");
@@ -92,13 +96,13 @@ public class ConnectionSequence extends Thread {
 			} else {
 				status = new ConnectionStep("Requesting a login token...");
 				SimplePostRequest spr = new SimplePostRequest("https://chunkstories.xyz/api/serverTokenObtainer.php",
-						"username=" + ClientImplementation.username + "&sessid=" + ClientImplementation.session_key);
+						"username=" + ClientImplementation.getUsername() + "&sessid=" + ClientImplementation.getSession_key());
 				String reply = spr.result();
 				if (reply != null && reply.startsWith("ok")) {
 					String loginToken = reply.split(":")[1];
 
 					connection.sendTextMessage("login/start");
-					connection.sendTextMessage("login/username:" + ClientImplementation.username);
+					connection.sendTextMessage("login/username:" + ClientImplementation.getUsername());
 					connection.sendTextMessage("login/logintoken:" + loginToken);
 					connection.sendTextMessage("login/version:" + VersionInfo.networkProtocolVersion);
 					connection.sendTextMessage("login/confirm");
@@ -107,7 +111,9 @@ public class ConnectionSequence extends Thread {
 				} else {
 					abort("Failed to obtain a login token from the servers");
 				}
-			}
+			}*/
+			//TODO use correct authentification method here
+
 			if (!authSemaphore.tryAcquire(5, TimeUnit.SECONDS))
 				abort("Server login timed out");
 
@@ -135,7 +141,7 @@ public class ConnectionSequence extends Thread {
 
 				// String md5Required = requiredMod.contains(":") ? requiredMod.split(":")[0] :
 				// requiredMod;
-				ClientImplementation.getInstance().logger().info("Server asks for mod " + modInternalName + " (" + modSizeInBytes
+				ingameClient.logger().info("Server asks for mod " + modInternalName + " (" + modSizeInBytes
 						+ " bytes), md5=" + modMd5Hash);
 
 				requiredMd5s.add(modMd5Hash);
@@ -149,7 +155,7 @@ public class ConnectionSequence extends Thread {
 
 				// Check their size and signature
 				if (cached.length() != modSizeInBytes) {
-					ClientImplementation.getInstance().logger()
+					ingameClient.logger()
 							.info("Invalid filesize for downloaded mod " + modInternalName + " (hash: " + modMd5Hash
 									+ ")" + " expected filesize = " + modSizeInBytes + " != actual filesize = "
 									+ cached.length());
@@ -164,7 +170,7 @@ public class ConnectionSequence extends Thread {
 				} catch (ModLoadFailureException e) {
 					e.printStackTrace();
 
-					ClientImplementation.getInstance().logger().info("Could not load downloaded mod " + modInternalName + " (hash: "
+					ingameClient.logger().info("Could not load downloaded mod " + modInternalName + " (hash: "
 							+ modMd5Hash + "), see stack trace");
 					cached.delete(); // Delete suspicious file
 					abort("Failed to load " + modInternalName + ", check error log.");
@@ -173,7 +179,7 @@ public class ConnectionSequence extends Thread {
 				// Test the md5 hash wasn't tampered with
 				String actualMd5Hash = testHash.getMD5Hash();
 				if (!actualMd5Hash.equals(modMd5Hash)) {
-					ClientImplementation.getInstance().logger().info("Invalid md5 hash for mod " + modInternalName
+					ingameClient.logger().info("Invalid md5 hash for mod " + modInternalName
 							+ " expected md5 hash = " + modMd5Hash + " != actual md5 hash = " + actualMd5Hash);
 					cached.delete(); // Delete suspicious file
 					abort("Mod " + modInternalName + " hash did not match.");
@@ -186,10 +192,10 @@ public class ConnectionSequence extends Thread {
 			for (String m : requiredMd5s) {
 				requiredMods[i++] = "md5:" + m;
 			}
-			ClientImplementation.getInstance().getContent().modsManager().setEnabledMods(requiredMods);
+			ingameClient.getContent().modsManager().setEnabledMods(requiredMods);
 
 			status = new ConnectionStep("Reloading mods...");
-			ClientImplementation.getInstance().reloadAssets();
+			ingameClient.getClient().reloadAssets();
 
 			status = new ConnectionStep("Loading ContentTranslator...");
 			connection.sendTextMessage("world/translator");

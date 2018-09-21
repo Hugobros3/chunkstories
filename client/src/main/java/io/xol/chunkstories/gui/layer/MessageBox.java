@@ -19,8 +19,6 @@ public class MessageBox extends Layer {
 
 	public MessageBox(Gui gui, Layer parent, String message) {
 		super(gui, parent);
-		// Thread.dumpStack();
-		// Gui buttons
 		this.message = message;
 
 		this.okButton.setAction(new Runnable() {

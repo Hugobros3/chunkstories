@@ -6,6 +6,7 @@
 
 package io.xol.chunkstories.gui.layer;
 
+import io.xol.chunkstories.api.gui.Gui;
 import io.xol.chunkstories.client.ClientImplementation;
 import org.joml.Vector4f;
 
@@ -40,8 +41,8 @@ public class LoginPrompt extends Layer {
 	private boolean can_next = false;
 	private boolean failed_login;
 
-	public LoginPrompt(GameWindow gameWindow, Layer parent) {
-		super(gameWindow, parent);
+	public LoginPrompt(Gui gui, Layer parent) {
+		super(gui, parent);
 
 		elements.add(usernameForm);
 		passwordForm.setPassword(true);
@@ -50,9 +51,9 @@ public class LoginPrompt extends Layer {
 
 		// Autologin fills in the forms automagically
 		// TODO Secure storage of password
-		if (gameWindow.getClient().getConfiguration().getStringOption("client.login.auto").equals("ok")) {
-			usernameForm.setText(ClientImplementation.getInstance().getConfiguration().getStringOption("client.login.username"));
-			passwordForm.setText(ClientImplementation.getInstance().getConfiguration().getStringOption("client.login.password"));
+		if (gui.getClient().getConfiguration().getStringOption("client.login.auto").equals("ok")) {
+			usernameForm.setText(gui.getClient().getConfiguration().getStringOption("client.login.username"));
+			passwordForm.setText(gui.getClient().getConfiguration().getStringOption("client.login.password"));
 			autologin = true;
 		}
 
@@ -67,7 +68,7 @@ public class LoginPrompt extends Layer {
 		parentLayer.render(renderer);
 		float scale = this.getGuiScale();
 
-		if (ClientImplementation.getInstance().getConfiguration().getStringOption("client.game.language").equals("undefined")) {
+		if (gui.getClient().getConfiguration().getStringOption("client.game.language").equals("undefined")) {
 			gameWindow.setLayer(new LanguageSelectionScreen(gameWindow, this, false));
 			// this.mainScene.changeOverlay(new LanguageSelectionScreen(mainScene, this,
 			// false));
@@ -90,17 +91,17 @@ public class LoginPrompt extends Layer {
 
 		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(),
 				usernameForm.getPositionX(), usernameForm.getPositionY() + usernameForm.getHeight() + 4 * scale,
-				ClientImplementation.getInstance().getContent().localization().localize("#{login.username}"), scale, scale,
+				gui.getClient().getContent().localization().localize("#{login.username}"), scale, scale,
 				new Vector4f(1.0f));
 		renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(),
 				passwordForm.getPositionX(), passwordForm.getPositionY() + usernameForm.getHeight() + 4 * scale,
-				ClientImplementation.getInstance().getContent().localization().localize("#{login.password}"), scale, scale,
+				gui.getClient().getContent().localization().localize("#{login.password}"), scale, scale,
 				new Vector4f(1.0f));
 
 		if (logging_in) {
 			renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(),
 					renderer.getWindow().getWidth() / 2 - 230, renderer.getWindow().getHeight() / 2 - 90,
-					ClientImplementation.getInstance().getContent().localization().localize("#{login.loggingIn}"), scale, scale,
+					gui.getClient().getContent().localization().localize("#{login.loggingIn}"), scale, scale,
 					new Vector4f(1.0f));
 		} else {
 			float decal_lb = loginButton.getWidth();
@@ -108,7 +109,7 @@ public class LoginPrompt extends Layer {
 
 			renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(),
 					loginButton.getPositionX() + 4 * scale + decal_lb, loginButton.getPositionY() + 2 * scale,
-					ClientImplementation.getInstance().getContent().localization().localize("#{login.register}"), scale, scale,
+					gui.getClient().getContent().localization().localize("#{login.register}"), scale, scale,
 					new Vector4f(1.0f));
 
 			if (failed_login)
@@ -119,7 +120,7 @@ public class LoginPrompt extends Layer {
 
 		if (autologin) {
 			int seconds = 10;
-			String autologin2 = ClientImplementation.getInstance().getContent().localization().localize("#{login.auto1} "
+			String autologin2 = gui.getClient().getContent().localization().localize("#{login.auto1} "
 					+ (seconds - (System.currentTimeMillis() - startCounter) / 1000) + " #{login.auto2}");
 
 			float autologinLength = renderer.getFontRenderer().defaultFont().getWidth(autologin2) * 2.0f;
@@ -138,8 +139,8 @@ public class LoginPrompt extends Layer {
 
 	private void connect() {
 		if (usernameForm.getText().equals("OFFLINE")) {
-			ClientImplementation.offline = true;
-			ClientImplementation.username = "OfflineUser" + (int) (Math.random() * 1000);
+			ClientImplementation.setOffline(true);
+			ClientImplementation.setUsername("OfflineUser" + (int) (Math.random() * 1000));
 			gameWindow.setLayer(new MainMenu(gameWindow, parentLayer));
 		} else {
 			logging_in = true;
@@ -155,22 +156,22 @@ public class LoginPrompt extends Layer {
 				}
 				if (result.startsWith("ok")) {
 					String session = result.split(":")[1];
-					ClientImplementation.username = usernameForm.getText();
-					ClientImplementation.session_key = session;
-					ClientImplementation.getInstance().getConfiguration().getOption("client.login.auto").trySetting("ok");
-					ClientImplementation.getInstance().getConfiguration().getOption("client.login.username")
+					ClientImplementation.setUsername(usernameForm.getText());
+					ClientImplementation.setSession_key(session);
+					gui.getClient().getConfiguration().getOption("client.login.auto").trySetting("ok");
+					gui.getClient().getConfiguration().getOption("client.login.username")
 							.trySetting(usernameForm.getText());
-					ClientImplementation.getInstance().getConfiguration().getOption("client.login.password")
+					gui.getClient().getConfiguration().getOption("client.login.password")
 							.trySetting(passwordForm.getText());
 
-					if (ClientImplementation.username.equals("Gobrosse") || ClientImplementation.username.equals("kektest")) {
+					if (ClientImplementation.getUsername().equals("Gobrosse") || ClientImplementation.getUsername().equals("kektest")) {
 						ClientLimitations.isDebugAllowed = true;
 					}
 
 					// If the user didn't opt-out, look for crash files and upload those
-					if (ClientImplementation.getInstance().getConfiguration().getStringOption("client.game.log-policy")
+					if (gui.getClient().getConfiguration().getStringOption("client.game.log-policy")
 							.equals("send")) {
-						JavaCrashesUploader t = new JavaCrashesUploader(ClientImplementation.getInstance());
+						JavaCrashesUploader t = new JavaCrashesUploader(gui.getClient());
 						t.start();
 					}
 
@@ -199,7 +200,7 @@ public class LoginPrompt extends Layer {
 		else if (input.equals("enter"))
 			connect();
 		else if (input.equals("tab")) {
-			int shift = gameWindow.getInputsManager().getInputByName("shift").isPressed() ? -1 : 1;
+			int shift = gui.getClient().getInputsManager().getInputByName("shift").isPressed() ? -1 : 1;
 			int i = this.elements.indexOf(this.focusedElement);
 
 			GuiElement elem = null;

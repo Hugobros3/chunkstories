@@ -14,39 +14,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import io.xol.chunkstories.api.gui.Gui;
+import io.xol.chunkstories.api.gui.GuiDrawer;
 import org.joml.Vector4f;
 
 import io.xol.chunkstories.api.gui.Layer;
-import io.xol.chunkstories.api.rendering.GameWindow;
-import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.StateMachine.BlendMode;
-import io.xol.chunkstories.api.rendering.shader.Shader;
-import io.xol.chunkstories.api.rendering.target.RenderTargetsConfiguration;
-import io.xol.chunkstories.api.rendering.textures.Texture2DRenderTarget;
-import io.xol.chunkstories.api.rendering.textures.TextureFormat;
-import io.xol.chunkstories.renderer.opengl.fbo.FrameBufferObjectGL;
-import io.xol.chunkstories.renderer.opengl.texture.Texture2DGL;
-import io.xol.chunkstories.renderer.opengl.texture.Texture2DRenderTargetGL;
-import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;
 
 public class SkyBoxBackground extends Layer {
 	// Stuff for rendering the background
 	String skyBox;
-	Camera camera = new Camera();
 
-	private Texture2DRenderTarget unblurred, blurredH, blurredV;
-	private RenderTargetsConfiguration unblurredFBO, blurredHFBO, blurredVFBO;
-
-	public SkyBoxBackground(GameWindow gameWindow) {
-		super(gameWindow, null);
-
-		unblurred = new Texture2DRenderTargetGL(TextureFormat.RGBA_8BPP, gameWindow.getWidth(), gameWindow.getHeight());
-		blurredH = new Texture2DRenderTargetGL(TextureFormat.RGBA_8BPP, gameWindow.getWidth(), gameWindow.getHeight());
-		blurredV = new Texture2DRenderTargetGL(TextureFormat.RGBA_8BPP, gameWindow.getWidth(), gameWindow.getHeight());
-
-		unblurredFBO = new FrameBufferObjectGL(null, unblurred);
-		blurredHFBO = new FrameBufferObjectGL(null, blurredH);
-		blurredVFBO = new FrameBufferObjectGL(null, blurredV);
+	public SkyBoxBackground(Gui gui) {
+		super(gui, null);
 
 		selectRandomSkybox();
 	}
@@ -64,15 +43,13 @@ public class SkyBoxBackground extends Layer {
 
 		// TODO uncuck this
 		skyBox = "./textures/skybox";
-		camera.setRotationX(25);
-		camera.setRotationY(-45);
 	}
 
 	public String getRandomSplashScreen() {
 		List<String> splashes = new ArrayList<String>();
 		try {
 			InputStreamReader ipsr = new InputStreamReader(
-					gameWindow.getClient().getContent().getAsset("./splash.txt").read(), "UTF-8");
+					gui.getClient().getContent().getAsset("./splash.txt").read(), "UTF-8");
 			BufferedReader br = new BufferedReader(ipsr);
 			String ligne;
 			while ((ligne = br.readLine()) != null) {
@@ -86,95 +63,21 @@ public class SkyBoxBackground extends Layer {
 			Random rnd = new Random();
 			return splashes.get(rnd.nextInt(splashes.size()));
 		}
-		return "en vrai j'ai jamais trop jou� � pok�mon";
+		return "";
 	}
 
 	@Override
-	public void onResize(int newWidth, int newHeight) {
-		unblurredFBO.resize(gameWindow.getWidth(), gameWindow.getHeight());
-		blurredHFBO.resize(gameWindow.getWidth(), gameWindow.getHeight());
-		blurredVFBO.resize(gameWindow.getWidth(), gameWindow.getHeight());
-	}
+	public void render(GuiDrawer renderer) {
+		if (gui.getTopLayer() == this)
+			gui.setTopLayer(new MainMenu(gui, this));
 
-	@Override
-	public void render(RenderingInterface renderer) {
-		if (gameWindow.getLayer() == this)
-			gameWindow.setLayer(new MainMenu(gameWindow, this));
-
-		try // Ugly fps caps yay
-		{
-			Thread.sleep(33L);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-
-		// Render this shit boy
-		renderer.getRenderTargetManager().setConfiguration(unblurredFBO);
-		camera.setupUsingScreenSize(gameWindow.getWidth(), gameWindow.getHeight());
-		Shader menuSkyBox = renderer.useShader("mainMenuSkyBox");
-		camera.setupShader(menuSkyBox);
-
-		renderer.bindCubemap("skybox", TexturesHandler.getCubemap(skyBox));
-		camera.setRotationX(35 + (float) (Math.sin(camera.getRotationY() / 15)) * 5f);
-		camera.setRotationY((System.currentTimeMillis() % 1000000) / 200.0f);
-		renderer.drawFSQuad();
-
-		renderer.getRenderTargetManager().setConfiguration(blurredHFBO);
-		Shader blurH = renderer.useShader("blurH");
-		blurH.setUniform2f("screenSize", gameWindow.getWidth(), gameWindow.getHeight());
-
-		renderer.bindTexture2D("inputTexture", unblurred);
-		renderer.drawFSQuad();
-
-		for (int i = 0; i < 1; i++) {
-			renderer.getRenderTargetManager().setConfiguration(blurredVFBO);
-			Shader blurV = renderer.useShader("blurV");
-			blurV.setUniform1f("lookupScale", 1);
-			blurV.setUniform2f("screenSize", gameWindow.getWidth() / 2, gameWindow.getHeight() / 2);
-
-			renderer.bindTexture2D("inputTexture", blurredH);
-			renderer.drawFSQuad();
-
-			renderer.getRenderTargetManager().setConfiguration(blurredHFBO);
-			blurH = renderer.useShader("blurH");
-			blurH.setUniform2f("screenSize", gameWindow.getWidth() / 2, gameWindow.getHeight() / 2);
-			renderer.bindTexture2D("inputTexture", blurredV);
-			renderer.drawFSQuad();
-		}
-
-		renderer.getRenderTargetManager().setConfiguration(blurredVFBO);
-		Shader blurV = renderer.useShader("blurV");
-		blurV.setUniform2f("screenSize", gameWindow.getWidth(), gameWindow.getHeight());
-		renderer.bindTexture2D("inputTexture", blurredH);
-		renderer.drawFSQuad();
-
-		renderer.getRenderTargetManager().setConfiguration(null);
-		Shader blit = renderer.useShader("background");
-		blit.setUniform2f("screenSize", gameWindow.getWidth(), gameWindow.getHeight());
-		Texture2DGL backgroundTexture = TexturesHandler.getTexture("./textures/gui/darker.png");
-		backgroundTexture.setLinearFiltering(false);
-		renderer.bindTexture2D("diffuseTexture", backgroundTexture);
-		renderer.bindTexture2D("backgroundTexture", blurredV);
-		renderer.drawFSQuad();
-
-		Texture2DGL logoTexture = TexturesHandler.getTexture("./textures/gui/icon.png");
 		float alphaIcon = (float) (0.25 + Math.sin((System.currentTimeMillis() % (1000 * 60 * 60) / 3000f)) * 0.25f);
-		renderer.setBlendMode(BlendMode.MIX);
-		float diagonal = (float) Math
-				.sqrt(gameWindow.getWidth() * gameWindow.getWidth() + gameWindow.getHeight() * gameWindow.getHeight());
-		float iconSize = (float) (diagonal / 3
-				+ 50 * Math.sin((System.currentTimeMillis() % (1000 * 60 * 60) / 30000f)));
-		renderer.getGuiRenderer().drawBoxWindowsSpace(gameWindow.getWidth() / 2 - iconSize / 2,
-				gameWindow.getHeight() / 2 - iconSize / 2, gameWindow.getWidth() / 2 + iconSize / 2,
-				gameWindow.getHeight() / 2 + iconSize / 2, 0, 1, 1, 0, logoTexture, true, true,
+		int iconSize = 256;
+
+		renderer.drawBoxWindowsSpaceWithSize(gui.getViewportWidth() / 2 - iconSize / 2,
+				gui.getViewportHeight() / 2 - iconSize / 2, iconSize,
+				iconSize, 0, 1, 1, 0, "./textures/gui/icon.png",
 				new Vector4f(1.0f, 1.0f, 1.0f, alphaIcon));
 
-	}
-
-	@Override
-	public void destroy() {
-		unblurredFBO.destroy();
-		blurredHFBO.destroy();
-		blurredVFBO.destroy();
 	}
 }

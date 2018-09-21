@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Iterator;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -35,10 +36,7 @@ import io.xol.chunkstories.api.exceptions.world.RegionNotLoadedException;
 import io.xol.chunkstories.api.exceptions.world.WorldException;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.particles.ParticlesManager;
-import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.player.Player;
-import io.xol.chunkstories.api.rendering.world.chunk.ChunkRenderable;
-import io.xol.chunkstories.api.util.ConfigDeprecated;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.voxel.Voxel;
@@ -66,7 +64,6 @@ import io.xol.chunkstories.content.translator.LoadedContentTranslator;
 import io.xol.chunkstories.entity.EntityWorldIterator;
 import io.xol.chunkstories.entity.SerializedEntityFile;
 import io.xol.chunkstories.util.concurrency.CompoundFence;
-import io.xol.chunkstories.util.config.OldStyleConfigFile;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.heightmap.WorldHeightmapsImplementation;
 import io.xol.chunkstories.world.io.IOTasks;
@@ -79,16 +76,15 @@ import io.xol.chunkstories.world.region.RegionImplementation;
 public abstract class WorldImplementation implements World {
 	protected final GameContext gameContext;
 
-	private final ContentTranslator contentTranslator;
-	private final AbstractContentTranslator masterContentTranslator;
+	protected final WorldInfo worldInfo;
+	protected final ContentTranslator contentTranslator;
+	protected final AbstractContentTranslator masterContentTranslator;
 
-	protected final WorldInfoImplementation worldInfo;
-	private final WorldInfoMaster worldInfoMaster;
 
 	private final File folder;
 
 	// protected final boolean client;
-	private final ConfigDeprecated internalData;
+	private final Properties internalData;
 
 	private WorldGenerator generator;
 
@@ -122,12 +118,7 @@ public abstract class WorldImplementation implements World {
 	// Entity IDS counter
 	AtomicLong entitiesUUIDGenerator = new AtomicLong();
 
-	public WorldImplementation(GameContext gameContext, WorldInfoImplementation info) throws WorldLoadingException {
-		this(gameContext, info, null);
-	}
-
-	public WorldImplementation(GameContext gameContext, WorldInfoImplementation info,
-			ContentTranslator initialContentTranslator) throws WorldLoadingException {
+	public WorldImplementation(GameContext gameContext, WorldInfo info, ContentTranslator initialContentTranslator, File folder) throws WorldLoadingException {
 		try {
 			this.gameContext = gameContext;
 			this.worldInfo = info;
@@ -144,16 +135,16 @@ public abstract class WorldImplementation implements World {
 				boolean new_world = false;
 				// WorldInfoMaster are backed by a file. If we pass the World constructor a
 				// simple WorldInfo, we consider being asked to create a new world
-				if (worldInfo instanceof WorldInfoMaster) {
+				/*if (worldInfo instanceof WorldInfoMaster) {
 					worldInfoMaster = (WorldInfoMaster) worldInfo;
 				} else {
 					worldInfoMaster = new WorldInfoMaster(worldInfo);
 					worldInfoMaster.save();
 					new_world = true;
-				}
+				}*/
 
 				// Obtain the parent folder
-				this.folder = worldInfoMaster.getFile().getParentFile();
+				this.folder = folder;
 
 				// Check for an existing content translator
 				File contentTranslatorFile = new File(folder.getPath() + "/content_mappings.dat");
@@ -161,7 +152,7 @@ public abstract class WorldImplementation implements World {
 					this.masterContentTranslator = LoadedContentTranslator.loadFromFile(gameContext.getContent(),
 							contentTranslatorFile);
 				} else {
-					if (!new_world) {
+					if (!new_world) { // TODO actually really unecessary I can delete those
 						// Legacy world! Use the default mappings from when ids where dynamically
 						// allocated.
 						logger.warn("Loading a legacy (pre-automagic ids allocation), trying default mappings...");
@@ -274,15 +265,13 @@ public abstract class WorldImplementation implements World {
 			if (entity == null || entity.traits.tryWithBoolean(TraitHealth.class, eh -> eh.isDead()))
 				entity = this.gameContext.getContent().entities().getEntityDefinition("player")
 						.create(actualSpawnLocation);
-			// entity = new EntityPlayer(this, 0d, 0d, 0d, player.getName()); //Default
-			// entity
 			else
 				entity.setUUID(-1);
 
 			// Name your player !
 			entity.traits.with(TraitName.class, en -> en.setName(player.getName()));
 
-			entity.entityLocation.set(actualSpawnLocation);
+			entity.traitLocation.set(actualSpawnLocation);
 
 			addEntity(entity);
 
@@ -633,7 +622,7 @@ public abstract class WorldImplementation implements World {
 		}
 	}
 
-	@Override
+	/** Requests a full serialization of the world */
 	public Fence saveEverything() {
 		CompoundFence ioOperationsFence = new CompoundFence();
 
@@ -897,7 +886,6 @@ public abstract class WorldImplementation implements World {
 		return contentTranslator;
 	}
 
-	@Override
 	public void destroy() {
 		// Stop the game logic first
 		worldThread.stopLogicThread().traverse();

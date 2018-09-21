@@ -6,15 +6,7 @@
 
 package io.xol.chunkstories.client.net.vanillasockets;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.net.Socket;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import io.xol.chunkstories.api.client.ClientInterface;
+import io.xol.chunkstories.api.client.IngameClient;
 import io.xol.chunkstories.api.exceptions.PacketProcessingException;
 import io.xol.chunkstories.api.exceptions.net.IllegalPacketException;
 import io.xol.chunkstories.api.exceptions.net.UnknowPacketException;
@@ -34,10 +26,18 @@ import io.xol.chunkstories.net.vanillasockets.SendQueue;
 import io.xol.chunkstories.net.vanillasockets.StreamGobbler;
 import io.xol.chunkstories.world.WorldClientRemote;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.net.Socket;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /** A clientside connection to a server using the TCP protocol. */
 public class TCPServerConnection extends ServerConnection {
 
-	private final ClientInterface client;
+	private final IngameClient client;
 	private final ClientPacketsContext packetsContext;
 
 	private Socket socket = null;
@@ -54,7 +54,7 @@ public class TCPServerConnection extends ServerConnection {
 	// A representation of who we're talking to
 	private RemoteServer remoteServer;
 
-	public TCPServerConnection(ClientInterface gameContext, String remoteAddress, int port) {
+	public TCPServerConnection(IngameClient gameContext, String remoteAddress, int port) {
 		super(gameContext, remoteAddress, port);
 		this.client = gameContext;
 
@@ -128,7 +128,7 @@ public class TCPServerConnection extends ServerConnection {
 
 	public boolean handleSystemRequest(String msg) {
 		if (msg.startsWith("chat/")) {
-			client.printChat(msg.substring(5, msg.length()));
+			client.print(msg.substring(5, msg.length()));
 		} else if (msg.startsWith("disconnect/")) {
 			String errorMessage = msg.replace("disconnect/", "");
 			logger.info("Disconnected by server : " + errorMessage);

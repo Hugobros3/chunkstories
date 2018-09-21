@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.xol.chunkstories.api.gui.Gui;
+import io.xol.chunkstories.api.gui.GuiDrawer;
 import io.xol.chunkstories.client.ClientImplementation;
 import org.joml.Vector4f;
 
@@ -36,8 +38,8 @@ public class LevelSelection extends Layer {
 	List<WorldInfoMaster> localWorlds = new ArrayList<WorldInfoMaster>();
 	List<LocalWorldButton> worldsButtons = new ArrayList<LocalWorldButton>();
 
-	public LevelSelection(GameWindow scene, Layer parent) {
-		super(scene, parent);
+	public LevelSelection(Gui gui, Layer parent) {
+		super(gui, parent);
 		// Gui buttons
 
 		this.backOption.setAction(new Runnable() {
@@ -68,13 +70,6 @@ public class LevelSelection extends Layer {
 				try {
 					localWorlds.add(new WorldInfoMaster(infoTxt));
 
-					/*
-					 * BufferedReader reader = new BufferedReader(new InputStreamReader(new
-					 * FileInputStream(infoTxt), "UTF-8"));
-					 * 
-					 * localWorlds.add(new WorldInfoImplementation(reader)); //localWorlds.add(new
-					 * WorldInfoImplementation(infoTxt, f.getName())); reader.close();
-					 */
 				} catch (IOException e) {
 					ClientImplementation.getInstance().logger().error("Could not load world declaration file " + infoTxt);
 				}
@@ -166,15 +161,8 @@ public class LevelSelection extends Layer {
 			this.info = info;
 		}
 
-		/*
-		 * @Override public boolean isMouseOver(Mouse mouse) { return
-		 * (mouse.getCursorX() >= xPosition && mouse.getCursorX() < xPosition + width /
-		 * 2 + 4 && mouse.getCursorY() >= yPosition - height / 2 - 4 &&
-		 * mouse.getCursorY() <= yPosition + height / 2 + 4); }
-		 */
-
 		@Override
-		public void render(RenderingInterface renderer) {
+		public void render(GuiDrawer renderer) {
 			Texture2D texture = renderer.textures()
 					.getTexture((isFocused() || isMouseOver()) ? "./textures/gui/scalableButtonOver.png"
 							: "./textures/gui/scalableButton.png");
@@ -199,13 +187,7 @@ public class LevelSelection extends Layer {
 
 		}
 
-		@Override
-		public void setPosition(float f, float g) {
-			xPosition = (int) f;
-			yPosition = (int) g;
-		}
-
-		public float getWidth() {
+		public int getWidth() {
 			return width;
 		}
 	}

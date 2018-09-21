@@ -6,7 +6,7 @@
 
 package io.xol.chunkstories.server.commands;
 
-import io.xol.chunkstories.api.server.ServerInterface;
+import io.xol.chunkstories.api.server.Server;
 import io.xol.chunkstories.server.commands.admin.ConfigCommands;
 import io.xol.chunkstories.server.commands.admin.ModerationCommands;
 import io.xol.chunkstories.server.commands.admin.SaveCommand;
@@ -32,7 +32,7 @@ import io.xol.chunkstories.server.commands.world.WeatherCommand;
 
 public class InstallServerCommands {
 
-	public InstallServerCommands(ServerInterface server) {
+	public InstallServerCommands(Server server) {
 
 		// Administration
 		new ConfigCommands(server);
