@@ -7,19 +7,19 @@
 package io.xol.chunkstories.server;
 
 import io.xol.chunkstories.api.plugin.ServerPluginManager;
-import io.xol.chunkstories.api.server.ServerInterface;
+import io.xol.chunkstories.api.server.Server;
 import io.xol.chunkstories.plugin.DefaultPluginManager;
 
 public class DefaultServerPluginManager extends DefaultPluginManager implements ServerPluginManager {
-	ServerInterface server;
+	Server server;
 
-	public DefaultServerPluginManager(ServerInterface server) {
+	public DefaultServerPluginManager(Server server) {
 		super(server);
 		this.server = server;
 	}
 
 	@Override
-	public ServerInterface getServerInterface() {
+	public Server getServer() {
 		return server;
 	}
 }

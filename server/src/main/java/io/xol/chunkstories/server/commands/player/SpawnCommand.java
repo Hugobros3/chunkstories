@@ -10,13 +10,13 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
-import io.xol.chunkstories.api.server.ServerInterface;
+import io.xol.chunkstories.api.server.Server;
 import io.xol.chunkstories.server.commands.ServerCommandBasic;
 
 /** Handles the (re)spawn point of a world */
 public class SpawnCommand extends ServerCommandBasic {
 
-	public SpawnCommand(ServerInterface serverConsole) {
+	public SpawnCommand(Server serverConsole) {
 		super(serverConsole);
 		server.getPluginManager().registerCommand("spawn").setHandler(this);
 	}

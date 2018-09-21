@@ -11,12 +11,12 @@ import java.util.Iterator;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
-import io.xol.chunkstories.api.server.ServerInterface;
+import io.xol.chunkstories.api.server.Server;
 import io.xol.chunkstories.server.commands.ServerCommandBasic;
 
 public class ListPlayersCommand extends ServerCommandBasic {
 
-	public ListPlayersCommand(ServerInterface serverConsole) {
+	public ListPlayersCommand(Server serverConsole) {
 		super(serverConsole);
 		server.getPluginManager().registerCommand("list").setHandler(this);
 	}

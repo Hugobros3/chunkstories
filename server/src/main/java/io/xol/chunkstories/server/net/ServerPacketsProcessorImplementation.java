@@ -12,7 +12,7 @@ import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.content.OnlineContentTranslator;
 import io.xol.chunkstories.api.net.Interlocutor;
 import io.xol.chunkstories.api.player.Player;
-import io.xol.chunkstories.api.server.ServerInterface;
+import io.xol.chunkstories.api.server.Server;
 import io.xol.chunkstories.api.server.ServerPacketsProcessor;
 import io.xol.chunkstories.net.PacketsContextCommon;
 import io.xol.chunkstories.server.DedicatedServer;
@@ -28,7 +28,7 @@ public class ServerPacketsProcessorImplementation implements ServerPacketsProces
 	}
 
 	@Override
-	public ServerInterface getContext() {
+	public Server getContext() {
 		return server;
 	}
 
@@ -72,7 +72,7 @@ public class ServerPacketsProcessorImplementation implements ServerPacketsProces
 		}
 
 		@Override
-		public ServerInterface getContext() {
+		public Server getContext() {
 			return ServerPacketsProcessorImplementation.this.getContext();
 		}
 

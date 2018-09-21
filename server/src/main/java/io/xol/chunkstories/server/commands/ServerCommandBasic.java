@@ -7,12 +7,12 @@
 package io.xol.chunkstories.server.commands;
 
 import io.xol.chunkstories.api.plugin.commands.CommandHandler;
-import io.xol.chunkstories.api.server.ServerInterface;
+import io.xol.chunkstories.api.server.Server;
 
 public abstract class ServerCommandBasic implements CommandHandler {
-	protected final ServerInterface server;
+	protected final Server server;
 
-	public ServerCommandBasic(ServerInterface server) {
+	public ServerCommandBasic(Server server) {
 		this.server = server;
 	}
 

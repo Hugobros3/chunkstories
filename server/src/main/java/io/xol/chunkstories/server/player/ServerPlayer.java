@@ -26,7 +26,7 @@ import io.xol.chunkstories.api.net.packets.PacketOpenInventory;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.server.RemotePlayer;
-import io.xol.chunkstories.api.server.ServerInterface;
+import io.xol.chunkstories.api.server.Server;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.util.ColorsTools;
 import io.xol.chunkstories.api.world.WorldMaster;
@@ -42,7 +42,7 @@ import io.xol.chunkstories.world.WorldServer;
 public class ServerPlayer implements RemotePlayer {
 	protected final ClientConnection connection;
 	protected final String name;
-	protected final ServerInterface server;
+	protected final Server server;
 
 	private OldStyleConfigFile playerDataFile;
 
@@ -352,7 +352,7 @@ public class ServerPlayer implements RemotePlayer {
 		return connection;
 	}
 
-	public ServerInterface getContext() {
+	public Server getContext() {
 		return server;
 	}
 

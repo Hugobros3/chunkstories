@@ -31,7 +31,7 @@ import io.xol.chunkstories.api.plugin.ClientPlugin;
 import io.xol.chunkstories.api.plugin.PluginInformation;
 import io.xol.chunkstories.api.plugin.ServerPlugin;
 import io.xol.chunkstories.api.plugin.commands.PluginCommand;
-import io.xol.chunkstories.api.server.ServerInterface;
+import io.xol.chunkstories.api.server.Server;
 import io.xol.chunkstories.content.GameDirectory;
 
 /**
@@ -90,7 +90,7 @@ public class PluginInformationImplementation extends URLClassLoader implements P
 			} else if (ServerPlugin.class.isAssignableFrom(entryPointClassUnchecked)) {
 				pluginType = PluginType.MASTER;
 
-				Class<?>[] types = new Class[] { PluginInformation.class, ServerInterface.class };
+				Class<?>[] types = new Class[] { PluginInformation.class, Server.class };
 				entryPointConstructor = entryPointClass.getConstructor(types);
 			}
 			// If it's not a derivative of either ClientPlugin or ServerPlugin, it's then a
@@ -234,15 +234,15 @@ public class PluginInformationImplementation extends URLClassLoader implements P
 				ClientInterface clientInterface = (ClientInterface) pluginExecutionContext;
 				return (ClientPlugin) entryPointConstructor.newInstance(new Object[] { this, clientInterface });
 			case MASTER:
-				if (!(pluginExecutionContext instanceof ServerInterface))
+				if (!(pluginExecutionContext instanceof Server))
 					throw new IllegalArgumentException() {
 						public String getMessage() {
-							return "Attempted to create a serverside-only plugin without using a ServerInterface as a PluginExecutionContext";
+							return "Attempted to create a serverside-only plugin without using a Server as a PluginExecutionContext";
 						}
 					};
 
-				ServerInterface serverInterface = (ServerInterface) pluginExecutionContext;
-				return (ServerPlugin) entryPointConstructor.newInstance(new Object[] { this, serverInterface });
+				Server Server = (Server) pluginExecutionContext;
+				return (ServerPlugin) entryPointConstructor.newInstance(new Object[] { this, Server });
 			default:
 				return (ChunkStoriesPlugin) entryPointConstructor
 						.newInstance(new Object[] { this, pluginExecutionContext });

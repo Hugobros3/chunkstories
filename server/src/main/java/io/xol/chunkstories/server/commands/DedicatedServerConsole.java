@@ -8,7 +8,7 @@ package io.xol.chunkstories.server.commands;
 
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
 import io.xol.chunkstories.api.plugin.commands.ServerConsole;
-import io.xol.chunkstories.api.server.ServerInterface;
+import io.xol.chunkstories.api.server.Server;
 import io.xol.chunkstories.api.util.ColorsTools;
 import io.xol.chunkstories.server.DedicatedServer;
 
@@ -54,7 +54,7 @@ public class DedicatedServerConsole implements ServerConsole {
 	}
 
 	@Override
-	public ServerInterface getServer() {
+	public Server getServer() {
 		return server;
 	}
 }

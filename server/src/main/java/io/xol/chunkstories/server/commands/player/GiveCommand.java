@@ -15,13 +15,13 @@ import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
-import io.xol.chunkstories.api.server.ServerInterface;
+import io.xol.chunkstories.api.server.Server;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.server.commands.ServerCommandBasic;
 
 public class GiveCommand extends ServerCommandBasic {
 
-	public GiveCommand(ServerInterface serverConsole) {
+	public GiveCommand(Server serverConsole) {
 		super(serverConsole);
 		server.getPluginManager().registerCommand("give").setHandler(this);
 	}
@@ -88,8 +88,8 @@ public class GiveCommand extends ServerCommandBasic {
 			amount = Integer.parseInt(arguments[1]);
 		}
 		if (arguments.length >= 3) {
-			if (gameContent instanceof ServerInterface)
-				to = ((ServerInterface) gameContent).getPlayerByName(arguments[2]);
+			if (gameContent instanceof Server)
+				to = ((Server) gameContent).getPlayerByName(arguments[2]);
 			else {
 				player.sendMessage("#FF969BThis is a singleplayer world - there are no other players");
 				return true;

@@ -11,13 +11,13 @@ import io.xol.chunkstories.api.entity.traits.serializable.TraitHealth;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
-import io.xol.chunkstories.api.server.ServerInterface;
+import io.xol.chunkstories.api.server.Server;
 import io.xol.chunkstories.server.commands.ServerCommandBasic;
 
 /** Heals */
 public class HealthCommand extends ServerCommandBasic {
 
-	public HealthCommand(ServerInterface serverConsole) {
+	public HealthCommand(Server serverConsole) {
 		super(serverConsole);
 		server.getPluginManager().registerCommand("health").setHandler(this);
 	}

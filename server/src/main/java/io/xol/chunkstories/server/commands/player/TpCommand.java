@@ -10,12 +10,12 @@ import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
-import io.xol.chunkstories.api.server.ServerInterface;
+import io.xol.chunkstories.api.server.Server;
 import io.xol.chunkstories.server.commands.ServerCommandBasic;
 
 public class TpCommand extends ServerCommandBasic {
 
-	public TpCommand(ServerInterface serverConsole) {
+	public TpCommand(Server serverConsole) {
 		super(serverConsole);
 		server.getPluginManager().registerCommand("tp").setHandler(this);
 	}

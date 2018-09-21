@@ -16,7 +16,7 @@ import io.xol.chunkstories.api.entity.traits.serializable.TraitHealth;
 import io.xol.chunkstories.api.events.player.PlayerChatEvent;
 import io.xol.chunkstories.api.events.player.PlayerLogoutEvent;
 import io.xol.chunkstories.api.net.Interlocutor;
-import io.xol.chunkstories.api.server.ServerInterface;
+import io.xol.chunkstories.api.server.Server;
 import io.xol.chunkstories.content.translator.AbstractContentTranslator;
 import io.xol.chunkstories.net.Connection;
 import io.xol.chunkstories.net.packets.PacketContentTranslator;
@@ -29,7 +29,7 @@ import io.xol.chunkstories.world.WorldServer;
 
 public abstract class ClientConnection extends Connection implements Interlocutor {
 
-	protected final ServerInterface server;
+	protected final Server server;
 	protected final ClientsManager clientsManager;
 
 	protected final Logger logger;
@@ -45,7 +45,7 @@ public abstract class ClientConnection extends Connection implements Interlocuto
 	 */
 	private static final AtomicInteger usersCount = new AtomicInteger();
 
-	public ClientConnection(ServerInterface server, ClientsManager clientsManager, String remoteAddress, int port) {
+	public ClientConnection(Server server, ClientsManager clientsManager, String remoteAddress, int port) {
 		super(server, remoteAddress, port);
 		this.server = server;
 		this.clientsManager = clientsManager;
@@ -56,7 +56,7 @@ public abstract class ClientConnection extends Connection implements Interlocuto
 		this.loginHelper = new PlayerLoginHelper(this);
 	}
 
-	public ServerInterface getContext() {
+	public Server getContext() {
 		return server;
 	}
 

@@ -8,12 +8,12 @@ package io.xol.chunkstories.server.commands.debug;
 
 import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
-import io.xol.chunkstories.api.server.ServerInterface;
+import io.xol.chunkstories.api.server.Server;
 import io.xol.chunkstories.server.commands.ServerCommandBasic;
 
 public class MiscDebugCommands extends ServerCommandBasic {
 
-	public MiscDebugCommands(ServerInterface serverConsole) {
+	public MiscDebugCommands(Server serverConsole) {
 		super(serverConsole);
 		server.getPluginManager().registerCommand("gc").setHandler(this);
 	}

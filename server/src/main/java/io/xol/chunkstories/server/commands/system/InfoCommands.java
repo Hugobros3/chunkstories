@@ -12,14 +12,14 @@ import io.xol.chunkstories.api.content.mods.Mod;
 import io.xol.chunkstories.api.plugin.ChunkStoriesPlugin;
 import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
-import io.xol.chunkstories.api.server.ServerInterface;
+import io.xol.chunkstories.api.server.Server;
 import io.xol.chunkstories.server.commands.ServerCommandBasic;
 import io.xol.chunkstories.util.VersionInfo;
 
 /** Handles /uptime, /info commands */
 public class InfoCommands extends ServerCommandBasic {
 
-	public InfoCommands(ServerInterface serverConsole) {
+	public InfoCommands(Server serverConsole) {
 		super(serverConsole);
 
 		server.getPluginManager().registerCommand("uptime").setHandler(this);

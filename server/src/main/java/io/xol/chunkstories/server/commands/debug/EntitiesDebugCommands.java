@@ -11,12 +11,12 @@ import java.util.Iterator;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
-import io.xol.chunkstories.api.server.ServerInterface;
+import io.xol.chunkstories.api.server.Server;
 import io.xol.chunkstories.server.commands.ServerCommandBasic;
 
 public class EntitiesDebugCommands extends ServerCommandBasic {
 
-	public EntitiesDebugCommands(ServerInterface serverConsole) {
+	public EntitiesDebugCommands(Server serverConsole) {
 		super(serverConsole);
 		server.getPluginManager().registerCommand("entities").setHandler(this);
 	}

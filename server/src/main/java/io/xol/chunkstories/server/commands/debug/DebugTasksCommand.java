@@ -8,13 +8,13 @@ package io.xol.chunkstories.server.commands.debug;
 
 import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
-import io.xol.chunkstories.api.server.ServerInterface;
+import io.xol.chunkstories.api.server.Server;
 import io.xol.chunkstories.server.commands.ServerCommandBasic;
 import io.xol.chunkstories.task.WorkerThreadPool;
 
 public class DebugTasksCommand extends ServerCommandBasic {
 
-	public DebugTasksCommand(ServerInterface serverConsole) {
+	public DebugTasksCommand(Server serverConsole) {
 		super(serverConsole);
 		server.getPluginManager().registerCommand("tasks").setHandler(this);
 	}

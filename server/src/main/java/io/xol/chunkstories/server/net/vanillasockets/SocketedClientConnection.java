@@ -23,7 +23,7 @@ import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.PacketDefinition.PacketGenre;
 import io.xol.chunkstories.api.net.PacketWorldStreaming;
 import io.xol.chunkstories.api.net.packets.PacketText;
-import io.xol.chunkstories.api.server.ServerInterface;
+import io.xol.chunkstories.api.server.Server;
 import io.xol.chunkstories.net.Connection;
 import io.xol.chunkstories.net.LogicalPacketDatagram;
 import io.xol.chunkstories.net.PacketDefinitionImplementation;
@@ -44,7 +44,7 @@ public class SocketedClientConnection extends ClientConnection {
 	private StreamGobbler streamGobbler;
 	private SendQueue sendQueue;
 
-	public SocketedClientConnection(ServerInterface server, ClientsManager clientsManager, Socket socket)
+	public SocketedClientConnection(Server server, ClientsManager clientsManager, Socket socket)
 			throws IOException {
 		super(server, clientsManager, socket.getInetAddress().getHostAddress(), socket.getPort());
 		this.clientsManager = clientsManager;

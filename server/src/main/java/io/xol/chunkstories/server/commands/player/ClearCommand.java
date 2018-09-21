@@ -11,13 +11,13 @@ import io.xol.chunkstories.api.entity.traits.serializable.TraitInventory;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.plugin.commands.Command;
 import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
-import io.xol.chunkstories.api.server.ServerInterface;
+import io.xol.chunkstories.api.server.Server;
 import io.xol.chunkstories.server.commands.ServerCommandBasic;
 
 /** Removes all items from inventory */
 public class ClearCommand extends ServerCommandBasic {
 
-	public ClearCommand(ServerInterface serverConsole) {
+	public ClearCommand(Server serverConsole) {
 		super(serverConsole);
 		server.getPluginManager().registerCommand("clear").setHandler(this);
 	}

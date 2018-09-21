@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.player.Player;
-import io.xol.chunkstories.api.server.DedicatedServerInterface;
+import io.xol.chunkstories.api.server.DedicatedServer;
 import io.xol.chunkstories.api.server.PermissionsManager;
 import io.xol.chunkstories.api.server.UserPrivileges;
 import io.xol.chunkstories.api.util.ColorsTools;
@@ -55,7 +55,7 @@ import io.xol.chunkstories.world.WorldServer;
  * also takes care of the command line input as it's the main thread, thought
  * the processing of command lines is handled by ServerConsole.java
  */
-public class DedicatedServer implements Runnable, DedicatedServerInterface {
+public class DedicatedServer implements Runnable, DedicatedServer {
 	static DedicatedServer server;
 
 	public static void main(String args[]) {
