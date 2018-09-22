@@ -6,7 +6,6 @@
 
 package io.xol.chunkstories.world.chunk;
 
-import io.xol.chunkstories.api.rendering.world.chunk.ChunkRenderable;
 import io.xol.chunkstories.api.workers.Task;
 import io.xol.chunkstories.api.workers.TaskExecutor;
 import io.xol.chunkstories.world.WorldImplementation;
@@ -52,8 +51,8 @@ public class TaskLightChunk extends Task {
 			int mods = chunk.lightBaker.computeVoxelLightningInternal(updateAdjacentChunks);
 
 			// Blocks have changed ?
-			if (mods > 0 && chunk instanceof ChunkRenderable)
-				((ChunkRenderable) chunk).meshUpdater().requestMeshUpdate();
+			if (mods > 0)
+				chunk.mesh().incrementPendingUpdates();
 
 			// Remove however many updates were pending
 			chunk.lightBaker.unbakedUpdates.addAndGet(-updatesNeeded);
@@ -65,7 +64,7 @@ public class TaskLightChunk extends Task {
 			// Re-schedule a new task immediately if updates happened while we worked
 			if (chunk.lightBaker.unbakedUpdates.get() > 0) {
 				chunk.lightBaker.task = new TaskLightChunk(chunk, true);
-				chunk.getWorld().getGameContext().tasks().scheduleTask(chunk.lightBaker.task);
+				chunk.getWorld().getGameContext().getTasks().scheduleTask(chunk.lightBaker.task);
 			}
 			// Set the task reference to null so a new task can be spawned as needed
 			else {

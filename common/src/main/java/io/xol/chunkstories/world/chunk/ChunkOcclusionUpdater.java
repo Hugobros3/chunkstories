@@ -43,7 +43,7 @@ public class ChunkOcclusionUpdater implements ChunkOcclusionManager {
 
 		if (task == null || task.isDone() || task.isCancelled()) {
 			task = new TaskComputeChunkOcclusion(chunk);
-			chunk.getWorld().getGameContext().tasks().scheduleTask(task);
+			chunk.getWorld().getGameContext().getTasks().scheduleTask(task);
 		}
 
 		fence = task;
@@ -59,7 +59,7 @@ public class ChunkOcclusionUpdater implements ChunkOcclusionManager {
 
 			if (task == null || task.isDone() || task.isCancelled()) {
 				task = new TaskComputeChunkOcclusion(chunk);
-				chunk.getWorld().getGameContext().tasks().scheduleTask(task);
+				chunk.getWorld().getGameContext().getTasks().scheduleTask(task);
 			}
 
 			taskLock.unlock();

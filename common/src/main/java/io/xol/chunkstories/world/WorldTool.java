@@ -8,13 +8,15 @@ package io.xol.chunkstories.world;
 
 import java.util.Iterator;
 
+import io.xol.chunkstories.api.graphics.systems.dispatching.DecalsManager;
+import io.xol.chunkstories.api.world.WorldInfo;
+import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3dc;
 import org.joml.Vector3fc;
 
 import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.player.Player;
-import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.sound.SoundSource;
 import io.xol.chunkstories.api.sound.SoundSource.Mode;
@@ -27,24 +29,25 @@ import io.xol.chunkstories.world.io.IOTasksImmediate;
 public class WorldTool extends WorldImplementation implements WorldMaster {
 	private final GameContext toolContext;
 
+	final IOTasks ioHandler;
 	private boolean isLightningEnabled = false;
 
-	public WorldTool(GameContext toolContext, WorldInfoImplementation info) throws WorldLoadingException {
+	public WorldTool(GameContext toolContext, WorldInfo info) throws WorldLoadingException {
 		this(toolContext, info, true);
 	}
 
-	public WorldTool(GameContext toolContext, WorldInfoImplementation info, boolean immediateIO)
+	public WorldTool(GameContext toolContext, WorldInfo info, boolean immediateIO)
 			throws WorldLoadingException {
-		super(toolContext, info);
+		super(toolContext, info, null, null);
 
 		this.toolContext = toolContext;
 
 		if (immediateIO)
-			ioHandler = new IOTasksImmediate(this);
+			ioHandler = (new IOTasksImmediate(this));
 		else {
 			// Normal IO.
-			ioHandler = new IOTasks(this);
-			ioHandler.start();
+			ioHandler = (new IOTasks(this));
+			getIoHandler().start();
 		}
 		// ioHandler.start();
 	}
@@ -64,6 +67,12 @@ public class WorldTool extends WorldImplementation implements WorldMaster {
 	}
 
 	NullSoundManager nullSoundManager = new NullSoundManager();
+
+	@NotNull
+	@Override
+	public IOTasks getIoHandler() {
+		return ioHandler;
+	}
 
 	class NullSoundManager implements SoundManager {
 
@@ -133,11 +142,9 @@ public class WorldTool extends WorldImplementation implements WorldMaster {
 	class NullDecalsManager implements DecalsManager {
 
 		@Override
-		public void drawDecal(Vector3dc position, Vector3dc orientation, Vector3dc size, String decalName) {
-			// TODO Auto-generated method stub
+		public void add(@NotNull Vector3dc vector3dc, @NotNull Vector3dc vector3dc1, @NotNull Vector3dc vector3dc2, @NotNull String s) {
 
 		}
-
 	}
 
 	@Override

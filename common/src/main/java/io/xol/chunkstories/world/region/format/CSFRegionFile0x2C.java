@@ -67,12 +67,12 @@ public class CSFRegionFile0x2C extends CSFRegionFile {
 			owner.setDiskDataLoaded(true);
 
 			// don't tick the world entities until we get this straight
-			owner.world.entitiesLock.writeLock().lock();
+			owner.world.getEntitiesLock().writeLock().lock();
 
 			// Older version case - TODO write a version mechanism that prevents from
 			// checking this
 			if (in.available() <= 0) {
-				owner.world.entitiesLock.writeLock().unlock();
+				owner.world.getEntitiesLock().writeLock().unlock();
 				return;
 			}
 
@@ -92,7 +92,7 @@ public class CSFRegionFile0x2C extends CSFRegionFile {
 				// e.printStackTrace();
 			}
 
-			owner.world.entitiesLock.writeLock().unlock();
+			owner.world.getEntitiesLock().writeLock().unlock();
 
 		} finally {
 			in.close();

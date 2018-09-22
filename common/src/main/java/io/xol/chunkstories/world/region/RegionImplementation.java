@@ -106,7 +106,7 @@ public class RegionImplementation implements Region {
 		if (world instanceof WorldMaster) {
 			file = new File(world.getFolderPath() + "/regions/" + regionX + "." + regionY + "." + regionZ + ".csf");
 			// CSFRegionFile.determineVersionAndCreate(this);
-			world.ioHandler.requestRegionLoad(this);
+			world.getIoHandler().requestRegionLoad(this);
 		} else {
 			file = null;
 			isDiskDataLoaded.set(true);
@@ -241,7 +241,7 @@ public class RegionImplementation implements Region {
 
 	@Override
 	public IOTask save() {
-		return world.ioHandler.requestRegionSave(this);
+		return world.getIoHandler().requestRegionSave(this);
 	}
 
 	/*

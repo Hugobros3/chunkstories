@@ -24,7 +24,6 @@ import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.events.voxel.WorldModificationCause;
 import io.xol.chunkstories.api.exceptions.world.WorldException;
 import io.xol.chunkstories.api.net.packets.PacketVoxelUpdate;
-import io.xol.chunkstories.api.rendering.world.chunk.ChunkRenderable;
 import io.xol.chunkstories.api.server.RemotePlayer;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.util.IterableIteratorWrapper;
@@ -394,8 +393,8 @@ public class CubicChunk implements Chunk {
 				for (int iy = sy; iy <= ey; iy++)
 					for (int iz = sz; iz <= ez; iz++) {
 						Chunk chunk = world.getChunk(ix, iy, iz);
-						if (chunk != null && chunk instanceof ChunkRenderable)
-							((ChunkRenderable) chunk).meshUpdater().requestMeshUpdate();
+						if (chunk != null)
+							chunk.mesh().incrementPendingUpdates();
 					}
 		}
 
@@ -659,6 +658,11 @@ public class CubicChunk implements Chunk {
 	@Override
 	public ChunkLightUpdater lightBaker() {
 		return lightBaker;
+	}
+
+	@Override
+	public ChunkMesh mesh() {
+		return null; //TODO
 	}
 
 	@Override

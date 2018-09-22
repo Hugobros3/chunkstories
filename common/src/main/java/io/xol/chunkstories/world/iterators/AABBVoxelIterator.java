@@ -6,7 +6,7 @@
 
 package io.xol.chunkstories.world.iterators;
 
-import io.xol.chunkstories.api.physics.CollisionBox;
+import io.xol.chunkstories.api.physics.Box;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.voxel.Voxel;
 import io.xol.chunkstories.api.voxel.VoxelFormat;
@@ -16,7 +16,7 @@ import io.xol.chunkstories.api.world.cell.CellData;
 
 public class AABBVoxelIterator implements IterableIterator<CellData>, CellData {
 	private final World world;
-	private final CollisionBox collisionBox;
+	private final Box Box;
 
 	// private final Voxels voxels;
 
@@ -29,27 +29,27 @@ public class AABBVoxelIterator implements IterableIterator<CellData>, CellData {
 	Voxel voxel;
 	int sunlight, blocklight, metadata;
 
-	public AABBVoxelIterator(World world, CollisionBox collisionBox) {
+	public AABBVoxelIterator(World world, Box Box) {
 		this.world = world;
-		this.collisionBox = collisionBox;
+		this.Box = Box;
 
 		// this.voxels = world.getGameContext().getContent().voxels();
 
-		this.minx = (int) Math.floor(collisionBox.xpos);
-		this.miny = (int) Math.floor(collisionBox.ypos);
-		this.minz = (int) Math.floor(collisionBox.zpos);
+		this.minx = (int) Math.floor(Box.xPosition);
+		this.miny = (int) Math.floor(Box.yPosition);
+		this.minz = (int) Math.floor(Box.zPosition);
 
-		this.maxx = (int) Math.ceil(collisionBox.xpos + collisionBox.xw);
-		this.maxy = (int) Math.ceil(collisionBox.ypos + collisionBox.h);
-		this.maxz = (int) Math.ceil(collisionBox.zpos + collisionBox.zw);
+		this.maxx = (int) Math.ceil(Box.xPosition + Box.xWidth);
+		this.maxy = (int) Math.ceil(Box.yPosition + Box.yHeight);
+		this.maxz = (int) Math.ceil(Box.zPosition + Box.zWidth);
 
 		this.i = minx;
 		this.j = miny;
 		this.k = minz;
 	}
 
-	public CollisionBox getCollisionBox() {
-		return collisionBox;
+	public Box getBox() {
+		return Box;
 	}
 
 	@Override
@@ -58,7 +58,7 @@ public class AABBVoxelIterator implements IterableIterator<CellData>, CellData {
 		/*
 		 * if(i == maxx && j == maxy && k == maxz) return false; return true;
 		 */
-		// return k <= (int)Math.ceil(collisionBox.zpos + collisionBox.zw);
+		// return k <= (int)Math.ceil(Box.zpos + Box.zw);
 	}
 
 	@Override

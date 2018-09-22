@@ -54,10 +54,12 @@ public class TaskGenerateWorldSlice extends Task implements WorldUser {
 
 			// Once the region & it's heightmap has been generated, tell the game client to
 			// rebuild them
-			if (world instanceof WorldClient) {
-				((WorldClient) world).getWorldRenderer().getSummariesTexturesHolder()
-						.warnDataHasArrived(heightmap.getRegionX(), heightmap.getRegionZ());
-			}
+
+			//TODO maybe a callback here ?
+			//if (world instanceof WorldClient) {
+			//	((WorldClient) world).getWorldRenderer().getSummariesTexturesHolder()
+			//			.warnDataHasArrived(heightmap.getRegionX(), heightmap.getRegionZ());
+			//}
 
 			this.heightmap.save().traverse();
 			this.heightmap.unregisterUser(this);
@@ -85,7 +87,7 @@ public class TaskGenerateWorldSlice extends Task implements WorldUser {
 				TaskGenerateWorldThinSlice task = new TaskGenerateWorldThinSlice(world,
 						heightmap.getRegionX() * 8 + directed_relative_chunkX,
 						heightmap.getRegionZ() * 8 + directed_relative_chunkZ, heightmap);
-				world.getGameContext().tasks().scheduleTask(task);
+				world.getGameContext().getTasks().scheduleTask(task);
 				f[relative_chunkZ] = task;
 			}
 			relative_chunkX++;

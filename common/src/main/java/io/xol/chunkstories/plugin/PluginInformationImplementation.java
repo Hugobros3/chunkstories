@@ -22,7 +22,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import io.xol.chunkstories.api.GameContext;
-import io.xol.chunkstories.api.client.ClientInterface;
+import io.xol.chunkstories.api.client.Client;
 import io.xol.chunkstories.api.exceptions.plugins.PluginCreationException;
 import io.xol.chunkstories.api.exceptions.plugins.PluginInfoException;
 import io.xol.chunkstories.api.exceptions.plugins.PluginLoadException;
@@ -85,7 +85,7 @@ public class PluginInformationImplementation extends URLClassLoader implements P
 			if (ClientPlugin.class.isAssignableFrom(entryPointClassUnchecked)) {
 				pluginType = PluginType.CLIENT_ONLY;
 
-				Class<?>[] types = new Class[] { PluginInformation.class, ClientInterface.class };
+				Class<?>[] types = new Class[] { PluginInformation.class, Client.class };
 				entryPointConstructor = entryPointClass.getConstructor(types);
 			} else if (ServerPlugin.class.isAssignableFrom(entryPointClassUnchecked)) {
 				pluginType = PluginType.MASTER;
@@ -224,14 +224,14 @@ public class PluginInformationImplementation extends URLClassLoader implements P
 		try {
 			switch (pluginType) {
 			case CLIENT_ONLY:
-				if (!(pluginExecutionContext instanceof ClientInterface))
+				if (!(pluginExecutionContext instanceof Client))
 					throw new IllegalArgumentException() {
 						public String getMessage() {
-							return "Attempted to create a clientside-only plugin without using a ClientInterface as a PluginExecutionContext";
+							return "Attempted to create a clientside-only plugin without using a Client as a PluginExecutionContext";
 						}
 					};
 
-				ClientInterface clientInterface = (ClientInterface) pluginExecutionContext;
+				Client clientInterface = (Client) pluginExecutionContext;
 				return (ClientPlugin) entryPointConstructor.newInstance(new Object[] { this, clientInterface });
 			case MASTER:
 				if (!(pluginExecutionContext instanceof Server))

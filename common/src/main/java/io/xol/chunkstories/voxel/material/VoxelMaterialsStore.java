@@ -50,8 +50,6 @@ public class VoxelMaterialsStore implements Content.Voxels.VoxelMaterials {
 	}
 
 	private void readDefinitions(Asset f) {
-		if (f == null)
-			return;
 		try {
 			BufferedReader reader = new BufferedReader(f.reader());
 			String line = "";

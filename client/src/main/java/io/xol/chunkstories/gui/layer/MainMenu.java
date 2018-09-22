@@ -15,7 +15,7 @@ import io.xol.chunkstories.api.gui.elements.LargeButton;
 import io.xol.chunkstories.api.gui.elements.LargeButtonIcon;
 import io.xol.chunkstories.api.item.inventory.BasicInventory;
 import io.xol.chunkstories.api.item.inventory.Inventory;
-import io.xol.chunkstories.api.rendering.GameWindow;
+import io.xol.chunkstories.api.rendering.gui;
 import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.gui.layer.config.LanguageSelectionScreen;
 import io.xol.chunkstories.gui.layer.config.LogPolicyAsk;
@@ -36,10 +36,10 @@ public class MainMenu extends Layer {
 	public MainMenu(Gui scene, Layer parent) {
 		super(scene, parent);
 
-		this.largeSingleplayer.setAction(() -> gameWindow.setLayer(new LevelSelection(gameWindow, MainMenu.this)));
-		this.largeOnline.setAction(() -> gameWindow.setLayer(new ServerSelection(gameWindow, MainMenu.this, false)));
-		this.largeMods.setAction(() -> gameWindow.setLayer(new ModsSelection(gameWindow, MainMenu.this)));
-		this.largeOptions.setAction(() -> gameWindow.setLayer(new OptionsScreen(gameWindow, MainMenu.this)));
+		this.largeSingleplayer.setAction(() -> gui.setTopLayer(new LevelSelection(gui, MainMenu.this)));
+		this.largeOnline.setAction(() -> gui.setTopLayer(new ServerSelection(gui, MainMenu.this, false)));
+		this.largeMods.setAction(() -> gui.setTopLayer(new ModsSelection(gui, MainMenu.this)));
+		this.largeOptions.setAction(() -> gui.setTopLayer(new OptionsScreen(gui, MainMenu.this)));
 
 		largeOnline.setWidth(104);
 		largeSingleplayer.setWidth(104);
@@ -54,47 +54,46 @@ public class MainMenu extends Layer {
 	}
 
 	@Override
-	public void render(GuiDrawer renderingContext) {
-		parentLayer.render(renderingContext);
+	public void render(GuiDrawer drawer) {
+		parentLayer.render(drawer);
 
-		if (gameWindow.getLayer() == this && gameWindow.getClient().getConfiguration()
+		if (gui.getTopLayer() == this && gui.getClient().getConfiguration()
 				.getStringOption("client.game.log-policy").equals("undefined"))
-			gameWindow.setLayer(new LogPolicyAsk(gameWindow, this));
+			gui.setTopLayer(new LogPolicyAsk(gui, this));
 
-		float spacing = 4;
-		float buttonsAreaSize = largeSingleplayer.getWidth() * 2 + spacing * this.getGuiScale();
+		int spacing = 4;
+		int buttonsAreaSize = largeSingleplayer.getWidth() * 2 + spacing;
 
-		float leftButtonX = this.getWidth() / 2 - buttonsAreaSize / 2 + 0.0f;
+		int leftButtonX = this.getWidth() / 2 - buttonsAreaSize / 2;
 
-		float ySmall = (12) * this.getGuiScale();
-		float yBig = ySmall + largeSingleplayer.getHeight() + (spacing) * this.getGuiScale();
+		int ySmall = 12;
+		int yBig = ySmall + largeSingleplayer.getHeight() + (spacing);
 
 		largeOnline.setPosition(leftButtonX, yBig);
-		largeOnline.render(renderingContext);
+		largeOnline.render(drawer);
 
 		largeSingleplayer.setPosition(leftButtonX, ySmall);
-		largeSingleplayer.render(renderingContext);
+		largeSingleplayer.render(drawer);
 
-		float rightButtonX = leftButtonX + largeSingleplayer.getWidth() + (spacing) * this.getGuiScale();
+		int rightButtonX = leftButtonX + largeSingleplayer.getWidth() + (spacing) * 1;
 
 		largeMods.setPosition(rightButtonX, yBig);
-		largeMods.render(renderingContext);
+		largeMods.render(drawer);
 
 		largeOptions.setPosition(rightButtonX, ySmall);
-		largeOptions.render(renderingContext);
+		largeOptions.render(drawer);
 
 		// Notices
 		Vector4f noticeColor = new Vector4f(0.5f);
-		String version = "Chunk Stories ClientImplementation " + VersionInfo.version;
-		renderingContext.getFontRenderer().defaultFont().getWidth(version);
-		renderingContext.getFontRenderer().drawString(renderingContext.getFontRenderer().defaultFont(), 4, 0, version,
-				this.getGuiScale(), noticeColor);
+		String version = "Chunk Stories Client " + VersionInfo.version;
+		drawer.getFonts().defaultFont().getWidth(version);
+		drawer.drawString(drawer.getFonts().defaultFont(), 4, 0, version,
+				1, noticeColor);
 
-		String copyrightNotice = "2015-2018 Hugo 'Gobrosse' Devillers";
-		float noticeDekal = renderingContext.getFontRenderer().defaultFont().getWidth(copyrightNotice)
-				* (this.getGuiScale());
-		renderingContext.getFontRenderer().drawString(renderingContext.getFontRenderer().defaultFont(),
-				renderingContext.getWindow().getWidth() - noticeDekal - 4, 0, copyrightNotice, this.getGuiScale(),
+		String copyrightNotice = "https://github.com/Hugobros3/chunkstories";
+		int noticeDekal = drawer.getFonts().defaultFont().getWidth(copyrightNotice);
+		drawer.drawString(drawer.getFonts().defaultFont(),
+				gui.getViewportWidth() - noticeDekal - 4, 0, copyrightNotice, 1,
 				noticeColor);
 
 	}
@@ -102,15 +101,15 @@ public class MainMenu extends Layer {
 	@Override
 	public boolean handleTextInput(char c) {
 		if (c == 'e') {
-			gameWindow.setLayer(new InventoryView(gameWindow, this, new Inventory[] { new BasicInventory(10, 4) }));
+			gui.setTopLayer(new InventoryView(gui, this, new Inventory[]{new BasicInventory(10, 4)}));
 		} else if (c == 'd') {
-			gameWindow.setLayer(new DeathScreen(gameWindow, this));
+			gui.setTopLayer(new DeathScreen(gui, this));
 		} else if (c == 'r') {
-			gameWindow.setLayer(new MessageBox(gameWindow, this, "Error : error"));
+			gui.setTopLayer(new MessageBox(gui, this, "Error : error"));
 		} else if (c == 'l') {
-			gameWindow.setLayer(new LanguageSelectionScreen(gameWindow, this, true));
+			gui.setTopLayer(new LanguageSelectionScreen(gui, this, true));
 		} else if (c == 'o') {
-			gameWindow.setLayer(new LogPolicyAsk(gameWindow, this));
+			gui.setTopLayer(new LogPolicyAsk(gui, this));
 		} else if (c == 'c') {
 			// Fabricated crash
 			throw new RuntimeException("Epic crash");
@@ -118,20 +117,4 @@ public class MainMenu extends Layer {
 
 		return super.handleTextInput(c);
 	}
-
-	// TODO re-include some of that stuff
-	/*
-	 * @Override public boolean handleKeypress(int k) { if (k == Keyboard.KEY_E)
-	 * mainScene.changeOverlay(new InventoryOverlay(mainScene, this, new
-	 * Inventory[]{new BasicInventory(10, 4) , new InventoryLocalCreativeMenu()}));
-	 * // new Inventory(null, 10, 4, "La chatte à ta mère") if (k ==
-	 * Keyboard.KEY_D) mainScene.changeOverlay(new DeathOverlay(mainScene, this));
-	 * 
-	 * if (k == Keyboard.KEY_R) mainScene.changeOverlay(new
-	 * MessageBoxOverlay(mainScene, this, "Error : error"));
-	 * 
-	 * if (k == Keyboard.KEY_C && Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)) {
-	 * //Fabricated crash throw new RuntimeException("Epic crash"); } return false;
-	 * }
-	 */
 }

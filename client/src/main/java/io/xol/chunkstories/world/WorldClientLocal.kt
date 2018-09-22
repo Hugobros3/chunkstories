@@ -22,8 +22,9 @@ constructor(val localHost: IngameClientLocalHost, info: WorldInfo, folder: File)
     override val soundManager: SoundManager
         get() = client.soundManager
 
+    override val ioHandler = IOTasks(this)
+
     init {
-        ioHandler = IOTasks(this)
         ioHandler.start()
     }
 
@@ -33,7 +34,7 @@ constructor(val localHost: IngameClientLocalHost, info: WorldInfo, folder: File)
         super.tick()
     }
 
-    override fun getPlayers(): IterableIterator<Player> = localHost.connectedPlayers
+    override val players: IterableIterator<Player> = localHost.connectedPlayers
 
     override fun getPlayerByName(playerName: String): Player? = localHost.getPlayerByName(playerName)
 }

@@ -201,7 +201,7 @@ public class ChunkHolderImplementation implements ChunkHolder {
 		for (Entity entity : chunk.localEntities) {
 
 			// Don't save controllable entities
-			if (!entity.entityLocation.wasRemoved() && !(entity.traits.has(TraitDontSave.class))) {
+			if (!entity.traitLocation.wasRemoved() && !(entity.traits.has(TraitDontSave.class))) {
 				EntitySerializer.writeEntityToStream(daos, region.handler, entity);
 			}
 		}
@@ -241,7 +241,7 @@ public class ChunkHolderImplementation implements ChunkHolder {
 		this.chunk = null;
 
 		// Remove the entities from this chunk from the world
-		region.world.entitiesLock.writeLock().lock();
+		region.world.getEntitiesLock().writeLock().lock();
 		Iterator<Entity> i = chunk.localEntities.iterator();
 		while (i.hasNext()) {
 			Entity entity = i.next();
@@ -252,7 +252,7 @@ public class ChunkHolderImplementation implements ChunkHolder {
 				region.world.removeEntityFromList(entity);
 			}
 		}
-		region.world.entitiesLock.writeLock().unlock();
+		region.world.getEntitiesLock().writeLock().unlock();
 
 		// Lock it down
 		chunk.entitiesLock.lock();
@@ -326,7 +326,7 @@ public class ChunkHolderImplementation implements ChunkHolder {
 			// too much
 			if (chunk == null && loadChunkTask == null) {
 				// We create a task only if one isn't already ongoing.
-				loadChunkTask = getRegion().getWorld().ioHandler.requestChunkLoad(this);
+				loadChunkTask = getRegion().getWorld().getIoHandler().requestChunkLoad(this);
 			}
 
 			return true;
@@ -457,8 +457,9 @@ public class ChunkHolderImplementation implements ChunkHolder {
 			regionLoadedChunks.add(chunk);
 		this.chunk = chunk;
 
-		if (region.getWorld() instanceof WorldClient)
-			((WorldClient) region.getWorld()).getWorldRenderer().flagChunksModified();
+		//TODO maybe a callback here ?
+		//if (region.getWorld() instanceof WorldClient)
+		//	((WorldClient) region.getWorld()).getWorldRenderer().flagChunksModified();
 
 		this.chunkLock.writeLock().unlock();
 

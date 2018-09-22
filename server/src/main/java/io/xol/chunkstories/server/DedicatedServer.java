@@ -286,7 +286,7 @@ public class DedicatedServer implements Runnable, DedicatedServer {
 				+ this.world.getRegionsSummariesHolder().countSummaries();
 		txt += " | ram:" + usedRam + "/" + maxRam;
 		txt += " | " + this.workers.toShortString();
-		txt += " | ioq:" + this.world.ioHandler.getSize();
+		txt += " | ioq:" + this.world.getIoHandler().getSize();
 
 		txt += ansi().bg(BLACK).fg(WHITE);
 
@@ -320,7 +320,7 @@ public class DedicatedServer implements Runnable, DedicatedServer {
 
 		logger.info("Saving map and waiting for IO to finish");
 		world.saveEverything();
-		world.ioHandler.waitThenKill();
+		world.getIoHandler().waitThenKill();
 
 		logger.info("Done");
 		world.destroy();

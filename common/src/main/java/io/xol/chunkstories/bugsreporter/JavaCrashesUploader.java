@@ -8,11 +8,11 @@ package io.xol.chunkstories.bugsreporter;
 
 import java.io.File;
 
+import io.xol.chunkstories.api.client.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.xol.chunkstories.api.GameContext;
-import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.content.GameDirectory;
 
 /**
@@ -47,8 +47,8 @@ public class JavaCrashesUploader extends Thread {
 
 					try {
 						String str = "not-client";
-						if (context instanceof ClientInterface)
-							str = ((ClientInterface) context).username();
+						if (context instanceof Client)
+							str = ((Client) context).getUser().getName();
 
 						logger().info(
 								"JavaCrashesUploader: Found crashfile " + file.getName() + ", uploading (30s max)");

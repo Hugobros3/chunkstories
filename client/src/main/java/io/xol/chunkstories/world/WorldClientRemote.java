@@ -49,8 +49,8 @@ public class WorldClientRemote extends WorldClientCommon implements WorldClientN
 
 		mpIOHandler = new IOTasksMultiplayerClient(this);
 
-		ioHandler = mpIOHandler;
-		ioHandler.start();
+		setIoHandler(mpIOHandler);
+		getIoHandler().start();
 	}
 
 	public OnlineContentTranslator getContentTranslator() {
@@ -92,7 +92,7 @@ public class WorldClientRemote extends WorldClientCommon implements WorldClientN
 	// Accepts and processes synched packets
 	public void processIncommingPackets() {
 		try {
-			entitiesLock.writeLock().lock();
+			getEntitiesLock().writeLock().lock();
 
 			@SuppressWarnings("unused")
 			int packetsThisTick = 0;
@@ -124,7 +124,7 @@ public class WorldClientRemote extends WorldClientCommon implements WorldClientN
 				packetsThisTick++;
 			}
 		} finally {
-			entitiesLock.writeLock().unlock();
+			getEntitiesLock().writeLock().unlock();
 		}
 	}
 

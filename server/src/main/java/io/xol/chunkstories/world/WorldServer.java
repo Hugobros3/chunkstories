@@ -51,8 +51,8 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 		this.virtualServerParticlesManager = new VirtualServerParticlesManager(this, server);
 		this.virtualServerDecalsManager = new VirtualServerDecalsManager(this, server);
 
-		ioHandler = new IOTasks(this);
-		ioHandler.start();
+		setIoHandler(new IOTasks(this));
+		getIoHandler().start();
 	}
 
 	public DedicatedServer getServer() {
@@ -126,7 +126,7 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 
 	public void processIncommingPackets() {
 		try {
-			entitiesLock.writeLock().lock();
+			getEntitiesLock().writeLock().lock();
 
 			Iterator<PendingPlayerDatagram> iterator = packetsQueue.iterator();
 			while (iterator.hasNext()) {
@@ -158,7 +158,7 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 				datagram.dispose();
 			}
 		} finally {
-			entitiesLock.writeLock().unlock();
+			getEntitiesLock().writeLock().unlock();
 		}
 	}
 

@@ -133,7 +133,7 @@ public class TaskComputeChunkOcclusion extends Task {
 				mask[x * 1024 + y * 32 + z] = true;
 				completion++;
 
-				if (!chunk.peekSimple(x, y, z).getDefinition().isOpaque()) {
+				if (!chunk.peekSimple(x, y, z).isOpaque()) {
 					// Adds touched sides to set
 
 					if (x == 0)

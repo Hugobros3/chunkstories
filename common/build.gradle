@@ -4,6 +4,8 @@ apply plugin: 'java'
 apply plugin: 'java-library'
 apply plugin: 'maven'
 
+apply plugin: 'antlr'
+
 version = rootProject.version
 description = 'Common implementation code'
 
@@ -17,6 +19,8 @@ dependencies {
 	
 	implementation 'com.github.Hugobros3:assimp:no-lwjgl-SNAPSHOT'
 	//implementation 'com.github.kotlin-graphics:assimp:unspecified'
+
+	antlr "org.antlr:antlr4:4.5" // use ANTLR version 4
 }
 
 test {

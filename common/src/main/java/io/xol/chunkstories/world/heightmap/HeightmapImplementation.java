@@ -124,9 +124,9 @@ public class HeightmapImplementation implements Heightmap {
 			handler = new File(world.getFolderPath() + "/summaries/" + rx + "." + rz + ".sum");
 
 			if (!handler.exists())
-				world.getGameContext().tasks().scheduleTask(new TaskGenerateWorldSlice(world, this, dirX, dirZ));
+				world.getGameContext().getTasks().scheduleTask(new TaskGenerateWorldSlice(world, this, dirX, dirZ));
 
-			loadFence = this.world.ioHandler.requestHeightmapLoad(this);
+			loadFence = this.world.getIoHandler().requestHeightmapLoad(this);
 		} else {
 			handler = null;
 			loadFence = new TrivialFence();
@@ -222,7 +222,7 @@ public class HeightmapImplementation implements Heightmap {
 	}
 
 	public IOTask save() {
-		return this.world.ioHandler.requestHeightmapSave(this);
+		return this.world.getIoHandler().requestHeightmapSave(this);
 	}
 
 	private int index(int x, int z) {
@@ -240,7 +240,7 @@ public class HeightmapImplementation implements Heightmap {
 		int h = getHeight(worldX, worldZ);
 
 		// If we place something solid over the last solid thing
-		if ((cell.getVoxel().getDefinition().isSolid() || cell.getVoxel().getDefinition().isLiquid())) {
+		if ((cell.getVoxel().isSolid() || cell.getVoxel().getName().endsWith("water"))) {
 			if (height >= h || h == Heightmap.NO_DATA) {
 				heights[index(worldX, worldZ)] = height;
 				ids[index(worldX, worldZ)] = cell.getData();
@@ -258,8 +258,8 @@ public class HeightmapImplementation implements Heightmap {
 					loaded = world.isChunkLoaded(worldX / 32, height / 32, worldZ / 32);
 
 					WorldCell celli = world.peekSafely(worldX, height, worldZ);
-					solid = celli.getVoxel().getDefinition().isSolid();
-					liquid = celli.getVoxel().getDefinition().isLiquid();
+					solid = celli.getVoxel().isSolid();
+					liquid = celli.getVoxel().getName().endsWith("water");
 
 					raw_data = world.peekRaw(worldX, height, worldZ);
 				} while (height >= 0 && loaded && !solid && !liquid);
@@ -438,9 +438,10 @@ public class HeightmapImplementation implements Heightmap {
 
 		summaryLoaded.set(true);
 
-		if (world instanceof WorldClient) {
-			((WorldClient) world).getWorldRenderer().getSummariesTexturesHolder().warnDataHasArrived(regionX, regionZ);
-		}
+		//TODO maybe a callback here ?
+		//if (world instanceof WorldClient) {
+		//	((WorldClient) world).getWorldRenderer().getSummariesTexturesHolder().warnDataHasArrived(regionX, regionZ);
+		//}
 
 		// Already have clients waiting for it ? Satisfy these messieurs
 		usersLock.lock();

@@ -20,12 +20,11 @@ import org.joml.Matrix4f;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
 
-import io.xol.chunkstories.api.animation.SkeletalAnimation;
+import io.xol.chunkstories.api.animation.Animation;
 import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.math.Quaternion4d;
-import io.xol.chunkstories.api.rendering.RenderingInterface;
 
-public class BVHAnimation implements SkeletalAnimation {
+public class BVHAnimation implements Animation {
 	int frames = 0;
 	float frameTime = 0f;
 
@@ -357,10 +356,5 @@ public class BVHAnimation implements SkeletalAnimation {
 		txt += "Frames: " + frames + "\n";
 		txt += "Frame Time: " + frameTime + "]";
 		return txt;
-	}
-
-	@Override
-	public boolean shouldHideBone(RenderingInterface renderingContext, String boneName) {
-		return false;
 	}
 }

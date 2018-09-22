@@ -12,12 +12,12 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import io.xol.chunkstories.api.physics.Box;
 import org.joml.Vector3d;
 import org.joml.Vector3dc;
 
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.physics.CollisionBox;
 import io.xol.chunkstories.api.util.CompoundIterator;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.World.NearEntitiesIterator;
@@ -81,7 +81,7 @@ public class WorldEntitiesHolder implements Iterable<Entity> {
 		int cey = box_end_y >> 5;
 		int cez = box_end_z >> 5;
 
-		CollisionBox box = new CollisionBox(box_start_x, box_start_y, box_start_z, box_end_x - box_start_x,
+		Box box = new Box(box_start_x, box_start_y, box_start_z, box_end_x - box_start_x,
 				box_end_y - box_start_y, box_end_z - box_start_z);
 		// System.out.println(box.xw+":"+box.h+":"+box.zw);
 		// Vector3d boxc = new Vector3d(box.xpos, box.ypos, box.zpos);
@@ -143,7 +143,7 @@ public class WorldEntitiesHolder implements Iterable<Entity> {
 
 	class DistanceCheckedIterator implements NearEntitiesIterator {
 
-		public DistanceCheckedIterator(Iterator<Entity> i, CollisionBox box) {
+		public DistanceCheckedIterator(Iterator<Entity> i, Box box) {
 			this.i = i;
 			this.box = box;
 
@@ -151,7 +151,7 @@ public class WorldEntitiesHolder implements Iterable<Entity> {
 		}
 
 		final Iterator<Entity> i;
-		final CollisionBox box;
+		final Box box;
 		Entity next = null;
 		double distance;
 
@@ -166,7 +166,7 @@ public class WorldEntitiesHolder implements Iterable<Entity> {
 				Entity candidate = i.next();
 				if (box.isPointInside(candidate.getLocation())) {
 					next = candidate;
-					distance = candidate.getLocation().distance(new Vector3d(box.xpos, box.ypos, box.zpos));
+					distance = candidate.getLocation().distance(new Vector3d(box.xPosition, box.yPosition, box.zPosition));
 				}
 			}
 		}

@@ -74,7 +74,7 @@ public class TaskGenerateWorldThinSlice extends Task implements WorldUser {
 				int y = maxGenerationHeight - 1;
 				while (y >= 0) {
 					CellData cell = holders[y / 32].getChunk().peek(x, y, z);
-					if (cell.getVoxel().getDefinition().isSolid() || cell.getVoxel().getDefinition().isLiquid()) {
+					if (cell.getVoxel().isSolid() || cell.getVoxel().getName().equals("water")) {
 						heightmap.setTopCell(cell);
 						break;
 					}

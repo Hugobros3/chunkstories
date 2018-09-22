@@ -9,16 +9,16 @@ package io.xol.chunkstories.animation;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.xol.chunkstories.api.animation.Animation;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
 
-import io.xol.chunkstories.api.animation.SkeletalAnimation.SkeletonBone;
 import io.xol.chunkstories.api.math.Math2;
 import io.xol.chunkstories.api.math.Quaternion4d;
 
-public class BVHTreeBone implements SkeletonBone {
+public class BVHTreeBone implements Animation.SkeletonBone {
 	private final BVHAnimation bvh;
 	public final String name;
 	// final int id;
