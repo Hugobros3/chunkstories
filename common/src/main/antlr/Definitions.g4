@@ -13,3 +13,12 @@ voxelDefinition: 'voxel' Name '{' properties '}';
 
 worldGeneratorDefinitions: worldGeneratorDefinition* ;
 worldGeneratorDefinition: 'generator' Name '{' properties '}';
+
+itemDefinitions: itemDefinition* ;
+itemDefinition: 'generator' Name '{' properties '}';
+
+entitiesDefinitions: entitiesDefinition* ;
+entitiesDefinition: 'generator' Name '{' properties '}';
+
+voxelMaterialDefinitions: voxelMaterialDefinition* ;
+voxelMaterialDefinition: 'generator' Name '{' properties '}';

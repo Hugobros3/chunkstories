@@ -17,7 +17,6 @@ import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.content.mods.ModsManager;
 import io.xol.chunkstories.api.exceptions.content.mods.NotAllModsLoadedException;
-import io.xol.chunkstories.api.mesh.MeshLibrary;
 import io.xol.chunkstories.content.mods.ModsManagerImplementation;
 import io.xol.chunkstories.content.mods.ModsManagerImplementation.NonExistentCoreContent;
 import io.xol.chunkstories.entity.EntityDefinitionsStore;
@@ -146,7 +145,7 @@ public class GameContentStore implements Content {
 	}
 
 	@Override
-	public MeshLibrary meshes() {
+	public MeshStore meshes() {
 		return meshes;
 	}
 

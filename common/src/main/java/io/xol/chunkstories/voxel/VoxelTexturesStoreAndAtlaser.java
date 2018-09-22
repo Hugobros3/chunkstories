@@ -138,7 +138,7 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
                 }
             }
 
-            // ChunkStoriesLogger.getInstance().info("At least " + sizeRequired + " by " +
+            // ChunkStoriesLogger.getInstance().worldInfo("At least " + sizeRequired + " by " +
             // sizeRequired + " for TextureAtlas (surfacedNeeded : " + totalSurfacedNeeded +
             // ")");
 

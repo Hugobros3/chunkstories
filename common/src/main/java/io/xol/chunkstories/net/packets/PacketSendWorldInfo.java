@@ -15,22 +15,23 @@ import io.xol.chunkstories.api.net.PacketDestinator;
 import io.xol.chunkstories.api.net.PacketReceptionContext;
 import io.xol.chunkstories.api.net.PacketSender;
 import io.xol.chunkstories.api.net.PacketSendingContext;
-import io.xol.chunkstories.world.WorldInfoImplementation;
+import io.xol.chunkstories.api.world.WorldInfo;
+import io.xol.chunkstories.world.WorldInfoUtilKt;
 
 public class PacketSendWorldInfo extends Packet {
-	public WorldInfoImplementation info;
+	public WorldInfo worldInfo;
 
 	public PacketSendWorldInfo() {
 
 	}
 
-	public PacketSendWorldInfo(WorldInfoImplementation info) {
-		this.info = info;
+	public PacketSendWorldInfo(WorldInfo info) {
+		this.worldInfo = info;
 	}
 
 	@Override
 	public void send(PacketDestinator destinator, DataOutputStream out, PacketSendingContext ctx) throws IOException {
-		out.writeUTF(info.saveAsString());
+		out.writeUTF(WorldInfoUtilKt.serializeWorldInfo(worldInfo, false));
 	}
 
 	public void process(PacketSender sender, DataInputStream in, PacketReceptionContext processor) throws IOException {

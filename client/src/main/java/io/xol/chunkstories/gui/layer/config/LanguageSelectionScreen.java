@@ -131,7 +131,7 @@ public class LanguageSelectionScreen extends Layer {
 			this.height = 32;
 
 			try {
-				InputStream is = ClientImplementation.getInstance().getContent().getAsset("./lang/" + translationCode + "/lang.info")
+				InputStream is = ClientImplementation.getInstance().getContent().getAsset("./lang/" + translationCode + "/lang.worldInfo")
 						.read();
 				BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF8"));
 

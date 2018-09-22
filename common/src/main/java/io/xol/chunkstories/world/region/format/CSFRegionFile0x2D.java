@@ -104,7 +104,7 @@ public class CSFRegionFile0x2D extends CSFRegionFile {
 			 * EntitySerializer.readEntityFromStream(in, this, owner.world); if (entity !=
 			 * null) owner.world.addEntity(entity); } while (entity != null);
 			 * 
-			 * } catch (Exception e) { logger().info("Error while loading "+file);
+			 * } catch (Exception e) { logger().worldInfo("Error while loading "+file);
 			 * e.printStackTrace(logger().getPrintWriter()); e.printStackTrace(); }
 			 * 
 			 * owner.world.entitiesLock.writeLock().unlock();
@@ -141,7 +141,7 @@ public class CSFRegionFile0x2D extends CSFRegionFile {
 							dos.writeInt(0);
 					}
 
-			// Then write the relevant info where it exists
+			// Then write the relevant worldInfo where it exists
 			for (int a = 0; a < 8; a++)
 				for (int b = 0; b < 8; b++)
 					for (int c = 0; c < 8; c++)

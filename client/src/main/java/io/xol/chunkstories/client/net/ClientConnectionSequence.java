@@ -55,7 +55,7 @@ public class ClientConnectionSequence extends Thread {
 
 			@Override
 			public boolean handleSystemRequest(String msg) {
-				if (msg.startsWith("info/mods:")) {
+				if (msg.startsWith("worldInfo/mods:")) {
 					modsString = msg.substring(10, msg.length());
 					modsSemaphore.release();
 					return true;
@@ -202,7 +202,7 @@ public class ClientConnectionSequence extends Thread {
 			if (!translatorSemaphore.tryAcquire(5, TimeUnit.SECONDS))
 				abort("Timed out waiting for content translator");
 
-			// Ask the server world info and if allowed where to spawn and preload chunks
+			// Ask the server world worldInfo and if allowed where to spawn and preload chunks
 			connection.sendTextMessage("world/enter");
 			if (!worldSemaphore.tryAcquire(15, TimeUnit.SECONDS))
 				abort("Timed out waiting for world");

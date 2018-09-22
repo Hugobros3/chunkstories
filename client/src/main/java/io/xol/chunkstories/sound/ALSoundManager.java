@@ -133,7 +133,7 @@ public class ALSoundManager implements ClientSoundManager {
 					j++;
 				}
 				// auxEffectsSlots = new SoundEffect[auxSlotsIds.size()];
-				// logger().info(auxEffectsSlots.length + " avaible auxiliary effects slots.");
+				// logger().worldInfo(auxEffectsSlots.length + " avaible auxiliary effects slots.");
 			}
 
 			Runtime.getRuntime().addShutdownHook(new Thread() {

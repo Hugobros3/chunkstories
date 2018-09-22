@@ -12,7 +12,6 @@ import java.io.IOException;
 
 import io.xol.chunkstories.api.entity.Controller;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.traits.TraitWhenControlled;
 import io.xol.chunkstories.api.entity.traits.serializable.TraitController;
 import io.xol.chunkstories.api.events.player.PlayerInputPressedEvent;
 import io.xol.chunkstories.api.events.player.PlayerInputReleasedEvent;
@@ -74,23 +73,15 @@ public class PacketInput extends PacketWorld {
 					if (!event.isCancelled())
 						entity.traits.with(TraitController.class, ec -> {
 							Controller controller = ec.getController();
-							entity.traits.with(TraitWhenControlled.class, t -> {
-								t.onControllerInput(input, controller);
-							});
+							//TODO fix
+							//entity.traits.with(TraitWhenControlled.class, t -> {
+							//	t.onControllerInput(input, controller);
+							//});
 						});
-
-					// entity.onControllerInput(input,
-					// entity.getControllerComponent().getController());
 				} else {
 					PlayerInputReleasedEvent event = new PlayerInputReleasedEvent(sppc.getPlayer(), input);
 					entity.getWorld().getGameLogic().getPluginsManager().fireEvent(event);
 				}
-
-				// TODO why is this disabled and still there ?
-				// If we pressed the input, apply game logic
-				// if(pressed)
-				// entity.handleInteraction(input,
-				// entity.getControllerComponent().getController());
 			}
 		}
 	}

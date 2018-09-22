@@ -57,7 +57,7 @@ public class ModZip extends ModImplementation {
 				}
 			}
 
-			this.modInfo = new ModInfoImplementation(this, getAssetByName("./mod.txt").read());
+			this.modInfo = ModInfoLoaderKt.loadModInfo(getAssetByName("./mod.txt").reader());
 			// loadModInformation(getAssetByName("./mod.txt"));
 		} catch (IOException e) {
 			throw new ModLoadFailureException(this, "Zip file not found or malformed");

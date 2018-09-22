@@ -175,7 +175,7 @@ public class DedicatedServer implements Runnable, DedicatedServer {
 			String worldName = serverConfig.getString("world", "world");
 			String worldDir = GameDirectory.getGameFolderPath() + "/worlds/" + worldName;
 			if (new File(worldDir).exists()) {
-				world = new WorldServer(this, new WorldInfoMaster(new File(worldDir + "/info.world")));
+				world = new WorldServer(this, new WorldInfoMaster(new File(worldDir + "/worldInfo.world")));
 			} else {
 				serverConfig.save();
 				System.out.println("Can't find the world \"" + worldName + "\" in " + worldDir + ". Exiting !");

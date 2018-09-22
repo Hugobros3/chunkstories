@@ -25,7 +25,7 @@ import io.xol.chunkstories.api.content.mods.ModsManager;
 import io.xol.chunkstories.content.GameContentStore;
 
 public class LocalizationManagerImplementation implements LocalizationManager {
-	// This class holds static model info
+	// This class holds static model worldInfo
 
 	private final GameContentStore store;
 	private final ModsManager modsManager;
@@ -57,7 +57,7 @@ public class LocalizationManagerImplementation implements LocalizationManager {
 		Iterator<Asset> i = modsManager.getAllAssetsByPrefix("./lang/");
 		while (i.hasNext()) {
 			Asset a = i.next();
-			if (a.getName().endsWith("lang.info")) {
+			if (a.getName().endsWith("lang.worldInfo")) {
 				String abrigedName = a.getName().substring(7, a.getName().length() - 10);
 				if (abrigedName.contains("/"))
 					continue;

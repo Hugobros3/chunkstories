@@ -266,7 +266,6 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 
 	@Override
 	public int getIdForPacket(PacketDefinition definition) {
-		// return packetMappings.getOrDefault(definition, -1);
 		int id = packetMappings.getOrDefault(definition, -1);
 		if (id == -1) {
 			logger.debug("d:" + definition);

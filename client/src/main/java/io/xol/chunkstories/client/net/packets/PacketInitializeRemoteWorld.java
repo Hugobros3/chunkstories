@@ -30,7 +30,7 @@ public class PacketInitializeRemoteWorld extends PacketSendWorldInfo {
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(initializationString.getBytes("UTF-8"));
 		BufferedReader reader = new BufferedReader(new InputStreamReader(bais, "UTF-8"));
-		info = new WorldInfoImplementation(reader);
+		worldInfo = new WorldInfoImplementation(reader);
 
 		if (processor instanceof ClientPacketsContext) {
 			processor.logger().info("Received World initialization packet");
@@ -48,7 +48,7 @@ public class PacketInitializeRemoteWorld extends PacketSendWorldInfo {
 				public void run() {
 					WorldClientRemote world;
 					try {
-						world = new WorldClientRemote(client, info, contentTranslator, cpp.getConnection());
+						world = new WorldClientRemote(client, worldInfo, contentTranslator, cpp.getConnection());
 						client.changeWorld(world);
 
 						cpp.getConnection().handleSystemRequest("world/ok");

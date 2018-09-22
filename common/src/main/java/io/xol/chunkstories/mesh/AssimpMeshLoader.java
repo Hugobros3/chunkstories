@@ -6,284 +6,266 @@
 
 package io.xol.chunkstories.mesh;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import assimp.*;
 import com.carrotsearch.hppc.ByteArrayList;
 import com.carrotsearch.hppc.FloatArrayList;
-
-import assimp.AiBone;
-import assimp.AiMaterial;
-import assimp.AiMesh;
-import assimp.AiScene;
-import assimp.AiVertexWeight;
-import assimp.Importer;
 import glm_.vec3.Vec3;
 import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.exceptions.content.MeshLoadException;
-import io.xol.chunkstories.api.mesh.AnimatableMesh;
-import io.xol.chunkstories.api.mesh.Mesh;
-import io.xol.chunkstories.api.mesh.MeshLibrary;
-import io.xol.chunkstories.api.mesh.MeshMaterial;
+import io.xol.chunkstories.api.graphics.Mesh;
+import io.xol.chunkstories.api.graphics.MeshAttributeSet;
+import io.xol.chunkstories.api.graphics.MeshMaterial;
+import io.xol.chunkstories.api.graphics.VertexFormat;
+import io.xol.chunkstories.api.graphics.representation.Surface;
 import io.xol.chunkstories.util.FoldersUtils;
+import kotlin.ranges.IntRange;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
+import java.util.*;
+import java.util.Map.Entry;
 
 public class AssimpMeshLoader {
 
-	private static final Logger logger = LoggerFactory.getLogger("content.meshes.assimp-kotlin");
+    private static final Logger logger = LoggerFactory.getLogger("content.meshes.assimp-kotlin");
 
-	final MeshLibrary store;
+    final MeshStore store;
 
-	public AssimpMeshLoader(MeshLibrary meshStore) {
-		store = meshStore;
-	}
+    Importer im = new Importer();
 
-	class VertexBoneWeights {
-		float[] weights = new float[4];
-		int[] bones = new int[4];
-		int slot = 0;
-		float totalWeight = 0.0f;
-	}
+    public AssimpMeshLoader(MeshStore meshStore) {
+        store = meshStore;
 
-	public Mesh load(Asset mainAsset) throws MeshLoadException {
-		if (mainAsset == null)
-			throw new MeshLoadException(mainAsset);
+        assimp.SettingsKt.setASSIMP_LOAD_TEXTURES(false);
+        im.setIoHandler(new AssetIOSystem(store.parent()));
+    }
 
-		Importer im = new Importer();
-		assimp.SettingsKt.setASSIMP_LOAD_TEXTURES(false);
+    class VertexBoneWeights {
+        float[] weights = new float[4];
+        int[] bones = new int[4];
+        int slot = 0;
+        float totalWeight = 0.0f;
+    }
 
-		im.setIoHandler(new AssetIOSystem(store.parent()));
-		AiScene scene = im.readFile(mainAsset.getName(), im.getIoHandler(), 0);
+    public Mesh load(Asset mainAsset) throws MeshLoadException {
+        if (mainAsset == null)
+            throw new MeshLoadException(mainAsset);
 
-		if (scene == null) {
-			logger.error("Could not load meshes from asset: " + mainAsset);
-			throw new MeshLoadException(mainAsset);
-		}
-		/*
-		 * for(AiMesh mesh : scene.getMeshes()) { System.out.println(mesh.getName());
-		 * System.out.println(mesh.getFaces().size());
-		 * 
-		 * AiMaterial material = scene.getMaterials().get(mesh.getMaterialIndex());
-		 * System.out.println("mat: "+material.getName());
-		 * System.out.println(material.getTextures());
-		 * 
-		 * System.out.println("bones: "+mesh.getNumBones()); for(AiBone bone :
-		 * mesh.getBones()) {
-		 * System.out.println(bone.getName().substring(bone.getName().lastIndexOf('_') +
-		 * 1)); System.out.println(bone.getNumWeights());
-		 * System.out.println(tomat4(bone.getOffsetMatrix())); } }
-		 */
-		if (scene.getMeshes() == null || scene.getMeshes().size() == 0) {
-			logger.error("Loaded mesh did not contain any mesh data.");
-			return null;
-		}
+        AiScene scene = im.readFile(mainAsset.getName(), im.getIoHandler(), 0);
 
-		FloatArrayList vertices = new FloatArrayList();
-		FloatArrayList normals = new FloatArrayList();
-		FloatArrayList texcoords = new FloatArrayList();
+        if (scene == null) {
+            logger.error("Could not load meshes from asset: " + mainAsset);
+            throw new MeshLoadException(mainAsset);
+        }
 
-		Map<String, Integer> boneNames = new HashMap<>();
-		ByteArrayList boneIds = new ByteArrayList();
-		ByteArrayList boneWeights = new ByteArrayList();
+        scene.getMeshes();
+        if (scene.getMeshes().size() == 0) {
+            logger.error("Loaded mesh did not contain any mesh data.");
+            return null;
+        }
 
-		List<MeshMaterialLoaded> meshMaterials = new ArrayList<>();
+        FloatArrayList vertices = new FloatArrayList();
+        FloatArrayList normals = new FloatArrayList();
+        FloatArrayList texcoords = new FloatArrayList();
 
-		boolean has_bones = scene.getMeshes().get(0).getHasBones();
-		Map<Integer, VertexBoneWeights> boneWeightsForeachVertex = null;
-		if (has_bones)
-			boneWeightsForeachVertex = new HashMap<>();
+        Map<String, Integer> boneNamesToIds = new HashMap<>();
+        ByteArrayList boneIds = new ByteArrayList();
+        ByteArrayList boneWeights = new ByteArrayList();
 
-		String assetFolder = mainAsset.getName().substring(0, mainAsset.getName().lastIndexOf('/') + 1);
-		// System.out.println("asset folder: "+assetFolder);
+        List<MeshMaterial> meshMaterials = new ArrayList<>();
 
-		int[] order = { 0, 1, 2 };
-		for (AiMesh mesh : scene.getMeshes()) {
-			int existing_vertices = vertices.size() / 3;
 
-			AiMaterial material = scene.getMaterials().get(mesh.getMaterialIndex());
-			MeshMaterialLoaded mml = new MeshMaterialLoaded(null, material.getName(), existing_vertices, -1,
-					"./textures/notex.png", "./textures/normalnormal.png", "./textures/defaultmaterial.png");
-			for (AiMaterial.Texture tex : material.getTextures()) {
-				switch (tex.getType()) {
-				case ambient:
-					break;
-				case diffuse:
-					mml.albedoTextureName = FoldersUtils.combineNames(assetFolder, tex.getFile());
-					break;
-				case displacement:
-					break;
-				case emissive:
-					break;
-				case height:
-					break;
-				case lightmap:
-					break;
-				case none:
-					break;
-				case normals:
-					mml.normalTextureName = FoldersUtils.combineNames(assetFolder, tex.getFile());
-					break;
-				case opacity:
-					break;
-				case reflection:
-					break;
-				case shininess:
-					break;
-				case specular:
-					mml.specularTextureName = FoldersUtils.combineNames(assetFolder, tex.getFile());
-					break;
-				case unknown:
-					break;
-				default:
-					break;
+        boolean hasAnimationData = scene.getMeshes().get(0).getHasBones();
+        Map<Integer, VertexBoneWeights> boneWeightsForeachVertex = null;
+        if (hasAnimationData)
+            boneWeightsForeachVertex = new HashMap<>();
 
-				}
-				// System.out.println(tex.getFile()+":"+tex.getType());
-			}
+        String assetFolder = mainAsset.getName().substring(0, mainAsset.getName().lastIndexOf('/') + 1);
 
-			meshMaterials.add(mml);
+        int[] order = {0, 1, 2};
 
-			if (has_bones) {
-				for (int i = 0; i < mesh.getNumVertices(); i++) {
-					boneWeightsForeachVertex.put(i + existing_vertices, new VertexBoneWeights());
-				}
-				for (AiBone bone : mesh.getBones()) {
-					String boneName = bone.getName().substring(bone.getName().lastIndexOf('_') + 1);
+        // For each submesh ...
+        for (AiMesh aiMesh : scene.getMeshes()) {
+            int firstVertex = vertices.size() / 3;
 
-					int boneId = boneNames.getOrDefault(boneName, -1);
+            AiMaterial material = scene.getMaterials().get(aiMesh.getMaterialIndex());
+            HashMap<String, String> materialTextures = new HashMap<>();
 
-					if (boneId == -1) {
-						boneId = boneNames.size();
-						boneNames.put(boneName, boneId);
-					}
-					for (AiVertexWeight weight : bone.getWeights()) {
-						int vid = existing_vertices + weight.getVertexId();
-						VertexBoneWeights vw = boneWeightsForeachVertex.get(vid);
+            for (AiMaterial.Texture tex : material.getTextures()) {
+                switch (tex.getType()) {
+                    case ambient:
+                        break;
+                    case diffuse:
+                        materialTextures.put("albedo", FoldersUtils.combineNames(assetFolder, tex.getFile()));
+                        break;
+                    case displacement:
+                        break;
+                    case emissive:
+                        break;
+                    case height:
+                        break;
+                    case lightmap:
+                        break;
+                    case none:
+                        break;
+                    case normals:
+                        materialTextures.put("normal", FoldersUtils.combineNames(assetFolder, tex.getFile()));
+                        break;
+                    case opacity:
+                        materialTextures.put("ao", FoldersUtils.combineNames(assetFolder, tex.getFile()));
+                        break;
+                    case reflection:
+                        break;
+                    case shininess:
+                        materialTextures.put("roughness", FoldersUtils.combineNames(assetFolder, tex.getFile()));
+                        break;
+                    case specular:
+                        materialTextures.put("metallic", FoldersUtils.combineNames(assetFolder, tex.getFile()));
+                        break;
+                    case unknown:
+                        break;
+                    default:
+                        break;
 
-						vw.bones[vw.slot] = boneId;
-						vw.weights[vw.slot] = weight.getWeight();
-						vw.slot++;
-						vw.totalWeight += weight.getWeight();
-						if (vw.totalWeight > 1.0f) {
-							logger.warn("Total weight > 1 for vertex #" + vid);
-						}
-						if (vw.slot >= 4) {
-							logger.error("More than 4 bones weighted against vertex #" + vid);
-							return null;
-						}
-					}
-				}
-			}
-			for (List<Integer> face : mesh.getFaces()) {
-				if (face.size() == 3) {
-					for (int i : order) { // swap
-						Vec3 vertex = mesh.getVertices().get(face.get(i));
-						Vec3 normal = mesh.getNormals().get(face.get(i));
-						float[] texcoord = mesh.getTextureCoords().get(0).get(face.get(i));
+                }
+            }
 
-						if (mainAsset.getName().endsWith("dae")) {
-							// swap Y and Z axises
-							vertices.add(vertex.x, vertex.z, -vertex.y);
-							normals.add(normal.x, normal.z, -normal.y);
-						} else {
-							vertices.add(vertex.x, vertex.y, vertex.z);
-							normals.add(normal.x, normal.y, normal.z);
-						}
-						texcoords.add(texcoord[0], 1.0f - texcoord[1]);
+            if (hasAnimationData) {
+                // Create objects to receive the animation data for all the vertices of this submesh
+                for (int i = 0; i < aiMesh.getNumVertices(); i++) {
+                    boneWeightsForeachVertex.put(firstVertex + i, new VertexBoneWeights());
+                }
 
-						if (has_bones) {
-							VertexBoneWeights boned = boneWeightsForeachVertex.get(existing_vertices + face.get(i));
-							boneIds.add((byte) boned.bones[0]);
-							boneIds.add((byte) boned.bones[1]);
-							boneIds.add((byte) boned.bones[2]);
-							boneIds.add((byte) boned.bones[3]);
+                // For each bone used in the submesh
+                for (AiBone aiBone : aiMesh.getBones()) {
+                    String boneName = aiBone.getName().substring(aiBone.getName().lastIndexOf('_') + 1);
 
-							boneWeights.add((byte) (boned.weights[0] * 255));
-							boneWeights.add((byte) (boned.weights[1] * 255));
-							boneWeights.add((byte) (boned.weights[2] * 255));
-							boneWeights.add((byte) (boned.weights[3] * 255));
-						}
-					}
-				} else
-					logger.warn("Should triangulate! (face=" + face.size() + ")");
-			}
+                    // Maps a bone id to a bone name (maybe useful later!)
+                    // TODO check if Assimp's bone ordering is the same as BVH, and if we need this
+                    int boneId = boneNamesToIds.getOrDefault(boneName, -1);
+                    if (boneId == -1) {
+                        boneId = boneNamesToIds.size();
+                        boneNamesToIds.put(boneName, boneId);
+                    }
 
-			mml.lastVertex = vertices.size() / 3 - 1;
-		}
+                    // For each weight this bone is applying
+                    for (AiVertexWeight aiWeight : aiBone.getWeights()) {
+                        int vertexId = firstVertex + aiWeight.getVertexId();
+                        VertexBoneWeights vertexBoneWeights = boneWeightsForeachVertex.get(vertexId);
 
-		FloatBuffer verticesBuffer = toFloatBuffer(vertices);
-		FloatBuffer normalsBuffer = toFloatBuffer(normals);
-		FloatBuffer texcoordsBuffer = toFloatBuffer(texcoords);
+                        // Write the weight and bone information to the next available slot in that vertex
+                        vertexBoneWeights.bones[vertexBoneWeights.slot] = boneId;
+                        vertexBoneWeights.weights[vertexBoneWeights.slot] = aiWeight.getWeight();
+                        vertexBoneWeights.slot++;
 
-		ByteBuffer boneIdsBuffer = toByteBuffer(boneIds);
-		ByteBuffer boneWeightsBuffer = toByteBuffer(boneWeights);
+                        vertexBoneWeights.totalWeight += aiWeight.getWeight();
 
-		String[] boneNamesArray = new String[boneNames.size()];
-		for (Entry<String, Integer> e : boneNames.entrySet()) {
-			boneNamesArray[e.getValue()] = e.getKey();
-		}
+                        if (vertexBoneWeights.totalWeight > 1.0f) {
+                            logger.warn("Total weight > 1 for vertex #" + vertexId);
+                        }
+                        if (vertexBoneWeights.slot >= 4) {
+                            logger.error("More than 4 bones weighted against vertex #" + vertexId);
+                            return null;
+                        }
+                    }
+                }
+            }
 
-		Mesh mesh;
+            // Now onto the main course, we need the actual mesh data
+            for (List<Integer> aiFace : aiMesh.getFaces()) {
+                if (aiFace.size() == 3) {
+                    for (int i : order) { // swap vertices order
+                        Vec3 vertex = aiMesh.getVertices().get(aiFace.get(i));
+                        Vec3 normal = aiMesh.getNormals().get(aiFace.get(i));
+                        float[] texcoord = aiMesh.getTextureCoords().get(0).get(aiFace.get(i));
 
-		// Hacky but whatever you get the point, we fill the data structure
-		MeshMaterial materialsArray[] = new MeshMaterial[meshMaterials.size()];
+                        if (mainAsset.getName().endsWith("dae")) {
+                            // swap Y and Z axises
+                            vertices.add(vertex.x, vertex.z, -vertex.y);
+                            normals.add(normal.x, normal.z, -normal.y);
+                        } else {
+                            vertices.add(vertex.x, vertex.y, vertex.z);
+                            normals.add(normal.x, normal.y, normal.z);
+                        }
 
-		if (has_bones)
-			mesh = new AnimatableMesh(verticesBuffer, texcoordsBuffer, normalsBuffer, boneNamesArray, boneIdsBuffer,
-					boneWeightsBuffer, materialsArray);
-		else
-			mesh = new Mesh(verticesBuffer, texcoordsBuffer, normalsBuffer, materialsArray);
+                        texcoords.add(texcoord[0], 1.0f - texcoord[1]);
 
-		for (int i = 0; i < materialsArray.length; i++) {
-			meshMaterials.get(i).mesh = mesh;
-			materialsArray[i] = meshMaterials.get(i);
-		}
+                        if (hasAnimationData) {
+                            VertexBoneWeights boned = boneWeightsForeachVertex.get(firstVertex + aiFace.get(i));
+                            boneIds.add((byte) boned.bones[0]);
+                            boneIds.add((byte) boned.bones[1]);
+                            boneIds.add((byte) boned.bones[2]);
+                            boneIds.add((byte) boned.bones[3]);
 
-		return mesh;
-	}
+                            boneWeights.add((byte) (boned.weights[0] * 255));
+                            boneWeights.add((byte) (boned.weights[1] * 255));
+                            boneWeights.add((byte) (boned.weights[2] * 255));
+                            boneWeights.add((byte) (boned.weights[3] * 255));
+                        }
+                    }
+                } else
+                    logger.warn("Should triangulate! (face=" + aiFace.size() + ")");
+            }
 
-	private FloatBuffer toFloatBuffer(FloatArrayList array) {
-		FloatBuffer fb = ByteBuffer.allocateDirect(array.size() * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
-		for (int i = 0; i < array.size(); i++) {
-			fb.put(i, array.get(i));
-		}
-		fb.position(0);
-		fb.limit(fb.capacity());
-		return fb;
-	}
+            int lastVertex = vertices.size() / 3 - 1;
 
-	private ByteBuffer toByteBuffer(ByteArrayList array) {
-		ByteBuffer bb = ByteBuffer.allocateDirect(array.size()).order(ByteOrder.nativeOrder());
-		for (int i = 0; i < array.size(); i++) {
-			bb.put(i, array.get(i));
-		}
-		bb.position(0);
-		bb.limit(bb.capacity());
-		return bb;
-	}
+            Surface surface = new Surface(materialTextures);
+            String materialName = aiMesh.getName();
+            if(materialName == null || materialName.equals(""))
+                materialName = "Material"+meshMaterials.size();
+            MeshMaterial meshMaterial = new MeshMaterial(materialName, surface, new IntRange(firstVertex, lastVertex));
+            meshMaterials.add(meshMaterial);
+        }
 
-	/*
-	 * private Matrix4f tomat4(Mat4 mat4) { Matrix4f mat = new Matrix4f();
-	 * mat.m00(mat4.v00()); mat.m01(mat4.v01()); mat.m02(mat4.v02());
-	 * mat.m03(mat4.v03());
-	 * 
-	 * mat.m10(mat4.v10()); mat.m11(mat4.v11()); mat.m12(mat4.v12());
-	 * mat.m13(mat4.v13());
-	 * 
-	 * mat.m20(mat4.v20()); mat.m21(mat4.v21()); mat.m22(mat4.v22());
-	 * mat.m23(mat4.v23());
-	 * 
-	 * mat.m30(mat4.v30()); mat.m31(mat4.v31()); mat.m32(mat4.v32());
-	 * mat.m33(mat4.v33());
-	 * 
-	 * mat.transpose(); return mat; }
-	 */
+        List<MeshAttributeSet> attributes = new LinkedList<>();
+
+        attributes.add(new MeshAttributeSet("vertexPosition", 3, VertexFormat.FLOAT, toByteBuffer(vertices)));
+        attributes.add(new MeshAttributeSet("vertexNormal", 3, VertexFormat.FLOAT, toByteBuffer(normals)));
+        attributes.add(new MeshAttributeSet("textureCoordinate", 2, VertexFormat.FLOAT, toByteBuffer(texcoords)));
+        if(hasAnimationData) {
+            attributes.add(new MeshAttributeSet("vertexPosition", 2, VertexFormat.BYTE, toByteBuffer(boneIds)));
+            attributes.add(new MeshAttributeSet("vertexPosition", 2, VertexFormat.NORMALIZED_UBYTE, toByteBuffer(boneWeights)));
+        }
+
+        // TODO unused, left in because might be needed, see earlier in the file
+        String[] boneNamesArray = new String[boneNamesToIds.size()];
+        for (Entry<String, Integer> e : boneNamesToIds.entrySet()) {
+            boneNamesArray[e.getValue()] = e.getKey();
+        }
+
+        int verticesCount = vertices.size();
+        return new Mesh(verticesCount, attributes, meshMaterials);
+    }
+
+    private FloatBuffer toFloatBuffer(FloatArrayList array) {
+        FloatBuffer fb = ByteBuffer.allocateDirect(array.size() * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        for (int i = 0; i < array.size(); i++) {
+            fb.put(i, array.get(i));
+        }
+        fb.position(0);
+        fb.limit(fb.capacity());
+        return fb;
+    }
+
+    private ByteBuffer toByteBuffer(FloatArrayList array) {
+        ByteBuffer byteBuffer = ByteBuffer.allocateDirect(array.size() * 4).order(ByteOrder.nativeOrder());
+        for (int i = 0; i < array.size(); i++) {
+            byteBuffer.putFloat(i, array.get(i));
+        }
+        byteBuffer.flip();
+        return byteBuffer;
+    }
+
+    private ByteBuffer toByteBuffer(ByteArrayList array) {
+        ByteBuffer bb = ByteBuffer.allocateDirect(array.size()).order(ByteOrder.nativeOrder());
+        for (int i = 0; i < array.size(); i++) {
+            bb.put(i, array.get(i));
+        }
+        bb.position(0);
+        bb.limit(bb.capacity());
+        return bb;
+    }
 }

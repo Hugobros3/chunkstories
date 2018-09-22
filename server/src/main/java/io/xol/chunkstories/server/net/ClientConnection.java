@@ -72,7 +72,7 @@ public abstract class ClientConnection extends Connection implements Interlocuto
 
 	@Override
 	public boolean handleSystemRequest(String message) {
-		if (message.startsWith("info")) {
+		if (message.startsWith("worldInfo")) {
 			this.clientsManager.sendServerInfo(this);
 			return true;
 
@@ -80,7 +80,7 @@ public abstract class ClientConnection extends Connection implements Interlocuto
 			return loginHelper.handleLogin(message.substring(6, message.length()));
 
 		} else if (message.equals("mods")) {
-			sendTextMessage("info/mods:" + clientsManager.getServer().getModsProvider().getModsString());
+			sendTextMessage("worldInfo/mods:" + clientsManager.getServer().getModsProvider().getModsString());
 			this.flush();
 			return true;
 
@@ -127,7 +127,7 @@ public abstract class ClientConnection extends Connection implements Interlocuto
 
 			if (message.equals("enter")) {
 				player.setWorld(world);
-				// Sends the construction info for the world, and then the player entity
+				// Sends the construction worldInfo for the world, and then the player entity
 				PacketSendWorldInfo packet = new PacketSendWorldInfo((WorldInfoImplementation) world.getWorldInfo());
 				pushPacket(packet);
 

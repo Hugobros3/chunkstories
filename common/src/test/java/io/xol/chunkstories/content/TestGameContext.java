@@ -8,6 +8,7 @@ package io.xol.chunkstories.content;
 
 import java.io.File;
 
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +42,7 @@ public class TestGameContext implements GameContext {
 	}
 
 	@Override
-	public Tasks tasks() {
+	public Tasks getTasks() {
 		throw new UnsupportedOperationException();
 	}
 

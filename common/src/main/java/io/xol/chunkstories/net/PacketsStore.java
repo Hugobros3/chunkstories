@@ -76,7 +76,9 @@ public class PacketsStore implements Content.PacketDefinitions {
 
 	private void readPacketsDefinitions(BufferedReader reader, Object source) {
 		logger().debug("Reading packets definitions in : " + source);
-		try {
+
+		throw new UnsupportedOperationException("TODO");
+		/*try {
 			String line = "";
 			PacketDefinitionImplementation packetType = null;
 			while ((line = reader.readLine()) != null) {
@@ -117,7 +119,7 @@ public class PacketsStore implements Content.PacketDefinitions {
 			reader.close();
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
+		}*/
 	}
 
 	@Override

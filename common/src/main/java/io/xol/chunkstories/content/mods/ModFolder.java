@@ -43,7 +43,7 @@ public class ModFolder extends ModImplementation {
 
 		recursiveFolderRead(folder);
 
-		this.modInfo = new ModInfoImplementation(this, getAssetByName("./mod.txt").read());
+		this.modInfo = ModInfoLoaderKt.loadModInfo(getAssetByName("./mod.txt").reader());
 		// loadModInformation();
 		logger = LoggerFactory.getLogger("mod." + this.modInfo.getInternalName());
 	}

@@ -96,7 +96,7 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 
 	/*
 	 * public void handleWorldMessage(UserConnection sender, String message) { if
-	 * (message.equals("info")) { //Sends the construction info for the world, and
+	 * (message.equals("worldInfo")) { //Sends the construction worldInfo for the world, and
 	 * then the player entity //worldInfo.sendInfo(sender); PacketSendWorldInfo
 	 * packet = new PacketSendWorldInfo(worldInfo); sender.pushPacket(packet);
 	 * 

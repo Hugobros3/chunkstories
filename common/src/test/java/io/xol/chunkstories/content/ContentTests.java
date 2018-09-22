@@ -6,9 +6,8 @@
 
 package io.xol.chunkstories.content;
 
+import io.xol.chunkstories.api.graphics.Mesh;
 import org.junit.Test;
-
-import io.xol.chunkstories.api.mesh.Mesh;
 
 public class ContentTests {
 
@@ -17,7 +16,7 @@ public class ContentTests {
 		TestGameContext testContext = new TestGameContext(null);
 
 		Mesh m = testContext.getContent().meshes().getMesh("./models/human/human.dae");
-		System.out.println(m.getVerticesCount() + " lol:" + m.getClass());
+		System.out.println(m.getVertices() + " lol:" + m.getClass());
 
 		// m = testContext.getContent().meshes().getMesh("./models/human.obj");
 		// System.out.println(m.getVerticesCount()+" lol:"+m.getClass());
@@ -26,7 +25,7 @@ public class ContentTests {
 		// System.out.println(m.getVerticesCount()+" lol:"+m.getClass());
 
 		m = testContext.getContent().meshes().getMesh("./voxels/blockmodels/model_template.dae");
-		System.out.println(m.getVerticesCount() + " lol:" + m.getClass());
+		System.out.println(m.getVertices() + " lol:" + m.getClass());
 
 		System.out.println(m.getMaterials());
 

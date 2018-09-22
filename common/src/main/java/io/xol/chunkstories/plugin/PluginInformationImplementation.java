@@ -56,10 +56,10 @@ public class PluginInformationImplementation extends URLClassLoader implements P
 			throws PluginLoadException, IOException {
 		super(new URL[] { file.toURI().toURL() }, parentLoader);
 
-		// Opens the jar and grabs plugin.info
+		// Opens the jar and grabs plugin.worldInfo
 		JarFile jar = new JarFile(file);
 
-		InputStream pluginInfo = getRessourceFromJar(jar, "plugin.info");
+		InputStream pluginInfo = getRessourceFromJar(jar, "plugin.worldInfo");
 
 		if (pluginInfo == null)
 			throw new NotAPluginException(file);
@@ -201,7 +201,7 @@ public class PluginInformationImplementation extends URLClassLoader implements P
 			}
 		}
 
-		// System.out.println("Loaded info : " + pluginName + " version " +
+		// System.out.println("Loaded worldInfo : " + pluginName + " version " +
 		// pluginVersion + " by " + authors + " EP:" + entryPoint);
 		br.close();
 	}

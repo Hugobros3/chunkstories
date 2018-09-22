@@ -81,7 +81,7 @@ public class LocalPlayerImplementation implements LocalPlayer {
 			// Directly unset it
 			if (world instanceof WorldMaster)
 				controlledEntity.traits.with(TraitController.class, ec2 -> ec2.setController(null));
-			// When loosing control over an entity, stop sending the server info about it
+			// When loosing control over an entity, stop sending the server worldInfo about it
 			else if (controlledEntity.getWorld() instanceof WorldClientNetworkedRemote)
 				((WorldClientNetworkedRemote) controlledEntity.getWorld()).getRemoteServer()
 						.unsubscribe(controlledEntity);

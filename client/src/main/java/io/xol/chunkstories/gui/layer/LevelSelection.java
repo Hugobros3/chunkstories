@@ -65,7 +65,7 @@ public class LevelSelection extends Layer {
 		if (!worldsFolder.exists())
 			worldsFolder.mkdir();
 		for (File f : worldsFolder.listFiles()) {
-			File infoTxt = new File(f.getAbsolutePath() + "/info.world");
+			File infoTxt = new File(f.getAbsolutePath() + "/worldInfo.world");
 			if (infoTxt.exists()) {
 				try {
 					localWorlds.add(new WorldInfoMaster(infoTxt));
@@ -174,7 +174,7 @@ public class LevelSelection extends Layer {
 					32, scale());
 
 			ObjectRenderer.renderTexturedRect(xPosition + 32 + 4, yPosition + 32 + 4, 64, 64,
-					GameDirectory.getGameFolderPath() + "/worlds/" + info.getInternalName() + "/info.png");
+					GameDirectory.getGameFolderPath() + "/worlds/" + info.getInternalName() + "/worldInfo.png");
 
 			Font font = renderer.getFontRenderer().getFont("LiberationSans-Regular", 11);
 

@@ -10,15 +10,16 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
 
+import io.xol.chunkstories.api.content.Definition;
 import io.xol.chunkstories.api.exceptions.content.IllegalPacketDeclarationException;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.PacketDefinition;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.content.GameContentStore;
-import io.xol.chunkstories.content.GenericNamedConfigurable;
 
-public class PacketDefinitionImplementation extends GenericNamedConfigurable implements PacketDefinition {
+public class PacketDefinitionImplementation extends Definition implements PacketDefinition {
 
 	final AllowedFrom allowedFrom;
 	final PacketGenre genre;
@@ -35,9 +36,9 @@ public class PacketDefinitionImplementation extends GenericNamedConfigurable imp
 
 	private boolean constructorTakesWorld = false; // True if the Packet constructor takes a World parameter
 
-	public PacketDefinitionImplementation(GameContentStore store, String name, BufferedReader reader)
+	public PacketDefinitionImplementation(GameContentStore store, String name, Map<String, String> properties)
 			throws IllegalPacketDeclarationException, IOException {
-		super(name, reader);
+		super(name, properties);
 
 		streamed = Boolean.parseBoolean(this.resolveProperty("streamed", "false"));
 		fixedId = Integer.parseInt(this.resolveProperty("fixedId", "-1"));

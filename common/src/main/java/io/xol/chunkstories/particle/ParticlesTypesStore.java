@@ -57,7 +57,8 @@ public class ParticlesTypesStore implements Content.ParticlesTypes {
 	private void loadParticlesFile(Asset f) {
 		if (f == null)
 			return;
-		try (BufferedReader reader = new BufferedReader(f.reader());) {
+		throw new UnsupportedOperationException("TODO");
+		/*try (BufferedReader reader = new BufferedReader(f.reader());) {
 			String line = "";
 			while ((line = reader.readLine()) != null) {
 				if (line.startsWith("#")) {
@@ -90,7 +91,7 @@ public class ParticlesTypesStore implements Content.ParticlesTypes {
 			}
 		} catch (IOException e) {
 			logger().warn(e.getMessage());
-		}
+		}*/
 	}
 
 	@Override

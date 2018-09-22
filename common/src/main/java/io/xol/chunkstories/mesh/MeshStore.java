@@ -9,6 +9,8 @@ package io.xol.chunkstories.mesh;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.xol.chunkstories.api.graphics.Mesh;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,17 +18,14 @@ import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.content.mods.ModsManager;
 import io.xol.chunkstories.api.exceptions.content.MeshLoadException;
-import io.xol.chunkstories.api.mesh.AnimatableMesh;
-import io.xol.chunkstories.api.mesh.Mesh;
-import io.xol.chunkstories.api.mesh.MeshLibrary;
 import io.xol.chunkstories.content.GameContentStore;
 
-public class MeshStore implements MeshLibrary {
+public class MeshStore implements Content.Meshes {
 
 	protected final Content content;
 	protected final ModsManager modsManager;
 
-	protected Map<String, Mesh> meshes = new HashMap<String, Mesh>();
+	protected Map<String, Mesh> meshes = new HashMap<>();
 
 	AssimpMeshLoader loader = new AssimpMeshLoader(this);
 
@@ -61,18 +60,6 @@ public class MeshStore implements MeshLibrary {
 		return mesh;
 	}
 
-	@Override
-	public AnimatableMesh getAnimatableMesh(String meshName) {
-
-		Mesh mesh = this.getMesh(meshName);
-
-		if (mesh == null || !(mesh instanceof AnimatableMesh))
-			return null;
-
-		return (AnimatableMesh) mesh;
-	}
-
-	@Override
 	public Content parent() {
 		return content;
 	}
@@ -81,5 +68,11 @@ public class MeshStore implements MeshLibrary {
 
 	public Logger logger() {
 		return logger;
+	}
+
+	@NotNull
+	@Override
+	public Mesh getDefaultMesh() {
+		return null;
 	}
 }

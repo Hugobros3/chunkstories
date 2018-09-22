@@ -16,14 +16,14 @@ import io.xol.chunkstories.api.server.Server;
 import io.xol.chunkstories.server.commands.ServerCommandBasic;
 import io.xol.chunkstories.util.VersionInfo;
 
-/** Handles /uptime, /info commands */
+/** Handles /uptime, /worldInfo commands */
 public class InfoCommands extends ServerCommandBasic {
 
 	public InfoCommands(Server serverConsole) {
 		super(serverConsole);
 
 		server.getPluginManager().registerCommand("uptime").setHandler(this);
-		server.getPluginManager().registerCommand("info").setHandler(this);
+		server.getPluginManager().registerCommand("worldInfo").setHandler(this);
 		server.getPluginManager().registerCommand("help").setHandler(this);
 		server.getPluginManager().registerCommand("plugins").setHandler(this);
 		server.getPluginManager().registerCommand("mods").setHandler(this);
@@ -34,7 +34,7 @@ public class InfoCommands extends ServerCommandBasic {
 		if (cmd.getName().equals("uptime")) {
 			emitter.sendMessage("#00FFD0The server has been running for " + server.getUptime() + " seconds.");
 			return true;
-		} else if (cmd.getName().equals("info")) {
+		} else if (cmd.getName().equals("worldInfo")) {
 			emitter.sendMessage("#00FFD0The server's ip is " + server.getPublicIp());
 			emitter.sendMessage("#00FFD0It's running version " + VersionInfo.version + " of the server software.");
 			emitter.sendMessage("#00FFD0" + server.getWorld());
@@ -46,7 +46,7 @@ public class InfoCommands extends ServerCommandBasic {
 			emitter.sendMessage("#00FFD0" + " /plugins");
 			emitter.sendMessage("#00FFD0" + " /mods");
 			emitter.sendMessage("#00FFD0" + " /list");
-			emitter.sendMessage("#00FFD0" + " /info");
+			emitter.sendMessage("#00FFD0" + " /worldInfo");
 			emitter.sendMessage("#00FFD0" + " /uptime");
 			for (Command command : server.getPluginManager().commands()) {
 				emitter.sendMessage("#00FFD0 /" + command.getName());

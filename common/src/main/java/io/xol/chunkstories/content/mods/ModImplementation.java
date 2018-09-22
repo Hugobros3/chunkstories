@@ -73,8 +73,6 @@ public abstract class ModImplementation implements Mod {
 			}
 
 		});
-		// for(String s : assetsSorted)
-		// System.out.println(s);
 
 		// Concatenate their names...
 		String completeNamesString = "";
