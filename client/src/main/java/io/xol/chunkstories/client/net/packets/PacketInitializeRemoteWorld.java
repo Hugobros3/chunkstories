@@ -6,35 +6,26 @@
 
 package io.xol.chunkstories.client.net.packets;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-
 import io.xol.chunkstories.api.content.OnlineContentTranslator;
 import io.xol.chunkstories.api.net.PacketReceptionContext;
 import io.xol.chunkstories.api.net.PacketSender;
-import io.xol.chunkstories.api.util.concurrency.Fence;
-import io.xol.chunkstories.client.ClientImplementation;
-import io.xol.chunkstories.client.net.ClientPacketsContext;
+import io.xol.chunkstories.client.net.ClientPacketsEncoderDecoder;
 import io.xol.chunkstories.net.packets.PacketSendWorldInfo;
-import io.xol.chunkstories.world.WorldClientRemote;
-import io.xol.chunkstories.world.WorldInfoImplementation;
-import io.xol.chunkstories.world.WorldLoadingException;
+import io.xol.chunkstories.world.WorldInfoUtilKt;
+
+import java.io.DataInputStream;
+import java.io.IOException;
 
 public class PacketInitializeRemoteWorld extends PacketSendWorldInfo {
 
 	public void process(PacketSender sender, DataInputStream in, PacketReceptionContext processor) throws IOException {
 		String initializationString = in.readUTF();
 
-		ByteArrayInputStream bais = new ByteArrayInputStream(initializationString.getBytes("UTF-8"));
-		BufferedReader reader = new BufferedReader(new InputStreamReader(bais, "UTF-8"));
-		worldInfo = new WorldInfoImplementation(reader);
+		worldInfo = WorldInfoUtilKt.deserializeWorldInfo(initializationString);
 
-		if (processor instanceof ClientPacketsContext) {
+		if (processor instanceof ClientPacketsEncoderDecoder) {
 			processor.logger().info("Received World initialization packet");
-			ClientPacketsContext cpp = (ClientPacketsContext) processor;
+			ClientPacketsEncoderDecoder cpp = (ClientPacketsEncoderDecoder) processor;
 
 			OnlineContentTranslator contentTranslator = cpp.getContentTranslator();
 			if (contentTranslator == null) {
@@ -42,7 +33,9 @@ public class PacketInitializeRemoteWorld extends PacketSendWorldInfo {
 				return;
 			}
 
-			ClientImplementation client = (ClientImplementation) cpp.getContext(); // TODO should we expose this to the interface ?
+			//TODO remake this mechanism but make it actually any good
+			/*
+			IngameClientRemoteHost client = (IngameClientRemoteHost) cpp.getContext();
 			Fence fence = client.getGameWindow().queueSynchronousTask(new Runnable() {
 				@Override
 				public void run() {
@@ -58,7 +51,7 @@ public class PacketInitializeRemoteWorld extends PacketSendWorldInfo {
 				}
 			});
 
-			fence.traverse();
+			fence.traverse();*/
 		}
 	}
 }

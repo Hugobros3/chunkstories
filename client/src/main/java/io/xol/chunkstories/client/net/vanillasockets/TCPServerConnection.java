@@ -6,7 +6,6 @@
 
 package io.xol.chunkstories.client.net.vanillasockets;
 
-import io.xol.chunkstories.api.client.IngameClient;
 import io.xol.chunkstories.api.exceptions.PacketProcessingException;
 import io.xol.chunkstories.api.exceptions.net.IllegalPacketException;
 import io.xol.chunkstories.api.exceptions.net.UnknowPacketException;
@@ -15,7 +14,8 @@ import io.xol.chunkstories.api.net.PacketDefinition.PacketGenre;
 import io.xol.chunkstories.api.net.PacketWorldStreaming;
 import io.xol.chunkstories.api.net.RemoteServer;
 import io.xol.chunkstories.api.net.packets.PacketText;
-import io.xol.chunkstories.client.net.ClientPacketsContext;
+import io.xol.chunkstories.client.ClientImplementation;
+import io.xol.chunkstories.client.net.ClientPacketsEncoderDecoder;
 import io.xol.chunkstories.client.net.ConnectionStep;
 import io.xol.chunkstories.client.net.RemoteServerImplementation;
 import io.xol.chunkstories.client.net.ServerConnection;
@@ -36,30 +36,27 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /** A clientside connection to a server using the TCP protocol. */
 public class TCPServerConnection extends ServerConnection {
-
-	private final IngameClient client;
-	private final ClientPacketsContext packetsContext;
+	private final ClientImplementation client;
+	private final ClientPacketsEncoderDecoder encoderDecoder;
 
 	private Socket socket = null;
-	private DataInputStream in = null;
 
 	private boolean connected = false, disconnected = false;
 
 	private AtomicBoolean connectOnce = new AtomicBoolean(false);
 	private AtomicBoolean closeOnce = new AtomicBoolean(false);
 
-	private StreamGobbler streamGobbler;
 	private SendQueue sendQueue;
 
 	// A representation of who we're talking to
 	private RemoteServer remoteServer;
 
-	public TCPServerConnection(IngameClient gameContext, String remoteAddress, int port) {
-		super(gameContext, remoteAddress, port);
-		this.client = gameContext;
+	public TCPServerConnection(ClientImplementation client, String remoteAddress, int port) {
+		super(remoteAddress, port);
 
-		packetsContext = new ClientPacketsContext(gameContext, this);
+		this.client = client;
 		remoteServer = new RemoteServerImplementation(this);
+		encoderDecoder = new ClientPacketsEncoderDecoder(client, this);
 	}
 
 	@Override
@@ -70,8 +67,8 @@ public class TCPServerConnection extends ServerConnection {
 		try {
 			socket = new Socket(remoteAddress, port);
 
-			in = new DataInputStream(socket.getInputStream());
-			streamGobbler = new ClientGobbler(this, in);
+			DataInputStream in = new DataInputStream(socket.getInputStream());
+			StreamGobbler streamGobbler = new ClientGobbler(this, in);
 
 			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 			sendQueue = new SendQueue(this, out);
@@ -97,28 +94,28 @@ public class TCPServerConnection extends ServerConnection {
 	public void handleDatagram(LogicalPacketDatagram datagram)
 			throws IOException, PacketProcessingException, IllegalPacketException {
 		PacketDefinitionImplementation definition = (PacketDefinitionImplementation) datagram.packetDefinition;// (PacketDefinitionImpl)
-																												// getPacketsContext().getContentTranslator().getPacketForId(datagram.packetTypeId);
+																												// getEncoderDecoder().getContentTranslator().getPacketForId(datagram.packetTypeId);
 		if (definition.getGenre() == PacketGenre.GENERAL_PURPOSE) {
 			Packet packet = definition.createNew(true, null);
-			packet.process(getRemoteServer(), datagram.getData(), getPacketsContext());
+			packet.process(getRemoteServer(), datagram.getData(), getEncoderDecoder());
 			datagram.dispose();
 
 		} else if (definition.getGenre() == PacketGenre.SYSTEM) {
 			Packet packet = definition.createNew(true, null);
-			packet.process(getRemoteServer(), datagram.getData(), getPacketsContext());
+			packet.process(getRemoteServer(), datagram.getData(), getEncoderDecoder());
 			if (packet instanceof PacketText) {
 				handleSystemRequest(((PacketText) packet).text);
 			}
 			datagram.dispose();
 
 		} else if (definition.getGenre() == PacketGenre.WORLD) {
-			WorldClientRemote world = getPacketsContext().getWorld();
+			WorldClientRemote world = getEncoderDecoder().getWorld();
 			world.queueDatagram(datagram);
 
 		} else if (definition.getGenre() == PacketGenre.WORLD_STREAMING) {
-			WorldClientRemote world = getPacketsContext().getWorld();
+			WorldClientRemote world = getEncoderDecoder().getWorld();
 			PacketWorldStreaming packet = (PacketWorldStreaming) definition.createNew(true, world);
-			packet.process(getRemoteServer(), datagram.getData(), getPacketsContext());
+			packet.process(getRemoteServer(), datagram.getData(), getEncoderDecoder());
 			world.ioHandler().handlePacketWorldStreaming(packet);
 			datagram.dispose();
 		} else {
@@ -141,7 +138,7 @@ public class TCPServerConnection extends ServerConnection {
 	@Override
 	public void pushPacket(Packet packet) {
 		try {
-			sendQueue.queue(packetsContext.buildOutgoingPacket(packet));
+			sendQueue.queue(encoderDecoder.buildOutgoingPacket(packet));
 		} catch (UnknowPacketException e) {
 			logger.error("Couldn't pushPacket()", e);
 		} catch (IOException e) {
@@ -196,8 +193,8 @@ public class TCPServerConnection extends ServerConnection {
 	}
 
 	@Override
-	public ClientPacketsContext getPacketsContext() {
-		return this.packetsContext;
+	public ClientPacketsEncoderDecoder getEncoderDecoder() {
+		return this.encoderDecoder;
 	}
 
 	@Override

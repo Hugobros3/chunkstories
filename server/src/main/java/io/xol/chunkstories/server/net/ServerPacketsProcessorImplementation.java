@@ -6,15 +6,15 @@
 
 package io.xol.chunkstories.server.net;
 
+import io.xol.chunkstories.api.content.Content;
 import org.slf4j.Logger;
 
-import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.content.OnlineContentTranslator;
 import io.xol.chunkstories.api.net.Interlocutor;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.server.Server;
 import io.xol.chunkstories.api.server.ServerPacketsProcessor;
-import io.xol.chunkstories.net.PacketsContextCommon;
+import io.xol.chunkstories.net.PacketsEncoderDecoder;
 import io.xol.chunkstories.server.DedicatedServer;
 import io.xol.chunkstories.server.player.ServerPlayer;
 import io.xol.chunkstories.world.WorldServer;
@@ -38,10 +38,11 @@ public class ServerPacketsProcessorImplementation implements ServerPacketsProces
 	}
 
 	public ClientPacketsContext forConnection(ClientConnection connection) {
-		return new ClientPacketsContext(server, connection);
+		return new ClientPacketsContext(server.getContent().packets(), connection);
 	}
 
-	public class ClientPacketsContext extends PacketsContextCommon implements ServerPacketsProcessor {
+	/** Processes the packets for a certain user connection */
+	public class ClientPacketsContext extends PacketsEncoderDecoder implements ServerPacketsProcessor {
 
 		final ClientConnection connection;
 
@@ -49,8 +50,8 @@ public class ServerPacketsProcessorImplementation implements ServerPacketsProces
 			return logger;
 		}
 
-		public ClientPacketsContext(GameContext gameContext, ClientConnection connection) {
-			super(gameContext, connection);
+		public ClientPacketsContext(Content.PacketDefinitions packetDefinitions, ClientConnection connection) {
+			super(packetDefinitions, connection);
 			this.connection = connection;
 		}
 
@@ -87,11 +88,12 @@ public class ServerPacketsProcessorImplementation implements ServerPacketsProces
 		}
 	}
 
+	/** Processes the packets sent/received by an authenticated *player* */
 	public class PlayerPacketsProcessor extends ClientPacketsContext implements ServerPlayerPacketsProcessor {
 		final ServerPlayer player;
 
 		public PlayerPacketsProcessor(ServerPlayer player) {
-			super(player.getContext(), player.getPlayerConnection());
+			super(server.getContent().packets(), player.getPlayerConnection());
 			this.player = player;
 		}
 

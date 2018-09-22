@@ -23,7 +23,7 @@ import io.xol.chunkstories.api.net.PacketSendingContext;
 import io.xol.chunkstories.content.translator.AbstractContentTranslator;
 import io.xol.chunkstories.content.translator.IncompatibleContentException;
 import io.xol.chunkstories.content.translator.LoadedContentTranslator;
-import io.xol.chunkstories.net.PacketsContextCommon;
+import io.xol.chunkstories.net.PacketsEncoderDecoder;
 
 public class PacketContentTranslator extends Packet {
 
@@ -52,7 +52,7 @@ public class PacketContentTranslator extends Packet {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(bais, "UTF-8"));
 		try {
 			OnlineContentTranslator translator = new LoadedContentTranslator(context.getContext().getContent(), reader);
-			PacketsContextCommon cCommon = (PacketsContextCommon) context;
+			PacketsEncoderDecoder cCommon = (PacketsEncoderDecoder) context;
 			cCommon.setContentTranslator(translator);
 			context.logger().info("Successfully installed content translator");
 			cCommon.getConnection().handleSystemRequest("world/translator_ok");

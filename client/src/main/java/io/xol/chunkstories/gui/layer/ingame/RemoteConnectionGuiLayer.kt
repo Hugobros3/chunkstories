@@ -17,9 +17,7 @@ import io.xol.chunkstories.gui.layer.MainMenu
 import io.xol.chunkstories.gui.layer.MessageBox
 
 /** GUI overlay that tells you about the progress of connecting to a server  */
-class RemoteConnectionGuiLayer(scene: Gui, parent: Layer, ip: String, port: Int) : Layer(scene, parent) {
-    internal var connectionSequence: ClientConnectionSequence = ClientConnectionSequence(ip, port)
-
+class RemoteConnectionGuiLayer(scene: Gui, parent: Layer, private val connectionSequence: ClientConnectionSequence) : Layer(scene, parent) {
     internal var exitButton = BaseButton(this, 0, 0, 160, "#{connection.cancel}")
 
     init {

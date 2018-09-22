@@ -6,71 +6,74 @@
 
 package io.xol.chunkstories.server.net.announcer;
 
-import java.net.Inet4Address;
-import java.util.Random;
-import java.util.concurrent.atomic.AtomicBoolean;
-
+import io.xol.chunkstories.api.util.Configuration;
 import io.xol.chunkstories.net.http.HttpRequests;
 import io.xol.chunkstories.server.DedicatedServer;
 import io.xol.chunkstories.util.VersionInfo;
 
+import java.net.Inet4Address;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 //TODO Use proper way to http stuff instead of this ugly ass hack
+
 /**
- * Small background thread that is tasked with putting and keeping up to date
- * the server's entry in the global list
+ * Small background thread that is tasked with putting and keeping up to date the server's entry in the global list
+ * <br/>
+ * Note: This keeps running so it can be hot-enabled/disabled without too much trouble
  */
 public class ServerAnnouncerThread extends Thread {
-	AtomicBoolean run = new AtomicBoolean(true);
+    private final DedicatedServer server;
+    private final AtomicBoolean run = new AtomicBoolean(true);
 
-	int lolcode = 0;
-	public long updatedelay = 0;
+    /**
+     * Unique key used to authentificate on the servers list.
+     */
+    private int lolcode; //TODO moar bits
 
-	public String srv_name;
-	public String srv_desc;
+    public ServerAnnouncerThread(DedicatedServer server) {
+        this.server = server;
 
-	DedicatedServer server;
+        lolcode = server.getServerConfig().getIntValue("server.announcer.lolcode");
+        if (lolcode == 0L) {
+            Random rnd = new Random();
+            lolcode = rnd.nextInt(Integer.MAX_VALUE);
+            Configuration.OptionInt option = server.getServerConfig().get("server.announcer.lolcode");
+            option.trySetting(lolcode);
+        }
 
-	public ServerAnnouncerThread(DedicatedServer server) {
-		this.server = server;
+        setName("Server list announcer thread");
+    }
 
-		lolcode = server.getServerConfig().getInteger("lolcode", 0);
-		if (lolcode == 0L) {
-			Random rnd = new Random();
-			lolcode = rnd.nextInt(Integer.MAX_VALUE);
-			server.getServerConfig().setInteger("lolcode", lolcode);
-		}
-		updatedelay = server.getServerConfig().getLong("update-delay", 10000L);
-		String hostname = HttpRequests.sendPost("https://chunkstories.xyz/api/sayMyName.php?host=1", "");
-		srv_name = server.getServerConfig().getString("server-name", "unnamedserver@" + hostname);
-		srv_desc = server.getServerConfig().getString("server-desc", "Default description.");
-		setName("Multiverse thread");
-	}
+    public void stopAnnouncer() {
+        run.set(false);
+    }
 
-	public void stopAnnouncer() {
-		run.set(false);
-	}
+    @Override
+    public void run() {
+        try {
+            String internalIp = Inet4Address.getLocalHost().getHostAddress();
+            String externalIp = HttpRequests.sendPost("https://chunkstories.xyz/api/sayMyName.php?ip=1", "");
 
-	@Override
-	public void run() {
-		try {
-			String internalIp = Inet4Address.getLocalHost().getHostAddress();
-			String externalIp = HttpRequests.sendPost("httpss://chunkstories.xyz/api/sayMyName.php?ip=1", "");
+            while (run.get()) {
+                if (server.getServerConfig().getBooleanValue("server.announcer.enable")) {
 
-			while (run.get()) {
-				// System.out.println("Updating server data on Multiverse.");
-				if (server.getServerConfig().getString("enable-multiverse", "false").equals("true")) {
-					HttpRequests.sendPost("https://chunkstories.xyz/api/serverAnnounce.php",
-							"srvname=" + srv_name + "&desc=" + srv_desc + "&ip=" + externalIp + "&iip=" + internalIp
-									+ "&mu=" + server.getHandler().getMaxClients() + "&u="
-									+ server.getHandler().getPlayersNumber() + "&n=0&w=default&p=1&v="
-									+ VersionInfo.version + "&lolcode=" + lolcode);
-					sleep(updatedelay);
-				} else
-					sleep(6000);
-			}
-		} catch (Exception e) {
-			server.getLogger().error("An unexpected error happened during multiverse stuff. More worldInfo below.");
-			e.printStackTrace();
-		}
-	}
+                    String serverName = server.getServerConfig().getValue("server.name");
+                    String serverDescription = server.getServerConfig().getValue("server.description");
+
+                    HttpRequests.sendPost("https://chunkstories.xyz/api/serverAnnounce.php",
+                            "srvname=" + serverName + "&desc=" + serverDescription + "&ip=" + externalIp + "&iip=" + internalIp
+                                    + "&mu=" + server.getHandler().getMaxClients() + "&u="
+                                    + server.getHandler().getPlayersNumber() + "&n=0&w=default&p=1&v="
+                                    + VersionInfo.version + "&lolcode=" + lolcode);
+
+                    sleep(server.getServerConfig().getIntValue("server.announcer.dutyCycle"));
+                } else
+                    sleep(6000);
+            }
+        } catch (Exception e) {
+            server.getLogger().error("An unexpected error happened during multiverse stuff. More worldInfo below.");
+            e.printStackTrace();
+        }
+    }
 }

@@ -84,7 +84,7 @@ public class VanillaClientsManager extends ClientsManager {
 			return false;
 
 		try {
-			ServerSocket serverSocket = new ServerSocket(server.getServerConfig().getInteger("server-port", 30410));
+			ServerSocket serverSocket = new ServerSocket(server.getServerConfig().getIntValue("server.net.port"));
 			server.logger().info(
 					"Started server on port " + serverSocket.getLocalPort() + ", ip=" + serverSocket.getInetAddress());
 

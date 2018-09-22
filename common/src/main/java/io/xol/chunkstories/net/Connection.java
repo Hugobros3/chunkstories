@@ -14,29 +14,21 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.exceptions.PacketProcessingException;
 import io.xol.chunkstories.api.exceptions.net.IllegalPacketException;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.packets.PacketText;
 
 public abstract class Connection {
-	protected final GameContext context;
-
 	protected final String remoteAddress;
 	protected final int port;
 
-	protected static final Logger logger = LoggerFactory.getLogger("client.net.connection");
+	protected static final Logger logger = LoggerFactory.getLogger("net.connection");
 
-	public Connection(GameContext gameContext, String remoteAddress, int port) {
+	public Connection(String remoteAddress, int port) {
 		super();
-		this.context = gameContext;
 		this.remoteAddress = remoteAddress;
 		this.port = port;
-	}
-
-	public GameContext getContext() {
-		return context;
 	}
 
 	public String getRemoteAddress() {
@@ -64,7 +56,7 @@ public abstract class Connection {
 
 	public abstract void pushPacket(Packet packet);
 
-	public abstract PacketsContextCommon getPacketsContext();
+	public abstract PacketsEncoderDecoder getEncoderDecoder();
 
 	public abstract boolean close();
 

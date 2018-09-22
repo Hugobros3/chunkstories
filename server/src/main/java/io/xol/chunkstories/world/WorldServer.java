@@ -6,12 +6,12 @@
 
 package io.xol.chunkstories.world;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
-import io.xol.chunkstories.api.content.OnlineContentTranslator;
 import io.xol.chunkstories.api.exceptions.PacketProcessingException;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.PacketDefinition.PacketGenre;
@@ -19,9 +19,9 @@ import io.xol.chunkstories.api.net.PacketWorld;
 import io.xol.chunkstories.api.net.packets.PacketTime;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.api.util.IterableIterator;
+import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.api.world.WorldMaster;
 import io.xol.chunkstories.api.world.WorldNetworked;
-import io.xol.chunkstories.content.translator.AbstractContentTranslator;
 import io.xol.chunkstories.net.LogicalPacketDatagram;
 import io.xol.chunkstories.net.PacketDefinitionImplementation;
 import io.xol.chunkstories.server.DedicatedServer;
@@ -30,10 +30,13 @@ import io.xol.chunkstories.server.propagation.VirtualServerDecalsManager;
 import io.xol.chunkstories.server.propagation.VirtualServerParticlesManager;
 import io.xol.chunkstories.sound.VirtualSoundManager;
 import io.xol.chunkstories.world.io.IOTasks;
+import org.jetbrains.annotations.NotNull;
 
 public class WorldServer extends WorldImplementation implements WorldMaster, WorldNetworked {
 	private final DedicatedServer server;
-	private final AbstractContentTranslator translator;
+	private final IOTasks ioHandler;
+
+	//private final AbstractContentTranslator translator;
 
 	private VirtualSoundManager virtualServerSoundManager;
 	private VirtualServerParticlesManager virtualServerParticlesManager;
@@ -41,27 +44,22 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 
 	private Deque<PendingPlayerDatagram> packetsQueue = new ConcurrentLinkedDeque<>();
 
-	public WorldServer(DedicatedServer server, WorldInfoImplementation worldInfo) throws WorldLoadingException {
-		super(server, worldInfo);
+	public WorldServer(DedicatedServer server, WorldInfo worldInfo, File folder) throws WorldLoadingException {
+		super(server, worldInfo, null, folder);
 		this.server = server;
 
-		this.translator = (AbstractContentTranslator) super.getContentTranslator();
+		//this.translator = (AbstractContentTranslator) super.getContentTranslator();
 
 		this.virtualServerSoundManager = new VirtualSoundManager(this);
 		this.virtualServerParticlesManager = new VirtualServerParticlesManager(this, server);
 		this.virtualServerDecalsManager = new VirtualServerDecalsManager(this, server);
 
-		setIoHandler(new IOTasks(this));
+		ioHandler = new IOTasks(this);
 		getIoHandler().start();
 	}
 
 	public DedicatedServer getServer() {
 		return server;
-	}
-
-	@Override
-	public OnlineContentTranslator getContentTranslator() {
-		return translator;
 	}
 
 	@Override
@@ -94,25 +92,11 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 		this.getServer().getHandler().flushAll();
 	}
 
-	/*
-	 * public void handleWorldMessage(UserConnection sender, String message) { if
-	 * (message.equals("worldInfo")) { //Sends the construction worldInfo for the world, and
-	 * then the player entity //worldInfo.sendInfo(sender); PacketSendWorldInfo
-	 * packet = new PacketSendWorldInfo(worldInfo); sender.pushPacket(packet);
-	 * 
-	 * //TODO only spawn the player when he asks to
-	 * spawnPlayer(sender.getLoggedInPlayer()); } else if
-	 * (message.equals("respawn")) { Player player = sender.getLoggedInPlayer();
-	 * if(player == null) { sender.sendChat("Fuck off ?"); return; } else { //Only
-	 * allow to respawn if the current entity is null or dead
-	 * if(player.getControlledEntity() == null || (player.getControlledEntity()
-	 * instanceof EntityLiving &&
-	 * ((EntityLiving)player.getControlledEntity()).isDead())) {
-	 * spawnPlayer(sender.getLoggedInPlayer()); sender.sendChat("Respawning ..."); }
-	 * else sender.
-	 * sendChat("You're not dead, or you are controlling a non-living entity."); } }
-	 * }
-	 */
+	@NotNull
+	@Override
+	public IOTasks getIoHandler() {
+		return ioHandler;
+	}
 
 	class PendingPlayerDatagram {
 		LogicalPacketDatagram datagram;
@@ -147,7 +131,7 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 
 						// packetsProcessor.getSender() is equivalent to player here
 						packetWorld.process(player, datagram.getData(),
-								player.getPlayerConnection().getPacketsContext());
+								player.getPlayerConnection().getEncoderDecoder());
 					}
 				} catch (IOException | PacketProcessingException e) {
 					logger().warn("Networking Exception while processing datagram: " + e.getMessage());

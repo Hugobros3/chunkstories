@@ -9,6 +9,10 @@ import io.xol.chunkstories.world.WorldLoadingException
 import io.xol.chunkstories.world.deserializeWorldInfo
 import java.io.File
 
+fun ClientImplementation.connectToRemoteWorld(address: String, port: Int) : WorldClientRemote {
+    TODO()
+}
+
 class IngameClientRemoteHost(client: ClientImplementation, worldInitializer: (IngameClientImplementation) -> WorldClientRemote) : IngameClientImplementation(client, worldInitializer) {
     override val world: WorldClientRemote = super.internalWorld as WorldClientRemote
     override val pluginManager: ClientSlavePluginManager = super.internalPluginManager as ClientSlavePluginManager

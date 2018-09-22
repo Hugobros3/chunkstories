@@ -58,7 +58,7 @@ public class HealthCommand extends ServerCommandBasic {
 
 		if (!entity.traits.tryWithBoolean(TraitHealth.class, fm -> {
 			fm.setHealth(health);
-			player.sendMessage("Health set to: " + health + "/" + fm.getMaxHealth());
+			player.sendMessage("Health set to: " + health + "/" + fm.maxHealth);
 
 			return true;
 		}))

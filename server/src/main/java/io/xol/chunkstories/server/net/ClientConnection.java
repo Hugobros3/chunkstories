@@ -24,7 +24,6 @@ import io.xol.chunkstories.net.packets.PacketSendFile;
 import io.xol.chunkstories.net.packets.PacketSendWorldInfo;
 import io.xol.chunkstories.server.net.ServerPacketsProcessorImplementation.ClientPacketsContext;
 import io.xol.chunkstories.server.player.ServerPlayer;
-import io.xol.chunkstories.world.WorldInfoImplementation;
 import io.xol.chunkstories.world.WorldServer;
 
 public abstract class ClientConnection extends Connection implements Interlocutor {
@@ -34,7 +33,7 @@ public abstract class ClientConnection extends Connection implements Interlocuto
 
 	protected final Logger logger;
 
-	private PlayerLoginHelper loginHelper;
+	private PlayerAuthenticationHelper loginHelper;
 
 	protected ClientPacketsContext packetsProcessor;
 	protected ServerPlayer player = null;
@@ -46,14 +45,14 @@ public abstract class ClientConnection extends Connection implements Interlocuto
 	private static final AtomicInteger usersCount = new AtomicInteger();
 
 	public ClientConnection(Server server, ClientsManager clientsManager, String remoteAddress, int port) {
-		super(server, remoteAddress, port);
+		super(remoteAddress, port);
 		this.server = server;
 		this.clientsManager = clientsManager;
 
 		// This way we can tell the logs from one use to the next
 		this.logger = LoggerFactory.getLogger("server.net.users." + usersCount.getAndIncrement());
 
-		this.loginHelper = new PlayerLoginHelper(this);
+		this.loginHelper = new PlayerAuthenticationHelper(this);
 	}
 
 	public Server getContext() {
@@ -61,7 +60,7 @@ public abstract class ClientConnection extends Connection implements Interlocuto
 	}
 
 	@Override
-	public ClientPacketsContext getPacketsContext() {
+	public ClientPacketsContext getEncoderDecoder() {
 		return packetsProcessor;
 	}
 
@@ -128,7 +127,7 @@ public abstract class ClientConnection extends Connection implements Interlocuto
 			if (message.equals("enter")) {
 				player.setWorld(world);
 				// Sends the construction worldInfo for the world, and then the player entity
-				PacketSendWorldInfo packet = new PacketSendWorldInfo((WorldInfoImplementation) world.getWorldInfo());
+				PacketSendWorldInfo packet = new PacketSendWorldInfo(world.getWorldInfo());
 				pushPacket(packet);
 
 				// TODO only spawn the player when he asks to

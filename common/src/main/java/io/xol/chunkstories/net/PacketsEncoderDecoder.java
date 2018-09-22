@@ -14,7 +14,6 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.content.OnlineContentTranslator;
 import io.xol.chunkstories.api.exceptions.PacketProcessingException;
@@ -33,16 +32,14 @@ import io.xol.chunkstories.net.packets.PacketSendFile;
  * The task of the packet processor is to decode & sort incomming packets by ID
  * and to send outcoming packets with the right packet ID.
  */
-public abstract class PacketsContextCommon implements PacketReceptionContext, PacketSendingContext {
-	protected final GameContext gameContext;
+public abstract class PacketsEncoderDecoder implements PacketReceptionContext, PacketSendingContext {
 	protected final Content.PacketDefinitions store;
 	protected final Connection connection;
 
 	protected OnlineContentTranslator contentTranslator;
 
-	public PacketsContextCommon(GameContext gameContext, Connection connection) {
-		this.gameContext = gameContext;
-		this.store = gameContext.getContent().packets();
+	public PacketsEncoderDecoder(Content.PacketDefinitions packetDefinitions, Connection connection) {
+		this.store = packetDefinitions;
 		this.connection = connection;
 	}
 
@@ -88,8 +85,7 @@ public abstract class PacketsContextCommon implements PacketReceptionContext, Pa
 			packetTypeId = secondByte | (firstByte & 0x7F) << 8;
 		}
 
-		PacketDefinitionImplementation def = (PacketDefinitionImplementation) this.getContentTranslator()
-				.getPacketForId(packetTypeId);
+		PacketDefinitionImplementation def = (PacketDefinitionImplementation) this.getContentTranslator().getPacketForId(packetTypeId);
 		if (def == null) {
 			throw new UnknowPacketException(packetTypeId);
 		}
@@ -136,7 +132,7 @@ public abstract class PacketsContextCommon implements PacketReceptionContext, Pa
 					@Override
 					public void write(DataOutputStream out) throws IOException {
 						writePacketIdHeader(out, packet_id);
-						packet.send(getInterlocutor(), out, PacketsContextCommon.this);
+						packet.send(getInterlocutor(), out, PacketsEncoderDecoder.this);
 					}
 
 				};

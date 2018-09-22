@@ -64,11 +64,11 @@ import java.util.concurrent.locks.ReadWriteLock
 import java.util.concurrent.locks.ReentrantReadWriteLock
 
 abstract class WorldImplementation @Throws(WorldLoadingException::class)
-constructor(gameContext: GameContext, info: WorldInfo, initialContentTranslator: ContentTranslator?, folder: File?) : World {
+constructor(gameContext: GameContext, info: WorldInfo, initialContentTranslator: AbstractContentTranslator?, folder: File?) : World {
     override val gameContext: GameContext
 
     final override val worldInfo: WorldInfo
-    final override val contentTranslator: ContentTranslator
+    final override val contentTranslator: AbstractContentTranslator
 
     val folderFile: File?
 
@@ -166,7 +166,7 @@ constructor(gameContext: GameContext, info: WorldInfo, initialContentTranslator:
                     contentTranslator = InitialContentTranslator(gameContext.content)
                 }
 
-                (this.contentTranslator as AbstractContentTranslator).save(File(this.folderPath!! + "/content_mappings.dat"))
+                this.contentTranslator.save(File(this.folderPath!! + "/content_mappings.dat"))
 
                 internalDataFile = File(folder.path + "/internal.dat")
                 this.internalData.load(FileReader(internalDataFile))
@@ -176,11 +176,9 @@ constructor(gameContext: GameContext, info: WorldInfo, initialContentTranslator:
                 this.ticksElapsed = internalData.getProperty("worldTimeInternal")?.toLongOrNull() ?: 0
                 this.weather = internalData.getProperty("overcastFactor")?.toFloatOrNull() ?: 0.2F
             } else {
-
                 // Slave world initialization
                 if (initialContentTranslator == null) {
-                    throw WorldLoadingException(
-                            "No ContentTranslator providen and none could be found on disk since this is a Slave World.")
+                    throw WorldLoadingException("No ContentTranslator providen and none could be found on disk since this is a Slave World.")
                 } else {
                     this.contentTranslator = initialContentTranslator
                 }

@@ -8,11 +8,11 @@ package io.xol.chunkstories.server.propagation;
 
 import java.util.Iterator;
 
+import io.xol.chunkstories.api.graphics.systems.dispatching.DecalsManager;
 import org.joml.Vector3dc;
 
 import io.xol.chunkstories.api.net.packets.PacketDecal;
 import io.xol.chunkstories.api.player.Player;
-import io.xol.chunkstories.api.rendering.effects.DecalsManager;
 import io.xol.chunkstories.server.DedicatedServer;
 import io.xol.chunkstories.server.player.ServerPlayer;
 import io.xol.chunkstories.world.WorldServer;
@@ -32,7 +32,7 @@ public class VirtualServerDecalsManager implements DecalsManager {
 		}
 
 		@Override
-		public void drawDecal(Vector3dc position, Vector3dc orientation, Vector3dc size, String decalName) {
+		public void add(Vector3dc position, Vector3dc orientation, Vector3dc size, String decalName) {
 			Iterator<Player> i = worldServer.getPlayers();
 			while (i.hasNext()) {
 				Player player = i.next();
@@ -45,17 +45,11 @@ public class VirtualServerDecalsManager implements DecalsManager {
 
 	void tellPlayer(Player player, Vector3dc position, Vector3dc orientation, Vector3dc size, String decalName) {
 		PacketDecal packet = new PacketDecal(worldServer, decalName, position, orientation, size);
-
-		/*
-		 * packet.decalName = decalName; packet.position = position; packet.orientation
-		 * = orientation; packet.size = size;
-		 */
-
 		player.pushPacket(packet);
 	}
 
 	@Override
-	public void drawDecal(Vector3dc position, Vector3dc orientation, Vector3dc size, String decalName) {
+	public void add(Vector3dc position, Vector3dc orientation, Vector3dc size, String decalName) {
 		Iterator<Player> i = worldServer.getPlayers();
 		while (i.hasNext()) {
 			Player player = i.next();

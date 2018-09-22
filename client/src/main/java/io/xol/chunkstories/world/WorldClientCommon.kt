@@ -6,21 +6,20 @@
 
 package io.xol.chunkstories.world
 
-import io.xol.chunkstories.api.content.ContentTranslator
 import io.xol.chunkstories.api.graphics.systems.dispatching.DecalsManager
 import io.xol.chunkstories.api.particles.ParticlesManager
 import io.xol.chunkstories.api.plugin.ClientPluginManager
 import io.xol.chunkstories.api.world.WorldClient
 import io.xol.chunkstories.api.world.WorldInfo
 import io.xol.chunkstories.client.ingame.IngameClientImplementation
-
+import io.xol.chunkstories.content.translator.AbstractContentTranslator
 import java.io.File
 
 /**
  * Mostly the common methods of WorldClientRemote and WorldClientLocal
  */
 abstract class WorldClientCommon @Throws(WorldLoadingException::class)
-constructor(override val client: IngameClientImplementation, info: WorldInfo, translator: ContentTranslator?, folder: File?) : WorldImplementation(client, info, translator, folder), WorldClient {
+constructor(override val client: IngameClientImplementation, info: WorldInfo, translator: AbstractContentTranslator?, folder: File?) : WorldImplementation(client, info, translator, folder), WorldClient {
 
     val pluginManager: ClientPluginManager
         get() = client.pluginManager

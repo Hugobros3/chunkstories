@@ -31,12 +31,12 @@ public class DebugWorldDataCommands extends ServerCommandBasic {
 		if (command.getName().equals("chunk") && emitter.hasPermission("server.debug")) {
 			Player player = (Player) emitter;
 
-			emitter.sendMessage("#00FFD0" + player.getControlledEntity().entityLocation.getChunk());
+			emitter.sendMessage("#00FFD0" + player.getControlledEntity().traitLocation.getChunk());
 			return true;
 		} else if (command.getName().equals("region") && emitter.hasPermission("server.debug")) {
 			Player player = (Player) emitter;
 
-			Chunk chunk = player.getControlledEntity().entityLocation.getChunk();
+			Chunk chunk = player.getControlledEntity().traitLocation.getChunk();
 
 			if (chunk != null)
 				emitter.sendMessage("#00FFD0" + chunk.getRegion());

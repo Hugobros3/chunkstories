@@ -10,12 +10,12 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class PacketOutgoingBuffered implements PacketOutgoing {
-	final PacketsContextCommon context;
+	final PacketsEncoderDecoder context;
 	final short id;
 	final int payload_size;
 	final byte[] payload;
 
-	public PacketOutgoingBuffered(PacketsContextCommon context, short id, int payload_size, byte[] payload) {
+	public PacketOutgoingBuffered(PacketsEncoderDecoder context, short id, int payload_size, byte[] payload) {
 		this.context = context;
 
 		this.id = id;

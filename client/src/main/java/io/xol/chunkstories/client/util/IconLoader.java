@@ -10,14 +10,14 @@ import static org.lwjgl.glfw.GLFW.glfwSetWindowIcon;
 
 import java.nio.ByteBuffer;
 
+import io.xol.chunkstories.client.glfw.GLFWWindow;
 import org.lwjgl.glfw.GLFWImage;
 
 import de.matthiasmann.twl.utils.PNGDecoder;
 import de.matthiasmann.twl.utils.PNGDecoder.Format;
-import io.xol.chunkstories.renderer.opengl.GLFWGameWindow;
 
 public class IconLoader {
-	public IconLoader(GLFWGameWindow gameWindow) {
+	public IconLoader(GLFWWindow gameWindow) {
 		try (GLFWImage.Buffer icons = GLFWImage.malloc(2)) {
 			ByteBuffer pixels16 = getByteBufferData("/textures/icon16.png");
 			icons.position(0).width(16).height(16).pixels(pixels16);
@@ -26,7 +26,7 @@ public class IconLoader {
 			icons.position(1).width(32).height(32).pixels(pixels32);
 
 			icons.position(0);
-			glfwSetWindowIcon(gameWindow.glfwWindowHandle, icons);
+			glfwSetWindowIcon(gameWindow.getGlfwWindowHandle(), icons);
 
 			// stbi_image_free(pixels32);
 			// stbi_image_free(pixels16);

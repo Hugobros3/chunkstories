@@ -11,21 +11,26 @@ import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.net.http.SimplePostRequest;
 import io.xol.chunkstories.server.player.ServerPlayer;
 import io.xol.chunkstories.util.VersionInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** Helper class to offload the login handling logic from ClientConnection */
-public class PlayerLoginHelper {
-	final ClientConnection connection;
+class PlayerAuthenticationHelper {
+	private final ClientConnection connection;
 
-	String name, token, version;
+	private String name, token, version;
+	private boolean loggedIn = false;
 
-	boolean logged_in = false;
+	private static final Logger logger = LoggerFactory.getLogger("server.authentication");
 
-	public PlayerLoginHelper(ClientConnection connection) {
+	PlayerAuthenticationHelper(ClientConnection connection) {
 		this.connection = connection;
+
+		logger.debug("User on connection "+connection+" attempting to authenticate...");
 	}
 
-	public boolean handleLogin(String loginRequest) {
-		if (logged_in)
+	boolean handleLogin(String loginRequest) {
+		if (loggedIn)
 			return false;
 
 		if (loginRequest.startsWith("username:")) {
@@ -38,15 +43,9 @@ public class PlayerLoginHelper {
 		}
 		if (loginRequest.startsWith("version:")) {
 			version = loginRequest.replace("version:", "");
-			if (connection.clientsManager.getServer().getServerConfig().getString("check-version", "true")
-					.equals("true")) {
-
-				if (Integer.parseInt(version) != VersionInfo.networkProtocolVersion)
-					connection.disconnect("Wrong protocol version ! " + version + " != "
-							+ VersionInfo.networkProtocolVersion + " \n Update your game !");
-			}
 			return true;
 		}
+
 		if (loginRequest.startsWith("confirm")) {
 			if (name.equals("undefined"))
 				return true;
@@ -58,7 +57,11 @@ public class PlayerLoginHelper {
 				connection.disconnect("No valid token supplied");
 				return true;
 			}
-			if (connection.clientsManager.getServer().getServerConfig().getInteger("offline-mode", 0) == 1) {
+			if (connection.clientsManager.getServer().getServerConfig().getBooleanValue("server.security.checkClientVersion")) {
+				if (Integer.parseInt(version) != VersionInfo.networkProtocolVersion)
+					connection.disconnect("Wrong protocol version ! " + version + " != "+ VersionInfo.networkProtocolVersion + " \n Update your game !");
+			}
+			if (connection.clientsManager.getServer().getServerConfig().getBooleanValue("server.security.checkClientAuthentification")) {
 				connection.logger.warn("Offline-mode is on, letting " + this.name + " connecting without verification");
 				afterLoginValidation();
 				return true;
@@ -84,9 +87,9 @@ public class PlayerLoginHelper {
 	 */
 	private void afterLoginValidation() {
 		// Disallow users from logging in from two places
-		Player contender = connection.clientsManager.getPlayerByName(name);
-		if (contender != null) {
-			connection.disconnect("You are already logged in. (" + contender + "). ");
+		Player yourEvilDouble = connection.clientsManager.getPlayerByName(name);
+		if (yourEvilDouble != null) {
+			connection.disconnect("You are already logged in. (" + yourEvilDouble + "). ");
 			return;
 		}
 
@@ -105,7 +108,7 @@ public class PlayerLoginHelper {
 		connection.clientsManager.getServer().broadcastMessage(playerConnectionEvent.getConnectionMessage());
 
 		// Aknowledge the login
-		logged_in = true;
+		loggedIn = true;
 		connection.sendTextMessage("login/ok");
 		connection.flush();
 		connection.setPlayer(player);

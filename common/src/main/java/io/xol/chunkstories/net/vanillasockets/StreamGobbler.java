@@ -36,7 +36,7 @@ public abstract class StreamGobbler extends Thread {
 	public void run() {
 		try {
 			while (connection.isOpen()) {
-				LogicalPacketDatagram datagram = connection.getPacketsContext().digestIncommingPacket(in);
+				LogicalPacketDatagram datagram = connection.getEncoderDecoder().digestIncommingPacket(in);
 				connection.handleDatagram(datagram);
 			}
 

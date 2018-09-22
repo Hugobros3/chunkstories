@@ -49,7 +49,7 @@ public class ServerPacketWorldUser extends PacketWorldUser {
 
 		if (sender instanceof ServerPlayer) {
 			ServerPlayer player = (ServerPlayer) sender;
-			player.loadingAgent.handleClientRequest(this);
+			player.getLoadingAgent().handleClientRequest(this);
 		}
 	}
 }

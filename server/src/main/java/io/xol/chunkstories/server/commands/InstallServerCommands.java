@@ -11,7 +11,7 @@ import io.xol.chunkstories.server.commands.admin.ConfigCommands;
 import io.xol.chunkstories.server.commands.admin.ModerationCommands;
 import io.xol.chunkstories.server.commands.admin.SaveCommand;
 import io.xol.chunkstories.server.commands.admin.SayCommand;
-import io.xol.chunkstories.server.commands.admin.StopTheFuckingTree;
+import io.xol.chunkstories.server.commands.admin.StopServerCommand;
 import io.xol.chunkstories.server.commands.debug.DebugIOCommand;
 import io.xol.chunkstories.server.commands.debug.DebugTasksCommand;
 import io.xol.chunkstories.server.commands.debug.DebugWorldDataCommands;
@@ -39,7 +39,7 @@ public class InstallServerCommands {
 		new ModerationCommands(server);
 		new SaveCommand(server);
 		new SayCommand(server);
-		new StopTheFuckingTree(server);
+		new StopServerCommand(server);
 
 		// Debug
 		new DebugIOCommand(server);

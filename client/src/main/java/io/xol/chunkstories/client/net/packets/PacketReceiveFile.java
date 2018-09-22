@@ -14,26 +14,26 @@ import java.util.concurrent.Semaphore;
 import io.xol.chunkstories.api.exceptions.PacketProcessingException;
 import io.xol.chunkstories.api.net.PacketReceptionContext;
 import io.xol.chunkstories.api.net.PacketSender;
-import io.xol.chunkstories.client.net.ClientPacketsContext;
+import io.xol.chunkstories.client.net.ClientPacketsEncoderDecoder;
 import io.xol.chunkstories.net.Connection.DownloadStatus;
 import io.xol.chunkstories.net.Connection.PendingDownload;
-import io.xol.chunkstories.net.PacketsContextCommon;
+import io.xol.chunkstories.net.PacketsEncoderDecoder;
 import io.xol.chunkstories.net.packets.PacketSendFile;
 
 public class PacketReceiveFile extends PacketSendFile {
 	@Override
 	public void process(PacketSender sender, DataInputStream in, PacketReceptionContext processor)
 			throws IOException, PacketProcessingException {
-		if (!(processor instanceof ClientPacketsContext))
+		if (!(processor instanceof ClientPacketsEncoderDecoder))
 			return;
 
-		// ClientPacketsContext cppi = (ClientPacketsContext)processor;
+		// ClientPacketsEncoderDecoder cppi = (ClientPacketsEncoderDecoder)processor;
 
 		String fileTag = in.readUTF();
 		long fileLength = in.readLong();
 
 		if (fileLength > 0) {
-			PacketsContextCommon context = (PacketsContextCommon) processor;
+			PacketsEncoderDecoder context = (PacketsEncoderDecoder) processor;
 			PendingDownload pendingDownload = context.getConnection().getLocationForExpectedFile(fileTag);
 			if (pendingDownload == null)
 				throw new IOException("Received unexpected PacketFile with tag: " + fileTag);

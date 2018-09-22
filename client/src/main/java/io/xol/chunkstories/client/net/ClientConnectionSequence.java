@@ -13,7 +13,6 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import io.xol.chunkstories.client.ClientImplementation;
-import io.xol.chunkstories.client.ingame.IngameClientImplementation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,19 +20,17 @@ import io.xol.chunkstories.api.exceptions.content.mods.ModLoadFailureException;
 import io.xol.chunkstories.client.net.vanillasockets.TCPServerConnection;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.content.mods.ModZip;
-import io.xol.chunkstories.net.http.SimplePostRequest;
-import io.xol.chunkstories.util.VersionInfo;
 
 /**
  * The job of the ClientConnectionSequence is to execute the required steps to login
  * in a server, while monitoring back progress to the main thread
  */
 public class ClientConnectionSequence extends Thread {
-	final IngameClientImplementation ingameClient;
-	final ServerConnection connection;
-	boolean isDone = false;
+	private final ClientImplementation client;
+	private final ServerConnection connection;
+	private boolean isDone = false;
 
-	ConnectionStep status;
+	private ConnectionStep status;
 
 	private Semaphore authSemaphore = new Semaphore(0);
 
@@ -48,8 +45,8 @@ public class ClientConnectionSequence extends Thread {
 
 	private static final Logger logger = LoggerFactory.getLogger("net");
 
-	public ClientConnectionSequence(IngameClientImplementation client, String ip, int port) {
-		this.ingameClient = client;
+	public ClientConnectionSequence(ClientImplementation client, String ip, int port) {
+		this.client = client;
 		
 		this.connection = new TCPServerConnection(client, ip, port) {
 
@@ -141,7 +138,7 @@ public class ClientConnectionSequence extends Thread {
 
 				// String md5Required = requiredMod.contains(":") ? requiredMod.split(":")[0] :
 				// requiredMod;
-				ingameClient.logger().info("Server asks for mod " + modInternalName + " (" + modSizeInBytes
+				client.logger().info("Server asks for mod " + modInternalName + " (" + modSizeInBytes
 						+ " bytes), md5=" + modMd5Hash);
 
 				requiredMd5s.add(modMd5Hash);
@@ -155,7 +152,7 @@ public class ClientConnectionSequence extends Thread {
 
 				// Check their size and signature
 				if (cached.length() != modSizeInBytes) {
-					ingameClient.logger()
+					client.logger()
 							.info("Invalid filesize for downloaded mod " + modInternalName + " (hash: " + modMd5Hash
 									+ ")" + " expected filesize = " + modSizeInBytes + " != actual filesize = "
 									+ cached.length());
@@ -170,7 +167,7 @@ public class ClientConnectionSequence extends Thread {
 				} catch (ModLoadFailureException e) {
 					e.printStackTrace();
 
-					ingameClient.logger().info("Could not load downloaded mod " + modInternalName + " (hash: "
+					client.logger().info("Could not load downloaded mod " + modInternalName + " (hash: "
 							+ modMd5Hash + "), see stack trace");
 					cached.delete(); // Delete suspicious file
 					abort("Failed to load " + modInternalName + ", check error log.");
@@ -179,7 +176,7 @@ public class ClientConnectionSequence extends Thread {
 				// Test the md5 hash wasn't tampered with
 				String actualMd5Hash = testHash.getMD5Hash();
 				if (!actualMd5Hash.equals(modMd5Hash)) {
-					ingameClient.logger().info("Invalid md5 hash for mod " + modInternalName
+					client.logger().info("Invalid md5 hash for mod " + modInternalName
 							+ " expected md5 hash = " + modMd5Hash + " != actual md5 hash = " + actualMd5Hash);
 					cached.delete(); // Delete suspicious file
 					abort("Mod " + modInternalName + " hash did not match.");
@@ -192,10 +189,10 @@ public class ClientConnectionSequence extends Thread {
 			for (String m : requiredMd5s) {
 				requiredMods[i++] = "md5:" + m;
 			}
-			ingameClient.getContent().modsManager().setEnabledMods(requiredMods);
+			client.getContent().modsManager().setEnabledMods(requiredMods);
 
 			status = new ConnectionStep("Reloading mods...");
-			ingameClient.getClient().reloadAssets();
+			client.reloadAssets();
 
 			status = new ConnectionStep("Loading ContentTranslator...");
 			connection.sendTextMessage("world/translator");
@@ -237,6 +234,7 @@ public class ClientConnectionSequence extends Thread {
 	}
 
 	@SuppressWarnings("serial")
+	private
 	class AbortException extends Exception {
 
 	}

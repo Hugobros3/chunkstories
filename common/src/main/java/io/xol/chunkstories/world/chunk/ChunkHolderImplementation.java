@@ -398,46 +398,6 @@ public class ChunkHolderImplementation implements ChunkHolder {
 	static Constructor<? extends CubicChunk> clientChunkConstructor;
 	static Constructor<? extends CubicChunk> clientChunkConstructorNoData;
 
-	static {
-		loadConstructors();
-	}
-
-	@SuppressWarnings("unchecked")
-	private static void loadConstructors() {
-		try {
-			// We don't use mod loading code on purpose
-			Class<? extends CubicChunk> clientChunkClass = (Class<? extends CubicChunk>) Class
-					.forName("io.xol.chunkstories.world.chunk.ClientChunk");
-			clientChunkConstructor = clientChunkClass.getConstructor(ChunkHolderImplementation.class, int.class,
-					int.class, int.class, CompressedData.class);
-			clientChunkConstructorNoData = clientChunkClass.getConstructor(ChunkHolderImplementation.class, int.class,
-					int.class, int.class);
-		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException e) {
-			// logger().log("ClientChunk class not found, assumming this is not a client
-			// instance");
-		}
-	}
-
-	// TODO have a cleaner way to make this
-	private static CubicChunk createClientChunk(ChunkHolderImplementation chunkHolder, int x, int y, int z,
-			final CompressedData data) {
-
-		try {
-			if (data == null) {
-				return clientChunkConstructorNoData.newInstance(chunkHolder, x, y, z);
-			} else {
-				return clientChunkConstructor.newInstance(chunkHolder, x, y, z, data);
-			}
-
-		} catch (SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException
-				| InvocationTargetException e) {
-			e.printStackTrace();
-			assert false;
-			System.exit(-800);
-			return null;
-		}
-	}
-
 	public CubicChunk createChunk(CompressedData data) {
 		this.chunkLock.writeLock().lock();
 
@@ -447,11 +407,7 @@ public class ChunkHolderImplementation implements ChunkHolder {
 			return this.chunk;
 		}
 
-		CubicChunk chunk;
-		if (region.world instanceof WorldClient)
-			chunk = createClientChunk(this, x, y, z, data);
-		else
-			chunk = data == null ? new CubicChunk(this, x, y, z) : new CubicChunk(this, x, y, z, data);
+		CubicChunk chunk = data == null ? new CubicChunk(this, x, y, z) : new CubicChunk(this, x, y, z, data);
 
 		if (this.chunk == null && chunk != null)
 			regionLoadedChunks.add(chunk);

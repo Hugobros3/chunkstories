@@ -82,15 +82,15 @@ public class SocketedClientConnection extends ClientConnection {
 	@Override
 	public void handleDatagram(LogicalPacketDatagram datagram)
 			throws IOException, PacketProcessingException, IllegalPacketException {
-		PacketDefinitionImplementation definition = (PacketDefinitionImplementation) datagram.packetDefinition;// getPacketsContext().getContentTranslator().getPacketForId(datagram.packetTypeId);
+		PacketDefinitionImplementation definition = (PacketDefinitionImplementation) datagram.packetDefinition;// getEncoderDecoder().getContentTranslator().getPacketForId(datagram.packetTypeId);
 		if (definition.getGenre() == PacketGenre.GENERAL_PURPOSE) {
 			Packet packet = definition.createNew(true, null);
-			packet.process(packetsProcessor.getInterlocutor(), datagram.getData(), getPacketsContext());
+			packet.process(packetsProcessor.getInterlocutor(), datagram.getData(), getEncoderDecoder());
 			datagram.dispose();
 
 		} else if (definition.getGenre() == PacketGenre.SYSTEM) {
 			Packet packet = definition.createNew(true, null);
-			packet.process(packetsProcessor.getInterlocutor(), datagram.getData(), getPacketsContext());
+			packet.process(packetsProcessor.getInterlocutor(), datagram.getData(), getEncoderDecoder());
 			if (packet instanceof PacketText) {
 				handleSystemRequest(((PacketText) packet).text);
 			}
@@ -108,9 +108,9 @@ public class SocketedClientConnection extends ClientConnection {
 			// Server doesn't expect world streaming updates from the client
 			// it does, however, listen to world_user_requests packets to keep
 			// track of the client's world data
-			WorldServer world = getPacketsContext().getWorld();
+			WorldServer world = getEncoderDecoder().getWorld();
 			PacketWorldStreaming packet = (PacketWorldStreaming) definition.createNew(false, world);
-			packet.process(packetsProcessor.getInterlocutor(), datagram.getData(), getPacketsContext());
+			packet.process(packetsProcessor.getInterlocutor(), datagram.getData(), getEncoderDecoder());
 			datagram.dispose();
 		} else {
 			throw new RuntimeException("whut");

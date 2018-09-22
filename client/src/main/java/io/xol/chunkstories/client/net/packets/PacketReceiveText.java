@@ -16,6 +16,6 @@ import io.xol.chunkstories.api.net.packets.PacketText;
 public class PacketReceiveText extends PacketText {
 	public void process(PacketSender sender, DataInputStream in, PacketReceptionContext processor) throws IOException {
 		super.process(sender, in, processor);
-		// ((ClientPacketsContext)processor).getConnection().handleTextPacket(text);
+		// ((ClientPacketsEncoderDecoder)processor).getConnection().handleTextPacket(text);
 	}
 }

@@ -21,6 +21,13 @@ import java.util.Calendar;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import io.xol.chunkstories.api.plugin.ServerPluginManager;
+import io.xol.chunkstories.api.server.Server;
+import io.xol.chunkstories.api.util.Configuration;
+import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.api.world.WorldInfo;
+import io.xol.chunkstories.world.WorldInfoUtilKt;
+import io.xol.chunkstories.world.WorldLoadingException;
 import org.fusesource.jansi.AnsiConsole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +35,6 @@ import org.slf4j.LoggerFactory;
 import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.entity.Entity;
 import io.xol.chunkstories.api.player.Player;
-import io.xol.chunkstories.api.server.DedicatedServer;
 import io.xol.chunkstories.api.server.PermissionsManager;
 import io.xol.chunkstories.api.server.UserPrivileges;
 import io.xol.chunkstories.api.util.ColorsTools;
@@ -46,8 +52,6 @@ import io.xol.chunkstories.server.propagation.ServerModsProvider;
 import io.xol.chunkstories.task.WorkerThreadPool;
 import io.xol.chunkstories.util.LogbackSetupHelper;
 import io.xol.chunkstories.util.VersionInfo;
-import io.xol.chunkstories.util.config.OldStyleConfigFile;
-import io.xol.chunkstories.world.WorldInfoMaster;
 import io.xol.chunkstories.world.WorldServer;
 
 /**
@@ -55,7 +59,7 @@ import io.xol.chunkstories.world.WorldServer;
  * also takes care of the command line input as it's the main thread, thought
  * the processing of command lines is handled by ServerConsole.java
  */
-public class DedicatedServer implements Runnable, DedicatedServer {
+public class DedicatedServer implements Runnable, Server {
 	static DedicatedServer server;
 
 	public static void main(String args[]) {
@@ -100,7 +104,9 @@ public class DedicatedServer implements Runnable, DedicatedServer {
 
 	private Logger logger = null;
 	private DedicatedServerConsole console = new DedicatedServerConsole(this);
-	private OldStyleConfigFile serverConfig = new OldStyleConfigFile("./config/server.cfg");
+
+	private Configuration serverConfig = new Configuration(this);
+	private final File configFile = new File("./config/server.config");
 
 	private AtomicBoolean running = new AtomicBoolean(true);
 	private long initTimestamp = System.currentTimeMillis() / 1000;
@@ -117,7 +123,7 @@ public class DedicatedServer implements Runnable, DedicatedServer {
 
 	// What mods are required to join this server ?
 	private ServerModsProvider modsProvider;
-	private DefaultPluginManager pluginsManager;
+	private DefaultServerPluginManager pluginsManager;
 
 	DedicatedServer(File coreContentLocation, String modsString) {
 		AnsiConsole.systemInstall();
@@ -143,15 +149,7 @@ public class DedicatedServer implements Runnable, DedicatedServer {
 			gameContent.reload();
 
 			// Spawns worker threads
-			int nbThreads = -1;
-			String configThreads = this.serverConfig.getString("workersThreads", "auto");
-			if (!configThreads.equals("auto")) {
-				try {
-					nbThreads = Integer.parseInt(configThreads);
-				} catch (NumberFormatException e) {
-				}
-			}
-
+			int nbThreads = this.serverConfig.getIntValue("server.performance.workerThreads");
 			if (nbThreads <= 0) {
 				nbThreads = Runtime.getRuntime().availableProcessors() - 2;
 
@@ -172,13 +170,20 @@ public class DedicatedServer implements Runnable, DedicatedServer {
 			pluginsManager = new DefaultServerPluginManager(this);
 
 			// Load the world(s)
-			String worldName = serverConfig.getString("world", "world");
-			String worldDir = GameDirectory.getGameFolderPath() + "/worlds/" + worldName;
-			if (new File(worldDir).exists()) {
-				world = new WorldServer(this, new WorldInfoMaster(new File(worldDir + "/worldInfo.world")));
+			String worldName = serverConfig.getValue("server.world");
+			String worldPath = GameDirectory.getGameFolderPath() + "/worlds/" + worldName;
+			File worldDir = new File(worldPath);
+			if (worldDir.exists()) {
+				File worldInfoFile = new File(worldDir.getPath()+"/worldInfo.dat");
+				if(!worldInfoFile.exists())
+					throw new WorldLoadingException("The folder $folder doesn't contain a worldInfo.dat file !");
+
+				WorldInfo worldInfo = WorldInfoUtilKt.deserializeWorldInfo(worldInfoFile);
+
+				world = new WorldServer(this, worldInfo, worldDir);
 			} else {
-				serverConfig.save();
-				System.out.println("Can't find the world \"" + worldName + "\" in " + worldDir + ". Exiting !");
+				serverConfig.save(configFile);
+				System.out.println("Can't find the world \"" + worldName + "\" in " + worldPath + ". Exiting !");
 				Runtime.getRuntime().exit(0);
 			}
 
@@ -188,16 +193,7 @@ public class DedicatedServer implements Runnable, DedicatedServer {
 			announcer = new ServerAnnouncerThread(this);
 			announcer.start();
 
-			permissionsManager = new PermissionsManager() {
-
-				@Override
-				public boolean hasPermission(Player player, String permissionNode) {
-					if (userPrivileges.isUserAdmin(player.getName()))
-						return true;
-					return false;
-				}
-
-			};
+			permissionsManager = (player, permissionNode) -> userPrivileges.isUserAdmin(player.getName());
 
 			// Load plugins
 			pluginsManager.reloadPlugins();
@@ -206,7 +202,7 @@ public class DedicatedServer implements Runnable, DedicatedServer {
 			// Finally start logic
 			world.startLogic();
 		} catch (Exception e) {
-			logger.error("Could not initalize server. Stacktrace below");
+			logger.error("Could not initialize server . Stacktrace below");
 			throw new RuntimeException(e);
 		}
 	}
@@ -299,12 +295,12 @@ public class DedicatedServer implements Runnable, DedicatedServer {
 		return world;
 	}
 
-	public OldStyleConfigFile getServerConfig() {
+	public Configuration getServerConfig() {
 		return serverConfig;
 	}
 
 	@Override
-	public DefaultPluginManager getPluginManager() {
+	public ServerPluginManager getPluginManager() {
 		return pluginsManager;
 	}
 
@@ -326,7 +322,7 @@ public class DedicatedServer implements Runnable, DedicatedServer {
 		world.destroy();
 
 		logger.info("Saving configuration");
-		serverConfig.save();
+		serverConfig.save(configFile);
 		userPrivileges.save();
 		logger.info("Good night sweet prince");
 		Runtime.getRuntime().exit(0);
@@ -346,7 +342,7 @@ public class DedicatedServer implements Runnable, DedicatedServer {
 
 	public void reloadConfig() {
 		userPrivileges.load();
-		serverConfig.load();
+		serverConfig.load(configFile);
 	}
 
 	@Override
@@ -427,7 +423,7 @@ public class DedicatedServer implements Runnable, DedicatedServer {
 	}
 
 	@Override
-	public void installPermissionsManager(PermissionsManager permissionsManager) {
+	public void setPermissionsManager(PermissionsManager permissionsManager) {
 		this.permissionsManager = permissionsManager;
 	}
 
@@ -448,7 +444,7 @@ public class DedicatedServer implements Runnable, DedicatedServer {
 	}
 
 	@Override
-	public Tasks tasks() {
+	public Tasks getTasks() {
 		return workers;
 	}
 }

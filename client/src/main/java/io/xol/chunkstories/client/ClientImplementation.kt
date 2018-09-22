@@ -12,8 +12,6 @@ import java.util.Calendar
 
 import io.xol.chunkstories.api.GameContext
 import io.xol.chunkstories.api.client.Client
-import io.xol.chunkstories.api.content.Content
-import io.xol.chunkstories.api.graphics.Window
 import io.xol.chunkstories.api.gui.Gui
 import io.xol.chunkstories.api.plugin.PluginManager
 import io.xol.chunkstories.client.glfw.GLFWWindow
@@ -26,22 +24,21 @@ import org.slf4j.LoggerFactory
 
 import io.xol.chunkstories.Constants
 import io.xol.chunkstories.api.client.ClientIdentity
-import io.xol.chunkstories.api.client.ClientSoundManager
-import io.xol.chunkstories.api.workers.Tasks
+import io.xol.chunkstories.api.util.Configuration
 import io.xol.chunkstories.content.GameDirectory
 import io.xol.chunkstories.gui.layer.LoginPrompt
 import io.xol.chunkstories.gui.layer.SkyBoxBackground
 import io.xol.chunkstories.input.lwjgl3.Lwjgl3ClientInputsManager
 import io.xol.chunkstories.util.LogbackSetupHelper
 import io.xol.chunkstories.util.VersionInfo
-import io.xol.chunkstories.util.config.ConfigurationImplementation
 
 /** Client implementation entry point, is the root of the systems and holds state through them  */
 class ClientImplementation internal constructor(coreContentLocation: File, modsStringArgument: String?) : Client, GameContext {
     private val logger: Logger
     private val chatLogger = LoggerFactory.getLogger("game.chat")
 
-    override val configuration: ConfigurationImplementation
+    override val configuration: Configuration
+    private val configFile: File = File("./config/client.config")
 
     override val content: GameContentStore
     override val tasks: ClientTasksPool
@@ -62,7 +59,6 @@ class ClientImplementation internal constructor(coreContentLocation: File, modsS
     override lateinit var user: ClientIdentity
 
     init {
-
         // Name the thread
         Thread.currentThread().name = "Main OpenGL Rendering thread"
         Thread.currentThread().priority = Constants.MAIN_GL_THREAD_PRIORITY
@@ -85,20 +81,12 @@ class ClientImplementation internal constructor(coreContentLocation: File, modsS
         content = GameContentStore(this, coreContentLocation, modsStringArgument)
         content.reload()
 
-        configuration = ClientConfigurationImplementation(this, File("./config/client.cfg"))
+        configuration = Configuration(this)
         //gameWindow.stage_2_init(); // TODO this is bs, don't need this plz
-        configuration.load()
+        configuration.load(configFile)
 
         // Spawns worker threads
-        var nbThreads = -1
-        val configThreads = configuration.getStringOption("workersThreads")
-        if (configThreads != "auto") {
-            try {
-                nbThreads = Integer.parseInt(configThreads)
-            } catch (e: NumberFormatException) {
-            }
-
-        }
+        var nbThreads : Int = configuration.values["client.performance.workerThreads"]
 
         if (nbThreads <= 0) {
             nbThreads = Runtime.getRuntime().availableProcessors() / 2
@@ -112,8 +100,8 @@ class ClientImplementation internal constructor(coreContentLocation: File, modsS
         tasks.start()
 
         // Load the correct language
-        val lang = configuration.getStringOption("client.game.language")
-        if (lang != "undefined")
+        val lang : String = configuration.values["client.game.language"]
+        if (lang != "")
             content.localization().loadTranslation(lang)
 
         // Initlializes windows screen to main menu ( and ask for login )
@@ -126,16 +114,13 @@ class ClientImplementation internal constructor(coreContentLocation: File, modsS
 
     fun cleanup() {
         tasks.destroy()
-        configuration.save()
+        configuration.save(configFile)
     }
 
     fun reloadAssets() {
-        configuration.save()
         content.reload()
-        configuration.reload()
         gameWindow.inputsManager.reload()
         //TODO hook some rendering stuff in here
-        configuration.load()
     }
 
     override fun print(message: String) {

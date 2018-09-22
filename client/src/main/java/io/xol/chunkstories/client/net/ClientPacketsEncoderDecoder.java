@@ -6,29 +6,28 @@
 
 package io.xol.chunkstories.client.net;
 
+import io.xol.chunkstories.api.client.Client;
 import io.xol.chunkstories.api.client.IngameClient;
 import io.xol.chunkstories.api.client.LocalPlayer;
 import io.xol.chunkstories.api.client.net.ClientPacketsProcessor;
 import io.xol.chunkstories.api.net.Interlocutor;
-import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.content.translator.InitialContentTranslator;
-import io.xol.chunkstories.net.PacketsContextCommon;
+import io.xol.chunkstories.net.PacketsEncoderDecoder;
 import io.xol.chunkstories.world.WorldClientRemote;
 
-public class ClientPacketsContext extends PacketsContextCommon implements ClientPacketsProcessor {
+public class ClientPacketsEncoderDecoder extends PacketsEncoderDecoder implements ClientPacketsProcessor {
 
-	final IngameClient client;
+	private IngameClient client = null;
 	final ServerConnection clientConnection;
 
-	public ClientPacketsContext(IngameClient gameContext, ServerConnection clientConnection) {
-		super(gameContext, clientConnection);
+	public ClientPacketsEncoderDecoder(Client client, ServerConnection clientConnection) {
+		super(client.getContent().packets(), clientConnection);
 
-		this.client = gameContext;
 		this.clientConnection = clientConnection;
 
-		InitialContentTranslator translator = new InitialContentTranslator(gameContext.getContent());
-		// translator.assignPacketIds();
-		// translator.buildArrays();
+		// Very basic content translator used to translate the system packets (those with an assignated fixedId)
+		// Gets replaced later during the connection process as we receive the actual mappings from the server !
+		InitialContentTranslator translator = new InitialContentTranslator(client.getContent());
 		this.contentTranslator = translator;
 	}
 

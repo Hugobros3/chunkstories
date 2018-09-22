@@ -40,7 +40,7 @@ public abstract class ClientsManager {
 		externalIP = HttpRequests.sendPost("https://chunkstories.xyz/api/sayMyName.php?ip=1", "");
 		hostname = HttpRequests.sendPost("https://chunkstories.xyz/api/sayMyName.php?host=1", "");
 
-		this.maxClients = server.getServerConfig().getInteger("maxusers", 100);
+		this.maxClients = server.getServerConfig().getIntValue("server.maxUsers");
 	}
 
 	public DedicatedServer getServer() {
@@ -113,9 +113,9 @@ public abstract class ClientsManager {
 
 	public void sendServerInfo(ClientConnection clientConnection) {
 		clientConnection.sendTextMessage("worldInfo/name:"
-				+ getServer().getServerConfig().getString("server-name", "unnamedserver@" + getHostname()));
+				+ getServer().getServerConfig().getValue("serverName"));
 		clientConnection.sendTextMessage(
-				"worldInfo/motd:" + getServer().getServerConfig().getString("server-desc", "Default description."));
+				"worldInfo/motd:" + getServer().getServerConfig().getValue("serverDescription"));
 		clientConnection.sendTextMessage("worldInfo/connected:" + getPlayersNumber() + ":" + getMaxClients());
 		clientConnection.sendTextMessage("worldInfo/version:" + VersionInfo.version);
 		clientConnection.sendTextMessage("worldInfo/mods:" + getServer().getModsProvider().getModsString());

@@ -11,7 +11,6 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
-import io.xol.chunkstories.api.client.IngameClient;
 import io.xol.chunkstories.api.content.OnlineContentTranslator;
 import io.xol.chunkstories.api.exceptions.PacketProcessingException;
 import io.xol.chunkstories.api.net.Packet;
@@ -21,40 +20,35 @@ import io.xol.chunkstories.api.net.RemoteServer;
 import io.xol.chunkstories.api.sound.SoundManager;
 import io.xol.chunkstories.api.world.WorldClientNetworkedRemote;
 import io.xol.chunkstories.api.world.WorldInfo;
-import io.xol.chunkstories.client.ClientImplementation;
-import io.xol.chunkstories.client.ClientSlavePluginManager;
 import io.xol.chunkstories.client.ingame.IngameClientRemoteHost;
 import io.xol.chunkstories.client.net.ServerConnection;
+import io.xol.chunkstories.content.translator.AbstractContentTranslator;
 import io.xol.chunkstories.net.LogicalPacketDatagram;
 import io.xol.chunkstories.net.PacketDefinitionImplementation;
-import io.xol.chunkstories.net.PacketsContextCommon;
+import io.xol.chunkstories.net.PacketsEncoderDecoder;
+import io.xol.chunkstories.world.io.IOTasks;
 import io.xol.chunkstories.world.io.IOTasksMultiplayerClient;
+import org.jetbrains.annotations.NotNull;
 
 public class WorldClientRemote extends WorldClientCommon implements WorldClientNetworkedRemote {
 	private final ServerConnection connection;
-	private final PacketsContextCommon packetsProcessor;
+	private final PacketsEncoderDecoder packetsProcessor;
 
-	private final IOTasksMultiplayerClient mpIOHandler;
+	private final IOTasksMultiplayerClient ioHandler;
 
 	private final OnlineContentTranslator translator;
 
-	public WorldClientRemote(IngameClientRemoteHost client, WorldInfo info, OnlineContentTranslator translator,
+	public WorldClientRemote(IngameClientRemoteHost client, WorldInfo info, AbstractContentTranslator translator,
 							 ServerConnection connection) throws WorldLoadingException {
 		super(client, info, translator, null);
 
 		this.connection = connection;
-		this.packetsProcessor = connection.getPacketsContext();
+		this.packetsProcessor = connection.getEncoderDecoder();
 
 		this.translator = translator;
 
-		mpIOHandler = new IOTasksMultiplayerClient(this);
-
-		setIoHandler(mpIOHandler);
-		getIoHandler().start();
-	}
-
-	public OnlineContentTranslator getContentTranslator() {
-		return translator;
+		ioHandler = new IOTasksMultiplayerClient(this);
+		ioHandler.start();
 	}
 
 	@Override
@@ -133,6 +127,12 @@ public class WorldClientRemote extends WorldClientCommon implements WorldClientN
 	}
 
 	public IOTasksMultiplayerClient ioHandler() {
-		return mpIOHandler;
+		return ioHandler;
+	}
+
+	@NotNull
+	@Override
+	public IOTasks getIoHandler() {
+		return ioHandler;
 	}
 }

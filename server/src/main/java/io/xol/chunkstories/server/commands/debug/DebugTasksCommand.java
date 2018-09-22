@@ -22,8 +22,8 @@ public class DebugTasksCommand extends ServerCommandBasic {
 	@Override
 	public boolean handleCommand(CommandEmitter emitter, Command command, String[] arguments) {
 		if (command.getName().equals("tasks") && emitter.hasPermission("server.debug")) {
-			emitter.sendMessage("#00FFD0Tasks in the pipeline: " + server.tasks().submittedTasks());
-			((WorkerThreadPool) server.tasks()).dumpTasks();
+			emitter.sendMessage("#00FFD0Tasks in the pipeline: " + server.getTasks().submittedTasks());
+			((WorkerThreadPool) server.getTasks()).dumpTasks();
 			return true;
 		}
 		return false;

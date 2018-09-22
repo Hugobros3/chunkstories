@@ -112,7 +112,7 @@ public class Lwjgl3KeyBind extends Lwjgl3Input implements KeyboardKeyInput, Poll
 
 	@Override
 	public void updateStatus() {
-		isDown = glfwGetKey(im.gameWindow.glfwWindowHandle, GLFW_key) == GLFW_PRESS;// Keyboard.isKeyDown(LWJGL2_key);
+		isDown = glfwGetKey(im.gameWindow.getGlfwWindowHandle(), GLFW_key) == GLFW_PRESS;// Keyboard.isKeyDown(LWJGL2_key);
 	}
 
 	/**

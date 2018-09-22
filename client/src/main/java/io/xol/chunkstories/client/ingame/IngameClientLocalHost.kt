@@ -14,6 +14,8 @@ import io.xol.chunkstories.server.FileBasedUsersPrivileges
 import io.xol.chunkstories.world.WorldClientLocal
 import io.xol.chunkstories.world.WorldLoadingException
 import io.xol.chunkstories.world.deserializeWorldInfo
+import io.xol.chunkstories.world.serializeWorldInfo
+import org.slf4j.LoggerFactory
 import java.io.File
 
 fun ClientImplementation.enterExistingWorld(folder: File) : WorldClientLocal {
@@ -25,6 +27,7 @@ fun ClientImplementation.enterExistingWorld(folder: File) : WorldClientLocal {
         throw WorldLoadingException("The folder $folder doesn't contain a worldInfo.dat file !")
 
     val worldInfo = deserializeWorldInfo(worldInfoFile)
+    logger().debug("Entering world $worldInfo")
 
     // Create the context for the local server
     val localHostCtx = IngameClientLocalHost(this) {
@@ -34,8 +37,17 @@ fun ClientImplementation.enterExistingWorld(folder: File) : WorldClientLocal {
     return localHostCtx.world
 }
 
-fun ClientImplementation.createAndEnterWorld(worldInfo: WorldInfo) : WorldClientLocal {
-    TODO("serialize worldInfo and load it")
+fun ClientImplementation.createAndEnterWorld(folder: File, worldInfo: WorldInfo) : WorldClientLocal {
+    if(folder.exists())
+        throw Exception("The folder $folder already exists !")
+
+    logger().debug("Creating new singleplayer world")
+    folder.mkdirs()
+    val worldInfoFile = File(folder.path + "/worldInfo.dat")
+    worldInfoFile.writeText(serializeWorldInfo(worldInfo, true))
+    logger().debug("Created directory & wrote worldInfo.dat ; now entering world")
+
+    return enterExistingWorld(folder)
 }
 
 /** Represent an IngameClient that is also a local Server (with minimal server functionality). Used in local SP. */
@@ -99,5 +111,9 @@ class IngameClientLocalHost(client: ClientImplementation, worldInitializer: (Ing
                     world.folderPath + "/players/" + this.name.toLowerCase() + ".csf")
             playerEntityFile.write(playerEntity)
         }
+    }
+
+    companion object {
+        val logger = LoggerFactory.getLogger("client.world")
     }
 }
