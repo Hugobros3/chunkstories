@@ -6,38 +6,17 @@
 
 package io.xol.chunkstories.input.lwjgl3;
 
-import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
-import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
-import static org.lwjgl.glfw.GLFW.GLFW_REPEAT;
-import static org.lwjgl.glfw.GLFW.glfwGetKey;
-import static org.lwjgl.glfw.GLFW.glfwPollEvents;
-import static org.lwjgl.glfw.GLFW.glfwSetCharCallback;
-import static org.lwjgl.glfw.GLFW.glfwSetKeyCallback;
-import static org.lwjgl.glfw.GLFW.glfwSetMouseButtonCallback;
-import static org.lwjgl.glfw.GLFW.glfwSetScrollCallback;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-
-import io.xol.chunkstories.client.ClientImplementation;
-import io.xol.chunkstories.client.glfw.GLFWWindow;
-import org.lwjgl.glfw.GLFWCharCallback;
-import org.lwjgl.glfw.GLFWKeyCallback;
-import org.lwjgl.glfw.GLFWMouseButtonCallback;
-import org.lwjgl.glfw.GLFWScrollCallback;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.xol.chunkstories.api.client.ClientInputsManager;
+import io.xol.chunkstories.api.client.IngameClient;
 import io.xol.chunkstories.api.client.LocalPlayer;
 import io.xol.chunkstories.api.entity.Entity;
+import io.xol.chunkstories.api.entity.traits.Trait;
+import io.xol.chunkstories.api.entity.traits.serializable.TraitControllable;
 import io.xol.chunkstories.api.events.client.ClientInputPressedEvent;
 import io.xol.chunkstories.api.events.client.ClientInputReleasedEvent;
 import io.xol.chunkstories.api.events.player.PlayerInputPressedEvent;
 import io.xol.chunkstories.api.events.player.PlayerInputReleasedEvent;
+import io.xol.chunkstories.api.gui.Gui;
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse;
@@ -45,6 +24,8 @@ import io.xol.chunkstories.api.input.Mouse.MouseButton;
 import io.xol.chunkstories.api.input.Mouse.MouseScroll;
 import io.xol.chunkstories.api.plugin.ClientPluginManager;
 import io.xol.chunkstories.api.world.World;
+import io.xol.chunkstories.client.ClientImplementation;
+import io.xol.chunkstories.client.glfw.GLFWWindow;
 import io.xol.chunkstories.client.net.ServerConnection;
 import io.xol.chunkstories.gui.layer.config.KeyBindSelectionOverlay;
 import io.xol.chunkstories.input.InputVirtual;
@@ -53,346 +34,345 @@ import io.xol.chunkstories.input.InputsManagerLoader;
 import io.xol.chunkstories.input.Pollable;
 import io.xol.chunkstories.net.packets.PacketInput;
 import io.xol.chunkstories.world.WorldClientRemote;
+import org.lwjgl.glfw.GLFWCharCallback;
+import org.lwjgl.glfw.GLFWKeyCallback;
+import org.lwjgl.glfw.GLFWMouseButtonCallback;
+import org.lwjgl.glfw.GLFWScrollCallback;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.*;
+
+import static org.lwjgl.glfw.GLFW.*;
 
 public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsManagerLoader {
-	protected final GLFWWindow gameWindow;
+    protected final GLFWWindow gameWindow;
+    private final Gui gui;
 
-	Collection<Input> inputs = new ArrayList<Input>();
-	Map<Long, Input> inputsMap = new HashMap<Long, Input>();
+    Collection<Input> inputs = new ArrayList<>();
+    Map<Long, Input> inputsMap = new HashMap<>();
 
-	public Lwjgl3Mouse mouse;// = new Lwjgl3Mouse(this);
-	public Lwjgl3MouseButton LEFT;// = new Lwjgl3MouseButton(MOUSE, "mouse.left", 0);
-	public Lwjgl3MouseButton RIGHT;// = new Lwjgl3MouseButton(MOUSE, "mouse.right", 1);
-	public Lwjgl3MouseButton MIDDLE;// = new Lwjgl3MouseButton(MOUSE, "mouse.middle", 2);
+    public Lwjgl3Mouse mouse;
+    public Lwjgl3MouseButton LEFT;
+    public Lwjgl3MouseButton RIGHT;
+    public Lwjgl3MouseButton MIDDLE;
 
-	private final GLFWKeyCallback keyCallback;
-	private final GLFWMouseButtonCallback mouseButtonCallback;
-	private final GLFWScrollCallback scrollCallback;
-	private final GLFWCharCallback characterCallback;
+    private final GLFWKeyCallback keyCallback;
+    private final GLFWMouseButtonCallback mouseButtonCallback;
+    private final GLFWScrollCallback scrollCallback;
+    private final GLFWCharCallback characterCallback;
 
-	private static final Logger logger = LoggerFactory.getLogger("client.workers");
+    private static final Logger logger = LoggerFactory.getLogger("client.workers");
 
-	// private final Ingame scene;
-	public Lwjgl3ClientInputsManager(GLFWWindow gameWindow) {
-		this.gameWindow = gameWindow;
+    // private final IngameLayer scene;
+    public Lwjgl3ClientInputsManager(GLFWWindow gameWindow) {
+        this.gameWindow = gameWindow;
+        this.gui = gameWindow.getClient().getGui();
 
-		mouse = new Lwjgl3Mouse(this);
-		LEFT = new Lwjgl3MouseButton(mouse, "mouse.left", 0);
-		RIGHT = new Lwjgl3MouseButton(mouse, "mouse.right", 1);
-		MIDDLE = new Lwjgl3MouseButton(mouse, "mouse.middle", 2);
+        mouse = new Lwjgl3Mouse(this);
+        LEFT = new Lwjgl3MouseButton(mouse, "mouse.left", 0);
+        RIGHT = new Lwjgl3MouseButton(mouse, "mouse.right", 1);
+        MIDDLE = new Lwjgl3MouseButton(mouse, "mouse.middle", 2);
 
-		glfwSetKeyCallback(gameWindow.getGlfwWindowHandle(), (keyCallback = new GLFWKeyCallback() {
-			@Override
-			public void invoke(long window, int key, int scancode, int action, int mods) {
-				if (gameWindow.getLayer() instanceof KeyBindSelectionOverlay) {
-					KeyBindSelectionOverlay kbs = (KeyBindSelectionOverlay) gameWindow.getLayer();
-					kbs.setKeyTo(key);
-				}
+        glfwSetKeyCallback(gameWindow.getGlfwWindowHandle(), (keyCallback = new GLFWKeyCallback() {
+            @Override
+            public void invoke(long window, int key, int scancode, int action, int mods) {
+                if (gui.getTopLayer() instanceof KeyBindSelectionOverlay) {
+                    KeyBindSelectionOverlay kbs = (KeyBindSelectionOverlay) gui.getTopLayer();
+                    kbs.setKeyTo(key);
+                }
 
-				// Try first the compound shortcuts
-				Lwjgl3KeyBindCompound keyBindCompound = getKeyCompoundFulForLWJGL3xKey(key);
-				if (keyBindCompound != null) {
-					if (action == GLFW_PRESS)
-						if (onInputPressed(keyBindCompound))
-							return;
-				}
+                // Try first the compound shortcuts
+                Lwjgl3KeyBindCompound keyBindCompound = getKeyCompoundFulForLWJGL3xKey(key);
+                if (keyBindCompound != null) {
+                    if (action == GLFW_PRESS)
+                        if (onInputPressed(keyBindCompound))
+                            return;
+                }
 
-				// If unsuccessfull pass to normal keyboard input
-				Lwjgl3KeyBind keyboardInput = getKeyBoundForLWJGL3xKey(key);
+                // If unsuccessfull pass to normal keyboard input
+                Lwjgl3KeyBind keyboardInput = getKeyBoundForLWJGL3xKey(key);
 
-				if (keyboardInput != null) {
-					if (action == GLFW_PRESS)
-						onInputPressed(keyboardInput);
-					else if (action == GLFW_REPEAT && keyboardInput.repeat)
-						onInputPressed(keyboardInput);
-					else if (action == GLFW_RELEASE)
-						onInputReleased(keyboardInput);
-				}
+                if (keyboardInput != null) {
+                    if (action == GLFW_PRESS)
+                        onInputPressed(keyboardInput);
+                    else if (action == GLFW_REPEAT && keyboardInput.repeat)
+                        onInputPressed(keyboardInput);
+                    else if (action == GLFW_RELEASE)
+                        onInputReleased(keyboardInput);
+                }
 
-				// Unhandled character
-			}
-		}));
+                // Unhandled character
+            }
+        }));
 
-		glfwSetMouseButtonCallback(gameWindow.getGlfwWindowHandle(), (mouseButtonCallback = new GLFWMouseButtonCallback() {
-			@Override
-			public void invoke(long window, int button, int action, int mods) {
-				MouseButton mButton = null;
-				switch (button) {
-				case 0:
-					mButton = LEFT;
-					break;
-				case 1:
-					mButton = RIGHT;
-					break;
-				case 2:
-					mButton = MIDDLE;
-					break;
-				}
+        glfwSetMouseButtonCallback(gameWindow.getGlfwWindowHandle(), (mouseButtonCallback = new GLFWMouseButtonCallback() {
+            @Override
+            public void invoke(long window, int button, int action, int mods) {
+                MouseButton mButton = null;
+                switch (button) {
+                    case 0:
+                        mButton = LEFT;
+                        break;
+                    case 1:
+                        mButton = RIGHT;
+                        break;
+                    case 2:
+                        mButton = MIDDLE;
+                        break;
+                }
 
-				if (mButton != null) {
-					if (action == GLFW_PRESS)
-						onInputPressed(mButton);
-					else if (action == GLFW_RELEASE)
-						onInputReleased(mButton);
-				}
-			}
+                if (mButton != null) {
+                    if (action == GLFW_PRESS)
+                        onInputPressed(mButton);
+                    else if (action == GLFW_RELEASE)
+                        onInputReleased(mButton);
+                }
+            }
 
-		}));
+        }));
 
-		glfwSetScrollCallback(gameWindow.getGlfwWindowHandle(), scrollCallback = new GLFWScrollCallback() {
-			@Override
-			public void invoke(long window, double xoffset, double yoffset) {
+        glfwSetScrollCallback(gameWindow.getGlfwWindowHandle(), scrollCallback = new GLFWScrollCallback() {
+            @Override
+            public void invoke(long window, double xoffset, double yoffset) {
 
-				MouseScroll ms = mouse.scroll(yoffset);
-				onInputPressed(ms);
+                MouseScroll ms = mouse.scroll(yoffset);
+                onInputPressed(ms);
 
-				// gameWindow.getCurrentScene().onScroll((int)yoffset);
-			}
-		});
+                // gameWindow.getCurrentScene().onScroll((int)yoffset);
+            }
+        });
 
-		glfwSetCharCallback(gameWindow.getGlfwWindowHandle(), characterCallback = new GLFWCharCallback() {
+        glfwSetCharCallback(gameWindow.getGlfwWindowHandle(), characterCallback = new GLFWCharCallback() {
 
-			@Override
-			public void invoke(long window, int codepoint) {
-				char[] chars = Character.toChars(codepoint);
-				for (char c : chars) {
-					// Try the GUI handling
-					Layer layer = gameWindow.getLayer();
-					if (layer.handleTextInput(c))
-						return;
-					// else
-					// System.out.println("Unhandled character:" + c);
-				}
-			}
+            @Override
+            public void invoke(long window, int codepoint) {
+                char[] chars = Character.toChars(codepoint);
+                for (char c : chars) {
+                    Layer layer = gui.getTopLayer();
+                    if (layer != null)
+                        layer.handleTextInput(c);
+                }
+            }
 
-		});
+        });
 
-		reload();
-	}
+        //reload();
+    }
 
-	public Iterator<Input> getAllInputs() {
-		return inputs.iterator();
-	}
+    public Iterator<Input> getAllInputs() {
+        return inputs.iterator();
+    }
 
-	/**
-	 * Returns null or a KeyBind matching the name
-	 */
-	public Input getInputByName(String bindName) {
-		if (bindName.equals("mouse.left"))
-			return LEFT;
-		if (bindName.equals("mouse.right"))
-			return RIGHT;
-		if (bindName.equals("mouse.middle"))
-			return MIDDLE;
+    /**
+     * Returns null or a KeyBind matching the name
+     */
+    public Input getInputByName(String bindName) {
+        if (bindName.equals("mouse.left"))
+            return LEFT;
+        if (bindName.equals("mouse.right"))
+            return RIGHT;
+        if (bindName.equals("mouse.middle"))
+            return MIDDLE;
 
-		//TODO hash map !!!
-		for (Input keyBind : inputs) {
-			if (keyBind.getName().equals(bindName))
-				return keyBind;
-		}
-		return null;
-	}
+        //TODO hash map !!!
+        for (Input keyBind : inputs) {
+            if (keyBind.getName().equals(bindName))
+                return keyBind;
+        }
+        return null;
+    }
 
-	/**
-	 * Returns null or a KeyBind matching the pressed key
-	 * 
-	 * @param keyCode
-	 * @return
-	 */
-	protected Lwjgl3KeyBind getKeyBoundForLWJGL3xKey(int keyCode) {
-		for (Input keyBind : inputs) {
-			if (keyBind instanceof Lwjgl3KeyBind && ((Lwjgl3KeyBind) keyBind).getLWJGL3xKey() == keyCode)
-				return (Lwjgl3KeyBind) keyBind;
-		}
-		return null;
-	}
+    /**
+     * Returns null or a KeyBind matching the pressed key
+     *
+     * @param keyCode
+     * @return
+     */
+    protected Lwjgl3KeyBind getKeyBoundForLWJGL3xKey(int keyCode) {
+        for (Input keyBind : inputs) {
+            if (keyBind instanceof Lwjgl3KeyBind && ((Lwjgl3KeyBind) keyBind).getLWJGL3xKey() == keyCode)
+                return (Lwjgl3KeyBind) keyBind;
+        }
+        return null;
+    }
 
-	protected Lwjgl3KeyBindCompound getKeyCompoundFulForLWJGL3xKey(int key) {
-		inputs: for (Input keyBind : inputs) {
-			if (keyBind instanceof Lwjgl3KeyBindCompound) {
-				Lwjgl3KeyBindCompound keyCombinaison = (Lwjgl3KeyBindCompound) keyBind;
+    protected Lwjgl3KeyBindCompound getKeyCompoundFulForLWJGL3xKey(int key) {
+        inputs:
+        for (Input keyBind : inputs) {
+            if (keyBind instanceof Lwjgl3KeyBindCompound) {
+                Lwjgl3KeyBindCompound keyCombinaison = (Lwjgl3KeyBindCompound) keyBind;
 
-				// Check all other keys were pressed
-				for (int glfwKey : keyCombinaison.glfwKeys) {
-					if (glfwGetKey(gameWindow.getGlfwWindowHandle(), glfwKey) != GLFW_PRESS)
-						continue inputs;
-				}
+                // Check all other keys were pressed
+                for (int glfwKey : keyCombinaison.glfwKeys) {
+                    if (glfwGetKey(gameWindow.getGlfwWindowHandle(), glfwKey) != GLFW_PRESS)
+                        continue inputs;
+                }
 
-				return keyCombinaison;
-			}
-		}
+                return keyCombinaison;
+            }
+        }
 
-		return null;
-	}
+        return null;
+    }
 
-	public Input getInputFromHash(long hash) {
-		if (hash == 0)
-			return LEFT;
-		else if (hash == 1)
-			return RIGHT;
-		else if (hash == 2)
-			return MIDDLE;
+    public Input getInputFromHash(long hash) {
+        if (hash == 0)
+            return LEFT;
+        else if (hash == 1)
+            return RIGHT;
+        else if (hash == 2)
+            return MIDDLE;
 
-		return inputsMap.get(hash);
-	}
+        return inputsMap.get(hash);
+    }
 
-	public void reload() {
-		inputs.clear();
-		inputsMap.clear();
+    public void reload() {
+        inputs.clear();
+        inputsMap.clear();
 
-		InputsLoaderHelper.loadKeyBindsIntoManager(this, ClientImplementation.getInstance().getContent().modsManager());
+        InputsLoaderHelper.loadKeyBindsIntoManager(this, gameWindow.getClient().getContent().modsManager());
 
-		// Add physical mouse buttons
-		inputs.add(LEFT);
-		inputsMap.put(LEFT.getHash(), LEFT);
-		inputs.add(RIGHT);
-		inputsMap.put(RIGHT.getHash(), RIGHT);
-		inputs.add(MIDDLE);
-		inputsMap.put(MIDDLE.getHash(), MIDDLE);
-	}
+        // Add physical mouse buttons
+        inputs.add(LEFT);
+        inputsMap.put(LEFT.getHash(), LEFT);
+        inputs.add(RIGHT);
+        inputsMap.put(RIGHT.getHash(), RIGHT);
+        inputs.add(MIDDLE);
+        inputsMap.put(MIDDLE.getHash(), MIDDLE);
+    }
 
-	public void insertInput(String type, String name, String value, Collection<String> arguments) {
-		Input input;
-		if (type.equals("keyBind")) {
-			Lwjgl3KeyBind key = new Lwjgl3KeyBind(this, name, value);
-			input = key;
-			if (arguments.contains("hidden"))
-				key.editable = false;
-			if (arguments.contains("repeat"))
-				key.repeat = true;
-			// keyboardInputs.add(key);
-		} else if (type.equals("virtual")) {
-			input = new InputVirtual(name);
-		} else if (type.equals("keyBindCompound")) {
-			Lwjgl3KeyBindCompound keyCompound = new Lwjgl3KeyBindCompound(this, name, value);
-			input = keyCompound;
-		} else
-			return;
+    public void insertInput(String type, String name, String value, Collection<String> arguments) {
+        Input input;
+        if (type.equals("keyBind")) {
+            Lwjgl3KeyBind key = new Lwjgl3KeyBind(this, name, value);
+            input = key;
+            if (arguments.contains("hidden"))
+                key.editable = false;
+            if (arguments.contains("repeat"))
+                key.repeat = true;
+            // keyboardInputs.add(key);
+        } else if (type.equals("virtual")) {
+            input = new InputVirtual(name);
+        } else if (type.equals("keyBindCompound")) {
+            Lwjgl3KeyBindCompound keyCompound = new Lwjgl3KeyBindCompound(this, name, value);
+            input = keyCompound;
+        } else
+            return;
 
-		inputs.add(input);
-		inputsMap.put(input.getHash(), input);
-	}
+        inputs.add(input);
+        inputsMap.put(input.getHash(), input);
+    }
 
-	public void pollLWJGLInputs() {
-		glfwPollEvents();
+    public void pollLWJGLInputs() {
+        glfwPollEvents();
 
-		for (Input input : this.inputs) {
-			if (input instanceof Pollable)
-				((Pollable) input).updateStatus();
-		}
-	}
+        for (Input input : this.inputs) {
+            if (input instanceof Pollable)
+                ((Pollable) input).updateStatus();
+        }
+    }
 
-	public boolean onInputPressed(Input input) {
-		if (input.equals("fullscreen")) {
-			gameWindow.toggleFullscreen();
-			return true;
-		}
+    public boolean onInputPressed(Input input) {
+        if (input.equals("fullscreen")) {
+            //TODO
+            //gameWindow.toggleFullscreen();
+            return true;
+        }
 
-		// Try the client-side event press
-		ClientInputPressedEvent event = new ClientInputPressedEvent(gameWindow.getClient(), input);
+        IngameClient ingameClient = gameWindow.getClient().getIngame();
+        if(ingameClient == null)
+            return false;
 
-		ClientPluginManager cpm = gameWindow.getClient().getPluginManager();
-		if (cpm != null) {
-			cpm.fireEvent(event);
-			if (event.isCancelled())
-				return false;
-		}
+        // Try the client-side event press
+        ClientInputPressedEvent inputPressedEvent = new ClientInputPressedEvent(gameWindow.getClient(), input);
+        ingameClient.getPluginManager().fireEvent(inputPressedEvent);
+        if (inputPressedEvent.isCancelled())
+            return false;
 
-		// Try the GUI handling
-		Layer layer = gameWindow.getClient().getGui().getTopLayer();
-		if (layer.handleInput(input))
-			return true;
+        // Try the GUI handling
+        Layer layer = gameWindow.getClient().getGui().getTopLayer();
+        if (layer != null && layer.handleInput(input))
+            return true;
 
-		// System.out.println("wasn't handled");
+        final LocalPlayer player = ingameClient.getPlayer();
+        final Entity playerEntity = player.getControlledEntity();
 
-		final LocalPlayer player = ClientImplementation.getInstance().getPlayer();
-		if (player == null)
-			return false;
+        // There has to be a controlled entity for sending inputs to make sense.
+        if (playerEntity == null)
+            return false;
 
-		final Entity entityControlled = player.getControlledEntity();
+        World world = playerEntity.getWorld();
 
-		// There has to be a controlled entity for sending inputs to make sense.
-		if (entityControlled == null)
-			return false;
+        // Send input to server
+        if (world instanceof WorldClientRemote) {
+            // MouseScroll inputs are strictly client-side
+            if (!(input instanceof MouseScroll)) {
+                ServerConnection connection = ((WorldClientRemote) playerEntity.getWorld()).getConnection();
+                PacketInput packet = new PacketInput(world);
+                packet.input = input;
+                packet.isPressed = true;
+                connection.pushPacket(packet);
+            }
 
-		// Send input to server
-		World world = entityControlled.getWorld();
-		if (world instanceof WorldClientRemote) {
-			// MouseScroll inputs are strictly client-side
-			if (!(input instanceof MouseScroll)) {
-				ServerConnection connection = ((WorldClientRemote) entityControlled.getWorld()).getConnection();
-				PacketInput packet = new PacketInput(world);
-				packet.input = input;
-				packet.isPressed = true;
-				connection.pushPacket(packet);
-			}
+            return playerEntity.traits.tryWithBoolean(TraitControllable.class, t -> t.onControllerInput(input));
+        } else {
+            PlayerInputPressedEvent playerInputPressedEvent = new PlayerInputPressedEvent(player, input);
+            ingameClient.getPluginManager().fireEvent(playerInputPressedEvent);
 
-			return entityControlled.traits.tryWithBoolean(TraitWhenControlled.class, t -> {
-				t.onControllerInput(input, gameWindow.getClient().getPlayer());
-			});
-		} else {
-			PlayerInputPressedEvent event2 = new PlayerInputPressedEvent(ClientImplementation.getInstance().getPlayer(), input);
-			cpm.fireEvent(event2);
+            if (playerInputPressedEvent.isCancelled())
+                return false;
+        }
 
-			if (event2.isCancelled())
-				return false;
-			// entity.handleInteraction(input,
-			// entity.getControllerComponent().getController());
-		}
+        // Handle interaction locally
+        return playerEntity.traits.tryWithBoolean(TraitControllable.class, t -> t.onControllerInput(input));
+    }
 
-		// Handle interaction locally
-		return entityControlled.traits.tryWithBoolean(TraitWhenControlled.class, t -> {
-			t.onControllerInput(input, gameWindow.getClient().getPlayer());
-		});
-	}
+    @Override
+    public boolean onInputReleased(Input input) {
+        IngameClient ingameClient = gameWindow.getClient().getIngame();
+        if(ingameClient == null)
+            return false;
 
-	@Override
-	public boolean onInputReleased(Input input) {
-		ClientInputReleasedEvent event = new ClientInputReleasedEvent(gameWindow.getClient(), input);
-		ClientPluginManager cpm = gameWindow.getClient().getPluginManager();
-		if (cpm != null) {
-			cpm.fireEvent(event);
-		}
+        ClientInputReleasedEvent event = new ClientInputReleasedEvent(gameWindow.getClient(), input);
+        ingameClient.getPluginManager().fireEvent(event);
 
-		final LocalPlayer player = ClientImplementation.getInstance().getPlayer();
-		if (player == null)
-			return false;
+        final LocalPlayer player = ingameClient.getPlayer();
+        final Entity entityControlled = player.getControlledEntity();
 
-		final Entity entityControlled = player.getControlledEntity();
+        // There has to be a controlled entity for sending inputs to make sense.
+        if (entityControlled == null)
+            return false;
 
-		// There has to be a controlled entity for sending inputs to make sense.
-		if (entityControlled == null)
-			return false;
+        // Send input to server
+        World world = entityControlled.getWorld();
+        if (world instanceof WorldClientRemote) {
+            ServerConnection connection = ((WorldClientRemote) entityControlled.getWorld()).getConnection();
+            PacketInput packet = new PacketInput(world);
+            packet.input = input;
+            packet.isPressed = false;
+            connection.pushPacket(packet);
+            return true;
+        } else {
+            PlayerInputReleasedEvent event2 = new PlayerInputReleasedEvent(player, input);
+            ingameClient.getPluginManager().fireEvent(event2);
+            return true;
+        }
+    }
 
-		// Send input to server
-		World world = entityControlled.getWorld();
-		if (world instanceof WorldClientRemote) {
-			ServerConnection connection = ((WorldClientRemote) entityControlled.getWorld()).getConnection();
-			PacketInput packet = new PacketInput(world);
-			packet.input = input;
-			packet.isPressed = false;
-			connection.pushPacket(packet);
-			return true;
-		} else {
-			PlayerInputReleasedEvent event2 = new PlayerInputReleasedEvent(ClientImplementation.getInstance().getPlayer(), input);
-			cpm.fireEvent(event2);
-			return true;
-		}
-	}
+    @Override
+    public Mouse getMouse() {
+        return mouse;
+    }
 
-	@Override
-	public Mouse getMouse() {
-		return mouse;
-	}
+    public void destroy() {
+        this.keyCallback.free();
+        this.mouseButtonCallback.free();
+        this.scrollCallback.free();
+        this.characterCallback.free();
+    }
 
-	public void destroy() {
-		this.keyCallback.free();
-		this.mouseButtonCallback.free();
-		this.scrollCallback.free();
-		this.characterCallback.free();
-	}
-
-	public Logger logger() {
-		return logger;
-	}
+    public Logger logger() {
+        return logger;
+    }
 }

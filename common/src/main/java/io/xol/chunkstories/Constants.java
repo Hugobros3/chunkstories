@@ -7,7 +7,7 @@
 package io.xol.chunkstories;
 
 public class Constants {
-	public static int MAIN_GL_THREAD_PRIORITY = 7;
+	public static int MAIN_THREAD_PRIORITY = 7;
 
 	// Please don't hiccup
 	public static int MAIN_SINGLEPLAYER_LOGIC_THREAD_PRIORITY = 10;

@@ -9,10 +9,9 @@ package io.xol.chunkstories.input.lwjgl3;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.glfwGetMouseButton;
 
-import io.xol.chunkstories.api.client.ClientInterface;
+import io.xol.chunkstories.api.client.Client;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse.MouseButton;
-import io.xol.chunkstories.client.ClientImplementation;
 import io.xol.chunkstories.input.Pollable;
 
 public class Lwjgl3MouseButton implements MouseButton, Pollable {
@@ -45,12 +44,12 @@ public class Lwjgl3MouseButton implements MouseButton, Pollable {
 
 	@Override
 	public void updateStatus() {
-		isDown = glfwGetMouseButton(mouse.im.gameWindow.glfwWindowHandle, button) == GLFW_PRESS;
+		isDown = glfwGetMouseButton(mouse.im.gameWindow.getGlfwWindowHandle(), button) == GLFW_PRESS;
 	}
 
 	@Override
-	public ClientInterface getClient() {
-		return ClientImplementation.getInstance();
+	public Client getClient() {
+		return mouse.im.gameWindow.getClient();
 	}
 
 	@Override

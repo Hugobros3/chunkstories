@@ -26,7 +26,7 @@ public class KeyBindSelectionOverlay extends Layer {
 	public void render(GuiDrawer drawer) {
 		this.parentLayer.render(drawer);
 
-		drawer.drawBoxWindowsSpaceWithSize(0, 0, gui.getViewportWidth(), gui.getViewportHeight(), null, new Vector4f(0.0f, 0.0f, 0.0f, 0.5f));
+		drawer.drawBox(0, 0, gui.getViewportWidth(), gui.getViewportHeight(), new Vector4f(0.0f, 0.0f, 0.0f, 0.5f));
 
 		//TODO localization
 		String plz = "Please press a key";

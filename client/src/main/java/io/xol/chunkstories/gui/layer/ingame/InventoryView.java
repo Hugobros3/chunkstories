@@ -6,6 +6,8 @@
 
 package io.xol.chunkstories.gui.layer.ingame;
 
+import io.xol.chunkstories.api.client.IngameClient;
+import io.xol.chunkstories.api.client.LocalPlayer;
 import io.xol.chunkstories.api.gui.Gui;
 import io.xol.chunkstories.api.gui.GuiDrawer;
 import org.joml.Vector4f;
@@ -22,8 +24,6 @@ import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
 import io.xol.chunkstories.api.net.packets.PacketInventoryMoveItemPile;
 import io.xol.chunkstories.api.player.Player;
-import io.xol.chunkstories.api.rendering.GameWindow;
-import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldClientNetworkedRemote;
 import io.xol.chunkstories.api.world.WorldMaster;
@@ -46,10 +46,10 @@ public class InventoryView extends Layer {
 	}
 
 	@Override
-	public void render(GuiDrawer renderer) {
-		parentLayer.render(renderer);
+	public void render(GuiDrawer drawer) {
+		parentLayer.render(drawer);
 
-		Mouse mouse = renderer.getClient().getInputsManager().getMouse();
+		Mouse mouse = gui.getMouse();
 
 		int totalWidth = 0;
 		for (Inventory inv : inventories)
@@ -58,21 +58,20 @@ public class InventoryView extends Layer {
 		int widthAccumulation = 0;
 		for (int i = 0; i < drawers.length; i++) {
 			int thisWidth = inventories[i].getWidth();
-			drawers[i].drawInventoryCentered(renderer,
-					renderer.getWindow().getWidth() / 2 - totalWidth * 24 + thisWidth * 24 + widthAccumulation * 48,
-					renderer.getWindow().getHeight() / 2, 2, false, 4 - i * 4);
+			drawers[i].drawInventoryCentered(drawer,
+					gui.getViewportWidth() / 2 - totalWidth * 24 + thisWidth * 24 + widthAccumulation * 48,
+					gui.getViewportHeight() / 2, false, 4 - i * 4);
 			widthAccumulation += 1 + thisWidth;
 
+			// Draws the item name when highlighted
 			int[] highlightedSlot = drawers[i].getSelectedSlot();
 			if (highlightedSlot != null) {
 				ItemPile pileHighlighted = inventories[i].getItemPileAt(highlightedSlot[0], highlightedSlot[1]);
 				if (pileHighlighted != null) {
-					float mx = (float) mouse.getCursorX();
-					float my = (float) mouse.getCursorY();
+					int mx = (int) mouse.getCursorX();
+					int my = (int) mouse.getCursorY();
 
-					renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(), mx, my,
-							pileHighlighted.getItem().getName(), 2, 2, new Vector4f(1.0f));
-					// System.out.println(pileHighlighted);
+					drawer.drawStringWithShadow(drawer.getFonts().defaultFont(2), mx, my, pileHighlighted.getItem().getName(), -1, new Vector4f(1.0f));
 				}
 			}
 		}
@@ -82,15 +81,13 @@ public class InventoryView extends Layer {
 
 			int width = slotSize * selectedItem.getItem().getDefinition().getSlotsWidth();
 			int height = slotSize * selectedItem.getItem().getDefinition().getSlotsHeight();
-			selectedItem.getItem().getDefinition().getRenderer().renderItemInInventory(renderer, selectedItem,
-					(float) mouse.getCursorX() - width / 2, (float) mouse.getCursorY() - height / 2, 2);
+			//TODO
+			//selectedItem.getItem().getDefinition().getRenderer().renderItemInInventory(drawer, selectedItem, (float) mouse.getCursorX() - width / 2, (float) mouse.getCursorY() - height / 2, 2);
 
 			if (selectedItemAmount != 1)
-				renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(),
-						(float) mouse.getCursorX() - width / 2
-								+ (selectedItem.getItem().getDefinition().getSlotsWidth() - 1.0f) * slotSize,
-						(float) mouse.getCursorY() - height / 2, selectedItemAmount + "", 2, 2,
-						new Vector4f(1, 1, 1, 1));
+				drawer.drawStringWithShadow(drawer.getFonts().defaultFont(2),
+						(int) mouse.getCursorX() - width / 2 + (selectedItem.getItem().getDefinition().getSlotsWidth() - 1) * slotSize,
+						(int) mouse.getCursorY() - height / 2, selectedItemAmount + "", -1, new Vector4f(1));
 
 		}
 	}
@@ -99,7 +96,7 @@ public class InventoryView extends Layer {
 		if (input instanceof MouseButton)
 			return handleClick((MouseButton) input);
 		else if (input.equals("exit")) {
-			this.gameWindow.setLayer(parentLayer);
+			gui.popTopLayer();
 			InventoryView.selectedItem = null;
 			return true;
 		} else
@@ -107,21 +104,20 @@ public class InventoryView extends Layer {
 	}
 
 	private boolean handleClick(MouseButton mouseButton) {
-		// We assume a player has to be spawned in order to do items manipulation
-		Player player = gameWindow.getClient().getPlayer();
-		if (player == null) {
-			this.gameWindow.setLayer(parentLayer);
-			// this.mainScene.changeOverlay(parent);
+		// We to be ingame in order to do items manipulation
+		IngameClient ingameClient = gui.getClient().getIngame();
+		if (ingameClient == null) {
+			gui.popTopLayer();
 			selectedItem = null;
 			return true;
 		}
 
+		LocalPlayer player = ingameClient.getPlayer();
 		World world = player.getWorld();
-
 		for (int i = 0; i < drawers.length; i++) {
 			// Close button
 			if (drawers[i].isOverCloseButton()) {
-				this.gameWindow.setLayer(parentLayer);
+				gui.popTopLayer();
 				selectedItem = null;
 			} else {
 

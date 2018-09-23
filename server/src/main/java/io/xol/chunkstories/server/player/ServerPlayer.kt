@@ -17,7 +17,7 @@ import org.joml.Vector3d
 
 import io.xol.chunkstories.api.Location
 import io.xol.chunkstories.api.entity.Entity
-import io.xol.chunkstories.api.entity.traits.serializable.TraitController
+import io.xol.chunkstories.api.entity.traits.serializable.TraitControllable
 import io.xol.chunkstories.api.entity.traits.serializable.TraitInventory
 import io.xol.chunkstories.api.entity.traits.serializable.TraitSerializable
 import io.xol.chunkstories.api.input.InputsManager
@@ -146,10 +146,10 @@ class ServerPlayer(val playerConnection: ClientConnection, private val playerNam
                 return false
 
             if(oldEntity != null)
-                oldEntity.traits[TraitController::class]?.controller = null
+                oldEntity.traits[TraitControllable::class]?.controller = null
 
             if(newEntity != null)
-                newEntity.traits[TraitController::class]?.controller = this
+                newEntity.traits[TraitControllable::class]?.controller = this
 
             controlledEntity = newEntity
         }
@@ -254,7 +254,7 @@ class ServerPlayer(val playerConnection: ClientConnection, private val playerNam
         while (iterator.hasNext()) {
             val entity = iterator.next()
             // If one of the entities is controllable ...
-            entity.traits[TraitController::class]?.apply {
+            entity.traits[TraitControllable::class]?.apply {
                 if(controller == this)
                     controller = null
             }

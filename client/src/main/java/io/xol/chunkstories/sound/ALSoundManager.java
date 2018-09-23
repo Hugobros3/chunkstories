@@ -37,6 +37,7 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import io.xol.chunkstories.client.ClientImplementation;
 import org.joml.Vector3dc;
 import org.joml.Vector3fc;
 import org.lwjgl.openal.AL;
@@ -57,24 +58,20 @@ import io.xol.chunkstories.sound.source.ALSoundSource;
 import io.xol.chunkstories.sound.source.DummySoundSource;
 
 public class ALSoundManager implements ClientSoundManager {
-	protected Queue<ALSoundSource> playingSoundSources = new ConcurrentLinkedQueue<ALSoundSource>();
-	Random rng;
-
-	Thread contextThread;
-	// Are we allowed to use EFX effects
-	public static boolean efxOn = false;
+	private final ClientImplementation client;
+	private final SoundsLibrary library;
+	private Queue<ALSoundSource> playingSoundSources = new ConcurrentLinkedQueue<>();
 
 	private AtomicBoolean shutdownState = new AtomicBoolean(false);
-
-	int[] auxEffectsSlotsId;
 
 	private long device;
 	private long context;
 
 	public final static Logger logger = LoggerFactory.getLogger("sound");
 
-	public ALSoundManager() {
-		rng = new Random();
+	public ALSoundManager(ClientImplementation client) {
+		this.client = client;
+		this.library = new SoundsLibrary(client);
 		try {
 			device = alcOpenDevice((ByteBuffer) null);
 			if (device == MemoryUtil.NULL) {
@@ -89,7 +86,7 @@ public class ALSoundManager implements ClientSoundManager {
 
 			if (deviceCaps.OpenALC11) {
 				List<String> devices = ALUtil.getStringList(MemoryUtil.NULL, ALC_ALL_DEVICES_SPECIFIER);
-				if (devices == null) {
+				if (devices.size() == 0) {
 					// checkALCError(MemoryUtil.NULL);
 				} else {
 					for (int i = 0; i < devices.size(); i++) {
@@ -103,39 +100,15 @@ public class ALSoundManager implements ClientSoundManager {
 
 			context = alcCreateContext(device, (IntBuffer) null);
 			alcMakeContextCurrent(context);
-			// alcSetThreadContext(context);
 
 			AL.createCapabilities(deviceCaps);
 
 			alDistanceModel(AL_LINEAR_DISTANCE_CLAMPED);
 			String alVersion = alGetString(AL_VERSION);
 			String alExtensions = alGetString(AL_EXTENSIONS);
-			contextThread = Thread.currentThread();
+			Thread contextThread = Thread.currentThread();
 			logger().info("OpenAL context successfully created, version = " + alVersion);
 			logger().info("OpenAL Extensions avaible : " + alExtensions);
-			efxOn = false;// EFXUtil.isEfxSupported();
-			logger().info("EFX extension support : " + (efxOn ? "yes" : "no"));
-			if (efxOn) {
-				// Reset error
-				alGetError();
-				List<Integer> auxSlotsIds = new ArrayList<Integer>();
-				while (true) {
-					int generated_id = alGenAuxiliaryEffectSlots();
-					int error = alGetError();
-					if (error != AL_NO_ERROR)
-						break;
-					auxSlotsIds.add(generated_id);
-				}
-				auxEffectsSlotsId = new int[auxSlotsIds.size()];
-				int j = 0;
-				for (int i : auxSlotsIds) {
-					auxEffectsSlotsId[j] = i;
-					j++;
-				}
-				// auxEffectsSlots = new SoundEffect[auxSlotsIds.size()];
-				// logger().worldInfo(auxEffectsSlots.length + " avaible auxiliary effects slots.");
-			}
-
 			Runtime.getRuntime().addShutdownHook(new Thread() {
 				@Override
 				public void run() {
@@ -179,7 +152,7 @@ public class ALSoundManager implements ClientSoundManager {
 		}
 	}
 
-	public float x, y, z;
+	private float x, y, z;
 
 	@Override
 	public void setListenerPosition(float x, float y, float z, Vector3fc lookAt, Vector3fc up) {
@@ -199,7 +172,7 @@ public class ALSoundManager implements ClientSoundManager {
 		// 0.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f });
 	}
 
-	public void addSoundSource(ALSoundSource soundSource) {
+	private void addSoundSource(ALSoundSource soundSource) {
 		soundSource.play();
 		playingSoundSources.add(soundSource);
 	}
@@ -210,9 +183,9 @@ public class ALSoundManager implements ClientSoundManager {
 		try {
 			ALSoundSource ss;
 			if (mode == Mode.STREAMED)
-				ss = new ALBufferedSoundSource(soundEffect, position, pitch, gain, attStart, attEnd);
+				ss = new ALBufferedSoundSource(this, soundEffect, position, pitch, gain, attStart, attEnd);
 			else
-				ss = new ALSoundSource(soundEffect, mode, position, pitch, gain, attStart, attEnd);
+				ss = new ALSoundSource(this, soundEffect, mode, position, pitch, gain, attStart, attEnd);
 
 			addSoundSource(ss);
 			return ss;
@@ -241,7 +214,7 @@ public class ALSoundManager implements ClientSoundManager {
 		playingSoundSources.clear();
 	}
 
-	int removeUnplayingSources() {
+	private int removeUnplayingSources() {
 		int j = 0;
 		Iterator<ALSoundSource> i = playingSoundSources.iterator();
 		while (i.hasNext()) {
@@ -279,10 +252,10 @@ public class ALSoundManager implements ClientSoundManager {
 			ALSoundSource soundSource = null;
 
 			if (mode == Mode.STREAMED)
-				soundSource = new ALBufferedSoundSource(soundName, position, pitch, gain, attenuationStart,
+				soundSource = new ALBufferedSoundSource(this, soundName, position, pitch, gain, attenuationStart,
 						attenuationEnd);
 			else
-				soundSource = new ALSoundSource(soundName, mode, position, pitch, gain, attenuationStart,
+				soundSource = new ALSoundSource(this, soundName, mode, position, pitch, gain, attenuationStart,
 						attenuationEnd);
 
 			// Match the UUIDs
@@ -294,5 +267,9 @@ public class ALSoundManager implements ClientSoundManager {
 			logger.warn("Sound not found " + soundName);
 			return null;
 		}
+	}
+
+	public SoundsLibrary getLibrary() {
+		return library;
 	}
 }

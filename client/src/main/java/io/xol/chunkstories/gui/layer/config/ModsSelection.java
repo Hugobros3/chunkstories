@@ -13,10 +13,10 @@ import io.xol.chunkstories.api.gui.Font;
 import io.xol.chunkstories.api.gui.Gui;
 import io.xol.chunkstories.api.gui.GuiDrawer;
 import io.xol.chunkstories.api.gui.Layer;
-import io.xol.chunkstories.api.gui.elements.LargeButtonIcon;
+import io.xol.chunkstories.api.gui.elements.Button;
+import io.xol.chunkstories.api.gui.elements.LargeButtonWithIcon;
 import io.xol.chunkstories.api.gui.elements.ScrollableContainer;
 import io.xol.chunkstories.api.gui.elements.ScrollableContainer.ContainerElement;
-import io.xol.chunkstories.api.gui.elements.ThinButton;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.input.Mouse.MouseButton;
@@ -37,12 +37,11 @@ import java.util.*;
 public class ModsSelection extends Layer {
     private static final Logger logger = LoggerFactory.getLogger("client.mods");
 
-    private LargeButtonIcon applyMods = new LargeButtonIcon(this, "validate");
+    private LargeButtonWithIcon applyMods = new LargeButtonWithIcon(this, "validate");
+    private LargeButtonWithIcon backOption = new LargeButtonWithIcon(this, "back");
 
-    private ThinButton locateExtMod = new ThinButton(this, 0, 0, "Locate external mod");
-    private ThinButton openModsFolder = new ThinButton(this, 0, 0, "Open mods folder");
-
-    private LargeButtonIcon backOption = new LargeButtonIcon(this, "back");
+    private Button locateExtMod = new Button(this, 0, 0, "Locate external mod");
+    private Button openModsFolder = new Button(this, 0, 0, "Open mods folder");
 
     private ModsScrollableContainer modsContainer = new ModsScrollableContainer(this);
 
@@ -294,7 +293,7 @@ public class ModsSelection extends Layer {
             }
 
             @Override
-            public void render(GuiDrawer renderer) {
+            public void render(GuiDrawer drawer) {
                 Mouse mouse = gui.getMouse();
 
                 // Setup textures
@@ -306,44 +305,44 @@ public class ModsSelection extends Layer {
                 String enableDisableTexture =(enabled ? "textures/gui/modsDisable.png" : "textures/gui/modsEnable.png");
 
                 // Render graphical base
-                renderer.drawBoxWindowsSpaceWithSize(positionX, positionY, width, height, 0, 1, 1, 0, bgTexture,
+                drawer.drawBox(positionX, positionY, width, height, 0, 1, 1, 0, bgTexture,
                         enabled ? new Vector4f(1.0f, 1.0f, 1.0f, 1.0f) : new Vector4f(1f, 1f, 1f, 0.5f));
                 if (enabled) {
                     String enabledTexture = "textures/gui/modsEnabled.png";
-                    renderer.drawBoxWindowsSpaceWithSize(positionX, positionY, width, height,
+                    drawer.drawBox(positionX, positionY, width, height,
                             0, 1, 1, 0, enabledTexture, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
                 }
 
                 // Render subbuttons
                 if (isOverUpButton(mouse))
-                    renderer.drawBoxWindowsSpaceWithSize(positionX, positionY, width, height,
+                    drawer.drawBox(positionX, positionY, width, height,
                             0, 1, 1, 0, upArrowTexture, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
                 if (isOverEnableDisableButton(mouse))
-                    renderer.drawBoxWindowsSpaceWithSize(positionX, positionY, width, height,
+                    drawer.drawBox(positionX, positionY, width, height,
                             0, 1, 1, 0, enableDisableTexture, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
                 if (isOverDownButton(mouse))
-                    renderer.drawBoxWindowsSpaceWithSize(positionX, positionY, width, height,
+                    drawer.drawBox(positionX, positionY, width, height,
                             0, 1, 1, 0, downArrowTexture, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
 
                 // Render icon
-                renderer.drawBoxWindowsSpaceWithSize(positionX + 4, positionY + 4, 64,
+                drawer.drawBox(positionX + 4, positionY + 4, 64,
                         64, 0, 1, 1, 0, icon, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
                 // Text !
                 if (name != null)
-                    renderer.drawString(
-                            renderer.getFonts().getFont("LiberationSans-Regular", 12), positionX + 70,
+                    drawer.drawString(
+                            drawer.getFonts().getFont("LiberationSans-Regular", 12), positionX + 70,
                             positionY + 54, name, -1, new Vector4f(0.0f, 0.0f, 0.0f, 1.0f));
 
                 if (topRightString != null) {
-                    int dekal = width - renderer.getFonts().getFont("LiberationSans-Regular", 12).getWidth(topRightString) - 4;
-                    renderer.drawString(
-                            renderer.getFonts().getFont("LiberationSans-Regular", 12), positionX + dekal,
+                    int dekal = width - drawer.getFonts().getFont("LiberationSans-Regular", 12).getWidth(topRightString) - 4;
+                    drawer.drawString(
+                            drawer.getFonts().getFont("LiberationSans-Regular", 12), positionX + dekal,
                             positionY + 54, topRightString, -1, new Vector4f(0.25f, 0.25f, 0.25f, 1.0f));
                 }
 
                 if (descriptionLines != null)
-                    renderer.drawString(
-                            renderer.getFonts().getFont("LiberationSans-Regular", 12), positionX + 70,
+                    drawer.drawString(
+                            drawer.getFonts().getFont("LiberationSans-Regular", 12), positionX + 70,
                             positionY + 38, descriptionLines, -1, new Vector4f(0.25f, 0.25f, 0.25f, 1.0f));
 
             }

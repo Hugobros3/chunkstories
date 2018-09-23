@@ -29,6 +29,10 @@ public class InventoryGridRenderer {
     int[] selectedSlot;
     boolean closedButton = false;
 
+    public void drawInventoryCentered(GuiDrawer drawer, int x, int y, boolean summary, int blankLines) {
+        drawInventory(drawer, x - slotsWidth(getInventory().getWidth()) / 2, y - slotsHeight(getInventory().getHeight(), summary, blankLines) / 2, summary, blankLines, -1);
+    }
+
     public int[] getSelectedSlot() {
         return selectedSlot;
     }
@@ -37,7 +41,7 @@ public class InventoryGridRenderer {
         return closedButton;
     }
 
-    public void drawPlayerInventorySummary(GuiDrawer renderer, int x, int y) {
+    public void drawPlayerInventorySummary(GuiDrawer drawer, int x, int y) {
         int selectedSlot = -1;
         if (inventory instanceof TraitInventory) {
             TraitSelectedItem esi = ((TraitInventory) inventory).entity.traits.get(TraitSelectedItem.class);
@@ -45,13 +49,12 @@ public class InventoryGridRenderer {
                 selectedSlot = esi.getSelectedSlot();
         }
 
-        drawInventory(renderer, x - slotsWidth(getInventory().getWidth(), 2) / 2,
-                y - slotsHeight(getInventory().getHeight(), true, 0) / 2, 2, true, 0, selectedSlot);
+        drawInventory(drawer, x - slotsWidth(getInventory().getWidth()) / 2, y - slotsHeight(getInventory().getHeight(), true, 0) / 2, true, 0, selectedSlot);
     }
 
     //TODO move to own layer
-    public void drawInventory(GuiDrawer renderer, int x, int y, boolean summary, int blankLines, int highlightSlot) {
-        Mouse mouse = gui.getClient().getInputsManager().getMouse();
+    public void drawInventory(GuiDrawer drawer, int x, int y, boolean summary, int blankLines, int highlightSlot) {
+        Mouse mouse = drawer.getGui().getMouse();
         if (getInventory() == null)
             return;
 
@@ -69,22 +72,22 @@ public class InventoryGridRenderer {
 
         Vector4f color = new Vector4f(1f, 1f, 1f, summary ? 0.5f : 1f);
         // All 8 corners
-        renderer.drawBoxWindowsSpaceWithSize(x, y + internalHeight + cornerSize, cornerSize,
+        drawer.drawBox(x, y + internalHeight + cornerSize, cornerSize,
                 cornerSize, 0, 0.03125f, 0.03125f, 0, inventoryTexture, color);
-        renderer.drawBoxWindowsSpaceWithSize(x + cornerSize, y + internalHeight + cornerSize,
+        drawer.drawBox(x + cornerSize, y + internalHeight + cornerSize,
                 internalWidth, cornerSize, 0.03125f, 0.03125f, 0.96875f, 0, inventoryTexture, color);
-        renderer.drawBoxWindowsSpaceWithSize(x + cornerSize + internalWidth,
+        drawer.drawBox(x + cornerSize + internalWidth,
                 y + internalHeight + cornerSize, cornerSize, cornerSize, 0.96875f, 0.03125f, 1f, 0, inventoryTexture,
                 color);
-        renderer.drawBoxWindowsSpaceWithSize(x, y, cornerSize, cornerSize, 0, 1f, 0.03125f, 248 / 256f,
+        drawer.drawBox(x, y, cornerSize, cornerSize, 0, 1f, 0.03125f, 248 / 256f,
                 inventoryTexture, color);
-        renderer.drawBoxWindowsSpaceWithSize(x + cornerSize, y, internalWidth, cornerSize, 0.03125f,
+        drawer.drawBox(x + cornerSize, y, internalWidth, cornerSize, 0.03125f,
                 1f, 0.96875f, 248 / 256f, inventoryTexture, color);
-        renderer.drawBoxWindowsSpaceWithSize(x + cornerSize + internalWidth, y, cornerSize, cornerSize,
+        drawer.drawBox(x + cornerSize + internalWidth, y, cornerSize, cornerSize,
                 0.96875f, 1f, 1f, 248 / 256f, inventoryTexture, color);
-        renderer.drawBoxWindowsSpaceWithSize(x, y + cornerSize, cornerSize, internalHeight, 0,
+        drawer.drawBox(x, y + cornerSize, cornerSize, internalHeight, 0,
                 248f / 256f, 0.03125f, 8f / 256f, inventoryTexture, color);
-        renderer.drawBoxWindowsSpaceWithSize(x + cornerSize + internalWidth, y + cornerSize,
+        drawer.drawBox(x + cornerSize + internalWidth, y + cornerSize,
                 cornerSize, internalHeight, 248 / 256f, 248f / 256f, 1f, 8f / 256f, inventoryTexture, color);
         // Actual inventory slots
         int sumSlots2HL = 0;
@@ -110,24 +113,24 @@ public class InventoryGridRenderer {
                     if (summaryBarSelected != null && i == summaryBarSelected.getX()) {
                         sumSlots2HL = summaryBarSelected.getItem().getDefinition().getSlotsWidth();
                     }
-                    if (sumSlots2HL > 0 || (summaryBarSelected == null && highlightSlot == i)) {
+                    if (sumSlots2HL > 0 || summaryBarSelected == null && highlightSlot == i) {
                         sumSlots2HL--;
-                        renderer.drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize,
+                        drawer.drawBox(x + cornerSize + i * slotSize,
                                 y + cornerSize + j * slotSize, slotSize, slotSize, 32f / 256f, 176 / 256f, 56 / 256f,
                                 152 / 256f, inventoryTexture, color);
                     } else
-                        renderer.drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize,
+                        drawer.drawBox(x + cornerSize + i * slotSize,
                                 y + cornerSize + j * slotSize, slotSize, slotSize, 8f / 256f, 176 / 256f, 32f / 256f,
                                 152 / 256f, inventoryTexture, color);
 
                 } else {
-                    if (mouseOver || (selectedPile != null && thisPile != null && selectedPile.getX() == thisPile.getX()
-                            && selectedPile.getY() == thisPile.getY())) {
-                        renderer.drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize,
+                    if (mouseOver || selectedPile != null && thisPile != null && selectedPile.getX() == thisPile.getX()
+                            && selectedPile.getY() == thisPile.getY()) {
+                        drawer.drawBox(x + cornerSize + i * slotSize,
                                 y + cornerSize + j * slotSize, slotSize, slotSize, 32f / 256f, 176 / 256f, 56 / 256f,
                                 152 / 256f, inventoryTexture, color);
                     } else
-                        renderer.drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize,
+                        drawer.drawBox(x + cornerSize + i * slotSize,
                                 y + cornerSize + j * slotSize, slotSize, slotSize, 8f / 256f, 176 / 256f, 32f / 256f,
                                 152 / 256f, inventoryTexture, color);
 
@@ -140,20 +143,20 @@ public class InventoryGridRenderer {
             for (int i = 0; i < getInventory().getWidth(); i++) {
                 if (j == getInventory().getHeight()) {
                     if (i == getInventory().getWidth() - 1)
-                        renderer.drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize,
+                        drawer.drawBox(x + cornerSize + i * slotSize,
                                 y + cornerSize + j * slotSize, slotSize, slotSize, 224f / 256f, 152 / 256f, 248 / 256f,
                                 128 / 256f, inventoryTexture, color);
                     else
-                        renderer.drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize,
+                        drawer.drawBox(x + cornerSize + i * slotSize,
                                 y + cornerSize + j * slotSize, slotSize, slotSize, 8f / 256f, 152 / 256f, 32f / 256f,
                                 128 / 256f, inventoryTexture, color);
                 } else {
                     if (i == getInventory().getWidth() - 1)
-                        renderer.drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize,
+                        drawer.drawBox(x + cornerSize + i * slotSize,
                                 y + cornerSize + j * slotSize, slotSize, slotSize, 224f / 256f, 56 / 256f, 248 / 256f,
                                 32 / 256f, inventoryTexture, color);
                     else
-                        renderer.drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize,
+                        drawer.drawBox(x + cornerSize + i * slotSize,
                                 y + cornerSize + j * slotSize, slotSize, slotSize, 8f / 256f, 56 / 256f, 32f / 256f,
                                 32 / 256f, inventoryTexture, color);
                 }
@@ -161,16 +164,16 @@ public class InventoryGridRenderer {
         }
         // Top part
         if (!summary) {
-            renderer.drawBoxWindowsSpaceWithSize(x + cornerSize,
+            drawer.drawBox(x + cornerSize,
                     y + cornerSize + internalHeight - slotSize, slotSize, slotSize, 8f / 256f, 32f / 256f, 32f / 256f,
                     8f / 256f, inventoryTexture, color);
 
             for (int i = 1; i < getInventory().getWidth() - 2; i++) {
-                renderer.drawBoxWindowsSpaceWithSize(x + cornerSize + i * slotSize,
+                drawer.drawBox(x + cornerSize + i * slotSize,
                         y + cornerSize + internalHeight - slotSize, slotSize, slotSize, 32f / 256f, 32f / 256f,
                         56f / 256f, 8f / 256f, inventoryTexture, color);
             }
-            renderer.drawBoxWindowsSpaceWithSize(
+            drawer.drawBox(
                     x + cornerSize + (getInventory().getWidth() - 2) * slotSize,
                     y + cornerSize + internalHeight - slotSize, slotSize, slotSize, 200f / 256f, 32f / 256f, 224 / 256f,
                     8f / 256f, inventoryTexture, color);
@@ -179,13 +182,13 @@ public class InventoryGridRenderer {
                     && mouse.getCursorY() > y + cornerSize + internalHeight - slotSize
                     && mouse.getCursorY() <= y + cornerSize + internalHeight;
 
-            renderer.drawBoxWindowsSpaceWithSize(
+            drawer.drawBox(
                     x + cornerSize + (getInventory().getWidth() - 1) * slotSize,
                     y + cornerSize + internalHeight - slotSize, slotSize, slotSize, 224f / 256f, 32f / 256f,
                     248f / 256f, 8f / 256f, inventoryTexture, color);
 
-            renderer.drawStringWithShadow(
-                    renderer.getFonts().getFont("LiberationSans-Bold", 12), x + cornerSize + 6,
+            drawer.drawStringWithShadow(
+                    drawer.getFonts().getFont("LiberationSans-Bold", 12), x + cornerSize + 6,
                     y + cornerSize + internalHeight - slotSize + 2 * scale, getInventory().getInventoryName(), -1, new Vector4f(1, 1, 1, 1));
         }
 
@@ -209,32 +212,32 @@ public class InventoryGridRenderer {
             int i = pile.getX();
             int j = pile.getY();
 
-            if (pile != null && (!summary || j == 0)) {
+            if (!summary || j == 0) {
                 int amountToDisplay = pile.getAmount();
 
                 // If we selected this item
-                if ((InventoryView.selectedItem != null && InventoryView.selectedItem.getInventory() != null
+                if (InventoryView.selectedItem != null && InventoryView.selectedItem.getInventory() != null
                         && getInventory().equals(InventoryView.selectedItem.getInventory())
-                        && InventoryView.selectedItem.getX() == i && InventoryView.selectedItem.getY() == j)) {
+                        && InventoryView.selectedItem.getX() == i && InventoryView.selectedItem.getY() == j) {
                     amountToDisplay -= InventoryView.selectedItemAmount;
                 }
 
                 // Draw amount of items in the pile
                 if (amountToDisplay > 1)
-                    renderer.drawStringWithShadow(renderer.getFonts().defaultFont(),
-                            x + cornerSize + ((pile.getItem().getDefinition().getSlotsWidth() - 1) + i) * slotSize,
+                    drawer.drawStringWithShadow(drawer.getFonts().defaultFont(),
+                            x + cornerSize + (pile.getItem().getDefinition().getSlotsWidth() - 1 + i) * slotSize,
                             y + cornerSize + j * slotSize, amountToDisplay + "", -1,
                             new Vector4f(1, 1, 1, 1));
             }
         }
     }
 
-    public int slotsWidth(int slots, int scale) {
-        return (8 + slots * 24) * scale;
+    public int slotsWidth(int slots) {
+        return 8 + slots * 24;
     }
 
-    public int slotsHeight(int slots, int scale, boolean summary, int blankLines) {
-        return (8 + (slots + (summary ? 0 : 1) + blankLines) * 24) * scale;
+    public int slotsHeight(int slots, boolean summary, int blankLines) {
+        return 8 + (slots + (summary ? 0 : 1) + blankLines) * 24;
     }
 
     public Inventory getInventory() {

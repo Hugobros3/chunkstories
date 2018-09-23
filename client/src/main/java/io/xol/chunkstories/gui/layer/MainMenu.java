@@ -12,7 +12,7 @@ import org.joml.Vector4f;
 
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.gui.elements.LargeButton;
-import io.xol.chunkstories.api.gui.elements.LargeButtonIcon;
+import io.xol.chunkstories.api.gui.elements.LargeButtonWithIcon;
 import io.xol.chunkstories.api.item.inventory.BasicInventory;
 import io.xol.chunkstories.api.item.inventory.Inventory;
 import io.xol.chunkstories.gui.layer.config.LanguageSelectionScreen;
@@ -25,8 +25,8 @@ import io.xol.chunkstories.util.VersionInfo;
 
 /** Gives quick access to the main features of the game */
 public class MainMenu extends Layer {
-	LargeButtonIcon largeOnline = new LargeButtonIcon(this, "online");
-	LargeButtonIcon largeMods = new LargeButtonIcon(this, "mods");
+	LargeButtonWithIcon largeOnline = new LargeButtonWithIcon(this, "online");
+	LargeButtonWithIcon largeMods = new LargeButtonWithIcon(this, "mods");
 
 	LargeButton largeSingleplayer = new LargeButton(this, "singleplayer");
 	LargeButton largeOptions = new LargeButton(this, "options");

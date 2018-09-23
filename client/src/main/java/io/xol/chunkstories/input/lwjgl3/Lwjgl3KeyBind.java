@@ -9,72 +9,39 @@ package io.xol.chunkstories.input.lwjgl3;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.glfwGetKey;
 
-import io.xol.chunkstories.api.client.LocalPlayer;
+import io.xol.chunkstories.api.client.Client;
+import io.xol.chunkstories.api.client.IngameClient;
 import io.xol.chunkstories.api.input.KeyboardKeyInput;
-import io.xol.chunkstories.api.util.Configuration.KeyBindOption;
-import io.xol.chunkstories.client.ClientImplementation;
-import io.xol.chunkstories.content.GenericNamedConfigurable;
+import io.xol.chunkstories.api.util.Configuration;
 import io.xol.chunkstories.input.Pollable;
 
 /**
  * Describes a key assignated to some action
  */
 public class Lwjgl3KeyBind extends Lwjgl3Input implements KeyboardKeyInput, Pollable {
-	Lwjgl3ClientInputsManager lwjgl3im;
+	private Lwjgl3ClientInputsManager inputsManager;
 
-	int GLFW_key;
-	int defaultKey;
+	private int GLFW_key;
+	private int defaultKey;
 
-	boolean isDown = false;
+	private boolean isDown = false;
 	boolean editable = true;
 	boolean repeat = false;
 
-	Lwjgl3KeyBindOption option;
+	private Configuration.OptionInt option;
 
-	public Lwjgl3KeyBind(Lwjgl3ClientInputsManager im, String name, String defaultKeyName) {
-		super(im, name);
-		this.lwjgl3im = im;
+	Lwjgl3KeyBind(Lwjgl3ClientInputsManager inputsManager, String name, String defaultKeyName) {
+		super(inputsManager, name);
+		this.inputsManager = inputsManager;
 		this.defaultKey = GLFWKeyIndexHelper.getGlfwKeyByName(defaultKeyName);
 		this.GLFW_key = defaultKey;
 
-		option = new Lwjgl3KeyBindOption("client.input.bind." + name);
-		ClientImplementation.getInstance().getConfiguration().addOption(option);
-	}
+		Client client = inputsManager.gameWindow.getClient();
+		Configuration clientConfiguration = client.getConfiguration();
 
-	public Lwjgl3KeyBindOption getOption() {
-		return option;
-	}
-
-	public class Lwjgl3KeyBindOption extends GenericNamedConfigurable implements KeyBindOption {
-
-		public Lwjgl3KeyBindOption(String name) {
-			super(name);
-		}
-
-		@Override
-		public int getIntValue() {
-			return GLFW_key;
-		}
-
-		@Override
-		public String getValue() {
-			return GLFW_key + "";
-		}
-
-		@Override
-		public String getDefaultValue() {
-			return defaultKey + "";
-		}
-
-		@Override
-		public void trySetting(String value) {
-			GLFW_key = parse(value);
-		}
-
-		@Override
-		public Lwjgl3KeyBind getInput() {
-			return Lwjgl3KeyBind.this;
-		}
+		option = clientConfiguration.new OptionInt("client.input.bind." + name, defaultKey);
+		option.addHook(o -> {GLFW_key = o.getValue();});
+		clientConfiguration.registerOption(option);
 	}
 
 	private int parse(String s) {
@@ -90,29 +57,29 @@ public class Lwjgl3KeyBind extends Lwjgl3Input implements KeyboardKeyInput, Poll
 	 * 
 	 * @return
 	 */
-	public int getLWJGL3xKey() {
+	int getLWJGL3xKey() {
 		return GLFW_key;
 	}
 
+	/** Returns true if the key is pressed and we're either not ingame or there is no GUI overlay blocking gameplay input */
 	@Override
 	public boolean isPressed() {
-		LocalPlayer player = this.lwjgl3im.gameWindow.getClient().getPlayer();
-		if (player != null)
-			return isDown && player.hasFocus();
-		return isDown;// && this.lwjgl3im.gameWindow.hasFocus();
+		IngameClient ingameClient = inputsManager.gameWindow.getClient().getIngame();
+		if (ingameClient != null)
+			return isDown && ingameClient.getPlayer().hasFocus();
+		return isDown;
 	}
 
 	/**
 	 * When reloading from the config file (options changed)
 	 */
 	public void reload() {
-		// this.GLFW_key = ClientImplementation.getInstance().getConfig().getInteger("bind."+name,
-		// -1);
+		// doesn't do stuff, we have a hook on the option directly
 	}
 
 	@Override
 	public void updateStatus() {
-		isDown = glfwGetKey(im.gameWindow.getGlfwWindowHandle(), GLFW_key) == GLFW_PRESS;// Keyboard.isKeyDown(LWJGL2_key);
+		isDown = glfwGetKey(im.gameWindow.getGlfwWindowHandle(), GLFW_key) == GLFW_PRESS;
 	}
 
 	/**

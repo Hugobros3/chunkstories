@@ -12,7 +12,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
-import io.xol.chunkstories.client.ClientImplementation;
+import io.xol.chunkstories.api.client.IngameClient;
+import io.xol.chunkstories.api.gui.Font;
+import io.xol.chunkstories.api.gui.Gui;
+import io.xol.chunkstories.api.gui.GuiDrawer;
 import org.joml.Vector4f;
 
 import io.xol.chunkstories.api.content.mods.Mod;
@@ -27,7 +30,9 @@ import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.chunkstories.world.WorldClientRemote;
 
 public class ChatManager {
-	private final Ingame ingame;
+	private final IngameLayer ingameGuiLayer;
+	private final IngameClient ingameClient;
+	private final Gui gui;
 
 	private int chatHistorySize = 150;
 
@@ -37,8 +42,10 @@ public class ChatManager {
 	private int sentMessages = 0;
 	private int sentHistory = 0;
 
-	public ChatManager(Ingame ingame) {
-		this.ingame = ingame;
+	public ChatManager(IngameClient ingameClient, IngameLayer ingameGuiLayer) {
+		this.ingameClient = ingameClient;
+		this.ingameGuiLayer = ingameGuiLayer;
+		this.gui = ingameGuiLayer.getGui();
 	}
 
 	private class ChatLine {
@@ -63,8 +70,8 @@ public class ChatManager {
 
 		long delay;
 
-		public ChatPanelOverlay(GameWindow scene, Layer parent) {
-			super(scene, parent);
+		public ChatPanelOverlay(Gui gui, Layer parent) {
+			super(gui, parent);
 
 			// Add the inputBox
 			this.inputBox = new InputText(this, 0, 0, 500);
@@ -79,12 +86,12 @@ public class ChatManager {
 		}
 
 		@Override
-		public void render(RenderingInterface renderer) {
-			parentLayer.render(renderer);
+		public void render(GuiDrawer drawer) {
+			parentLayer.render(drawer);
 
 			inputBox.setPosition(12, 192);
 			inputBox.setTransparent(true);
-			inputBox.render(renderer);
+			inputBox.render(drawer);
 		}
 
 		@Override
@@ -95,7 +102,7 @@ public class ChatManager {
 		@Override
 		public boolean handleInput(Input input) {
 			if (input.equals("exit")) {
-				gameWindow.setLayer(parentLayer);
+				gui.popTopLayer();
 				return true;
 			} else if (input.equals("uiUp")) {
 				// sentHistory = 0 : empty message, = 1 last message, 2 last message before etc
@@ -119,7 +126,7 @@ public class ChatManager {
 				processTextInput(inputBox.getText());
 				inputBox.setText("");
 				sentHistory = 0;
-				gameWindow.setLayer(parentLayer);
+				gui.popTopLayer();
 				return true;
 			} else if (input instanceof MouseScroll) {
 				MouseScroll ms = (MouseScroll) input;
@@ -145,9 +152,9 @@ public class ChatManager {
 		}
 	}
 
-	int scroll = 0;
+	private int scroll = 0;
 
-	public void render(RenderingInterface renderer) {
+	public void render(GuiDrawer drawer) {
 		while (chat.size() > chatHistorySize)
 			chat.removeLast();
 		if (scroll < 0)// || !chatting)
@@ -166,27 +173,21 @@ public class ChatManager {
 				continue;
 			}
 
-			Font font = renderer.getFontRenderer().getFont("LiberationSans-Regular", 12);
-			float scale = 2f;
+			Font font = gui.getFonts().getFont("LiberationSans-Regular__aa", 18);
 
-			font = renderer.getFontRenderer().getFont("LiberationSans-Regular__aa", 18);
-			scale = 1.0f;
-
-			int chatWidth = Math.max(750, ClientImplementation.getInstance().getGameWindow().getWidth() / 4 * 3);
-
-			String localizedLine = ClientImplementation.getInstance().getContent().localization().localize(line.text);
-
-			int actualLines = font.getLinesHeight(localizedLine, chatWidth / scale);
+			int chatWidth = Math.max(750, gui.getViewportWidth() / 4 * 3);
+			String localizedLine = gui.localization().localize(line.text);
+			int actualLines = font.getLinesHeight(localizedLine, chatWidth);
 			linesDrew += actualLines;
-			float alpha = (line.time + 10000L - System.currentTimeMillis()) / 1000f;
-			if (alpha < 0)
-				alpha = 0;
-			if (alpha > 1 || ingame.getGameWindow().getLayer() instanceof ChatPanelOverlay)
-				alpha = 1;
+			float textFade = (line.time + 10000L - System.currentTimeMillis()) / 1000f;
+			if (textFade < 0)
+				textFade = 0;
+			if (textFade > 1 || gui.getTopLayer() instanceof ChatPanelOverlay)
+				textFade = 1;
 
-			renderer.getFontRenderer().drawStringWithShadow(font, 9,
-					(linesDrew - 1) * font.getLineHeight() * scale + 180 + (50), localizedLine, scale, scale, chatWidth,
-					new Vector4f(1, 1, 1, alpha));
+			drawer.drawStringWithShadow(font, 9,
+					(linesDrew - 1) * font.getLineHeight() + 180 + (50), localizedLine, chatWidth,
+					new Vector4f(1, 1, 1, textFade));
 		}
 
 	}
@@ -196,8 +197,7 @@ public class ChatManager {
 	}
 
 	private void processTextInput(String input) {
-
-		String username = ingame.getGameWindow().getClient().username();
+		String clientUserName = ingameClient.getUser().getName();
 
 		if (input.startsWith("/")) {
 			String chatMsg = input;
@@ -211,7 +211,7 @@ public class ChatManager {
 				args = chatMsg.substring(chatMsg.indexOf(" ") + 1, chatMsg.length()).split(" ");
 			}
 
-			if (ingame.getGameWindow().getClient().getPluginManager().dispatchCommand(ClientImplementation.getInstance().getPlayer(),
+			if (ingameClient.getPluginManager().dispatchCommand(ingameClient.getPlayer(),
 					cmdName, args)) {
 				if (sent.size() == 0 || !sent.get(0).equals(input)) {
 					sent.add(0, input);
@@ -221,13 +221,13 @@ public class ChatManager {
 			} else if (cmdName.equals("plugins")) {
 				String list = "";
 
-				Iterator<ChunkStoriesPlugin> i = ingame.getGameWindow().getClient().getPluginManager().activePlugins();
+				Iterator<ChunkStoriesPlugin> i = ingameClient.getPluginManager().activePlugins();
 				while (i.hasNext()) {
 					ChunkStoriesPlugin plugin = i.next();
 					list += plugin.getName() + (i.hasNext() ? ", " : "");
 				}
 
-				if (ClientImplementation.getInstance().getWorld() instanceof WorldClientLocal)
+				if (ingameClient.getWorld() instanceof WorldClientLocal)
 					insert("#00FFD0" + i + " active client [master] plugins : " + list);
 				else
 					insert("#74FFD0" + i + " active client [remote] plugins : " + list);
@@ -239,14 +239,14 @@ public class ChatManager {
 			} else if (cmdName.equals("mods")) {
 				String list = "";
 				int i = 0;
-				for (Mod mod : ClientImplementation.getInstance().getContent().modsManager().getCurrentlyLoadedMods()) {
+				for (Mod mod : ingameClient.getContent().modsManager().getCurrentlyLoadedMods()) {
 					i++;
 					list += mod.getModInfo().getName()
-							+ (i == ClientImplementation.getInstance().getContent().modsManager().getCurrentlyLoadedMods().size() ? ""
+							+ (i == ingameClient.getContent().modsManager().getCurrentlyLoadedMods().size() ? ""
 									: ", ");
 				}
 
-				if (ClientImplementation.getInstance().getWorld() instanceof WorldClientLocal)
+				if (ingameClient.getWorld() instanceof WorldClientLocal)
 					insert("#FF0000" + i + " active client [master] mods : " + list);
 				else
 					insert("#FF7070" + i + " active client [remote] mods : " + list);
@@ -265,13 +265,13 @@ public class ChatManager {
 			ClientLimitations.isDebugAllowed = true;
 		}
 
-		if (ingame.getGameWindow().getClient().getWorld() instanceof WorldClientRemote)
-			((WorldClientRemote) ingame.getGameWindow().getClient().getWorld()).getConnection()
+		if (ingameClient.getWorld() instanceof WorldClientRemote)
+			((WorldClientRemote) ingameClient.getWorld()).getConnection()
 					.sendTextMessage("chat/" + input);
 		else
-			insert(ColorsTools.getUniqueColorPrefix(username) + username + "#FFFFFF > " + input);
+			insert(ColorsTools.getUniqueColorPrefix(clientUserName) + clientUserName + "#FFFFFF > " + input);
 
-		System.out.println(username + " > " + input);
+		System.out.println(clientUserName + " > " + input);
 
 		if (sent.size() == 0 || !sent.get(0).equals(input)) {
 			sent.add(0, input);

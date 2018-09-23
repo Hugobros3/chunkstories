@@ -105,8 +105,8 @@ public class DedicatedServer implements Runnable, Server {
 	private Logger logger = null;
 	private DedicatedServerConsole console = new DedicatedServerConsole(this);
 
-	private Configuration serverConfig = new Configuration(this);
 	private final File configFile = new File("./config/server.config");
+	private Configuration serverConfig = new Configuration(this, configFile);
 
 	private AtomicBoolean running = new AtomicBoolean(true);
 	private long initTimestamp = System.currentTimeMillis() / 1000;

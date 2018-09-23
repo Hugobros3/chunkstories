@@ -10,13 +10,14 @@ import io.xol.chunkstories.api.gui.Font;
 import io.xol.chunkstories.api.gui.Gui;
 import io.xol.chunkstories.api.gui.GuiDrawer;
 import io.xol.chunkstories.api.gui.Layer;
-import io.xol.chunkstories.api.gui.elements.BaseButton;
+import io.xol.chunkstories.api.gui.elements.Button;
 import io.xol.chunkstories.api.gui.elements.InputText;
-import io.xol.chunkstories.api.gui.elements.LargeButtonIcon;
+import io.xol.chunkstories.api.gui.elements.LargeButtonWithIcon;
 import io.xol.chunkstories.api.gui.elements.ScrollableContainer;
 import io.xol.chunkstories.api.gui.elements.ScrollableContainer.ContainerElement;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse.MouseButton;
+import io.xol.chunkstories.api.util.Configuration;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.gui.layer.ServerSelection.ServerSelectionZone.ServerGuiItem;
 import io.xol.chunkstories.gui.layer.ingame.RemoteConnectionGuiLayer;
@@ -33,19 +34,18 @@ import java.io.FileOutputStream;
 import java.net.Socket;
 
 public class ServerSelection extends Layer implements HttpRequester {
-    InputText ipForm = new InputText(this, 0, 0, 250);
 
-    LargeButtonIcon backOption = new LargeButtonIcon(this, "back");
-    BaseButton connectButton = new BaseButton(this, 0, 0, 0, "#{connection.connect}");
+    private LargeButtonWithIcon backOption = new LargeButtonWithIcon(this, "back");
+    private InputText ipForm = new InputText(this, 0, 0, 250);
+    private Button connectButton = new Button(this, 0, 0, 0, "#{connection.connect}");
+    private ServerSelectionZone serverSelectionZone = new ServerSelectionZone(this);
 
-    ServerSelectionZone serverSelectionZone = new ServerSelectionZone(this);
-
-    boolean autologin;
+    private boolean automaticLogin;
     private boolean movedInList = false;
 
     private final static Logger logger = LoggerFactory.getLogger("gui.serverselection");
 
-    public ServerSelection(Gui gui, Layer parent, boolean a) {
+    ServerSelection(Gui gui, Layer parent, boolean a) {
         super(gui, parent);
         elements.add(ipForm);
 
@@ -58,8 +58,8 @@ public class ServerSelection extends Layer implements HttpRequester {
         elements.add(serverSelectionZone);
         elements.add(backOption);
 
-        autologin = a;
-        String lastServer = gui.getClient().getConfiguration().getStringOption("client.game.last-server");
+        automaticLogin = a;
+        String lastServer = gui.getClient().getConfiguration().getValue("client.game.lastServer");
         if (!lastServer.equals(""))
             ipForm.setText(lastServer);
 
@@ -68,41 +68,41 @@ public class ServerSelection extends Layer implements HttpRequester {
     }
 
     @Override
-    public void render(GuiDrawer renderer) {
-        parentLayer.getRootLayer().render(renderer);
+    public void render(GuiDrawer drawer) {
+        if (parentLayer != null) {
+            parentLayer.render(drawer);
+        }
 
-        if (autologin && !ipForm.getText().equals(""))
+        if (automaticLogin && !ipForm.getText().equals(""))
             login();
 
         String instructions = "Select a server from the list or type in the address directly";
-        Font font = renderer.getFontRenderer().getFont("LiberationSans-Regular", 11);
-        renderer.getFontRenderer().drawStringWithShadow(font, 32, renderer.getWindow().getHeight() - 32 * 2,
-                instructions, 3, 3, new Vector4f(1));
+        Font titleFont = drawer.getFonts().getFont("LiberationSans-Regular", 33);
+        drawer.drawStringWithShadow(titleFont, 32, gui.getViewportHeight() - 32 * 2, instructions, -1, new Vector4f(1));
 
         // gui
-        float txtbox = renderer.getWindow().getWidth() - connectButton.getWidth() - 48 - 8;
-        ipForm.setPosition(25, renderer.getWindow().getHeight() - 100);
-        ipForm.setWidth(txtbox / this.getGuiScale());
-        ipForm.render(renderer);
+        int ipTextboxSize = gui.getViewportWidth() - connectButton.getWidth() - 48 - 8;
+        ipForm.setPosition(25, gui.getViewportHeight() - 100);
+        ipForm.setWidth(ipTextboxSize);
+        ipForm.render(drawer);
 
         connectButton.setPosition(ipForm.getPositionX() + ipForm.getWidth() + 4,
-                renderer.getWindow().getHeight() - 100);
+                gui.getViewportHeight() - 100);
 
-        connectButton.render(renderer);
+        connectButton.render(drawer);
 
         backOption.setPosition(8, 8);
-        backOption.render(renderer);
+        backOption.render(drawer);
 
         updateServers();
 
-        float offsetForButtons = backOption.getPositionY() + backOption.getHeight() + 8;
-        float offsetForHeaderText = 32 + ipForm.getHeight();
+        int offsetForButtons = backOption.getPositionY() + backOption.getHeight() + 8;
+        int offsetForHeaderText = 32 + ipForm.getHeight();
         serverSelectionZone.setPosition((width - 480) / 2, offsetForButtons);
-        serverSelectionZone.setDimensions(480, height - (offsetForButtons + offsetForHeaderText));
-        serverSelectionZone.render(renderer);
+        serverSelectionZone.setSize(480, height - (offsetForButtons + offsetForHeaderText));
+        serverSelectionZone.render(drawer);
     }
 
-    // Controls handling
     @Override
     public boolean handleInput(Input input) {
         if (input.equals("enter"))
@@ -112,7 +112,7 @@ public class ServerSelection extends Layer implements HttpRequester {
         else if (input.equals("repingServers")) // F6 ?
             f6();
         else if (input.equals("exit"))
-            gameWindow.setLayer(parentLayer);
+            gui.popTopLayer();
         else if (serverSelectionZone.isFocused() && input.equals("uiUp")) {
             movedInList = true;
             currentServer--;
@@ -135,7 +135,7 @@ public class ServerSelection extends Layer implements HttpRequester {
         if (ip.length() == 0)
             return;
 
-        gui.getClient().getConfiguration().getOption("client.game.last-server").trySetting(ip);
+        ((Configuration.OptionString)gui.getClient().getConfiguration().get("client.game.lastServer")).trySetting(ip);
         gui.getClient().getConfiguration().save();
 
         if (ip.contains(":")) {
@@ -143,13 +143,11 @@ public class ServerSelection extends Layer implements HttpRequester {
             ip = ip.split(":")[0];
         }
 
-        // ClientImplementation.world = null;
-
-        gui.setTopLayer(new RemoteConnectionGuiLayer(gui, this, ip, port));
+        //TODO create connection sequence (ongoing refactor of that)
+        //gui.setTopLayer(new RemoteConnectionGuiLayer(gui, this, ip, port));
     }
 
-    int currentServer = 0;
-    int oldServer = 0;
+    private int currentServer = 0;
 
     private void updateServers() {
         if (serverSelectionZone.elements.size() == 0)
@@ -178,18 +176,18 @@ public class ServerSelection extends Layer implements HttpRequester {
         }
     }
 
-    public class ServerSelectionZone extends ScrollableContainer {
-        protected ServerSelectionZone(Layer layer) {
+    class ServerSelectionZone extends ScrollableContainer {
+        ServerSelectionZone(Layer layer) {
             super(layer);
         }
 
         class ServerGuiItem extends ContainerElement {
 
             ServerDataLoader sd;
-            public String ip;
-            public int port;
+            String ip;
+            int port;
 
-            public ServerGuiItem(String ip, int port) {
+            ServerGuiItem(String ip, int port) {
                 super("Loading server worldInfo for " + ip + ":" + port, "");
                 this.ip = ip;
                 this.port = port;
@@ -208,7 +206,7 @@ public class ServerSelection extends Layer implements HttpRequester {
                 return true;
             }
 
-            public void reload() {
+            void reload() {
                 if (sd.infoError || sd.infoLoaded)
                     this.sd = new ServerDataLoader(this, ip, port);
             }
@@ -219,8 +217,8 @@ public class ServerSelection extends Layer implements HttpRequester {
     public class ServerDataLoader extends Thread {
         ServerGuiItem parent;
 
-        public String ip;
-        public int port;
+        String ip;
+        int port;
         String name = "Loading...";
         String description = "Loading...";
         String gameMode = "Loading...";
@@ -230,7 +228,7 @@ public class ServerSelection extends Layer implements HttpRequester {
         long connectStart;
         long ping = 42;
 
-        public ServerDataLoader(ServerGuiItem parent, String ip, int port) {
+        ServerDataLoader(ServerGuiItem parent, String ip, int port) {
             this.parent = parent;
 
             this.ip = ip;
@@ -332,9 +330,7 @@ public class ServerSelection extends Layer implements HttpRequester {
                     String address = line.split(":")[2];
                     serverSelectionZone.elements.add(serverSelectionZone.new ServerGuiItem(address, 30410));
                 }
-            } catch (Exception e) {
-
-            }
+            } catch (Exception ignored) { }
         }
     }
 }

@@ -67,14 +67,14 @@ public class SkyBoxBackground extends Layer {
 	}
 
 	@Override
-	public void render(GuiDrawer renderer) {
+	public void render(GuiDrawer drawer) {
 		if (gui.getTopLayer() == this)
 			gui.setTopLayer(new MainMenu(gui, this));
 
 		float alphaIcon = (float) (0.25 + Math.sin((System.currentTimeMillis() % (1000 * 60 * 60) / 3000f)) * 0.25f);
 		int iconSize = 256;
 
-		renderer.drawBoxWindowsSpaceWithSize(gui.getViewportWidth() / 2 - iconSize / 2,
+		drawer.drawBox(gui.getViewportWidth() / 2 - iconSize / 2,
 				gui.getViewportHeight() / 2 - iconSize / 2, iconSize,
 				iconSize, 0, 1, 1, 0, "./textures/gui/icon.png",
 				new Vector4f(1.0f, 1.0f, 1.0f, alphaIcon));

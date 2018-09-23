@@ -72,13 +72,13 @@ public class GuiRendererImplementation implements GuiRenderer {
 	 * (non-Javadoc)
 	 * 
 	 * @see
-	 * io.xol.engine.graphics.util.GuiRenderer#drawBoxWindowsSpaceWithSize(float,
+	 * io.xol.engine.graphics.util.GuiRenderer#drawBox(float,
 	 * float, float, float, float, float, float, float,
 	 * io.xol.engine.graphics.textures.Texture2D, boolean, boolean,
 	 * io.xol.chunkstories.api.math.Vector4f)
 	 */
 	@Override
-	public void drawBoxWindowsSpaceWithSize(float startX, float startY, float width, float height, float textureStartX,
+	public void drawBox(float startX, float startY, float width, float height, float textureStartX,
 			float textureStartY, float textureEndX, float textureEndY, Texture2D texture, boolean alpha,
 			boolean textured, Vector4fc color) {
 		float endX = startX + width;

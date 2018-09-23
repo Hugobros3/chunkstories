@@ -6,34 +6,32 @@
 
 package io.xol.chunkstories.gui.layer.ingame;
 
+import io.xol.chunkstories.api.gui.Font;
+import io.xol.chunkstories.api.gui.Gui;
+import io.xol.chunkstories.api.gui.GuiDrawer;
+import io.xol.chunkstories.gui.layer.MainMenu;
 import org.joml.Vector4f;
 
 import io.xol.chunkstories.api.gui.Layer;
-import io.xol.chunkstories.api.gui.elements.BaseButton;
+import io.xol.chunkstories.api.gui.elements.Button;
 import io.xol.chunkstories.api.input.Input;
-import io.xol.chunkstories.api.rendering.GameWindow;
-import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 import io.xol.chunkstories.gui.layer.config.ModsSelection;
 import io.xol.chunkstories.gui.layer.config.OptionsScreen;
 
 /** The GUI code for the basic pause menu you bring about by pressing ESC */
 public class PauseMenu extends Layer {
-	BaseButton resumeButton = new BaseButton(this, 0, 0, 160, "#{menu.resume}");
-	BaseButton optionsButton = new BaseButton(this, 0, 0, 160, "#{menu.options}");
-	BaseButton modsButton = new BaseButton(this, -100, 0, 160, "#{menu.mods}");
-	BaseButton exitButton = new BaseButton(this, 0, 0, 160, "#{menu.backto}");
+	private Button resumeButton = new Button(this, 0, 0, 160, "#{menu.resume}");
+	private Button optionsButton = new Button(this, 0, 0, 160, "#{menu.options}");
+	private Button modsButton = new Button(this, -100, 0, 160, "#{menu.mods}");
+	private Button exitButton = new Button(this, 0, 0, 160, "#{menu.backto}");
 
-	public PauseMenu(GameWindow scene, Layer parent) {
-		super(scene, parent);
+	PauseMenu(Gui gui, Layer parent) {
+		super(gui, parent);
 
-		this.resumeButton.setAction(() -> gameWindow.setLayer(parentLayer));
-
-		this.optionsButton.setAction(() -> gameWindow.setLayer(new OptionsScreen(gameWindow, PauseMenu.this)));
-
-		this.modsButton.setAction(() -> gameWindow.setLayer(new ModsSelection(gameWindow, PauseMenu.this)));
-
-		this.exitButton.setAction(() -> gameWindow.getClient().exitToMainMenu());
+		this.resumeButton.setAction(gui::popTopLayer);
+		this.optionsButton.setAction(() -> gui.setTopLayer(new OptionsScreen(gui, PauseMenu.this)));
+		this.modsButton.setAction(() -> gui.setTopLayer(new ModsSelection(gui, PauseMenu.this)));
+		this.exitButton.setAction(() -> gui.setTopLayer(new MainMenu(gui, null)));
 
 		elements.add(resumeButton);
 		elements.add(optionsButton);
@@ -42,30 +40,28 @@ public class PauseMenu extends Layer {
 	}
 
 	@Override
-	public void render(RenderingInterface renderer) {
-		parentLayer.render(renderer);
+	public void render(GuiDrawer drawer) {
+		parentLayer.render(drawer);
 
-		Font font = renderer.getFontRenderer().getFont("LiberationSans-Regular", 11);
-		String pauseText = renderer.getClient().getContent().localization().getLocalizedString("ingame.pause");
-		renderer.getFontRenderer().drawStringWithShadow(font,
-				renderer.getWindow().getWidth() / 2 - font.getWidth(pauseText) * 1.5f,
-				renderer.getWindow().getHeight() / 2 + 48 * 3, pauseText, 3, 3, new Vector4f(1));
+		Font font = drawer.getFonts().getFont("LiberationSans-Regular", 11);
+		String pauseText = gui.localization().getLocalizedString("ingame.pause");
+		drawer.drawStringWithShadow(font,
+				gui.getViewportWidth() / 2 - font.getWidth(pauseText) / 2,
+				gui.getViewportHeight() / 2 + 48 * 3, pauseText, -1, new Vector4f(1));
 
-		resumeButton.setPosition(renderer.getWindow().getWidth() / 2 - resumeButton.getWidth() / 2,
-				renderer.getWindow().getHeight() / 2 + 24 * 2 * getGuiScale());
-		optionsButton.setPosition(resumeButton.getPositionX(),
-				renderer.getWindow().getHeight() / 2 + 24 * getGuiScale());
-		exitButton.setPosition(resumeButton.getPositionX(), renderer.getWindow().getHeight() / 2 - 24 * getGuiScale());
+		resumeButton.setPosition(gui.getViewportWidth() / 2 - resumeButton.getWidth() / 2, gui.getViewportHeight() / 2 + 24 * 2);
+		optionsButton.setPosition(resumeButton.getPositionX(), gui.getViewportHeight() / 2 + 24);
+		exitButton.setPosition(resumeButton.getPositionX(), gui.getViewportHeight() / 2 - 24);
 
-		resumeButton.render(renderer);
-		optionsButton.render(renderer);
-		exitButton.render(renderer);
+		resumeButton.render(drawer);
+		optionsButton.render(drawer);
+		exitButton.render(drawer);
 	}
 
 	@Override
 	public boolean handleInput(Input input) {
 		if (input.equals("exit")) {
-			gameWindow.setLayer(parentLayer);
+			gui.popTopLayer();
 			return true;
 		}
 

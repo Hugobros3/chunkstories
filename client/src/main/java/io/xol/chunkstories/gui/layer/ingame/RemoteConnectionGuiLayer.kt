@@ -11,25 +11,25 @@ import io.xol.chunkstories.api.gui.GuiDrawer
 import org.joml.Vector4f
 
 import io.xol.chunkstories.api.gui.Layer
-import io.xol.chunkstories.api.gui.elements.BaseButton
+import io.xol.chunkstories.api.gui.elements.Button
 import io.xol.chunkstories.client.net.ClientConnectionSequence
 import io.xol.chunkstories.gui.layer.MainMenu
 import io.xol.chunkstories.gui.layer.MessageBox
 
 /** GUI overlay that tells you about the progress of connecting to a server  */
 class RemoteConnectionGuiLayer(scene: Gui, parent: Layer, private val connectionSequence: ClientConnectionSequence) : Layer(scene, parent) {
-    internal var exitButton = BaseButton(this, 0, 0, 160, "#{connection.cancel}")
+    internal var exitButton = Button(this, 0, 0, 160, "#{connection.cancel}")
 
     init {
         this.exitButton.setAction { gui.client.ingame?.exitToMainMenu() ?: let { gui.topLayer = MainMenu(gui, null) } }
         elements.add(exitButton)
     }
 
-    override fun render(drawer: GuiDrawer?) {
-        parentLayer!!.rootLayer.render(drawer)
+    override fun render(drawer: GuiDrawer) {
+        parentLayer?.render(drawer)
 
         val color = "#606060"
-        val font = drawer!!.fonts.getFont("LiberationSans-Regular", 11f)
+        val font = drawer.fonts.getFont("LiberationSans-Regular", 11f)
 
         val connection = "Connecting, please wait"
 

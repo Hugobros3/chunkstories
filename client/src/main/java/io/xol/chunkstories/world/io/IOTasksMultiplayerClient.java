@@ -16,6 +16,7 @@ import io.xol.chunkstories.api.net.PacketWorldStreaming;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.workers.TaskExecutor;
 import io.xol.chunkstories.client.ClientImplementation;
+import io.xol.chunkstories.client.ingame.IngameClientImplementation;
 import io.xol.chunkstories.client.net.ServerConnection;
 import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
 import io.xol.chunkstories.net.packets.PacketHeightmap;
@@ -25,7 +26,7 @@ import io.xol.chunkstories.world.heightmap.HeightmapImplementation;
 import io.xol.chunkstories.world.region.RegionImplementation;
 
 public class IOTasksMultiplayerClient extends IOTasks {
-	ClientImplementation client;
+	IngameClientImplementation client;
 	ServerConnection connection;
 
 	public IOTasksMultiplayerClient(WorldClientRemote world) {

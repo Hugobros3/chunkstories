@@ -14,7 +14,7 @@ import io.xol.chunkstories.api.client.ClientInputsManager;
 import io.xol.chunkstories.api.client.IngameClient;
 import io.xol.chunkstories.api.client.LocalPlayer;
 import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.entity.traits.serializable.TraitController;
+import io.xol.chunkstories.api.entity.traits.serializable.TraitControllable;
 import io.xol.chunkstories.api.entity.traits.serializable.TraitInventory;
 import io.xol.chunkstories.api.graphics.Window;
 import io.xol.chunkstories.api.graphics.systems.dispatching.DecalsManager;
@@ -56,7 +56,7 @@ public class LocalPlayerImplementation implements LocalPlayer {
 
 	@Override
 	public boolean setControlledEntity(Entity entity) {
-		TraitController ec = entity != null ? entity.traits.get(TraitController.class) : null;
+		TraitControllable ec = entity != null ? entity.traits.get(TraitControllable.class) : null;
 		if (entity != null && ec != null) {
 			this.subscribe(entity);
 
@@ -80,7 +80,7 @@ public class LocalPlayerImplementation implements LocalPlayer {
 		} else if (entity == null && controlledEntity != null) {
 			// Directly unset it
 			if (world instanceof WorldMaster)
-				controlledEntity.traits.with(TraitController.class, ec2 -> ec2.setController(null));
+				controlledEntity.traits.with(TraitControllable.class, ec2 -> ec2.setController(null));
 			// When loosing control over an entity, stop sending the server worldInfo about it
 			else if (controlledEntity.getWorld() instanceof WorldClientNetworkedRemote)
 				((WorldClientNetworkedRemote) controlledEntity.getWorld()).getRemoteServer()

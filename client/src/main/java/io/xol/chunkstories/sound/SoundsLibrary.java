@@ -14,19 +14,22 @@ import io.xol.chunkstories.sound.ogg.SoundDataOggSample;
 import io.xol.chunkstories.sound.ogg.SoundDataOggStream;
 
 public class SoundsLibrary {
-	// Internal class that stores the sounds
+	private final ClientImplementation client;
+	static Map<String, SoundData> soundsData = new HashMap<>();
 
-	static Map<String, SoundData> soundsData = new HashMap<String, SoundData>();
+	public SoundsLibrary(ClientImplementation client) {
+		this.client = client;
+	}
 
-	public static SoundData obtainOggSample(String soundEffect) {
-		SoundDataOggSample sd = new SoundDataOggSample(ClientImplementation.getInstance().getContent().getAsset(soundEffect));
+	public SoundData obtainOggSample(String soundEffect) {
+		SoundDataOggSample sd = new SoundDataOggSample(client.getContent().getAsset(soundEffect));
 		sd.name = soundEffect;
 		if (sd.loadedOk())
 			return sd;
 		return null;
 	}
 
-	public static SoundData obtainSample(String soundEffect) {
+	public SoundData obtainSample(String soundEffect) {
 		if (soundEffect == null)
 			return null;
 
@@ -46,7 +49,7 @@ public class SoundsLibrary {
 		return sd;
 	}
 
-	public static void clean() {
+	public void clean() {
 		for (SoundData sd : soundsData.values()) {
 			sd.destroy();
 		}
@@ -60,7 +63,7 @@ public class SoundsLibrary {
 	 * @param musicName
 	 * @return
 	 */
-	public static SoundData obtainBufferedSample(String musicName) {
+	public SoundData obtainBufferedSample(String musicName) {
 		if (!musicName.startsWith("./"))
 			musicName = "./" + musicName;
 
@@ -72,10 +75,10 @@ public class SoundsLibrary {
 		return sd;
 	}
 
-	private static SoundDataBuffered obtainOggStream(String musicName) {
+	private SoundDataBuffered obtainOggStream(String musicName) {
 		SoundDataOggStream sd;
 
-		sd = new SoundDataOggStream(ClientImplementation.getInstance().getContent().getAsset(musicName).read());
+		sd = new SoundDataOggStream(client.getContent().getAsset(musicName).read());
 		sd.name = musicName;
 		if (sd.loadedOk())
 			return sd;

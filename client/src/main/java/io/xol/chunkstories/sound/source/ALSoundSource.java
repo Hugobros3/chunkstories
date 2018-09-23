@@ -56,11 +56,11 @@ public class ALSoundSource extends SoundSourceAbstract {
 		this.soundSourceUUID = uUID;
 	}
 
-	public ALSoundSource(String soundEffect, Mode mode, Vector3dc position, float pitch, float gain, float attStart,
+	public ALSoundSource(ALSoundManager soundManager, String soundEffect, Mode mode, Vector3dc position, float pitch, float gain, float attStart,
 			float attEnd) throws SoundEffectNotFoundException {
 		this(mode, position, pitch, gain, attStart, attEnd);
 
-		this.soundData = SoundsLibrary.obtainSample(soundEffect);
+		this.soundData = soundManager.getLibrary().obtainSample(soundEffect);
 		if (soundData == null)
 			throw new SoundEffectNotFoundException();
 	}

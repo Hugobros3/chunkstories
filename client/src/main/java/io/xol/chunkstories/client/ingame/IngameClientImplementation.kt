@@ -5,7 +5,6 @@ import io.xol.chunkstories.api.client.ClientInputsManager
 import io.xol.chunkstories.api.client.ClientSoundManager
 import io.xol.chunkstories.api.client.IngameClient
 import io.xol.chunkstories.api.content.Content
-import io.xol.chunkstories.api.events.player.PlayerLogoutEvent
 import io.xol.chunkstories.api.graphics.Window
 import io.xol.chunkstories.api.graphics.systems.dispatching.DecalsManager
 import io.xol.chunkstories.api.gui.Gui
@@ -17,11 +16,10 @@ import io.xol.chunkstories.api.world.WorldMaster
 import io.xol.chunkstories.client.ClientImplementation
 import io.xol.chunkstories.client.ClientMasterPluginManager
 import io.xol.chunkstories.client.ClientSlavePluginManager
-import io.xol.chunkstories.entity.SerializedEntityFile
 import io.xol.chunkstories.gui.layer.MainMenu
 import io.xol.chunkstories.gui.layer.MessageBox
 import io.xol.chunkstories.gui.layer.SkyBoxBackground
-import io.xol.chunkstories.gui.layer.ingame.Ingame
+import io.xol.chunkstories.gui.layer.ingame.IngameLayer
 import io.xol.chunkstories.gui.layer.ingame.RemoteConnectionGuiLayer
 import io.xol.chunkstories.server.commands.InstallServerCommands
 import io.xol.chunkstories.server.commands.content.ReloadContentCommand
@@ -43,12 +41,14 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
     val internalPluginManager: ClientPluginManager
     val internalWorld: WorldClientCommon = worldInitializer.invoke(this)
 
+    abstract override val world: WorldClientCommon
+
     final override val decalsManager: DecalsManager
     final override val particlesManager: ParticlesManager
 
     final override val player: LocalPlayerImplementation
 
-    val ingameGuiLayer: Ingame
+    val ingameGuiLayer: IngameLayer
 
     init {
         decalsManager = internalWorld.decalsManager
@@ -69,7 +69,7 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
         if (internalWorld is WorldMaster)
             internalWorld.spawnPlayer(player)
 
-        ingameGuiLayer = Ingame(gui, this)
+        ingameGuiLayer = IngameLayer(gui, this)
         val connectionProgressLayer = gui.topLayer as? RemoteConnectionGuiLayer
         if (connectionProgressLayer != null) //TODO generalize to other loading hider overlays
             connectionProgressLayer.parentLayer = ingameGuiLayer

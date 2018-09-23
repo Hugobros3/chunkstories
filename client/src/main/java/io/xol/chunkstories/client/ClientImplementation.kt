@@ -60,8 +60,8 @@ class ClientImplementation internal constructor(coreContentLocation: File, modsS
 
     init {
         // Name the thread
-        Thread.currentThread().name = "Main OpenGL Rendering thread"
-        Thread.currentThread().priority = Constants.MAIN_GL_THREAD_PRIORITY
+        Thread.currentThread().name = "Main thread"
+        Thread.currentThread().priority = Constants.MAIN_THREAD_PRIORITY
 
         // Start logging system
         val cal = Calendar.getInstance()
@@ -72,7 +72,7 @@ class ClientImplementation internal constructor(coreContentLocation: File, modsS
         val loggingFilename = GameDirectory.getGameFolderPath() + "/logs/" + time + ".log"
         LogbackSetupHelper(loggingFilename)
 
-        soundManager = ALSoundManager()
+        soundManager = ALSoundManager(this)
 
         // Creates game window, no use of any user content up to this point
         gameWindow = GLFWWindow(this, "Chunk Stories " + VersionInfo.version)
@@ -84,6 +84,8 @@ class ClientImplementation internal constructor(coreContentLocation: File, modsS
         configuration = Configuration(this, configFile)
         //gameWindow.stage_2_init(); // TODO this is bs, don't need this plz
         configuration.load()
+
+        inputsManager.reload()
 
         // Spawns worker threads
         var nbThreads : Int = configuration.values["client.performance.workerThreads"]

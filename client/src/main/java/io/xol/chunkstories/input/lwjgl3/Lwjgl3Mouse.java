@@ -16,11 +16,11 @@ import static org.lwjgl.glfw.GLFW.glfwSetInputMode;
 
 import java.nio.DoubleBuffer;
 
+import io.xol.chunkstories.api.client.Client;
 import io.xol.chunkstories.client.ClientImplementation;
 import org.joml.Vector2d;
 import org.lwjgl.system.MemoryUtil;
 
-import io.xol.chunkstories.api.client.ClientInterface;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse;
 
@@ -50,7 +50,7 @@ public class Lwjgl3Mouse implements Mouse {
 	public Vector2d getMousePosition() {
 		DoubleBuffer b1 = MemoryUtil.memAllocDouble(1);
 		DoubleBuffer b2 = MemoryUtil.memAllocDouble(1);
-		glfwGetCursorPos(im.gameWindow.glfwWindowHandle, b1, b2);
+		glfwGetCursorPos(im.gameWindow.getGlfwWindowHandle(), b1, b2);
 		Vector2d vec2 = new Vector2d(b1.get(), im.gameWindow.getHeight() - b2.get());
 		MemoryUtil.memFree(b1);
 		MemoryUtil.memFree(b2);
@@ -70,17 +70,17 @@ public class Lwjgl3Mouse implements Mouse {
 
 	@Override
 	public void setMouseCursorLocation(double x, double y) {
-		glfwSetCursorPos(im.gameWindow.glfwWindowHandle, x, y);
+		glfwSetCursorPos(im.gameWindow.getGlfwWindowHandle(), x, y);
 	}
 
 	@Override
 	public boolean isGrabbed() {
-		return glfwGetInputMode(im.gameWindow.glfwWindowHandle, GLFW_CURSOR) == GLFW_CURSOR_DISABLED;
+		return glfwGetInputMode(im.gameWindow.getGlfwWindowHandle(), GLFW_CURSOR) == GLFW_CURSOR_DISABLED;
 	}
 
 	@Override
 	public void setGrabbed(boolean grabbed) {
-		glfwSetInputMode(this.im.gameWindow.glfwWindowHandle, GLFW_CURSOR,
+		glfwSetInputMode(this.im.gameWindow.getGlfwWindowHandle(), GLFW_CURSOR,
 				grabbed ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
 	}
 
@@ -88,8 +88,8 @@ public class Lwjgl3Mouse implements Mouse {
 		return new MouseScroll() {
 
 			@Override
-			public ClientInterface getClient() {
-				return ClientImplementation.getInstance();
+			public Client getClient() {
+				return im.gameWindow.getClient();
 			}
 
 			@Override
