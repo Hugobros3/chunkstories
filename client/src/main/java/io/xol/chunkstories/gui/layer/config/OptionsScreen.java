@@ -11,10 +11,12 @@ import static org.lwjgl.glfw.GLFW.glfwGetKeyName;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.xol.chunkstories.api.gui.Gui;
+import io.xol.chunkstories.api.gui.GuiDrawer;
+import io.xol.chunkstories.api.util.Configuration;
 import io.xol.chunkstories.client.ClientImplementation;
 import org.joml.Vector4f;
 
-import io.xol.chunkstories.api.content.Content.LocalizationManager;
 import io.xol.chunkstories.api.gui.GuiElement;
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.gui.elements.BaseButton;
@@ -22,26 +24,18 @@ import io.xol.chunkstories.api.gui.elements.LargeButtonIcon;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.input.Mouse.MouseButton;
-import io.xol.chunkstories.api.rendering.GameWindow;
-import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.textures.Texture2D;
 import io.xol.chunkstories.api.util.Configuration.Option;
 import io.xol.chunkstories.api.util.Configuration.OptionBoolean;
 import io.xol.chunkstories.input.lwjgl3.Lwjgl3KeyBind.Lwjgl3KeyBindOption;
-import io.xol.chunkstories.renderer.opengl.util.ObjectRenderer;
-import io.xol.chunkstories.util.config.OptionChoiceImplementation;
-import io.xol.chunkstories.util.config.OptionScaleImplementation;
-import io.xol.chunkstories.util.config.OptionToggleImplementation;
 
 public class OptionsScreen extends Layer {
-	LargeButtonIcon exitButton = new LargeButtonIcon(this, "back");
-	List<ConfigTab> configTabs = new ArrayList<ConfigTab>();
+	private LargeButtonIcon exitButton = new LargeButtonIcon(this, "back");
+	private List<ConfigTab> configTabs = new ArrayList<>();
 
-	List<TabButton> tabsButtons = new ArrayList<TabButton>();
-	int selectedConfigTab = 0;
-	private final LocalizationManager locMgr;
+	private List<BaseButton> tabsButtons = new ArrayList<>();
+	private int selectedConfigTab = 0;
 
-	// private RenderingInterface renderer;
+	private final Configuration clientConfiguration;
 
 	abstract class ConfigButton extends BaseButton {
 		Runnable run = null;
@@ -51,23 +45,23 @@ public class OptionsScreen extends Layer {
 			return this;
 		}
 
-		public void apply() {
+		void apply() {
 			if (run != null)
 				run.run();
 		}
 
 		final Option option;
 
-		public ConfigButton(Option o) {
+		ConfigButton(Option o) {
 			super(OptionsScreen.this, 0, 0, o.getName());
 			this.option = o;
 
-			this.height = 24;
-			this.width = 160;
+			this.setHeight(24);
+			this.setWidth(160);
 		}
 
 		public void updateText() {
-			this.text = locMgr.getLocalizedString(option.getName()) + " : " + option.getValue();
+			this.text = gui.localization().getLocalizedString(option.getName()) + " : " + option.getValue();
 		}
 
 		public abstract void onClick(float posx, float posy, int button);
@@ -76,7 +70,7 @@ public class OptionsScreen extends Layer {
 	class ConfigButtonToggle extends ConfigButton {
 		final OptionBoolean option;
 
-		public ConfigButtonToggle(OptionBoolean o) {
+		ConfigButtonToggle(OptionBoolean o) {
 			super(o);
 			option = o;
 		}
@@ -89,12 +83,12 @@ public class OptionsScreen extends Layer {
 	}
 
 	class ConfigButtonMultiChoice extends ConfigButton {
-		final OptionChoiceImplementation option;
+		final Configuration.OptionMultiChoice option;
 
 		String values[];
 		int cuVal = 0;
 
-		public ConfigButtonMultiChoice(OptionChoiceImplementation o) {
+		ConfigButtonMultiChoice(Configuration.OptionMultiChoice o) {
 			super(o);
 			this.option = o;
 			this.values = new String[o.getPossibleChoices().size()];
@@ -124,23 +118,22 @@ public class OptionsScreen extends Layer {
 	}
 
 	class ConfigButtonKey extends ConfigButton {
-		public ConfigButtonKey(Lwjgl3KeyBindOption kbi) {
+		ConfigButtonKey(Lwjgl3KeyBindOption kbi) {
 			super(kbi);
 		}
 
 		@Override
 		public void updateText() {
-			this.text = locMgr.getLocalizedString(option.getName()) + " : "
+			this.text = gui.localization().getLocalizedString(option.getName()) + " : "
 					+ glfwGetKeyName(Integer.parseInt(option.getValue()), 0);// Keyboard.getKeyName(Integer.parseInt(value));
 		}
 
 		@Override
 		public void onClick(float posx, float posy, int button) {
-			OptionsScreen.this.gameWindow
-					.setLayer(new KeyBindSelectionOverlay(OptionsScreen.this.gameWindow, OptionsScreen.this, this));
+			gui.setTopLayer(new KeyBindSelectionOverlay(gui, OptionsScreen.this, this));
 		}
 
-		public void callBack(int key) {
+		void callBack(int key) {
 			option.trySetting("" + key);
 			apply();
 		}
@@ -148,57 +141,52 @@ public class OptionsScreen extends Layer {
 	}
 
 	class ConfigButtonScale extends ConfigButton {
-		final OptionScaleImplementation option;
+		final Configuration.OptionDoubleRange option;
 
-		public ConfigButtonScale(OptionScaleImplementation o) {
+		ConfigButtonScale(Configuration.OptionDoubleRange o) {
 			super(o);
 			this.option = o;
 		}
 
 		@Override
-		public void onClick(float posx, float posy, int button) {
-			float relPos = posx - this.xPosition;
-			float scaled = (float) (0.0f + Math.min(320, Math.max(0.0, relPos))) / 320.0f;
-			scaled *= (option.getMaximumValue() - option.getMinimumValue());
-			scaled += option.getMinimumValue();
+		public void onClick(float mouseX, float mouseY, int button) {
+			float relativeMouseXPosition = mouseX - this.getPositionX();
+			float newValue = (float) (0.0f + Math.min(320, Math.max(0.0, relativeMouseXPosition))) / 320.0f;
+			newValue *= (option.getMaximumValue() - option.getMinimumValue());
+			newValue += option.getMinimumValue();
 
-			option.trySetting("" + scaled);
-			/*
-			 * scaled /= steps; scaled = (float) (Math.floor(scaled)) * steps;
-			 * 
-			 * value = scaled+"";
-			 */
+			option.trySetting(newValue);
 		}
 
 		@Override
-		public void render(RenderingInterface renderer) {
-			double scaled = option.getDoubleValue();
+		public void render(GuiDrawer renderer) {
+			double scaled = option.getValue();
 
 			scaled /= option.getGranularity();
 			scaled = (float) (Math.floor(scaled)) * option.getGranularity();
 
-			this.text = locMgr.getLocalizedString(option.getName()) + " : " + String.format("%." + 3 + "G", scaled);// Keyboard.getKeyName(Integer.parseInt(value));
+			this.text = gui.localization().getLocalizedString(option.getName()) + " : " + String.format("%." + 3 + "G", scaled);// Keyboard.getKeyName(Integer.parseInt(value));
 
-			String localizedText = ClientImplementation.getInstance().getContent().localization().localize(text);
-			int textWidth = ClientImplementation.getInstance().getContent().fonts().defaultFont().getWidth(localizedText) * scale();
+			String localizedText = gui.localization().localize(text);
+			int textWidth = gui.getFonts().defaultFont().getWidth(localizedText);
 			if (width < 0) {
 				width = textWidth;
 			}
 			float textDekal = getWidth() / 2 - textWidth / 2;
-			Texture2D texture = renderer.textures().getTexture("./textures/gui/scalableField.png");
-			texture.setLinearFiltering(false);
+			String texture = "./textures/gui/scalableField.png";
 
-			renderer.getGuiRenderer().drawCorneredBoxTiled(xPosition, yPosition, getWidth(), getHeight(), 8, texture,
-					32, scale());
+			renderer.drawCorneredBoxTiled(xPosition, yPosition, getWidth(), getHeight(), 8, texture, 32, scale());
 
+			//TODO modernize
+			/*
 			ObjectRenderer.renderTexturedRect(
 					xPosition + this.width * scale() * (float) (option.getDoubleValue() - option.getMinimumValue())
 							/ (float) (option.getMaximumValue() - option.getMinimumValue()),
 					yPosition + 12 * scale(), 32 * scale(), 32 * scale(), 0, 0, 32, 32, 32,
-					"./textures/gui/barCursor.png");
+					"./textures/gui/barCursor.png");*/
 
-			renderer.getFontRenderer().drawStringWithShadow(renderer.getFontRenderer().defaultFont(),
-					xPosition + textDekal, yPosition + 4 * scale(), localizedText, scale(), scale(),
+			renderer.drawStringWithShadow(renderer.getFonts().defaultFont(),
+					xPosition + textDekal, yPosition + 4, localizedText, -1,
 					new Vector4f(1.0f));
 		}
 
@@ -208,7 +196,7 @@ public class OptionsScreen extends Layer {
 		String name;
 		List<ConfigButton> configButtons;
 
-		public ConfigTab(String name) {
+		ConfigTab(String name) {
 			this.name = name;
 			this.configButtons = new ArrayList<>();
 		}
@@ -220,49 +208,49 @@ public class OptionsScreen extends Layer {
 		}
 	}
 
-	public OptionsScreen(GameWindow scene, Layer parent) {
-		super(scene, parent);
-
-		locMgr = ClientImplementation.getInstance().getContent().localization();
+	public OptionsScreen(Gui gui, Layer parent) {
+		super(gui, parent);
 
 		exitButton.setAction(new Runnable() {
 
 			@Override
 			public void run() {
-				ClientImplementation.getInstance().getConfiguration().save();
-				gameWindow.setLayer(parentLayer);
+				gui.getClient().getConfiguration().save();
+				gui.setTopLayer(parentLayer);
 			}
 
 		});
 		elements.add(exitButton);
 
-		for (Option option : gameWindow.getClient().getConfiguration().allOptions()) {
-			if (!option.getName().startsWith("client."))
-				continue;
+		clientConfiguration = gui.getClient().getConfiguration();
 
+		for (Option option : clientConfiguration.getOptions()) {
 			String name = option.getName();
 			String category = name.substring("client.".length());
 			category = category.substring(0, category.indexOf("."));
 
 			category = category.substring(0, 1).toUpperCase() + category.substring(1).toLowerCase();
 
-			ConfigButton optionButton = null;
+			ConfigButton optionButton;
 
-			if (option instanceof OptionChoiceImplementation)
-				optionButton = new ConfigButtonMultiChoice((OptionChoiceImplementation) option);
-			if (option instanceof OptionScaleImplementation)
-				optionButton = new ConfigButtonScale((OptionScaleImplementation) option);
-			if (option instanceof OptionToggleImplementation)
-				optionButton = new ConfigButtonToggle((OptionToggleImplementation) option);
-			if (option instanceof Lwjgl3KeyBindOption) {
+			if (option instanceof Configuration.OptionMultiChoice)
+				optionButton = new ConfigButtonMultiChoice((Configuration.OptionMultiChoice) option);
+			else if (option instanceof Configuration.OptionDoubleRange)
+				optionButton = new ConfigButtonScale((Configuration.OptionDoubleRange) option);
+			else if (option instanceof OptionBoolean)
+				optionButton = new ConfigButtonToggle((OptionBoolean) option);
+			else
+				continue;
 
-				Lwjgl3KeyBindOption keyOption = (Lwjgl3KeyBindOption) option;
+			//TODO rethink how input works
+			/*if (option instanceof Configuration.OptionInput) {
+				Configuration.OptionInput keyOption = (Lwjgl3KeyBindOption) option;
 				if (keyOption.getInput().isEditable())
 					optionButton = new ConfigButtonKey(keyOption);
-			}
+			}*/
 
-			if (optionButton == null || option.resolveProperty("hidden", "false").equals("true"))
-				continue;
+			//if (optionButton == null || option.resolveProperty("hidden", "false").equals("true"))
+			//	continue;
 
 			ConfigTab relevantTab = null;
 			for (ConfigTab tab : configTabs) {
@@ -282,11 +270,9 @@ public class OptionsScreen extends Layer {
 		int configTabIndex = 0;
 		for (ConfigTab tab : configTabs) {
 			// Add all these elements to the Gui handler
-			for (GuiElement f : tab.configButtons)
-				elements.add(f);
+			elements.addAll(tab.configButtons);
 
-			// String txt = tab.name;
-			TabButton tabButton = new TabButton(this, tab);
+			BaseButton tabButton = new BaseButton(this, tab);
 
 			// Make the action of the tab buttons switching tab effectively
 			final int configTabIndex2 = configTabIndex;
@@ -309,11 +295,7 @@ public class OptionsScreen extends Layer {
 		TabButton(OptionsScreen layer, ConfigTab tab) {
 			super(layer, 0, 0, tab.name);
 
-			this.height = 24;
-		}
-
-		public float getWidth() {
-			return super.getWidth();// + 8 * scale();
+			this.setHeight(24);
 		}
 	}
 
@@ -325,9 +307,9 @@ public class OptionsScreen extends Layer {
 		int optionsPanelSize = (160 * 2 + 16 + 32) * this.getGuiScale();
 
 		// Shades the BG
-		renderer.getGuiRenderer().drawBoxWindowsSpace(0, 0, renderer.getWindow().getWidth(),
+		renderer..drawBoxWindowsSpace(0, 0, renderer.getWindow().getWidth(),
 				renderer.getWindow().getHeight(), 0, 0, 0, 0, null, false, true, new Vector4f(0.0f, 0.0f, 0.0f, 0.5f));
-		renderer.getGuiRenderer().drawBoxWindowsSpace(renderer.getWindow().getWidth() / 2.0f - optionsPanelSize / 2, 0,
+		renderer..drawBoxWindowsSpace(renderer.getWindow().getWidth() / 2.0f - optionsPanelSize / 2, 0,
 				renderer.getWindow().getWidth() / 2 + optionsPanelSize / 2, renderer.getWindow().getHeight(), 0, 0, 0,
 				0, null, false, true, new Vector4f(0.0f, 0.0f, 0.0f, 0.5f));
 

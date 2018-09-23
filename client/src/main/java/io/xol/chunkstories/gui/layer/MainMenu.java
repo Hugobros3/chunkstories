@@ -15,8 +15,6 @@ import io.xol.chunkstories.api.gui.elements.LargeButton;
 import io.xol.chunkstories.api.gui.elements.LargeButtonIcon;
 import io.xol.chunkstories.api.item.inventory.BasicInventory;
 import io.xol.chunkstories.api.item.inventory.Inventory;
-import io.xol.chunkstories.api.rendering.gui;
-import io.xol.chunkstories.api.rendering.RenderingInterface;
 import io.xol.chunkstories.gui.layer.config.LanguageSelectionScreen;
 import io.xol.chunkstories.gui.layer.config.LogPolicyAsk;
 import io.xol.chunkstories.gui.layer.config.ModsSelection;
@@ -33,13 +31,13 @@ public class MainMenu extends Layer {
 	LargeButton largeSingleplayer = new LargeButton(this, "singleplayer");
 	LargeButton largeOptions = new LargeButton(this, "options");
 
-	public MainMenu(Gui scene, Layer parent) {
-		super(scene, parent);
+	public MainMenu(Gui gui, Layer parent) {
+		super(gui, parent);
 
-		this.largeSingleplayer.setAction(() -> gui.setTopLayer(new LevelSelection(gui, MainMenu.this)));
-		this.largeOnline.setAction(() -> gui.setTopLayer(new ServerSelection(gui, MainMenu.this, false)));
-		this.largeMods.setAction(() -> gui.setTopLayer(new ModsSelection(gui, MainMenu.this)));
-		this.largeOptions.setAction(() -> gui.setTopLayer(new OptionsScreen(gui, MainMenu.this)));
+		this.largeSingleplayer.setAction(() -> this.gui.setTopLayer(new LevelSelection(this.gui, MainMenu.this)));
+		this.largeOnline.setAction(() -> this.gui.setTopLayer(new ServerSelection(this.gui, MainMenu.this, false)));
+		this.largeMods.setAction(() -> this.gui.setTopLayer(new ModsSelection(this.gui, MainMenu.this)));
+		this.largeOptions.setAction(() -> this.gui.setTopLayer(new OptionsScreen(this.gui, MainMenu.this)));
 
 		largeOnline.setWidth(104);
 		largeSingleplayer.setWidth(104);
@@ -57,8 +55,7 @@ public class MainMenu extends Layer {
 	public void render(GuiDrawer drawer) {
 		parentLayer.render(drawer);
 
-		if (gui.getTopLayer() == this && gui.getClient().getConfiguration()
-				.getStringOption("client.game.log-policy").equals("undefined"))
+		if (gui.getTopLayer() == this && gui.getClient().getConfiguration().getValue(LogPolicyAsk.logPolicyConfigNode).equals("ask"))
 			gui.setTopLayer(new LogPolicyAsk(gui, this));
 
 		int spacing = 4;
@@ -75,7 +72,7 @@ public class MainMenu extends Layer {
 		largeSingleplayer.setPosition(leftButtonX, ySmall);
 		largeSingleplayer.render(drawer);
 
-		int rightButtonX = leftButtonX + largeSingleplayer.getWidth() + (spacing) * 1;
+		int rightButtonX = leftButtonX + largeSingleplayer.getWidth() + spacing;
 
 		largeMods.setPosition(rightButtonX, yBig);
 		largeMods.render(drawer);

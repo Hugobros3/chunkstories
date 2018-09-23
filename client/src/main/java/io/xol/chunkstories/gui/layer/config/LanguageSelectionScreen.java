@@ -13,6 +13,8 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.xol.chunkstories.api.gui.Gui;
+import io.xol.chunkstories.api.gui.GuiDrawer;
 import io.xol.chunkstories.client.ClientImplementation;
 import org.joml.Vector4f;
 import org.lwjgl.glfw.GLFW;
@@ -22,19 +24,15 @@ import io.xol.chunkstories.api.gui.elements.BaseButton;
 import io.xol.chunkstories.api.gui.elements.LargeButtonIcon;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse.MouseScroll;
-import io.xol.chunkstories.api.rendering.GameWindow;
-import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.textures.Texture2D;
-import io.xol.chunkstories.renderer.opengl.util.ObjectRenderer;
 
 public class LanguageSelectionScreen extends Layer {
-	LargeButtonIcon backOption = new LargeButtonIcon(this, "back");
-	List<LanguageButton> languages = new ArrayList<LanguageButton>();
+	private LargeButtonIcon backOption = new LargeButtonIcon(this, "back");
+	private List<LanguageButton> languages = new ArrayList<LanguageButton>();
 
-	boolean allowBackButton;
+	private boolean allowBackButton;
 
-	public LanguageSelectionScreen(GameWindow scene, Layer parent, boolean allowBackButton) {
-		super(scene, parent);
+	public LanguageSelectionScreen(Gui gui, Layer parent, boolean allowBackButton) {
+		super(gui, parent);
 		// Gui buttons
 
 		this.allowBackButton = allowBackButton;
@@ -78,24 +76,24 @@ public class LanguageSelectionScreen extends Layer {
 		}
 	}
 
-	int scroll = 0;
+	private int scroll = 0;
 
 	@Override
-	public void render(RenderingInterface renderingContext) {
-		float scale = this.getGuiScale();
+	public void render(GuiDrawer drawer) {
+		int scale = 1;
 		if (scroll < 0)
 			scroll = 0;
 
-		this.parentLayer.getRootLayer().render(renderingContext);
+		this.parentLayer.getRootLayer().render(drawer);
 
-		int posY = (int) (renderingContext.getWindow().getHeight() - scale * (64 + 32));
+		int posY = (int) (drawer.getWindow().getHeight() - scale * (64 + 32));
 
-		renderingContext.getFontRenderer().drawStringWithShadow(
-				renderingContext.getFontRenderer().getFont("LiberationSans-Regular", 11 * scale), 8 * scale,
-				renderingContext.getWindow().getHeight() - 32 * scale, "Welcome - Bienvenue - Wilkomen - Etc", 2, 2,
+		drawer.getFontRenderer().drawStringWithShadow(
+				drawer.getFontRenderer().getFont("LiberationSans-Regular", 11 * scale), 8 * scale,
+				drawer.getWindow().getHeight() - 32 * scale, "Welcome - Bienvenue - Wilkomen - Etc", 2, 2,
 				new Vector4f(1));
 
-		int remainingSpace = (int) Math.floor(renderingContext.getWindow().getHeight() / 96 - 2);
+		int remainingSpace = (int) Math.floor(drawer.getWindow().getHeight() / 96 - 2);
 
 		while (scroll + remainingSpace > languages.size())
 			scroll--;
@@ -109,14 +107,14 @@ public class LanguageSelectionScreen extends Layer {
 
 			// int maxWidth = renderingContext.getWindow().getWidth() - 64 * 2;
 			langButton.setWidth(256);// maxWidth / scale);
-			langButton.setPosition(renderingContext.getWindow().getWidth() / 2 - langButton.getWidth() / 2, posY);
-			langButton.render(renderingContext);
+			langButton.setPosition(drawer.getWindow().getWidth() / 2 - langButton.getWidth() / 2, posY);
+			langButton.render(drawer);
 			posY -= langButton.getHeight() + (4) * scale;
 		}
 
 		if (allowBackButton) {
 			backOption.setPosition(8, 8);
-			backOption.render(renderingContext);
+			backOption.render(drawer);
 		}
 	}
 
@@ -124,7 +122,7 @@ public class LanguageSelectionScreen extends Layer {
 		String translationCode;
 		String translationName;
 
-		public LanguageButton(Layer layer, int x, int y, String info) {
+		LanguageButton(Layer layer, int x, int y, String info) {
 			super(layer, x, y, 0, "");
 			this.translationCode = info;
 

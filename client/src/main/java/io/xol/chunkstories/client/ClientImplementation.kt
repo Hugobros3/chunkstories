@@ -81,9 +81,9 @@ class ClientImplementation internal constructor(coreContentLocation: File, modsS
         content = GameContentStore(this, coreContentLocation, modsStringArgument)
         content.reload()
 
-        configuration = Configuration(this)
+        configuration = Configuration(this, configFile)
         //gameWindow.stage_2_init(); // TODO this is bs, don't need this plz
-        configuration.load(configFile)
+        configuration.load()
 
         // Spawns worker threads
         var nbThreads : Int = configuration.values["client.performance.workerThreads"]
@@ -114,7 +114,7 @@ class ClientImplementation internal constructor(coreContentLocation: File, modsS
 
     fun cleanup() {
         tasks.destroy()
-        configuration.save(configFile)
+        configuration.save()
     }
 
     fun reloadAssets() {

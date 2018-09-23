@@ -6,6 +6,8 @@
 
 package io.xol.chunkstories.gui.layer.ingame;
 
+import io.xol.chunkstories.api.gui.Gui;
+import io.xol.chunkstories.api.gui.GuiDrawer;
 import io.xol.chunkstories.client.ClientImplementation;
 import org.joml.Vector4f;
 
@@ -22,11 +24,11 @@ import io.xol.chunkstories.api.world.WorldMaster;
 
 /** The screen shown when you die */
 public class DeathScreen extends Layer {
-	BaseButton respawnButton = new BaseButton(this, 0, 0, 160, "#{ingame.respawn}");
-	BaseButton exitButton = new BaseButton(this, 0, 0, 160, "#{ingame.exit}");
+	private BaseButton respawnButton = new BaseButton(this, 0, 0, 160, "#{ingame.respawn}");
+	private BaseButton exitButton = new BaseButton(this, 0, 0, 160, "#{ingame.exit}");
 
-	public DeathScreen(GameWindow scene, Layer parent) {
-		super(scene, parent);
+	public DeathScreen(Gui gui, Layer parent) {
+		super(gui, parent);
 
 		this.respawnButton.setAction(() -> {
 			if (gameWindow.getClient().getWorld() instanceof WorldMaster)
@@ -45,33 +47,33 @@ public class DeathScreen extends Layer {
 	}
 
 	@Override
-	public void render(RenderingInterface renderer) {
-		parentLayer.render(renderer);
+	public void render(GuiDrawer drawer) {
+		parentLayer.render(drawer);
 
-		renderer.getGuiRenderer().drawBoxWindowsSpace(0, 0, renderer.getWindow().getWidth(),
-				renderer.getWindow().getHeight(), 0, 0, 0, 0, null, false, true, new Vector4f(0.0f, 0.0f, 0.0f, 0.5f));
+		drawer.getGuiRenderer().drawBoxWindowsSpace(0, 0, drawer.getWindow().getWidth(),
+				drawer.getWindow().getHeight(), 0, 0, 0, 0, null, false, true, new Vector4f(0.0f, 0.0f, 0.0f, 0.5f));
 
 		String color = "#";
 		color += HexTools.intToHex((int) (Math.random() * 255));
 		color += HexTools.intToHex((int) (Math.random() * 255));
 		color += HexTools.intToHex((int) (Math.random() * 255));
 
-		Font font = renderer.getFontRenderer().getFont("LiberationSans-Regular", 11);
+		Font font = drawer.getFontRenderer().getFont("LiberationSans-Regular", 11);
 
-		renderer.getFontRenderer().drawStringWithShadow(font,
-				renderer.getWindow().getWidth() / 2 - font.getWidth("YOU DIEDED") * 3f,
-				renderer.getWindow().getHeight() / 2 + 48 * 3, "#FF0000YOU DIEDED", 6, 6, new Vector4f(1));
-		renderer.getFontRenderer().drawStringWithShadow(font,
-				renderer.getWindow().getWidth() / 2 - font.getWidth("git --gud scrub") * 1.5f,
-				renderer.getWindow().getHeight() / 2 + 36 * 3, color + "git --gud scrub", 3, 3, new Vector4f(1));
+		drawer.getFontRenderer().drawStringWithShadow(font,
+				drawer.getWindow().getWidth() / 2 - font.getWidth("YOU DIEDED") * 3f,
+				drawer.getWindow().getHeight() / 2 + 48 * 3, "#FF0000YOU DIEDED", 6, 6, new Vector4f(1));
+		drawer.getFontRenderer().drawStringWithShadow(font,
+				drawer.getWindow().getWidth() / 2 - font.getWidth("git --gud scrub") * 1.5f,
+				drawer.getWindow().getHeight() / 2 + 36 * 3, color + "git --gud scrub", 3, 3, new Vector4f(1));
 
-		respawnButton.setPosition(renderer.getWindow().getWidth() / 2 - respawnButton.getWidth() / 2,
-				renderer.getWindow().getHeight() / 2 + 48);
-		exitButton.setPosition(renderer.getWindow().getWidth() / 2 - exitButton.getWidth() / 2,
-				renderer.getWindow().getHeight() / 2 - 24);
+		respawnButton.setPosition(drawer.getWindow().getWidth() / 2 - respawnButton.getWidth() / 2,
+				drawer.getWindow().getHeight() / 2 + 48);
+		exitButton.setPosition(drawer.getWindow().getWidth() / 2 - exitButton.getWidth() / 2,
+				drawer.getWindow().getHeight() / 2 - 24);
 
-		respawnButton.render(renderer);
-		exitButton.render(renderer);
+		respawnButton.render(drawer);
+		exitButton.render(drawer);
 
 		// When the new entity arrives
 		if (ClientImplementation.getInstance().getPlayer().getControlledEntity() != null)

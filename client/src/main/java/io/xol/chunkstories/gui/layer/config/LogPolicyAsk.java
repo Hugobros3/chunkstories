@@ -6,31 +6,37 @@
 
 package io.xol.chunkstories.gui.layer.config;
 
-import io.xol.chunkstories.client.ClientImplementation;
+import io.xol.chunkstories.api.gui.Font;
+import io.xol.chunkstories.api.gui.Gui;
+import io.xol.chunkstories.api.gui.GuiDrawer;
+import io.xol.chunkstories.api.util.Configuration;
 import org.joml.Vector4f;
 
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.gui.elements.BaseButton;
-import io.xol.chunkstories.api.rendering.GameWindow;
-import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
 
+/** Asks the user if he wishes to have his logs uploaded to the game servers for debugging purposes */
+//TODO anonymize those (strip C:\Users\... and such)
 public class LogPolicyAsk extends Layer {
-	BaseButton acceptButton = new BaseButton(this, 0, 0, 150, "#{logpolicy.accept}");
-	BaseButton refuseButton = new BaseButton(this, 0, 0, 150, "#{logpolicy.deny}");
+	public static final String logPolicyConfigNode = "client.game.logPolicy";
 
-	String message = ClientImplementation.getInstance().getContent().localization().getLocalizedString("logpolicy.asktext");
+	private Configuration.OptionString option = gui.getClient().getConfiguration().get(logPolicyConfigNode);
 
-	public LogPolicyAsk(GameWindow gameWindow, Layer parent) {
-		super(gameWindow, parent);
+	private BaseButton acceptButton = new BaseButton(this, 0, 0, 150, "#{logpolicy.accept}");
+	private BaseButton refuseButton = new BaseButton(this, 0, 0, 150, "#{logpolicy.deny}");
+
+	private String logPolicyExplanationText = gui.localization().getLocalizedString("logpolicy.asktext");
+
+	public LogPolicyAsk(Gui gui, Layer parent) {
+		super(gui, parent);
 
 		this.acceptButton.setAction(new Runnable() {
 
 			@Override
 			public void run() {
-				ClientImplementation.getInstance().getConfiguration().getOption("client.game.log-policy").trySetting("send");
-				ClientImplementation.getInstance().getConfiguration().save();
-				gameWindow.setLayer(parentLayer);
+				option.trySetting("send");
+				gui.getClient().getConfiguration().save();
+				LogPolicyAsk.this.gui.setTopLayer(parentLayer);
 			}
 
 		});
@@ -39,9 +45,9 @@ public class LogPolicyAsk extends Layer {
 
 			@Override
 			public void run() {
-				ClientImplementation.getInstance().getConfiguration().getOption("client.game.log-policy").trySetting("dont");
-				ClientImplementation.getInstance().getConfiguration().save();
-				gameWindow.setLayer(parentLayer);
+				option.trySetting("dont");
+				gui.getClient().getConfiguration().save();
+				LogPolicyAsk.this.gui.setTopLayer(parentLayer);
 			}
 
 		});
@@ -51,34 +57,31 @@ public class LogPolicyAsk extends Layer {
 	}
 
 	@Override
-	public void render(RenderingInterface renderer) {
+	public void render(GuiDrawer renderer) {
 		parentLayer.render(renderer);
-		float scale = gameWindow.getGuiScale();
 
-		renderer.getGuiRenderer().drawBoxWindowsSpace(0, 0, renderer.getWindow().getWidth(),
-				renderer.getWindow().getHeight(), 0, 0, 0, 0, null, false, true, new Vector4f(0.0f, 0.0f, 0.0f, 0.5f));
+		renderer.drawBoxWindowsSpaceWithSize(0, 0, gui.getViewportWidth(), gui.getViewportHeight(), 0, 0, 0, 0, null, new Vector4f(0.0f, 0.0f, 0.0f, 0.5f));
 
-		renderer.getFontRenderer().drawStringWithShadow(
-				renderer.getFontRenderer().getFont("LiberationSans-Regular__aa", 16 * scale), 30,
-				renderer.getWindow().getHeight() - 64,
-				ClientImplementation.getInstance().getContent().localization().getLocalizedString("logpolicy.title"), 1, 1,
-				new Vector4f(1));
+		renderer.drawStringWithShadow(
+				renderer.getFonts().getFont("LiberationSans-Regular__aa", 16 * 1), 30,
+				gui.getViewportHeight() - 64,
+				gui.getClient().getContent().localization().getLocalizedString("logpolicy.title"), -1,
+				new Vector4f(1.0F));
 
-		Font logPolicyTextFont = renderer.getFontRenderer().getFont("LiberationSans-Regular__aa", 12 * scale);
+		Font logPolicyTextFont = renderer.getFonts().getFont("LiberationSans-Regular__aa", 12);
 
-		renderer.getFontRenderer().drawString(logPolicyTextFont, 30, renderer.getWindow().getHeight() - 128, message, 1,
-				width - 60);
+		renderer.drawString(logPolicyTextFont, 30, gui.getViewportHeight() - 128, logPolicyExplanationText, width - 60, new Vector4f(1.0F));
 
-		float seperation = 4 * scale;
-		float groupSize = acceptButton.getWidth() + refuseButton.getWidth() + seperation;
+		int buttonsSpacing = 4;
+		int buttonsPlusSpacingLength = acceptButton.getWidth() + refuseButton.getWidth() + buttonsSpacing;
 
-		acceptButton.setPosition(renderer.getWindow().getWidth() / 2 - groupSize / 2,
-				renderer.getWindow().getHeight() / 4 - 32);
+		acceptButton.setPosition(gui.getViewportWidth() / 2 - buttonsPlusSpacingLength / 2,
+				gui.getViewportHeight() / 4 - 32);
 		acceptButton.render(renderer);
 
 		refuseButton.setPosition(
-				renderer.getWindow().getWidth() / 2 - groupSize / 2 + seperation + acceptButton.getWidth(),
-				renderer.getWindow().getHeight() / 4 - 32);
+				gui.getViewportWidth() / 2 - buttonsPlusSpacingLength / 2 + buttonsSpacing + acceptButton.getWidth(),
+				gui.getViewportHeight() / 4 - 32);
 		refuseButton.render(renderer);
 	}
 }

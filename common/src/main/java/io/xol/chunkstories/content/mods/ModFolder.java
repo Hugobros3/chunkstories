@@ -43,7 +43,7 @@ public class ModFolder extends ModImplementation {
 
 		recursiveFolderRead(folder);
 
-		this.modInfo = ModInfoLoaderKt.loadModInfo(getAssetByName("./mod.txt").reader());
+		this.modInfo = ModInfoLoaderKt.loadModInfo(getAssetByName("mod.txt").reader());
 		// loadModInformation();
 		logger = LoggerFactory.getLogger("mod." + this.modInfo.getInternalName());
 	}
@@ -53,12 +53,10 @@ public class ModFolder extends ModImplementation {
 			for (File f : file.listFiles())
 				recursiveFolderRead(f);
 		} else {
-			String fileName = file.getAbsolutePath().substring(folder.getAbsolutePath().length() + 1,
-					file.getAbsolutePath().length());
+			String fileName = file.getAbsolutePath().substring(folder.getAbsolutePath().length() + 1);
 			fileName = fileName.replace('\\', '/');
-			String assetName = "./" + fileName;
+			String assetName = fileName;
 
-			// System.out.println(assetName);
 			assets.put(assetName, new ModFolderAsset(assetName, file));
 		}
 	}

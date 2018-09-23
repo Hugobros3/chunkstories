@@ -50,15 +50,12 @@ public class ModZip extends ModImplementation {
 			while (e.hasMoreElements()) {
 				ZipEntry entry = e.nextElement();
 				if (!entry.isDirectory()) {
-					String assetName = "./" + entry.getName();
-
-					// System.out.println("Found asset " + assetName);
+					String assetName = entry.getName();
 					assets.put(assetName, new ModZipAsset(assetName, entry));
 				}
 			}
 
-			this.modInfo = ModInfoLoaderKt.loadModInfo(getAssetByName("./mod.txt").reader());
-			// loadModInformation(getAssetByName("./mod.txt"));
+			this.modInfo = ModInfoLoaderKt.loadModInfo(getAssetByName("mod.txt").reader());
 		} catch (IOException e) {
 			throw new ModLoadFailureException(this, "Zip file not found or malformed");
 		}

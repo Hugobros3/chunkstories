@@ -6,20 +6,12 @@
 
 package io.xol.chunkstories.gui.layer.config;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import io.xol.chunkstories.client.ClientImplementation;
-import org.joml.Vector4f;
-
 import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.api.content.mods.Mod;
 import io.xol.chunkstories.api.exceptions.content.mods.ModLoadFailureException;
+import io.xol.chunkstories.api.gui.Font;
+import io.xol.chunkstories.api.gui.Gui;
+import io.xol.chunkstories.api.gui.GuiDrawer;
 import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.gui.elements.LargeButtonIcon;
 import io.xol.chunkstories.api.gui.elements.ScrollableContainer;
@@ -29,349 +21,334 @@ import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse;
 import io.xol.chunkstories.api.input.Mouse.MouseButton;
 import io.xol.chunkstories.api.input.Mouse.MouseScroll;
-import io.xol.chunkstories.api.rendering.GameWindow;
-import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.text.FontRenderer.Font;
-import io.xol.chunkstories.api.rendering.textures.Texture2D;
+import io.xol.chunkstories.client.ClientImplementation;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.content.mods.ModFolder;
 import io.xol.chunkstories.content.mods.ModImplementation;
 import io.xol.chunkstories.content.mods.ModZip;
 import io.xol.chunkstories.gui.layer.config.ModsSelection.ModsScrollableContainer.ModItem;
-import io.xol.chunkstories.renderer.opengl.texture.Texture2DAsset;
-import io.xol.chunkstories.renderer.opengl.texture.Texture2DGL;
-import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;
+import org.joml.Vector4f;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.util.*;
 
 public class ModsSelection extends Layer {
-	LargeButtonIcon applyMods = new LargeButtonIcon(this, "validate");
+    private static final Logger logger = LoggerFactory.getLogger("client.mods");
 
-	ThinButton locateExtMod = new ThinButton(this, 0, 0, ("Locate external mod"));
-	ThinButton openModsFolder = new ThinButton(this, 0, 0, ("Open mods folder"));
+    private LargeButtonIcon applyMods = new LargeButtonIcon(this, "validate");
 
-	LargeButtonIcon backOption = new LargeButtonIcon(this, "back");
+    private ThinButton locateExtMod = new ThinButton(this, 0, 0, "Locate external mod");
+    private ThinButton openModsFolder = new ThinButton(this, 0, 0, "Open mods folder");
 
-	ModsScrollableContainer modsContainer = new ModsScrollableContainer(this);
+    private LargeButtonIcon backOption = new LargeButtonIcon(this, "back");
 
-	public ModsSelection(GameWindow window, Layer parent) {
-		super(window, parent);
+    private ModsScrollableContainer modsContainer = new ModsScrollableContainer(this);
 
-		elements.add(modsContainer);
+    public ModsSelection(Gui window, Layer parent) {
+        super(window, parent);
 
-		elements.add(locateExtMod);
-		elements.add(openModsFolder);
-		elements.add(backOption);
-		elements.add(applyMods);
+        elements.add(modsContainer);
 
-		this.backOption.setAction(() -> gameWindow.setLayer(parentLayer));
+        elements.add(locateExtMod);
+        elements.add(openModsFolder);
+        elements.add(backOption);
+        elements.add(applyMods);
 
-		this.applyMods.setAction(new Runnable() {
-			@Override
-			public void run() {
-				List<String> modsEnabled = new ArrayList<String>();
-				for (ContainerElement e : modsContainer.elements) {
-					ModItem modItem = (ModItem) e;
-					if (modItem.enabled) {
-						System.out.println(
-								"Adding " + ((ModImplementation) modItem.mod).getLoadString() + " to mod path");
-						modsEnabled.add(((ModImplementation) modItem.mod).getLoadString());
-					}
-				}
+        this.backOption.setAction(() -> gui.setTopLayer(parentLayer));
 
-				String[] ok = new String[modsEnabled.size()];
-				modsEnabled.toArray(ok);
-				ClientImplementation.getInstance().getContent().modsManager().setEnabledMods(ok);
+        this.applyMods.setAction(() -> {
+            List<String> modsEnabled = new ArrayList<String>();
+            for (ContainerElement e : modsContainer.elements) {
+                ModItem modItem = (ModItem) e;
+                if (modItem.enabled) {
+                    logger.info("Adding " + ((ModImplementation) modItem.mod).getLoadString() + " to mod path");
+                    modsEnabled.add(((ModImplementation) modItem.mod).getLoadString());
+                }
+            }
 
-				ClientImplementation.getInstance().reloadAssets();
-				buildModsList();
-			}
-		});
+            String[] ok = new String[modsEnabled.size()];
+            modsEnabled.toArray(ok);
+            gui.getClient().getContent().modsManager().setEnabledMods(ok);
 
-		buildModsList();
-	}
+            ((ClientImplementation) gui.getClient()).reloadAssets();
+            buildModsList();
+        });
 
-	private void buildModsList() {
-		modsContainer.elements.clear();
-		Collection<String> currentlyEnabledMods = Arrays
-				.asList(ClientImplementation.getInstance().getContent().modsManager().getEnabledModsString());
+        buildModsList();
+    }
 
-		Set<String> uniqueMods = new HashSet<String>();
-		// First put in already loaded mods
-		for (Mod mod : ClientImplementation.getInstance().getContent().modsManager().getCurrentlyLoadedMods()) {
-			// Should use md5 hash instead ;)
-			if (uniqueMods.add(mod.getModInfo().getName().toLowerCase()))
-				modsContainer.elements.add(modsContainer.new ModItem(mod, true));
-		}
+    private void buildModsList() {
+        modsContainer.elements.clear();
+        Collection<String> currentlyEnabledMods = Arrays
+                .asList(gui.getClient().getContent().modsManager().getEnabledModsString());
 
-		// Then look for mods in folder fashion
-		for (File f : new File(GameDirectory.getGameFolderPath() + "/mods/").listFiles()) {
-			if (f.isDirectory()) {
-				File txt = new File(f.getAbsolutePath() + "/mod.txt");
-				if (txt.exists()) {
-					try {
-						ModFolder mod = new ModFolder(f);
-						// Should use md5 hash instead ;)
-						if (uniqueMods.add(mod.getModInfo().getName().toLowerCase()))
-							modsContainer.elements.add(modsContainer.new ModItem(mod,
-									currentlyEnabledMods.contains(mod.getModInfo().getName())));
+        Set<String> uniqueMods = new HashSet<String>();
+        // First put in already loaded mods
+        for (Mod mod : gui.getClient().getContent().modsManager().getCurrentlyLoadedMods()) {
+            // Should use md5 hash instead ;)
+            if (uniqueMods.add(mod.getModInfo().getName().toLowerCase()))
+                modsContainer.elements.add(modsContainer.new ModItem(mod, true));
+        }
 
-						System.out.println("mod:" + mod.getModInfo().getName() + " // "
-								+ currentlyEnabledMods.contains(mod.getModInfo().getName()));
-					} catch (ModLoadFailureException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		}
-		// Then look for .zips
-		// First look for mods in folder fashion
-		for (File f : new File(GameDirectory.getGameFolderPath() + "/mods/").listFiles()) {
-			if (f.getName().endsWith(".zip")) {
-				try {
-					ModZip mod = new ModZip(f);
-					// Should use md5 hash instead ;)
-					if (uniqueMods.add(mod.getModInfo().getName().toLowerCase()))
-						modsContainer.elements.add(modsContainer.new ModItem(mod,
-								currentlyEnabledMods.contains(mod.getModInfo().getName())));
-				} catch (ModLoadFailureException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	}
+        // Then look for mods in folder fashion
+        for (File f : new File(GameDirectory.getGameFolderPath() + "/mods/").listFiles()) {
+            if (f.isDirectory()) {
+                File txt = new File(f.getAbsolutePath() + "/mod.txt");
+                if (txt.exists()) {
+                    try {
+                        ModFolder mod = new ModFolder(f);
+                        // Should use md5 hash instead ;)
+                        if (uniqueMods.add(mod.getModInfo().getName().toLowerCase()))
+                            modsContainer.elements.add(modsContainer.new ModItem(mod,
+                                    currentlyEnabledMods.contains(mod.getModInfo().getName())));
 
-	@Override
-	public void render(RenderingInterface renderer) {
-		parentLayer.getRootLayer().render(renderer);
-		int scale = ClientImplementation.getInstance().getGameWindow().getGuiScale();
+                        System.out.println("mod:" + mod.getModInfo().getName() + " // "
+                                + currentlyEnabledMods.contains(mod.getModInfo().getName()));
+                    } catch (ModLoadFailureException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        // Then look for .zips
+        // First look for mods in folder fashion
+        for (File f : new File(GameDirectory.getGameFolderPath() + "/mods/").listFiles()) {
+            if (f.getName().endsWith(".zip")) {
+                try {
+                    ModZip mod = new ModZip(f);
+                    // Should use md5 hash instead ;)
+                    if (uniqueMods.add(mod.getModInfo().getName().toLowerCase()))
+                        modsContainer.elements.add(modsContainer.new ModItem(mod,
+                                currentlyEnabledMods.contains(mod.getModInfo().getName())));
+                } catch (ModLoadFailureException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 
-		String instructions = "Select the mods you want to use";
-		Font font = renderer.getFontRenderer().getFont("LiberationSans-Regular", 16 * scale);
-		renderer.getFontRenderer().drawStringWithShadow(font, 32, renderer.getWindow().getHeight() - 24 * scale,
-				instructions, 1, 1, new Vector4f(1));
+    @Override
+    public void render(GuiDrawer renderer) {
+        parentLayer.getRootLayer().render(renderer);
+        int scale = 1;
 
-		backOption.setPosition(xPosition + 8, 8);
-		backOption.render(renderer);
+        String instructions = "Select the mods you want to use";
+        Font font = renderer.getFonts().getFont("LiberationSans-Regular", 16 * scale);
+        renderer.drawStringWithShadow(font, 32, gui.getViewportHeight() - 24 * scale,
+                instructions, -1, new Vector4f(1));
 
-		// Display buttons
+        backOption.setPosition(xPosition + 8, 8);
+        backOption.render(renderer);
 
-		float totalLengthOfButtons = 0;
-		float spacing = 2 * scale;
+        // Display buttons
 
-		totalLengthOfButtons += applyMods.getWidth();
-		totalLengthOfButtons += spacing;
+        int totalLengthOfButtons = 0;
+        int spacing = 2 * scale;
 
-		totalLengthOfButtons += locateExtMod.getWidth();
-		totalLengthOfButtons += spacing;
+        totalLengthOfButtons += applyMods.getWidth();
+        totalLengthOfButtons += spacing;
 
-		// totalLengthOfButtons += openModsFolder.getWidth();
-		// totalLengthOfButtons += spacing;
+        totalLengthOfButtons += locateExtMod.getWidth();
+        totalLengthOfButtons += spacing;
 
-		float buttonDisplayX = renderer.getWindow().getWidth() / 2 - totalLengthOfButtons / 2;
-		float buttonDisplayY = 8;
+        int buttonDisplayX = gui.getViewportWidth() / 2 - totalLengthOfButtons / 2;
+        int buttonDisplayY = 8;
 
-		locateExtMod.setPosition(buttonDisplayX, buttonDisplayY);
-		buttonDisplayX += locateExtMod.getWidth() + spacing;
-		locateExtMod.render(renderer);
+        locateExtMod.setPosition(buttonDisplayX, buttonDisplayY);
+        buttonDisplayX += locateExtMod.getWidth() + spacing;
+        locateExtMod.render(renderer);
 
-		openModsFolder.setPosition(buttonDisplayX, buttonDisplayY);
-		buttonDisplayX += openModsFolder.getWidth() + spacing;
-		openModsFolder.render(renderer);
+        openModsFolder.setPosition(buttonDisplayX, buttonDisplayY);
+        buttonDisplayX += openModsFolder.getWidth() + spacing;
+        openModsFolder.render(renderer);
 
-		applyMods.setPosition(this.getWidth() - applyMods.getWidth() - 8, 8);
-		buttonDisplayX += applyMods.getWidth() + spacing;
-		applyMods.render(renderer);
+        applyMods.setPosition(this.getWidth() - applyMods.getWidth() - 8, 8);
+        buttonDisplayX += applyMods.getWidth() + spacing;
+        applyMods.render(renderer);
 
-		float offsetForButtons = applyMods.getPositionY() + applyMods.getHeight() + 8 * scale;
-		float offsetForHeaderText = 32 * scale;
-		modsContainer.setPosition((width - 480 * scale) / 2, offsetForButtons);
-		modsContainer.setDimensions(480 * scale, height - (offsetForButtons + offsetForHeaderText));
-		modsContainer.render(renderer);
-	}
+        int offsetForButtons = applyMods.getPositionY() + applyMods.getHeight() + 8 * scale;
+        int offsetForHeaderText = 32 * scale;
+        modsContainer.setPosition((width - 480 * scale) / 2, offsetForButtons);
+        modsContainer.setSize(480 * scale, height - (offsetForButtons + offsetForHeaderText));
+        modsContainer.render(renderer);
+    }
 
-	@Override
-	public boolean handleInput(Input input) {
-		if (input instanceof MouseScroll) {
-			MouseScroll ms = (MouseScroll) input;
-			modsContainer.scroll(ms.amount() > 0);
-			return true;
-		}
+    @Override
+    public boolean handleInput(Input input) {
+        if (input instanceof MouseScroll) {
+            MouseScroll ms = (MouseScroll) input;
+            modsContainer.scroll(ms.amount() > 0);
+            return true;
+        }
 
-		return super.handleInput(input);
-	}
+        return super.handleInput(input);
+    }
 
-	class ModsScrollableContainer extends ScrollableContainer {
+    class ModsScrollableContainer extends ScrollableContainer {
 
-		protected ModsScrollableContainer(Layer layer) {
-			super(layer);
-		}
+        ModsScrollableContainer(Layer layer) {
+            super(layer);
+        }
 
-		public void render(RenderingInterface renderer) {
-			super.render(renderer);
+        public void render(GuiDrawer renderer) {
+            super.render(renderer);
 
-			String text = "Showing elements ";
+            String text = "Showing elements ";
 
-			text += scroll;
-			text += "-";
-			text += scroll;
+            text += scroll;
+            text += "-";
+            text += scroll;
 
-			text += " out of " + elements.size();
-			int dekal = renderer.getFontRenderer().getFont("LiberationSans-Regular", 12).getWidth(text) / 2;
-			renderer.getFontRenderer().drawString(renderer.getFontRenderer().getFont("LiberationSans-Regular", 12),
-					xPosition + width / 2 - dekal * scale(), yPosition - 128 / scale(), text, scale(),
-					new Vector4f(0.0f, 0.0f, 0.0f, 1.0f));
-		}
+            text += " out of " + elements.size();
+            int dekal = renderer.getFonts().getFont("LiberationSans-Regular", 12).getWidth(text) / 2;
 
-		class ModItem extends ContainerElement {
+            renderer.drawString(renderer.getFonts().getFont("LiberationSans-Regular", 12),
+                    xPosition + width / 2 - dekal, yPosition - 128, text, -1,
+                    new Vector4f(0.0f, 0.0f, 0.0f, 1.0f));
+        }
 
-			boolean enabled;
+        class ModItem extends ContainerElement {
 
-			Texture2DGL icon;
-			Mod mod;
+            boolean enabled;
 
-			public ModItem(Mod mod2, boolean enabled) {
-				super(mod2.getModInfo().getName(), mod2.getModInfo().getDescription().replace("\\n", "\n"));
-				this.mod = mod2;
-				this.enabled = enabled;
-				this.topRightString = mod2.getModInfo().getVersion();
+            String icon;
+            Mod mod;
 
-				Asset asset = mod2.getAssetByName("./modicon.png");
-				if (asset != null)
-					icon = new Texture2DAsset(asset);
-				else
-					icon = TexturesHandler.getTexture("./nomodicon.png");
-			}
+            ModItem(Mod mod2, boolean enabled) {
+                super(mod2.getModInfo().getName(), mod2.getModInfo().getDescription().replace("\\n", "\n"));
+                this.mod = mod2;
+                this.enabled = enabled;
+                this.topRightString = mod2.getModInfo().getVersion();
 
-			@Override
-			public boolean handleClick(MouseButton mouseButton) {
-				Mouse mouse = mouseButton.getMouse();
-				if (isOverUpButton(mouse)) {
-					int indexInList = ModsScrollableContainer.this.elements.indexOf(this);
-					if (indexInList > 0) {
-						int newIndex = indexInList - 1;
-						ModsScrollableContainer.this.elements.remove(indexInList);
-						ModsScrollableContainer.this.elements.add(newIndex, this);
-					}
-				} else if (isOverDownButton(mouse)) {
-					int indexInList = ModsScrollableContainer.this.elements.indexOf(this);
-					if (indexInList < ModsScrollableContainer.this.elements.size() - 1) {
-						int newIndex = indexInList + 1;
-						ModsScrollableContainer.this.elements.remove(indexInList);
-						ModsScrollableContainer.this.elements.add(newIndex, this);
-					}
-				} else if (isOverEnableDisableButton(mouse)) {
-					// TODO: Check for conflicts when enabling
-					enabled = !enabled;
-				} else
-					return false;
-				return true;
-			}
+                Asset asset = mod2.getAssetByName("modicon.png");
+                if (asset != null)
+                    icon = "@"+mod2.getModInfo().getInternalName()+":modicon.png";
+                else
+                    icon = "nomodicon.png";
+            }
 
-			public boolean isOverUpButton(Mouse mouse) {
-				int s = ModsScrollableContainer.this.scale();
-				double mx = mouse.getCursorX();
-				double my = mouse.getCursorY();
+            @Override
+            public boolean handleClick(MouseButton mouseButton) {
+                Mouse mouse = mouseButton.getMouse();
+                if (isOverUpButton(mouse)) {
+                    int indexInList = ModsScrollableContainer.this.elements.indexOf(this);
+                    if (indexInList > 0) {
+                        int newIndex = indexInList - 1;
+                        ModsScrollableContainer.this.elements.remove(indexInList);
+                        ModsScrollableContainer.this.elements.add(newIndex, this);
+                    }
+                } else if (isOverDownButton(mouse)) {
+                    int indexInList = ModsScrollableContainer.this.elements.indexOf(this);
+                    if (indexInList < ModsScrollableContainer.this.elements.size() - 1) {
+                        int newIndex = indexInList + 1;
+                        ModsScrollableContainer.this.elements.remove(indexInList);
+                        ModsScrollableContainer.this.elements.add(newIndex, this);
+                    }
+                } else if (isOverEnableDisableButton(mouse)) {
+                    // TODO: Check for conflicts when enabling
+                    enabled = !enabled;
+                } else
+                    return false;
+                return true;
+            }
 
-				float positionX = this.positionX + 460 * s;
-				float positionY = this.positionY + 37 * s;
-				int width = 18;
-				int height = 17;
-				return mx >= positionX && mx <= positionX + width * s && my >= positionY
-						&& my <= positionY + height * s;
-			}
+            boolean isOverUpButton(Mouse mouse) {
+                int s = 1;
+                double mx = mouse.getCursorX();
+                double my = mouse.getCursorY();
 
-			public boolean isOverEnableDisableButton(Mouse mouse) {
-				int s = ModsScrollableContainer.this.scale();
-				double mx = mouse.getCursorX();
-				double my = mouse.getCursorY();
+                float positionX = this.positionX + 460 * s;
+                float positionY = this.positionY + 37 * s;
+                int width = 18;
+                int height = 17;
+                return mx >= positionX && mx <= positionX + width * s && my >= positionY
+                        && my <= positionY + height * s;
+            }
 
-				float positionX = this.positionX + 460 * s;
-				float positionY = this.positionY + 20 * s;
-				int width = 18;
-				int height = 17;
-				return mx >= positionX && mx <= positionX + width * s && my >= positionY
-						&& my <= positionY + height * s;
-			}
+            boolean isOverEnableDisableButton(Mouse mouse) {
+                int s = 1;
+                double mx = mouse.getCursorX();
+                double my = mouse.getCursorY();
 
-			public boolean isOverDownButton(Mouse mouse) {
-				int s = ModsScrollableContainer.this.scale();
-				double mx = mouse.getCursorX();
-				double my = mouse.getCursorY();
+                float positionX = this.positionX + 460 * s;
+                float positionY = this.positionY + 20 * s;
+                int width = 18;
+                int height = 17;
+                return mx >= positionX && mx <= positionX + width * s && my >= positionY
+                        && my <= positionY + height * s;
+            }
 
-				float positionX = this.positionX + 460 * s;
-				float positionY = this.positionY + 2 * s;
-				int width = 18;
-				int height = 17;
-				return mx >= positionX && mx <= positionX + width * s && my >= positionY
-						&& my <= positionY + height * s;
-			}
+            boolean isOverDownButton(Mouse mouse) {
+                int s = 1;
+                double mx = mouse.getCursorX();
+                double my = mouse.getCursorY();
 
-			@Override
-			public void render(RenderingInterface renderer) {
-				Mouse mouse = renderer.getClient().getInputsManager().getMouse();
+                float positionX = this.positionX + 460 * s;
+                float positionY = this.positionY + 2 * s;
+                int width = 18;
+                int height = 17;
+                return mx >= positionX && mx <= positionX + width * s && my >= positionY
+                        && my <= positionY + height * s;
+            }
 
-				int s = ModsScrollableContainer.this.scale();
-				// Setup textures
-				Texture2D bgTexture = renderer.textures()
-						.getTexture(isMouseOver(mouse) ? "./textures/gui/modsOver.png" : "./textures/gui/mods.png");
-				bgTexture.setLinearFiltering(false);
+            @Override
+            public void render(GuiDrawer renderer) {
+                Mouse mouse = gui.getMouse();
 
-				Texture2D upArrowTexture = renderer.textures().getTexture("./textures/gui/modsArrowUp.png");
-				upArrowTexture.setLinearFiltering(false);
-				Texture2D downArrowTexture = renderer.textures().getTexture("./textures/gui/modsArrowDown.png");
-				downArrowTexture.setLinearFiltering(false);
+                // Setup textures
+                String bgTexture = isMouseOver(mouse) ? "textures/gui/modsOver.png" : "textures/gui/mods.png";
 
-				Texture2D enableDisableTexture = renderer.textures()
-						.getTexture(enabled ? "./textures/gui/modsDisable.png" : "./textures/gui/modsEnable.png");
-				enableDisableTexture.setLinearFiltering(false);
+                String upArrowTexture = "textures/gui/modsArrowUp.png";
+                String downArrowTexture = "textures/gui/modsArrowDown.png";
 
-				// Render graphical base
-				renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX, positionY, width * s, height * s, 0, 1,
-						1, 0, bgTexture, true, false,
-						enabled ? new Vector4f(1.0f, 1.0f, 1.0f, 1.0f) : new Vector4f(1f, 1f, 1f, 0.5f));
-				if (enabled) {
-					Texture2D enabledTexture = renderer.textures().getTexture("./textures/gui/modsEnabled.png");
-					enabledTexture.setLinearFiltering(false);
-					renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX, positionY, width * s, height * s,
-							0, 1, 1, 0, enabledTexture, true, false, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
-				}
+                String enableDisableTexture =(enabled ? "textures/gui/modsDisable.png" : "textures/gui/modsEnable.png");
 
-				// Render subbuttons
-				if (isOverUpButton(mouse))
-					renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX, positionY, width * s, height * s,
-							0, 1, 1, 0, upArrowTexture, true, false, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
-				if (isOverEnableDisableButton(mouse))
-					renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX, positionY, width * s, height * s,
-							0, 1, 1, 0, enableDisableTexture, true, false, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
-				if (isOverDownButton(mouse))
-					renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX, positionY, width * s, height * s,
-							0, 1, 1, 0, downArrowTexture, true, false, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
+                // Render graphical base
+                renderer.drawBoxWindowsSpaceWithSize(positionX, positionY, width, height, 0, 1, 1, 0, bgTexture,
+                        enabled ? new Vector4f(1.0f, 1.0f, 1.0f, 1.0f) : new Vector4f(1f, 1f, 1f, 0.5f));
+                if (enabled) {
+                    String enabledTexture = "textures/gui/modsEnabled.png";
+                    renderer.drawBoxWindowsSpaceWithSize(positionX, positionY, width, height,
+                            0, 1, 1, 0, enabledTexture, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
+                }
 
-				// Render icon
-				renderer.getGuiRenderer().drawBoxWindowsSpaceWithSize(positionX + 4 * s, positionY + 4 * s, 64 * s,
-						64 * s, 0, 1, 1, 0, icon, true, false, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
-				// Text !
-				if (name != null)
-					renderer.getFontRenderer().drawString(
-							renderer.getFontRenderer().getFont("LiberationSans-Regular", 12), positionX + 70 * s,
-							positionY + 54 * s, name, s, new Vector4f(0.0f, 0.0f, 0.0f, 1.0f));
+                // Render subbuttons
+                if (isOverUpButton(mouse))
+                    renderer.drawBoxWindowsSpaceWithSize(positionX, positionY, width, height,
+                            0, 1, 1, 0, upArrowTexture, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
+                if (isOverEnableDisableButton(mouse))
+                    renderer.drawBoxWindowsSpaceWithSize(positionX, positionY, width, height,
+                            0, 1, 1, 0, enableDisableTexture, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
+                if (isOverDownButton(mouse))
+                    renderer.drawBoxWindowsSpaceWithSize(positionX, positionY, width, height,
+                            0, 1, 1, 0, downArrowTexture, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
 
-				if (topRightString != null) {
-					float dekal = width
-							- renderer.getFontRenderer().getFont("LiberationSans-Regular", 12).getWidth(topRightString)
-							- 4;
-					renderer.getFontRenderer().drawString(
-							renderer.getFontRenderer().getFont("LiberationSans-Regular", 12), positionX + dekal * s,
-							positionY + 54 * s, topRightString, s, new Vector4f(0.25f, 0.25f, 0.25f, 1.0f));
-				}
+                // Render icon
+                renderer.drawBoxWindowsSpaceWithSize(positionX + 4, positionY + 4, 64,
+                        64, 0, 1, 1, 0, icon, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
+                // Text !
+                if (name != null)
+                    renderer.drawString(
+                            renderer.getFonts().getFont("LiberationSans-Regular", 12), positionX + 70,
+                            positionY + 54, name, -1, new Vector4f(0.0f, 0.0f, 0.0f, 1.0f));
 
-				if (descriptionLines != null)
-					renderer.getFontRenderer().drawString(
-							renderer.getFontRenderer().getFont("LiberationSans-Regular", 12), positionX + 70 * s,
-							positionY + 38 * s, descriptionLines, s, new Vector4f(0.25f, 0.25f, 0.25f, 1.0f));
+                if (topRightString != null) {
+                    int dekal = width - renderer.getFonts().getFont("LiberationSans-Regular", 12).getWidth(topRightString) - 4;
+                    renderer.drawString(
+                            renderer.getFonts().getFont("LiberationSans-Regular", 12), positionX + dekal,
+                            positionY + 54, topRightString, -1, new Vector4f(0.25f, 0.25f, 0.25f, 1.0f));
+                }
 
-			}
+                if (descriptionLines != null)
+                    renderer.drawString(
+                            renderer.getFonts().getFont("LiberationSans-Regular", 12), positionX + 70,
+                            positionY + 38, descriptionLines, -1, new Vector4f(0.25f, 0.25f, 0.25f, 1.0f));
 
-		}
-	}
+            }
+
+        }
+    }
 
 }
