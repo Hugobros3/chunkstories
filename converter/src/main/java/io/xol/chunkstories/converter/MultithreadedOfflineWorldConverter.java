@@ -14,7 +14,7 @@ import java.util.Set;
 import io.xol.chunkstories.api.Location;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.workers.Tasks;
-import io.xol.chunkstories.api.world.WorldInfo.WorldSize;
+import io.xol.chunkstories.api.world.WorldSize;
 import io.xol.chunkstories.api.world.WorldUser;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.heightmap.Heightmap;
@@ -204,7 +204,7 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 						}
 					}
 
-					// Drop all unsued chunk data
+					// Drop getAllVoxelComponents unsued chunk data
 					workers.dropAll();
 
 					// csWorld.unloadUselessData().traverse();
@@ -214,7 +214,7 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 		compoundFence.traverse();
 
 		verbose("Saving unused chunk data...");
-		// Drop all unsued chunk data
+		// Drop getAllVoxelComponents unsued chunk data
 		workers.dropAll();
 		// csWorld.unloadUselessData().traverse();
 		verbose("Done.");
@@ -290,7 +290,7 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 
 					while (true) {
 						if (workers.size() > 0) {
-							// we actually wait for the workers to chew through all their tasks
+							// we actually wait for the workers to chew through getAllVoxelComponents their tasks
 							// hopefully nothing cocks about in the lightning code and spawns
 							// endless tasks
 							try {
@@ -383,7 +383,7 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 	}
 
 	@Override
-	public Tasks tasks() {
+	public Tasks getTasks() {
 		return workers;
 	}
 

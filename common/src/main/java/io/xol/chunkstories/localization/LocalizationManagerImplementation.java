@@ -25,7 +25,7 @@ import io.xol.chunkstories.api.content.mods.ModsManager;
 import io.xol.chunkstories.content.GameContentStore;
 
 public class LocalizationManagerImplementation implements LocalizationManager {
-	// This class holds static model worldInfo
+	// This class holds static model info
 
 	private final GameContentStore store;
 	private final ModsManager modsManager;
@@ -54,11 +54,9 @@ public class LocalizationManagerImplementation implements LocalizationManager {
 	public void reload() {
 		translations.clear();
 
-		Iterator<Asset> i = modsManager.getAllAssetsByPrefix("./lang/");
-		while (i.hasNext()) {
-			Asset a = i.next();
-			if (a.getName().endsWith("lang.worldInfo")) {
-				String abrigedName = a.getName().substring(7, a.getName().length() - 10);
+		for(Asset a : modsManager.getAllAssetsByPrefix("lang/")) {
+			if (a.getName().endsWith("lang.info")) {
+				String abrigedName = a.getName().substring(5, a.getName().length() - 10);
 				if (abrigedName.contains("/"))
 					continue;
 				// System.out.println("Found translation: "+abrigedName);
@@ -82,9 +80,7 @@ public class LocalizationManagerImplementation implements LocalizationManager {
 			logger.info("Loading translation from asset asset: " + a);
 
 			String prefix = a.getName().substring(0, a.getName().length() - 9);
-			Iterator<Asset> i = modsManager.getAllAssetsByPrefix(prefix);
-			while (i.hasNext()) {
-				Asset a2 = i.next();
+			for(Asset a2 : modsManager.getAllAssetsByPrefix(prefix)) {
 				if (a2.getName().endsWith(".lang")) {
 					try {
 						BufferedReader reader = new BufferedReader(new InputStreamReader(a2.read(), "UTF8"));

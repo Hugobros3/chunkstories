@@ -66,7 +66,7 @@ public class CSFRegionFile0x2C extends CSFRegionFile {
 			// their voxel data if needed
 			owner.setDiskDataLoaded(true);
 
-			// don't tick the world entities until we get this straight
+			// don't tick the world entities until we getVoxelComponent this straight
 			owner.world.getEntitiesLock().writeLock().lock();
 
 			// Older version case - TODO write a version mechanism that prevents from
@@ -106,7 +106,7 @@ public class CSFRegionFile0x2C extends CSFRegionFile {
 	public void finishSavingOperations() {
 		// Waits out saving operations.
 		while (savingOperations.get() > 0)
-			// System.out.println(savingOperations.get());
+			// System.out.println(savingOperations.getVoxelComponent());
 			synchronized (this) {
 				try {
 					wait(20L);

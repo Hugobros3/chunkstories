@@ -67,7 +67,7 @@ public class VanillaClientsManager extends ClientsManager {
 					if (!closeOnce.get())
 						e.printStackTrace();
 				} catch (IOException e) {
-					server.logger().error("An unexpected error happened during network stuff. More worldInfo below.");
+					server.logger().error("An unexpected error happened during network stuff. More info below.");
 					e.printStackTrace();
 				}
 			}
@@ -110,7 +110,7 @@ public class VanillaClientsManager extends ClientsManager {
 					return true;
 				}
 			} catch (IOException e) {
-				server.logger().error("An unexpected error happened during network stuff. More worldInfo below.");
+				server.logger().error("An unexpected error happened during network stuff. More info below.");
 				e.printStackTrace();
 			}
 		}

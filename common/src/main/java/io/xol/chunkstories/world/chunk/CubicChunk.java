@@ -137,7 +137,7 @@ public class CubicChunk implements Chunk {
 							int bytes = dis.readShort();
 							dis.readFully(smallArray, 0, bytes);
 
-							VoxelComponent component = components.get(componentName);
+							VoxelComponent component = components.getVoxelComponent(componentName);
 							if (component == null) {
 								System.out.println("Error, a component named " + componentName
 										+ " was saved, but it was not recreated by the voxel whenPlaced() method.");
@@ -219,7 +219,7 @@ public class CubicChunk implements Chunk {
 
 		if (chunkVoxelData == null) {
 			// Empty chunk ?
-			// Use the heightmap to figure out wether or not that cell should be skylit.
+			// Use the heightmap to figure out wether or not that getCell should be skylit.
 			int sunlight = 0;
 			int groundHeight = world.getRegionsSummariesHolder().getHeightAtWorldCoordinates(chunkX * 32 + x,
 					chunkZ * 32 + z);
@@ -271,6 +271,10 @@ public class CubicChunk implements Chunk {
 			return CubicChunk.this.components(x, y, z);
 		}
 
+		@Override public void refreshRepresentation() {
+			//nope
+		}
+
 		@Override
 		public void registerComponent(String name, VoxelComponent component) {
 			components().put(name, component);
@@ -280,7 +284,7 @@ public class CubicChunk implements Chunk {
 
 	/**
 	 * The 'core' of the core, this private function is responsible for placing and
-	 * keeping everyone up to snuff on block modifications. It all comes back to
+	 * keeping everyone up to snuff on block modifications. It getAllVoxelComponents comes back to
 	 * this really.
 	 */
 	private ActualChunkVoxelContext pokeInternal(final int worldX, final int worldY, final int worldZ, Voxel newVoxel,
@@ -306,7 +310,7 @@ public class CubicChunk implements Chunk {
 			future.setMetaData(VoxelFormat.meta(raw_data));
 		} else {
 			// Build the raw data from the set parameters by editing the in-place data
-			// (because we allow only editing some aspects of the cell data)
+			// (because we allow only editing some aspects of the getCell data)
 			raw_data = cell_pre.getData();
 			if (newVoxel != null) {
 				raw_data = VoxelFormat.changeId(raw_data, world.getContentTranslator().getIdForVoxel(newVoxel));
@@ -534,6 +538,10 @@ public class CubicChunk implements Chunk {
 		@Override
 		public int getData() {
 			return raw_data;
+		}
+
+		@Override public void refreshRepresentation() {
+			//TODO
 		}
 
 		@Deprecated

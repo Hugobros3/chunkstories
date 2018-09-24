@@ -71,14 +71,14 @@ public class VoxelTexturesArrays {
 						"Max texture units < 32. This means your GPU is ancient and you'll run into a lot of issues!");
 			}
 
-			// We'll reserve 8 texture units for all the other fluff
+			// We'll reserve 8 texture units for getAllVoxelComponents the other fluff
 			int maxTextureArrays = (gl_MaxTextureUnits - 8);
 
 			List<AtlasElement> elements = new ArrayList<AtlasElement>();
 			// Map<Integer, AtlasElement> sizeBuckets = new HashMap<Integer,
 			// AtlasElement>();
 
-			// First we want to iterate over every file to get an idea of how many textures
+			// First we want to iterate over every file to getVoxelComponent an idea of how many textures
 			// (and of how many sizes) we are dealing
 			Iterator<AssetHierarchy> allFiles = content.modsManager().getAllUniqueEntries();
 			AssetHierarchy entry;
@@ -176,7 +176,7 @@ public class VoxelTexturesArrays {
 				System.exit(-602);
 			}
 
-			// Once that's done, try to fit all everything in the texture units constraints
+			// Once that's done, try to fit getAllVoxelComponents everything in the texture units constraints
 			int[] sizes = new int[maxTextureArrays];
 			int[] counts = new int[maxTextureArrays];
 			AtlasElement[][] stuff = new AtlasElement[maxTextureArrays][gl_MaxTextureArraySize];
@@ -252,7 +252,7 @@ public class VoxelTexturesArrays {
 			System.out.println("Found space OK for every " + elements.size() + " voxel texture, had to downscale "
 					+ downscaleTimes + " resolutions down to " + maxDownscaled);
 
-			// Once we secured all the needed textures, let's assemble them in a big map
+			// Once we secured getAllVoxelComponents the needed textures, let's assemble them in a big map
 			for (int i = 0; i < maxTextureArrays; i++) {
 				System.out.println("Array " + i + ": Size:" + sizes[i] + " Count:" + counts[i]);
 				sizes[i] = 0;

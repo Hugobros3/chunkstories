@@ -171,7 +171,7 @@ public abstract class DefaultPluginManager implements PluginManager {
 
 				}
 
-				// Instanciate the plugin after all
+				// Instanciate the plugin after getAllVoxelComponents
 				ChunkStoriesPlugin pluginInstance = pluginInformation.createInstance(pluginExecutionContext);
 
 				activePlugins.add(pluginInstance);
@@ -266,7 +266,7 @@ public abstract class DefaultPluginManager implements PluginManager {
 	public void registerEventListener(Listener listener, ChunkStoriesPlugin plugin) {
 		System.out.println("Registering " + listener);
 		try {
-			// Get a list of all the classes methods
+			// Get a list of getAllVoxelComponents the classes methods
 			Set<Method> methods = new HashSet<Method>();
 			for (Method method : listener.getClass().getMethods())
 				methods.add(method);

@@ -6,15 +6,14 @@
 
 package io.xol.chunkstories.world.generator
 
-import DefinitionsLexer
-import DefinitionsParser
+import WorldGeneratorDefinitionsLexer
+import WorldGeneratorDefinitionsParser
 import io.xol.chunkstories.api.content.Asset
 import io.xol.chunkstories.api.content.Content
 import io.xol.chunkstories.api.content.mods.ModsManager
 import io.xol.chunkstories.api.world.generator.BlankWorldGenerator
 import io.xol.chunkstories.api.world.generator.WorldGeneratorDefinition
 import io.xol.chunkstories.content.GameContentStore
-import io.xol.chunkstories.util.format.toMap
 import org.antlr.v4.runtime.ANTLRInputStream
 import org.antlr.v4.runtime.CommonTokenStream
 import org.slf4j.Logger
@@ -34,14 +33,14 @@ class WorldGeneratorsStore(private val store: GameContentStore) : Content.WorldG
     }
 
     fun reload() {
-        // Loads all generators
+        // Loads getAllVoxelComponents generators
         generators.clear()
 
-        fun loadWorldGeneratorsFile(a: Asset) {
-            logger().debug("Reading WorldGenerators declarations in : $a")
+        fun readDefinitions(a: Asset) {
+            logger().debug("Reading wrld generators definitions in : $a")
 
             val text = a.reader().use { it.readText() }
-            val parser = DefinitionsParser(CommonTokenStream(DefinitionsLexer(ANTLRInputStream(text))))
+            val parser = WorldGeneratorDefinitionsParser(CommonTokenStream(WorldGeneratorDefinitionsLexer(ANTLRInputStream(text))))
 
             for(definition in parser.worldGeneratorDefinitions().worldGeneratorDefinition()) {
                 val name = definition.Name().text
@@ -53,10 +52,8 @@ class WorldGeneratorsStore(private val store: GameContentStore) : Content.WorldG
             }
         }
 
-        val i = modsManager.getAllAssetsByExtension("generators")
-        while (i.hasNext()) {
-            val f = i.next()
-            loadWorldGeneratorsFile(f)
+        for(asset in store.modsManager().allAssets.filter { it.name.startsWith("generators/")  && it.name.endsWith(".def") }) {
+            readDefinitions(asset)
         }
     }
 
@@ -79,6 +76,28 @@ class WorldGeneratorsStore(private val store: GameContentStore) : Content.WorldG
 
     companion object {
         private val logger = LoggerFactory.getLogger("content.generators")
+    }
+
+    public fun WorldGeneratorDefinitionsParser.PropertiesContext?.toMap(): Map<String, String> {
+        if(this == null)
+            return emptyMap()
+
+        val map = mutableMapOf<String, String>()
+
+        this.extractIn(map, "")
+
+        return map
+    }
+
+    public fun WorldGeneratorDefinitionsParser.PropertiesContext.extractIn(map: MutableMap<String, String>, prefix: String) {
+        this.property().forEach {
+            map.put(prefix + it.Name().text, it.value().text)
+        }
+
+        this.compoundProperty().forEach {
+            map.put(prefix + it.Name().text, "exists")
+            it.properties().extractIn(map, prefix + it.Name().text + ".")
+        }
     }
 }
 

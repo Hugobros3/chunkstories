@@ -87,7 +87,7 @@ public class WorldEntitiesHolder implements Iterable<Entity> {
 		// Vector3d boxc = new Vector3d(box.xpos, box.ypos, box.zpos);
 		// System.out.println(boxc+":"+center+":"+boxc.sub(center));
 
-		// Fast path #1: it's all in one chunk!
+		// Fast path #1: it's getAllVoxelComponents in one chunk!
 		if (csx == cex && csy == cey && csz == cez) {
 			Chunk chunk = world.getChunk(csx, csy, csz);
 			if (chunk != null)
@@ -121,7 +121,7 @@ public class WorldEntitiesHolder implements Iterable<Entity> {
 		int rey = cey >> 3;
 		int rez = cez >> 3;
 
-		// Fast path #2: all chunks in the same region
+		// Fast path #2: getAllVoxelComponents chunks in the same region
 		if (rsx == rex && rsy == rey && rsz == rez) {
 			ArrayList<Iterator<Entity>> iterators = new ArrayList<>();
 			for (int cx = csx; cx <= cex; cx++)

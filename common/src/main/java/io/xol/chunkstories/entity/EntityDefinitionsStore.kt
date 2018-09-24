@@ -11,14 +11,13 @@ import java.util.HashMap
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-import DefinitionsLexer
-import DefinitionsParser
+import EntityDefinitionsLexer
+import EntityDefinitionsParser
 import io.xol.chunkstories.api.content.Asset
 import io.xol.chunkstories.api.content.Content
 import io.xol.chunkstories.api.content.Content.EntityDefinitions
 import io.xol.chunkstories.api.entity.EntityDefinition
 import io.xol.chunkstories.content.GameContentStore
-import io.xol.chunkstories.util.format.toMap
 import org.antlr.v4.runtime.ANTLRInputStream
 import org.antlr.v4.runtime.CommonTokenStream
 
@@ -38,11 +37,11 @@ class EntityDefinitionsStore(content: GameContentStore) : EntityDefinitions {
     fun reload() {
         entityDefinitions.clear()
 
-        fun readEntitiesDefinitions(a: Asset) {
+        fun readDefinitions(a: Asset) {
             logger().debug("Reading entities definitions in : $a")
 
             val text = a.reader().use { it.readText() }
-            val parser = DefinitionsParser(CommonTokenStream(DefinitionsLexer(ANTLRInputStream(text))))
+            val parser = EntityDefinitionsParser(CommonTokenStream(EntityDefinitionsLexer(ANTLRInputStream(text))))
 
             for(definition in parser.entitiesDefinitions().entitiesDefinition()) {
                 val name = definition.Name().text
@@ -55,10 +54,8 @@ class EntityDefinitionsStore(content: GameContentStore) : EntityDefinitions {
             }
         }
 
-        val i = content.modsManager().getAllAssetsByExtension("entities")
-        while (i.hasNext()) {
-            val f = i.next()
-            readEntitiesDefinitions(f)
+        for(asset in content.modsManager().allAssets.filter { it.name.startsWith("entities/") && it.name.endsWith(".def") }) {
+            readDefinitions(asset)
         }
     }
 
@@ -77,5 +74,27 @@ class EntityDefinitionsStore(content: GameContentStore) : EntityDefinitions {
     companion object {
 
         private val logger = LoggerFactory.getLogger("content.entities")
+    }
+
+    public fun EntityDefinitionsParser.PropertiesContext?.toMap(): Map<String, String> {
+        if(this == null)
+            return emptyMap()
+
+        val map = mutableMapOf<String, String>()
+
+        this.extractIn(map, "")
+
+        return map
+    }
+
+    public fun EntityDefinitionsParser.PropertiesContext.extractIn(map: MutableMap<String, String>, prefix: String) {
+        this.property().forEach {
+            map.put(prefix + it.Name().text, it.value().text)
+        }
+
+        this.compoundProperty().forEach {
+            map.put(prefix + it.Name().text, "exists")
+            it.properties().extractIn(map, prefix + it.Name().text + ".")
+        }
     }
 }

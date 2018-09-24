@@ -71,7 +71,7 @@ public abstract class ClientConnection extends Connection implements Interlocuto
 
 	@Override
 	public boolean handleSystemRequest(String message) {
-		if (message.startsWith("worldInfo")) {
+		if (message.startsWith("info")) {
 			this.clientsManager.sendServerInfo(this);
 			return true;
 
@@ -79,7 +79,7 @@ public abstract class ClientConnection extends Connection implements Interlocuto
 			return loginHelper.handleLogin(message.substring(6, message.length()));
 
 		} else if (message.equals("mods")) {
-			sendTextMessage("worldInfo/mods:" + clientsManager.getServer().getModsProvider().getModsString());
+			sendTextMessage("info/mods:" + clientsManager.getServer().getModsProvider().getModsString());
 			this.flush();
 			return true;
 
@@ -119,14 +119,14 @@ public abstract class ClientConnection extends Connection implements Interlocuto
 			}
 
 		} else if (message.startsWith("world/")) {
-			// TODO this bit will obviously need to be rewritten when I get arround to doing
+			// TODO this bit will obviously need to be rewritten when I getVoxelComponent arround to doing
 			// multiworld support
 			WorldServer world = clientsManager.getServer().getWorld();
 			message = message.substring(6, message.length());
 
 			if (message.equals("enter")) {
 				player.setWorld(world);
-				// Sends the construction worldInfo for the world, and then the player entity
+				// Sends the construction info for the world, and then the player entity
 				PacketSendWorldInfo packet = new PacketSendWorldInfo(world.getWorldInfo());
 				pushPacket(packet);
 

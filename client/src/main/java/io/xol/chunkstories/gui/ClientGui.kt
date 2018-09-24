@@ -15,7 +15,7 @@ val logger = LoggerFactory.getLogger("client.gui")
 
 class ClientGui(override val client: ClientImplementation) : Gui {
 
-    override val fonts: Fonts = TODO()
+    override val fonts: Fonts = FontsLibrary(client.content)
     override val mouse: Mouse = client.inputsManager.getMouse()
     override var topLayer: Layer? = null
 

@@ -360,7 +360,7 @@ constructor(gameContext: GameContext, info: WorldInfo, initialContentTranslator:
 
     @Throws(WorldException::class)
     override
-            /** Fancy get method that throws exceptions when the world isn't loaded  */
+            /** Fancy getVoxelComponent method that throws exceptions when the world isn't loaded  */
     fun peek(x: Int, y: Int, z: Int): ChunkCell {
         var x = x
         var y = y
@@ -396,7 +396,7 @@ constructor(gameContext: GameContext, info: WorldInfo, initialContentTranslator:
         return chunk.peek(x, y, z)
     }
 
-    /** Safety: provide an alternative 'fake' cell if the proper one isn't loaded  */
+    /** Safety: provide an alternative 'fake' getCell if the proper one isn't loaded  */
     internal inner class UnloadedWorldCell(x: Int, y: Int, z: Int, voxel: Voxel, meta: Int, blocklight: Int, sunlight: Int) : Cell(x, y, z, voxel, meta, blocklight, sunlight), World.WorldCell {
 
         init {
@@ -554,7 +554,7 @@ constructor(gameContext: GameContext, info: WorldInfo, initialContentTranslator:
     fun saveEverything(): Fence {
         val ioOperationsFence = CompoundFence()
 
-        logger.info("Saving all parts of world " + worldInfo.name)
+        logger.info("Saving getAllVoxelComponents parts of world " + worldInfo.name)
         ioOperationsFence.add(regionsHolder.saveAll())
         ioOperationsFence.add(regionsSummariesHolder.saveAllLoadedSummaries())
 

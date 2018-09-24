@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import io.xol.chunkstories.api.workers.Task;
 import io.xol.chunkstories.api.workers.TaskExecutor;
 import io.xol.chunkstories.api.workers.Tasks;
-import io.xol.chunkstories.api.world.WorldInfo.WorldSize;
+import io.xol.chunkstories.api.world.WorldSize;
 import io.xol.chunkstories.api.world.WorldUser;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.heightmap.Heightmap;

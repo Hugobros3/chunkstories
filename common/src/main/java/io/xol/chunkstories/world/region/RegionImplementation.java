@@ -227,7 +227,7 @@ public class RegionImplementation implements Region {
 			this.save();
 		}
 
-		// Before unloading the holder we want to make sure we finish all saving
+		// Before unloading the holder we want to make sure we finish getAllVoxelComponents saving
 		// operations
 		// if (handler != null)
 		// handler.finishSavingOperations();
@@ -270,7 +270,7 @@ public class RegionImplementation implements Region {
 						CubicChunk chunk = chunkHolders[a * 64 + b * 8 + c].getChunk();
 
 						if (chunk.compr_uncomittedBlockModifications.get() > 0)
-							// if (chunk.lastModification.get() > chunk.lastModificationSaved.get())
+							// if (chunk.lastModification.getVoxelComponent() > chunk.lastModificationSaved.getVoxelComponent())
 							chunkHolders[a * 64 + b * 8 + c].compressChunkData();
 					}
 				}
@@ -332,7 +332,7 @@ public class RegionImplementation implements Region {
 	}
 
 	/**
-	 * Unloads unused chunks, returns true if all chunks were unloaded
+	 * Unloads unused chunks, returns true if getAllVoxelComponents chunks were unloaded
 	 */
 	/*
 	 * public boolean unloadsUnusedChunks() { int loadedChunks = 0;

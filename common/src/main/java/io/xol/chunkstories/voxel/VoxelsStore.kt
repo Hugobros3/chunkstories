@@ -6,14 +6,13 @@
 
 package io.xol.chunkstories.voxel
 
-import DefinitionsLexer
-import DefinitionsParser
+import VoxelDefinitionsLexer
+import VoxelDefinitionsParser
 import io.xol.chunkstories.api.content.Asset
 import io.xol.chunkstories.api.content.Content
 import io.xol.chunkstories.api.voxel.Voxel
 import io.xol.chunkstories.api.voxel.VoxelDefinition
 import io.xol.chunkstories.content.GameContentStore
-import io.xol.chunkstories.util.format.toMap
 import io.xol.chunkstories.voxel.material.VoxelMaterialsStore
 import org.antlr.v4.runtime.ANTLRInputStream
 import org.antlr.v4.runtime.CommonTokenStream
@@ -27,7 +26,7 @@ class VoxelsStore(private val content: GameContentStore) : Content.Voxels {
     private val textures: VoxelTexturesStoreAndAtlaser = VoxelTexturesStoreAndAtlaser(this)
 
     var voxelsByName: MutableMap<String, Voxel> = HashMap()
-    private val air: Voxel = Voxel(VoxelDefinition(this, "air", mapOf("solid" to "false", "opaque" to "false")))
+    private lateinit var air: Voxel
 
     override fun materials(): VoxelMaterialsStore {
         return materials
@@ -41,20 +40,21 @@ class VoxelsStore(private val content: GameContentStore) : Content.Voxels {
         this.materials.reload()
         this.textures.buildTextureAtlas()
 
+        air = Voxel(io.xol.chunkstories.api.voxel.VoxelDefinition(this, "air", kotlin.collections.mapOf("solid" to "false", "opaque" to "false")))
         this.reloadVoxelTypes()
     }
 
     private fun reloadVoxelTypes() {
         voxelsByName.clear()
 
-        fun readVoxelsDefinitions(a: Asset) {
+        fun readDefinitions(a: Asset) {
             val loadedVoxels = 0
             logger().debug("Reading voxels definitions in : $a")
 
             val text = a.reader().use { it.readText() }
-            val parser = DefinitionsParser(CommonTokenStream(DefinitionsLexer(ANTLRInputStream(text))))
+            val parser = VoxelDefinitionsParser(CommonTokenStream(VoxelDefinitionsLexer(ANTLRInputStream(text))))
 
-            for(definition in parser.worldGeneratorDefinitions().worldGeneratorDefinition()) {
+            for(definition in parser.voxelDefinitions().voxelDefinition()) {
                 val name = definition.Name().text
                 val properties = definition.properties().toMap()
 
@@ -67,10 +67,8 @@ class VoxelsStore(private val content: GameContentStore) : Content.Voxels {
             logger().debug("Parsed file $a correctly, loading $loadedVoxels voxels.")
         }
 
-        val i = content.modsManager().getAllAssetsByExtension("voxels")
-        while (i.hasNext()) {
-            val f = i.next()
-            readVoxelsDefinitions(f)
+        for(asset in content.modsManager().allAssets.filter { it.name.startsWith("voxels/") && !it.name.startsWith("voxels/materials/") && it.name.endsWith(".def") }) {
+            readDefinitions(asset)
         }
     }
 
@@ -99,4 +97,25 @@ class VoxelsStore(private val content: GameContentStore) : Content.Voxels {
         private val logger = LoggerFactory.getLogger("content.voxels")
     }
 
+    public fun VoxelDefinitionsParser.PropertiesContext?.toMap(): Map<String, String> {
+        if(this == null)
+            return emptyMap()
+
+        val map = mutableMapOf<String, String>()
+
+        this.extractIn(map, "")
+
+        return map
+    }
+
+    public fun VoxelDefinitionsParser.PropertiesContext.extractIn(map: MutableMap<String, String>, prefix: String) {
+        this.property().forEach {
+            map.put(prefix + it.Name().text, it.value().text)
+        }
+
+        this.compoundProperty().forEach {
+            map.put(prefix + it.Name().text, "exists")
+            it.properties().extractIn(map, prefix + it.Name().text + ".")
+        }
+    }
 }

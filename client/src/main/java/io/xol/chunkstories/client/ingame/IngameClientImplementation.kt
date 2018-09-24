@@ -78,7 +78,7 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
 
         client.ingame = this
 
-        // Start only the logic after all that
+        // Start only the logic after getAllVoxelComponents that
         internalWorld.startLogic()
     }
 

@@ -139,7 +139,7 @@ public class ChunkStoriesLauncher {
 				out.writeBytes(params);
 				out.flush();
 				out.close();
-				// get response
+				// getVoxelComponent response
 				BufferedReader in = new BufferedReader(new InputStreamReader(htc.getInputStream()));
 				StringBuffer rslt = new StringBuffer();
 				String line;
@@ -160,7 +160,7 @@ public class ChunkStoriesLauncher {
 				out.writeBytes(params);
 				out.flush();
 				out.close();
-				// get response
+				// getVoxelComponent response
 				BufferedReader in = new BufferedReader(new InputStreamReader(htc.getInputStream()));
 				StringBuffer rslt = new StringBuffer();
 				String line;

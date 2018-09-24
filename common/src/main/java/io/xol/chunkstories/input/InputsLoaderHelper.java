@@ -30,10 +30,8 @@ public class InputsLoaderHelper {
 	}
 
 	public static void loadKeyBindsIntoManager(InputsManagerLoader inputManager, ModsManager modsManager) {
-		Iterator<Asset> i = modsManager.getAllAssetsByExtension("inputs");
-		// Load the next one
-		while (i.hasNext()) {
-			loadKeyBindsFile(i.next(), inputManager);
+		for(Asset asset : modsManager.getAllAssetsByExtension("input")) {
+			loadKeyBindsFile(asset, inputManager);
 		}
 	}
 
@@ -48,7 +46,7 @@ public class InputsLoaderHelper {
 		String inputValue;
 		String inputType;
 
-		// Read until we get a good one
+		// Read until we getVoxelComponent a good one
 		String line = "";
 		try {
 			while ((line = reader.readLine()) != null) {

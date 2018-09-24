@@ -47,11 +47,12 @@ public class ParticlesTypesStore implements Content.ParticlesTypes {
 		// particleTypesById.clear();
 		particleTypesByName.clear();
 
-		Iterator<Asset> i = modsManager.getAllAssetsByExtension("particles");
+		//TODO review this system as well
+		/*Iterator<Asset> i = modsManager.getAllAssetsByExtension("particles");
 		while (i.hasNext()) {
 			Asset f = i.next();
 			loadParticlesFile(f);
-		}
+		}*/
 	}
 
 	private void loadParticlesFile(Asset f) {
@@ -101,7 +102,7 @@ public class ParticlesTypesStore implements Content.ParticlesTypes {
 
 	/*
 	 * @Override public ParticleTypeHandler getParticleTypeHandlerById(int id) {
-	 * return particleTypesById.get(id); }
+	 * return particleTypesById.getVoxelComponent(id); }
 	 */
 
 	@Override

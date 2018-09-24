@@ -10,7 +10,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.HashSet;
@@ -29,7 +28,6 @@ import io.xol.chunkstories.api.server.RemotePlayer;
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.voxel.components.VoxelComponent;
-import io.xol.chunkstories.api.world.WorldClient;
 import io.xol.chunkstories.api.world.WorldUser;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.entity.EntitySerializer;
@@ -149,15 +147,15 @@ public class ChunkHolderImplementation implements ChunkHolder {
 		DataOutputStream dos = new DataOutputStream(bbos);
 
 		try {
-			// For all cells that have components
+			// For getAllVoxelComponents cells that have components
 			for (CellComponentsHolder voxelComponents : chunk.allCellComponents.values()) {
 
 				// Write a 1 then their in-chunk index
 				daos.writeByte((byte) 0x01);
 				daos.writeInt(voxelComponents.getIndex());
 
-				// For all components in this cell
-				for (Entry<String, VoxelComponent> entry : voxelComponents.all()) {
+				// For getAllVoxelComponents components in this getCell
+				for (Entry<String, VoxelComponent> entry : voxelComponents.getAllVoxelComponents()) {
 					daos.writeUTF(entry.getKey()); // Write component name
 
 					// Push the component in the temporary buffer
@@ -172,7 +170,7 @@ public class ChunkHolderImplementation implements ChunkHolder {
 					daos.writeShort(bytesPushed.length);
 
 					// Get those bytes as an array then write it in the compressed stuff
-					// smallBuffer.get(smallArray);
+					// smallBuffer.getVoxelComponent(smallArray);
 					daos.write(bytesPushed, 0, bytesPushed.length);
 
 					// Reset the temporary buffer

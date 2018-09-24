@@ -30,8 +30,8 @@ class GLFWWindow(val client: ClientImplementation) : Window {
             mainThread { glfwSetWindowTitle(glfwWindowHandle, value) }
         }
 
-    override var height: Int = 1024
-    override var width: Int = 640
+    override var width: Int = 1024
+    override var height: Int = 640
 
     val glfwWindowHandle: Long
     val backend: GLFWBasedGraphicsBackend

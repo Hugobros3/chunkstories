@@ -25,7 +25,7 @@ import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.region.RegionImplementation;
 
 /**
- * Sandboxed thread that runs all the game logic for one world
+ * Sandboxed thread that runs getAllVoxelComponents the game logic for one world
  */
 //TODO actually sandbox it lol
 public class WorldLogicThread extends Thread implements GameLogic {

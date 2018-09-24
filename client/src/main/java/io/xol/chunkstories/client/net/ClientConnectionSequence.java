@@ -52,7 +52,7 @@ public class ClientConnectionSequence extends Thread {
 
 			@Override
 			public boolean handleSystemRequest(String msg) {
-				if (msg.startsWith("worldInfo/mods:")) {
+				if (msg.startsWith("info/mods:")) {
 					modsString = msg.substring(10, msg.length());
 					modsSemaphore.release();
 					return true;
@@ -145,7 +145,7 @@ public class ClientConnectionSequence extends Thread {
 
 				File cached = new File(GameDirectory.getGameFolderPath() + "/servermods/" + modMd5Hash + ".zip");
 				if (!cached.exists()) {
-					// Sequentially download all the mods from the server
+					// Sequentially download getAllVoxelComponents the mods from the server
 					status = connection.obtainModFile(modMd5Hash, cached);
 					status.waitForEnd();
 				}
@@ -199,7 +199,7 @@ public class ClientConnectionSequence extends Thread {
 			if (!translatorSemaphore.tryAcquire(5, TimeUnit.SECONDS))
 				abort("Timed out waiting for content translator");
 
-			// Ask the server world worldInfo and if allowed where to spawn and preload chunks
+			// Ask the server world info and if allowed where to spawn and preload chunks
 			connection.sendTextMessage("world/enter");
 			if (!worldSemaphore.tryAcquire(15, TimeUnit.SECONDS))
 				abort("Timed out waiting for world");

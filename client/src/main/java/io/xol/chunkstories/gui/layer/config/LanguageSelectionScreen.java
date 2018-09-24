@@ -112,7 +112,7 @@ public class LanguageSelectionScreen extends Layer {
 			this.translationCode = info;
 
 			try {
-				InputStream is = gui.getClient().getContent().getAsset("./lang/" + translationCode + "/lang.worldInfo").read();
+				InputStream is = gui.getClient().getContent().getAsset("./lang/" + translationCode + "/lang.info").read();
 				BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
 
 				translationName = reader.readLine();

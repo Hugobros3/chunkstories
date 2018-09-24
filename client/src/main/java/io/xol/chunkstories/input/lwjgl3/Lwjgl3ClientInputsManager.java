@@ -203,7 +203,7 @@ public class Lwjgl3ClientInputsManager implements ClientInputsManager, InputsMan
             if (keyBind instanceof Lwjgl3KeyBindCompound) {
                 Lwjgl3KeyBindCompound keyCombinaison = (Lwjgl3KeyBindCompound) keyBind;
 
-                // Check all other keys were pressed
+                // Check getAllVoxelComponents other keys were pressed
                 for (int glfwKey : keyCombinaison.glfwKeys) {
                     if (glfwGetKey(gameWindow.getGlfwWindowHandle(), glfwKey) != GLFW_PRESS)
                         continue inputs;

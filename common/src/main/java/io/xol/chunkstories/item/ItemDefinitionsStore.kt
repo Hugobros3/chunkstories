@@ -6,15 +6,14 @@
 
 package io.xol.chunkstories.item
 
-import DefinitionsLexer
-import DefinitionsParser
+import ItemDefinitionsLexer
+import ItemDefinitionsParser
 import io.xol.chunkstories.api.content.Asset
 import io.xol.chunkstories.api.content.Content
 import io.xol.chunkstories.api.content.Content.ItemsDefinitions
 import io.xol.chunkstories.api.content.mods.ModsManager
 import io.xol.chunkstories.api.item.ItemDefinition
 import io.xol.chunkstories.content.GameContentStore
-import io.xol.chunkstories.util.format.toMap
 import org.antlr.v4.runtime.ANTLRInputStream
 import org.antlr.v4.runtime.CommonTokenStream
 import org.slf4j.Logger
@@ -41,9 +40,11 @@ class ItemDefinitionsStore(gameContentStore: GameContentStore) : ItemsDefinition
     fun reload() {
         itemDefinitions.clear()
 
-        fun readItemsDefinitions(a: Asset) {
+        fun readDefinitions(a: Asset) {
+            logger().debug("Reading items definitions in : $a")
+
             val text = a.reader().use { it.readText() }
-            val parser = DefinitionsParser(CommonTokenStream(DefinitionsLexer(ANTLRInputStream(text))))
+            val parser = ItemDefinitionsParser(CommonTokenStream(ItemDefinitionsLexer(ANTLRInputStream(text))))
 
             for (definition in parser.itemDefinitions().itemDefinition()) {
                 val name = definition.Name().text
@@ -56,11 +57,8 @@ class ItemDefinitionsStore(gameContentStore: GameContentStore) : ItemsDefinition
             }
         }
 
-        val i = modsManager.getAllAssetsByExtension("items")
-        while (i.hasNext()) {
-            val f = i.next()
-            logger().debug("Reading items definitions in : $f")
-            readItemsDefinitions(f)
+        for(asset in content.modsManager().allAssets.filter { it.name.startsWith("items/") && it.name.endsWith(".def") }) {
+            readDefinitions(asset)
         }
     }
 
@@ -75,5 +73,27 @@ class ItemDefinitionsStore(gameContentStore: GameContentStore) : ItemsDefinition
 
     override fun parent(): Content {
         return content
+    }
+
+    fun ItemDefinitionsParser.PropertiesContext?.toMap(): Map<String, String> {
+        if(this == null)
+            return emptyMap()
+
+        val map = mutableMapOf<String, String>()
+
+        this.extractIn(map, "")
+
+        return map
+    }
+
+    fun ItemDefinitionsParser.PropertiesContext.extractIn(map: MutableMap<String, String>, prefix: String) {
+        this.property().forEach {
+            map.put(prefix + it.Name().text, it.value().text)
+        }
+
+        this.compoundProperty().forEach {
+            map.put(prefix + it.Name().text, "exists")
+            it.properties().extractIn(map, prefix + it.Name().text + ".")
+        }
     }
 }

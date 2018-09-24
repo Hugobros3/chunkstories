@@ -30,7 +30,7 @@ constructor(val localHost: IngameClientLocalHost, info: WorldInfo, folder: File)
 
     override fun tick() {
         // TODO: processIncommingPackets();
-        // TODO: flush all
+        // TODO: flush getAllVoxelComponents
         super.tick()
     }
 

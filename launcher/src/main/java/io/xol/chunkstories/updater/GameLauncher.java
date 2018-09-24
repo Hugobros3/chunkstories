@@ -51,7 +51,7 @@ public class GameLauncher implements ActionListener {
 				while ((line = br.readLine()) != null) {
 					System.out.println(type + line);
 
-					// If we get this error less than 5s after starting the game, it's fucked !
+					// If we getVoxelComponent this error less than 5s after starting the game, it's fucked !
 					if (line.contains("This Java instance does not support a 64-bit JVM")
 							&& (System.currentTimeMillis() - t) < 5000) {
 						wrongJVM = true;

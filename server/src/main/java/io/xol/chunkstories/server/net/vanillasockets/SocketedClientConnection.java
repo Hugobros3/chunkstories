@@ -50,7 +50,7 @@ public class SocketedClientConnection extends ClientConnection {
 		this.clientsManager = clientsManager;
 		this.socket = socket;
 
-		// We get exceptions early if this fails
+		// We getVoxelComponent exceptions early if this fails
 		InputStream socketInputStream = socket.getInputStream();
 		OutputStream socketOutputStream = socket.getOutputStream();
 

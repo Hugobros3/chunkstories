@@ -6,8 +6,8 @@
 
 package io.xol.chunkstories.voxel.material
 
-import DefinitionsLexer
-import DefinitionsParser
+import MaterialDefinitionsLexer
+import MaterialDefinitionsParser
 import java.util.HashMap
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -16,7 +16,6 @@ import io.xol.chunkstories.api.content.Asset
 import io.xol.chunkstories.api.content.Content
 import io.xol.chunkstories.api.voxel.materials.VoxelMaterial
 import io.xol.chunkstories.content.GameContentStore
-import io.xol.chunkstories.util.format.toMap
 import io.xol.chunkstories.voxel.VoxelsStore
 import org.antlr.v4.runtime.ANTLRInputStream
 import org.antlr.v4.runtime.CommonTokenStream
@@ -26,8 +25,7 @@ class VoxelMaterialsStore(private val voxels: VoxelsStore) : Content.Voxels.Voxe
 
     internal var materials: MutableMap<String, VoxelMaterial> = HashMap()
 
-    override val defaultMaterial: VoxelMaterial
-        get() = null!!
+    override lateinit var defaultMaterial: VoxelMaterial
 
     override fun logger(): Logger {
         return logger
@@ -44,7 +42,7 @@ class VoxelMaterialsStore(private val voxels: VoxelsStore) : Content.Voxels.Voxe
             logger().debug("Reading voxel material definitions in : $a")
 
             val text = a.reader().use { it.readText() }
-            val parser = DefinitionsParser(CommonTokenStream(DefinitionsLexer(ANTLRInputStream(text))))
+            val parser = MaterialDefinitionsParser(CommonTokenStream(MaterialDefinitionsLexer(ANTLRInputStream(text))))
 
             for(definition in parser.voxelMaterialDefinitions().voxelMaterialDefinition()) {
                 val name = definition.Name().text
@@ -53,14 +51,15 @@ class VoxelMaterialsStore(private val voxels: VoxelsStore) : Content.Voxels.Voxe
                 val voxelMaterial = VoxelMaterial(this, name, properties)
                 materials.put(name, voxelMaterial)
 
+                if(voxelMaterial.name == "default")
+                    defaultMaterial = voxelMaterial
+
                 logger.debug("Loaded voxel material $voxelMaterial")
             }
         }
 
-        val i = store.modsManager().getAllAssetsByExtension("materials")
-        while (i.hasNext()) {
-            val f = i.next()
-            readDefinitions(f)
+        for(asset in store.modsManager().allAssets.filter { it.name.startsWith("voxels/materials/") && it.name.endsWith(".def") }) {
+            readDefinitions(asset)
         }
     }
 
@@ -79,7 +78,28 @@ class VoxelMaterialsStore(private val voxels: VoxelsStore) : Content.Voxels.Voxe
     }
 
     companion object {
-
         private val logger = LoggerFactory.getLogger("content.materials")
+    }
+
+    public fun MaterialDefinitionsParser.PropertiesContext?.toMap(): Map<String, String> {
+        if(this == null)
+            return emptyMap()
+
+        val map = mutableMapOf<String, String>()
+
+        this.extractIn(map, "")
+
+        return map
+    }
+
+    public fun MaterialDefinitionsParser.PropertiesContext.extractIn(map: MutableMap<String, String>, prefix: String) {
+        this.property().forEach {
+            map.put(prefix + it.Name().text, it.value().text)
+        }
+
+        this.compoundProperty().forEach {
+            map.put(prefix + it.Name().text, "exists")
+            it.properties().extractIn(map, prefix + it.Name().text + ".")
+        }
     }
 }

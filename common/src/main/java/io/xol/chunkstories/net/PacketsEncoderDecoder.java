@@ -61,7 +61,7 @@ public abstract class PacketsEncoderDecoder implements PacketReceptionContext, P
 	}
 
 	/**
-	 * Read 1 or 2 bytes to get the next packet ID and returns a packet of this type
+	 * Read 1 or 2 bytes to getVoxelComponent the next packet ID and returns a packet of this type
 	 * if it exists
 	 * 
 	 * @param in The InputStream of the connection

@@ -269,7 +269,7 @@ public class OptionsScreen extends Layer {
 
 		int configTabIndex = 0;
 		for (ConfigTab tab : configTabs) {
-			// Add all these elements to the Gui handler
+			// Add getAllVoxelComponents these elements to the Gui handler
 			elements.addAll(tab.configButtons);
 
 			Button tabButton = new Button(this, 0, 0, tab.name);

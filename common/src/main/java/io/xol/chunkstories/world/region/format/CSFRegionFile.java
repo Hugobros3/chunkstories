@@ -52,7 +52,7 @@ public abstract class CSFRegionFile implements OfflineSerializedData {
 	public void finishSavingOperations() {
 		// Waits out saving operations.
 		while (savingOperations.get() > 0)
-			// System.out.println(savingOperations.get());
+			// System.out.println(savingOperations.getVoxelComponent());
 			synchronized (this) {
 				try {
 					wait(20L);

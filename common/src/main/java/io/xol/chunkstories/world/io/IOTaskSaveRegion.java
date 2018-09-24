@@ -25,7 +25,7 @@ public class IOTaskSaveRegion extends IOTask {
 	public boolean task(TaskExecutor taskExecutor) {
 		region.handler.savingOperations.incrementAndGet();
 
-		// First compress all loaded chunks !
+		// First compress getAllVoxelComponents loaded chunks !
 		region.compressAll();
 
 		try {

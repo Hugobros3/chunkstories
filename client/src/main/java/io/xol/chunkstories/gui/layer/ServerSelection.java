@@ -188,7 +188,7 @@ public class ServerSelection extends Layer implements HttpRequester {
             int port;
 
             ServerGuiItem(String ip, int port) {
-                super("Loading server worldInfo for " + ip + ":" + port, "");
+                super("Loading server info for " + ip + ":" + port, "");
                 this.ip = ip;
                 this.port = port;
                 this.sd = new ServerDataLoader(this, ip, port);
@@ -245,22 +245,22 @@ public class ServerSelection extends Layer implements HttpRequester {
                 DataInputStream in = new DataInputStream(socket.getInputStream());
                 DataOutputStream out = new DataOutputStream(socket.getOutputStream());
                 out.write((byte) 0x00);
-                out.writeInt("worldInfo".getBytes("UTF-8").length + 2);
-                out.writeUTF("worldInfo");
+                out.writeInt("info".getBytes("UTF-8").length + 2);
+                out.writeUTF("info");
                 out.flush();
 
                 ping = System.currentTimeMillis() - connectStart;
                 String lineRead = "";
 
-                while (!lineRead.startsWith("worldInfo/done")) {
+                while (!lineRead.startsWith("info/done")) {
                     // Discard first byte, assummed to be packed id
                     in.readByte();
                     // Discard one more byte, assumed to be packet length
                     in.readInt();
                     lineRead = in.readUTF();
                     // System.out.println("red:"+lineRead);
-                    if (lineRead.startsWith("worldInfo/")) {
-                        String data[] = lineRead.replace("worldInfo/", "").split(":");
+                    if (lineRead.startsWith("info/")) {
+                        String data[] = lineRead.replace("info/", "").split(":");
                         if (data[0].equals("name"))
                             name = data[1];
                         if (data[0].equals("version"))

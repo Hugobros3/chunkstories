@@ -58,7 +58,7 @@ public class TaskBuildHeightmap extends Task {
 					}
 				}
 
-		// Wait until all of that crap loads
+		// Wait until getAllVoxelComponents of that crap loads
 		loadRelevantData.traverse();
 
 		// Descend from top
@@ -68,12 +68,10 @@ public class TaskBuildHeightmap extends Task {
 					int cx = i / 32;
 					int cy = h / 32;
 					int cz = j / 32;
-					CellData data = holders[(cx * 8 + cy) * heightInChunks + cz].getChunk().peek(i % 32, h % 32,
-							j % 32);
-					// CellData data = csWorld.peekSafely(regionX * 256 + i, h, regionZ * 256 + j);
+					CellData data = holders[(cx * 8 + cy) * heightInChunks + cz].getChunk().peek(i % 32, h % 32, j % 32);
 					if (!data.getVoxel().isAir()) {
 						Voxel vox = data.getVoxel();
-						if (vox.getDefinition().isSolid() || vox.getDefinition().isLiquid()) {
+						if (vox.isSolid() || vox.getName().equals("water")) {
 							summary.setTopCell(data);
 							break;
 						}

@@ -132,7 +132,7 @@ public class SendQueue extends Thread {
 			if (packet == null)
 				break;
 
-			// We signal all the remaining flush fluff
+			// We signal getAllVoxelComponents the remaining flush fluff
 			if (packet instanceof Flush)
 				((Flush) packet).fence.signal();
 

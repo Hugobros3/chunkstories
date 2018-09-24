@@ -182,14 +182,14 @@ public class VirtualSoundManager implements SoundManager {
 		Iterator<ServerPlayerVirtualSoundManager> i = playersSoundManagers.iterator();
 		while (i.hasNext()) {
 			ServerPlayerVirtualSoundManager playerSoundManager = i.next();
-			// Send it to all players than could hear it
+			// Send it to getAllVoxelComponents players than could hear it
 			if (exceptHim == null || !playerSoundManager.equals(exceptHim)) {
 				if (!playerSoundManager.couldHearSource(soundSource))
 					continue;
 
 				// Creates the soundSource and adds it weakly to the player's list
 				playerSoundManager.serverPlayer.pushPacket(packet);
-				// TODO maybe not relevant since for updating we iterate over all players then
+				// TODO maybe not relevant since for updating we iterate over getAllVoxelComponents players then
 				// do a distance check
 				playerSoundManager.addSourceToPlayer(soundSource);
 			}
@@ -205,7 +205,7 @@ public class VirtualSoundManager implements SoundManager {
 		Iterator<ServerPlayerVirtualSoundManager> i = playersSoundManagers.iterator();
 		while (i.hasNext()) {
 			ServerPlayerVirtualSoundManager playerSoundManager = i.next();
-			// Send it to all players than could hear it
+			// Send it to getAllVoxelComponents players than could hear it
 			if (exceptHim == null || !playerSoundManager.equals(exceptHim)) {
 				if (!playerSoundManager.couldHearSource(soundSource))
 					continue;

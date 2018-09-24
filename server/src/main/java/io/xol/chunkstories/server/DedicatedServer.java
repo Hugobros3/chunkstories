@@ -55,7 +55,7 @@ import io.xol.chunkstories.util.VersionInfo;
 import io.xol.chunkstories.world.WorldServer;
 
 /**
- * The server class handles and make the link between all server components It
+ * The server class handles and make the link between getAllVoxelComponents server components It
  * also takes care of the command line input as it's the main thread, thought
  * the processing of command lines is handled by ServerConsole.java
  */
@@ -308,7 +308,7 @@ public class DedicatedServer implements Runnable, Server {
 		// When stopped, close sockets and save config.
 		logger.info("Stopping world logic");
 
-		logger.info("Killing all connections");
+		logger.info("Killing getAllVoxelComponents connections");
 		clientsManager.close();
 
 		logger.info("Shutting down plugins ...");

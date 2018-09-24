@@ -88,7 +88,7 @@ class ClientImplementation internal constructor(coreContentLocation: File, modsS
         inputsManager.reload()
 
         // Spawns worker threads
-        var nbThreads : Int = configuration.values["client.performance.workerThreads"]
+        var nbThreads : Int = configuration.getIntValue("client.performance.workerThreads")
 
         if (nbThreads <= 0) {
             nbThreads = Runtime.getRuntime().availableProcessors() / 2
@@ -102,7 +102,7 @@ class ClientImplementation internal constructor(coreContentLocation: File, modsS
         tasks.start()
 
         // Load the correct language
-        val lang : String = configuration.values["client.game.language"]
+        val lang : String = configuration.getValue("client.game.language")
         if (lang != "")
             content.localization().loadTranslation(lang)
 

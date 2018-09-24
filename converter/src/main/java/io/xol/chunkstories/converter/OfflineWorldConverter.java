@@ -12,6 +12,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Random;
 
+import io.xol.chunkstories.api.world.WorldSize;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,12 +21,10 @@ import io.xol.chunkstories.api.content.Content;
 import io.xol.chunkstories.api.converter.MinecraftBlocksTranslator;
 import io.xol.chunkstories.api.plugin.PluginManager;
 import io.xol.chunkstories.api.world.WorldInfo;
-import io.xol.chunkstories.api.world.WorldInfo.WorldSize;
 import io.xol.chunkstories.api.world.WorldUser;
 import io.xol.chunkstories.content.GameContentStore;
 import io.xol.chunkstories.util.FoldersUtils;
 import io.xol.chunkstories.util.LogbackSetupHelper;
-import io.xol.chunkstories.world.WorldInfoImplementation;
 import io.xol.chunkstories.world.WorldLoadingException;
 import io.xol.chunkstories.world.WorldTool;
 import io.xol.enklume.MinecraftWorld;
@@ -40,7 +39,7 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser {
 			helpText += "Usage : anvil-export anvilWorldDir csWorldDir <size> <x-start> <z-start> [void-fill] [-vr]\n";
 			helpText += "anvilWorldDir is the directory containing the Minecraft level ( the one with level.dat inside )\n";
 			helpText += "csWorldDir is the export destination.\n";
-			helpText += "Target size for chunk stories world, avaible sizes : " + WorldInfo.WorldSize.getAllSizes()
+			helpText += "Target size for chunk stories world, avaible sizes : " + WorldSize.values()
 					+ "\n";
 			helpText += "<x-start> and <z-start> are the two coordinates (in mc world) from where we will take the data, "
 					+ "going up in the coordinates to fill the world size.\n Exemple : anvil-export mc cs TINY -512 -512 will take the"
@@ -105,9 +104,9 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser {
 			FoldersUtils.deleteFolder(csWorldDir);
 		}
 
-		WorldInfo.WorldSize size = WorldInfo.WorldSize.getWorldSize(arguments[2]);
+		WorldSize size = WorldSize.valueOf(arguments[2]);
 		if (size == null) {
-			System.out.println("Invalid world size. Valid world sizes : " + WorldInfo.WorldSize.getAllSizes());
+			System.out.println("Invalid world size. Valid world sizes : " + WorldSize.values());
 			return;
 		}
 
@@ -170,7 +169,7 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser {
 		verbose("Loading converter_mapping.txt");
 		File file = new File("converter_mapping.txt");
 		mappers = new MinecraftBlocksTranslator(this, file);
-		verbose("Done, took " + (System.nanoTime() - System.nanoTime()) / 1000 + " µs");
+		verbose("Done, took " + (System.nanoTime() - System.nanoTime()) / 1000 + " ï¿½s");
 
 		// Loads the Minecraft World
 		mcWorld = new MinecraftWorld(mcFolder);
@@ -186,8 +185,7 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser {
 
 		// IO is NOT blocking here, good luck.
 		try {
-			csWorld = new WorldTool(this, new WorldInfoImplementation(internalName, csWorldName, random.nextLong() + "",
-					description, size, worldGenerator), false);
+			csWorld = new WorldTool(this, new WorldInfo(internalName, csWorldName, description,random.nextLong() + "", size, worldGenerator), false);
 		} catch (WorldLoadingException e) {
 			throw new RuntimeException("Error creating world", e);
 		}

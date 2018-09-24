@@ -29,7 +29,7 @@ public class ContentTests {
 
 		System.out.println(m.getMaterials());
 
-		// System.out.println(m.getVertices().get(0)+":"+m.getVertices().get(1)+":"+m.getVertices().get(2));
+		// System.out.println(m.getVertices().getVoxelComponent(0)+":"+m.getVertices().getVoxelComponent(1)+":"+m.getVertices().getVoxelComponent(2));
 		/*
 		 * try { Asset a =
 		 * testContext.getContent().getAsset("./models/human_all_animations.dae");

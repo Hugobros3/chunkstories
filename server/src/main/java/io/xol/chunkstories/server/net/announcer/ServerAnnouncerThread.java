@@ -72,7 +72,7 @@ public class ServerAnnouncerThread extends Thread {
                     sleep(6000);
             }
         } catch (Exception e) {
-            server.getLogger().error("An unexpected error happened during multiverse stuff. More worldInfo below.");
+            server.getLogger().error("An unexpected error happened during multiverse stuff. More info below.");
             e.printStackTrace();
         }
     }

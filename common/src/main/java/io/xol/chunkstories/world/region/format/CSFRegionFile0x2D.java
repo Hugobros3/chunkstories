@@ -96,7 +96,7 @@ public class CSFRegionFile0x2D extends CSFRegionFile {
 			// their voxel data if needed
 			owner.setDiskDataLoaded(true);
 
-			// don't tick the world entities until we get this straight
+			// don't tick the world entities until we getVoxelComponent this straight
 			/*
 			 * owner.world.entitiesLock.writeLock().lock();
 			 * 
@@ -168,7 +168,7 @@ public class CSFRegionFile0x2D extends CSFRegionFile {
 								dos.writeInt(0);
 						}
 
-			// don't tick the world entities until we get this straight - this is about not
+			// don't tick the world entities until we getVoxelComponent this straight - this is about not
 			// duplicating entities
 			/*
 			 * owner.world.entitiesLock.readLock().lock();
@@ -192,7 +192,7 @@ public class CSFRegionFile0x2D extends CSFRegionFile {
 	public void finishSavingOperations() {
 		// Waits out saving operations.
 		while (savingOperations.get() > 0)
-			// System.out.println(savingOperations.get());
+			// System.out.println(savingOperations.getVoxelComponent());
 			synchronized (this) {
 				try {
 					wait(20L);

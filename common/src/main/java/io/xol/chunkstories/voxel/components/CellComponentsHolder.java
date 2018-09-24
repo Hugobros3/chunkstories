@@ -66,12 +66,12 @@ public class CellComponentsHolder implements CellComponents {
 	}
 
 	@Override
-	public VoxelComponent get(String name) {
+	public VoxelComponent getVoxelComponent(String name) {
 		return map.get(name);
 	}
 
 	@Override
-	public IterableIterator<Entry<String, VoxelComponent>> all() {
+	public IterableIterator<Entry<String, VoxelComponent>> getAllVoxelComponents() {
 		return new IterableIteratorWrapper<Entry<String, VoxelComponent>>(map.entrySet().iterator());
 	}
 
@@ -81,7 +81,7 @@ public class CellComponentsHolder implements CellComponents {
 	}
 
 	@Override
-	public ChunkCell cell() {
+	public ChunkCell getCell() {
 		return chunk.peek(getX(), getY(), getZ());
 	}
 
@@ -90,10 +90,9 @@ public class CellComponentsHolder implements CellComponents {
 		return chunk.holder().getChunkUsers();
 	}
 
-	@Override
-	public String name(VoxelComponent component) {
+	public String getRegisteredComponentName(VoxelComponent component) {
 		// Reverse lookup
-		Iterator<Entry<String, VoxelComponent>> i = all();
+		Iterator<Entry<String, VoxelComponent>> i = getAllVoxelComponents();
 		while (i.hasNext()) {
 			Entry<String, VoxelComponent> e = i.next();
 			if (e.getValue() == component)

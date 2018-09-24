@@ -53,7 +53,7 @@ public class ServerInputsManager implements InputsManager, InputsManagerLoader {
 		inputs.clear();
 		inputsMap.clear();
 
-		// Load all keys as virtual ones
+		// Load getAllVoxelComponents keys as virtual ones
 		InputsLoaderHelper.loadKeyBindsIntoManager(this, player.getContext().getContent().modsManager());
 
 		// Add virtual mouse buttons

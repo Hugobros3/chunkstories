@@ -58,13 +58,7 @@ public class PacketsStore implements Content.PacketDefinitions {
 				return "system.packets";
 			}
 		});
-
-		// Load packets from content
-		Iterator<Asset> i = store.modsManager().getAllAssetsByExtension("packets");
-		while (i.hasNext()) {
-			Asset f = i.next();
-			readPacketsDefinitions(f);
-		}
+		//TODO review this system
 	}
 
 	private void readPacketsDefinitions(Asset f) {
@@ -77,7 +71,8 @@ public class PacketsStore implements Content.PacketDefinitions {
 	private void readPacketsDefinitions(BufferedReader reader, Object source) {
 		logger().debug("Reading packets definitions in : " + source);
 
-		throw new UnsupportedOperationException("TODO");
+		//TODO
+		//throw new UnsupportedOperationException("TODO");
 		/*try {
 			String line = "";
 			PacketDefinitionImplementation packetType = null;

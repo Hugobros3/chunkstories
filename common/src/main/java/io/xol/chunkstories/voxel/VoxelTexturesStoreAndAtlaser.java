@@ -67,33 +67,29 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
     public VoxelTexturesStoreAndAtlaser(VoxelsStore voxels) {
         this.content = voxels.parent();
         this.voxels = voxels;
-
-        this.buildTextureAtlas();
+        //this.buildTextureAtlas();
     }
 
     public void buildTextureAtlas() {
+        logger.debug("Rebuilding texture atlas");
         try {
             // Clear previous values
             texMap.clear();
 
-            // Compute all sizes first.
+            // Compute getAllVoxelComponents sizes first.
             int totalSurfacedNeeded = 0;
-            // Get all sizes :
+            // Get getAllVoxelComponents sizes :
             List<VoxelTextureAtlased> voxelTexturesSortedBySize = new ArrayList<VoxelTextureAtlased>();
 
-            // First we want to iterate over every file to get an idea of how many textures
+            // First we want to iterate over every file to getVoxelComponent an idea of how many textures
             // (and of how many sizes) we are dealing
-            Iterator<AssetHierarchy> allFiles = content.modsManager().getAllUniqueEntries();
-            AssetHierarchy entry;
-            Asset f;
-            while (allFiles.hasNext()) {
-                entry = allFiles.next();
-                if (entry.getName().startsWith("./voxels/textures/")) {
-                    String name = entry.getName().replace("./voxels/textures/", "");
+            for (AssetHierarchy entry : content.modsManager().getAllUniqueEntries()) {
+                if (entry.getName().startsWith("voxels/textures/")) {
+                    String name = entry.getName().replace("voxels/textures/", "");
 
-                    f = entry.topInstance();
+                    Asset asset = entry.getTopInstance();
                     // For now only PNG is supported TODO: .hdr and more ?
-                    if (f.getName().endsWith(".png")) {
+                    if (asset.getName().endsWith(".png")) {
                         String textureName = name.replace(".png", "").replace("/", ".").replace("\\", ".");
                         if (textureName.endsWith("_normal") || textureName.endsWith("_roughness") || textureName.endsWith("_metalness")
                                 || textureName.endsWith("_n") || textureName.endsWith("_r") || textureName.endsWith("_m")) {
@@ -101,14 +97,14 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
                             continue;
                         }
 
-                        if (f.getName().contains("/_"))
+                        if (asset.getName().contains("/_"))
                             continue; // ignore directories starting with _
 
                         if (!texMap.containsKey(textureName)) {
-                            VoxelTextureAtlased voxelTexture = new VoxelTextureAtlased(textureName, f, uniquesIds);
+                            VoxelTextureAtlased voxelTexture = new VoxelTextureAtlased(textureName, asset, uniquesIds);
                             uniquesIds++;
 
-                            voxelTexture.imageFileDimensions = getImageSize(f);
+                            voxelTexture.imageFileDimensions = getImageSize(asset);
 
                             voxelTexturesSortedBySize.add(voxelTexture);
                             totalSurfacedNeeded += voxelTexture.imageFileDimensions * voxelTexture.imageFileDimensions;
@@ -229,7 +225,7 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
                     try {
                         tileAlbedoBuffer = ImageIO.read(content.modsManager().getAsset(strippedAssetName + ".png").read());
                     } catch (NullPointerException e) {
-                        System.out.println("./voxels/textures/" + voxelTexture.getName() + ".png");
+                        System.out.println("voxels/textures/" + voxelTexture.getName() + ".png");
                         throw e;
                     }
 
@@ -272,7 +268,7 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
                     if (normalMap == null)
                         normalMap = content.modsManager().getAsset(strippedAssetName + "_n.png");
                     if (normalMap == null)
-                        normalMap = content.modsManager().getAsset("./voxels/textures/notex_normal.png");
+                        normalMap = content.modsManager().getAsset("voxels/textures/notex_normal.png");
 
                     tileNormalBuffer = ImageIO.read(normalMap.read());
                     for (int x = 0; x < voxelTexture.imageFileDimensions; x++) {
@@ -286,7 +282,7 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
                     if (roughnessMap == null)
                         roughnessMap = content.modsManager().getAsset(strippedAssetName + "_r.png");
                     if (roughnessMap == null)
-                        roughnessMap = content.modsManager().getAsset("./voxels/textures/notex_roughness.png");
+                        roughnessMap = content.modsManager().getAsset("voxels/textures/notex_roughness.png");
 
                     tileRoughnessBuffer = ImageIO.read(roughnessMap.read());
 
@@ -294,7 +290,7 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
                     if (metalnessMap == null)
                         metalnessMap = content.modsManager().getAsset(strippedAssetName + "_m.png");
                     if (metalnessMap == null)
-                        metalnessMap = content.modsManager().getAsset("./voxels/textures/notex_metalness.png");
+                        metalnessMap = content.modsManager().getAsset("voxels/textures/notex_metalness.png");
 
                     tileMetalnessBuffer = ImageIO.read(metalnessMap.read());
 
@@ -329,8 +325,8 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
                     sizeRequired *= 2;
             }
             // Read textures metadata
-            // TODO read all overrides in priority
-            readTexturesMeta(content.modsManager().getAsset("./voxels/textures/meta.txt"));
+            // TODO read getAllVoxelComponents overrides in priority
+            readTexturesMeta(content.modsManager().getAsset("voxels/textures/meta.txt"));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -410,7 +406,7 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
     }
 
     public Iterator<VoxelTexture> all() {
-        return new CasterIterator<VoxelTexture, VoxelTextureAtlased>(texMap.values().iterator());
+        return new CasterIterator<>(texMap.values().iterator());
     }
 
     @Override
@@ -481,6 +477,6 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
     @NotNull
     @Override
     public VoxelTexture getDefaultVoxelTexture() {
-        throw new NotImplementedException();
+        return getVoxelTexture("notex");
     }
 }

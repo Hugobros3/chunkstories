@@ -56,10 +56,10 @@ public class PluginInformationImplementation extends URLClassLoader implements P
 			throws PluginLoadException, IOException {
 		super(new URL[] { file.toURI().toURL() }, parentLoader);
 
-		// Opens the jar and grabs plugin.worldInfo
+		// Opens the jar and grabs plugin.info
 		JarFile jar = new JarFile(file);
 
-		InputStream pluginInfo = getRessourceFromJar(jar, "plugin.worldInfo");
+		InputStream pluginInfo = getRessourceFromJar(jar, "plugin.info");
 
 		if (pluginInfo == null)
 			throw new NotAPluginException(file);
@@ -201,7 +201,7 @@ public class PluginInformationImplementation extends URLClassLoader implements P
 			}
 		}
 
-		// System.out.println("Loaded worldInfo : " + pluginName + " version " +
+		// System.out.println("Loaded info : " + pluginName + " version " +
 		// pluginVersion + " by " + authors + " EP:" + entryPoint);
 		br.close();
 	}
@@ -248,7 +248,7 @@ public class PluginInformationImplementation extends URLClassLoader implements P
 						.newInstance(new Object[] { this, pluginExecutionContext });
 			}
 		}
-		// Catch-all for plugin creation failure
+		// Catch-getAllVoxelComponents for plugin creation failure
 		catch (InstantiationException | IllegalAccessException | IllegalArgumentException
 				| InvocationTargetException e) {
 			e.printStackTrace();
@@ -265,7 +265,7 @@ public class PluginInformationImplementation extends URLClassLoader implements P
 			JarEntry entry = jar.getJarEntry(ressource);
 			return jar.getInputStream(entry);
 		} catch (Exception e) {
-			// System.out.println("Unable to get ressource '" + ressource + "' from jar '" +
+			// System.out.println("Unable to getVoxelComponent ressource '" + ressource + "' from jar '" +
 			// jar + "'");
 			// e.printStackTrace();
 		}

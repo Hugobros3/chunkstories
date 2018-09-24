@@ -14,7 +14,7 @@ import io.xol.chunkstories.api.plugin.commands.CommandEmitter;
 import io.xol.chunkstories.api.server.Server;
 import io.xol.chunkstories.server.commands.ServerCommandBasic;
 
-/** Removes all items from inventory */
+/** Removes getAllVoxelComponents items from inventory */
 public class ClearCommand extends ServerCommandBasic {
 
 	public ClearCommand(Server serverConsole) {

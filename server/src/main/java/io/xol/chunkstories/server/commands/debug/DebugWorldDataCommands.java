@@ -66,7 +66,7 @@ public class DebugWorldDataCommands extends ServerCommandBasic {
 	}
 
 	private void dumpLoadedHeightmap(WorldImplementation world, CommandEmitter emitter) {
-		emitter.sendMessage("#00FFD0" + "Dumping all region summaries...");
+		emitter.sendMessage("#00FFD0" + "Dumping getAllVoxelComponents region summaries...");
 		for (HeightmapImplementation sum : world.getRegionsSummariesHolder().all()) {
 			emitter.sendMessage("#00FFD0" + sum);
 		}

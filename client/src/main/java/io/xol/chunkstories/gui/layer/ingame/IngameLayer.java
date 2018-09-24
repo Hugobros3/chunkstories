@@ -134,7 +134,7 @@ public class IngameLayer extends Layer {
 			if (inventoryBarDrawer != null)
 				inventoryBarDrawer.drawPlayerInventorySummary(renderer, gui.getViewportWidth() / 2 - 7, 64 + 64);
 
-			// Draw debug worldInfo
+			// Draw debug info
 			//if (client.getConfiguration().getBooleanValue("client.debug.showDebugInfo"))
 			//	debugInfoRenderer.drawF3debugMenu(renderer);
 

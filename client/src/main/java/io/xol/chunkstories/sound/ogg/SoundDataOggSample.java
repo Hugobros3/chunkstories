@@ -47,7 +47,7 @@ public class SoundDataOggSample extends SoundData {
 				alId = alGenBuffers();
 				length = lel.length * 1000L / (oggInput.info.channels * oggInput.getRate());
 				// System.out.println("Sound "+f+" is "+length+" ms
-				// long."+oggInput.worldInfo.channels+"r:"+oggInput.getRate()+"lel"+lel.length);
+				// long."+oggInput.info.channels+"r:"+oggInput.getRate()+"lel"+lel.length);
 				int format = oggInput.info.channels == 1 ? AL_FORMAT_MONO16 : AL_FORMAT_STEREO16;
 				alBufferData(alId, format, buf, oggInput.getRate());
 				int result;

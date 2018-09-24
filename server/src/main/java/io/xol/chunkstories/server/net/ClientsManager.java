@@ -112,14 +112,14 @@ public abstract class ClientsManager {
 	}
 
 	public void sendServerInfo(ClientConnection clientConnection) {
-		clientConnection.sendTextMessage("worldInfo/name:"
+		clientConnection.sendTextMessage("info/name:"
 				+ getServer().getServerConfig().getValue("serverName"));
 		clientConnection.sendTextMessage(
-				"worldInfo/motd:" + getServer().getServerConfig().getValue("serverDescription"));
-		clientConnection.sendTextMessage("worldInfo/connected:" + getPlayersNumber() + ":" + getMaxClients());
-		clientConnection.sendTextMessage("worldInfo/version:" + VersionInfo.version);
-		clientConnection.sendTextMessage("worldInfo/mods:" + getServer().getModsProvider().getModsString());
-		clientConnection.sendTextMessage("worldInfo/done");
+				"info/motd:" + getServer().getServerConfig().getValue("serverDescription"));
+		clientConnection.sendTextMessage("info/connected:" + getPlayersNumber() + ":" + getMaxClients());
+		clientConnection.sendTextMessage("info/version:" + VersionInfo.version);
+		clientConnection.sendTextMessage("info/mods:" + getServer().getModsProvider().getModsString());
+		clientConnection.sendTextMessage("info/done");
 
 		// We flush because since the potential player isn't registered, the automatic
 		// flush at world ticking doesn't apply to them
