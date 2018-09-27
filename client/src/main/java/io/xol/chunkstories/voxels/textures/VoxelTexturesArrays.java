@@ -80,11 +80,7 @@ public class VoxelTexturesArrays {
 
 			// First we want to iterate over every file to getVoxelComponent an idea of how many textures
 			// (and of how many sizes) we are dealing
-			Iterator<AssetHierarchy> allFiles = content.modsManager().getAllUniqueEntries();
-			AssetHierarchy entry;
-			Asset f;
-			while (allFiles.hasNext()) {
-				entry = allFiles.next();
+			for(AssetHierarchy entry : content.modsManager().getAllUniqueEntries()) {
 				if (entry.getName().startsWith("./voxels/textures/")) {
 					String name = entry.getName().replace("./voxels/textures/", "");
 
@@ -101,8 +97,8 @@ public class VoxelTexturesArrays {
 					if (name.contains("/"))
 						continue;
 
-					f = entry.topInstance();
-					if (f.getName().endsWith(".png")) {
+					Asset asset = entry.getTopInstance();
+					if (asset.getName().endsWith(".png")) {
 						String textureName = name.replace(".png", "");
 
 						// VoxelTextureAtlased voxelTexture = new VoxelTextureAtlased(textureName,
@@ -111,12 +107,12 @@ public class VoxelTexturesArrays {
 						int width, height;
 						try {
 							ImageReader reader = ImageIO.getImageReadersBySuffix("png").next();
-							ImageInputStream stream = ImageIO.createImageInputStream(f.read());
+							ImageInputStream stream = ImageIO.createImageInputStream(asset.read());
 							reader.setInput(stream);
 							width = reader.getWidth(reader.getMinIndex());
 							height = reader.getHeight(reader.getMinIndex());
 						} catch (Exception e) {
-							logger().warn("Could not obtain the size of the asset: " + f.getName());
+							logger().warn("Could not obtain the size of the asset: " + asset.getName());
 							// e.printStackTrace(logger().getPrintWriter());
 							// e.printStackTrace();
 							continue;
@@ -124,21 +120,21 @@ public class VoxelTexturesArrays {
 
 						// We want nice powers of two
 						if ((width & (width - 1)) != 0 || (height & (height - 1)) != 0) {
-							logger().warn("Non pow2 texture size (" + width + ":" + height + ") for: " + f.getName()
+							logger().warn("Non pow2 texture size (" + width + ":" + height + ") for: " + asset.getName()
 									+ ", skipping.");
 							continue;
 						}
 
 						// Width >= 16
 						if (width < 16 || height < 16) {
-							logger().warn("Too small (<16px) texture (" + width + ":" + height + ") for: " + f.getName()
+							logger().warn("Too small (<16px) texture (" + width + ":" + height + ") for: " + asset.getName()
 									+ ", skipping.");
 							continue;
 						}
 
 						int frames = height / width;
 
-						AtlasElement texture = new AtlasElement(f, type, textureName, width, frames);
+						AtlasElement texture = new AtlasElement(asset, type, textureName, width, frames);
 						elements.add(texture);
 
 						if (textureName.equals("notex")) {
@@ -160,9 +156,9 @@ public class VoxelTexturesArrays {
 						// sizeBuckets.put(width, texture);
 						// System.out.println("Added: "+texture);
 
-					} else if (f.getName().endsWith(".jpg") || f.getName().endsWith(".tiff")
-							|| f.getName().endsWith(".bmp") || f.getName().endsWith(".gif")) {
-						logger().warn("Found image file of unsupported format in voxels folder: " + f.getName()
+					} else if (asset.getName().endsWith(".jpg") || asset.getName().endsWith(".tiff")
+							|| asset.getName().endsWith(".bmp") || asset.getName().endsWith(".gif")) {
+						logger().warn("Found image file of unsupported format in voxels folder: " + asset.getName()
 								+ ", ignoring.");
 						continue;
 					}

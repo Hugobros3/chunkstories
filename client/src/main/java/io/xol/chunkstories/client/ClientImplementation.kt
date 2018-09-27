@@ -37,8 +37,8 @@ class ClientImplementation internal constructor(coreContentLocation: File, modsS
     private val logger: Logger
     private val chatLogger = LoggerFactory.getLogger("game.chat")
 
-    override val configuration: Configuration
     private val configFile: File = File("./config/client.config")
+    override val configuration: Configuration = Configuration(this, configFile)
 
     override val content: GameContentStore
     override val tasks: ClientTasksPool
@@ -81,7 +81,6 @@ class ClientImplementation internal constructor(coreContentLocation: File, modsS
         content = GameContentStore(this, coreContentLocation, modsStringArgument)
         content.reload()
 
-        configuration = Configuration(this, configFile)
         //gameWindow.stage_2_init(); // TODO this is bs, don't need this plz
         configuration.load()
 

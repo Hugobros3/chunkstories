@@ -8,36 +8,49 @@ import org.lwjgl.PointerBuffer
 import org.lwjgl.glfw.GLFWVulkan.glfwGetRequiredInstanceExtensions
 import org.lwjgl.glfw.GLFWVulkan.glfwVulkanSupported
 import org.lwjgl.system.MemoryStack
+import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
-
 import java.awt.image.BufferedImage
 
 class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(window) {
+    internal val enableValidation = true
+
+    val requiredDeviceExtensions = listOf(KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME)
+
     private var instance: VkInstance
     private val debugCallback: Long
 
-    private val physicalDevice: VkPhysicalDevice
+    /** All the physical devices available to Vulkan */
+    val physicalDevices: List<PhysicalDevice>
+
+    /** The physical device in use by the application */
+    val physicalDevice: PhysicalDevice
+
+    /** The logical device in use by the application, derived from the physicalDevice */
+    val logicalDevice: LogicalDevice
+
+    internal var surface: WindowSurface
 
     init {
-        if(!glfwVulkanSupported())
+        if (!glfwVulkanSupported())
             throw Exception("Vulkan is not supported on this machine")
 
         val requiredExtensions = glfwGetRequiredInstanceExtensions() ?: throw Exception("Vulkan is not supported for windowed rendering on this machine.")
 
-        instance = createVkInstance(requiredExtensions, true)
+        instance = createVkInstance(requiredExtensions)
         debugCallback = setupDebug(instance)
+        surface = WindowSurface(instance, window)
 
-        physicalDevice = enumerateAndPickPhysicalDevice(true)
+        physicalDevices = enumeratePhysicalDevices()
+        physicalDevice = pickPhysicalDevice(true)
+
+        logicalDevice = LogicalDevice(this, physicalDevice)
     }
 
     override fun drawFrame(frameNumber: Int) {
         //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun cleanup() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun captureFramebuffer(): BufferedImage {
@@ -45,7 +58,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
     }
 
     /** Creates a Vulkan instance */
-    private fun createVkInstance(requiredExtensions: PointerBuffer, enableValidation: Boolean): VkInstance = MemoryStack.stackPush().use {
+    private fun createVkInstance(requiredExtensions: PointerBuffer): VkInstance = stackPush().use {
         val appInfoStruct = VkApplicationInfo.callocStack().sType(VK10.VK_STRUCTURE_TYPE_APPLICATION_INFO).apply {
             pApplicationName(MemoryStack.stackUTF8("Chunk Stories"))
             pEngineName(MemoryStack.stackUTF8("Chunk Stories Vulkan Backend"))
@@ -69,7 +82,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
         val createInfoStruct = VkInstanceCreateInfo.callocStack().sType(VK10.VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO).apply {
             pApplicationInfo(appInfoStruct)
             ppEnabledExtensionNames(requestedExtensions)
-            if (requestedLayers != null) ppEnabledLayerNames(requestedLayers)
+            ppEnabledLayerNames(requestedLayers)
         }
 
         val pInstance = MemoryStack.stackMallocPointer(1)
@@ -103,37 +116,63 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
         }
     }
 
-    fun enumerateAndPickPhysicalDevice(prompt: Boolean): VkPhysicalDevice = MemoryStack.stackPush().use {
-        logger.debug("Picking device...")
+    private fun enumeratePhysicalDevices(): List<PhysicalDevice> = stackPush().use {
+        logger.debug("Enumerating physical devices...")
         val pPhysicalDeviceCount = it.mallocInt(1)
-        vkEnumeratePhysicalDevices(instance, pPhysicalDeviceCount, null).ensureIs("Failed to count physical devices !", VK_SUCCESS, VK_INCOMPLETE)
+        vkEnumeratePhysicalDevices(instance, pPhysicalDeviceCount, null).ensureIs("Failed to count physical devices !", VK_SUCCESS)
 
         // Then make a suitably sized array and grab'em
         val pPhysicalDevices = it.mallocPointer(pPhysicalDeviceCount.get(0))
         vkEnumeratePhysicalDevices(instance, pPhysicalDeviceCount, pPhysicalDevices).ensureIs("Failed to enumerate physical devices !", VK_SUCCESS, VK_INCOMPLETE)
 
-        //We are only interested in the first device
-        val physicalDeviceHandle = pPhysicalDevices.get(0)
+        val physicalDevices = mutableListOf<PhysicalDevice>()
+        for (physicalDeviceHandle in pPhysicalDevices) {
+            val physicalDevice = PhysicalDevice(this, VkPhysicalDevice(physicalDeviceHandle, instance))
 
-        val physicalDevice = VkPhysicalDevice(physicalDeviceHandle, instance)
+            if (physicalDevice.suitable)
+                physicalDevices.add(physicalDevice)
+            else
+                logger.debug("Ignoring unsuitable physical device : $physicalDevice")
+        }
 
-        val pProperties = VkPhysicalDeviceProperties.callocStack(it)
-        VK10.vkGetPhysicalDeviceProperties(physicalDevice, pProperties)
+        return physicalDevices
+    }
 
-        logger.debug("Vulkan device: ${pProperties.deviceNameString()} (${pProperties.deviceType().physicalDeviceTypeName()}) ")
-        logger.debug("${pProperties.limits().bufferImageGranularity()}")
+    private fun pickPhysicalDevice(prompt: Boolean): PhysicalDevice {
+        logger.debug("Selecting physical device...")
+        var bestPhysicalDevice: PhysicalDevice? = null
 
-        return physicalDevice
+        val preferredDeviceId = window.client.configuration.getIntValue("client.graphics.vulkan.device")
+        if (preferredDeviceId != 0) {
+            bestPhysicalDevice = physicalDevices.find { it.deviceId == preferredDeviceId }
+        } else if (prompt) {
+            //TODO ask the user with a pop-up
+        }
+
+        // The user didn't pick his favourite device ? Use the most suitable one
+        if (bestPhysicalDevice == null)
+            bestPhysicalDevice = physicalDevices.maxBy(PhysicalDevice::fitnessScore)
+
+        logger.debug("Picking physical device $bestPhysicalDevice")
+
+        return bestPhysicalDevice ?: throw Exception("Could not find suitable physical device !")
     }
 
     override fun createDrawingSystem(clazz: Class<DrawingSystem>): DrawingSystem {
-        when(clazz) {
+        when (clazz) {
             FarTerrainDrawer::class.java -> {
-                TODO("you have to implement the common drawing systems in your backend")
+                TODO("you have to implement the common drawing systems in your graphicsBackend")
             }
         }
 
         TODO("not implemented")
+    }
+
+    override fun cleanup() {
+        logicalDevice.cleanup()
+
+        vkDestroyInstance(instance, null)
+        logger.debug("Successfully finished cleaning up Vulkan objects")
     }
 
     companion object {
