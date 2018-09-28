@@ -10,6 +10,7 @@ import org.lwjgl.glfw.GLFWVulkan.glfwVulkanSupported
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
+import org.lwjgl.vulkan.KHRSwapchain.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 import java.awt.image.BufferedImage
@@ -31,7 +32,16 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
     /** The logical device in use by the application, derived from the physicalDevice */
     val logicalDevice: LogicalDevice
 
+    /** The actual surface we're drawing onto */
     internal var surface: WindowSurface
+    internal var swapchain: SwapChain
+
+    val renderToBackbuffer : VulkanRenderPass
+
+    val imageAvailableSemaphore : VkSemaphore
+    val renderFinishedSemaphore : VkSemaphore
+
+    val triangleDrawer : TriangleDrawer
 
     init {
         if (!glfwVulkanSupported())
@@ -47,10 +57,41 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
         physicalDevice = pickPhysicalDevice(true)
 
         logicalDevice = LogicalDevice(this, physicalDevice)
+
+        renderToBackbuffer = VulkanRenderPass(this)
+        swapchain = SwapChain(this, renderToBackbuffer)
+
+        imageAvailableSemaphore = createSemaphore()
+        renderFinishedSemaphore = createSemaphore()
+
+        triangleDrawer = TriangleDrawer(this)
     }
 
     override fun drawFrame(frameNumber: Int) {
-        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        stackPush()
+        val pImageIndex = stackMallocInt(1)
+        vkAcquireNextImageKHR(logicalDevice.vkDevice, swapchain.handle, Long.MAX_VALUE, imageAvailableSemaphore, VK_NULL_HANDLE, pImageIndex)
+        val imageIndex = pImageIndex.get(0)
+
+        triangleDrawer.drawTriangle(imageIndex)
+
+        val presentInfo = VkPresentInfoKHR.callocStack().sType(VK_STRUCTURE_TYPE_PRESENT_INFO_KHR).apply {
+            val waitSemaphores = stackMallocLong(1)
+            waitSemaphores.put(0, renderFinishedSemaphore)
+            pWaitSemaphores(waitSemaphores)
+
+            val swapChains = stackMallocLong(1)
+            swapChains.put(0, swapchain.handle)
+            pSwapchains(swapChains)
+            swapchainCount(1)
+
+            pImageIndices(pImageIndex)
+            pResults(null)
+        }
+
+        vkQueuePresentKHR(logicalDevice.presentationQueue.handle, presentInfo)
+
+        stackPop()
     }
 
     override fun captureFramebuffer(): BufferedImage {
@@ -99,6 +140,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
         val callback = object : VkDebugReportCallbackEXT() {
             override fun invoke(flags: Int, objectType: Int, `object`: Long, location: Long, messageCode: Int, pLayerPrefix: Long, pMessage: Long, pUserData: Long): Int {
                 logger.error(VkDebugReportCallbackEXT.getString(pMessage))
+                Thread.dumpStack()
                 return 0
             }
         }

@@ -23,14 +23,14 @@ enum class PhysicalDeviceType(val fitnessScoreBonus: Int){
 }
 
 fun Int.presentationMode() = when(this) {
-    VK_PRESENT_MODE_IMMEDIATE_KHR -> PresentionMode.IMMEDIATE
-    VK_PRESENT_MODE_MAILBOX_KHR -> PresentionMode.MAILBOX
-    VK_PRESENT_MODE_FIFO_KHR -> PresentionMode.FIFO
-    VK_PRESENT_MODE_FIFO_RELAXED_KHR -> PresentionMode.FIFO_RELAXED
+    VK_PRESENT_MODE_IMMEDIATE_KHR -> PresentationMode.IMMEDIATE
+    VK_PRESENT_MODE_MAILBOX_KHR -> PresentationMode.MAILBOX
+    VK_PRESENT_MODE_FIFO_KHR -> PresentationMode.FIFO
+    VK_PRESENT_MODE_FIFO_RELAXED_KHR -> PresentationMode.FIFO_RELAXED
     else -> throw Exception("Unrecognized presentation mode !")
 }
 
-enum class PresentionMode {
+enum class PresentationMode {
     IMMEDIATE,
     MAILBOX,
     FIFO,

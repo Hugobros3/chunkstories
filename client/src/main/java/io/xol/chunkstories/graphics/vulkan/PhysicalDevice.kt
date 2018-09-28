@@ -1,11 +1,12 @@
 package io.xol.chunkstories.graphics.vulkan
 
 import org.lwjgl.system.MemoryStack
-import org.lwjgl.system.MemoryStack.*
+import org.lwjgl.system.MemoryStack.stackMallocInt
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.KHRSurface.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
+import java.nio.IntBuffer
 
 class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vkPhysicalDevice: VkPhysicalDevice) {
     val deviceName: String
@@ -19,8 +20,7 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
 
     val availableExtensions: List<String>
 
-    var swapchainDetails: PhysicalDevice.SwapChainSupportDetails
-        internal set
+    internal val swapchainDetails: PhysicalDevice.SwapChainSupportDetails
 
     init {
         MemoryStack.stackPush() // todo use use() when Contracts work correctly on AutoCloseable
@@ -42,12 +42,12 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
 
         // Query device extensions
         val pExtensionsCount = stackMallocInt(1)
-        vkEnumerateDeviceExtensionProperties(vkPhysicalDevice, null as? CharSequence, pExtensionsCount, null).ensureIs("Failed to obtain extensions count",VK_SUCCESS)
+        vkEnumerateDeviceExtensionProperties(vkPhysicalDevice, null as? CharSequence, pExtensionsCount, null).ensureIs("Failed to obtain extensions count", VK_SUCCESS)
         val pExtensionsProperties = VkExtensionProperties.callocStack(pExtensionsCount.get(0))
         vkEnumerateDeviceExtensionProperties(vkPhysicalDevice, null as? CharSequence, pExtensionsCount, pExtensionsProperties).ensureIs("Failed to enumerate extensions", VK_SUCCESS, VK_INCOMPLETE)
 
         availableExtensions = mutableListOf()
-        for(extension in pExtensionsProperties) {
+        for (extension in pExtensionsProperties) {
             availableExtensions += extension.extensionNameString()
         }
 
@@ -85,10 +85,8 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
         vkGetPhysicalDeviceSurfacePresentModesKHR(vkPhysicalDevice, backend.surface.handle, pPresentModeCount, null)
         val pPresentModes = stackMallocInt(pPresentModeCount.get(0))
         vkGetPhysicalDeviceSurfacePresentModesKHR(vkPhysicalDevice, backend.surface.handle, pPresentModeCount, pPresentModes)
-        val pPresentModesIa = IntArray(pPresentModeCount.get(0))
-        pPresentModes.get(pPresentModesIa, 0, pPresentModes.capacity())
 
-        swapchainDetails = SwapChainSupportDetails(pSurfaceCapabilities, pSurfaceFormats, pPresentModesIa.map { it.presentationMode() } )
+        swapchainDetails = SwapChainSupportDetails(pSurfaceCapabilities, pSurfaceFormats, pPresentModes)
 
         // Decide if suitable or not based on all that
         suitable = vkPhysicalDeviceFeatures.geometryShader() && availableExtensions.containsAll(backend.requiredDeviceExtensions) && swapchainDetails.suitable
@@ -101,58 +99,69 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
         override fun toString() = "QueueFamily(index=$index, canGraphics=$canGraphics, canCompute=$canCompute, canTransfer=$canTransfer, canPresent=$canPresent)"
     }
 
-    inner class SwapChainSupportDetails(capabilities: VkSurfaceCapabilitiesKHR, surfaceFormats: VkSurfaceFormatKHR.Buffer, val presentationModes: List<PresentionMode>) {
-        val suitable : Boolean
+    inner class SwapChainSupportDetails(capabilities: VkSurfaceCapabilitiesKHR, surfaceFormats: VkSurfaceFormatKHR.Buffer, pPresentModes: IntBuffer) {
+        val suitable: Boolean
 
-        val formatToUse : Formats
-        val colorSpaceToUse = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
-        val presentationModeToUse: PresentionMode
+        val availableFormats: List<Formats>
+        val availablePresentationModes: List<PresentationMode>
+        val imageCount: IntRange
+
+        val transformToUse : Int
+        val formatToUse: Formats
+            get() =
+                if (availableFormats == listOf(Formats.VK_FORMAT_UNDEFINED))
+                    Formats.VK_FORMAT_R8G8B8A8_UNORM
+                else {
+                    val preferredFormat = Formats.VK_FORMAT_R8G8B8A8_UNORM
+                    if (availableFormats.contains(preferredFormat))
+                        preferredFormat
+                    else
+                        availableFormats[0]
+                }
+
+        val presentationModeToUse: PresentationMode
+            get() {
+                val preferredPresentationModes = when (backend.window.client.configuration.getValue("client.graphics.syncMode")) {
+                    "vsync" -> listOf(PresentationMode.FIFO)
+                    "fastest" -> listOf(PresentationMode.IMMEDIATE, PresentationMode.MAILBOX, PresentationMode.FIFO_RELAXED, PresentationMode.FIFO)
+                    else -> listOf(PresentationMode.MAILBOX, PresentationMode.FIFO)
+                }
+
+                var bestCompromise: PresentationMode? = null
+                for (mostLikedPresentationMode in preferredPresentationModes) {
+                    if (availablePresentationModes.contains(mostLikedPresentationMode)) {
+                        bestCompromise = mostLikedPresentationMode
+                    }
+                }
+
+                return bestCompromise ?: throw Exception("Could not find a compromise between the presentation mode the user wanted and those available")
+            }
+
         val swapExtentToUse: VkExtent2D
+        /** Afaik only supported color space for now, so whatever */
+        val colorSpaceToUse = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
 
         init {
-            suitable = surfaceFormats.capacity() > 0 && presentationModes.isNotEmpty()
+            availableFormats = surfaceFormats.map { Formats.values()[it.format()] }
 
-            logger.debug("Listing formats")
-            for(format in surfaceFormats) {
-                logger.debug("Format: ${Formats.values()[format.format()].name} colorspace : ${format.colorSpace()}")
-            }
-
-            // Chose a surface format
-            // TODO HDR support and way smarter selection
-            val availableFormats = surfaceFormats.map { Formats.values()[it.format()] }
-
-            if(surfaceFormats.capacity() == 1 && surfaceFormats.get(0).format() == VK_FORMAT_UNDEFINED)
-                formatToUse = Formats.VK_FORMAT_R8G8B8A8_UNORM
-            else {
-                val preferredFormat = Formats.VK_FORMAT_R8G8B8A8_UNORM
-                if(availableFormats.contains(preferredFormat))
-                    formatToUse = preferredFormat
-                else
-                    formatToUse = availableFormats[0]
-            }
-
-            // Chose a presentation mode
-            val preferredPresentationModes = when(backend.window.client.configuration.getValue("client.graphics.syncMode")) {
-                "vsync" -> listOf(PresentionMode.FIFO)
-                "fastest" -> listOf(PresentionMode.IMMEDIATE, PresentionMode.MAILBOX, PresentionMode.FIFO_RELAXED, PresentionMode.FIFO)
-                else -> listOf(PresentionMode.MAILBOX, PresentionMode.FIFO)
-            }
-
-            var bestCompromise : PresentionMode? = null
-            for(mostLikedPresentationMode in preferredPresentationModes) {
-                if(presentationModes.contains(mostLikedPresentationMode)) {
-                    bestCompromise = mostLikedPresentationMode
-                }
-            }
-
-            presentationModeToUse = bestCompromise ?: throw Exception("Could not find a compromise between the presentation mode the user wanted and those available")
+            val pPresentModesIa = IntArray(pPresentModes.capacity())
+            pPresentModes.get(pPresentModesIa, 0, pPresentModes.capacity())
+            availablePresentationModes = pPresentModesIa.map { it.presentationMode() }
 
             // Look I'm not interested in this swap extent bs
             // TODO maybe later
             swapExtentToUse = capabilities.currentExtent()
-            if(swapExtentToUse.width() == Int.MAX_VALUE)
+            if (swapExtentToUse.width() == Int.MAX_VALUE)
                 throw Exception("Not willing to deal with this nonsense right now")
+
+            imageCount = if(capabilities.maxImageCount() != 0) capabilities.minImageCount()..capabilities.maxImageCount() else capabilities.minImageCount()..Int.MAX_VALUE
+
+            transformToUse = capabilities.currentTransform()
+
+            suitable = surfaceFormats.capacity() > 0 && availablePresentationModes.isNotEmpty()
         }
+
+
     }
 
     override fun toString(): String {
