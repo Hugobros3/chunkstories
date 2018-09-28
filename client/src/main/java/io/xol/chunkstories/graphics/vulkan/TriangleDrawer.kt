@@ -6,7 +6,11 @@ import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 
 class TriangleDrawer(val backend: VulkanGraphicsBackend) {
-    val pipeline = Pipeline(backend, backend.renderToBackbuffer)
+
+    val vertexShaderModule = ShaderModule(backend, javaClass.classLoader.getResourceAsStream("./shaders/base.vert.spv"))
+    val fragmentShaderModule = ShaderModule(backend, javaClass.classLoader.getResourceAsStream("./shaders/base.frag.spv"))
+
+    val pipeline = Pipeline(backend, backend.renderToBackbuffer, vertexShaderModule, fragmentShaderModule)
     val cmdPool = CommandPool(backend, backend.logicalDevice.graphicsQueue.family)
 
     val commandBuffers : List<VkCommandBuffer>
@@ -72,12 +76,12 @@ class TriangleDrawer(val backend: VulkanGraphicsBackend) {
         stackPop()
     }
 
-    fun drawTriangle(index: Int) {
+    fun drawTriangle(frame : SwapChain.Frame) {
         stackPush().use {
 
             val submitInfo = VkSubmitInfo.callocStack().sType(VK_STRUCTURE_TYPE_SUBMIT_INFO).apply {
                 val waitOnSemaphores = stackMallocLong(1)
-                waitOnSemaphores.put(0, backend.imageAvailableSemaphore)
+                waitOnSemaphores.put(0, frame.renderCanBeginSemaphore)
                 pWaitSemaphores(waitOnSemaphores)
                 waitSemaphoreCount(1)
 
@@ -86,16 +90,23 @@ class TriangleDrawer(val backend: VulkanGraphicsBackend) {
                 pWaitDstStageMask(waitStages)
 
                 val commandBuffers = stackMallocPointer(1)
-                commandBuffers.put(0, this@TriangleDrawer.commandBuffers[index])
+                commandBuffers.put(0, this@TriangleDrawer.commandBuffers[frame.swapchainImageIndex])
                 pCommandBuffers(commandBuffers)
 
-                val semaphoresToSignal = stackMallocLong(1)
-                semaphoresToSignal.put(0, backend.renderFinishedSemaphore)
+                val semaphoresToSignal = stackLongs(frame.renderFinishedSemaphore)
                 pSignalSemaphores(semaphoresToSignal)
             }
 
-            vkQueueSubmit(backend.logicalDevice.graphicsQueue.handle, submitInfo, VK_NULL_HANDLE).ensureIs("Failed to submit command buffer", VK_SUCCESS)
+            vkQueueSubmit(backend.logicalDevice.graphicsQueue.handle, submitInfo, frame.renderFinishedFence).ensureIs("Failed to submit command buffer", VK_SUCCESS)
         }
+    }
+
+    fun cleanup() {
+        cmdPool.cleanup()
+        pipeline.cleanup()
+
+        fragmentShaderModule.cleanup()
+        vertexShaderModule.cleanup()
     }
 
     companion object {

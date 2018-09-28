@@ -10,5 +10,6 @@ typealias VkPipeline = Long
 typealias VkFramebuffer = Long
 typealias VkCommandPool = Long
 typealias VkSemaphore = Long
+typealias VkFence = Long
 
 typealias VkSurfaceKHR = Long

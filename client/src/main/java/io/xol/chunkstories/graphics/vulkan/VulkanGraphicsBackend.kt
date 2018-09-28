@@ -10,7 +10,7 @@ import org.lwjgl.glfw.GLFWVulkan.glfwVulkanSupported
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
-import org.lwjgl.vulkan.KHRSwapchain.*
+import org.lwjgl.vulkan.EXTDebugReport.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 import java.awt.image.BufferedImage
@@ -22,6 +22,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
 
     private var instance: VkInstance
     private val debugCallback: Long
+    private var cookie = true
 
     /** All the physical devices available to Vulkan */
     val physicalDevices: List<PhysicalDevice>
@@ -37,9 +38,6 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
     internal var swapchain: SwapChain
 
     val renderToBackbuffer : VulkanRenderPass
-
-    val imageAvailableSemaphore : VkSemaphore
-    val renderFinishedSemaphore : VkSemaphore
 
     val triangleDrawer : TriangleDrawer
 
@@ -61,35 +59,17 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
         renderToBackbuffer = VulkanRenderPass(this)
         swapchain = SwapChain(this, renderToBackbuffer)
 
-        imageAvailableSemaphore = createSemaphore()
-        renderFinishedSemaphore = createSemaphore()
-
         triangleDrawer = TriangleDrawer(this)
     }
 
     override fun drawFrame(frameNumber: Int) {
         stackPush()
-        val pImageIndex = stackMallocInt(1)
-        vkAcquireNextImageKHR(logicalDevice.vkDevice, swapchain.handle, Long.MAX_VALUE, imageAvailableSemaphore, VK_NULL_HANDLE, pImageIndex)
-        val imageIndex = pImageIndex.get(0)
 
-        triangleDrawer.drawTriangle(imageIndex)
+        val frame = swapchain.beginFrame(frameNumber)
 
-        val presentInfo = VkPresentInfoKHR.callocStack().sType(VK_STRUCTURE_TYPE_PRESENT_INFO_KHR).apply {
-            val waitSemaphores = stackMallocLong(1)
-            waitSemaphores.put(0, renderFinishedSemaphore)
-            pWaitSemaphores(waitSemaphores)
+        triangleDrawer.drawTriangle(frame)
 
-            val swapChains = stackMallocLong(1)
-            swapChains.put(0, swapchain.handle)
-            pSwapchains(swapChains)
-            swapchainCount(1)
-
-            pImageIndices(pImageIndex)
-            pResults(null)
-        }
-
-        vkQueuePresentKHR(logicalDevice.presentationQueue.handle, presentInfo)
+        swapchain.finishFrame(frame)
 
         stackPop()
     }
@@ -137,22 +117,23 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
     }
 
     private fun setupDebug(vkInstance: VkInstance): Long {
-        val callback = object : VkDebugReportCallbackEXT() {
+        val jvmCallback = object : VkDebugReportCallbackEXT() {
             override fun invoke(flags: Int, objectType: Int, `object`: Long, location: Long, messageCode: Int, pLayerPrefix: Long, pMessage: Long, pUserData: Long): Int {
                 logger.error(VkDebugReportCallbackEXT.getString(pMessage))
                 Thread.dumpStack()
+                cookie = false
                 return 0
             }
         }
 
-        MemoryStack.stackPush().use {
-            val dbgSetupStruct = VkDebugReportCallbackCreateInfoEXT.callocStack().sType(EXTDebugReport.VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT).apply {
-                pfnCallback(callback)
-                flags(EXTDebugReport.VK_DEBUG_REPORT_ERROR_BIT_EXT or EXTDebugReport.VK_DEBUG_REPORT_WARNING_BIT_EXT)
+        stackPush().use {
+            val dbgSetupStruct = VkDebugReportCallbackCreateInfoEXT.callocStack().sType(VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT).apply {
+                pfnCallback(jvmCallback)
+                flags(VK_DEBUG_REPORT_ERROR_BIT_EXT or VK_DEBUG_REPORT_WARNING_BIT_EXT)
             }
 
             val pCallback = MemoryStack.stackMallocLong(1)
-            EXTDebugReport.vkCreateDebugReportCallbackEXT(vkInstance, dbgSetupStruct, null, pCallback).ensureIs("Failed to create debug callback !", VK10.VK_SUCCESS)
+            vkCreateDebugReportCallbackEXT(vkInstance, dbgSetupStruct, null, pCallback).ensureIs("Failed to create debug callback !", VK10.VK_SUCCESS)
             logger.info("Successfully registered debug callback")
             return pCallback.get(0)
         }
@@ -211,7 +192,19 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
     }
 
     override fun cleanup() {
+        vkDeviceWaitIdle(logicalDevice.vkDevice)
+
+        triangleDrawer.cleanup()
+
+        renderToBackbuffer.cleanup()
+        swapchain.cleanup()
         logicalDevice.cleanup()
+
+        vkDestroyDebugReportCallbackEXT(instance, debugCallback, null)
+        if(cookie)
+            logger.debug("You get a cookie for not making the validation layer unhappy :)")
+        else
+            logger.debug("The validation layer found errors, no cookie for you !")
 
         vkDestroyInstance(instance, null)
         logger.debug("Successfully finished cleaning up Vulkan objects")

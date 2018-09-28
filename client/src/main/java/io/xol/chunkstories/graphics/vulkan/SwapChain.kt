@@ -12,11 +12,19 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VulkanRen
     val handle : Long
     val swapChainImages : List<VkImage>
     val swapChainImageViews : List<VkImageView>
+
     lateinit var swapChainFramebuffers : List<VkFramebuffer>
         private set
-
     internal var imagesCount: Int
         private set
+
+    internal var maxFramesInFlight: Int = -1
+        private set
+    private var inflightFrameIndex = 0
+
+    private lateinit var imageAvailableSemaphores : List<VkSemaphore>
+    private lateinit var renderingSemaphores : List<VkSemaphore>
+    private lateinit var inFlightFences : List<VkFence>
 
     init {
         logger.debug("Creating swapchain...")
@@ -93,9 +101,8 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VulkanRen
 
         }
 
-        logger.debug("Created views for those")
-
         createFramebuffers(displayRenderPass)
+        createSemaphores()
 
         stackPop()
     }
@@ -124,7 +131,80 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VulkanRen
         stackPop()
     }
 
+    private fun createSemaphores() {
+        maxFramesInFlight = imagesCount
+        imageAvailableSemaphores = List(maxFramesInFlight) { backend.createSemaphore() }
+        renderingSemaphores = List(maxFramesInFlight) { backend.createSemaphore() }
+        inFlightFences = List(maxFramesInFlight) { backend.createFence(true) }
+    }
+
+    fun beginFrame(frameNumber: Int) : Frame {
+        val stack = stackPush()
+
+        val currentInflightFrameIndex = inflightFrameIndex
+
+        val fence = inFlightFences[currentInflightFrameIndex]
+        vkWaitForFences(backend.logicalDevice.vkDevice, fence, true, Long.MAX_VALUE)
+        vkResetFences(backend.logicalDevice.vkDevice, fence)
+
+        val imageAvailableSemaphore = imageAvailableSemaphores[currentInflightFrameIndex]
+        val renderingFinishedSemaphore = renderingSemaphores[currentInflightFrameIndex]
+
+        val pImageIndex = stackMallocInt(1)
+        vkAcquireNextImageKHR(backend.logicalDevice.vkDevice, handle, Long.MAX_VALUE, imageAvailableSemaphore, VK_NULL_HANDLE, pImageIndex)
+        val swapchainImageIndex = pImageIndex.get(0)
+
+        stackPop()
+
+        return Frame(frameNumber, swapchainImageIndex, imageAvailableSemaphore, renderingFinishedSemaphore, fence, System.nanoTime())
+    }
+
+    /**
+     * The instructions for rendering the next frame: which swapchain image are we rendering in, what semaphore are we waiting on
+     * and what semaphore and fence should we signal when we're done
+     */
+    data class Frame(val frameNumber : Int,
+                     val swapchainImageIndex : Int,
+                     val renderCanBeginSemaphore: VkSemaphore,
+                     val renderFinishedSemaphore: VkSemaphore,
+                     val renderFinishedFence: VkFence,
+                     val started: Long)
+
+    fun finishFrame(frame: Frame) {
+        val stack = stackPush()
+
+        val presentInfo = VkPresentInfoKHR.callocStack().sType(VK_STRUCTURE_TYPE_PRESENT_INFO_KHR).apply {
+            val waitSemaphores = stackMallocLong(1)
+            waitSemaphores.put(0, frame.renderFinishedSemaphore)
+            pWaitSemaphores(waitSemaphores)
+
+            val swapChains = stackMallocLong(1)
+            swapChains.put(0, handle)
+            pSwapchains(swapChains)
+            swapchainCount(1)
+
+            pImageIndices(stackInts(frame.swapchainImageIndex))
+            pResults(null)
+        }
+
+        vkQueuePresentKHR(backend.logicalDevice.presentationQueue.handle, presentInfo)
+        val frameTime = System.nanoTime() - frame.started
+        val fps = 1000000000.0 / frameTime.toDouble()
+        //println("frame took $frameTime ns, fps = ${fps}")
+        backend.window.title = "fps = ${fps.toInt()}"
+
+        inflightFrameIndex = ( inflightFrameIndex + 1) % maxFramesInFlight
+        stackPop()
+    }
+
     fun cleanup() {
+        inFlightFences.forEach {
+            vkDestroyFence(backend.logicalDevice.vkDevice, it, null)
+        }
+
+        imageAvailableSemaphores.forEach { vkDestroySemaphore(backend.logicalDevice.vkDevice, it, null) }
+        renderingSemaphores.forEach { vkDestroySemaphore(backend.logicalDevice.vkDevice, it, null) }
+
         for(framebuffer in swapChainFramebuffers) {
             vkDestroyFramebuffer(backend.logicalDevice.vkDevice, framebuffer, null)
         }

@@ -5,7 +5,7 @@ import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 
-class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VulkanRenderPass) {
+class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VulkanRenderPass, val vertexShaderModule: ShaderModule, fragmentShaderModule: ShaderModule) {
     val layout: VkPipelineLayout
     val handle: VkPipeline
 
@@ -13,8 +13,6 @@ class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VulkanRenderP
         logger.info("Creating pipeline")
 
         stackPush()
-        val vertexShaderModule = ShaderModule(backend, javaClass.classLoader.getResourceAsStream("./shaders/base.vert.spv"))
-        val fragmentShaderModule = ShaderModule(backend, javaClass.classLoader.getResourceAsStream("./shaders/base.frag.spv"))
 
         val vertexStageCreateInfo = VkPipelineShaderStageCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO).apply {
             stage(VK_SHADER_STAGE_VERTEX_BIT)

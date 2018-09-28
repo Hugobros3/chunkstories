@@ -1,11 +1,9 @@
 package io.xol.chunkstories.graphics.vulkan
 
 import org.lwjgl.PointerBuffer
-import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VkSemaphoreCreateInfo
 import java.io.InputStream
 import java.nio.ByteBuffer
-import kotlin.contracts.*
 
 
 import org.lwjgl.system.MemoryStack.*
@@ -36,13 +34,27 @@ fun InputStream.toByteBuffer() : ByteBuffer {
 
 fun VulkanGraphicsBackend.createSemaphore() : VkSemaphore {
     stackPush()
-    val semaphoreInfo = VkSemaphoreCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO)
+    val semaphoreCreateInfo = VkSemaphoreCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO)
     val pSemaphore = stackMallocLong(1)
-    vkCreateSemaphore(this.logicalDevice.vkDevice, semaphoreInfo, null, pSemaphore).ensureIs("Failed to create semaphore", VK_SUCCESS)
+    vkCreateSemaphore(this.logicalDevice.vkDevice, semaphoreCreateInfo, null, pSemaphore).ensureIs("Failed to create semaphore", VK_SUCCESS)
     val semaphore = pSemaphore.get(0)
     stackPop()
 
     return semaphore
+}
+
+
+fun VulkanGraphicsBackend.createFence(createSignalled : Boolean) : VkFence {
+    stackPush()
+    val fenceCreateInfo = VkFenceCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_FENCE_CREATE_INFO).apply {
+        if(createSignalled) flags(VK_FENCE_CREATE_SIGNALED_BIT)
+    }
+    val pFence = stackMallocLong(1)
+    vkCreateFence(this.logicalDevice.vkDevice, fenceCreateInfo, null, pFence).ensureIs("Failed to create semaphore", VK_SUCCESS)
+    val fence = pFence.get(0)
+    stackPop()
+
+    return fence
 }
 
 /*
