@@ -1,7 +1,7 @@
 package io.xol.chunkstories.graphics.vulkan
 
 import io.xol.chunkstories.client.glfw.GLFWWindow
-import org.lwjgl.glfw.GLFWVulkan.glfwCreateWindowSurface
+import org.lwjgl.glfw.GLFWVulkan.*
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.KHRSurface.vkDestroySurfaceKHR
 import org.lwjgl.vulkan.VkInstance

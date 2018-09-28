@@ -57,7 +57,9 @@ class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VulkanRenderP
         }
         val scissor = VkRect2D.callocStack(1).apply {
             offset(zeroZero)
-            extent(backend.physicalDevice.swapchainDetails.swapExtentToUse)
+            extent().width(backend.window.width)
+            extent().height(backend.window.height)
+            //extent(backend.physicalDevice.swapchainDetails.swapExtentToUse)
         }
 
         val viewportStageCreateInfo = VkPipelineViewportStateCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO).apply {

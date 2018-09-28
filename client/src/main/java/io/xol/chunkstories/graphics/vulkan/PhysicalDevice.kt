@@ -137,7 +137,7 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
                 return bestCompromise ?: throw Exception("Could not find a compromise between the presentation mode the user wanted and those available")
             }
 
-        val swapExtentToUse: VkExtent2D
+        private val swapExtentToUse: VkExtent2D
         /** Afaik only supported color space for now, so whatever */
         val colorSpaceToUse = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
 

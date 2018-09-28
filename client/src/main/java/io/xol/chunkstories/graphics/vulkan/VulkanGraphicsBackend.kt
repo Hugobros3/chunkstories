@@ -5,6 +5,7 @@ import io.xol.chunkstories.api.graphics.systems.drawing.FarTerrainDrawer
 import io.xol.chunkstories.client.glfw.GLFWWindow
 import io.xol.chunkstories.graphics.GLFWBasedGraphicsBackend
 import org.lwjgl.PointerBuffer
+import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWVulkan.glfwGetRequiredInstanceExtensions
 import org.lwjgl.glfw.GLFWVulkan.glfwVulkanSupported
 import org.lwjgl.system.MemoryStack
@@ -36,10 +37,11 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
     /** The actual surface we're drawing onto */
     internal var surface: WindowSurface
     internal var swapchain: SwapChain
+        internal set
 
     val renderToBackbuffer : VulkanRenderPass
 
-    val triangleDrawer : TriangleDrawer
+    var triangleDrawer : TriangleDrawer
 
     init {
         if (!glfwVulkanSupported())
@@ -57,7 +59,16 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
         logicalDevice = LogicalDevice(this, physicalDevice)
 
         renderToBackbuffer = VulkanRenderPass(this)
-        swapchain = SwapChain(this, renderToBackbuffer)
+        swapchain = SwapChain(this, renderToBackbuffer, null)
+
+        GLFW.glfwSetWindowSizeCallback(window.glfwWindowHandle) { handle, newWidth, newHeight ->
+                if(newWidth != 0 && newHeight != 0) {
+                    window.width = newWidth
+                    window.height = newHeight
+
+                this@VulkanGraphicsBackend.swapchain.expired = true
+            }
+        }
 
         triangleDrawer = TriangleDrawer(this)
     }
@@ -68,7 +79,6 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
         val frame = swapchain.beginFrame(frameNumber)
 
         triangleDrawer.drawTriangle(frame)
-
         swapchain.finishFrame(frame)
 
         stackPop()
@@ -76,6 +86,11 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
 
     override fun captureFramebuffer(): BufferedImage {
         throw UnsupportedOperationException("Not yet.")
+    }
+
+    fun recreateSwapchainDependencies() {
+        triangleDrawer.cleanup()
+        triangleDrawer = TriangleDrawer(this)
     }
 
     /** Creates a Vulkan instance */

@@ -52,7 +52,9 @@ class TriangleDrawer(val backend: VulkanGraphicsBackend) {
                 framebuffer(backend.swapchain.swapChainFramebuffers[i])
                 renderArea().offset().x(0)
                 renderArea().offset().y(0)
-                renderArea().extent(backend.physicalDevice.swapchainDetails.swapExtentToUse)
+                renderArea().extent().width(backend.window.width)
+                renderArea().extent().height(backend.window.height)
+                //renderArea().extent(backend.physicalDevice.swapchainDetails.swapExtentToUse)
 
                 val clearColor = VkClearValue.callocStack(1).apply {
                     color().float32().apply {

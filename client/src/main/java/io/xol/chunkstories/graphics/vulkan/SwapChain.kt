@@ -1,19 +1,21 @@
 package io.xol.chunkstories.graphics.vulkan
 
+import org.lwjgl.glfw.GLFW.glfwWaitEvents
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
-import org.lwjgl.vulkan.KHRSurface.*
+import org.lwjgl.vulkan.KHRSurface.VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR
+import org.lwjgl.vulkan.KHRSurface.vkGetPhysicalDeviceSurfaceCapabilitiesKHR
 import org.lwjgl.vulkan.KHRSwapchain.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 
-class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VulkanRenderPass) {
+class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VulkanRenderPass, oldSwapChain: SwapChain?) {
 
-    val handle : Long
-    val swapChainImages : List<VkImage>
-    val swapChainImageViews : List<VkImageView>
+    val handle: Long
+    val swapChainImages: List<VkImage>
+    val swapChainImageViews: List<VkImageView>
 
-    lateinit var swapChainFramebuffers : List<VkFramebuffer>
+    lateinit var swapChainFramebuffers: List<VkFramebuffer>
         private set
     internal var imagesCount: Int
         private set
@@ -22,16 +24,18 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VulkanRen
         private set
     private var inflightFrameIndex = 0
 
-    private lateinit var imageAvailableSemaphores : List<VkSemaphore>
-    private lateinit var renderingSemaphores : List<VkSemaphore>
-    private lateinit var inFlightFences : List<VkFence>
+    private lateinit var imageAvailableSemaphores: List<VkSemaphore>
+    private lateinit var renderingSemaphores: List<VkSemaphore>
+    private lateinit var inFlightFences: List<VkFence>
+
+    var expired = false
 
     init {
         logger.debug("Creating swapchain...")
         stackPush()
 
         imagesCount = backend.physicalDevice.swapchainDetails.imageCount.first + 1
-        if(imagesCount > backend.physicalDevice.swapchainDetails.imageCount.last)
+        if (imagesCount > backend.physicalDevice.swapchainDetails.imageCount.last)
             imagesCount = backend.physicalDevice.swapchainDetails.imageCount.last
         logger.debug("Asking for $imagesCount in the swapchain")
 
@@ -40,7 +44,9 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VulkanRen
             minImageCount(imagesCount)
             imageFormat(backend.physicalDevice.swapchainDetails.formatToUse.ordinal)
             imageColorSpace(backend.physicalDevice.swapchainDetails.colorSpaceToUse)
-            imageExtent(backend.physicalDevice.swapchainDetails.swapExtentToUse)
+            imageExtent().width(backend.window.width)
+            imageExtent().height(backend.window.height)
+            //imageExtent(backend.physicalDevice.swapchainDetails.swapExtentToUse)
             imageArrayLayers(1)
             //TODO maybe not needed once we do everything in offscreen buffers
             imageUsage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
@@ -48,7 +54,8 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VulkanRen
             preTransform(backend.physicalDevice.swapchainDetails.transformToUse)
             compositeAlpha(VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR)
             clipped(true)
-            oldSwapchain( VK_NULL_HANDLE )
+            oldSwapchain(oldSwapChain?.handle ?: VK_NULL_HANDLE)
+            //oldSwapchain( VK_NULL_HANDLE )
         }
 
         if (backend.logicalDevice.graphicsQueue == backend.logicalDevice.presentationQueue) {
@@ -79,7 +86,7 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VulkanRen
 
         // Create the views & framebuffers
         swapChainImageViews = mutableListOf()
-        for(image in swapChainImages) {
+        for (image in swapChainImages) {
             val vkImageViewCreateInfo = VkImageViewCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO).apply {
                 image(image)
                 viewType(VK_IMAGE_VIEW_TYPE_2D)
@@ -111,7 +118,7 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VulkanRen
         stackPush()
         swapChainFramebuffers = mutableListOf()
 
-        for(imageView in swapChainImageViews) {
+        for (imageView in swapChainImageViews) {
             val pAttachement = stackMallocLong(1)
             pAttachement.put(0, imageView)
 
@@ -138,7 +145,7 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VulkanRen
         inFlightFences = List(maxFramesInFlight) { backend.createFence(true) }
     }
 
-    fun beginFrame(frameNumber: Int) : Frame {
+    fun beginFrame(frameNumber: Int): Frame {
         val stack = stackPush()
 
         val currentInflightFrameIndex = inflightFrameIndex
@@ -151,11 +158,42 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VulkanRen
         val renderingFinishedSemaphore = renderingSemaphores[currentInflightFrameIndex]
 
         val pImageIndex = stackMallocInt(1)
-        vkAcquireNextImageKHR(backend.logicalDevice.vkDevice, handle, Long.MAX_VALUE, imageAvailableSemaphore, VK_NULL_HANDLE, pImageIndex)
+        val result = vkAcquireNextImageKHR(backend.logicalDevice.vkDevice, handle, Long.MAX_VALUE, imageAvailableSemaphore, VK_NULL_HANDLE, pImageIndex)
+
+        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || this.expired) {
+            logger.debug("Recreating swap chain !")
+            vkDeviceWaitIdle(backend.logicalDevice.vkDevice)
+            while (true) {
+                stackPush()
+                // Querying that makes the validation layer happy when resizing, so whatever
+                val pSurfaceCapabilities = VkSurfaceCapabilitiesKHR.callocStack()
+                vkGetPhysicalDeviceSurfaceCapabilitiesKHR(backend.physicalDevice.vkPhysicalDevice, backend.surface.handle, pSurfaceCapabilities)
+
+                if (backend.window.width == 0 || backend.window.height == 0)
+                    logger.debug("Was minized, waiting to become a workable size again")
+                else if (backend.window.width > pSurfaceCapabilities.maxImageExtent().width() || backend.window.height > pSurfaceCapabilities.maxImageExtent().height())
+                    logger.debug("Weird condition, game window is exceeding the max extent of the surface, waiting until conditions change...")
+                else {
+                    stackPop()
+                    break
+                }
+                stackPop()
+
+                glfwWaitEvents()
+            }
+
+            val newSwapchain = SwapChain(backend, backend.renderToBackbuffer, this)
+            backend.swapchain = newSwapchain
+            backend.recreateSwapchainDependencies()
+            cleanup()
+
+            stackPop()
+            return newSwapchain.beginFrame(frameNumber)
+        }
+
         val swapchainImageIndex = pImageIndex.get(0)
 
         stackPop()
-
         return Frame(frameNumber, swapchainImageIndex, imageAvailableSemaphore, renderingFinishedSemaphore, fence, System.nanoTime())
     }
 
@@ -163,8 +201,8 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VulkanRen
      * The instructions for rendering the next frame: which swapchain image are we rendering in, what semaphore are we waiting on
      * and what semaphore and fence should we signal when we're done
      */
-    data class Frame(val frameNumber : Int,
-                     val swapchainImageIndex : Int,
+    data class Frame(val frameNumber: Int,
+                     val swapchainImageIndex: Int,
                      val renderCanBeginSemaphore: VkSemaphore,
                      val renderFinishedSemaphore: VkSemaphore,
                      val renderFinishedFence: VkFence,
@@ -193,23 +231,20 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VulkanRen
         //println("frame took $frameTime ns, fps = ${fps}")
         backend.window.title = "fps = ${fps.toInt()}"
 
-        inflightFrameIndex = ( inflightFrameIndex + 1) % maxFramesInFlight
+        inflightFrameIndex = (inflightFrameIndex + 1) % maxFramesInFlight
         stackPop()
     }
 
     fun cleanup() {
-        inFlightFences.forEach {
-            vkDestroyFence(backend.logicalDevice.vkDevice, it, null)
-        }
-
+        inFlightFences.forEach { vkDestroyFence(backend.logicalDevice.vkDevice, it, null) }
         imageAvailableSemaphores.forEach { vkDestroySemaphore(backend.logicalDevice.vkDevice, it, null) }
         renderingSemaphores.forEach { vkDestroySemaphore(backend.logicalDevice.vkDevice, it, null) }
 
-        for(framebuffer in swapChainFramebuffers) {
+        for (framebuffer in swapChainFramebuffers) {
             vkDestroyFramebuffer(backend.logicalDevice.vkDevice, framebuffer, null)
         }
 
-        for(imageView in swapChainImageViews) {
+        for (imageView in swapChainImageViews) {
             vkDestroyImageView(backend.logicalDevice.vkDevice, imageView, null)
         }
 
