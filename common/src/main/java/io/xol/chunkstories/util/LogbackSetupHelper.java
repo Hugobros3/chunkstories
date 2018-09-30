@@ -6,6 +6,7 @@
 
 package io.xol.chunkstories.util;
 
+import ch.qos.logback.classic.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,4 +55,26 @@ public class LogbackSetupHelper {
 		rootLogger.setLevel(ch.qos.logback.classic.Level.DEBUG);
 	}
 
+	public static void setupLoggingForTesting() {
+		ch.qos.logback.classic.Logger rootLogger = (ch.qos.logback.classic.Logger) LoggerFactory
+				.getLogger(Logger.ROOT_LOGGER_NAME);
+
+		String pattern = "%date %level [%logger] %msg%n";
+
+		LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+
+		PatternLayoutEncoder ple2 = new PatternLayoutEncoder();
+		ple2.setPattern(pattern);
+		ple2.setContext(lc);
+		ple2.start();
+
+		ConsoleAppender<ILoggingEvent> logConsoleAppender = new ConsoleAppender<>();
+		logConsoleAppender.setContext(lc);
+		logConsoleAppender.setName("console");
+		logConsoleAppender.setEncoder(ple2);
+		logConsoleAppender.start();
+
+		rootLogger.addAppender(logConsoleAppender);
+		rootLogger.setLevel(Level.ALL);
+	}
 }

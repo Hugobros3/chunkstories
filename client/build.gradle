@@ -21,36 +21,10 @@ apply plugin: 'com.github.johnrengelman.shadow'
 version = rootProject.version
 description = 'Multiplatform PC Client using LWJGL3'
 
-/* LWJGL3 deps */
-
-/*
-import org.gradle.internal.os.OperatingSystem
-
-switch ( OperatingSystem.current() ) {
-	case OperatingSystem.WINDOWS:
-		project.ext.lwjglNatives = "natives-windows"
-		break
-	case OperatingSystem.LINUX:
-		project.ext.lwjglNatives = "natives-linux"
-	break
-	case OperatingSystem.MAC_OS:
-		project.ext.lwjglNatives = "natives-macos"
-		break
-}*/
-
-/*project.ext.natives = ["natives-windows", "natives-linux", "natives-macos"];
-project.ext.lwjglVersion = "3.1.1"
-
-configurations {
-	multiplatform {
-		extendsFrom runtime
-	}
-}*/
-
 dependencies {
+	ext.spirvCrossVersion = "0.4.1"
+	compile "graphics.scenery:spirvcrossj:$spirvCrossVersion"
 
-	//LWJGL3 masterrace
-	//compile "org.lwjgl:lwjgl:${lwjglVersion}"
 	compile "org.lwjgl:lwjgl-glfw:${lwjglVersion}"
 	//compile "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}"
 	compile "org.lwjgl:lwjgl-openal:${lwjglVersion}"
@@ -58,16 +32,16 @@ dependencies {
 	compile "org.lwjgl:lwjgl-vulkan:${lwjglVersion}"
 	compile "org.lwjgl:lwjgl-stb:${lwjglVersion}"
 	compile "org.lwjgl:lwjgl-tinyfd:${lwjglVersion}"
+
 	//When running on our debug computer, it's safe to assume the OS that will run the game is the same than the one who'll compile it.
-	//runtime "org.lwjgl:lwjgl:${lwjglVersion}:${lwjglNatives}"
 	runtime "org.lwjgl:lwjgl-glfw:${lwjglVersion}:${lwjglNatives}"
 	//runtime "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}:${lwjglNatives}"
 	runtime "org.lwjgl:lwjgl-openal:${lwjglVersion}:${lwjglNatives}"
 	runtime "org.lwjgl:lwjgl-opengl:${lwjglVersion}:${lwjglNatives}"
-	//runtime "org.lwjgl:lwjgl-vulkan:${lwjglVersion}:${lwjglNatives}"
-	//runtime "org.lwjgl:lwjgl-vulkan:${lwjglVersion}:${lwjglNatives}"
 	runtime "org.lwjgl:lwjgl-stb:${lwjglVersion}:${lwjglNatives}"
 	runtime "org.lwjgl:lwjgl-tinyfd:${lwjglVersion}:${lwjglNatives}"
+	runtime "graphics.scenery:spirvcrossj:$spirvCrossVersion:$lwjglNatives"
+
 	//When compiling a redistribuable jar, we need ALL natives in it!
 	project.ext.natives.each {
 		//multiplatform ("org.lwjgl:lwjgl:${lwjglVersion}:" + it)
@@ -77,12 +51,12 @@ dependencies {
 		multiplatform "org.lwjgl:lwjgl-opengl:${lwjglVersion}:" + it
 		multiplatform "org.lwjgl:lwjgl-stb:${lwjglVersion}:" + it
 		multiplatform "org.lwjgl:lwjgl-tinyfd:${lwjglVersion}:" + it
+		multiplatform "graphics.scenery:spirvcrossj:$spirvCrossVersion:$lwjglNatives"
 	}
 }
 
 // Dependencies from subprojects
 dependencies {
-	//compile project(':core')
 	compile project(':common')
 	compile project(':server')
 }
@@ -108,11 +82,6 @@ shadowJar {
 	classifier = null
 	version = null
 	configurations = [project.configurations.multiplatform]
-	
-	dependencies {
-		//exclude(dependency(group: 'io.xol.chunkstories', name: 'core', version: contentRevisionBuiltAgainst, ext: 'jar'))
-    }
-
 }
 
 run { 
