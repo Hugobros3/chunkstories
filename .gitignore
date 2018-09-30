@@ -29,6 +29,7 @@ bin/
 *.class
 scripts/
 version.txt
+*.spv
 
 # Random utility/built jars no one cares about
 counter.jar

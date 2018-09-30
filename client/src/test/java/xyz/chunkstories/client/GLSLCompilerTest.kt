@@ -32,4 +32,17 @@ class GLSLCompilerTest {
 
         SpirvCrossHelper.generateSpirV(vertexShader, null,  fragmentShader)
     }
+
+    @Test
+    fun testAdvanced() {
+        LogbackSetupHelper.setupLoggingForTesting()
+
+        val vertexShader = javaClass.getResource("/shaders/test.vert").readText()
+        println("Loaded vertex shader OK")
+
+        val fragmentShader = javaClass.getResource("/shaders/test.frag").readText()
+        println("Loaded fragment shader OK")
+
+        SpirvCrossHelper.generateSpirV(vertexShader, null,  fragmentShader)
+    }
 }

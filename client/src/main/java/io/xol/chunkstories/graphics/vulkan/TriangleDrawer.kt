@@ -1,5 +1,6 @@
 package io.xol.chunkstories.graphics.vulkan
 
+import io.xol.chunkstories.graphics.vulkan.shaderc.SpirvCrossHelper
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
@@ -7,8 +8,9 @@ import org.slf4j.LoggerFactory
 
 class TriangleDrawer(val backend: VulkanGraphicsBackend) {
 
-    val vertexShaderModule = ShaderModule(backend, javaClass.classLoader.getResourceAsStream("./shaders/base.vert.spv"))
-    val fragmentShaderModule = ShaderModule(backend, javaClass.classLoader.getResourceAsStream("./shaders/base.frag.spv"))
+    val baseProgram = SpirvCrossHelper.loadProgram("/shaders/base")
+    val vertexShaderModule = ShaderModule(backend, baseProgram.vertexShaderSpirV)
+    val fragmentShaderModule = ShaderModule(backend, baseProgram.fragmentShaderSpirV)
 
     val pipeline = Pipeline(backend, backend.renderToBackbuffer, vertexShaderModule, fragmentShaderModule)
     val cmdPool = CommandPool(backend, backend.logicalDevice.graphicsQueue.family)
