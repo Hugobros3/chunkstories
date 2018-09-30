@@ -31,9 +31,23 @@ class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VulkanRenderP
         shaderStagesCreateInfo.put(fragmentStageCreateInfo)
         shaderStagesCreateInfo.flip()
 
+        // Vertex input
+        val bindingDescription = VkVertexInputBindingDescription.callocStack(1).apply {
+            binding(0)
+            stride(2 * 4)
+            inputRate(VK_VERTEX_INPUT_RATE_VERTEX)
+        }
+
+        val attributeDescriptions = VkVertexInputAttributeDescription.callocStack(1).apply {
+            binding(0)
+            location(0)
+            format(VK_FORMAT_R32G32_SFLOAT)
+            offset(0)
+        }
+
         val vertexInputInfo = VkPipelineVertexInputStateCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO).apply {
-            pVertexAttributeDescriptions(null)
-            pVertexBindingDescriptions(null)
+            pVertexBindingDescriptions(bindingDescription)
+            pVertexAttributeDescriptions(attributeDescriptions)
         }
 
         val inputAssemblyStateCreateInfo = VkPipelineInputAssemblyStateCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO).apply {

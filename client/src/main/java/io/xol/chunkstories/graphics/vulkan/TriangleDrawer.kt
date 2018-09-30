@@ -5,12 +5,17 @@ import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
+import sun.nio.ch.DirectBuffer
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
 class TriangleDrawer(val backend: VulkanGraphicsBackend) {
 
-    val baseProgram = SpirvCrossHelper.loadProgram("/shaders/base")
+    val baseProgram = SpirvCrossHelper.loadProgram("/shaders/blit")
     val vertexShaderModule = ShaderModule(backend, baseProgram.vertexShaderSpirV)
     val fragmentShaderModule = ShaderModule(backend, baseProgram.fragmentShaderSpirV)
+
+    val vertexBuffer: VertexBuffer
 
     val pipeline = Pipeline(backend, backend.renderToBackbuffer, vertexShaderModule, fragmentShaderModule)
     val cmdPool = CommandPool(backend, backend.logicalDevice.graphicsQueue.family)
@@ -21,6 +26,17 @@ class TriangleDrawer(val backend: VulkanGraphicsBackend) {
 
     init {
         stackPush()
+
+        val data = floatArrayOf(0.0F, -0.5F, 0.5F, 0.5F, -0.5F, 0.5F)
+        val byteBuffer = stackMalloc(data.size * 4)
+
+        //byteBuffer.order(ByteOrder.BIG_ENDIAN)
+        val fb = byteBuffer.asFloatBuffer()
+
+        fb.put(data)
+        //byteBuffer.flip()
+
+        vertexBuffer = VertexBuffer(backend, byteBuffer)
 
         imagesCount = backend.swapchain.imagesCount
 
@@ -71,6 +87,9 @@ class TriangleDrawer(val backend: VulkanGraphicsBackend) {
 
             vkCmdBeginRenderPass(commandBuffer, renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE)
             vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
+
+            vkCmdBindVertexBuffers(commandBuffer, 0, stackLongs(vertexBuffer.handle), stackLongs(0))
+
             vkCmdDraw(commandBuffer, 3, 1, 0, 0) // that's rather anticlimactic
             vkCmdEndRenderPass(commandBuffer)
 
@@ -106,6 +125,7 @@ class TriangleDrawer(val backend: VulkanGraphicsBackend) {
     }
 
     fun cleanup() {
+        vertexBuffer.cleanup()
         cmdPool.cleanup()
         pipeline.cleanup()
 

@@ -74,14 +74,11 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
     }
 
     override fun drawFrame(frameNumber: Int) {
-        stackPush()
-
         val frame = swapchain.beginFrame(frameNumber)
 
         triangleDrawer.drawTriangle(frame)
-        swapchain.finishFrame(frame)
 
-        stackPop()
+        swapchain.finishFrame(frame)
     }
 
     override fun captureFramebuffer(): BufferedImage {
