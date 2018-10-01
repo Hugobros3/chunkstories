@@ -172,7 +172,7 @@ private fun ByteBuffer.bytes(): ByteArray {
     return bytes2
 }
 
-private fun Int.hex(): String {
+public fun Int.hex(): String {
     var lol = ""
     var t = this
 
