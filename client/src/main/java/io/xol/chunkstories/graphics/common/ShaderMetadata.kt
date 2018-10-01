@@ -1,10 +1,9 @@
 package io.xol.chunkstories.graphics.common
 
 import io.xol.chunkstories.api.graphics.structs.InterfaceBlock
-import org.joml.Matrix3f
 import kotlin.reflect.KClass
 
-class ShaderMetadata(val shaderString: String, customClassToStealLoader: Class<*>?) {
+class ShaderMetadata(shaderString: String, customClassToStealLoader: Class<*>?) {
     /** interfaceblock structs yet to include (declared via #include struct but not reached yet) */
     internal val todo = mutableListOf<KClass<InterfaceBlock>>()
     internal val done = mutableListOf<KClass<InterfaceBlock>>()
@@ -15,28 +14,59 @@ class ShaderMetadata(val shaderString: String, customClassToStealLoader: Class<*
     /** All the data structure that are explicitely included in the shader string *or* implicitely included due to use in an included struct */
     val structures = mutableListOf<InterfaceBlockRepresentation>()
 
+    val glslWithAddedStructs: String
+
     init {
-        shaderString.lines().filter { it.startsWith("#include struct") }.forEach {
-            it.split(' ').getOrNull(2)?.let { it.replace("<", "").replace(">", "").let {
-                println("wow")
-                val classByThatName = Class.forName(it, true, customClassToStealLoader?.classLoader ?: javaClass.classLoader) ?: throw Exception("Couldn't find the class $it")
-                todo.add(classByThatName.kotlin as? KClass<InterfaceBlock> ?: throw Exception("Specified class $it does not implement InterfaceBlock"))
-            } }
+        val mappedLines = shaderString.lines().map {
+
+            if (it.startsWith("#include struct")) {
+                it.split(' ').getOrNull(2)?.replace("<", "")?.replace(">", "")?.let {
+                    val classByThatName = (Class.forName(it, true, customClassToStealLoader?.classLoader ?: javaClass.classLoader)
+                            ?: throw Exception("Couldn't find the class $it"))
+                            .kotlin as? KClass<InterfaceBlock> ?: throw Exception("Specified class $it does not implement InterfaceBlock")
+                    todo.add(classByThatName)
+                    return@map classByThatName
+                }
+            }
+            it
         }
 
-        while(todo.isNotEmpty()) {
+        while (todo.isNotEmpty()) {
             val interfaceBlockClass = todo.removeAt(0)
 
             val representation = InterfaceBlockRepresentation(interfaceBlockClass, this)
             structures += representation
             done += interfaceBlockClass
 
-            if(stack.size > 0) {
+            if (stack.size > 0) {
                 println("Stack size > 0 after a conversion... hmmm")
                 stack.clear()
             }
         }
 
-        println(structures.map { it.toString() })
+        val noDuplicates = mutableListOf<KClass<InterfaceBlock>>()
+        fun recursivelyAddWithRequirements(klass: KClass<InterfaceBlock>) : List<String> {
+            if(noDuplicates.contains(klass))
+                return emptyList()
+
+            val ibRepresentation = structures.find { it.klass == klass } ?: throw Exception("Assertion failed catastrophically")
+            noDuplicates.add(klass)
+
+            val defs = mutableListOf<String>()
+            ibRepresentation.requirements.forEach { defs.addAll(recursivelyAddWithRequirements(it)) }
+
+            defs.add(ibRepresentation.generateGLSL())
+            return defs
+        }
+
+        glslWithAddedStructs = mappedLines.joinToString(separator = "\n") { line ->
+            when (line) {
+                is String -> line
+                is KClass<*> -> recursivelyAddWithRequirements(line as KClass<InterfaceBlock>).joinToString(separator = "\n")
+                else -> throw Exception()
+            }
+        }
+
+        //println(structures.map { it.toString() })
     }
 }

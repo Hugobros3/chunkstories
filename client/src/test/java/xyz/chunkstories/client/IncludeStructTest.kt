@@ -40,7 +40,7 @@ class IncludeStructTest {
 
         val meta = ShaderMetadata(shaderCode, this::class.java)
 
-        val generatedGLSLCode = meta.structures.map { it.generateGLSL() }.joinToString(separator = "\n\n")
+        val generatedGLSLCode = meta.glslWithAddedStructs
         println("Generated GLSL :\n$generatedGLSLCode")
     }
 }

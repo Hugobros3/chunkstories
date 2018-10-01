@@ -10,12 +10,12 @@ import kotlin.reflect.jvm.javaField
 
 class InterfaceBlockRepresentation(val klass: KClass<InterfaceBlock>, shaderMetadata: ShaderMetadata) : InterfaceBlockFieldType(klass) {
     private val interfaceBlockClass = klass.findOutActualInterfaceBlockClass()
+    private val sampleInstance: InterfaceBlock
+
     override val glslToken: String = interfaceBlockClass.simpleName ?: throw Exception("Don't use anonymous classes for writing InterfaceBlocks !")
 
     val fields : Array<InterfaceBlockField>
-    //val fields: Map<Int, InterfaceBlockField>
-
-    private val sampleInstance: InterfaceBlock
+    internal val requirements = mutableListOf<KClass<InterfaceBlock>>()
 
     init {
         if(shaderMetadata.stack.contains(klass))
@@ -76,6 +76,9 @@ class InterfaceBlockRepresentation(val klass: KClass<InterfaceBlock>, shaderMeta
                             shaderMetadata.done += structRepresentation.klass
                             shaderMetadata.structures += structRepresentation
                         }
+
+                        requirements.add(type)
+
                         structRepresentation
                     }
 
@@ -113,13 +116,19 @@ class InterfaceBlockRepresentation(val klass: KClass<InterfaceBlock>, shaderMeta
     fun generateGLSL() : String {
         var glsl = "struct $glslToken {\n"
 
-        for(field in fields) {
-            glsl += "\t${field.type.glslToken} ${field.name};\n"
-        }
+        glsl += generateInnerGLSL()
 
         glsl += "};\n"
 
-        return glsl;
+        return glsl
+    }
+
+    fun generateInnerGLSL() : String {
+        var glsl = ""
+        for(field in fields) {
+            glsl += "\t${field.type.glslToken} ${field.name};\n"
+        }
+        return glsl
     }
 
     override fun toString(): String {
