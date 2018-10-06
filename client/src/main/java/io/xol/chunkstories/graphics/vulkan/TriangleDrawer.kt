@@ -1,19 +1,17 @@
 package io.xol.chunkstories.graphics.vulkan
 
-import io.xol.chunkstories.graphics.vulkan.shaderc.SpirvCrossHelper
+import io.xol.chunkstories.api.graphics.ShaderStage
+import io.xol.chunkstories.graphics.common.shaderc.SpirvCrossHelper
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
-import sun.nio.ch.DirectBuffer
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 
 class TriangleDrawer(val backend: VulkanGraphicsBackend) {
 
-    val baseProgram = SpirvCrossHelper.loadProgram("/shaders/blit")
-    val vertexShaderModule = ShaderModule(backend, baseProgram.vertexShaderSpirV)
-    val fragmentShaderModule = ShaderModule(backend, baseProgram.fragmentShaderSpirV)
+    val baseProgram = backend.shaderFactory.loadProgram("/shaders/blit")
+    val vertexShaderModule = ShaderModule(backend, baseProgram.stages[ShaderStage.VERTEX]!!)
+    val fragmentShaderModule = ShaderModule(backend, baseProgram.stages[ShaderStage.FRAGMENT]!!)
 
     val vertexBuffer: VertexBuffer
 

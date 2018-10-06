@@ -1,14 +1,13 @@
-package io.xol.chunkstories.graphics.common
+package io.xol.chunkstories.graphics.common.shaderc
 
 import io.xol.chunkstories.api.graphics.structs.InterfaceBlock
-import io.xol.chunkstories.graphics.vulkan.shaderc.hex
 import org.joml.*
 import kotlin.reflect.KClass
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.superclasses
 import kotlin.reflect.jvm.javaField
 
-class InterfaceBlockRepresentation(val klass: KClass<InterfaceBlock>, shaderMetadata: ShaderMetadata) : InterfaceBlockFieldType(klass) {
+class InterfaceBlockGLSLMapping(val klass: KClass<InterfaceBlock>, shaderMetadata: ShaderWithResolvedIncludeStructs) : InterfaceBlockFieldType(klass) {
     private val interfaceBlockClass = klass.findOutActualInterfaceBlockClass()
     private val sampleInstance: InterfaceBlock
 
@@ -69,12 +68,10 @@ class InterfaceBlockRepresentation(val klass: KClass<InterfaceBlock>, shaderMeta
                     // We're referencing another struct !
                     InterfaceBlock::class.java.isAssignableFrom(type.java) -> {
                         val type = type as KClass<InterfaceBlock>
-                        var structRepresentation = shaderMetadata.structures.find { it.interfaceBlockClass == type }
-                        if(structRepresentation == null) {
-                            structRepresentation = InterfaceBlockRepresentation(type, shaderMetadata)
-
-                            shaderMetadata.done += structRepresentation.klass
-                            shaderMetadata.structures += structRepresentation
+                        var structRepresentation = shaderMetadata.factory.structures.getOrPut(type) {
+                            val structRepresentation = InterfaceBlockGLSLMapping(type, shaderMetadata)
+                            //shaderMetadata.done += structRepresentation.klass
+                            structRepresentation
                         }
 
                         requirements.add(type)
@@ -133,7 +130,7 @@ class InterfaceBlockRepresentation(val klass: KClass<InterfaceBlock>, shaderMeta
 
     override fun toString(): String {
         return """
-            InterfaceBlockRepresentation($glslToken) {
+            InterfaceBlockGLSLMapping($glslToken) {
                 ${fields.map {
             "0x${it.offset.hex()} (${it.offset}): ${it.type.glslToken} ${it.name}"
         }}

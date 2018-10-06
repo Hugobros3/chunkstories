@@ -1,8 +1,8 @@
 package xyz.chunkstories.client
 
 import io.xol.chunkstories.api.graphics.structs.InterfaceBlock
-import io.xol.chunkstories.api.graphics.structs.WorldConditions
-import io.xol.chunkstories.graphics.common.ShaderMetadata
+import io.xol.chunkstories.graphics.common.shaderc.ShaderFactory
+import io.xol.chunkstories.graphics.common.shaderc.ShaderWithResolvedIncludeStructs
 import org.joml.Matrix3f
 import org.junit.Test
 
@@ -38,9 +38,11 @@ class IncludeStructTest {
             }
         """.trimIndent()
 
-        val meta = ShaderMetadata(shaderCode, this::class.java)
+        val factory = ShaderFactory(this.javaClass.classLoader)
 
-        val generatedGLSLCode = meta.glslWithAddedStructs
+        val meta = ShaderWithResolvedIncludeStructs(factory, shaderCode)
+
+        val generatedGLSLCode = meta.transformedCode
         println("Generated GLSL :\n$generatedGLSLCode")
     }
 }

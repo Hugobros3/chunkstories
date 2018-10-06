@@ -1,8 +1,7 @@
 package xyz.chunkstories.client
 
-import io.xol.chunkstories.graphics.common.ShaderMetadata
-import io.xol.chunkstories.graphics.vulkan.shaderc.InlineUniformStructs
-import io.xol.chunkstories.graphics.vulkan.shaderc.InlineUniformStructs.inlineStructsUsedAsUniformTypes
+import io.xol.chunkstories.graphics.common.shaderc.ShaderWithResolvedIncludeStructs
+import io.xol.chunkstories.graphics.common.shaderc.ShaderFactory
 import org.junit.Test
 
 class InlineIncludedStructTest {
@@ -24,10 +23,10 @@ class InlineIncludedStructTest {
             }
         """.trimIndent()
 
-        val meta = ShaderMetadata(shaderCode, this::class.java)
+        val factory = ShaderFactory(this.javaClass.classLoader)
+        val meta = ShaderWithResolvedIncludeStructs(factory, shaderCode)
 
-        val generatedGLSLCode = meta.glslWithAddedStructs
-        val processedGLSLCode = inlineStructsUsedAsUniformTypes(generatedGLSLCode, meta)
+        val processedGLSLCode = factory.inlineStructsUsedAsUniformTypes(meta)
 
         println("Processed GLSL :\n$processedGLSLCode")
     }
