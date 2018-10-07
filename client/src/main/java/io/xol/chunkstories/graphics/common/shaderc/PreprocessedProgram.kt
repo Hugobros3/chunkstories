@@ -4,7 +4,7 @@ import io.xol.chunkstories.api.graphics.structs.InterfaceBlock
 import kotlin.reflect.KClass
 
 //TODO move constructor to a ShaderFactory method
-class ShaderWithResolvedIncludeStructs(val factory: ShaderFactory, shaderString: String) {
+class PreprocessedProgram(val factory: ShaderFactory, shaderString: String) {
     /** interfaceblock structs yet to include (declared via #include struct but not reached yet) */
     internal val todo = mutableListOf<KClass<InterfaceBlock>>()
     //internal val done = mutableListOf<KClass<InterfaceBlock>>()
@@ -12,7 +12,7 @@ class ShaderWithResolvedIncludeStructs(val factory: ShaderFactory, shaderString:
     /** Stack of what interface block classes we're making representations for so we can catch loops */
     internal val stack = mutableListOf<KClass<InterfaceBlock>>()
 
-    val transformedCode: String
+    var transformedCode: String
 
     init {
         val mappedLines = shaderString.lines().map {

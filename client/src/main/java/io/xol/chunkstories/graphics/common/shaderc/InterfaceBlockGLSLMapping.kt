@@ -7,9 +7,9 @@ import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.superclasses
 import kotlin.reflect.jvm.javaField
 
-class InterfaceBlockGLSLMapping(val klass: KClass<InterfaceBlock>, shaderMetadata: ShaderWithResolvedIncludeStructs) : InterfaceBlockFieldType(klass) {
+class InterfaceBlockGLSLMapping(val klass: KClass<InterfaceBlock>, shaderMetadata: PreprocessedProgram) : InterfaceBlockFieldType(klass) {
     private val interfaceBlockClass = klass.findOutActualInterfaceBlockClass()
-    private val sampleInstance: InterfaceBlock
+    internal val sampleInstance: InterfaceBlock
 
     override val glslToken: String = interfaceBlockClass.simpleName ?: throw Exception("Don't use anonymous classes for writing InterfaceBlocks !")
 

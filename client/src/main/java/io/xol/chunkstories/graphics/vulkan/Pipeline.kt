@@ -1,11 +1,12 @@
 package io.xol.chunkstories.graphics.vulkan
 
+import io.xol.chunkstories.graphics.vulkan.shaderc.VulkanShaderFactory
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 
-class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VulkanRenderPass, val vertexShaderModule: ShaderModule, fragmentShaderModule: ShaderModule) {
+class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VulkanRenderPass, program: VulkanShaderFactory.VulkanicShaderProgram) {
     val layout: VkPipelineLayout
     val handle: VkPipeline
 
@@ -17,13 +18,13 @@ class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VulkanRenderP
         val vertexStageCreateInfo = VkPipelineShaderStageCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO).apply {
             stage(VK_SHADER_STAGE_VERTEX_BIT)
             pName(stackUTF8("main"))
-            module(vertexShaderModule.handle)
+            //TODO module(vertexShaderModule.handle)
         }
 
         val fragmentStageCreateInfo = VkPipelineShaderStageCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO).apply {
             stage(VK_SHADER_STAGE_FRAGMENT_BIT)
             pName(stackUTF8("main"))
-            module(fragmentShaderModule.handle)
+            //TODO module(fragmentShaderModule.handle)
         }
 
         val shaderStagesCreateInfo = VkPipelineShaderStageCreateInfo.callocStack(2)

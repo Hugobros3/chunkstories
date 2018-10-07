@@ -9,13 +9,13 @@ import org.slf4j.LoggerFactory
 
 class TriangleDrawer(val backend: VulkanGraphicsBackend) {
 
-    val baseProgram = backend.shaderFactory.loadProgram("/shaders/blit")
-    val vertexShaderModule = ShaderModule(backend, baseProgram.stages[ShaderStage.VERTEX]!!)
-    val fragmentShaderModule = ShaderModule(backend, baseProgram.stages[ShaderStage.FRAGMENT]!!)
+    val baseProgram = backend.shaderFactory.createShaderProgram("/shaders/blit")
+    //val vertexShaderModule = ShaderModule(backend, baseProgram.stages[ShaderStage.VERTEX]!!)
+    //val fragmentShaderModule = ShaderModule(backend, baseProgram.stages[ShaderStage.FRAGMENT]!!)
 
     val vertexBuffer: VertexBuffer
 
-    val pipeline = Pipeline(backend, backend.renderToBackbuffer, vertexShaderModule, fragmentShaderModule)
+    val pipeline = Pipeline(backend, backend.renderToBackbuffer, baseProgram)
     val cmdPool = CommandPool(backend, backend.logicalDevice.graphicsQueue.family)
 
     val commandBuffers : List<VkCommandBuffer>
@@ -127,8 +127,9 @@ class TriangleDrawer(val backend: VulkanGraphicsBackend) {
         cmdPool.cleanup()
         pipeline.cleanup()
 
-        fragmentShaderModule.cleanup()
-        vertexShaderModule.cleanup()
+        baseProgram.cleanup()
+        //fragmentShaderModule.cleanup()
+        //vertexShaderModule.cleanup()
     }
 
     companion object {

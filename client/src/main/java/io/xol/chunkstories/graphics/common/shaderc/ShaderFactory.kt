@@ -6,10 +6,15 @@ import kotlin.reflect.KClass
 
 open class ShaderFactory(open val classLoader: ClassLoader) {
 
+    enum class GLSLDialect {
+        OPENGL4,
+        VULKAN
+    }
+
     /** All the data structure that are explicitely included in the shader string *or* implicitely included due to use in an included struct */
     val structures = mutableMapOf<KClass<InterfaceBlock>, InterfaceBlockGLSLMapping>()
 
-    fun translateGLSL(dialect: GLSLDialect, stagesCode: Map<ShaderStage, String>): SpirvCrossHelper.TranspiledGLSLProgram? =
+    fun translateGLSL(dialect: GLSLDialect, stagesCode: Map<ShaderStage, String>): GLSLProgram =
             SpirvCrossHelper.translateGLSLDialect(this, dialect, stagesCode)
 
     /**
@@ -20,48 +25,75 @@ open class ShaderFactory(open val classLoader: ClassLoader) {
      * Vulkan GLSL. Since I find this utterly dumb, here is a preprocessor that explodes the struct definition at the uniform declaration
      */
     //TODO prolly should just parse the GLSL at this point and inline any struct we can ? idk
-    fun inlineStructsUsedAsUniformTypes(shaderMetadata: ShaderWithResolvedIncludeStructs): String {
+    fun PreprocessedProgram.findAndInlineUBOs(): List<Pair<String, InterfaceBlockGLSLMapping>> {
+        val list = mutableListOf<Pair<String, InterfaceBlockGLSLMapping>>()
         var processed = ""
 
-        for (line in shaderMetadata.transformedCode.lines()) {
+        for (line in this.transformedCode.lines()) {
             var layoutQualifier = ""
             var declarationStrippedOfLayoutPrefix = line
 
-            var translated : String? = line
+            var translated: String? = line
 
             if (line.startsWith("layout")) {
                 val layoutEndIndex = line.indexOf(')') + 1
                 layoutQualifier = line.substring(0, layoutEndIndex)
                 declarationStrippedOfLayoutPrefix = line.substring(layoutEndIndex).trim()
-                println("layout: $layoutQualifier $declarationStrippedOfLayoutPrefix")
+                //println("layout: $layoutQualifier $declarationStrippedOfLayoutPrefix")
 
                 // If the layout block is on a line of it's own it'll just get forgotten
-                translated = null
+                // translated = null
             }
 
+
             if (declarationStrippedOfLayoutPrefix.startsWith("uniform")) {
-                val uniformTypeName = declarationStrippedOfLayoutPrefix.split(' ').getOrNull(1) ?: "prout prout caca boudin"
-                val uniformName = declarationStrippedOfLayoutPrefix.split(' ').getOrNull(2)?.trimEnd(';') ?: "prout prout caca boudin"
+                val uniformTypeName = declarationStrippedOfLayoutPrefix.split(' ').getOrNull(1)
+                val uniformName = declarationStrippedOfLayoutPrefix.split(' ').getOrNull(2)?.trimEnd(';')
 
-                this.structures.values.find { it.glslToken == uniformTypeName }?.apply {
-                    println("Found inlineable uniform using a InterfaceBlock-based struct")
+                factory.structures.values.find { it.glslToken == uniformTypeName }?.apply {
+                    //this.sampleInstance as? UniformBlock ?: throw Exception("You must declare your InterfaceBlock as UniformBlock to use it in a Shader !")
 
-                    val inlinedUniformInterfaceBlockDeclaration =
-                            "layout(std140) uniform ${this.glslToken}_inlined_for_$uniformName {\n" + this.generateInnerGLSL() + "} $uniformName;\n"
+                    println("Found inlineable uniform using a InterfaceBlock-based struct: $uniformName")
+                    list += Pair(uniformName!!, this)
 
+                    val inlinedUniformInterfaceBlockDeclaration = "layout(std140) uniform _inlined${uniformTypeName}_$uniformName {\n" + this.generateInnerGLSL() + "} $uniformName;\n"
                     translated = inlinedUniformInterfaceBlockDeclaration
                 }
             }
 
-            if(translated != null)
+            if (translated != null)
                 processed += translated + "\n"
         }
 
-        return processed
+        this.transformedCode = processed
+
+        return list
     }
 
-    enum class GLSLDialect {
-        OPENGL4,
-        VULKAN
+    data class GLSLProgram(val sourceCode: Map<ShaderStage, String>, val resources: List<GLSLUniformResource>)
+
+    interface GLSLUniformResource {
+        val name: String
+        val descriptorSet: Int
+        val binding: Int
     }
+
+    data class GLSLUniformBlock(
+            override val name: String,
+            override val descriptorSet: Int,
+            override val binding: Int,
+            val mapper: InterfaceBlockGLSLMapping) : GLSLUniformResource
+
+    data class GLSLUnusedUniform(
+            override val name: String,
+            override val descriptorSet: Int,
+            override val binding: Int
+    ) : GLSLUniformResource
+
+    /** Represents a (potentially an array of) sampler2D uniform resource declared in one of the stages of the GLSL program */
+    data class GLSLUniformSampler2D(
+            override val name: String,
+            override val descriptorSet: Int,
+            override val binding: Int,
+            val count: Int) : GLSLUniformResource
 }

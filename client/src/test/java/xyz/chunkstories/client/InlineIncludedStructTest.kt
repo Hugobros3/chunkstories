@@ -1,6 +1,6 @@
 package xyz.chunkstories.client
 
-import io.xol.chunkstories.graphics.common.shaderc.ShaderWithResolvedIncludeStructs
+import io.xol.chunkstories.graphics.common.shaderc.PreprocessedProgram
 import io.xol.chunkstories.graphics.common.shaderc.ShaderFactory
 import org.junit.Test
 
@@ -24,10 +24,12 @@ class InlineIncludedStructTest {
         """.trimIndent()
 
         val factory = ShaderFactory(this.javaClass.classLoader)
-        val meta = ShaderWithResolvedIncludeStructs(factory, shaderCode)
+        val meta = PreprocessedProgram(factory, shaderCode)
 
-        val processedGLSLCode = factory.inlineStructsUsedAsUniformTypes(meta)
+        with(factory) {
+            meta.findAndInlineUBOs()
+        }
 
-        println("Processed GLSL :\n$processedGLSLCode")
+        println("Processed GLSL :\n${meta.transformedCode}")
     }
 }

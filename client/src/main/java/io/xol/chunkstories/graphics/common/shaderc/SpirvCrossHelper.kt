@@ -2,6 +2,11 @@ package io.xol.chunkstories.graphics.common.shaderc
 
 import graphics.scenery.spirvcrossj.*
 import io.xol.chunkstories.api.graphics.ShaderStage
+import io.xol.chunkstories.api.graphics.structs.UniformUpdateFrequency
+import io.xol.chunkstories.api.graphics.structs.UpdateFrequency
+import org.lwjgl.opengl.GL20.GL_SAMPLER_2D
+import org.lwjgl.vulkan.VK10.VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+import org.lwjgl.vulkan.VK10.VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE
 import org.slf4j.LoggerFactory
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -34,18 +39,25 @@ object SpirvCrossHelper {
             ShaderStage.FRAGMENT -> ".frag"
         }
 
-    fun translateGLSLDialect(factory: ShaderFactory, dialect: ShaderFactory.GLSLDialect, stagesCode: Map<ShaderStage, String>): TranspiledGLSLProgram? {
+    fun translateGLSLDialect(factory: ShaderFactory, dialect: ShaderFactory.GLSLDialect, stagesCode: Map<ShaderStage, String>): ShaderFactory.GLSLProgram {
         libspirvcrossj.initializeProcess()
         val ressources = libspirvcrossj.getDefaultTBuiltInResource()
 
         val program = TProgram()
 
+        val unlocatedUBOs = mutableListOf<Pair<String, InterfaceBlockGLSLMapping>>()
+
         val stages = stagesCode.map { (stage, code) ->
-            val codeWithIncludedStructs = ShaderWithResolvedIncludeStructs(factory, code)
+            val preprocessed = PreprocessedProgram(factory, code)
 
-            val codeWithInlinedStructs = factory.inlineStructsUsedAsUniformTypes(codeWithIncludedStructs)
+            // Transform the UBO (inline them so glslang is happier), and use the occasion to get a list of declared UBOs
+            val uniformBlocks = with(factory) {
+                preprocessed.findAndInlineUBOs()
+            }
 
-            ProgramStage(codeWithInlinedStructs, stage)
+            unlocatedUBOs.addAll(uniformBlocks)
+
+            ProgramStage(preprocessed.transformedCode, stage)
         }
 
         for (stage in stages) {
@@ -78,10 +90,39 @@ object SpirvCrossHelper {
             logger.warn(program.infoLog)
             logger.warn(program.infoDebugLog)
 
-            return null
+            throw Exception("Failed to link/map program !")
         }
 
-        //program.buildReflection()
+        val resourcesBuckets = when (dialect) {
+            ShaderFactory.GLSLDialect.OPENGL4 -> arrayOf(mutableListOf()) // ONE bucket, because descriptor sets aren't a thing in OpenGL
+
+            // As many buckets as we have different uniform update frequencies (those map directly to Descriptor Sets)
+            ShaderFactory.GLSLDialect.VULKAN -> Array<MutableList<ShaderFactory.GLSLUniformResource>>(UniformUpdateFrequency.values().size) { mutableListOf() }
+        }
+
+        //logger.debug("Sorting unlocated uniforms into buckets: ")
+        //val locatedUniforms = mutableListOf<VulkanShaderFactory.VulkanShaderProgramUniformBlock>()
+        /*for(updateFrequency in UniformUpdateFrequency.values()) {
+            logger.debug("Bucket $updateFrequency : ")
+            val ubosWithThisFrequency = unlocatedUBOs.filter { (_, mapping) -> mapping.klass.updateFrequency == updateFrequency }
+
+            var binding = 0
+            for(ubo in ubosWithThisFrequency) {
+                val set = updateFrequency.ordinal
+                logger.debug("Assigning binding ($set, $binding) to ubo ${ubo.first}")
+                locatedUniforms += VulkanShaderFactory.VulkanShaderProgramUniformBlock(ubo.first, set, binding++, ubo.second)
+            }
+        }*/
+
+        program.buildReflection()
+
+        // TODO this is a hack because I can't use reflection to get info on the sampler itself
+        val uniformTypeMap = mutableMapOf<String, Pair<Int, Int>>()
+        for(index in 0 until program.numLiveUniformVariables) {
+            uniformTypeMap[program.getUniformName(index)] = Pair(program.getUniformType(index), program.getUniformArraySize(index))
+        }
+
+        println(uniformTypeMap)
 
         fun ProgramStage.translateToGLSLDialect(): String {
             val intermediate = program.getIntermediate(this.stage.spirvStageInt)
@@ -104,79 +145,98 @@ object SpirvCrossHelper {
                     options.vulkanSemantics = true
                 }
             }
-
             compiler.options = options
 
-            val r = compiler.shaderResources
 
-            val buffers = r.uniformBuffers
-            for (i in 0 until buffers.size().toInt()) {
-                val buffer = buffers.get(i)
-                println("Found uniform block : name= ${buffer.name}")
+            fun kotlin.reflect.KClass<io.xol.chunkstories.api.graphics.structs.InterfaceBlock>.updateFrequency(): UniformUpdateFrequency  =
+                    this.annotations.filterIsInstance<UpdateFrequency>().firstOrNull()?.frequency ?: UniformUpdateFrequency.ONCE_PER_BATCH
 
-                var set = compiler.getDecoration(buffer.id, Decoration.DecorationDescriptorSet)
-                println("Descriptor set: $set")
+            val uniformBufferBlocks = compiler.shaderResources.uniformBuffers
+            for (i in 0 until uniformBufferBlocks.size().toInt()) {
+                val uniformBufferBlock = uniformBufferBlocks[i]
 
-                set = (Math.random() * 5).toLong()
-                compiler.setDecoration(buffer.id, Decoration.DecorationDescriptorSet, set)
+                var uniformBlockName = uniformBufferBlock.name
 
-                assert(compiler.getDecoration(buffer.id, Decoration.DecorationDescriptorSet) == set)
+                /** Go over the uniform blocks and assign those a set & id */
+                if (uniformBlockName.startsWith("_inlined")) {
 
-                println("set set to $set")
+                    uniformBlockName = uniformBlockName.substring(uniformBlockName.indexOf('_') + 1)
+                    uniformBlockName = uniformBlockName.substring(uniformBlockName.indexOf('_') + 1)
+
+                    //println("Found uniform block : name= $uniformBlockName")
+
+                    val inlinedUBO = unlocatedUBOs.find { it.first == uniformBlockName }
+                            ?: throw Exception("UBO name starts with _inlined but we seemingly didn't create it ... Quoi la baise ! ")
+
+                    val updateFrequency = inlinedUBO.second.klass.updateFrequency()
+
+                    val descriptorSet = when(dialect) {
+                        ShaderFactory.GLSLDialect.OPENGL4 -> 0
+                        ShaderFactory.GLSLDialect.VULKAN -> updateFrequency.ordinal + 1
+                    }
+                    val binding = resourcesBuckets[descriptorSet].size
+
+                    // Set the descriptor set decoration (important!)
+                    compiler.setDecoration(uniformBufferBlock.id, Decoration.DecorationDescriptorSet, descriptorSet.toLong())
+                    compiler.setDecoration(uniformBufferBlock.id, Decoration.DecorationBinding, binding.toLong())
+
+                    // Check we did set the Descriptor Set
+                    assert(compiler.getDecoration(uniformBufferBlock.id, Decoration.DecorationDescriptorSet) == descriptorSet.toLong())
+
+                    // Add the new resource to the corresponding bucket
+                    resourcesBuckets[descriptorSet].add(ShaderFactory.GLSLUniformBlock(uniformBlockName, descriptorSet, binding, inlinedUBO.second))
+
+                    println("Bound UBO $uniformBlockName to ($descriptorSet, $binding)")
+                } else {
+                    throw Exception("We require all uniform blocks to be typed with a #included struct.")
+                }
             }
 
-            val translatedGLSL = compiler.compile()
+            val samplers = compiler.shaderResources.sampledImages
+            for(i in 0 until samplers.size().toInt()) {
+                val sampler = samplers[i]
 
-            return translatedGLSL
+                val samplerName = sampler.name
+
+                //TODO TODO TODO val samplerType = sampler.typeId
+                val hack = uniformTypeMap[samplerName] ?: Pair(-1, 1)
+                val samplerType = hack.first
+                val samplerArraySize = hack.second
+
+                val descriptorSet = 0
+                val binding = resourcesBuckets[descriptorSet].size
+
+                resourcesBuckets[descriptorSet].add(when(samplerType) {
+                    GL_SAMPLER_2D -> ShaderFactory.GLSLUniformSampler2D(samplerName, descriptorSet, binding, samplerArraySize)
+                    else -> ShaderFactory.GLSLUnusedUniform(samplerName, descriptorSet, binding)
+                })
+
+                compiler.setDecoration(sampler.id, Decoration.DecorationDescriptorSet, descriptorSet.toLong())
+                compiler.setDecoration(sampler.id, Decoration.DecorationBinding, binding.toLong())
+
+                println("Bound Sampler $samplerName $samplerType to ($descriptorSet, $binding)")
+            }
+
+            compiler.addHeaderLine("// Autogenerated GLSL code")
+
+            return compiler.compile()
         }
-
-        /*val vertexShader = stages.find { it.ext() == ".vert" }!!.translateToGLSLDialect()
-        val geometryShader = stages.find { it.ext() == ".geom" }?.translateToGLSLDialect()
-        val fragmentShader = stages.find { it.ext() == ".frag" }!!.translateToGLSLDialect()*/
-
-        /* logger.debug("#uniforms blocks : ${program.numLiveUniformBlocks} loose : ${program.numLiveUniformVariables}")
-         for(i in 0 until program.numLiveUniformBlocks) {
-             val name = program.getUniformBlockName(i)
-             val ttype = program.getUniformBlockTType(i)
-             val binding = program.getUniformBlockBinding(i)
-             val index = program.getUniformBlockIndex(i)
-             println("uniform $i block :$name binding=$binding index=$index")
-         }
-
-         for(i in 0 until program.numLiveUniformVariables) {
-             val name = program.getUniformName(i)
-             val type = program.getUniformType(i)
-             val ttype = program.getUniformTType(i)
-             println("uniform $i :$name type=$type")
-         }
-
-         for(i in 0 until program.numLiveAttributes) {
-             val name = program.getAttributeName(i)
-             val type = program.getAttributeType(i)
-             val ttype = program.getAttributeTType(i)
-
-             println("attribute $i: $name $type")
-             //println("GL_SAMPLER_2D=$GL_SAMPLER_2D")
-         }*/
-
-        //program.dumpReflection()
 
         libspirvcrossj.finalizeProcess()
 
-        return TranspiledGLSLProgram(dialect, mapOf(*(stages.map { Pair(it.stage, it.translateToGLSLDialect()) }).toTypedArray()))
+        val sources = mapOf(*(stages.map { Pair(it.stage, it.translateToGLSLDialect()) }).toTypedArray())
+        val resources = resourcesBuckets.toList().merge()
+
+        return ShaderFactory.GLSLProgram(sources, resources)
     }
 
-    data class TranspiledGLSLProgram(val dialect: ShaderFactory.GLSLDialect, val stages: Map<ShaderStage, String>) {
-
-    }
-
-    fun generateSpirV(transpiledGLSL: TranspiledGLSLProgram): GeneratedSpirV? {
+    fun generateSpirV(transpiledGLSL: ShaderFactory.GLSLProgram): GeneratedSpirV? {
         libspirvcrossj.initializeProcess()
         val ressources = libspirvcrossj.getDefaultTBuiltInResource()
 
         val program = TProgram()
 
-        val stages = transpiledGLSL.stages.map { (stage, code) -> ProgramStage(code, stage) }
+        val stages = transpiledGLSL.sourceCode.map { (stage, code) -> ProgramStage(code, stage) }
 
         for (stage in stages) {
             stage.tShader = TShader(stage.stage.spirvStageInt)
@@ -226,9 +286,15 @@ object SpirvCrossHelper {
     }
 
     /** the generated spirv the engine can ingest for that shader program */
-    data class GeneratedSpirV(val source: TranspiledGLSLProgram, val stages: Map<ShaderStage, ByteBuffer>) {
+    data class GeneratedSpirV(val source: ShaderFactory.GLSLProgram, val stages: Map<ShaderStage, ByteBuffer>) {
 
     }
+}
+
+private fun <E> List<List<E>>.merge(): List<E> {
+    val list = mutableListOf<E>()
+    this.forEach { list.addAll(it) }
+    return list
 }
 
 private fun IntVec.byteBuffer(): ByteBuffer {
