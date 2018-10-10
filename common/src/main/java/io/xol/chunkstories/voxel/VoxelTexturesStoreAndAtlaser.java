@@ -41,7 +41,6 @@ import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
 import io.xol.chunkstories.content.GameContentStore;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.util.CasterIterator;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTextures {
     Map<String, VoxelTextureAtlased> texMap = new HashMap<String, VoxelTextureAtlased>();
@@ -416,7 +415,7 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 
     //TODO move that to implem
     private Texture2D getTextureFromBufferedImage(BufferedImage image) {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
 
 //        int[] data = new int[image.getWidth() * image.getHeight()];
 //        image.getRGB(0, 0, image.getWidth(), image.getHeight(), data, 0, image.getWidth());

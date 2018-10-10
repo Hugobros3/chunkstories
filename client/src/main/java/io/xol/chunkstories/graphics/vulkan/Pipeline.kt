@@ -1,12 +1,13 @@
 package io.xol.chunkstories.graphics.vulkan
 
+import io.xol.chunkstories.api.graphics.ShaderStage
 import io.xol.chunkstories.graphics.vulkan.shaderc.VulkanShaderFactory
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 
-class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VulkanRenderPass, program: VulkanShaderFactory.VulkanicShaderProgram) {
+class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VulkanRenderPass, val program: VulkanShaderFactory.VulkanicShaderProgram) {
     val layout: VkPipelineLayout
     val handle: VkPipeline
 
@@ -15,21 +16,16 @@ class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VulkanRenderP
 
         stackPush()
 
-        val vertexStageCreateInfo = VkPipelineShaderStageCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO).apply {
-            stage(VK_SHADER_STAGE_VERTEX_BIT)
-            pName(stackUTF8("main"))
-            //TODO module(vertexShaderModule.handle)
+        val vertexStagesCreateInfos = program.modules.map { (stage, module) ->
+            VkPipelineShaderStageCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO).apply {
+                stage(stage.vkShaderStageBit)
+                pName(stackUTF8("main"))
+                module(module.handle)
+            }
         }
 
-        val fragmentStageCreateInfo = VkPipelineShaderStageCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO).apply {
-            stage(VK_SHADER_STAGE_FRAGMENT_BIT)
-            pName(stackUTF8("main"))
-            //TODO module(fragmentShaderModule.handle)
-        }
-
-        val shaderStagesCreateInfo = VkPipelineShaderStageCreateInfo.callocStack(2)
-        shaderStagesCreateInfo.put(vertexStageCreateInfo)
-        shaderStagesCreateInfo.put(fragmentStageCreateInfo)
+        val shaderStagesCreateInfo = VkPipelineShaderStageCreateInfo.callocStack(vertexStagesCreateInfos.size)
+        vertexStagesCreateInfos.forEach { shaderStagesCreateInfo.put(it) }
         shaderStagesCreateInfo.flip()
 
         // Vertex input
@@ -155,3 +151,11 @@ class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VulkanRenderP
         val logger = LoggerFactory.getLogger("client.vulkan")
     }
 }
+
+val ShaderStage.vkShaderStageBit: Int
+    get() = when(this) {
+
+        ShaderStage.VERTEX -> VK_SHADER_STAGE_VERTEX_BIT
+        ShaderStage.GEOMETRY -> VK_SHADER_STAGE_GEOMETRY_BIT
+        ShaderStage.FRAGMENT -> VK_SHADER_STAGE_FRAGMENT_BIT
+    }
