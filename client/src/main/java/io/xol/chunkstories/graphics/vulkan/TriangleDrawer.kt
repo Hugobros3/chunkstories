@@ -1,8 +1,7 @@
 package io.xol.chunkstories.graphics.vulkan
 
-import io.xol.chunkstories.api.graphics.ShaderStage
-import io.xol.chunkstories.graphics.common.shaderc.SpirvCrossHelper
-import io.xol.chunkstories.graphics.vulkan.shaderc.VulkanShaderFactory
+import io.xol.chunkstories.graphics.vulkan.swapchain.PerFrameResource
+import io.xol.chunkstories.graphics.vulkan.swapchain.SwapChain
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
@@ -10,89 +9,35 @@ import org.slf4j.LoggerFactory
 
 class TriangleDrawer(val backend: VulkanGraphicsBackend) {
 
-    val baseProgram = VulkanShaderFactory.VulkanicShaderProgram(backend, backend.shaderFactory.loadProgram("/shaders/blit"))
-    //val vertexShaderModule = ShaderModule(backend, baseProgram.stages[ShaderStage.VERTEX]!!)
-    //val fragmentShaderModule = ShaderModule(backend, baseProgram.stages[ShaderStage.FRAGMENT]!!)
-
-    val vertexBuffer: VertexBuffer
+    val baseProgram = backend.shaderFactory.createProgram(backend, "/shaders/blit")
 
     val pipeline = Pipeline(backend, backend.renderToBackbuffer, baseProgram)
-    val cmdPool = CommandPool(backend, backend.logicalDevice.graphicsQueue.family)
+    val cmdPool = CommandPool(backend, backend.logicalDevice.graphicsQueue.family, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT  or VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
 
-    val commandBuffers : List<VkCommandBuffer>
-
-    private val imagesCount: Int
+    val vertexBuffers: PerFrameResource<VulkanVertexBuffer>
+    val commandBuffers: PerFrameResource<VkCommandBuffer>
 
     init {
         stackPush()
 
-        val data = floatArrayOf(0.0F, -0.5F, 0.5F, 0.5F, -0.5F, 0.5F)
-        val byteBuffer = stackMalloc(data.size * 4)
-
-        //byteBuffer.order(ByteOrder.BIG_ENDIAN)
-        val fb = byteBuffer.asFloatBuffer()
-
-        fb.put(data)
-        //byteBuffer.flip()
-
-        vertexBuffer = VertexBuffer(backend, byteBuffer)
-
-        imagesCount = backend.swapchain.imagesCount
-
-        // Allocate as many command buffers as there are images in the swapchain (the commands differ as you render to another target)
-        val commandBufferAllocateInfo = VkCommandBufferAllocateInfo.callocStack().sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO).apply {
-            commandPool(cmdPool.handle)
-            level(VK_COMMAND_BUFFER_LEVEL_PRIMARY)
-            commandBufferCount(imagesCount)
+        vertexBuffers = PerFrameResource(backend) {
+            VulkanVertexBuffer(backend, 1024)
         }
 
-        logger.info("Allocating command buffers")
-        val pCmdBuffers = stackMallocPointer(imagesCount)
-        vkAllocateCommandBuffers(backend.logicalDevice.vkDevice, commandBufferAllocateInfo, pCmdBuffers)
-        commandBuffers = mutableListOf()
-        for(pCmdBuffer in pCmdBuffers) {
-            commandBuffers += VkCommandBuffer(pCmdBuffer, backend.logicalDevice.vkDevice)
-        }
+        commandBuffers = PerFrameResource(backend) {
 
-        // Record the necessary commands in those command buffers
-        for((i, commandBuffer) in commandBuffers.withIndex()) {
-            logger.debug("Filling command buffer $i $commandBuffer")
-            val beginInfo = VkCommandBufferBeginInfo.callocStack().sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO).apply {
-                flags(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT)
-                pInheritanceInfo(null)
+            val commandBufferAllocateInfo = VkCommandBufferAllocateInfo.callocStack().sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO).apply {
+                commandPool(cmdPool.handle)
+                level(VK_COMMAND_BUFFER_LEVEL_PRIMARY)
+                commandBufferCount(1)
             }
 
-            vkBeginCommandBuffer(commandBuffer, beginInfo)
+            val pCmdBuffers = stackMallocPointer(1)
+            vkAllocateCommandBuffers(backend.logicalDevice.vkDevice, commandBufferAllocateInfo, pCmdBuffers)
 
-            val renderPassBeginInfo = VkRenderPassBeginInfo.callocStack().sType(VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO).apply {
-                renderPass(backend.renderToBackbuffer.handle)
-                framebuffer(backend.swapchain.swapChainFramebuffers[i])
-                renderArea().offset().x(0)
-                renderArea().offset().y(0)
-                renderArea().extent().width(backend.window.width)
-                renderArea().extent().height(backend.window.height)
-                //renderArea().extent(backend.physicalDevice.swapchainDetails.swapExtentToUse)
+            val commandBuffer = VkCommandBuffer(pCmdBuffers.get(0), backend.logicalDevice.vkDevice)
 
-                val clearColor = VkClearValue.callocStack(1).apply {
-                    color().float32().apply {
-                        this.put(0, 0.0F)
-                        this.put(1, 0.5F)
-                        this.put(2, 0.0F)
-                        this.put(3, 1.0F)
-                    }
-                }
-                pClearValues(clearColor)
-            }
-
-            vkCmdBeginRenderPass(commandBuffer, renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE)
-            vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
-
-            vkCmdBindVertexBuffers(commandBuffer, 0, stackLongs(vertexBuffer.handle), stackLongs(0))
-
-            vkCmdDraw(commandBuffer, 3, 1, 0, 0) // that's rather anticlimactic
-            vkCmdEndRenderPass(commandBuffer)
-
-            vkEndCommandBuffer(commandBuffer)
+            commandBuffer
         }
 
         stackPop()
@@ -100,6 +45,59 @@ class TriangleDrawer(val backend: VulkanGraphicsBackend) {
 
     fun drawTriangle(frame : SwapChain.Frame) {
         stackPush().use {
+
+            // Rewrite the vertex buffer
+            vertexBuffers[frame].apply {
+                val data = floatArrayOf(0.0F + Math.sin(frame.frameNumber * 0.01).toFloat(), -0.5F, 0.5F, 0.5F, -0.5F, 0.5F)
+                val byteBuffer = stackMalloc(data.size * 4)
+
+                val fb = byteBuffer.asFloatBuffer()
+
+                fb.put(data)
+                this.upload(byteBuffer)
+            }
+
+            // Rewrite the command buffer
+            commandBuffers[frame].apply {
+                val beginInfo = VkCommandBufferBeginInfo.callocStack().sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO).apply {
+                    flags(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT)
+                    pInheritanceInfo(null)
+                }
+
+                vkBeginCommandBuffer(this, beginInfo)
+
+                val renderPassBeginInfo = VkRenderPassBeginInfo.callocStack().sType(VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO).apply {
+                    renderPass(backend.renderToBackbuffer.handle)
+
+                    //TODO frame.swapchainImage
+                    framebuffer(backend.swapchain.swapChainFramebuffers[frame.swapchainImageIndex])
+                    renderArea().offset().x(0)
+                    renderArea().offset().y(0)
+                    renderArea().extent().width(backend.window.width)
+                    renderArea().extent().height(backend.window.height)
+                    //renderArea().extent(backend.physicalDevice.swapchainDetails.swapExtentToUse)
+
+                    val clearColor = VkClearValue.callocStack(1).apply {
+                        color().float32().apply {
+                            this.put(0, 0.0F)
+                            this.put(1, 0.5F)
+                            this.put(2, 0.0F)
+                            this.put(3, 1.0F)
+                        }
+                    }
+                    pClearValues(clearColor)
+                }
+
+                vkCmdBeginRenderPass(this, renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE)
+                vkCmdBindPipeline(this, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
+
+                vkCmdBindVertexBuffers(this, 0, stackLongs(vertexBuffers[frame].handle), stackLongs(0))
+
+                vkCmdDraw(this, 3, 1, 0, 0) // that's rather anticlimactic
+                vkCmdEndRenderPass(this)
+
+                vkEndCommandBuffer(this)
+            }
 
             val submitInfo = VkSubmitInfo.callocStack().sType(VK_STRUCTURE_TYPE_SUBMIT_INFO).apply {
                 val waitOnSemaphores = stackMallocLong(1)
@@ -112,7 +110,7 @@ class TriangleDrawer(val backend: VulkanGraphicsBackend) {
                 pWaitDstStageMask(waitStages)
 
                 val commandBuffers = stackMallocPointer(1)
-                commandBuffers.put(0, this@TriangleDrawer.commandBuffers[frame.swapchainImageIndex])
+                commandBuffers.put(0, this@TriangleDrawer.commandBuffers[frame])
                 pCommandBuffers(commandBuffers)
 
                 val semaphoresToSignal = stackLongs(frame.renderFinishedSemaphore)
@@ -124,13 +122,12 @@ class TriangleDrawer(val backend: VulkanGraphicsBackend) {
     }
 
     fun cleanup() {
-        vertexBuffer.cleanup()
+        vertexBuffers.cleanup()
+
         cmdPool.cleanup()
         pipeline.cleanup()
 
         baseProgram.cleanup()
-        //fragmentShaderModule.cleanup()
-        //vertexShaderModule.cleanup()
     }
 
     companion object {

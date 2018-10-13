@@ -1,5 +1,6 @@
-package io.xol.chunkstories.graphics.vulkan
+package io.xol.chunkstories.graphics.vulkan.swapchain
 
+import io.xol.chunkstories.graphics.vulkan.*
 import org.lwjgl.glfw.GLFW.glfwWaitEvents
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
@@ -194,7 +195,7 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VulkanRen
         val swapchainImageIndex = pImageIndex.get(0)
 
         stackPop()
-        return Frame(frameNumber, swapchainImageIndex, imageAvailableSemaphore, renderingFinishedSemaphore, fence, System.nanoTime())
+        return Frame(frameNumber, swapchainImageIndex, currentInflightFrameIndex, imageAvailableSemaphore, renderingFinishedSemaphore, fence, System.nanoTime())
     }
 
     /**
@@ -203,10 +204,12 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VulkanRen
      */
     data class Frame(val frameNumber: Int,
                      val swapchainImageIndex: Int,
+                     val inflightFrameIndex: Int,
                      val renderCanBeginSemaphore: VkSemaphore,
                      val renderFinishedSemaphore: VkSemaphore,
                      val renderFinishedFence: VkFence,
-                     val started: Long)
+                     val started: Long) {
+    }
 
     fun finishFrame(frame: Frame) {
         val stack = stackPush()

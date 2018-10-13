@@ -1,5 +1,6 @@
 package io.xol.chunkstories.graphics.vulkan
 
+import io.xol.chunkstories.graphics.vulkan.resources.Cleanable
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkBufferCreateInfo
@@ -8,15 +9,15 @@ import org.lwjgl.vulkan.VkMemoryRequirements
 import org.lwjgl.vulkan.VkPhysicalDeviceMemoryProperties
 import java.nio.ByteBuffer
 
-class VertexBuffer(val backend: VulkanGraphicsBackend, data: ByteBuffer) {
+open class VulkanBuffer(val backend: VulkanGraphicsBackend, val bufferSize: Long, usageBits: Int) : Cleanable {
     val handle: VkBuffer
     private val allocatedMemoryPointer: Long
 
     init {
         stackPush()
         val bufferInfo = VkBufferCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO).apply {
-            size(data.limit().toLong())
-            usage(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT)
+            size(bufferSize)
+            usage(usageBits)
             sharingMode(VK_SHARING_MODE_EXCLUSIVE)
             flags(0)
         }
@@ -61,10 +62,19 @@ class VertexBuffer(val backend: VulkanGraphicsBackend, data: ByteBuffer) {
 
         vkBindBufferMemory(backend.logicalDevice.vkDevice, handle, allocatedMemoryPointer, 0)
 
-        val ppData = stackMallocPointer(1)
-        vkMapMemory(backend.logicalDevice.vkDevice, allocatedMemoryPointer, 0, bufferInfo.size(), 0, ppData)
+        stackPop()
+    }
 
-        val mappedMemory = ppData.getByteBuffer(bufferInfo.size().toInt())
+    /** Memory-maps the buffer and updates it */
+    fun upload(data: ByteBuffer) {
+        assert(data.remaining() <= bufferSize)
+
+        stackPush()
+
+        val ppData = stackMallocPointer(1)
+        vkMapMemory(backend.logicalDevice.vkDevice, allocatedMemoryPointer, 0, bufferSize, 0, ppData)
+
+        val mappedMemory = ppData.getByteBuffer(bufferSize.toInt())
         mappedMemory.put(data)
 
         vkUnmapMemory(backend.logicalDevice.vkDevice, allocatedMemoryPointer)
@@ -72,7 +82,7 @@ class VertexBuffer(val backend: VulkanGraphicsBackend, data: ByteBuffer) {
         stackPop()
     }
 
-    fun cleanup() {
+    override fun cleanup() {
         vkDestroyBuffer(backend.logicalDevice.vkDevice, handle, null)
         vkFreeMemory(backend.logicalDevice.vkDevice, allocatedMemoryPointer, null)
     }

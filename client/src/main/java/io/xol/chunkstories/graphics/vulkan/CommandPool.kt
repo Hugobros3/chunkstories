@@ -6,7 +6,7 @@ import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 
-class CommandPool(val backend: VulkanGraphicsBackend, queueFamily: PhysicalDevice.QueueFamily) {
+class CommandPool(val backend: VulkanGraphicsBackend, queueFamily: PhysicalDevice.QueueFamily, flags: Int) {
     val handle: VkCommandPool
 
     init {
@@ -14,7 +14,7 @@ class CommandPool(val backend: VulkanGraphicsBackend, queueFamily: PhysicalDevic
 
         val commandPoolCreateInfo = VkCommandPoolCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO).apply {
             queueFamilyIndex(queueFamily.index)
-            flags(0)
+            flags(flags)
         }
 
         val pCommandPool = stackMallocLong(1)

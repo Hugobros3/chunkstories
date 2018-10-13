@@ -21,6 +21,8 @@ class VulkanShaderFactory(val client: Client) : ShaderFactory(VulkanShaderFactor
         return try { translateGLSL(GLSLDialect.VULKAN, stages) } catch(e: Exception) { throw Exception("Failed to load program $basePath, $e") }
     }
 
+    fun createProgram(backend: VulkanGraphicsBackend, basePath: String) = VulkanicShaderProgram(backend, loadProgram(basePath))
+
     data class VulkanicShaderProgram(val backend: VulkanGraphicsBackend, val glslProgram: GLSLProgram) {
         val spirvCode = SpirvCrossHelper.generateSpirV(glslProgram)
         val modules: Map<ShaderStage, ShaderModule>

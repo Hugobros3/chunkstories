@@ -5,6 +5,7 @@ import io.xol.chunkstories.api.graphics.systems.drawing.FarTerrainDrawer
 import io.xol.chunkstories.client.glfw.GLFWWindow
 import io.xol.chunkstories.graphics.GLFWBasedGraphicsBackend
 import io.xol.chunkstories.graphics.vulkan.shaderc.VulkanShaderFactory
+import io.xol.chunkstories.graphics.vulkan.swapchain.SwapChain
 import org.lwjgl.PointerBuffer
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWVulkan.glfwGetRequiredInstanceExtensions
