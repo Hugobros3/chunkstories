@@ -24,7 +24,6 @@ class VulkanGuiPass(val backend: VulkanGraphicsBackend, val gui: ClientGui) {
     val vertexBuffers: PerFrameResource<VulkanVertexBuffer>
     val commandBuffers: PerFrameResource<VkCommandBuffer>
 
-
     val stagingByteBuffer = MemoryUtil.memAlloc(guiBufferSize)
     val stagingFloatBuffer = stagingByteBuffer.asFloatBuffer()
     var stagingSize = 0
@@ -141,8 +140,7 @@ class VulkanGuiPass(val backend: VulkanGraphicsBackend, val gui: ClientGui) {
                 val renderPassBeginInfo = VkRenderPassBeginInfo.callocStack().sType(VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO).apply {
                     renderPass(backend.renderToBackbuffer.handle)
 
-                    //TODO frame.swapchainImage
-                    framebuffer(backend.swapchain.swapChainFramebuffers[frame.swapchainImageIndex])
+                    framebuffer(frame.swapchainFramebuffer)
                     renderArea().offset().x(0)
                     renderArea().offset().y(0)
                     renderArea().extent().width(backend.window.width)

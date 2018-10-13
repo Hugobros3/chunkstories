@@ -29,6 +29,7 @@ class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VulkanRenderP
         shaderStagesCreateInfo.flip()
 
         // Vertex input
+        // TODO obtain those from the shader program ?
         val bindingDescription = VkVertexInputBindingDescription.callocStack(1).apply {
             binding(0)
             stride(2 * 4)
@@ -52,8 +53,8 @@ class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VulkanRenderP
             primitiveRestartEnable(false)
         }
 
-        //TODO use dynamic state for this
-        val viewport = VkViewport.callocStack(1).apply {
+        //We use dynamic state instead
+        /*val viewport = VkViewport.callocStack(1).apply {
             x(0.0F)
             y(0.0F)
             width(backend.window.width.toFloat()*0)
@@ -71,13 +72,12 @@ class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VulkanRenderP
             extent().width(backend.window.width)
             extent().height(backend.window.height)
             //extent(backend.physicalDevice.swapchainDetails.swapExtentToUse)
-        }
+        }*/
 
         val viewportStageCreateInfo = VkPipelineViewportStateCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO).apply {
             viewportCount(1)
-            //pViewports(viewport)
             scissorCount(1)
-            //pScissors(scissor)
+            // Specify a count but ignore filling the structs
         }
 
         val rasterizerCreateInfo = VkPipelineRasterizationStateCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO).apply {
@@ -103,13 +103,15 @@ class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VulkanRenderP
             pAttachments(staticBlendState)
         }
 
-        //TODO here goes VkPipelineDynamicStateCreateInfo
         val dynamicStateCreateInfo : VkPipelineDynamicStateCreateInfo? = VkPipelineDynamicStateCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO).apply {
             pDynamicStates(stackInts(VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR))
         }
 
         val pipelineLayoutCreateInfo = VkPipelineLayoutCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO).apply {
-            pSetLayouts(null)
+            //TODO here goes descriptor sets
+            val pDescriptorSets = stackMallocLong(program.descriptorSetLayouts.size)
+            program.descriptorSetLayouts.forEach { pDescriptorSets.put(it) }
+            pSetLayouts(pDescriptorSets)
             pPushConstantRanges(null)
         }
 

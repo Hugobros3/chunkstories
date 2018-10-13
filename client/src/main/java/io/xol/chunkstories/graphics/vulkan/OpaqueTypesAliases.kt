@@ -12,5 +12,6 @@ typealias VkCommandPool = Long
 typealias VkSemaphore = Long
 typealias VkFence = Long
 typealias VkBuffer = Long
+typealias VkDescriptorSetLayout = Long
 
 typealias VkSurfaceKHR = Long
