@@ -65,8 +65,6 @@ public class LoginPrompt extends Layer {
 
 		if (gui.getClient().getConfiguration().getValue("client.game.language").equals("undefined")) {
 			gui.setTopLayer(new LanguageSelectionScreen(gui, this, false));
-			// this.mainScene.changeOverlay(new LanguageSelectionScreen(mainScene, this,
-			// false));
 		}
 
 		if (can_next)

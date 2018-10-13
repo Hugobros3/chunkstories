@@ -20,7 +20,7 @@ class PerFrameResource<R : Any>(val backend: VulkanGraphicsBackend, val initLamb
 
     lateinit var values : Array<Any>
 
-    operator fun get(frame: SwapChain.Frame) = values[frame.inflightFrameIndex] as R
+    operator fun get(frame: Frame) = values[frame.inflightFrameIndex] as R
 
     fun cleanup() {
         values.forEach { (it as? Cleanable)?.cleanup() }

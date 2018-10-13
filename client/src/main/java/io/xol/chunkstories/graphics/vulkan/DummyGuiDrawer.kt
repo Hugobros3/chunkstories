@@ -7,9 +7,12 @@ import io.xol.chunkstories.api.gui.GuiDrawer
 import org.joml.Vector4f
 import org.joml.Vector4fc
 
-class VulkanGuiDrawer(override val fonts: Fonts, override val gui: Gui) : GuiDrawer {
+open class DummyGuiDrawer(override val gui: Gui) : GuiDrawer {
+    override val fonts: Fonts
+        get() = gui.fonts
+
     override fun drawBox(startX: Int, startY: Int, width: Int, height: Int, textureStartX: Float, textureStartY: Float, textureEndX: Float, textureEndY: Float, texture: String?, color: Vector4fc?) {
-        
+
     }
 
     override fun drawBox(startX: Int, startY: Int, width: Int, height: Int, texture: String?) =

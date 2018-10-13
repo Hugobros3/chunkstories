@@ -6,6 +6,7 @@ import io.xol.chunkstories.client.glfw.GLFWWindow
 import io.xol.chunkstories.graphics.GLFWBasedGraphicsBackend
 import io.xol.chunkstories.graphics.vulkan.shaderc.VulkanShaderFactory
 import io.xol.chunkstories.graphics.vulkan.swapchain.SwapChain
+import io.xol.chunkstories.gui.ClientGui
 import org.lwjgl.PointerBuffer
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWVulkan.glfwGetRequiredInstanceExtensions
@@ -44,7 +45,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
     val renderToBackbuffer : VulkanRenderPass
 
     val shaderFactory = VulkanShaderFactory(window.client)
-    var triangleDrawer : TriangleDrawer
+    var triangleDrawer : VulkanGuiPass
 
     init {
         if (!glfwVulkanSupported())
@@ -73,13 +74,13 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
             }
         }
 
-        triangleDrawer = TriangleDrawer(this)
+        triangleDrawer = VulkanGuiPass(this, window.client.gui)
     }
 
     override fun drawFrame(frameNumber: Int) {
         val frame = swapchain.beginFrame(frameNumber)
 
-        triangleDrawer.drawTriangle(frame)
+        triangleDrawer.render(frame)
 
         swapchain.finishFrame(frame)
     }
@@ -89,8 +90,8 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
     }
 
     fun recreateSwapchainDependencies() {
-        triangleDrawer.cleanup()
-        triangleDrawer = TriangleDrawer(this)
+        //triangleDrawer.cleanup()
+        //triangleDrawer = VulkanGuiPass(this, window.client.gui)
     }
 
     /** Creates a Vulkan instance */

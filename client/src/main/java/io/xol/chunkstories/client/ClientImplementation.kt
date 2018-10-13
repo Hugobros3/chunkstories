@@ -46,7 +46,7 @@ class ClientImplementation internal constructor(coreContentLocation: File, modsS
     override val gameWindow: GLFWWindow
     override val soundManager: ALSoundManager
 
-    override val gui: Gui
+    override val gui = ClientGui(this)
 
     override var ingame: IngameClientImplementation? = null
 
@@ -106,7 +106,6 @@ class ClientImplementation internal constructor(coreContentLocation: File, modsS
             content.localization().loadTranslation(lang)
 
         // Initlializes windows screen to main menu ( and ask for login )
-        gui = ClientGui(this)
         gui.topLayer = LoginPrompt(gui, SkyBoxBackground(gui))
 
         gameWindow.mainLoop()

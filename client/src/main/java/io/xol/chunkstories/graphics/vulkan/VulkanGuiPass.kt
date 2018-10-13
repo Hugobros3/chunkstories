@@ -1,14 +1,21 @@
 package io.xol.chunkstories.graphics.vulkan
 
+import io.xol.chunkstories.api.gui.Font
+import io.xol.chunkstories.api.gui.GuiDrawer
+import io.xol.chunkstories.graphics.vulkan.swapchain.Frame
 import io.xol.chunkstories.graphics.vulkan.swapchain.PerFrameResource
-import io.xol.chunkstories.graphics.vulkan.swapchain.SwapChain
+import io.xol.chunkstories.gui.ClientGui
+import org.joml.Vector4f
+import org.joml.Vector4fc
 import org.lwjgl.system.MemoryStack.*
+import org.lwjgl.system.MemoryUtil
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 
-class TriangleDrawer(val backend: VulkanGraphicsBackend) {
+internal const val guiBufferSize = 16384
 
+class VulkanGuiPass(val backend: VulkanGraphicsBackend, val gui: ClientGui) {
     val baseProgram = backend.shaderFactory.createProgram(backend, "/shaders/blit")
 
     val pipeline = Pipeline(backend, backend.renderToBackbuffer, baseProgram)
@@ -17,15 +24,50 @@ class TriangleDrawer(val backend: VulkanGraphicsBackend) {
     val vertexBuffers: PerFrameResource<VulkanVertexBuffer>
     val commandBuffers: PerFrameResource<VkCommandBuffer>
 
+
+    val stagingByteBuffer = MemoryUtil.memAlloc(guiBufferSize)
+    val stagingFloatBuffer = stagingByteBuffer.asFloatBuffer()
+    var stagingSize = 0
+
+    val drawer = object : DummyGuiDrawer(gui) {
+        override fun drawBox(startX: Int, startY: Int, width: Int, height: Int, textureStartX: Float, textureStartY: Float, textureEndX: Float, textureEndY: Float, texture: String?, color: Vector4fc?) {
+            val sx = 1.0F / gui.viewportWidth.toFloat()
+            val sy = 1.0F / gui.viewportHeight.toFloat()
+
+            fun vertex(a: Int, b: Int) {
+                stagingFloatBuffer.put(-1.0F + 2.0F * (a * sx))
+                stagingFloatBuffer.put(1.0F - 2.0F * (b * sy))
+            }
+            
+            vertex((startX), startY)
+            vertex((startX), (startY + height))
+            vertex((startX + width), (startY + height))
+
+            vertex((startX), startY)
+            vertex((startX + width), (startY))
+            vertex((startX + width), (startY + height))
+
+            stagingSize += 2
+        }
+
+
+        override fun drawBoxWithCorners(posx: Int, posy: Int, width: Int, height: Int, cornerSizeDivider: Int, texture: String) {
+            drawBox(posx, posy, width, height, Vector4f(1.0F))
+        }
+
+        override fun drawString(font: Font, xPosition: Int, yPosition: Int, text: String, color: Vector4fc) {
+            println(text)
+        }
+    }
+
     init {
         stackPush()
 
         vertexBuffers = PerFrameResource(backend) {
-            VulkanVertexBuffer(backend, 1024)
+            VulkanVertexBuffer(backend, guiBufferSize.toLong())
         }
 
         commandBuffers = PerFrameResource(backend) {
-
             val commandBufferAllocateInfo = VkCommandBufferAllocateInfo.callocStack().sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO).apply {
                 commandPool(cmdPool.handle)
                 level(VK_COMMAND_BUFFER_LEVEL_PRIMARY)
@@ -43,19 +85,26 @@ class TriangleDrawer(val backend: VulkanGraphicsBackend) {
         stackPop()
     }
 
-    fun drawTriangle(frame : SwapChain.Frame) {
+    fun render(frame : Frame) {
         stackPush().use {
+
+            stagingByteBuffer.clear()
+            stagingFloatBuffer.clear()
+            stagingSize = 0
+
+            gui.topLayer?.render(drawer)
 
             // Rewrite the vertex buffer
             vertexBuffers[frame].apply {
-                val data = floatArrayOf(0.0F + Math.sin(frame.frameNumber * 0.01).toFloat(), -0.5F, 0.5F, 0.5F, -0.5F, 0.5F)
+               /* val data = floatArrayOf(0.0F + Math.sin(frame.frameNumber * 0.01).toFloat(), -0.5F, 0.5F, 0.5F, -0.5F, 0.5F)
                 val byteBuffer = stackMalloc(data.size * 4)
-
                 val fb = byteBuffer.asFloatBuffer()
 
-                fb.put(data)
-                this.upload(byteBuffer)
+                fb.put(data)*/
+                this.upload(stagingByteBuffer)
             }
+
+            //println(stagingSize)
 
             // Rewrite the command buffer
             commandBuffers[frame].apply {
@@ -65,6 +114,29 @@ class TriangleDrawer(val backend: VulkanGraphicsBackend) {
                 }
 
                 vkBeginCommandBuffer(this, beginInfo)
+
+                val viewport = VkViewport.callocStack(1).apply {
+                    x(0.0F)
+                    y(0.0F)
+                    width(backend.window.width.toFloat())
+                    height(backend.window.height.toFloat())
+                    minDepth(0.0F)
+                    maxDepth(1.0F)
+                }
+
+                val zeroZero = VkOffset2D.callocStack().apply {
+                    x(0)
+                    y(0)
+                }
+                val scissor = VkRect2D.callocStack(1).apply {
+                    offset(zeroZero)
+                    extent().width(backend.window.width)
+                    extent().height(backend.window.height)
+                    //extent(backend.physicalDevice.swapchainDetails.swapExtentToUse)
+                }
+
+                vkCmdSetViewport(this, 0, viewport)
+                vkCmdSetScissor(this, 0, scissor)
 
                 val renderPassBeginInfo = VkRenderPassBeginInfo.callocStack().sType(VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO).apply {
                     renderPass(backend.renderToBackbuffer.handle)
@@ -93,7 +165,7 @@ class TriangleDrawer(val backend: VulkanGraphicsBackend) {
 
                 vkCmdBindVertexBuffers(this, 0, stackLongs(vertexBuffers[frame].handle), stackLongs(0))
 
-                vkCmdDraw(this, 3, 1, 0, 0) // that's rather anticlimactic
+                vkCmdDraw(this, 3 * stagingSize, 1, 0, 0) // that's rather anticlimactic
                 vkCmdEndRenderPass(this)
 
                 vkEndCommandBuffer(this)
@@ -110,7 +182,7 @@ class TriangleDrawer(val backend: VulkanGraphicsBackend) {
                 pWaitDstStageMask(waitStages)
 
                 val commandBuffers = stackMallocPointer(1)
-                commandBuffers.put(0, this@TriangleDrawer.commandBuffers[frame])
+                commandBuffers.put(0, this@VulkanGuiPass.commandBuffers[frame])
                 pCommandBuffers(commandBuffers)
 
                 val semaphoresToSignal = stackLongs(frame.renderFinishedSemaphore)
@@ -128,6 +200,8 @@ class TriangleDrawer(val backend: VulkanGraphicsBackend) {
         pipeline.cleanup()
 
         baseProgram.cleanup()
+
+        MemoryUtil.memFree(stagingByteBuffer)
     }
 
     companion object {

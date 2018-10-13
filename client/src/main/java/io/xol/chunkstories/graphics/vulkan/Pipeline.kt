@@ -56,8 +56,8 @@ class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VulkanRenderP
         val viewport = VkViewport.callocStack(1).apply {
             x(0.0F)
             y(0.0F)
-            width(backend.window.width.toFloat())
-            height(backend.window.height.toFloat())
+            width(backend.window.width.toFloat()*0)
+            height(backend.window.height.toFloat()*0)
             minDepth(0.0F)
             maxDepth(1.0F)
         }
@@ -75,9 +75,9 @@ class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VulkanRenderP
 
         val viewportStageCreateInfo = VkPipelineViewportStateCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO).apply {
             viewportCount(1)
-            pViewports(viewport)
+            //pViewports(viewport)
             scissorCount(1)
-            pScissors(scissor)
+            //pScissors(scissor)
         }
 
         val rasterizerCreateInfo = VkPipelineRasterizationStateCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO).apply {
@@ -104,7 +104,9 @@ class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VulkanRenderP
         }
 
         //TODO here goes VkPipelineDynamicStateCreateInfo
-        val dynamicStateCreateInfo : VkPipelineDynamicStateCreateInfo? = null
+        val dynamicStateCreateInfo : VkPipelineDynamicStateCreateInfo? = VkPipelineDynamicStateCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO).apply {
+            pDynamicStates(stackInts(VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR))
+        }
 
         val pipelineLayoutCreateInfo = VkPipelineLayoutCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO).apply {
             pSetLayouts(null)
@@ -119,12 +121,14 @@ class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VulkanRenderP
             pStages(shaderStagesCreateInfo)
             pVertexInputState(vertexInputInfo)
             pInputAssemblyState(inputAssemblyStateCreateInfo)
+
+            pDynamicState(dynamicStateCreateInfo)//TODO
+
             pViewportState(viewportStageCreateInfo)
             pRasterizationState(rasterizerCreateInfo)
             pMultisampleState(multisampleStateCreateInfo)
             pDepthStencilState(null)
             pColorBlendState(blendStateCreateInfo)
-            pDynamicState(null)//TODO
 
             layout(layout)
 

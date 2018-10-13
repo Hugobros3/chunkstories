@@ -1,7 +1,5 @@
 package io.xol.chunkstories.gui
 
-import io.xol.chunkstories.api.client.IngameClient
-import io.xol.chunkstories.api.content.Content
 import io.xol.chunkstories.api.gui.Fonts
 import io.xol.chunkstories.api.gui.Gui
 import io.xol.chunkstories.api.gui.Layer
@@ -15,14 +13,17 @@ val logger = LoggerFactory.getLogger("client.gui")
 
 class ClientGui(override val client: ClientImplementation) : Gui {
 
-    override val fonts: Fonts = FontsLibrary(client.content)
-    override val mouse: Mouse = client.inputsManager.getMouse()
+    override val fonts: Fonts by lazy { FontsLibrary(client.content) }
+    override val mouse: Mouse
+        get() = client.inputsManager.getMouse()
     override var topLayer: Layer? = null
 
     //TODO make this configurable
     open val guiScale = 2
-    override val viewportHeight: Int = client.gameWindow.width / guiScale
-    override val viewportWidth: Int = client.gameWindow.height / guiScale
+    override val viewportWidth: Int
+        get() = client.gameWindow.width / guiScale
+    override val viewportHeight: Int
+        get() = client.gameWindow.height / guiScale
 
     override fun hasFocus() = client.gameWindow.hasFocus()
 

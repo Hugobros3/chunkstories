@@ -139,7 +139,9 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VulkanRen
         stackPop()
     }
 
+
     private fun createSemaphores() {
+        //TODO make this moar configurable
         maxFramesInFlight = imagesCount
         imageAvailableSemaphores = List(maxFramesInFlight) { backend.createSemaphore() }
         renderingSemaphores = List(maxFramesInFlight) { backend.createSemaphore() }
@@ -147,7 +149,7 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VulkanRen
     }
 
     fun beginFrame(frameNumber: Int): Frame {
-        val stack = stackPush()
+        stackPush()
 
         val currentInflightFrameIndex = inflightFrameIndex
 
@@ -195,20 +197,9 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VulkanRen
         val swapchainImageIndex = pImageIndex.get(0)
 
         stackPop()
-        return Frame(frameNumber, swapchainImageIndex, currentInflightFrameIndex, imageAvailableSemaphore, renderingFinishedSemaphore, fence, System.nanoTime())
-    }
 
-    /**
-     * The instructions for rendering the next frame: which swapchain image are we rendering in, what semaphore are we waiting on
-     * and what semaphore and fence should we signal when we're done
-     */
-    data class Frame(val frameNumber: Int,
-                     val swapchainImageIndex: Int,
-                     val inflightFrameIndex: Int,
-                     val renderCanBeginSemaphore: VkSemaphore,
-                     val renderFinishedSemaphore: VkSemaphore,
-                     val renderFinishedFence: VkFence,
-                     val started: Long) {
+        return Frame(frameNumber, swapchainImageIndex, swapChainImages[swapchainImageIndex], swapChainImageViews[swapchainImageIndex], swapChainFramebuffers[swapchainImageIndex],
+                currentInflightFrameIndex, imageAvailableSemaphore, renderingFinishedSemaphore, fence, System.nanoTime())
     }
 
     fun finishFrame(frame: Frame) {
