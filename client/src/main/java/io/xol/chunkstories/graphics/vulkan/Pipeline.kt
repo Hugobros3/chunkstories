@@ -111,6 +111,8 @@ class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VulkanRenderP
             //TODO here goes descriptor sets
             val pDescriptorSets = stackMallocLong(program.descriptorSetLayouts.size)
             program.descriptorSetLayouts.forEach { pDescriptorSets.put(it) }
+            pDescriptorSets.flip()
+
             pSetLayouts(pDescriptorSets)
             pPushConstantRanges(null)
         }

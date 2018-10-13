@@ -3,6 +3,7 @@ package io.xol.chunkstories.graphics.common.shaderc
 import io.xol.chunkstories.api.graphics.structs.InterfaceBlock
 import org.joml.*
 import kotlin.reflect.KClass
+import kotlin.reflect.KProperty
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.superclasses
 import kotlin.reflect.jvm.javaField
@@ -15,6 +16,9 @@ class InterfaceBlockGLSLMapping(val klass: KClass<InterfaceBlock>, shaderMetadat
 
     val fields : Array<InterfaceBlockField>
     internal val requirements = mutableListOf<KClass<InterfaceBlock>>()
+
+    override var size: Int = 0
+        private set
 
     init {
         if(shaderMetadata.stack.contains(klass))
@@ -97,13 +101,15 @@ class InterfaceBlockGLSLMapping(val klass: KClass<InterfaceBlock>, shaderMetadat
                 //println("corrected to $currentOffset")
             }
 
-            val structField = InterfaceBlockField(property.name, currentOffset, structFieldType)
+            val structField = InterfaceBlockField(property, property.name, currentOffset, structFieldType)
 
             currentOffset += structField.type.size
 
             fields.add(structField)
             //fields.put(structField.offset, structField)
         }
+
+        size = currentOffset
 
         shaderMetadata.stack.removeAt(0)
 
@@ -153,7 +159,7 @@ private fun KClass<out InterfaceBlock>.findOutActualInterfaceBlockClass(): KClas
 
 private fun KClass<*>.superclass() = this.superclasses.filter { !it.java.isInterface }.singleOrNull() ?: this
 
-data class InterfaceBlockField(val name: String, val offset: Int, val type: InterfaceBlockFieldType)
+data class InterfaceBlockField(val property: KProperty<*>, val name: String, val offset: Int, val type: InterfaceBlockFieldType)
 
 open abstract class InterfaceBlockFieldType(val kClass: KClass<*>) {
     abstract val glslToken: String
@@ -181,21 +187,21 @@ private class InterfaceBlockArrayTypeType(kClass: KClass<Array<*>>, val arraySiz
     }
 }
 
-private class InterfaceBlockStaticFieldType(kClass: KClass<*>, override val glslToken: String, override val alignment: Int, override val size: Int) : InterfaceBlockFieldType(kClass)
+internal class InterfaceBlockStaticFieldType(kClass: KClass<*>, override val glslToken: String, override val alignment: Int, override val size: Int) : InterfaceBlockFieldType(kClass)
 
-object StaticDataTypes {
+internal object StaticDataTypes {
     fun get(kClass: KClass<*>): InterfaceBlockFieldType = list.find { it.kClass == kClass } ?: throw Exception("Unknown static type $kClass")
 
-    val list: List<InterfaceBlockFieldType> = listOf(
-            InterfaceBlockStaticFieldType(Float::class, "float", 4, 4),
-            InterfaceBlockStaticFieldType(Int::class, "int", 4, 4),
-            InterfaceBlockStaticFieldType(Long::class, "int", 4, 4),
+    val FLOAT = InterfaceBlockStaticFieldType(Float::class, "float", 4, 4)
+    val INT = InterfaceBlockStaticFieldType(Int::class, "int", 4, 4)
+    val LONG = InterfaceBlockStaticFieldType(Long::class, "int", 4, 4)
 
-            InterfaceBlockStaticFieldType(Vector2f::class, "vec2", 2 * 4, 2 * 4),
-            InterfaceBlockStaticFieldType(Vector3f::class, "vec3", 4 * 4, 3 * 4),
-            InterfaceBlockStaticFieldType(Vector4f::class, "vec4", 4 * 4, 4 * 4),
+    val VEC2 = InterfaceBlockStaticFieldType(Vector2f::class, "vec2", 2 * 4, 2 * 4)
+    val VEC3 = InterfaceBlockStaticFieldType(Vector3f::class, "vec3", 4 * 4, 3 * 4)
+    val VEC4 = InterfaceBlockStaticFieldType(Vector4f::class, "vec4", 4 * 4, 4 * 4)
 
-            InterfaceBlockStaticFieldType(Matrix3f::class, "mat3", 4 * 4, 3 * 3 * 4),
-            InterfaceBlockStaticFieldType(Matrix4f::class, "mat4", 4 * 4, 4 * 4 * 4)
-    )
+    val MAT3 = InterfaceBlockStaticFieldType(Matrix3f::class, "mat3", 4 * 4, 3 * 3 * 4)
+    val MAT4 = InterfaceBlockStaticFieldType(Matrix4f::class, "mat4", 4 * 4, 4 * 4 * 4)
+
+    val list: List<InterfaceBlockFieldType> = listOf(FLOAT, INT, LONG, VEC2, VEC3, VEC4, MAT3, MAT4)
 }

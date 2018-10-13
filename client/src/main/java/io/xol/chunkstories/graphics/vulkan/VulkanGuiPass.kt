@@ -1,7 +1,8 @@
 package io.xol.chunkstories.graphics.vulkan
 
 import io.xol.chunkstories.api.gui.Font
-import io.xol.chunkstories.api.gui.GuiDrawer
+import io.xol.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
+import io.xol.chunkstories.graphics.vulkan.shaderc.UniformTestOffset
 import io.xol.chunkstories.graphics.vulkan.swapchain.Frame
 import io.xol.chunkstories.graphics.vulkan.swapchain.PerFrameResource
 import io.xol.chunkstories.gui.ClientGui
@@ -20,6 +21,7 @@ class VulkanGuiPass(val backend: VulkanGraphicsBackend, val gui: ClientGui) {
 
     val pipeline = Pipeline(backend, backend.renderToBackbuffer, baseProgram)
     val cmdPool = CommandPool(backend, backend.logicalDevice.graphicsQueue.family, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT  or VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
+    val descriptorPool = DescriptorPool(backend, baseProgram)
 
     val vertexBuffers: PerFrameResource<VulkanVertexBuffer>
     val commandBuffers: PerFrameResource<VkCommandBuffer>
@@ -103,6 +105,11 @@ class VulkanGuiPass(val backend: VulkanGraphicsBackend, val gui: ClientGui) {
                 this.upload(stagingByteBuffer)
             }
 
+            val testOffset = UniformTestOffset()
+            testOffset.offset.x = (Math.random().toFloat() - 0.5F) * 0.2F
+
+            descriptorPool.configure(frame, testOffset)
+
             //println(stagingSize)
 
             // Rewrite the command buffer
@@ -136,6 +143,8 @@ class VulkanGuiPass(val backend: VulkanGraphicsBackend, val gui: ClientGui) {
 
                 vkCmdSetViewport(this, 0, viewport)
                 vkCmdSetScissor(this, 0, scissor)
+
+                vkCmdBindDescriptorSets(this, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 0, descriptorPool.setsForFrame(frame), null as? IntArray)
 
                 val renderPassBeginInfo = VkRenderPassBeginInfo.callocStack().sType(VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO).apply {
                     renderPass(backend.renderToBackbuffer.handle)
@@ -198,6 +207,8 @@ class VulkanGuiPass(val backend: VulkanGraphicsBackend, val gui: ClientGui) {
         pipeline.cleanup()
 
         baseProgram.cleanup()
+
+        descriptorPool.cleanup()
 
         MemoryUtil.memFree(stagingByteBuffer)
     }
