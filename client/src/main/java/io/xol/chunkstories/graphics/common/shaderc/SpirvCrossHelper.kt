@@ -13,7 +13,7 @@ import java.nio.ByteOrder
 
 /** The API for that is really nasty and fugly so I'll contain it in this file */
 object SpirvCrossHelper {
-    val logger = LoggerFactory.getLogger("client.shaderc")
+    val logger = LoggerFactory.getLogger("client.shaders")
 
     init {
         Loader.loadNatives()

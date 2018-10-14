@@ -1,5 +1,7 @@
-package io.xol.chunkstories.graphics.vulkan
+package io.xol.chunkstories.graphics.vulkan.devices
 
+import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
+import io.xol.chunkstories.graphics.vulkan.util.ensureIs
 import org.lwjgl.PointerBuffer
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*

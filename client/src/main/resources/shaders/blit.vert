@@ -4,7 +4,7 @@ in vec2 vertexIn;
 out vec2 texCoord;
 
 //in int gl_VertexID; 
-#include struct <io.xol.chunkstories.graphics.vulkan.shaderc.UniformTestOffset>
+#include struct <io.xol.chunkstories.graphics.vulkan.shaders.UniformTestOffset>
 uniform UniformTestOffset uniformTest;
 
 out vec3 color;

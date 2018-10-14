@@ -1,4 +1,4 @@
-package io.xol.chunkstories.graphics.vulkan.shaderc
+package io.xol.chunkstories.graphics.vulkan.shaders
 
 import io.xol.chunkstories.api.graphics.structs.InterfaceBlock
 import org.joml.Vector2f

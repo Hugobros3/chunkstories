@@ -1,6 +1,6 @@
 package io.xol.chunkstories.graphics.vulkan.swapchain
 
-import io.xol.chunkstories.graphics.vulkan.*
+import io.xol.chunkstories.graphics.vulkan.util.*
 
 /**
  * The instructions for rendering the next frame: which swapchain image are we rendering in, what semaphore are we waiting on

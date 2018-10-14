@@ -1,4 +1,4 @@
-package io.xol.chunkstories.graphics.vulkan
+package io.xol.chunkstories.graphics.vulkan.util
 
 import org.lwjgl.vulkan.KHRSurface.*
 import org.lwjgl.vulkan.VK10.*
@@ -37,7 +37,7 @@ enum class PresentationMode {
     FIFO_RELAXED
 }
 
-enum class Formats {
+enum class VulkanFormat {
     VK_FORMAT_UNDEFINED,
     VK_FORMAT_R4G4_UNORM_PACK8,
     VK_FORMAT_R4G4B4A4_UNORM_PACK16,

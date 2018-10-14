@@ -1,5 +1,6 @@
-package io.xol.chunkstories.graphics.vulkan
+package io.xol.chunkstories.graphics.vulkan.util
 
+import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import org.lwjgl.PointerBuffer
 import org.lwjgl.vulkan.VkSemaphoreCreateInfo
 import java.io.InputStream

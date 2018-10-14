@@ -1,5 +1,8 @@
-package io.xol.chunkstories.graphics.vulkan
+package io.xol.chunkstories.graphics.vulkan.shaders
 
+import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
+import io.xol.chunkstories.graphics.vulkan.util.VkShaderModule
+import io.xol.chunkstories.graphics.vulkan.util.toByteBuffer
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkShaderModuleCreateInfo

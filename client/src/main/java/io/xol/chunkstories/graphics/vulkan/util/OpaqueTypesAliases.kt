@@ -1,4 +1,4 @@
-package io.xol.chunkstories.graphics.vulkan
+package io.xol.chunkstories.graphics.vulkan.util
 
 typealias VkImage = Long
 
@@ -15,5 +15,9 @@ typealias VkBuffer = Long
 typealias VkDescriptorSetLayout = Long
 typealias VkDescriptorPool = Long
 typealias VkDescriptorSet = Long
+typealias VkDeviceMemory = Long
+typealias VkSampler = Long
+
+typealias VkImageLayout = Int
 
 typealias VkSurfaceKHR = Long

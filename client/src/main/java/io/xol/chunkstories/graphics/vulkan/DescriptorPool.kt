@@ -5,8 +5,10 @@ import io.xol.chunkstories.api.graphics.structs.UniformUpdateFrequency
 import io.xol.chunkstories.graphics.common.shaderc.ShaderFactory
 import io.xol.chunkstories.graphics.vulkan.buffers.VulkanUniformBuffer
 import io.xol.chunkstories.graphics.vulkan.resources.Cleanable
-import io.xol.chunkstories.graphics.vulkan.shaderc.VulkanShaderFactory
+import io.xol.chunkstories.graphics.vulkan.shaders.VulkanShaderFactory
 import io.xol.chunkstories.graphics.vulkan.swapchain.Frame
+import io.xol.chunkstories.graphics.vulkan.util.VkDescriptorPool
+import io.xol.chunkstories.graphics.vulkan.util.ensureIs
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*

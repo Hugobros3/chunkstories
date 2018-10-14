@@ -1,5 +1,7 @@
-package io.xol.chunkstories.graphics.vulkan
+package io.xol.chunkstories.graphics.vulkan.devices
 
+import io.xol.chunkstories.graphics.vulkan.*
+import io.xol.chunkstories.graphics.vulkan.util.*
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryStack.stackMallocInt
 import org.lwjgl.vulkan.*
@@ -20,7 +22,7 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
 
     val availableExtensions: List<String>
 
-    internal val swapchainDetails: PhysicalDevice.SwapChainSupportDetails
+    internal val swapchainDetails: SwapChainSupportDetails
 
     init {
         MemoryStack.stackPush() // todo use use() when Contracts work correctly on AutoCloseable
@@ -32,9 +34,6 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
         deviceName = vkPhysicalDeviceProperties.deviceNameString()
         deviceType = vkPhysicalDeviceProperties.deviceType().physicalDeviceType()
         deviceId = vkPhysicalDeviceProperties.deviceID()
-
-        val vkPhysicalDeviceMemoryProperties = VkPhysicalDeviceMemoryProperties.callocStack()
-        VK10.vkGetPhysicalDeviceMemoryProperties(vkPhysicalDevice, vkPhysicalDeviceMemoryProperties)
 
         // Query device features
         val vkPhysicalDeviceFeatures = VkPhysicalDeviceFeatures.callocStack()
@@ -102,17 +101,17 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
     inner class SwapChainSupportDetails(capabilities: VkSurfaceCapabilitiesKHR, surfaceFormats: VkSurfaceFormatKHR.Buffer, pPresentModes: IntBuffer) {
         val suitable: Boolean
 
-        val availableFormats: List<Formats>
+        val availableFormats: List<VulkanFormat>
         val availablePresentationModes: List<PresentationMode>
         val imageCount: IntRange
 
         val transformToUse : Int
-        val formatToUse: Formats
+        val formatToUse: VulkanFormat
             get() =
-                if (availableFormats == listOf(Formats.VK_FORMAT_UNDEFINED))
-                    Formats.VK_FORMAT_R8G8B8A8_UNORM
+                if (availableFormats == listOf(VulkanFormat.VK_FORMAT_UNDEFINED))
+                    VulkanFormat.VK_FORMAT_R8G8B8A8_UNORM
                 else {
-                    val preferredFormat = Formats.VK_FORMAT_R8G8B8A8_UNORM
+                    val preferredFormat = VulkanFormat.VK_FORMAT_R8G8B8A8_UNORM
                     if (availableFormats.contains(preferredFormat))
                         preferredFormat
                     else
@@ -142,7 +141,7 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
         val colorSpaceToUse = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
 
         init {
-            availableFormats = surfaceFormats.map { Formats.values()[it.format()] }
+            availableFormats = surfaceFormats.map { VulkanFormat.values()[it.format()] }
 
             val pPresentModesIa = IntArray(pPresentModes.capacity())
             pPresentModes.get(pPresentModesIa, 0, pPresentModes.capacity())

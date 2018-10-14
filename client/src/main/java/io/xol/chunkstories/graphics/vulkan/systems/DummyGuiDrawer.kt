@@ -1,4 +1,4 @@
-package io.xol.chunkstories.graphics.vulkan
+package io.xol.chunkstories.graphics.vulkan.systems
 
 import io.xol.chunkstories.api.gui.Font
 import io.xol.chunkstories.api.gui.Fonts

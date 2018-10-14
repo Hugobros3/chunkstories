@@ -1,5 +1,7 @@
 package io.xol.chunkstories.graphics.vulkan
 
+import io.xol.chunkstories.graphics.vulkan.util.VkRenderPass
+import io.xol.chunkstories.graphics.vulkan.util.ensureIs
 import org.slf4j.LoggerFactory
 
 import org.lwjgl.system.MemoryStack.*

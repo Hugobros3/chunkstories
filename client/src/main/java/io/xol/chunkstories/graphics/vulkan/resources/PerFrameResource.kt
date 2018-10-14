@@ -1,7 +1,7 @@
-package io.xol.chunkstories.graphics.vulkan.swapchain
+package io.xol.chunkstories.graphics.vulkan.resources
 
 import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
-import io.xol.chunkstories.graphics.vulkan.resources.Cleanable
+import io.xol.chunkstories.graphics.vulkan.swapchain.Frame
 import org.lwjgl.system.MemoryStack.stackPop
 import org.lwjgl.system.MemoryStack.stackPush
 

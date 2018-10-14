@@ -1,4 +1,4 @@
-package io.xol.chunkstories.graphics.vulkan.shaderc
+package io.xol.chunkstories.graphics.vulkan.shaders
 
 import io.xol.chunkstories.api.client.Client
 import io.xol.chunkstories.api.graphics.ShaderStage
@@ -6,10 +6,9 @@ import io.xol.chunkstories.api.graphics.structs.UniformUpdateFrequency
 import io.xol.chunkstories.content.mods.ModsManagerImplementation
 import io.xol.chunkstories.graphics.common.shaderc.ShaderFactory
 import io.xol.chunkstories.graphics.common.shaderc.SpirvCrossHelper
-import io.xol.chunkstories.graphics.vulkan.ShaderModule
-import io.xol.chunkstories.graphics.vulkan.VkDescriptorSetLayout
+import io.xol.chunkstories.graphics.vulkan.util.VkDescriptorSetLayout
 import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
-import io.xol.chunkstories.graphics.vulkan.ensureIs
+import io.xol.chunkstories.graphics.vulkan.util.ensureIs
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkDescriptorSetLayoutBinding

@@ -1,10 +1,15 @@
-package io.xol.chunkstories.graphics.vulkan
+package io.xol.chunkstories.graphics.vulkan.systems
 
 import io.xol.chunkstories.api.gui.Font
+import io.xol.chunkstories.graphics.vulkan.CommandPool
+import io.xol.chunkstories.graphics.vulkan.DescriptorPool
+import io.xol.chunkstories.graphics.vulkan.Pipeline
+import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import io.xol.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
-import io.xol.chunkstories.graphics.vulkan.shaderc.UniformTestOffset
+import io.xol.chunkstories.graphics.vulkan.shaders.UniformTestOffset
 import io.xol.chunkstories.graphics.vulkan.swapchain.Frame
-import io.xol.chunkstories.graphics.vulkan.swapchain.PerFrameResource
+import io.xol.chunkstories.graphics.vulkan.resources.PerFrameResource
+import io.xol.chunkstories.graphics.vulkan.util.ensureIs
 import io.xol.chunkstories.gui.ClientGui
 import org.joml.Vector4f
 import org.joml.Vector4fc
@@ -20,7 +25,7 @@ class VulkanGuiPass(val backend: VulkanGraphicsBackend, val gui: ClientGui) {
     val baseProgram = backend.shaderFactory.createProgram(backend, "/shaders/blit")
 
     val pipeline = Pipeline(backend, backend.renderToBackbuffer, baseProgram)
-    val cmdPool = CommandPool(backend, backend.logicalDevice.graphicsQueue.family, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT  or VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
+    val cmdPool = CommandPool(backend, backend.logicalDevice.graphicsQueue.family, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT or VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
     val descriptorPool = DescriptorPool(backend, baseProgram)
 
     val vertexBuffers: PerFrameResource<VulkanVertexBuffer>
@@ -97,11 +102,6 @@ class VulkanGuiPass(val backend: VulkanGraphicsBackend, val gui: ClientGui) {
 
             // Rewrite the vertex buffer
             vertexBuffers[frame].apply {
-               /* val data = floatArrayOf(0.0F + Math.sin(frame.frameNumber * 0.01).toFloat(), -0.5F, 0.5F, 0.5F, -0.5F, 0.5F)
-                val byteBuffer = stackMalloc(data.size * 4)
-                val fb = byteBuffer.asFloatBuffer()
-
-                fb.put(data)*/
                 this.upload(stagingByteBuffer)
             }
 
@@ -109,8 +109,6 @@ class VulkanGuiPass(val backend: VulkanGraphicsBackend, val gui: ClientGui) {
             testOffset.offset.x = (Math.random().toFloat() - 0.5F) * 0.2F
 
             descriptorPool.configure(frame, testOffset)
-
-            //println(stagingSize)
 
             // Rewrite the command buffer
             commandBuffers[frame].apply {
@@ -138,7 +136,6 @@ class VulkanGuiPass(val backend: VulkanGraphicsBackend, val gui: ClientGui) {
                     offset(zeroZero)
                     extent().width(backend.window.width)
                     extent().height(backend.window.height)
-                    //extent(backend.physicalDevice.swapchainDetails.swapExtentToUse)
                 }
 
                 vkCmdSetViewport(this, 0, viewport)
@@ -154,7 +151,6 @@ class VulkanGuiPass(val backend: VulkanGraphicsBackend, val gui: ClientGui) {
                     renderArea().offset().y(0)
                     renderArea().extent().width(backend.window.width)
                     renderArea().extent().height(backend.window.height)
-                    //renderArea().extent(backend.physicalDevice.swapchainDetails.swapExtentToUse)
 
                     val clearColor = VkClearValue.callocStack(1).apply {
                         color().float32().apply {

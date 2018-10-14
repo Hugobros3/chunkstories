@@ -1,7 +1,10 @@
 package io.xol.chunkstories.graphics.vulkan
 
 import io.xol.chunkstories.api.graphics.ShaderStage
-import io.xol.chunkstories.graphics.vulkan.shaderc.VulkanShaderFactory
+import io.xol.chunkstories.graphics.vulkan.shaders.VulkanShaderFactory
+import io.xol.chunkstories.graphics.vulkan.util.VkPipeline
+import io.xol.chunkstories.graphics.vulkan.util.VkPipelineLayout
+import io.xol.chunkstories.graphics.vulkan.util.ensureIs
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
@@ -108,7 +111,6 @@ class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VulkanRenderP
         }
 
         val pipelineLayoutCreateInfo = VkPipelineLayoutCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO).apply {
-            //TODO here goes descriptor sets
             val pDescriptorSets = stackMallocLong(program.descriptorSetLayouts.size)
             program.descriptorSetLayouts.forEach { pDescriptorSets.put(it) }
             pDescriptorSets.flip()
@@ -126,7 +128,7 @@ class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VulkanRenderP
             pVertexInputState(vertexInputInfo)
             pInputAssemblyState(inputAssemblyStateCreateInfo)
 
-            pDynamicState(dynamicStateCreateInfo)//TODO
+            pDynamicState(dynamicStateCreateInfo)
 
             pViewportState(viewportStageCreateInfo)
             pRasterizationState(rasterizerCreateInfo)
