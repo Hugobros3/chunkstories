@@ -33,6 +33,8 @@ class VulkanTexture2D(val backend: VulkanGraphicsBackend, val textures: VulkanTe
             format(vulkanFormat.ordinal)
             tiling(VK_IMAGE_TILING_OPTIMAL) // TODO are we sure ?
 
+            usage(VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT)
+
             initialLayout(VK_IMAGE_LAYOUT_UNDEFINED)
             sharingMode(VK_SHARING_MODE_EXCLUSIVE)
             samples(VK_SAMPLE_COUNT_1_BIT)
@@ -105,7 +107,7 @@ class VulkanTexture2D(val backend: VulkanGraphicsBackend, val textures: VulkanTe
             }
         }
 
-        val imageBarrier = VkImageMemoryBarrier.callocStack(1).sType(VK_STRUCTURE_TYPE_MEMORY_BARRIER).apply {
+        val imageBarrier = VkImageMemoryBarrier.callocStack(1).sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER).apply {
             oldLayout(oldLayout)
             newLayout(newLayout)
             srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
@@ -146,7 +148,7 @@ class VulkanTexture2D(val backend: VulkanGraphicsBackend, val textures: VulkanTe
                 aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
                 mipLevel(0)
                 baseArrayLayer(0)
-                layerCount(0)
+                layerCount(1)
             }
 
             imageOffset().apply {

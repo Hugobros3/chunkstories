@@ -7,6 +7,8 @@ import io.xol.chunkstories.graphics.vulkan.buffers.VulkanUniformBuffer
 import io.xol.chunkstories.graphics.vulkan.resources.Cleanable
 import io.xol.chunkstories.graphics.vulkan.shaders.VulkanShaderFactory
 import io.xol.chunkstories.graphics.vulkan.swapchain.Frame
+import io.xol.chunkstories.graphics.vulkan.textures.VulkanSampler
+import io.xol.chunkstories.graphics.vulkan.textures.VulkanTexture2D
 import io.xol.chunkstories.graphics.vulkan.util.VkDescriptorPool
 import io.xol.chunkstories.graphics.vulkan.util.ensureIs
 import org.lwjgl.system.MemoryStack.*
@@ -130,6 +132,36 @@ class DescriptorPool(val backend: VulkanGraphicsBackend, val program: VulkanShad
 
             // Just update the descriptor for our lone ubo buffer
             pBufferInfo(bufferInfo)
+        }
+
+        vkUpdateDescriptorSets(backend.logicalDevice.vkDevice, stuffToWrite, null)
+
+        stackPop()
+    }
+
+    fun configureTextureAndSampler(frame: Frame, name: String, texture: VulkanTexture2D, sampler: VulkanSampler) {
+        val resource = program.glslProgram.resources.filterIsInstance<ShaderFactory.GLSLUniformSampler2D>().find {
+            it.name == name
+        } ?: throw Exception("I can't find a program sampler2D resource matching that name '$name' :s")
+
+        stackPush()
+
+        val imageInfo = VkDescriptorImageInfo.callocStack(1).apply {
+            imageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) //TODO maybe we can get that from VulkanTexture2D current layout field ?
+            imageView(texture.imageView)
+            sampler(sampler.handle)
+        }
+
+        val destinationSet = descriptorSets[frame.inflightFrameIndex] // We store all the samplers in descriptor set zero for now
+
+        val stuffToWrite = VkWriteDescriptorSet.callocStack(1).sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET).apply {
+            dstSet(destinationSet)
+            dstBinding(resource.binding)
+            dstArrayElement(0)
+            descriptorType(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
+
+            // Just update the descriptor for our lone ubo buffer
+            pImageInfo(imageInfo)
         }
 
         vkUpdateDescriptorSets(backend.logicalDevice.vkDevice, stuffToWrite, null)
