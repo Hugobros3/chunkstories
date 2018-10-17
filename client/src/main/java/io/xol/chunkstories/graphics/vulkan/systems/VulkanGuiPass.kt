@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory
 internal const val guiBufferSize = 16384
 
 class VulkanGuiPass(val backend: VulkanGraphicsBackend, val gui: ClientGui) {
-    val baseProgram = backend.shaderFactory.createProgram(backend, "/shaders/blit")
+    val baseProgram = backend.shaderFactory.createProgram(backend, "/shaders/gui/gui")
 
     val pipeline = Pipeline(backend, backend.renderToBackbuffer, baseProgram)
     val cmdPool = CommandPool(backend, backend.logicalDevice.graphicsQueue.family, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT or VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
@@ -112,7 +112,7 @@ class VulkanGuiPass(val backend: VulkanGraphicsBackend, val gui: ClientGui) {
             val testOffset = UniformTestOffset()
             testOffset.offset.x = (Math.random().toFloat() - 0.5F) * 0.2F
 
-            descriptorPool.configure(frame, testOffset)
+            //descriptorPool.configure(frame, testOffset)
             descriptorPool.configureTextureAndSampler(frame, "diffuseTexture", backend.textures.defaultTexture2D as VulkanTexture2D, sampler)
 
             // Rewrite the command buffer

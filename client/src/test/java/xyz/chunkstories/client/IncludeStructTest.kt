@@ -2,7 +2,7 @@ package xyz.chunkstories.client
 
 import io.xol.chunkstories.api.graphics.structs.InterfaceBlock
 import io.xol.chunkstories.graphics.common.shaderc.ShaderFactory
-import io.xol.chunkstories.graphics.common.shaderc.PreprocessedProgram
+import io.xol.chunkstories.graphics.common.shaderc.PreprocessedShaderStage
 import org.joml.Matrix3f
 import org.junit.Test
 
@@ -40,7 +40,7 @@ class IncludeStructTest {
 
         val factory = ShaderFactory(this.javaClass.classLoader)
 
-        val meta = PreprocessedProgram(factory, shaderCode)
+        val meta = PreprocessedShaderStage(factory, shaderCode)
 
         val generatedGLSLCode = meta.transformedCode
         println("Generated GLSL :\n$generatedGLSLCode")

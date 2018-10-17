@@ -14,7 +14,7 @@ import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkDescriptorSetLayoutBinding
 import org.lwjgl.vulkan.VkDescriptorSetLayoutCreateInfo
 
-class VulkanShaderFactory(val client: Client) : ShaderFactory(VulkanShaderFactory::class.java.classLoader) {
+class VulkanShaderFactory(val backend: VulkanGraphicsBackend, val client: Client) : ShaderFactory(VulkanShaderFactory::class.java.classLoader) {
     override val classLoader: ClassLoader
         get() = (client?.content?.modsManager() as? ModsManagerImplementation)?.finalClassLoader ?: VulkanShaderFactory::class.java.classLoader
 

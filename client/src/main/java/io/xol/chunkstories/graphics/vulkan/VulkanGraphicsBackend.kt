@@ -54,7 +54,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
 
     val renderToBackbuffer : VulkanRenderPass
 
-    val shaderFactory = VulkanShaderFactory(window.client)
+    val shaderFactory = VulkanShaderFactory(this, window.client)
     val textures: VulkanTextures
 
     var triangleDrawer : VulkanGuiPass

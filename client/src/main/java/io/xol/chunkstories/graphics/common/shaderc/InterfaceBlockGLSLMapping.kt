@@ -1,14 +1,13 @@
 package io.xol.chunkstories.graphics.common.shaderc
 
 import io.xol.chunkstories.api.graphics.structs.InterfaceBlock
-import org.joml.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.superclasses
 import kotlin.reflect.jvm.javaField
 
-class InterfaceBlockGLSLMapping(val klass: KClass<InterfaceBlock>, shaderMetadata: PreprocessedProgram) : InterfaceBlockFieldType(klass) {
+class InterfaceBlockGLSLMapping(val klass: KClass<InterfaceBlock>, factory: ShaderFactory, shaderMetadata: PreprocessedShaderStage) : InterfaceBlockFieldType(klass) {
     private val interfaceBlockClass = klass.findOutActualInterfaceBlockClass()
     internal val sampleInstance: InterfaceBlock
 
@@ -43,11 +42,12 @@ class InterfaceBlockGLSLMapping(val klass: KClass<InterfaceBlock>, shaderMetadat
             property.javaField!!.isAccessible = true
 
             fun translateFieldType(type: KClass<out Any>, value: Any?): InterfaceBlockFieldType {
-                val staticType = StaticDataTypes.list.find { it.kClass == type }
+                val staticType = GLSLBaseType.get(type)
+
                 return when {
                     // Base GLSL types
                     staticType != null -> {
-                        staticType
+                        staticType.fieldType
                     }
 
                     // Array types - Arrays *have* to be non-null
@@ -60,20 +60,20 @@ class InterfaceBlockGLSLMapping(val klass: KClass<InterfaceBlock>, shaderMetadat
                     }
                     value is IntArray -> {
                         if (value.size > 0) {
-                            InterfaceBlockArrayTypeType(type as KClass<Array<*>>, value.size, StaticDataTypes.get(Int::class))
+                            InterfaceBlockArrayTypeType(type as KClass<Array<*>>, value.size, GLSLBaseType.get(Int::class)?.fieldType!!)
                         } else throw Exception("Who uses zero sized arrays ???")
                     }
                     value is FloatArray -> {
                         if (value.size > 0) {
-                            InterfaceBlockArrayTypeType(type as KClass<Array<*>>, value.size, StaticDataTypes.get(Float::class))
+                            InterfaceBlockArrayTypeType(type as KClass<Array<*>>, value.size, GLSLBaseType.get(Float::class)?.fieldType!!)
                         } else throw Exception("Who uses zero sized arrays ???")
                     }
 
                     // We're referencing another struct !
                     InterfaceBlock::class.java.isAssignableFrom(type.java) -> {
                         val type = type as KClass<InterfaceBlock>
-                        var structRepresentation = shaderMetadata.factory.structures.getOrPut(type) {
-                            val structRepresentation = InterfaceBlockGLSLMapping(type, shaderMetadata)
+                        var structRepresentation = factory.structures.getOrPut(type) {
+                            val structRepresentation = InterfaceBlockGLSLMapping(type, factory, shaderMetadata)
                             //shaderMetadata.done += structRepresentation.klass
                             structRepresentation
                         }
@@ -116,7 +116,7 @@ class InterfaceBlockGLSLMapping(val klass: KClass<InterfaceBlock>, shaderMetadat
         this.fields = fields.toTypedArray()
     }
 
-    fun generateGLSL() : String {
+    fun generateStructGLSL() : String {
         var glsl = "struct $glslToken {\n"
 
         glsl += generateInnerGLSL()
@@ -187,21 +187,5 @@ private class InterfaceBlockArrayTypeType(kClass: KClass<Array<*>>, val arraySiz
     }
 }
 
-internal class InterfaceBlockStaticFieldType(kClass: KClass<*>, override val glslToken: String, override val alignment: Int, override val size: Int) : InterfaceBlockFieldType(kClass)
+class InterfaceBlockBaseFieldType(kClass: KClass<*>, override val glslToken: String, override val alignment: Int, override val size: Int) : InterfaceBlockFieldType(kClass)
 
-internal object StaticDataTypes {
-    fun get(kClass: KClass<*>): InterfaceBlockFieldType = list.find { it.kClass == kClass } ?: throw Exception("Unknown static type $kClass")
-
-    val FLOAT = InterfaceBlockStaticFieldType(Float::class, "float", 4, 4)
-    val INT = InterfaceBlockStaticFieldType(Int::class, "int", 4, 4)
-    val LONG = InterfaceBlockStaticFieldType(Long::class, "int", 4, 4)
-
-    val VEC2 = InterfaceBlockStaticFieldType(Vector2f::class, "vec2", 2 * 4, 2 * 4)
-    val VEC3 = InterfaceBlockStaticFieldType(Vector3f::class, "vec3", 4 * 4, 3 * 4)
-    val VEC4 = InterfaceBlockStaticFieldType(Vector4f::class, "vec4", 4 * 4, 4 * 4)
-
-    val MAT3 = InterfaceBlockStaticFieldType(Matrix3f::class, "mat3", 4 * 4, 3 * 3 * 4)
-    val MAT4 = InterfaceBlockStaticFieldType(Matrix4f::class, "mat4", 4 * 4, 4 * 4 * 4)
-
-    val list: List<InterfaceBlockFieldType> = listOf(FLOAT, INT, LONG, VEC2, VEC3, VEC4, MAT3, MAT4)
-}

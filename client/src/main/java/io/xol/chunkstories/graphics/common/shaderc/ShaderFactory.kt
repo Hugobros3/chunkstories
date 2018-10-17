@@ -17,60 +17,9 @@ open class ShaderFactory(open val classLoader: ClassLoader) {
     fun translateGLSL(dialect: GLSLDialect, stagesCode: Map<ShaderStage, String>): GLSLProgram =
             SpirvCrossHelper.translateGLSLDialect(this, dialect, stagesCode)
 
-    /**
-     * Vulkan GLSL semantics don't like loose non-opaque uniforms, and so we use interface blocks.
-     *
-     * We can `#include struct` in GLSL to generate a struct matching a Java class, but GLSLang actually wants the uniform declaration to
-     * *declare* a interface block, even when all we want is to use the same layout as a struct. This is legal in OpenGL GLSL, but not
-     * Vulkan GLSL. Since I find this utterly dumb, here is a preprocessor that explodes the struct definition at the uniform declaration
-     */
-    //TODO prolly should just parse the GLSL at this point and inline any struct we can ? idk
-    fun PreprocessedProgram.findAndInlineUBOs(): List<Pair<String, InterfaceBlockGLSLMapping>> {
-        val list = mutableListOf<Pair<String, InterfaceBlockGLSLMapping>>()
-        var processed = ""
+    data class GLSLProgram(val sourceCode: Map<ShaderStage, String>, val vertexInputs: GLSLVertexAttribute, val resources: List<GLSLUniformResource>)
 
-        for (line in this.transformedCode.lines()) {
-            var layoutQualifier = ""
-            var declarationStrippedOfLayoutPrefix = line
-
-            var translated: String? = line
-
-            if (line.startsWith("layout")) {
-                val layoutEndIndex = line.indexOf(')') + 1
-                layoutQualifier = line.substring(0, layoutEndIndex)
-                declarationStrippedOfLayoutPrefix = line.substring(layoutEndIndex).trim()
-                //println("layout: $layoutQualifier $declarationStrippedOfLayoutPrefix")
-
-                // If the layout block is on a line of it's own it'll just get forgotten
-                // translated = null
-            }
-
-
-            if (declarationStrippedOfLayoutPrefix.startsWith("uniform")) {
-                val uniformTypeName = declarationStrippedOfLayoutPrefix.split(' ').getOrNull(1)
-                val uniformName = declarationStrippedOfLayoutPrefix.split(' ').getOrNull(2)?.trimEnd(';')
-
-                factory.structures.values.find { it.glslToken == uniformTypeName }?.apply {
-                    //this.sampleInstance as? UniformBlock ?: throw Exception("You must declare your InterfaceBlock as UniformBlock to use it in a Shader !")
-
-                    println("Found inlineable uniform using a InterfaceBlock-based struct: $uniformName")
-                    list += Pair(uniformName!!, this)
-
-                    val inlinedUniformInterfaceBlockDeclaration = "layout(std140) uniform _inlined${uniformTypeName}_$uniformName {\n" + this.generateInnerGLSL() + "} $uniformName;\n"
-                    translated = inlinedUniformInterfaceBlockDeclaration
-                }
-            }
-
-            if (translated != null)
-                processed += translated + "\n"
-        }
-
-        this.transformedCode = processed
-
-        return list
-    }
-
-    data class GLSLProgram(val sourceCode: Map<ShaderStage, String>, val resources: List<GLSLUniformResource>)
+    data class GLSLVertexAttribute(val name: String, val format: GLSLBaseType, val location: Int, val binding: Int, val interfaceBlock: InterfaceBlockGLSLMapping?)
 
     interface GLSLUniformResource {
         val name: String

@@ -21,32 +21,42 @@ class DescriptorPool(val backend: VulkanGraphicsBackend, val program: VulkanShad
 
     internal val descriptorSets: LongArray
 
+    //TODO should probably live elsewhere
     internal val ubos = mutableMapOf<ShaderFactory.GLSLUniformBlock, Array<VulkanUniformBuffer>>()
 
     init {
         stackPush()
 
-        // Contains a list of all the descriptor types we need, where the number of duplicates tells us how many program resources need one
-        val resourcesTypes = program.glslProgram.resources.mapNotNull {
-            when (it) {
+        val descriptorsCountPerType = mutableMapOf<Int, Int>()
+        resources@ for(resource in program.glslProgram.resources ) {
+            val descriptorType = when (resource) {
                 is ShaderFactory.GLSLUniformBlock -> VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
                 is ShaderFactory.GLSLUniformSampler2D -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
-                else -> null
+                is ShaderFactory.GLSLUnusedUniform -> continue@resources
+                else -> throw Exception("Missing mapping from GLSLResource type to Vulkan descriptor type !")
             }
+
+            val descriptorsNeeded = when (resource) {
+                is ShaderFactory.GLSLUniformBlock -> 1
+                is ShaderFactory.GLSLUniformSampler2D -> resource.count
+                else -> throw Exception("Missing mapping from GLSLResource type to Vulkan descriptor type !")
+            }
+
+            val descriptorsForThatResourceType = descriptorsCountPerType[descriptorType] ?: 0
+            descriptorsCountPerType[descriptorType] = descriptorsForThatResourceType + descriptorsNeeded
         }
 
-        if (resourcesTypes.isNotEmpty()) {
-
-            val resourcesSize = VkDescriptorPoolSize.callocStack(resourcesTypes.size)
-            resourcesTypes.toSet().mapIndexed { index, type ->
+        if (descriptorsCountPerType.isNotEmpty()) {
+            val resourcesSize = VkDescriptorPoolSize.callocStack(descriptorsCountPerType.keys.size)
+            descriptorsCountPerType.entries.forEachIndexed { index, (descriptorType, count) ->
                 resourcesSize[index].apply {
                     // VK_DESCRIPTOR_SOMETHING
-                    type(type)
+                    type(descriptorType)
 
                     // Ie we have 4 ubos in the shader, and 3 swapchain images, so we need 12 descriptors
-                    val numberOfResourcesOfThatType = resourcesTypes.count { it == type }
+                    val numberOfResourcesOfThatType = count
                     descriptorCount(numberOfResourcesOfThatType * backend.swapchain.maxFramesInFlight)
-                    println("Asked for ${descriptorCount()} : $type")
+                    println("Asked for ${descriptorCount()} of $descriptorType")
                 }
             }
 
@@ -64,8 +74,6 @@ class DescriptorPool(val backend: VulkanGraphicsBackend, val program: VulkanShad
             handle = pDescriptorPool.get(0)
 
             // Create those descriptor sets immediately
-            // TODO optimize this and have spare descriptor sets to bulk-update ?
-            // TODO probably unnecessary as UBOs are meant to be mostly static but idk
             val layouts = stackMallocLong(descriptorSetsCount)
 
             for (setLayout in program.descriptorSetLayouts) {

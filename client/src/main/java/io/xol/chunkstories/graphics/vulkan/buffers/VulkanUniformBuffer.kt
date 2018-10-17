@@ -2,8 +2,7 @@ package io.xol.chunkstories.graphics.vulkan.buffers
 
 import io.xol.chunkstories.api.graphics.structs.InterfaceBlock
 import io.xol.chunkstories.graphics.common.shaderc.InterfaceBlockGLSLMapping
-import io.xol.chunkstories.graphics.common.shaderc.InterfaceBlockStaticFieldType
-import io.xol.chunkstories.graphics.common.shaderc.StaticDataTypes
+import io.xol.chunkstories.graphics.common.shaderc.GLSLBaseType
 import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import org.joml.Vector2f
 import org.joml.Vector3f
@@ -23,24 +22,24 @@ class VulkanUniformBuffer(backend: VulkanGraphicsBackend, val mapper: InterfaceB
             fillMe.position(field.offset)
 
             when(field.type) {
-                StaticDataTypes.FLOAT -> fillMe.putFloat(field.property.getter.call(interfaceBlock) as Float)
-                StaticDataTypes.INT -> fillMe.putInt(field.property.getter.call(interfaceBlock) as Int)
-                StaticDataTypes.LONG -> fillMe.putInt((field.property.getter.call(interfaceBlock) as Long).toInt())
+                GLSLBaseType.FLOAT -> fillMe.putFloat(field.property.getter.call(interfaceBlock) as Float)
+                GLSLBaseType.INT -> fillMe.putInt(field.property.getter.call(interfaceBlock) as Int)
+                GLSLBaseType.LONG -> fillMe.putInt((field.property.getter.call(interfaceBlock) as Long).toInt())
 
-                StaticDataTypes.VEC2 -> {
+                GLSLBaseType.VEC2 -> {
                     val vec = field.property.getter.call(interfaceBlock) as? Vector2f ?: zero2
                     fillMe.putFloat(vec.x)
                     fillMe.putFloat(vec.y)
                 }
 
-                StaticDataTypes.VEC3 -> {
+                GLSLBaseType.VEC3 -> {
                     val vec = field.property.getter.call(interfaceBlock) as? Vector3f ?: zero3
                     fillMe.putFloat(vec.x)
                     fillMe.putFloat(vec.y)
                     fillMe.putFloat(vec.z)
                 }
 
-                StaticDataTypes.VEC4 -> {
+                GLSLBaseType.VEC4 -> {
                     val vec = field.property.getter.call(interfaceBlock) as? Vector4f ?: zero4
                     fillMe.putFloat(vec.x)
                     fillMe.putFloat(vec.y)

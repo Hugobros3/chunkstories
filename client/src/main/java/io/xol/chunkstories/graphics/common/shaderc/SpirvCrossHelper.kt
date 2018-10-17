@@ -2,14 +2,16 @@ package io.xol.chunkstories.graphics.common.shaderc
 
 import graphics.scenery.spirvcrossj.*
 import io.xol.chunkstories.api.graphics.ShaderStage
+import io.xol.chunkstories.api.graphics.structs.InterfaceBlock
 import io.xol.chunkstories.api.graphics.structs.UniformUpdateFrequency
 import io.xol.chunkstories.api.graphics.structs.UpdateFrequency
+import io.xol.chunkstories.graphics.vulkan.shaders.VulkanShaderFactory
+import io.xol.chunkstories.graphics.vulkan.textures.VirtualTexturing
 import org.lwjgl.opengl.GL20.GL_SAMPLER_2D
-import org.lwjgl.vulkan.VK10.VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
-import org.lwjgl.vulkan.VK10.VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE
 import org.slf4j.LoggerFactory
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.reflect.KClass
 
 /** The API for that is really nasty and fugly so I'll contain it in this file */
 object SpirvCrossHelper {
@@ -39,26 +41,34 @@ object SpirvCrossHelper {
             ShaderStage.FRAGMENT -> ".frag"
         }
 
-    fun translateGLSLDialect(factory: ShaderFactory, dialect: ShaderFactory.GLSLDialect, stagesCode: Map<ShaderStage, String>): ShaderFactory.GLSLProgram {
+    fun translateGLSLDialect(factory: ShaderFactory, dialect: ShaderFactory.GLSLDialect, shaderCodePerStage: Map<ShaderStage, String>): ShaderFactory.GLSLProgram {
         libspirvcrossj.initializeProcess()
         val ressources = libspirvcrossj.getDefaultTBuiltInResource()
 
         val program = TProgram()
 
-        val unlocatedUBOs = mutableListOf<Pair<String, InterfaceBlockGLSLMapping>>()
+        /** Vertex inputs that need a binding and a location decoration */
+        var vertexInputsToProcess: List<Pair<String, Pair<GLSLBaseType, Boolean>>>? = null
+        var instancedVertexInputBlocks: List<Pair<String, InterfaceBlockGLSLMapping>>? = null
 
-        val stages = stagesCode.map { (stage, code) ->
-            val preprocessed = PreprocessedProgram(factory, code)
+        /** ubos that need a set/location decoration */
+        val ubosToProcess = mutableListOf<Pair<String, InterfaceBlockGLSLMapping>>()
 
-            // Transform the UBO (inline them so glslang is happier), and use the occasion to get a list of declared UBOs
-            val uniformBlocks = with(factory) {
-                preprocessed.findAndInlineUBOs()
+        val stages = shaderCodePerStage.map { (stage, code) ->
+            val preprocessed = PreprocessedShaderStage(factory, code, stage)
+
+            ubosToProcess.addAll(preprocessed.uniformBlocks)
+
+            if(stage == ShaderStage.VERTEX) {
+                vertexInputsToProcess = preprocessed.vertexInputs
+                instancedVertexInputBlocks = preprocessed.instancedVertexInputBlocks
             }
-
-            unlocatedUBOs.addAll(uniformBlocks)
 
             ProgramStage(preprocessed.transformedCode, stage)
         }
+
+        vertexInputsToProcess!!
+        instancedVertexInputBlocks!!
 
         for (stage in stages) {
             stage.tShader = TShader(stage.stage.spirvStageInt)
@@ -100,20 +110,6 @@ object SpirvCrossHelper {
             ShaderFactory.GLSLDialect.VULKAN -> Array<MutableList<ShaderFactory.GLSLUniformResource>>(UniformUpdateFrequency.values().size) { mutableListOf() }
         }
 
-        //logger.debug("Sorting unlocated uniforms into buckets: ")
-        //val locatedUniforms = mutableListOf<VulkanShaderFactory.VulkanShaderProgramUniformBlock>()
-        /*for(updateFrequency in UniformUpdateFrequency.values()) {
-            logger.debug("Bucket $updateFrequency : ")
-            val ubosWithThisFrequency = unlocatedUBOs.filter { (_, mapping) -> mapping.klass.updateFrequency == updateFrequency }
-
-            var binding = 0
-            for(ubo in ubosWithThisFrequency) {
-                val set = updateFrequency.ordinal
-                logger.debug("Assigning binding ($set, $binding) to ubo ${ubo.first}")
-                locatedUniforms += VulkanShaderFactory.VulkanShaderProgramUniformBlock(ubo.first, set, binding++, ubo.second)
-            }
-        }*/
-
         program.buildReflection()
 
         // TODO this is a hack because I can't use reflection to get info on the sampler itself
@@ -122,14 +118,14 @@ object SpirvCrossHelper {
             uniformTypeMap[program.getUniformName(index)] = Pair(program.getUniformType(index), program.getUniformArraySize(index))
         }
 
-        println(uniformTypeMap)
+        //println(uniformTypeMap)
 
-        fun ProgramStage.translateToGLSLDialect(): String {
+        fun ProgramStage.analyzeAndDecorateStageResources(): CompilerGLSL {
             val intermediate = program.getIntermediate(this.stage.spirvStageInt)
             val intVec = IntVec()
             libspirvcrossj.glslangToSpv(intermediate, intVec)
 
-            logger.debug("intermediary: ${intVec.size()} spirv bytes generated")
+            //logger.debug("intermediary: ${intVec.size()} spirv bytes generated")
 
             val compiler = CompilerGLSL(intVec)
             val options = CompilerGLSL.Options()
@@ -147,8 +143,7 @@ object SpirvCrossHelper {
             }
             compiler.options = options
 
-
-            fun kotlin.reflect.KClass<io.xol.chunkstories.api.graphics.structs.InterfaceBlock>.updateFrequency(): UniformUpdateFrequency  =
+            fun KClass<InterfaceBlock>.updateFrequency(): UniformUpdateFrequency  =
                     this.annotations.filterIsInstance<UpdateFrequency>().firstOrNull()?.frequency ?: UniformUpdateFrequency.ONCE_PER_BATCH
 
             val uniformBufferBlocks = compiler.shaderResources.uniformBuffers
@@ -165,7 +160,7 @@ object SpirvCrossHelper {
 
                     //println("Found uniform block : name= $uniformBlockName")
 
-                    val inlinedUBO = unlocatedUBOs.find { it.first == uniformBlockName }
+                    val inlinedUBO = ubosToProcess.find { it.first == uniformBlockName }
                             ?: throw Exception("UBO name starts with _inlined but we seemingly didn't create it ... Quoi la baise ! ")
 
                     val updateFrequency = inlinedUBO.second.klass.updateFrequency()
@@ -198,7 +193,10 @@ object SpirvCrossHelper {
 
                 val samplerName = sampler.name
 
-                //TODO TODO TODO val samplerType = sampler.typeId
+                //TODO Don't use this hack as soon as we can get the sampler type properly using
+                //TODO sampler.typeId / sampler.baseTypeId
+                //TODO https://github.com/scenerygraphics/spirvcrossj/issues/10
+
                 val hack = uniformTypeMap[samplerName] ?: Pair(-1, 1)
                 val samplerType = hack.first
                 val samplerArraySize = hack.second
@@ -218,14 +216,41 @@ object SpirvCrossHelper {
             }
 
             compiler.addHeaderLine("// Autogenerated GLSL code")
-
-            return compiler.compile()
+            //return compiler.compile()
+            return compiler
         }
 
         libspirvcrossj.finalizeProcess()
 
-        val sources = mapOf(*(stages.map { Pair(it.stage, it.translateToGLSLDialect()) }).toTypedArray())
-        val resources = resourcesBuckets.toList().merge()
+        val partiallyDecoratedShaderStages = stages.map { it.analyzeAndDecorateStageResources() }
+        val resources = resourcesBuckets.toList().merge().toMutableList()
+
+        val virtualTexturing : VirtualTexturing?
+
+        if(factory is VulkanShaderFactory) {
+            virtualTexturing = VirtualTexturing(factory.backend, resources)
+
+            partiallyDecoratedShaderStages.forEach {
+                it.addHeaderLine("layout(set=0, location=0) uniform sampler2D virtualTextures[${virtualTexturing.virtualTexturingSlots}];")
+                //TODO when that api works maybe ? it.shaderResources.sampledImages.pushBack(CombinedImageSampler())
+            }
+
+            val descriptorSet = 0
+            val binding = resourcesBuckets[descriptorSet].size
+
+            resources.add(ShaderFactory.GLSLUniformSampler2D("virtualTextures", descriptorSet, binding, virtualTexturing.virtualTexturingSlots))
+        } else {
+            partiallyDecoratedShaderStages.forEach {
+                it.addHeaderLine("// I guessed because this isn't actually linked to any concrete factory")
+                it.addHeaderLine("layout(set=0, location=0) uniform sampler2D virtualTextures[32];")
+
+                //TODO when that api works maybe ? it.shaderResources.sampledImages.pushBack(CombinedImageSampler())
+            }
+        }
+
+        val sources = mapOf(*(partiallyDecoratedShaderStages.mapIndexed{ index, compiler ->
+            Pair(stages[index].stage, compiler.compile())
+        }).toTypedArray())
 
         return ShaderFactory.GLSLProgram(sources, resources)
     }
