@@ -48,8 +48,7 @@ object SpirvCrossHelper {
         val program = TProgram()
 
         /** Vertex inputs that need a binding and a location decoration */
-        var vertexInputsToProcess: List<Pair<String, Pair<GLSLBaseType, Boolean>>>? = null
-        var instancedVertexInputBlocks: List<Pair<String, InterfaceBlockGLSLMapping>>? = null
+        val vertexInputsToProcess = mutableListOf<PreprocessedShaderStage.VertexInputDeclaration>()
 
         /** ubos that need a set/location decoration */
         val ubosToProcess = mutableListOf<Pair<String, InterfaceBlockGLSLMapping>>()
@@ -60,15 +59,11 @@ object SpirvCrossHelper {
             ubosToProcess.addAll(preprocessed.uniformBlocks)
 
             if(stage == ShaderStage.VERTEX) {
-                vertexInputsToProcess = preprocessed.vertexInputs
-                instancedVertexInputBlocks = preprocessed.instancedVertexInputBlocks
+                vertexInputsToProcess.addAll(preprocessed.vertexInputs)
             }
 
             ProgramStage(preprocessed.transformedCode, stage)
         }
-
-        vertexInputsToProcess!!
-        instancedVertexInputBlocks!!
 
         for (stage in stages) {
             stage.tShader = TShader(stage.stage.spirvStageInt)
@@ -119,6 +114,25 @@ object SpirvCrossHelper {
         }
 
         //println(uniformTypeMap)
+
+        var vertexInputLocation = 0
+        var vertexInputBinding = 0
+
+        val vertexInputs = mutableListOf<ShaderFactory.GLSLVertexAttribute>()
+        // First assign locations (at binding = 0) for all non-instanced vertex inputs ( == mesh / model data )
+        vertexInputs.addAll(vertexInputsToProcess.filter { !it.instanced }.map { input ->
+            ShaderFactory.GLSLVertexAttribute(input.name, input.type, vertexInputLocation++, vertexInputBinding, null)
+        })
+
+        // Then assign locations & bindings, with one binding per interface block
+        vertexInputsToProcess.filter { it.instanced }.groupBy { it.interfaceBlock }.map { (interfaceBlock, inputs) ->
+            vertexInputBinding++
+            vertexInputLocation = 0
+
+            for(input in inputs) {
+                vertexInputs += ShaderFactory.GLSLVertexAttribute(input.name, input.type, vertexInputLocation++, vertexInputBinding, interfaceBlock)
+            }
+        }
 
         fun ProgramStage.analyzeAndDecorateStageResources(): CompilerGLSL {
             val intermediate = program.getIntermediate(this.stage.spirvStageInt)
@@ -228,17 +242,17 @@ object SpirvCrossHelper {
         val virtualTexturing : VirtualTexturing?
 
         if(factory is VulkanShaderFactory) {
-            virtualTexturing = VirtualTexturing(factory.backend, resources)
+            val virtualTexturingSlots = with(VirtualTexturing) { factory.backend.getNumberOfSlotsForVirtualTexturing(resources) }
 
             partiallyDecoratedShaderStages.forEach {
-                it.addHeaderLine("layout(set=0, location=0) uniform sampler2D virtualTextures[${virtualTexturing.virtualTexturingSlots}];")
+                it.addHeaderLine("layout(set=0, location=0) uniform sampler2D virtualTextures[${virtualTexturingSlots}];")
                 //TODO when that api works maybe ? it.shaderResources.sampledImages.pushBack(CombinedImageSampler())
             }
 
             val descriptorSet = 0
             val binding = resourcesBuckets[descriptorSet].size
 
-            resources.add(ShaderFactory.GLSLUniformSampler2D("virtualTextures", descriptorSet, binding, virtualTexturing.virtualTexturingSlots))
+            resources.add(ShaderFactory.GLSLUniformSampler2D("virtualTextures", descriptorSet, binding, virtualTexturingSlots))
         } else {
             partiallyDecoratedShaderStages.forEach {
                 it.addHeaderLine("// I guessed because this isn't actually linked to any concrete factory")
@@ -252,7 +266,7 @@ object SpirvCrossHelper {
             Pair(stages[index].stage, compiler.compile())
         }).toTypedArray())
 
-        return ShaderFactory.GLSLProgram(sources, resources)
+        return ShaderFactory.GLSLProgram(sources, vertexInputs, resources)
     }
 
     fun generateSpirV(transpiledGLSL: ShaderFactory.GLSLProgram): GeneratedSpirV {
@@ -307,7 +321,9 @@ object SpirvCrossHelper {
 
         libspirvcrossj.finalizeProcess()
 
-        return GeneratedSpirV(transpiledGLSL, mapOf(*stages.map { Pair(it.stage, it.generateSpirV()) }.toTypedArray()))
+        return GeneratedSpirV(transpiledGLSL, stages.associateBy({it.stage},  { it.generateSpirV() }))
+
+        //return GeneratedSpirV(transpiledGLSL, mapOf(*stages.map { Pair(it.stage, it.generateSpirV()) }.toTypedArray()))
     }
 
     /** the generated spirv the engine can ingest for that shader program */

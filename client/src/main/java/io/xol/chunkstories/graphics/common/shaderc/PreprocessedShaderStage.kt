@@ -21,9 +21,7 @@ class PreprocessedShaderStage(private val factory: ShaderFactory, private val or
     lateinit var uniformBlocks: List<Pair<String, InterfaceBlockGLSLMapping>>
         private set
 
-    lateinit var vertexInputs: List<Pair<String, Pair<GLSLBaseType, Boolean>>>
-        private set
-    lateinit var instancedVertexInputBlocks: List<Pair<String, InterfaceBlockGLSLMapping>>
+    lateinit var vertexInputs: List<VertexInputDeclaration>
         private set
 
     init {
@@ -146,8 +144,7 @@ class PreprocessedShaderStage(private val factory: ShaderFactory, private val or
         val list = mutableListOf<Pair<String, InterfaceBlockGLSLMapping>>()
         var processed = ""
 
-        val inputs = mutableListOf<Pair<String, Pair<GLSLBaseType, Boolean>>>()
-        val instancedInputs = mutableListOf<Pair<String, InterfaceBlockGLSLMapping>>()
+        val inputs = mutableListOf<VertexInputDeclaration>()
 
         var previousLine = ""
         for (line in this.transformedCode.lines()) {
@@ -182,7 +179,7 @@ class PreprocessedShaderStage(private val factory: ShaderFactory, private val or
 
                     baseType != null -> {
                         val instanced = previousLine == "#instanced"
-                        inputs.add(Pair(inputName, Pair(baseType, instanced)))
+                        inputs.add(VertexInputDeclaration(inputName, baseType, instanced, null))
                     }
 
                     else -> throw Exception("What do I do with input type $typeName ? ")
@@ -201,9 +198,8 @@ class PreprocessedShaderStage(private val factory: ShaderFactory, private val or
         println(inputs)
 
         this.vertexInputs = inputs
-        this.instancedVertexInputBlocks = instancedInputs
         this.transformedCode = processed
-
-        instancedVertexInputBlocks = list
     }
+
+    data class VertexInputDeclaration(val name: String, val type: GLSLBaseType, val instanced: Boolean, val interfaceBlock: InterfaceBlockGLSLMapping?)
 }

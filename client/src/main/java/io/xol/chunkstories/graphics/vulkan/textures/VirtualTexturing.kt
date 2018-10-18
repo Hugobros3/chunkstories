@@ -10,38 +10,38 @@ import org.lwjgl.vulkan.*
 class VirtualTexturing(val backend: VulkanGraphicsBackend, val program: ShaderFactory.GLSLProgram) {
 
     companion object {
-        const val MAX_VIRTUAL_TEXTURING_ARRAY_SIZE = 512L
+        const val MAX_VIRTUAL_TEXTURING_ARRAY_SIZE = 512
 
-        fun getNumberOfSlotsForVirtualTexturing(resources: List<ShaderFactory.GLSLUniformResource>) : Int {
+        fun VulkanGraphicsBackend.getNumberOfSlotsForVirtualTexturing(resources: List<ShaderFactory.GLSLUniformResource>) : Int {
             stackPush()
 
             val physicalDeviceProperties = VkPhysicalDeviceProperties.callocStack()
-            vkGetPhysicalDeviceProperties(backend.physicalDevice.vkPhysicalDevice, physicalDeviceProperties)
+            vkGetPhysicalDeviceProperties(this.physicalDevice.vkPhysicalDevice, physicalDeviceProperties)
 
             val reservedForUBOs = resources.count { it is ShaderFactory.GLSLUniformBlock }
             val reservedForNonVirtualTextureInputs = resources.count { it is ShaderFactory.GLSLUniformSampler2D }
 
-            println("${physicalDeviceProperties.deviceNameString()} : ${physicalDeviceProperties.limits().maxPerStageResources().toUInt().toLong()}")
+            println("${physicalDeviceProperties.deviceNameString()} : ${physicalDeviceProperties.limits().maxPerStageResources().safe()}")
 
             val limits = physicalDeviceProperties.limits()
 
             val possibleLimits = listOf(
                     // We can't have more combined samplers than we have for the individual resources
                     // Plus we need to reserve a bunch of them
-                    limits.maxDescriptorSetSamplers().toUInt().toLong() - reservedForNonVirtualTextureInputs,
-                    limits.maxDescriptorSetSampledImages().toUInt().toLong() - reservedForNonVirtualTextureInputs,
-                    limits.maxPerStageDescriptorSamplers().toUInt().toLong()- reservedForNonVirtualTextureInputs,
-                    limits.maxPerStageDescriptorSampledImages().toUInt().toLong() - reservedForNonVirtualTextureInputs,
+                    limits.maxDescriptorSetSamplers().safe() - reservedForNonVirtualTextureInputs,
+                    limits.maxDescriptorSetSampledImages().safe() - reservedForNonVirtualTextureInputs,
+                    limits.maxPerStageDescriptorSamplers().safe()- reservedForNonVirtualTextureInputs,
+                    limits.maxPerStageDescriptorSampledImages().safe() - reservedForNonVirtualTextureInputs,
 
                     /* This one is weirder: it is possible that the maximum number of bound resources is lower than the sum of
                      the limits of each individual resource type. In this case we need to ensure we still have enough descriptors
                      for UBOs and virtual texturing stuff  */
-                    (limits.maxPerStageResources().toUInt().toLong() - reservedForUBOs - reservedForNonVirtualTextureInputs)
+                    (limits.maxPerStageResources().safe() - reservedForUBOs - reservedForNonVirtualTextureInputs)
             )
 
             println(possibleLimits)
 
-            val virtualTexturingSlots = Math.min(possibleLimits.min()!!, MAX_VIRTUAL_TEXTURING_ARRAY_SIZE).toInt()
+            val virtualTexturingSlots = Math.min(possibleLimits.min()!!, MAX_VIRTUAL_TEXTURING_ARRAY_SIZE)
             if(virtualTexturingSlots <= 0)
                 throw Exception("Oops! This device doesn't have the ability to bind everything we need for this shader sadly !")
 
@@ -51,3 +51,5 @@ class VirtualTexturing(val backend: VulkanGraphicsBackend, val program: ShaderFa
         }
     }
 }
+
+private fun Int.safe(): Int = if(this == -1) Int.MAX_VALUE else this

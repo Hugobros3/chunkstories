@@ -42,7 +42,9 @@ class VulkanShaderFactory(val backend: VulkanGraphicsBackend, val client: Client
 
         init {
             stackPush()
-            modules = mapOf(*spirvCode.stages.map { (stage, byteBuffer) -> Pair(stage, ShaderModule(backend, byteBuffer)) }.toTypedArray())
+
+            modules = spirvCode.stages.mapValues { ShaderModule(backend, it.value) }
+            //modules = mapOf(*spirvCode.stages.map { (stage, byteBuffer) -> Pair(stage, ShaderModule(backend, byteBuffer)) }.toTypedArray())
 
             /** Important: DescriptorSet 0 is reserved and update frequencies start at 1 */
             //iterate over the descriptor sets we want
