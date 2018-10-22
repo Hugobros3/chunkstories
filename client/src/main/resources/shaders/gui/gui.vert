@@ -1,6 +1,6 @@
 #version 450
 
-in vec2 vertexIn;
+layout(location = 0) in vec2 vertexIn;
 in vec2 texCoordIn;
 in vec4 colorIn;
 

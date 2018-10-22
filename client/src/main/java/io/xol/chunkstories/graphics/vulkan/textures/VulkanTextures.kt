@@ -43,7 +43,7 @@ class VulkanTextures(val backend: VulkanGraphicsBackend) : GraphicsEngine.Textur
         val vkBuffer = VulkanBuffer(backend, buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT)
 
         val format = TextureFormat.RGBA_8 // TODO when adding support for HDR change that as well
-        val texture2D = VulkanTexture2D(backend, this, format, width, height, VK_IMAGE_USAGE_TRANSFER_SRC_BIT or VK_IMAGE_USAGE_SAMPLED_BIT)
+        val texture2D = VulkanTexture2D(backend, commandPool, format, width, height, VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT)
 
         texture2D.transitionLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
         texture2D.copyBufferToImage(vkBuffer)

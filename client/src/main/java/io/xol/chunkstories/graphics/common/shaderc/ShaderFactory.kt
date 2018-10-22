@@ -19,7 +19,7 @@ open class ShaderFactory(open val classLoader: ClassLoader) {
 
     data class GLSLProgram(val sourceCode: Map<ShaderStage, String>, val vertexInputs: List<GLSLVertexAttribute>, val resources: List<GLSLUniformResource>)
 
-    data class GLSLVertexAttribute(val name: String, val format: GLSLBaseType, val location: Int, val binding: Int, val interfaceBlock: InterfaceBlockGLSLMapping?)
+    data class GLSLVertexAttribute(val name: String, val format: GLSLBaseType, val location: Int, val instanced: Boolean, val interfaceBlock: InterfaceBlockGLSLMapping?)
 
     interface GLSLUniformResource {
         val name: String

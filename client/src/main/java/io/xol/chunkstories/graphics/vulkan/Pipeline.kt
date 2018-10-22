@@ -4,13 +4,14 @@ import io.xol.chunkstories.api.graphics.ShaderStage
 import io.xol.chunkstories.graphics.vulkan.shaders.VulkanShaderFactory
 import io.xol.chunkstories.graphics.vulkan.util.VkPipeline
 import io.xol.chunkstories.graphics.vulkan.util.VkPipelineLayout
+import io.xol.chunkstories.graphics.vulkan.util.VkRenderPass
 import io.xol.chunkstories.graphics.vulkan.util.ensureIs
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 
-class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VulkanRenderPass, val program: VulkanShaderFactory.VulkanicShaderProgram) {
+class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VkRenderPass, val program: VulkanShaderFactory.VulkanicShaderProgram) {
     val layout: VkPipelineLayout
     val handle: VkPipeline
 
@@ -56,31 +57,10 @@ class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VulkanRenderP
             primitiveRestartEnable(false)
         }
 
-        //We use dynamic state instead
-        /*val viewport = VkViewport.callocStack(1).apply {
-            x(0.0F)
-            y(0.0F)
-            width(backend.window.width.toFloat()*0)
-            height(backend.window.height.toFloat()*0)
-            minDepth(0.0F)
-            maxDepth(1.0F)
-        }
-
-        val zeroZero = VkOffset2D.callocStack().apply {
-            x(0)
-            y(0)
-        }
-        val scissor = VkRect2D.callocStack(1).apply {
-            offset(zeroZero)
-            extent().width(backend.window.width)
-            extent().height(backend.window.height)
-            //extent(backend.physicalDevice.swapchainDetails.swapExtentToUse)
-        }*/
-
+        // Specify a count but ignore filling the structs, we'll do it in the command buffer !
         val viewportStageCreateInfo = VkPipelineViewportStateCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO).apply {
             viewportCount(1)
             scissorCount(1)
-            // Specify a count but ignore filling the structs
         }
 
         val rasterizerCreateInfo = VkPipelineRasterizationStateCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO).apply {
@@ -138,7 +118,7 @@ class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VulkanRenderP
 
             layout(layout)
 
-            renderPass(renderPass.handle)
+            renderPass(renderPass)
             subpass(0)
 
             basePipelineHandle(VK_NULL_HANDLE)

@@ -52,7 +52,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
     internal var swapchain: SwapChain
         internal set
 
-    val renderToBackbuffer : VulkanRenderPass
+    val renderToBackbuffer : RenderPass
 
     val shaderFactory = VulkanShaderFactory(this, window.client)
     val textures: VulkanTextures
@@ -77,7 +77,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
         memoryManager = VulkanMemoryManager(this, logicalDevice)
         textures = VulkanTextures(this)
 
-        renderToBackbuffer = VulkanRenderPass(this)
+        renderToBackbuffer = RenderPass(this)
         swapchain = SwapChain(this, renderToBackbuffer, null)
 
         GLFW.glfwSetWindowSizeCallback(window.glfwWindowHandle) { handle, newWidth, newHeight ->

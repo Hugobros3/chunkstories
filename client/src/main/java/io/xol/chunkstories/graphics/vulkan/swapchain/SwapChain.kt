@@ -11,7 +11,7 @@ import org.lwjgl.vulkan.KHRSwapchain.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 
-class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VulkanRenderPass, oldSwapChain: SwapChain?) {
+class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: RenderPass, oldSwapChain: SwapChain?) {
 
     val handle: Long
     val swapChainImages: List<VkImage>
@@ -116,7 +116,7 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VulkanRen
         stackPop()
     }
 
-    private fun createFramebuffers(displayRenderPass: VulkanRenderPass) {
+    private fun createFramebuffers(displayRenderPass: RenderPass) {
         stackPush()
         swapChainFramebuffers = mutableListOf()
 

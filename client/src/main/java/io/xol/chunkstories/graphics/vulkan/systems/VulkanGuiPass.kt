@@ -1,6 +1,7 @@
 package io.xol.chunkstories.graphics.vulkan.systems
 
 import io.xol.chunkstories.api.gui.Font
+import io.xol.chunkstories.graphics.common.DummyGuiDrawer
 import io.xol.chunkstories.graphics.vulkan.CommandPool
 import io.xol.chunkstories.graphics.vulkan.DescriptorPool
 import io.xol.chunkstories.graphics.vulkan.Pipeline
@@ -26,7 +27,7 @@ internal const val guiBufferSize = 16384
 class VulkanGuiPass(val backend: VulkanGraphicsBackend, val gui: ClientGui) {
     val baseProgram = backend.shaderFactory.createProgram(backend, "/shaders/gui/gui")
 
-    val pipeline = Pipeline(backend, backend.renderToBackbuffer, baseProgram)
+    val pipeline = Pipeline(backend, backend.renderToBackbuffer.handle, baseProgram)
     val cmdPool = CommandPool(backend, backend.logicalDevice.graphicsQueue.family, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT or VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
     val descriptorPool = DescriptorPool(backend, baseProgram)
 
@@ -150,6 +151,7 @@ class VulkanGuiPass(val backend: VulkanGraphicsBackend, val gui: ClientGui) {
 
                 val renderPassBeginInfo = VkRenderPassBeginInfo.callocStack().sType(VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO).apply {
                     renderPass(backend.renderToBackbuffer.handle)
+
 
                     framebuffer(frame.swapchainFramebuffer)
                     renderArea().offset().x(0)

@@ -2,6 +2,7 @@ package io.xol.chunkstories.graphics.vulkan.textures
 
 import io.xol.chunkstories.api.graphics.Texture2D
 import io.xol.chunkstories.api.graphics.TextureFormat
+import io.xol.chunkstories.graphics.vulkan.CommandPool
 import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import io.xol.chunkstories.graphics.vulkan.buffers.VulkanBuffer
 import io.xol.chunkstories.graphics.vulkan.resources.Cleanable
@@ -10,7 +11,7 @@ import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 
-class VulkanTexture2D(val backend: VulkanGraphicsBackend, val textures: VulkanTextures, override val format: TextureFormat, override val height: Int, override val width: Int,
+class VulkanTexture2D(val backend: VulkanGraphicsBackend, val operationsPool: CommandPool, override val format: TextureFormat, override val height: Int, override val width: Int,
                       val usageFlags: Int) : Texture2D, Cleanable {
 
     val vulkanFormat = format.vulkanFormat
@@ -75,7 +76,7 @@ class VulkanTexture2D(val backend: VulkanGraphicsBackend, val textures: VulkanTe
 
     fun transitionLayout(oldLayout: VkImageLayout, newLayout: VkImageLayout) {
         stackPush()
-        val commandBuffer = textures.commandPool.createOneUseCB()
+        val commandBuffer = operationsPool.createOneUseCB()
 
         // What we want to make sure isn't interfered with
         var dstAccessMask = 0
@@ -128,14 +129,14 @@ class VulkanTexture2D(val backend: VulkanGraphicsBackend, val textures: VulkanTe
 
         vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, null, null, imageBarrier)
 
-        textures.commandPool.submitOneTimeCB(commandBuffer, backend.logicalDevice.graphicsQueue)
+        operationsPool.submitOneTimeCB(commandBuffer, backend.logicalDevice.graphicsQueue)
 
         stackPop()
     }
 
     fun copyBufferToImage(buffer: VulkanBuffer) {
         stackPush()
-        val commandBuffer = textures.commandPool.createOneUseCB()
+        val commandBuffer = operationsPool.createOneUseCB()
 
         val region = VkBufferImageCopy.callocStack(1).apply {
             bufferOffset(0)
@@ -166,7 +167,7 @@ class VulkanTexture2D(val backend: VulkanGraphicsBackend, val textures: VulkanTe
 
         vkCmdCopyBufferToImage(commandBuffer, buffer.handle, imageHandle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, region)
 
-        textures.commandPool.submitOneTimeCB(commandBuffer, backend.logicalDevice.graphicsQueue)
+        operationsPool.submitOneTimeCB(commandBuffer, backend.logicalDevice.graphicsQueue)
 
         stackPop()
     }
