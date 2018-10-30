@@ -204,7 +204,7 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: RenderPas
     }
 
     fun finishFrame(frame: Frame) {
-        val stack = stackPush()
+        stackPush()
 
         val presentInfo = VkPresentInfoKHR.callocStack().sType(VK_STRUCTURE_TYPE_PRESENT_INFO_KHR).apply {
             val waitSemaphores = stackMallocLong(1)
@@ -221,9 +221,9 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: RenderPas
         }
 
         vkQueuePresentKHR(backend.logicalDevice.presentationQueue.handle, presentInfo)
+
         val frameTime = System.nanoTime() - frame.started
         val fps = 1000000000.0 / frameTime.toDouble()
-        //println("frame took $frameTime ns, fps = ${fps}")
         backend.window.title = "fps = ${fps.toInt()}"
 
         inflightFrameIndex = (inflightFrameIndex + 1) % maxFramesInFlight

@@ -10,6 +10,7 @@ import io.xol.chunkstories.graphics.vulkan.util.*
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
+import org.slf4j.LoggerFactory
 
 class VulkanTexture2D(val backend: VulkanGraphicsBackend, val operationsPool: CommandPool, override val format: TextureFormat, override val height: Int, override val width: Int,
                       val usageFlags: Int) : Texture2D, Cleanable {
@@ -106,6 +107,8 @@ class VulkanTexture2D(val backend: VulkanGraphicsBackend, val operationsPool: Co
                 srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT
                 srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT
             }
+
+            else -> logger.error("Unhandled transition : $oldLayout to $newLayout")
         }
 
         val imageBarrier = VkImageMemoryBarrier.callocStack(1).sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER).apply {
@@ -177,5 +180,8 @@ class VulkanTexture2D(val backend: VulkanGraphicsBackend, val operationsPool: Co
 
         vkDestroyImage(backend.logicalDevice.vkDevice, imageHandle, null)
         vkFreeMemory(backend.logicalDevice.vkDevice, imageMemory, null)
+    }
+    companion object {
+        val logger = LoggerFactory.getLogger("client.vulkan")
     }
 }

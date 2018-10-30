@@ -16,7 +16,7 @@ import org.lwjgl.vulkan.VkDescriptorSetLayoutCreateInfo
 
 class VulkanShaderFactory(val backend: VulkanGraphicsBackend, val client: Client) : ShaderFactory(VulkanShaderFactory::class.java.classLoader) {
     override val classLoader: ClassLoader
-        get() = (client?.content?.modsManager() as? ModsManagerImplementation)?.finalClassLoader ?: VulkanShaderFactory::class.java.classLoader
+        get() = (client.content.modsManager() as? ModsManagerImplementation)?.finalClassLoader ?: VulkanShaderFactory::class.java.classLoader
 
     fun loadProgram(basePath: String): GLSLProgram {
         val vertexShader = javaClass.getResource("$basePath.vert").readText()

@@ -7,7 +7,7 @@ import io.xol.chunkstories.api.graphics.rendergraph.RenderBuffer
 import io.xol.chunkstories.api.graphics.rendergraph.RenderGraph
 import io.xol.chunkstories.api.graphics.systems.drawing.DrawingSystem
 import io.xol.chunkstories.graphics.vulkan.resources.Cleanable
-import io.xol.chunkstories.graphics.vulkan.systems.VulkanPass
+import io.xol.chunkstories.graphics.vulkan.swapchain.Frame
 import io.xol.chunkstories.graphics.vulkan.textures.VulkanRenderBuffer
 import org.joml.Vector2i
 import org.lwjgl.vulkan.VK10
@@ -15,13 +15,14 @@ import kotlin.reflect.KClass
 
 class VulkanRenderGraph(val backend: VulkanGraphicsBackend, script: RenderGraphDeclarationScript) : RenderGraph, Cleanable {
 
+    //TODO useless ?
     val commandPool: CommandPool
 
     override val buffers = mutableMapOf<String, VulkanRenderBuffer>()
     override val passes = mutableMapOf<String, VulkanPass>()
 
-    override lateinit var defaultPass: Pass
-    override lateinit var finalPass: Pass
+    override lateinit var defaultPass: VulkanPass
+    override lateinit var finalPass: VulkanPass
 
     override val viewportSize: Vector2i
             get() = Vector2i(backend.window.width, backend.window.height)
@@ -66,7 +67,14 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, script: RenderGraphD
         finalPass = passes.values.find { it.final } ?: throw Exception("No final pass was set !")
     }
 
+    fun renderFrame(frame: Frame) {
+        //TODO build some layout and have inter-pass synchronisation
+        finalPass.render(frame)
+    }
+
     override fun cleanup() {
+        passes.values.forEach(Cleanable::cleanup)
+        buffers.values.forEach(Cleanable::cleanup)
         commandPool.cleanup()
     }
 }

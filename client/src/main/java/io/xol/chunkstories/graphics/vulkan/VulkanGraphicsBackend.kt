@@ -1,7 +1,10 @@
 package io.xol.chunkstories.graphics.vulkan
 
+import io.xol.chunkstories.api.graphics.rendergraph.Pass
+import io.xol.chunkstories.api.graphics.rendergraph.RegisteredDrawingSystem
 import io.xol.chunkstories.api.graphics.systems.drawing.DrawingSystem
 import io.xol.chunkstories.api.graphics.systems.drawing.FarTerrainDrawer
+import io.xol.chunkstories.api.gui.GuiDrawer
 import io.xol.chunkstories.client.glfw.GLFWWindow
 import io.xol.chunkstories.graphics.GLFWBasedGraphicsBackend
 import io.xol.chunkstories.graphics.vulkan.devices.LogicalDevice
@@ -10,8 +13,10 @@ import io.xol.chunkstories.graphics.vulkan.resources.VulkanMemoryManager
 import io.xol.chunkstories.graphics.vulkan.shaders.VulkanShaderFactory
 import io.xol.chunkstories.graphics.vulkan.swapchain.SwapChain
 import io.xol.chunkstories.graphics.vulkan.swapchain.WindowSurface
-import io.xol.chunkstories.graphics.vulkan.systems.VulkanGuiPass
+import io.xol.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
+import io.xol.chunkstories.graphics.vulkan.systems.VulkanGuiDrawer
 import io.xol.chunkstories.graphics.vulkan.textures.VulkanTextures
+import io.xol.chunkstories.graphics.vulkan.util.builtInRendergraphs
 import io.xol.chunkstories.graphics.vulkan.util.ensureIs
 import org.lwjgl.PointerBuffer
 import org.lwjgl.glfw.GLFW
@@ -57,7 +62,8 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
     val shaderFactory = VulkanShaderFactory(this, window.client)
     val textures: VulkanTextures
 
-    var triangleDrawer : VulkanGuiPass
+    var renderGraph: VulkanRenderGraph
+    //var triangleDrawer : VulkanGuiPass
 
     init {
         if (!glfwVulkanSupported())
@@ -89,13 +95,14 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
             }
         }
 
-        triangleDrawer = VulkanGuiPass(this, window.client.gui)
+        renderGraph = VulkanRenderGraph(this, builtInRendergraphs.onlyGuiRenderGraph)
+        //triangleDrawer = VulkanGuiPass(this, window.client.gui)
     }
 
     override fun drawFrame(frameNumber: Int) {
         val frame = swapchain.beginFrame(frameNumber)
 
-        triangleDrawer.render(frame)
+        renderGraph.renderFrame(frame)
 
         swapchain.finishFrame(frame)
     }
@@ -212,20 +219,20 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
         return bestPhysicalDevice ?: throw Exception("Could not find suitable physical device !")
     }
 
-    override fun createDrawingSystem(clazz: Class<DrawingSystem>): DrawingSystem {
-        when (clazz) {
-            FarTerrainDrawer::class.java -> {
-                TODO("you have to implement the common drawing systems in your graphicsBackend")
-            }
-        }
+    override fun createDrawingSystem(pass: Pass, declaredDrawingSystem: RegisteredDrawingSystem): VulkanDrawingSystem {
+        val pass = pass as? VulkanPass ?: throw Exception("Pass didn't originate from a Vulkan backend !!!")
 
-        TODO("not implemented")
+        return when (declaredDrawingSystem.clazz) {
+            GuiDrawer::class.java -> VulkanGuiDrawer(pass, window.client.gui)
+
+            else -> throw Exception("Unimplemented system on this backend: ${declaredDrawingSystem.clazz}")
+        }
     }
 
     override fun cleanup() {
         vkDeviceWaitIdle(logicalDevice.vkDevice)
 
-        triangleDrawer.cleanup()
+        renderGraph.cleanup()
 
         renderToBackbuffer.cleanup()
         swapchain.cleanup()
