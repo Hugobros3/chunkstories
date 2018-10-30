@@ -51,7 +51,7 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: RenderPas
             //imageExtent(backend.physicalDevice.swapchainDetails.swapExtentToUse)
             imageArrayLayers(1)
             //TODO maybe not needed once we do everything in offscreen buffers
-            imageUsage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
+            imageUsage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT or VK_IMAGE_USAGE_TRANSFER_DST_BIT)
 
             preTransform(backend.physicalDevice.swapchainDetails.transformToUse)
             compositeAlpha(VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR)
@@ -121,12 +121,12 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: RenderPas
         swapChainFramebuffers = mutableListOf()
 
         for (imageView in swapChainImageViews) {
-            val pAttachement = stackMallocLong(1)
-            pAttachement.put(0, imageView)
+            val pAttachment = stackMallocLong(1)
+            pAttachment.put(0, imageView)
 
             val framebufferCreateInfo = VkFramebufferCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO).apply {
                 renderPass(displayRenderPass.handle)
-                pAttachments(pAttachement)
+                pAttachments(pAttachment)
                 width(backend.window.width)
                 height(backend.window.height)
                 layers(1)

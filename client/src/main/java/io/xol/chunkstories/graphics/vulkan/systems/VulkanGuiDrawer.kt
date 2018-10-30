@@ -27,7 +27,7 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
         get() = pass.backend
 
     val baseProgram = backend.shaderFactory.createProgram(backend, "/shaders/gui/gui")
-    val pipeline = Pipeline(backend, backend.renderToBackbuffer.handle, baseProgram)
+    val pipeline = Pipeline(backend, pass.renderPass, baseProgram)
     val descriptorPool = DescriptorPool(backend, baseProgram)
 
     val sampler = VulkanSampler(backend)

@@ -5,33 +5,76 @@ import io.xol.chunkstories.graphics.vulkan.resources.Cleanable
 import io.xol.chunkstories.graphics.vulkan.resources.PerFrameResource
 import io.xol.chunkstories.graphics.vulkan.swapchain.Frame
 import io.xol.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
+import io.xol.chunkstories.graphics.vulkan.textures.VulkanRenderBuffer
 import io.xol.chunkstories.graphics.vulkan.textures.vulkanFormat
-import io.xol.chunkstories.graphics.vulkan.util.VkRenderPass
-import io.xol.chunkstories.graphics.vulkan.util.ensureIs
+import io.xol.chunkstories.graphics.vulkan.util.*
 import org.lwjgl.system.MemoryStack
-import org.lwjgl.system.MemoryStack.stackPush
+import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 
 class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGraph, config: Pass.() -> Unit) : Pass(), Cleanable {
 
-    val vkRenderPass: VkRenderPass
-    val passAdaptedDrawingSystems: List<VulkanDrawingSystem>
+    val renderBuffers: List<VulkanRenderBuffer>
 
-    val cmdPool = CommandPool(backend, backend.logicalDevice.graphicsQueue.family, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT or VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
+    val renderPass: VkRenderPass
+    val framebuffer: VkFramebuffer
+
+    val drawingSystems: List<VulkanDrawingSystem>
+
+    val passDoneSemaphore: VkSemaphore
+
+    val commandPool = CommandPool(backend, backend.logicalDevice.graphicsQueue.family, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT or VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
     val commandBuffers: PerFrameResource<VkCommandBuffer>
 
     init {
         this.apply(config)
 
+        println("le outputs: "+outputs)
+        if(outputs.isEmpty())
+            System.exit(-7)
+
         MemoryStack.stackPush()
 
+        passDoneSemaphore = backend.createSemaphore()
+
+        renderBuffers = outputs.map { output ->
+            graph.buffers[output.outputBuffer ?: output.name] ?: throw Exception("Buffer ${output.outputBuffer} isn't declared !")
+        }
+
+        renderPass = createRenderPass()
+        framebuffer = createFramebuffer()
+
+        drawingSystems = mutableListOf()
+        for (declaredDrawingSystem in this.declaredDrawingSystems) {
+            val drawingSystem = backend.createDrawingSystem(this, declaredDrawingSystem)
+            drawingSystems.add(drawingSystem)
+        }
+
+        commandBuffers = PerFrameResource(backend) {
+            val commandBufferAllocateInfo = VkCommandBufferAllocateInfo.callocStack().sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO).apply {
+                commandPool(commandPool.handle)
+                level(VK_COMMAND_BUFFER_LEVEL_PRIMARY)
+                commandBufferCount(1)
+            }
+
+            val pCmdBuffers = MemoryStack.stackMallocPointer(1)
+            vkAllocateCommandBuffers(backend.logicalDevice.vkDevice, commandBufferAllocateInfo, pCmdBuffers)
+
+            val commandBuffer = VkCommandBuffer(pCmdBuffers.get(0), backend.logicalDevice.vkDevice)
+
+            commandBuffer
+        }
+
+        MemoryStack.stackPop()
+    }
+
+    private fun createRenderPass(): VkRenderPass {
         val attachmentDescription = VkAttachmentDescription.callocStack(outputs.size)
         outputs.mapIndexed { index, output ->
             attachmentDescription[index].apply {
-                val renderbuffer = graph.buffers[output.outputBuffer]
-                        ?: throw Exception("Buffer ${output.outputBuffer} isn't declared !")
+                val renderbuffer = renderBuffers[index]
 
                 format(renderbuffer.format.vulkanFormat.ordinal)
                 samples(VK_SAMPLE_COUNT_1_BIT)
@@ -89,34 +132,30 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
 
         val pRenderPass = MemoryStack.stackMallocLong(1)
         vkCreateRenderPass(backend.logicalDevice.vkDevice, renderPassCreateInfo, null, pRenderPass).ensureIs("Failed to create render pass", VK_SUCCESS)
-        vkRenderPass = pRenderPass.get(0)
+        return pRenderPass.get(0)
+    }
 
-        passAdaptedDrawingSystems = mutableListOf()
-        for (declaredDrawingSystem in this.declaredDrawingSystems) {
-            val drawingSystem = backend.createDrawingSystem(this, declaredDrawingSystem)
-            passAdaptedDrawingSystems.add(drawingSystem)
+    private fun createFramebuffer(): VkFramebuffer {
+        val pAttachments = stackMallocLong(outputs.size)
+
+        renderBuffers.forEach { renderBuffer -> pAttachments.put(renderBuffer.texture.imageView) }
+        pAttachments.flip()
+
+        val framebufferCreateInfo = VkFramebufferCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO).apply {
+            renderPass(renderPass)
+            pAttachments(pAttachments)
+            width(backend.window.width)
+            height(backend.window.height)
+            layers(1)
         }
 
-        commandBuffers = PerFrameResource(backend) {
-            val commandBufferAllocateInfo = VkCommandBufferAllocateInfo.callocStack().sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO).apply {
-                commandPool(cmdPool.handle)
-                level(VK_COMMAND_BUFFER_LEVEL_PRIMARY)
-                commandBufferCount(1)
-            }
-
-            val pCmdBuffers = MemoryStack.stackMallocPointer(1)
-            vkAllocateCommandBuffers(backend.logicalDevice.vkDevice, commandBufferAllocateInfo, pCmdBuffers)
-
-            val commandBuffer = VkCommandBuffer(pCmdBuffers.get(0), backend.logicalDevice.vkDevice)
-
-            commandBuffer
-        }
-
-        MemoryStack.stackPop()
+        val pFramebuffer = stackMallocLong(1)
+        vkCreateFramebuffer(backend.logicalDevice.vkDevice, framebufferCreateInfo, null, pFramebuffer).ensureIs("Failed to create framebuffer", VK_SUCCESS)
+        return pFramebuffer.get(0)
     }
 
     //TODO for now let's assume there is only one pass so we can use head/tail semaphores from the frame object
-    fun render(frame: Frame) {
+    fun render(frame: Frame, inSemaphore: VkSemaphore) {
         stackPush().use {
             commandBuffers[frame].apply {
                 val beginInfo = VkCommandBufferBeginInfo.callocStack().sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO).apply {
@@ -149,10 +188,12 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
                 vkCmdSetScissor(this, 0, scissor)
 
                 val renderPassBeginInfo = VkRenderPassBeginInfo.callocStack().sType(VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO).apply {
-                    renderPass(backend.renderToBackbuffer.handle)
 
+                    renderPass(renderPass)
+                    framebuffer(framebuffer)
+                    //renderPass(backend.renderToBackbuffer.handle)
+                    //framebuffer(frame.swapchainFramebuffer)
 
-                    framebuffer(frame.swapchainFramebuffer)
                     renderArea().offset().x(0)
                     renderArea().offset().y(0)
                     renderArea().extent().width(backend.window.width)
@@ -171,7 +212,7 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
 
                 vkCmdBeginRenderPass(this, renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE)
 
-                for(drawingSystem in passAdaptedDrawingSystems) {
+                for (drawingSystem in drawingSystems) {
                     drawingSystem.render(frame, this)
                 }
 
@@ -181,7 +222,7 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
 
             val submitInfo = VkSubmitInfo.callocStack().sType(VK_STRUCTURE_TYPE_SUBMIT_INFO).apply {
                 val waitOnSemaphores = MemoryStack.stackMallocLong(1)
-                waitOnSemaphores.put(0, frame.renderCanBeginSemaphore)
+                waitOnSemaphores.put(0, inSemaphore)
                 pWaitSemaphores(waitOnSemaphores)
                 waitSemaphoreCount(1)
 
@@ -193,19 +234,24 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
                 commandBuffers.put(0, this@VulkanPass.commandBuffers[frame])
                 pCommandBuffers(commandBuffers)
 
-                val semaphoresToSignal = MemoryStack.stackLongs(frame.renderFinishedSemaphore)
+                val semaphoresToSignal = MemoryStack.stackLongs(passDoneSemaphore)
                 pSignalSemaphores(semaphoresToSignal)
             }
 
-            vkQueueSubmit(backend.logicalDevice.graphicsQueue.handle, submitInfo, frame.renderFinishedFence).ensureIs("Failed to submit command buffer", VK_SUCCESS)
+            vkQueueSubmit(backend.logicalDevice.graphicsQueue.handle, submitInfo, /*frame.renderFinishedFence*/ VK_NULL_HANDLE).ensureIs("Failed to submit command buffer", VK_SUCCESS)
         }
     }
 
     override fun cleanup() {
-        vkDestroyRenderPass(backend.logicalDevice.vkDevice, vkRenderPass, null)
-        cmdPool.cleanup()
+        vkDestroyFramebuffer(backend.logicalDevice.vkDevice, framebuffer, null)
+        vkDestroyRenderPass(backend.logicalDevice.vkDevice, renderPass, null)
 
-        passAdaptedDrawingSystems.forEach(Cleanable::cleanup)
+        commandPool.cleanup()
+        //commandBuffers.cleanup() // useless, cleaning the commandpool cleans those implicitely
+
+        vkDestroySemaphore(backend.logicalDevice.vkDevice, passDoneSemaphore, null)
+
+        drawingSystems.forEach(Cleanable::cleanup)
     }
 
     companion object {

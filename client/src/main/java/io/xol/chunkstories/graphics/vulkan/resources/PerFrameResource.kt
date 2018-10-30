@@ -25,5 +25,9 @@ class PerFrameResource<R : Any>(val backend: VulkanGraphicsBackend, val initLamb
     fun cleanup() {
         values.forEach { (it as? Cleanable)?.cleanup() }
     }
+
+    fun cleanup(cleanupFunction: R.() -> Unit) {
+        values.forEach { (it as R).cleanupFunction() }
+    }
 }
 

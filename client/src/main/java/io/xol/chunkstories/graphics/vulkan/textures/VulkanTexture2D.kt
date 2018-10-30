@@ -12,7 +12,7 @@ import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 
-class VulkanTexture2D(val backend: VulkanGraphicsBackend, val operationsPool: CommandPool, override val format: TextureFormat, override val height: Int, override val width: Int,
+class VulkanTexture2D(val backend: VulkanGraphicsBackend, val operationsPool: CommandPool, override val format: TextureFormat, override val width: Int, override val height: Int,
                       val usageFlags: Int) : Texture2D, Cleanable {
 
     val vulkanFormat = format.vulkanFormat
@@ -35,7 +35,8 @@ class VulkanTexture2D(val backend: VulkanGraphicsBackend, val operationsPool: Co
             format(vulkanFormat.ordinal)
             tiling(VK_IMAGE_TILING_OPTIMAL) // TODO are we sure ?
 
-            usage(VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT)
+            usage(usageFlags)
+            //usage(VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT)
 
             initialLayout(VK_IMAGE_LAYOUT_UNDEFINED)
             sharingMode(VK_SHARING_MODE_EXCLUSIVE)
