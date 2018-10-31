@@ -1,11 +1,12 @@
-package io.xol.chunkstories.graphics.vulkan
+package io.xol.chunkstories.graphics.vulkan.graph
 
 import io.xol.chunkstories.api.graphics.rendergraph.Pass
+import io.xol.chunkstories.graphics.vulkan.CommandPool
+import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import io.xol.chunkstories.graphics.vulkan.resources.Cleanable
 import io.xol.chunkstories.graphics.vulkan.resources.PerFrameResource
 import io.xol.chunkstories.graphics.vulkan.swapchain.Frame
 import io.xol.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
-import io.xol.chunkstories.graphics.vulkan.textures.VulkanRenderBuffer
 import io.xol.chunkstories.graphics.vulkan.textures.vulkanFormat
 import io.xol.chunkstories.graphics.vulkan.util.*
 import org.lwjgl.system.MemoryStack
@@ -30,10 +31,6 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
 
     init {
         this.apply(config)
-
-        println("le outputs: "+outputs)
-        if(outputs.isEmpty())
-            System.exit(-7)
 
         MemoryStack.stackPush()
 
@@ -213,7 +210,7 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
                 vkCmdBeginRenderPass(this, renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE)
 
                 for (drawingSystem in drawingSystems) {
-                    drawingSystem.render(frame, this)
+                    drawingSystem.registerDrawingCommands(frame, this)
                 }
 
                 vkCmdEndRenderPass(this)

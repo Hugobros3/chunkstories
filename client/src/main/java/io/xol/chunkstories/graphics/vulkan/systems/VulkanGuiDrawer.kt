@@ -4,6 +4,7 @@ import io.xol.chunkstories.api.gui.Font
 import io.xol.chunkstories.graphics.common.DummyGuiDrawer
 import io.xol.chunkstories.graphics.vulkan.*
 import io.xol.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
+import io.xol.chunkstories.graphics.vulkan.graph.VulkanPass
 import io.xol.chunkstories.graphics.vulkan.shaders.UniformTestOffset
 import io.xol.chunkstories.graphics.vulkan.swapchain.Frame
 import io.xol.chunkstories.graphics.vulkan.resources.PerFrameResource
@@ -80,7 +81,7 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
         }
     }
 
-    override fun render(frame : Frame, commandBuffer: VkCommandBuffer) {
+    override fun registerDrawingCommands(frame : Frame, commandBuffer: VkCommandBuffer) {
         stackPush().use {
             stagingByteBuffer.clear()
             stagingFloatBuffer.clear()
@@ -99,16 +100,15 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
             //descriptorPool.configure(frame, testOffset)
             descriptorPool.configureTextureAndSampler(frame, "diffuseTexture", backend.textures.defaultTexture2D as VulkanTexture2D, sampler)
 
-            // Rewrite the command buffer
-            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 0, descriptorPool.setsForFrame(frame), null as? IntArray)
+            // Write the commands in the command buffer
             vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
+            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 0, descriptorPool.setsForFrame(frame), null as? IntArray)
             vkCmdBindVertexBuffers(commandBuffer, 0, MemoryStack.stackLongs(vertexBuffers[frame].handle), MemoryStack.stackLongs(0))
             vkCmdDraw(commandBuffer, 3 * stagingSize, 1, 0, 0) // that's rather anticlimactic
         }
     }
 
     override fun cleanup() {
-
         sampler.cleanup()
         vertexBuffers.cleanup()
 

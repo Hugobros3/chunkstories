@@ -2,13 +2,13 @@ package io.xol.chunkstories.graphics.vulkan
 
 import io.xol.chunkstories.api.graphics.rendergraph.Pass
 import io.xol.chunkstories.api.graphics.rendergraph.RegisteredDrawingSystem
-import io.xol.chunkstories.api.graphics.systems.drawing.DrawingSystem
-import io.xol.chunkstories.api.graphics.systems.drawing.FarTerrainDrawer
 import io.xol.chunkstories.api.gui.GuiDrawer
 import io.xol.chunkstories.client.glfw.GLFWWindow
 import io.xol.chunkstories.graphics.GLFWBasedGraphicsBackend
 import io.xol.chunkstories.graphics.vulkan.devices.LogicalDevice
 import io.xol.chunkstories.graphics.vulkan.devices.PhysicalDevice
+import io.xol.chunkstories.graphics.vulkan.graph.VulkanPass
+import io.xol.chunkstories.graphics.vulkan.graph.VulkanRenderGraph
 import io.xol.chunkstories.graphics.vulkan.resources.VulkanMemoryManager
 import io.xol.chunkstories.graphics.vulkan.shaders.VulkanShaderFactory
 import io.xol.chunkstories.graphics.vulkan.swapchain.SwapChain
@@ -16,8 +16,7 @@ import io.xol.chunkstories.graphics.vulkan.swapchain.WindowSurface
 import io.xol.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
 import io.xol.chunkstories.graphics.vulkan.systems.VulkanGuiDrawer
 import io.xol.chunkstories.graphics.vulkan.textures.VulkanTextures
-import io.xol.chunkstories.graphics.vulkan.util.builtInRendergraphs
-import io.xol.chunkstories.graphics.vulkan.util.ensureIs
+import io.xol.chunkstories.graphics.vulkan.util.*
 import org.lwjgl.PointerBuffer
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWVulkan.glfwGetRequiredInstanceExtensions
@@ -29,8 +28,6 @@ import org.lwjgl.vulkan.EXTDebugReport.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 import java.awt.image.BufferedImage
-
-import io.xol.chunkstories.graphics.vulkan.util.iterator
 
 class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(window) {
     internal val enableValidation = true
@@ -57,13 +54,12 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
     internal var swapchain: SwapChain
         internal set
 
-    val renderToBackbuffer : RenderPass
+    val renderToBackbuffer : VkRenderPass
 
     val shaderFactory = VulkanShaderFactory(this, window.client)
     val textures: VulkanTextures
 
     var renderGraph: VulkanRenderGraph
-    //var triangleDrawer : VulkanGuiPass
 
     init {
         if (!glfwVulkanSupported())
@@ -83,7 +79,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
         memoryManager = VulkanMemoryManager(this, logicalDevice)
         textures = VulkanTextures(this)
 
-        renderToBackbuffer = RenderPass(this)
+        renderToBackbuffer = RenderPassHelpers.createWindowSurfaceRenderPass(this)
         swapchain = SwapChain(this, renderToBackbuffer, null)
 
         GLFW.glfwSetWindowSizeCallback(window.glfwWindowHandle) { handle, newWidth, newHeight ->
@@ -95,8 +91,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
             }
         }
 
-        renderGraph = VulkanRenderGraph(this, builtInRendergraphs.onlyGuiRenderGraph)
-        //triangleDrawer = VulkanGuiPass(this, window.client.gui)
+        renderGraph = VulkanRenderGraph(this, BuiltInRendergraphs.onlyGuiRenderGraph)
     }
 
     override fun drawFrame(frameNumber: Int) {
@@ -112,8 +107,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
     }
 
     fun recreateSwapchainDependencies() {
-        //triangleDrawer.cleanup()
-        //triangleDrawer = VulkanGuiPass(this, window.client.gui)
+        renderGraph.resizeBuffers()
     }
 
     /** Creates a Vulkan instance */
@@ -234,7 +228,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
 
         renderGraph.cleanup()
 
-        renderToBackbuffer.cleanup()
+        vkDestroyRenderPass(logicalDevice.vkDevice, renderToBackbuffer, null)
         swapchain.cleanup()
 
         textures.cleanup()

@@ -1,13 +1,13 @@
-package io.xol.chunkstories.graphics.vulkan
+package io.xol.chunkstories.graphics.vulkan.graph
 
 import io.xol.chunkstories.api.dsl.*
 import io.xol.chunkstories.api.graphics.rendergraph.*
 import io.xol.chunkstories.api.graphics.systems.drawing.DrawingSystem
+import io.xol.chunkstories.graphics.vulkan.CommandPool
+import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import io.xol.chunkstories.graphics.vulkan.resources.Cleanable
 import io.xol.chunkstories.graphics.vulkan.resources.PerFrameResource
 import io.xol.chunkstories.graphics.vulkan.swapchain.Frame
-import io.xol.chunkstories.graphics.vulkan.textures.VulkanRenderBuffer
-import io.xol.chunkstories.graphics.vulkan.util.VkSemaphore
 import io.xol.chunkstories.graphics.vulkan.util.ensureIs
 import org.joml.Vector2i
 import org.lwjgl.system.MemoryStack
@@ -19,7 +19,6 @@ import kotlin.reflect.KClass
 
 class VulkanRenderGraph(val backend: VulkanGraphicsBackend, script: RenderGraphDeclarationScript) : RenderGraph, Cleanable {
 
-    //TODO useless ?
     val commandPool: CommandPool
     val commandBuffers: PerFrameResource<VkCommandBuffer>
 
@@ -205,5 +204,9 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, script: RenderGraphD
 
         commandPool.cleanup()
         //commandBuffers.cleanup() // useless, cleaning the commandpool cleans those implicitely
+    }
+
+    fun resizeBuffers() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 }

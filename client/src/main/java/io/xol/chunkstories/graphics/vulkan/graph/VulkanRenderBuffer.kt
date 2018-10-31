@@ -1,10 +1,10 @@
-package io.xol.chunkstories.graphics.vulkan.textures
+package io.xol.chunkstories.graphics.vulkan.graph
 
 import io.xol.chunkstories.api.graphics.TextureFormat
 import io.xol.chunkstories.api.graphics.rendergraph.RenderBuffer
 import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
-import io.xol.chunkstories.graphics.vulkan.VulkanRenderGraph
 import io.xol.chunkstories.graphics.vulkan.resources.Cleanable
+import io.xol.chunkstories.graphics.vulkan.textures.VulkanTexture2D
 import org.lwjgl.vulkan.VK10.*
 
 class VulkanRenderBuffer(backend: VulkanGraphicsBackend, graph: VulkanRenderGraph, config: RenderBuffer.() -> Unit) : RenderBuffer(), Cleanable {

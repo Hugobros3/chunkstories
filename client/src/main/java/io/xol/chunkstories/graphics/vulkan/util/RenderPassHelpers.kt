@@ -1,7 +1,6 @@
-package io.xol.chunkstories.graphics.vulkan
+package io.xol.chunkstories.graphics.vulkan.util
 
-import io.xol.chunkstories.graphics.vulkan.util.VkRenderPass
-import io.xol.chunkstories.graphics.vulkan.util.ensureIs
+import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import org.slf4j.LoggerFactory
 
 import org.lwjgl.system.MemoryStack.*
@@ -9,11 +8,10 @@ import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
 import org.lwjgl.vulkan.VK10.*
 
-@Deprecated("Useless wrapper !")
-class RenderPass(val backend: VulkanGraphicsBackend) {
-    val handle: VkRenderPass
+/** Contains a bunch of helpers for moving the verboseness of renderpass creation out of the logic */
+object RenderPassHelpers {
 
-    init {
+    fun createWindowSurfaceRenderPass(backend: VulkanGraphicsBackend): VkRenderPass {
         logger.info("Creating render pass")
 
         stackPush()
@@ -21,7 +19,8 @@ class RenderPass(val backend: VulkanGraphicsBackend) {
             format(backend.physicalDevice.swapchainDetails.formatToUse.ordinal)
             samples(VK_SAMPLE_COUNT_1_BIT)
 
-            loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
+            //loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
+            loadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
             storeOp(VK_ATTACHMENT_STORE_OP_STORE)
 
             stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
@@ -44,11 +43,10 @@ class RenderPass(val backend: VulkanGraphicsBackend) {
 
         val dependencies = VkSubpassDependency.calloc(1).apply {
             srcSubpass(VK_SUBPASS_EXTERNAL)
-            dstSubpass(0)
-
             srcStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
             srcAccessMask(0)
 
+            dstSubpass(0)
             dstStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
             dstAccessMask(VK_ACCESS_COLOR_ATTACHMENT_READ_BIT or VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
         }
@@ -62,16 +60,12 @@ class RenderPass(val backend: VulkanGraphicsBackend) {
 
         val pRenderPass = stackMallocLong(1)
         vkCreateRenderPass(backend.logicalDevice.vkDevice, renderPassCreateInfo, null, pRenderPass).ensureIs("Failed to create render pass", VK_SUCCESS)
-        handle = pRenderPass.get(0)
+        val handle = pRenderPass.get(0)
 
         stackPop()
+
+        return handle
     }
 
-    fun cleanup() {
-        vkDestroyRenderPass(backend.logicalDevice.vkDevice, handle, null)
-    }
-
-    companion object {
-        val logger = LoggerFactory.getLogger("client.vulkan")
-    }
+    val logger = LoggerFactory.getLogger("client.vulkan")
 }

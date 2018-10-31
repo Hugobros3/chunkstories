@@ -8,7 +8,7 @@ import io.xol.chunkstories.api.graphics.rendergraph.PassOutput.BlendMode.*
 import io.xol.chunkstories.api.graphics.ImageInput.SamplingMode.*
 import io.xol.chunkstories.api.gui.GuiDrawer
 
-object builtInRendergraphs {
+object BuiltInRendergraphs {
     val onlyGuiRenderGraph : RenderGraphDeclarationScript = {
         renderBuffers {
             renderBuffer {
