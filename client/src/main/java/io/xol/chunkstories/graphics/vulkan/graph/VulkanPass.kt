@@ -222,11 +222,8 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
                 vkCmdSetScissor(this, 0, scissor)
 
                 val renderPassBeginInfo = VkRenderPassBeginInfo.callocStack().sType(VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO).apply {
-
                     renderPass(renderPass)
                     framebuffer(framebuffer)
-                    //renderPass(backend.renderToBackbuffer.handle)
-                    //framebuffer(frame.swapchainFramebuffer)
 
                     renderArea().offset().x(0)
                     renderArea().offset().y(0)
