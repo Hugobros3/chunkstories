@@ -6,7 +6,7 @@ import org.lwjgl.system.MemoryStack.stackPop
 import org.lwjgl.system.MemoryStack.stackPush
 
 /** Declares a resource type that is instanced N times as there are N frames in flight */
-class PerFrameResource<R : Any>(val backend: VulkanGraphicsBackend, val initLambda: () -> R) {
+class InflightFrameResource<R : Any>(val backend: VulkanGraphicsBackend, val initLambda: () -> R) {
 
     init {
         init()
@@ -26,8 +26,8 @@ class PerFrameResource<R : Any>(val backend: VulkanGraphicsBackend, val initLamb
         values.forEach { (it as? Cleanable)?.cleanup() }
     }
 
-    fun cleanup(cleanupFunction: R.() -> Unit) {
-        values.forEach { (it as R).cleanupFunction() }
+    fun cleanup(cleanupFunction: (R) -> Unit) {
+        values.forEach { cleanupFunction((it as R)) }
     }
 }
 

@@ -5,7 +5,7 @@ import io.xol.chunkstories.api.graphics.rendergraph.*
 import io.xol.chunkstories.graphics.vulkan.CommandPool
 import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import io.xol.chunkstories.graphics.vulkan.resources.Cleanable
-import io.xol.chunkstories.graphics.vulkan.resources.PerFrameResource
+import io.xol.chunkstories.graphics.vulkan.resources.InflightFrameResource
 import io.xol.chunkstories.graphics.vulkan.swapchain.Frame
 import io.xol.chunkstories.graphics.vulkan.util.ensureIs
 import org.joml.Vector2i
@@ -18,7 +18,7 @@ import org.lwjgl.vulkan.VK10.*
 class VulkanRenderGraph(val backend: VulkanGraphicsBackend, script: RenderGraphDeclarationScript) : RenderGraph, Cleanable {
 
     val commandPool: CommandPool
-    val commandBuffers: PerFrameResource<VkCommandBuffer>
+    val commandBuffers: InflightFrameResource<VkCommandBuffer>
 
     override val buffers = mutableMapOf<String, VulkanRenderBuffer>()
     override val passes = mutableMapOf<String, VulkanPass>()
@@ -41,7 +41,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, script: RenderGraphD
         defaultPass = passes.values.find { it.default } ?: throw Exception("No default pass was set !")
         finalPass = passes.values.find { it.final } ?: throw Exception("No final pass was set !")
 
-        commandBuffers = PerFrameResource(backend) {
+        commandBuffers = InflightFrameResource(backend) {
             val commandBufferAllocateInfo = VkCommandBufferAllocateInfo.callocStack().sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO).apply {
                 commandPool(commandPool.handle)
                 level(VK_COMMAND_BUFFER_LEVEL_PRIMARY)
@@ -110,7 +110,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, script: RenderGraphD
                 else -> pass.render(frame, waitOn)
             }
 
-            waitOn = pass.passDoneSemaphore
+            waitOn = pass.passDoneSemaphore[frame]
         }
 
         copyFinalRenderbuffer(frame)
@@ -133,7 +133,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, script: RenderGraphD
 
                     srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
                     dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
-                    image(finalPass.renderBuffers[0].texture.imageHandle)
+                    image(finalPass.outputRenderBuffers[0].texture.imageHandle)
 
                     subresourceRange().apply {
                         aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
@@ -169,8 +169,8 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, script: RenderGraphD
                 vkCmdPipelineBarrier(this, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, null, null, swapchainImageReadyCopyBarrier)
 
                 val region = VkImageCopy.callocStack(1).apply {
-                    this.extent().width(finalPass.renderBuffers[0].size.x)
-                    this.extent().height(finalPass.renderBuffers[0].size.y)
+                    this.extent().width(finalPass.outputRenderBuffers[0].size.x)
+                    this.extent().height(finalPass.outputRenderBuffers[0].size.y)
                     this.extent().depth(1)
 
                     srcSubresource().apply {
@@ -182,7 +182,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, script: RenderGraphD
 
                     dstSubresource().set(srcSubresource())
                 }
-                vkCmdCopyImage(this, finalPass.renderBuffers[0].texture.imageHandle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                vkCmdCopyImage(this, finalPass.outputRenderBuffers[0].texture.imageHandle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
                         frame.swapchainImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, region)
 
                 val swapchainImageReadyPresentBarrier = VkImageMemoryBarrier.callocStack(1).sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER).apply {
@@ -212,7 +212,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, script: RenderGraphD
 
             val submitInfo = VkSubmitInfo.callocStack().sType(VK_STRUCTURE_TYPE_SUBMIT_INFO).apply {
                 val waitOnSemaphores = MemoryStack.stackMallocLong(1)
-                waitOnSemaphores.put(0, finalPass.passDoneSemaphore)
+                waitOnSemaphores.put(0, finalPass.passDoneSemaphore[frame])
                 pWaitSemaphores(waitOnSemaphores)
                 waitSemaphoreCount(1)
 

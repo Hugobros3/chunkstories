@@ -107,7 +107,7 @@ class VulkanRenderBuffer(backend: VulkanGraphicsBackend, graph: VulkanRenderGrap
     }
 
     fun findUsageInPass(pass: VulkanPass) : VulkanRenderBuffer.UsageState {
-        if(pass.renderBuffers.contains(this))
+        if(pass.outputRenderBuffers.contains(this))
             return VulkanRenderBuffer.UsageState.OUTPUT
 
         //TODO use resolved variant

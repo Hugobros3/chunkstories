@@ -11,7 +11,7 @@ import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 
-class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VkRenderPass, val program: VulkanShaderFactory.VulkanicShaderProgram) {
+class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VkRenderPass, val program: VulkanShaderFactory.VulkanicShaderProgram, vertexInputConfiguration: () -> VkPipelineVertexInputStateCreateInfo) {
     val layout: VkPipelineLayout
     val handle: VkPipeline
 
@@ -34,7 +34,7 @@ class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VkRenderPass,
 
         // Vertex input
         // TODO obtain those from the shader program ?
-        val bindingDescription = VkVertexInputBindingDescription.callocStack(1).apply {
+        /*val bindingDescription = VkVertexInputBindingDescription.callocStack(1).apply {
             binding(0)
             stride(2 * 4)
             inputRate(VK_VERTEX_INPUT_RATE_VERTEX)
@@ -50,7 +50,8 @@ class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VkRenderPass,
         val vertexInputInfo = VkPipelineVertexInputStateCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO).apply {
             pVertexBindingDescriptions(bindingDescription)
             pVertexAttributeDescriptions(attributeDescriptions)
-        }
+        }*/
+        val vertexInputStateCreateInfo : VkPipelineVertexInputStateCreateInfo = vertexInputConfiguration()
 
         val inputAssemblyStateCreateInfo = VkPipelineInputAssemblyStateCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO).apply {
             topology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST)
@@ -105,7 +106,7 @@ class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VkRenderPass,
 
         val pipelineCreateInfo = VkGraphicsPipelineCreateInfo.callocStack(1).sType(VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO).apply {
             pStages(shaderStagesCreateInfo)
-            pVertexInputState(vertexInputInfo)
+            pVertexInputState(vertexInputStateCreateInfo)
             pInputAssemblyState(inputAssemblyStateCreateInfo)
 
             pDynamicState(dynamicStateCreateInfo)

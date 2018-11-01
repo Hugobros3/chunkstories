@@ -1,11 +1,10 @@
 package io.xol.chunkstories.graphics.vulkan.graph
 
-import io.xol.chunkstories.api.graphics.ImageInput
 import io.xol.chunkstories.api.graphics.rendergraph.Pass
 import io.xol.chunkstories.graphics.vulkan.CommandPool
 import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import io.xol.chunkstories.graphics.vulkan.resources.Cleanable
-import io.xol.chunkstories.graphics.vulkan.resources.PerFrameResource
+import io.xol.chunkstories.graphics.vulkan.resources.InflightFrameResource
 import io.xol.chunkstories.graphics.vulkan.swapchain.Frame
 import io.xol.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
 import io.xol.chunkstories.graphics.vulkan.textures.vulkanFormat
@@ -18,7 +17,7 @@ import org.slf4j.LoggerFactory
 
 class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGraph, config: Pass.() -> Unit) : Pass(), Cleanable {
 
-    val renderBuffers: List<VulkanRenderBuffer>
+    val outputRenderBuffers: List<VulkanRenderBuffer>
 
     var renderPass: VkRenderPass = -1
         private set
@@ -28,10 +27,10 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
     lateinit var drawingSystems: List<VulkanDrawingSystem>
         private set
 
-    val passDoneSemaphore: VkSemaphore
+    val passDoneSemaphore: InflightFrameResource<VkSemaphore>
 
     val commandPool = CommandPool(backend, backend.logicalDevice.graphicsQueue.family, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT or VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
-    val commandBuffers: PerFrameResource<VkCommandBuffer>
+    val commandBuffers: InflightFrameResource<VkCommandBuffer>
 
     /** Set late by the RenderGraph */
     lateinit var passDependencies: List<VulkanPass>
@@ -41,13 +40,13 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
 
         MemoryStack.stackPush()
 
-        passDoneSemaphore = backend.createSemaphore()
+        passDoneSemaphore = InflightFrameResource(backend) { backend.createSemaphore() }
 
-        renderBuffers = outputs.map { output ->
+        outputRenderBuffers = outputs.map { output ->
             graph.buffers[output.outputBuffer ?: output.name] ?: throw Exception("Buffer ${output.outputBuffer} isn't declared !")
         }
 
-        commandBuffers = PerFrameResource(backend) {
+        commandBuffers = InflightFrameResource(backend) {
             val commandBufferAllocateInfo = VkCommandBufferAllocateInfo.callocStack().sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO).apply {
                 commandPool(commandPool.handle)
                 level(VK_COMMAND_BUFFER_LEVEL_PRIMARY)
@@ -100,7 +99,7 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
     private fun createRenderPass(): VkRenderPass {
         val attachmentDescription = VkAttachmentDescription.callocStack(outputs.size)
         outputs.mapIndexed { index, output ->
-            val renderbuffer = renderBuffers[index]
+            val renderbuffer = outputRenderBuffers[index]
 
             val previousUsage = renderbuffer.findPreviousUsage()
             val currentUsage = VulkanRenderBuffer.UsageState.OUTPUT
@@ -173,7 +172,7 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
     private fun createFramebuffer(): VkFramebuffer {
         val pAttachments = stackMallocLong(outputs.size)
 
-        renderBuffers.forEach { renderBuffer -> pAttachments.put(renderBuffer.texture.imageView) }
+        outputRenderBuffers.forEach { renderBuffer -> pAttachments.put(renderBuffer.texture.imageView) }
         pAttachments.flip()
 
         val framebufferCreateInfo = VkFramebufferCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO).apply {
@@ -249,7 +248,7 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
 
                 // Transition image layouts now !
 
-                /*renderBuffers.forEach { renderBuffer ->
+                /*outputRenderBuffers.forEach { renderBuffer ->
                     val previousUsage = renderBuffer.findPreviousUsage()
                     val currentUsage = VulkanRenderBuffer.UsageState.OUTPUT
 
@@ -278,7 +277,7 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
                 commandBuffers.put(0, this@VulkanPass.commandBuffers[frame])
                 pCommandBuffers(commandBuffers)
 
-                val semaphoresToSignal = MemoryStack.stackLongs(passDoneSemaphore)
+                val semaphoresToSignal = MemoryStack.stackLongs(passDoneSemaphore[frame])
                 pSignalSemaphores(semaphoresToSignal)
             }
 
@@ -293,7 +292,7 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
         commandPool.cleanup()
         //commandBuffers.cleanup() // useless, cleaning the commandpool cleans those implicitely
 
-        vkDestroySemaphore(backend.logicalDevice.vkDevice, passDoneSemaphore, null)
+        passDoneSemaphore.cleanup { vkDestroySemaphore(backend.logicalDevice.vkDevice, it, null) }
 
         drawingSystems.forEach(Cleanable::cleanup)
     }

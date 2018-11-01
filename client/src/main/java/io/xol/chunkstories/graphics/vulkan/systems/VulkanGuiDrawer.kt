@@ -7,7 +7,7 @@ import io.xol.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
 import io.xol.chunkstories.graphics.vulkan.graph.VulkanPass
 import io.xol.chunkstories.graphics.vulkan.shaders.UniformTestOffset
 import io.xol.chunkstories.graphics.vulkan.swapchain.Frame
-import io.xol.chunkstories.graphics.vulkan.resources.PerFrameResource
+import io.xol.chunkstories.graphics.vulkan.resources.InflightFrameResource
 import io.xol.chunkstories.graphics.vulkan.textures.VulkanSampler
 import io.xol.chunkstories.graphics.vulkan.textures.VulkanTexture2D
 import io.xol.chunkstories.gui.ClientGui
@@ -27,19 +27,54 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
     val backend: VulkanGraphicsBackend
         get() = pass.backend
 
-    val baseProgram = backend.shaderFactory.createProgram(backend, "/shaders/gui/gui")
-    val pipeline = Pipeline(backend, pass.renderPass, baseProgram)
-    val descriptorPool = DescriptorPool(backend, baseProgram)
+    val guiShaderProgram = backend.shaderFactory.createProgram(backend, "/shaders/gui/gui")
+
+    val pipeline = Pipeline(backend, pass.renderPass, guiShaderProgram) {
+        val bindingDescription = VkVertexInputBindingDescription.callocStack(1).apply {
+            binding(0)
+            stride(2 * 4 + 2 * 4 + 4 * 4)
+            inputRate(VK_VERTEX_INPUT_RATE_VERTEX)
+        }
+
+        val attributeDescriptions = VkVertexInputAttributeDescription.callocStack(3)
+        attributeDescriptions[0].apply {
+            binding(0)
+            location(guiShaderProgram.glslProgram.vertexInputs.find { it.name == "vertexIn" }?.location!! )
+            format(VK_FORMAT_R32G32_SFLOAT)
+            offset(0)
+        }
+
+        attributeDescriptions[1].apply {
+            binding(0)
+            location(guiShaderProgram.glslProgram.vertexInputs.find { it.name == "texCoordIn" }?.location!! )
+            format(VK_FORMAT_R32G32_SFLOAT)
+            offset(2 * 4)
+        }
+
+        attributeDescriptions[2].apply {
+            binding(0)
+            location(guiShaderProgram.glslProgram.vertexInputs.find { it.name == "colorIn" }?.location!! )
+            format(VK_FORMAT_R32G32B32A32_SFLOAT)
+            offset(2 * 4 + 2 * 4)
+        }
+
+        VkPipelineVertexInputStateCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO).apply {
+            pVertexBindingDescriptions(bindingDescription)
+            pVertexAttributeDescriptions(attributeDescriptions)
+        }
+    }
+
+    val descriptorPool = DescriptorPool(backend, guiShaderProgram)
 
     val sampler = VulkanSampler(backend)
 
-    val vertexBuffers: PerFrameResource<VulkanVertexBuffer>
+    val vertexBuffers: InflightFrameResource<VulkanVertexBuffer>
 
     init {
 
         stackPush()
 
-        vertexBuffers = PerFrameResource(backend) {
+        vertexBuffers = InflightFrameResource(backend) {
             VulkanVertexBuffer(backend, guiBufferSize.toLong())
         }
 
@@ -60,14 +95,38 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
                 stagingFloatBuffer.put(-1.0F + 2.0F * (a * sx))
                 stagingFloatBuffer.put(1.0F - 2.0F * (b * sy))
             }
+
+            fun texCoord(a: Float, b: Float) {
+                stagingFloatBuffer.put(a)
+                stagingFloatBuffer.put(b)
+            }
+
+            fun color() {
+                stagingFloatBuffer.put(color?.x() ?: 1.0F)
+                stagingFloatBuffer.put(color?.y() ?: 1.0F)
+                stagingFloatBuffer.put(color?.z() ?: 1.0F)
+                stagingFloatBuffer.put(color?.w() ?: 1.0F)
+            }
             
             vertex((startX), startY)
+            texCoord(textureStartX, textureStartY)
+            color()
             vertex((startX), (startY + height))
+            texCoord(textureStartX, textureEndY)
+            color()
             vertex((startX + width), (startY + height))
+            texCoord(textureEndX, textureEndY)
+            color()
 
             vertex((startX), startY)
+            texCoord(textureStartX, textureStartY)
+            color()
             vertex((startX + width), (startY))
+            texCoord(textureEndX, textureStartY)
+            color()
             vertex((startX + width), (startY + height))
+            texCoord(textureEndX, textureEndY)
+            color()
 
             stagingSize += 2
         }
@@ -114,7 +173,7 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
 
         pipeline.cleanup()
 
-        baseProgram.cleanup()
+        guiShaderProgram.cleanup()
 
         descriptorPool.cleanup()
 
