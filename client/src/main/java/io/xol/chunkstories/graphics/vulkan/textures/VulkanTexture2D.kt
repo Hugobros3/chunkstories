@@ -99,6 +99,16 @@ class VulkanTexture2D(val backend: VulkanGraphicsBackend, val operationsPool: Co
                 srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT
             }
 
+            (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED) and (newLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) -> {
+                // We want to write to the image in the transfer stage
+                dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT or VK_ACCESS_COLOR_ATTACHMENT_READ_BIT
+                dstStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT
+
+                // There is nothing writing to this image before us
+                srcAccessMask = 0
+                srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT
+            }
+
             (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) and (newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) -> {
                 // We want the shader reads in the fragment shader to be left alone !
                 dstAccessMask = VK_ACCESS_SHADER_READ_BIT

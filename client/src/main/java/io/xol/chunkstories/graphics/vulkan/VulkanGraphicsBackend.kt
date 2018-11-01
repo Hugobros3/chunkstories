@@ -2,6 +2,7 @@ package io.xol.chunkstories.graphics.vulkan
 
 import io.xol.chunkstories.api.graphics.rendergraph.Pass
 import io.xol.chunkstories.api.graphics.rendergraph.RegisteredDrawingSystem
+import io.xol.chunkstories.api.graphics.systems.drawing.FullscreenQuadDrawer
 import io.xol.chunkstories.api.gui.GuiDrawer
 import io.xol.chunkstories.client.glfw.GLFWWindow
 import io.xol.chunkstories.graphics.GLFWBasedGraphicsBackend
@@ -14,6 +15,7 @@ import io.xol.chunkstories.graphics.vulkan.shaders.VulkanShaderFactory
 import io.xol.chunkstories.graphics.vulkan.swapchain.SwapChain
 import io.xol.chunkstories.graphics.vulkan.swapchain.WindowSurface
 import io.xol.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
+import io.xol.chunkstories.graphics.vulkan.systems.VulkanFullscreenQuadDrawer
 import io.xol.chunkstories.graphics.vulkan.systems.VulkanGuiDrawer
 import io.xol.chunkstories.graphics.vulkan.textures.VulkanTextures
 import io.xol.chunkstories.graphics.vulkan.util.*
@@ -218,6 +220,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
 
         return when (declaredDrawingSystem.clazz) {
             GuiDrawer::class.java -> VulkanGuiDrawer(pass, window.client.gui)
+            FullscreenQuadDrawer::class.java -> VulkanFullscreenQuadDrawer(pass)
 
             else -> throw Exception("Unimplemented system on this backend: ${declaredDrawingSystem.clazz}")
         }

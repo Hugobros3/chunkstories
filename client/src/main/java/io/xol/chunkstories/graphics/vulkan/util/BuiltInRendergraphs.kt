@@ -12,6 +12,13 @@ object BuiltInRendergraphs {
     val onlyGuiRenderGraph : RenderGraphDeclarationScript = {
         renderBuffers {
             renderBuffer {
+                name = "menuBackground"
+
+                format = RGBA_8
+                size = viewportSize
+            }
+
+            renderBuffer {
                 name = "guiColorBuffer"
 
                 format = RGBA_8
@@ -21,7 +28,27 @@ object BuiltInRendergraphs {
 
         passes {
             pass {
+                name = "menuBackground"
+
+                draws {
+                    fullscreenQuad()
+                }
+
+                outputs {
+                    output {
+                        name = "menuBackground"
+                    }
+                }
+
+                depth {
+                    enabled = false
+                }
+            }
+
+            pass {
                 name = "gui"
+
+                dependsOn("menuBackground")
 
                 draws {
                     system(GuiDrawer::class)

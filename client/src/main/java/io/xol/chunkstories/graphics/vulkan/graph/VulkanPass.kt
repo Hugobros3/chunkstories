@@ -1,5 +1,6 @@
 package io.xol.chunkstories.graphics.vulkan.graph
 
+import io.xol.chunkstories.api.graphics.ImageInput
 import io.xol.chunkstories.api.graphics.rendergraph.Pass
 import io.xol.chunkstories.graphics.vulkan.CommandPool
 import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
@@ -19,15 +20,21 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
 
     val renderBuffers: List<VulkanRenderBuffer>
 
-    val renderPass: VkRenderPass
-    val framebuffer: VkFramebuffer
+    var renderPass: VkRenderPass = -1
+        private set
+    var framebuffer: VkFramebuffer = -1
+        private set
 
-    val drawingSystems: List<VulkanDrawingSystem>
+    lateinit var drawingSystems: List<VulkanDrawingSystem>
+        private set
 
     val passDoneSemaphore: VkSemaphore
 
     val commandPool = CommandPool(backend, backend.logicalDevice.graphicsQueue.family, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT or VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
     val commandBuffers: PerFrameResource<VkCommandBuffer>
+
+    /** Set late by the RenderGraph */
+    lateinit var passDependencies: List<VulkanPass>
 
     init {
         this.apply(config)
@@ -38,15 +45,6 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
 
         renderBuffers = outputs.map { output ->
             graph.buffers[output.outputBuffer ?: output.name] ?: throw Exception("Buffer ${output.outputBuffer} isn't declared !")
-        }
-
-        renderPass = createRenderPass()
-        framebuffer = createFramebuffer()
-
-        drawingSystems = mutableListOf()
-        for (declaredDrawingSystem in this.declaredDrawingSystems) {
-            val drawingSystem = backend.createDrawingSystem(this, declaredDrawingSystem)
-            drawingSystems.add(drawingSystem)
         }
 
         commandBuffers = PerFrameResource(backend) {
@@ -67,19 +65,60 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
         MemoryStack.stackPop()
     }
 
+    /** We need to know how the graph is laid out to feed Vulkan enough intel */
+    fun postGraphBuild() {
+        MemoryStack.stackPush()
+        renderPass = createRenderPass()
+        framebuffer = createFramebuffer()
+
+        val drawingSystems = mutableListOf<VulkanDrawingSystem>()
+        for (declaredDrawingSystem in this.declaredDrawingSystems) {
+            val drawingSystem = backend.createDrawingSystem(this, declaredDrawingSystem)
+            drawingSystems.add(drawingSystem)
+        }
+
+        this.drawingSystems = drawingSystems
+        MemoryStack.stackPop()
+    }
+
+    fun VulkanRenderBuffer.findPreviousUsage() : VulkanRenderBuffer.UsageState {
+        val thisPassIndex = graph.passesInOrder.indexOf(this@VulkanPass)
+        if(thisPassIndex == 0)
+            return VulkanRenderBuffer.UsageState.NONE
+
+        //Check all the previous pass to look for a previous usage
+        for(index in (thisPassIndex - 1) downTo 0) {
+            val usageThere = findUsageInPass(graph.passesInOrder[index])
+
+            if(usageThere != VulkanRenderBuffer.UsageState.NONE)
+                return usageThere
+        }
+
+        return VulkanRenderBuffer.UsageState.NONE
+    }
+
     private fun createRenderPass(): VkRenderPass {
         val attachmentDescription = VkAttachmentDescription.callocStack(outputs.size)
         outputs.mapIndexed { index, output ->
+            val renderbuffer = renderBuffers[index]
+
+            val previousUsage = renderbuffer.findPreviousUsage()
+            val currentUsage = VulkanRenderBuffer.UsageState.OUTPUT
+
             attachmentDescription[index].apply {
-                val renderbuffer = renderBuffers[index]
 
                 format(renderbuffer.format.vulkanFormat.ordinal)
                 samples(VK_SAMPLE_COUNT_1_BIT)
 
                 if (output.clear)
                     loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
-                else
-                    loadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
+                else {
+                    if(previousUsage == VulkanRenderBuffer.UsageState.NONE)
+                        loadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
+                    else
+                        loadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
+                }
+
                 //TODO use DONT_CARE when it can be determined we won't be needing the data
                 storeOp(VK_ATTACHMENT_STORE_OP_STORE)
 
@@ -87,9 +126,8 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
                 stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
                 stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
 
-                //TODO use a smarter layout
-                initialLayout(VK_IMAGE_LAYOUT_GENERAL)
-                finalLayout(VK_IMAGE_LAYOUT_GENERAL)
+                initialLayout(previousUsage.vkLayout)
+                finalLayout(currentUsage.vkLayout)
             }
         }
 
@@ -97,8 +135,8 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
         outputs.mapIndexed { index, output ->
             colorAttachmentReference[index].apply {
                 attachment(index)
-                //layout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-                layout(VK_IMAGE_LAYOUT_GENERAL)
+                layout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+                //layout(VK_IMAGE_LAYOUT_GENERAL)
             }
         }
 
@@ -208,6 +246,15 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
                 }
 
                 vkCmdBeginRenderPass(this, renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE)
+
+                // Transition image layouts now !
+
+                /*renderBuffers.forEach { renderBuffer ->
+                    val previousUsage = renderBuffer.findPreviousUsage()
+                    val currentUsage = VulkanRenderBuffer.UsageState.OUTPUT
+
+                    renderBuffer.transitionUsage(this, previousUsage, currentUsage)
+                }*/
 
                 for (drawingSystem in drawingSystems) {
                     drawingSystem.registerDrawingCommands(frame, this)
