@@ -298,7 +298,7 @@ public class TrueTypeFont implements Font {
 			short height = (short) bufferedImage.getHeight();
 
 			int bpp = (byte) bufferedImage.getColorModel().getPixelSize();
-			ByteBuffer byteBuffer;
+			ByteBuffer handles;
 			DataBuffer db = bufferedImage.getData().getDataBuffer();
 			if (db instanceof DataBufferInt) {
 				int intI[] = ((DataBufferInt) (bufferedImage.getData().getDataBuffer())).getData();
@@ -313,17 +313,17 @@ public class TrueTypeFont implements Font {
 					newI[newIndex + 3] = b[0];
 				}
 
-				byteBuffer = ByteBuffer.allocateDirect(width * height * (bpp / 8)).order(ByteOrder.nativeOrder())
+				handles = ByteBuffer.allocateDirect(width * height * (bpp / 8)).order(ByteOrder.nativeOrder())
 						.put(newI);
 			} else {
-				byteBuffer = ByteBuffer.allocateDirect(width * height * (bpp / 8)).order(ByteOrder.nativeOrder())
+				handles = ByteBuffer.allocateDirect(width * height * (bpp / 8)).order(ByteOrder.nativeOrder())
 						.put(((DataBufferByte) (bufferedImage.getData().getDataBuffer())).getData());
 			}
-			byteBuffer.flip();
+			handles.flip();
 
 			Texture2DGL texture = new Texture2DRenderTargetGL(TextureFormat.RGBA_8BPP, width, height);
 
-			texture.uploadTextureData(width, height, byteBuffer);
+			texture.uploadTextureData(width, height, handles);
 			texture.setLinearFiltering(false);
 			texture.setTextureWrapping(false);
 

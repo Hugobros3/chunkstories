@@ -6,7 +6,7 @@ import io.xol.chunkstories.api.graphics.structs.InterfaceBlock
 import io.xol.chunkstories.api.graphics.structs.UniformUpdateFrequency
 import io.xol.chunkstories.api.graphics.structs.UpdateFrequency
 import io.xol.chunkstories.graphics.vulkan.shaders.VulkanShaderFactory
-import io.xol.chunkstories.graphics.vulkan.textures.VirtualTexturing
+import io.xol.chunkstories.graphics.vulkan.textures.VirtualTexturingHelper
 import org.lwjgl.opengl.GL20.GL_SAMPLER_2D
 import org.slf4j.LoggerFactory
 import java.nio.ByteBuffer
@@ -252,8 +252,8 @@ object SpirvCrossHelper {
         val resources = resourcesBuckets.toList().merge().toMutableList()
 
         when (factory) {
-            is VulkanShaderFactory -> {
-                val virtualTexturingSlots = with(VirtualTexturing) { factory.backend.getNumberOfSlotsForVirtualTexturing(resources) }
+            /*is VulkanShaderFactory -> {
+                val virtualTexturingSlots = with(VirtualTexturingHelper) { factory.backend.getNumberOfSlotsForVirtualTexturing(resources) }
 
                 partiallyDecoratedShaderStages.forEach {
                     it.addHeaderLine("layout(set=0, location=0) uniform sampler2D virtualTextures[${virtualTexturingSlots}];")
@@ -272,7 +272,7 @@ object SpirvCrossHelper {
                 it.addHeaderLine("layout(set=0, location=0) uniform sampler2D virtualTextures[32];")
 
                 //TODO when that api works maybe ? it.shaderResources.sampledImages.pushBack(CombinedImageSampler())
-            }
+            }*/
         }
 
         val sources = mapOf(*(partiallyDecoratedShaderStages.mapIndexed{ index, compiler ->

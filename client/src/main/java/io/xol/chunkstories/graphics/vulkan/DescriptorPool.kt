@@ -182,7 +182,7 @@ class DescriptorPool(val backend: VulkanGraphicsBackend, val program: VulkanShad
         val setsCount = (1 + UniformUpdateFrequency.values().size)
         val sets = LongArray(setsCount)
 
-        for (setIndex in 0 until setsCount) {
+        for (setIndex in 1 until setsCount) {
             val set = descriptorSets[setIndex * backend.swapchain.maxFramesInFlight + frame.inflightFrameIndex]
             sets[setIndex] = set
         }

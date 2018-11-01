@@ -47,7 +47,7 @@ class VulkanUniformBuffer(backend: VulkanGraphicsBackend, val mapper: InterfaceB
                     fillMe.putFloat(vec.w)
                 }
 
-                else -> throw Exception("field type ${field.type} does not have a byteBuffer-filling branch")
+                else -> throw Exception("field type ${field.type} does not have a handles-filling branch")
             }
         }
 

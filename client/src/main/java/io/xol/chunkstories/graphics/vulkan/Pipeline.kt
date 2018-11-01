@@ -32,25 +32,6 @@ class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VkRenderPass,
         vertexStagesCreateInfos.forEach { shaderStagesCreateInfo.put(it) }
         shaderStagesCreateInfo.flip()
 
-        // Vertex input
-        // TODO obtain those from the shader program ?
-        /*val bindingDescription = VkVertexInputBindingDescription.callocStack(1).apply {
-            binding(0)
-            stride(2 * 4)
-            inputRate(VK_VERTEX_INPUT_RATE_VERTEX)
-        }
-
-        val attributeDescriptions = VkVertexInputAttributeDescription.callocStack(1).apply {
-            binding(0)
-            location(0)
-            format(VK_FORMAT_R32G32_SFLOAT)
-            offset(0)
-        }
-
-        val vertexInputInfo = VkPipelineVertexInputStateCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO).apply {
-            pVertexBindingDescriptions(bindingDescription)
-            pVertexAttributeDescriptions(attributeDescriptions)
-        }*/
         val vertexInputStateCreateInfo : VkPipelineVertexInputStateCreateInfo = vertexInputConfiguration()
 
         val inputAssemblyStateCreateInfo = VkPipelineInputAssemblyStateCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO).apply {
