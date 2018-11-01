@@ -19,6 +19,8 @@ class VirtualTexturingHelper(val backend: VulkanGraphicsBackend, val program: Vu
     val pool: VkDescriptorPool
     val sets: LongArray
 
+    val samplers: Array<VulkanSampler>
+
     init {
         stackPush()
 
@@ -26,6 +28,7 @@ class VirtualTexturingHelper(val backend: VulkanGraphicsBackend, val program: Vu
                 .find { it.name == "virtualTextures" } ?: throw Exception("You need a virtualTextures uniform to use virtual texturing.")
 
         SLICE_SIZE = vtResource.count
+        samplers = Array(SLICE_SIZE) { VulkanSampler(backend) }
 
         val resourcesSize = VkDescriptorPoolSize.callocStack(1).apply {
             type(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
@@ -115,7 +118,8 @@ class VirtualTexturingHelper(val backend: VulkanGraphicsBackend, val program: Vu
                         imageView(reverseContents[i].imageView)
                     else
                         imageView(reverseContents[0].imageView)
-                    sampler(tempSampler.handle)
+
+                    sampler(samplers[i].handle)
                 }
             }
 
@@ -152,6 +156,7 @@ class VirtualTexturingHelper(val backend: VulkanGraphicsBackend, val program: Vu
 
     override fun cleanup() {
         vkDestroyDescriptorPool(backend.logicalDevice.vkDevice, pool, null)
+        samplers.forEach(Cleanable::cleanup)
     }
 
     companion object {
