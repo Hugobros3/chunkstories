@@ -1,4 +1,5 @@
 #version 450
+
 layout(set=0, location=0) uniform sampler2D virtualTextures[32];
  
 in vec2 texCoord;

@@ -122,22 +122,23 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
             apiVersion(VK10.VK_MAKE_VERSION(1, 0, 2))
         }
 
-        val requestedExtensions = MemoryStack.stackMallocPointer(requiredExtensions.remaining() + 1)
-        requestedExtensions.put(requiredExtensions)
-        requestedExtensions.put(MemoryStack.stackUTF8(EXTDebugReport.VK_EXT_DEBUG_REPORT_EXTENSION_NAME))
-        requestedExtensions.flip()
+        val pRequestedInstanceExtensions = MemoryStack.stackMallocPointer(requiredExtensions.remaining() + 2)
+        pRequestedInstanceExtensions.put(requiredExtensions)
+        pRequestedInstanceExtensions.put(MemoryStack.stackUTF8(EXTDebugReport.VK_EXT_DEBUG_REPORT_EXTENSION_NAME))
+        pRequestedInstanceExtensions.put(stackUTF8("VK_KHR_get_physical_device_properties2"))
+        pRequestedInstanceExtensions.flip()
 
-        var requestedLayers: PointerBuffer? = null
+        var pRequestedLayers: PointerBuffer? = null
         if (enableValidation) {
-            requestedLayers = MemoryStack.stackCallocPointer(1)
-            requestedLayers.put(MemoryStack.stackUTF8("VK_LAYER_LUNARG_standard_validation"))
-            requestedLayers.flip()
+            pRequestedLayers = MemoryStack.stackCallocPointer(1)
+            pRequestedLayers.put(MemoryStack.stackUTF8("VK_LAYER_LUNARG_standard_validation"))
+            pRequestedLayers.flip()
         }
 
         val createInfoStruct = VkInstanceCreateInfo.callocStack().sType(VK10.VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO).apply {
             pApplicationInfo(appInfoStruct)
-            ppEnabledExtensionNames(requestedExtensions)
-            ppEnabledLayerNames(requestedLayers)
+            ppEnabledExtensionNames(pRequestedInstanceExtensions)
+            ppEnabledLayerNames(pRequestedLayers)
         }
 
         val pInstance = MemoryStack.stackMallocPointer(1)

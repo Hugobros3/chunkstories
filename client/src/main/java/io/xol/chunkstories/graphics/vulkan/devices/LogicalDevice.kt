@@ -66,8 +66,10 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
             requestedLayers.flip()
         }
 
-        val pRequiredExtensions = stackMallocPointer(backend.requiredDeviceExtensions.size)
-        backend.requiredDeviceExtensions.forEachIndexed { i, e -> pRequiredExtensions.put(i, stackUTF8(e)) }
+        val requestedExtensions = setOf("VK_EXT_descriptor_indexing", "VK_KHR_maintenance3").union(backend.requiredDeviceExtensions)
+
+        val pRequiredExtensions = stackMallocPointer(requestedExtensions.size)
+        requestedExtensions.forEachIndexed { i, e -> pRequiredExtensions.put(i, stackUTF8(e)) }
 
         val vkDeviceCreateInfo = VkDeviceCreateInfo.callocStack().sType(VK10.VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO).apply {
             pQueueCreateInfos(vkDeviceQueuesCreateInfo)

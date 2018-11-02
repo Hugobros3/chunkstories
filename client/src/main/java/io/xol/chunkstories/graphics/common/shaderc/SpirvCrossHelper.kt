@@ -6,7 +6,6 @@ import io.xol.chunkstories.api.graphics.structs.InterfaceBlock
 import io.xol.chunkstories.api.graphics.structs.UniformUpdateFrequency
 import io.xol.chunkstories.api.graphics.structs.UpdateFrequency
 import io.xol.chunkstories.graphics.vulkan.shaders.VulkanShaderFactory
-import io.xol.chunkstories.graphics.vulkan.textures.VirtualTexturingHelper
 import org.lwjgl.opengl.GL20.GL_SAMPLER_2D
 import org.slf4j.LoggerFactory
 import java.nio.ByteBuffer
@@ -58,7 +57,7 @@ object SpirvCrossHelper {
 
             ubosToProcess.addAll(preprocessed.uniformBlocks)
 
-            if(stage == ShaderStage.VERTEX) {
+            if (stage == ShaderStage.VERTEX) {
                 vertexInputsToProcess.addAll(preprocessed.vertexInputs)
             }
 
@@ -109,7 +108,7 @@ object SpirvCrossHelper {
 
         // TODO this is a hack because I can't use reflection to get info on the sampler itself
         val uniformTypeMap = mutableMapOf<String, Pair<Int, Int>>()
-        for(index in 0 until program.numLiveUniformVariables) {
+        for (index in 0 until program.numLiveUniformVariables) {
             uniformTypeMap[program.getUniformName(index)] = Pair(program.getUniformType(index), program.getUniformArraySize(index))
         }
 
@@ -129,7 +128,7 @@ object SpirvCrossHelper {
             //vertexInputBinding++
             //vertexInputLocation = 0
 
-            for(input in inputs) {
+            for (input in inputs) {
                 vertexInputs += ShaderFactory.GLSLVertexAttribute(input.name, input.type, vertexInputLocation++, input.instanced, interfaceBlock)
             }
         }
@@ -157,7 +156,7 @@ object SpirvCrossHelper {
             }
             compiler.options = options
 
-            fun KClass<InterfaceBlock>.updateFrequency(): UniformUpdateFrequency  =
+            fun KClass<InterfaceBlock>.updateFrequency(): UniformUpdateFrequency =
                     this.annotations.filterIsInstance<UpdateFrequency>().firstOrNull()?.frequency ?: UniformUpdateFrequency.ONCE_PER_BATCH
 
             val uniformBufferBlocks = compiler.shaderResources.uniformBuffers
@@ -179,7 +178,7 @@ object SpirvCrossHelper {
 
                     val updateFrequency = inlinedUBO.second.klass.updateFrequency()
 
-                    val descriptorSet = when(dialect) {
+                    val descriptorSet = when (dialect) {
                         ShaderFactory.GLSLDialect.OPENGL4 -> 0
                         ShaderFactory.GLSLDialect.VULKAN -> updateFrequency.ordinal + 1
                     }
@@ -202,7 +201,7 @@ object SpirvCrossHelper {
             }
 
             val samplers = compiler.shaderResources.sampledImages
-            for(i in 0 until samplers.size().toInt()) {
+            for (i in 0 until samplers.size().toInt()) {
                 val sampler = samplers[i]
 
                 val samplerName = sampler.name
@@ -218,7 +217,7 @@ object SpirvCrossHelper {
                 val descriptorSet = 0
                 val binding = resourcesBuckets[descriptorSet].size
 
-                resourcesBuckets[descriptorSet].add(when(samplerType) {
+                resourcesBuckets[descriptorSet].add(when (samplerType) {
                     GL_SAMPLER_2D -> ShaderFactory.GLSLUniformSampler2D(samplerName, descriptorSet, binding, samplerArraySize)
                     else -> ShaderFactory.GLSLUnusedUniform(samplerName, descriptorSet, binding)
                 })
@@ -229,15 +228,28 @@ object SpirvCrossHelper {
                 println("Bound Sampler $samplerName $samplerType to ($descriptorSet, $binding)")
             }
 
-            if(stage == ShaderStage.VERTEX) {
+            if (stage == ShaderStage.VERTEX) {
                 val declaredVertexInputs = compiler.shaderResources.stageInputs
 
-                for(i in 0 until declaredVertexInputs.size().toInt()) {
+                for (i in 0 until declaredVertexInputs.size().toInt()) {
                     val declaredVertexInput = declaredVertexInputs[i]
 
                     vertexInputs.find { it.name == declaredVertexInput.name }?.let { metadata ->
                         compiler.setDecoration(declaredVertexInput.id, Decoration.DecorationLocation, metadata.location.toLong())
                         println("Vertex input ${declaredVertexInput.name} assigned location ${metadata.location}")
+                    }
+                }
+            }
+
+            if (stage == ShaderStage.FRAGMENT) {
+                val stageInputs = compiler.shaderResources.stageInputs
+
+                for (i in 0 until stageInputs.size().toInt()) {
+                    val stageInput = stageInputs[i]
+
+                    println(stageInput.name + "st" + compiler.getType(stageInput.baseTypeId).basetype)
+                    if (stageInput.name.equals("textureId")) {
+                        //compiler.setDecoration(stageInput.id, 5300, 1)
                     }
                 }
             }
@@ -252,8 +264,8 @@ object SpirvCrossHelper {
         val resources = resourcesBuckets.toList().merge().toMutableList()
 
         when (factory) {
-            /*is VulkanShaderFactory -> {
-                val virtualTexturingSlots = with(VirtualTexturingHelper) { factory.backend.getNumberOfSlotsForVirtualTexturing(resources) }
+            is VulkanShaderFactory -> {
+                /*val virtualTexturingSlots = with(VirtualTexturingHelper) { factory.backend.getNumberOfSlotsForVirtualTexturing(resources) }
 
                 partiallyDecoratedShaderStages.forEach {
                     it.addHeaderLine("layout(set=0, location=0) uniform sampler2D virtualTextures[${virtualTexturingSlots}];")
@@ -263,7 +275,10 @@ object SpirvCrossHelper {
                 val descriptorSet = 0
                 val binding = resourcesBuckets[descriptorSet].size
 
-                resources.add(ShaderFactory.GLSLUniformSampler2D("virtualTextures", descriptorSet, binding, virtualTexturingSlots))
+                resources.add(ShaderFactory.GLSLUniformSampler2D("virtualTextures", descriptorSet, binding, virtualTexturingSlots))*/
+
+                val fragmentStageIndex = stages.indexOf(stages.find { it.stage == ShaderStage.FRAGMENT })
+                partiallyDecoratedShaderStages[fragmentStageIndex].addHeaderLine("#extension GL_EXT_nonuniform_qualifier : require")
             }
             //TODO OpenGL 4
 
@@ -272,12 +287,24 @@ object SpirvCrossHelper {
                 it.addHeaderLine("layout(set=0, location=0) uniform sampler2D virtualTextures[32];")
 
                 //TODO when that api works maybe ? it.shaderResources.sampledImages.pushBack(CombinedImageSampler())
-            }*/
+            }
         }
 
-        val sources = mapOf(*(partiallyDecoratedShaderStages.mapIndexed{ index, compiler ->
-            Pair(stages[index].stage, compiler.compile())
+        val sources = mapOf(*(partiallyDecoratedShaderStages.mapIndexed { index, compiler ->
+            var compiledSource = compiler.compile()
+
+            if (dialect == ShaderFactory.GLSLDialect.VULKAN) {
+                // Like, I could do this stuff cleanly using reflection and put the correct decoration in the spirvcode...
+                // But this works and stops me from wasting my time fighting the spirvcross swig nonsense
+                compiledSource = compiledSource.replace(Regex("virtualTextures\\[(([a-z]|[A-Z]).*)\\]")) {
+                    "virtualTextures[nonuniformEXT(${it.groupValues[1]})]"
+                }
+            }
+
+            Pair(stages[index].stage, compiledSource)
         }).toTypedArray())
+
+        println(sources[ShaderStage.FRAGMENT])
 
         return ShaderFactory.GLSLProgram(sources, vertexInputs, resources)
     }
@@ -334,7 +361,7 @@ object SpirvCrossHelper {
 
         libspirvcrossj.finalizeProcess()
 
-        return GeneratedSpirV(transpiledGLSL, stages.associateBy({it.stage},  { it.generateSpirV() }))
+        return GeneratedSpirV(transpiledGLSL, stages.associateBy({ it.stage }, { it.generateSpirV() }))
 
         //return GeneratedSpirV(transpiledGLSL, mapOf(*stages.map { Pair(it.stage, it.generateSpirV()) }.toTypedArray()))
     }

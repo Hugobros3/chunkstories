@@ -15,6 +15,9 @@ subprojects {
 		maven { url "http://maven.xol.io/repository/public/" }
 		maven { url 'https://jitpack.io' }
 		maven { url 'http://dl.bintray.com/kotlin/kotlin-eap'}
+		maven {
+			url 'http://oss.sonatype.org/content/repositories/snapshots/'
+		}
 	}
 	
 	buildscript {
