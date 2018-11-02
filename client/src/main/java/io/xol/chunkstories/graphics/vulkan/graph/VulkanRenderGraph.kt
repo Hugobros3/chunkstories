@@ -241,6 +241,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, script: RenderGraphD
     }
 
     fun resizeBuffers() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        buffers.values.forEach { it.resize() }
+        passes.values.forEach { it.recreateFramebuffer() }
     }
 }

@@ -170,6 +170,7 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
     }
 
     private fun createFramebuffer(): VkFramebuffer {
+        stackPush()
         val pAttachments = stackMallocLong(outputs.size)
 
         outputRenderBuffers.forEach { renderBuffer -> pAttachments.put(renderBuffer.texture.imageView) }
@@ -185,7 +186,9 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
 
         val pFramebuffer = stackMallocLong(1)
         vkCreateFramebuffer(backend.logicalDevice.vkDevice, framebufferCreateInfo, null, pFramebuffer).ensureIs("Failed to create framebuffer", VK_SUCCESS)
-        return pFramebuffer.get(0)
+        val handle = pFramebuffer.get(0)
+        stackPop()
+        return handle
     }
 
     //TODO for now let's assume there is only one pass so we can use head/tail semaphores from the frame object
@@ -281,6 +284,11 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
 
             vkQueueSubmit(backend.logicalDevice.graphicsQueue.handle, submitInfo, /*frame.renderFinishedFence*/ VK_NULL_HANDLE).ensureIs("Failed to submit command buffer", VK_SUCCESS)
         }
+    }
+
+    fun recreateFramebuffer() {
+        vkDestroyFramebuffer(backend.logicalDevice.vkDevice, framebuffer, null)
+        framebuffer = createFramebuffer()
     }
 
     override fun cleanup() {

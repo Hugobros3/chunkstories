@@ -3,6 +3,7 @@ package io.xol.chunkstories.graphics.vulkan.graph
 import io.xol.chunkstories.api.graphics.ImageInput
 import io.xol.chunkstories.api.graphics.TextureFormat
 import io.xol.chunkstories.api.graphics.rendergraph.RenderBuffer
+import io.xol.chunkstories.graphics.common.DummyRenderBuffer
 import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import io.xol.chunkstories.graphics.vulkan.resources.Cleanable
 import io.xol.chunkstories.graphics.vulkan.textures.VulkanTexture2D
@@ -11,10 +12,11 @@ import org.lwjgl.system.MemoryStack.stackPush
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 import org.lwjgl.vulkan.VkImageMemoryBarrier
+import org.slf4j.LoggerFactory
 
-class VulkanRenderBuffer(backend: VulkanGraphicsBackend, graph: VulkanRenderGraph, config: RenderBuffer.() -> Unit) : RenderBuffer(), Cleanable {
+class VulkanRenderBuffer(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGraph, val config: RenderBuffer.() -> Unit) : RenderBuffer(), Cleanable {
 
-    override val texture: VulkanTexture2D
+    override lateinit var texture: VulkanTexture2D
 
     /** Set late by the RenderGraph */
     lateinit var layoutPerStage: Map<VulkanPass, Int>
@@ -43,10 +45,15 @@ class VulkanRenderBuffer(backend: VulkanGraphicsBackend, graph: VulkanRenderGrap
         //texture.transitionToRenderBufferLayout()
     }
 
-    //TODO handle resizes ?
-
-    override fun cleanup() {
-        texture.cleanup()
+    fun resize() {
+        val scratchBuffer = DummyRenderBuffer().apply(config)
+        val newSize = scratchBuffer.size
+        if(newSize != size) {
+            logger.debug("Resizing render buffer $name")
+            size = newSize
+            texture.cleanup()
+            texture = VulkanTexture2D(backend, graph.commandPool, format, size.x, size.y, usage.usageBits())
+        }
     }
 
     enum class UsageState(val vkLayout: Int) {
@@ -66,6 +73,10 @@ class VulkanRenderBuffer(backend: VulkanGraphicsBackend, graph: VulkanRenderGrap
 
         //TODO if no blend we might not even need the read thing
         UsageState.OUTPUT -> VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT or VK_ACCESS_COLOR_ATTACHMENT_READ_BIT
+    }
+
+    override fun cleanup() {
+        texture.cleanup()
     }
 
     fun transitionUsage(commandBuffer: VkCommandBuffer, previousUsage: UsageState, newUsage: UsageState) {
@@ -119,6 +130,10 @@ class VulkanRenderBuffer(backend: VulkanGraphicsBackend, graph: VulkanRenderGrap
         }}
 
         return VulkanRenderBuffer.UsageState.NONE
+    }
+
+    companion object {
+        val logger = LoggerFactory.getLogger("client.vulkan")
     }
 }
 
