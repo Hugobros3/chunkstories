@@ -66,7 +66,10 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
             requestedLayers.flip()
         }
 
-        val requestedExtensions = setOf("VK_EXT_descriptor_indexing", "VK_KHR_maintenance3").union(backend.requiredDeviceExtensions)
+        var requestedExtensions = backend.requiredDeviceExtensions.toSet()
+
+        if(backend.doNonUniformSamplerArrayAccess)
+            requestedExtensions = setOf("VK_EXT_descriptor_indexing", "VK_KHR_maintenance3").union(requestedExtensions)
 
         val pRequiredExtensions = stackMallocPointer(requestedExtensions.size)
         requestedExtensions.forEachIndexed { i, e -> pRequiredExtensions.put(i, stackUTF8(e)) }

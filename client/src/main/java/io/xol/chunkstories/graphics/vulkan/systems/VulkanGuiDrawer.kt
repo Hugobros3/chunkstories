@@ -2,12 +2,14 @@ package io.xol.chunkstories.graphics.vulkan.systems
 
 import io.xol.chunkstories.api.gui.Font
 import io.xol.chunkstories.graphics.common.DummyGuiDrawer
-import io.xol.chunkstories.graphics.vulkan.*
+import io.xol.chunkstories.graphics.vulkan.DescriptorPool
+import io.xol.chunkstories.graphics.vulkan.Pipeline
+import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import io.xol.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
 import io.xol.chunkstories.graphics.vulkan.graph.VulkanPass
+import io.xol.chunkstories.graphics.vulkan.resources.InflightFrameResource
 import io.xol.chunkstories.graphics.vulkan.shaders.UniformTestOffset
 import io.xol.chunkstories.graphics.vulkan.swapchain.Frame
-import io.xol.chunkstories.graphics.vulkan.resources.InflightFrameResource
 import io.xol.chunkstories.graphics.vulkan.textures.VirtualTexturingHelper
 import io.xol.chunkstories.graphics.vulkan.textures.VulkanSampler
 import io.xol.chunkstories.graphics.vulkan.textures.VulkanTexture2D
@@ -15,10 +17,13 @@ import io.xol.chunkstories.gui.ClientGui
 import org.joml.Vector4f
 import org.joml.Vector4fc
 import org.lwjgl.system.MemoryStack
-import org.lwjgl.system.MemoryStack.*
+import org.lwjgl.system.MemoryStack.stackPush
 import org.lwjgl.system.MemoryUtil
-import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
+import org.lwjgl.vulkan.VkCommandBuffer
+import org.lwjgl.vulkan.VkPipelineVertexInputStateCreateInfo
+import org.lwjgl.vulkan.VkVertexInputAttributeDescription
+import org.lwjgl.vulkan.VkVertexInputBindingDescription
 import org.slf4j.LoggerFactory
 
 internal const val guiBufferSize = 16384
@@ -40,28 +45,28 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
         val attributeDescriptions = VkVertexInputAttributeDescription.callocStack(4)
         attributeDescriptions[0].apply {
             binding(0)
-            location(guiShaderProgram.glslProgram.vertexInputs.find { it.name == "vertexIn" }?.location!! )
+            location(guiShaderProgram.glslProgram.vertexInputs.find { it.name == "vertexIn" }?.location!!)
             format(VK_FORMAT_R32G32_SFLOAT)
             offset(0)
         }
 
         attributeDescriptions[1].apply {
             binding(0)
-            location(guiShaderProgram.glslProgram.vertexInputs.find { it.name == "texCoordIn" }?.location!! )
+            location(guiShaderProgram.glslProgram.vertexInputs.find { it.name == "texCoordIn" }?.location!!)
             format(VK_FORMAT_R32G32_SFLOAT)
             offset(2 * 4)
         }
 
         attributeDescriptions[2].apply {
             binding(0)
-            location(guiShaderProgram.glslProgram.vertexInputs.find { it.name == "colorIn" }?.location!! )
+            location(guiShaderProgram.glslProgram.vertexInputs.find { it.name == "colorIn" }?.location!!)
             format(VK_FORMAT_R32G32B32A32_SFLOAT)
             offset(2 * 4 + 2 * 4)
         }
 
         attributeDescriptions[3].apply {
             binding(0)
-            location(guiShaderProgram.glslProgram.vertexInputs.find { it.name == "textureIdIn" }?.location!! )
+            location(guiShaderProgram.glslProgram.vertexInputs.find { it.name == "textureIdIn" }?.location!!)
             format(VK_FORMAT_R32_SINT)
             offset(2 * 4 + 2 * 4 + 4 * 4)
         }
@@ -84,7 +89,7 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
     }
 
     val virtualTexturing = VirtualTexturingHelper(backend, guiShaderProgram)
-    lateinit var virtualTexturingContext : VirtualTexturingHelper.VirtualTexturingContext
+    lateinit var virtualTexturingContext: VirtualTexturingHelper.VirtualTexturingContext
 
     /** Accumulation for GUI contents */
     val stagingByteBuffer = MemoryUtil.memAlloc(guiBufferSize)
@@ -112,15 +117,15 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
                 stagingByteBuffer.putFloat(color?.z() ?: 1.0F)
                 stagingByteBuffer.putFloat(color?.w() ?: 1.0F)
             }
-            
+
             fun textureId(id: Int) {
                 stagingByteBuffer.putInt(id)
             }
 
-            //println(texture)
+            val vulkanTexture = (if (texture != null) backend.textures.getOrLoadTexture2D(texture) else backend.textures.defaultTexture2D)
+                            as VulkanTexture2D
 
-            val texture = if(texture != null ) backend.textures.getOrLoadTexture2D(texture) else backend.textures.defaultTexture2D
-            val translatedId = virtualTexturingContext.translate(texture as VulkanTexture2D)
+            val translatedId = virtualTexturingContext.translate(vulkanTexture)
 
             vertex((startX), startY)
             texCoord(textureStartX, textureStartY)
@@ -159,12 +164,12 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
             drawBox(posx, posy, width, height, texture, Vector4f(1.0F))
         }
 
-        override fun drawString(font: Font, xPosition: Int, yPosition: Int, text: String, color: Vector4fc) {
-            println(text)
+        override fun drawString(font: Font, xPosition: Int, yPosition: Int, text: String, cutoffLength: Int, color: Vector4fc) {
+
         }
     }
 
-    override fun registerDrawingCommands(frame : Frame, commandBuffer: VkCommandBuffer) {
+    override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer) {
         stackPush().use {
             stagingByteBuffer.clear()
             //stagingFloatBuffer.clear()

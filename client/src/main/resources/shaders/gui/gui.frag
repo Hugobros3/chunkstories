@@ -11,4 +11,5 @@ out vec4 fragColor;
 void main()
 {
 	fragColor = texture(virtualTextures[textureId], texCoord);
+	//fragColor = vec4(texture(virtualTextures[textureId], texCoord).a, 0.0, 1.0, 0.5);
 }

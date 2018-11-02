@@ -32,7 +32,8 @@ import org.slf4j.LoggerFactory
 import java.awt.image.BufferedImage
 
 class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(window) {
-    internal val enableValidation = true
+    internal var enableValidation = false
+    internal var doNonUniformSamplerArrayAccess = false
 
     val requiredDeviceExtensions = listOf(KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME)
 
@@ -122,10 +123,13 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
             apiVersion(VK10.VK_MAKE_VERSION(1, 0, 2))
         }
 
-        val pRequestedInstanceExtensions = MemoryStack.stackMallocPointer(requiredExtensions.remaining() + 2)
+        val additionalInstanceExtensions = mutableSetOf(EXTDebugReport.VK_EXT_DEBUG_REPORT_EXTENSION_NAME)
+        if(doNonUniformSamplerArrayAccess)
+            additionalInstanceExtensions += "VK_KHR_get_physical_device_properties2"
+
+        val pRequestedInstanceExtensions = MemoryStack.stackMallocPointer(requiredExtensions.remaining() + additionalInstanceExtensions.size)
         pRequestedInstanceExtensions.put(requiredExtensions)
-        pRequestedInstanceExtensions.put(MemoryStack.stackUTF8(EXTDebugReport.VK_EXT_DEBUG_REPORT_EXTENSION_NAME))
-        pRequestedInstanceExtensions.put(stackUTF8("VK_KHR_get_physical_device_properties2"))
+        additionalInstanceExtensions.forEach { extensionName -> pRequestedInstanceExtensions.put(stackUTF8(extensionName)) }
         pRequestedInstanceExtensions.flip()
 
         var pRequestedLayers: PointerBuffer? = null
