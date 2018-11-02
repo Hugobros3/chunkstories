@@ -68,23 +68,23 @@ class VirtualTexturingHelper(val backend: VulkanGraphicsBackend, val program: Vu
     fun begin(commandBuffer: VkCommandBuffer, pipeline: Pipeline, tempSampler: VulkanSampler, callback: () -> Unit) =
             VirtualTexturingContext(commandBuffer, pipeline, tempSampler, callback)
 
-
-    sealed class Result {
-        class Mapping(val drawcallId: Int) : Result()
-        object Failure : Result()
-    }
-
     inner class VirtualTexturingContext(val commandBuffer: VkCommandBuffer, val pipeline: Pipeline, val tempSampler: VulkanSampler, val callback: () -> Unit) {
         var slice = 0
         val sliceContents = mutableMapOf<VulkanTexture2D, Int>()
         val reverseContents = mutableListOf<VulkanTexture2D>()
         var nextId = 0
 
+        init {
+            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 0, stackLongs(sets[slice]), null)
+        }
+
         fun translate(texture: VulkanTexture2D): Int {
             if (sliceContents.size == SLICE_SIZE) {
                 writeCurrentSlice()
                 nextSlice()
-                //return Result.Failure
+
+                //TODO only do this once I'm sure the next slice will be used
+                vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 0, stackLongs(sets[slice]), null)
             }
 
             val id = sliceContents[texture] ?: let {
@@ -139,7 +139,6 @@ class VirtualTexturingHelper(val backend: VulkanGraphicsBackend, val program: Vu
         }
 
         fun nextSlice() {
-            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 0, stackLongs(sets[slice]), null)
             callback()
 
             slice++

@@ -89,7 +89,10 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
     }
 
     val virtualTexturing = VirtualTexturingHelper(backend, guiShaderProgram)
+
+    //TODO this is hacky af, fix this plz
     lateinit var virtualTexturingContext: VirtualTexturingHelper.VirtualTexturingContext
+    lateinit var commandBuffer: VkCommandBuffer
 
     /** Accumulation for GUI contents */
     val stagingByteBuffer = MemoryUtil.memAlloc(guiBufferSize)
@@ -157,6 +160,8 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
             color()
             textureId(translatedId)
 
+            vkCmdDraw(commandBuffer, 3 * 2, 1, 3 * stagingSize, 0)
+
             stagingSize += 2
         }
 
@@ -171,33 +176,34 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
 
     override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer) {
         stackPush().use {
+            // Write the commands in the command buffer
+            vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
+            //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 1, descriptorPool.setsForFrame(frame), null as? IntArray)
+            vkCmdBindVertexBuffers(commandBuffer, 0, MemoryStack.stackLongs(vertexBuffers[frame].handle), MemoryStack.stackLongs(0))
+
             stagingByteBuffer.clear()
             //stagingFloatBuffer.clear()
             stagingSize = 0
 
+            this.commandBuffer = commandBuffer
             virtualTexturingContext = virtualTexturing.begin(commandBuffer, pipeline, sampler) {
 
             }
             gui.topLayer?.render(drawer)
             virtualTexturingContext.finish()
 
-            // Rewrite the vertex buffer
+            // Upload the vertex buffer contents
             vertexBuffers[frame].apply {
                 stagingByteBuffer.flip()
                 this.upload(stagingByteBuffer)
             }
 
-            val testOffset = UniformTestOffset()
-            testOffset.offset.x = (Math.random().toFloat() - 0.5F) * 0.2F
-
+            //val testOffset = UniformTestOffset()
+            //testOffset.offset.x = (Math.random().toFloat() - 0.5F) * 0.2F
             //descriptorPool.configure(frame, testOffset)
             //descriptorPool.configureTextureAndSampler(frame, "diffuseTexture", backend.textures.defaultTexture2D as VulkanTexture2D, sampler)
 
-            // Write the commands in the command buffer
-            vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
-            //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 1, descriptorPool.setsForFrame(frame), null as? IntArray)
-            vkCmdBindVertexBuffers(commandBuffer, 0, MemoryStack.stackLongs(vertexBuffers[frame].handle), MemoryStack.stackLongs(0))
-            vkCmdDraw(commandBuffer, 3 * stagingSize, 1, 0, 0) // that's rather anticlimactic
+            //vkCmdDraw(commandBuffer, 3 * stagingSize, 1, 0, 0)
         }
     }
 
