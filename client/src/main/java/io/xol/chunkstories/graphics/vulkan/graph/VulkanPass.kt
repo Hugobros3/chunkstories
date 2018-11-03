@@ -236,7 +236,7 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
                     val clearColor = VkClearValue.callocStack(1).apply {
                         color().float32().apply {
                             this.put(0, 1.0F)
-                            this.put(1, 1.0F)
+                            this.put(1, 0.0F)
                             this.put(2, 1.0F)
                             this.put(3, 1.0F)
                         }
