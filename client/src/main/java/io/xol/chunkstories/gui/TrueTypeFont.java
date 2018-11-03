@@ -55,12 +55,12 @@ public class TrueTypeFont implements Font {
 	/**
 	 * Default font texture width
 	 */
-	private int textureWidth = 512;
+	public static int textureWidth = 512;
 
 	/**
 	 * Default font texture height
 	 */
-	private int textureHeight = 512;
+	public static int textureHeight = 512;
 
 	/**
 	 * A reference to Java's AWT Font that we create our font texture from
@@ -291,6 +291,8 @@ public class TrueTypeFont implements Font {
 	public int getLineHeight() {
 		return fontHeight;
 	}
+
+
 
 	/*public static Texture2DGL loadImageIntoOpenGLTexture(int offset, BufferedImage bufferedImage) {
 		try {
