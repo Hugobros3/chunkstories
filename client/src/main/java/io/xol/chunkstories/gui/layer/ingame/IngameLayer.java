@@ -20,7 +20,8 @@ import io.xol.chunkstories.api.gui.Layer;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse.MouseScroll;
 import io.xol.chunkstories.api.item.inventory.ItemPile;
-import io.xol.chunkstories.api.util.Configuration.OptionBoolean;
+import io.xol.chunkstories.api.util.configuration.Configuration;
+import io.xol.chunkstories.client.InternalClientOptions;
 import io.xol.chunkstories.client.ingame.IngameClientImplementation;
 import io.xol.chunkstories.gui.InventoryGridRenderer;
 import io.xol.chunkstories.gui.layer.ingame.ChatManager.ChatPanelOverlay;
@@ -181,7 +182,7 @@ public class IngameLayer extends Layer {
 		} else if (input.equals("screenshot")) {
 			client.getGameWindow().takeScreenshot();
 		} else if (input.equals("toggleDebugInfo")) {
-			OptionBoolean debugInfo = client.getConfiguration().get("client.debug.showDebugInfo");
+			Configuration.OptionBoolean debugInfo = client.getConfiguration().get(InternalClientOptions.INSTANCE.getShowDebugInformation());
 			debugInfo.toggle();
 			guiHidden = false;
 			return true;

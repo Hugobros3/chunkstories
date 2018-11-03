@@ -34,24 +34,24 @@ public class Lwjgl3Mouse implements Mouse {
 
 	@Override
 	public MouseButton getMainButton() {
-		return im.LEFT;
+		return im.getLEFT();
 	}
 
 	@Override
 	public MouseButton getSecondaryButton() {
-		return im.RIGHT;
+		return im.getRIGHT();
 	}
 
 	@Override
 	public MouseButton getMiddleButton() {
-		return im.MIDDLE;
+		return im.getMIDDLE();
 	}
 
 	public Vector2d getMousePosition() {
 		DoubleBuffer b1 = MemoryUtil.memAllocDouble(1);
 		DoubleBuffer b2 = MemoryUtil.memAllocDouble(1);
-		glfwGetCursorPos(im.gameWindow.getGlfwWindowHandle(), b1, b2);
-		Vector2d vec2 = new Vector2d(b1.get(), im.gameWindow.getHeight() - b2.get());
+		glfwGetCursorPos(im.getGameWindow().getGlfwWindowHandle(), b1, b2);
+		Vector2d vec2 = new Vector2d(b1.get(), im.getGameWindow().getHeight() - b2.get());
 		MemoryUtil.memFree(b1);
 		MemoryUtil.memFree(b2);
 
@@ -70,17 +70,17 @@ public class Lwjgl3Mouse implements Mouse {
 
 	@Override
 	public void setMouseCursorLocation(double x, double y) {
-		glfwSetCursorPos(im.gameWindow.getGlfwWindowHandle(), x, y);
+		glfwSetCursorPos(im.getGameWindow().getGlfwWindowHandle(), x, y);
 	}
 
 	@Override
 	public boolean isGrabbed() {
-		return glfwGetInputMode(im.gameWindow.getGlfwWindowHandle(), GLFW_CURSOR) == GLFW_CURSOR_DISABLED;
+		return glfwGetInputMode(im.getGameWindow().getGlfwWindowHandle(), GLFW_CURSOR) == GLFW_CURSOR_DISABLED;
 	}
 
 	@Override
 	public void setGrabbed(boolean grabbed) {
-		glfwSetInputMode(this.im.gameWindow.getGlfwWindowHandle(), GLFW_CURSOR,
+		glfwSetInputMode(this.im.getGameWindow().getGlfwWindowHandle(), GLFW_CURSOR,
 				grabbed ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
 	}
 
@@ -89,7 +89,7 @@ public class Lwjgl3Mouse implements Mouse {
 
 			@Override
 			public Client getClient() {
-				return im.gameWindow.getClient();
+				return im.getGameWindow().getClient();
 			}
 
 			@Override

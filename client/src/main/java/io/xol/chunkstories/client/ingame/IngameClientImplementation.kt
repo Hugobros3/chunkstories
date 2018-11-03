@@ -10,7 +10,7 @@ import io.xol.chunkstories.api.graphics.systems.dispatching.DecalsManager
 import io.xol.chunkstories.api.gui.Gui
 import io.xol.chunkstories.api.particles.ParticlesManager
 import io.xol.chunkstories.api.plugin.ClientPluginManager
-import io.xol.chunkstories.api.util.Configuration
+import io.xol.chunkstories.api.util.configuration.Configuration
 import io.xol.chunkstories.api.workers.Tasks
 import io.xol.chunkstories.api.world.WorldMaster
 import io.xol.chunkstories.client.ClientImplementation

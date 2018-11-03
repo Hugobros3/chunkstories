@@ -17,7 +17,7 @@ import java.util.List;
 import io.xol.chunkstories.api.gui.Gui;
 import io.xol.chunkstories.api.gui.GuiDrawer;
 import io.xol.chunkstories.api.gui.elements.LargeButtonWithIcon;
-import io.xol.chunkstories.api.util.Configuration;
+import io.xol.chunkstories.api.util.configuration.Configuration;
 import io.xol.chunkstories.localization.LocalizationManagerImplementation;
 import org.joml.Vector4f;
 import org.lwjgl.glfw.GLFW;

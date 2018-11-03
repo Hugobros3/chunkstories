@@ -16,6 +16,8 @@ import io.xol.chunkstories.api.client.IngameClient;
 import io.xol.chunkstories.api.gui.Font;
 import io.xol.chunkstories.api.gui.Gui;
 import io.xol.chunkstories.api.gui.GuiDrawer;
+import io.xol.chunkstories.api.util.configuration.Configuration;
+import io.xol.chunkstories.client.InternalClientOptions;
 import org.joml.Vector4f;
 
 import io.xol.chunkstories.api.content.mods.Mod;
@@ -25,7 +27,6 @@ import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse.MouseScroll;
 import io.xol.chunkstories.api.plugin.ChunkStoriesPlugin;
 import io.xol.chunkstories.api.util.ColorsTools;
-import io.xol.chunkstories.client.ClientLimitations;
 import io.xol.chunkstories.world.WorldClientLocal;
 import io.xol.chunkstories.world.WorldClientRemote;
 
@@ -34,7 +35,7 @@ public class ChatManager {
 	private final IngameClient ingameClient;
 	private final Gui gui;
 
-	private int chatHistorySize = 150;
+	private final int chatHistorySize = 150;
 
 	private Deque<ChatLine> chat = new ConcurrentLinkedDeque<ChatLine>();
 	private List<String> sent = new ArrayList<String>();
@@ -135,9 +136,6 @@ public class ChatManager {
 				else
 					scroll--;
 			}
-			/*
-			 * else { sentHistory = 0; inputBox.input(k); }
-			 */
 			inputBox.handleInput(input);
 
 			return true;
@@ -241,9 +239,7 @@ public class ChatManager {
 				int i = 0;
 				for (Mod mod : ingameClient.getContent().modsManager().getCurrentlyLoadedMods()) {
 					i++;
-					list += mod.getModInfo().getName()
-							+ (i == ingameClient.getContent().modsManager().getCurrentlyLoadedMods().size() ? ""
-									: ", ");
+					list += mod.getModInfo().getName() + (i == ingameClient.getContent().modsManager().getCurrentlyLoadedMods().size() ? "" : ", ");
 				}
 
 				if (ingameClient.getWorld() instanceof WorldClientLocal)
@@ -262,7 +258,8 @@ public class ChatManager {
 			chat.clear();
 		} else if (input.equals("I am Mr Debug")) {
 			// it was you this whole time
-			ClientLimitations.isDebugAllowed = true;
+			Configuration.OptionBoolean option = ingameClient.getConfiguration().get(InternalClientOptions.INSTANCE.getDebugMode());
+			option.trySetting(true);
 		}
 
 		if (ingameClient.getWorld() instanceof WorldClientRemote)

@@ -6,25 +6,22 @@
 
 package io.xol.chunkstories.gui.layer.config;
 
-import static org.lwjgl.glfw.GLFW.glfwGetKeyName;
+import io.xol.chunkstories.api.gui.Gui;
+import io.xol.chunkstories.api.gui.GuiDrawer;
+import io.xol.chunkstories.api.gui.Layer;
+import io.xol.chunkstories.api.gui.elements.Button;
+import io.xol.chunkstories.api.gui.elements.LargeButtonWithIcon;
+import io.xol.chunkstories.api.input.Input;
+import io.xol.chunkstories.api.input.Mouse;
+import io.xol.chunkstories.api.input.Mouse.MouseButton;
+import io.xol.chunkstories.api.util.configuration.Configuration;
+import io.xol.chunkstories.api.util.configuration.Configuration.*;
+import org.joml.Vector4f;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import io.xol.chunkstories.api.gui.Gui;
-import io.xol.chunkstories.api.gui.GuiDrawer;
-import io.xol.chunkstories.api.gui.elements.LargeButtonWithIcon;
-import io.xol.chunkstories.api.util.Configuration;
-import io.xol.chunkstories.client.ClientImplementation;
-import org.joml.Vector4f;
-
-import io.xol.chunkstories.api.gui.Layer;
-import io.xol.chunkstories.api.gui.elements.Button;
-import io.xol.chunkstories.api.input.Input;
-import io.xol.chunkstories.api.input.Mouse;
-import io.xol.chunkstories.api.input.Mouse.MouseButton;
-import io.xol.chunkstories.api.util.Configuration.Option;
-import io.xol.chunkstories.api.util.Configuration.OptionBoolean;
+import static org.lwjgl.glfw.GLFW.glfwGetKeyName;
 
 public class OptionsScreen extends Layer {
 	private LargeButtonWithIcon exitButton = new LargeButtonWithIcon(this, "back");
@@ -73,8 +70,7 @@ public class OptionsScreen extends Layer {
 			option = o;
 		}
 
-		@Override
-		public void onClick(float posx, float posy, int button) {
+		@Override public void onClick(float posx, float posy, int button) {
 			option.toggle();
 		}
 
@@ -100,8 +96,7 @@ public class OptionsScreen extends Layer {
 			}
 		}
 
-		@Override
-		public void onClick(float posx, float posy, int button) {
+		@Override public void onClick(float posx, float posy, int button) {
 			if (button == 0)
 				cuVal++;
 			else
@@ -123,13 +118,12 @@ public class OptionsScreen extends Layer {
 			this.option = option;
 		}
 
-		@Override
-		public void updateText() {
-			this.text = gui.localization().getLocalizedString(option.getName()) + " : " + glfwGetKeyName(option.getValue(), 0);// Keyboard.getKeyName(Integer.parseInt(value));
+		@Override public void updateText() {
+			this.text = gui.localization().getLocalizedString(option.getName()) + " : " + glfwGetKeyName(option.getValue(),
+					0);// Keyboard.getKeyName(Integer.parseInt(value));
 		}
 
-		@Override
-		public void onClick(float posx, float posy, int button) {
+		@Override public void onClick(float posx, float posy, int button) {
 			gui.setTopLayer(new KeyBindSelectionOverlay(gui, OptionsScreen.this, this));
 		}
 
@@ -148,8 +142,7 @@ public class OptionsScreen extends Layer {
 			this.option = o;
 		}
 
-		@Override
-		public void onClick(float mouseX, float mouseY, int button) {
+		@Override public void onClick(float mouseX, float mouseY, int button) {
 			double relativeMouseXPosition = mouseX - this.getPositionX();
 			double newValue = (0.0 + Math.min(320.0, Math.max(0.0, relativeMouseXPosition))) / 320.0f;
 			newValue *= (option.getMaximumValue() - option.getMinimumValue());
@@ -164,11 +157,11 @@ public class OptionsScreen extends Layer {
 			option.trySetting(newValue);
 		}
 
-		@Override
-		public void render(GuiDrawer drawer) {
+		@Override public void render(GuiDrawer drawer) {
 			double value = option.getValue();
 
-			this.text = gui.localization().getLocalizedString(option.getName()) + " : " + String.format("%." + 3 + "G", value);// Keyboard.getKeyName(Integer.parseInt(value));
+			this.text = gui.localization().getLocalizedString(option.getName()) + " : " + String
+					.format("%." + 3 + "G", value);// Keyboard.getKeyName(Integer.parseInt(value));
 
 			String localizedText = gui.localization().localize(text);
 			int textWidth = gui.getFonts().defaultFont().getWidth(localizedText);
@@ -213,8 +206,7 @@ public class OptionsScreen extends Layer {
 
 		exitButton.setAction(new Runnable() {
 
-			@Override
-			public void run() {
+			@Override public void run() {
 				gui.getClient().getConfiguration().save();
 				gui.setTopLayer(parentLayer);
 			}
@@ -277,8 +269,7 @@ public class OptionsScreen extends Layer {
 			// Make the action of the tab buttons switching tab effectively
 			final int configTabIndex2 = configTabIndex;
 			tabButton.setAction(new Runnable() {
-				@Override
-				public void run() {
+				@Override public void run() {
 					selectedConfigTab = configTabIndex2;
 				}
 
@@ -299,8 +290,7 @@ public class OptionsScreen extends Layer {
 		}
 	}
 
-	@Override
-	public void render(GuiDrawer renderer) {
+	@Override public void render(GuiDrawer renderer) {
 		// this.renderer = renderer;
 		parentLayer.getRootLayer().render(renderer);
 
@@ -308,7 +298,8 @@ public class OptionsScreen extends Layer {
 
 		// Shades the BG
 		renderer.drawBox(0, 0, gui.getViewportWidth(), gui.getViewportHeight(), new Vector4f(0.0f, 0.0f, 0.0f, 0.5f));
-		renderer.drawBox(gui.getViewportWidth() / 2 - optionsPanelSize / 2, 0, gui.getViewportWidth() / 2 + optionsPanelSize / 2, gui.getViewportHeight(), new Vector4f(0.0f, 0.0f, 0.0f, 0.5f));
+		renderer.drawBox(gui.getViewportWidth() / 2 - optionsPanelSize / 2, 0, gui.getViewportWidth() / 2 + optionsPanelSize / 2, gui.getViewportHeight(),
+				new Vector4f(0.0f, 0.0f, 0.0f, 0.5f));
 
 		// Render the tabs buttons
 		int dekal = 16;
@@ -343,16 +334,14 @@ public class OptionsScreen extends Layer {
 			b = a % 2;
 		}
 
-		renderer.drawStringWithShadow(renderer.getFonts().getFont("LiberationSans-Regular", 11),
-				gui.getViewportWidth() / 2 - optionsPanelSize / 2 + 16, gui.getViewportHeight() - 32,
-				gui.localization().getLocalizedString("options.title"), -1, new Vector4f(1));
+		renderer.drawStringWithShadow(renderer.getFonts().getFont("LiberationSans-Regular", 11), gui.getViewportWidth() / 2 - optionsPanelSize / 2 + 16,
+				gui.getViewportHeight() - 32, gui.localization().getLocalizedString("options.title"), -1, new Vector4f(1));
 
 		exitButton.setPosition(8, 8);
 		exitButton.render(renderer);
 	}
 
-	@Override
-	public boolean handleInput(Input input) {
+	@Override public boolean handleInput(Input input) {
 		if (input.getName().equals("exit")) {
 			clientConfiguration.save();
 			gui.popTopLayer();
@@ -361,8 +350,7 @@ public class OptionsScreen extends Layer {
 			MouseButton mb = (MouseButton) input;
 			for (ConfigButton b : configTabs.get(selectedConfigTab).configButtons) {
 				if (b.isMouseOver()) {
-					b.onClick((float) mb.getMouse().getCursorX(), (float) mb.getMouse().getCursorY(),
-							mb.getName().equals("mouse.left") ? 0 : 1);
+					b.onClick((float) mb.getMouse().getCursorX(), (float) mb.getMouse().getCursorY(), mb.getName().equals("mouse.left") ? 0 : 1);
 					b.apply();
 				}
 			}

@@ -9,7 +9,7 @@ package io.xol.chunkstories.gui.layer.config;
 import io.xol.chunkstories.api.gui.Font;
 import io.xol.chunkstories.api.gui.Gui;
 import io.xol.chunkstories.api.gui.GuiDrawer;
-import io.xol.chunkstories.api.util.Configuration;
+import io.xol.chunkstories.api.util.configuration.Configuration;
 import org.joml.Vector4f;
 
 import io.xol.chunkstories.api.gui.Layer;

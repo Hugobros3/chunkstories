@@ -30,7 +30,7 @@ public class InputsLoaderHelper {
 	}
 
 	public static void loadKeyBindsIntoManager(InputsManagerLoader inputManager, ModsManager modsManager) {
-		for(Asset asset : modsManager.getAllAssetsByExtension("input")) {
+		for(Asset asset : modsManager.getAllAssetsByExtension("inputs")) {
 			loadKeyBindsFile(asset, inputManager);
 		}
 	}
@@ -46,7 +46,7 @@ public class InputsLoaderHelper {
 		String inputValue;
 		String inputType;
 
-		// Read until we getVoxelComponent a good one
+		// Read until we get a good one
 		String line = "";
 		try {
 			while ((line = reader.readLine()) != null) {
@@ -69,18 +69,6 @@ public class InputsLoaderHelper {
 
 						inputManager.insertInput(inputType, inputName, inputValue, arguments);
 					}
-
-					/*
-					 * if (splitted.length >= 3) { if (inputManager instanceof
-					 * Lwjgl2ClientInputsManager) { if (splitted[0].equals("keyBind")) { input = new
-					 * KeyBindImplementation(splitted[1], splitted[2]); for(int i = 3; i <
-					 * splitted.length; i++) { if(splitted[i].equals("hidden"))
-					 * ((KeyBindImplementation) input).setEditable(false); } return true; } } else
-					 * if(inputManager instanceof ServerInputsManager) { input = new
-					 * InputVirtual(splitted[1]); return true; } } else if(splitted.length >= 2) {
-					 * if (splitted[0].equals("virtual")) { input = new InputVirtual(splitted[1]);
-					 * return true; } }
-					 */
 				}
 			}
 			reader.close();

@@ -17,7 +17,7 @@ import io.xol.chunkstories.api.gui.elements.ScrollableContainer;
 import io.xol.chunkstories.api.gui.elements.ScrollableContainer.ContainerElement;
 import io.xol.chunkstories.api.input.Input;
 import io.xol.chunkstories.api.input.Mouse.MouseButton;
-import io.xol.chunkstories.api.util.Configuration;
+import io.xol.chunkstories.api.util.configuration.Configuration;
 import io.xol.chunkstories.content.GameDirectory;
 import io.xol.chunkstories.gui.layer.ServerSelection.ServerSelectionZone.ServerGuiItem;
 import io.xol.chunkstories.gui.layer.ingame.RemoteConnectionGuiLayer;

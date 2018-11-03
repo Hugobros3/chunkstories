@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.xol.chunkstories.api.plugin.ServerPluginManager;
 import io.xol.chunkstories.api.server.Server;
-import io.xol.chunkstories.api.util.Configuration;
+import io.xol.chunkstories.api.util.configuration.Configuration;
 import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.world.WorldInfoUtilKt;

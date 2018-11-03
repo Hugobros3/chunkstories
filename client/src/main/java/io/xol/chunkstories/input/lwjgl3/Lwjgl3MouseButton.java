@@ -44,12 +44,12 @@ public class Lwjgl3MouseButton implements MouseButton, Pollable {
 
 	@Override
 	public void updateStatus() {
-		isDown = glfwGetMouseButton(mouse.im.gameWindow.getGlfwWindowHandle(), button) == GLFW_PRESS;
+		isDown = glfwGetMouseButton(mouse.im.getGameWindow().getGlfwWindowHandle(), button) == GLFW_PRESS;
 	}
 
 	@Override
 	public Client getClient() {
-		return mouse.im.gameWindow.getClient();
+		return mouse.im.getGameWindow().getClient();
 	}
 
 	@Override

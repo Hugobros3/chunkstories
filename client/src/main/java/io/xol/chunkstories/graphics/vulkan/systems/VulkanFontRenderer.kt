@@ -10,6 +10,7 @@ import io.xol.chunkstories.api.graphics.TextureFormat
 import io.xol.chunkstories.api.gui.Font
 import io.xol.chunkstories.api.math.HexTools
 import io.xol.chunkstories.api.util.ColorsTools
+import io.xol.chunkstories.graphics.common.util.toByteBuffer
 import io.xol.chunkstories.graphics.vulkan.CommandPool
 import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import io.xol.chunkstories.graphics.vulkan.buffers.VulkanBuffer
@@ -60,6 +61,7 @@ class VulkanFontRenderer(internal val backend: VulkanGraphicsBackend) : Cleanabl
 			if (currentLineTotalLength < clipX / scaleX)
 				totalwidth += (clipX / scaleX - currentLineTotalLength) / 2;
 		}*/
+        var charsThisLine = 0
         while (i < whatchars.length) {
             charCurrent = whatchars[i].toInt()
 
@@ -72,7 +74,7 @@ class VulkanFontRenderer(internal val backend: VulkanGraphicsBackend) : Cleanabl
             fun createPage() : VulkanTexture2D {
                 val image = trueTypeFont.createPage(charCurrent / 256)
 
-                val byteBuffer = toByteBuffer(image!!)
+                val byteBuffer = image!!.toByteBuffer()
 
                 val stagingBuffer = VulkanBuffer(backend, byteBuffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT)
                 val pageTexture = VulkanTexture2D(backend, commandPool, TextureFormat.RGBA_8, TrueTypeFont.textureWidth, TrueTypeFont.textureHeight, VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT)
@@ -107,6 +109,7 @@ class VulkanFontRenderer(internal val backend: VulkanGraphicsBackend) : Cleanabl
                 } else if (charCurrent == '\n'.toInt()) {
                     startY -= trueTypeFont.height.toFloat()
                     totalwidth = 0
+                    charsThisLine = 0
 
                     if (lineI < lines.size - 1)
                         lineI++
@@ -119,9 +122,13 @@ class VulkanFontRenderer(internal val backend: VulkanGraphicsBackend) : Cleanabl
                     if (clip && totalwidth + glyph.width > clipX / scaleX) {
                         startY -= trueTypeFont.height.toFloat()
                         totalwidth = 0
-                        continue
+                        charsThisLine = 0
+
+                        if(charsThisLine > 0)
+                            continue
                     }
 
+                    charsThisLine++
                     drawer.drawQuad(totalwidth * scaleX + x, startY * scaleY + y, glyph.width * scaleX,
                             glyph.height * scaleY, glyph.x.toFloat() / TrueTypeFont.textureWidth,
                             (glyph.y + glyph.height).toFloat() / TrueTypeFont.textureHeight,
@@ -139,31 +146,6 @@ class VulkanFontRenderer(internal val backend: VulkanGraphicsBackend) : Cleanabl
         }
     }
 
-    companion object {
-
-        fun toByteBuffer(image: BufferedImage): ByteBuffer {
-            val data = IntArray(image.width * image.height)
-            image.getRGB(0, 0, image.width, image.height, data, 0, image.width)
-
-            val buffer = ByteBuffer.allocateDirect(4 * image.width * image.height)// BufferUtils.createByteBuffer(4
-            // * image.getWidth() *
-            // image.getHeight());
-
-            for (y in 0 until image.height) {
-                for (x in 0 until image.width) {
-                    val pixel = data[y * image.width + x]
-                    buffer.put((pixel shr 16 and 0xFF).toByte())
-                    buffer.put((pixel shr 8 and 0xFF).toByte())
-                    buffer.put((pixel and 0xFF).toByte())
-                    buffer.put((pixel shr 24 and 0xFF).toByte())
-                }
-            }
-
-            buffer.flip()
-
-            return buffer
-        }
-    }
     override fun cleanup() {
         texturePages.forEach {
             it.value.values.forEach(Cleanable::cleanup)
@@ -171,4 +153,5 @@ class VulkanFontRenderer(internal val backend: VulkanGraphicsBackend) : Cleanabl
 
         commandPool.cleanup()
     }
+
 }

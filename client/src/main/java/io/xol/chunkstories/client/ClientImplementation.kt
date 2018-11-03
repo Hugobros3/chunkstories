@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory
 
 import io.xol.chunkstories.Constants
 import io.xol.chunkstories.api.client.ClientIdentity
-import io.xol.chunkstories.api.util.Configuration
+import io.xol.chunkstories.api.util.configuration.Configuration
 import io.xol.chunkstories.content.GameDirectory
 import io.xol.chunkstories.gui.layer.LoginPrompt
 import io.xol.chunkstories.gui.layer.SkyBoxBackground
@@ -62,6 +62,8 @@ class ClientImplementation internal constructor(coreContentLocation: File, modsS
         // Name the thread
         Thread.currentThread().name = "Main thread"
         Thread.currentThread().priority = Constants.MAIN_THREAD_PRIORITY
+
+        configuration.addOptions(InternalClientOptions.options)
 
         // Start logging system
         val cal = Calendar.getInstance()
@@ -146,40 +148,38 @@ class ClientImplementation internal constructor(coreContentLocation: File, modsS
 
             var modsStringArgument: String? = null
             for (launchArgument in launchArguments) {
-                if (launchArgument == "--forceobsolete") {
+                when {
+                    launchArgument == "--forceobsolete" -> //TODO ClientLimitations.ignoreObsoleteHardware = false
+                        println("Ignoring hardware checks. This is absolutely definitely not going to make the game run, proceed at your own risk of imminent failure." + "You are stripped of any tech support rights when running the game using this.")
+                    launchArgument.contains("--mods") -> modsStringArgument = launchArgument.replace("--mods=", "")
+                    launchArgument.contains("--dir") -> GameDirectory.set(launchArgument.replace("--dir=", ""))
+                    launchArgument.contains("--core") -> {
+                        val coreContentLocationPath = launchArgument.replace("--core=", "")
+                        coreContentLocation = File(coreContentLocationPath)
+                    }
+                    else -> {
+                        var helpText = "Chunk Stories client " + VersionInfo.version + "\n"
 
-                    ClientLimitations.ignoreObsoleteHardware = false
-                    println(
-                            "Ignoring hardware checks. This is absolutely definitely not going to make the game run, proceed at your own risk of imminent failure." + "You are stripped of any tech support rights when running the game using this.")
-                } else if (launchArgument.contains("--mods")) {
-                    modsStringArgument = launchArgument.replace("--mods=", "")
-                } else if (launchArgument.contains("--dir")) {
-                    GameDirectory.set(launchArgument.replace("--dir=", ""))
-                } else if (launchArgument.contains("--core")) {
-                    val coreContentLocationPath = launchArgument.replace("--core=", "")
-                    coreContentLocation = File(coreContentLocationPath)
-                } else {
-                    var helpText = "Chunk Stories client " + VersionInfo.version + "\n"
+                        if (launchArgument == "-h" || launchArgument == "--help")
+                            helpText += "Command line help: \n"
+                        else
+                            helpText += "Unrecognized command: $launchArgument\n"
 
-                    if (launchArgument == "-h" || launchArgument == "--help")
-                        helpText += "Command line help: \n"
-                    else
-                        helpText += "Unrecognized command: $launchArgument\n"
+                        helpText += "--forceobsolete Forces the game to run even if requirements aren't met. No support will be offered when using this! \n"
+                        helpText += "--mods=xxx,yyy | -mods=* Tells the game to start with those mods enabled\n"
+                        helpText += "--dir=whatever Tells the game not to look for .chunkstories at it's normal location and instead use the argument\n"
+                        helpText += "--core=whaterverfolder/ or --core=whatever.zip Tells the game to use some specific folder or archive as it's base content.\n"
 
-                    helpText += "--forceobsolete Forces the game to run even if requirements aren't met. No support will be offered when using this! \n"
-                    helpText += "--mods=xxx,yyy | -mods=* Tells the game to start with those mods enabled\n"
-                    helpText += "--dir=whatever Tells the game not to look for .chunkstories at it's normal location and instead use the argument\n"
-                    helpText += "--core=whaterverfolder/ or --core=whatever.zip Tells the game to use some specific folder or archive as it's base content.\n"
-
-                    println(helpText)
-                    return
+                        println(helpText)
+                        return
+                    }
                 }
             }
 
             ClientImplementation(coreContentLocation, modsStringArgument)
 
             // Not supposed to happen, gets there when ClientImplementation crashes badly.
-            System.exit(-1)
+            //System.exit(-1)
         }
     }
 }

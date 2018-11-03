@@ -1,5 +1,6 @@
 package io.xol.chunkstories.gui
 
+import glm_.closestPointToLines
 import io.xol.chunkstories.api.gui.Fonts
 import io.xol.chunkstories.api.gui.Gui
 import io.xol.chunkstories.api.gui.Layer
@@ -14,8 +15,7 @@ val logger = LoggerFactory.getLogger("client.gui")
 class ClientGui(override val client: ClientImplementation) : Gui {
 
     override val fonts: Fonts by lazy { FontsLibrary(client.content) }
-    override val mouse: Mouse
-        get() = client.inputsManager.getMouse()
+
     override var topLayer: Layer? = null
 
     //TODO make this configurable
@@ -33,6 +33,14 @@ class ClientGui(override val client: ClientImplementation) : Gui {
         get() = client.gameWindow.width / guiScale
     override val viewportHeight: Int
         get() = client.gameWindow.height / guiScale
+
+    // Fake out the mouse object
+    override val mouse : Mouse by lazy {
+        object : Mouse by client.inputsManager.mouse {
+            override fun getCursorX() = client.inputsManager.mouse.cursorX / guiScale
+            override fun getCursorY() = client.inputsManager.mouse.cursorY / guiScale
+        }
+    }
 
     override fun hasFocus() = client.gameWindow.hasFocus()
 

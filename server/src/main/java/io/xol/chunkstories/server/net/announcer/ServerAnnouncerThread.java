@@ -6,7 +6,7 @@
 
 package io.xol.chunkstories.server.net.announcer;
 
-import io.xol.chunkstories.api.util.Configuration;
+import io.xol.chunkstories.api.util.configuration.Configuration;
 import io.xol.chunkstories.net.http.HttpRequests;
 import io.xol.chunkstories.server.DedicatedServer;
 import io.xol.chunkstories.util.VersionInfo;

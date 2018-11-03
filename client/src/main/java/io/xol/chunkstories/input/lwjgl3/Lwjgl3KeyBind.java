@@ -12,7 +12,7 @@ import static org.lwjgl.glfw.GLFW.glfwGetKey;
 import io.xol.chunkstories.api.client.Client;
 import io.xol.chunkstories.api.client.IngameClient;
 import io.xol.chunkstories.api.input.KeyboardKeyInput;
-import io.xol.chunkstories.api.util.Configuration;
+import io.xol.chunkstories.api.util.configuration.Configuration;
 import io.xol.chunkstories.input.Pollable;
 
 /**
@@ -36,7 +36,7 @@ public class Lwjgl3KeyBind extends Lwjgl3Input implements KeyboardKeyInput, Poll
 		this.defaultKey = GLFWKeyIndexHelper.getGlfwKeyByName(defaultKeyName);
 		this.GLFW_key = defaultKey;
 
-		Client client = inputsManager.gameWindow.getClient();
+		Client client = inputsManager.getGameWindow().getClient();
 		Configuration clientConfiguration = client.getConfiguration();
 
 		option = clientConfiguration.new OptionInt("client.input.bind." + name, defaultKey);
@@ -64,7 +64,7 @@ public class Lwjgl3KeyBind extends Lwjgl3Input implements KeyboardKeyInput, Poll
 	/** Returns true if the key is pressed and we're either not ingame or there is no GUI overlay blocking gameplay input */
 	@Override
 	public boolean isPressed() {
-		IngameClient ingameClient = inputsManager.gameWindow.getClient().getIngame();
+		IngameClient ingameClient = inputsManager.getGameWindow().getClient().getIngame();
 		if (ingameClient != null)
 			return isDown && ingameClient.getPlayer().hasFocus();
 		return isDown;
@@ -79,7 +79,7 @@ public class Lwjgl3KeyBind extends Lwjgl3Input implements KeyboardKeyInput, Poll
 
 	@Override
 	public void updateStatus() {
-		isDown = glfwGetKey(im.gameWindow.getGlfwWindowHandle(), GLFW_key) == GLFW_PRESS;
+		isDown = glfwGetKey(im.getGameWindow().getGlfwWindowHandle(), GLFW_key) == GLFW_PRESS;
 	}
 
 	/**

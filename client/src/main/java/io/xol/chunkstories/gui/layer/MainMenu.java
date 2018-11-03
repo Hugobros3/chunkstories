@@ -84,14 +84,11 @@ public class MainMenu extends Layer {
 		Vector4f noticeColor = new Vector4f(0.5f);
 		String version = "Chunk Stories Client " + VersionInfo.version;
 		drawer.getFonts().defaultFont().getWidth(version);
-		drawer.drawString(drawer.getFonts().defaultFont(), 4, 0, version,
-				1, noticeColor);
+		drawer.drawString(drawer.getFonts().defaultFont(), 4, 0, version,-1, noticeColor);
 
 		String copyrightNotice = "https://github.com/Hugobros3/chunkstories";
 		int noticeDekal = drawer.getFonts().defaultFont().getWidth(copyrightNotice);
-		drawer.drawString(drawer.getFonts().defaultFont(),
-				gui.getViewportWidth() - noticeDekal - 4, 0, copyrightNotice, 1,
-				noticeColor);
+		drawer.drawString(drawer.getFonts().defaultFont(), gui.getViewportWidth() - noticeDekal - 4, 0, copyrightNotice, -1, noticeColor);
 
 	}
 
