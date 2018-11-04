@@ -36,7 +36,7 @@ object BuiltInRendergraphs {
 
                 outputs {
                     output {
-                        name = "menuBackground"
+                        name = "guiColorBuffer"
                     }
                 }
 
@@ -58,7 +58,7 @@ object BuiltInRendergraphs {
                     output {
                         name = "guiColorBuffer"
 
-                        clear = true
+                        //clear = true
                         blending = MIX
                     }
                 }

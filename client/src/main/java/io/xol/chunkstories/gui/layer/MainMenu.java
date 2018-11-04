@@ -61,7 +61,7 @@ public class MainMenu extends Layer {
 		int spacing = 4;
 		int buttonsAreaSize = largeSingleplayer.getWidth() * 2 + spacing;
 
-		int leftButtonX = this.getWidth() / 2 - buttonsAreaSize / 2;
+		int leftButtonX = gui.getViewportWidth() / 2 - buttonsAreaSize / 2;
 
 		int ySmall = 12;
 		int yBig = ySmall + largeSingleplayer.getHeight() + (spacing);
@@ -89,7 +89,6 @@ public class MainMenu extends Layer {
 		String copyrightNotice = "https://github.com/Hugobros3/chunkstories";
 		int noticeDekal = drawer.getFonts().defaultFont().getWidth(copyrightNotice);
 		drawer.drawString(drawer.getFonts().defaultFont(), gui.getViewportWidth() - noticeDekal - 4, 0, copyrightNotice, -1, noticeColor);
-
 	}
 
 	@Override

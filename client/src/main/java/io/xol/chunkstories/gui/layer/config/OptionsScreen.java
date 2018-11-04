@@ -56,7 +56,7 @@ public class OptionsScreen extends Layer {
 		}
 
 		public void updateText() {
-			this.text = gui.localization().getLocalizedString(option.getName()) + " : " + option.getValue();
+			this.setText(gui.localization().getLocalizedString(option.getName()) + " : " + option.getValue());
 		}
 
 		public abstract void onClick(float posx, float posy, int button);
@@ -119,8 +119,7 @@ public class OptionsScreen extends Layer {
 		}
 
 		@Override public void updateText() {
-			this.text = gui.localization().getLocalizedString(option.getName()) + " : " + glfwGetKeyName(option.getValue(),
-					0);// Keyboard.getKeyName(Integer.parseInt(value));
+			this.setText(gui.localization().getLocalizedString(option.getName()) + " : " + glfwGetKeyName(option.getValue(), 0));// Keyboard.getKeyName(Integer.parseInt(value));
 		}
 
 		@Override public void onClick(float posx, float posy, int button) {
@@ -160,10 +159,9 @@ public class OptionsScreen extends Layer {
 		@Override public void render(GuiDrawer drawer) {
 			double value = option.getValue();
 
-			this.text = gui.localization().getLocalizedString(option.getName()) + " : " + String
-					.format("%." + 3 + "G", value);// Keyboard.getKeyName(Integer.parseInt(value));
+			this.setText(gui.localization().getLocalizedString(option.getName()) + " : " + String.format("%." + 3 + "G", value));// Keyboard.getKeyName(Integer.parseInt(value));
 
-			String localizedText = gui.localization().localize(text);
+			String localizedText = gui.localization().localize(getText());
 			int textWidth = gui.getFonts().defaultFont().getWidth(localizedText);
 			if (width < 0) {
 				width = textWidth;
@@ -298,7 +296,7 @@ public class OptionsScreen extends Layer {
 
 		// Shades the BG
 		renderer.drawBox(0, 0, gui.getViewportWidth(), gui.getViewportHeight(), new Vector4f(0.0f, 0.0f, 0.0f, 0.5f));
-		renderer.drawBox(gui.getViewportWidth() / 2 - optionsPanelSize / 2, 0, gui.getViewportWidth() / 2 + optionsPanelSize / 2, gui.getViewportHeight(),
+		renderer.drawBox(gui.getViewportWidth() / 2 - optionsPanelSize / 2, 0, optionsPanelSize, gui.getViewportHeight(),
 				new Vector4f(0.0f, 0.0f, 0.0f, 0.5f));
 
 		// Render the tabs buttons
@@ -319,7 +317,7 @@ public class OptionsScreen extends Layer {
 		Mouse mouse = gui.getMouse();
 
 		for (ConfigButton c : currentConfigTab.configButtons) {
-			c.setPosition(startPosX + b * (160 + 16), startPosY - a * 16);
+			c.setPosition(startPosX + b * (160 + 16), startPosY - (a / 2) * 16);
 			c.updateText();
 			c.render(renderer);
 

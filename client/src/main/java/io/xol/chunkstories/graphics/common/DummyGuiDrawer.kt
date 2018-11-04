@@ -42,7 +42,10 @@ open class DummyGuiDrawer(override val gui: Gui) : GuiDrawer {
             drawString(fonts.defaultFont(), xPosition, yPosition, text, -1, color)
 
     override fun drawStringWithShadow(font: Font, xPosition: Int, yPosition: Int, text: String, cutoffLength: Int, color: Vector4fc) {
-        val colorDarkened = Vector4f(color).mul(0.5F)
+        val colorDarkened = Vector4f(color)
+        colorDarkened.x *= 0.25f
+        colorDarkened.y *= 0.25f
+        colorDarkened.z *= 0.25f
         drawString(font, xPosition + 1, yPosition - 1, text, cutoffLength, colorDarkened)
         drawString(font, xPosition, yPosition, text, cutoffLength, color)
     }

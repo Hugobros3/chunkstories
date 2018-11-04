@@ -21,7 +21,7 @@ class RemoteConnectionGuiLayer(scene: Gui, parent: Layer, private val connection
     internal var exitButton = Button(this, 0, 0, 160, "#{connection.cancel}")
 
     init {
-        this.exitButton.setAction { gui.client.ingame?.exitToMainMenu() ?: let { gui.topLayer = MainMenu(gui, null) } }
+        this.exitButton.action = Runnable { gui.client.ingame?.exitToMainMenu() ?: let { gui.topLayer = MainMenu(gui, null) } }
         elements.add(exitButton)
     }
 
@@ -44,7 +44,7 @@ class RemoteConnectionGuiLayer(scene: Gui, parent: Layer, private val connection
                 gui.viewportHeight / 2 + 32 * 3, color + currentConnectionStep, -1,
                 Vector4f(1f))
 
-        exitButton.setPosition(gui.viewportWidth / 2 - exitButton.getWidth() / 2,
+        exitButton.setPosition(gui.viewportWidth / 2 - exitButton.width / 2,
                 gui.viewportHeight / 2 - 24)
 
         exitButton.render(drawer)

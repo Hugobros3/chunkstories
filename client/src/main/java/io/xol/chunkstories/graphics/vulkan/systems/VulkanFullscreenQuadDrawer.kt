@@ -41,7 +41,7 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
     init {
         val vertices = floatArrayOf(
                 -1.0F, -1.0F,
-                0.0F, 1.0F,
+                -1.0F, 1.0F,
                 1.0F, 1.0F,
                 -1.0F, -1.0F,
                 1.0F, -1.0F,
