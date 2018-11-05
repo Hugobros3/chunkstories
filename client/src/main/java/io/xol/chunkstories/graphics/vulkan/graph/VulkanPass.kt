@@ -315,7 +315,7 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
                     if(depth.enabled) {
                         val depthBufferAttachmentIndex = outputRenderBuffers.size
                         clearColor[depthBufferAttachmentIndex].let {
-                            it.depthStencil().depth(0f)
+                            it.depthStencil().depth(1f)
                         }
                     }
 

@@ -64,7 +64,7 @@ class Pipeline(val backend: VulkanGraphicsBackend, val pass: VulkanPass, val pro
         }
 
         val depthStencilStateCreateInfo = VkPipelineDepthStencilStateCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO).apply {
-            //depthTestEnable(pass.depth.enabled)
+            depthTestEnable(pass.depth.enabled)
             depthWriteEnable(pass.depth.write)
 
             depthCompareOp(when(pass.depth.mode) {

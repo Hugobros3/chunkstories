@@ -77,7 +77,7 @@ object SpirvCrossHelper {
             messages = messages or EShMessages.EShMsgSpvRules
 
             val parse = stage.tShader.parse(ressources, 450, false, messages)
-            if (parse) logger.debug("parse OK") else {
+            if (parse) logger.debug("parse1 OK") else {
                 logger.warn(stage.tShader.infoLog)
                 logger.warn(stage.tShader.infoDebugLog)
             }
