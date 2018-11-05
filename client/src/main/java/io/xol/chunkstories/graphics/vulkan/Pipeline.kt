@@ -1,6 +1,9 @@
 package io.xol.chunkstories.graphics.vulkan
 
 import io.xol.chunkstories.api.graphics.ShaderStage
+import io.xol.chunkstories.api.graphics.rendergraph.DepthTestingConfiguration
+import io.xol.chunkstories.api.graphics.rendergraph.DepthTestingConfiguration.DepthTestMode.*
+import io.xol.chunkstories.graphics.vulkan.graph.VulkanPass
 import io.xol.chunkstories.graphics.vulkan.shaders.VulkanShaderFactory
 import io.xol.chunkstories.graphics.vulkan.util.VkPipeline
 import io.xol.chunkstories.graphics.vulkan.util.VkPipelineLayout
@@ -11,7 +14,7 @@ import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 
-class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VkRenderPass, val program: VulkanShaderFactory.VulkanicShaderProgram, vertexInputConfiguration: () -> VkPipelineVertexInputStateCreateInfo) {
+class Pipeline(val backend: VulkanGraphicsBackend, val pass: VulkanPass, val program: VulkanShaderFactory.VulkanicShaderProgram, vertexInputConfiguration: () -> VkPipelineVertexInputStateCreateInfo) {
     val layout: VkPipelineLayout
     val handle: VkPipeline
 
@@ -34,6 +37,7 @@ class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VkRenderPass,
 
         val vertexInputStateCreateInfo : VkPipelineVertexInputStateCreateInfo = vertexInputConfiguration()
 
+        // TODO get those from the VulkanPass
         val inputAssemblyStateCreateInfo = VkPipelineInputAssemblyStateCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO).apply {
             topology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST)
             primitiveRestartEnable(false)
@@ -45,6 +49,7 @@ class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VkRenderPass,
             scissorCount(1)
         }
 
+        // TODO get those from the VulkanPass
         val rasterizerCreateInfo = VkPipelineRasterizationStateCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO).apply {
             depthClampEnable(false)
             rasterizerDiscardEnable(false)
@@ -58,6 +63,27 @@ class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VkRenderPass,
             rasterizationSamples(VK_SAMPLE_COUNT_1_BIT)
         }
 
+        val depthStencilStateCreateInfo = VkPipelineDepthStencilStateCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO).apply {
+            //depthTestEnable(pass.depth.enabled)
+            depthWriteEnable(pass.depth.write)
+
+            depthCompareOp(when(pass.depth.mode) {
+                GREATER -> VK_COMPARE_OP_GREATER
+                GREATER_OR_EQUAL -> VK_COMPARE_OP_GREATER_OR_EQUAL
+                EQUAL -> VK_COMPARE_OP_EQUAL
+                LESS_OR_EQUAL -> VK_COMPARE_OP_LESS_OR_EQUAL
+                LESS -> VK_COMPARE_OP_LESS
+                ALWAYS -> VK_COMPARE_OP_ALWAYS
+            })
+
+            depthBoundsTestEnable(false)
+            minDepthBounds(0f)
+            maxDepthBounds(1f)
+
+            stencilTestEnable(false)
+        }
+
+        // TODO get those from the VulkanPass
         val staticBlendState = VkPipelineColorBlendAttachmentState.callocStack(1).apply {
             colorWriteMask(VK_COLOR_COMPONENT_R_BIT or VK_COLOR_COMPONENT_G_BIT or VK_COLOR_COMPONENT_B_BIT or VK_COLOR_COMPONENT_A_BIT)
 
@@ -69,7 +95,6 @@ class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VkRenderPass,
             dstAlphaBlendFactor(VK_BLEND_FACTOR_ZERO)
             alphaBlendOp(VK_BLEND_OP_ADD)
         }
-
         val blendStateCreateInfo = VkPipelineColorBlendStateCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO).apply {
             logicOpEnable(false)
             pAttachments(staticBlendState)
@@ -102,12 +127,12 @@ class Pipeline(val backend: VulkanGraphicsBackend, val renderPass: VkRenderPass,
             pViewportState(viewportStageCreateInfo)
             pRasterizationState(rasterizerCreateInfo)
             pMultisampleState(multisampleStateCreateInfo)
-            pDepthStencilState(null)
+            pDepthStencilState(depthStencilStateCreateInfo)
             pColorBlendState(blendStateCreateInfo)
 
             layout(layout)
 
-            renderPass(renderPass)
+            renderPass(pass.renderPass)
             subpass(0)
 
             basePipelineHandle(VK_NULL_HANDLE)

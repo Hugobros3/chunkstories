@@ -75,16 +75,13 @@ class VirtualTexturingHelper(val backend: VulkanGraphicsBackend, val program: Vu
         var nextId = 0
 
         init {
-            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 0, stackLongs(sets[slice]), null)
+            //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 0, stackLongs(sets[slice]), null)
         }
 
         fun translate(texture: VulkanTexture2D): Int {
             if (sliceContents.size == SLICE_SIZE) {
                 writeCurrentSlice()
                 nextSlice()
-
-                //TODO only do this once I'm sure the next slice will be used
-                vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 0, stackLongs(sets[slice]), null)
             }
 
             val id = sliceContents[texture] ?: let {
@@ -135,6 +132,9 @@ class VirtualTexturingHelper(val backend: VulkanGraphicsBackend, val program: Vu
             }
 
             vkUpdateDescriptorSets(backend.logicalDevice.vkDevice, stuffToWrite, null)
+
+            //TODO only do this once I'm sure the next slice will be used
+            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 0, stackLongs(sets[slice]), null)
             //println("writing to slice [$slice] ${reverseContents.size}")
         }
 

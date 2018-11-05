@@ -1,5 +1,6 @@
 package io.xol.chunkstories.graphics.vulkan.textures
 
+import assimp.format.blender.Tex
 import io.xol.chunkstories.api.graphics.Texture2D
 import io.xol.chunkstories.api.graphics.TextureFormat
 import io.xol.chunkstories.graphics.vulkan.CommandPool
@@ -61,7 +62,10 @@ class VulkanTexture2D(val backend: VulkanGraphicsBackend, val operationsPool: Co
             viewType(VK_IMAGE_VIEW_TYPE_2D)
             format(vulkanFormat.ordinal)
             subresourceRange().apply {
-                aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
+                if(format == TextureFormat.DEPTH_32 || format == TextureFormat.DEPTH_24)
+                    aspectMask(VK_IMAGE_ASPECT_DEPTH_BIT)
+                else
+                    aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
                 baseMipLevel(0)
                 levelCount(1)
                 baseArrayLayer(0)

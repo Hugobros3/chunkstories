@@ -67,8 +67,10 @@ class VulkanTextures(val backend: VulkanGraphicsBackend) : GraphicsEngine.Textur
     }
 }
 
+//TODO look those up at logical device init time
 val TextureFormat.vulkanFormat: VulkanFormat
     get() = when (this) {
         TextureFormat.RGBA_8 -> VulkanFormat.VK_FORMAT_R8G8B8A8_UNORM
+        TextureFormat.DEPTH_32 -> VulkanFormat.VK_FORMAT_D32_SFLOAT
         else -> throw Exception("Unmapped texture format $this")
     }

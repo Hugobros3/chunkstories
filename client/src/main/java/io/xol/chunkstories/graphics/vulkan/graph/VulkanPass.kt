@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory
 class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGraph, config: Pass.() -> Unit) : Pass(), Cleanable {
 
     val outputRenderBuffers: List<VulkanRenderBuffer>
+    val resolvedDepthBuffer: VulkanRenderBuffer?
 
     var renderPass: VkRenderPass = -1
         private set
@@ -61,6 +62,8 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
             commandBuffer
         }
 
+        resolvedDepthBuffer = if(depth.enabled) graph.buffers[depth.depthBuffer] else null
+
         MemoryStack.stackPop()
     }
 
@@ -97,7 +100,7 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
     }
 
     private fun createRenderPass(): VkRenderPass {
-        val attachmentDescription = VkAttachmentDescription.callocStack(outputs.size)
+        val attachmentDescription = VkAttachmentDescription.callocStack(outputs.size + if(depth.enabled) 1 else 0)
         outputs.mapIndexed { index, output ->
             val renderbuffer = outputRenderBuffers[index]
 
@@ -130,6 +133,38 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
             }
         }
 
+        if(depth.enabled) {
+            val depthBufferAttachmentIndex = attachmentDescription.capacity() - 1
+            attachmentDescription[depthBufferAttachmentIndex].apply {
+                val renderbuffer = resolvedDepthBuffer!!
+
+                val previousUsage = renderbuffer.findPreviousUsage()
+                val currentUsage = VulkanRenderBuffer.UsageState.OUTPUT
+
+                format(renderbuffer.format.vulkanFormat.ordinal)
+                samples(VK_SAMPLE_COUNT_1_BIT)
+
+                if (depth.clear)
+                    loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
+                else {
+                    if (previousUsage == VulkanRenderBuffer.UsageState.NONE)
+                        loadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
+                    else
+                        loadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
+                }
+
+                //TODO use DONT_CARE when it can be determined we won't be needing the data
+                storeOp(VK_ATTACHMENT_STORE_OP_STORE)
+
+                //TODO we don't even use stencil why is this here
+                stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
+                stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
+
+                initialLayout(previousUsage.vkLayout)
+                finalLayout(currentUsage.vkLayout)
+            }
+        }
+
         val colorAttachmentReference = VkAttachmentReference.callocStack(outputs.size)
         outputs.mapIndexed { index, output ->
             colorAttachmentReference[index].apply {
@@ -144,17 +179,48 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
 
             pColorAttachments(colorAttachmentReference)
             colorAttachmentCount(colorAttachmentReference.capacity())
+
+            if(depth.enabled) {
+                val depthBufferAttachmentIndex = attachmentDescription.capacity() - 1
+                val depthAttachmentReference = VkAttachmentReference.callocStack().apply {
+                    attachment(depthBufferAttachmentIndex)
+                    if(depth.write)
+                        layout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+                    else
+                        layout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL)
+                }
+                pDepthStencilAttachment(depthAttachmentReference)
+            }
         }
 
         val dependencies = VkSubpassDependency.calloc(1).apply {
             srcSubpass(VK_SUBPASS_EXTERNAL)
             dstSubpass(0)
 
-            srcStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
-            srcAccessMask(0)
+            //TODO we could be really smart here and be aware of the read/writes between passes to further optimize those masks
+            //TODO maybe even do different scheduling absed on that. Unfortunately I just want to get this renderer going atm
+            //var stages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+            var access = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT or VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
+            if(depth.enabled) {
+                access = access or VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT or VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT
+            }
 
-            dstStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
-            dstAccessMask(VK_ACCESS_COLOR_ATTACHMENT_READ_BIT or VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
+            if(depth.enabled)
+                srcStageMask(VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT or VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
+            else
+                srcStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
+
+            // If this is the first pass we just want to wait on the image being available
+            if(graph.passesInOrder.indexOf(this@VulkanPass) == 0)
+                srcAccessMask(0)
+            else
+                srcAccessMask(access)
+
+            if(depth.enabled)
+                dstStageMask(VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT or VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
+            else
+                dstStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
+            dstAccessMask(access)
         }
 
         val renderPassCreateInfo = VkRenderPassCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO).apply {
@@ -171,9 +237,11 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
 
     private fun createFramebuffer(): VkFramebuffer {
         stackPush()
-        val pAttachments = stackMallocLong(outputs.size)
+        val pAttachments = stackMallocLong(outputs.size + if(depth.enabled) 1 else 0)
 
         outputRenderBuffers.forEach { renderBuffer -> pAttachments.put(renderBuffer.texture.imageView) }
+        if(depth.enabled)
+            pAttachments.put(resolvedDepthBuffer!!.texture.imageView)
         pAttachments.flip()
 
         val framebufferCreateInfo = VkFramebufferCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO).apply {
@@ -233,15 +301,24 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
                     renderArea().extent().width(backend.window.width)
                     renderArea().extent().height(backend.window.height)
 
-                    val clearColor = VkClearValue.callocStack(1).apply {
-                        color().float32().apply {
+                    val clearColor = VkClearValue.callocStack(outputRenderBuffers.size + if(depth.enabled) 1 else 0)
+
+                    (0 until outputRenderBuffers.size).map { clearColor[it] }.forEach {
+                        it.color().float32().apply {
                             this.put(0, 1.0F)
                             this.put(1, 0.0F)
                             this.put(2, 1.0F)
                             this.put(3, 1.0F)
                         }
-
                     }
+
+                    if(depth.enabled) {
+                        val depthBufferAttachmentIndex = outputRenderBuffers.size
+                        clearColor[depthBufferAttachmentIndex].let {
+                            it.depthStencil().depth(0f)
+                        }
+                    }
+
                     pClearValues(clearColor)
                 }
 
@@ -270,9 +347,9 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
                 pWaitSemaphores(waitOnSemaphores)
                 waitSemaphoreCount(1)
 
-                val waitStages = MemoryStack.stackMallocInt(1)
-                waitStages.put(0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
-                pWaitDstStageMask(waitStages)
+                //val waitStages = MemoryStack.stackMallocInt(1)
+                //waitStages.put(0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
+                pWaitDstStageMask(stackInts(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT))
 
                 val commandBuffers = MemoryStack.stackMallocPointer(1)
                 commandBuffers.put(0, this@VulkanPass.commandBuffers[frame])

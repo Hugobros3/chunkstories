@@ -7,14 +7,15 @@ import io.xol.chunkstories.api.graphics.rendergraph.DepthTestingConfiguration.De
 import io.xol.chunkstories.api.graphics.rendergraph.PassOutput.BlendMode.*
 import io.xol.chunkstories.api.graphics.ImageInput.SamplingMode.*
 import io.xol.chunkstories.api.gui.GuiDrawer
+import io.xol.chunkstories.graphics.vulkan.systems.VulkanSpinningCubeDrawer
 
 object BuiltInRendergraphs {
     val onlyGuiRenderGraph : RenderGraphDeclarationScript = {
         renderBuffers {
             renderBuffer {
-                name = "menuBackground"
+                name = "menuDepth"
 
-                format = RGBA_8
+                format = DEPTH_32
                 size = viewportSize
             }
 
@@ -31,17 +32,21 @@ object BuiltInRendergraphs {
                 name = "menuBackground"
 
                 draws {
-                    fullscreenQuad()
+                    //fullscreenQuad()
+                    system(VulkanSpinningCubeDrawer::class)
                 }
 
                 outputs {
                     output {
                         name = "guiColorBuffer"
+                        clear = true
                     }
                 }
 
                 depth {
-                    enabled = false
+                    enabled = true
+                    depthBuffer = "menuDepth"
+                    clear = true
                 }
             }
 

@@ -17,6 +17,7 @@ import io.xol.chunkstories.graphics.vulkan.swapchain.WindowSurface
 import io.xol.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
 import io.xol.chunkstories.graphics.vulkan.systems.VulkanFullscreenQuadDrawer
 import io.xol.chunkstories.graphics.vulkan.systems.VulkanGuiDrawer
+import io.xol.chunkstories.graphics.vulkan.systems.VulkanSpinningCubeDrawer
 import io.xol.chunkstories.graphics.vulkan.textures.VulkanTextures
 import io.xol.chunkstories.graphics.vulkan.util.*
 import org.lwjgl.PointerBuffer
@@ -32,7 +33,7 @@ import org.slf4j.LoggerFactory
 import java.awt.image.BufferedImage
 
 class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(window) {
-    internal var enableValidation = false
+    internal var enableValidation = true
     internal var doNonUniformSamplerArrayAccess = false
 
     val requiredDeviceExtensions = listOf(KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME)
@@ -226,6 +227,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
         return when (declaredDrawingSystem.clazz) {
             GuiDrawer::class.java -> VulkanGuiDrawer(pass, window.client.gui)
             FullscreenQuadDrawer::class.java -> VulkanFullscreenQuadDrawer(pass)
+            VulkanSpinningCubeDrawer::class.java -> VulkanSpinningCubeDrawer(pass)
 
             else -> throw Exception("Unimplemented system on this backend: ${declaredDrawingSystem.clazz}")
         }

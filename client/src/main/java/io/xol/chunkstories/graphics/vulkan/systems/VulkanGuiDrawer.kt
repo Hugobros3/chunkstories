@@ -39,7 +39,7 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
     val fontRenderer = VulkanFontRenderer(backend)
     val guiShaderProgram = backend.shaderFactory.createProgram(backend, "/shaders/gui/gui")
 
-    val pipeline = Pipeline(backend, pass.renderPass, guiShaderProgram) {
+    val pipeline = Pipeline(backend, pass, guiShaderProgram) {
         val bindingDescription = VkVertexInputBindingDescription.callocStack(1).apply {
             binding(0)
             stride(2 * 4 + 2 * 4 + 4 * 4 + 4)
@@ -100,6 +100,7 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
 
     /** Accumulation for GUI contents */
     val stagingByteBuffer = MemoryUtil.memAlloc(guiBufferSize)
+    val stagingDraws = mutableListOf<Pair<Int, Int>>()
 
     var previousTexture = -1
     var sameTextureCount = 0
@@ -310,12 +311,15 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
     }
 
     fun writeOut() {
+        val primitivesCount = 3 * 2 * sameTextureCount
+
         if(sameTextureCount > 0)
-            vkCmdDraw(commandBuffer, 3 * 2 * sameTextureCount, 1, previousOffset, 0)
+            stagingDraws.add(Pair(primitivesCount, previousOffset))
+            //vkCmdDraw(commandBuffer, primitivesCount, 1, previousOffset, 0)
 
         //println("$sameTextureCount : $previousOffset")
 
-        previousOffset += 3 * 2 * sameTextureCount
+        previousOffset += primitivesCount
         sameTextureCount = 0
     }
 
@@ -333,6 +337,11 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
             this.commandBuffer = commandBuffer
             virtualTexturingContext = virtualTexturing.begin(commandBuffer, pipeline, sampler) {
                 writeOut()
+
+                for((primitivesCount, offset) in stagingDraws)
+                    vkCmdDraw(commandBuffer, primitivesCount, 1, offset, 0)
+
+                stagingDraws.clear()
             }
             gui.topLayer?.render(drawer)
             virtualTexturingContext.finish()
@@ -347,8 +356,6 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
             //testOffset.offset.x = (Math.random().toFloat() - 0.5F) * 0.2F
             //descriptorPool.configure(frame, testOffset)
             //descriptorPool.configureTextureAndSampler(frame, "diffuseTexture", backend.textures.defaultTexture2D as VulkanTexture2D, sampler)
-
-            //vkCmdDraw(commandBuffer, 3 * stagingSize, 1, 0, 0)
         }
     }
 

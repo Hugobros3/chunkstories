@@ -15,7 +15,7 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
 
     val guiShaderProgram = backend.shaderFactory.createProgram(backend, "/shaders/test/test")
 
-    val pipeline = Pipeline(backend, pass.renderPass, guiShaderProgram) {
+    val pipeline = Pipeline(backend, pass, guiShaderProgram) {
         val bindingDescription = VkVertexInputBindingDescription.callocStack(1).apply {
             binding(0)
             stride(2 * 4)

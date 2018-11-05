@@ -118,7 +118,7 @@ class VulkanRenderBuffer(val backend: VulkanGraphicsBackend, val graph: VulkanRe
     }
 
     fun findUsageInPass(pass: VulkanPass) : VulkanRenderBuffer.UsageState {
-        if(pass.outputRenderBuffers.contains(this))
+        if(pass.outputRenderBuffers.contains(this) || pass.resolvedDepthBuffer == this)
             return VulkanRenderBuffer.UsageState.OUTPUT
 
         //TODO use resolved variant
