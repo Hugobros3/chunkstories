@@ -70,25 +70,26 @@ public class ServerSelection extends Layer implements HttpRequester {
     @Override
     public void render(GuiDrawer drawer) {
         if (parentLayer != null) {
-            parentLayer.render(drawer);
+            //parentLayer.render(drawer);
         }
+
+        width = gui.getViewportWidth();
+        height = gui.getViewportHeight();
 
         if (automaticLogin && !ipForm.getText().equals(""))
             login();
 
         String instructions = "Select a server from the list or type in the address directly";
-        Font titleFont = drawer.getFonts().getFont("LiberationSans-Regular", 33);
-        drawer.drawStringWithShadow(titleFont, 32, gui.getViewportHeight() - 32 * 2, instructions, -1, new Vector4f(1));
+        Font titleFont = drawer.getFonts().getFont("LiberationSans-Regular", 16);
+        drawer.drawStringWithShadow(titleFont, 8, gui.getViewportHeight() - 32, instructions, -1, new Vector4f(1));
 
         // gui
-        int ipTextboxSize = gui.getViewportWidth() - connectButton.getWidth() - 48 - 8;
-        ipForm.setPosition(25, gui.getViewportHeight() - 100);
+        int ipTextboxSize = gui.getViewportWidth() - connectButton.getWidth() - 8 - 8;
+        ipForm.setPosition(8, gui.getViewportHeight() - 32 - 32);
         ipForm.setWidth(ipTextboxSize);
         ipForm.render(drawer);
 
-        connectButton.setPosition(ipForm.getPositionX() + ipForm.getWidth() + 4,
-                gui.getViewportHeight() - 100);
-
+        connectButton.setPosition(ipForm.getPositionX() + ipForm.getWidth() + 4, gui.getViewportHeight() - 32 - 32);
         connectButton.render(drawer);
 
         backOption.setPosition(8, 8);
@@ -97,7 +98,7 @@ public class ServerSelection extends Layer implements HttpRequester {
         updateServers();
 
         int offsetForButtons = backOption.getPositionY() + backOption.getHeight() + 8;
-        int offsetForHeaderText = 32 + ipForm.getHeight();
+        int offsetForHeaderText = 8 + 32 + 32;
         serverSelectionZone.setPosition((width - 480) / 2, offsetForButtons);
         serverSelectionZone.setSize(480, height - (offsetForButtons + offsetForHeaderText));
         serverSelectionZone.render(drawer);

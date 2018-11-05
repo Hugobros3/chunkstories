@@ -33,7 +33,6 @@ public class LoginPrompt extends Layer {
 
 	private String message = "";
 
-	private boolean can_next = false;
 	private boolean failed_login;
 	private final static Logger logger = LoggerFactory.getLogger("client.login");
 
@@ -66,9 +65,6 @@ public class LoginPrompt extends Layer {
 		if (gui.getClient().getConfiguration().getValue("client.game.language").equals("undefined")) {
 			gui.setTopLayer(new LanguageSelectionScreen(gui, this, false));
 		}
-
-		if (can_next)
-			gui.setTopLayer(new MainMenu(gui, parentLayer));
 
 		//TODO draw logo
 		//ObjectRenderer.renderTexturedRect(gui.getViewportWidth() / 2, gui.getViewportHeight() / 2 + 90, 256, 256, "./textures/logo.png");
@@ -119,6 +115,7 @@ public class LoginPrompt extends Layer {
 			drawer.drawStringWithShadow(drawer.getFonts().defaultFont(2),
 					gui.getViewportWidth() / 2 - autologinLength / 2,
 					gui.getViewportHeight() / 2 - 170, autologin2, -1, new Vector4f(0.0f, 1.0f, 0.0f, 1.0f));
+
 			if ((System.currentTimeMillis() - startCounter) / 1000 > seconds) {
 				connect();
 				autologin = false;
@@ -168,7 +165,7 @@ public class LoginPrompt extends Layer {
 						t.start();
 					}
 
-					can_next = true;
+					gui.setTopLayer(new MainMenu(gui, parentLayer));
 				} else if (result.startsWith("ko")) {
 					failed_login = true;
 					String reason = result.split(":")[1];
@@ -188,11 +185,11 @@ public class LoginPrompt extends Layer {
 
 	@Override
 	public boolean handleInput(Input input) {
-		if (input.equals("exit"))
+		if (input.getName().equals("exit"))
 			autologin = false;
-		else if (input.equals("enter"))
+		else if (input.getName().equals("enter"))
 			connect();
-		else if (input.equals("tab")) {
+		else if (input.getName().equals("tab")) {
 			int shift = gui.getClient().getInputsManager().getInputByName("shift").isPressed() ? -1 : 1;
 			int i = this.elements.indexOf(this.focusedElement);
 
