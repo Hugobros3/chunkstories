@@ -193,8 +193,7 @@ public class ServerSelection extends Layer implements HttpRequester {
                 this.ip = ip;
                 this.port = port;
                 this.sd = new ServerDataLoader(this, ip, port);
-                this.iconTextureLocation = GameDirectory.getGameFolderPath() + "/cache/server-icon-" + ip + "-" + port
-                        + ".png";
+                this.iconTextureLocation = GameDirectory.getGameFolderPath() + "/cache/server-icon-" + ip + "-" + port + ".png";
             }
 
             @Override

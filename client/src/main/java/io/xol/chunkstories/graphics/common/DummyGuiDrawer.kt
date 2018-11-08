@@ -16,13 +16,13 @@ open class DummyGuiDrawer(override val gui: Gui) : GuiDrawer {
     }
 
     override fun drawBox(startX: Int, startY: Int, width: Int, height: Int, texture: String?) =
-            drawBox(startX, startY, width, height, 0F, 0F, 1F, 1F, texture, null)
+            drawBox(startX, startY, width, height, 0F, 1F, 1F, 0F, texture, null)
 
     override fun drawBox(startX: Int, startY: Int, width: Int, height: Int, texture: String?, color: Vector4fc?) =
-            drawBox(startX, startY, width, height, 0F, 0F, 1F, 1F, texture, color)
+            drawBox(startX, startY, width, height, 0F, 1F, 1F, 0F, texture, color)
 
     override fun drawBox(startX: Int, startY: Int, width: Int, height: Int, color: Vector4fc?) =
-            drawBox(startX, startY, width, height, 0F, 0F, 1F, 1F, null, color)
+            drawBox(startX, startY, width, height, 0F, 1F, 1F, 0F, null, color)
 
     override fun drawBoxWithCorners(posx: Int, posy: Int, width: Int, height: Int, cornerSizeDivider: Int, texture: String) {
 

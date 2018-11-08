@@ -63,7 +63,7 @@ public class MainMenu extends Layer {
 
 		int leftButtonX = gui.getViewportWidth() / 2 - buttonsAreaSize / 2;
 
-		int ySmall = 12;
+		int ySmall = 24;
 		int yBig = ySmall + largeSingleplayer.getHeight() + (spacing);
 
 		largeOnline.setPosition(leftButtonX, yBig);
@@ -81,14 +81,14 @@ public class MainMenu extends Layer {
 		largeOptions.render(drawer);
 
 		// Notices
-		Vector4f noticeColor = new Vector4f(0.5f);
+		Vector4f noticeColor = new Vector4f(1f);
 		String version = "Chunk Stories Client " + VersionInfo.version;
 		drawer.getFonts().defaultFont().getWidth(version);
-		drawer.drawString(drawer.getFonts().defaultFont(), 4, 0, version,-1, noticeColor);
+		drawer.drawStringWithShadow(drawer.getFonts().defaultFont(), 4, 0, version,-1, noticeColor);
 
 		String copyrightNotice = "https://github.com/Hugobros3/chunkstories";
-		int noticeDekal = drawer.getFonts().defaultFont().getWidth(copyrightNotice);
-		drawer.drawString(drawer.getFonts().defaultFont(), gui.getViewportWidth() - noticeDekal - 4, 0, copyrightNotice, -1, noticeColor);
+		int copyrightNoticeOffset = drawer.getFonts().defaultFont().getWidth(copyrightNotice);
+		drawer.drawStringWithShadow(drawer.getFonts().defaultFont(), gui.getViewportWidth() - copyrightNoticeOffset - 4, 0, copyrightNotice, -1, noticeColor);
 	}
 
 	@Override
