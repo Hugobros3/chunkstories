@@ -117,7 +117,7 @@ class LevelSelection internal constructor(gui: Gui, parent: Layer) : Layer(gui, 
 
     inner class LocalWorldButton internal constructor(x: Int, y: Int, var info: WorldInfo) : Button(this@LevelSelection, x, y, "") {
 
-        override fun render(renderer: GuiDrawer) {
+        override fun render(drawer: GuiDrawer) {
             val texture = if (isFocused || isMouseOver)
                 "textures/gui/scalableButtonOver.png"
             else
@@ -125,15 +125,15 @@ class LevelSelection internal constructor(gui: Gui, parent: Layer) : Layer(gui, 
 
             this.height = 64
 
-            renderer.drawBoxWithCorners(positionX - 2, positionY - 2, width + 4, height + 4, 8, texture)
+            drawer.drawBoxWithCorners(positionX - 2, positionY - 2, width + 4, height + 4, 8, texture)
 
             //TODO redo
             //ObjectRenderer.renderTexturedRect(xPosition + 32 + 4, yPosition + 32 + 4, 64, 64, GameDirectory.getGameFolderPath() + "/worlds/" + info.getInternalName() + "/worldInfo.png");
-            renderer.drawBox(positionX, positionY, 64, 64, "textures/gui/icon.png", null)
+            drawer.drawBox(positionX, positionY, 64, 64, "textures/gui/icon.png", null)
 
-            val font = renderer.fonts.getFont("LiberationSans-Regular", 12f)
-            renderer.drawString(font, positionX + 72, positionY + 32 + 8, info.name + "#CCCCCC    Size : " + info.size.toString() + " ( " + info.size.sizeInChunks / 32 + "x" + info.size.sizeInChunks / 32 + " km )", width - 72, Vector4f(0.25f, 0.25f, 0.25f, 1.0f))
-            renderer.drawString(font, positionX + 72, positionY + 8, info.description, -1, Vector4f(0.25f, 0.25f, 0.25f, 1.0f))
+            val font = drawer.fonts.getFont("LiberationSans-Regular", 12f)
+            drawer.drawString(font, positionX + 72, positionY + 32 + 8, info.name + "#CCCCCC    Size : " + info.size.toString() + " ( " + info.size.sizeInChunks / 32 + "x" + info.size.sizeInChunks / 32 + " km )", width - 72, Vector4f(0.25f, 0.25f, 0.25f, 1.0f))
+            drawer.drawString(font, positionX + 72, positionY + 8, info.description, -1, Vector4f(0.25f, 0.25f, 0.25f, 1.0f))
         }
     }
 
