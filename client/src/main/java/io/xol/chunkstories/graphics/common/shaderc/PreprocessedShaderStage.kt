@@ -146,7 +146,7 @@ class PreprocessedShaderStage(private val factory: ShaderFactory, private val or
 
         val inputs = mutableListOf<VertexInputDeclaration>()
 
-        var previousLine = ""
+        //var previousLine = ""
         for (line in this.transformedCode.lines()) {
             var translatedLine: String? = line
 
@@ -178,8 +178,8 @@ class PreprocessedShaderStage(private val factory: ShaderFactory, private val or
                     }
 
                     baseType != null -> {
-                        val instanced = previousLine == "#instanced"
-                        inputs.add(VertexInputDeclaration(inputName, baseType, instanced, null))
+                        //val instanced = previousLine == "#instanced"
+                        inputs.add(VertexInputDeclaration(inputName, baseType, null))
                     }
 
                     else -> throw Exception("What do I do with input type $typeName ? ")
@@ -192,7 +192,7 @@ class PreprocessedShaderStage(private val factory: ShaderFactory, private val or
             if (translatedLine != null)
                 processed += translatedLine + "\n"
 
-            previousLine = line
+            //previousLine = line
         }
 
         println(inputs)
@@ -201,5 +201,5 @@ class PreprocessedShaderStage(private val factory: ShaderFactory, private val or
         this.transformedCode = processed
     }
 
-    data class VertexInputDeclaration(val name: String, val type: GLSLBaseType, val instanced: Boolean, val interfaceBlock: InterfaceBlockGLSLMapping?)
+    data class VertexInputDeclaration(val name: String, val type: GLSLBaseType, val interfaceBlock: InterfaceBlockGLSLMapping?)
 }

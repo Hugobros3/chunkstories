@@ -13,6 +13,7 @@ import io.xol.chunkstories.graphics.vulkan.swapchain.Frame
 import io.xol.chunkstories.graphics.vulkan.textures.VirtualTexturingHelper
 import io.xol.chunkstories.graphics.vulkan.textures.VulkanSampler
 import io.xol.chunkstories.graphics.vulkan.textures.VulkanTexture2D
+import io.xol.chunkstories.graphics.vulkan.vertexInputConfiguration
 import io.xol.chunkstories.gui.ClientGui
 import org.joml.Vector4fc
 import org.lwjgl.system.MemoryStack
@@ -37,51 +38,47 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
         get() = pass.backend
 
     val fontRenderer = VulkanFontRenderer(backend)
-    val guiShaderProgram = backend.shaderFactory.createProgram(backend, "/shaders/gui/gui")
-
-    val pipeline = Pipeline(backend, pass, guiShaderProgram) {
-        val bindingDescription = VkVertexInputBindingDescription.callocStack(1).apply {
+    //val guiShaderProgram = backend.shaderFactory.createProgram(backend, "/shaders/gui/gui")
+    
+    val vertexInputConfiguration = vertexInputConfiguration {
+        binding {
             binding(0)
             stride(2 * 4 + 2 * 4 + 4 * 4 + 4)
             inputRate(VK_VERTEX_INPUT_RATE_VERTEX)
         }
 
-        val attributeDescriptions = VkVertexInputAttributeDescription.callocStack(4)
-        attributeDescriptions[0].apply {
+        attribute {
             binding(0)
-            location(guiShaderProgram.glslProgram.vertexInputs.find { it.name == "vertexIn" }?.location!!)
+            location(program.vertexInputs.find { it.name == "vertexIn" }?.location!!)
             format(VK_FORMAT_R32G32_SFLOAT)
             offset(0)
         }
 
-        attributeDescriptions[1].apply {
+        attribute {
             binding(0)
-            location(guiShaderProgram.glslProgram.vertexInputs.find { it.name == "texCoordIn" }?.location!!)
+            location(program.vertexInputs.find { it.name == "texCoordIn" }?.location!!)
             format(VK_FORMAT_R32G32_SFLOAT)
             offset(2 * 4)
         }
 
-        attributeDescriptions[2].apply {
+        attribute {
             binding(0)
-            location(guiShaderProgram.glslProgram.vertexInputs.find { it.name == "colorIn" }?.location!!)
+            location(program.vertexInputs.find { it.name == "colorIn" }?.location!!)
             format(VK_FORMAT_R32G32B32A32_SFLOAT)
             offset(2 * 4 + 2 * 4)
         }
 
-        attributeDescriptions[3].apply {
+        attribute {
             binding(0)
-            location(guiShaderProgram.glslProgram.vertexInputs.find { it.name == "textureIdIn" }?.location!!)
+            location(program.vertexInputs.find { it.name == "textureIdIn" }?.location!!)
             format(VK_FORMAT_R32_SINT)
             offset(2 * 4 + 2 * 4 + 4 * 4)
         }
-
-        VkPipelineVertexInputStateCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO).apply {
-            pVertexBindingDescriptions(bindingDescription)
-            pVertexAttributeDescriptions(attributeDescriptions)
-        }
     }
 
-    val descriptorPool = DescriptorPool(backend, guiShaderProgram)
+        val pipeline = Pipeline(backend, pass, vertexInputConfiguration)
+
+    val descriptorPool = DescriptorPool(backend, pass.program)
     val sampler = VulkanSampler(backend)
 
     val vertexBuffers: InflightFrameResource<VulkanVertexBuffer>
@@ -92,7 +89,7 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
         }
     }
 
-    val virtualTexturing = VirtualTexturingHelper(backend, guiShaderProgram)
+    val virtualTexturing = VirtualTexturingHelper(backend, pass.program)
 
     //TODO this is hacky af, fix this plz
     lateinit var virtualTexturingContext: VirtualTexturingHelper.VirtualTexturingContext
@@ -367,8 +364,6 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
 
         pipeline.cleanup()
         virtualTexturing.cleanup()
-
-        guiShaderProgram.cleanup()
 
         descriptorPool.cleanup()
 

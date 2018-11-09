@@ -8,6 +8,7 @@ import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import io.xol.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
 import io.xol.chunkstories.graphics.vulkan.graph.VulkanPass
 import io.xol.chunkstories.graphics.vulkan.swapchain.Frame
+import io.xol.chunkstories.graphics.vulkan.vertexInputConfiguration
 import org.joml.Matrix4f
 import org.joml.Vector3f
 import org.lwjgl.system.MemoryStack.*
@@ -18,36 +19,32 @@ class VulkanSpinningCubeDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
     val backend: VulkanGraphicsBackend
         get() = pass.backend
 
-    val guiShaderProgram = backend.shaderFactory.createProgram(backend, "/shaders/cube/cube")
-    val descriptorPool = DescriptorPool(backend, guiShaderProgram)
+    //val guiShaderProgram = backend.shaderFactory.createProgram(backend, "/shaders/cube/cube")
+    val descriptorPool = DescriptorPool(backend, pass.program)
 
-    val pipeline = Pipeline(backend, pass, guiShaderProgram) {
-        val bindingDescription = VkVertexInputBindingDescription.callocStack(1).apply {
+     val vertexInputConfiguration = vertexInputConfiguration {
+         binding {
             binding(0)
             stride(3 * 4 + 2 * 4)
             inputRate(VK_VERTEX_INPUT_RATE_VERTEX)
         }
 
-        val attributeDescriptions = VkVertexInputAttributeDescription.callocStack(2)
-        attributeDescriptions[0].apply {
+        attribute {
             binding(0)
-            location(guiShaderProgram.glslProgram.vertexInputs.find { it.name == "vertexIn" }?.location!! )
+            location(program.vertexInputs.find { it.name == "vertexIn" }?.location!! )
             format(VK_FORMAT_R32G32B32_SFLOAT)
             offset(0)
         }
 
-        attributeDescriptions[1].apply {
+        attribute {
             binding(0)
-            location(guiShaderProgram.glslProgram.vertexInputs.find { it.name == "texCoordIn" }?.location!! )
+            location(program.vertexInputs.find { it.name == "texCoordIn" }?.location!! )
             format(VK_FORMAT_R32G32_SFLOAT)
             offset(3 * 4)
         }
-
-        VkPipelineVertexInputStateCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO).apply {
-            pVertexBindingDescriptions(bindingDescription)
-            pVertexAttributeDescriptions(attributeDescriptions)
-        }
     }
+
+    val pipeline = Pipeline(backend, pass, vertexInputConfiguration)
 
     private val vertexBuffer: VulkanVertexBuffer
 
@@ -132,7 +129,7 @@ class VulkanSpinningCubeDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
         val camera = Camera(modelViewMatrix, projectionMatrix)
 
         descriptorPool.configure(frame, camera)
-        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 0, descriptorPool.setsForFrame(frame), null as? IntArray)
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 1, descriptorPool.setsForFrame(frame), null as? IntArray)
 
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
         vkCmdBindVertexBuffers(commandBuffer, 0, stackLongs(vertexBuffer.handle), stackLongs(0))
@@ -145,6 +142,5 @@ class VulkanSpinningCubeDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
         descriptorPool.cleanup()
 
         pipeline.cleanup()
-        guiShaderProgram.cleanup()
     }
 }

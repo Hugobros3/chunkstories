@@ -31,6 +31,7 @@ object BuiltInRendergraphs {
         passes {
             pass {
                 name = "menuBackground"
+                shaderName = "cube"
 
                 draws {
                     //fullscreenQuad()
@@ -95,6 +96,13 @@ object BuiltInRendergraphs {
                 format = RGBA_8
                 size = viewportSize
             }
+
+            renderBuffer {
+                name = "finalBuffer"
+
+                format = RGBA_8
+                size = viewportSize
+            }
         }
 
         passes {
@@ -120,9 +128,37 @@ object BuiltInRendergraphs {
             }
 
             pass {
-                name = "gui"
+                name = "postprocess"
 
                 dependsOn("cubes")
+
+                inputs {
+                    imageInput {
+                        name = "colorBuffer"
+                        source = renderBuffer("colorBuffer")
+                    }
+                }
+
+                draws {
+                    fullscreenQuad()
+                }
+
+                outputs {
+                    output {
+                        name = "finalBuffer"
+                        blending = OVERWRITE
+                    }
+                }
+
+                depth {
+                    enabled = false
+                }
+            }
+
+            pass {
+                name = "gui"
+
+                dependsOn("postprocess")
 
                 draws {
                     system(GuiDrawer::class)
@@ -130,7 +166,7 @@ object BuiltInRendergraphs {
 
                 outputs {
                     output {
-                        name = "colorBuffer"
+                        name = "finalBuffer"
 
                         //clear = true
                         blending = MIX

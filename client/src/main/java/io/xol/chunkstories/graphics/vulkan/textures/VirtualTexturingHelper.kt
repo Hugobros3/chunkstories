@@ -10,9 +10,8 @@ import io.xol.chunkstories.graphics.vulkan.util.ensureIs
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
-import java.nio.IntBuffer
 
-class VirtualTexturingHelper(val backend: VulkanGraphicsBackend, val program: VulkanShaderFactory.VulkanicShaderProgram) : Cleanable {
+class VirtualTexturingHelper(val backend: VulkanGraphicsBackend, val program: VulkanShaderFactory.VulkanShaderProgram) : Cleanable {
 
     val SLICE_SIZE: Int
 

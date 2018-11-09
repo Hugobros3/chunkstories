@@ -12,6 +12,7 @@ import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import io.xol.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
 import io.xol.chunkstories.graphics.vulkan.graph.VulkanPass
 import io.xol.chunkstories.graphics.vulkan.swapchain.Frame
+import io.xol.chunkstories.graphics.vulkan.vertexInputConfiguration
 import io.xol.chunkstories.util.math.toVec3f
 import io.xol.chunkstories.util.math.toVec3i
 import org.joml.*
@@ -24,49 +25,41 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
     val backend: VulkanGraphicsBackend
         get() = pass.backend
 
-    val guiShaderProgram = backend.shaderFactory.createProgram(backend, "/shaders/cubes/cubes")
-    val descriptorPool = DescriptorPool(backend, guiShaderProgram)
-
-    val pipeline = Pipeline(backend, pass, guiShaderProgram) {
-        val bindingDescription = VkVertexInputBindingDescription.callocStack(2)
-        bindingDescription[0].apply {
+    //val guiShaderProgram = backend.shaderFactory.createProgram(backend, "/shaders/cubes/cubes")
+    val descriptorPool = DescriptorPool(backend, pass.program)
+    val vertexInputConfiguration = vertexInputConfiguration {
+        binding {
             binding(0)
             stride(3 * 4 + 2 * 4)
             inputRate(VK_VERTEX_INPUT_RATE_VERTEX)
         }
-        bindingDescription[1].apply {
+        binding {
             binding(1)
             stride(3 * 4)
             inputRate(VK_VERTEX_INPUT_RATE_INSTANCE)
         }
 
-        val attributeDescriptions = VkVertexInputAttributeDescription.callocStack(3)
-        attributeDescriptions[0].apply {
+        attribute {
             binding(0)
-            location(guiShaderProgram.glslProgram.vertexInputs.find { it.name == "vertexIn" }?.location!! )
+            location(program.vertexInputs.find { it.name == "vertexIn" }!!.location)
             format(VK_FORMAT_R32G32B32_SFLOAT)
             offset(0)
         }
-
-        attributeDescriptions[1].apply {
+        attribute {
             binding(0)
-            location(guiShaderProgram.glslProgram.vertexInputs.find { it.name == "texCoordIn" }?.location!! )
+            location(program.vertexInputs.find { it.name == "texCoordIn" }!!.location)
             format(VK_FORMAT_R32G32_SFLOAT)
             offset(3 * 4)
         }
-
-        attributeDescriptions[2].apply {
+        attribute {
             binding(1)
-            location(guiShaderProgram.glslProgram.vertexInputs.find { it.name == "cubePositionIn" }?.location!! )
+            location(program.vertexInputs.find { it.name == "cubePositionIn" }!!.location)
             format(VK_FORMAT_R32G32B32_SFLOAT)
             offset(0)
         }
-
-        VkPipelineVertexInputStateCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO).apply {
-            pVertexBindingDescriptions(bindingDescription)
-            pVertexAttributeDescriptions(attributeDescriptions)
-        }
     }
+
+    val pipeline = Pipeline(backend, pass, vertexInputConfiguration)
 
     private val vertexBuffer: VulkanVertexBuffer
     val individualCubeVertices = floatArrayOf(
@@ -205,7 +198,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
 
         if(instances > 0) {
 
-            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 0, descriptorPool.setsForFrame(frame), null as? IntArray)
+            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 1, descriptorPool.setsForFrame(frame), null as? IntArray)
 
             vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
             vkCmdBindVertexBuffers(commandBuffer, 0, stackLongs(vertexBuffer.handle), stackLongs(0))
@@ -223,6 +216,5 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         descriptorPool.cleanup()
 
         pipeline.cleanup()
-        guiShaderProgram.cleanup()
     }
 }

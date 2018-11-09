@@ -98,11 +98,18 @@ object SpirvCrossHelper {
             throw Exception("Failed to link/map program !")
         }
 
-        val resourcesBuckets = when (dialect) {
-            ShaderFactory.GLSLDialect.OPENGL4 -> arrayOf(mutableListOf()) // ONE bucket, because descriptor sets aren't a thing in OpenGL
-            // As many buckets as we have different uniform update frequencies (those map directly to Descriptor Sets)
-            ShaderFactory.GLSLDialect.VULKAN -> Array<MutableList<ShaderFactory.GLSLUniformResource>>(UniformUpdateFrequency.values().size) { mutableListOf() }
+        val bucketsCount  = when (dialect) {
+            ShaderFactory.GLSLDialect.OPENGL4 -> 1 // ONE bucket, because descriptor sets aren't a thing in OpenGL
+
+            /**
+             * Bucket0: Virtual texturing descriptors
+             * Bucket1: Static texturing descriptors ( declared samplers in the shader, you feed them manually )
+             * Bucket2 .. BucketN+2: Descriptors for UBOs with frequency N
+             */
+            ShaderFactory.GLSLDialect.VULKAN -> UniformUpdateFrequency.values().size + 2
         }
+
+        val resourcesBuckets = Array<MutableList<ShaderFactory.GLSLUniformResource>>(bucketsCount) { mutableListOf() }
 
         program.buildReflection()
 
@@ -113,21 +120,8 @@ object SpirvCrossHelper {
         }
 
         var vertexInputLocation = 0
-
-        val vertexInputs = mutableListOf<ShaderFactory.GLSLVertexAttribute>()
-        // First assign locations (at binding = 0) for all non-instanced vertex inputs ( == mesh / model data )
-        vertexInputs.addAll(vertexInputsToProcess.filter { !it.instanced }.map { input ->
-            ShaderFactory.GLSLVertexAttribute(input.name, input.type, vertexInputLocation++, input.instanced, null)
-        })
-
-        // Then assign locations & bindings, with one binding per interface block
-        vertexInputsToProcess.filter { it.instanced }.groupBy { it.interfaceBlock }.map { (interfaceBlock, inputs) ->
-            //vertexInputBinding++
-            //vertexInputLocation = 0
-
-            for (input in inputs) {
-                vertexInputs += ShaderFactory.GLSLVertexAttribute(input.name, input.type, vertexInputLocation++, input.instanced, interfaceBlock)
-            }
+        val vertexInputs = vertexInputsToProcess.map { input ->
+            ShaderFactory.GLSLVertexAttribute(input.name, input.type, vertexInputLocation++, null)
         }
 
         fun ProgramStage.analyzeAndDecorateStageResources(): CompilerGLSL {
@@ -177,7 +171,7 @@ object SpirvCrossHelper {
 
                     val descriptorSet = when (dialect) {
                         ShaderFactory.GLSLDialect.OPENGL4 -> 0
-                        ShaderFactory.GLSLDialect.VULKAN -> updateFrequency.ordinal + 1
+                        ShaderFactory.GLSLDialect.VULKAN -> updateFrequency.ordinal + 2
                     }
                     val binding = resourcesBuckets[descriptorSet].size
 
@@ -211,7 +205,8 @@ object SpirvCrossHelper {
                 val samplerType = hack.first
                 val samplerArraySize = hack.second
 
-                val descriptorSet = 0
+                // Set 0 is reserved for virtual textures, Set 1 is for static textures (accross all the draw)
+                val descriptorSet = if(samplerName == "virtualTextures") 0 else 1
                 val binding = resourcesBuckets[descriptorSet].size
 
                 resourcesBuckets[descriptorSet].add(when (samplerType) {
@@ -225,15 +220,15 @@ object SpirvCrossHelper {
                 println("Bound Sampler $samplerName $samplerType to ($descriptorSet, $binding)")
             }
 
+            // Modify the spirv to add the location decorations based on the locations we assigned earlier
             if (stage == ShaderStage.VERTEX) {
                 val declaredVertexInputs = compiler.shaderResources.stageInputs
-
                 for (i in 0 until declaredVertexInputs.size().toInt()) {
-                    val declaredVertexInput = declaredVertexInputs[i]
+                    val spirvVertexInput = declaredVertexInputs[i]
 
-                    vertexInputs.find { it.name == declaredVertexInput.name }?.let { metadata ->
-                        compiler.setDecoration(declaredVertexInput.id, Decoration.DecorationLocation, metadata.location.toLong())
-                        println("Vertex input ${declaredVertexInput.name} assigned location ${metadata.location}")
+                    vertexInputs.find { it.name == spirvVertexInput.name }?.let { vertexInput ->
+                        compiler.setDecoration(spirvVertexInput.id, Decoration.DecorationLocation, vertexInput.location.toLong())
+                        println("Vertex input ${spirvVertexInput.name} was assigned location ${vertexInput.location}")
                     }
                 }
             }
@@ -301,7 +296,7 @@ object SpirvCrossHelper {
             Pair(stages[index].stage, compiledSource)
         }).toTypedArray())
 
-        println(sources[ShaderStage.FRAGMENT])
+        //println(sources[ShaderStage.FRAGMENT])
 
         return ShaderFactory.GLSLProgram(sources, vertexInputs, resources)
     }

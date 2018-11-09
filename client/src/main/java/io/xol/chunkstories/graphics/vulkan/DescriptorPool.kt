@@ -16,12 +16,15 @@ import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 
 /** Holds the descriptors a shader program needs */
-class DescriptorPool(val backend: VulkanGraphicsBackend, val program: VulkanShaderFactory.VulkanicShaderProgram) : Cleanable {
+class DescriptorPool(val backend: VulkanGraphicsBackend, val program: VulkanShaderFactory.VulkanShaderProgram) : Cleanable {
     val handle: VkDescriptorPool
 
-    internal val descriptorSets: LongArray
+    // Array of array of descriptor sets
+    // First dimension is the descriptor set slot, second dimension is for the current frame in flight
+    // Gotcha: Index 0 of the primary array corresponds to the descriptor set 1, as binding 0 is reserved for virtual texturing
+    internal val allocatedSets: Map<Int, LongArray>
 
-    //TODO should probably live elsewhere
+    // We also store the contents for the UBOs here
     internal val ubos = mutableMapOf<ShaderFactory.GLSLUniformBlock, Array<VulkanUniformBuffer>>()
 
     init {
@@ -29,6 +32,10 @@ class DescriptorPool(val backend: VulkanGraphicsBackend, val program: VulkanShad
 
         val descriptorsCountPerType = mutableMapOf<Int, Int>()
         resources@ for(resource in program.glslProgram.resources ) {
+            // Ignore resources from descriptor set zero when allocating this pool
+            if(resource.descriptorSet == 0)
+                continue
+
             val descriptorType = when (resource) {
                 is ShaderFactory.GLSLUniformBlock -> VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
                 is ShaderFactory.GLSLUniformSampler2D -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
@@ -54,8 +61,7 @@ class DescriptorPool(val backend: VulkanGraphicsBackend, val program: VulkanShad
                     type(descriptorType)
 
                     // Ie we have 4 ubos in the shader, and 3 swapchain images, so we need 12 descriptors
-                    val numberOfResourcesOfThatType = count
-                    descriptorCount(numberOfResourcesOfThatType * backend.swapchain.maxFramesInFlight)
+                    descriptorCount(count * backend.swapchain.maxFramesInFlight)
                     println("Asked for ${descriptorCount()} of $descriptorType")
                 }
             }
@@ -73,13 +79,11 @@ class DescriptorPool(val backend: VulkanGraphicsBackend, val program: VulkanShad
                     .ensureIs("Failed to create descriptor pool !", VK_SUCCESS)
             handle = pDescriptorPool.get(0)
 
-            // Create those descriptor sets immediately
+            // Allocate every set we need from this pool
             val layouts = stackMallocLong(descriptorSetsCount)
-
-            for (setLayout in program.descriptorSetLayouts) {
-                // We want a descriptor set for every set in use and for every possible frame in flight
-                for (i in 0 until backend.swapchain.maxFramesInFlight)
-                    layouts.put(setLayout)
+            for (setLayoutIndex in 1 until (UniformUpdateFrequency.values().size) + 2) {
+                for (j in 0 until backend.swapchain.maxFramesInFlight)
+                    layouts.put(program.descriptorSetLayouts[setLayoutIndex])
             }
             layouts.flip()
 
@@ -90,13 +94,18 @@ class DescriptorPool(val backend: VulkanGraphicsBackend, val program: VulkanShad
 
             val pDescriptorSets = stackMallocLong(descriptorSetsCount)
             vkAllocateDescriptorSets(backend.logicalDevice.vkDevice, allocInfo, pDescriptorSets).ensureIs("Failed to allocate descriptor sets :( ", VK_SUCCESS)
-            descriptorSets = LongArray(descriptorSetsCount)
-            pDescriptorSets.get(descriptorSets)
 
+            allocatedSets = mutableMapOf()
+
+            for(set in 1 until UniformUpdateFrequency.values().size + 2) {
+                val instances = LongArray(backend.swapchain.maxFramesInFlight)
+                pDescriptorSets.get(instances)
+                allocatedSets[set] = instances
+            }
         } else {
             // In the weird case where we don't have any uniforms, we create a dummy descriptor pool
             handle = -1L
-            descriptorSets = LongArray(0)
+            allocatedSets = mapOf()
         }
 
         stackPop()
@@ -129,7 +138,7 @@ class DescriptorPool(val backend: VulkanGraphicsBackend, val program: VulkanShad
         }
 
         // Update *that* set
-        val destinationSet = descriptorSets[resource.descriptorSet * backend.swapchain.maxFramesInFlight + frame.inflightFrameIndex]
+        val destinationSet = allocatedSets[resource.descriptorSet]!![frame.inflightFrameIndex]
 
         // Just update it
         val stuffToWrite = VkWriteDescriptorSet.callocStack(1).sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET).apply {
@@ -160,7 +169,7 @@ class DescriptorPool(val backend: VulkanGraphicsBackend, val program: VulkanShad
             sampler(sampler.handle)
         }
 
-        val destinationSet = descriptorSets[frame.inflightFrameIndex] // We store all the samplers in descriptor set zero for now
+        val destinationSet = allocatedSets[1]!![frame.inflightFrameIndex] // We store all the samplers in descriptor set zero for now
 
         val stuffToWrite = VkWriteDescriptorSet.callocStack(1).sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET).apply {
             dstSet(destinationSet)
@@ -177,13 +186,14 @@ class DescriptorPool(val backend: VulkanGraphicsBackend, val program: VulkanShad
         stackPop()
     }
 
-    /** Returns an array containing the handles of the descriptor sets to bind at frame N */
+    /** Returns an array containing the handles of the descriptor sets to bind at frame N (except for VT) */
     fun setsForFrame(frame: Frame): LongArray {
-        val setsCount = (1 + UniformUpdateFrequency.values().size)
-        val sets = LongArray(setsCount)
+        val sets2returnCount = (UniformUpdateFrequency.values().size + 1)
+        val sets = LongArray(sets2returnCount)
 
-        for (setIndex in 0 until setsCount) {
-            val set = descriptorSets[setIndex * backend.swapchain.maxFramesInFlight + frame.inflightFrameIndex]
+        for (setIndex in 0 until sets2returnCount) {
+            val set = allocatedSets[setIndex + 1]!![frame.inflightFrameIndex]
+            //println(set)
             sets[setIndex] = set
         }
 
@@ -191,6 +201,7 @@ class DescriptorPool(val backend: VulkanGraphicsBackend, val program: VulkanShad
     }
 
     override fun cleanup() {
+        // Destroying the pool also kills all the descriptors, so that's nice
         if (handle != -1L)
             vkDestroyDescriptorPool(backend.logicalDevice.vkDevice, handle, null)
 

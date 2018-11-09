@@ -16,6 +16,7 @@ import org.lwjgl.vulkan.VkDescriptorSetLayoutCreateInfo
 
 class VulkanShaderFactory(val backend: VulkanGraphicsBackend, val client: Client) : ShaderFactory(VulkanShaderFactory::class.java.classLoader) {
     override val classLoader: ClassLoader
+        //Note: We NEED that ?. operator because we're calling into this before Client is done initializing
         get() = (client?.content?.modsManager() as? ModsManagerImplementation)?.finalClassLoader ?: VulkanShaderFactory::class.java.classLoader
 
     fun loadProgram(basePath: String): GLSLProgram {
@@ -32,9 +33,9 @@ class VulkanShaderFactory(val backend: VulkanGraphicsBackend, val client: Client
         }
     }
 
-    fun createProgram(backend: VulkanGraphicsBackend, basePath: String) = VulkanicShaderProgram(backend, loadProgram(basePath))
+    fun createProgram(backend: VulkanGraphicsBackend, basePath: String) = VulkanShaderProgram(backend, loadProgram(basePath))
 
-    data class VulkanicShaderProgram internal constructor(val backend: VulkanGraphicsBackend, val glslProgram: GLSLProgram) {
+    data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsBackend, val glslProgram: GLSLProgram) {
         val spirvCode = SpirvCrossHelper.generateSpirV(glslProgram)
         val modules: Map<ShaderStage, ShaderModule>
 
@@ -44,11 +45,10 @@ class VulkanShaderFactory(val backend: VulkanGraphicsBackend, val client: Client
             stackPush()
 
             modules = spirvCode.stages.mapValues { ShaderModule(backend, it.value) }
-            //modules = mapOf(*spirvCode.stages.map { (stage, handles) -> Pair(stage, ShaderModule(backend, handles)) }.toTypedArray())
 
-            /** Important: DescriptorSet 0 is reserved and update frequencies start at 1 */
-            //iterate over the descriptor sets we want
-            descriptorSetLayouts = (0..UniformUpdateFrequency.values().size).map { descriptorSet ->
+            // Constructs layouts for the sets we'll be using
+            // Important: the descriptor set 0 is reserved for virtual texturing, set 1 is for static samplers and UBOs start at 2
+            descriptorSetLayouts = (0 until UniformUpdateFrequency.values().size + 2).map { descriptorSet ->
 
                 // Create bindings for all the resources in that set
                 val layoutBindings = glslProgram.resources.filter { it.descriptorSet == descriptorSet }.mapNotNull { resource ->
@@ -66,7 +66,7 @@ class VulkanShaderFactory(val backend: VulkanGraphicsBackend, val client: Client
 
                         descriptorCount(when (resource) {
                             is GLSLUniformSampler2D -> resource.count
-                            else -> 1 //TODO maybe allow arrays of ubo ? idk
+                            else -> 1 //TODO maybe allow arrays of ubo ? not for now
                         })
 
                         stageFlags(VK_SHADER_STAGE_ALL_GRAPHICS) //TODO we could be more precise here
@@ -80,12 +80,10 @@ class VulkanShaderFactory(val backend: VulkanGraphicsBackend, val client: Client
                     layoutBindings.forEach { them.put(it) }
                     them
                 } else null
-
                 pLayoutBindings?.flip()
 
                 val setLayoutCreateInfo = VkDescriptorSetLayoutCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO).apply {
                     pBindings(pLayoutBindings)
-
                 }
 
                 val pDescriptorSetLayout = stackLongs(1)
@@ -103,9 +101,4 @@ class VulkanShaderFactory(val backend: VulkanGraphicsBackend, val client: Client
             descriptorSetLayouts.forEach { vkDestroyDescriptorSetLayout(backend.logicalDevice.vkDevice, it, null) }
         }
     }
-}
-
-enum class VulkanShaderUniformResourceType {
-    UNIFORM_BLOCK,
-    SAMPLER2D
 }

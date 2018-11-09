@@ -1,10 +1,12 @@
 package io.xol.chunkstories.graphics.vulkan.graph
 
+import io.xol.chunkstories.api.graphics.ImageInput
 import io.xol.chunkstories.api.graphics.rendergraph.Pass
 import io.xol.chunkstories.graphics.vulkan.CommandPool
 import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import io.xol.chunkstories.graphics.vulkan.resources.Cleanable
 import io.xol.chunkstories.graphics.vulkan.resources.InflightFrameResource
+import io.xol.chunkstories.graphics.vulkan.shaders.VulkanShaderFactory
 import io.xol.chunkstories.graphics.vulkan.swapchain.Frame
 import io.xol.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
 import io.xol.chunkstories.graphics.vulkan.textures.vulkanFormat
@@ -19,6 +21,8 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
 
     val outputRenderBuffers: List<VulkanRenderBuffer>
     val resolvedDepthBuffer: VulkanRenderBuffer?
+
+    val program: VulkanShaderFactory.VulkanShaderProgram
 
     var renderPass: VkRenderPass = -1
         private set
@@ -38,6 +42,9 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
 
     init {
         this.apply(config)
+
+        //TODO handle custom shaders from mods
+        program = backend.shaderFactory.createProgram(backend, "/shaders/$shaderName/$shaderName")
 
         MemoryStack.stackPush()
 
@@ -322,16 +329,25 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
                     pClearValues(clearColor)
                 }
 
+
+                imageInputs.forEach { input ->
+                    val source = input.source
+
+                    when(source) {
+                        is ImageInput.ImageSource.RenderBufferReference -> {
+                            val renderBuffer = graph.buffers[input.name]!!
+
+                            val previousUsage = renderBuffer.findPreviousUsage()
+                            val currentUsage = VulkanRenderBuffer.UsageState.INPUT
+
+                            renderBuffer.transitionUsage(this, previousUsage, currentUsage)
+                        }
+                    }
+                }
+
                 vkCmdBeginRenderPass(this, renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE)
 
                 // Transition image layouts now !
-
-                /*outputRenderBuffers.forEach { renderBuffer ->
-                    val previousUsage = renderBuffer.findPreviousUsage()
-                    val currentUsage = VulkanRenderBuffer.UsageState.OUTPUT
-
-                    renderBuffer.transitionUsage(this, previousUsage, currentUsage)
-                }*/
 
                 for (drawingSystem in drawingSystems) {
                     drawingSystem.registerDrawingCommands(frame, this)
@@ -378,6 +394,8 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
         passDoneSemaphore.cleanup { vkDestroySemaphore(backend.logicalDevice.vkDevice, it, null) }
 
         drawingSystems.forEach(Cleanable::cleanup)
+
+        program.cleanup()
     }
 
     companion object {
