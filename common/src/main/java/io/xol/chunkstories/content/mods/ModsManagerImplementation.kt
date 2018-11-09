@@ -44,13 +44,13 @@ class ModsManagerImplementation @Throws(NonExistentCoreContent::class)
     private var cacheFolder: File? = null
 
     //TODO move, probably
-    private val pluginsWithinEnabledMods = ArrayList<PluginInformationImplementation>()
+    val pluginsWithinEnabledMods = ArrayList<PluginInformationImplementation>()
 
     var finalClassLoader: ClassLoader? = null
         private set
 
-    lateinit var allModsPlugins: Collection<PluginInformationImplementation>
-        private set
+    //lateinit var allModsPlugins: Collection<PluginInformationImplementation>
+    //    private set
 
     init {
         if (!baseContentLocation.exists())

@@ -1,5 +1,6 @@
 package io.xol.chunkstories.client.glfw
 
+import io.xol.chunkstories.api.entity.traits.serializable.TraitControllable
 import io.xol.chunkstories.api.graphics.GraphicsBackend
 import io.xol.chunkstories.api.graphics.Window
 import io.xol.chunkstories.client.ClientImplementation
@@ -44,7 +45,6 @@ class GLFWWindow(val client: ClientImplementation) : Window {
 
     val glfwWindowHandle: Long
     val graphicsBackend: GLFWBasedGraphicsBackend
-
     val inputsManager : Lwjgl3ClientInputsManager
 
     enum class GraphicsBackends(val glfwApiHint: Int, val usable: () -> Boolean, val creator : (GLFWWindow) -> GLFWBasedGraphicsBackend) {
@@ -89,6 +89,9 @@ class GLFWWindow(val client: ClientImplementation) : Window {
         while(!glfwWindowShouldClose(glfwWindowHandle)) {
             mainThreadQueue.removeAll { it.invoke(this); true }
             glfwPollEvents()
+            inputsManager.updateInputs()
+
+            client.ingame?.player?.controlledEntity?.let { it.traits[TraitControllable::class]?.onEachFrame() }
 
             graphicsBackend.drawFrame(frameNumber)
 

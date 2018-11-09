@@ -125,7 +125,7 @@ public abstract class DefaultPluginManager implements PluginManager {
 
 		// Mods too can bundle plugins
 		for (PluginInformationImplementation pluginInformation : ((ModsManagerImplementation) this.pluginExecutionContext
-				.getContent().modsManager()).getAllModsPlugins()) {
+				.getContent().modsManager()).getPluginsWithinEnabledMods()) {
 			// Client only plugins require actually being a client
 			if (pluginInformation.getPluginType() == PluginType.CLIENT_ONLY && !(this instanceof ClientPluginManager))
 				continue;

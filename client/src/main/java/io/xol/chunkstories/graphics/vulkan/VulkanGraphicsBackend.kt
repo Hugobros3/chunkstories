@@ -14,10 +14,7 @@ import io.xol.chunkstories.graphics.vulkan.resources.VulkanMemoryManager
 import io.xol.chunkstories.graphics.vulkan.shaders.VulkanShaderFactory
 import io.xol.chunkstories.graphics.vulkan.swapchain.SwapChain
 import io.xol.chunkstories.graphics.vulkan.swapchain.WindowSurface
-import io.xol.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
-import io.xol.chunkstories.graphics.vulkan.systems.VulkanFullscreenQuadDrawer
-import io.xol.chunkstories.graphics.vulkan.systems.VulkanGuiDrawer
-import io.xol.chunkstories.graphics.vulkan.systems.VulkanSpinningCubeDrawer
+import io.xol.chunkstories.graphics.vulkan.systems.*
 import io.xol.chunkstories.graphics.vulkan.textures.VulkanTextures
 import io.xol.chunkstories.graphics.vulkan.util.*
 import org.lwjgl.PointerBuffer
@@ -95,10 +92,20 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
             }
         }
 
-        renderGraph = VulkanRenderGraph(this, BuiltInRendergraphs.onlyGuiRenderGraph)
+        renderGraph = VulkanRenderGraph(this, queuedRenderGraph!!)
+        queuedRenderGraph = null
     }
 
     override fun drawFrame(frameNumber: Int) {
+        val queuedRenderGraph = this.queuedRenderGraph
+        if(queuedRenderGraph != null) {
+            vkDeviceWaitIdle(logicalDevice.vkDevice)
+
+            renderGraph.cleanup()
+            renderGraph = VulkanRenderGraph(this, queuedRenderGraph)
+            this.queuedRenderGraph = null
+        }
+
         val frame = swapchain.beginFrame(frameNumber)
 
         renderGraph.renderFrame(frame)
@@ -228,6 +235,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
             GuiDrawer::class.java -> VulkanGuiDrawer(pass, window.client.gui)
             FullscreenQuadDrawer::class.java -> VulkanFullscreenQuadDrawer(pass)
             VulkanSpinningCubeDrawer::class.java -> VulkanSpinningCubeDrawer(pass)
+            VulkanCubesDrawer::class.java -> VulkanCubesDrawer(pass, window.client.ingame!!)
 
             else -> throw Exception("Unimplemented system on this backend: ${declaredDrawingSystem.clazz}")
         }

@@ -49,7 +49,7 @@ class Lwjgl3ClientInputsManager// private final IngameLayer scene;
 (val gameWindow: GLFWWindow) : ClientInputsManager, InputsManagerLoader {
     private val gui: Gui
 
-    internal var inputs: MutableCollection<Input> = ArrayList()
+    internal var inputs = mutableListOf<Input>()
     internal var inputsMap: MutableMap<Long, Input> = mutableMapOf()
 
     var mouse: Lwjgl3Mouse
@@ -251,9 +251,7 @@ class Lwjgl3ClientInputsManager// private final IngameLayer scene;
         inputsMap[input.hash] = input
     }
 
-    fun pollLWJGLInputs() {
-        glfwPollEvents()
-
+    fun updateInputs() {
         for (input in this.inputs) {
             if (input is Pollable)
                 input.updateStatus()

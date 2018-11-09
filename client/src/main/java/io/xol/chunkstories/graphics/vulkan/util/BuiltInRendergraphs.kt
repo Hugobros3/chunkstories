@@ -7,6 +7,7 @@ import io.xol.chunkstories.api.graphics.rendergraph.DepthTestingConfiguration.De
 import io.xol.chunkstories.api.graphics.rendergraph.PassOutput.BlendMode.*
 import io.xol.chunkstories.api.graphics.ImageInput.SamplingMode.*
 import io.xol.chunkstories.api.gui.GuiDrawer
+import io.xol.chunkstories.graphics.vulkan.systems.VulkanCubesDrawer
 import io.xol.chunkstories.graphics.vulkan.systems.VulkanSpinningCubeDrawer
 
 object BuiltInRendergraphs {
@@ -62,6 +63,74 @@ object BuiltInRendergraphs {
                 outputs {
                     output {
                         name = "guiColorBuffer"
+
+                        //clear = true
+                        blending = MIX
+                    }
+                }
+
+                default = true
+                final = true
+
+                depth {
+                    enabled = false
+                }
+            }
+        }
+    }
+
+
+    val debugRenderGraph : RenderGraphDeclarationScript = {
+        renderBuffers {
+            renderBuffer {
+                name = "depthBuffer"
+
+                format = DEPTH_32
+                size = viewportSize
+            }
+
+            renderBuffer {
+                name = "colorBuffer"
+
+                format = RGBA_8
+                size = viewportSize
+            }
+        }
+
+        passes {
+            pass {
+                name = "cubes"
+
+                draws {
+                    system(VulkanCubesDrawer::class)
+                }
+
+                outputs {
+                    output {
+                        name = "colorBuffer"
+                        clear = true
+                    }
+                }
+
+                depth {
+                    enabled = true
+                    depthBuffer = "depthBuffer"
+                    clear = true
+                }
+            }
+
+            pass {
+                name = "gui"
+
+                dependsOn("cubes")
+
+                draws {
+                    system(GuiDrawer::class)
+                }
+
+                outputs {
+                    output {
+                        name = "colorBuffer"
 
                         //clear = true
                         blending = MIX

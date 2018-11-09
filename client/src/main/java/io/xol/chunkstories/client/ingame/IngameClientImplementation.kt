@@ -16,6 +16,8 @@ import io.xol.chunkstories.api.world.WorldMaster
 import io.xol.chunkstories.client.ClientImplementation
 import io.xol.chunkstories.client.ClientMasterPluginManager
 import io.xol.chunkstories.client.ClientSlavePluginManager
+import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
+import io.xol.chunkstories.graphics.vulkan.util.BuiltInRendergraphs
 import io.xol.chunkstories.gui.layer.MainMenu
 import io.xol.chunkstories.gui.layer.MessageBox
 import io.xol.chunkstories.gui.layer.SkyBoxBackground
@@ -56,6 +58,7 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
 
         // We need the plugin manager very early so we make it in the common abstract class constructor
         internalPluginManager = (this as? IngameClientLocalHost)?.let { ClientMasterPluginManager(it) } ?: ClientSlavePluginManager(this)
+        internalPluginManager.reloadPlugins()
 
         // Prepare command line
         ReloadContentCommand(this)
@@ -69,6 +72,9 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
         if (internalWorld is WorldMaster)
             internalWorld.spawnPlayer(player)
 
+        client.ingame = this
+        client.gameWindow.graphicsBackend.queuedRenderGraph = BuiltInRendergraphs.debugRenderGraph
+
         ingameGuiLayer = IngameLayer(gui, this)
         val connectionProgressLayer = gui.topLayer as? RemoteConnectionGuiLayer
         if (connectionProgressLayer != null) //TODO generalize to other loading hider overlays
@@ -76,9 +82,7 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
         else
             gui.topLayer = ingameGuiLayer
 
-        client.ingame = this
-
-        // Start only the logic after getAllVoxelComponents that
+        // Start only the logic after all that
         internalWorld.startLogic()
     }
 
@@ -100,6 +104,8 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
 
     open fun exitCommon() {
         pluginManager.disablePlugins()
+
+        client.gameWindow.graphicsBackend.queuedRenderGraph = BuiltInRendergraphs.onlyGuiRenderGraph
 
         // Destroy the world
         internalWorld.destroy()
