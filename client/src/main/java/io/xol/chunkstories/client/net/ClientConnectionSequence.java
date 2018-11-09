@@ -145,7 +145,7 @@ public class ClientConnectionSequence extends Thread {
 
 				File cached = new File(GameDirectory.getGameFolderPath() + "/servermods/" + modMd5Hash + ".zip");
 				if (!cached.exists()) {
-					// Sequentially download getAllVoxelComponents the mods from the server
+					// Sequentially download all the mods from the server
 					status = connection.obtainModFile(modMd5Hash, cached);
 					status.waitForEnd();
 				}

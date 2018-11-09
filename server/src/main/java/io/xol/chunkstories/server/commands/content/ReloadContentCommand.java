@@ -28,7 +28,7 @@ public class ReloadContentCommand implements CommandHandler {
         if (command.getName().equals("reload") && emitter.hasPermission("content.reload")) {
             if (arguments.length == 0) {
                 emitter.sendMessage("#00FFD0" + "Usage for /reload: ");
-                emitter.sendMessage("#00FFD0" + "/reload getAllVoxelComponents #FFFFD0| Reloads everything (might break stuff!)");
+                emitter.sendMessage("#00FFD0" + "/reload all #FFFFD0| Reloads everything (might break stuff!)");
                 emitter.sendMessage("#00FFD0"
                         + "/reload assets #FFFFD0| Reloads non-code assets without rebuilding the filesystem ( for iteration )");
                 emitter.sendMessage("#00FFD0"
@@ -38,7 +38,7 @@ public class ReloadContentCommand implements CommandHandler {
                 // TODO show those subsystems
 
             } else {
-                if (arguments[0].equals("getAllVoxelComponents")) {
+                if (arguments[0].equals("all")) {
                     gameContext.getContent().reload();
                     emitter.sendMessage("#00FFD0" + "Reloaded everything.");
                 } /*else if (arguments[0].equals("shaders")) {

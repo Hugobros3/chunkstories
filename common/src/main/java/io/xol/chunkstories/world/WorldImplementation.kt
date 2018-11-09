@@ -64,8 +64,8 @@ import java.util.concurrent.locks.ReadWriteLock
 import java.util.concurrent.locks.ReentrantReadWriteLock
 
 abstract class WorldImplementation @Throws(WorldLoadingException::class)
-constructor(gameContext: GameContext, info: WorldInfo, initialContentTranslator: AbstractContentTranslator?, folder: File?) : World {
-    override val gameContext: GameContext
+constructor(override val gameContext: GameContext, info: WorldInfo, initialContentTranslator: AbstractContentTranslator?, folder: File?) : World {
+    //override val gameContext: GameContext
 
     final override val worldInfo: WorldInfo
     final override val contentTranslator: AbstractContentTranslator
@@ -75,7 +75,7 @@ constructor(gameContext: GameContext, info: WorldInfo, initialContentTranslator:
     private val internalData = Properties()
     private val internalDataFile: File?
 
-    override val generator: WorldGenerator
+    final override val generator: WorldGenerator
 
     // The world age, also tick counter. Can count for billions of real-world
     // time so we are not in trouble.
@@ -91,7 +91,7 @@ constructor(gameContext: GameContext, info: WorldInfo, initialContentTranslator:
     private val worldThread: WorldLogicThread
 
     //Data holding
-    final val regionsHolder: HashMapWorldRegionsHolder
+    val regionsHolder: HashMapWorldRegionsHolder
     final override val regionsSummariesHolder: WorldHeightmapsImplementation
 
     // Temporary entity list
@@ -99,7 +99,7 @@ constructor(gameContext: GameContext, info: WorldInfo, initialContentTranslator:
 
     var entitiesLock: ReadWriteLock = ReentrantReadWriteLock(true)
 
-    override val collisionsManager: WorldCollisionsManager
+    final override val collisionsManager: WorldCollisionsManager
 
     // Entity IDS counter
     internal var entitiesUUIDGenerator = AtomicLong()
@@ -134,15 +134,15 @@ constructor(gameContext: GameContext, info: WorldInfo, initialContentTranslator:
     override val allLoadedChunks: ChunksIterator
         get() = WorldChunksIterator(this)
 
-    override val gameLogic: GameLogic
+    final override val gameLogic: GameLogic
         get() = worldThread
 
-    override val content: Content
+    final override val content: Content
         get() = gameContext.content
 
     init {
         try {
-            this.gameContext = gameContext
+            //this.gameContext = gameContext
             this.worldInfo = info
 
             // Create holders for the world data
@@ -169,7 +169,8 @@ constructor(gameContext: GameContext, info: WorldInfo, initialContentTranslator:
                 this.contentTranslator.save(File(this.folderPath!! + "/content_mappings.dat"))
 
                 internalDataFile = File(folder.path + "/internal.dat")
-                this.internalData.load(FileReader(internalDataFile))
+                if(internalDataFile.exists())
+                    this.internalData.load(FileReader(internalDataFile))
 
                 this.entitiesUUIDGenerator.set(internalData.getProperty("entities-ids-counter", "0").toLong())
                 this.time = internalData.getProperty("worldTime")?.toLongOrNull() ?: 5000
@@ -187,9 +188,8 @@ constructor(gameContext: GameContext, info: WorldInfo, initialContentTranslator:
                 this.folderFile = null
                 this.internalDataFile = null
             }
-            this.generator = gameContext.content.generators().getWorldGenerator(info.generatorName)
-                    .createForWorld(this)
 
+            this.generator = gameContext.content.generators().getWorldGenerator(info.generatorName).createForWorld(this)
             this.collisionsManager = DefaultWorldCollisionsManager(this)
 
             // Start the world logic thread
@@ -202,11 +202,11 @@ constructor(gameContext: GameContext, info: WorldInfo, initialContentTranslator:
     }
 
     fun startLogic() {
-        worldThread!!.start()
+        worldThread.start()
     }
 
     fun stopLogic(): Fence {
-        return worldThread!!.stopLogicThread()
+        return worldThread.stopLogicThread()
     }
 
     open fun spawnPlayer(player: Player) {
@@ -238,8 +238,8 @@ constructor(gameContext: GameContext, info: WorldInfo, initialContentTranslator:
             if (entity == null || entity.traits[TraitHealth::class.java]?.isDead == true)
                 entity = this.gameContext.content.entities().getEntityDefinition("player")!!
                         .newEntity(this)
-            else
-                entity.UUID = -1
+            //else
+            //    entity.UUID = -1
 
             // Name your player !
             entity.traits[TraitName::class.java]?.name = player.name
@@ -554,7 +554,7 @@ constructor(gameContext: GameContext, info: WorldInfo, initialContentTranslator:
     fun saveEverything(): Fence {
         val ioOperationsFence = CompoundFence()
 
-        logger.info("Saving getAllVoxelComponents parts of world " + worldInfo.name)
+        logger.info("Saving all parts of world " + worldInfo.name)
         ioOperationsFence.add(regionsHolder.saveAll())
         ioOperationsFence.add(regionsSummariesHolder.saveAllLoadedSummaries())
 
@@ -571,7 +571,7 @@ constructor(gameContext: GameContext, info: WorldInfo, initialContentTranslator:
         return entitiesUUIDGenerator.getAndIncrement()
     }
 
-    override fun handleInteraction(entity: Entity, voxelLocation: Location, input: Input): Boolean {
+    override fun handleInteraction(entity: Entity, voxelLocation: Location?, input: Input): Boolean {
         if (voxelLocation == null)
             return false
 

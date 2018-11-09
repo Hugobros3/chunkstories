@@ -53,7 +53,8 @@ fun ClientImplementation.createAndEnterWorld(folder: File, worldInfo: WorldInfo)
 /** Represent an IngameClient that is also a local Server (with minimal server functionality). Used in local SP. */
 class IngameClientLocalHost(client: ClientImplementation, worldInitializer: (IngameClientImplementation) -> WorldClientLocal) : IngameClientImplementation(client, worldInitializer), Server {
     override val world: WorldClientLocal = super.internalWorld as WorldClientLocal
-    override val pluginManager: ClientMasterPluginManager = super.internalPluginManager as ClientMasterPluginManager
+    override val pluginManager: ClientMasterPluginManager
+            get() = super.internalPluginManager as ClientMasterPluginManager
 
     override val userPrivileges = FileBasedUsersPrivileges()
     override var permissionsManager: PermissionsManager = PermissionsManager { _, _ ->
@@ -94,8 +95,7 @@ class IngameClientLocalHost(client: ClientImplementation, worldInitializer: (Ing
         print(message)
     }
 
-    override val connectedPlayers: IterableIterator<Player>
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+    override val connectedPlayers = setOf(player)
 
     override val connectedPlayersCount: Int = 1
     override val publicIp: String = "127.0.0.1"

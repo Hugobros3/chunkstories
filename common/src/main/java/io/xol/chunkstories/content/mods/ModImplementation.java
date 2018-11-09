@@ -60,7 +60,7 @@ public abstract class ModImplementation implements Mod {
 	}
 
 	private synchronized void computeMD5Hash() {
-		// Makes a sorted list of the names of getAllVoxelComponents the assets
+		// Makes a sorted list of the names of all the assets
 		List<String> assetsSorted = new ArrayList<String>();
 		for (Asset asset : assets()) {
 			assetsSorted.add(asset.getName());

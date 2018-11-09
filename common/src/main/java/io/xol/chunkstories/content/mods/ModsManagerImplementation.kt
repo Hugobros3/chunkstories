@@ -375,7 +375,7 @@ class ModsManagerImplementation @Throws(NonExistentCoreContent::class)
 
         logger().error("Failed to load class $className")
 
-        // If getAllVoxelComponents fail, return null
+        // If all fail, return null
         return null
     }
 

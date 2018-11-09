@@ -227,7 +227,7 @@ class ServerPlayer(val playerConnection: ClientConnection, private val playerNam
         if (subscribedEntities.add(entity)) {
             entity.subscribers.register(this)
 
-            // Only the server should ever push getAllVoxelComponents components to a client
+            // Only the server should ever push all components to a client
             entity.traits.all().forEach { c ->
                 if (c is TraitSerializable)
                     c.pushComponent(this)

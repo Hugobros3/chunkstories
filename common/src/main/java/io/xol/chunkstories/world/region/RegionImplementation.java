@@ -227,7 +227,7 @@ public class RegionImplementation implements Region {
 			this.save();
 		}
 
-		// Before unloading the holder we want to make sure we finish getAllVoxelComponents saving
+		// Before unloading the holder we want to make sure we finish all saving
 		// operations
 		// if (handler != null)
 		// handler.finishSavingOperations();
@@ -332,7 +332,7 @@ public class RegionImplementation implements Region {
 	}
 
 	/**
-	 * Unloads unused chunks, returns true if getAllVoxelComponents chunks were unloaded
+	 * Unloads unused chunks, returns true if all chunks were unloaded
 	 */
 	/*
 	 * public boolean unloadsUnusedChunks() { int loadedChunks = 0;

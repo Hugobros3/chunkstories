@@ -33,7 +33,7 @@ class WorldGeneratorsStore(private val store: GameContentStore) : Content.WorldG
     }
 
     fun reload() {
-        // Loads getAllVoxelComponents generators
+        // Loads all generators
         generators.clear()
 
         fun readDefinitions(a: Asset) {

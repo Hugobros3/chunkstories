@@ -23,11 +23,14 @@ constructor(override val client: IngameClientImplementation, info: WorldInfo, tr
 
     val pluginManager: ClientPluginManager
         get() = client.pluginManager
-    override val gameContext: IngameClientImplementation
-        get() = client
 
-    override val decalsManager: DecalsManager = TODO()
-    override val particlesManager: ParticlesManager = TODO()
+    /** We cast and return the super property because of callbacks in the superconstructor expect this to be set before we have a chance to in this constructor */
+    override val gameContext: IngameClientImplementation
+        get() = super.gameContext as IngameClientImplementation
+
+    //TODO
+    override val decalsManager: DecalsManager = WorldTool.NullDecalsManager()
+    override val particlesManager: ParticlesManager = WorldTool.NullParticlesManager()
 
     override fun tick() {
         super.tick()

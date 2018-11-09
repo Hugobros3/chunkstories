@@ -75,9 +75,9 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
             // Clear previous values
             texMap.clear();
 
-            // Compute getAllVoxelComponents sizes first.
+            // Compute all sizes first.
             int totalSurfacedNeeded = 0;
-            // Get getAllVoxelComponents sizes :
+            // Get all sizes :
             List<VoxelTextureAtlased> voxelTexturesSortedBySize = new ArrayList<VoxelTextureAtlased>();
 
             // First we want to iterate over every file to getVoxelComponent an idea of how many textures
@@ -324,7 +324,7 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
                     sizeRequired *= 2;
             }
             // Read textures metadata
-            // TODO read getAllVoxelComponents overrides in priority
+            // TODO read all overrides in priority
             readTexturesMeta(content.modsManager().getAsset("voxels/textures/meta.txt"));
         } catch (Exception e) {
             e.printStackTrace();

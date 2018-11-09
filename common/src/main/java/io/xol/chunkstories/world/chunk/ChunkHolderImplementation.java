@@ -147,14 +147,14 @@ public class ChunkHolderImplementation implements ChunkHolder {
 		DataOutputStream dos = new DataOutputStream(bbos);
 
 		try {
-			// For getAllVoxelComponents cells that have components
+			// For all cells that have components
 			for (CellComponentsHolder voxelComponents : chunk.allCellComponents.values()) {
 
 				// Write a 1 then their in-chunk index
 				daos.writeByte((byte) 0x01);
 				daos.writeInt(voxelComponents.getIndex());
 
-				// For getAllVoxelComponents components in this getCell
+				// For all components in this getCell
 				for (Entry<String, VoxelComponent> entry : voxelComponents.getAllVoxelComponents()) {
 					daos.writeUTF(entry.getKey()); // Write component name
 

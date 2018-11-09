@@ -134,7 +134,7 @@ public class AssimpMeshLoader {
             }
 
             if (hasAnimationData) {
-                // Create objects to receive the animation data for getAllVoxelComponents the vertices of this submesh
+                // Create objects to receive the animation data for all the vertices of this submesh
                 for (int i = 0; i < aiMesh.getNumVertices(); i++) {
                     boneWeightsForeachVertex.put(firstVertex + i, new VertexBoneWeights());
                 }

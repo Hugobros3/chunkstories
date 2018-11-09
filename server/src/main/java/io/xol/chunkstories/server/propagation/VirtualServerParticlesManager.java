@@ -6,19 +6,16 @@
 
 package io.xol.chunkstories.server.propagation;
 
-import java.util.Iterator;
-
-import org.joml.Vector3dc;
-
 import io.xol.chunkstories.api.net.packets.PacketParticle;
 import io.xol.chunkstories.api.particles.ParticlesManager;
 import io.xol.chunkstories.api.player.Player;
 import io.xol.chunkstories.server.DedicatedServer;
 import io.xol.chunkstories.server.player.ServerPlayer;
 import io.xol.chunkstories.world.WorldServer;
+import org.joml.Vector3dc;
 
 public class VirtualServerParticlesManager implements ParticlesManager {
-	WorldServer worldServer;
+	private final WorldServer worldServer;
 
 	public VirtualServerParticlesManager(WorldServer worldServer, DedicatedServer server) {
 		this.worldServer = worldServer;
@@ -31,44 +28,24 @@ public class VirtualServerParticlesManager implements ParticlesManager {
 			this.serverPlayer = serverPlayer;
 		}
 
-		@Override
-		public void spawnParticleAtPosition(String particleTypeName, Vector3dc position) {
+		@Override public void spawnParticleAtPosition(String particleTypeName, Vector3dc position) {
 			spawnParticleAtPositionWithVelocity(particleTypeName, position, null);
 		}
 
-		@Override
-		public void spawnParticleAtPositionWithVelocity(String particleTypeName, Vector3dc position,
-				Vector3dc velocity) {
-			Iterator<Player> i = worldServer.getPlayers();
-			while (i.hasNext()) {
-				Player player = i.next();
-				if (!player.equals(serverPlayer))
-					tellPlayer(player, particleTypeName, position, velocity);
-			}
+		@Override public void spawnParticleAtPositionWithVelocity(String particleTypeName, Vector3dc position, Vector3dc velocity) {
+			VirtualServerParticlesManager.this.spawnParticleAtPositionWithVelocity(particleTypeName, position, velocity);
 		}
 
 	}
 
-	void tellPlayer(Player player, String particleTypeName, Vector3dc location, Vector3dc velocity) {
-		PacketParticle packet = new PacketParticle(worldServer, particleTypeName, location, velocity);
-		/*
-		 * packet.particleName = particleTypeName; packet.position = location;
-		 * packet.velocity = velocity;
-		 */
-		player.pushPacket(packet);
-	}
-
-	@Override
-	public void spawnParticleAtPosition(String particleTypeName, Vector3dc position) {
+	@Override public void spawnParticleAtPosition(String particleTypeName, Vector3dc position) {
 		spawnParticleAtPositionWithVelocity(particleTypeName, position, null);
 	}
 
-	@Override
-	public void spawnParticleAtPositionWithVelocity(String particleTypeName, Vector3dc location, Vector3dc velocity) {
-		Iterator<Player> i = worldServer.getPlayers();
-		while (i.hasNext()) {
-			Player player = i.next();
-			tellPlayer(player, particleTypeName, location, velocity);
+	@Override public void spawnParticleAtPositionWithVelocity(String particleTypeName, Vector3dc location, Vector3dc velocity) {
+		for (Player player : worldServer.getPlayers()) {
+			PacketParticle packet = new PacketParticle(worldServer, particleTypeName, location, velocity);
+			player.pushPacket(packet);
 		}
 	}
 

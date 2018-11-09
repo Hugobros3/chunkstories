@@ -95,7 +95,7 @@ public class OggInputStream extends InputStream {
 		// Ogg bitstream is in fact Vorbis data
 
 		// I handle the initial header first instead of just having the code
-		// read getAllVoxelComponents three Vorbis headers at once because reading the initial
+		// read all three Vorbis headers at once because reading the initial
 		// header is an easy way to identify a Vorbis bitstream and it's
 		// useful to see that functionality seperated out.
 
@@ -175,7 +175,7 @@ public class OggInputStream extends InputStream {
 				return false;
 			}
 			if (bytes == 0 && i < 2) {
-				System.out.println("End of file before finding getAllVoxelComponents Vorbis headers!");
+				System.out.println("End of file before finding all Vorbis headers!");
 				reachedEnd = true;
 				return false;
 			}
@@ -184,7 +184,7 @@ public class OggInputStream extends InputStream {
 
 		convsize = 4096 / info.channels;
 
-		// OK, got and parsed getAllVoxelComponents three headers. Initialize the Vorbis
+		// OK, got and parsed all three headers. Initialize the Vorbis
 		// packet->PCM decoder.
 		dspState.synthesis_init(info); // central decode state
 		currentBlock.init(dspState); // local state for most of the decode

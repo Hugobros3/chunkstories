@@ -108,7 +108,7 @@ public class PacketSoundSource extends PacketWorld {
 			return;
 		}
 
-		// Update the soundSource with getAllVoxelComponents we can
+		// Update the soundSource with all we can
 		soundSource.setPosition(position);
 		soundSource.setPitch(pitch);
 		soundSource.setGain(gain);

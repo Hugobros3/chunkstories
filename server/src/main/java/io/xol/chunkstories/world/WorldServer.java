@@ -10,8 +10,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Deque;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
+import io.xol.chunkstories.api.GameContext;
 import io.xol.chunkstories.api.exceptions.PacketProcessingException;
 import io.xol.chunkstories.api.net.Packet;
 import io.xol.chunkstories.api.net.PacketDefinition.PacketGenre;
@@ -58,6 +60,13 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 		getIoHandler().start();
 	}
 
+	@NotNull
+	@Override
+	/** We cast the super property because of callbacks in the superconstructor expect this to be set before we have a chance to in this constructor */
+	public DedicatedServer getGameContext() {
+		return (DedicatedServer) super.getGameContext();
+	}
+
 	public DedicatedServer getServer() {
 		return server;
 	}
@@ -69,11 +78,8 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 		super.tick();
 
 		// Update client tracking
-		Iterator<Player> playersIterator = this.getPlayers();
-		while (playersIterator.hasNext()) {
-			Player player = playersIterator.next();
+		for (Player player : getPlayers()) {
 
-			// System.out.println("client: "+client);
 			if (player.hasSpawned()) {
 				// Update whatever he sees
 				((ServerPlayer) player).updateTrackedEntities();
@@ -96,6 +102,12 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 	@Override
 	public IOTasks getIoHandler() {
 		return ioHandler;
+	}
+
+	@NotNull @Override
+	public Set<Player> getPlayers() {
+		//TODO make sure they are in that world
+		return server.getConnectedPlayers();
 	}
 
 	class PendingPlayerDatagram {
@@ -163,35 +175,6 @@ public class WorldServer extends WorldImplementation implements WorldMaster, Wor
 	@Override
 	public VirtualServerDecalsManager getDecalsManager() {
 		return virtualServerDecalsManager;
-	}
-
-	public IterableIterator<Player> getPlayers() {
-		return new IterableIterator<Player>() {
-			Iterator<Player> players = server.getConnectedPlayers();
-			Player next = null;
-
-			@Override
-			public boolean hasNext() {
-				while (next == null && players.hasNext()) {
-					next = players.next();
-					if (next.getWorld() != null && next.getWorld().equals(WorldServer.this)) // Require the player to be
-																								// spawned within this
-																								// world.
-						break;
-					else
-						next = null;
-				}
-				return next != null;
-			}
-
-			@Override
-			public Player next() {
-				Player player = next;
-				next = null;
-				return player;
-			}
-
-		};
 	}
 
 	@Override

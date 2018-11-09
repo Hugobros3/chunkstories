@@ -248,7 +248,7 @@ public class PluginInformationImplementation extends URLClassLoader implements P
 						.newInstance(new Object[] { this, pluginExecutionContext });
 			}
 		}
-		// Catch-getAllVoxelComponents for plugin creation failure
+		// Catch-all for plugin creation failure
 		catch (InstantiationException | IllegalAccessException | IllegalArgumentException
 				| InvocationTargetException e) {
 			e.printStackTrace();

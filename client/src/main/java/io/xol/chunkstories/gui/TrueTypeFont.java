@@ -152,6 +152,8 @@ public class TrueTypeFont implements Font {
 		// texture
 		// size should be calculated dynamicaly by looking at character sizes.
 		try {
+			pageCreated[offset] = true;
+
 			BufferedImage imgTemp = new BufferedImage(textureWidth, textureHeight, BufferedImage.TYPE_INT_ARGB);
 			Graphics2D g = (Graphics2D) imgTemp.getGraphics();
 

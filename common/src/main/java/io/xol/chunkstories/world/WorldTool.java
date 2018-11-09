@@ -7,6 +7,7 @@
 package io.xol.chunkstories.world;
 
 import java.util.Iterator;
+import java.util.Set;
 
 import io.xol.chunkstories.api.graphics.systems.dispatching.DecalsManager;
 import io.xol.chunkstories.api.world.WorldInfo;
@@ -116,7 +117,7 @@ public class WorldTool extends WorldImplementation implements WorldMaster {
 
 	NullParticlesManager nullParticlesManager = new NullParticlesManager();
 
-	class NullParticlesManager implements ParticlesManager {
+	static class NullParticlesManager implements ParticlesManager {
 
 		@Override
 		public void spawnParticleAtPosition(String particleTypeName, Vector3dc location) {
@@ -139,7 +140,7 @@ public class WorldTool extends WorldImplementation implements WorldMaster {
 
 	NullDecalsManager nullDecalsManager = new NullDecalsManager();
 
-	class NullDecalsManager implements DecalsManager {
+	static class NullDecalsManager implements DecalsManager {
 
 		@Override
 		public void add(@NotNull Vector3dc vector3dc, @NotNull Vector3dc vector3dc1, @NotNull Vector3dc vector3dc2, @NotNull String s) {
@@ -153,7 +154,7 @@ public class WorldTool extends WorldImplementation implements WorldMaster {
 	}
 
 	@Override
-	public IterableIterator<Player> getPlayers() {
+	public Set<Player> getPlayers() {
 		throw new UnsupportedOperationException("getPlayers");
 	}
 

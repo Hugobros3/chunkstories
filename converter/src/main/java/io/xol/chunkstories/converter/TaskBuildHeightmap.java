@@ -58,7 +58,7 @@ public class TaskBuildHeightmap extends Task {
 					}
 				}
 
-		// Wait until getAllVoxelComponents of that crap loads
+		// Wait until all of that crap loads
 		loadRelevantData.traverse();
 
 		// Descend from top

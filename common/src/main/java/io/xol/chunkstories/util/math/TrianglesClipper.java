@@ -197,7 +197,7 @@ public class TrianglesClipper {
 		}
 		// All are
 		else if (v1.x() < border && v2.x() < border && v3.x() < border) {
-			// System.out.println("getAllVoxelComponents out !");
+			// System.out.println("all out !");
 			return 0;
 		}
 		// None are
@@ -245,7 +245,7 @@ public class TrianglesClipper {
 
 			return cullTop(v1, v1to2, v1to3);
 		} else if (v1.x() > border && v2.x() > border && v3.x() > border) {
-			// System.out.println("getAllVoxelComponents out !");
+			// System.out.println("all out !");
 			return 0;
 		} else {
 			return cullTop(v1, v2, v3);
@@ -336,7 +336,7 @@ public class TrianglesClipper {
 
 			return cullBot(v1, v1to2, v1to3);
 		} else if (v1.y() > border && v2.y() > border && v3.y() > border) {
-			// System.out.println("getAllVoxelComponents out !");
+			// System.out.println("all out !");
 			return 0;
 		} else {
 			return cullBot(v1, v2, v3);
@@ -382,7 +382,7 @@ public class TrianglesClipper {
 		// All are
 		else if (v1.y() < border && v2.y() < border && v3.y() < border) {
 			return 0;
-			// System.out.println("getAllVoxelComponents out !");
+			// System.out.println("all out !");
 		}
 		// None are
 		else {

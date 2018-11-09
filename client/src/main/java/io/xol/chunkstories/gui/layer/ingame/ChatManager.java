@@ -90,7 +90,7 @@ public class ChatManager {
 		public void render(GuiDrawer drawer) {
 			parentLayer.render(drawer);
 
-			inputBox.setPosition(12, 192);
+			inputBox.setPosition(8, 48);
 			inputBox.setTransparent(true);
 			inputBox.render(drawer);
 		}
@@ -183,8 +183,8 @@ public class ChatManager {
 			if (textFade > 1 || gui.getTopLayer() instanceof ChatPanelOverlay)
 				textFade = 1;
 
-			drawer.drawStringWithShadow(font, 9,
-					(linesDrew - 1) * font.getLineHeight() + 180 + (50), localizedLine, chatWidth,
+			drawer.drawStringWithShadow(font, 8,
+					(linesDrew) * font.getLineHeight() + 64, localizedLine, chatWidth,
 					new Vector4f(1, 1, 1, textFade));
 		}
 

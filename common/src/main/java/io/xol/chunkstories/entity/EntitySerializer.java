@@ -37,7 +37,7 @@ public class EntitySerializer {
             dos.writeLong(entity.getUUID());
             dos.writeShort(entity.getWorld().getContentTranslator().getIdForEntity(entity));
 
-            // Write getAllVoxelComponents components we wanna update
+            // Write all components we wanna update
             for (Trait trait : entity.traits.all()) {
                 if (trait instanceof TraitSerializable) {
                     LengthAwareOutputStream out = LengthAwareBufferedIOHelper.getLengthAwareOutput();
@@ -74,7 +74,7 @@ public class EntitySerializer {
             Entity entity = world.getContentTranslator().getEntityForId(entityTypeID).newEntity(world);
             entity.setUUID(entityUUID);
 
-            // Loop throught getAllVoxelComponents components
+            // Loop throught all components
             while (true) {
                 int componentLength = dis.readInt();
                 if (componentLength == -1) // End of components to read

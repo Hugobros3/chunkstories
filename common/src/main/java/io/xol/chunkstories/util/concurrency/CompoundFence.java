@@ -15,7 +15,7 @@ public class CompoundFence extends LinkedList<Fence> implements Fence {
 	private static final long serialVersionUID = 1770973697744619763L;
 
 	@Override
-	/** Traverse-getAllVoxelComponents :) */
+	/** Traverse-all :) */
 	public void traverse() {
 		for (Fence f : this) {
 			if (f != null)

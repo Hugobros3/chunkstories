@@ -19,6 +19,7 @@ import org.joml.Vector4f;
 /**
  * Helps with rendering the inventory grid
  */
+//TODO refactor into a neater component with width and shit
 public class InventoryGridRenderer {
     private Inventory inventory;
 
@@ -26,12 +27,8 @@ public class InventoryGridRenderer {
         this.inventory = entityInventories;
     }
 
-    int[] selectedSlot;
-    boolean closedButton = false;
-
-    public void drawInventoryCentered(GuiDrawer drawer, int x, int y, boolean summary, int blankLines) {
-        drawInventory(drawer, x - slotsWidth(getInventory().getWidth()) / 2, y - slotsHeight(getInventory().getHeight(), summary, blankLines) / 2, summary, blankLines, -1);
-    }
+    private int[] selectedSlot;
+    private boolean closedButton = false;
 
     public int[] getSelectedSlot() {
         return selectedSlot;
@@ -49,7 +46,7 @@ public class InventoryGridRenderer {
                 selectedSlot = esi.getSelectedSlot();
         }
 
-        drawInventory(drawer, x - slotsWidth(getInventory().getWidth()) / 2, y - slotsHeight(getInventory().getHeight(), true, 0) / 2, true, 0, selectedSlot);
+        drawInventory(drawer, x - slotsWidth(getInventory().getWidth()) / 2, y /*- slotsHeight(getInventory().getHeight(), true, 0) / 2*/, true, 0, selectedSlot);
     }
 
     //TODO move to own layer
@@ -206,8 +203,7 @@ public class InventoryGridRenderer {
             }
         }
 
-        // Draws the item's text ( done later to allow fontRenderer to pool their draws
-        // )
+        // Draws the item's text ( done later to allow fontRenderer to pool their draws )
         for (ItemPile pile : getInventory()) {
             int i = pile.getX();
             int j = pile.getY();

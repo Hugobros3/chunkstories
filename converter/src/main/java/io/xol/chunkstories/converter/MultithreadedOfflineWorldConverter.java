@@ -204,7 +204,7 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 						}
 					}
 
-					// Drop getAllVoxelComponents unsued chunk data
+					// Drop all unsued chunk data
 					workers.dropAll();
 
 					// csWorld.unloadUselessData().traverse();
@@ -214,7 +214,7 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 		compoundFence.traverse();
 
 		verbose("Saving unused chunk data...");
-		// Drop getAllVoxelComponents unsued chunk data
+		// Drop all unsued chunk data
 		workers.dropAll();
 		// csWorld.unloadUselessData().traverse();
 		verbose("Done.");
@@ -290,7 +290,7 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 
 					while (true) {
 						if (workers.size() > 0) {
-							// we actually wait for the workers to chew through getAllVoxelComponents their tasks
+							// we actually wait for the workers to chew through all their tasks
 							// hopefully nothing cocks about in the lightning code and spawns
 							// endless tasks
 							try {

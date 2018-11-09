@@ -60,12 +60,18 @@ class VoxelsStore(private val content: GameContentStore) : Content.Voxels {
 
                 val voxelDefinition = VoxelDefinition(this, name, properties)
                 val voxel : Voxel = voxelDefinition.create()
-                voxelsByName.put(name, voxel)
+                voxelsByName[name] = voxel
                 logger.debug("Loaded $voxelDefinition from $a, created $voxel")
             }
 
             logger().debug("Parsed file $a correctly, loading $loadedVoxels voxels.")
         }
+
+        air = Voxel(VoxelDefinition(this, "air", mapOf(
+                "solid" to "false",
+                "opaque" to "false"
+        )))
+        voxelsByName["air"] = air
 
         for(asset in content.modsManager().allAssets.filter { it.name.startsWith("voxels/") && !it.name.startsWith("voxels/materials/") && it.name.endsWith(".def") }) {
             readDefinitions(asset)

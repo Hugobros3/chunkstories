@@ -14,7 +14,7 @@ import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.region.RegionImplementation;
 
 /**
- * Iterates over an entire world and gives getAllVoxelComponents *loaded* chunks of it
+ * Iterates over an entire world and gives all *loaded* chunks of it
  */
 public class WorldChunksIterator implements ChunksIterator {
 	Iterator<RegionImplementation> regionsIterator;

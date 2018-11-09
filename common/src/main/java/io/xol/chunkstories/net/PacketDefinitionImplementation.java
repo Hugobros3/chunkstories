@@ -43,15 +43,15 @@ public class PacketDefinitionImplementation extends Definition implements Packet
 		streamed = Boolean.parseBoolean(this.resolveProperty("streamed", "false"));
 		fixedId = Integer.parseInt(this.resolveProperty("fixedId", "-1"));
 
-		String afs = this.resolveProperty("allowedFrom", "getAllVoxelComponents");
-		if (afs.equals("getAllVoxelComponents"))
+		String afs = this.resolveProperty("allowedFrom", "all");
+		if (afs.equals("all"))
 			allowedFrom = AllowedFrom.ALL;
 		else if (afs.equals("client"))
 			allowedFrom = AllowedFrom.CLIENT;
 		else if (afs.equals("server"))
 			allowedFrom = AllowedFrom.SERVER;
 		else
-			throw new IllegalPacketDeclarationException("allowedFrom can only take one of {getAllVoxelComponents, client, server}.");
+			throw new IllegalPacketDeclarationException("allowedFrom can only take one of {all, client, server}.");
 
 		String tys = this.resolveProperty("type", "general");
 		if (tys.equals("general"))

@@ -50,7 +50,7 @@ class Lwjgl3ClientInputsManager// private final IngameLayer scene;
     private val gui: Gui
 
     internal var inputs: MutableCollection<Input> = ArrayList()
-    internal var inputsMap: MutableMap<Long, Input> = HashMap()
+    internal var inputsMap: MutableMap<Long, Input> = mutableMapOf()
 
     var mouse: Lwjgl3Mouse
     var LEFT: Lwjgl3MouseButton
@@ -190,7 +190,7 @@ class Lwjgl3ClientInputsManager// private final IngameLayer scene;
         inputs@ for (keyBind in inputs) {
             if (keyBind is Lwjgl3KeyBindCompound) {
 
-                // Check getAllVoxelComponents other keys were pressed
+                // Check all other keys were pressed
                 for (glfwKey in keyBind.glfwKeys) {
                     if (glfwGetKey(gameWindow.glfwWindowHandle, glfwKey) != GLFW_PRESS)
                         continue@inputs

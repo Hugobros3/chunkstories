@@ -6,6 +6,7 @@
 
 package io.xol.chunkstories.gui.layer.ingame;
 
+import io.xol.chunkstories.api.client.IngameClient;
 import io.xol.chunkstories.api.gui.Font;
 import io.xol.chunkstories.api.gui.Gui;
 import io.xol.chunkstories.api.gui.GuiDrawer;
@@ -31,7 +32,7 @@ public class PauseMenu extends Layer {
 		this.resumeButton.setAction(gui::popTopLayer);
 		this.optionsButton.setAction(() -> gui.setTopLayer(new OptionsScreen(gui, PauseMenu.this)));
 		this.modsButton.setAction(() -> gui.setTopLayer(new ModsSelection(gui, PauseMenu.this)));
-		this.exitButton.setAction(() -> gui.setTopLayer(new MainMenu(gui, null)));
+		this.exitButton.setAction(() -> gui.getClient().getIngame().exitToMainMenu());
 
 		elements.add(resumeButton);
 		elements.add(optionsButton);

@@ -30,11 +30,11 @@ constructor(val localHost: IngameClientLocalHost, info: WorldInfo, folder: File)
 
     override fun tick() {
         // TODO: processIncommingPackets();
-        // TODO: flush getAllVoxelComponents
+        // TODO: flush all
         super.tick()
     }
 
-    override val players: IterableIterator<Player> = localHost.connectedPlayers
+    override val players: Set<Player> = localHost.connectedPlayers
 
     override fun getPlayerByName(playerName: String): Player? = localHost.getPlayerByName(playerName)
 }

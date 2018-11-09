@@ -94,7 +94,7 @@ public class TaskComputeChunkOcclusion extends Task {
 
 		@SuppressWarnings("unused")
 		int bits = 0;
-		// Until getAllVoxelComponents 32768 blocks have been processed
+		// Until all 32768 blocks have been processed
 		while (completion < 32768) {
 			// If this face was already done, we find one that wasn't
 			while (mask[x * 1024 + y * 32 + z]) {

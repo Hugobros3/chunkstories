@@ -51,17 +51,26 @@ public class InventoryView extends Layer {
 
 		Mouse mouse = gui.getMouse();
 
+		int margin = 4;
+
 		int totalWidth = 0;
-		for (Inventory inv : inventories)
-			totalWidth += 2 + inv.getWidth();
-		totalWidth -= 2;
+		int maxHeight = 0;
+		for (Inventory inv : inventories) {
+			totalWidth += inv.getWidth() * 24 + margin;
+			maxHeight = Math.max(maxHeight, inv.getHeight() * 24);
+		}
+		totalWidth -= margin;
+
+
 		int widthAccumulation = 0;
 		for (int i = 0; i < drawers.length; i++) {
-			int thisWidth = inventories[i].getWidth();
-			drawers[i].drawInventoryCentered(drawer,
-					gui.getViewportWidth() / 2 - totalWidth * 24 + thisWidth * 24 + widthAccumulation * 48,
-					gui.getViewportHeight() / 2, false, 4 - i * 4);
-			widthAccumulation += 1 + thisWidth;
+			int thisWidth = inventories[i].getWidth() * 24;
+
+			drawers[i].drawInventory(drawer,
+					gui.getViewportWidth() / 2 - totalWidth / 2 + widthAccumulation,
+					gui.getViewportHeight() / 2 - maxHeight / 2, false, 0, -1);
+
+			widthAccumulation += margin + thisWidth;
 
 			// Draws the item name when highlighted
 			int[] highlightedSlot = drawers[i].getSelectedSlot();

@@ -6,9 +6,7 @@
 
 package io.xol.chunkstories.server.net;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.xol.chunkstories.api.player.Player;
@@ -95,8 +93,9 @@ public abstract class ClientsManager {
 		return players.get(playerName);
 	}
 
-	public IterableIterator<Player> getPlayers() {
-		return new IterableIterator<Player>() {
+	public Set<Player> getPlayers() {
+		return new LinkedHashSet(players.values());
+		/*return new IterableIterator<Player>() {
 			Iterator<ServerPlayer> authClients = players.values().iterator();
 
 			@Override
@@ -108,7 +107,7 @@ public abstract class ClientsManager {
 			public ServerPlayer next() {
 				return authClients.next();
 			}
-		};
+		};*/
 	}
 
 	public void sendServerInfo(ClientConnection clientConnection) {

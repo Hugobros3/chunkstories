@@ -284,7 +284,7 @@ public class CubicChunk implements Chunk {
 
 	/**
 	 * The 'core' of the core, this private function is responsible for placing and
-	 * keeping everyone up to snuff on block modifications. It getAllVoxelComponents comes back to
+	 * keeping everyone up to snuff on block modifications. It all comes back to
 	 * this really.
 	 */
 	private ActualChunkVoxelContext pokeInternal(final int worldX, final int worldY, final int worldZ, Voxel newVoxel,
