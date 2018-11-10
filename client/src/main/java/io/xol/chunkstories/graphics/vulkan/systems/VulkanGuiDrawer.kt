@@ -76,7 +76,7 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
         }
     }
 
-        val pipeline = Pipeline(backend, pass, vertexInputConfiguration)
+    val pipeline = Pipeline(backend, pass, vertexInputConfiguration)
 
     val descriptorPool = DescriptorPool(backend, pass.program)
     val sampler = VulkanSampler(backend)
@@ -332,7 +332,7 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
             sameTextureCount = 0
 
             this.commandBuffer = commandBuffer
-            virtualTexturingContext = virtualTexturing.begin(commandBuffer, pipeline, sampler) {
+            virtualTexturingContext = virtualTexturing.begin(commandBuffer, pipeline, frame) {
                 writeOut()
 
                 for((primitivesCount, offset) in stagingDraws)

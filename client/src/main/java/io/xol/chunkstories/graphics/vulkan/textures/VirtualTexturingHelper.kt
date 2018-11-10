@@ -4,7 +4,9 @@ import io.xol.chunkstories.graphics.common.shaderc.ShaderFactory
 import io.xol.chunkstories.graphics.vulkan.Pipeline
 import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import io.xol.chunkstories.graphics.vulkan.resources.Cleanable
+import io.xol.chunkstories.graphics.vulkan.resources.InflightFrameResource
 import io.xol.chunkstories.graphics.vulkan.shaders.VulkanShaderFactory
+import io.xol.chunkstories.graphics.vulkan.swapchain.Frame
 import io.xol.chunkstories.graphics.vulkan.util.VkDescriptorPool
 import io.xol.chunkstories.graphics.vulkan.util.ensureIs
 import org.lwjgl.system.MemoryStack.*
@@ -16,7 +18,7 @@ class VirtualTexturingHelper(val backend: VulkanGraphicsBackend, val program: Vu
     val SLICE_SIZE: Int
 
     val pool: VkDescriptorPool
-    val sets: LongArray
+    val sets: InflightFrameResource<LongArray>
 
     val samplers: Array<VulkanSampler>
 
@@ -29,14 +31,16 @@ class VirtualTexturingHelper(val backend: VulkanGraphicsBackend, val program: Vu
         SLICE_SIZE = vtResource.count
         samplers = Array(SLICE_SIZE) { VulkanSampler(backend) }
 
+        val framesInFlight = backend.swapchain.maxFramesInFlight
+
         val resourcesSize = VkDescriptorPoolSize.callocStack(1).apply {
             type(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
-            descriptorCount(SLICE_SIZE * MAX_SLICES)
+            descriptorCount(SLICE_SIZE * MAX_SLICES * framesInFlight)
         }
 
         val poolCreateInfo = VkDescriptorPoolCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO).apply {
             pPoolSizes(resourcesSize)
-            maxSets(MAX_SLICES)
+            maxSets(MAX_SLICES * framesInFlight)
         }
 
         val pDescriptorPool = stackMallocLong(1)
@@ -45,8 +49,8 @@ class VirtualTexturingHelper(val backend: VulkanGraphicsBackend, val program: Vu
 
         // Bulk-allocate sets for however many slices we allow
         val descriptorSetLayout = program.descriptorSetLayouts[0] // Descriptor set layout zero = layout of the set containing just vtResource
-        val layouts = stackMallocLong(MAX_SLICES)
-        for (i in 0 until MAX_SLICES) {
+        val layouts = stackMallocLong(MAX_SLICES * framesInFlight)
+        for (i in 0 until MAX_SLICES * framesInFlight) {
             layouts.put(descriptorSetLayout)
         }
         layouts.flip()
@@ -56,18 +60,21 @@ class VirtualTexturingHelper(val backend: VulkanGraphicsBackend, val program: Vu
             pSetLayouts(layouts)
         }
 
-        val pDescriptorSets = stackMallocLong(MAX_SLICES)
+        val pDescriptorSets = stackMallocLong(MAX_SLICES * framesInFlight)
         vkAllocateDescriptorSets(backend.logicalDevice.vkDevice, allocInfo, pDescriptorSets).ensureIs("Failed to allocate descriptor sets :( ", VK_SUCCESS)
-        sets = LongArray(MAX_SLICES)
-        pDescriptorSets.get(sets)
+        sets = InflightFrameResource(backend) {
+            val a = LongArray(MAX_SLICES)
+            pDescriptorSets.get(a)
+            a
+        }
 
         stackPop()
     }
 
-    fun begin(commandBuffer: VkCommandBuffer, pipeline: Pipeline, tempSampler: VulkanSampler, callback: () -> Unit) =
-            VirtualTexturingContext(commandBuffer, pipeline, tempSampler, callback)
+    fun begin(commandBuffer: VkCommandBuffer, pipeline: Pipeline, frame: Frame, callback: () -> Unit) =
+            VirtualTexturingContext(commandBuffer, pipeline, frame, callback)
 
-    inner class VirtualTexturingContext(val commandBuffer: VkCommandBuffer, val pipeline: Pipeline, val tempSampler: VulkanSampler, val callback: () -> Unit) {
+    inner class VirtualTexturingContext(val commandBuffer: VkCommandBuffer, val pipeline: Pipeline, val frame: Frame, val callback: () -> Unit) {
         var slice = 0
         val sliceContents = mutableMapOf<VulkanTexture2D, Int>()
         val reverseContents = mutableListOf<VulkanTexture2D>()
@@ -119,7 +126,7 @@ class VirtualTexturingHelper(val backend: VulkanGraphicsBackend, val program: Vu
                 }
             }
 
-            val destinationSet = sets[slice]
+            val destinationSet = sets[frame][slice]
             val stuffToWrite = VkWriteDescriptorSet.callocStack(1).sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET).apply {
                 dstSet(destinationSet)
                 dstBinding(0) // only one thing in this set, the virtualTextures[] doodad... or is it ?
@@ -133,7 +140,7 @@ class VirtualTexturingHelper(val backend: VulkanGraphicsBackend, val program: Vu
             vkUpdateDescriptorSets(backend.logicalDevice.vkDevice, stuffToWrite, null)
 
             //TODO only do this once I'm sure the next slice will be used
-            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 0, stackLongs(sets[slice]), null)
+            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 0, stackLongs(sets[frame][slice]), null)
             //println("writing to slice [$slice] ${reverseContents.size}")
         }
 

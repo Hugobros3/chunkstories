@@ -124,7 +124,15 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
 
     var instances = 0
     var lastGenPosition = Vector3d(-100.0)
-    fun fillInstanceBuffer(arround: Location) {
+    fun fillInstanceBuffer(frame:Frame, arround: Location) {
+        println("waiting on previous frame to finish so we know we can update the buffer")
+        var previousIndex = frame.inflightFrameIndex - 1
+        if(previousIndex < 0)
+            previousIndex += backend.swapchain.maxFramesInFlight
+        if(previousIndex != frame.inflightFrameIndex) {
+            //TODO this is terrible
+            vkDeviceWaitIdle(backend.logicalDevice.vkDevice)
+        }
         println("filling instance buffer")
 
         val buffer = MemoryUtil.memAlloc(instancesBuffer.bufferSize.toInt())
@@ -149,9 +157,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         }
         buffer.flip()
         instancesBuffer.upload(buffer)
-
         lastGenPosition = Vector3d(arround)
-
         MemoryUtil.memFree(buffer)
     }
 
@@ -192,7 +198,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
             //println("$lastGenPosition ${lastGenPosition.distance(entity.location)}")
 
             if(lastGenPosition.distance(entity.location) > 10) {
-                fillInstanceBuffer(entity.location)
+                fillInstanceBuffer(frame, entity.location)
             }
         }
 

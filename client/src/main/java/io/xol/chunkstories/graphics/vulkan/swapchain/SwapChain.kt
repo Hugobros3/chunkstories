@@ -143,7 +143,7 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
 
     private fun createSemaphores() {
         //TODO make this moar configurable
-        maxFramesInFlight = 1//imagesCount
+        maxFramesInFlight = imagesCount
 
         imageAvailableSemaphores = List(maxFramesInFlight) { backend.createSemaphore() }
         renderingSemaphores = List(maxFramesInFlight) { backend.createSemaphore() }
