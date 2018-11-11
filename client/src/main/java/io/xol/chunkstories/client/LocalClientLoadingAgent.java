@@ -60,11 +60,13 @@ public class LocalClientLoadingAgent {
 			int cameraChunkX = Math2.floor((controlledEntity.getLocation().x()) / 32);
 			int cameraChunkY = Math2.floor((controlledEntity.getLocation().y()) / 32);
 			int cameraChunkZ = Math2.floor((controlledEntity.getLocation().z()) / 32);
+
 			int chunksViewDistance = (int) (world.getClient().getConfiguration().getIntValue(InternalClientOptions.INSTANCE.getViewDistance()) / 32);
+			int chunksViewDistanceHeight = 4;
 
 			for (int chunkX = (cameraChunkX - chunksViewDistance - 1); chunkX <= cameraChunkX + chunksViewDistance + 1; chunkX++) {
 				for (int chunkZ = (cameraChunkZ - chunksViewDistance - 1); chunkZ <= cameraChunkZ + chunksViewDistance + 1; chunkZ++)
-					for (int chunkY = cameraChunkY - 3; chunkY <= cameraChunkY + 3; chunkY++) {
+					for (int chunkY = cameraChunkY - chunksViewDistanceHeight - 1; chunkY <= cameraChunkY + chunksViewDistanceHeight + 1; chunkY++) {
 						WorldInfo worldInfo = world.getWorldInfo();
 						WorldSize size = worldInfo.getSize();
 
@@ -102,9 +104,8 @@ public class LocalClientLoadingAgent {
 				ChunkHolder holder = i.next();
 				if ((LoopingMathHelper.moduloDistance(holder.getChunkCoordinateX(), cameraChunkX,
 						world.getSizeInChunks()) > chunksViewDistance + 1)
-						|| (LoopingMathHelper.moduloDistance(holder.getChunkCoordinateZ(), cameraChunkZ,
-								world.getSizeInChunks()) > chunksViewDistance + 1)
-						|| (Math.abs(holder.getChunkCoordinateY() - cameraChunkY) > 4)) {
+						|| (LoopingMathHelper.moduloDistance(holder.getChunkCoordinateZ(), cameraChunkZ, world.getSizeInChunks()) > chunksViewDistance + 1)
+						|| (Math.abs(holder.getChunkCoordinateY() - cameraChunkY) > chunksViewDistanceHeight + 1)) {
 					WorldInfo worldInfo = world.getWorldInfo();
 					WorldSize size = worldInfo.getSize();
 

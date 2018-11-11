@@ -1,13 +1,13 @@
 package io.xol.chunkstories.graphics.vulkan.systems.world
 
-import io.xol.chunkstories.api.Location
 import io.xol.chunkstories.api.client.IngameClient
 import io.xol.chunkstories.api.entity.traits.serializable.TraitControllable
 import io.xol.chunkstories.api.graphics.structs.Camera
+import io.xol.chunkstories.api.physics.Box
+import io.xol.chunkstories.api.physics.Frustrum
+import io.xol.chunkstories.api.util.kotlin.toVec3d
 import io.xol.chunkstories.api.util.kotlin.toVec3i
-import io.xol.chunkstories.api.voxel.Voxel
-import io.xol.chunkstories.api.voxel.VoxelFormat
-import io.xol.chunkstories.api.voxel.VoxelSide
+import io.xol.chunkstories.client.InternalClientOptions
 import io.xol.chunkstories.graphics.common.Primitive
 import io.xol.chunkstories.graphics.vulkan.DescriptorPool
 import io.xol.chunkstories.graphics.vulkan.Pipeline
@@ -17,14 +17,13 @@ import io.xol.chunkstories.graphics.vulkan.graph.VulkanPass
 import io.xol.chunkstories.graphics.vulkan.swapchain.Frame
 import io.xol.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
 import io.xol.chunkstories.graphics.vulkan.vertexInputConfiguration
+import io.xol.chunkstories.world.WorldClientCommon
 import io.xol.chunkstories.world.WorldImplementation
 import io.xol.chunkstories.world.chunk.CubicChunk
 import org.joml.*
 import org.lwjgl.system.MemoryStack.*
-import org.lwjgl.system.MemoryUtil
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
-import kotlin.random.Random
 
 class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDrawingSystem(pass) {
     val backend: VulkanGraphicsBackend
@@ -133,77 +132,6 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         }
     }
 
-    var instances = 0
-    var lastGenPosition = Vector3d(-100.0)
-    fun fillInstanceBuffer(frame:Frame, arround: Location) {
-        println("waiting on previous frame to finish so we know we can update the buffer")
-        var previousIndex = frame.inflightFrameIndex - 1
-        if(previousIndex < 0)
-            previousIndex += backend.swapchain.maxFramesInFlight
-        if(previousIndex != frame.inflightFrameIndex) {
-            //TODO this is terrible
-            vkDeviceWaitIdle(backend.logicalDevice.vkDevice)
-        }
-        println("filling instance buffer")
-
-        val buffer = MemoryUtil.memAlloc(instancesBuffer.bufferSize.toInt())
-
-        val arroundi = arround.toVec3i()
-        val radius = 128
-        val radiush = 32
-
-        val rng = Random(arround.hashCode())
-        val world = client.world as WorldImplementation
-
-        instances = 0
-        for(x in arroundi.x - radius until arroundi.x + radius) {
-            for(y in arroundi.y - radiush until arroundi.y + radiush) {
-                for(z in arroundi.z - radius until arroundi.z + radius) {
-                    //val cell = world.peekSafely(x, y, z)
-                    val data = world.peekRaw(x, y, z)
-                    val voxel = world.contentTranslator.getVoxelForId(VoxelFormat.id(data))!!
-
-                    fun opaque(voxel: Voxel) = voxel.solid || voxel.name == "water"
-
-                    fun check(x2: Int, y2: Int, z2: Int) : Boolean {
-                        val data2 = world.peekRaw(x2, y2, z2)
-                        val voxel = world.contentTranslator.getVoxelForId(VoxelFormat.id(data2))!!
-                        return opaque(voxel)
-                    }
-
-                    //TODO cell.voxel never null
-                    if(opaque(voxel)) {
-                        if(check(x, y - 1, z) && check(x, y + 1, z) && check(x + 1, y, z) && check(x - 1, y, z) && check(x, y, z + 1) && check(x, y, z - 1))
-                            continue
-
-                        buffer.putFloat(x.toFloat())
-                        buffer.putFloat(y.toFloat())
-                        buffer.putFloat(z.toFloat())
-
-                        val tex = voxel.voxelTextures[VoxelSide.TOP.ordinal]//voxel?.getVoxelTexture(cell, VoxelSide.TOP)
-                        val color = Vector4f(tex.color ?: Vector4f(1f, 0f, 0f, 1f))
-                        if(color.w < 1.0f)
-                            color.mul(Vector4f(0f, 1f, 0.3f, 1.0f))
-                        //color.mul(cell.sunlight / 15f)
-                        color.mul(0.9f + rng.nextFloat() * 0.1f)
-
-                        //val color = Vector4f(rng.nextFloat(), rng.nextFloat(), rng.nextFloat(), 1f)
-                        buffer.putFloat(color.x())
-                        buffer.putFloat(color.y())
-                        buffer.putFloat(color.z())
-                        instances++
-                    }
-                }
-            }
-        }
-        buffer.flip()
-        println("instances $instances $maxCubeInstances")
-
-        instancesBuffer.upload(buffer)
-        lastGenPosition = Vector3d(arround)
-        MemoryUtil.memFree(buffer)
-    }
-
     companion object {
         var totalCubesDrawn = 0
         var totalBuffersUsed = 0
@@ -211,14 +139,10 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
 
     override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer) {
         val entity = client.player.controlledEntity
-        if(entity != null) {
-            val camera = entity.traits[TraitControllable::class]?.camera ?: Camera()
-            descriptorPool.configure(frame, camera)
+        val camera = entity?.traits?.get(TraitControllable::class)?.camera ?: Camera()
+        descriptorPool.configure(frame, camera)
 
-            /*if(lastGenPosition.distance(entity.location) > 32) {
-                fillInstanceBuffer(frame, entity.location)
-            }*/
-        }
+        val frustrum = Frustrum(camera, client.gameWindow)
 
         totalCubesDrawn = 0
         totalBuffersUsed = 0
@@ -232,13 +156,37 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
             vkCmdDraw(commandBuffer, 3 * 2 * 6, instances, 0, 0)
         }*/
 
-        val world = client.world as WorldImplementation
+        val world = client.world as WorldClientCommon
+
+        val camChunk = camera.position.toVec3i()
+        camChunk.x /= 32
+        camChunk.y /= 32
+        camChunk.z /= 32
+
+        val drawDistance = world.client.configuration.getIntValue(InternalClientOptions.viewDistance) / 32
+        val drawDistanceH = 4
 
         val usedData = mutableListOf<VulkanChunkRenderData.Block>()
         for(chunk in world.allLoadedChunks) {
             val chunk = chunk as CubicChunk
-            //TODO actually frustrum cull those like a boss
+
+            if(!frustrum.isBoxInFrustrum(Box(Vector3i(chunk.chunkX * 32, chunk.chunkY * 32, chunk.chunkZ * 32).toVec3d(), Vector3i(32, 32, 32).toVec3d())))
+                continue
+
+            if(chunk.isAirChunk)
+                continue
+
+            if(chunk.chunkX !in (camChunk.x - drawDistance)..(camChunk.x + drawDistance))
+                continue
+
+            if((chunk.chunkZ !in (camChunk.z - drawDistance)..(camChunk.z + drawDistance)))
+                continue
+
+            if((chunk.chunkY !in (camChunk.y - drawDistanceH)..(camChunk.y + drawDistanceH)))
+                continue
+
             if(chunk.meshData is VulkanChunkRenderData) {
+
                 val block = (chunk.meshData as VulkanChunkRenderData).getLastBlock()
                 if(block?.vertexBuffer != null) {
                     vkCmdBindVertexBuffers(commandBuffer, 1, stackLongs(block.vertexBuffer.handle), stackLongs(0))
@@ -259,6 +207,10 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
     }
 
     override fun cleanup() {
+        for(chunk in client.world.allLoadedChunks) {
+            (chunk.mesh() as? VulkanChunkRenderData)?.destroy()
+        }
+
         vertexBuffer.cleanup()
         instancesBuffer.cleanup()
 

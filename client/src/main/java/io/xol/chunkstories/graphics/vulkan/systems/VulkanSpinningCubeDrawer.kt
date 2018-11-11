@@ -127,7 +127,7 @@ class VulkanSpinningCubeDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
         modelViewMatrix.mul(viewMatrix)
         modelViewMatrix.mul(objectMatrix)
 
-        val camera = Camera(cameraPosition, cubePosition, up, modelViewMatrix, projectionMatrix)
+        val camera = Camera(cameraPosition, cubePosition, up, fov, modelViewMatrix, projectionMatrix)
 
         descriptorPool.configure(frame, camera)
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 1, descriptorPool.setsForFrame(frame), null as? IntArray)

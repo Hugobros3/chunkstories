@@ -41,7 +41,7 @@ class DebugInfoRendererHelper(ingameLayer: IngameLayer) {
             debugLine("Looking at $lookingAt in direction ${playerEntity.traits[TraitRotation::class]?.directionLookingAt}")
 
             val standingAt = playerEntity.location.toVec3i()
-            val standingIn = world.peek(playerEntity.location)
+            val standingIn = world.peekSafely(playerEntity.location)
             debugLine("Standing at $standingAt in ${standingIn.voxel} (solid=${standingIn.voxel?.solid}, box=${standingIn.voxel?.collisionBoxes?.getOrNull(0)})")
 
             val region = world.getRegionLocation(playerEntity.location)

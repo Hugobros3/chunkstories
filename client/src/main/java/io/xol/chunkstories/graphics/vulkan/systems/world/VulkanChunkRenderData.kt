@@ -57,16 +57,46 @@ class VulkanChunkRenderData(val backend: VulkanGraphicsBackend, chunk: CubicChun
 
     var task : GenerateChunkDataTask? = null
 
+    //TODO schedule this shit better
+    override fun incrementPendingUpdates() {
+        launchTask()
+    }
+
     fun launchTask() {
-        if(task != null)
+        if((task != null && !(task?.isCancelled == true || task?.isDone == true)))
             return
 
         task = GenerateChunkDataTask(backend, chunk)
         backend.window.client.tasks.scheduleTask(task)
     }
 
+    companion object {
+        val neighborsIndexes = generateNeighbors()
+
+        fun generateNeighbors(): List<Triple<Int, Int, Int>> {
+            val list = mutableListOf<Triple<Int, Int, Int>>()
+
+            for(x in -1..1)
+                for(y in -1..1)
+                    for(z in -1..1)
+                        list += Triple(x, y, z)
+
+            return list.filterNot { (x, y, z) -> (x == 0 && y == 0 && z == 0) }
+        }
+    }
+
     class GenerateChunkDataTask(val backend: VulkanGraphicsBackend, val chunk: CubicChunk) : Task() {
         override fun task(taskExecutor: TaskExecutor?): Boolean {
+            if(!chunk.holder().isChunkLoaded || chunk.holder().region.isUnloaded)
+                return true
+
+            val neighborsPresent = neighborsIndexes.count { (x, y, z) ->
+                val neighbor = chunk.world.getChunk(chunk.chunkX + x, chunk.chunkY + y, chunk.chunkZ + z)
+                (neighbor != null || (chunk.chunkY + y < 0) || (chunk.chunkY + y >= chunk.world.worldInfo.size.heightInChunks))
+            }
+            if(neighborsPresent < neighborsIndexes.size )
+                return true
+
             val generatedData = Block(backend, chunk)
             (chunk.meshData as VulkanChunkRenderData).setLastBlock(generatedData)
             return true
