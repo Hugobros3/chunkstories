@@ -1,5 +1,6 @@
 package io.xol.chunkstories.graphics.common.shaderc
 
+import io.xol.chunkstories.api.graphics.structs.IgnoreGLSL
 import io.xol.chunkstories.api.graphics.structs.InterfaceBlock
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
@@ -35,11 +36,18 @@ class InterfaceBlockGLSLMapping(val klass: KClass<InterfaceBlock>, factory: Shad
         for (property in klass.memberProperties) {
             // Check the property is a concrete one
             val declaredIn = property.javaField?.declaringClass ?: continue
+
             // Check it's declared in the class that explicitely implements InterfaceBlock
             if (!declaredIn.isAssignableFrom(interfaceBlockClass.java)) {
                 println("Field ${property.name} is declared in child class $declaredIn, ignoring")
                 continue
             }
+
+            if(property.annotations.find { it is IgnoreGLSL } != null) {
+                println("Field ${property.name} is declared with the @IgnoreGLSL annotation, ignoring")
+                continue
+            }
+
             // We'll need that
             property.javaField!!.isAccessible = true
 

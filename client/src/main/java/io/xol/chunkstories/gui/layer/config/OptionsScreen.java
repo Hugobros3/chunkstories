@@ -176,7 +176,8 @@ public class OptionsScreen extends Layer {
 
 		@Override public void onClick(float mouseX, float mouseY, int button) {
 			double relativeMouseXPosition = mouseX - this.getPositionX();
-			double newValue = (0.0 + Math.min(320.0, Math.max(0.0, relativeMouseXPosition))) / 320.0f;
+			//System.out.println(relativeMouseXPosition);
+			double newValue = (0.0 + Math.min(320.0, Math.max(0.0, relativeMouseXPosition))) / 160.0f;
 			newValue *= (option.getMaximumValue() - option.getMinimumValue());
 			newValue += option.getMinimumValue();
 
@@ -200,9 +201,9 @@ public class OptionsScreen extends Layer {
 				width = textWidth;
 			}
 			int textStartOffset = getWidth() / 2 - textWidth / 2;
-			String texture = "./textures/gui/scalableField.png";
+			String texture = "textures/gui/scalableField.png";
 
-			drawer.drawBoxWithCorners(xPosition, yPosition, getWidth(), getHeight(), 8, texture);
+			drawer.drawBoxWithCorners(getPositionX(), getPositionY(), getWidth(), getHeight(), 8, texture);
 
 			//TODO redo call with modern api
 			/*
@@ -212,7 +213,7 @@ public class OptionsScreen extends Layer {
 					yPosition + 12 * scale(), 32 * scale(), 32 * scale(), 0, 0, 32, 32, 32,
 					"./textures/gui/barCursor.png");*/
 
-			drawer.drawStringWithShadow(drawer.getFonts().defaultFont(), xPosition + textStartOffset, yPosition + 4, localizedText, -1, new Vector4f(1.0f));
+			drawer.drawStringWithShadow(drawer.getFonts().defaultFont(), getPositionX() + textStartOffset, getPositionY() + 4, localizedText, -1, new Vector4f(1.0f));
 		}
 	}
 
@@ -253,8 +254,6 @@ public class OptionsScreen extends Layer {
 
 			category = category.substring(0, category.indexOf("."));
 			category = category.substring(0, 1).toUpperCase() + category.substring(1).toLowerCase();
-
-			System.out.println("category: "+category+"opt"+name);
 
 			ConfigButton optionButton;
 

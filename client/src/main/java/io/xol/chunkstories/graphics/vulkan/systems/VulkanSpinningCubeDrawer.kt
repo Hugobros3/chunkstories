@@ -1,6 +1,6 @@
 package io.xol.chunkstories.graphics.vulkan.systems
 
-import io.xol.chunkstories.api.graphics.Camera
+import io.xol.chunkstories.api.graphics.structs.Camera
 import io.xol.chunkstories.api.voxel.VoxelSide
 import io.xol.chunkstories.graphics.common.Primitive
 import io.xol.chunkstories.graphics.vulkan.DescriptorPool

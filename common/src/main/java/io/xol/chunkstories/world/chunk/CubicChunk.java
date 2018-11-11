@@ -48,6 +48,8 @@ import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.WorldTool;
 import io.xol.chunkstories.world.region.RegionImplementation;
 
+import javax.annotation.Nonnull;
+
 /**
  * Essential class that holds actual chunk voxel data, entities and voxel
  * component !
@@ -69,10 +71,10 @@ public class CubicChunk implements Chunk {
 	public final AtomicInteger compr_uncomittedBlockModifications = new AtomicInteger();
 
 	public final ChunkOcclusionUpdater occlusion = new ChunkOcclusionUpdater(this);
-	// public final AtomicInteger occl_compr_uncomittedBlockModifications = new
-	// AtomicInteger();
-
 	public final ChunkLightBaker lightBaker;
+
+	@Nonnull
+	public ChunkRenderingData meshData;
 
 	protected final Map<Integer, CellComponentsHolder> allCellComponents = new HashMap<Integer, CellComponentsHolder>();
 	protected final Set<Entity> localEntities = ConcurrentHashMap.newKeySet();
@@ -174,6 +176,8 @@ public class CubicChunk implements Chunk {
 				e.printStackTrace();
 			}
 		}
+
+		meshData = new ChunkRenderingData();
 
 		// Send chunk to whoever already subscribed
 		if (data == null)
@@ -500,14 +504,6 @@ public class CubicChunk implements Chunk {
 					VoxelFormat.meta(data), VoxelFormat.blocklight(data), VoxelFormat.sunlight(data));
 
 			this.raw_data = data;
-
-			// System.out.println(chunkX << 5);
-			// System.out.println(x+":"+y+":"+z);
-			// System.out.println(this.getZ() - z);
-			/*
-			 * this.x = x & 0x1F; this.y = y & 0x1F; this.z = z & 0x1F; this.voxel =
-			 * world.getContentTranslator().getVoxelForId(data);
-			 */
 		}
 
 		@Override
@@ -632,6 +628,7 @@ public class CubicChunk implements Chunk {
 	@Override
 	public void destroy() {
 		this.lightBaker.destroy();
+		this.meshData.destroy();
 	}
 
 	@Override
@@ -670,20 +667,7 @@ public class CubicChunk implements Chunk {
 
 	@Override
 	public ChunkMesh mesh() {
-		return dummy; //TODO
-	}
-
-	DummyChunkMesh dummy = new DummyChunkMesh();
-
-	static class DummyChunkMesh implements ChunkMesh {
-
-		@Override public void incrementPendingUpdates() {
-
-		}
-
-		@Override public int pendingUpdates() {
-			return 0;
-		}
+		return meshData;
 	}
 
 	@Override

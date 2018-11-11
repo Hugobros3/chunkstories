@@ -2,7 +2,7 @@ package io.xol.chunkstories.graphics.vulkan.systems.debug
 
 import io.xol.chunkstories.api.client.IngameClient
 import io.xol.chunkstories.api.entity.traits.serializable.TraitControllable
-import io.xol.chunkstories.api.graphics.Camera
+import io.xol.chunkstories.api.graphics.structs.Camera
 import io.xol.chunkstories.client.InternalClientOptions
 import io.xol.chunkstories.graphics.common.Primitive
 import io.xol.chunkstories.graphics.vulkan.DescriptorPool

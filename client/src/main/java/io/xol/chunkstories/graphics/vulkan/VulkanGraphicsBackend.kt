@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory
 import java.awt.image.BufferedImage
 
 class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(window) {
-    internal var enableValidation = true
+    internal var enableValidation = false
     internal var doNonUniformSamplerArrayAccess = false
 
     val requiredDeviceExtensions = listOf(KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME)

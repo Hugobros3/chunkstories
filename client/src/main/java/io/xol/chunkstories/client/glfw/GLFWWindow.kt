@@ -99,6 +99,8 @@ class GLFWWindow(val client: ClientImplementation) : Window {
             frameNumber++
         }
 
+        client.ingame?.exitToMainMenu()
+
         cleanup()
     }
 

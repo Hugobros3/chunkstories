@@ -3,7 +3,7 @@ package io.xol.chunkstories.graphics.vulkan.systems.world
 import io.xol.chunkstories.api.Location
 import io.xol.chunkstories.api.client.IngameClient
 import io.xol.chunkstories.api.entity.traits.serializable.TraitControllable
-import io.xol.chunkstories.api.graphics.Camera
+import io.xol.chunkstories.api.graphics.structs.Camera
 import io.xol.chunkstories.api.util.kotlin.toVec3i
 import io.xol.chunkstories.api.voxel.Voxel
 import io.xol.chunkstories.api.voxel.VoxelFormat

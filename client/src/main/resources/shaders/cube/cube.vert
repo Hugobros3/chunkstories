@@ -7,7 +7,7 @@ in vec2 texCoordIn;
 out vec2 texCoord;
 out vec4 color;
 
-#include struct <io.xol.chunkstories.api.graphics.Camera>
+#include struct <io.xol.chunkstories.api.graphics.structs.Camera>
 uniform Camera camera;
 
 void main()

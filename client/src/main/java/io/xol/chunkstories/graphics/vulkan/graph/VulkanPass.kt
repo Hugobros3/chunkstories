@@ -310,12 +310,13 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
 
                     val clearColor = VkClearValue.callocStack(outputRenderBuffers.size + if(depth.enabled) 1 else 0)
 
-                    (0 until outputRenderBuffers.size).map { clearColor[it] }.forEach {
-                        it.color().float32().apply {
-                            this.put(0, 1.0F)
-                            this.put(1, 0.0F)
-                            this.put(2, 1.0F)
-                            this.put(3, 1.0F)
+                    (0 until outputRenderBuffers.size).map { clearColor[it] }.forEachIndexed { i, cc ->
+                        cc.color().float32().apply {
+                            val clearColor = outputs[i].clearColor
+                            this.put(0, clearColor.x().toFloat())
+                            this.put(1, clearColor.y().toFloat())
+                            this.put(2, clearColor.z().toFloat())
+                            this.put(3, clearColor.w().toFloat())
                         }
                     }
 
