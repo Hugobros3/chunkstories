@@ -3,9 +3,9 @@ package io.xol.chunkstories.gui.layer.ingame
 import io.xol.chunkstories.api.entity.traits.TraitVoxelSelection
 import io.xol.chunkstories.api.entity.traits.serializable.TraitRotation
 import io.xol.chunkstories.api.gui.GuiDrawer
+import io.xol.chunkstories.api.util.kotlin.toVec3i
 import io.xol.chunkstories.client.glfw.GLFWWindow
 import io.xol.chunkstories.util.VersionInfo
-import io.xol.chunkstories.util.math.toVec3i
 import io.xol.chunkstories.world.WorldImplementation
 
 class DebugInfoRendererHelper(ingameLayer: IngameLayer) {

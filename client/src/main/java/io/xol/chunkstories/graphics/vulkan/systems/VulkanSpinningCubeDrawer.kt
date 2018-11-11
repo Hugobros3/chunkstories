@@ -2,6 +2,7 @@ package io.xol.chunkstories.graphics.vulkan.systems
 
 import io.xol.chunkstories.api.graphics.Camera
 import io.xol.chunkstories.api.voxel.VoxelSide
+import io.xol.chunkstories.graphics.common.Primitive
 import io.xol.chunkstories.graphics.vulkan.DescriptorPool
 import io.xol.chunkstories.graphics.vulkan.Pipeline
 import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
@@ -44,7 +45,7 @@ class VulkanSpinningCubeDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
         }
     }
 
-    val pipeline = Pipeline(backend, pass, vertexInputConfiguration)
+    val pipeline = Pipeline(backend, pass, vertexInputConfiguration, Primitive.TRIANGLES)
 
     private val vertexBuffer: VulkanVertexBuffer
 
@@ -126,7 +127,7 @@ class VulkanSpinningCubeDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
         modelViewMatrix.mul(viewMatrix)
         modelViewMatrix.mul(objectMatrix)
 
-        val camera = Camera(modelViewMatrix, projectionMatrix)
+        val camera = Camera(cameraPosition, cubePosition, up, modelViewMatrix, projectionMatrix)
 
         descriptorPool.configure(frame, camera)
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 1, descriptorPool.setsForFrame(frame), null as? IntArray)

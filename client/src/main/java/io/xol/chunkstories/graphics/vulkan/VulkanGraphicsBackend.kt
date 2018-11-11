@@ -15,6 +15,9 @@ import io.xol.chunkstories.graphics.vulkan.shaders.VulkanShaderFactory
 import io.xol.chunkstories.graphics.vulkan.swapchain.SwapChain
 import io.xol.chunkstories.graphics.vulkan.swapchain.WindowSurface
 import io.xol.chunkstories.graphics.vulkan.systems.*
+import io.xol.chunkstories.graphics.vulkan.systems.debug.VulkanDebugDrawer
+import io.xol.chunkstories.graphics.vulkan.systems.gui.VulkanGuiDrawer
+import io.xol.chunkstories.graphics.vulkan.systems.world.VulkanCubesDrawer
 import io.xol.chunkstories.graphics.vulkan.textures.VulkanTextures
 import io.xol.chunkstories.graphics.vulkan.util.*
 import org.lwjgl.PointerBuffer
@@ -236,6 +239,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
             FullscreenQuadDrawer::class.java -> VulkanFullscreenQuadDrawer(pass)
             VulkanSpinningCubeDrawer::class.java -> VulkanSpinningCubeDrawer(pass)
             VulkanCubesDrawer::class.java -> VulkanCubesDrawer(pass, window.client.ingame!!)
+            VulkanDebugDrawer::class.java -> VulkanDebugDrawer(pass, window.client.ingame!!)
 
             else -> throw Exception("Unimplemented system on this backend: ${declaredDrawingSystem.clazz}")
         }

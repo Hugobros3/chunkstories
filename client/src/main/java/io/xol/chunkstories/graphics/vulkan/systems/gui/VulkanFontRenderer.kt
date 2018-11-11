@@ -1,4 +1,4 @@
-package io.xol.chunkstories.graphics.vulkan.systems
+package io.xol.chunkstories.graphics.vulkan.systems.gui
 
 //
 // This file is a part of the Chunk Stories Implementation codebase
@@ -21,8 +21,6 @@ import io.xol.chunkstories.gui.TrueTypeFont
 import org.joml.Vector4f
 import org.joml.Vector4fc
 import org.lwjgl.vulkan.VK10.*
-import java.awt.image.BufferedImage
-import java.nio.ByteBuffer
 
 /** Very messy and shitty way of spitting text  */
 class VulkanFontRenderer(internal val backend: VulkanGraphicsBackend) : Cleanable {

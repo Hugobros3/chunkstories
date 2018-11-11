@@ -1,7 +1,9 @@
 package io.xol.chunkstories.graphics.vulkan
 
+import io.xol.chunkstories.api.graphics.GraphicsEngine
 import io.xol.chunkstories.api.graphics.ShaderStage
 import io.xol.chunkstories.api.graphics.rendergraph.DepthTestingConfiguration.DepthTestMode.*
+import io.xol.chunkstories.graphics.common.Primitive
 import io.xol.chunkstories.graphics.common.shaderc.ShaderFactory
 import io.xol.chunkstories.graphics.vulkan.graph.VulkanPass
 import io.xol.chunkstories.graphics.vulkan.util.VkPipeline
@@ -32,7 +34,7 @@ class VertexInputConfiguration {
     }
 }
 
-class Pipeline(val backend: VulkanGraphicsBackend, val pass: VulkanPass, val vertexInputConfiguration: VertexInputConfiguration) {
+class Pipeline(val backend: VulkanGraphicsBackend, val pass: VulkanPass, val vertexInputConfiguration: VertexInputConfiguration, val primitiveType: Primitive) {
     val layout: VkPipelineLayout
     val handle: VkPipeline
 
@@ -68,7 +70,11 @@ class Pipeline(val backend: VulkanGraphicsBackend, val pass: VulkanPass, val ver
 
         // TODO get those from the VulkanPass
         val inputAssemblyStateCreateInfo = VkPipelineInputAssemblyStateCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO).apply {
-            topology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST)
+            topology(when(primitiveType) {
+                Primitive.POINTS -> VK_PRIMITIVE_TOPOLOGY_POINT_LIST
+                Primitive.LINES -> VK_PRIMITIVE_TOPOLOGY_LINE_LIST
+                Primitive.TRIANGLES -> VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
+            })
             primitiveRestartEnable(false)
         }
 

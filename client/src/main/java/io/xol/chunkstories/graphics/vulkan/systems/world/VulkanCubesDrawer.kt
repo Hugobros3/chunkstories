@@ -1,21 +1,23 @@
-package io.xol.chunkstories.graphics.vulkan.systems
+package io.xol.chunkstories.graphics.vulkan.systems.world
 
 import io.xol.chunkstories.api.Location
 import io.xol.chunkstories.api.client.IngameClient
-import io.xol.chunkstories.api.entity.Entity
 import io.xol.chunkstories.api.entity.traits.serializable.TraitControllable
-import io.xol.chunkstories.api.entity.traits.serializable.TraitRotation
 import io.xol.chunkstories.api.graphics.Camera
-import io.xol.chunkstories.api.util.kotlin.toVec3f
 import io.xol.chunkstories.api.util.kotlin.toVec3i
+import io.xol.chunkstories.api.voxel.Voxel
+import io.xol.chunkstories.api.voxel.VoxelFormat
 import io.xol.chunkstories.api.voxel.VoxelSide
+import io.xol.chunkstories.graphics.common.Primitive
 import io.xol.chunkstories.graphics.vulkan.DescriptorPool
 import io.xol.chunkstories.graphics.vulkan.Pipeline
 import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import io.xol.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
 import io.xol.chunkstories.graphics.vulkan.graph.VulkanPass
 import io.xol.chunkstories.graphics.vulkan.swapchain.Frame
+import io.xol.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
 import io.xol.chunkstories.graphics.vulkan.vertexInputConfiguration
+import io.xol.chunkstories.world.WorldImplementation
 import org.joml.*
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.system.MemoryUtil
@@ -68,7 +70,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         }
     }
 
-    val pipeline = Pipeline(backend, pass, vertexInputConfiguration)
+    val pipeline = Pipeline(backend, pass, vertexInputConfiguration, Primitive.TRIANGLES)
 
     private val vertexBuffer: VulkanVertexBuffer
     val individualCubeVertices = floatArrayOf(
@@ -151,20 +153,35 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         val radiush = 32
 
         val rng = Random(arround.hashCode())
+        val world = client.world as WorldImplementation
 
         instances = 0
         for(x in arroundi.x - radius until arroundi.x + radius) {
             for(y in arroundi.y - radiush until arroundi.y + radiush) {
                 for(z in arroundi.z - radius until arroundi.z + radius) {
-                    val cell = client.world.peekSafely(x, y, z)
+                    //val cell = world.peekSafely(x, y, z)
+                    val data = world.peekRaw(x, y, z)
+                    val voxel = world.contentTranslator.getVoxelForId(VoxelFormat.id(data))!!
+
+                    fun opaque(voxel: Voxel) = voxel.solid || voxel.name == "water"
+
+                    fun check(x2: Int, y2: Int, z2: Int) : Boolean {
+                        val data2 = world.peekRaw(x2, y2, z2)
+                        val voxel = world.contentTranslator.getVoxelForId(VoxelFormat.id(data2))!!
+                        return opaque(voxel)
+                    }
+
                     //TODO cell.voxel never null
-                    if((cell.voxel?.solid == true) || cell.voxel?.name == "water") {
+                    if(opaque(voxel)) {
+                        if(check(x, y - 1, z) && check(x, y + 1, z) && check(x + 1, y, z) && check(x - 1, y, z) && check(x, y, z + 1) && check(x, y, z - 1))
+                            continue
+
                         buffer.putFloat(x.toFloat())
                         buffer.putFloat(y.toFloat())
                         buffer.putFloat(z.toFloat())
 
-                        val tex = cell.voxel?.getVoxelTexture(cell, VoxelSide.TOP)
-                        val color = Vector4f(tex?.color ?: Vector4f(1f, 0f, 0f, 1f))
+                        val tex = voxel.voxelTextures[VoxelSide.TOP.ordinal]//voxel?.getVoxelTexture(cell, VoxelSide.TOP)
+                        val color = Vector4f(tex.color ?: Vector4f(1f, 0f, 0f, 1f))
                         if(color.w < 1.0f)
                             color.mul(Vector4f(0f, 1f, 0.3f, 1.0f))
                         //color.mul(cell.sunlight / 15f)
@@ -209,7 +226,6 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
 
             vkCmdDraw(commandBuffer, 3 * 2 * 6, instances, 0, 0)
         }
-
     }
 
     override fun cleanup() {

@@ -13,14 +13,14 @@ class InterfaceBlockGLSLMapping(val klass: KClass<InterfaceBlock>, factory: Shad
 
     override val glslToken: String = interfaceBlockClass.simpleName ?: throw Exception("Don't use anonymous classes for writing InterfaceBlocks !")
 
-    val fields : Array<InterfaceBlockField>
+    val fields: Array<InterfaceBlockField>
     internal val requirements = mutableListOf<KClass<InterfaceBlock>>()
 
     override var size: Int = 0
         private set
 
     init {
-        if(shaderMetadata.stack.contains(klass))
+        if (shaderMetadata.stack.contains(klass))
             throw Exception("Loop detected! Interface block ${klass.qualifiedName} was referenced from itself !")
 
         shaderMetadata.stack.add(0, klass)
@@ -28,8 +28,10 @@ class InterfaceBlockGLSLMapping(val klass: KClass<InterfaceBlock>, factory: Shad
         val fields = mutableListOf<InterfaceBlockField>()
         var currentOffset = 0
 
-        sampleInstance = klass.constructors.find { it.parameters.isEmpty() }?.call()
-                ?: throw Exception("Any structure implementing InterfaceBlock MUST have a default constructor")
+        sampleInstance = klass.constructors.find { it.parameters.isEmpty() }?.call() ?: let {
+            klass.constructors.find { it.parameters.filter { !it.isOptional }.isEmpty() }?.callBy(emptyMap())
+                    ?: throw Exception("Any structure implementing InterfaceBlock MUST have a default constructor")
+        }
         for (property in klass.memberProperties) {
             // Check the property is a concrete one
             val declaredIn = property.javaField?.declaringClass ?: continue
@@ -116,7 +118,7 @@ class InterfaceBlockGLSLMapping(val klass: KClass<InterfaceBlock>, factory: Shad
         this.fields = fields.toTypedArray()
     }
 
-    fun generateStructGLSL() : String {
+    fun generateStructGLSL(): String {
         var glsl = "struct $glslToken {\n"
 
         glsl += generateInnerGLSL()
@@ -126,9 +128,9 @@ class InterfaceBlockGLSLMapping(val klass: KClass<InterfaceBlock>, factory: Shad
         return glsl
     }
 
-    fun generateInnerGLSL() : String {
+    fun generateInnerGLSL(): String {
         var glsl = ""
-        for(field in fields) {
+        for (field in fields) {
             glsl += "\t${field.type.glslToken} ${field.name};\n"
         }
         return glsl

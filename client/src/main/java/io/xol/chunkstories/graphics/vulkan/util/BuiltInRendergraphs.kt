@@ -3,11 +3,10 @@ package io.xol.chunkstories.graphics.vulkan.util
 import io.xol.chunkstories.api.dsl.RenderGraphDeclarationScript
 
 import io.xol.chunkstories.api.graphics.TextureFormat.*
-import io.xol.chunkstories.api.graphics.rendergraph.DepthTestingConfiguration.DepthTestMode.*
 import io.xol.chunkstories.api.graphics.rendergraph.PassOutput.BlendMode.*
-import io.xol.chunkstories.api.graphics.ImageInput.SamplingMode.*
 import io.xol.chunkstories.api.gui.GuiDrawer
-import io.xol.chunkstories.graphics.vulkan.systems.VulkanCubesDrawer
+import io.xol.chunkstories.graphics.vulkan.systems.world.VulkanCubesDrawer
+import io.xol.chunkstories.graphics.vulkan.systems.debug.VulkanDebugDrawer
 import io.xol.chunkstories.graphics.vulkan.systems.VulkanSpinningCubeDrawer
 
 object BuiltInRendergraphs {
@@ -128,9 +127,27 @@ object BuiltInRendergraphs {
             }
 
             pass {
-                name = "postprocess"
+                name = "debug"
+                shaderName = "wireframe"
 
                 dependsOn("cubes")
+
+                draws {
+                    system(VulkanDebugDrawer::class)
+                }
+
+                outputs {
+                    output {
+                        name = "colorBuffer"
+                        blending = MIX
+                    }
+                }
+            }
+
+            pass {
+                name = "postprocess"
+
+                dependsOn("cubes", "debug")
 
                 inputs {
                     imageInput {
@@ -148,10 +165,6 @@ object BuiltInRendergraphs {
                         name = "finalBuffer"
                         blending = OVERWRITE
                     }
-                }
-
-                depth {
-                    enabled = false
                 }
             }
 
@@ -175,10 +188,6 @@ object BuiltInRendergraphs {
 
                 default = true
                 final = true
-
-                depth {
-                    enabled = false
-                }
             }
         }
     }

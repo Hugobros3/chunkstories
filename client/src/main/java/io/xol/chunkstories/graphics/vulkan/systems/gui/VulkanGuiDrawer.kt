@@ -1,8 +1,9 @@
-package io.xol.chunkstories.graphics.vulkan.systems
+package io.xol.chunkstories.graphics.vulkan.systems.gui
 
 import io.xol.chunkstories.api.gui.Font
 import io.xol.chunkstories.api.gui.Gui
 import io.xol.chunkstories.graphics.common.DummyGuiDrawer
+import io.xol.chunkstories.graphics.common.Primitive
 import io.xol.chunkstories.graphics.vulkan.DescriptorPool
 import io.xol.chunkstories.graphics.vulkan.Pipeline
 import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
@@ -10,6 +11,7 @@ import io.xol.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
 import io.xol.chunkstories.graphics.vulkan.graph.VulkanPass
 import io.xol.chunkstories.graphics.vulkan.resources.InflightFrameResource
 import io.xol.chunkstories.graphics.vulkan.swapchain.Frame
+import io.xol.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
 import io.xol.chunkstories.graphics.vulkan.textures.VirtualTexturingHelper
 import io.xol.chunkstories.graphics.vulkan.textures.VulkanSampler
 import io.xol.chunkstories.graphics.vulkan.textures.VulkanTexture2D
@@ -21,9 +23,6 @@ import org.lwjgl.system.MemoryStack.stackPush
 import org.lwjgl.system.MemoryUtil
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
-import org.lwjgl.vulkan.VkPipelineVertexInputStateCreateInfo
-import org.lwjgl.vulkan.VkVertexInputAttributeDescription
-import org.lwjgl.vulkan.VkVertexInputBindingDescription
 import org.slf4j.LoggerFactory
 
 internal const val guiBufferSize = 16384 * 32
@@ -38,8 +37,6 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
         get() = pass.backend
 
     val fontRenderer = VulkanFontRenderer(backend)
-    //val guiShaderProgram = backend.shaderFactory.createProgram(backend, "/shaders/gui/gui")
-    
     val vertexInputConfiguration = vertexInputConfiguration {
         binding {
             binding(0)
@@ -76,7 +73,7 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
         }
     }
 
-    val pipeline = Pipeline(backend, pass, vertexInputConfiguration)
+    val pipeline = Pipeline(backend, pass, vertexInputConfiguration, Primitive.TRIANGLES)
 
     val descriptorPool = DescriptorPool(backend, pass.program)
     val sampler = VulkanSampler(backend)
@@ -322,9 +319,7 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
 
     override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer) {
         stackPush().use {
-            // Write the commands in the command buffer
             vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
-            //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 1, descriptorPool.setsForFrame(frame), null as? IntArray)
             vkCmdBindVertexBuffers(commandBuffer, 0, MemoryStack.stackLongs(vertexBuffers[frame].handle), MemoryStack.stackLongs(0))
 
             stagingByteBuffer.clear()
@@ -348,11 +343,6 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
                 stagingByteBuffer.flip()
                 this.upload(stagingByteBuffer)
             }
-
-            //val testOffset = UniformTestOffset()
-            //testOffset.offset.x = (Math.random().toFloat() - 0.5F) * 0.2F
-            //descriptorPool.configure(frame, testOffset)
-            //descriptorPool.configureTextureAndSampler(frame, "diffuseTexture", backend.textures.defaultTexture2D as VulkanTexture2D, sampler)
         }
     }
 
