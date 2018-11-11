@@ -25,7 +25,7 @@ import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 import org.slf4j.LoggerFactory
 
-internal const val guiBufferSize = 16384 * 32
+internal const val guiBufferSize = 2 * 1024 * 1024
 
 abstract class InternalGuiDrawer(gui: Gui) : DummyGuiDrawer(gui) {
     abstract fun drawQuad(startX: Float, startY: Float, width: Float, height: Float, textureStartX: Float, textureStartY: Float, textureEndX: Float, textureEndY: Float, texture: VulkanTexture2D, color: Vector4fc?)

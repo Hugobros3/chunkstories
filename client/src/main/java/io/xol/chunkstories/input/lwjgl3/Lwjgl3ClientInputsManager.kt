@@ -7,26 +7,17 @@
 package io.xol.chunkstories.input.lwjgl3
 
 import io.xol.chunkstories.api.client.ClientInputsManager
-import io.xol.chunkstories.api.client.IngameClient
-import io.xol.chunkstories.api.client.LocalPlayer
-import io.xol.chunkstories.api.entity.Entity
-import io.xol.chunkstories.api.entity.traits.Trait
 import io.xol.chunkstories.api.entity.traits.serializable.TraitControllable
 import io.xol.chunkstories.api.events.client.ClientInputPressedEvent
 import io.xol.chunkstories.api.events.client.ClientInputReleasedEvent
 import io.xol.chunkstories.api.events.player.PlayerInputPressedEvent
 import io.xol.chunkstories.api.events.player.PlayerInputReleasedEvent
 import io.xol.chunkstories.api.gui.Gui
-import io.xol.chunkstories.api.gui.Layer
 import io.xol.chunkstories.api.input.Input
 import io.xol.chunkstories.api.input.Mouse
 import io.xol.chunkstories.api.input.Mouse.MouseButton
 import io.xol.chunkstories.api.input.Mouse.MouseScroll
-import io.xol.chunkstories.api.plugin.ClientPluginManager
-import io.xol.chunkstories.api.world.World
-import io.xol.chunkstories.client.ClientImplementation
 import io.xol.chunkstories.client.glfw.GLFWWindow
-import io.xol.chunkstories.client.net.ServerConnection
 import io.xol.chunkstories.gui.layer.config.KeyBindSelectionOverlay
 import io.xol.chunkstories.input.InputVirtual
 import io.xol.chunkstories.input.InputsLoaderHelper
@@ -34,16 +25,13 @@ import io.xol.chunkstories.input.InputsManagerLoader
 import io.xol.chunkstories.input.Pollable
 import io.xol.chunkstories.net.packets.PacketInput
 import io.xol.chunkstories.world.WorldClientRemote
+import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWCharCallback
 import org.lwjgl.glfw.GLFWKeyCallback
 import org.lwjgl.glfw.GLFWMouseButtonCallback
 import org.lwjgl.glfw.GLFWScrollCallback
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-
-import java.util.*
-
-import org.lwjgl.glfw.GLFW.*
 
 class Lwjgl3ClientInputsManager// private final IngameLayer scene;
 (val gameWindow: GLFWWindow) : ClientInputsManager, InputsManagerLoader {
@@ -180,7 +168,7 @@ class Lwjgl3ClientInputsManager// private final IngameLayer scene;
      */
     protected fun getKeyBoundForLWJGL3xKey(keyCode: Int): Lwjgl3KeyBind? {
         for (keyBind in inputs) {
-            if (keyBind is Lwjgl3KeyBind && keyBind.lwjgL3xKey == keyCode)
+            if (keyBind is Lwjgl3KeyBind && keyBind.lwjglKey == keyCode)
                 return keyBind
         }
         return null
@@ -231,21 +219,15 @@ class Lwjgl3ClientInputsManager// private final IngameLayer scene;
 
     override fun insertInput(type: String, name: String, value: String?, arguments: Collection<String>) {
         val input: Input
-        if (type == "keyBind") {
-            val key = Lwjgl3KeyBind(this, name, value)
-            input = key
-            if (arguments.contains("hidden"))
-                key.editable = false
-            if (arguments.contains("repeat"))
-                key.repeat = true
-            // keyboardInputs.add(key);
-        } else if (type == "virtual") {
-            input = InputVirtual(name)
-        } else if (type == "keyBindCompound") {
-            val keyCompound = Lwjgl3KeyBindCompound(this, name, value)
-            input = keyCompound
-        } else
-            return
+        when (type) {
+            "keyBind" -> input = Lwjgl3KeyBind(this, name, value!!, arguments.contains("hidden"), arguments.contains("repeat"))
+            "virtual" -> input = InputVirtual(name)
+            "keyBindCompound" -> {
+                val keyCompound = Lwjgl3KeyBindCompound(this, name, value)
+                input = keyCompound
+            }
+            else -> return
+        }
 
         inputs.add(input)
         inputsMap[input.hash] = input
@@ -278,7 +260,7 @@ class Lwjgl3ClientInputsManager// private final IngameLayer scene;
         if (layer?.handleInput(input) == true)
             return true
 
-        if(ingameClient == null)
+        if (ingameClient == null)
             return false
 
         val player = ingameClient.player

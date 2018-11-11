@@ -107,13 +107,46 @@ public class OptionsScreen extends Layer {
 				cuVal = 0;
 			option.trySetting(values[cuVal]);
 		}
+	}
+
+	class ConfigButtonMultiChoiceInt extends ConfigButton {
+		final Configuration.OptionMultiChoiceInt option;
+
+		List<Integer> possibleValues;
+		int currentValueIndex = 0;
+
+		ConfigButtonMultiChoiceInt(Configuration.OptionMultiChoiceInt o) {
+			super(o);
+			this.option = o;
+			this.possibleValues = o.getPossibleChoices();
+
+			if (o.getValue() != null) {
+				for (int i = 0; i < possibleValues.size(); i++) {
+					if (possibleValues.get(i) == (o.getValue()))
+						currentValueIndex = i;
+				}
+			}
+		}
+
+		@Override public void onClick(float posx, float posy, int button) {
+			if (button == 0)
+				currentValueIndex++;
+			else
+				currentValueIndex--;
+			if (currentValueIndex < 0)
+				currentValueIndex = possibleValues.size() - 1;
+			if (currentValueIndex >= possibleValues.size())
+				currentValueIndex = 0;
+			option.trySetting(possibleValues.get(currentValueIndex));
+		}
 
 	}
 
-	class ConfigButtonKey extends ConfigButton {
-		final Configuration.OptionInt option;
 
-		ConfigButtonKey(Configuration.OptionInt option) {
+	class ConfigButtonKey extends ConfigButton {
+		final Configuration.OptionKeyBind option;
+
+		ConfigButtonKey(OptionKeyBind option) {
 			super(option);
 			this.option = option;
 		}
@@ -217,9 +250,11 @@ public class OptionsScreen extends Layer {
 		for (Option option : clientConfiguration.getOptions()) {
 			String name = option.getName();
 			String category = name.substring("client.".length());
-			category = category.substring(0, category.indexOf("."));
 
+			category = category.substring(0, category.indexOf("."));
 			category = category.substring(0, 1).toUpperCase() + category.substring(1).toLowerCase();
+
+			System.out.println("category: "+category+"opt"+name);
 
 			ConfigButton optionButton;
 
@@ -229,6 +264,15 @@ public class OptionsScreen extends Layer {
 				optionButton = new ConfigButtonScale((Configuration.OptionDoubleRange) option);
 			else if (option instanceof OptionBoolean)
 				optionButton = new ConfigButtonToggle((OptionBoolean) option);
+			else if(option instanceof Configuration.OptionMultiChoiceInt)
+				optionButton = new ConfigButtonMultiChoiceInt((Configuration.OptionMultiChoiceInt)option);
+			else if(option instanceof Configuration.OptionKeyBind) {
+				Configuration.OptionKeyBind keyOption = (OptionKeyBind) option;
+				if (!keyOption.getHidden())
+					optionButton = new ConfigButtonKey(keyOption);
+				else
+					continue;
+			}
 			else
 				continue;
 
@@ -317,7 +361,7 @@ public class OptionsScreen extends Layer {
 		Mouse mouse = gui.getMouse();
 
 		for (ConfigButton c : currentConfigTab.configButtons) {
-			c.setPosition(startPosX + b * (160 + 16), startPosY - (a / 2) * 16);
+			c.setPosition(startPosX + b * (160 + 16), startPosY - (a / 2) * 32);
 			c.updateText();
 			c.render(renderer);
 
