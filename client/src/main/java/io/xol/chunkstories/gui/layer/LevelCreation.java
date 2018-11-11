@@ -41,7 +41,7 @@ public class LevelCreation extends Layer {
             //Escapes the unused characters
             String internalName = levelName.getText().replaceAll("[^\\w\\s]", "_");
 
-            WorldInfo worldInfo = new WorldInfo(internalName, levelName.getText(), "" + System.currentTimeMillis(), "", WorldSize.MEDIUM, worldGenName.getText());
+            WorldInfo worldInfo = new WorldInfo(internalName, levelName.getText(), "Player-generated world", "" + System.currentTimeMillis(), WorldSize.MEDIUM, worldGenName.getText());
             IngameClientLocalHostKt.createAndEnterWorld((ClientImplementation) gui.getClient(), new File("./worlds/"+internalName+"/"), worldInfo);
         });
 

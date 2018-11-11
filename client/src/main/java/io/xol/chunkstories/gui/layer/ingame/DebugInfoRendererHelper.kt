@@ -1,13 +1,11 @@
 package io.xol.chunkstories.gui.layer.ingame
 
-import io.xol.chunkstories.api.client.LocalPlayer
-import io.xol.chunkstories.api.entity.traits.serializable.TraitControllable
-import io.xol.chunkstories.api.entity.traits.serializable.TraitInventory
+import io.xol.chunkstories.api.entity.traits.TraitVoxelSelection
 import io.xol.chunkstories.api.entity.traits.serializable.TraitRotation
 import io.xol.chunkstories.api.gui.GuiDrawer
 import io.xol.chunkstories.client.glfw.GLFWWindow
-import io.xol.chunkstories.input.lwjgl3.Lwjgl3KeyBind
 import io.xol.chunkstories.util.VersionInfo
+import io.xol.chunkstories.util.math.toVec3i
 import io.xol.chunkstories.world.WorldImplementation
 
 class DebugInfoRendererHelper(ingameLayer: IngameLayer) {
@@ -27,21 +25,27 @@ class DebugInfoRendererHelper(ingameLayer: IngameLayer) {
         val world = client.world as WorldImplementation
 
         debugLine("Chunk Stories ${VersionInfo.version} running on the ${window.graphicsBackend.javaClass.simpleName}")
+        debugLine("${client.tasks.submittedTasks()} + ${client.tasks}")
         debugLine("#FF0000Rendering performance : todo FPS | ms #00FFFFSimulation performance : ${world.gameLogic.simulationFps}")
         debugLine("World info : ${world.allLoadedChunks.count()} chunks loaded, ${world.regionsHolder.stats}")
 
         val playerEntity = client.player.controlledEntity
         if(playerEntity != null ) {
             debugLine("Controlled entity id ${playerEntity.UUID} position ${playerEntity.location} type ${playerEntity.definition.name}")
-            debugLine("Looking at ${playerEntity.traits[TraitRotation::class]?.directionLookingAt}")
 
-            debugLine("controller focus: ${(playerEntity.traits[TraitControllable::class.java]?.controller as? LocalPlayer)?.hasFocus()}")
+            val lookingAt = playerEntity.traits[TraitVoxelSelection::class]?.getBlockLookingAt(false, false)
+            debugLine("Looking at $lookingAt in direction ${playerEntity.traits[TraitRotation::class]?.directionLookingAt}")
+
+            val standingAt = playerEntity.location.toVec3i()
+            val standingIn = world.peek(playerEntity.location)
+            debugLine("Standing at $standingAt in ${standingIn.voxel} (solid=${standingIn.voxel?.solid}, box=${standingIn.voxel?.collisionBoxes?.getOrNull(0)})")
+
+            val region = world.getRegionLocation(playerEntity.location)
+            val chunk = world.getChunkWorldCoordinates(playerEntity.location)
+            debugLine("Chunk: $chunk, region: $region")
         }
 
-        debugLine("gui focus ${gui.hasFocus()}")
-        debugLine("input mgr focus ${client.inputsManager.mouse.isGrabbed}")
-
-        val inp = client.inputsManager.getInputByName("forward") as Lwjgl3KeyBind
-        debugLine("forward key ${inp.name} ${inp.isPressed}")
+        //val inp = client.inputsManager.getInputByName("forward") as Lwjgl3KeyBind
+        //debugLine("forward key ${inp.name} ${inp.isPressed}")
     }
 }

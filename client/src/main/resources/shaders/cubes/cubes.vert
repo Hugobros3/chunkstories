@@ -5,6 +5,7 @@ in vec3 vertexIn;
 in vec2 texCoordIn;
 
 in vec3 cubePositionIn;
+in vec3 cubeColorIn;
 
 out vec2 texCoord;
 out vec4 color;
@@ -15,6 +16,6 @@ uniform Camera camera;
 void main()
 {
 	texCoord = texCoordIn;
-	color = vec4(gl_VertexIndex * 0.5, gl_VertexIndex * 0.125, gl_VertexIndex * 0.125 * 0.5, 1.0);
+	color = vec4(cubeColorIn, 1.0);
 	gl_Position = camera.projectionMatrix * camera.viewMatrix * vec4(vertexIn.xyz + cubePositionIn.xyz, 1.0);
 }

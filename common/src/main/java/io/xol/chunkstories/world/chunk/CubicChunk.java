@@ -670,7 +670,20 @@ public class CubicChunk implements Chunk {
 
 	@Override
 	public ChunkMesh mesh() {
-		return null; //TODO
+		return dummy; //TODO
+	}
+
+	DummyChunkMesh dummy = new DummyChunkMesh();
+
+	static class DummyChunkMesh implements ChunkMesh {
+
+		@Override public void incrementPendingUpdates() {
+
+		}
+
+		@Override public int pendingUpdates() {
+			return 0;
+		}
 	}
 
 	@Override
