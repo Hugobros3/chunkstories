@@ -2,7 +2,7 @@ package io.xol.chunkstories.world.chunk
 
 import io.xol.chunkstories.api.world.chunk.Chunk
 
-open class ChunkRenderingData : Chunk.ChunkMesh {
+open class ChunkRenderingData(val chunk: CubicChunk) : Chunk.ChunkMesh {
     override fun pendingUpdates(): Int {
         return 0
     }

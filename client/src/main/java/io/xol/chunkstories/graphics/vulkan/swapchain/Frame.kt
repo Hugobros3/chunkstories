@@ -16,4 +16,7 @@ data class Frame(val frameNumber: Int,
                  val renderFinishedSemaphore: VkSemaphore,
                  val renderFinishedFence: VkFence,
                  val started: Long) {
+
+    /** When this frame has completed execution on the GPU, these tasks will be called */
+    val recyclingTasks = mutableListOf<() -> Unit>()
 }

@@ -18,6 +18,7 @@ import io.xol.chunkstories.graphics.vulkan.swapchain.Frame
 import io.xol.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
 import io.xol.chunkstories.graphics.vulkan.vertexInputConfiguration
 import io.xol.chunkstories.world.WorldImplementation
+import io.xol.chunkstories.world.chunk.CubicChunk
 import org.joml.*
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.system.MemoryUtil
@@ -29,9 +30,8 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
     val backend: VulkanGraphicsBackend
         get() = pass.backend
 
-    //val guiShaderProgram = backend.shaderFactory.createProgram(backend, "/shaders/cubes/cubes")
-    val descriptorPool = DescriptorPool(backend, pass.program)
-    val vertexInputConfiguration = vertexInputConfiguration {
+    private val descriptorPool = DescriptorPool(backend, pass.program)
+    private val vertexInputConfiguration = vertexInputConfiguration {
         binding {
             binding(0)
             stride(3 * 4 + 2 * 4)
@@ -70,10 +70,10 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         }
     }
 
-    val pipeline = Pipeline(backend, pass, vertexInputConfiguration, Primitive.TRIANGLES)
+    private val pipeline = Pipeline(backend, pass, vertexInputConfiguration, Primitive.TRIANGLES)
 
     private val vertexBuffer: VulkanVertexBuffer
-    val individualCubeVertices = floatArrayOf(
+    private val individualCubeVertices = floatArrayOf(
              0.0f,  0.0f,  0.0f,   0.0f, 0.0f,
              0.0f,  1.0f,  1.0f,   1.0f, 1.0f,
              0.0f,  1.0f,  0.0f,   0.0f, 1.0f,
@@ -204,27 +204,57 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         MemoryUtil.memFree(buffer)
     }
 
+    companion object {
+        var totalCubesDrawn = 0
+        var totalBuffersUsed = 0
+    }
+
     override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer) {
         val entity = client.player.controlledEntity
         if(entity != null) {
             val camera = entity.traits[TraitControllable::class]?.camera ?: Camera()
             descriptorPool.configure(frame, camera)
 
-            //println("$lastGenPosition ${lastGenPosition.distance(entity.location)}")
-
-            if(lastGenPosition.distance(entity.location) > 32) {
+            /*if(lastGenPosition.distance(entity.location) > 32) {
                 fillInstanceBuffer(frame, entity.location)
+            }*/
+        }
+
+        totalCubesDrawn = 0
+        totalBuffersUsed = 0
+
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 1, descriptorPool.setsForFrame(frame), null as? IntArray)
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
+        vkCmdBindVertexBuffers(commandBuffer, 0, stackLongs(vertexBuffer.handle), stackLongs(0))
+
+        /*if(instances > 0) {
+            vkCmdBindVertexBuffers(commandBuffer, 1, stackLongs(instancesBuffer.handle), stackLongs(0))
+            vkCmdDraw(commandBuffer, 3 * 2 * 6, instances, 0, 0)
+        }*/
+
+        val world = client.world as WorldImplementation
+
+        val usedData = mutableListOf<VulkanChunkRenderData.Block>()
+        for(chunk in world.allLoadedChunks) {
+            val chunk = chunk as CubicChunk
+            //TODO actually frustrum cull those like a boss
+            if(chunk.meshData is VulkanChunkRenderData) {
+                val block = (chunk.meshData as VulkanChunkRenderData).getLastBlock()
+                if(block?.vertexBuffer != null) {
+                    vkCmdBindVertexBuffers(commandBuffer, 1, stackLongs(block.vertexBuffer.handle), stackLongs(0))
+                    vkCmdDraw(commandBuffer, 3 * 2 * 6, block.count, 0, 0)
+
+                    totalCubesDrawn += block.count
+                    totalBuffersUsed++
+                }
+            } else {
+                chunk.meshData = VulkanChunkRenderData(backend, chunk)
             }
         }
 
-        if(instances > 0) {
-            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 1, descriptorPool.setsForFrame(frame), null as? IntArray)
 
-            vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
-            vkCmdBindVertexBuffers(commandBuffer, 0, stackLongs(vertexBuffer.handle), stackLongs(0))
-            vkCmdBindVertexBuffers(commandBuffer, 1, stackLongs(instancesBuffer.handle), stackLongs(0))
-
-            vkCmdDraw(commandBuffer, 3 * 2 * 6, instances, 0, 0)
+        frame.recyclingTasks.add {
+            usedData.forEach(VulkanChunkRenderData.Block::doneWith)
         }
     }
 

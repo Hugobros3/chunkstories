@@ -5,6 +5,8 @@ import io.xol.chunkstories.api.entity.traits.serializable.TraitRotation
 import io.xol.chunkstories.api.gui.GuiDrawer
 import io.xol.chunkstories.api.util.kotlin.toVec3i
 import io.xol.chunkstories.client.glfw.GLFWWindow
+import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
+import io.xol.chunkstories.graphics.vulkan.systems.world.VulkanCubesDrawer
 import io.xol.chunkstories.util.VersionInfo
 import io.xol.chunkstories.world.WorldImplementation
 
@@ -23,10 +25,12 @@ class DebugInfoRendererHelper(ingameLayer: IngameLayer) {
         val client = gui.client.ingame!!
         val window = (client.gameWindow as GLFWWindow)
         val world = client.world as WorldImplementation
+        val swapchain = (window.graphicsBackend as VulkanGraphicsBackend).swapchain
 
         debugLine("Chunk Stories ${VersionInfo.version} running on the ${window.graphicsBackend.javaClass.simpleName}")
         debugLine("${client.tasks.submittedTasks()} + ${client.tasks}")
-        debugLine("#FF0000Rendering performance : todo FPS | ms #00FFFFSimulation performance : ${world.gameLogic.simulationFps}")
+        debugLine("#FF0000Rendering performance : ${swapchain.fps.toInt()}FPS | ${swapchain.lastFrametime/1000000}ms #00FFFFSimulation performance : ${world.gameLogic.simulationFps}")
+        debugLine("Cubes drawn: ${VulkanCubesDrawer.totalCubesDrawn} within ${VulkanCubesDrawer.totalBuffersUsed} vertex buffers")
         debugLine("World info : ${world.allLoadedChunks.count()} chunks loaded, ${world.regionsHolder.stats}")
 
         val playerEntity = client.player.controlledEntity

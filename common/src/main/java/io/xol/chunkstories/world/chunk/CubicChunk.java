@@ -177,7 +177,7 @@ public class CubicChunk implements Chunk {
 			}
 		}
 
-		meshData = new ChunkRenderingData();
+		meshData = new ChunkRenderingData(this);
 
 		// Send chunk to whoever already subscribed
 		if (data == null)

@@ -35,6 +35,7 @@ dependencies {
 	compile "org.lwjgl:lwjgl-vulkan:${lwjglVersion}"
 	compile "org.lwjgl:lwjgl-stb:${lwjglVersion}"
 	compile "org.lwjgl:lwjgl-tinyfd:${lwjglVersion}"
+	compile "org.lwjgl:lwjgl-vma:${lwjglVersion}"
 
 	//When running on our debug computer, it's safe to assume the OS that will run the game is the same than the one who'll compile it.
 	runtime "org.lwjgl:lwjgl-glfw:${lwjglVersion}:${lwjglNatives}"
@@ -43,6 +44,7 @@ dependencies {
 	runtime "org.lwjgl:lwjgl-opengl:${lwjglVersion}:${lwjglNatives}"
 	runtime "org.lwjgl:lwjgl-stb:${lwjglVersion}:${lwjglNatives}"
 	runtime "org.lwjgl:lwjgl-tinyfd:${lwjglVersion}:${lwjglNatives}"
+	runtime "org.lwjgl:lwjgl-vma:${lwjglVersion}:${lwjglNatives}"
 	runtime "graphics.scenery:spirvcrossj:$spirvCrossVersion:$lwjglNatives"
 
 	//When compiling a redistribuable jar, we need ALL natives in it!
@@ -54,6 +56,7 @@ dependencies {
 		multiplatform "org.lwjgl:lwjgl-opengl:${lwjglVersion}:" + it
 		multiplatform "org.lwjgl:lwjgl-stb:${lwjglVersion}:" + it
 		multiplatform "org.lwjgl:lwjgl-tinyfd:${lwjglVersion}:" + it
+		multiplatform "org.lwjgl:lwjgl-vma:${lwjglVersion}:" + it
 		multiplatform "graphics.scenery:spirvcrossj:$spirvCrossVersion:$lwjglNatives"
 	}
 }

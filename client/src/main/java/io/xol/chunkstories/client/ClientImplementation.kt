@@ -26,6 +26,7 @@ import io.xol.chunkstories.Constants
 import io.xol.chunkstories.api.client.ClientIdentity
 import io.xol.chunkstories.api.util.configuration.Configuration
 import io.xol.chunkstories.content.GameDirectory
+import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import io.xol.chunkstories.gui.layer.LoginPrompt
 import io.xol.chunkstories.gui.layer.SkyBoxBackground
 import io.xol.chunkstories.input.lwjgl3.Lwjgl3ClientInputsManager
@@ -153,6 +154,7 @@ class ClientImplementation internal constructor(coreContentLocation: File, modsS
                         println("Ignoring hardware checks. This is absolutely definitely not going to make the game run, proceed at your own risk of imminent failure." + "You are stripped of any tech support rights when running the game using this.")
                     launchArgument.contains("--mods") -> modsStringArgument = launchArgument.replace("--mods=", "")
                     launchArgument.contains("--dir") -> GameDirectory.set(launchArgument.replace("--dir=", ""))
+                    launchArgument.contains("--enableValidation") -> VulkanGraphicsBackend.useValidationLayer = true
                     launchArgument.contains("--core") -> {
                         val coreContentLocationPath = launchArgument.replace("--core=", "")
                         coreContentLocation = File(coreContentLocationPath)

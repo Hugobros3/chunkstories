@@ -26,6 +26,10 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
         private set
     private var inflightFrameIndex = 0
 
+    // We keep a reference to old frames to manage their data lifecycle, even past GPU execution
+    private lateinit var inFlightFrames: Array<Frame?>
+
+    // Those sync primitives get recycled accross multiple frames
     private lateinit var imageAvailableSemaphores: List<VkSemaphore>
     private lateinit var renderingSemaphores: List<VkSemaphore>
     private lateinit var inFlightFences: List<VkFence>
@@ -140,17 +144,33 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
         stackPop()
     }
 
+    //TODO make it an option
+    fun getMaxFramesInFlight() = imagesCount
 
     private fun createSemaphores() {
-        //TODO make this moar configurable
-        maxFramesInFlight = imagesCount
+        maxFramesInFlight = getMaxFramesInFlight()
 
         imageAvailableSemaphores = List(maxFramesInFlight) { backend.createSemaphore() }
         renderingSemaphores = List(maxFramesInFlight) { backend.createSemaphore() }
         inFlightFences = List(maxFramesInFlight) { backend.createFence(true) }
+        inFlightFrames = arrayOfNulls<Frame?>(maxFramesInFlight)
     }
 
+    private var lastFrameStart = 0L
+    var lastFrametime: Long = 0L
+    var fps = 0.0
+
     fun beginFrame(frameNumber: Int): Frame {
+        val retiringFrame = inFlightFrames[inflightFrameIndex]
+        if(retiringFrame != null) {
+            retiringFrame.recyclingTasks.forEach { it.invoke() }
+        }
+
+        lastFrametime = System.nanoTime() - lastFrameStart
+        fps = 1000000000.0 / lastFrametime.toDouble()
+        backend.window.title = "fps = ${fps.toInt()}"
+        lastFrameStart = System.nanoTime()
+
         stackPush()
 
         val currentInflightFrameIndex = inflightFrameIndex
@@ -200,8 +220,11 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
 
         stackPop()
 
-        return Frame(frameNumber, swapchainImageIndex, swapChainImages[swapchainImageIndex], swapChainImageViews[swapchainImageIndex], swapChainFramebuffers[swapchainImageIndex],
+        val frame =  Frame(frameNumber, swapchainImageIndex, swapChainImages[swapchainImageIndex], swapChainImageViews[swapchainImageIndex], swapChainFramebuffers[swapchainImageIndex],
                 currentInflightFrameIndex, imageAvailableSemaphore, renderingFinishedSemaphore, fence, System.nanoTime())
+
+        inFlightFrames[inflightFrameIndex] = frame
+        return frame
     }
 
     fun finishFrame(frame: Frame) {
@@ -222,10 +245,6 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
         }
 
         vkQueuePresentKHR(backend.logicalDevice.presentationQueue.handle, presentInfo)
-
-        val frameTime = System.nanoTime() - frame.started
-        val fps = 1000000000.0 / frameTime.toDouble()
-        backend.window.title = "fps = ${fps.toInt()}"
 
         inflightFrameIndex = (inflightFrameIndex + 1) % maxFramesInFlight
         stackPop()

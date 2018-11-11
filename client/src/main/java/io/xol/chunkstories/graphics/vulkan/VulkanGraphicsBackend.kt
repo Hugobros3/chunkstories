@@ -10,6 +10,7 @@ import io.xol.chunkstories.graphics.vulkan.devices.LogicalDevice
 import io.xol.chunkstories.graphics.vulkan.devices.PhysicalDevice
 import io.xol.chunkstories.graphics.vulkan.graph.VulkanPass
 import io.xol.chunkstories.graphics.vulkan.graph.VulkanRenderGraph
+import io.xol.chunkstories.graphics.vulkan.resources.VmaAllocator
 import io.xol.chunkstories.graphics.vulkan.resources.VulkanMemoryManager
 import io.xol.chunkstories.graphics.vulkan.shaders.VulkanShaderFactory
 import io.xol.chunkstories.graphics.vulkan.swapchain.SwapChain
@@ -33,12 +34,12 @@ import org.slf4j.LoggerFactory
 import java.awt.image.BufferedImage
 
 class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(window) {
-    internal var enableValidation = false
-    internal var doNonUniformSamplerArrayAccess = false
+    internal val enableValidation = useValidationLayer
+    internal val doNonUniformSamplerArrayAccess = false
 
     val requiredDeviceExtensions = listOf(KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME)
 
-    private var instance: VkInstance
+    internal var instance: VkInstance
     private val debugCallback: Long
     private var cookie = true
 
@@ -52,6 +53,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
     val logicalDevice: LogicalDevice
 
     val memoryManager: VulkanMemoryManager
+    val vmaAllocator: VmaAllocator
 
     /** The actual surface we're drawing onto */
     internal var surface: WindowSurface
@@ -80,6 +82,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
 
         logicalDevice = LogicalDevice(this, physicalDevice)
 
+        vmaAllocator = VmaAllocator(this)
         memoryManager = VulkanMemoryManager(this, logicalDevice)
         textures = VulkanTextures(this)
 
@@ -131,7 +134,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
             pEngineName(MemoryStack.stackUTF8("Chunk Stories Vulkan Backend"))
 
             //No clue which version to use, same one as the tutorial I guess
-            apiVersion(VK10.VK_MAKE_VERSION(1, 0, 2))
+            apiVersion(VK10.VK_MAKE_VERSION(1, 1, 0))
         }
 
         val additionalInstanceExtensions = mutableSetOf(EXTDebugReport.VK_EXT_DEBUG_REPORT_EXTENSION_NAME)
@@ -145,6 +148,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
 
         var pRequestedLayers: PointerBuffer? = null
         if (enableValidation) {
+            logger.info("Validation layer enabled")
             pRequestedLayers = MemoryStack.stackCallocPointer(1)
             pRequestedLayers.put(MemoryStack.stackUTF8("VK_LAYER_LUNARG_standard_validation"))
             pRequestedLayers.flip()
@@ -254,6 +258,8 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
         swapchain.cleanup()
 
         textures.cleanup()
+
+        vmaAllocator.cleanup()
         memoryManager.cleanup()
 
         logicalDevice.cleanup()
@@ -269,6 +275,8 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
     }
 
     companion object {
+        var useValidationLayer = false
+
         val logger = LoggerFactory.getLogger("client.vulkan")
     }
 }
