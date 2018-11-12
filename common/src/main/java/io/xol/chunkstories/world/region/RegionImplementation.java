@@ -41,7 +41,7 @@ public class RegionImplementation implements Region {
 	public final int regionX, regionY, regionZ;
 	public final long uuid;
 
-	protected Collection<CubicChunk> loadedChunks = ConcurrentHashMap.newKeySet();
+	public Collection<CubicChunk> loadedChunks = ConcurrentHashMap.newKeySet();
 
 	/**
 	 * Contains the users that registered to this region using world.aquireRegion or
@@ -74,7 +74,7 @@ public class RegionImplementation implements Region {
 	public SafeWriteLock chunksArrayLock = new SafeWriteLock();
 
 	// Holds 8x8x8 CubicChunks
-	private ChunkHolderImplementation[] chunkHolders;
+	private final ChunkHolderImplementation[] chunkHolders;
 	private AtomicBoolean isDiskDataLoaded = new AtomicBoolean(false);
 
 	private static Random random = new Random();

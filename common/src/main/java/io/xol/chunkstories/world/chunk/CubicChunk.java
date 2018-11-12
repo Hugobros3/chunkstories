@@ -73,22 +73,27 @@ public class CubicChunk implements Chunk {
 	public final ChunkOcclusionUpdater occlusion = new ChunkOcclusionUpdater(this);
 	public final ChunkLightBaker lightBaker;
 
+	// Set to true after destroy()
+	public boolean isDestroyed = false;
+	public final Semaphore chunkDestructionSemaphore = new Semaphore(1);
+
 	@Nonnull
 	public ChunkRenderingData meshData;
 
 	protected final Map<Integer, CellComponentsHolder> allCellComponents = new HashMap<Integer, CellComponentsHolder>();
 	protected final Set<Entity> localEntities = ConcurrentHashMap.newKeySet();
 
+	//TODO use semaphores/RW locks
 	protected final SimpleLock componentsLock = new SimpleLock();
 	protected final SimpleLock entitiesLock = new SimpleLock();
 
 	private Semaphore chunkDataArrayCreation = new Semaphore(1);
 
-	public CubicChunk(ChunkHolderImplementation holder, int chunkX, int chunkY, int chunkZ) {
-		this(holder, chunkX, chunkY, chunkZ, null);
-	}
+	public static final AtomicInteger chunksCounter = new AtomicInteger(0);
 
 	public CubicChunk(ChunkHolderImplementation holder, int chunkX, int chunkY, int chunkZ, CompressedData data) {
+		chunksCounter.incrementAndGet();
+
 		this.chunkHolder = holder;
 
 		this.holdingRegion = holder.getRegion();
@@ -232,8 +237,6 @@ public class CubicChunk implements Chunk {
 
 			return VoxelFormat.format(0, 0, sunlight, 0);
 		} else {
-			// Thread.dumpStack();
-			// System.out.println(x+":"+y+":"+z);
 			return chunkVoxelData[x * 32 * 32 + y * 32 + z];
 		}
 	}
@@ -627,8 +630,12 @@ public class CubicChunk implements Chunk {
 
 	@Override
 	public void destroy() {
+		chunkDestructionSemaphore.acquireUninterruptibly();
 		this.lightBaker.destroy();
 		this.meshData.destroy();
+		this.isDestroyed = true;
+		//chunksCounter.decrementAndGet();
+		chunkDestructionSemaphore.release();
 	}
 
 	@Override

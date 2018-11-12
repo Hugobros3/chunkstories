@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger
 class VulkanChunkRenderData(val backend: VulkanGraphicsBackend, chunk: CubicChunk) : ChunkRenderingData(chunk) {
     val semaphore = Semaphore(1)
 
+    private var isDestroyed = false
     private var lastBlock: Block? = null
 
     fun getLastBlock(): Block? {
@@ -40,7 +41,10 @@ class VulkanChunkRenderData(val backend: VulkanGraphicsBackend, chunk: CubicChun
             if (lastBlock != null)
                 lastBlock!!.doneWith()
 
-            lastBlock = block
+            if(isDestroyed)
+                block.doneWith()
+            else
+                lastBlock = block
         } finally {
             semaphore.release()
         }
@@ -51,6 +55,9 @@ class VulkanChunkRenderData(val backend: VulkanGraphicsBackend, chunk: CubicChun
             semaphore.acquireUninterruptibly()
             if (lastBlock != null)
                 lastBlock!!.doneWith()
+
+            lastBlock = null
+            isDestroyed = true
         } finally {
             semaphore.release()
         }
@@ -87,7 +94,6 @@ class VulkanChunkRenderData(val backend: VulkanGraphicsBackend, chunk: CubicChun
     }
 
     class GenerateChunkDataTask(val backend: VulkanGraphicsBackend, val chunk: CubicChunk) : Task() {
-
         lateinit var rawChunkData: IntArray
 
         inline fun opaque(voxel: Voxel) = voxel.solid || voxel.name == "water"

@@ -63,11 +63,6 @@ public class TaskGenerateWorldThinSlice extends Task implements WorldUser {
 		}
 		generator.generateWorldSlice(chunks);
 
-		/*
-		 * for(int chunkY = 0; chunkY < maxGenerationHeightInChunks; chunkY ++) {
-		 * generator.generateChunk(holders[chunkY].getChunk()); }
-		 */
-
 		// Build the heightmap from that
 		for (int x = 0; x < 32; x++)
 			for (int z = 0; z < 32; z++) {

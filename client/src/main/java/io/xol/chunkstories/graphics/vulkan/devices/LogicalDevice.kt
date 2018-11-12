@@ -1,6 +1,8 @@
 package io.xol.chunkstories.graphics.vulkan.devices
 
+import io.xol.chunkstories.graphics.vulkan.CommandPool
 import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
+import io.xol.chunkstories.graphics.vulkan.resources.Cleanable
 import io.xol.chunkstories.graphics.vulkan.util.ensureIs
 import org.lwjgl.PointerBuffer
 import org.lwjgl.system.MemoryStack.*
@@ -11,6 +13,8 @@ import java.util.concurrent.Semaphore
 import kotlin.math.log
 
 class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: PhysicalDevice) {
+    private val allQueues: List<Queue>
+
     lateinit var graphicsQueue: Queue private set
     lateinit var presentationQueue: Queue private set
     lateinit var transferQueue: Queue private set
@@ -28,7 +32,10 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
                 ?: throw Exception("Couldn't find an acceptable graphics queue family in $physicalDevice")
         val presentationQueueFamily = physicalDevice.queueFamilies.find { it.canPresent }
                 ?: throw Exception("Couldn't find an acceptable presentation queue family in $physicalDevice")
-        val transferQueueFamily = physicalDevice.queueFamilies.find { it.canTransfer }
+
+        val transferQueueFamily = physicalDevice.queueFamilies.filter { it.canTransfer }.
+                // we sort the list and give the existing graphics queue a weight, so we avoid selecting it if we have other options
+                sortedBy { if(it == graphicsQueueFamily) 10 else 0 }.getOrNull(0)
                 ?: throw Exception("Couldn't find an acceptable transfer queue family in $physicalDevice")
 
         val requests = listOf<QueueRequest>(
@@ -142,6 +149,8 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
         }*/
 
         //i = 0
+        allQueues = mutableListOf()
+
         for ((family, queues) in mappedRequests) {
             var i = 0
             var queue: Queue? = null
@@ -150,6 +159,7 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
                 if(i < actualRequestedQueueCounts[family]!!) {
                     vkGetDeviceQueue(vkDevice, family.index, i++, pQueue)
                     queue = Queue(VkQueue(pQueue.get(0), vkDevice), family)
+                    allQueues += queue
                 }
                 queueRequest.target.invoke(queue!!)
             }
@@ -160,6 +170,8 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
     }
 
     fun cleanup() {
+        allQueues
+
         vkDestroyDevice(vkDevice, null)
     }
 
@@ -169,6 +181,21 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
 
     inner class Queue(val handle: VkQueue, val family: PhysicalDevice.QueueFamily) {
         val mutex = Semaphore(1)
+
+        val threadSafePools: ThreadLocal<CommandPool>
+        private val allocatedThreadSafePools = mutableListOf<CommandPool>()
+
+        init {
+            threadSafePools = ThreadLocal.withInitial {
+                val pool = CommandPool(backend, family, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT or VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
+                allocatedThreadSafePools.add(pool)
+                pool
+            }
+        }
+
+        fun cleanup() {
+            allocatedThreadSafePools.forEach(Cleanable::cleanup)
+        }
 
         override fun toString(): String {
             return "Queue(handle=$handle, family=$family)"

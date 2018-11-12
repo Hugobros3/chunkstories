@@ -6,11 +6,7 @@
 
 package io.xol.chunkstories.world.region;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -28,8 +24,7 @@ public class HashMapWorldRegionsHolder {
 
 	// private Semaphore noConcurrentRegionCreationDestruction = new Semaphore(1);
 	private final ReadWriteLock regionsLock = new ReentrantReadWriteLock();
-	private final Map<Integer, RegionImplementation> regions = new HashMap<>(); // new ConcurrentHashMap<Integer,
-																				// RegionImplementation>(8, 0.9f, 1);
+	private final Map<Integer, RegionImplementation> regions = new HashMap<>();
 
 	private final int sizeInRegions, heightInRegions;
 
@@ -40,21 +35,16 @@ public class HashMapWorldRegionsHolder {
 		sizeInRegions = world.getWorldInfo().getSize().sizeInChunks / 8;
 	}
 
-	public Iterator<RegionImplementation> internalGetLoadedRegions() {
-		// Iterators are sort of unsafe so we quickly build a list and let them iterate
-		// that
+	//TODO have a copyOnWrite list or smth
+	public Collection<RegionImplementation> internalGetLoadedRegions() {
 		try {
 			regionsLock.readLock().lock();
-			List<RegionImplementation> list = new LinkedList<>();
-			for (RegionImplementation r : regions.values()) {
-				list.add(r);
-			}
-
-			return list.iterator();
+			List<RegionImplementation> list = new ArrayList<>();
+			list.addAll(regions.values());
+			return list;
 		} finally {
 			regionsLock.readLock().unlock();
 		}
-		// return regions.values().iterator();
 	}
 
 	public RegionImplementation getRegionChunkCoordinates(int chunkX, int chunkY, int chunkZ) {

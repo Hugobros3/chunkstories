@@ -39,10 +39,6 @@ public class TaskGenerateWorldSlice extends Task implements WorldUser {
 
 	@Override
 	protected boolean task(TaskExecutor taskExecutor) {
-		// System.out.println(heightmap);
-		// if(isWorkDone() || f == null)
-		// System.out.println(heightmap.isLoaded()+":"+relative_chunkX+":"+isWorkDone());
-
 		if (!heightmap.isLoaded())
 			return false; // wait until that is done
 

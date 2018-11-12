@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -39,6 +40,8 @@ import io.xol.chunkstories.world.io.IOTask;
 import io.xol.chunkstories.world.region.RegionImplementation;
 import net.jpountz.lz4.LZ4Compressor;
 import net.jpountz.lz4.LZ4Factory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ChunkHolderImplementation implements ChunkHolder {
 	// Position stuff
@@ -46,8 +49,8 @@ public class ChunkHolderImplementation implements ChunkHolder {
 	private final int x, y, z;
 	private final int uuid;
 
-	private final Collection<CubicChunk> regionLoadedChunks; // To update the parent object's collection (used in
-																// iterator)
+	// To update the parent object's collection (used initerator)
+	private final Collection<CubicChunk> regionLoadedChunks;
 
 	protected final Set<WorldUser> users = new HashSet<>(); // Keep tracks of who needs this data loaded
 	private final Set<RemotePlayer> usersWaitingForIntialData = new HashSet<RemotePlayer>();
@@ -58,14 +61,15 @@ public class ChunkHolderImplementation implements ChunkHolder {
 	private SafeWriteLock compressedDataLock = new SafeWriteLock();
 	private CompressedData compressedData;
 
-	public final static byte[] AIR_CHUNK_NO_DATA_SAVED = new byte[] {}; // Symbolic reference indicating there is
-																		// nothing worth saving in this chunk, but data
-																		// was generated
+	/** Symbolic reference indicating there is othing worth saving in this chunk, but data was generated */
+	public final static byte[] AIR_CHUNK_NO_DATA_SAVED = new byte[] {};
 
-	private IOTask loadChunkTask;
+	public IOTask loadChunkTask;
 
 	private ReadWriteLock chunkLock = new ReentrantReadWriteLock();
 	private CubicChunk chunk;
+
+	public final static AtomicInteger globalRegisteredUsers = new AtomicInteger(0);
 
 	public ChunkHolderImplementation(RegionImplementation region, Collection<CubicChunk> loadedChunks, int x, int y,
 			int z) {
@@ -76,8 +80,7 @@ public class ChunkHolderImplementation implements ChunkHolder {
 		this.y = y;
 		this.z = z;
 
-		uuid = ((x << region.getWorld().getWorldInfo().getSize().bitlengthOfVerticalChunksCoordinates) | y) << region
-				.getWorld().getWorldInfo().getSize().bitlengthOfHorizontalChunksCoordinates | z;
+		uuid = ((x << region.getWorld().getWorldInfo().getSize().bitlengthOfVerticalChunksCoordinates) | y) << region.getWorld().getWorldInfo().getSize().bitlengthOfHorizontalChunksCoordinates | z;
 	}
 
 	// LZ4 compressors & decompressors stuff
@@ -227,52 +230,51 @@ public class ChunkHolderImplementation implements ChunkHolder {
 
 	private void unloadChunk() {
 		chunkLock.writeLock().lock();
-		CubicChunk chunk = this.chunk;
 
-		if (chunk == null) {
-			chunkLock.writeLock().unlock();
-			return;
-		}
-
-		// Unlist it immediately
-		regionLoadedChunks.remove(chunk);
-		this.chunk = null;
-
-		// Remove the entities from this chunk from the world
-		region.world.getEntitiesLock().writeLock().lock();
-		Iterator<Entity> i = chunk.localEntities.iterator();
-		while (i.hasNext()) {
-			Entity entity = i.next();
-			if (entity.traits.tryWith(TraitControllable.class, ec -> ec.getController()) != null) {
-				continue; // give grace to controlled entities
-				// TODO this is sloppy!
-			} else {
-				region.world.removeEntityFromList(entity);
+		try {
+			if (chunk == null) {
+				if (loadChunkTask == null)
+					logger.info("Unloading holder but there was no chunk loaded, nor a task to load one");
+				//else
+				//	logger.info("Unloading holder but there was no chunk loaded, but a task was in progress");
+				return;
 			}
+
+			// Unlist it immediately
+			regionLoadedChunks.remove(chunk);
+
+			// Remove the entities from this chunk from the world
+			region.world.getEntitiesLock().writeLock().lock();
+			for (Entity entity : chunk.localEntities) {
+				if (entity.traits.tryWith(TraitControllable.class, TraitControllable::getController) == null) {
+					region.world.removeEntityFromList(entity);
+				}  // TODO this is sloppy!
+			}
+			region.world.getEntitiesLock().writeLock().unlock();
+
+			// Lock it down
+			chunk.entitiesLock.lock();
+
+			// Compress chunk one last time before it has to go
+			setCompressedData(compressChunkData(chunk));
+
+			// destroy it (returns any internal data using up ressources)
+			chunk.destroy();
+			CubicChunk.chunksCounter.decrementAndGet();
+
+			// unlock it (whoever messes with it now, his problem)
+			chunk.entitiesLock.unlock();
+
+			this.chunk = null;
+		} finally {
+			// Kill any load chunk operation that might want to set the chunk later on
+			if (loadChunkTask != null) {
+				loadChunkTask.cancel();
+				loadChunkTask = null;
+			}
+
+			chunkLock.writeLock().unlock();
 		}
-		region.world.getEntitiesLock().writeLock().unlock();
-
-		// Lock it down
-		chunk.entitiesLock.lock();
-
-		// Kill any load chunk operation that is still scheduled
-		if (loadChunkTask != null) {
-			IOTask task = loadChunkTask;
-			if (task != null)
-				task.cancel();
-
-			loadChunkTask = null;
-		}
-
-		// Compress chunk one last time before it has to go
-		setCompressedData(compressChunkData(chunk));
-
-		// destroy it (returns any internal data using up ressources)
-		chunk.destroy();
-
-		// unlock it (whoever messes with it now, his problem)
-		chunk.entitiesLock.unlock();
-		chunkLock.writeLock().unlock();
 	}
 
 	@Override
@@ -301,8 +303,10 @@ public class ChunkHolderImplementation implements ChunkHolder {
 		try {
 			region.usersLock.lock();
 
-			if (users.add(user))
+			if (users.add(user)) {
 				region.usersCount++;
+				globalRegisteredUsers.incrementAndGet();
+			}
 
 			CubicChunk chunk = this.chunk;
 
@@ -342,14 +346,15 @@ public class ChunkHolderImplementation implements ChunkHolder {
 		try {
 			region.usersLock.lock();
 
-			if (users.remove(user)) // Remove the user from the set and decrement the region users count
+			if (users.remove(user)) {
+				globalRegisteredUsers.decrementAndGet();
 				region.usersCount--;
+			}
 
 			if (users.isEmpty()) {
 				unloadChunk(); // Unload the chunk as soon as nobody holds on to it
 
-				if (region.usersCount == 0) // Nota bene: This can only happen if this chunk has no user, since the
-											// chunk users ARE region users
+				if (region.usersCount == 0)
 					region.internalUnload();
 				return true;
 			}
@@ -389,27 +394,32 @@ public class ChunkHolderImplementation implements ChunkHolder {
 		return z & 0x7;
 	}
 
-	public CubicChunk createChunk() {
-		return this.createChunk(null);
-	}
+	static Logger logger = LoggerFactory.getLogger("world.chunkHolder");
 
-	static Constructor<? extends CubicChunk> clientChunkConstructor;
-	static Constructor<? extends CubicChunk> clientChunkConstructorNoData;
-
-	public CubicChunk createChunk(CompressedData data) {
+	//TODO check the data we are receiving is from the task we wanted
+	public void receiveDataAndCreate(CompressedData data) {
 		this.chunkLock.writeLock().lock();
 
 		if (this.chunk != null) {
-			System.out.println("Warning: creating a chunk but the chunkholder already had one, ignoring");
-			this.chunkLock.writeLock().unlock();
-			return this.chunk;
+			logger.error("Creating an already existing chunk!");
+			throw new RuntimeException("Boo !");
+			//System.out.println("Warning: creating a chunk but the chunkholder already had one, ignoring");
+			//this.chunkLock.writeLock().unlock();
+			//return this.chunk;
 		}
 
-		CubicChunk chunk = data == null ? new CubicChunk(this, x, y, z) : new CubicChunk(this, x, y, z, data);
+		if(this.loadChunkTask == null) {
+			logger.error("No load chunk task was waiting...");
+			return;
+		} else {
+			// This task is now done
+			this.loadChunkTask = null;
+		}
 
-		if (this.chunk == null && chunk != null)
-			regionLoadedChunks.add(chunk);
-		this.chunk = chunk;
+		// Create the actual chunk object
+		this.chunk = new CubicChunk(this, x, y, z, data);
+
+		regionLoadedChunks.add(chunk);
 
 		//TODO maybe a callback here ?
 		//if (region.getWorld() instanceof WorldClient)
@@ -427,8 +437,6 @@ public class ChunkHolderImplementation implements ChunkHolder {
 		} finally {
 			region.usersLock.unlock();
 		}
-
-		return chunk;
 	}
 
 	@Override
@@ -450,16 +458,7 @@ public class ChunkHolderImplementation implements ChunkHolder {
 	public boolean equals(Object o) {
 		if (o instanceof ChunkHolderImplementation) {
 			ChunkHolderImplementation ch = ((ChunkHolderImplementation) o);
-			// boolean thoroughTest = ch.x == x && ch.y == y && ch.z == z;
-			boolean fastTest = ch.uuid == uuid;
-
-			/*
-			 * if(fastTest != thoroughTest) {
-			 * System.out.println("Grosse merde !"+thoroughTest+" != "+fastTest);
-			 * System.out.println(x+" "+y+" "+z + " " + ch.uuid); }
-			 */
-
-			return fastTest;
+			return ch.uuid == uuid;
 		}
 
 		return false;

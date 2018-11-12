@@ -109,7 +109,7 @@ public class IOTasks extends Thread implements TaskExecutor {
 	/**
 	 * Loads the content of a region chunk slot
 	 */
-	public IOTask requestChunkLoad(ChunkHolderImplementation chunkSlot) {
+	public IOTaskLoadChunk requestChunkLoad(ChunkHolderImplementation chunkSlot) {
 		IOTaskLoadChunk task = new IOTaskLoadChunk(chunkSlot);
 		if (scheduleTask(task))
 			return task;

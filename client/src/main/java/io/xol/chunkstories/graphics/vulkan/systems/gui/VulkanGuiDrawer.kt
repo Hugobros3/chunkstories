@@ -82,7 +82,7 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
 
     init {
         vertexBuffers = InflightFrameResource(backend) {
-            VulkanVertexBuffer(backend, guiBufferSize.toLong())
+            VulkanVertexBuffer(backend, guiBufferSize.toLong(), true)
         }
     }
 

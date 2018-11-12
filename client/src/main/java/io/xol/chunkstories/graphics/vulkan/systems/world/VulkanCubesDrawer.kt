@@ -12,7 +12,6 @@ import io.xol.chunkstories.graphics.common.Primitive
 import io.xol.chunkstories.graphics.vulkan.DescriptorPool
 import io.xol.chunkstories.graphics.vulkan.Pipeline
 import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
-import io.xol.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
 import io.xol.chunkstories.graphics.vulkan.graph.VulkanPass
 import io.xol.chunkstories.graphics.vulkan.swapchain.Frame
 import io.xol.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
@@ -145,8 +144,10 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
                 continue
 
             if (chunk.meshData is VulkanChunkRenderData) {
-
                 val block = (chunk.meshData as VulkanChunkRenderData).getLastBlock()
+                if(block != null)
+                    usedData.add(block)
+
                 if (block?.vertexBuffer != null) {
                     vkCmdBindVertexBuffers(commandBuffer, 0, stackLongs(block.vertexBuffer.handle), stackLongs(0))
                     //vkCmdDraw(commandBuffer, 3 * 2 * 6, block.count, 0, 0)
@@ -156,7 +157,11 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
                     totalBuffersUsed++
                 }
             } else {
-                chunk.meshData = VulkanChunkRenderData(backend, chunk)
+                // This avoids the condition where the meshData is created after the chunk is destroyed
+                chunk.chunkDestructionSemaphore.acquireUninterruptibly()
+                if(!chunk.isDestroyed)
+                    chunk.meshData = VulkanChunkRenderData(backend, chunk)
+                chunk.chunkDestructionSemaphore.release()
             }
         }
 

@@ -3,6 +3,7 @@ package io.xol.chunkstories.graphics.vulkan.buffers
 import io.xol.chunkstories.graphics.vulkan.util.VkBuffer
 import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import io.xol.chunkstories.graphics.vulkan.resources.Cleanable
+import io.xol.chunkstories.graphics.vulkan.resources.VmaAllocator
 import io.xol.chunkstories.graphics.vulkan.util.createFence
 import io.xol.chunkstories.graphics.vulkan.util.ensureIs
 import io.xol.chunkstories.graphics.vulkan.util.waitFence
@@ -14,6 +15,7 @@ import org.lwjgl.vulkan.VkBufferCopy
 import org.lwjgl.vulkan.VkBufferCreateInfo
 import org.lwjgl.vulkan.VkFenceCreateInfo
 import java.nio.ByteBuffer
+import java.util.concurrent.atomic.AtomicBoolean
 
 open class VulkanBuffer(val backend: VulkanGraphicsBackend, val bufferSize: Long, usageBits: Int, val hostVisible: Boolean) : Cleanable {
     val handle: VkBuffer
@@ -25,6 +27,9 @@ open class VulkanBuffer(val backend: VulkanGraphicsBackend, val bufferSize: Long
     }
 
     init {
+        VmaAllocator.allocatedBytes.addAndGet(bufferSize )
+        VmaAllocator.allocations.incrementAndGet()
+
         stackPush()
         val bufferInfo = VkBufferCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO).apply {
             size(bufferSize)
@@ -47,8 +52,7 @@ open class VulkanBuffer(val backend: VulkanGraphicsBackend, val bufferSize: Long
         }
 
         val pBuffer = stackMallocLong(1)
-        //vmaAllocation = VmaAllocationInfo.calloc()
-        val pAllocation = stackPointers(1)
+        val pAllocation = stackMallocPointer(1)
 
         vmaCreateBuffer(backend.vmaAllocator.handle, bufferInfo, vmaAllocCreateInfo, pBuffer, pAllocation, null).ensureIs("VMA: failed to allocate vram :(", VK_SUCCESS)
         handle = pBuffer.get(0)
@@ -75,7 +79,6 @@ open class VulkanBuffer(val backend: VulkanGraphicsBackend, val bufferSize: Long
         assert(data.remaining() <= bufferSize)
 
         stackPush()
-
         if(hostVisible) {
             val ppData = stackMallocPointer(1)
             vmaMapMemory(backend.vmaAllocator.handle, allocation, ppData).ensureIs("VMA: Failed to map memory", VK_SUCCESS)
@@ -87,7 +90,7 @@ open class VulkanBuffer(val backend: VulkanGraphicsBackend, val bufferSize: Long
             vmaUnmapMemory(backend.vmaAllocator.handle, allocation)
             //vkUnmapMemory(backend.logicalDevice.vkDevice, allocatedMemory)
         } else {
-            val pool = backend.threadSafePools.get()
+            val pool = backend.logicalDevice.transferQueue.threadSafePools.get()
 
             /*val fenceCreateInfo = VkFenceCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_FENCE_CREATE_INFO).apply {
                 this.flags(0)
@@ -109,7 +112,7 @@ open class VulkanBuffer(val backend: VulkanGraphicsBackend, val bufferSize: Long
             }
             vkCmdCopyBuffer(commandBuffer, stagingBuffer.handle, handle, region)
 
-            pool.submitOneTimeCB(commandBuffer, backend.logicalDevice.graphicsQueue, fence)
+            pool.submitOneTimeCB(commandBuffer, backend.logicalDevice.transferQueue, fence)
 
             backend.waitFence(fence)
 
@@ -121,7 +124,17 @@ open class VulkanBuffer(val backend: VulkanGraphicsBackend, val bufferSize: Long
         stackPop()
     }
 
+    val deleteOnce = AtomicBoolean()
+
     override fun cleanup() {
+        if(!deleteOnce.compareAndSet(false, true)) {
+            Thread.dumpStack()
+            println("cleaned buffer TWICE wtf")
+        }
+
+        VmaAllocator.allocatedBytes.addAndGet(-(bufferSize))
+        VmaAllocator.allocations.decrementAndGet()
+
         vmaDestroyBuffer(backend.vmaAllocator.handle, handle, allocation)
         // vkDestroyBuffer(backend.logicalDevice.vkDevice, handle, null)
         //vkFreeMemory(backend.logicalDevice.vkDevice, allocatedMemory, null)

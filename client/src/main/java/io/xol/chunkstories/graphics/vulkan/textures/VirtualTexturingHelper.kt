@@ -100,6 +100,9 @@ class VirtualTexturingHelper(val backend: VulkanGraphicsBackend, val program: Vu
         }
 
         fun writeCurrentSlice() {
+            if(sliceContents.size == 0)
+                return
+
             //val imageInfo = VkDescriptorImageInfo.callocStack(reverseContents.size)
             val imageInfo = VkDescriptorImageInfo.callocStack(SLICE_SIZE)
 

@@ -68,9 +68,6 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
 
     var renderGraph: VulkanRenderGraph
 
-    val threadSafePools: ThreadLocal<CommandPool>
-    private val allocatedThreadSafePools = mutableListOf<CommandPool>()
-
     init {
         if (!glfwVulkanSupported())
             throw Exception("Vulkan is not supported on this machine")
@@ -89,11 +86,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
         vmaAllocator = VmaAllocator(this)
         //TODO remove
         memoryManager = VulkanMemoryManager(this, logicalDevice)
-        threadSafePools = ThreadLocal.withInitial {
-            val pool = CommandPool(this, logicalDevice.graphicsQueue.family, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT or VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
-            allocatedThreadSafePools.add(pool)
-            pool
-        }
+
 
         textures = VulkanTextures(this)
 
@@ -272,7 +265,6 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
 
         vmaAllocator.cleanup()
         memoryManager.cleanup()
-        allocatedThreadSafePools.forEach(Cleanable::cleanup)
 
         logicalDevice.cleanup()
 

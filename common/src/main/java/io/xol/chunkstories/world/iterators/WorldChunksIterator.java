@@ -22,7 +22,7 @@ public class WorldChunksIterator implements ChunksIterator {
 	ChunksIterator currentRegionChunksIterator;
 
 	public WorldChunksIterator(WorldImplementation world) {
-		regionsIterator = world.getRegionsHolder().internalGetLoadedRegions();
+		regionsIterator = world.getRegionsHolder().internalGetLoadedRegions().iterator();
 	}
 
 	@Override

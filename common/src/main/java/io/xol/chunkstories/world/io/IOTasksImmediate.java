@@ -39,7 +39,7 @@ public class IOTasksImmediate extends IOTasks {
 	}
 
 	@Override
-	public IOTask requestChunkLoad(ChunkHolderImplementation r) {
+	public IOTaskLoadChunk requestChunkLoad(ChunkHolderImplementation r) {
 		IOTaskLoadChunk task = new IOTaskLoadChunk(r);
 		runTask(task);
 		return task;

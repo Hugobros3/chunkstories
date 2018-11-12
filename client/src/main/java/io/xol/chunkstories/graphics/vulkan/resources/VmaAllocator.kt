@@ -6,6 +6,8 @@ import org.lwjgl.util.vma.Vma.vmaCreateAllocator
 import org.lwjgl.util.vma.Vma.vmaDestroyAllocator
 import org.lwjgl.util.vma.VmaAllocatorCreateInfo
 import org.lwjgl.util.vma.VmaVulkanFunctions
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicLong
 
 class VmaAllocator(backend: VulkanGraphicsBackend) : Cleanable {
     val handle: Long
@@ -33,6 +35,11 @@ class VmaAllocator(backend: VulkanGraphicsBackend) : Cleanable {
 
     override fun cleanup() {
         vmaDestroyAllocator(handle)
+    }
+
+    companion object {
+        val allocatedBytes = AtomicLong(0)
+        val allocations = AtomicInteger(0)
     }
 
 }

@@ -15,7 +15,6 @@ import io.xol.chunkstories.api.exceptions.net.IllegalPacketException;
 import io.xol.chunkstories.api.net.PacketWorldStreaming;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.workers.TaskExecutor;
-import io.xol.chunkstories.client.ClientImplementation;
 import io.xol.chunkstories.client.ingame.IngameClientImplementation;
 import io.xol.chunkstories.client.net.ServerConnection;
 import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
@@ -52,7 +51,7 @@ public class IOTasksMultiplayerClient extends IOTasks {
 	};
 
 	@Override
-	public IOTask requestChunkLoad(ChunkHolderImplementation slot) {
+	public IOTaskLoadChunk requestChunkLoad(ChunkHolderImplementation slot) {
 		// connection.sendTextMessage("world/getChunkCompressed:" +
 		// slot.getChunkCoordinateX() + ":" + slot.getChunkCoordinateY() + ":" +
 		// slot.getChunkCoordinateZ());
@@ -132,7 +131,7 @@ public class IOTasksMultiplayerClient extends IOTasks {
 			if (region == null)
 				return;
 			region.getChunkHolder(((PacketChunkCompressedData) packet).x, ((PacketChunkCompressedData) packet).y,
-					((PacketChunkCompressedData) packet).z).createChunk(((PacketChunkCompressedData) packet).data);
+					((PacketChunkCompressedData) packet).z).receiveDataAndCreate(((PacketChunkCompressedData) packet).data);
 		}
 
 		// Else
