@@ -32,7 +32,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
     private val vertexInputConfiguration = vertexInputConfiguration {
         binding {
             binding(0)
-            stride(3 * 4)
+            stride(3 * 4 * 2)
             inputRate(VK_VERTEX_INPUT_RATE_VERTEX)
         }
 
@@ -41,6 +41,13 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
             location(program.vertexInputs.find { it.name == "vertexIn" }!!.location)
             format(VK_FORMAT_R32G32B32_SFLOAT)
             offset(0)
+        }
+
+        attribute {
+            binding(0)
+            location(program.vertexInputs.find { it.name == "colorIn" }!!.location)
+            format(VK_FORMAT_R32G32B32_SFLOAT)
+            offset(3 * 4)
         }
     }
 

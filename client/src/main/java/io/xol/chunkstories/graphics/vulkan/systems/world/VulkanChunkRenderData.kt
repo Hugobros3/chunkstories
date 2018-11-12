@@ -150,7 +150,7 @@ class VulkanChunkRenderData(val backend: VulkanGraphicsBackend, chunk: CubicChun
                     }
                 }*/
 
-                val buffer = memAlloc(65536 * 32)
+                val buffer = memAlloc(1024 * 1024 * 4)
 
                 for (x in 0..31) {
                     for (y in 0..31) {
@@ -165,7 +165,7 @@ class VulkanChunkRenderData(val backend: VulkanGraphicsBackend, chunk: CubicChun
                                 /*buffer.putFloat(x.toFloat() + chunk.chunkX * 32f)
                                 buffer.putFloat(y.toFloat() + chunk.chunkY * 32f)
                                 buffer.putFloat(z.toFloat() + chunk.chunkZ * 32f)
-
+*/
                                 val tex = currentVoxel.voxelTextures[VoxelSide.TOP.ordinal]//voxel?.getVoxelTexture(cell, VoxelSide.TOP)
                                 val color = Vector4f(tex.color ?: Vector4f(1f, 0f, 0f, 1f))
                                 if (color.w < 1.0f)
@@ -174,14 +174,18 @@ class VulkanChunkRenderData(val backend: VulkanGraphicsBackend, chunk: CubicChun
                                 color.mul(0.9f + rng.nextFloat() * 0.1f)
 
                                 //val color = Vector4f(rng.nextFloat(), rng.nextFloat(), rng.nextFloat(), 1f)
-                                buffer.putFloat(color.x())
+                                /*buffer.putFloat(color.x())
                                 buffer.putFloat(color.y())
                                 buffer.putFloat(color.z())*/
+
                                 for((vertex, texcoord) in VulkanCubesDrawer.individualCubeVertices) {
                                     buffer.putFloat(vertex[0] + x + chunk.chunkX * 32f)
                                     buffer.putFloat(vertex[1] + y + chunk.chunkY * 32f)
                                     buffer.putFloat(vertex[2] + z + chunk.chunkZ * 32f)
 
+                                    buffer.putFloat(color.x())
+                                    buffer.putFloat(color.y())
+                                    buffer.putFloat(color.z())
                                     count++
                                 }
                             }
