@@ -12,9 +12,9 @@ import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 
 //TODO test if inline helps (or if HotSpot does it by itself)
-public fun Int.ensureIs(exceptionMessage: String, compareTo: Int) = if (this != compareTo) throw Exception(exceptionMessage) else Unit
+public fun Int.ensureIs(exceptionMessage: String, compareTo: Int) = if (this != compareTo) throw Exception("Unexpected return code: $this : $exceptionMessage") else Unit
 
-public fun Int.ensureIs(exceptionMessage: String, vararg compareTo: Int) = if (!compareTo.contains(this)) throw Exception(exceptionMessage) else Unit
+public fun Int.ensureIs(exceptionMessage: String, vararg compareTo: Int) = if (!compareTo.contains(this)) throw Exception("Unexpected return code: $this : $exceptionMessage") else Unit
 
 operator fun PointerBuffer.iterator(): Iterator<Long> = object : Iterator<Long> {
     var index = 0

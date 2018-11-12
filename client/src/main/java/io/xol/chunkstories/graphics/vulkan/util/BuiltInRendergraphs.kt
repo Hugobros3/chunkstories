@@ -144,6 +144,11 @@ object BuiltInRendergraphs {
                         blending = MIX
                     }
                 }
+
+                depth {
+                    enabled = true
+                    depthBuffer = "depthBuffer"
+                }
             }
 
             pass {

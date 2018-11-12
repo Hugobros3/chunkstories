@@ -48,9 +48,11 @@ class VulkanDebugDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
 
     val vertexBuffers: InflightFrameResource<VulkanVertexBuffer>
 
+    val debugBufferSize = 1024 * 1024 * 2
+
     init {
         vertexBuffers = InflightFrameResource(backend) {
-            VulkanVertexBuffer(backend, guiBufferSize.toLong())
+            VulkanVertexBuffer(backend, debugBufferSize.toLong())
         }
     }
 
@@ -60,7 +62,7 @@ class VulkanDebugDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         descriptorPool.configure(frame, camera)
 
         var linesCount = 0
-        val buffer = memAlloc(65536 * 32)
+        val buffer = memAlloc(debugBufferSize)
 
         fun line(from: Vector3d, to: Vector3d) {
             buffer.putFloat(from.x().toFloat())
@@ -107,6 +109,9 @@ class VulkanDebugDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
             for (chunk in world.allLoadedChunks) {
                 val cp = Vector3d((chunk.chunkX * 32).toDouble(), (chunk.chunkY * 32).toDouble(), (chunk.chunkZ * 32).toDouble())
                 val cpe = Vector3d(cp).add(32.0, 32.0, 32.0)
+
+                if(buffer.remaining() <= 4 * 3 * 2 * 4 * 3 * 5)
+                    break
                 cube(cp, cpe)
             }
         }
