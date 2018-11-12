@@ -56,49 +56,6 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
     companion object {
         var totalCubesDrawn = 0
         var totalBuffersUsed = 0
-
-        val individualCubeVertices = listOf(
-                Pair(floatArrayOf(0.0f, 0.0f, 0.0f), floatArrayOf(0.0f, 0.0f)),
-                Pair(floatArrayOf(0.0f, 1.0f, 1.0f), floatArrayOf(1.0f, 1.0f)),
-                Pair(floatArrayOf(0.0f, 1.0f, 0.0f), floatArrayOf(0.0f, 1.0f)),
-                Pair(floatArrayOf(0.0f, 1.0f, 1.0f), floatArrayOf(1.0f, 1.0f)),
-                Pair(floatArrayOf(0.0f, 0.0f, 0.0f), floatArrayOf(0.0f, 0.0f)),
-                Pair(floatArrayOf(0.0f, 0.0f, 1.0f), floatArrayOf(1.0f, 0.0f)),
-
-                Pair(floatArrayOf(0.0f, 0.0f, 1.0f), floatArrayOf(0.0f, 0.0f)),
-                Pair(floatArrayOf(1.0f, 0.0f, 1.0f), floatArrayOf(1.0f, 0.0f)),
-                Pair(floatArrayOf(1.0f, 1.0f, 1.0f), floatArrayOf(1.0f, 1.0f)),
-                Pair(floatArrayOf(0.0f, 0.0f, 1.0f), floatArrayOf(0.0f, 0.0f)),
-                Pair(floatArrayOf(1.0f, 1.0f, 1.0f), floatArrayOf(1.0f, 1.0f)),
-                Pair(floatArrayOf(0.0f, 1.0f, 1.0f), floatArrayOf(0.0f, 1.0f)),
-
-                Pair(floatArrayOf(1.0f, 0.0f, 0.0f), floatArrayOf(1.0f, 0.0f)),
-                Pair(floatArrayOf(1.0f, 1.0f, 0.0f), floatArrayOf(1.0f, 1.0f)),
-                Pair(floatArrayOf(1.0f, 1.0f, 1.0f), floatArrayOf(0.0f, 1.0f)),
-                Pair(floatArrayOf(1.0f, 0.0f, 0.0f), floatArrayOf(1.0f, 0.0f)),
-                Pair(floatArrayOf(1.0f, 1.0f, 1.0f), floatArrayOf(0.0f, 1.0f)),
-                Pair(floatArrayOf(1.0f, 0.0f, 1.0f), floatArrayOf(0.0f, 0.0f)),
-
-                Pair(floatArrayOf(0.0f, 0.0f, 0.0f), floatArrayOf(1.0f, 0.0f)),
-                Pair(floatArrayOf(1.0f, 1.0f, 0.0f), floatArrayOf(0.0f, 1.0f)),
-                Pair(floatArrayOf(1.0f, 0.0f, 0.0f), floatArrayOf(0.0f, 0.0f)),
-                Pair(floatArrayOf(0.0f, 0.0f, 0.0f), floatArrayOf(1.0f, 0.0f)),
-                Pair(floatArrayOf(0.0f, 1.0f, 0.0f), floatArrayOf(1.0f, 1.0f)),
-                Pair(floatArrayOf(1.0f, 1.0f, 0.0f), floatArrayOf(0.0f, 1.0f)),
-
-                Pair(floatArrayOf(0.0f, 1.0f, 0.0f), floatArrayOf(0.0f, 1.0f)),
-                Pair(floatArrayOf(1.0f, 1.0f, 1.0f), floatArrayOf(1.0f, 0.0f)),
-                Pair(floatArrayOf(1.0f, 1.0f, 0.0f), floatArrayOf(1.0f, 1.0f)),
-                Pair(floatArrayOf(0.0f, 1.0f, 0.0f), floatArrayOf(0.0f, 1.0f)),
-                Pair(floatArrayOf(0.0f, 1.0f, 1.0f), floatArrayOf(0.0f, 0.0f)),
-                Pair(floatArrayOf(1.0f, 1.0f, 1.0f), floatArrayOf(1.0f, 0.0f)),
-
-                Pair(floatArrayOf(0.0f, 0.0f, 0.0f), floatArrayOf(0.0f, 0.0f)),
-                Pair(floatArrayOf(1.0f, 0.0f, 0.0f), floatArrayOf(1.0f, 0.0f)),
-                Pair(floatArrayOf(1.0f, 0.0f, 1.0f), floatArrayOf(1.0f, 1.0f)),
-                Pair(floatArrayOf(0.0f, 0.0f, 0.0f), floatArrayOf(0.0f, 0.0f)),
-                Pair(floatArrayOf(1.0f, 0.0f, 1.0f), floatArrayOf(1.0f, 1.0f)),
-                Pair(floatArrayOf(0.0f, 0.0f, 1.0f), floatArrayOf(0.0f, 1.0f)))
     }
 
     override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer) {

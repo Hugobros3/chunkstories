@@ -165,13 +165,9 @@ class VulkanChunkRenderData(val backend: VulkanGraphicsBackend, chunk: CubicChun
                             val currentVoxel = chunk.world.contentTranslator.getVoxelForId(VoxelFormat.id(currentVoxelData))!!
 
                             if (opaque(currentVoxel)) {
-                                if (opaque(x, y - 1, z) && opaque(x, y + 1, z) && opaque(x + 1, y, z) && opaque(x - 1, y, z) && opaque(x, y, z + 1) && opaque(x, y, z - 1))
-                                    continue
+                                //if (opaque(x, y - 1, z) && opaque(x, y + 1, z) && opaque(x + 1, y, z) && opaque(x - 1, y, z) && opaque(x, y, z + 1) && opaque(x, y, z - 1))
+                                //    continue
 
-                                /*buffer.putFloat(x.toFloat() + chunk.chunkX * 32f)
-                                buffer.putFloat(y.toFloat() + chunk.chunkY * 32f)
-                                buffer.putFloat(z.toFloat() + chunk.chunkZ * 32f)
-*/
                                 val tex = currentVoxel.voxelTextures[VoxelSide.TOP.ordinal]//voxel?.getVoxelTexture(cell, VoxelSide.TOP)
                                 val color = Vector4f(tex.color ?: Vector4f(1f, 0f, 0f, 1f))
                                 if (color.w < 1.0f)
@@ -184,16 +180,33 @@ class VulkanChunkRenderData(val backend: VulkanGraphicsBackend, chunk: CubicChun
                                 buffer.putFloat(color.y())
                                 buffer.putFloat(color.z())*/
 
-                                for((vertex, texcoord) in VulkanCubesDrawer.individualCubeVertices) {
-                                    buffer.putFloat(vertex[0] + x + chunk.chunkX * 32f)
-                                    buffer.putFloat(vertex[1] + y + chunk.chunkY * 32f)
-                                    buffer.putFloat(vertex[2] + z + chunk.chunkZ * 32f)
+                                fun face(face: List<Pair<FloatArray, FloatArray>>) {
+                                    for((vertex, texcoord) in face) {
+                                        buffer.putFloat(vertex[0] + x + chunk.chunkX * 32f)
+                                        buffer.putFloat(vertex[1] + y + chunk.chunkY * 32f)
+                                        buffer.putFloat(vertex[2] + z + chunk.chunkZ * 32f)
 
-                                    buffer.putFloat(color.x())
-                                    buffer.putFloat(color.y())
-                                    buffer.putFloat(color.z())
-                                    count++
+                                        buffer.putFloat(color.x())
+                                        buffer.putFloat(color.y())
+                                        buffer.putFloat(color.z())
+                                        count++
+                                    }
                                 }
+
+                                if (!opaque(x, y - 1, z))
+                                    face(UnitCube.bottomFace)
+                                if (!opaque(x, y + 1, z))
+                                    face(UnitCube.topFace)
+
+                                if (!opaque(x - 1, y, z))
+                                    face(UnitCube.leftFace)
+                                if (!opaque(x + 1, y, z))
+                                    face(UnitCube.rightFace)
+
+                                if (!opaque(x, y, z - 1))
+                                    face(UnitCube.backFace)
+                                if (!opaque(x, y, z + 1))
+                                    face(UnitCube.frontFace)
                             }
                         }
                     }
