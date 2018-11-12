@@ -2,7 +2,9 @@ package io.xol.chunkstories.graphics.vulkan
 
 import io.xol.chunkstories.graphics.vulkan.devices.LogicalDevice
 import io.xol.chunkstories.graphics.vulkan.devices.PhysicalDevice
+import io.xol.chunkstories.graphics.vulkan.resources.Cleanable
 import io.xol.chunkstories.graphics.vulkan.util.VkCommandPool
+import io.xol.chunkstories.graphics.vulkan.util.VkFence
 import io.xol.chunkstories.graphics.vulkan.util.ensureIs
 import org.slf4j.LoggerFactory
 
@@ -10,7 +12,7 @@ import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 
-class CommandPool(val backend: VulkanGraphicsBackend, queueFamily: PhysicalDevice.QueueFamily, flags: Int) {
+class CommandPool(val backend: VulkanGraphicsBackend, queueFamily: PhysicalDevice.QueueFamily, flags: Int) : Cleanable {
     val handle: VkCommandPool
 
     init {
@@ -50,11 +52,10 @@ class CommandPool(val backend: VulkanGraphicsBackend, queueFamily: PhysicalDevic
         vkBeginCommandBuffer(commandBuffer, beginInfo)
 
         stackPop()
-
         return commandBuffer
     }
 
-    fun submitOneTimeCB(commandBuffer: VkCommandBuffer, queue: LogicalDevice.Queue) {
+    fun submitOneTimeCB(commandBuffer: VkCommandBuffer, queue: LogicalDevice.Queue, fence : VkFence) {
         vkEndCommandBuffer(commandBuffer)
 
         stackPush()
@@ -63,16 +64,14 @@ class CommandPool(val backend: VulkanGraphicsBackend, queueFamily: PhysicalDevic
             pCommandBuffers(stackPointers(commandBuffer))
         }
 
-        //TODO use a fence instead
-        vkQueueSubmit(queue.handle, submitInfo, VK_NULL_HANDLE)
-        vkQueueWaitIdle(queue.handle)
-
-        vkFreeCommandBuffers(backend.logicalDevice.vkDevice, handle, commandBuffer)
+        queue.mutex.acquireUninterruptibly()
+        vkQueueSubmit(queue.handle, submitInfo, fence ?: VK_NULL_HANDLE).ensureIs("Failed to submit commandBuffer ", VK_SUCCESS)
+        queue.mutex.release()
 
         stackPop()
     }
 
-    fun cleanup() {
+    override fun cleanup() {
         vkDestroyCommandPool(backend.logicalDevice.vkDevice, handle, null)
     }
 

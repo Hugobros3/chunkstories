@@ -162,7 +162,7 @@ class VulkanChunkRenderData(val backend: VulkanGraphicsBackend, chunk: CubicChun
                                 if (opaque(x, y - 1, z) && opaque(x, y + 1, z) && opaque(x + 1, y, z) && opaque(x - 1, y, z) && opaque(x, y, z + 1) && opaque(x, y, z - 1))
                                     continue
 
-                                buffer.putFloat(x.toFloat() + chunk.chunkX * 32f)
+                                /*buffer.putFloat(x.toFloat() + chunk.chunkX * 32f)
                                 buffer.putFloat(y.toFloat() + chunk.chunkY * 32f)
                                 buffer.putFloat(z.toFloat() + chunk.chunkZ * 32f)
 
@@ -176,8 +176,14 @@ class VulkanChunkRenderData(val backend: VulkanGraphicsBackend, chunk: CubicChun
                                 //val color = Vector4f(rng.nextFloat(), rng.nextFloat(), rng.nextFloat(), 1f)
                                 buffer.putFloat(color.x())
                                 buffer.putFloat(color.y())
-                                buffer.putFloat(color.z())
-                                count++
+                                buffer.putFloat(color.z())*/
+                                for((vertex, texcoord) in VulkanCubesDrawer.individualCubeVertices) {
+                                    buffer.putFloat(vertex[0] + x + chunk.chunkX * 32f)
+                                    buffer.putFloat(vertex[1] + y + chunk.chunkY * 32f)
+                                    buffer.putFloat(vertex[2] + z + chunk.chunkZ * 32f)
+
+                                    count++
+                                }
                             }
                         }
                     }
@@ -185,7 +191,7 @@ class VulkanChunkRenderData(val backend: VulkanGraphicsBackend, chunk: CubicChun
 
                 buffer.flip()
 
-                if (buffer.limit() > 0) {
+                if (buffer.remaining() > 0) {
                     vertexBuffer = VulkanVertexBuffer(backend, buffer.limit().toLong())
                     vertexBuffer.upload(buffer)
                 } else

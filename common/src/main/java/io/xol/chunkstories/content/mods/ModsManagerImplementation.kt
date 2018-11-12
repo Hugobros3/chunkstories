@@ -329,7 +329,7 @@ class ModsManagerImplementation @Throws(NonExistentCoreContent::class)
 
         if (asset == null && assetName.startsWith("./")) {
             logger.warn("Requesting asset using the old deprecated ./ prefix !")
-            Thread.dumpStack()
+            //Thread.dumpStack()
             asset = avaibleAssets[assetName.substring(2)]
         }
 

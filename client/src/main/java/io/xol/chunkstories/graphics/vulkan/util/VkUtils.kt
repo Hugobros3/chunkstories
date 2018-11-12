@@ -58,6 +58,16 @@ fun VulkanGraphicsBackend.createFence(createSignalled : Boolean) : VkFence {
     return fence
 }
 
+fun VulkanGraphicsBackend.waitFence(fence: VkFence) {
+    loop@ while(true) {
+        val rslt = vkWaitForFences(this.logicalDevice.vkDevice, fence, true, 1000)
+        when (rslt) {
+            VK_SUCCESS -> break@loop
+            VK_TIMEOUT -> continue@loop
+            VK_ERROR_DEVICE_LOST -> throw Exception("well fuck")
+        }
+    }
+}
 /*
 @ExperimentalContracts
 inline fun <T : Any?> stack(operations: () -> T) : T {

@@ -9,7 +9,7 @@ import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.VK10.*
 
 class VulkanUniformBuffer(backend: VulkanGraphicsBackend, val mapper: InterfaceBlockGLSLMapping) :
-        VulkanBuffer(backend, mapper.size.toLong(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT) {
+        VulkanBuffer(backend, mapper.size.toLong(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, true) {
 
     fun upload(interfaceBlock: InterfaceBlock) {
         stackPush()

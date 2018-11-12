@@ -52,6 +52,9 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
             imageColorSpace(backend.physicalDevice.swapchainDetails.colorSpaceToUse)
             imageExtent().width(backend.window.width)
             imageExtent().height(backend.window.height)
+
+            logger.debug("Using presentation mode ${backend.physicalDevice.swapchainDetails.presentationModeToUse}")
+            presentMode(backend.physicalDevice.swapchainDetails.presentationModeToUse.ordinal)
             //imageExtent(backend.physicalDevice.swapchainDetails.swapExtentToUse)
             imageArrayLayers(1)
             //TODO maybe not needed once we do everything in offscreen buffers
@@ -244,7 +247,9 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
             pResults(null)
         }
 
+        backend.logicalDevice.presentationQueue.mutex.acquireUninterruptibly()
         vkQueuePresentKHR(backend.logicalDevice.presentationQueue.handle, presentInfo)
+        backend.logicalDevice.presentationQueue.mutex.release()
 
         inflightFrameIndex = (inflightFrameIndex + 1) % maxFramesInFlight
         stackPop()

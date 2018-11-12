@@ -228,7 +228,9 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, script: RenderGraphD
                 pSignalSemaphores(semaphoresToSignal)
             }
 
+            backend.logicalDevice.graphicsQueue.mutex.acquireUninterruptibly()
             vkQueueSubmit(backend.logicalDevice.graphicsQueue.handle, submitInfo, frame.renderFinishedFence).ensureIs("Failed to submit command buffer", VK_SUCCESS)
+            backend.logicalDevice.graphicsQueue.mutex.release()
         }
     }
 

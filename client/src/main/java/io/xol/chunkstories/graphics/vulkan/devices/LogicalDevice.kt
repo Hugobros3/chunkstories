@@ -7,23 +7,63 @@ import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
+import java.util.concurrent.Semaphore
+import kotlin.math.log
 
 class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: PhysicalDevice) {
-    val graphicsQueue: Queue
-    val presentationQueue: Queue
+    lateinit var graphicsQueue: Queue private set
+    lateinit var presentationQueue: Queue private set
+    lateinit var transferQueue: Queue private set
 
     internal val handle: Long
-    internal val vkDevice : VkDevice
+    internal val vkDevice: VkDevice
+
+    data class QueueRequest(val family: PhysicalDevice.QueueFamily, val target: (queue: Queue) -> Unit)
 
     init {
         logger.debug("Creating logical device")
         stackPush() // todo use use() when Contracts work correctly on AutoCloseable
 
-        val graphicsQueueFamily = physicalDevice.queueFamilies.find { it.canGraphics } ?: throw Exception("Couldn't find an acceptable graphics queue family in $physicalDevice")
-        val presentationQueueFamily = physicalDevice.queueFamilies.find { it.canPresent } ?: throw Exception("Couldn't find an acceptable presentation queue family in $physicalDevice")
+        val graphicsQueueFamily = physicalDevice.queueFamilies.find { it.canGraphics }
+                ?: throw Exception("Couldn't find an acceptable graphics queue family in $physicalDevice")
+        val presentationQueueFamily = physicalDevice.queueFamilies.find { it.canPresent }
+                ?: throw Exception("Couldn't find an acceptable presentation queue family in $physicalDevice")
+        val transferQueueFamily = physicalDevice.queueFamilies.find { it.canTransfer }
+                ?: throw Exception("Couldn't find an acceptable transfer queue family in $physicalDevice")
+
+        val requests = listOf<QueueRequest>(
+                QueueRequest(graphicsQueueFamily) { graphicsQueue = it },
+                QueueRequest(presentationQueueFamily) { presentationQueue = it },
+                QueueRequest(transferQueueFamily) { transferQueue = it }
+        )
+        logger.debug("Queues we would like to have: $requests")
+
+        val mappedRequests = requests.groupBy { it.family }
+        logger.debug("Queues of the same family merged together: $mappedRequests")
+
+        val vkDeviceQueuesCreateInfo = VkDeviceQueueCreateInfo.callocStack(mappedRequests.size)
+        var i = 0
+
+        val actualRequestedQueueCounts = mappedRequests.map { (family, queues) ->
+            val queues2create = Math.min(queues.size, family.maxInstances)
+            if(queues2create < queues.size)
+                logger.info("Max queueCount() of the queue family $family is under the requested amount of queues for that type (${queues.size}), queue aliasing will occur")
+
+            vkDeviceQueuesCreateInfo.get(i++).sType(VK10.VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO).apply {
+                queueFamilyIndex(family.index)
+                val floatBuffer = stackMallocFloat(1)
+                floatBuffer.put(0, 1.0f)
+                pQueuePriorities(floatBuffer)
+
+                VkDeviceQueueCreateInfo.nqueueCount(address(), queues2create)
+                //pQueuePriorities().put(0, 1.0f)
+            }
+
+            Pair(family, queues2create)
+        }.toMap()
 
         // The queues we need depends if the two families are the same
-        val vkDeviceQueuesCreateInfo: VkDeviceQueueCreateInfo.Buffer
+        /*val vkDeviceQueuesCreateInfo: VkDeviceQueueCreateInfo.Buffer
         if( graphicsQueueFamily == presentationQueueFamily ) {
             logger.debug("Note : Graphics and presentation queue families are the same. Creating a single queue !")
 
@@ -52,7 +92,7 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
                 floatBuffer.put(0, 1.0f)
                 pQueuePriorities(floatBuffer)
             }
-        }
+        }*/
 
         // The features we need
         val vkPhysicalDeviceFeatures = VkPhysicalDeviceFeatures.callocStack()
@@ -69,7 +109,7 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
         var requestedExtensions = backend.requiredDeviceExtensions.toSet()
         requestedExtensions += "VK_KHR_get_memory_requirements2"
 
-        if(backend.doNonUniformSamplerArrayAccess)
+        if (backend.doNonUniformSamplerArrayAccess)
             requestedExtensions = setOf("VK_EXT_descriptor_indexing", "VK_KHR_maintenance3").union(requestedExtensions)
 
         val pRequiredExtensions = stackMallocPointer(requestedExtensions.size)
@@ -89,7 +129,7 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
 
         val pQueue = stackMallocPointer(1)
 
-        if( graphicsQueueFamily == presentationQueueFamily ) {
+        /*if( graphicsQueueFamily == presentationQueueFamily ) {
             vkGetDeviceQueue(vkDevice, graphicsQueueFamily.index, 0, pQueue)
             graphicsQueue = Queue(VkQueue(pQueue.get(0), vkDevice), graphicsQueueFamily)
             presentationQueue = graphicsQueue
@@ -99,6 +139,20 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
 
             vkGetDeviceQueue(vkDevice, presentationQueueFamily.index, 0, pQueue)
             presentationQueue = Queue(VkQueue(pQueue.get(0), vkDevice), graphicsQueueFamily)
+        }*/
+
+        //i = 0
+        for ((family, queues) in mappedRequests) {
+            var i = 0
+            var queue: Queue? = null
+
+            for (queueRequest in queues) {
+                if(i < actualRequestedQueueCounts[family]!!) {
+                    vkGetDeviceQueue(vkDevice, family.index, i++, pQueue)
+                    queue = Queue(VkQueue(pQueue.get(0), vkDevice), family)
+                }
+                queueRequest.target.invoke(queue!!)
+            }
         }
 
         stackPop()
@@ -114,6 +168,8 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
     }
 
     inner class Queue(val handle: VkQueue, val family: PhysicalDevice.QueueFamily) {
+        val mutex = Semaphore(1)
+
         override fun toString(): String {
             return "Queue(handle=$handle, family=$family)"
         }

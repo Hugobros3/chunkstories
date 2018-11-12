@@ -147,7 +147,13 @@ class VulkanTexture2D(val backend: VulkanGraphicsBackend, val operationsPool: Co
 
         vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, null, null, imageBarrier)
 
-        operationsPool.submitOneTimeCB(commandBuffer, backend.logicalDevice.graphicsQueue)
+        val fence = backend.createFence(false)
+        operationsPool.submitOneTimeCB(commandBuffer, backend.logicalDevice.graphicsQueue, fence)
+
+        backend.waitFence(fence)
+
+        vkDestroyFence(backend.logicalDevice.vkDevice, fence, null)
+        vkFreeCommandBuffers(backend.logicalDevice.vkDevice, operationsPool.handle, commandBuffer)
 
         stackPop()
     }
@@ -185,7 +191,13 @@ class VulkanTexture2D(val backend: VulkanGraphicsBackend, val operationsPool: Co
 
         vkCmdCopyBufferToImage(commandBuffer, buffer.handle, imageHandle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, region)
 
-        operationsPool.submitOneTimeCB(commandBuffer, backend.logicalDevice.graphicsQueue)
+        val fence = backend.createFence(false)
+        operationsPool.submitOneTimeCB(commandBuffer, backend.logicalDevice.graphicsQueue, fence)
+
+        backend.waitFence(fence)
+
+        vkDestroyFence(backend.logicalDevice.vkDevice, fence, null)
+        vkFreeCommandBuffers(backend.logicalDevice.vkDevice, operationsPool.handle, commandBuffer)
 
         stackPop()
     }

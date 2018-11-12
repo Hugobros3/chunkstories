@@ -68,7 +68,7 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
             vkGetPhysicalDeviceSurfaceSupportKHR(vkPhysicalDevice, index, backend.surface.handle, pPresentSupport).ensureIs("Couldn't query support for presentation", VK_SUCCESS)
             val canPresent = pPresentSupport.get(0) > 0
 
-            queueFamilies += QueueFamily(index, canGraphics, canCompute, canTransfer, canPresent)
+            queueFamilies += QueueFamily(index, queueFamiliesProperties.queueCount(), canGraphics, canCompute, canTransfer, canPresent)
         }
 
         // Query swapchain details
@@ -94,8 +94,8 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
         MemoryStack.stackPop()
     }
 
-    inner class QueueFamily(val index: Int, val canGraphics: Boolean, val canCompute: Boolean, val canTransfer: Boolean, val canPresent: Boolean) {
-        override fun toString() = "QueueFamily(index=$index, canGraphics=$canGraphics, canCompute=$canCompute, canTransfer=$canTransfer, canPresent=$canPresent)"
+    inner class QueueFamily(val index: Int, val maxInstances: Int, val canGraphics: Boolean, val canCompute: Boolean, val canTransfer: Boolean, val canPresent: Boolean) {
+        override fun toString() = "QueueFamily(index=$index, maxInstances=$maxInstances, canGraphics=$canGraphics, canCompute=$canCompute, canTransfer=$canTransfer, canPresent=$canPresent)"
     }
 
     inner class SwapChainSupportDetails(capabilities: VkSurfaceCapabilitiesKHR, surfaceFormats: VkSurfaceFormatKHR.Buffer, pPresentModes: IntBuffer) {
@@ -122,18 +122,18 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
             get() {
                 val preferredPresentationModes = when (backend.window.client.configuration.getValue("client.graphics.syncMode")) {
                     "vsync" -> listOf(PresentationMode.FIFO)
-                    "fastest" -> listOf(PresentationMode.IMMEDIATE, PresentationMode.MAILBOX, PresentationMode.FIFO_RELAXED, PresentationMode.FIFO)
-                    else -> listOf(PresentationMode.MAILBOX, PresentationMode.FIFO)
+                    "tripleBuffering" -> listOf(PresentationMode.MAILBOX, PresentationMode.FIFO)
+                    else -> listOf(PresentationMode.IMMEDIATE, PresentationMode.MAILBOX, PresentationMode.FIFO_RELAXED, PresentationMode.FIFO)
                 }
 
-                var bestCompromise: PresentationMode? = null
+                //var bestCompromise: PresentationMode? = null
                 for (mostLikedPresentationMode in preferredPresentationModes) {
                     if (availablePresentationModes.contains(mostLikedPresentationMode)) {
-                        bestCompromise = mostLikedPresentationMode
+                        return mostLikedPresentationMode
                     }
                 }
 
-                return bestCompromise ?: throw Exception("Could not find a compromise between the presentation mode the user wanted and those available")
+                throw Exception("Could not find a compromise between the presentation mode the user wanted and those available")
             }
 
         private val swapExtentToUse: VkExtent2D
