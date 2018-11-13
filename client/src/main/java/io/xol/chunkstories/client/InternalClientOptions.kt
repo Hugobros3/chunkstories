@@ -32,7 +32,7 @@ object InternalClientOptions {
             section("graphics") {
                 viewDistance = optionMultipleChoicesInt("viewDistance") {
                     default = 128
-                    possibleChoices = listOf(64, 128, 192, 256, 384, 512)
+                    possibleChoices = listOf(64, 128, 192, 256, 384, 512, 768, 1024)
                 }
             }
         }
