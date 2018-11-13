@@ -1,6 +1,5 @@
 package io.xol.chunkstories.graphics.vulkan.systems.world
 
-import com.sun.org.apache.xpath.internal.operations.Bool
 import io.xol.chunkstories.api.voxel.Voxel
 import io.xol.chunkstories.api.voxel.VoxelFormat
 import io.xol.chunkstories.api.voxel.VoxelSide
@@ -98,20 +97,15 @@ class VulkanChunkRenderData(val backend: VulkanGraphicsBackend, chunk: CubicChun
 
         inline fun opaque(voxel: Voxel) = voxel.solid || voxel.name == "water"
 
-        inline fun opaque(x2: Int, y2: Int, z2: Int): Boolean =
-                if (x2 in 0..31 && y2 in 0..31 && z2 in 0..31) {
-                    val data3 = rawChunkData[x2 * 32 * 32 + y2 * 32 + z2]
-                    if(data3 != 0) {
-                        val voxel2 = chunk.world.contentTranslator.getVoxelForId(VoxelFormat.id(data3))!!
-                        opaque(voxel2)
-                    } else false
-                } else {
-                    val data3 = chunk.world.peekRaw(x2 + chunk.chunkX * 32, y2 + chunk.chunkY * 32, z2 + chunk.chunkZ * 32)
-                    if(data3 != 0) {
-                        val voxel2 = chunk.world.contentTranslator.getVoxelForId(VoxelFormat.id(data3))!!
-                        opaque(voxel2)
-                    } else false
-                }
+        inline fun opaque(data: Int) = if(data == 0) false else opaque(chunk.world.contentTranslator.getVoxelForId(VoxelFormat.id(data))!!)
+
+        inline fun opaque(x2: Int, y2: Int, z2: Int): Boolean = opaque(data(x2, y2, z2))
+
+        inline fun data(x2: Int, y2: Int, z2: Int): Int =
+                if (x2 in 0..31 && y2 in 0..31 && z2 in 0..31)
+                    rawChunkData[x2 * 32 * 32 + y2 * 32 + z2]
+                else
+                    chunk.world.peekRaw(x2 + chunk.chunkX * 32, y2 + chunk.chunkY * 32, z2 + chunk.chunkZ * 32)
 
         lateinit var cachedOpacity: BooleanArray
 
@@ -158,6 +152,7 @@ class VulkanChunkRenderData(val backend: VulkanGraphicsBackend, chunk: CubicChun
 
                 val buffer = memAlloc(1024 * 1024 * 4)
 
+                val color = Vector4f()
                 for (x in 0..31) {
                     for (y in 0..31) {
                         for (z in 0..31) {
@@ -169,18 +164,26 @@ class VulkanChunkRenderData(val backend: VulkanGraphicsBackend, chunk: CubicChun
                                 //    continue
 
                                 val tex = currentVoxel.voxelTextures[VoxelSide.TOP.ordinal]//voxel?.getVoxelTexture(cell, VoxelSide.TOP)
-                                val color = Vector4f(tex.color ?: Vector4f(1f, 0f, 0f, 1f))
-                                if (color.w < 1.0f)
-                                    color.mul(Vector4f(0f, 1f, 0.3f, 1.0f))
-                                //color.mul(cell.sunlight / 15f)
-                                color.mul(0.9f + rng.nextFloat() * 0.1f)
+
 
                                 //val color = Vector4f(rng.nextFloat(), rng.nextFloat(), rng.nextFloat(), 1f)
                                 /*buffer.putFloat(color.x())
                                 buffer.putFloat(color.y())
                                 buffer.putFloat(color.z())*/
 
-                                fun face(face: List<Pair<FloatArray, FloatArray>>) {
+                                fun face(data: Int, face: List<Pair<FloatArray, FloatArray>>) {
+                                    if(opaque(data))
+                                        return
+
+                                    if(tex.color != null)
+                                        color.set(tex.color)
+
+                                    if (color.w < 1.0f)
+                                        color.mul(Vector4f(0f, 1f, 0.3f, 1.0f))
+
+                                    val sunlight = VoxelFormat.sunlight(data) / 15f
+                                    color.mul(sunlight * 0.9f + rng.nextFloat() * 0.1f)
+
                                     for((vertex, texcoord) in face) {
                                         buffer.putFloat(vertex[0] + x + chunk.chunkX * 32f)
                                         buffer.putFloat(vertex[1] + y + chunk.chunkY * 32f)
@@ -193,20 +196,14 @@ class VulkanChunkRenderData(val backend: VulkanGraphicsBackend, chunk: CubicChun
                                     }
                                 }
 
-                                if (!opaque(x, y - 1, z))
-                                    face(UnitCube.bottomFace)
-                                if (!opaque(x, y + 1, z))
-                                    face(UnitCube.topFace)
+                                face(data(x, y - 1, z), UnitCube.bottomFace)
+                                face(data(x, y + 1, z), UnitCube.topFace)
 
-                                if (!opaque(x - 1, y, z))
-                                    face(UnitCube.leftFace)
-                                if (!opaque(x + 1, y, z))
-                                    face(UnitCube.rightFace)
+                                face(data(x - 1, y, z), UnitCube.leftFace)
+                                face(data(x + 1, y, z), UnitCube.rightFace)
 
-                                if (!opaque(x, y, z - 1))
-                                    face(UnitCube.backFace)
-                                if (!opaque(x, y, z + 1))
-                                    face(UnitCube.frontFace)
+                                face(data(x, y, z - 1), UnitCube.backFace)
+                                face(data(x, y, z + 1), UnitCube.frontFace)
                             }
                         }
                     }
