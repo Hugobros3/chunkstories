@@ -1,7 +1,6 @@
-package io.xol.chunkstories.graphics.vulkan.systems.world
+package io.xol.chunkstories.graphics.common
 
-import io.xol.chunkstories.api.voxel.VoxelSide
-
+/** Reference cube object on hand */
 object UnitCube {
     /** X- */
     val leftFace = listOf(Pair(floatArrayOf(0.0f, 0.0f, 0.0f), floatArrayOf(0.0f, 0.0f)),

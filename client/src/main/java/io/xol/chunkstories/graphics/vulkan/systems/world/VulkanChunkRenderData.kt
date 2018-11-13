@@ -1,18 +1,9 @@
 package io.xol.chunkstories.graphics.vulkan.systems.world
 
-import io.xol.chunkstories.api.voxel.Voxel
-import io.xol.chunkstories.api.voxel.VoxelFormat
-import io.xol.chunkstories.api.voxel.VoxelSide
-import io.xol.chunkstories.api.workers.Task
-import io.xol.chunkstories.api.workers.TaskExecutor
 import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import io.xol.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
 import io.xol.chunkstories.world.chunk.ChunkRenderingData
 import io.xol.chunkstories.world.chunk.CubicChunk
-import org.joml.Vector4f
-import org.lwjgl.system.MemoryUtil.memAlloc
-import org.lwjgl.system.MemoryUtil.memFree
-import java.util.*
 import java.util.concurrent.Semaphore
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -20,30 +11,30 @@ class VulkanChunkRenderData(val backend: VulkanGraphicsBackend, chunk: CubicChun
     val semaphore = Semaphore(1)
 
     private var isDestroyed = false
-    private var lastBlock: Block? = null
+    private var currentData: ChunkMeshInstance? = null
 
-    fun getLastBlock(): Block? {
+    fun getData(): ChunkMeshInstance? {
         try {
             semaphore.acquireUninterruptibly()
-            if (lastBlock == null)
+            if (currentData == null)
                 launchTask()
 
-            return lastBlock?.apply { users.incrementAndGet() }
+            return currentData?.apply { users.incrementAndGet() }
         } finally {
             semaphore.release()
         }
     }
 
-    fun setLastBlock(block: Block) {
+    fun acceptNewData(block: ChunkMeshInstance) {
         try {
             semaphore.acquireUninterruptibly()
-            if (lastBlock != null)
-                lastBlock!!.doneWith()
+            if (currentData != null)
+                currentData!!.doneWith()
 
             if(isDestroyed)
                 block.doneWith()
             else
-                lastBlock = block
+                currentData = block
         } finally {
             semaphore.release()
         }
@@ -52,10 +43,10 @@ class VulkanChunkRenderData(val backend: VulkanGraphicsBackend, chunk: CubicChun
     override fun destroy() {
         try {
             semaphore.acquireUninterruptibly()
-            if (lastBlock != null)
-                lastBlock!!.doneWith()
+            if (currentData != null)
+                currentData!!.doneWith()
 
-            lastBlock = null
+            currentData = null
             isDestroyed = true
         } finally {
             semaphore.release()
@@ -92,141 +83,7 @@ class VulkanChunkRenderData(val backend: VulkanGraphicsBackend, chunk: CubicChun
         }
     }
 
-    class GenerateChunkDataTask(val backend: VulkanGraphicsBackend, val chunk: CubicChunk) : Task() {
-        lateinit var rawChunkData: IntArray
-
-        inline fun opaque(voxel: Voxel) = voxel.solid || voxel.name == "water"
-
-        inline fun opaque(data: Int) = if(data == 0) false else opaque(chunk.world.contentTranslator.getVoxelForId(VoxelFormat.id(data))!!)
-
-        inline fun opaque(x2: Int, y2: Int, z2: Int): Boolean = opaque(data(x2, y2, z2))
-
-        inline fun data(x2: Int, y2: Int, z2: Int): Int =
-                if (x2 in 0..31 && y2 in 0..31 && z2 in 0..31)
-                    rawChunkData[x2 * 32 * 32 + y2 * 32 + z2]
-                else
-                    chunk.world.peekRaw(x2 + chunk.chunkX * 32, y2 + chunk.chunkY * 32, z2 + chunk.chunkZ * 32)
-
-        lateinit var cachedOpacity: BooleanArray
-
-        inline fun cachedOpaque(x: Int, y: Int, z: Int) = cachedOpacity[(x + 1) * 34 * 34 + (y + 1) * 34 + (z + 1)]
-
-        companion object {
-            val threadLocalOpacity = object: ThreadLocal<BooleanArray>() {
-                override fun initialValue() = BooleanArray(34 * 34 * 34)
-            }
-        }
-
-        override fun task(taskExecutor: TaskExecutor?): Boolean {
-            if (!chunk.holder().isChunkLoaded || chunk.holder().region.isUnloaded)
-                return true
-
-            val neighborsPresent = neighborsIndexes.count { (x, y, z) ->
-                val neighbor = chunk.world.getChunk(chunk.chunkX + x, chunk.chunkY + y, chunk.chunkZ + z)
-                (neighbor != null || (chunk.chunkY + y < 0) || (chunk.chunkY + y >= chunk.world.worldInfo.size.heightInChunks))
-            }
-            if (neighborsPresent < neighborsIndexes.size)
-                return true
-
-            val rng = Random(1)
-            var count = 0
-            val vertexBuffer: VulkanVertexBuffer?
-
-            val chunkDataRef = chunk.chunkVoxelData
-            if (chunk.isAirChunk || chunkDataRef == null) {
-                vertexBuffer = null
-            } else {
-                rawChunkData = chunkDataRef
-
-                // Cache the opacity so we don't waste time doing those checks over and over again
-                //cachedOpacity = BooleanArray(34 * 34 * 34)
-                //Arrays.fill(cachedOpacity)
-                /*cachedOpacity = threadLocalOpacity.get()
-                for (x in -1..32) {
-                    for (y in -1..32) {
-                        for (z in -1..32) {
-                            cachedOpacity[(x + 1) * 34 * 34 + (y + 1) * 34 + (z + 1)] = true//opaque(x, y, z)
-                        }
-                    }
-                }*/
-
-                val buffer = memAlloc(1024 * 1024 * 4)
-
-                val color = Vector4f()
-                for (x in 0..31) {
-                    for (y in 0..31) {
-                        for (z in 0..31) {
-                            val currentVoxelData = rawChunkData[x * 32 * 32 + y * 32 + z]
-                            val currentVoxel = chunk.world.contentTranslator.getVoxelForId(VoxelFormat.id(currentVoxelData))!!
-
-                            if (opaque(currentVoxel)) {
-                                //if (opaque(x, y - 1, z) && opaque(x, y + 1, z) && opaque(x + 1, y, z) && opaque(x - 1, y, z) && opaque(x, y, z + 1) && opaque(x, y, z - 1))
-                                //    continue
-
-                                val tex = currentVoxel.voxelTextures[VoxelSide.TOP.ordinal]//voxel?.getVoxelTexture(cell, VoxelSide.TOP)
-
-
-                                //val color = Vector4f(rng.nextFloat(), rng.nextFloat(), rng.nextFloat(), 1f)
-                                /*buffer.putFloat(color.x())
-                                buffer.putFloat(color.y())
-                                buffer.putFloat(color.z())*/
-
-                                fun face(data: Int, face: List<Pair<FloatArray, FloatArray>>) {
-                                    if(opaque(data))
-                                        return
-
-                                    if(tex.color != null)
-                                        color.set(tex.color)
-
-                                    if (color.w < 1.0f)
-                                        color.mul(Vector4f(0f, 1f, 0.3f, 1.0f))
-
-                                    val sunlight = VoxelFormat.sunlight(data) / 15f
-                                    color.mul(sunlight * 0.9f + rng.nextFloat() * 0.1f)
-
-                                    for((vertex, texcoord) in face) {
-                                        buffer.putFloat(vertex[0] + x + chunk.chunkX * 32f)
-                                        buffer.putFloat(vertex[1] + y + chunk.chunkY * 32f)
-                                        buffer.putFloat(vertex[2] + z + chunk.chunkZ * 32f)
-
-                                        buffer.putFloat(color.x())
-                                        buffer.putFloat(color.y())
-                                        buffer.putFloat(color.z())
-                                        count++
-                                    }
-                                }
-
-                                face(data(x, y - 1, z), UnitCube.bottomFace)
-                                face(data(x, y + 1, z), UnitCube.topFace)
-
-                                face(data(x - 1, y, z), UnitCube.leftFace)
-                                face(data(x + 1, y, z), UnitCube.rightFace)
-
-                                face(data(x, y, z - 1), UnitCube.backFace)
-                                face(data(x, y, z + 1), UnitCube.frontFace)
-                            }
-                        }
-                    }
-                }
-
-                buffer.flip()
-
-                if (buffer.remaining() > 0) {
-                    vertexBuffer = VulkanVertexBuffer(backend, buffer.limit().toLong())
-                    vertexBuffer.upload(buffer)
-                } else
-                    vertexBuffer = null
-
-                memFree(buffer)
-            }
-
-            val generatedData = Block(chunk, vertexBuffer, count)
-            (chunk.meshData as VulkanChunkRenderData).setLastBlock(generatedData)
-            return true
-        }
-    }
-
-    class Block(val chunk: CubicChunk, val vertexBuffer: VulkanVertexBuffer?, val count: Int) {
+    class ChunkMeshInstance(val chunk: CubicChunk, val vertexBuffer: VulkanVertexBuffer?, val count: Int) {
         // User 0 isn't an user, it symbolizes the fact this block is still in use
         var users = AtomicInteger(1)
 

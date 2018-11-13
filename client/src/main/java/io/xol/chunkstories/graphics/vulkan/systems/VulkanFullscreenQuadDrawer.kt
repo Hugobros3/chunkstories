@@ -1,6 +1,7 @@
 package io.xol.chunkstories.graphics.vulkan.systems
 
 import io.xol.chunkstories.api.graphics.ImageInput
+import io.xol.chunkstories.graphics.common.FaceCullingMode
 import io.xol.chunkstories.graphics.common.Primitive
 import io.xol.chunkstories.graphics.vulkan.DescriptorPool
 import io.xol.chunkstories.graphics.vulkan.Pipeline
@@ -32,7 +33,7 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
             offset(0)
         }
     }
-    val pipeline = Pipeline(backend, pass, vertexInputConfiguration, Primitive.TRIANGLES)
+    val pipeline = Pipeline(backend, pass, vertexInputConfiguration, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
     val descriptorPool = DescriptorPool(backend, pass.program)
     val sampler = VulkanSampler(backend)
 
@@ -41,8 +42,8 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
     init {
         val vertices = floatArrayOf(
                 -1.0F, -1.0F,
-                -1.0F, 1.0F,
                 1.0F, 1.0F,
+                -1.0F, 1.0F,
                 -1.0F, -1.0F,
                 1.0F, -1.0F,
                 1.0F, 1.0F

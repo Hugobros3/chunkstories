@@ -2,6 +2,7 @@ package io.xol.chunkstories.graphics.vulkan.systems
 
 import io.xol.chunkstories.api.graphics.structs.Camera
 import io.xol.chunkstories.api.voxel.VoxelSide
+import io.xol.chunkstories.graphics.common.FaceCullingMode
 import io.xol.chunkstories.graphics.common.Primitive
 import io.xol.chunkstories.graphics.vulkan.DescriptorPool
 import io.xol.chunkstories.graphics.vulkan.Pipeline
@@ -45,7 +46,7 @@ class VulkanSpinningCubeDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
         }
     }
 
-    val pipeline = Pipeline(backend, pass, vertexInputConfiguration, Primitive.TRIANGLES)
+    val pipeline = Pipeline(backend, pass, vertexInputConfiguration, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
 
     private val vertexBuffer: VulkanVertexBuffer
 

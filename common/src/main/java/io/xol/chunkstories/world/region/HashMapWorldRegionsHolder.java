@@ -20,9 +20,8 @@ import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.chunk.CubicChunk;
 
 public class HashMapWorldRegionsHolder {
-	private WorldImplementation world;
+	private final WorldImplementation world;
 
-	// private Semaphore noConcurrentRegionCreationDestruction = new Semaphore(1);
 	private final ReadWriteLock regionsLock = new ReentrantReadWriteLock();
 	private final Map<Integer, RegionImplementation> regions = new HashMap<>();
 
@@ -30,7 +29,7 @@ public class HashMapWorldRegionsHolder {
 
 	public HashMapWorldRegionsHolder(WorldImplementation world) {
 		this.world = world;
-		// this.chunksData = chunksData;
+
 		heightInRegions = world.getWorldInfo().getSize().heightInChunks / 8;
 		sizeInRegions = world.getWorldInfo().getSize().sizeInChunks / 8;
 	}
@@ -61,14 +60,10 @@ public class HashMapWorldRegionsHolder {
 		}
 	}
 
-	long prout = 0;
-
 	public CubicChunk getChunk(int chunkX, int chunkY, int chunkZ) {
 		RegionImplementation holder = getRegionChunkCoordinates(chunkX, chunkY, chunkZ);
-		if (holder != null) {
-			// System.out.println(regions.size());
+		if (holder != null)
 			return holder.getChunk(chunkX, chunkY, chunkZ);
-		}
 		return null;
 	}
 
@@ -87,32 +82,13 @@ public class HashMapWorldRegionsHolder {
 		return allRegionsFences;
 	}
 
-	/*public void markChunkForReRender(int chunkX, int chunkY, int chunkZ) {
-		int worldSizeInChunks = world.getWorldInfo().getSize().sizeInChunks;
-		if (chunkX < 0)
-			chunkX += worldSizeInChunks;
-		if (chunkY < 0)
-			chunkY += worldSizeInChunks;
-		if (chunkZ < 0)
-			chunkZ += worldSizeInChunks;
-		chunkX = chunkX % worldSizeInChunks;
-		chunkZ = chunkZ % worldSizeInChunks;
-
-		if (chunkY < 0 || chunkY >= worldSizeInChunks)
-			return;
-
-		Chunk c = getChunk(chunkX, chunkY, chunkZ);
-		if (c != null)
-			c.mesh().incrementPendingUpdates();
-	}*/
-
 	public void destroy() {
 		regions.clear();
 	}
 
 	@Override
 	public String toString() {
-		return "[ChunksHolder: " + regions.size() + " Chunk Holders loaded]";
+		return "[RegionsHolder: " + regions.size() + " loaded regions]";
 	}
 
 	public String getStats() {
@@ -125,16 +101,6 @@ public class HashMapWorldRegionsHolder {
 		while (i.hasNext()) {
 			i.next();
 			c++;
-		}
-		return c;
-	}
-
-	public int countChunksWithData() {
-		int c = 0;
-		Iterator<Chunk> i = world.getAllLoadedChunks();
-		while (i.hasNext()) {
-			if (!i.next().isAirChunk())
-				c++;
 		}
 		return c;
 	}

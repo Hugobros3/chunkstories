@@ -3,6 +3,7 @@ package io.xol.chunkstories.graphics.vulkan.systems.gui
 import io.xol.chunkstories.api.gui.Font
 import io.xol.chunkstories.api.gui.Gui
 import io.xol.chunkstories.graphics.common.DummyGuiDrawer
+import io.xol.chunkstories.graphics.common.FaceCullingMode
 import io.xol.chunkstories.graphics.common.Primitive
 import io.xol.chunkstories.graphics.vulkan.DescriptorPool
 import io.xol.chunkstories.graphics.vulkan.Pipeline
@@ -73,7 +74,7 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
         }
     }
 
-    val pipeline = Pipeline(backend, pass, vertexInputConfiguration, Primitive.TRIANGLES)
+    val pipeline = Pipeline(backend, pass, vertexInputConfiguration, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
 
     val descriptorPool = DescriptorPool(backend, pass.program)
     val sampler = VulkanSampler(backend)
@@ -164,13 +165,13 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
             color(color)
             textureId(translatedId)
 
-            vertex((startX + width), (startY))
-            texCoord(textureEndX, textureStartY)
+            vertex((startX + width), (startY + height))
+            texCoord(textureEndX, textureEndY)
             color(color)
             textureId(translatedId)
 
-            vertex((startX + width), (startY + height))
-            texCoord(textureEndX, textureEndY)
+            vertex((startX + width), (startY))
+            texCoord(textureEndX, textureStartY)
             color(color)
             textureId(translatedId)
 
@@ -205,13 +206,13 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
             color(color)
             textureId(translatedId)
 
-            vertex((startX + width), (startY))
-            texCoord(textureEndX, textureStartY)
+            vertex((startX + width), (startY + height))
+            texCoord(textureEndX, textureEndY)
             color(color)
             textureId(translatedId)
 
-            vertex((startX + width), (startY + height))
-            texCoord(textureEndX, textureEndY)
+            vertex((startX + width), (startY))
+            texCoord(textureEndX, textureStartY)
             color(color)
             textureId(translatedId)
 

@@ -4,6 +4,7 @@ import io.xol.chunkstories.api.client.IngameClient
 import io.xol.chunkstories.api.entity.traits.serializable.TraitControllable
 import io.xol.chunkstories.api.graphics.structs.Camera
 import io.xol.chunkstories.client.InternalClientOptions
+import io.xol.chunkstories.graphics.common.FaceCullingMode
 import io.xol.chunkstories.graphics.common.Primitive
 import io.xol.chunkstories.graphics.vulkan.DescriptorPool
 import io.xol.chunkstories.graphics.vulkan.Pipeline
@@ -44,7 +45,7 @@ class VulkanDebugDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         }
     }
 
-    val pipeline = Pipeline(backend, pass, vertexInputConfiguration, Primitive.LINES)
+    val pipeline = Pipeline(backend, pass, vertexInputConfiguration, Primitive.LINES, FaceCullingMode.DISABLED)
 
     val vertexBuffers: InflightFrameResource<VulkanVertexBuffer>
 

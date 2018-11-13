@@ -178,14 +178,9 @@ public class OptionsScreen extends Layer {
 			double relativeMouseXPosition = mouseX - this.getPositionX();
 			//System.out.println(relativeMouseXPosition);
 			double newValue = (0.0 + Math.min(320.0, Math.max(0.0, relativeMouseXPosition))) / 160.0f;
+
 			newValue *= (option.getMaximumValue() - option.getMinimumValue());
 			newValue += option.getMinimumValue();
-
-			//handled by OptionDoubleRange
-			/*if(option.getGranularity() != 0.0) {
-				newValue /= option.getGranularity();
-				newValue = (float) (Math.floor(value)) * option.getGranularity();
-			}*/
 
 			option.trySetting(newValue);
 		}

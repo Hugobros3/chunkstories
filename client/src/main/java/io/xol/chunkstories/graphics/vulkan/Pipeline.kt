@@ -3,6 +3,7 @@ package io.xol.chunkstories.graphics.vulkan
 import io.xol.chunkstories.api.graphics.GraphicsEngine
 import io.xol.chunkstories.api.graphics.ShaderStage
 import io.xol.chunkstories.api.graphics.rendergraph.DepthTestingConfiguration.DepthTestMode.*
+import io.xol.chunkstories.graphics.common.FaceCullingMode
 import io.xol.chunkstories.graphics.common.Primitive
 import io.xol.chunkstories.graphics.common.shaderc.ShaderFactory
 import io.xol.chunkstories.graphics.vulkan.graph.VulkanPass
@@ -34,7 +35,7 @@ class VertexInputConfiguration {
     }
 }
 
-class Pipeline(val backend: VulkanGraphicsBackend, val pass: VulkanPass, val vertexInputConfiguration: VertexInputConfiguration, val primitiveType: Primitive) {
+class Pipeline(val backend: VulkanGraphicsBackend, val pass: VulkanPass, val vertexInputConfiguration: VertexInputConfiguration, val primitiveType: Primitive, val faceCullingMode: FaceCullingMode) {
     val layout: VkPipelineLayout
     val handle: VkPipeline
 
@@ -91,6 +92,12 @@ class Pipeline(val backend: VulkanGraphicsBackend, val pass: VulkanPass, val ver
             polygonMode(VK_POLYGON_MODE_FILL)
             lineWidth(1.0F)
             depthBiasEnable(false)
+            cullMode(when(faceCullingMode){
+                FaceCullingMode.DISABLED -> VK_CULL_MODE_NONE
+                FaceCullingMode.CULL_FRONT -> VK_CULL_MODE_FRONT_BIT
+                FaceCullingMode.CULL_BACK -> VK_CULL_MODE_BACK_BIT
+            })
+            frontFace(VK_FRONT_FACE_CLOCKWISE)
         }
 
         val multisampleStateCreateInfo = VkPipelineMultisampleStateCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO).apply {

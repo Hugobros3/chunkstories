@@ -8,6 +8,7 @@ import io.xol.chunkstories.api.physics.Frustrum
 import io.xol.chunkstories.api.util.kotlin.toVec3d
 import io.xol.chunkstories.api.util.kotlin.toVec3i
 import io.xol.chunkstories.client.InternalClientOptions
+import io.xol.chunkstories.graphics.common.FaceCullingMode
 import io.xol.chunkstories.graphics.common.Primitive
 import io.xol.chunkstories.graphics.vulkan.DescriptorPool
 import io.xol.chunkstories.graphics.vulkan.Pipeline
@@ -50,7 +51,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         }
     }
 
-    private val pipeline = Pipeline(backend, pass, vertexInputConfiguration, Primitive.TRIANGLES)
+    private val pipeline = Pipeline(backend, pass, vertexInputConfiguration, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
 
 
     companion object {
@@ -81,7 +82,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         val drawDistance = world.client.configuration.getIntValue(InternalClientOptions.viewDistance) / 32
         val drawDistanceH = 4
 
-        val usedData = mutableListOf<VulkanChunkRenderData.Block>()
+        val usedData = mutableListOf<VulkanChunkRenderData.ChunkMeshInstance>()
         for (chunk in world.allLoadedChunks) {
             val chunk = chunk as CubicChunk
 
@@ -101,7 +102,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
                 continue
 
             if (chunk.meshData is VulkanChunkRenderData) {
-                val block = (chunk.meshData as VulkanChunkRenderData).getLastBlock()
+                val block = (chunk.meshData as VulkanChunkRenderData).getData()
                 if(block != null)
                     usedData.add(block)
 
@@ -124,7 +125,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
 
 
         frame.recyclingTasks.add {
-            usedData.forEach(VulkanChunkRenderData.Block::doneWith)
+            usedData.forEach(VulkanChunkRenderData.ChunkMeshInstance::doneWith)
         }
     }
 
