@@ -183,12 +183,10 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser {
 
 		Random random = new Random();
 
-		// IO is NOT blocking here, good luck.
-		try {
-			csWorld = new WorldTool(this, new WorldInfo(internalName, csWorldName, description,random.nextLong() + "", size, worldGenerator), false);
-		} catch (WorldLoadingException e) {
-			throw new RuntimeException("Error creating world", e);
-		}
+		File folder = new File("out/"+internalName);
+		WorldInfo info = new WorldInfo(internalName, csWorldName, description,random.nextLong() + "", size, worldGenerator);
+
+		csWorld = WorldTool.Companion.createWorld(this, folder, info);
 	}
 
 	protected void verbose(String s) {
