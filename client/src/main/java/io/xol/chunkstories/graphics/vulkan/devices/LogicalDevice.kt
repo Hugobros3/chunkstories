@@ -114,7 +114,7 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
         }
 
         var requestedExtensions = backend.requiredDeviceExtensions.toSet()
-        requestedExtensions += "VK_KHR_get_memory_requirements2"
+        //requestedExtensions += "VK_KHR_get_memory_requirements2"
 
         if (backend.doNonUniformSamplerArrayAccess)
             requestedExtensions = setOf("VK_EXT_descriptor_indexing", "VK_KHR_maintenance3").union(requestedExtensions)
