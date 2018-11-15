@@ -131,8 +131,8 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
             internalData.setProperty("defaultSpawnZ", "${location.z()}")
         }
 
-    override val allLoadedChunks: ChunksIterator
-        get() = WorldChunksIterator(this)
+    override val allLoadedChunks: Collection<CubicChunk>
+        get() = regionsHolder.internalGetLoadedChunks()
 
     final override val gameLogic: GameLogic
         get() = worldThread

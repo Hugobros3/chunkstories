@@ -244,11 +244,6 @@ public class RegionImplementation implements Region {
 		return world.getIoHandler().requestRegionSave(this);
 	}
 
-	/*
-	 * @Override public IOTask unloadAndSave() { unload(); return
-	 * world.ioHandler.requestRegionSave(this); }
-	 */
-
 	@Override
 	public String toString() {
 		return "[Region rx:" + regionX + " ry:" + regionY + " rz:" + regionZ + " uuid: " + uuid + "loaded?:"

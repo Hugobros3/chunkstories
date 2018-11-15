@@ -1,1 +1,0 @@
-java -jar converter/build/libs/converter.jar C:/Users/Gobrosse/namalsk-map namalsk-cs20 MEDIUM 0 0 -vr -mt --core=../chunkstories-core/res
