@@ -17,12 +17,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.xol.chunkstories.api.world.serialization.OfflineSerializedData;
-import io.xol.chunkstories.world.region.RegionImplementation;
+import io.xol.chunkstories.world.storage.RegionImplementation;
 
 /** Common region file storage formats stuff */
 public abstract class CSFRegionFile implements OfflineSerializedData {
 
-	public final RegionImplementation owner;
+	public final RegionImplementation region;
 	public final File file;
 
 	private static final Logger logger = LoggerFactory.getLogger("world.serialization.region");
@@ -32,11 +32,8 @@ public abstract class CSFRegionFile implements OfflineSerializedData {
 	}
 
 	public CSFRegionFile(RegionImplementation holder, File file) {
-		this.owner = holder;
+		this.region = holder;
 		this.file = file;
-
-		// this.file = new File(holder.world.getFolderPath() + "/regions/" +
-		// holder.regionX + "." + holder.regionY + "." + holder.regionZ + ".csf");
 	}
 
 	public AtomicInteger savingOperations = new AtomicInteger();
@@ -64,10 +61,10 @@ public abstract class CSFRegionFile implements OfflineSerializedData {
 
 	public static CSFRegionFile determineVersionAndCreate(RegionImplementation region) {
 
-		if (region.file.exists()) {
+		if (region.getFile().exists()) {
 
 			try {
-				FileInputStream fist = new FileInputStream(region.file);
+				FileInputStream fist = new FileInputStream(region.getFile());
 				DataInputStream in = new DataInputStream(fist);
 
 				// Read jsut the first 12 bytes of data
@@ -82,7 +79,7 @@ public abstract class CSFRegionFile implements OfflineSerializedData {
 				// chnkstrs in ascii
 				if (magicNumber == 6003953969960732739L) {
 					if (versionNumber == 0x2D)
-						return new CSFRegionFile0x2D(region, region.file);
+						return new CSFRegionFile0x2D(region, region.getFile());
 					else
 						throw new RuntimeException("Unhandled file format revision: " + versionNumber);
 				}
@@ -91,14 +88,13 @@ public abstract class CSFRegionFile implements OfflineSerializedData {
 
 			}
 		} else
-			return new CSFRegionFile0x2D(region, region.file);
+			return new CSFRegionFile0x2D(region, region.getFile());
 
-		System.out.println(region.file);
-		System.out.println(region.file.exists());
+		System.out.println(region.getFile());
+		System.out.println(region.getFile().exists());
 		Thread.dumpStack();
-		System.exit(-1);
 
-		return new CSFRegionFile0x2C(region, region.file);
+		throw new RuntimeException("Older unsupported file format detected!");
 	}
 
 }

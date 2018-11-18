@@ -12,7 +12,7 @@ import java.io.File;
 import java.io.IOException;
 
 import io.xol.chunkstories.world.chunk.CompressedData;
-import io.xol.chunkstories.world.region.RegionImplementation;
+import io.xol.chunkstories.world.storage.RegionImplementation;
 
 /**
  * This version adds support for distinguishing between generated empty and
@@ -80,12 +80,10 @@ public class CSFRegionFile0x2D extends CSFRegionFile {
 								System.out.println("Error! Index said there was " + compressedDataSize
 										+ " bytes of data but the total suggests it should be " + supposedSize);
 
-							owner.getChunkHolder(a, b, c).setCompressedData(
-									new CompressedData(voxelData, voxelComponentsData, entitiesData));
+							region.getChunkHolder(a, b, c).setCompressedData(new CompressedData(voxelData, voxelComponentsData, entitiesData));
 						}
 						// No data exists here
-						else if (compressedDataSize == 0x00000000) {
-							owner.getChunkHolder(a, b, c).setCompressedData(null);
+						else if (compressedDataSize == 0x00000000) { region.getChunkHolder(a, b, c).setCompressedData(null);
 						} else {
 							throw new RuntimeException(
 									"Unexpected negative length for compressed chunk size: " + compressedDataSize);
@@ -94,23 +92,7 @@ public class CSFRegionFile0x2D extends CSFRegionFile {
 
 			// We pretend it's loaded sooner so we can add the entities and they will load
 			// their voxel data if needed
-			owner.setDiskDataLoaded(true);
-
-			// don't tick the world entities until we getVoxelComponent this straight
-			/*
-			 * owner.world.entitiesLock.writeLock().lock();
-			 * 
-			 * try { //Read entities until we hit -1 Entity entity = null; do { entity =
-			 * EntitySerializer.readEntityFromStream(in, this, owner.world); if (entity !=
-			 * null) owner.world.addEntity(entity); } while (entity != null);
-			 * 
-			 * } catch (Exception e) { logger().worldInfo("Error while loading "+file);
-			 * e.printStackTrace(logger().getPrintWriter()); e.printStackTrace(); }
-			 * 
-			 * owner.world.entitiesLock.writeLock().unlock();
-			 */
-
-			// Load in the voxel components yay
+			region.whenDataLoadedCallback();
 
 		} finally {
 			in.close();
@@ -131,7 +113,7 @@ public class CSFRegionFile0x2D extends CSFRegionFile {
 				for (int b = 0; b < 8; b++)
 					for (int c = 0; c < 8; c++) {
 						// For each chunk within the region, grab the compressed data version
-						CompressedData compressedData = owner.getChunkHolder(a, b, c).getCompressedData();
+						CompressedData compressedData = region.getChunkHolder(a, b, c).getCompressedData();
 
 						allCompressedData[a][b][c] = compressedData;
 
@@ -167,29 +149,12 @@ public class CSFRegionFile0x2D extends CSFRegionFile {
 							} else
 								dos.writeInt(0);
 						}
-
-			// don't tick the world entities until we getVoxelComponent this straight - this is about not
-			// duplicating entities
-			/*
-			 * owner.world.entitiesLock.readLock().lock();
-			 * 
-			 * Iterator<Entity> holderEntities = owner.getEntitiesWithinRegion(); while
-			 * (holderEntities.hasNext()) { Entity entity = holderEntities.next(); //Don't
-			 * save controllable entities if (entity.exists() && !(entity instanceof
-			 * EntityUnsaveable && !((EntityUnsaveable) entity).shouldSaveIntoRegion())) {
-			 * EntitySerializer.writeEntityToStream(dos, this, entity); } }
-			 * 
-			 * //dos.writeLong(-1); EntitySerializer.writeEntityToStream(dos, this, null);
-			 * 
-			 * owner.world.entitiesLock.readLock().unlock();
-			 */
-
 		} finally {
 			dos.close();
 		}
 	}
 
-	public void finishSavingOperations() {
+	/*public void finishSavingOperations() {
 		// Waits out saving operations.
 		while (savingOperations.get() > 0)
 			// System.out.println(savingOperations.getVoxelComponent());
@@ -200,6 +165,6 @@ public class CSFRegionFile0x2D extends CSFRegionFile {
 					e.printStackTrace();
 				}
 			}
-	}
+	}*/
 
 }

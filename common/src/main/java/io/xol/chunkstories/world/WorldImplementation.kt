@@ -4,13 +4,14 @@
 // Website: http://chunkstories.xyz
 //
 
+@file:Suppress("NAME_SHADOWING")
+
 package io.xol.chunkstories.world
 
 import io.xol.chunkstories.api.GameContext
 import io.xol.chunkstories.api.GameLogic
 import io.xol.chunkstories.api.Location
 import io.xol.chunkstories.api.content.Content
-import io.xol.chunkstories.api.content.ContentTranslator
 import io.xol.chunkstories.api.entity.Entity
 import io.xol.chunkstories.api.entity.traits.serializable.TraitHealth
 import io.xol.chunkstories.api.entity.traits.serializable.TraitName
@@ -32,7 +33,6 @@ import io.xol.chunkstories.api.world.cell.CellData
 import io.xol.chunkstories.api.world.cell.FutureCell
 import io.xol.chunkstories.api.world.chunk.Chunk.ChunkCell
 import io.xol.chunkstories.api.world.chunk.ChunkHolder
-import io.xol.chunkstories.api.world.chunk.ChunksIterator
 import io.xol.chunkstories.api.world.generator.WorldGenerator
 import io.xol.chunkstories.api.world.heightmap.Heightmap
 import io.xol.chunkstories.content.sandbox.UnthrustedUserContentSecurityManager
@@ -44,13 +44,12 @@ import io.xol.chunkstories.entity.EntityWorldIterator
 import io.xol.chunkstories.entity.SerializedEntityFile
 import io.xol.chunkstories.util.concurrency.CompoundFence
 import io.xol.chunkstories.world.chunk.CubicChunk
-import io.xol.chunkstories.world.heightmap.WorldHeightmapsImplementation
+import io.xol.chunkstories.world.heightmap.HeightmapsStorage
 import io.xol.chunkstories.world.io.IOTasks
 import io.xol.chunkstories.world.iterators.AABBVoxelIterator
-import io.xol.chunkstories.world.iterators.WorldChunksIterator
 import io.xol.chunkstories.world.logic.WorldLogicThread
-import io.xol.chunkstories.world.region.HashMapWorldRegionsHolder
-import io.xol.chunkstories.world.region.RegionImplementation
+import io.xol.chunkstories.world.storage.RegionsStorage
+import io.xol.chunkstories.world.storage.RegionImplementation
 import org.joml.Vector3dc
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -91,8 +90,8 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
     private val worldThread: WorldLogicThread
 
     //Data holding
-    val regionsHolder: HashMapWorldRegionsHolder
-    final override val regionsSummariesHolder: WorldHeightmapsImplementation
+    val regionsStorage: RegionsStorage
+    final override val regionsSummariesHolder: HeightmapsStorage
 
     // Temporary entity list
     protected val entities: WorldEntitiesHolder
@@ -131,8 +130,8 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
             internalData.setProperty("defaultSpawnZ", "${location.z()}")
         }
 
-    override val allLoadedChunks: Collection<CubicChunk>
-        get() = regionsHolder.internalGetLoadedChunks()
+    override val allLoadedChunks: Sequence<CubicChunk>
+        get() = regionsStorage.regionsList.asSequence().flatMap { it.loadedChunks }
 
     final override val gameLogic: GameLogic
         get() = worldThread
@@ -146,8 +145,8 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
             this.worldInfo = info
 
             // Create holders for the world data
-            this.regionsHolder = HashMapWorldRegionsHolder(this)
-            this.regionsSummariesHolder = WorldHeightmapsImplementation(this)
+            this.regionsStorage = RegionsStorage(this)
+            this.regionsSummariesHolder = HeightmapsStorage(this)
 
             // And for the citizens
             this.entities = WorldEntitiesHolder(this)
@@ -281,14 +280,12 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
     override fun removeEntity(entity: Entity): Boolean {
         try {
             entitiesLock.writeLock().lock()
-            if (entity != null) {
-                entity.traitLocation.onRemoval()
+            entity.traitLocation.onRemoval()
 
-                // Actually removes it from the world list
-                removeEntityFromList(entity)
+            // Actually removes it from the world list
+            removeEntityFromList(entity)
 
-                return true
-            }
+            return true
 
             return false
         } finally {
@@ -555,8 +552,8 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
         val ioOperationsFence = CompoundFence()
 
         logger.info("Saving all parts of world " + worldInfo.name)
-        ioOperationsFence.add(regionsHolder.saveAll())
-        ioOperationsFence.add(regionsSummariesHolder.saveAllLoadedSummaries())
+        ioOperationsFence.add(regionsStorage.saveAll())
+        //ioOperationsFence.add(regionsSummariesHolder.saveAllLoadedSummaries())
 
         this.internalData.setProperty("entities-ids-counter", "" + entitiesUUIDGenerator.get())
         this.internalData.setProperty("worldTime", "" + time)
@@ -588,7 +585,7 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
 
     private fun sanitizeHorizontalCoordinate(coordinate: Int): Int {
         var coordinate = coordinate
-        coordinate = coordinate % (sizeInChunks * 32)
+        coordinate %= (sizeInChunks * 32)
         if (coordinate < 0)
             coordinate += sizeInChunks * 32
         return coordinate
@@ -612,13 +609,13 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
         var chunkX = chunkX
         var chunkZ = chunkZ
         // Sanitation of input data
-        chunkX = chunkX % sizeInChunks
-        chunkZ = chunkZ % sizeInChunks
+        chunkX %= sizeInChunks
+        chunkZ %= sizeInChunks
         if (chunkX < 0)
             chunkX += sizeInChunks
         if (chunkZ < 0)
             chunkZ += sizeInChunks
-        return this.regionsHolder!!.acquireChunkHolder(user, chunkX, chunkY, chunkZ)
+        return this.regionsStorage!!.acquireChunkHolder(user, chunkX, chunkY, chunkZ)
     }
 
     override fun acquireChunkHolderWorldCoordinates(user: WorldUser, worldX: Int, worldY: Int, worldZ: Int): ChunkHolder? {
@@ -629,15 +626,15 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
         worldY = sanitizeVerticalCoordinate(worldY)
         worldZ = sanitizeHorizontalCoordinate(worldZ)
 
-        return this.regionsHolder!!.acquireChunkHolder(user, worldX / 32, worldY / 32, worldZ / 32)
+        return this.regionsStorage!!.acquireChunkHolder(user, worldX / 32, worldY / 32, worldZ / 32)
     }
 
     override fun isChunkLoaded(chunkX: Int, chunkY: Int, chunkZ: Int): Boolean {
         var chunkX = chunkX
         var chunkZ = chunkZ
         // Sanitation of input data
-        chunkX = chunkX % sizeInChunks
-        chunkZ = chunkZ % sizeInChunks
+        chunkX %= sizeInChunks
+        chunkZ %= sizeInChunks
         if (chunkX < 0)
             chunkX += sizeInChunks
         if (chunkZ < 0)
@@ -645,7 +642,7 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
         // Out of bounds checks
         if (chunkY < 0)
             return false
-        return if (chunkY >= worldInfo.size.heightInChunks) false else this.regionsHolder!!.getChunk(chunkX, chunkY, chunkZ) != null
+        return if (chunkY >= worldInfo.size.heightInChunks) false else this.regionsStorage!!.getChunk(chunkX, chunkY, chunkZ) != null
         // If it doesn't return null then it exists
     }
 
@@ -661,19 +658,19 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
     override fun getChunk(chunkX: Int, chunkY: Int, chunkZ: Int): CubicChunk? {
         var chunkX = chunkX
         var chunkZ = chunkZ
-        chunkX = chunkX % sizeInChunks
-        chunkZ = chunkZ % sizeInChunks
+        chunkX %= sizeInChunks
+        chunkZ %= sizeInChunks
         if (chunkX < 0)
             chunkX += sizeInChunks
         if (chunkZ < 0)
             chunkZ += sizeInChunks
         if (chunkY < 0)
             return null
-        return if (chunkY >= worldInfo.size.heightInChunks) null else regionsHolder!!.getChunk(chunkX, chunkY, chunkZ)
+        return if (chunkY >= worldInfo.size.heightInChunks) null else regionsStorage!!.getChunk(chunkX, chunkY, chunkZ)
     }
 
     override fun acquireRegion(user: WorldUser, regionX: Int, regionY: Int, regionZ: Int): RegionImplementation? {
-        return this.regionsHolder!!.acquireRegion(user, regionX, regionY, regionZ)
+        return this.regionsStorage!!.acquireRegion(user, regionX, regionY, regionZ)
     }
 
     override fun acquireRegionChunkCoordinates(user: WorldUser, chunkX: Int, chunkY: Int, chunkZ: Int): RegionImplementation? {
@@ -717,15 +714,15 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
     }
 
     override fun getRegion(regionX: Int, regionY: Int, regionZ: Int): RegionImplementation? {
-        return regionsHolder!!.getRegion(regionX, regionY, regionZ)
+        return regionsStorage!!.getRegion(regionX, regionY, regionZ)
     }
 
     open fun destroy() {
         // Stop the game logic first
-        worldThread!!.stopLogicThread().traverse()
+        worldThread.stopLogicThread().traverse()
 
-        this.regionsHolder!!.destroy()
-        this.regionsSummariesHolder.destroy()
+        //this.regionsStorage!!.destroy()
+        //this.regionsSummariesHolder.destroy()
 
         // Always, ALWAYS save this.
         if (this is WorldMaster) {
@@ -734,7 +731,7 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
         }
 
         // Kill the IO handler
-        ioHandler!!.kill()
+        ioHandler.kill()
     }
 
     private fun saveInternalData() {

@@ -13,16 +13,14 @@ import java.security.NoSuchAlgorithmException;
 
 import io.xol.chunkstories.api.exceptions.net.IllegalPacketException;
 import io.xol.chunkstories.api.net.PacketWorldStreaming;
-import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.workers.TaskExecutor;
 import io.xol.chunkstories.client.ingame.IngameClientImplementation;
 import io.xol.chunkstories.client.net.ServerConnection;
 import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
 import io.xol.chunkstories.net.packets.PacketHeightmap;
 import io.xol.chunkstories.world.WorldClientRemote;
-import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
 import io.xol.chunkstories.world.heightmap.HeightmapImplementation;
-import io.xol.chunkstories.world.region.RegionImplementation;
+import io.xol.chunkstories.world.storage.RegionImplementation;
 
 public class IOTasksMultiplayerClient extends IOTasks {
 	IngameClientImplementation client;
@@ -50,19 +48,6 @@ public class IOTasksMultiplayerClient extends IOTasks {
 		}
 	};
 
-	@Override
-	public IOTaskLoadChunk requestChunkLoad(ChunkHolderImplementation slot) {
-		// connection.sendTextMessage("world/getChunkCompressed:" +
-		// slot.getChunkCoordinateX() + ":" + slot.getChunkCoordinateY() + ":" +
-		// slot.getChunkCoordinateZ());
-		return null;
-	}
-
-	@Override
-	public void requestRegionLoad(RegionImplementation holder) {
-		holder.setDiskDataLoaded(true);
-	}
-
 	public class IOTaskProcessCompressedHeightmapArrival extends IOTask {
 		PacketHeightmap packet;
 
@@ -72,9 +57,8 @@ public class IOTasksMultiplayerClient extends IOTasks {
 
 		@Override
 		public boolean task(TaskExecutor taskExecutor) {
-			HeightmapImplementation summary = world.getRegionsSummariesHolder()
-					.getHeightmapWorldCoordinates(packet.rx * 256, packet.rz * 256);
-			if (summary == null) {
+			HeightmapImplementation heightmap = world.getRegionsSummariesHolder().getHeightmapWorldCoordinates(packet.rx * 256, packet.rz * 256);
+			if (heightmap == null) {
 				logger().error("Summary data arrived for " + packet.rx + ": " + packet.rz
 						+ "but there was no region summary waiting for it ?");
 				return true;
@@ -84,13 +68,13 @@ public class IOTasksMultiplayerClient extends IOTasks {
 			int[] ids = new int[256 * 256];
 
 			byte[] unCompressedSummaries = unCompressedSummariesData.get();
-			unCompressedSummaries = HeightmapImplementation.decompressor.decompress(packet.compressedData,
+			unCompressedSummaries = HeightmapImplementation.Companion.getDecompressor().decompress(packet.compressedData,
 					256 * 256 * 4 * 2);
 			IntBuffer ib = ByteBuffer.wrap(unCompressedSummaries).asIntBuffer();
 			ib.get(heights, 0, 256 * 256);
 			ib.get(ids, 0, 256 * 256);
 
-			summary.setData(heights, ids);
+			heightmap.whenDataLoadedCallback(heights, ids);
 
 			return true;
 		}
@@ -109,11 +93,6 @@ public class IOTasksMultiplayerClient extends IOTasks {
 	public void requestHeightmapProcess(PacketHeightmap packet) {
 		IOTaskProcessCompressedHeightmapArrival task = new IOTaskProcessCompressedHeightmapArrival(packet);
 		scheduleTask(task);
-	}
-
-	@Override
-	public Fence requestHeightmapLoad(HeightmapImplementation summary) {
-		return null;
 	}
 
 	public void handlePacketWorldStreaming(PacketWorldStreaming packet) throws IllegalPacketException {

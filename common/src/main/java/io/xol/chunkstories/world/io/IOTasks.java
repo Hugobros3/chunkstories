@@ -18,9 +18,9 @@ import io.xol.chunkstories.Constants;
 import io.xol.chunkstories.api.util.concurrency.Fence;
 import io.xol.chunkstories.api.workers.TaskExecutor;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.chunkstories.world.chunk.ChunkHolderImplementation;
+import io.xol.chunkstories.world.storage.ChunkHolderImplementation;
 import io.xol.chunkstories.world.heightmap.HeightmapImplementation;
-import io.xol.chunkstories.world.region.RegionImplementation;
+import io.xol.chunkstories.world.storage.RegionImplementation;
 
 /**
  * This thread does I/O work in queue. Extended by IOTaskMultiplayerClient and
@@ -109,25 +109,23 @@ public class IOTasks extends Thread implements TaskExecutor {
 	/**
 	 * Loads the content of a region chunk slot
 	 */
-	public IOTaskLoadChunk requestChunkLoad(ChunkHolderImplementation chunkSlot) {
+	/*public IOTaskLoadChunk requestChunkLoad(ChunkHolderImplementation chunkSlot) {
 		IOTaskLoadChunk task = new IOTaskLoadChunk(chunkSlot);
 		if (scheduleTask(task))
 			return task;
 		return null;
-	}
+	}*/
 
-	public void requestRegionLoad(RegionImplementation holder) {
+	/*public Fence requestRegionLoad(RegionImplementation holder) {
 		// if (!isDoneSavingRegion(holder))
 		// return;
 
 		IOTask task = new IOTaskLoadRegion(holder);
 		scheduleTask(task);
-	}
+		return task;
+	}*/
 
-	public IOTask requestRegionSave(RegionImplementation holder) {
-		if (!holder.isDiskDataLoaded())
-			return null;
-
+	/*public IOTask requestRegionSave(RegionImplementation holder) {
 		IOTask task = new IOTaskSaveRegion(holder);
 		scheduleTask(task);
 		return task;
@@ -145,7 +143,7 @@ public class IOTasks extends Thread implements TaskExecutor {
 		scheduleTask(task);
 
 		return task;
-	}
+	}*/
 
 	public void kill() {
 		scheduleTask(DIE);

@@ -221,7 +221,7 @@ public class WorldEntitiesHolder implements Iterable<Entity> {
 
 			Region currentRegion = world.getRegion(region_x, region_y, region_z);
 			Iterator<Entity> currentRegionIterator = currentRegion == null ? null
-					: currentRegion.getEntitiesWithinRegion();
+					: currentRegion.getEntitiesWithinRegion().iterator();
 			Entity next = null;
 			double distance = 0D;
 
@@ -293,7 +293,7 @@ public class WorldEntitiesHolder implements Iterable<Entity> {
 				while (true) {
 					// Found one !
 					if (currentRegion != null) {
-						currentRegionIterator = currentRegion.getEntitiesWithinRegion();
+						currentRegionIterator = currentRegion.getEntitiesWithinRegion().iterator();
 						return true;
 					}
 

@@ -21,25 +21,24 @@ import io.xol.chunkstories.world.chunk.TaskLightChunk;
 
 public class TaskGenerateWorldThinSlice extends Task implements WorldUser {
 
-	final Heightmap heightmap;
-	final World world;
-	final int chunkX, chunkZ;
-	ChunkHolder holders[];
+	private final Heightmap heightmap;
+	private final World world;
+	private final int chunkX, chunkZ;
+
+	private ChunkHolder holders[];
 
 	private final int maxGenerationHeight, maxGenerationHeightInChunks;
 	private WorldGenerator generator;
 
-	public TaskGenerateWorldThinSlice(World world, int chunkX, int chunkZ, Heightmap heightmap) {
+	TaskGenerateWorldThinSlice(World world, int chunkX, int chunkZ, Heightmap heightmap) {
 		this.world = world;
 		this.heightmap = heightmap;
 		this.chunkX = chunkX;
 		this.chunkZ = chunkZ;
 
 		generator = world.getGenerator();
-		maxGenerationHeight = Integer
-				.parseInt(generator.getDefinition().resolveProperty("maxGenerationHeight", "1024"));
+		maxGenerationHeight = Integer.parseInt(generator.getDefinition().resolveProperty("maxGenerationHeight", "1024"));
 		maxGenerationHeightInChunks = (int) Math.ceil(maxGenerationHeight / 32.0);
-		// System.out.println(maxGenerationHeightInChunks);
 
 		holders = new ChunkHolder[maxGenerationHeightInChunks];
 		for (int chunkY = 0; chunkY < maxGenerationHeightInChunks; chunkY++) {
@@ -50,9 +49,7 @@ public class TaskGenerateWorldThinSlice extends Task implements WorldUser {
 	@Override
 	protected boolean task(TaskExecutor taskExecutor) {
 		for (int chunkY = 0; chunkY < maxGenerationHeightInChunks; chunkY++) {
-
-			// System.out.println("howdy"+holders[chunkY].isChunkLoaded());
-			if (!holders[chunkY].isChunkLoaded() || holders[chunkY].getChunk() == null)
+			if (!(holders[chunkY].getState() instanceof ChunkHolder.State.Available))
 				return false;
 		}
 

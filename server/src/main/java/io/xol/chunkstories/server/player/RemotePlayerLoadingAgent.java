@@ -14,11 +14,10 @@ import java.util.concurrent.locks.ReentrantLock;
 import io.xol.chunkstories.api.math.Math2;
 import io.xol.chunkstories.api.net.packets.PacketWorldUser;
 import io.xol.chunkstories.api.net.packets.PacketWorldUser.Type;
-import io.xol.chunkstories.api.world.WorldInfo;
 import io.xol.chunkstories.api.world.WorldSize;
 import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.heightmap.Heightmap;
-import io.xol.chunkstories.world.region.RegionImplementation;
+import io.xol.chunkstories.world.storage.RegionImplementation;
 
 /**
  * Receives the requests from the remote player & decides wether to accept them

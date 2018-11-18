@@ -23,7 +23,6 @@ import io.xol.chunkstories.api.util.IterableIterator
 import io.xol.chunkstories.api.world.WorldMaster
 import io.xol.chunkstories.sound.source.DummySoundSource
 import io.xol.chunkstories.world.io.IOTasks
-import io.xol.chunkstories.world.io.IOTasksImmediate
 
 class WorldTool @Throws(WorldLoadingException::class)
 constructor(gameContext: GameContext, info: WorldInfo, folder: File, immediateIO: Boolean) : WorldImplementation(gameContext, info, null, folder), WorldMaster {
@@ -51,15 +50,8 @@ constructor(gameContext: GameContext, info: WorldInfo, folder: File, immediateIO
         get() = throw UnsupportedOperationException("getPlayers")
 
     init {
-
-        if (immediateIO)
-            ioHandler = IOTasksImmediate(this)
-        else {
-            // Normal IO.
-            ioHandler = IOTasks(this)
-            ioHandler.start()
-        }
-        // ioHandler.start();
+        ioHandler = IOTasks(this)
+        ioHandler.start()
     }
 
 

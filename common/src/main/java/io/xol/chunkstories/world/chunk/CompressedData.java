@@ -43,13 +43,9 @@ public class CompressedData {
 		f4st.put(voxelCompressedData);
 		f4st.flip();
 
-		// System.out.println(f4st);
-
 		ByteBuffer t3mp = MemoryUtil.memAlloc(32 * 32 * 32 * 4);
 		try {
 			localDecompressor.get().decompress(f4st, t3mp);
-
-			// System.out.println(t3mp);
 
 			t3mp.flip();
 

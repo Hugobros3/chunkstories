@@ -12,7 +12,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import io.xol.chunkstories.api.workers.TaskExecutor;
-import io.xol.chunkstories.world.region.RegionImplementation;
+import io.xol.chunkstories.world.storage.RegionImplementation;
 
 public class IOTaskSaveRegion extends IOTask {
 	RegionImplementation region;
@@ -23,20 +23,20 @@ public class IOTaskSaveRegion extends IOTask {
 
 	@Override
 	public boolean task(TaskExecutor taskExecutor) {
-		region.handler.savingOperations.incrementAndGet();
+		region.getHandler().savingOperations.incrementAndGet();
 
 		// First compress all loaded chunks !
 		region.compressAll();
 
 		try {
 			// Create the necessary directory structure if needed
-			region.file.getParentFile().mkdirs();
+			region.getFile().getParentFile().mkdirs();
 
 			// Create the output stream
-			FileOutputStream outputFileStream = new FileOutputStream(region.handler.file);
+			FileOutputStream outputFileStream = new FileOutputStream(region.getHandler().file);
 			DataOutputStream dos = new DataOutputStream(outputFileStream);
 
-			region.handler.save(dos);
+			region.getHandler().save(dos);
 
 			outputFileStream.close();
 		} catch (FileNotFoundException e) {
@@ -46,10 +46,11 @@ public class IOTaskSaveRegion extends IOTask {
 		}
 
 		// Let go
-		this.region.handler.savingOperations.decrementAndGet();
+		this.region.getHandler().savingOperations.decrementAndGet();
+		this.region.whenSavingDone();
 
-		synchronized (region.file) {
-			region.file.notifyAll();
+		synchronized (region.getFile()) {
+			region.getFile().notifyAll();
 		}
 		return true;
 	}

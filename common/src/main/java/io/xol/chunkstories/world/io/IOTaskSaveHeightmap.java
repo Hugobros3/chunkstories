@@ -10,6 +10,7 @@ import java.io.FileOutputStream;
 import java.nio.ByteBuffer;
 
 import io.xol.chunkstories.api.workers.TaskExecutor;
+import io.xol.chunkstories.api.world.heightmap.Heightmap;
 import io.xol.chunkstories.world.heightmap.HeightmapImplementation;
 
 public class IOTaskSaveHeightmap extends IOTask {
@@ -22,13 +23,13 @@ public class IOTaskSaveHeightmap extends IOTask {
 	@Override
 	public boolean task(TaskExecutor taskExecutor) {
 		try {
-			if (!heightmap.isLoaded())
-				return true;
+			if (!(heightmap.getState() instanceof Heightmap.State.Available))
+				throw new RuntimeException("Illegal state: You can't save a heightmap in the ");
 
-			heightmap.handler.getParentFile().mkdirs();
-			if (!heightmap.handler.exists())
-				heightmap.handler.createNewFile();
-			FileOutputStream out = new FileOutputStream(heightmap.handler);
+			heightmap.getFile().getParentFile().mkdirs();
+			if (!heightmap.getFile().exists())
+				heightmap.getFile().createNewFile();
+			FileOutputStream out = new FileOutputStream(heightmap.getFile());
 
 			int[] heights = heightmap.getHeightData();
 			int[] ids = heightmap.getVoxelData();
@@ -38,7 +39,7 @@ public class IOTaskSaveHeightmap extends IOTask {
 			for (int i = 0; i < 256 * 256; i++)
 				writeMe.putInt(heights[i]);
 
-			byte[] compressed = HeightmapImplementation.compressor.compress(writeMe.array());
+			byte[] compressed = HeightmapImplementation.Companion.getCompressor().compress(writeMe.array());
 
 			int compressedSize = compressed.length;
 
@@ -50,7 +51,7 @@ public class IOTaskSaveHeightmap extends IOTask {
 			for (int i = 0; i < 256 * 256; i++)
 				writeMe.putInt(ids[i]);
 
-			compressed = HeightmapImplementation.compressor.compress(writeMe.array());
+			compressed = HeightmapImplementation.Companion.getCompressor().compress(writeMe.array());
 			compressedSize = compressed.length;
 
 			size = ByteBuffer.allocate(4).putInt(compressedSize).array();

@@ -43,7 +43,7 @@ public class WorkerThread extends Thread implements TaskExecutor {
 
 			// Depending on the result we either reschedule the task or decrement the
 			// counter
-			if (result == false)
+			if (!result)
 				pool.rescheduleTask(task);
 			else
 				pool.tasksQueueSize.decrementAndGet();

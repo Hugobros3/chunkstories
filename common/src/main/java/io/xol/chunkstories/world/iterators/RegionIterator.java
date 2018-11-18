@@ -8,7 +8,7 @@ package io.xol.chunkstories.world.iterators;
 
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunksIterator;
-import io.xol.chunkstories.world.region.RegionImplementation;
+import io.xol.chunkstories.world.storage.RegionImplementation;
 
 /**
  * Iterates over a Region

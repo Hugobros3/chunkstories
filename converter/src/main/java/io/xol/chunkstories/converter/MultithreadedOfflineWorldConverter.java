@@ -147,7 +147,7 @@ public class MultithreadedOfflineWorldConverter extends OfflineWorldConverter {
 								.floor(((double) minecraftChunksImported / (double) minecraftChunksToImport) * 100);
 
 						if (completion >= 100.0 || (System.currentTimeMillis() - lastPercentageShow > 5000)) {
-							verbose(completion + "% ... (" + csWorld.getRegionsHolder().countChunks()
+							verbose(completion + "% ... (" + csWorld.getRegionsStorage().countChunks()
 									+ " chunks loaded ) using " + Runtime.getRuntime().freeMemory() / 1024 / 1024 + "/"
 									+ Runtime.getRuntime().maxMemory() / 1024 / 1024 + "Mb ");
 							lastPercentageShow = System.currentTimeMillis();

@@ -17,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import io.xol.chunkstories.world.storage.ChunkHolderImplementation;
 import org.joml.Vector3dc;
 
 import io.xol.chunkstories.api.Location;
@@ -46,7 +47,7 @@ import io.xol.chunkstories.util.concurrency.SimpleLock;
 import io.xol.chunkstories.voxel.components.CellComponentsHolder;
 import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.WorldTool;
-import io.xol.chunkstories.world.region.RegionImplementation;
+import io.xol.chunkstories.world.storage.RegionImplementation;
 
 import javax.annotation.Nonnull;
 
@@ -80,12 +81,12 @@ public class CubicChunk implements Chunk {
 	@Nonnull
 	public ChunkRenderingData meshData;
 
-	protected final Map<Integer, CellComponentsHolder> allCellComponents = new HashMap<Integer, CellComponentsHolder>();
-	protected final Set<Entity> localEntities = ConcurrentHashMap.newKeySet();
+	public final Map<Integer, CellComponentsHolder> allCellComponents = new HashMap<Integer, CellComponentsHolder>();
+	public final Set<Entity> localEntities = ConcurrentHashMap.newKeySet();
 
 	//TODO use semaphores/RW locks
-	protected final SimpleLock componentsLock = new SimpleLock();
-	protected final SimpleLock entitiesLock = new SimpleLock();
+	public final SimpleLock componentsLock = new SimpleLock();
+	public final SimpleLock entitiesLock = new SimpleLock();
 
 	private Semaphore chunkDataArrayCreation = new Semaphore(1);
 
@@ -151,7 +152,7 @@ public class CubicChunk implements Chunk {
 							} else {
 								// Hope for the best
 								// System.out.println("called pull on "+component.getClass());
-								component.pull(holder.getRegion().handler, dias);
+								component.pull(holder.getRegion().getHandler(), dias);
 							}
 
 							dias.reset();
@@ -168,7 +169,7 @@ public class CubicChunk implements Chunk {
 					// Read entities until we hit -1
 					Entity entity = null;
 					do {
-						entity = EntitySerializer.readEntityFromStream(dis, holder.getRegion().handler, world);
+						entity = EntitySerializer.readEntityFromStream(dis, holder.getRegion().getHandler(), world);
 						if (entity != null) {
 							this.addEntity(entity);
 							world.addEntity(entity);
@@ -232,7 +233,7 @@ public class CubicChunk implements Chunk {
 			int sunlight = 0;
 			int groundHeight = world.getRegionsSummariesHolder().getHeightAtWorldCoordinates(chunkX * 32 + x,
 					chunkZ * 32 + z);
-			if (groundHeight < y + chunkY * 32 && groundHeight != Heightmap.NO_DATA)
+			if (groundHeight < y + chunkY * 32 && groundHeight != Heightmap.Companion.getNO_DATA())
 				sunlight = 15;
 
 			return VoxelFormat.format(0, 0, sunlight, 0);
@@ -414,7 +415,7 @@ public class CubicChunk implements Chunk {
 			PacketVoxelUpdate packet = new PacketVoxelUpdate(
 					new ActualChunkVoxelContext(chunkX * 32 + x, chunkY * 32 + y, chunkZ * 32 + z, raw_data));
 
-			Iterator<WorldUser> pi = this.chunkHolder.users.iterator();
+			Iterator<WorldUser> pi = this.chunkHolder.getUsers().iterator();
 			while (pi.hasNext()) {
 				WorldUser user = pi.next();
 				if (!(user instanceof RemotePlayer))

@@ -11,7 +11,7 @@ import java.util.Iterator;
 import io.xol.chunkstories.api.world.chunk.Chunk;
 import io.xol.chunkstories.api.world.chunk.ChunksIterator;
 import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.chunkstories.world.region.RegionImplementation;
+import io.xol.chunkstories.world.storage.RegionImplementation;
 
 /**
  * Iterates over an entire world and gives all *loaded* chunks of it
@@ -22,7 +22,7 @@ public class WorldChunksIterator implements ChunksIterator {
 	ChunksIterator currentRegionChunksIterator;
 
 	public WorldChunksIterator(WorldImplementation world) {
-		regionsIterator = world.getRegionsHolder().internalGetLoadedRegions().iterator();
+		regionsIterator = world.getRegionsStorage().internalGetLoadedRegions().iterator();
 	}
 
 	@Override

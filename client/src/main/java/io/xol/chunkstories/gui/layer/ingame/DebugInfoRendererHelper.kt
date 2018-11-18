@@ -10,8 +10,6 @@ import io.xol.chunkstories.graphics.vulkan.resources.VmaAllocator
 import io.xol.chunkstories.graphics.vulkan.systems.world.VulkanCubesDrawer
 import io.xol.chunkstories.util.VersionInfo
 import io.xol.chunkstories.world.WorldImplementation
-import io.xol.chunkstories.world.chunk.ChunkHolderImplementation
-import io.xol.chunkstories.world.chunk.CubicChunk
 
 class DebugInfoRendererHelper(ingameLayer: IngameLayer) {
     val gui = ingameLayer.gui
@@ -33,21 +31,22 @@ class DebugInfoRendererHelper(ingameLayer: IngameLayer) {
         debugLine("Chunk Stories ${VersionInfo.version} running on the ${window.graphicsBackend.javaClass.simpleName}")
         debugLine("${client.tasks.submittedTasks()} + ${client.tasks}")
 
-        val manualChunksCount = world.regionsHolder.internalGetLoadedRegions().sumBy { it.loadedChunks.size }
-
-        if(world.regionsHolder.internalGetLoadedRegions().toSet().size != world.regionsHolder.internalGetLoadedRegions().size) {
+        /*val manualChunksCount = world.regionsStorage.internalGetLoadedRegions().sumBy { it.loadedChunks.size }
+        if(world.regionsStorage.internalGetLoadedRegions().toSet().size != world.regionsStorage.internalGetLoadedRegions().size)
             println("DUPLICATED REGION OMG")
-        }
+        val globalUserCount = world.regionsStorage.internalGetLoadedRegions().sumBy { it.loadedChunks.sumBy { it.holder().countUsers() } }
+        val zombieChunksCount = world.regionsStorage.internalGetLoadedRegions().sumBy { it.loadedChunks.count { it.holder().countUsers() == 0 } }
+        debugLine("Chunk count sanitization: atomic counter: ${CubicChunk.chunksCounter} registeredUsers: ${ChunkHolderImplementation.globalRegisteredUsers} manualCount: $manualChunksCount users atomic counter $globalUserCount zombies: #FF0000$zombieChunksCount")
+*/
 
-        val globalUserCount = world.regionsHolder.internalGetLoadedRegions().sumBy { it.loadedChunks.sumBy { it.holder().countUsers() } }
-        val zombieChunksCount = world.regionsHolder.internalGetLoadedRegions().sumBy { it.loadedChunks.count { it.holder().countUsers() == 0 } }
+        debugLine("RAM usage: ${Runtime.getRuntime().freeMemory() / 1024 / 1024} mb free")
+        debugLine("VRAM usage: ${VmaAllocator.allocations} allocations totalizing ${VmaAllocator.allocatedBytes.get()/1024/1024}mb ")
 
-        debugLine("VMA allocations: ${VmaAllocator.allocations} total ${VmaAllocator.allocatedBytes.get()/1024/1024}mb ")
 
-        debugLine("chunks counter: ${CubicChunk.chunksCounter} chunksR: ${ChunkHolderImplementation.globalRegisteredUsers} manualCount: $manualChunksCount users $globalUserCount zombies: #FF0000$zombieChunksCount")
-        debugLine("#FF0000Rendering performance : ${swapchain.fps.toInt()}FPS | ${swapchain.lastFrametime/1000000}ms #00FFFFSimulation performance : ${world.gameLogic.simulationFps}")
-        debugLine("Cubes drawn: ${VulkanCubesDrawer.totalCubesDrawn} within ${VulkanCubesDrawer.totalBuffersUsed} vertex buffers")
-        debugLine("World info : ${world.allLoadedChunks.count()} chunks loaded, ${world.regionsHolder.stats}")
+        val performanceMetrics = swapchain.performanceCounter
+        debugLine("#FF0000Rendering: ${performanceMetrics.lastFrametimeNs/1000000}ms fps: ${performanceMetrics.avgFps.toInt()} (min ${performanceMetrics.minFps.toInt()}, max ${performanceMetrics.maxFps.toInt()}) #00FFFFSimulation performance : ${world.gameLogic.simulationFps}")
+        debugLine("Vertices drawn: ${VulkanCubesDrawer.totalCubesDrawn} within ${VulkanCubesDrawer.totalBuffersUsed} vertex buffers")
+        debugLine("World info : ${world.allLoadedChunks.count()} chunks loaded, ${world.regionsStorage.stats}")
 
         val playerEntity = client.player.controlledEntity
         if(playerEntity != null ) {

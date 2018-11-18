@@ -15,6 +15,7 @@ data class Frame(val frameNumber: Int,
                  val renderCanBeginSemaphore: VkSemaphore,
                  val renderFinishedSemaphore: VkSemaphore,
                  val renderFinishedFence: VkFence,
+                 /** Time when started, in nanoseconds */
                  val started: Long) {
 
     /** When this frame has completed execution on the GPU, these tasks will be called */

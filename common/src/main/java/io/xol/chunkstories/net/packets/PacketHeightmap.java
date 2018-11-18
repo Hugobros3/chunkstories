@@ -32,7 +32,7 @@ public class PacketHeightmap extends PacketWorldStreaming {
 	}
 
 	public PacketHeightmap(HeightmapImplementation summary) {
-		super(summary.world);
+		super(summary.getWorld());
 		this.summary = summary;
 	}
 
@@ -53,7 +53,7 @@ public class PacketHeightmap extends PacketWorldStreaming {
 		compressMe.flip();
 		byte[] unCompressed = new byte[compressMe.remaining()];
 		compressMe.get(unCompressed);
-		byte[] compressedData = HeightmapImplementation.compressor.compress(unCompressed);
+		byte[] compressedData = HeightmapImplementation.Companion.getCompressor().compress(unCompressed);
 		out.writeInt(compressedData.length);
 		out.write(compressedData);
 	}

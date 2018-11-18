@@ -23,8 +23,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 import io.xol.chunkstories.api.plugin.ServerPluginManager
 import io.xol.chunkstories.api.server.Server
 import io.xol.chunkstories.api.util.configuration.Configuration
-import io.xol.chunkstories.api.world.World
-import io.xol.chunkstories.api.world.WorldInfo
 import io.xol.chunkstories.world.*
 import io.xol.chunkstories.world.WorldLoadingException
 import org.fusesource.jansi.AnsiConsole
@@ -32,16 +30,12 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 import io.xol.chunkstories.api.content.Content
-import io.xol.chunkstories.api.entity.Entity
 import io.xol.chunkstories.api.player.Player
 import io.xol.chunkstories.api.server.PermissionsManager
-import io.xol.chunkstories.api.server.UserPrivileges
 import io.xol.chunkstories.api.util.ColorsTools
-import io.xol.chunkstories.api.util.IterableIterator
 import io.xol.chunkstories.api.workers.Tasks
 import io.xol.chunkstories.content.GameContentStore
 import io.xol.chunkstories.content.GameDirectory
-import io.xol.chunkstories.plugin.DefaultPluginManager
 import io.xol.chunkstories.server.commands.DedicatedServerConsole
 import io.xol.chunkstories.server.commands.InstallServerCommands
 import io.xol.chunkstories.server.net.ClientsManager
@@ -263,7 +257,7 @@ class DedicatedServer internal constructor(coreContentLocation: File, modsString
         txt += " | fps:" + world.gameLogic.simulationFps
         txt += " | ent:$ec"
         txt += " | players:" + this.handler.playersNumber + "/" + this.handler.maxClients
-        txt += (" | lc:" + this.world.regionsHolder.stats + " ls:"
+        txt += (" | lc:" + this.world.regionsStorage.stats + " ls:"
                 + this.world.regionsSummariesHolder.countSummaries())
         txt += " | ram:$usedRam/$maxRam"
         txt += " | " + this.workers.toShortString()
