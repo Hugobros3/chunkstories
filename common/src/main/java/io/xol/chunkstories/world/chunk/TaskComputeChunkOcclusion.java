@@ -15,32 +15,9 @@ import com.carrotsearch.hppc.IntDeque;
 import io.xol.chunkstories.api.workers.Task;
 import io.xol.chunkstories.api.workers.TaskExecutor;
 
-public class TaskComputeChunkOcclusion extends Task {
+public class TaskComputeChunkOcclusion {
 
-	final CubicChunk chunk;
-
-	public TaskComputeChunkOcclusion(CubicChunk chunk) {
-		this.chunk = chunk;
-	}
-
-	@Override
-	protected boolean task(TaskExecutor taskExecutor) {
-		try {
-			// Lock this
-			chunk.occlusion.onlyOneUpdateAtATime.lock();
-			int updatesNeeded = chunk.occlusion.unbakedUpdates.get();
-			if (updatesNeeded == 0)
-				return true;
-
-			chunk.occlusion.occlusionSides = computeOcclusionTable();
-
-			// Remove however many updates were pending
-			chunk.occlusion.unbakedUpdates.addAndGet(-updatesNeeded);
-		} finally {
-			chunk.occlusion.onlyOneUpdateAtATime.unlock();
-		}
-		return true;
-	}
+	final CubicChunk chunk = null;
 
 	static ThreadLocal<IntDeque> occlusionFaces = new ThreadLocal<IntDeque>() {
 		@Override
@@ -75,11 +52,7 @@ public class TaskComputeChunkOcclusion extends Task {
 	}
 
 	private boolean[][] computeOcclusionTable() {
-		// System.out.println("Computing occlusion table ...");
 		boolean[][] occlusionSides = new boolean[6][6];
-
-		if (true)
-			return occlusionSides;
 
 		IntDeque deque = occlusionFaces.get();
 		deque.clear();
@@ -87,7 +60,6 @@ public class TaskComputeChunkOcclusion extends Task {
 		boolean mask[] = masks.get();
 		boolfill(mask, false);
 
-		// boolean[] mask = new boolean[32768];
 		int x = 0, y = 0, z = 0;
 		int completion = 0;
 		int p = 0;

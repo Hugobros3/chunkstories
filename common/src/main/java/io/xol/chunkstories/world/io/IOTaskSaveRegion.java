@@ -39,8 +39,6 @@ public class IOTaskSaveRegion extends IOTask {
 			region.getHandler().save(dos);
 
 			outputFileStream.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

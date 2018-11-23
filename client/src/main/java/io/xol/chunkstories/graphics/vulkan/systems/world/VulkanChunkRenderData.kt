@@ -1,7 +1,11 @@
 package io.xol.chunkstories.graphics.vulkan.systems.world
 
+import assimp.CAN
+import io.xol.chunkstories.api.util.concurrency.Fence
+import io.xol.chunkstories.api.workers.Task
 import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import io.xol.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
+import io.xol.chunkstories.util.concurrency.TrivialFence
 import io.xol.chunkstories.world.chunk.ChunkRenderingData
 import io.xol.chunkstories.world.chunk.CubicChunk
 import java.util.concurrent.Semaphore
@@ -56,16 +60,19 @@ class VulkanChunkRenderData(val backend: VulkanGraphicsBackend, chunk: CubicChun
     var task: GenerateChunkDataTask? = null
 
     //TODO schedule this shit better
-    override fun incrementPendingUpdates() {
+    override fun requestUpdate() {
         launchTask()
     }
 
-    fun launchTask() {
-        if ((task != null && !(task?.isCancelled == true || task?.isDone == true)))
-            return
+    override fun requestUpdateAndGetFence() = launchTask() ?: TrivialFence()
+
+    fun launchTask() : GenerateChunkDataTask? {
+        if ((task != null && !(task?.state == Task.State.DONE || task?.state == Task.State.CANCELLED)))
+            return null
 
         task = GenerateChunkDataTask(backend, chunk)
         backend.window.client.tasks.scheduleTask(task)
+        return task
     }
 
     companion object {

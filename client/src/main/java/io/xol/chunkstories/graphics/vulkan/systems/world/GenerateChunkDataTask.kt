@@ -5,6 +5,7 @@ import io.xol.chunkstories.api.voxel.VoxelFormat
 import io.xol.chunkstories.api.voxel.VoxelSide
 import io.xol.chunkstories.api.workers.Task
 import io.xol.chunkstories.api.workers.TaskExecutor
+import io.xol.chunkstories.api.world.chunk.ChunkHolder
 import io.xol.chunkstories.graphics.common.UnitCube
 import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import io.xol.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
@@ -29,7 +30,7 @@ class GenerateChunkDataTask(val backend: VulkanGraphicsBackend, val chunk: Cubic
                 chunk.world.peekRaw(x2 + chunk.chunkX * 32, y2 + chunk.chunkY * 32, z2 + chunk.chunkZ * 32)
 
     override fun task(taskExecutor: TaskExecutor?): Boolean {
-        if (!chunk.holder().isChunkLoaded || chunk.holder().region.isUnloaded)
+        if (chunk.holder().state !is ChunkHolder.State.Available)
             return true
 
         val neighborsPresent = VulkanChunkRenderData.neighborsIndexes.count { (x, y, z) ->
@@ -43,7 +44,7 @@ class GenerateChunkDataTask(val backend: VulkanGraphicsBackend, val chunk: Cubic
         var count = 0
         val vertexBuffer: VulkanVertexBuffer?
 
-        val chunkDataRef = chunk.chunkVoxelData
+        val chunkDataRef = chunk.voxelDataArray
         if (chunk.isAirChunk || chunkDataRef == null) {
             vertexBuffer = null
         } else {

@@ -55,91 +55,73 @@ public class TaskConvertMcChunk extends Task {
 	@Override
 	protected boolean task(TaskExecutor taskExecutor) {
 
-		ConverterWorkerThread cwt = (ConverterWorkerThread) taskExecutor;
-		WorldTool csWorld = cwt.world();
+		ConverterWorkerThread thread = (ConverterWorkerThread) taskExecutor;
+		WorldTool csWorld = thread.world();
 
-		// Is it within our borders ?
+		try {
+			// Tries loading the Minecraft chunk
+			if (minecraftChunk != null) {
+				// If it succeed, we first require to load the corresponding chunkstories stuff
 
-		// if (chunkStoriesCurrentChunkX >= 0 && chunkStoriesCurrentChunkX <
-		// cwt.size().sizeInChunks * 32 && chunkStoriesCurrentChunkZ >= 0 &&
-		// chunkStoriesCurrentChunkZ < cwt.size().sizeInChunks * 32)
-		{
-			// Load the chunk
-			// MinecraftChunk minecraftChunk = null;
-			try {
-				// Tries loading the Minecraft chunk
+				// Ignore the summaries for now
+				CompoundFence compoundFence = new CompoundFence();
 
-				if (minecraftChunk != null) {
-					// If it succeed, we first require to load the corresponding chunkstories stuff
+				// Then the chunks
+				for (int y = 0; y < OfflineWorldConverter.mcWorldHeight; y += 32) {
+					ChunkHolder holder = csWorld.acquireChunkHolderWorldCoordinates(thread, chunkStoriesCurrentChunkX, y, chunkStoriesCurrentChunkZ);
+					ChunkHolder.State state = holder.getState();
+					if(state instanceof ChunkHolder.State.Loading)
+						compoundFence.add(((ChunkHolder.State.Loading) state).getFence());
+					//TODO sync compoundFence.add(holder.waitForLoading());
 
-					// Ignore the summaries for now
-
-					/*
-					 * Heightmap summary =
-					 * csWorld.getRegionsSummariesHolder().acquireRegionSummaryWorldCoordinates(
-					 * this, chunkStoriesCurrentChunkX, chunkStoriesCurrentChunkZ); if(summary !=
-					 * null) registeredCS_Summaries.add(summary);
-					 */
-
-					CompoundFence loadRelevantData = new CompoundFence();
-
-					// Then the chunks
-					for (int y = 0; y < OfflineWorldConverter.mcWorldHeight; y += 32) {
-						ChunkHolder holder = csWorld.acquireChunkHolderWorldCoordinates(cwt, chunkStoriesCurrentChunkX,
-								y, chunkStoriesCurrentChunkZ);
-						if (holder != null) {
-							loadRelevantData.add(holder.waitForLoading());
-
-							if (cwt.registeredCS_Holders.add(holder))
-								cwt.chunksAcquired++;
-						}
-					}
-
-					// Wait for them to actually load
-					loadRelevantData.traverse();
-
-					for (int x = 0; x < 16; x++)
-						for (int z = 0; z < 16; z++)
-							for (int y = 0; y < OfflineWorldConverter.mcWorldHeight; y++) {
-								// Translate each block
-								int mcId = minecraftChunk.getBlockID(x, y, z) & 0xFFF;
-								byte meta = (byte) (minecraftChunk.getBlockMeta(x, y, z) & 0xF);
-
-								// Ignore air blocks
-								if (mcId != 0) {
-									Mapper mapper = this.mappers.getMapper(mcId, meta);
-									if (mapper == null)
-										continue;
-
-									if (mapper instanceof NonTrivialMapper) {
-										((NonTrivialMapper) mapper).output(csWorld, chunkStoriesCurrentChunkX + x, y,
-												chunkStoriesCurrentChunkZ + z, mcId, meta, minecraftRegion,
-												minecraftCurrentChunkXinsideRegion, minecraftCuurrentChunkZinsideRegion,
-												x, y, z);
-									} else {
-										FutureCell future = new FutureCell(csWorld, chunkStoriesCurrentChunkX + x, y,
-												chunkStoriesCurrentChunkZ + z, csWorld.getContent().voxels().air());
-
-										// Directly set trivial blocks
-										mapper.output(mcId, meta, future);
-										if (!future.getVoxel().isAir())
-											csWorld.pokeSimpleSilently(future);
-									}
-
-								}
-							}
-
-					// Converts external data such as signs
-					// SpecialBlocksHandler.processAdditionalStuff(minecraftChunk, csWorld,
-					// chunkStoriesCurrentChunkX, 0, chunkStoriesCurrentChunkZ);
+					if (thread.aquiredChunkHolders.add(holder))
+						thread.chunksAcquired++;
 				}
-			} catch (Exception e) {
-				cwt.converter()
-						.verbose("Issue with chunk " + minecraftCurrentChunkXinsideRegion + " "
-								+ minecraftCuurrentChunkZinsideRegion + " of region " + minecraftRegionX + " "
-								+ minecraftRegionZ + ".");
-				e.printStackTrace();
+
+				// Wait for them to actually load
+				compoundFence.traverse();
+
+				for (int x = 0; x < 16; x++)
+					for (int z = 0; z < 16; z++)
+						for (int y = 0; y < OfflineWorldConverter.mcWorldHeight; y++) {
+							// Translate each block
+							int mcId = minecraftChunk.getBlockID(x, y, z) & 0xFFF;
+							byte meta = (byte) (minecraftChunk.getBlockMeta(x, y, z) & 0xF);
+
+							// Ignore air blocks
+							if (mcId != 0) {
+								Mapper mapper = this.mappers.getMapper(mcId, meta);
+								if (mapper == null)
+									continue;
+
+								if (mapper instanceof NonTrivialMapper) {
+									((NonTrivialMapper) mapper).output(csWorld, chunkStoriesCurrentChunkX + x, y,
+											chunkStoriesCurrentChunkZ + z, mcId, meta, minecraftRegion,
+											minecraftCurrentChunkXinsideRegion, minecraftCuurrentChunkZinsideRegion,
+											x, y, z);
+								} else {
+									FutureCell future = new FutureCell(csWorld, chunkStoriesCurrentChunkX + x, y,
+											chunkStoriesCurrentChunkZ + z, csWorld.getContent().voxels().air());
+
+									// Directly set trivial blocks
+									mapper.output(mcId, meta, future);
+									if (!future.getVoxel().isAir())
+										csWorld.pokeSimpleSilently(future);
+								}
+
+							}
+						}
+
+				// Converts external data such as signs
+				// SpecialBlocksHandler.processAdditionalStuff(minecraftChunk, csWorld,
+				// chunkStoriesCurrentChunkX, 0, chunkStoriesCurrentChunkZ);
 			}
+		} catch (Exception e) {
+			thread.converter()
+					.verbose("Issue with chunk " + minecraftCurrentChunkXinsideRegion + " "
+							+ minecraftCuurrentChunkZinsideRegion + " of region " + minecraftRegionX + " "
+							+ minecraftRegionZ + ".");
+			e.printStackTrace();
 		}
 
 		return true;

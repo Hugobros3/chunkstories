@@ -16,8 +16,6 @@ import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.generator.WorldGenerator;
 import io.xol.chunkstories.api.world.heightmap.Heightmap;
 import io.xol.chunkstories.world.chunk.ChunkLightBaker;
-import io.xol.chunkstories.world.chunk.CubicChunk;
-import io.xol.chunkstories.world.chunk.TaskLightChunk;
 
 public class TaskGenerateWorldThinSlice extends Task implements WorldUser {
 
@@ -76,10 +74,7 @@ public class TaskGenerateWorldThinSlice extends Task implements WorldUser {
 
 		// Let there be light
 		for (int chunkY = 0; chunkY < maxGenerationHeightInChunks; chunkY++) {
-			((ChunkLightBaker) holders[chunkY].getChunk().lightBaker()).unbakedUpdates.incrementAndGet();
-
-			TaskLightChunk lighter = new TaskLightChunk((CubicChunk) holders[chunkY].getChunk(), true);
-			lighter.run(taskExecutor); // and there was light
+			((ChunkLightBaker) holders[chunkY].getChunk().lightBaker()).hackyUpdateDirect();
 		}
 
 		// Let go the world data now

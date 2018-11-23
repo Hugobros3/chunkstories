@@ -17,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import io.xol.chunkstories.world.chunk.deriveddata.ChunkOcclusionProperty;
 import io.xol.chunkstories.world.storage.ChunkHolderImplementation;
 import org.joml.Vector3dc;
 
@@ -66,13 +67,13 @@ public class CubicChunk implements Chunk {
 	final protected int uuid;
 
 	// Actual data holding here
-	public int[] chunkVoxelData = null;
+	public int[] voxelDataArray = null;
 
 	// Count unsaved edits atomically, fancy :]
-	public final AtomicInteger compr_uncomittedBlockModifications = new AtomicInteger();
+	public final AtomicInteger compressionUncommitedModifications = new AtomicInteger();
 
-	public final ChunkOcclusionUpdater occlusion = new ChunkOcclusionUpdater(this);
-	public final ChunkLightBaker lightBaker;
+	public final ChunkOcclusionManager occlusion;
+	public final ChunkLightBaker lightingManager;
 
 	// Set to true after destroy()
 	public boolean isDestroyed = false;
@@ -107,11 +108,12 @@ public class CubicChunk implements Chunk {
 		this.uuid = ((chunkX << world.getWorldInfo().getSize().bitlengthOfVerticalChunksCoordinates) | chunkY) << world
 				.getWorldInfo().getSize().bitlengthOfHorizontalChunksCoordinates | chunkZ;
 
-		lightBaker = new ChunkLightBaker(this);
+		occlusion = new ChunkOcclusionProperty(this);
+		lightingManager = new ChunkLightBaker(this);
 
 		if (data != null) {
 			try {
-				this.chunkVoxelData = data.getVoxelData();
+				this.voxelDataArray = data.getVoxelData();
 
 				if (data.voxelComponentsCompressedData != null) {
 					ByteArrayInputStream bais = new ByteArrayInputStream(data.voxelComponentsCompressedData);
@@ -227,7 +229,7 @@ public class CubicChunk implements Chunk {
 		y = sanitizeCoordinate(y);
 		z = sanitizeCoordinate(z);
 
-		if (chunkVoxelData == null) {
+		if (voxelDataArray == null) {
 			// Empty chunk ?
 			// Use the heightmap to figure out wether or not that getCell should be skylit.
 			int sunlight = 0;
@@ -238,7 +240,7 @@ public class CubicChunk implements Chunk {
 
 			return VoxelFormat.format(0, 0, sunlight, 0);
 		} else {
-			return chunkVoxelData[x * 32 * 32 + y * 32 + z];
+			return voxelDataArray[x * 32 * 32 + y * 32 + z];
 		}
 	}
 
@@ -355,23 +357,23 @@ public class CubicChunk implements Chunk {
 		}
 
 		// Allocate if it makes sense
-		if (chunkVoxelData == null)
-			chunkVoxelData = atomicalyCreateInternalData();
+		if (voxelDataArray == null)
+			voxelDataArray = atomicalyCreateInternalData();
 
-		chunkVoxelData[x * 32 * 32 + y * 32 + z] = raw_data;
+		voxelDataArray[x * 32 * 32 + y * 32 + z] = raw_data;
 
 		if (newVoxel != null && !formerVoxel.equals(newVoxel))
 			newVoxel.whenPlaced(future);
 
 		// Update lightning
 		if (update)
-			lightBaker.computeLightSpread(x, y, z, cell_pre.raw_data, raw_data);
+			lightingManager.computeLightSpread(x, y, z, cell_pre.raw_data, raw_data);
 
 		// Increment the modifications counter
-		compr_uncomittedBlockModifications.incrementAndGet();
+		compressionUncommitedModifications.incrementAndGet();
 
 		// Don't spam the thread creation spawn
-		occlusion.unbakedUpdates.incrementAndGet();
+		occlusion.requestUpdate();
 
 		// Update related summary
 		if (update)
@@ -406,7 +408,7 @@ public class CubicChunk implements Chunk {
 					for (int iz = sz; iz <= ez; iz++) {
 						Chunk chunk = world.getChunk(ix, iy, iz);
 						if (chunk != null)
-							chunk.mesh().incrementPendingUpdates();
+							chunk.mesh().requestUpdate();
 					}
 		}
 
@@ -415,9 +417,7 @@ public class CubicChunk implements Chunk {
 			PacketVoxelUpdate packet = new PacketVoxelUpdate(
 					new ActualChunkVoxelContext(chunkX * 32 + x, chunkY * 32 + y, chunkZ * 32 + z, raw_data));
 
-			Iterator<WorldUser> pi = this.chunkHolder.getUsers().iterator();
-			while (pi.hasNext()) {
-				WorldUser user = pi.next();
+			for (WorldUser user : this.chunkHolder.getUsers()) {
 				if (!(user instanceof RemotePlayer))
 					continue;
 
@@ -462,22 +462,21 @@ public class CubicChunk implements Chunk {
 		chunkDataArrayCreation.acquireUninterruptibly();
 
 		// If it's STILL null
-		if (chunkVoxelData == null)
-			chunkVoxelData = new int[32 * 32 * 32];
+		if (voxelDataArray == null)
+			voxelDataArray = new int[32 * 32 * 32];
 
 		chunkDataArrayCreation.release();
 
-		return chunkVoxelData;
+		return voxelDataArray;
 	}
 
 	@Override
 	public String toString() {
-		return "[CubicChunk x:" + this.chunkX + " y:" + this.chunkY + " z:" + this.chunkZ + " air:" + isAirChunk()
-				+ " lS:" + this.lightBaker + "]";
+		return "[CubicChunk x:" + this.chunkX + " y:" + this.chunkY + " z:" + this.chunkZ + " air:" + isAirChunk() + " light:" + this.lightingManager + "]";
 	}
 
 	public boolean isAirChunk() {
-		return chunkVoxelData == null;
+		return voxelDataArray == null;
 	}
 
 	@Override
@@ -632,7 +631,7 @@ public class CubicChunk implements Chunk {
 	@Override
 	public void destroy() {
 		chunkDestructionSemaphore.acquireUninterruptibly();
-		this.lightBaker.destroy();
+		this.lightingManager.destroy();
 		this.meshData.destroy();
 		this.isDestroyed = true;
 		//chunksCounter.decrementAndGet();
@@ -670,7 +669,7 @@ public class CubicChunk implements Chunk {
 
 	@Override
 	public ChunkLightUpdater lightBaker() {
-		return lightBaker;
+		return lightingManager;
 	}
 
 	@Override

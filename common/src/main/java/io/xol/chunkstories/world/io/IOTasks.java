@@ -30,7 +30,6 @@ public class IOTasks extends Thread implements TaskExecutor {
 	protected WorldImplementation world;
 
 	protected final Deque<IOTask> tasks = new ConcurrentLinkedDeque<>();
-	// protected UniqueQueue<IOTask> tasks = new UniqueQueue<IOTask>();
 	private final Semaphore tasksCounter = new Semaphore(0);
 
 	private IOTask DIE = new IOTask() {
@@ -47,9 +46,7 @@ public class IOTasks extends Thread implements TaskExecutor {
 
 	public boolean scheduleTask(IOTask task) {
 		boolean code = tasks.add(task);
-		// if(code) {
 		tasksCounter.release();
-		// }
 		return code;
 	}
 

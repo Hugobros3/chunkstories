@@ -27,13 +27,10 @@ class IOTaskLoadRegion(private val region: RegionImplementation) : IOTask() {
                 region.handler.load(inputStream)
             } catch (e: FileNotFoundException) {
                 e.printStackTrace()
-                return true
             } catch (e: IOException) {
-                logger.warn("Error loading file" + region.handler!!.file)
+                logger.warn("Error loading file " + region.handler!!.file)
                 e.printStackTrace()
-                return true
             }
-
         }
 
         region.whenDataLoadedCallback()

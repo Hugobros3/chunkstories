@@ -26,7 +26,6 @@ import java.io.DataOutputStream
 import java.io.IOException
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.locks.ReentrantLock
 
 class ChunkHolderImplementation(override val region: RegionImplementation, override val chunkX: Int, override val chunkY: Int, override val chunkZ: Int) : ChunkHolder {
     private val uuid: Int
@@ -34,7 +33,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
     // The default state of a chunk holder is to wait for the parent region to finish it's own loading
     override var state: ChunkHolder.State = ChunkHolder.State.WaitForRegionInitialLoad
         private set
-    private val stateLock = ReentrantLock()
+    //private val stateLock = ReentrantLock()
 
     //No usersLock : we use the parent region usersLock & userCount
     override val users: MutableSet<WorldUser> = HashSet()
@@ -71,7 +70,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
 
     /** This method is called assumming the chunk is well-locked  */
     private fun compressChunkData(chunk: CubicChunk): CompressedData {
-        val changesTakenIntoAccount = chunk.compr_uncomittedBlockModifications.get()
+        val changesTakenIntoAccount = chunk.compressionUncommitedModifications.get()
 
         // Stage 1: Compress the actual voxel data
         val voxelCompressedData: ByteArray?
@@ -82,7 +81,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
             // chunk.localEntities.size() * 2048;
             val uncompressedStuff = MemoryUtil.memAlloc(uncompressedStuffBufferSize)
 
-            uncompressedStuff.asIntBuffer().put(chunk.chunkVoxelData)
+            uncompressedStuff.asIntBuffer().put(chunk.voxelDataArray)
             // uncompressedStuff.flip();
 
             val compressedStuff = MemoryUtil.memAlloc(uncompressedStuffBufferSize + 2048)
@@ -181,25 +180,32 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
 
         // Remove whatever modifications existed when the method started, this is for
         // avoiding concurrent modifications not being taken into account
-        chunk.compr_uncomittedBlockModifications.addAndGet(-changesTakenIntoAccount)
+        chunk.compressionUncommitedModifications.addAndGet(-changesTakenIntoAccount)
 
         return CompressedData(voxelCompressedData, voxelComponentsData, entityData)
     }
 
     private fun unloadChunk() {
         try {
-            stateLock.lock()
+            region.stateLock.lock()
+            //stateLock.lock()
 
-            when(state) {
-                ChunkHolder.State.WaitForRegionInitialLoad -> throw Exception("Illegal state transition: Can't unload a chunk from an early region.")
+            when (state) {
+                ChunkHolder.State.WaitForRegionInitialLoad -> {
+                    state = ChunkHolder.State.Unloaded
+                    return
+                }//throw Exception("Illegal state transition: Can't unload a chunk from an early region.")
                 ChunkHolder.State.Unloaded -> throw Exception("Illegal state transition: Can't unload an unloaded chunk.")
                 is ChunkHolder.State.Loading -> {
                     // If we had a loading request active, try to kill it
                     val task = (state as ChunkHolder.State.Loading).fence as Task
-                    if(task.tryCancel()) {
-                        //If we suceeded, we can set the state back to Unloaded and return right here.
+
+                    // If we managed to kill the task before it executes or before it could callback receiveDataAndCreate
+                    if (task.tryCancel() || state !is ChunkHolder.State.Available) {
                         state = ChunkHolder.State.Unloaded
                         return
+                    } else {
+                        println("failed to cancel task :(, resulting state is $state")
                     }
                 }
             }
@@ -235,54 +241,50 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
 
             state = ChunkHolder.State.Unloaded
         } finally {
-            stateLock.unlock()
+            region.stateLock.unlock()
+            //stateLock.unlock()
         }
     }
 
     override fun registerUser(user: WorldUser): Boolean {
         try {
-            region.usersLock.lock()
+            region.stateLock.lock()
+            //region.usersLock.lock()
+            //stateLock.lock()
 
             if (users.add(user)) {
                 region.usersCount++
                 globalRegisteredUsers.incrementAndGet()
             }
 
-            val chunk = this.chunk
+            if (state is ChunkHolder.State.Unloaded) {
+                val task = TaskLoadChunk(this)
+                state = ChunkHolder.State.Loading(task)
 
-            // If the user registering is remote, we also need to send him the data
-            if (user is RemotePlayer) {
-                if (chunk != null) {
-                    // Chunk already loaded ? Compress and send it immediately
-                    // TODO recompress chunk data each tick it's needed
-                    user.pushPacket(PacketChunkCompressedData(chunk, this.compressedData))
-                } else {
-                    // Add him to the wait list else
+                // If the user registering is remote, we also need to send him the data
+                if(user is RemotePlayer)
                     usersWaitingForIntialData.add(user)
-                }
-            }
 
-            try {
-                stateLock.lock()
+                region.world.gameContext.tasks.scheduleTask(task)
+            } else if( state is ChunkHolder.State.Available ) {
 
-               if(state is ChunkHolder.State.Unloaded) {
-                   val task = TaskLoadChunk(this)
-                   state = ChunkHolder.State.Loading(task)
-                   region.world.gameContext.tasks.scheduleTask(task)
-               }
-            } finally {
-                stateLock.unlock()
+                // If the user registering is remote, we also need to send him the data
+                if(user is RemotePlayer)
+                    user.pushPacket(PacketChunkCompressedData((state as ChunkHolder.State.Available).chunk as CubicChunk, this.compressedData))
             }
 
             return true
         } finally {
-            region.usersLock.unlock()
+            region.stateLock.unlock()
+            //region.usersLock.unlock()
+            //stateLock.unlock()
         }
     }
 
     override fun unregisterUser(user: WorldUser): Boolean {
         try {
-            region.usersLock.lock()
+            region.stateLock.lock()
+            //region.usersLock.lock()
 
             if (users.remove(user)) {
                 globalRegisteredUsers.decrementAndGet()
@@ -292,42 +294,47 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
             if (users.isEmpty()) {
                 unloadChunk() // Unload the chunk as soon as nobody holds on to it
 
-                if (region.users.isEmpty())
-                    region.internalUnload()
+                if (region.usersCount == 0)
+                    region.unload()
                 return true
             }
 
             return false
         } finally {
-            region.usersLock.unlock()
+            region.stateLock.unlock()
+            //region.usersLock.unlock()
         }
     }
 
     fun whenRegionIsAvailable() {
         try {
-            stateLock.lock()
+            //stateLock.lock()
+
+            region.stateLock.lock()
             state = ChunkHolder.State.Unloaded
 
             try {
-                region.usersLock.lock()
-                if(users.isNotEmpty()) {
+                //region.usersLock.lock()
+                if (users.isNotEmpty()) {
                     val task = TaskLoadChunk(this)
                     state = ChunkHolder.State.Loading(task)
                     region.world.gameContext.tasks.scheduleTask(task)
                 }
             } finally {
-                region.usersLock.unlock()
+                //region.usersLock.unlock()
             }
         } finally {
-            stateLock.unlock()
+            region.stateLock.unlock()
+            //stateLock.unlock()
         }
     }
 
     fun receiveDataAndCreate(data: CompressedData?) {
-        val playersToSendDataTo : List<RemotePlayer>?
+        val playersToSendDataTo: List<RemotePlayer>?
 
         try {
-            this.stateLock.lock()
+            region.stateLock.lock()
+            //this.stateLock.lock()
 
             if (state !is ChunkHolder.State.Loading) {
                 logger.error("Illegal state change: Received data but wasn't in the Loading state! (was $state)")
@@ -342,20 +349,21 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
             region.loadedChunksSet.add(chunk)
 
             try {
-                region.usersLock.lock()
-                playersToSendDataTo = if(usersWaitingForIntialData.isNotEmpty()) usersWaitingForIntialData.toList() else null
+                //region.usersLock.lock()
+                playersToSendDataTo = if (usersWaitingForIntialData.isNotEmpty()) usersWaitingForIntialData.toList() else null
                 usersWaitingForIntialData.clear()
             } finally {
-                region.usersLock.unlock()
+                //region.usersLock.unlock()
             }
 
         } finally {
-            this.stateLock.unlock()
+            region.stateLock.unlock()
+            //this.stateLock.unlock()
         }
 
-        if(playersToSendDataTo != null)
-        for (user in playersToSendDataTo)
-            user.pushPacket(PacketChunkCompressedData(chunk, data))
+        if (playersToSendDataTo != null)
+            for (user in playersToSendDataTo)
+                user.pushPacket(PacketChunkCompressedData(chunk, data))
     }
 
     override fun equals(o: Any?): Boolean {
@@ -364,6 +372,10 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
         }
 
         return false
+    }
+
+    override fun toString(): String {
+        return "ChunkHolderImplementation(region=, chunkX=$chunkX, chunkY=$chunkY, chunkZ=$chunkZ, state=${state.javaClass.simpleName}, users=${users.count()})"
     }
 
     companion object {
@@ -375,6 +387,6 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
         // LZ4 compressors & decompressors stuff
         private val factory = LZ4Factory.fastestInstance()
 
-        internal var logger = LoggerFactory.getLogger("world.chunkHolder")
+        internal var logger = LoggerFactory.getLogger("world.storage")
     }
 }

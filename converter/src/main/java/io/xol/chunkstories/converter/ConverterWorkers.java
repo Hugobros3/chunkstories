@@ -49,7 +49,7 @@ public class ConverterWorkers extends TasksPool<Task> implements Tasks {
 	}
 
 	// Virtual task the reference is used to signal threads to end.
-	Task DIE = new Task() {
+	private Task DIE = new Task() {
 
 		@Override
 		protected boolean task(TaskExecutor whoCares) {
@@ -62,8 +62,8 @@ public class ConverterWorkers extends TasksPool<Task> implements Tasks {
 
 		AtomicBoolean pleaseDrop = new AtomicBoolean(false);
 
-		Set<ChunkHolder> registeredCS_Holders = new HashSet<ChunkHolder>();
-		Set<Heightmap> registeredCS_Summaries = new HashSet<Heightmap>();
+		Set<ChunkHolder> aquiredChunkHolders = new HashSet<ChunkHolder>();
+		Set<Heightmap> aquiredHeightmaps = new HashSet<Heightmap>();
 
 		int chunksAcquired = 0;
 
@@ -119,16 +119,16 @@ public class ConverterWorkers extends TasksPool<Task> implements Tasks {
 					// for(Region region : registeredCS_Regions)
 					// region.unregisterUser(user);
 
-					for (ChunkHolder holder : registeredCS_Holders) {
+					for (ChunkHolder holder : aquiredChunkHolders) {
 						holder.unregisterUser(this);
 						chunksAcquired--;
 					}
 
-					for (Heightmap summary : registeredCS_Summaries)
+					for (Heightmap summary : aquiredHeightmaps)
 						summary.unregisterUser(this);
 
-					registeredCS_Summaries.clear();
-					registeredCS_Holders.clear();
+					aquiredHeightmaps.clear();
+					aquiredChunkHolders.clear();
 
 					// csWorld.unloadUselessData().traverse();
 					converter().verbose("Done.");
@@ -178,18 +178,18 @@ public class ConverterWorkers extends TasksPool<Task> implements Tasks {
 
 					atSignal.traverse();
 
-					ConverterWorkerThread cwt = (ConverterWorkerThread) taskExecutor;
+					ConverterWorkerThread thread = (ConverterWorkerThread) taskExecutor;
 
-					for (ChunkHolder holder : cwt.registeredCS_Holders) {
-						holder.unregisterUser(cwt);
-						cwt.chunksAcquired--;
+					for (ChunkHolder holder : thread.aquiredChunkHolders) {
+						holder.unregisterUser(thread);
+						thread.chunksAcquired--;
 					}
 
-					for (Heightmap summary : cwt.registeredCS_Summaries)
-						summary.unregisterUser(cwt);
+					for (Heightmap heightmap : thread.aquiredHeightmaps)
+						heightmap.unregisterUser(thread);
 
-					cwt.registeredCS_Summaries.clear();
-					cwt.registeredCS_Holders.clear();
+					thread.aquiredHeightmaps.clear();
+					thread.aquiredChunkHolders.clear();
 
 					done.signal();
 

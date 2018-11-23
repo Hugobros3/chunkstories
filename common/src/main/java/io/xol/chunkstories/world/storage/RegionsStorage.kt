@@ -73,9 +73,9 @@ class RegionsStorage(val world: WorldImplementation) {
 
     fun countChunks(): Int = regionsList.size
 
-    fun acquireRegion(user: WorldUser, regionX: Int, regionY: Int, regionZ: Int): RegionImplementation? {
+    fun acquireRegion(user: WorldUser, regionX: Int, regionY: Int, regionZ: Int): RegionImplementation {
         if (regionY < 0 || regionY > world.maxHeight / 256)
-            return null
+            throw Exception("Out of bounds: RegionY = $regionY is out of world bounds.")
 
         // In the special case where the user is the task that generates the map itself, acquiring the map will send us in a loop.
         // To solve this, we simply take the heightmap field from the task.
@@ -105,13 +105,15 @@ class RegionsStorage(val world: WorldImplementation) {
             return region
         } finally {
             this.regionsLock.writeLock().unlock()
-            heightmap.unregisterUser(bootStrapper)
+
+            if (user !is TaskGenerateWorldSlice)
+                heightmap.unregisterUser(bootStrapper)
         }
     }
 
-    fun acquireChunkHolder(user: WorldUser, chunkX: Int, chunkY: Int, chunkZ: Int): ChunkHolder? {
+    fun acquireChunkHolder(user: WorldUser, chunkX: Int, chunkY: Int, chunkZ: Int): ChunkHolder {
         if (chunkY < 0 || chunkY > world.maxHeight / 32)
-            return null
+            throw Exception("Out of bounds: ChunkY = $chunkY is out of world bounds.")
 
         val regionX = chunkX shr 3
         val regionY = chunkY shr 3
@@ -139,12 +141,12 @@ class RegionsStorage(val world: WorldImplementation) {
                 regionsList = regionsMap.values.toList()
             }
 
-            this.regionsLock.writeLock().unlock()
-
             return region.getChunkHolder(chunkX, chunkY, chunkZ)
         } finally {
             this.regionsLock.writeLock().unlock()
-            heightmap.unregisterUser(bootStrapper)
+
+            if (user !is TaskGenerateWorldSlice)
+                heightmap.unregisterUser(bootStrapper)
         }
     }
 

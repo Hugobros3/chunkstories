@@ -49,7 +49,7 @@ public class TaskGenerateWorldSlice extends Task implements WorldUser {
 	@Override
 	protected boolean task(TaskExecutor taskExecutor) {
 		if (!(heightmap.getState() instanceof Heightmap.State.Generating)) {
-			throw new RuntimeException("Broken assertion: We only generate world slices when the heightmap data is in the 'Generating' state !");
+			throw new RuntimeException("We only generate world slices when the heightmap data is in the 'Generating' state ! (state="+heightmap.getState()+")");
 		}
 
 		if (wave == 8) {
@@ -64,7 +64,7 @@ public class TaskGenerateWorldSlice extends Task implements WorldUser {
 			//			.warnDataHasArrived(heightmap.getRegionX(), heightmap.getRegionZ());
 			//}
 
-			this.heightmap.save().traverse();
+			//this.heightmap.save().traverse();
 			for(Region region : regions) {
 				region.unregisterUser(this);
 			}
@@ -103,9 +103,12 @@ public class TaskGenerateWorldSlice extends Task implements WorldUser {
 	}
 
 	private boolean isWorkDone() {
-		for (int i = 0; i < 8; i++)
-			if (!tasks[i].isDone())
+		for (int i = 0; i < 8; i++) {
+			if (tasks[i].getState() == State.CANCELLED)
+				throw new RuntimeException("oh boi no");
+			if (tasks[i].getState() != State.DONE)
 				return false;
+		}
 
 		return true;
 	}

@@ -600,12 +600,12 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
         return coordinate
     }
 
-    override fun acquireChunkHolderLocation(user: WorldUser, location: Location): ChunkHolder? {
+    override fun acquireChunkHolderLocation(user: WorldUser, location: Location): ChunkHolder {
         return acquireChunkHolder(user, location.x().toInt(), location.y().toInt(),
                 location.z().toInt())
     }
 
-    override fun acquireChunkHolder(user: WorldUser, chunkX: Int, chunkY: Int, chunkZ: Int): ChunkHolder? {
+    override fun acquireChunkHolder(user: WorldUser, chunkX: Int, chunkY: Int, chunkZ: Int): ChunkHolder {
         var chunkX = chunkX
         var chunkZ = chunkZ
         // Sanitation of input data
@@ -618,7 +618,7 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
         return this.regionsStorage!!.acquireChunkHolder(user, chunkX, chunkY, chunkZ)
     }
 
-    override fun acquireChunkHolderWorldCoordinates(user: WorldUser, worldX: Int, worldY: Int, worldZ: Int): ChunkHolder? {
+    override fun acquireChunkHolderWorldCoordinates(user: WorldUser, worldX: Int, worldY: Int, worldZ: Int): ChunkHolder {
         var worldX = worldX
         var worldY = worldY
         var worldZ = worldZ

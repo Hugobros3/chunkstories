@@ -257,8 +257,8 @@ class DedicatedServer internal constructor(coreContentLocation: File, modsString
         txt += " | fps:" + world.gameLogic.simulationFps
         txt += " | ent:$ec"
         txt += " | players:" + this.handler.playersNumber + "/" + this.handler.maxClients
-        txt += (" | lc:" + this.world.regionsStorage.stats + " ls:"
-                + this.world.regionsSummariesHolder.countSummaries())
+        txt += (" | lc:" + this.world.regionsStorage.regionsList.count() + " ls:"
+                + this.world.regionsSummariesHolder.all().count())
         txt += " | ram:$usedRam/$maxRam"
         txt += " | " + this.workers.toShortString()
         txt += " | ioq:" + this.world.ioHandler.size

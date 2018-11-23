@@ -29,7 +29,7 @@ class DebugInfoRendererHelper(ingameLayer: IngameLayer) {
         val swapchain = (window.graphicsBackend as VulkanGraphicsBackend).swapchain
 
         debugLine("Chunk Stories ${VersionInfo.version} running on the ${window.graphicsBackend.javaClass.simpleName}")
-        debugLine("${client.tasks.submittedTasks()} + ${client.tasks}")
+        debugLine("${client.tasks.submittedTasks()} + ${world.ioHandler.size}")
 
         /*val manualChunksCount = world.regionsStorage.internalGetLoadedRegions().sumBy { it.loadedChunks.size }
         if(world.regionsStorage.internalGetLoadedRegions().toSet().size != world.regionsStorage.internalGetLoadedRegions().size)
@@ -46,7 +46,7 @@ class DebugInfoRendererHelper(ingameLayer: IngameLayer) {
         val performanceMetrics = swapchain.performanceCounter
         debugLine("#FF0000Rendering: ${performanceMetrics.lastFrametimeNs/1000000}ms fps: ${performanceMetrics.avgFps.toInt()} (min ${performanceMetrics.minFps.toInt()}, max ${performanceMetrics.maxFps.toInt()}) #00FFFFSimulation performance : ${world.gameLogic.simulationFps}")
         debugLine("Vertices drawn: ${VulkanCubesDrawer.totalCubesDrawn} within ${VulkanCubesDrawer.totalBuffersUsed} vertex buffers")
-        debugLine("World info : ${world.allLoadedChunks.count()} chunks loaded, ${world.regionsStorage.stats}")
+        debugLine("World info : ${world.allLoadedChunks.count()} chunks loaded, ${world.regionsStorage.regionsList.count()} regions")
 
         val playerEntity = client.player.controlledEntity
         if(playerEntity != null ) {
@@ -60,8 +60,17 @@ class DebugInfoRendererHelper(ingameLayer: IngameLayer) {
             debugLine("Standing at $standingAt in ${standingIn.voxel} (solid=${standingIn.voxel?.solid}, box=${standingIn.voxel?.collisionBoxes?.getOrNull(0)})")
 
             val region = world.getRegionLocation(playerEntity.location)
-            val chunk = world.getChunkWorldCoordinates(playerEntity.location)
-            debugLine("Chunk: $chunk, region: $region")
+            val holder = region?.let {
+                val cx = playerEntity.location.x.toInt() / 32
+                val cy = playerEntity.location.y.toInt() / 32
+                val cz = playerEntity.location.z.toInt() / 32
+                it.getChunkHolder(cx, cy, cz)
+            }
+            val chunk = holder?.chunk
+
+            debugLine("region: $region")
+            debugLine("ChunkHolder: $holder")
+            debugLine("chunk: $chunk")
         }
 
         //val inp = client.inputsManager.getInputByName("forward") as Lwjgl3KeyBind

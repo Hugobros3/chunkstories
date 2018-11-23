@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import io.xol.chunkstories.api.util.IterableIterator;
 import io.xol.chunkstories.api.util.IterableIteratorWrapper;
@@ -85,9 +86,8 @@ public class CellComponentsHolder implements CellComponents {
 		return chunk.peek(getX(), getY(), getZ());
 	}
 
-	@Override
-	public IterableIterator<WorldUser> users() {
-		return chunk.holder().getChunkUsers();
+	public Set<WorldUser> users() {
+		return chunk.holder().getUsers();
 	}
 
 	public String getRegisteredComponentName(VoxelComponent component) {
