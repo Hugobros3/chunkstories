@@ -110,7 +110,7 @@ public class IOTasksMultiplayerClient extends IOTasks {
 			if (region == null)
 				return;
 			region.getChunkHolder(((PacketChunkCompressedData) packet).x, ((PacketChunkCompressedData) packet).y,
-					((PacketChunkCompressedData) packet).z).receiveDataAndCreate(((PacketChunkCompressedData) packet).data);
+					((PacketChunkCompressedData) packet).z).eventLoadFinishes(((PacketChunkCompressedData) packet).data);
 		}
 
 		// Else

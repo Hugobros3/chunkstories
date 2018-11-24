@@ -4,6 +4,7 @@ import io.xol.chunkstories.api.client.IngameClient
 import io.xol.chunkstories.api.entity.traits.serializable.TraitControllable
 import io.xol.chunkstories.api.graphics.structs.Camera
 import io.xol.chunkstories.client.InternalClientOptions
+import io.xol.chunkstories.client.ingame.LocalPlayerImplementation
 import io.xol.chunkstories.graphics.common.FaceCullingMode
 import io.xol.chunkstories.graphics.common.Primitive
 import io.xol.chunkstories.graphics.vulkan.DescriptorPool
@@ -106,7 +107,23 @@ class VulkanDebugDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         }
 
         if(client.configuration.getBooleanValue(InternalClientOptions.debugWireframe)) {
-            val world = client.world as WorldImplementation
+            val size = client.world.worldInfo.size
+
+            for(keyc in (client.player as LocalPlayerImplementation).loadingAgent.fastChunksMask) {
+                val key = keyc.value
+                val rx = (key shr (size.bitlengthOfHorizontalChunksCoordinates + size.bitlengthOfVerticalChunksCoordinates)) and size.maskForChunksCoordinates
+                val ry = (key shr (size.bitlengthOfHorizontalChunksCoordinates)) and (31)
+                val rz = (key) and size.maskForChunksCoordinates
+
+                val cp = Vector3d((rx * 32).toDouble(), (ry * 32).toDouble(), (rz * 32).toDouble())
+                val cpe = Vector3d(cp).add(32.0, 32.0, 32.0)
+
+                if(buffer.remaining() <= 4 * 3 * 2 * 4 * 3 * 5)
+                    break
+                cube(cp, cpe)
+            }
+
+            /*val world = client.world as WorldImplementation
             for (chunk in world.allLoadedChunks) {
                 val cp = Vector3d((chunk.chunkX * 32).toDouble(), (chunk.chunkY * 32).toDouble(), (chunk.chunkZ * 32).toDouble())
                 val cpe = Vector3d(cp).add(32.0, 32.0, 32.0)
@@ -114,7 +131,7 @@ class VulkanDebugDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
                 if(buffer.remaining() <= 4 * 3 * 2 * 4 * 3 * 5)
                     break
                 cube(cp, cpe)
-            }
+            }*/
         }
 
         buffer.flip()

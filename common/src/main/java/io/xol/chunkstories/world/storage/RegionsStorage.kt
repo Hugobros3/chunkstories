@@ -9,11 +9,13 @@ package io.xol.chunkstories.world.storage
 import io.xol.chunkstories.api.util.concurrency.Fence
 import io.xol.chunkstories.api.world.WorldUser
 import io.xol.chunkstories.api.world.chunk.ChunkHolder
+import io.xol.chunkstories.api.world.region.Region
 import io.xol.chunkstories.util.concurrency.CompoundFence
 import io.xol.chunkstories.util.concurrency.TrivialFence
 import io.xol.chunkstories.world.WorldImplementation
 import io.xol.chunkstories.world.chunk.CubicChunk
 import io.xol.chunkstories.world.generator.TaskGenerateWorldSlice
+import org.slf4j.LoggerFactory
 import java.util.concurrent.locks.ReentrantReadWriteLock
 
 class RegionsStorage(val world: WorldImplementation) {
@@ -39,7 +41,12 @@ class RegionsStorage(val world: WorldImplementation) {
         try {
             regionsLock.readLock().lock()
             val key = (regionX * sizeInRegions + regionZ) * heightInRegions + regionY
-            return regionsMap[key]
+            val region = regionsMap[key]
+
+            if(region?.state is Region.State.Zombie)
+                return null
+
+            return region
         } finally {
             regionsLock.readLock().unlock()
         }
@@ -50,22 +57,7 @@ class RegionsStorage(val world: WorldImplementation) {
         return holder?.getChunk(chunkX, chunkY, chunkZ)
     }
 
-    /*fun saveAll(): Fence {
-        val allRegionsFences = CompoundFence()
-        try {
-            regionsLock.readLock().lock()
-            regionsList.mapTo(allRegionsFences) { it.save() }
-            return allRegionsFences
-        } finally {
-            regionsLock.readLock().unlock()
-        }
-    }*/
-
     fun saveAll() = TrivialFence()
-
-    /*fun destroy() {
-        regionsMap.clear()
-    }*/
 
     override fun toString(): String {
         return "[RegionsHolder: " + regionsList.size + " loaded regions]"
@@ -90,6 +82,17 @@ class RegionsStorage(val world: WorldImplementation) {
 
             var region: RegionImplementation? = regionsMap[key]
             var fresh = false
+
+            if(region != null) {
+                region.stateLock.lock()
+                if(region.state is Region.State.Zombie) {
+                    //logger.debug("Region is zombie, killing it")
+                    region.stateLock.unlock()
+                    removeRegion(region)
+                    region = null
+                }
+            }
+
             if (region == null) {
                 region = RegionImplementation(world, heightmap, regionX, regionY, regionZ)
                 fresh = true
@@ -98,8 +101,15 @@ class RegionsStorage(val world: WorldImplementation) {
             val userAdded = region.registerUser(user)
 
             if (fresh) {
-                regionsMap[key] = region
+
+                //regionsMap[key] = region
+
+                if(regionsMap.putIfAbsent(key, region) != null) {
+                    throw Exception("Overwriting a sane region, wtf !")
+                }
                 regionsList = regionsMap.values.toList()
+            } else {
+                region.stateLock.unlock()
             }
 
             return region
@@ -126,8 +136,20 @@ class RegionsStorage(val world: WorldImplementation) {
         try {
             this.regionsLock.writeLock().lock()
 
-            var region: RegionImplementation? = regionsMap[key]
+            val ogRegion = regionsMap[key]
+            var region: RegionImplementation? = ogRegion
             var fresh = false
+
+            if(region != null) {
+                region.stateLock.lock()
+                if(region.state is Region.State.Zombie) {
+                    //logger.debug("Region is zombie, killing it")
+                    region.stateLock.unlock()
+                    removeRegion(region)
+                    region = null
+                }
+            }
+
             if (region == null) {
                 region = RegionImplementation(world, heightmap, regionX, regionY, regionZ)
                 fresh = true
@@ -137,8 +159,12 @@ class RegionsStorage(val world: WorldImplementation) {
             val userAdded = chunkHolder.registerUser(user)
 
             if (fresh) {
-                regionsMap[key] = region
+                if(regionsMap.putIfAbsent(key, region) != null) {
+                    throw Exception("Overwriting a sane region, wtf ! $ogRegion $region")
+                }
                 regionsList = regionsMap.values.toList()
+            } else {
+                region.stateLock.unlock()
             }
 
             return region.getChunkHolder(chunkX, chunkY, chunkZ)
@@ -155,9 +181,14 @@ class RegionsStorage(val world: WorldImplementation) {
      */
     internal fun removeRegion(region: RegionImplementation) {
         this.regionsLock.writeLock().lock()
-        val key = (region.regionX * sizeInRegions + region.regionY) * heightInRegions + region.regionZ
+        //val key = (region.regionX * sizeInRegions + region.regionY) * heightInRegions + region.regionZ
+        val key = (region.regionX * sizeInRegions + region.regionZ) * heightInRegions + region.regionY
         regionsMap.remove(key)
         regionsList = regionsMap.values.toList()
         this.regionsLock.writeLock().unlock()
+    }
+
+    companion object {
+        val logger = LoggerFactory.getLogger("world.storage")
     }
 }

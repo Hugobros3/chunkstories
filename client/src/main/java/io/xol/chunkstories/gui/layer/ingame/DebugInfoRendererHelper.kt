@@ -10,6 +10,7 @@ import io.xol.chunkstories.graphics.vulkan.resources.VmaAllocator
 import io.xol.chunkstories.graphics.vulkan.systems.world.VulkanCubesDrawer
 import io.xol.chunkstories.util.VersionInfo
 import io.xol.chunkstories.world.WorldImplementation
+import io.xol.chunkstories.world.chunk.CubicChunk
 
 class DebugInfoRendererHelper(ingameLayer: IngameLayer) {
     val gui = ingameLayer.gui
@@ -71,6 +72,10 @@ class DebugInfoRendererHelper(ingameLayer: IngameLayer) {
             debugLine("region: $region")
             debugLine("ChunkHolder: $holder")
             debugLine("chunk: $chunk")
+
+            holder?.apply {
+                debugLine("${CubicChunk.chunksCounter} history: H: ${holder.stateHistory} R: ${region.stateHistory}")
+            }
         }
 
         //val inp = client.inputsManager.getInputByName("forward") as Lwjgl3KeyBind

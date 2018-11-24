@@ -12,33 +12,26 @@ import io.xol.chunkstories.api.world.World;
 import io.xol.chunkstories.api.world.WorldUser;
 import io.xol.chunkstories.api.world.heightmap.Heightmap;
 import io.xol.chunkstories.api.world.region.Region;
+import io.xol.chunkstories.world.WorldImplementation;
 import io.xol.chunkstories.world.heightmap.HeightmapImplementation;
+import io.xol.chunkstories.world.storage.RegionImplementation;
 
 /**
  * Generates a world 'slice' (the voxel getCell data represented by a heightmap) using smaller tasks
  */
 public class TaskGenerateWorldSlice extends Task implements WorldUser {
 
-	public TaskGenerateWorldSlice(World world, Heightmap heightmap, int directionX, int directionZ) {
+	public TaskGenerateWorldSlice(WorldImplementation world, Heightmap heightmap, int directionX, int directionZ) {
 		this.world = world;
 		this.heightmap = heightmap;
-
-		//this.heightmap.registerUser(this);
-
-		// Acquire the
-		int heightInRegions = world.getWorldInfo().getSize().heightInChunks / 8;
-		this.regions = new Region[heightInRegions];
-		for(int ry = 0; ry < heightInRegions; ry++) {
-			regions[ry] = world.acquireRegion(this, heightmap.getRegionX(), ry, heightmap.getRegionZ());
-		}
 
 		this.directionX = directionX;
 		this.directionZ = directionZ;
 	}
 
-	private final World world;
+	private final WorldImplementation world;
 	public final Heightmap heightmap;
-	private final Region[] regions;
+	private RegionImplementation[] regions;
 
 	private int wave = 0;
 
@@ -46,8 +39,19 @@ public class TaskGenerateWorldSlice extends Task implements WorldUser {
 	private int directionZ;
 	private Task[] tasks;
 
+	private boolean initYet = false;
+
 	@Override
 	protected boolean task(TaskExecutor taskExecutor) {
+		if(!initYet) {
+			int heightInRegions = world.getWorldInfo().getSize().heightInChunks / 8;
+			this.regions = new RegionImplementation[heightInRegions];
+			for(int ry = 0; ry < heightInRegions; ry++) {
+				regions[ry] = world.acquireRegion(this, heightmap.getRegionX(), ry, heightmap.getRegionZ());
+			}
+			initYet = true;
+		}
+
 		if (!(heightmap.getState() instanceof Heightmap.State.Generating)) {
 			throw new RuntimeException("We only generate world slices when the heightmap data is in the 'Generating' state ! (state="+heightmap.getState()+")");
 		}
@@ -59,14 +63,11 @@ public class TaskGenerateWorldSlice extends Task implements WorldUser {
 			((HeightmapImplementation) this.heightmap).recomputeMetadata();
 
 			//TODO maybe a callback here ?
-			//if (world instanceof WorldClient) {
-			//	((WorldClient) world).getWorldRenderer().getSummariesTexturesHolder()
-			//			.warnDataHasArrived(heightmap.getRegionX(), heightmap.getRegionZ());
-			//}
+			//heightmap.whenDataAvailable ???
 
-			//this.heightmap.save().traverse();
-			for(Region region : regions) {
+			for(RegionImplementation region : regions) {
 				region.unregisterUser(this);
+				region.eventGeneratingFinishes$common_main();
 			}
 
 			return true;

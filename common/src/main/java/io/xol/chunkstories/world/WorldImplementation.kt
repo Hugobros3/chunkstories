@@ -615,7 +615,7 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
             chunkX += sizeInChunks
         if (chunkZ < 0)
             chunkZ += sizeInChunks
-        return this.regionsStorage!!.acquireChunkHolder(user, chunkX, chunkY, chunkZ)
+        return this.regionsStorage.acquireChunkHolder(user, chunkX, chunkY, chunkZ)
     }
 
     override fun acquireChunkHolderWorldCoordinates(user: WorldUser, worldX: Int, worldY: Int, worldZ: Int): ChunkHolder {
@@ -626,7 +626,7 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
         worldY = sanitizeVerticalCoordinate(worldY)
         worldZ = sanitizeHorizontalCoordinate(worldZ)
 
-        return this.regionsStorage!!.acquireChunkHolder(user, worldX / 32, worldY / 32, worldZ / 32)
+        return this.regionsStorage.acquireChunkHolder(user, worldX / 32, worldY / 32, worldZ / 32)
     }
 
     override fun isChunkLoaded(chunkX: Int, chunkY: Int, chunkZ: Int): Boolean {
@@ -670,7 +670,7 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
     }
 
     override fun acquireRegion(user: WorldUser, regionX: Int, regionY: Int, regionZ: Int): RegionImplementation? {
-        return this.regionsStorage!!.acquireRegion(user, regionX, regionY, regionZ)
+        return this.regionsStorage.acquireRegion(user, regionX, regionY, regionZ)
     }
 
     override fun acquireRegionChunkCoordinates(user: WorldUser, chunkX: Int, chunkY: Int, chunkZ: Int): RegionImplementation? {

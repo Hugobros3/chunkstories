@@ -25,13 +25,14 @@ import io.xol.chunkstories.api.world.WorldInfo
 import io.xol.chunkstories.api.world.WorldSize
 import io.xol.chunkstories.api.world.chunk.ChunkHolder
 import io.xol.chunkstories.api.world.heightmap.Heightmap
+import io.xol.chunkstories.api.world.region.Region
 import io.xol.chunkstories.world.WorldClientRemote
 
 class LocalClientLoadingAgent(private val client: Client, private val player: LocalPlayer, private val world: WorldClient) {
 
-    private val fastChunksMask = IntHashSet()
+    val fastChunksMask = IntHashSet()
 
-    private val usedChunks = HashSet<ChunkHolder>()
+    val usedChunks = HashSet<ChunkHolder>()
     private val usedRegionSummaries = HashSet<Heightmap>()
 
     private val lock = ReentrantLock()
@@ -60,15 +61,26 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
                         val size = worldInfo.size
 
                         val filteredChunkX = chunkX and size.maskForChunksCoordinates
-                        val filteredChunkY = Math2.clampi(chunkY, 0, 31)
+                        val filteredChunkY = Math2.clampi(chunkY, 0, size.sizeInChunks - 1)
                         val filteredChunkZ = chunkZ and size.maskForChunksCoordinates
 
-                        val summed = filteredChunkX shl size.bitlengthOfVerticalChunksCoordinates or filteredChunkY shl size.bitlengthOfHorizontalChunksCoordinates or filteredChunkZ
+                        val summed = (((filteredChunkX shl size.bitlengthOfVerticalChunksCoordinates) or filteredChunkY) shl size.bitlengthOfHorizontalChunksCoordinates) or filteredChunkZ
+                        //val summed2 = filteredChunkX shl size.bitlengthOfVerticalChunksCoordinates or filteredChunkY shl size.bitlengthOfHorizontalChunksCoordinates or filteredChunkZ
+                        //if(summed != summed2)
+                        //    println("fuck")
 
-                        if (fastChunksMask.contains(summed))
+                        //println(" d ${size.bitlengthOfVerticalChunksCoordinates} o ${size.bitlengthOfHorizontalChunksCoordinates}")
+
+                        if (fastChunksMask.contains(summed)) {
+                            //val chunkHolder = usedChunks.find { it.chunkX == filteredChunkX && it.chunkY == filteredChunkY && it.chunkZ == filteredChunkZ }
+                            //println("$chunkHolder + ${chunkHolder?.region}")
                             continue
+                        }
 
                         val holder = world.acquireChunkHolder(player, chunkX, chunkY, chunkZ)!!
+
+                        if(holder.region.state is Region.State.Zombie)
+                            throw Exception("WOW THIS IS NOT COOL :(((")
 
                         usedChunks.add(holder)
                         fastChunksMask.add(summed)
@@ -93,7 +105,7 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
                     val filteredChunkY = Math2.clampi(holder.chunkY, 0, 31)
                     val filteredChunkZ = holder.chunkZ and size.maskForChunksCoordinates
 
-                    val summed = filteredChunkX shl size.bitlengthOfVerticalChunksCoordinates or filteredChunkY shl size.bitlengthOfHorizontalChunksCoordinates or filteredChunkZ
+                    val summed = (((filteredChunkX shl size.bitlengthOfVerticalChunksCoordinates) or filteredChunkY) shl size.bitlengthOfHorizontalChunksCoordinates) or filteredChunkZ
 
                     fastChunksMask.remove(summed)
 
@@ -101,8 +113,7 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
                     holder.unregisterUser(player)
 
                     if (world is WorldClientRemote) {
-                        world.connection.pushPacket(PacketWorldUser.unregisterChunkPacket(world, filteredChunkX,
-                                filteredChunkY, filteredChunkZ))
+                        world.connection.pushPacket(PacketWorldUser.unregisterChunkPacket(world, filteredChunkX, filteredChunkY, filteredChunkZ))
                     }
                 }
             }
@@ -123,8 +134,7 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
 
                             if (world is WorldClientRemote) {
 
-                                world.connection
-                                        .pushPacket(PacketWorldUser.registerSummary(world, regionX, regionZ))
+                                world.connection.pushPacket(PacketWorldUser.registerSummary(world, regionX, regionZ))
                             }
                         }
                     }

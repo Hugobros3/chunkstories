@@ -11,10 +11,9 @@ import io.xol.chunkstories.api.world.WorldMaster
 import io.xol.chunkstories.api.world.WorldUser
 import io.xol.chunkstories.api.world.heightmap.Heightmap
 import io.xol.chunkstories.api.world.region.Region
+import io.xol.chunkstories.util.concurrency.TrivialFence
 import io.xol.chunkstories.world.WorldImplementation
 import io.xol.chunkstories.world.chunk.CubicChunk
-import io.xol.chunkstories.world.io.IOTaskLoadRegion
-import io.xol.chunkstories.world.io.IOTaskSaveRegion
 import io.xol.chunkstories.world.region.format.CSFRegionFile
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -30,8 +29,10 @@ class RegionImplementation(override val world: WorldImplementation, override val
     override var state: Region.State = Region.State.Zombie
         set(value) {
             field = value
+            stateHistory.add( value.javaClass.simpleName)
             //println("DEBUG: Region ${this@RegionImplementation} state set to $value")
         }
+    var stateHistory = mutableListOf<String>()
 
     /** Keeps track of the number of users of this region. Warning: this includes users of not only the region itself, but ALSO the chunks that make up this
     region. An user registered in 3 chunks for instance, will be counted three times. When this counter reaches zero, the region is unloaded.*/
@@ -39,7 +40,6 @@ class RegionImplementation(override val world: WorldImplementation, override val
     internal val usersSet: MutableSet<WorldUser> = HashSet()
     /** Externally exposed read-only copy of the users set */
     override var users: Set<WorldUser> = emptySet()
-    //val usersLock: Lock = ReentrantLock()
 
     private val chunkHolders: Array<ChunkHolderImplementation>
 
@@ -71,69 +71,56 @@ class RegionImplementation(override val world: WorldImplementation, override val
             handler = CSFRegionFile.determineVersionAndCreate(this)
 
             if (file.exists()) {
-                //assert(heightmap.state !is Heightmap.State.Generating) { "We should never have existing data if the heightmap is still generating!" }
-
                 val task = IOTaskLoadRegion(this)
                 state = Region.State.Loading(task)
                 world.ioHandler.scheduleTask(task)
             } else {
-                state = Region.State.Available()
-                chunkHolders.forEach { it.whenRegionIsAvailable() }
+                //TODO get world generation task reference from heightmap
+                state = Region.State.Generating(TrivialFence())
+                chunkHolders.forEach { it.eventRegionIsReady() }
             }
 
         } else {
             // Remote-world regions don't wait for anything to load in
+            //TODO no
             file = null
             handler = null
             state = Region.State.Available()
-            chunkHolders.forEach { it.whenRegionIsAvailable() }
-        }
-    }
-
-    fun whenDataLoadedCallback() {
-        try {
-            stateLock.lock()
-            if (state !is Region.State.Loading) {
-                logger.error("Illegal state transition: When accepting loaded data, region was in state $state")
-                return
-            }
-
-            state = Region.State.Available()
-            chunkHolders.forEach { it.whenRegionIsAvailable() }
-        } finally {
-            stateLock.unlock()
+            chunkHolders.forEach { it.eventRegionIsReady() }
         }
     }
 
     override fun registerUser(user: WorldUser): Boolean {
         try {
-            //usersLock.lock()
             stateLock.lock()
 
-            if(state is Region.State.Zombie)
+            if (state is Region.State.Zombie)
                 throw Exception("Registering user in a zombie region !!!")
+
+            val previousUserCount = usersCount
 
             if (usersSet.add(user)) {
                 usersCount++
+                if (previousUserCount == 0)
+                    eventUsersNotEmpty()
+
                 return true
             }
             return false
         } finally {
             users = usersSet.toSet()
-            //usersLock.unlock()
             stateLock.unlock()
         }
     }
 
     override fun unregisterUser(user: WorldUser): Boolean {
         try {
-            //usersLock.lock()
             stateLock.lock()
             usersSet.remove(user)
             usersCount--
 
             if (usersCount == 0) {
-                unload()
+                eventUsersEmpty()
                 return true
             }
 
@@ -141,7 +128,116 @@ class RegionImplementation(override val world: WorldImplementation, override val
         } finally {
             users = usersSet.toSet()
             stateLock.unlock()
-            //usersLock.unlock()
+        }
+
+    }
+
+    internal fun eventLoadingFinishes() {
+        try {
+            stateLock.lock()
+            if (state !is Region.State.Loading)
+                throw Exception("Illegal state transition: When accepting loaded data, region was in state $state")
+
+            when {
+                usersCount == 0 -> transitionZombie()
+                else -> {
+                    transitionAvailable()
+                    chunkHolders.forEach { it.eventRegionIsReady() }
+                }
+            }
+        } finally {
+            stateLock.unlock()
+        }
+    }
+
+    internal fun eventGeneratingFinishes() {
+        try {
+            stateLock.lock()
+            when {
+                usersCount == 0 && world is WorldMaster -> transitionSaving()
+                else -> transitionAvailable()
+            }
+
+        } finally {
+            stateLock.unlock()
+        }
+    }
+
+    internal fun eventSavingFinishes() {
+        try {
+            stateLock.lock()
+            when {
+                usersCount == 0 -> transitionZombie()
+                else -> transitionAvailable()
+            }
+
+        } finally {
+            stateLock.unlock()
+        }
+    }
+
+    internal fun eventUsersNotEmpty() {
+        try {
+            stateLock.lock()
+            when {
+                //state is Region.State.Saving -> transitionAvailable()
+            }
+
+        } finally {
+            stateLock.unlock()
+        }
+    }
+
+    internal fun eventUsersEmpty() {
+        try {
+            stateLock.lock()
+
+            when {
+                state is Region.State.Loading -> {
+                    // Transition to zombie state ONLY if cancel is successful
+                    if(((state as Region.State.Loading).fence as IOTaskLoadRegion).tryCancel())
+                        transitionZombie()
+                }
+                state is Region.State.Generating -> {
+                    //TODO actually this transition is a pain to implement
+                }
+                state is Region.State.Available && state !is Region.State.Saving && world is WorldMaster -> transitionSaving()
+            }
+
+        } finally {
+            stateLock.unlock()
+        }
+    }
+
+    private fun transitionSaving() {
+        when {
+            state is Region.State.Available || state is Region.State.Generating -> {
+
+            }
+            else -> throw Exception("Illegal state transition")
+        }
+
+        val task = IOTaskSaveRegion(this)
+        state = Region.State.Saving(task)
+        world.ioHandler.scheduleTask(task)
+    }
+
+    private fun transitionAvailable() {
+        state = Region.State.Available()
+    }
+
+    private fun transitionZombie() {
+        when {
+            state is Region.State.Zombie -> throw Exception("Region is already unloaded ! (stateHistory = $stateHistory)")
+            state is Region.State.Generating -> throw Exception("Illegal state change")
+            state is Region.State.Available && state !is Region.State.Saving -> throw Exception("Illegal state change")
+
+            else -> {
+                heightmap.unregisterUser(this)
+
+                state = Region.State.Zombie
+                world.regionsStorage.removeRegion(this)
+            }
         }
 
     }
@@ -152,75 +248,6 @@ class RegionImplementation(override val world: WorldImplementation, override val
 
     override fun getChunkHolder(chunkX: Int, chunkY: Int, chunkZ: Int): ChunkHolderImplementation {
         return chunkHolders[(chunkX and 7) * 64 + (chunkY and 7) * 8 + (chunkZ and 7)]
-    }
-
-    /** Called both when the last user logs off and when saving is done */
-    internal fun unload() {
-        fun remove() {
-            // Remove the reference in the world to this
-            world.regionsStorage.removeRegion(this)
-            heightmap.unregisterUser(this)
-
-            state = Region.State.Zombie
-        }
-
-        try {
-            stateLock.lock()
-
-            if (state is Region.State.Loading) {
-                val task = (state as Region.State.Loading).fence as IOTaskLoadRegion
-
-                // If we managed to kill the task before it executes or before it could callback whenDataLoadedCallback
-                if(task.tryCancel() || state !is Region.State.Available) {
-                    remove()
-                    return
-                } else {
-                    println("failed to cancel task :(, resulting state is $state")
-                }
-            }
-
-            if (state !is Region.State.Available && state !is Region.State.Saving)
-                throw Exception("Illegal state transition: When unloading, region was in state $state")
-
-            // We want to save, but only once.
-            // After the first save we'll still be in Saving state and so we can transition to Zombie.
-            if (world is WorldMaster && state is Region.State.Available && state !is Region.State.Saving) {
-                val task = IOTaskSaveRegion(this)
-                state = Region.State.Saving(task)
-                world.ioHandler.scheduleTask(task)
-
-                return // we'll actually unload later
-            }
-
-            remove()
-
-        } finally {
-            stateLock.unlock()
-        }
-    }
-
-    fun whenSavingDone() {
-        try {
-            stateLock.lock()
-            if (usersCount == 0)
-                unload()
-            else {
-                try {
-                    //stateLock.lock()
-                    if (state is Region.State.Saving)
-                        state = Region.State.Available()
-                } finally {
-                    //stateLock.unlock()
-                }
-            }
-
-        } finally {
-            stateLock.unlock()
-        }
-    }
-
-    override fun toString(): String {
-        return ("[Region rx:$regionX ry:$regionY rz:$regionZ state:${state.javaClass.simpleName} chunks:${loadedChunks.count()} entities:${entitiesWithinRegion.count()}]")
     }
 
     fun compressAll() {
@@ -241,6 +268,10 @@ class RegionImplementation(override val world: WorldImplementation, override val
                             chunkHolders[a * 64 + b * 8 + c].compressChunkData()
                     }
                 }
+    }
+
+    override fun toString(): String {
+        return ("[Region rx:$regionX ry:$regionY rz:$regionZ state:${state.javaClass.simpleName} users: ${usersCount} chunks:${loadedChunks.count()} entities:${entitiesWithinRegion.count()}]")
     }
 
     companion object {

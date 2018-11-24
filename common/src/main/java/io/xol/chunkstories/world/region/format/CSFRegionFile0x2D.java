@@ -92,7 +92,7 @@ public class CSFRegionFile0x2D extends CSFRegionFile {
 
 			// We pretend it's loaded sooner so we can add the entities and they will load
 			// their voxel data if needed
-			//region.whenDataLoadedCallback();
+			//region.eventLoadingFinishes();
 
 		} finally {
 			in.close();
