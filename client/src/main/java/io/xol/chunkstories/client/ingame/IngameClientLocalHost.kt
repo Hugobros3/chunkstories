@@ -69,8 +69,9 @@ class IngameClientLocalHost(client: ClientImplementation, worldInitializer: (Ing
 
             player.save()
 
+            player.loadingAgent.unloadEverything(true)
             // Save everything the world contains
-            internalWorld.saveEverything().traverse()
+            //internalWorld.saveEverything().traverse()
         }
         super.exitCommon()
     }

@@ -15,9 +15,7 @@ import io.xol.chunkstories.graphics.vulkan.graph.VulkanPass
 import io.xol.chunkstories.graphics.vulkan.resources.InflightFrameResource
 import io.xol.chunkstories.graphics.vulkan.swapchain.Frame
 import io.xol.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
-import io.xol.chunkstories.graphics.vulkan.systems.gui.guiBufferSize
 import io.xol.chunkstories.graphics.vulkan.vertexInputConfiguration
-import io.xol.chunkstories.world.WorldImplementation
 import org.joml.Vector3d
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.system.MemoryUtil.memAlloc
@@ -109,14 +107,22 @@ class VulkanDebugDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         if(client.configuration.getBooleanValue(InternalClientOptions.debugWireframe)) {
             val size = client.world.worldInfo.size
 
-            for(keyc in (client.player as LocalPlayerImplementation).loadingAgent.fastChunksMask) {
+            for(keyc in (client.player as LocalPlayerImplementation).loadingAgent.aquiredChunkHoldersMask) {
                 val key = keyc.value
-                val rx = (key shr (size.bitlengthOfHorizontalChunksCoordinates + size.bitlengthOfVerticalChunksCoordinates)) and size.maskForChunksCoordinates
-                val ry = (key shr (size.bitlengthOfHorizontalChunksCoordinates)) and (31)
-                val rz = (key) and size.maskForChunksCoordinates
+                var rx = (key shr (size.bitlengthOfHorizontalChunksCoordinates + size.bitlengthOfVerticalChunksCoordinates)) and size.maskForChunksCoordinates
+                var ry = (key shr (size.bitlengthOfHorizontalChunksCoordinates)) and (31)
+                var rz = (key) and size.maskForChunksCoordinates
 
-                val cp = Vector3d((rx * 32).toDouble(), (ry * 32).toDouble(), (rz * 32).toDouble())
-                val cpe = Vector3d(cp).add(32.0, 32.0, 32.0)
+                if(rx % 8 != 0 || ry % 8 != 0 || rz % 8 != 0)
+                    continue
+
+                rx /= 8
+                ry /= 8
+                rz /= 8
+
+                val cp = Vector3d((rx * 256).toDouble(), (ry * 256).toDouble(), (rz * 256).toDouble())
+                //val cpe = Vector3d(cp).add(32.0, 32.0, 32.0)
+                val cpe = Vector3d(cp).add(256.0, 256.0, 256.0)
 
                 if(buffer.remaining() <= 4 * 3 * 2 * 4 * 3 * 5)
                     break

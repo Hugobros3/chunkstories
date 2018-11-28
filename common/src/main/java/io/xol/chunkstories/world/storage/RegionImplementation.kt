@@ -150,7 +150,7 @@ class RegionImplementation(override val world: WorldImplementation, override val
         }
     }
 
-    internal fun eventGeneratingFinishes() {
+    fun eventGeneratingFinishes() {
         try {
             stateLock.lock()
             when {
@@ -163,7 +163,7 @@ class RegionImplementation(override val world: WorldImplementation, override val
         }
     }
 
-    internal fun eventSavingFinishes() {
+    fun eventSavingFinishes() {
         try {
             stateLock.lock()
             when {
@@ -192,16 +192,15 @@ class RegionImplementation(override val world: WorldImplementation, override val
         try {
             stateLock.lock()
 
-            when {
-                state is Region.State.Loading -> {
+            when (state) {
+                is Region.State.Generating -> {}
+                is Region.State.Loading -> {
                     // Transition to zombie state ONLY if cancel is successful
                     if(((state as Region.State.Loading).fence as IOTaskLoadRegion).tryCancel())
                         transitionZombie()
                 }
-                state is Region.State.Generating -> {
-                    //TODO actually this transition is a pain to implement
-                }
-                state is Region.State.Available && state !is Region.State.Saving && world is WorldMaster -> transitionSaving()
+                is Region.State.Saving -> {}
+                is Region.State.Available -> transitionSaving()
             }
 
         } finally {

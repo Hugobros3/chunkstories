@@ -4,7 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.chunkstories.world.io;
+package io.xol.chunkstories.world.heightmap;
 
 import java.io.FileOutputStream;
 import java.nio.ByteBuffer;
@@ -12,6 +12,7 @@ import java.nio.ByteBuffer;
 import io.xol.chunkstories.api.workers.TaskExecutor;
 import io.xol.chunkstories.api.world.heightmap.Heightmap;
 import io.xol.chunkstories.world.heightmap.HeightmapImplementation;
+import io.xol.chunkstories.world.io.IOTask;
 
 public class IOTaskSaveHeightmap extends IOTask {
 	HeightmapImplementation heightmap;
@@ -23,8 +24,8 @@ public class IOTaskSaveHeightmap extends IOTask {
 	@Override
 	public boolean task(TaskExecutor taskExecutor) {
 		try {
-			if (!(heightmap.getState() instanceof Heightmap.State.Available))
-				throw new RuntimeException("Illegal state: You can't save a heightmap in the ");
+			if (!(heightmap.getState() instanceof Heightmap.State.Saving))
+				throw new RuntimeException("Illegal state: You can't save a heightmap not in the saving state !");
 
 			heightmap.getFile().getParentFile().mkdirs();
 			if (!heightmap.getFile().exists())
@@ -62,6 +63,10 @@ public class IOTaskSaveHeightmap extends IOTask {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+
+		System.out.println("heightmap SAVED");
+
+		heightmap.eventSavingFinished();
 		return true;
 	}
 }

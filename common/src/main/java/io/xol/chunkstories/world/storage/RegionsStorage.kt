@@ -69,16 +69,16 @@ class RegionsStorage(val world: WorldImplementation) {
         if (regionY < 0 || regionY > world.maxHeight / 256)
             throw Exception("Out of bounds: RegionY = $regionY is out of world bounds.")
 
-        // In the special case where the user is the task that generates the map itself, acquiring the map will send us in a loop.
-        // To solve this, we simply take the heightmap field from the task.
-        val heightmap = if (user is TaskGenerateWorldSlice)
-            user.heightmap
-        else
-            world.regionsSummariesHolder.acquireHeightmap(bootStrapper, regionX, regionZ)
-
         val key = (regionX * sizeInRegions + regionZ) * heightInRegions + regionY
         try {
             this.regionsLock.writeLock().lock()
+
+            // In the special case where the user is the task that generates the map itself, acquiring the map will send us in a loop.
+            // To solve this, we simply take the heightmap field from the task.
+            val heightmap = if (user is TaskGenerateWorldSlice)
+                user.heightmap
+            else
+                world.regionsSummariesHolder.acquireHeightmap(bootStrapper, regionX, regionZ)
 
             var region: RegionImplementation? = regionsMap[key]
             var fresh = false
@@ -112,12 +112,12 @@ class RegionsStorage(val world: WorldImplementation) {
                 region.stateLock.unlock()
             }
 
+            if (user !is TaskGenerateWorldSlice)
+                heightmap.unregisterUser(bootStrapper)
+
             return region
         } finally {
             this.regionsLock.writeLock().unlock()
-
-            if (user !is TaskGenerateWorldSlice)
-                heightmap.unregisterUser(bootStrapper)
         }
     }
 
@@ -129,12 +129,13 @@ class RegionsStorage(val world: WorldImplementation) {
         val regionY = chunkY shr 3
         val regionZ = chunkZ shr 3
 
-        // Unlike the other entry point, this doesn't pose a risk of loop
-        val heightmap = world.regionsSummariesHolder.acquireHeightmap(bootStrapper, regionX, regionZ)
 
         val key = (regionX * sizeInRegions + regionZ) * heightInRegions + regionY
         try {
             this.regionsLock.writeLock().lock()
+
+            // Unlike the other entry point, this doesn't pose a risk of loop
+            val heightmap = world.regionsSummariesHolder.acquireHeightmap(bootStrapper, regionX, regionZ)
 
             val ogRegion = regionsMap[key]
             var region: RegionImplementation? = ogRegion
@@ -167,12 +168,12 @@ class RegionsStorage(val world: WorldImplementation) {
                 region.stateLock.unlock()
             }
 
+            if (user !is TaskGenerateWorldSlice)
+                heightmap.unregisterUser(bootStrapper)
+
             return region.getChunkHolder(chunkX, chunkY, chunkZ)
         } finally {
             this.regionsLock.writeLock().unlock()
-
-            if (user !is TaskGenerateWorldSlice)
-                heightmap.unregisterUser(bootStrapper)
         }
     }
 

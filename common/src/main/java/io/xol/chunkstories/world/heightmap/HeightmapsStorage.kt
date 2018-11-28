@@ -7,13 +7,11 @@
 package io.xol.chunkstories.world.heightmap
 
 import io.xol.chunkstories.api.Location
-import io.xol.chunkstories.api.util.concurrency.Fence
 import io.xol.chunkstories.api.world.WorldUser
 import io.xol.chunkstories.api.world.cell.CellData
 import io.xol.chunkstories.api.world.cell.FutureCell
 import io.xol.chunkstories.api.world.heightmap.Heightmap
 import io.xol.chunkstories.api.world.heightmap.WorldHeightmaps
-import io.xol.chunkstories.util.concurrency.CompoundFence
 import io.xol.chunkstories.world.WorldImplementation
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.ReentrantReadWriteLock
@@ -32,10 +30,17 @@ class HeightmapsStorage(override val world: WorldImplementation) : WorldHeightma
         return (rx * worldSizeInRegions + rz).toLong()
     }
 
+    fun Int.sanitizeRegionCoordinates(): Int {
+        val mod = this % worldSizeInRegions
+        if (mod < 0)
+            return mod + worldSizeInRegions
+        else
+            return mod
+    }
+
     override fun acquireHeightmap(worldUser: WorldUser, regionX: Int, regionZ: Int): HeightmapImplementation {
         var regionX = regionX
         var regionZ = regionZ
-        val heightmap: HeightmapImplementation
 
         regionX %= worldSizeInRegions
         regionZ %= worldSizeInRegions
@@ -49,12 +54,19 @@ class HeightmapsStorage(override val world: WorldImplementation) : WorldHeightma
         try {
             heightmapsLock.writeLock().lock()
 
-            if (heightmapData.containsKey(index)) {
-                heightmap = heightmapData[index]!!
-                heightmap.registerUser(worldUser)
-            } else {
+            var heightmap = heightmapData[index]
+
+            if (heightmap != null && heightmap.state is Heightmap.State.Zombie) {
+                heightmap = null
+                heightmapData.remove(index)
+            }
+
+            if (heightmap == null) {
                 heightmap = HeightmapImplementation(this, regionX, regionZ, worldUser)
-                heightmapData[index] = heightmap
+                if (heightmapData.putIfAbsent(index, heightmap) != null)
+                    throw Exception("Overwriting existing heightmap !")
+            } else {
+                heightmap.registerUser(worldUser)
             }
 
             return heightmap
@@ -109,10 +121,18 @@ class HeightmapsStorage(override val world: WorldImplementation) : WorldHeightma
         val i = index(worldX, worldZ)
 
         try {
-            heightmapsLock.readLock().lock()
-            return heightmapData[i]
+            //heightmapsLock.readLock().lock()
+            val heightmap = heightmapData[i]
+            return heightmap?.let {
+                when {
+                    it.state is Heightmap.State.Zombie -> null
+                    it.state is Heightmap.State.Generating -> it
+                    it.state is Heightmap.State.Loading -> null
+                    else -> it
+                }
+            }
         } finally {
-            heightmapsLock.readLock().unlock()
+            //heightmapsLock.readLock().unlock()
         }
     }
 

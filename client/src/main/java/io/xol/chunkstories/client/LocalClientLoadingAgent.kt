@@ -6,34 +6,30 @@
 
 package io.xol.chunkstories.client
 
-import java.util.HashSet
-import java.util.concurrent.locks.Lock
-import java.util.concurrent.locks.ReentrantLock
-
 import com.carrotsearch.hppc.IntHashSet
-
 import io.xol.chunkstories.api.client.Client
 import io.xol.chunkstories.api.client.LocalPlayer
-import io.xol.chunkstories.api.entity.Entity
 import io.xol.chunkstories.api.exceptions.net.IllegalPacketException
 import io.xol.chunkstories.api.math.LoopingMathHelper
 import io.xol.chunkstories.api.math.Math2
 import io.xol.chunkstories.api.net.packets.PacketWorldUser
 import io.xol.chunkstories.api.net.packets.PacketWorldUser.Type
 import io.xol.chunkstories.api.world.WorldClient
-import io.xol.chunkstories.api.world.WorldInfo
-import io.xol.chunkstories.api.world.WorldSize
 import io.xol.chunkstories.api.world.chunk.ChunkHolder
 import io.xol.chunkstories.api.world.heightmap.Heightmap
 import io.xol.chunkstories.api.world.region.Region
+import io.xol.chunkstories.util.concurrency.CompoundFence
 import io.xol.chunkstories.world.WorldClientRemote
+import java.util.*
+import java.util.concurrent.locks.ReentrantLock
 
 class LocalClientLoadingAgent(private val client: Client, private val player: LocalPlayer, private val world: WorldClient) {
 
-    val fastChunksMask = IntHashSet()
+    val aquiredChunkHoldersMask = IntHashSet()
+    val acquiredChunkHolders = HashSet<ChunkHolder>()
 
-    val usedChunks = HashSet<ChunkHolder>()
-    private val usedRegionSummaries = HashSet<Heightmap>()
+    val acquiredHeightmapsMask = IntHashSet()
+    val acquiredHeightmaps = HashSet<Heightmap>()
 
     private val lock = ReentrantLock()
 
@@ -71,7 +67,7 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
 
                         //println(" d ${size.bitlengthOfVerticalChunksCoordinates} o ${size.bitlengthOfHorizontalChunksCoordinates}")
 
-                        if (fastChunksMask.contains(summed)) {
+                        if (aquiredChunkHoldersMask.contains(summed)) {
                             //val chunkHolder = usedChunks.find { it.chunkX == filteredChunkX && it.chunkY == filteredChunkY && it.chunkZ == filteredChunkZ }
                             //println("$chunkHolder + ${chunkHolder?.region}")
                             continue
@@ -79,11 +75,11 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
 
                         val holder = world.acquireChunkHolder(player, chunkX, chunkY, chunkZ)!!
 
-                        if(holder.region.state is Region.State.Zombie)
+                        if (holder.region.state is Region.State.Zombie)
                             throw Exception("WOW THIS IS NOT COOL :(((")
 
-                        usedChunks.add(holder)
-                        fastChunksMask.add(summed)
+                        acquiredChunkHolders.add(holder)
+                        aquiredChunkHoldersMask.add(summed)
 
                         if (world is WorldClientRemote) {
                             world.connection.pushPacket(PacketWorldUser.registerChunkPacket(world, filteredChunkX, filteredChunkY, filteredChunkZ))
@@ -92,7 +88,7 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
             }
 
             // Unsubscribe for far ones
-            val i = usedChunks.iterator()
+            val i = acquiredChunkHolders.iterator()
             while (i.hasNext()) {
                 val holder = i.next()
                 if (LoopingMathHelper.moduloDistance(holder.chunkX, cameraChunkX, world.sizeInChunks) > chunksViewDistance + 1
@@ -107,7 +103,7 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
 
                     val summed = (((filteredChunkX shl size.bitlengthOfVerticalChunksCoordinates) or filteredChunkY) shl size.bitlengthOfHorizontalChunksCoordinates) or filteredChunkZ
 
-                    fastChunksMask.remove(summed)
+                    aquiredChunkHoldersMask.remove(summed)
 
                     i.remove()
                     holder.unregisterUser(player)
@@ -118,6 +114,8 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
                 }
             }
 
+            val sizeInRegions = (world.worldInfo.size.sizeInChunks / 8)
+
             // We load the region summaries we fancy
             val summaryDistance = 32//(int) (world.getClient().getConfiguration().getIntOption("client.rendering.viewDistance") / 24);
             for (chunkX in cameraChunkX - summaryDistance until cameraChunkX + summaryDistance)
@@ -126,12 +124,13 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
                         val regionX = chunkX / 8
                         val regionZ = chunkZ / 8
 
-                        // TODO bad to acquire each time!!!
-                        val regionSummary = world.regionsSummariesHolder.acquireHeightmap(player, regionX,
-                                regionZ)
+                        val key = regionX * sizeInRegions + regionZ
 
-                        if (usedRegionSummaries.add(regionSummary)) {
+                        if (!acquiredHeightmapsMask.contains(key)) {
+                            acquiredHeightmapsMask.add(key)
 
+                            val regionSummary = world.regionsSummariesHolder.acquireHeightmap(player, regionX, regionZ)
+                            acquiredHeightmaps.add(regionSummary)
                             if (world is WorldClientRemote) {
 
                                 world.connection.pushPacket(PacketWorldUser.registerSummary(world, regionX, regionZ))
@@ -144,20 +143,22 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
             val cameraRegionZ = cameraChunkZ / 8
 
             val distInRegions = summaryDistance / 8
-            val sizeInRegions = world.sizeInChunks / 8
 
             // And we unload the ones we no longer need
-            val iterator = usedRegionSummaries.iterator()
+            val iterator = acquiredHeightmaps.iterator()
             while (iterator.hasNext()) {
                 val entry = iterator.next()
                 val regionX = entry.regionX
                 val regionZ = entry.regionZ
+
+                val key = regionX * sizeInRegions + regionZ
 
                 val dx = LoopingMathHelper.moduloDistance(cameraRegionX, regionX, sizeInRegions)
                 val dz = LoopingMathHelper.moduloDistance(cameraRegionZ, regionZ, sizeInRegions)
                 if (dx > distInRegions + 1 || dz > distInRegions + 1) {
                     entry.unregisterUser(player)
                     iterator.remove()
+                    acquiredHeightmapsMask.remove(key)
 
                     if (world is WorldClientRemote) {
                         world.connection.pushPacket(PacketWorldUser.unregisterSummary(world, regionX, regionZ))
@@ -192,8 +193,8 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
                 val summed = filteredChunkX shl size.bitlengthOfVerticalChunksCoordinates or filteredChunkY shl size.bitlengthOfHorizontalChunksCoordinates or filteredChunkZ
 
                 // We remove it from our list
-                fastChunksMask.remove(summed)
-                usedChunks.remove(holder)
+                aquiredChunkHoldersMask.remove(summed)
+                acquiredChunkHolders.remove(holder)
 
                 // And we unsub.
                 holder.unregisterUser(player)
@@ -202,7 +203,7 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
             } else if (packet.type == Type.UNREGISTER_SUMMARY) {
                 val regionSummary = world.regionsSummariesHolder.getHeightmap(packet.x, packet.z) ?: return
 
-                usedRegionSummaries.remove(regionSummary)
+                acquiredHeightmaps.remove(regionSummary)
                 regionSummary.unregisterUser(player)
 
             } else
@@ -211,5 +212,17 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
         } finally {
             lock.unlock()
         }
+    }
+
+    fun unloadEverything(andWait: Boolean) {
+        val compoundFence = CompoundFence()
+
+        for(chunkHolder in acquiredChunkHolders) {
+            chunkHolder.unregisterUser(player)
+            chunkHolder.waitUntilStateIs(ChunkHolder.State.Unloaded)
+        }
+
+        if(andWait)
+            compoundFence.traverse()
     }
 }

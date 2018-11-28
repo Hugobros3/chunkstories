@@ -74,7 +74,7 @@ public class IOTasksMultiplayerClient extends IOTasks {
 			ib.get(heights, 0, 256 * 256);
 			ib.get(ids, 0, 256 * 256);
 
-			heightmap.whenDataLoadedCallback(heights, ids);
+			heightmap.eventLoadingFinished(heights, ids);
 
 			return true;
 		}

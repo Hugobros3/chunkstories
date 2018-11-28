@@ -19,13 +19,10 @@ import io.xol.chunkstories.api.world.cell.Cell
 import io.xol.chunkstories.api.world.cell.CellData
 import io.xol.chunkstories.api.world.cell.FutureCell
 import io.xol.chunkstories.api.world.heightmap.Heightmap
-import io.xol.chunkstories.api.world.region.Region
 import io.xol.chunkstories.net.packets.PacketHeightmap
 import io.xol.chunkstories.util.concurrency.SimpleFence
 import io.xol.chunkstories.world.WorldImplementation
 import io.xol.chunkstories.world.generator.TaskGenerateWorldSlice
-import io.xol.chunkstories.world.io.IOTaskLoadHeightmap
-import io.xol.chunkstories.world.io.IOTaskSaveHeightmap
 import net.jpountz.lz4.LZ4Factory
 import java.io.File
 import java.util.*
@@ -42,9 +39,8 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
     override lateinit var state: Heightmap.State
         private set
 
-    private val usersSet = HashSet<WorldUser>()// new HashSet<WorldUser>();
+    private val usersSet = HashSet<WorldUser>()
     private val usersWaitingForIntialData = HashSet<RemotePlayer>()
-    //private val usersLock = ReentrantLock()
     override var users: Set<WorldUser> = emptySet()
         private set
 
@@ -55,9 +51,6 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
 
     lateinit var min: Array<IntArray> private set
     lateinit var max: Array<IntArray> private set
-
-    // Textures (client renderer)
-    //val texturesUpToDate = AtomicBoolean(false)
 
     init {
         if (world is WorldMaster) {
@@ -88,6 +81,11 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
 
                 val task = TaskGenerateWorldSlice(world, this, dirX, dirZ)
                 state = Heightmap.State.Generating(task)
+
+                this.heightData = IntArray(Math.ceil(256.0 * 256.0 * (1 + 1 / 3.0)).toInt())
+                this.voxelData = IntArray(Math.ceil(256.0 * 256.0 * (1 + 1 / 3.0)).toInt())
+                recomputeMetadata()
+
                 world.gameContext.tasks.scheduleTask(task)
             }
         } else {
@@ -101,7 +99,11 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
     override fun registerUser(user: WorldUser): Boolean {
         try {
             stateLock.lock()
+            val wasEmpty = usersSet.isEmpty()
             if (usersSet.add(user)) {
+                if (wasEmpty)
+                    eventUsersNotEmpty()
+
                 if (user is RemotePlayer) {
                     when (state) {
                         is Heightmap.State.Available -> user.pushPacket(PacketHeightmap(this))
@@ -109,7 +111,8 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
                     }
                 }
                 return true
-            }
+            } else
+                throw Exception("Duplicate heightmap user: $user")
 
         } finally {
             stateLock.unlock()
@@ -121,66 +124,138 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
     override fun unregisterUser(user: WorldUser): Boolean {
         try {
             stateLock.lock()
-            usersSet.remove(user)
+            val wasEmpty = usersSet.isEmpty()
+            if (usersSet.remove(user)) {
+                if (usersSet.isEmpty()) {
+                    if (!wasEmpty)
+                        eventUsersEmpty()
 
-            if (usersSet.isEmpty()) {
-                unload()
-                return true
+                    return true
+                }
+                return false
             }
-            return false
+            throw Exception("Unregistering user that wasn't registered in the first place: $user")
         } finally {
             stateLock.unlock()
         }
     }
 
-    internal fun unload() {
-        fun remove() {
-            if (!storage.removeSummary(this)) {
-                println(this.toString() + " failed to be removed from the holder " + storage)
-            }
-            state = Heightmap.State.Zombie
-        }
-
+    fun eventUsersEmpty() {
         try {
             stateLock.lock()
 
             when (state) {
                 is Heightmap.State.Generating -> {
-                    val task = (state as Heightmap.State.Generating).fence as TaskGenerateWorldSlice
-                    if(task.tryCancel() || state !is Heightmap.State.Generating)
-                        remove()
-                    return
                 }
                 is Heightmap.State.Loading -> {
                     val task = (state as Heightmap.State.Loading).fence as IOTaskLoadHeightmap
-                    if(task.tryCancel() || state !is Heightmap.State.Loading)
-                        remove()
-                    return
+                    if (task.tryCancel())
+                        transitionZombie()
                 }
-                is Heightmap.State.Zombie -> throw Exception("Unloading a zombie heightmap !")
+                is Heightmap.State.Available -> transitionSaving()
+                Heightmap.State.Zombie -> throw Exception("Unexpected event")
             }
-
-            if(state !is Heightmap.State.Available && state !is Heightmap.State.Saving)
-                throw Exception("Illegal state transition: When unloading, heightmap was in state $state")
-
-            if(world is WorldMaster && state is Heightmap.State.Available) {
-                val task = IOTaskSaveHeightmap(this)
-                state = Heightmap.State.Saving(task)
-                world.ioHandler.scheduleTask(task)
-
-                return // we'll actually unload later
-            }
-
-            remove()
-
         } finally {
             stateLock.unlock()
         }
-
     }
 
-    fun countUsers(): Int {
-        return users.size
+    fun eventUsersNotEmpty() {
+        try {
+            stateLock.lock()
+
+            // No transitions on that event actually
+        } finally {
+            stateLock.unlock()
+        }
+    }
+
+    fun eventLoadingFinished(heightData: IntArray, voxelData: IntArray) {
+        try {
+            stateLock.lock()
+
+            if (state !is Heightmap.State.Loading)
+                throw Exception("Illegal state transition: When accepting loaded data, region was in state $state")
+
+            if (usersSet.isEmpty()) {
+                transitionZombie()
+            } else {
+
+                // 512kb per summary, use of max mipmaps for heights
+                this.heightData = IntArray(Math.ceil(256.0 * 256.0 * (1 + 1 / 3.0)).toInt())
+                this.voxelData = IntArray(Math.ceil(256.0 * 256.0 * (1 + 1 / 3.0)).toInt())
+
+                System.arraycopy(heightData, 0, this.heightData, 0, 256 * 256)
+                System.arraycopy(voxelData, 0, this.voxelData, 0, 256 * 256)
+
+                recomputeMetadata()
+                transitionAvailable()
+
+                // Already have clients waiting for it ? Satisfy these messieurs
+                // TODO copy list and then send so we block less
+                for (user in usersWaitingForIntialData) {
+                    user.pushPacket(PacketHeightmap(this))
+                }
+                usersWaitingForIntialData.clear()
+            }
+        } finally {
+            stateLock.unlock()
+        }
+    }
+
+    fun eventGenerationFinished() {
+        try {
+            stateLock.lock()
+
+            when {
+                state is Heightmap.State.Generating -> {
+                    if (usersSet.isEmpty())
+                        transitionSaving()
+                    else
+                        transitionAvailable()
+                }
+                else -> throw Exception("Illegal state/event combination !")
+            }
+        } finally {
+            stateLock.unlock()
+        }
+    }
+
+    fun eventSavingFinished() {
+        try {
+            stateLock.lock()
+
+            if (state !is Heightmap.State.Saving)
+                throw Exception("Illegal state/event combination !")
+
+            if (usersSet.isEmpty())
+                transitionZombie()
+            else
+                transitionAvailable()
+        } finally {
+            stateLock.unlock()
+        }
+    }
+
+    private fun transitionSaving() {
+        val task = IOTaskSaveHeightmap(this)
+        state = Heightmap.State.Saving(task)
+        world.ioHandler.scheduleTask(task)
+    }
+
+    private fun transitionAvailable() {
+        state = Heightmap.State.Available()
+    }
+
+    private fun transitionZombie() {
+        if (state !is Heightmap.State.Loading && state !is Heightmap.State.Saving)
+            throw Exception("Illegal state transition: When unloading, heightmap was in state $state")
+
+        if (!storage.removeSummary(this))
+            throw Exception(toString() + " failed to be removed from the holder " + storage)
+
+        state = Heightmap.State.Zombie
+
     }
 
     private fun index(x: Int, z: Int): Int {
@@ -321,7 +396,7 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
                     // Skip the already passed steps and the current resolution being sampled data
                     // to go write the next one
                     heightData[offset + resolution * 2 * (resolution * 2) + resolution * x + z] = maxHeight
-                    voxelData[offset + resolution * 2 * (resolution * 2) + resolution * x + z] = voxelData!![maxIndex]
+                    voxelData[offset + resolution * 2 * (resolution * 2) + resolution * x + z] = voxelData[maxIndex]
                 }
 
             offset += resolution * 2 * resolution * 2
@@ -357,37 +432,8 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
         return voxelData!![offset + resolution * x + z]
     }
 
-    fun whenDataLoadedCallback(heightData: IntArray, voxelData: IntArray) {
-        try {
-            stateLock.lock()
-
-            if (state !is Heightmap.State.Loading)
-                throw Exception("Illegal state transition: When accepting loaded data, region was in state $state")
-
-            // 512kb per summary, use of max mipmaps for heights
-            this.heightData = IntArray(Math.ceil(256.0 * 256.0 * (1 + 1 / 3.0)).toInt())
-            this.voxelData = IntArray(Math.ceil(256.0 * 256.0 * (1 + 1 / 3.0)).toInt())
-
-            System.arraycopy(heightData, 0, this.heightData, 0, 256 * 256)
-            System.arraycopy(voxelData, 0, this.voxelData, 0, 256 * 256)
-
-            recomputeMetadata()
-            state = Heightmap.State.Available()
-        } finally {
-
-            // Already have clients waiting for it ? Satisfy these messieurs
-            // TODO copy list and then send so we block less
-            for (user in usersWaitingForIntialData) {
-                user.pushPacket(PacketHeightmap(this))
-            }
-            usersWaitingForIntialData.clear()
-
-            stateLock.unlock()
-        }
-    }
-
     fun recomputeMetadata() {
-        if(state !is Heightmap.State.Available)
+        if (state !is Heightmap.State.Available)
             return
 
         this.computeHeightMetadata()
@@ -417,7 +463,7 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
     }
 
     override fun toString(): String {
-        return ("[Heightmap x:$regionX z:$regionZ users: ${this.countUsers()} state:$state]")
+        return ("[Heightmap x:$regionX z:$regionZ users: ${usersSet.count()} state:${state.javaClass.simpleName}]")
     }
 
     companion object {

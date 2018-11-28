@@ -21,7 +21,7 @@ import io.xol.chunkstories.world.storage.RegionImplementation;
  */
 public class TaskGenerateWorldSlice extends Task implements WorldUser {
 
-	public TaskGenerateWorldSlice(WorldImplementation world, Heightmap heightmap, int directionX, int directionZ) {
+	public TaskGenerateWorldSlice(WorldImplementation world, HeightmapImplementation heightmap, int directionX, int directionZ) {
 		this.world = world;
 		this.heightmap = heightmap;
 
@@ -30,7 +30,7 @@ public class TaskGenerateWorldSlice extends Task implements WorldUser {
 	}
 
 	private final WorldImplementation world;
-	public final Heightmap heightmap;
+	public final HeightmapImplementation heightmap;
 	private RegionImplementation[] regions;
 
 	private int wave = 0;
@@ -60,14 +60,12 @@ public class TaskGenerateWorldSlice extends Task implements WorldUser {
 			if (!isWorkDone()) // not QUITE done yet!
 				return false;
 
-			((HeightmapImplementation) this.heightmap).recomputeMetadata();
-
-			//TODO maybe a callback here ?
-			//heightmap.whenDataAvailable ???
+			heightmap.recomputeMetadata();
+			heightmap.eventGenerationFinished();
 
 			for(RegionImplementation region : regions) {
 				region.unregisterUser(this);
-				region.eventGeneratingFinishes$common_main();
+				region.eventGeneratingFinishes();
 			}
 
 			return true;
