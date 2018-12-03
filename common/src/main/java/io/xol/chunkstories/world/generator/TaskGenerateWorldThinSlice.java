@@ -16,6 +16,8 @@ import io.xol.chunkstories.api.world.chunk.ChunkHolder;
 import io.xol.chunkstories.api.world.generator.WorldGenerator;
 import io.xol.chunkstories.api.world.heightmap.Heightmap;
 import io.xol.chunkstories.world.chunk.ChunkLightBaker;
+import io.xol.chunkstories.world.chunk.CubicChunk;
+import io.xol.chunkstories.world.storage.ChunkHolderImplementation;
 
 public class TaskGenerateWorldThinSlice extends Task implements WorldUser {
 
@@ -23,7 +25,7 @@ public class TaskGenerateWorldThinSlice extends Task implements WorldUser {
 	private final World world;
 	private final int chunkX, chunkZ;
 
-	private ChunkHolder holders[];
+	private ChunkHolderImplementation holders[];
 
 	private final int maxGenerationHeight, maxGenerationHeightInChunks;
 	private WorldGenerator generator;
@@ -38,25 +40,30 @@ public class TaskGenerateWorldThinSlice extends Task implements WorldUser {
 		maxGenerationHeight = Integer.parseInt(generator.getDefinition().resolveProperty("maxGenerationHeight", "1024"));
 		maxGenerationHeightInChunks = (int) Math.ceil(maxGenerationHeight / 32.0);
 
-		holders = new ChunkHolder[maxGenerationHeightInChunks];
+		holders = new ChunkHolderImplementation[maxGenerationHeightInChunks];
 		for (int chunkY = 0; chunkY < maxGenerationHeightInChunks; chunkY++) {
-			holders[chunkY] = world.acquireChunkHolder(this, chunkX, chunkY, chunkZ);
+			holders[chunkY] = (ChunkHolderImplementation) world.acquireChunkHolder(this, chunkX, chunkY, chunkZ);
 		}
 	}
 
 	@Override
 	protected boolean task(TaskExecutor taskExecutor) {
 		for (int chunkY = 0; chunkY < maxGenerationHeightInChunks; chunkY++) {
-			if (!(holders[chunkY].getState() instanceof ChunkHolder.State.Available))
+			if (!(holders[chunkY].getState() instanceof ChunkHolder.State.Generating))
 				return false;
 		}
 
 		// Doing the lord's work
 		Chunk[] chunks = new Chunk[holders.length];
 		for (int chunkY = 0; chunkY < maxGenerationHeightInChunks; chunkY++) {
-			chunks[chunkY] = holders[chunkY].getChunk();
+			chunks[chunkY] = new CubicChunk(holders[chunkY], chunkX, chunkY, chunkZ, null);
 		}
+
 		generator.generateWorldSlice(chunks);
+
+		for (int chunkY = 0; chunkY < maxGenerationHeightInChunks; chunkY++) {
+			holders[chunkY].eventGenerationFinishes((CubicChunk) chunks[chunkY]);
+		}
 
 		// Build the heightmap from that
 		for (int x = 0; x < 32; x++)

@@ -19,7 +19,10 @@ import io.xol.chunkstories.client.net.ServerConnection;
 import io.xol.chunkstories.net.packets.PacketChunkCompressedData;
 import io.xol.chunkstories.net.packets.PacketHeightmap;
 import io.xol.chunkstories.world.WorldClientRemote;
+import io.xol.chunkstories.world.chunk.CompressedData;
+import io.xol.chunkstories.world.chunk.CubicChunk;
 import io.xol.chunkstories.world.heightmap.HeightmapImplementation;
+import io.xol.chunkstories.world.storage.ChunkHolderImplementation;
 import io.xol.chunkstories.world.storage.RegionImplementation;
 
 public class IOTasksMultiplayerClient extends IOTasks {
@@ -109,8 +112,11 @@ public class IOTasksMultiplayerClient extends IOTasks {
 			// the chunk but he's already fucking gone
 			if (region == null)
 				return;
-			region.getChunkHolder(((PacketChunkCompressedData) packet).x, ((PacketChunkCompressedData) packet).y,
-					((PacketChunkCompressedData) packet).z).eventLoadFinishes(((PacketChunkCompressedData) packet).data);
+
+			CompressedData compressedData = ((PacketChunkCompressedData) packet).data;
+			ChunkHolderImplementation chunkHolder = region.getChunkHolder(((PacketChunkCompressedData) packet).x, ((PacketChunkCompressedData) packet).y, ((PacketChunkCompressedData) packet).z);
+			CubicChunk chunk = new CubicChunk(chunkHolder, chunkHolder.getChunkX(), chunkHolder.getChunkY(), chunkHolder.getChunkZ(), compressedData);
+			chunkHolder.eventLoadFinishes(chunk);
 		}
 
 		// Else

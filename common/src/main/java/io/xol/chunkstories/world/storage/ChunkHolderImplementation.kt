@@ -15,6 +15,7 @@ import io.xol.chunkstories.api.world.region.Region
 import io.xol.chunkstories.entity.EntitySerializer
 import io.xol.chunkstories.net.packets.PacketChunkCompressedData
 import io.xol.chunkstories.util.concurrency.SafeWriteLock
+import io.xol.chunkstories.util.concurrency.TrivialFence
 import io.xol.chunkstories.world.chunk.CompressedData
 import io.xol.chunkstories.world.chunk.CubicChunk
 import io.xol.chunkstories.world.io.TaskLoadChunk
@@ -44,15 +45,8 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
     override val users: MutableSet<WorldUser> = HashSet()
     private val usersWaitingForIntialData = HashSet<RemotePlayer>()
 
-    // The compressed version of the chunk data
-    private val compressedDataLock = SafeWriteLock()
     /** Used by IO operations only  */
     var compressedData: CompressedData? = null
-        set(compressedData) {
-            compressedDataLock.beginWrite()
-            field = compressedData
-            compressedDataLock.endWrite()
-        }
 
     //var loadChunkTask: IOTask? = null
 
@@ -256,6 +250,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
             when (state) {
                 ChunkHolder.State.WaitForRegionInitialLoad -> { /* legal, don't care */ }
                 ChunkHolder.State.Unloaded -> throw Exception("This doesn't make sense $stateHistory")
+                is ChunkHolder.State.Generating -> { /* legal, don't care */ }
                 is ChunkHolder.State.Loading -> {
                     val task = (state as ChunkHolder.State.Loading).fence as TaskLoadChunk
                     if(task.tryCancel())
@@ -274,7 +269,8 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
 
             when(state) {
                 ChunkHolder.State.WaitForRegionInitialLoad -> { /* legal, don't care */ }
-                ChunkHolder.State.Unloaded -> transitionLoading()
+                ChunkHolder.State.Unloaded -> if(compressedData != null) transitionLoading() else transitionGenerating()
+                is ChunkHolder.State.Generating -> { /* legal, don't care */ }
                 is ChunkHolder.State.Loading -> throw Exception("This doesn't make sense $stateHistory")
                 is ChunkHolder.State.Available -> throw Exception("This doesn't make sense $stateHistory")
             }
@@ -290,7 +286,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
                 throw Exception("Illegal state change")
 
             if (users.isNotEmpty()) {
-                transitionLoading()
+                if(compressedData != null) transitionLoading() else transitionGenerating()
             } else {
                 transitionUnloaded()
             }
@@ -300,9 +296,8 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
         }
     }
 
-    fun eventLoadFinishes(data: CompressedData?) {
+    fun eventLoadFinishes(chunk: CubicChunk) {
         val playersToSendDataTo: List<RemotePlayer>?
-        val chunk : CubicChunk
 
         try {
             region.stateLock.lock()
@@ -312,9 +307,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
                 return
             }
 
-            transitionAvailable(data)
-
-            chunk = this.chunk!!
+            transitionAvailable(chunk)
             playersToSendDataTo = if (usersWaitingForIntialData.isNotEmpty()) usersWaitingForIntialData.toList() else null
             usersWaitingForIntialData.clear()
         } finally {
@@ -323,7 +316,30 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
 
         if (playersToSendDataTo != null)
             for (user in playersToSendDataTo)
-                user.pushPacket(PacketChunkCompressedData(chunk, data))
+                user.pushPacket(PacketChunkCompressedData(chunk, compressedData))
+    }
+
+    fun eventGenerationFinishes(chunk: CubicChunk) {
+        val playersToSendDataTo: List<RemotePlayer>?
+
+        try {
+            region.stateLock.lock()
+
+            if (state !is ChunkHolder.State.Generating) {
+                logger.error("Illegal state change: Received data but wasn't in the Generating state! (was $state)")
+                return
+            }
+
+            transitionAvailable(chunk)
+            playersToSendDataTo = if (usersWaitingForIntialData.isNotEmpty()) usersWaitingForIntialData.toList() else null
+            usersWaitingForIntialData.clear()
+        } finally {
+            region.stateLock.unlock()
+        }
+
+        if (playersToSendDataTo != null)
+            for (user in playersToSendDataTo)
+                user.pushPacket(PacketChunkCompressedData(chunk, compressedData))
     }
 
     private fun transitionLoading() {
@@ -342,11 +358,23 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
         }
     }
 
-    private fun transitionAvailable(data: CompressedData?) {
+    private fun transitionGenerating() {
         try {
             region.stateLock.lock()
 
-            val chunk = CubicChunk(this, chunkX, chunkY, chunkZ, data)
+            if(state !is ChunkHolder.State.WaitForRegionInitialLoad && state !is ChunkHolder.State.Unloaded)
+                throw Exception("Illegal transition")
+
+            state = ChunkHolder.State.Generating(TrivialFence())
+            region.stateLock.withLock { region.stateCondition.signalAll() }
+        } finally {
+            region.stateLock.unlock()
+        }
+    }
+
+    private fun transitionAvailable(chunk: CubicChunk) {
+        try {
+            region.stateLock.lock()
             state = ChunkHolder.State.Available(chunk)
             region.stateLock.withLock { region.stateCondition.signalAll() }
             region.loadedChunksSet.add(chunk)

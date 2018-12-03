@@ -64,7 +64,7 @@ public class IOTaskSaveHeightmap extends IOTask {
 			e.printStackTrace();
 		}
 
-		System.out.println("heightmap SAVED");
+		//System.out.println("heightmap SAVED");
 
 		heightmap.eventSavingFinished();
 		return true;
