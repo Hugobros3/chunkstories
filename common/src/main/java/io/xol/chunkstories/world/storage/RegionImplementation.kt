@@ -9,6 +9,7 @@ package io.xol.chunkstories.world.storage
 import io.xol.chunkstories.api.entity.Entity
 import io.xol.chunkstories.api.world.WorldMaster
 import io.xol.chunkstories.api.world.WorldUser
+import io.xol.chunkstories.api.world.chunk.ChunkHolder
 import io.xol.chunkstories.api.world.heightmap.Heightmap
 import io.xol.chunkstories.api.world.region.Region
 import io.xol.chunkstories.util.concurrency.TrivialFence
@@ -20,12 +21,14 @@ import java.io.File
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 class RegionImplementation(override val world: WorldImplementation, override val heightmap: Heightmap, override val regionX: Int, override val regionY: Int, override val regionZ: Int) : Region, WorldUser {
     val file: File?
     val handler: CSFRegionFile?
 
     val stateLock = ReentrantLock()
+    val stateCondition = stateLock.newCondition()
     override var state: Region.State = Region.State.Zombie
         set(value) {
             field = value
@@ -218,11 +221,13 @@ class RegionImplementation(override val world: WorldImplementation, override val
 
         val task = IOTaskSaveRegion(this)
         state = Region.State.Saving(task)
+        stateLock.withLock { stateCondition.signalAll() }
         world.ioHandler.scheduleTask(task)
     }
 
     private fun transitionAvailable() {
         state = Region.State.Available()
+        stateLock.withLock { stateCondition.signalAll() }
     }
 
     private fun transitionZombie() {
@@ -235,6 +240,7 @@ class RegionImplementation(override val world: WorldImplementation, override val
                 heightmap.unregisterUser(this)
 
                 state = Region.State.Zombie
+                stateLock.withLock { stateCondition.signalAll() }
                 world.regionsStorage.removeRegion(this)
             }
         }
@@ -271,6 +277,21 @@ class RegionImplementation(override val world: WorldImplementation, override val
 
     override fun toString(): String {
         return ("[Region rx:$regionX ry:$regionY rz:$regionZ state:${state.javaClass.simpleName} users: ${usersCount} chunks:${loadedChunks.count()} entities:${entitiesWithinRegion.count()}]")
+    }
+
+    fun waitUntilStateIs(stateClass: Class<out Region.State>) {
+        while(true) {
+            try {
+                stateLock.lock()
+                if(state.javaClass == stateClass)
+                    return
+            } finally {
+                stateLock.unlock()
+            }
+            stateLock.withLock {
+                stateCondition.await()
+            }
+        }
     }
 
     companion object {

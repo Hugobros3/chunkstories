@@ -19,6 +19,7 @@ import io.xol.chunkstories.api.world.cell.Cell
 import io.xol.chunkstories.api.world.cell.CellData
 import io.xol.chunkstories.api.world.cell.FutureCell
 import io.xol.chunkstories.api.world.heightmap.Heightmap
+import io.xol.chunkstories.api.world.region.Region
 import io.xol.chunkstories.net.packets.PacketHeightmap
 import io.xol.chunkstories.util.concurrency.SimpleFence
 import io.xol.chunkstories.world.WorldImplementation
@@ -27,6 +28,7 @@ import net.jpountz.lz4.LZ4Factory
 import java.io.File
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 /**
  * A region summary contains metadata about an 8x8 chunks ( or 256x256 blocks )
@@ -36,6 +38,7 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
     val world: WorldImplementation = storage.world
 
     private val stateLock = ReentrantLock()
+    private val stateCondition = stateLock.newCondition()
     override lateinit var state: Heightmap.State
         private set
 
@@ -240,11 +243,13 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
     private fun transitionSaving() {
         val task = IOTaskSaveHeightmap(this)
         state = Heightmap.State.Saving(task)
+        stateLock.withLock { stateCondition.signalAll() }
         world.ioHandler.scheduleTask(task)
     }
 
     private fun transitionAvailable() {
         state = Heightmap.State.Available()
+        stateLock.withLock { stateCondition.signalAll() }
     }
 
     private fun transitionZombie() {
@@ -255,7 +260,23 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
             throw Exception(toString() + " failed to be removed from the holder " + storage)
 
         state = Heightmap.State.Zombie
+        stateLock.withLock { stateCondition.signalAll() }
 
+    }
+
+    fun waitUntilStateIs(stateClass: Class<out Heightmap.State>) {
+        while(true) {
+            try {
+                stateLock.lock()
+                if(state.javaClass == stateClass)
+                    return
+            } finally {
+                stateLock.unlock()
+            }
+            stateLock.withLock {
+                stateCondition.await()
+            }
+        }
     }
 
     private fun index(x: Int, z: Int): Int {
@@ -306,7 +327,7 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
     }
 
     override fun setTopCell(cell: CellData) {
-        if (stateLock !is Heightmap.State.Available)
+        if (state !is Heightmap.State.Available && state !is Heightmap.State.Generating)
             return
 
         var worldX = cell.x
@@ -320,7 +341,7 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
     }
 
     override fun getHeight(x: Int, z: Int): Int {
-        if (state !is Heightmap.State.Available)
+        if (state !is Heightmap.State.Available && state !is Heightmap.State.Generating)
             return Heightmap.NO_DATA
 
         var x = x
@@ -332,7 +353,7 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
     }
 
     fun getRawVoxelData(x: Int, z: Int): Int {
-        if (state !is Heightmap.State.Available)
+        if (state !is Heightmap.State.Available && state !is Heightmap.State.Generating)
             return Heightmap.NO_DATA
 
         var x = x

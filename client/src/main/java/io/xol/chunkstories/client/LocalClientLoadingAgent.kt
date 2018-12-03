@@ -20,6 +20,10 @@ import io.xol.chunkstories.api.world.heightmap.Heightmap
 import io.xol.chunkstories.api.world.region.Region
 import io.xol.chunkstories.util.concurrency.CompoundFence
 import io.xol.chunkstories.world.WorldClientRemote
+import io.xol.chunkstories.world.heightmap.HeightmapImplementation
+import io.xol.chunkstories.world.storage.ChunkHolderImplementation
+import io.xol.chunkstories.world.storage.RegionImplementation
+import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
 
@@ -217,12 +221,31 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
     fun unloadEverything(andWait: Boolean) {
         val compoundFence = CompoundFence()
 
+        logger.debug("Unsubscribing to everything and waiting on everything to get back to normal...")
+
+        val regions = mutableSetOf<RegionImplementation>()
+
         for(chunkHolder in acquiredChunkHolders) {
             chunkHolder.unregisterUser(player)
-            chunkHolder.waitUntilStateIs(ChunkHolder.State.Unloaded)
+            (chunkHolder as ChunkHolderImplementation).waitUntilStateIs(ChunkHolder.State.Unloaded::class.java)
+            regions.add(chunkHolder.region)
         }
+
+        for(region in regions)
+            region.waitUntilStateIs(Region.State.Zombie::class.java)
+
+        for(heightmap in acquiredHeightmaps) {
+            heightmap.unregisterUser(player)
+            (heightmap as HeightmapImplementation).waitUntilStateIs(Heightmap.State.Zombie::class.java)
+        }
+
+        logger.debug("Done waiting! World should be saved now :)")
 
         if(andWait)
             compoundFence.traverse()
+    }
+
+    companion object {
+        val logger = LoggerFactory.getLogger("world.io")
     }
 }

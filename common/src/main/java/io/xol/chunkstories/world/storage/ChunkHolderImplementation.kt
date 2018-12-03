@@ -26,6 +26,8 @@ import java.io.DataOutputStream
 import java.io.IOException
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.concurrent.withLock
+import kotlin.reflect.KClass
 
 class ChunkHolderImplementation(override val region: RegionImplementation, override val chunkX: Int, override val chunkY: Int, override val chunkZ: Int) : ChunkHolder {
     private val uuid: Int
@@ -333,6 +335,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
 
             val task = TaskLoadChunk(this)
             state = ChunkHolder.State.Loading(task)
+            region.stateLock.withLock { region.stateCondition.signalAll() }
             region.world.gameContext.tasks.scheduleTask(task)
         } finally {
             region.stateLock.unlock()
@@ -345,6 +348,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
 
             val chunk = CubicChunk(this, chunkX, chunkY, chunkZ, data)
             state = ChunkHolder.State.Available(chunk)
+            region.stateLock.withLock { region.stateCondition.signalAll() }
             region.loadedChunksSet.add(chunk)
         } finally {
             region.stateLock.unlock()
@@ -407,6 +411,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
             }
 
             state = ChunkHolder.State.Unloaded
+            region.stateLock.withLock { region.stateCondition.signalAll() }
         } finally {
             region.stateLock.unlock()
         }
@@ -422,6 +427,21 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
 
     override fun toString(): String {
         return "ChunkHolderImplementation(region=, chunkX=$chunkX, chunkY=$chunkY, chunkZ=$chunkZ, state=${state.javaClass.simpleName}, users=${users.count()})"
+    }
+
+    fun waitUntilStateIs(stateClass: Class<out ChunkHolder.State>) {
+        while(true) {
+            try {
+                region.stateLock.lock()
+                if(state.javaClass == stateClass)
+                    return
+            } finally {
+                region.stateLock.unlock()
+            }
+            region.stateLock.withLock {
+                region.stateCondition.await()
+            }
+        }
     }
 
     companion object {

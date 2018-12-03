@@ -47,8 +47,6 @@ public class IOTaskSaveRegion extends IOTask {
 		this.region.getHandler().savingOperations.decrementAndGet();
 		this.region.eventSavingFinishes();
 
-		System.out.println("region SAVED");
-
 		synchronized (region.getFile()) {
 			region.getFile().notifyAll();
 		}

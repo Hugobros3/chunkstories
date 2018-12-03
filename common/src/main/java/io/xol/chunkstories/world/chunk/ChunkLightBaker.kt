@@ -119,7 +119,7 @@ class ChunkLightBaker(internal val chunk: CubicChunk) : AutoRebuildingProperty(c
                 return true
 
             // Actual computation takes place here
-            //findAndSpreadLight()
+            findAndSpreadLight()
 
             return true
         }
@@ -492,9 +492,8 @@ class ChunkLightBaker(internal val chunk: CubicChunk) : AutoRebuildingProperty(c
 
                         if (!hitGroundYet && csh != Heightmap.NO_DATA) {
                             if (chunkY * 32 + y >= csh) {
-                                if (chunkY * 32 + y <= csh || !world.contentTranslator
-                                                .getVoxelForId(VoxelFormat.id(chunk.voxelDataArray[x * 1024 + y * 32 + z]))!!
-                                                .isAir())
+                                if (chunkY * 32 + y <= csh ||
+                                        !world.contentTranslator.getVoxelForId(VoxelFormat.id(chunk.voxelDataArray[x * 1024 + y * 32 + z]))!!.isAir())
                                     hitGroundYet = true
                                 else {
                                     cell.sunlight = 15
@@ -1126,8 +1125,7 @@ class ChunkLightBaker(internal val chunk: CubicChunk) : AutoRebuildingProperty(c
     }
 
     private fun poke(cell: ScratchCell) {
-        val data = VoxelFormat.format(world.contentTranslator.getIdForVoxel(cell.voxel), cell.metadata,
-                cell.sunlight, cell.blocklight)
+        val data = VoxelFormat.format(world.contentTranslator.getIdForVoxel(cell.voxel), cell.metadata, cell.sunlight, cell.blocklight)
         pokeRawFast(cell.x, cell.y, cell.z, data)
     }
 
