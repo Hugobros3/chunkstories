@@ -104,7 +104,7 @@ class IngameLayer(window: Gui, private val client: IngameClientImplementation) :
     fun focus(makeInFocus: Boolean) {
         if (makeInFocus && !gui.mouse.isGrabbed) {
             client.inputsManager.mouse.isGrabbed = true
-            client.inputsManager.mouse.setMouseCursorLocation((gui.viewportWidth / 2).toDouble(), (gui.viewportHeight / 2).toDouble())
+            client.inputsManager.mouse.setMouseCursorLocation((client.gameWindow.width / 2).toDouble(), (client.gameWindow.height / 2).toDouble())
         } else if (!makeInFocus)
             client.inputsManager.mouse.isGrabbed = false
     }
