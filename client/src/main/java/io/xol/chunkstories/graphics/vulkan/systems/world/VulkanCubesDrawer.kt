@@ -19,6 +19,8 @@ import io.xol.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
 import io.xol.chunkstories.graphics.vulkan.vertexInputConfiguration
 import io.xol.chunkstories.world.WorldClientCommon
 import io.xol.chunkstories.world.chunk.CubicChunk
+import org.joml.Vector3d
+import org.joml.Vector3f
 import org.joml.Vector3i
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.VK10.*
@@ -83,10 +85,33 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         val drawDistanceH = 4
 
         val usedData = mutableListOf<VulkanChunkRenderData.ChunkMeshInstance>()
-        for (chunk in world.allLoadedChunks) {
-            val chunk = chunk as CubicChunk
 
-            if (!frustrum.isBoxInFrustrum(Box(Vector3i(chunk.chunkX * 32, chunk.chunkY * 32, chunk.chunkZ * 32).toVec3d(), Vector3i(32, 32, 32).toVec3d())))
+        //var box = Box(Vector3d(0.0), Vector3d(0.0))
+        //box.xWidth = 32.0
+        //box.yHeight = 32.0
+        //box.zWidth = 32.0
+
+        val boxCenter = Vector3f(0f)
+        val boxSize = Vector3f(32f, 32f, 32f)
+
+        for (chunk in world.allLoadedChunks) {
+            //val chunk = chunk as CubicChunk
+
+            //if (!frustrum.isBoxInFrustrum(Box(Vector3i(chunk.chunkX * 32, chunk.chunkY * 32, chunk.chunkZ * 32).toVec3d(), Vector3i(32, 32, 32).toVec3d())))
+            //    continue
+
+            //box.xPosition = chunk.chunkX * 32.0
+            //box.yPosition = chunk.chunkY * 32.0
+            //box.zPosition = chunk.chunkZ * 32.0
+
+            //if (!frustrum.isBoxInFrustrum(box))
+            //    continue
+
+            boxCenter.x = chunk.chunkX * 32.0f + 16.0f
+            boxCenter.y = chunk.chunkY * 32.0f + 16.0f
+            boxCenter.z = chunk.chunkZ * 32.0f + 16.0f
+
+            if(!frustrum.isBoxInFrustrum(boxCenter, boxSize))
                 continue
 
             if (chunk.isAirChunk)
