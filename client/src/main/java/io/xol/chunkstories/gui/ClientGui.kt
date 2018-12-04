@@ -21,6 +21,9 @@ class ClientGui(override val client: ClientImplementation) : Gui {
     //TODO make this configurable
     open val guiScale: Int
         get() {
+            if(guiScaleOverride != -1)
+                return guiScaleOverride
+
             val scaleHorizontal = Math.floor(client.gameWindow.width / 512.0).toInt()
             val scaleVertical = Math.floor(client.gameWindow.height / 320.0).toInt()
 
@@ -29,6 +32,9 @@ class ClientGui(override val client: ClientImplementation) : Gui {
                 return minScale
             return 1
         }
+
+    var guiScaleOverride = -1
+
     override val viewportWidth: Int
         get() = client.gameWindow.width / guiScale
     override val viewportHeight: Int

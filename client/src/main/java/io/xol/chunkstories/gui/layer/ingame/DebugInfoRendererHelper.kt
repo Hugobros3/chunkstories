@@ -8,6 +8,7 @@ import io.xol.chunkstories.client.glfw.GLFWWindow
 import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import io.xol.chunkstories.graphics.vulkan.resources.VmaAllocator
 import io.xol.chunkstories.graphics.vulkan.systems.world.VulkanCubesDrawer
+import io.xol.chunkstories.gui.ClientGui
 import io.xol.chunkstories.util.VersionInfo
 import io.xol.chunkstories.world.WorldImplementation
 import io.xol.chunkstories.world.chunk.CubicChunk
@@ -16,11 +17,16 @@ class DebugInfoRendererHelper(ingameLayer: IngameLayer) {
     val gui = ingameLayer.gui
 
     fun drawDebugInfo(guiDrawer: GuiDrawer) {
-        var posY = gui.viewportHeight - 4
-        val font = guiDrawer.fonts.getFont("LiberationSans-Regular", 10f)
+        //(guiDrawer.gui as ClientGui).guiScaleOverride = Math.max(1, (guiDrawer.gui as ClientGui).guiScale / 2)
+        (guiDrawer.gui as ClientGui).guiScaleOverride = 1
+
+        var posY = gui.viewportHeight
+        val font = guiDrawer.fonts.getFont("LiberationSans-Regular", 16f)
+        //posY -= font.lineHeight + 2
+        posY -= 4
 
         fun debugLine(text: String) {
-            posY -= 12
+            posY -= font.lineHeight + 0
             guiDrawer.drawStringWithShadow(font, 4, posY, text)
         }
 
@@ -30,36 +36,20 @@ class DebugInfoRendererHelper(ingameLayer: IngameLayer) {
         val swapchain = (window.graphicsBackend as VulkanGraphicsBackend).swapchain
 
         debugLine("Chunk Stories ${VersionInfo.version} running on the ${window.graphicsBackend.javaClass.simpleName}")
-        debugLine("${client.tasks.submittedTasks()} + ${world.ioHandler.size}")
 
-        /*val manualChunksCount = world.regionsStorage.internalGetLoadedRegions().sumBy { it.loadedChunks.size }
-        if(world.regionsStorage.internalGetLoadedRegions().toSet().size != world.regionsStorage.internalGetLoadedRegions().size)
-            println("DUPLICATED REGION OMG")
-        val globalUserCount = world.regionsStorage.internalGetLoadedRegions().sumBy { it.loadedChunks.sumBy { it.holder().countUsers() } }
-        val zombieChunksCount = world.regionsStorage.internalGetLoadedRegions().sumBy { it.loadedChunks.count { it.holder().countUsers() == 0 } }
-        debugLine("Chunk count sanitization: atomic counter: ${CubicChunk.chunksCounter} registeredUsers: ${ChunkHolderImplementation.globalRegisteredUsers} manualCount: $manualChunksCount users atomic counter $globalUserCount zombies: #FF0000$zombieChunksCount")
-*/
+        val performanceMetrics = swapchain.performanceCounter
+        debugLine("#FF0000Rendering: ${performanceMetrics.lastFrametimeNs/1000000}ms fps: ${performanceMetrics.avgFps.toInt()} (min ${performanceMetrics.minFps.toInt()}, max ${performanceMetrics.maxFps.toInt()}) #00FFFFSimulation performance : ${world.gameLogic.simulationFps}")
 
         debugLine("RAM usage: ${Runtime.getRuntime().freeMemory() / 1024 / 1024} mb free")
         debugLine("VRAM usage: ${VmaAllocator.allocations} allocations totalizing ${VmaAllocator.allocatedBytes.get()/1024/1024}mb ")
 
+        debugLine("Tasks queued: ${client.tasks.submittedTasks()} IO operations queud: ${world.ioHandler.size}")
 
-        val performanceMetrics = swapchain.performanceCounter
-        debugLine("#FF0000Rendering: ${performanceMetrics.lastFrametimeNs/1000000}ms fps: ${performanceMetrics.avgFps.toInt()} (min ${performanceMetrics.minFps.toInt()}, max ${performanceMetrics.maxFps.toInt()}) #00FFFFSimulation performance : ${world.gameLogic.simulationFps}")
         debugLine("Vertices drawn: ${VulkanCubesDrawer.totalCubesDrawn} within ${VulkanCubesDrawer.totalBuffersUsed} vertex buffers")
         debugLine("World info : ${world.allLoadedChunks.count()} chunks loaded, ${world.regionsStorage.regionsList.count()} regions")
 
         val playerEntity = client.player.controlledEntity
         if(playerEntity != null ) {
-            debugLine("Controlled entity id ${playerEntity.UUID} position ${playerEntity.location} type ${playerEntity.definition.name}")
-
-            val lookingAt = playerEntity.traits[TraitVoxelSelection::class]?.getBlockLookingAt(false, false)
-            debugLine("Looking at $lookingAt in direction ${playerEntity.traits[TraitRotation::class]?.directionLookingAt}")
-
-            val standingAt = playerEntity.location.toVec3i()
-            val standingIn = world.peekSafely(playerEntity.location)
-            debugLine("Standing at $standingAt in ${standingIn.voxel} (solid=${standingIn.voxel?.solid}, box=${standingIn.voxel?.collisionBoxes?.getOrNull(0)})")
-
             val region = world.getRegionLocation(playerEntity.location)
             val holder = region?.let {
                 val cx = playerEntity.location.x.toInt() / 32
@@ -69,14 +59,27 @@ class DebugInfoRendererHelper(ingameLayer: IngameLayer) {
             }
             val chunk = holder?.chunk
 
-            debugLine("region: $region")
+            debugLine("Region: $region")
             debugLine("ChunkHolder: $holder")
-            debugLine("chunk: $chunk")
+            debugLine("Chunk: $chunk")
 
-            holder?.apply {
+            debugLine("Controlled entity id ${playerEntity.UUID} position ${playerEntity.location} type ${playerEntity.definition.name}")
+
+            val lookingAt = playerEntity.traits[TraitVoxelSelection::class]?.getBlockLookingAt(false, false)
+            debugLine("Looking at $lookingAt in direction ${playerEntity.traits[TraitRotation::class]?.directionLookingAt}")
+
+            val standingAt = playerEntity.location.toVec3i()
+            val standingIn = world.peekSafely(playerEntity.location)
+            debugLine("Standing at $standingAt in ${standingIn.voxel} (solid=${standingIn.voxel?.solid}, box=${standingIn.voxel?.collisionBoxes?.getOrNull(0)})")
+
+
+
+            /*holder?.apply {
                 debugLine("${CubicChunk.chunksCounter} history: H: ${holder.stateHistory} R: ${region.stateHistory}")
-            }
+            }*/
         }
+
+        (guiDrawer.gui as ClientGui).guiScaleOverride = -1
 
         //val inp = client.inputsManager.getInputByName("forward") as Lwjgl3KeyBind
         //debugLine("forward key ${inp.name} ${inp.isPressed}")
