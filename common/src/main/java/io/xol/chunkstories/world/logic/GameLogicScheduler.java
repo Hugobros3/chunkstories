@@ -24,16 +24,11 @@ public class GameLogicScheduler implements Scheduler {
 		return logger;
 	}
 
-	List<ScheduledTask> scheduledTasks = new ArrayList<ScheduledTask>();
+	private List<ScheduledTask> scheduledTasks = new ArrayList<ScheduledTask>();
 
-	public void runScheduledTasks() {
+	void runScheduledTasks() {
 		try {
-			Iterator<ScheduledTask> i = scheduledTasks.iterator();
-			while (i.hasNext()) {
-				ScheduledTask task = i.next();
-				if (task.etc())
-					i.remove();
-			}
+			scheduledTasks.removeIf(ScheduledTask::etc);
 		} catch (Throwable t) {
 			logger().error(t.getMessage());
 			t.printStackTrace();
@@ -47,7 +42,7 @@ public class GameLogicScheduler implements Scheduler {
 
 	class ScheduledTask {
 
-		public ScheduledTask(Runnable runnable, long delay, long period) {
+		ScheduledTask(Runnable runnable, long delay, long period) {
 			this.runnable = runnable;
 			this.delay = delay;
 			this.period = period;

@@ -39,8 +39,8 @@ public class PacketSoundSource extends PacketWorld {
 
 	@Override
 	public void send(PacketDestinator destinator, DataOutputStream out, PacketSendingContext ctx) throws IOException {
-		out.writeUTF(soundSourceToSend.getSoundName());
-		out.writeLong(soundSourceToSend.getUUID());
+		out.writeUTF(soundSourceToSend.getName());
+		out.writeLong(soundSourceToSend.getUuid());
 		Vector3dc position = soundSourceToSend.getPosition();
 		if (position != null) {
 			out.writeBoolean(true);
@@ -53,7 +53,7 @@ public class PacketSoundSource extends PacketWorld {
 		// out.writeBoolean(soundSourceToSend.isAmbient);
 		// out.writeBoolean(soundSourceToSend.buffered);
 		out.writeByte(soundSourceToSend.getMode().ordinal());
-		out.writeBoolean(soundSourceToSend.stopped);
+		out.writeBoolean(soundSourceToSend.isDonePlaying());
 		out.writeFloat(soundSourceToSend.getPitch());
 		out.writeFloat(soundSourceToSend.getGain());
 		out.writeFloat(soundSourceToSend.getAttenuationStart());

@@ -35,8 +35,7 @@ constructor(override val client: IngameClientImplementation, info: WorldInfo, tr
     override fun tick() {
         super.tick()
 
-        // Update used map bits
-        client.player.loadingAgent.updateUsedWorldBits()
+        client.player.update()
 
         // Update world timing graph
         //WorldLogicTimeRenderer.tickWorld();

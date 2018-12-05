@@ -30,7 +30,7 @@ public class ClientPacketWorldUser extends PacketWorldUser {
 		System.out.println("weeiiird");
 		if (context instanceof ClientPacketsEncoderDecoder) {
 			try {
-				((LocalPlayerImplementation) ((ClientPacketsEncoderDecoder) context).getContext().getPlayer()).loadingAgent
+				((LocalPlayerImplementation) ((ClientPacketsEncoderDecoder) context).getContext().getPlayer()).getLoadingAgent()
 						.handleServerResponse(this);
 			} catch (IllegalPacketException e) {
 				e.printStackTrace();

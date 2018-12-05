@@ -84,11 +84,11 @@ constructor(gameContext: GameContext, info: WorldInfo, folder: File, immediateIO
 
         override fun stopAnySound() {}
 
-        override fun getAllPlayingSounds(): Iterator<SoundSource>? {
+        override fun getAllPlayingSounds(): Set<SoundSource>? {
             return null
         }
 
-        override fun setListenerPosition(x: Float, y: Float, z: Float, lookAt: Vector3fc, up: Vector3fc) {}
+        override fun setListenerPosition(position: Vector3fc, lookAt: Vector3fc, up: Vector3fc) {}
 
         override fun playSoundEffect(soundEffect: String, mode: Mode, position: Vector3dc?, pitch: Float, gain: Float,
                                      attStart: Float, attEnd: Float): SoundSource {

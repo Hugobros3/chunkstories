@@ -23,15 +23,17 @@ import org.lwjgl.system.MemoryUtil;
 import io.xol.chunkstories.sound.SoundDataBuffered;
 
 public class SoundDataOggStream extends SoundDataBuffered {
-	int alId = -1;
+	private int openAlBufferId = -1;
 
-	static int BUFFER_SIZE = 22050 * 4; // buffers size
-	// int[] buffersId = new int[2];
-	byte[] scratch = new byte[BUFFER_SIZE];
-	ByteBuffer buffer;
-	OggInputStream oggInput;
+	private static int BUFFER_SIZE = 22050 * 4; // buffers size
+	private byte[] scratch = new byte[BUFFER_SIZE];
+	private ByteBuffer buffer;
+	private OggInputStream oggInput;
 
-	int format;
+	private int format;
+
+	private long length = -1;
+	public String name = "undefined ta mère la globachienasse galactique";
 
 	public SoundDataOggStream(InputStream is) {
 		try {
@@ -46,12 +48,10 @@ public class SoundDataOggStream extends SoundDataBuffered {
 	}
 
 	private void fillBuffer(int alId) throws IOException {
-		int remaining = BUFFER_SIZE;// Math.min(BUFFER_SIZE, oggInput.available());
+		int remaining = BUFFER_SIZE;
 		while (remaining > 0) {
 			int read = oggInput.read(scratch, BUFFER_SIZE - remaining, remaining);
-			// System.out.println("Filling buffer "+alId+", read"+read+"bytes.");
 			if (read < 0) {
-				// We don't wanna infiniloop this shit
 				break;
 			}
 			remaining -= read;
@@ -75,7 +75,7 @@ public class SoundDataOggStream extends SoundDataBuffered {
 
 	@Override
 	public int getBuffer() {
-		return alId;
+		return openAlBufferId;
 	}
 
 	@Override
@@ -101,10 +101,6 @@ public class SoundDataOggStream extends SoundDataBuffered {
 		}
 		return -1;
 	}
-
-	long length = -1;
-
-	public String name = "undefined ta mère la globachienasse galactique";
 
 	@Override
 	public long getLengthMs() {

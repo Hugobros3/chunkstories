@@ -29,32 +29,39 @@ import io.xol.chunkstories.api.content.Asset;
 import io.xol.chunkstories.sound.SoundData;
 
 public class SoundDataOggSample extends SoundData {
-	int alId = -1;
+	private int openAlBufferId = -1;
+
+	private long length = -1;
+	public String name = "undefined";
 
 	public SoundDataOggSample(Asset asset) {
 		if (asset != null) {
 			try {
-				ByteArrayOutputStream oggData = new ByteArrayOutputStream();
+				ByteArrayOutputStream sampleDataOutputStream = new ByteArrayOutputStream();
 				OggInputStream oggInput = new OggInputStream(new DataInputStream(asset.read()));
 				while (!oggInput.atEnd()) {
-					oggData.write(oggInput.read());
+					sampleDataOutputStream.write(oggInput.read());
 				}
 				oggInput.close();
-				byte[] lel = oggData.toByteArray();
-				ByteBuffer buf = BufferUtils.createByteBuffer(lel.length);
-				buf.put(lel);
-				buf.flip();
-				alId = alGenBuffers();
-				length = lel.length * 1000L / (oggInput.info.channels * oggInput.getRate());
-				// System.out.println("Sound "+f+" is "+length+" ms
-				// long."+oggInput.info.channels+"r:"+oggInput.getRate()+"lel"+lel.length);
+
+				byte[] sampleDataByteArray = sampleDataOutputStream.toByteArray();
+
+				ByteBuffer sampleDataByteBuffer = BufferUtils.createByteBuffer(sampleDataByteArray.length);
+				sampleDataByteBuffer.put(sampleDataByteArray);
+				sampleDataByteBuffer.flip();
+
+				// Compute length in milliseconds based on sample length divided by rate & channels
+				length = sampleDataByteArray.length * 1000L / (oggInput.info.channels * oggInput.getRate());
+
 				int format = oggInput.info.channels == 1 ? AL_FORMAT_MONO16 : AL_FORMAT_STEREO16;
-				alBufferData(alId, format, buf, oggInput.getRate());
+
+				openAlBufferId = alGenBuffers();
+				alBufferData(openAlBufferId, format, sampleDataByteBuffer, oggInput.getRate());
+
 				int result;
 				if ((result = alGetError()) != AL_NO_ERROR)
 					System.out.println(getALErrorString(result));
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -81,16 +88,13 @@ public class SoundDataOggSample extends SoundData {
 
 	@Override
 	public int getBuffer() {
-		return alId;
+		return openAlBufferId;
 	}
 
 	@Override
 	public void destroy() {
-		alDeleteBuffers(alId);
+		alDeleteBuffers(openAlBufferId);
 	}
-
-	long length = -1;
-	public String name = "undefined";
 
 	@Override
 	public long getLengthMs() {

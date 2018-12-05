@@ -1,14 +1,12 @@
 package io.xol.chunkstories.client.glfw
 
 import io.xol.chunkstories.api.entity.traits.serializable.TraitControllable
-import io.xol.chunkstories.api.graphics.GraphicsBackend
 import io.xol.chunkstories.api.graphics.Window
 import io.xol.chunkstories.client.ClientImplementation
 import io.xol.chunkstories.graphics.GLFWBasedGraphicsBackend
 import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import io.xol.chunkstories.input.lwjgl3.Lwjgl3ClientInputsManager
 import org.lwjgl.glfw.GLFW.*
-import org.lwjgl.glfw.GLFWVulkan
 import org.lwjgl.glfw.GLFWVulkan.glfwVulkanSupported
 import org.slf4j.LoggerFactory
 import java.awt.image.BufferedImage
@@ -90,6 +88,7 @@ class GLFWWindow(val client: ClientImplementation) : Window {
             mainThreadQueue.removeAll { it.invoke(this); true }
             glfwPollEvents()
             inputsManager.updateInputs()
+            client.soundManager.updateAllSoundSources()
 
             client.ingame?.player?.controlledEntity?.let { it.traits[TraitControllable::class]?.onEachFrame() }
 

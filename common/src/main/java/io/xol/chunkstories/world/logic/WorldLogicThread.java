@@ -48,8 +48,6 @@ public class WorldLogicThread extends Thread implements GameLogic {
 		this.setPriority(Constants.MAIN_SINGLEPLAYER_LOGIC_THREAD_PRIORITY);
 
 		gameLogicScheduler = new GameLogicScheduler();
-
-		// this.start();
 	}
 
 	public GameContext getGameContext() {
