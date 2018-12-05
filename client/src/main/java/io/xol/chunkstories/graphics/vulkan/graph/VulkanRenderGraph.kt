@@ -15,7 +15,7 @@ import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
 import org.lwjgl.vulkan.VK10.*
 
-class VulkanRenderGraph(val backend: VulkanGraphicsBackend, script: RenderGraphDeclarationScript) : RenderGraph, Cleanable {
+class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val script: RenderGraphDeclarationScript) : RenderGraph, Cleanable {
 
     val commandPool: CommandPool
     val commandBuffers: InflightFrameResource<VkCommandBuffer>

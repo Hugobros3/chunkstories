@@ -10,7 +10,6 @@ import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 import java.util.concurrent.Semaphore
-import kotlin.math.log
 
 class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: PhysicalDevice) {
     private val allQueues: List<Queue>
@@ -69,41 +68,10 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
             Pair(family, queues2create)
         }.toMap()
 
-        // The queues we need depends if the two families are the same
-        /*val vkDeviceQueuesCreateInfo: VkDeviceQueueCreateInfo.Buffer
-        if( graphicsQueueFamily == presentationQueueFamily ) {
-            logger.debug("Note : Graphics and presentation queue families are the same. Creating a single queue !")
-
-            vkDeviceQueuesCreateInfo = VkDeviceQueueCreateInfo.callocStack(1)
-            vkDeviceQueuesCreateInfo.get(0).sType(VK10.VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO).apply {
-                queueFamilyIndex(graphicsQueueFamily.index)
-                val floatBuffer = stackMallocFloat(1)
-                floatBuffer.put(0, 1.0f)
-                pQueuePriorities(floatBuffer)
-            }
-
-        } else {
-            logger.debug("Note : Graphics and presentation queue families are different.")
-
-            vkDeviceQueuesCreateInfo = VkDeviceQueueCreateInfo.callocStack(2)
-            vkDeviceQueuesCreateInfo.get(0).sType(VK10.VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO).apply {
-                queueFamilyIndex(graphicsQueueFamily.index)
-                val floatBuffer = stackMallocFloat(1)
-                floatBuffer.put(0, 1.0f)
-                pQueuePriorities(floatBuffer)
-            }
-
-            vkDeviceQueuesCreateInfo.get(1).sType(VK10.VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO).apply {
-                queueFamilyIndex(presentationQueueFamily.index)
-                val floatBuffer = stackMallocFloat(1)
-                floatBuffer.put(0, 1.0f)
-                pQueuePriorities(floatBuffer)
-            }
-        }*/
-
         // The features we need
-        val vkPhysicalDeviceFeatures = VkPhysicalDeviceFeatures.callocStack()
-        vkPhysicalDeviceFeatures.shaderSampledImageArrayDynamicIndexing(true)
+        val requestedDeviceFeatures = VkPhysicalDeviceFeatures.callocStack()
+        requestedDeviceFeatures.shaderSampledImageArrayDynamicIndexing(true)
+        requestedDeviceFeatures.independentBlend(true)
 
         // The layers we need
         var requestedLayers: PointerBuffer? = null
@@ -124,7 +92,7 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
 
         val vkDeviceCreateInfo = VkDeviceCreateInfo.callocStack().sType(VK10.VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO).apply {
             pQueueCreateInfos(vkDeviceQueuesCreateInfo)
-            pEnabledFeatures(vkPhysicalDeviceFeatures)
+            pEnabledFeatures(requestedDeviceFeatures)
             ppEnabledExtensionNames(pRequiredExtensions)
             ppEnabledLayerNames(requestedLayers)
         }

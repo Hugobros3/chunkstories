@@ -10,11 +10,12 @@ import io.xol.chunkstories.graphics.common.UnitCube
 import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import io.xol.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
 import io.xol.chunkstories.world.chunk.CubicChunk
+import io.xol.chunkstories.world.chunk.deriveddata.AutoRebuildingProperty
 import org.joml.Vector4f
 import org.lwjgl.system.MemoryUtil
 import java.util.*
 
-class GenerateChunkDataTask(val backend: VulkanGraphicsBackend, val chunk: CubicChunk) : Task() {
+class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicChunk, attachedProperty: AutoRebuildingProperty, updates: Int) : AutoRebuildingProperty.UpdateTask(attachedProperty, updates) {
     lateinit var rawChunkData: IntArray
 
     inline fun opaque(voxel: Voxel) = voxel.solid || voxel.name == "water"
@@ -29,15 +30,15 @@ class GenerateChunkDataTask(val backend: VulkanGraphicsBackend, val chunk: Cubic
             else
                 chunk.world.peekRaw(x2 + chunk.chunkX * 32, y2 + chunk.chunkY * 32, z2 + chunk.chunkZ * 32)
 
-    override fun task(taskExecutor: TaskExecutor?): Boolean {
+    override fun update(taskExecutor: TaskExecutor): Boolean {
         if (chunk.holder().state !is ChunkHolder.State.Available)
             return true
 
-        val neighborsPresent = VulkanChunkRenderData.neighborsIndexes.count { (x, y, z) ->
+        val neighborsPresent = neighborsIndexes.count { (x, y, z) ->
             val neighbor = chunk.world.getChunk(chunk.chunkX + x, chunk.chunkY + y, chunk.chunkZ + z)
             (neighbor != null || (chunk.chunkY + y < 0) || (chunk.chunkY + y >= chunk.world.worldInfo.size.heightInChunks))
         }
-        if (neighborsPresent < VulkanChunkRenderData.neighborsIndexes.size)
+        if (neighborsPresent < neighborsIndexes.size)
             return true
 
         val rng = Random(1)
@@ -63,7 +64,7 @@ class GenerateChunkDataTask(val backend: VulkanGraphicsBackend, val chunk: Cubic
                             //if (opaque(x, y - 1, z) && opaque(x, y + 1, z) && opaque(x + 1, y, z) && opaque(x - 1, y, z) && opaque(x, y, z + 1) && opaque(x, y, z - 1))
                             //    continue
 
-                            fun face(data: Int, face: List<Pair<FloatArray, FloatArray>>, side: VoxelSide) {
+                            fun face(data: Int, face: UnitCube.CubeFaceData, side: VoxelSide) {
                                 if(opaque(data))
                                     return
 
@@ -77,7 +78,7 @@ class GenerateChunkDataTask(val backend: VulkanGraphicsBackend, val chunk: Cubic
                                 val sunlight = VoxelFormat.sunlight(data) / 15f
                                 color.mul(sunlight * 0.9f + rng.nextFloat() * 0.1f)
 
-                                for((vertex, texcoord) in face) {
+                                for((vertex, texcoord) in face.vertices) {
                                     buffer.putFloat(vertex[0] + x + chunk.chunkX * 32f)
                                     buffer.putFloat(vertex[1] + y + chunk.chunkY * 32f)
                                     buffer.putFloat(vertex[2] + z + chunk.chunkZ * 32f)
@@ -85,6 +86,10 @@ class GenerateChunkDataTask(val backend: VulkanGraphicsBackend, val chunk: Cubic
                                     buffer.putFloat(color.x())
                                     buffer.putFloat(color.y())
                                     buffer.putFloat(color.z())
+
+                                    buffer.putFloat(face.normalDirection.x())
+                                    buffer.putFloat(face.normalDirection.y())
+                                    buffer.putFloat(face.normalDirection.z())
                                     count++
                                 }
                             }
@@ -113,8 +118,24 @@ class GenerateChunkDataTask(val backend: VulkanGraphicsBackend, val chunk: Cubic
             MemoryUtil.memFree(buffer)
         }
 
-        val generatedData = VulkanChunkRenderData.ChunkMeshInstance(chunk, vertexBuffer, count)
-        (chunk.meshData as VulkanChunkRenderData).acceptNewData(generatedData)
+        //val generatedData = VulkanChunkRenderData.ChunkMeshInstance(chunk, vertexBuffer, count)
+        //(chunk.meshData as VulkanChunkRenderData).acceptNewData(generatedData)
+        (chunk.meshData as ChunkVkMeshProperty).acceptNewData(vertexBuffer, count)
         return true
+    }
+
+    companion object {
+        val neighborsIndexes = generateNeighbors()
+
+        fun generateNeighbors(): List<Triple<Int, Int, Int>> {
+            val list = mutableListOf<Triple<Int, Int, Int>>()
+
+            for (x in -1..1)
+                for (y in -1..1)
+                    for (z in -1..1)
+                        list += Triple(x, y, z)
+
+            return list.filterNot { (x, y, z) -> (x == 0 && y == 0 && z == 0) }
+        }
     }
 }

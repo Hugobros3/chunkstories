@@ -13,10 +13,10 @@ import java.util.concurrent.locks.ReentrantLock
  * Examples: Chunk lighting, occlusion, meshes, heightmap metadata, etc.
  * */
 abstract class AutoRebuildingProperty(val context: GameContext, initializeClean: Boolean) {
-    internal val lock = ReentrantLock()
-    internal var pendingUpdates = if(initializeClean) 0 else 1
+    protected val lock = ReentrantLock()
+    protected var pendingUpdates = if(initializeClean) 0 else 1
 
-    internal var task : UpdateTask? = null
+    protected var task : UpdateTask? = null
     internal var isDestroyed = false
 
     init {
@@ -41,9 +41,9 @@ abstract class AutoRebuildingProperty(val context: GameContext, initializeClean:
     }
 
     //TODO in practice checking the state will go unused because the task cleans up it's own reference
-    internal fun canSpawnTask() = !isDestroyed && (task == null || task?.state == Task.State.DONE || task?.state == Task.State.CANCELLED) && false
+    internal fun canSpawnTask() = !isDestroyed && (task == null || task?.state == Task.State.DONE || task?.state == Task.State.CANCELLED)
 
-    abstract internal fun createTask(updatesToConsider: Int) : UpdateTask
+    abstract fun createTask(updatesToConsider: Int) : UpdateTask
 
     fun requestUpdateAndGetFence() : Fence {
         pendingUpdates++
@@ -81,9 +81,12 @@ abstract class AutoRebuildingProperty(val context: GameContext, initializeClean:
         abstract fun update(taskExecutor: TaskExecutor): Boolean
     }
 
+    open fun cleanup() = Unit
+
     fun destroy() {
         try {
             lock.lock()
+            cleanup()
             isDestroyed = true
             task?.tryCancel()
         } finally {

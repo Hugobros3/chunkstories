@@ -163,10 +163,6 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
 
     fun beginFrame(frameNumber: Int): Frame {
         val retiringFrame = inFlightFrames[inflightFrameIndex]
-        if(retiringFrame != null) {
-            retiringFrame.recyclingTasks.forEach { it.invoke() }
-            //performanceCounter.whenFrameEnds(retiringFrame)
-        }
 
         stackPush()
 
@@ -174,6 +170,12 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
 
         val fence = inFlightFences[currentInflightFrameIndex]
         vkWaitForFences(backend.logicalDevice.vkDevice, fence, true, Long.MAX_VALUE)
+
+        if(retiringFrame != null) {
+            retiringFrame.recyclingTasks.forEach { it.invoke() }
+            //performanceCounter.whenFrameEnds(retiringFrame)
+        }
+
         vkResetFences(backend.logicalDevice.vkDevice, fence)
 
         val imageAvailableSemaphore = imageAvailableSemaphores[currentInflightFrameIndex]

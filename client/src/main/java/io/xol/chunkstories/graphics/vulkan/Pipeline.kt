@@ -3,6 +3,7 @@ package io.xol.chunkstories.graphics.vulkan
 import io.xol.chunkstories.api.graphics.GraphicsEngine
 import io.xol.chunkstories.api.graphics.ShaderStage
 import io.xol.chunkstories.api.graphics.rendergraph.DepthTestingConfiguration.DepthTestMode.*
+import io.xol.chunkstories.api.graphics.rendergraph.PassOutput
 import io.xol.chunkstories.graphics.common.FaceCullingMode
 import io.xol.chunkstories.graphics.common.Primitive
 import io.xol.chunkstories.graphics.common.shaderc.ShaderFactory
@@ -125,18 +126,36 @@ class Pipeline(val backend: VulkanGraphicsBackend, val pass: VulkanPass, val ver
             stencilTestEnable(false)
         }
 
-        // TODO get those from the VulkanPass
-        val staticBlendState = VkPipelineColorBlendAttachmentState.callocStack(1).apply {
+        val staticBlendState = VkPipelineColorBlendAttachmentState.callocStack(pass.outputs.size)
+        pass.outputs.forEachIndexed { index, passOutput -> staticBlendState[index].apply {
             colorWriteMask(VK_COLOR_COMPONENT_R_BIT or VK_COLOR_COMPONENT_G_BIT or VK_COLOR_COMPONENT_B_BIT or VK_COLOR_COMPONENT_A_BIT)
 
-            blendEnable(true)
-            srcColorBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA)
-            dstColorBlendFactor(VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
-            colorBlendOp(VK_BLEND_OP_ADD)
-            srcAlphaBlendFactor(VK_BLEND_FACTOR_ONE)
-            dstAlphaBlendFactor(VK_BLEND_FACTOR_ZERO)
-            alphaBlendOp(VK_BLEND_OP_ADD)
-        }
+            when(passOutput.blending) {
+                PassOutput.BlendMode.OVERWRITE -> blendEnable(false)
+                PassOutput.BlendMode.ALPHA_TEST -> {
+                    // Same as MIX here
+                    blendEnable(true)
+                    srcColorBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA)
+                    dstColorBlendFactor(VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
+                    colorBlendOp(VK_BLEND_OP_ADD)
+                    srcAlphaBlendFactor(VK_BLEND_FACTOR_ONE)
+                    dstAlphaBlendFactor(VK_BLEND_FACTOR_ZERO)
+                    alphaBlendOp(VK_BLEND_OP_ADD)
+                }
+                PassOutput.BlendMode.MIX -> {
+                    blendEnable(true)
+                    srcColorBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA)
+                    dstColorBlendFactor(VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
+                    colorBlendOp(VK_BLEND_OP_ADD)
+                    srcAlphaBlendFactor(VK_BLEND_FACTOR_ONE)
+                    dstAlphaBlendFactor(VK_BLEND_FACTOR_ZERO)
+                    alphaBlendOp(VK_BLEND_OP_ADD)
+                }
+                PassOutput.BlendMode.ADD -> TODO()
+                PassOutput.BlendMode.PREMULTIPLIED_ALPHA -> TODO()
+            }
+        } }
+
         val blendStateCreateInfo = VkPipelineColorBlendStateCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO).apply {
             logicOpEnable(false)
             pAttachments(staticBlendState)

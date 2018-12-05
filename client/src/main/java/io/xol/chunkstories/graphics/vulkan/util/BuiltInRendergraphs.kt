@@ -98,6 +98,13 @@ object BuiltInRendergraphs {
             }
 
             renderBuffer {
+                name = "normalBuffer"
+
+                format = RGBA_8
+                size = viewportSize
+            }
+
+            renderBuffer {
                 name = "finalBuffer"
 
                 format = RGBA_8
@@ -118,6 +125,12 @@ object BuiltInRendergraphs {
                         name = "colorBuffer"
                         clear = true
                         clearColor = Vector4d(0.0, 0.5, 1.0, 1.0)
+                    }
+
+                    output {
+                        name = "normalBuffer"
+                        clear = true
+                        clearColor = Vector4d(0.0, 0.0, 0.0, 0.0)
                     }
                 }
 

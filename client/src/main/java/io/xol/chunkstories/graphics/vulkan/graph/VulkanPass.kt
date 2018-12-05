@@ -44,7 +44,7 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
         this.apply(config)
 
         //TODO handle custom shaders from mods
-        program = backend.shaderFactory.createProgram(backend, "/shaders/$shaderName/$shaderName")
+        program = backend.shaderFactory.createProgram(backend, "$shaderName/$shaderName")
 
         MemoryStack.stackPush()
 

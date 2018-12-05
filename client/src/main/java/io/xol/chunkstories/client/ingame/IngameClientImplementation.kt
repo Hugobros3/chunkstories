@@ -16,7 +16,6 @@ import io.xol.chunkstories.api.world.WorldMaster
 import io.xol.chunkstories.client.ClientImplementation
 import io.xol.chunkstories.client.ClientMasterPluginManager
 import io.xol.chunkstories.client.ClientSlavePluginManager
-import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import io.xol.chunkstories.graphics.vulkan.util.BuiltInRendergraphs
 import io.xol.chunkstories.gui.layer.MainMenu
 import io.xol.chunkstories.gui.layer.MessageBox
@@ -24,7 +23,8 @@ import io.xol.chunkstories.gui.layer.SkyBoxBackground
 import io.xol.chunkstories.gui.layer.ingame.IngameLayer
 import io.xol.chunkstories.gui.layer.ingame.RemoteConnectionGuiLayer
 import io.xol.chunkstories.server.commands.InstallServerCommands
-import io.xol.chunkstories.server.commands.content.ReloadContentCommand
+import io.xol.chunkstories.client.commands.ReloadContentCommand
+import io.xol.chunkstories.client.commands.installClientCommands
 import io.xol.chunkstories.world.WorldClientCommon
 import org.slf4j.Logger
 
@@ -61,7 +61,7 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
         internalPluginManager.reloadPlugins()
 
         // Prepare command line
-        ReloadContentCommand(this)
+        installClientCommands(this)
         if (this is IngameClientLocalHost) {
             InstallServerCommands(this)
         }

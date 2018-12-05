@@ -30,6 +30,7 @@ open class VulkanBuffer(val backend: VulkanGraphicsBackend, val bufferSize: Long
         VmaAllocator.allocatedBytes.addAndGet(bufferSize )
         VmaAllocator.allocations.incrementAndGet()
 
+        backend.vmaAllocator.lock.lock()
         stackPush()
         val bufferInfo = VkBufferCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO).apply {
             size(bufferSize)
@@ -71,6 +72,7 @@ open class VulkanBuffer(val backend: VulkanGraphicsBackend, val bufferSize: Long
 
         vkBindBufferMemory(backend.logicalDevice.vkDevice, handle, allocatedMemory, 0)*/
 
+        backend.vmaAllocator.lock.unlock()
         stackPop()
     }
 
@@ -78,6 +80,7 @@ open class VulkanBuffer(val backend: VulkanGraphicsBackend, val bufferSize: Long
     fun upload(data: ByteBuffer) {
         assert(data.remaining() <= bufferSize)
 
+        backend.vmaAllocator.lock.lock()
         stackPush()
         if(hostVisible) {
             val ppData = stackMallocPointer(1)
@@ -121,6 +124,7 @@ open class VulkanBuffer(val backend: VulkanGraphicsBackend, val bufferSize: Long
             stagingBuffer.cleanup()
         }
 
+        backend.vmaAllocator.lock.unlock()
         stackPop()
     }
 
@@ -135,7 +139,10 @@ open class VulkanBuffer(val backend: VulkanGraphicsBackend, val bufferSize: Long
         VmaAllocator.allocatedBytes.addAndGet(-(bufferSize))
         VmaAllocator.allocations.decrementAndGet()
 
+
+        backend.vmaAllocator.lock.lock()
         vmaDestroyBuffer(backend.vmaAllocator.handle, handle, allocation)
+        backend.vmaAllocator.lock.unlock()
         // vkDestroyBuffer(backend.logicalDevice.vkDevice, handle, null)
         //vkFreeMemory(backend.logicalDevice.vkDevice, allocatedMemory, null)
 

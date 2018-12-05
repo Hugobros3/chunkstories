@@ -10,13 +10,13 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import io.xol.chunkstories.world.chunk.deriveddata.AutoRebuildingProperty;
 import io.xol.chunkstories.world.chunk.deriveddata.ChunkOcclusionProperty;
 import io.xol.chunkstories.world.storage.ChunkHolderImplementation;
 import org.joml.Vector3dc;
@@ -80,7 +80,7 @@ public class CubicChunk implements Chunk {
 	public final Semaphore chunkDestructionSemaphore = new Semaphore(1);
 
 	@Nonnull
-	public ChunkRenderingData meshData;
+	public ChunkMesh meshData;
 
 	public final Map<Integer, CellComponentsHolder> allCellComponents = new HashMap<Integer, CellComponentsHolder>();
 	public final Set<Entity> localEntities = ConcurrentHashMap.newKeySet();
@@ -185,7 +185,7 @@ public class CubicChunk implements Chunk {
 			}
 		}
 
-		meshData = new ChunkRenderingData(this);
+		meshData = DummyChunkRenderingData.INSTANCE;
 
 		// Send chunk to whoever already subscribed
 		if (data == null)
@@ -632,7 +632,8 @@ public class CubicChunk implements Chunk {
 	public void destroy() {
 		chunkDestructionSemaphore.acquireUninterruptibly();
 		this.lightingManager.destroy();
-		this.meshData.destroy();
+		if(meshData instanceof AutoRebuildingProperty)
+			((AutoRebuildingProperty)this.meshData).destroy();
 		this.isDestroyed = true;
 		//chunksCounter.decrementAndGet();
 		chunkDestructionSemaphore.release();

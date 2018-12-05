@@ -7,6 +7,7 @@ import io.xol.chunkstories.api.physics.Box
 import io.xol.chunkstories.api.physics.Frustrum
 import io.xol.chunkstories.api.util.kotlin.toVec3d
 import io.xol.chunkstories.api.util.kotlin.toVec3i
+import io.xol.chunkstories.api.world.chunk.Chunk
 import io.xol.chunkstories.client.InternalClientOptions
 import io.xol.chunkstories.graphics.common.FaceCullingMode
 import io.xol.chunkstories.graphics.common.Primitive
@@ -22,6 +23,7 @@ import io.xol.chunkstories.world.chunk.CubicChunk
 import org.joml.Vector3d
 import org.joml.Vector3f
 import org.joml.Vector3i
+import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
@@ -34,7 +36,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
     private val vertexInputConfiguration = vertexInputConfiguration {
         binding {
             binding(0)
-            stride(3 * 4 * 2)
+            stride(3 * 4 * 3)
             inputRate(VK_VERTEX_INPUT_RATE_VERTEX)
         }
 
@@ -51,6 +53,13 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
             format(VK_FORMAT_R32G32B32_SFLOAT)
             offset(3 * 4)
         }
+
+        attribute {
+            binding(0)
+            location(program.vertexInputs.find { it.name == "normalIn" }!!.location)
+            format(VK_FORMAT_R32G32B32_SFLOAT)
+            offset(3 * 4 * 2)
+        }
     }
 
     private val pipeline = Pipeline(backend, pass, vertexInputConfiguration, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
@@ -62,6 +71,8 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
     }
 
     override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer) {
+        MemoryStack.stackPush()
+
         val entity = client.player.controlledEntity
         val camera = entity?.traits?.get(TraitControllable::class)?.camera ?: Camera()
         descriptorPool.configure(frame, camera)
@@ -84,7 +95,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         val drawDistance = world.client.configuration.getIntValue(InternalClientOptions.viewDistance) / 32
         val drawDistanceH = 4
 
-        val usedData = mutableListOf<VulkanChunkRenderData.ChunkMeshInstance>()
+        val usedData = mutableListOf<ChunkVkMeshProperty.ChunkVulkanMeshData>()
 
         //var box = Box(Vector3d(0.0), Vector3d(0.0))
         //box.xWidth = 32.0
@@ -126,8 +137,8 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
             if ((chunk.chunkY !in (camChunk.y - drawDistanceH)..(camChunk.y + drawDistanceH)))
                 continue
 
-            if (chunk.meshData is VulkanChunkRenderData) {
-                val block = (chunk.meshData as VulkanChunkRenderData).getData()
+            if (chunk.meshData is ChunkVkMeshProperty) {
+                val block = (chunk.meshData as ChunkVkMeshProperty).get()
                 if(block != null)
                     usedData.add(block)
 
@@ -143,21 +154,22 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
                 // This avoids the condition where the meshData is created after the chunk is destroyed
                 chunk.chunkDestructionSemaphore.acquireUninterruptibly()
                 if(!chunk.isDestroyed)
-                    chunk.meshData = VulkanChunkRenderData(backend, chunk)
+                    chunk.meshData = ChunkVkMeshProperty(backend, chunk)
                 chunk.chunkDestructionSemaphore.release()
             }
         }
 
-
         frame.recyclingTasks.add {
-            usedData.forEach(VulkanChunkRenderData.ChunkMeshInstance::doneWith)
+            usedData.forEach(ChunkVkMeshProperty.ChunkVulkanMeshData::release)
         }
+
+        MemoryStack.stackPop()
     }
 
     override fun cleanup() {
-        for (chunk in client.world.allLoadedChunks) {
+        /*for (chunk in client.world.allLoadedChunks) {
             (chunk.mesh() as? VulkanChunkRenderData)?.destroy()
-        }
+        }*/
 
         descriptorPool.cleanup()
         pipeline.cleanup()

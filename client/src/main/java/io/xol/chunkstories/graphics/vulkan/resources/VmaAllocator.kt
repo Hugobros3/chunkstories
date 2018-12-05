@@ -8,9 +8,11 @@ import org.lwjgl.util.vma.VmaAllocatorCreateInfo
 import org.lwjgl.util.vma.VmaVulkanFunctions
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.locks.ReentrantLock
 
 class VmaAllocator(backend: VulkanGraphicsBackend) : Cleanable {
     val handle: Long
+    val lock = ReentrantLock()
 
     init {
         stackPush()
