@@ -307,9 +307,14 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
                 return
             }
 
-            transitionAvailable(chunk)
-            playersToSendDataTo = if (usersWaitingForIntialData.isNotEmpty()) usersWaitingForIntialData.toList() else null
-            usersWaitingForIntialData.clear()
+            if(users.isNotEmpty()) {
+                transitionAvailable(chunk)
+                playersToSendDataTo = if (usersWaitingForIntialData.isNotEmpty()) usersWaitingForIntialData.toList() else null
+                usersWaitingForIntialData.clear()
+            } else {
+                transitionUnloaded()
+                playersToSendDataTo = null
+            }
         } finally {
             region.stateLock.unlock()
         }
@@ -330,9 +335,14 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
                 return
             }
 
-            transitionAvailable(chunk)
-            playersToSendDataTo = if (usersWaitingForIntialData.isNotEmpty()) usersWaitingForIntialData.toList() else null
-            usersWaitingForIntialData.clear()
+            if(users.isNotEmpty()) {
+                transitionAvailable(chunk)
+                playersToSendDataTo = if (usersWaitingForIntialData.isNotEmpty()) usersWaitingForIntialData.toList() else null
+                usersWaitingForIntialData.clear()
+            } else {
+                transitionUnloaded()
+                playersToSendDataTo = null
+            }
         } finally {
             region.stateLock.unlock()
         }

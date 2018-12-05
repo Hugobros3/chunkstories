@@ -4,7 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.chunkstories.client
+package io.xol.chunkstories.client.ingame
 
 import com.carrotsearch.hppc.IntHashSet
 import io.xol.chunkstories.api.client.Client
@@ -18,6 +18,7 @@ import io.xol.chunkstories.api.world.WorldClient
 import io.xol.chunkstories.api.world.chunk.ChunkHolder
 import io.xol.chunkstories.api.world.heightmap.Heightmap
 import io.xol.chunkstories.api.world.region.Region
+import io.xol.chunkstories.client.InternalClientOptions
 import io.xol.chunkstories.util.concurrency.CompoundFence
 import io.xol.chunkstories.world.WorldClientRemote
 import io.xol.chunkstories.world.heightmap.HeightmapImplementation
@@ -125,8 +126,16 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
             for (chunkX in cameraChunkX - summaryDistance until cameraChunkX + summaryDistance)
                 for (chunkZ in cameraChunkZ - summaryDistance until cameraChunkZ + summaryDistance) {
                     if (chunkX % 8 == 0 && chunkZ % 8 == 0) {
-                        val regionX = chunkX / 8
-                        val regionZ = chunkZ / 8
+                        var regionX = (chunkX / 8) % sizeInRegions
+                        var regionZ = (chunkZ / 8) % sizeInRegions
+
+                        // sanitizing the regions is needed here
+                        if(regionX < 0) {
+                            regionX += sizeInRegions
+                        }
+                        if(regionZ < 0) {
+                            regionZ += sizeInRegions
+                        }
 
                         val key = regionX * sizeInRegions + regionZ
 
