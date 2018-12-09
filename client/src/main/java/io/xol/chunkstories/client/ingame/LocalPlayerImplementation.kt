@@ -23,8 +23,6 @@ import io.xol.chunkstories.api.sound.SoundManager
 import io.xol.chunkstories.api.world.World
 import io.xol.chunkstories.api.world.WorldClientNetworkedRemote
 import io.xol.chunkstories.api.world.WorldMaster
-import io.xol.chunkstories.client.LocalClientLoadingAgent
-import io.xol.chunkstories.client.ingame.IngameClientImplementation
 import io.xol.chunkstories.sound.ALSoundManager
 import io.xol.chunkstories.world.WorldClientCommon
 
