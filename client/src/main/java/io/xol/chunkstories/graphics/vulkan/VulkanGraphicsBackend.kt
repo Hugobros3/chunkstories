@@ -20,6 +20,7 @@ import io.xol.chunkstories.graphics.vulkan.systems.*
 import io.xol.chunkstories.graphics.vulkan.systems.debug.VulkanDebugDrawer
 import io.xol.chunkstories.graphics.vulkan.systems.gui.VulkanGuiDrawer
 import io.xol.chunkstories.graphics.vulkan.systems.world.VulkanCubesDrawer
+import io.xol.chunkstories.graphics.vulkan.textures.VirtualTexturing
 import io.xol.chunkstories.graphics.vulkan.textures.VulkanTextures
 import io.xol.chunkstories.graphics.vulkan.util.*
 import org.lwjgl.PointerBuffer
@@ -65,6 +66,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
 
     val shaderFactory = VulkanShaderFactory(this, window.client)
     val textures: VulkanTextures
+    val virtualTexturing: VirtualTexturing
 
     var renderGraph: VulkanRenderGraph
 
@@ -87,8 +89,8 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
         //TODO remove
         memoryManager = VulkanMemoryManager(this, logicalDevice)
 
-
         textures = VulkanTextures(this)
+        virtualTexturing = VirtualTexturing(this)
 
         renderToBackbuffer = RenderPassHelpers.createWindowSurfaceRenderPass(this)
         swapchain = SwapChain(this, renderToBackbuffer, null)
@@ -262,6 +264,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
         swapchain.cleanup()
 
         textures.cleanup()
+        virtualTexturing.cleanup()
 
         vmaAllocator.cleanup()
         memoryManager.cleanup()

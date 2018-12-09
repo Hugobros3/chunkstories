@@ -1,6 +1,6 @@
 #version 450
 
-layout(set=0, location=0) uniform sampler2D virtualTextures[32];
+layout(set=0, location=0) uniform sampler2D virtualTextures[1024];
  
 in vec2 texCoord;
 in vec4 color;
