@@ -13,7 +13,7 @@ import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 
-class VulkanTexture2D(val backend: VulkanGraphicsBackend, val operationsPool: CommandPool, override val format: TextureFormat, override val width: Int, override val height: Int,
+class VulkanTexture2D(val backend: VulkanGraphicsBackend, override val format: TextureFormat, override val width: Int, override val height: Int,
                       val usageFlags: Int) : Texture2D, Cleanable {
 
     val vulkanFormat = format.vulkanFormat
@@ -82,6 +82,7 @@ class VulkanTexture2D(val backend: VulkanGraphicsBackend, val operationsPool: Co
 
     fun transitionLayout(oldLayout: VkImageLayout, newLayout: VkImageLayout) {
         stackPush()
+        val operationsPool = backend.logicalDevice.graphicsQueue.threadSafePools.get()
         val commandBuffer = operationsPool.createOneUseCB()
 
         // What we want to make sure isn't interfered with
@@ -160,6 +161,7 @@ class VulkanTexture2D(val backend: VulkanGraphicsBackend, val operationsPool: Co
 
     fun copyBufferToImage(buffer: VulkanBuffer) {
         stackPush()
+        val operationsPool = backend.logicalDevice.graphicsQueue.threadSafePools.get()
         val commandBuffer = operationsPool.createOneUseCB()
 
         val region = VkBufferImageCopy.callocStack(1).apply {

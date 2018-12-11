@@ -36,7 +36,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
     private val vertexInputConfiguration = vertexInputConfiguration {
         binding {
             binding(0)
-            stride(3 * 4 * 3)
+            stride(3 * 4 + 3 * 4 + 3 * 4 + 2 * 4 + 4)
             inputRate(VK_VERTEX_INPUT_RATE_VERTEX)
         }
 
@@ -58,7 +58,21 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
             binding(0)
             location(program.vertexInputs.find { it.name == "normalIn" }!!.location)
             format(VK_FORMAT_R32G32B32_SFLOAT)
-            offset(3 * 4 * 2)
+            offset(3 * 4 + 3 * 4)
+        }
+
+        attribute {
+            binding(0)
+            location(program.vertexInputs.find { it.name == "texCoordIn" }!!.location)
+            format(VK_FORMAT_R32G32_SFLOAT)
+            offset(3 * 4 + 3 * 4 + 3 * 4)
+        }
+
+        attribute {
+            binding(0)
+            location(program.vertexInputs.find { it.name == "textureIdIn" }!!.location)
+            format(VK_FORMAT_R32_UINT)
+            offset(3 * 4 + 3 * 4 + 3 * 4 + 2 * 4)
         }
     }
 
@@ -143,6 +157,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
                     usedData.add(block)
 
                 if (block?.vertexBuffer != null) {
+                    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 0, stackLongs(block.virtualTexturingContext!!.setHandle), null)
                     vkCmdBindVertexBuffers(commandBuffer, 0, stackLongs(block.vertexBuffer.handle), stackLongs(0))
                     //vkCmdDraw(commandBuffer, 3 * 2 * 6, block.count, 0, 0)
                     vkCmdDraw(commandBuffer, block.count, 1, 0, 0)

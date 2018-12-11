@@ -285,11 +285,15 @@ object SpirvCrossHelper {
         val sources = mapOf(*(partiallyDecoratedShaderStages.mapIndexed { index, compiler ->
             var compiledSource = compiler.compile()
 
-            if (dialect == ShaderFactory.GLSLDialect.VULKAN && (factory as VulkanShaderFactory).backend.doNonUniformSamplerArrayAccess ) {
-                // Like, I could do this stuff cleanly using reflection and put the correct decoration in the spirvcode...
-                // But this works and stops me from wasting my time fighting the spirvcross swig nonsense
-                compiledSource = compiledSource.replace(Regex("virtualTextures\\[(([a-z]|[A-Z]).*)\\]")) {
-                    "virtualTextures[nonuniformEXT(${it.groupValues[1]})]"
+            if (dialect == ShaderFactory.GLSLDialect.VULKAN ) {
+                val backend = (factory as VulkanShaderFactory).backend
+                if (backend.enableDivergingUniformSamplerIndexing && backend.physicalDevice.canDoNonUniformSamplerIndexing) {
+                    // Like, I could do this stuff cleanly using reflection and put the correct decoration in the spirvcode...
+                    // But this works and stops me from wasting my time fighting the spirvcross swig nonsense
+                    compiledSource = compiledSource.replace(Regex("virtualTextures\\[(([a-z]|[A-Z]).*)\\]")) {
+                        "virtualTextures[nonuniformEXT(${it.groupValues[1]})]"
+                    }
+                    println(compiledSource)
                 }
             }
 

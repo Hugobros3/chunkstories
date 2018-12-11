@@ -7,6 +7,7 @@ import kotlin.reflect.full.isSubclassOf
 enum class GLSLBaseType(val klass: KClass<*>, val glslToken: String, val alignment: Int, val size: Int) {
     FLOAT(Float::class, "float", 4, 4),
     INT(Int::class, "int", 4, 4),
+    UINT(Int::class, "uint", 4, 4),
     LONG(Long::class, "int", 4, 4),
 
     VEC2(Vector2fc::class, "vec2", 2 * 4, 2 * 4),

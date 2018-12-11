@@ -40,7 +40,7 @@ class VulkanRenderBuffer(val backend: VulkanGraphicsBackend, val graph: VulkanRe
             else -> UsageType.COLOR
         }
 
-        texture = VulkanTexture2D(backend, graph.commandPool, format, size.x, size.y, usage.usageBits())
+        texture = VulkanTexture2D(backend, format, size.x, size.y, usage.usageBits())
         //texture.transitionLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL)
         //texture.transitionToRenderBufferLayout()
     }
@@ -52,7 +52,7 @@ class VulkanRenderBuffer(val backend: VulkanGraphicsBackend, val graph: VulkanRe
             logger.debug("Resizing render buffer $name")
             size = newSize
             texture.cleanup()
-            texture = VulkanTexture2D(backend, graph.commandPool, format, size.x, size.y, usage.usageBits())
+            texture = VulkanTexture2D(backend, format, size.x, size.y, usage.usageBits())
         }
     }
 

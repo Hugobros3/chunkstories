@@ -5,8 +5,13 @@ import io.xol.chunkstories.graphics.vulkan.util.*
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryStack.stackMallocInt
 import org.lwjgl.vulkan.*
+import org.lwjgl.vulkan.EXTDescriptorIndexing.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT
+import org.lwjgl.vulkan.KHRGetPhysicalDeviceProperties2.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2_KHR
+import org.lwjgl.vulkan.KHRGetPhysicalDeviceProperties2.vkGetPhysicalDeviceFeatures2KHR
 import org.lwjgl.vulkan.KHRSurface.*
 import org.lwjgl.vulkan.VK10.*
+import org.lwjgl.vulkan.VK11.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2
+import org.lwjgl.vulkan.VK11.vkGetPhysicalDeviceFeatures2
 import org.slf4j.LoggerFactory
 import java.nio.IntBuffer
 
@@ -21,6 +26,7 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
     val queueFamilies: List<QueueFamily>
 
     val availableExtensions: List<String>
+    val canDoNonUniformSamplerIndexing: Boolean
 
     internal val swapchainDetails: SwapChainSupportDetails
 
@@ -29,15 +35,11 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
 
         // Query device properties
         val vkPhysicalDeviceProperties = VkPhysicalDeviceProperties.callocStack()
-        VK10.vkGetPhysicalDeviceProperties(vkPhysicalDevice, vkPhysicalDeviceProperties)
+        vkGetPhysicalDeviceProperties(vkPhysicalDevice, vkPhysicalDeviceProperties)
 
         deviceName = vkPhysicalDeviceProperties.deviceNameString()
         deviceType = vkPhysicalDeviceProperties.deviceType().physicalDeviceType()
         deviceId = vkPhysicalDeviceProperties.deviceID()
-
-        // Query device features
-        val vkPhysicalDeviceFeatures = VkPhysicalDeviceFeatures.callocStack()
-        VK10.vkGetPhysicalDeviceFeatures(vkPhysicalDevice, vkPhysicalDeviceFeatures)
 
         // Query device extensions
         val pExtensionsCount = stackMallocInt(1)
@@ -50,7 +52,19 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
             availableExtensions += extension.extensionNameString()
         }
 
-        logger.debug("$availableExtensions")
+        logger.debug("Available Vulkan extensions: $availableExtensions")
+
+        // Query device features
+        val vkPhysicalDeviceFeatures2 = VkPhysicalDeviceFeatures2.callocStack().sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2)
+
+        var deviceIndexingFeatures: VkPhysicalDeviceDescriptorIndexingFeaturesEXT? = null
+        if(availableExtensions.contains("VK_EXT_descriptor_indexing")) {
+            deviceIndexingFeatures = VkPhysicalDeviceDescriptorIndexingFeaturesEXT.callocStack().sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT)
+            vkPhysicalDeviceFeatures2.pNext(deviceIndexingFeatures.address())
+        }
+        vkGetPhysicalDeviceFeatures2(vkPhysicalDevice, vkPhysicalDeviceFeatures2)
+
+        canDoNonUniformSamplerIndexing = deviceIndexingFeatures?.shaderSampledImageArrayNonUniformIndexing() == true
 
         // Query queue families properties
         val pQueueFamilyCount = MemoryStack.stackMallocInt(1)
@@ -87,8 +101,11 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
 
         swapchainDetails = SwapChainSupportDetails(pSurfaceCapabilities, pSurfaceFormats, pPresentModes)
 
+        // Look for diverging descriptor access capability
+
+
         // Decide if suitable or not based on all that
-        suitable = vkPhysicalDeviceFeatures.geometryShader() && availableExtensions.containsAll(backend.requiredDeviceExtensions) && swapchainDetails.suitable
+        suitable = vkPhysicalDeviceFeatures2.features().geometryShader() && availableExtensions.containsAll(backend.requiredDeviceExtensions) && swapchainDetails.suitable
         fitnessScore = 1 + deviceType.fitnessScoreBonus
 
         MemoryStack.stackPop()

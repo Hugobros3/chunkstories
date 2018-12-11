@@ -9,6 +9,7 @@ import io.xol.chunkstories.graphics.vulkan.util.VkDescriptorSet
 import io.xol.chunkstories.graphics.vulkan.util.VkDescriptorSetLayout
 import io.xol.chunkstories.graphics.vulkan.util.ensureIs
 import org.lwjgl.system.MemoryStack.*
+import org.lwjgl.system.MemoryUtil.memFree
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import java.util.concurrent.ConcurrentLinkedDeque
@@ -91,7 +92,7 @@ class VirtualTexturing(val backend: VulkanGraphicsBackend) : Cleanable {
         return layout
     }
 
-    fun prepareContexts(count: Int) {
+    private fun prepareContexts(count: Int) {
         stackPush()
 
         println("preparing $count contexts")
@@ -175,7 +176,7 @@ class VirtualTexturing(val backend: VulkanGraphicsBackend) : Cleanable {
             if(content.size == 0)
                 return
 
-            val imageInfo = VkDescriptorImageInfo.callocStack(contextCapacity)
+            val imageInfo = VkDescriptorImageInfo.calloc(contextCapacity)
 
             for(i in 0 until contextCapacity) {
                 imageInfo[i].apply {
@@ -200,6 +201,9 @@ class VirtualTexturing(val backend: VulkanGraphicsBackend) : Cleanable {
             }
 
             vkUpdateDescriptorSets(backend.logicalDevice.vkDevice, stuffToWrite, null)
+
+            imageInfo.free()
+            //memFree(imageInfo)
         }
 
         fun returnToPool() {

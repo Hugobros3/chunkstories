@@ -346,13 +346,18 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
         virtualTexturingContext.updateContents()
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 0, stackLongs(virtualTexturingContext.setHandle), null)
 
-        for ((primitivesCount, offset) in stagingDraws)
-            vkCmdDraw(commandBuffer, primitivesCount, 1, offset, 0)
+        if (backend.enableDivergingUniformSamplerIndexing && backend.physicalDevice.canDoNonUniformSamplerIndexing) {
+            val primitivesCount = stagingDraws.sumBy { it.first }
+            vkCmdDraw(commandBuffer, primitivesCount, 1, 0, 0)
+        } else {
+            for ((primitivesCount, offset) in stagingDraws)
+                vkCmdDraw(commandBuffer, primitivesCount, 1, offset, 0)
+        }
 
         stagingDraws.clear()
 
         usedContexts += virtualTexturingContext
-        if(!last)
+        if (!last)
             virtualTexturingContext = backend.virtualTexturing.getVirtualTexturingContext()
     }
 
@@ -368,14 +373,6 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
             this.commandBuffer = commandBuffer
             virtualTexturingContext = backend.virtualTexturing.getVirtualTexturingContext()
 
-            /*virtualTexturing.begin(commandBuffer, pipeline, frame) {
-        afterTextureSwitch()
-
-        for((primitivesCount, offset) in stagingDraws)
-            vkCmdDraw(commandBuffer, primitivesCount, 1, offset, 0)
-
-        stagingDraws.clear()
-    }*/
             gui.topLayer?.render(drawer)
             finishTexturingContext(true)
 

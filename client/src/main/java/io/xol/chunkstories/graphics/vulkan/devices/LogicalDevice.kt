@@ -7,6 +7,7 @@ import io.xol.chunkstories.graphics.vulkan.util.ensureIs
 import org.lwjgl.PointerBuffer
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
+import org.lwjgl.vulkan.EXTDescriptorIndexing.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 import java.util.concurrent.Semaphore
@@ -71,7 +72,7 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
         // The features we need
         val requestedDeviceFeatures = VkPhysicalDeviceFeatures.callocStack()
         requestedDeviceFeatures.shaderSampledImageArrayDynamicIndexing(true)
-        requestedDeviceFeatures.independentBlend(true)
+        //requestedDeviceFeatures.independentBlend(true)
 
         // The layers we need
         var requestedLayers: PointerBuffer? = null
@@ -84,7 +85,7 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
         var requestedExtensions = backend.requiredDeviceExtensions.toSet()
         //requestedExtensions += "VK_KHR_get_memory_requirements2"
 
-        if (backend.doNonUniformSamplerArrayAccess)
+        if (backend.enableDivergingUniformSamplerIndexing)
             requestedExtensions = setOf("VK_EXT_descriptor_indexing", "VK_KHR_maintenance3").union(requestedExtensions)
 
         val pRequiredExtensions = stackMallocPointer(requestedExtensions.size)
@@ -97,6 +98,14 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
             ppEnabledLayerNames(requestedLayers)
         }
 
+        if(backend.enableDivergingUniformSamplerIndexing && physicalDevice.canDoNonUniformSamplerIndexing) {
+            val descriptorIndexingExtCreateInfo = VkPhysicalDeviceDescriptorIndexingFeaturesEXT.callocStack().sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT).apply {
+                shaderSampledImageArrayNonUniformIndexing(true)
+            }
+            vkDeviceCreateInfo.pNext(descriptorIndexingExtCreateInfo.address())
+            logger.info("Enabling diverging uniform sampler indexing !")
+        }
+
         val pDevice = stackMallocPointer(1)
         vkCreateDevice(physicalDevice.vkPhysicalDevice, vkDeviceCreateInfo, null, pDevice).ensureIs("Failed to create device from $physicalDevice", VK10.VK_SUCCESS)
         handle = pDevice.get(0)
@@ -104,19 +113,6 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
 
         val pQueue = stackMallocPointer(1)
 
-        /*if( graphicsQueueFamily == presentationQueueFamily ) {
-            vkGetDeviceQueue(vkDevice, graphicsQueueFamily.index, 0, pQueue)
-            graphicsQueue = Queue(VkQueue(pQueue.get(0), vkDevice), graphicsQueueFamily)
-            presentationQueue = graphicsQueue
-        } else {
-            vkGetDeviceQueue(vkDevice, graphicsQueueFamily.index, 0, pQueue)
-            graphicsQueue = Queue(VkQueue(pQueue.get(0), vkDevice), graphicsQueueFamily)
-
-            vkGetDeviceQueue(vkDevice, presentationQueueFamily.index, 0, pQueue)
-            presentationQueue = Queue(VkQueue(pQueue.get(0), vkDevice), graphicsQueueFamily)
-        }*/
-
-        //i = 0
         allQueues = mutableListOf()
 
         for ((family, queues) in mappedRequests) {

@@ -10,7 +10,6 @@ import io.xol.chunkstories.graphics.vulkan.devices.LogicalDevice
 import io.xol.chunkstories.graphics.vulkan.devices.PhysicalDevice
 import io.xol.chunkstories.graphics.vulkan.graph.VulkanPass
 import io.xol.chunkstories.graphics.vulkan.graph.VulkanRenderGraph
-import io.xol.chunkstories.graphics.vulkan.resources.Cleanable
 import io.xol.chunkstories.graphics.vulkan.resources.VmaAllocator
 import io.xol.chunkstories.graphics.vulkan.resources.VulkanMemoryManager
 import io.xol.chunkstories.graphics.vulkan.shaders.VulkanShaderFactory
@@ -37,7 +36,7 @@ import java.awt.image.BufferedImage
 
 class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(window) {
     internal val enableValidation = useValidationLayer
-    internal val doNonUniformSamplerArrayAccess = false
+    internal var enableDivergingUniformSamplerIndexing = true
 
     val requiredDeviceExtensions = listOf(KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME)
 
@@ -60,7 +59,6 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
     /** The actual surface we're drawing onto */
     internal var surface: WindowSurface
     internal var swapchain: SwapChain
-        internal set
 
     val renderToBackbuffer : VkRenderPass
 
@@ -139,12 +137,11 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
             pApplicationName(MemoryStack.stackUTF8("Chunk Stories"))
             pEngineName(MemoryStack.stackUTF8("Chunk Stories Vulkan Backend"))
 
-            //No clue which version to use, same one as the tutorial I guess
-            apiVersion(VK10.VK_MAKE_VERSION(1, 1, 0))
+            apiVersion(VK10.VK_MAKE_VERSION(1, 1, 70))
         }
 
         val additionalInstanceExtensions = mutableSetOf(EXTDebugReport.VK_EXT_DEBUG_REPORT_EXTENSION_NAME)
-        if(doNonUniformSamplerArrayAccess)
+        if(enableDivergingUniformSamplerIndexing)
             additionalInstanceExtensions += "VK_KHR_get_physical_device_properties2"
 
         val pRequestedInstanceExtensions = MemoryStack.stackMallocPointer(requiredExtensions.remaining() + additionalInstanceExtensions.size)

@@ -9,6 +9,7 @@ import io.xol.chunkstories.api.world.chunk.ChunkHolder
 import io.xol.chunkstories.graphics.common.UnitCube
 import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import io.xol.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
+import io.xol.chunkstories.graphics.vulkan.textures.VirtualTexturing
 import io.xol.chunkstories.world.chunk.CubicChunk
 import io.xol.chunkstories.world.chunk.deriveddata.AutoRebuildingProperty
 import org.joml.Vector4f
@@ -44,12 +45,15 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
         val rng = Random(1)
         var count = 0
         val vertexBuffer: VulkanVertexBuffer?
+        val virtualTexturingContext: VirtualTexturing.VirtualTexturingContext?
 
         val chunkDataRef = chunk.voxelDataArray
         if (chunk.isAirChunk || chunkDataRef == null) {
             vertexBuffer = null
+            virtualTexturingContext = null
         } else {
             rawChunkData = chunkDataRef
+            virtualTexturingContext = backend.virtualTexturing.getVirtualTexturingContext()
 
             val buffer = MemoryUtil.memAlloc(1024 * 1024 * 4)
 
@@ -61,9 +65,6 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
                         val currentVoxel = chunk.world.contentTranslator.getVoxelForId(VoxelFormat.id(currentVoxelData))!!
 
                         if (opaque(currentVoxel)) {
-                            //if (opaque(x, y - 1, z) && opaque(x, y + 1, z) && opaque(x + 1, y, z) && opaque(x - 1, y, z) && opaque(x, y, z + 1) && opaque(x, y, z - 1))
-                            //    continue
-
                             fun face(data: Int, face: UnitCube.CubeFaceData, side: VoxelSide) {
                                 if(opaque(data))
                                     return
@@ -71,6 +72,12 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
                                 val tex = currentVoxel.voxelTextures[side.ordinal]
                                 if(tex.color != null)
                                     color.set(tex.color)
+
+                                val textureName = "voxels/textures/"+tex.name+".png"
+                                //println(textureName)
+                                val textureId = (virtualTexturingContext.translate(backend.textures[textureName]) as VirtualTexturing.TranslationResult.Success).id
+                                //val textureId = (virtualTexturingContext.translate(backend.textures.defaultTexture2D) as VirtualTexturing.TranslationResult.Success).id
+                                //val textureId = 0
 
                                 if (color.w < 1.0f)
                                     color.mul(Vector4f(0f, 1f, 0.3f, 1.0f))
@@ -90,6 +97,11 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
                                     buffer.putFloat(face.normalDirection.x())
                                     buffer.putFloat(face.normalDirection.y())
                                     buffer.putFloat(face.normalDirection.z())
+
+                                    buffer.putFloat(texcoord[0])
+                                    buffer.putFloat(texcoord[1])
+
+                                    buffer.putInt(textureId)
                                     count++
                                 }
                             }
@@ -116,11 +128,13 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
                 vertexBuffer = null
 
             MemoryUtil.memFree(buffer)
+
+            virtualTexturingContext.updateContents()
         }
 
         //val generatedData = VulkanChunkRenderData.ChunkMeshInstance(chunk, vertexBuffer, count)
         //(chunk.meshData as VulkanChunkRenderData).acceptNewData(generatedData)
-        (chunk.meshData as ChunkVkMeshProperty).acceptNewData(vertexBuffer, count)
+        (chunk.meshData as ChunkVkMeshProperty).acceptNewData(vertexBuffer, virtualTexturingContext, count)
         return true
     }
 

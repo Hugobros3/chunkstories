@@ -75,7 +75,7 @@ class VulkanFontRenderer(internal val backend: VulkanGraphicsBackend) : Cleanabl
                 val byteBuffer = image!!.toByteBuffer()
 
                 val stagingBuffer = VulkanBuffer(backend, byteBuffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT)
-                val pageTexture = VulkanTexture2D(backend, commandPool, TextureFormat.RGBA_8, TrueTypeFont.textureWidth, TrueTypeFont.textureHeight, VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT)
+                val pageTexture = VulkanTexture2D(backend, TextureFormat.RGBA_8, TrueTypeFont.textureWidth, TrueTypeFont.textureHeight, VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT)
 
                 pageTexture.transitionLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
                 pageTexture.copyBufferToImage(stagingBuffer)
