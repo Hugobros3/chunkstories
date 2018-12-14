@@ -236,7 +236,7 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
 
         for(chunkHolder in acquiredChunkHolders) {
             chunkHolder.unregisterUser(player)
-            (chunkHolder as ChunkHolderImplementation).waitUntilStateIs(ChunkHolder.State.Unloaded::class.java)
+            (chunkHolder as ChunkHolderImplementation).waitUntilStateIs(ChunkHolder.State.Unloaded::class.java).traverse()
             regions.add(chunkHolder.region)
         }
 

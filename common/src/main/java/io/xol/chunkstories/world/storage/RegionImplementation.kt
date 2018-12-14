@@ -7,9 +7,9 @@
 package io.xol.chunkstories.world.storage
 
 import io.xol.chunkstories.api.entity.Entity
+import io.xol.chunkstories.api.util.concurrency.Fence
 import io.xol.chunkstories.api.world.WorldMaster
 import io.xol.chunkstories.api.world.WorldUser
-import io.xol.chunkstories.api.world.chunk.ChunkHolder
 import io.xol.chunkstories.api.world.heightmap.Heightmap
 import io.xol.chunkstories.api.world.region.Region
 import io.xol.chunkstories.util.concurrency.TrivialFence
@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory
 import java.io.File
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.Semaphore
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
@@ -28,14 +29,24 @@ class RegionImplementation(override val world: WorldImplementation, override val
     val handler: CSFRegionFile?
 
     val stateLock = ReentrantLock()
-    val stateCondition = stateLock.newCondition()
-    override var state: Region.State = Region.State.Zombie
-        set(value) {
-            field = value
-            stateHistory.add( value.javaClass.simpleName)
-            //println("DEBUG: Region ${this@RegionImplementation} state set to $value")
+    //val stateCondition = stateLock.newCondition()
+    override lateinit var state: Region.State
+        private set
+
+    fun transitionState(value: Region.State) {
+        state = value
+        stateHistory.add(value.javaClass.simpleName)
+
+        if (peopleWaiting > 0) {
+            stateSemaphore.release(peopleWaiting)
+            peopleWaiting = 0
         }
+    }
+
     var stateHistory = mutableListOf<String>()
+
+    var peopleWaiting = 0
+    val stateSemaphore = Semaphore(0)
 
     /** Keeps track of the number of users of this region. Warning: this includes users of not only the region itself, but ALSO the chunks that make up this
     region. An user registered in 3 chunks for instance, will be counted three times. When this counter reaches zero, the region is unloaded.*/
@@ -75,11 +86,11 @@ class RegionImplementation(override val world: WorldImplementation, override val
 
             if (file.exists()) {
                 val task = IOTaskLoadRegion(this)
-                state = Region.State.Loading(task)
+                transitionState(Region.State.Loading(task))
                 world.ioHandler.scheduleTask(task)
             } else {
                 //TODO get world generation task reference from heightmap
-                state = Region.State.Generating(TrivialFence())
+                transitionState(Region.State.Generating(TrivialFence()))
                 chunkHolders.forEach { it.eventRegionIsReady() }
             }
 
@@ -88,7 +99,7 @@ class RegionImplementation(override val world: WorldImplementation, override val
             //TODO no
             file = null
             handler = null
-            state = Region.State.Available()
+            transitionState(Region.State.Available())
             chunkHolders.forEach { it.eventRegionIsReady() }
         }
     }
@@ -196,13 +207,15 @@ class RegionImplementation(override val world: WorldImplementation, override val
             stateLock.lock()
 
             when (state) {
-                is Region.State.Generating -> {}
+                is Region.State.Generating -> {
+                }
                 is Region.State.Loading -> {
                     // Transition to zombie state ONLY if cancel is successful
-                    if(((state as Region.State.Loading).fence as IOTaskLoadRegion).tryCancel())
+                    if (((state as Region.State.Loading).fence as IOTaskLoadRegion).tryCancel())
                         transitionZombie()
                 }
-                is Region.State.Saving -> {}
+                is Region.State.Saving -> {
+                }
                 is Region.State.Available -> transitionSaving()
             }
 
@@ -220,14 +233,12 @@ class RegionImplementation(override val world: WorldImplementation, override val
         }
 
         val task = IOTaskSaveRegion(this)
-        state = Region.State.Saving(task)
-        stateLock.withLock { stateCondition.signalAll() }
+        transitionState(Region.State.Saving(task))
         world.ioHandler.scheduleTask(task)
     }
 
     private fun transitionAvailable() {
-        state = Region.State.Available()
-        stateLock.withLock { stateCondition.signalAll() }
+        transitionState(Region.State.Available())
     }
 
     private fun transitionZombie() {
@@ -239,12 +250,10 @@ class RegionImplementation(override val world: WorldImplementation, override val
             else -> {
                 heightmap.unregisterUser(this)
 
-                state = Region.State.Zombie
-                stateLock.withLock { stateCondition.signalAll() }
+                transitionState(Region.State.Zombie)
                 world.regionsStorage.removeRegion(this)
             }
         }
-
     }
 
     override fun getChunk(chunkX: Int, chunkY: Int, chunkZ: Int): CubicChunk? {
@@ -279,18 +288,19 @@ class RegionImplementation(override val world: WorldImplementation, override val
         return ("[Region rx:$regionX ry:$regionY rz:$regionZ state:${state.javaClass.simpleName} users: ${usersCount} chunks:${loadedChunks.count()} entities:${entitiesWithinRegion.count()}]")
     }
 
-    fun waitUntilStateIs(stateClass: Class<out Region.State>) {
-        while(true) {
+    fun waitUntilStateIs(stateClass: Class<out Region.State>) = Fence {
+        while (true) {
             try {
                 stateLock.lock()
-                if(state.javaClass == stateClass)
-                    return
+                if (state.javaClass == stateClass)
+                    break
+
+                peopleWaiting++
             } finally {
                 stateLock.unlock()
             }
-            stateLock.withLock {
-                stateCondition.await()
-            }
+
+            stateSemaphore.acquireUninterruptibly()
         }
     }
 

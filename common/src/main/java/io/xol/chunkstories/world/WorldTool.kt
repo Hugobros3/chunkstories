@@ -27,33 +27,32 @@ import io.xol.chunkstories.world.io.IOTasks
 class WorldTool @Throws(WorldLoadingException::class)
 constructor(gameContext: GameContext, info: WorldInfo, folder: File, immediateIO: Boolean) : WorldImplementation(gameContext, info, null, folder), WorldMaster {
 
-    override val ioHandler: IOTasks
-    var isLightningEnabled = false
-        private set
+    var isLightningEnabled = true
+    var isGenerationEnabled = true
+
+    override val ioHandler: IOTasks = IOTasks(this)
 
     override val soundManager: SoundManager
         get() = nullSoundManager
 
-    internal var nullSoundManager = NullSoundManager()
+    private var nullSoundManager = NullSoundManager()
 
     override val particlesManager: ParticlesManager
         get() = nullParticlesManager
 
-    internal var nullParticlesManager = NullParticlesManager()
+    private var nullParticlesManager = NullParticlesManager()
 
     override val decalsManager: DecalsManager
         get() = nullDecalsManager
 
-    internal var nullDecalsManager = NullDecalsManager()
+    private var nullDecalsManager = NullDecalsManager()
 
     override val players: Set<Player>
         get() = throw UnsupportedOperationException("getPlayers")
 
     init {
-        ioHandler = IOTasks(this)
         ioHandler.start()
     }
-
 
     companion object {
         fun GameContext.createWorld(folder: File, worldInfo: WorldInfo) : WorldTool {
@@ -69,7 +68,6 @@ constructor(gameContext: GameContext, info: WorldInfo, folder: File, immediateIO
             return WorldTool(this, worldInfo, folder, false)
         }
     }
-
 
     internal inner class NullSoundManager : SoundManager {
 
@@ -125,9 +123,5 @@ constructor(gameContext: GameContext, info: WorldInfo, folder: File, immediateIO
 
     override fun getPlayerByName(playerName: String): Player? {
         throw UnsupportedOperationException("getPlayers")
-    }
-
-    fun setLightning(e: Boolean) {
-        isLightningEnabled = e
     }
 }

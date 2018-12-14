@@ -9,6 +9,7 @@ package io.xol.chunkstories.world.heightmap
 import io.xol.chunkstories.api.math.Math2
 import io.xol.chunkstories.api.player.Player
 import io.xol.chunkstories.api.server.RemotePlayer
+import io.xol.chunkstories.api.util.concurrency.Fence
 import io.xol.chunkstories.api.voxel.Voxel
 import io.xol.chunkstories.api.voxel.VoxelFormat
 import io.xol.chunkstories.api.voxel.VoxelSide
@@ -19,16 +20,16 @@ import io.xol.chunkstories.api.world.cell.Cell
 import io.xol.chunkstories.api.world.cell.CellData
 import io.xol.chunkstories.api.world.cell.FutureCell
 import io.xol.chunkstories.api.world.heightmap.Heightmap
-import io.xol.chunkstories.api.world.region.Region
 import io.xol.chunkstories.net.packets.PacketHeightmap
 import io.xol.chunkstories.util.concurrency.SimpleFence
 import io.xol.chunkstories.world.WorldImplementation
+import io.xol.chunkstories.world.WorldTool
 import io.xol.chunkstories.world.generator.TaskGenerateWorldSlice
 import net.jpountz.lz4.LZ4Factory
 import java.io.File
 import java.util.*
+import java.util.concurrent.Semaphore
 import java.util.concurrent.locks.ReentrantLock
-import kotlin.concurrent.withLock
 
 /**
  * A region summary contains metadata about an 8x8 chunks ( or 256x256 blocks )
@@ -38,9 +39,23 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
     val world: WorldImplementation = storage.world
 
     private val stateLock = ReentrantLock()
-    private val stateCondition = stateLock.newCondition()
-    override lateinit var state: Heightmap.State
-        private set
+    //private val stateCondition = stateLock.newCondition()
+    override lateinit var state: Heightmap.State private set
+
+    fun transitionState(value: Heightmap.State) {
+        state = value
+        stateHistory.add(value.javaClass.simpleName)
+
+        if (peopleWaiting > 0) {
+            stateSemaphore.release(peopleWaiting)
+            peopleWaiting = 0
+        }
+    }
+
+    var stateHistory = mutableListOf<String>()
+
+    var peopleWaiting = 0
+    val stateSemaphore = Semaphore(0)
 
     private val usersSet = HashSet<WorldUser>()
     private val usersWaitingForIntialData = HashSet<RemotePlayer>()
@@ -61,39 +76,45 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
 
             if (file.exists()) {
                 val task = IOTaskLoadHeightmap(this)
-                state = Heightmap.State.Loading(task)
+                transitionState(Heightmap.State.Loading(task))
             } else {
-                var dirX = 0
-                var dirZ = 0
+                if(world is WorldTool && !world.isGenerationEnabled) {
+                    this.heightData = IntArray(Math.ceil(256.0 * 256.0 * (1 + 1 / 3.0)).toInt())
+                    this.voxelData = IntArray(Math.ceil(256.0 * 256.0 * (1 + 1 / 3.0)).toInt())
+                    recomputeMetadata()
 
-                if (firstUser is Player) {
+                    transitionAvailable()
+                } else {
+                    var dirX = 0
+                    var dirZ = 0
 
-                    val playerRegionX = Math2.floor(firstUser.controlledEntity!!.location.x() / 256)
-                    val playerRegionZ = Math2.floor(firstUser.controlledEntity!!.location.z() / 256)
+                    if (firstUser is Player) {
+                        val playerRegionX = Math2.floor(firstUser.controlledEntity!!.location.x() / 256)
+                        val playerRegionZ = Math2.floor(firstUser.controlledEntity!!.location.z() / 256)
 
-                    if (regionX < playerRegionX)
-                        dirX = -1
-                    if (regionX > playerRegionX)
-                        dirX = 1
+                        if (regionX < playerRegionX)
+                            dirX = -1
+                        if (regionX > playerRegionX)
+                            dirX = 1
 
-                    if (regionZ < playerRegionZ)
-                        dirZ = -1
-                    if (regionZ > playerRegionZ)
-                        dirZ = 1
+                        if (regionZ < playerRegionZ)
+                            dirZ = -1
+                        if (regionZ > playerRegionZ)
+                            dirZ = 1
+                    }
+
+                    val task = TaskGenerateWorldSlice(world, this, dirX, dirZ)
+                    this.heightData = IntArray(Math.ceil(256.0 * 256.0 * (1 + 1 / 3.0)).toInt())
+                    this.voxelData = IntArray(Math.ceil(256.0 * 256.0 * (1 + 1 / 3.0)).toInt())
+                    recomputeMetadata()
+
+                    transitionState(Heightmap.State.Generating(task))
+                    world.gameContext.tasks.scheduleTask(task)
                 }
-
-                val task = TaskGenerateWorldSlice(world, this, dirX, dirZ)
-                state = Heightmap.State.Generating(task)
-
-                this.heightData = IntArray(Math.ceil(256.0 * 256.0 * (1 + 1 / 3.0)).toInt())
-                this.voxelData = IntArray(Math.ceil(256.0 * 256.0 * (1 + 1 / 3.0)).toInt())
-                recomputeMetadata()
-
-                world.gameContext.tasks.scheduleTask(task)
             }
         } else {
             file = null
-            state = Heightmap.State.Loading(SimpleFence())
+            transitionState(Heightmap.State.Loading(SimpleFence()))
         }
 
         this.registerUser(firstUser)
@@ -242,14 +263,12 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
 
     private fun transitionSaving() {
         val task = IOTaskSaveHeightmap(this)
-        state = Heightmap.State.Saving(task)
-        stateLock.withLock { stateCondition.signalAll() }
+        transitionState(Heightmap.State.Saving(task))
         world.ioHandler.scheduleTask(task)
     }
 
     private fun transitionAvailable() {
-        state = Heightmap.State.Available()
-        stateLock.withLock { stateCondition.signalAll() }
+        transitionState(Heightmap.State.Available())
     }
 
     private fun transitionZombie() {
@@ -259,23 +278,22 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
         if (!storage.removeSummary(this))
             throw Exception(toString() + " failed to be removed from the holder " + storage)
 
-        state = Heightmap.State.Zombie
-        stateLock.withLock { stateCondition.signalAll() }
-
+        transitionState(Heightmap.State.Zombie)
     }
 
-    fun waitUntilStateIs(stateClass: Class<out Heightmap.State>) {
-        while(true) {
+    fun waitUntilStateIs(stateClass: Class<out Heightmap.State>) = Fence {
+        while (true) {
             try {
                 stateLock.lock()
-                if(state.javaClass == stateClass)
-                    return
+                if (state.javaClass == stateClass)
+                    break
+
+                peopleWaiting++
             } finally {
                 stateLock.unlock()
             }
-            stateLock.withLock {
-                stateCondition.await()
-            }
+
+            stateSemaphore.acquireUninterruptibly()
         }
     }
 
@@ -383,9 +401,47 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
 
     }
 
-    private fun computeHeightMetadata() {
+    fun getHeightMipmapped(x: Int, z: Int, level: Int): Int {
+        var x = x
+        var z = z
         if (state !is Heightmap.State.Available)
-            return
+            return Heightmap.NO_DATA
+        if (level > 8)
+            return Heightmap.NO_DATA
+        val resolution = 256 shr level
+        x = x shr level
+        z = z shr level
+        val offset = mainMimpmapOffsets[level]
+        return heightData!![offset + resolution * x + z]
+    }
+
+    fun getDataMipmapped(x: Int, z: Int, level: Int): Int {
+        var x = x
+        var z = z
+        if (state !is Heightmap.State.Available)
+            return -1
+        if (level > 8)
+            return -1
+        val resolution = 256 shr level
+        x = x shr level
+        z = z shr level
+        val offset = mainMimpmapOffsets[level]
+        return voxelData!![offset + resolution * x + z]
+    }
+
+    fun recomputeMetadata() {
+        //if (::state.isInitialized && state !is Heightmap.State.Available)
+        //    return
+        if(!::voxelData.isInitialized)
+            throw Exception("Computing metadata but heightmap is not properly initialized yet!")
+
+        this.generateMipLevels()
+        this.computeChunkSlabsMinMax()
+    }
+
+    private fun generateMipLevels() {
+        //if (state !is Heightmap.State.Available)
+        //    return
 
         // Max mipmaps
         var resolution = 128
@@ -425,43 +481,7 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
         }
     }
 
-    fun getHeightMipmapped(x: Int, z: Int, level: Int): Int {
-        var x = x
-        var z = z
-        if (state !is Heightmap.State.Available)
-            return Heightmap.NO_DATA
-        if (level > 8)
-            return Heightmap.NO_DATA
-        val resolution = 256 shr level
-        x = x shr level
-        z = z shr level
-        val offset = mainMimpmapOffsets[level]
-        return heightData!![offset + resolution * x + z]
-    }
-
-    fun getDataMipmapped(x: Int, z: Int, level: Int): Int {
-        var x = x
-        var z = z
-        if (state !is Heightmap.State.Available)
-            return -1
-        if (level > 8)
-            return -1
-        val resolution = 256 shr level
-        x = x shr level
-        z = z shr level
-        val offset = mainMimpmapOffsets[level]
-        return voxelData!![offset + resolution * x + z]
-    }
-
-    fun recomputeMetadata() {
-        if (state !is Heightmap.State.Available)
-            return
-
-        this.computeHeightMetadata()
-        this.computeMinMax()
-    }
-
-    private fun computeMinMax() {
+    private fun computeChunkSlabsMinMax() {
         min = Array(8) { IntArray(8) }
         max = Array(8) { IntArray(8) }
 

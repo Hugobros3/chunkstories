@@ -498,7 +498,7 @@ public class CubicChunk implements Chunk {
 		return uuid;
 	}
 
-	class ActualChunkVoxelContext extends Cell implements ChunkCell, FreshChunkCell {
+	public class ActualChunkVoxelContext extends Cell implements ChunkCell, FreshChunkCell {
 
 		int raw_data;
 

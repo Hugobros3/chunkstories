@@ -16,13 +16,14 @@ import io.xol.chunkstories.api.voxel.VoxelSide
 import io.xol.chunkstories.api.workers.TaskExecutor
 import io.xol.chunkstories.api.world.chunk.ChunkLightUpdater
 import io.xol.chunkstories.api.world.heightmap.Heightmap
+import io.xol.chunkstories.world.WorldTool
 import io.xol.chunkstories.world.cell.ScratchCell
 import io.xol.chunkstories.world.chunk.deriveddata.AutoRebuildingProperty
 
 //TODO use custom propagation for ALL propagation functions & cleanup this whole darn mess
 /** Responsible for propagating voxel volumetric light  */
 class ChunkLightBaker(internal val chunk: CubicChunk) : AutoRebuildingProperty(chunk.world.gameContext, true), ChunkLightUpdater {
-    internal val world = chunk.world
+    internal val world = chunk.world!!
     internal val chunkX: Int = chunk.chunkX
     internal val chunkY: Int = chunk.chunkY
     internal val chunkZ: Int = chunk.chunkZ

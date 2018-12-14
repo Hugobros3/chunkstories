@@ -74,6 +74,7 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
                                     color.set(tex.color)
 
                                 val textureName = "voxels/textures/"+tex.name+".png"
+                                //val textureName = "voxels/textures/"+(if(Math.random() > 0.5) "stone" else "dirt")+".png"
                                 //println(textureName)
                                 val textureId = (virtualTexturingContext.translate(backend.textures[textureName]) as VirtualTexturing.TranslationResult.Success).id
                                 //val textureId = (virtualTexturingContext.translate(backend.textures.defaultTexture2D) as VirtualTexturing.TranslationResult.Success).id

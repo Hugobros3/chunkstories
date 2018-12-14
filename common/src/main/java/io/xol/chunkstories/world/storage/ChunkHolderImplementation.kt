@@ -9,13 +9,14 @@ package io.xol.chunkstories.world.storage
 import io.xol.chunkstories.api.entity.traits.TraitDontSave
 import io.xol.chunkstories.api.entity.traits.serializable.TraitControllable
 import io.xol.chunkstories.api.server.RemotePlayer
+import io.xol.chunkstories.api.util.concurrency.Fence
 import io.xol.chunkstories.api.world.WorldUser
 import io.xol.chunkstories.api.world.chunk.ChunkHolder
 import io.xol.chunkstories.api.world.region.Region
 import io.xol.chunkstories.entity.EntitySerializer
 import io.xol.chunkstories.net.packets.PacketChunkCompressedData
-import io.xol.chunkstories.util.concurrency.SafeWriteLock
 import io.xol.chunkstories.util.concurrency.TrivialFence
+import io.xol.chunkstories.world.WorldTool
 import io.xol.chunkstories.world.chunk.CompressedData
 import io.xol.chunkstories.world.chunk.CubicChunk
 import io.xol.chunkstories.world.io.TaskLoadChunk
@@ -26,20 +27,29 @@ import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
 import java.io.IOException
 import java.util.*
+import java.util.concurrent.Semaphore
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.concurrent.withLock
-import kotlin.reflect.KClass
 
 class ChunkHolderImplementation(override val region: RegionImplementation, override val chunkX: Int, override val chunkY: Int, override val chunkZ: Int) : ChunkHolder {
     private val uuid: Int
 
     // The default state of a chunk holder is to wait for the parent region to finish it's own loading
     override var state: ChunkHolder.State = ChunkHolder.State.WaitForRegionInitialLoad
-        private set(value) {
-            field = value
-            stateHistory.add( value.javaClass.simpleName)
-        }
     var stateHistory = mutableListOf<String>()
+
+    fun transitionState(value: ChunkHolder.State) {
+        state = value
+        stateHistory.add(value.javaClass.simpleName)
+
+        if (peopleWaiting > 0) {
+            stateSemaphore.release(peopleWaiting)
+            peopleWaiting = 0
+        }
+    }
+
+    var peopleWaiting = 0
+    val stateSemaphore = Semaphore(0)
 
     //No usersLock : we use the parent region usersLock & userCount
     override val users: MutableSet<WorldUser> = HashSet()
@@ -248,12 +258,14 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
             region.stateLock.lock()
 
             when (state) {
-                ChunkHolder.State.WaitForRegionInitialLoad -> { /* legal, don't care */ }
+                ChunkHolder.State.WaitForRegionInitialLoad -> { /* legal, don't care */
+                }
                 ChunkHolder.State.Unloaded -> throw Exception("This doesn't make sense $stateHistory")
-                is ChunkHolder.State.Generating -> { /* legal, don't care */ }
+                is ChunkHolder.State.Generating -> { /* legal, don't care */
+                }
                 is ChunkHolder.State.Loading -> {
                     val task = (state as ChunkHolder.State.Loading).fence as TaskLoadChunk
-                    if(task.tryCancel())
+                    if (task.tryCancel())
                         transitionUnloaded()
                 }
                 is ChunkHolder.State.Available -> transitionUnloaded()
@@ -267,10 +279,12 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
         try {
             region.stateLock.lock()
 
-            when(state) {
-                ChunkHolder.State.WaitForRegionInitialLoad -> { /* legal, don't care */ }
-                ChunkHolder.State.Unloaded -> if(compressedData != null) transitionLoading() else transitionGenerating()
-                is ChunkHolder.State.Generating -> { /* legal, don't care */ }
+            when (state) {
+                ChunkHolder.State.WaitForRegionInitialLoad -> { /* legal, don't care */
+                }
+                ChunkHolder.State.Unloaded -> if (compressedData != null) transitionLoading() else transitionGenerating()
+                is ChunkHolder.State.Generating -> { /* legal, don't care */
+                }
                 is ChunkHolder.State.Loading -> throw Exception("This doesn't make sense $stateHistory")
                 is ChunkHolder.State.Available -> throw Exception("This doesn't make sense $stateHistory")
             }
@@ -282,11 +296,11 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
     fun eventRegionIsReady() {
         try {
             region.stateLock.lock()
-            if(state != ChunkHolder.State.WaitForRegionInitialLoad)
+            if (state != ChunkHolder.State.WaitForRegionInitialLoad)
                 throw Exception("Illegal state change")
 
             if (users.isNotEmpty()) {
-                if(compressedData != null) transitionLoading() else transitionGenerating()
+                if (compressedData != null) transitionLoading() else transitionGenerating()
             } else {
                 transitionUnloaded()
             }
@@ -307,7 +321,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
                 return
             }
 
-            if(users.isNotEmpty()) {
+            if (users.isNotEmpty()) {
                 transitionAvailable(chunk)
                 playersToSendDataTo = if (usersWaitingForIntialData.isNotEmpty()) usersWaitingForIntialData.toList() else null
                 usersWaitingForIntialData.clear()
@@ -335,7 +349,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
                 return
             }
 
-            if(users.isNotEmpty()) {
+            if (users.isNotEmpty()) {
                 transitionAvailable(chunk)
                 playersToSendDataTo = if (usersWaitingForIntialData.isNotEmpty()) usersWaitingForIntialData.toList() else null
                 usersWaitingForIntialData.clear()
@@ -356,12 +370,11 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
         try {
             region.stateLock.lock()
 
-            if(state !is ChunkHolder.State.WaitForRegionInitialLoad && state !is ChunkHolder.State.Unloaded)
+            if (state !is ChunkHolder.State.WaitForRegionInitialLoad && state !is ChunkHolder.State.Unloaded)
                 throw Exception("Illegal transition")
 
             val task = TaskLoadChunk(this)
-            state = ChunkHolder.State.Loading(task)
-            region.stateLock.withLock { region.stateCondition.signalAll() }
+            transitionState(ChunkHolder.State.Loading(task))
             region.world.gameContext.tasks.scheduleTask(task)
         } finally {
             region.stateLock.unlock()
@@ -372,11 +385,13 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
         try {
             region.stateLock.lock()
 
-            if(state !is ChunkHolder.State.WaitForRegionInitialLoad && state !is ChunkHolder.State.Unloaded)
+            if (state !is ChunkHolder.State.WaitForRegionInitialLoad && state !is ChunkHolder.State.Unloaded)
                 throw Exception("Illegal transition")
 
-            state = ChunkHolder.State.Generating(TrivialFence())
-            region.stateLock.withLock { region.stateCondition.signalAll() }
+            transitionState(ChunkHolder.State.Generating(TrivialFence()))
+
+            if (region.world is WorldTool && !region.world.isGenerationEnabled)
+                eventGenerationFinishes(CubicChunk(this, chunkX, chunkY, chunkZ, null))
         } finally {
             region.stateLock.unlock()
         }
@@ -385,9 +400,8 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
     private fun transitionAvailable(chunk: CubicChunk) {
         try {
             region.stateLock.lock()
-            state = ChunkHolder.State.Available(chunk)
-            region.stateLock.withLock { region.stateCondition.signalAll() }
             region.loadedChunksSet.add(chunk)
+            transitionState(ChunkHolder.State.Available(chunk))
         } finally {
             region.stateLock.unlock()
         }
@@ -396,30 +410,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
     private fun transitionUnloaded() {
         try {
             region.stateLock.lock()
-
-            /*when (state) {
-                ChunkHolder.State.WaitForRegionInitialLoad -> {
-                    state = ChunkHolder.State.Unloaded
-                    return
-                }//throw Exception("Illegal state transition: Can't unload a chunk from an early region.")
-                ChunkHolder.State.Unloaded -> throw Exception("Illegal state transition: Can't transitionZombie an unloaded chunk.")
-                is ChunkHolder.State.Loading -> {
-                    // If we had a loading request active, try to kill it
-                    val task = (state as ChunkHolder.State.Loading).fence as Task
-
-                    // If we managed to kill the task before it executes or before it could callback eventLoadFinishes
-                    if (task.tryCancel() || state !is ChunkHolder.State.Available) {
-                        state = ChunkHolder.State.Unloaded
-                        return
-                    } else {
-                        println("failed to cancel task :(, resulting state is $state")
-                    }
-                }
-            }
-
-            assert(state is ChunkHolder.State.Available)*/
-
-            if(state is ChunkHolder.State.Available) {
+            if (state is ChunkHolder.State.Available) {
                 val chunk = (state as ChunkHolder.State.Available).chunk as CubicChunk
 
                 // Unlist it immediately
@@ -448,8 +439,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
                 chunk.entitiesLock.unlock()
             }
 
-            state = ChunkHolder.State.Unloaded
-            region.stateLock.withLock { region.stateCondition.signalAll() }
+            transitionState(ChunkHolder.State.Unloaded)
         } finally {
             region.stateLock.unlock()
         }
@@ -467,18 +457,18 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
         return "ChunkHolderImplementation(region=, chunkX=$chunkX, chunkY=$chunkY, chunkZ=$chunkZ, state=${state.javaClass.simpleName}, users=${users.count()})"
     }
 
-    fun waitUntilStateIs(stateClass: Class<out ChunkHolder.State>) {
-        while(true) {
+    fun waitUntilStateIs(stateClass: Class<out ChunkHolder.State>) = Fence {
+        while (true) {
             try {
                 region.stateLock.lock()
-                if(state.javaClass == stateClass)
-                    return
+                if (state.javaClass == stateClass)
+                    break
+
+                peopleWaiting++
             } finally {
                 region.stateLock.unlock()
             }
-            region.stateLock.withLock {
-                region.stateCondition.await()
-            }
+            stateSemaphore.acquireUninterruptibly()
         }
     }
 

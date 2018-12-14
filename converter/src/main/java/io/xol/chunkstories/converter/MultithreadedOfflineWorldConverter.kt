@@ -6,10 +6,6 @@
 
 package io.xol.chunkstories.converter
 
-import java.io.File
-import java.io.IOException
-import java.util.HashSet
-
 import io.xol.chunkstories.api.Location
 import io.xol.chunkstories.api.workers.Tasks
 import io.xol.chunkstories.api.world.WorldSize
@@ -18,21 +14,21 @@ import io.xol.chunkstories.api.world.heightmap.Heightmap
 import io.xol.chunkstories.util.concurrency.CompoundFence
 import io.xol.chunkstories.world.WorldImplementation
 import io.xol.chunkstories.world.WorldTool
+import io.xol.chunkstories.world.storage.ChunkHolderImplementation
 import io.xol.enklume.MinecraftWorld
 import io.xol.enklume.nbt.NBTInt
+import java.io.File
+import java.util.*
 
-class MultithreadedOfflineWorldConverter @Throws(IOException::class)
+class MultithreadedOfflineWorldConverter
 constructor(verboseMode: Boolean, mcFolder: File, csFolder: File, mcWorldName: String,
             csWorldName: String, size: WorldSize, minecraftOffsetX: Int, minecraftOffsetZ: Int, coreContentLocation: File,
             private val threadsCount: Int) : OfflineWorldConverter(verboseMode, mcFolder, csFolder, mcWorldName, csWorldName, size, minecraftOffsetX, minecraftOffsetZ, coreContentLocation) {
-    private val workers: ConverterWorkers
+
+    private val workers: ConverterWorkers = ConverterWorkers(this, this.csWorld, threadsCount)
 
     override val tasks: Tasks
         get() = workers
-
-    init {
-        this.workers = ConverterWorkers(this, this.csWorld, threadsCount)
-    }
 
     fun run() {
         val benchmarkingStart = System.currentTimeMillis()
@@ -55,8 +51,11 @@ constructor(verboseMode: Boolean, mcFolder: File, csFolder: File, mcWorldName: S
         logger.info("Done converting $mcWorldName, took $timeTookSeconds seconds.")
     }
 
-    protected fun stepOneCopyWorldData(mcWorld: MinecraftWorld, csWorld: WorldImplementation, minecraftOffsetX: Int,
+    protected fun stepOneCopyWorldData(mcWorld: MinecraftWorld, csWorld: WorldTool, minecraftOffsetX: Int,
                                        minecraftOffsetZ: Int) {
+        csWorld.isLightningEnabled = false
+        csWorld.isGenerationEnabled = false
+
         verbose("Entering step one: converting raw block data")
 
         // Prepares the loops
@@ -115,7 +114,6 @@ constructor(verboseMode: Boolean, mcFolder: File, csFolder: File, mcWorldName: S
                     }
 
                     waitForTheBoys.traverse()
-
                     workers.dropAll()
 
                     // Close region
@@ -130,9 +128,7 @@ constructor(verboseMode: Boolean, mcFolder: File, csFolder: File, mcWorldName: S
                                 .floor(minecraftChunksImported.toDouble() / minecraftChunksToImport.toDouble() * 100)
 
                         if (completion >= 100.0 || System.currentTimeMillis() - lastPercentageShow > 5000) {
-                            verbose(completion.toString() + "% ... (" + csWorld.regionsStorage.countChunks()
-                                    + " chunks loaded ) using " + Runtime.getRuntime().freeMemory() / 1024 / 1024 + "/"
-                                    + Runtime.getRuntime().maxMemory() / 1024 / 1024 + "Mb ")
+                            verbose("$completion% ... (${csWorld.regionsStorage.countChunks()} chunks loaded ) using ${Runtime.getRuntime().freeMemory() / 1024 / 1024}/${Runtime.getRuntime().maxMemory() / 1024 / 1024}Mb ")
                             lastPercentageShow = System.currentTimeMillis()
                         }
                     }
@@ -202,7 +198,7 @@ constructor(verboseMode: Boolean, mcFolder: File, csFolder: File, mcWorldName: S
 
     protected fun stepThreeSpreadLightning(csWorld: WorldTool) {
         verbose("Entering step three: spreading light")
-        csWorld.setLightning(true)
+        csWorld.isLightningEnabled = true
 
         val size = csWorld.worldInfo.size
         val maxHeightPossible = 256
@@ -234,23 +230,25 @@ constructor(verboseMode: Boolean, mcFolder: File, csFolder: File, mcWorldName: S
                         chunkZ)
                 aquiredHeightmaps.add(heightmap)
 
-                when(val state = heightmap.state) {
+                /*when(val state = heightmap.state) {
                     is Heightmap.State.Loading -> compoundFence.add(state.fence)
                     !is Heightmap.State.Available -> throw Exception("Heightmap state isn't available or loading, unexpected behavior met")
-                }
+                }*/
+                compoundFence.add(heightmap.waitUntilStateIs(Heightmap.State.Available::class.java))
 
                 // Loads 3x3 arround relevant chunks
                 for (i in -1..1) {
                     for (j in -1..1) {
                         for (chunkY in 0..maxHeightPossible / 32) {
-                            val chunkHolder = csWorld.acquireChunkHolder(worldUser, chunkX + i, chunkY, chunkZ + j)
-                                when(val state = chunkHolder.state) {
-                                    is ChunkHolder.State.Loading -> compoundFence.add(state.fence)
-                                    !is ChunkHolder.State.Available -> throw Exception("ChunkHolder state isn't available or loading, unexpected behavior met")
-                                }
+                            val chunkHolder = csWorld.acquireChunkHolder(worldUser, chunkX + i, chunkY, chunkZ + j) as ChunkHolderImplementation
+                            /*when(val state = chunkHolder.state) {
+                                is ChunkHolder.State.Loading -> compoundFence.add(state.fence)
+                                !is ChunkHolder.State.Available -> throw Exception("ChunkHolder state isn't available or loading, unexpected behavior met")
+                            }*/
+                            compoundFence.add(chunkHolder.waitUntilStateIs(ChunkHolder.State.Available::class.java))
 
-                                if (aquiredChunkHolders.add(chunkHolder))
-                                    chunksacquired++
+                            if (aquiredChunkHolders.add(chunkHolder))
+                                chunksacquired++
 
                         }
                     }
@@ -280,7 +278,6 @@ constructor(verboseMode: Boolean, mcFolder: File, csFolder: File, mcWorldName: S
                             try {
                                 Thread.sleep(50L)
                             } catch (e: InterruptedException) {
-                                // TODO Auto-generated catch block
                                 e.printStackTrace()
                             }
 
@@ -316,8 +313,7 @@ constructor(verboseMode: Boolean, mcFolder: File, csFolder: File, mcWorldName: S
                             chunksacquired--
                         }
 
-                        for (heightmap in aquiredHeightmaps)
-                            heightmap.unregisterUser(worldUser)
+                        aquiredHeightmaps.forEach { it.unregisterUser(worldUser) }
 
                         aquiredHeightmaps.clear()
                         aquiredChunkHolders.clear()

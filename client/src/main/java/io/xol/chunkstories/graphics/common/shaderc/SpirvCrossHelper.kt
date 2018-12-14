@@ -293,7 +293,8 @@ object SpirvCrossHelper {
                     compiledSource = compiledSource.replace(Regex("virtualTextures\\[(([a-z]|[A-Z]).*)\\]")) {
                         "virtualTextures[nonuniformEXT(${it.groupValues[1]})]"
                     }
-                    println(compiledSource)
+
+                    //println(compiledSource)
                 }
             }
 

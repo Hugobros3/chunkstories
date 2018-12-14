@@ -95,7 +95,7 @@ class VirtualTexturing(val backend: VulkanGraphicsBackend) : Cleanable {
     private fun prepareContexts(count: Int) {
         stackPush()
 
-        println("preparing $count contexts")
+        //println("preparing $count contexts")
 
         val resourcesSize = VkDescriptorPoolSize.callocStack(1).apply {
             type(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
