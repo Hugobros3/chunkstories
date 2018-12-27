@@ -51,7 +51,7 @@ open class VulkanBuffer(val backend: VulkanGraphicsBackend, val bufferSize: Long
         val vmaAllocCreateInfo = VmaAllocationCreateInfo.callocStack().apply {
             //usage(VMA_MEMORY_USAGE_GPU_ONLY)
             if(hostVisible) {
-                requiredFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT or VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
+                requiredFlags(/*VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT or */VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
             } else
                 requiredFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
         }
