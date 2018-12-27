@@ -226,15 +226,14 @@ constructor(verboseMode: Boolean, mcFolder: File, csFolder: File, mcWorldName: S
 
                 val compoundFence = CompoundFence()
 
-                val heightmap = csWorld.regionsSummariesHolder.acquireHeightmapChunkCoordinates(worldUser, chunkX,
-                        chunkZ)
-                aquiredHeightmaps.add(heightmap)
+                //val heightmap = csWorld.regionsSummariesHolder.acquireHeightmapChunkCoordinates(worldUser, chunkX, chunkZ)
+                //aquiredHeightmaps.add(heightmap)
 
                 /*when(val state = heightmap.state) {
                     is Heightmap.State.Loading -> compoundFence.add(state.fence)
                     !is Heightmap.State.Available -> throw Exception("Heightmap state isn't available or loading, unexpected behavior met")
                 }*/
-                compoundFence.add(heightmap.waitUntilStateIs(Heightmap.State.Available::class.java))
+                //compoundFence.add(heightmap.waitUntilStateIs(Heightmap.State.Available::class.java))
 
                 // Loads 3x3 arround relevant chunks
                 for (i in -1..1) {

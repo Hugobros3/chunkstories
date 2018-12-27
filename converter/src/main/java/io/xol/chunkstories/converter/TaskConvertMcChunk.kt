@@ -34,8 +34,7 @@ class TaskConvertMcChunk(private val minecraftRegion: MinecraftRegion, private v
                 // Then the chunks
                 var y = 0
                 while (y < OfflineWorldConverter.mcWorldHeight) {
-                    val holder = csWorld
-                            .acquireChunkHolderWorldCoordinates(thread, chunkStoriesCurrentChunkX, y, chunkStoriesCurrentChunkZ) as ChunkHolderImplementation
+                    val holder = csWorld.acquireChunkHolderWorldCoordinates(thread, chunkStoriesCurrentChunkX, y, chunkStoriesCurrentChunkZ) as ChunkHolderImplementation
                     compoundFence.add(holder.waitUntilStateIs(ChunkHolder.State.Available::class.java))
 
                     if (thread.aquiredChunkHolders.add(holder))

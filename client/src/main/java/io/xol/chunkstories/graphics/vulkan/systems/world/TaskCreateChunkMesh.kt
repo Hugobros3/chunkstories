@@ -3,7 +3,6 @@ package io.xol.chunkstories.graphics.vulkan.systems.world
 import io.xol.chunkstories.api.voxel.Voxel
 import io.xol.chunkstories.api.voxel.VoxelFormat
 import io.xol.chunkstories.api.voxel.VoxelSide
-import io.xol.chunkstories.api.workers.Task
 import io.xol.chunkstories.api.workers.TaskExecutor
 import io.xol.chunkstories.api.world.chunk.ChunkHolder
 import io.xol.chunkstories.graphics.common.UnitCube
@@ -19,7 +18,7 @@ import java.util.*
 class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicChunk, attachedProperty: AutoRebuildingProperty, updates: Int) : AutoRebuildingProperty.UpdateTask(attachedProperty, updates) {
     lateinit var rawChunkData: IntArray
 
-    inline fun opaque(voxel: Voxel) = voxel.solid || voxel.name == "water"
+    inline fun opaque(voxel: Voxel) = voxel.opaque || voxel.name == "water"
 
     inline fun opaque(data: Int) = if(data == 0) false else opaque(chunk.world.contentTranslator.getVoxelForId(VoxelFormat.id(data))!!)
 
@@ -55,21 +54,22 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
             rawChunkData = chunkDataRef
             virtualTexturingContext = backend.virtualTexturing.getVirtualTexturingContext()
 
-            val buffer = MemoryUtil.memAlloc(1024 * 1024 * 4)
+            val buffer = MemoryUtil.memAlloc(1024 * 1024 * 4 * 4)
 
             val color = Vector4f()
             for (x in 0..31) {
                 for (y in 0..31) {
                     for (z in 0..31) {
-                        val currentVoxelData = rawChunkData[x * 32 * 32 + y * 32 + z]
-                        val currentVoxel = chunk.world.contentTranslator.getVoxelForId(VoxelFormat.id(currentVoxelData))!!
+                        val data = rawChunkData[x * 32 * 32 + y * 32 + z]
+                        val voxel = chunk.world.contentTranslator.getVoxelForId(VoxelFormat.id(data))!!
 
-                        if (opaque(currentVoxel)) {
-                            fun face(data: Int, face: UnitCube.CubeFaceData, side: VoxelSide) {
-                                if(opaque(data))
+                        if (/*opaque(currentVoxel)*/ !voxel.isAir()) {
+                            fun face(neighborData: Int, face: UnitCube.CubeFaceData, side: VoxelSide) {
+                                val neighborVoxel = chunk.world.contentTranslator.getVoxelForId(VoxelFormat.id(neighborData))!!
+                                if(opaque(neighborVoxel) || (voxel == neighborVoxel && voxel.selfOpaque))
                                     return
 
-                                val tex = currentVoxel.voxelTextures[side.ordinal]
+                                val tex = voxel.voxelTextures[side.ordinal]
                                 if(tex.color != null)
                                     color.set(tex.color)
 
@@ -83,7 +83,9 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
                                 if (color.w < 1.0f)
                                     color.mul(Vector4f(0f, 1f, 0.3f, 1.0f))
 
-                                val sunlight = VoxelFormat.sunlight(data) / 15f
+                                val sunlight = VoxelFormat.sunlight(neighborData)
+                                val blocklight = VoxelFormat.blocklight(neighborData)
+
                                 color.mul(sunlight * 0.9f + rng.nextFloat() * 0.1f)
 
                                 for((vertex, texcoord) in face.vertices) {
@@ -91,9 +93,9 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
                                     buffer.putFloat(vertex[1] + y + chunk.chunkY * 32f)
                                     buffer.putFloat(vertex[2] + z + chunk.chunkZ * 32f)
 
-                                    buffer.putFloat(color.x())
-                                    buffer.putFloat(color.y())
-                                    buffer.putFloat(color.z())
+                                    buffer.putFloat(sunlight.toFloat() / 15f)
+                                    buffer.putFloat(blocklight.toFloat() / 15f)
+                                    buffer.putFloat(0.0f)
 
                                     buffer.putFloat(face.normalDirection.x())
                                     buffer.putFloat(face.normalDirection.y())

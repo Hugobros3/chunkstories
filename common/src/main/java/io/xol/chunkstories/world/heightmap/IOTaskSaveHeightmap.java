@@ -60,6 +60,8 @@ public class IOTaskSaveHeightmap extends IOTask {
 			out.write(compressed);
 
 			out.close();
+
+			//System.out.println("wrote "+heightmap.getFile());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

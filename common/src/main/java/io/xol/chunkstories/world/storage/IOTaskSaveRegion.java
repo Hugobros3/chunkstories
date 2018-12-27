@@ -37,6 +37,7 @@ public class IOTaskSaveRegion extends IOTask {
 			DataOutputStream dos = new DataOutputStream(outputFileStream);
 
 			region.getHandler().save(dos);
+			//System.out.println("saved "+region.getFile());
 
 			outputFileStream.close();
 		} catch (IOException e) {

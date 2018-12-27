@@ -119,29 +119,31 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         val boxCenter = Vector3f(0f)
         val boxSize = Vector3f(32f, 32f, 32f)
 
-        for (chunk in world.allLoadedChunks) {
-            //val chunk = chunk as CubicChunk
-
-            //if (!frustrum.isBoxInFrustrum(Box(Vector3i(chunk.chunkX * 32, chunk.chunkY * 32, chunk.chunkZ * 32).toVec3d(), Vector3i(32, 32, 32).toVec3d())))
-            //    continue
-
-            //box.xPosition = chunk.chunkX * 32.0
-            //box.yPosition = chunk.chunkY * 32.0
-            //box.zPosition = chunk.chunkZ * 32.0
-
-            //if (!frustrum.isBoxInFrustrum(box))
-            //    continue
-
+        val sortedChunks = world.allLoadedChunks.filter { chunk ->
             boxCenter.x = chunk.chunkX * 32.0f + 16.0f
             boxCenter.y = chunk.chunkY * 32.0f + 16.0f
             boxCenter.z = chunk.chunkZ * 32.0f + 16.0f
 
-            if(!frustrum.isBoxInFrustrum(boxCenter, boxSize))
-                continue
+            frustrum.isBoxInFrustrum(boxCenter, boxSize) && !chunk.isAirChunk
+        }.sortedBy { chunk ->
+            val chunkCenter = Vector3f(chunk.chunkX * 32 + 16.0f, chunk.chunkY * 32 + 16.0f, chunk.chunkZ * 32 + 16.0f)
+            chunkCenter.distance(camera.position) + 0.0f
+        }.distinct()//.take(50)
 
-            if (chunk.isAirChunk)
-                continue
+        /*sortedChunks.forEach { chunk ->
+            (chunk.meshData as? ChunkVkMeshProperty)?.let {
+                it.get()?.let {
+                    it.vertexBuffer?.let {
+                        if(it.memoryType != 0)
+                            println(it)
+                    }
 
+                    it.release()
+                }
+            }
+        }*/
+
+        for (chunk in sortedChunks) {
             if (chunk.chunkX !in (camChunk.x - drawDistance)..(camChunk.x + drawDistance))
                 continue
 

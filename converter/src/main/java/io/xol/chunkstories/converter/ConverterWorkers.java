@@ -103,7 +103,7 @@ public class ConverterWorkers extends TasksPool<Task> implements Tasks {
 
 				// Depending on the result we either reschedule the task or decrement the
 				// counter
-				if (result == false)
+				if (!result)
 					rescheduleTask(task);
 				else
 					tasksQueueSize.decrementAndGet();
@@ -179,6 +179,8 @@ public class ConverterWorkers extends TasksPool<Task> implements Tasks {
 					atSignal.traverse();
 
 					ConverterWorkerThread thread = (ConverterWorkerThread) taskExecutor;
+
+					//System.out.println("drop all now xd"+thread.aquiredChunkHolders);
 
 					for (ChunkHolder holder : thread.aquiredChunkHolders) {
 						holder.unregisterUser(thread);

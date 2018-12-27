@@ -176,6 +176,7 @@ class VirtualTexturing(val backend: VulkanGraphicsBackend) : Cleanable {
             if(content.size == 0)
                 return
 
+            stackPush()
             val imageInfo = VkDescriptorImageInfo.calloc(contextCapacity)
 
             for(i in 0 until contextCapacity) {
@@ -203,6 +204,7 @@ class VirtualTexturing(val backend: VulkanGraphicsBackend) : Cleanable {
             vkUpdateDescriptorSets(backend.logicalDevice.vkDevice, stuffToWrite, null)
 
             imageInfo.free()
+            stackPop()
             //memFree(imageInfo)
         }
 

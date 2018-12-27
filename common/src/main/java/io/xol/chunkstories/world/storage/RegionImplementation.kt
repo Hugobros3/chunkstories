@@ -14,6 +14,7 @@ import io.xol.chunkstories.api.world.heightmap.Heightmap
 import io.xol.chunkstories.api.world.region.Region
 import io.xol.chunkstories.util.concurrency.TrivialFence
 import io.xol.chunkstories.world.WorldImplementation
+import io.xol.chunkstories.world.WorldTool
 import io.xol.chunkstories.world.chunk.CubicChunk
 import io.xol.chunkstories.world.region.format.CSFRegionFile
 import org.slf4j.LoggerFactory
@@ -88,9 +89,12 @@ class RegionImplementation(override val world: WorldImplementation, override val
                 val task = IOTaskLoadRegion(this)
                 transitionState(Region.State.Loading(task))
                 world.ioHandler.scheduleTask(task)
-            } else {
+            } else if( (world !is WorldTool || world.isGenerationEnabled)){
                 //TODO get world generation task reference from heightmap
                 transitionState(Region.State.Generating(TrivialFence()))
+                chunkHolders.forEach { it.eventRegionIsReady() }
+            } else {
+                transitionState(Region.State.Available())
                 chunkHolders.forEach { it.eventRegionIsReady() }
             }
 
@@ -294,6 +298,9 @@ class RegionImplementation(override val world: WorldImplementation, override val
                 stateLock.lock()
                 if (state.javaClass == stateClass)
                     break
+
+                if(state is Region.State.Zombie)
+                    throw Exception("Stuck exception: Waiting on a Zombie heightmap to do anything is fruitless !")
 
                 peopleWaiting++
             } finally {

@@ -12,7 +12,7 @@ import io.xol.chunkstories.world.storage.ChunkHolderImplementation
 import io.xol.chunkstories.world.chunk.CompressedData
 import io.xol.chunkstories.world.chunk.CubicChunk
 
-class TaskLoadChunk(internal var chunkSlot: ChunkHolderImplementation) : Task() {
+class TaskLoadChunk(internal var chunkSlot: ChunkHolderImplementation) : IOTask() {
 
     public override fun task(taskExecutor: TaskExecutor): Boolean {
         val compressedData = chunkSlot.compressedData!!

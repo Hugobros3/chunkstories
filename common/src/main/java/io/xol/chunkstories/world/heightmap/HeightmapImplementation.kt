@@ -76,6 +76,7 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
 
             if (file.exists()) {
                 val task = IOTaskLoadHeightmap(this)
+                world.ioHandler.scheduleTask(task)
                 transitionState(Heightmap.State.Loading(task))
             } else {
                 if(world is WorldTool && !world.isGenerationEnabled) {
@@ -287,6 +288,9 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
                 stateLock.lock()
                 if (state.javaClass == stateClass)
                     break
+
+                if(state is Heightmap.State.Zombie)
+                    throw Exception("Stuck exception: Waiting on a Zombie heightmap to do anything is fruitless !")
 
                 peopleWaiting++
             } finally {

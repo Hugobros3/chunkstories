@@ -375,7 +375,9 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
 
             val task = TaskLoadChunk(this)
             transitionState(ChunkHolder.State.Loading(task))
-            region.world.gameContext.tasks.scheduleTask(task)
+            //TODO this is a hack for working arround the lack of fibers in the task system!
+            region.world.ioHandler.scheduleTask(task)
+            //region.world.gameContext.tasks.scheduleTask(task)
         } finally {
             region.stateLock.unlock()
         }
