@@ -11,13 +11,10 @@ import io.xol.chunkstories.api.world.chunk.Chunk
 import io.xol.chunkstories.client.InternalClientOptions
 import io.xol.chunkstories.graphics.common.FaceCullingMode
 import io.xol.chunkstories.graphics.common.Primitive
-import io.xol.chunkstories.graphics.vulkan.DescriptorPool
-import io.xol.chunkstories.graphics.vulkan.Pipeline
-import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
+import io.xol.chunkstories.graphics.vulkan.*
 import io.xol.chunkstories.graphics.vulkan.graph.VulkanPass
 import io.xol.chunkstories.graphics.vulkan.swapchain.Frame
 import io.xol.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
-import io.xol.chunkstories.graphics.vulkan.vertexInputConfiguration
 import io.xol.chunkstories.world.WorldClientCommon
 import io.xol.chunkstories.world.chunk.CubicChunk
 import org.joml.Vector3d
@@ -33,46 +30,58 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         get() = pass.backend
 
     private val descriptorPool = DescriptorPool(backend, pass.program)
-    private val vertexInputConfiguration = vertexInputConfiguration {
-        binding {
-            binding(0)
-            stride(3 * 4 + 3 * 4 + 3 * 4 + 2 * 4 + 4)
-            inputRate(VK_VERTEX_INPUT_RATE_VERTEX)
-        }
+    private val vertexInputConfiguration = VertexInputConfiguration {
+        var cunt = 0
 
         attribute {
             binding(0)
             location(program.vertexInputs.find { it.name == "vertexIn" }!!.location)
             format(VK_FORMAT_R32G32B32_SFLOAT)
-            offset(0)
+            offset(cunt)
         }
+
+        cunt += 3 * 4
 
         attribute {
             binding(0)
             location(program.vertexInputs.find { it.name == "colorIn" }!!.location)
-            format(VK_FORMAT_R32G32B32_SFLOAT)
-            offset(3 * 4)
+            format(VK_FORMAT_R8G8B8_UNORM)
+            offset(cunt)
         }
+
+        cunt += 4
 
         attribute {
             binding(0)
             location(program.vertexInputs.find { it.name == "normalIn" }!!.location)
-            format(VK_FORMAT_R32G32B32_SFLOAT)
-            offset(3 * 4 + 3 * 4)
+            format(VK_FORMAT_R8G8B8_SNORM)
+            offset(cunt)
         }
+
+        cunt += 4
 
         attribute {
             binding(0)
             location(program.vertexInputs.find { it.name == "texCoordIn" }!!.location)
-            format(VK_FORMAT_R32G32_SFLOAT)
-            offset(3 * 4 + 3 * 4 + 3 * 4)
+            format(VK_FORMAT_R16G16_UNORM)
+            offset(cunt)
         }
+
+        cunt += 4
 
         attribute {
             binding(0)
             location(program.vertexInputs.find { it.name == "textureIdIn" }!!.location)
             format(VK_FORMAT_R32_UINT)
-            offset(3 * 4 + 3 * 4 + 3 * 4 + 2 * 4)
+            offset(cunt)
+        }
+
+        cunt += 4
+
+        binding {
+            binding(0)
+            stride(cunt)
+            inputRate(VK_VERTEX_INPUT_RATE_VERTEX)
         }
     }
 

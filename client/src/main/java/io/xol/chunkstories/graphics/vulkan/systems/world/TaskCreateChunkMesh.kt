@@ -1,5 +1,6 @@
 package io.xol.chunkstories.graphics.vulkan.systems.world
 
+import glm_.func.common.clamp
 import io.xol.chunkstories.api.voxel.Voxel
 import io.xol.chunkstories.api.voxel.VoxelFormat
 import io.xol.chunkstories.api.voxel.VoxelSide
@@ -93,16 +94,30 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
                                     buffer.putFloat(vertex[1] + y + chunk.chunkY * 32f)
                                     buffer.putFloat(vertex[2] + z + chunk.chunkZ * 32f)
 
-                                    buffer.putFloat(sunlight.toFloat() / 15f)
-                                    buffer.putFloat(blocklight.toFloat() / 15f)
-                                    buffer.putFloat(0.0f)
+                                    fun Float.toSNORM(): Byte = ((this + 0.0f) * 0.5f * 255f).toInt().clamp(-128, 127).toByte()
+                                    fun Float.toUNORM16(): Short = (this * 65535f).toInt().clamp(0, 65535).toShort()
 
-                                    buffer.putFloat(face.normalDirection.x())
+                                    //buffer.putFloat(sunlight.toFloat() / 15f)
+                                    //buffer.putFloat(blocklight.toFloat() / 15f)
+                                    //buffer.putFloat(0.0f)
+                                    buffer.put((sunlight * 16).toByte())
+                                    buffer.put((blocklight * 16).toByte())
+                                    buffer.put(0)
+                                    buffer.put(0)
+
+                                    /*buffer.putFloat(face.normalDirection.x())
                                     buffer.putFloat(face.normalDirection.y())
-                                    buffer.putFloat(face.normalDirection.z())
+                                    buffer.putFloat(face.normalDirection.z())*/
+                                    buffer.put(face.normalDirection.x().toSNORM())
+                                    buffer.put(face.normalDirection.y().toSNORM())
+                                    buffer.put(face.normalDirection.z().toSNORM())
+                                    buffer.put(0)
 
-                                    buffer.putFloat(texcoord[0])
-                                    buffer.putFloat(texcoord[1])
+                                    /*buffer.putFloat(texcoord[0])
+                                    buffer.putFloat(texcoord[1])*/
+
+                                    buffer.putShort(texcoord[0].toUNORM16())
+                                    buffer.putShort(texcoord[1].toUNORM16())
 
                                     buffer.putInt(textureId)
                                     count++

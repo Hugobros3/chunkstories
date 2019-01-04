@@ -1,6 +1,5 @@
 package io.xol.chunkstories.graphics.vulkan
 
-import io.xol.chunkstories.api.graphics.GraphicsEngine
 import io.xol.chunkstories.api.graphics.ShaderStage
 import io.xol.chunkstories.api.graphics.rendergraph.DepthTestingConfiguration.DepthTestMode.*
 import io.xol.chunkstories.api.graphics.rendergraph.PassOutput
@@ -16,24 +15,16 @@ import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 
-//data class VertexInputConfiguration(val bindings: List<VkVertexInputBindingDescription.() -> Unit>, val attributes: List<VkVertexInputAttributeDescription.() -> Unit>)
+fun vertexInputConfiguration(declaration: VertexInputConfigurationContext.() -> Unit) = VertexInputConfiguration(declaration)
 
-fun vertexInputConfiguration(decl: VertexInputConfiguration.() -> Unit) = VertexInputConfiguration().apply(decl)
+data class VertexInputConfiguration(val declaration: VertexInputConfigurationContext.() -> Unit)
 
-class VertexInputConfiguration {
-    lateinit var program: ShaderFactory.GLSLProgram
-        internal set
+interface VertexInputConfigurationContext {
+    val program: ShaderFactory.GLSLProgram
 
-    internal val bindings = mutableListOf<VkVertexInputBindingDescription.() -> Unit>()
-    internal val attributes = mutableListOf<VkVertexInputAttributeDescription.() -> Unit>()
+    fun binding(decl: VkVertexInputBindingDescription.() -> Unit)
 
-    fun binding(decl: VkVertexInputBindingDescription.() -> Unit) {
-        bindings += decl
-    }
-
-    fun attribute(decl: VkVertexInputAttributeDescription.() -> Unit) {
-        attributes += decl
-    }
+    fun attribute(decl: VkVertexInputAttributeDescription.() -> Unit)
 }
 
 class Pipeline(val backend: VulkanGraphicsBackend, val pass: VulkanPass, val vertexInputConfiguration: VertexInputConfiguration, val primitiveType: Primitive, val faceCullingMode: FaceCullingMode) {
@@ -59,16 +50,40 @@ class Pipeline(val backend: VulkanGraphicsBackend, val pass: VulkanPass, val ver
         vertexStagesCreateInfos.forEach { shaderStagesCreateInfo.put(it) }
         shaderStagesCreateInfo.flip()
 
-        vertexInputConfiguration.program = program.glslProgram
-        val vertexInputStateCreateInfo = VkPipelineVertexInputStateCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO).apply {
-            val bindings = VkVertexInputBindingDescription.callocStack(vertexInputConfiguration.bindings.size)
-            vertexInputConfiguration.bindings.forEachIndexed { i, d -> bindings[i].apply(d) }
-            pVertexBindingDescriptions(bindings)
+        fun VertexInputConfiguration.fillVkVertexInputStruct(struct: VkPipelineVertexInputStateCreateInfo) {
+            //val bindingsList = mutableListOf<VkVertexInputBindingDescription.() -> Unit>()
+            //val attributesList = mutableListOf<VkVertexInputAttributeDescription.() -> Unit>()
+            val bindings = mutableListOf<VkVertexInputBindingDescription>()
+            val attributes = mutableListOf<VkVertexInputAttributeDescription>()
 
-            val attributes = VkVertexInputAttributeDescription.callocStack(vertexInputConfiguration.attributes.size)
-            vertexInputConfiguration.attributes.forEachIndexed { i, d -> attributes[i].apply(d) }
-            pVertexAttributeDescriptions(attributes)
+            val localConfigCtx = object : VertexInputConfigurationContext {
+                override val program: ShaderFactory.GLSLProgram
+                    get() = this@Pipeline.program.glslProgram
+
+                override fun binding(decl: VkVertexInputBindingDescription.() -> Unit) {
+                    bindings += VkVertexInputBindingDescription.callocStack().apply(decl)
+                }
+
+                override fun attribute(decl: VkVertexInputAttributeDescription.() -> Unit) {
+                    attributes += VkVertexInputAttributeDescription.callocStack().apply(decl)
+                }
+            }
+
+            this.declaration(localConfigCtx)
+
+            struct.apply {
+                val vkBindings = VkVertexInputBindingDescription.callocStack(bindings.size)
+                bindings.forEachIndexed { i, d -> vkBindings[i].set(d) }
+                pVertexBindingDescriptions(vkBindings)
+
+                val vkAttributes = VkVertexInputAttributeDescription.callocStack(attributes.size)
+                attributes.forEachIndexed { i, d -> vkAttributes[i].set(d) }
+                pVertexAttributeDescriptions(vkAttributes)
+            }
         }
+
+        val vertexInputStateCreateInfo = VkPipelineVertexInputStateCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO)
+        vertexInputConfiguration.fillVkVertexInputStruct(vertexInputStateCreateInfo)
 
         // TODO get those from the VulkanPass
         val inputAssemblyStateCreateInfo = VkPipelineInputAssemblyStateCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO).apply {
