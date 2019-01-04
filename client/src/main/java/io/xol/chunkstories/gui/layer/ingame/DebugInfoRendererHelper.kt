@@ -22,7 +22,6 @@ class DebugInfoRendererHelper(ingameLayer: IngameLayer) {
 
         var posY = gui.viewportHeight
         val font = guiDrawer.fonts.getFont("LiberationSans-Regular", 16f)
-        //posY -= font.lineHeight + 2
         posY -= 4
 
         fun debugLine(text: String) {
@@ -41,12 +40,14 @@ class DebugInfoRendererHelper(ingameLayer: IngameLayer) {
         debugLine("#FF0000Rendering: ${performanceMetrics.lastFrametimeNs/1000000}ms fps: ${performanceMetrics.avgFps.toInt()} (min ${performanceMetrics.minFps.toInt()}, max ${performanceMetrics.maxFps.toInt()}) #00FFFFSimulation performance : ${world.gameLogic.simulationFps}")
 
         debugLine("RAM usage: ${Runtime.getRuntime().freeMemory() / 1024 / 1024} mb free")
-        debugLine("VRAM usage: ${VmaAllocator.allocations} allocations totalizing ${VmaAllocator.allocatedBytes.get()/1024/1024}mb ")
+        debugLine("VRAM usage: ${VmaAllocator.allocations} allocations totalling ${VmaAllocator.allocatedBytes.get()/1024/1024}mb ")
 
         debugLine("Tasks queued: ${client.tasks.submittedTasks()} IO operations queud: ${world.ioHandler.size}")
 
         debugLine("Vertices drawn: ${VulkanCubesDrawer.totalCubesDrawn} within ${VulkanCubesDrawer.totalBuffersUsed} vertex buffers")
         debugLine("World info : ${world.allLoadedChunks.count()} chunks loaded, ${world.regionsStorage.regionsList.count()} regions")
+
+        //debugLine("#FFFF00Extra counters for debug info ${CubicChunk.chunksCounter.get()}")
 
         val playerEntity = client.player.controlledEntity
         if(playerEntity != null ) {
@@ -71,8 +72,6 @@ class DebugInfoRendererHelper(ingameLayer: IngameLayer) {
             val standingAt = playerEntity.location.toVec3i()
             val standingIn = world.peekSafely(playerEntity.location)
             debugLine("Standing at $standingAt in ${standingIn.voxel} (solid=${standingIn.voxel?.solid}, box=${standingIn.voxel?.collisionBoxes?.getOrNull(0)})")
-
-
 
             /*holder?.apply {
                 debugLine("${CubicChunk.chunksCounter} history: H: ${holder.stateHistory} R: ${region.stateHistory}")

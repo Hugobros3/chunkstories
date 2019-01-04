@@ -162,24 +162,26 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
     }
 
     fun beginFrame(frameNumber: Int): Frame {
+        // Are we retiring some older frame ? ( most often we do, except at initialization time )
         val retiringFrame = inFlightFrames[inflightFrameIndex]
 
         stackPush()
 
-        val currentInflightFrameIndex = inflightFrameIndex
-
-        val fence = inFlightFences[currentInflightFrameIndex]
+        val fence = inFlightFences[inflightFrameIndex]
         vkWaitForFences(backend.logicalDevice.vkDevice, fence, true, Long.MAX_VALUE)
 
         if(retiringFrame != null) {
             retiringFrame.recyclingTasks.forEach { it.invoke() }
+            // Null out this index so we don't accidentally refer to the old frame again
+            inFlightFrames[inflightFrameIndex] = null
+
             //performanceCounter.whenFrameEnds(retiringFrame)
         }
 
         vkResetFences(backend.logicalDevice.vkDevice, fence)
 
-        val imageAvailableSemaphore = imageAvailableSemaphores[currentInflightFrameIndex]
-        val renderingFinishedSemaphore = renderingSemaphores[currentInflightFrameIndex]
+        val imageAvailableSemaphore = imageAvailableSemaphores[inflightFrameIndex]
+        val renderingFinishedSemaphore = renderingSemaphores[inflightFrameIndex]
 
         val pImageIndex = stackMallocInt(1)
         val result = vkAcquireNextImageKHR(backend.logicalDevice.vkDevice, handle, Long.MAX_VALUE, imageAvailableSemaphore, VK_NULL_HANDLE, pImageIndex)
@@ -219,7 +221,7 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
 
         stackPop()
 
-        val frame =  Frame(frameNumber, swapchainImageIndex, swapChainImages[swapchainImageIndex], swapChainImageViews[swapchainImageIndex], swapChainFramebuffers[swapchainImageIndex], currentInflightFrameIndex, imageAvailableSemaphore, renderingFinishedSemaphore, fence, System.nanoTime())
+        val frame =  Frame(frameNumber, swapchainImageIndex, swapChainImages[swapchainImageIndex], swapChainImageViews[swapchainImageIndex], swapChainFramebuffers[swapchainImageIndex], inflightFrameIndex, imageAvailableSemaphore, renderingFinishedSemaphore, fence, System.nanoTime())
         performanceCounter.whenFrameBegins(frame)
 
         inFlightFrames[inflightFrameIndex] = frame
@@ -252,6 +254,12 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
     }
 
     fun cleanup() {
+        // Finish the recycling tasks for the frames that were in-flight
+        for(i in 0 until maxFramesInFlight) {
+            inFlightFrames[i]?.recyclingTasks?.forEach { it.invoke() }
+            inFlightFrames[i] = null
+        }
+
         inFlightFences.forEach { vkDestroyFence(backend.logicalDevice.vkDevice, it, null) }
         imageAvailableSemaphores.forEach { vkDestroySemaphore(backend.logicalDevice.vkDevice, it, null) }
         renderingSemaphores.forEach { vkDestroySemaphore(backend.logicalDevice.vkDevice, it, null) }
@@ -263,6 +271,8 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
         for (imageView in swapChainImageViews) {
             vkDestroyImageView(backend.logicalDevice.vkDevice, imageView, null)
         }
+
+        // We don't destroy the images because the swap chain owns them.
 
         vkDestroySwapchainKHR(backend.logicalDevice.vkDevice, handle, null)
     }

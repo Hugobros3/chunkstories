@@ -45,7 +45,7 @@ class ChunkVkMeshProperty(val backend: VulkanGraphicsBackend, val chunk: CubicCh
     override fun createTask(updatesToConsider: Int): UpdateTask = TaskCreateChunkMesh(backend, chunk, this, updatesToConsider)
 
     override fun cleanup() {
-        task?.tryCancel()
+        //task?.tryCancel()
         property.data?.release()
     }
 }

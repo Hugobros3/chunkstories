@@ -86,9 +86,9 @@ abstract class AutoRebuildingProperty(val context: GameContext, initializeClean:
     fun destroy() {
         try {
             lock.lock()
+            task?.tryCancel()
             cleanup()
             isDestroyed = true
-            task?.tryCancel()
         } finally {
             lock.unlock()
         }
