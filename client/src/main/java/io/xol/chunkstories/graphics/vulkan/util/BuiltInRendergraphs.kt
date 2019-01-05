@@ -154,7 +154,7 @@ object BuiltInRendergraphs {
                 outputs {
                     output {
                         name = "colorBuffer"
-                        blending = MIX
+                        blending = OVERWRITE
                     }
                 }
 
