@@ -52,7 +52,7 @@ _mappings
 20 glass
 #Lapis stuff
 21 stone
-22 colored:11
+22 concrete:11
 #23 dispenser
 24 hard_sand
 #25 subwoofer
@@ -119,7 +119,7 @@ _mappings
 #55 wire
 #Diamond ore
 56 diamond_ore
-57 colored:3
+57 concrete:3
 58 planks
 59 wheat
 60 soil
@@ -244,7 +244,7 @@ _mappings
 156 white_concrete_stairs
 157 rails
 #158 distributor
-159 colored keepmeta
+159 concrete keepmeta
 160 glass_pane
 161 leaves
 162 wood
@@ -255,7 +255,7 @@ _mappings
 #167 iron_trapdoor
 170 hay
 #171 carpet
-172 colored:12
+172 concrete:12
 #173 coal_block
 174 ice
 188 wood_fence
