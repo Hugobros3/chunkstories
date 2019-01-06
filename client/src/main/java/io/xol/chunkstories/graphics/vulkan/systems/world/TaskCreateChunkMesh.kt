@@ -10,6 +10,7 @@ import io.xol.chunkstories.graphics.common.UnitCube
 import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import io.xol.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
 import io.xol.chunkstories.graphics.vulkan.textures.VirtualTexturing
+import io.xol.chunkstories.world.cell.ScratchCell
 import io.xol.chunkstories.world.chunk.CubicChunk
 import io.xol.chunkstories.world.chunk.deriveddata.AutoRebuildingProperty
 import org.joml.Vector4f
@@ -57,12 +58,23 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
 
             val buffer = MemoryUtil.memAlloc(1024 * 1024 * 4 * 4)
 
-            val color = Vector4f()
+            val cell = ScratchCell(chunk.world)
+
+            //val color = Vector4f()
             for (x in 0..31) {
                 for (y in 0..31) {
                     for (z in 0..31) {
                         val data = rawChunkData[x * 32 * 32 + y * 32 + z]
                         val voxel = chunk.world.contentTranslator.getVoxelForId(VoxelFormat.id(data))!!
+
+                        cell.x = (chunk.chunkX shl 5) + x
+                        cell.y = (chunk.chunkX shl 5) + y
+                        cell.z = (chunk.chunkX shl 5) + z
+
+                        cell.voxel = voxel
+                        cell.metadata = VoxelFormat.meta(data)
+                        cell.sunlight = VoxelFormat.sunlight(data)
+                        cell.blocklight = VoxelFormat.blocklight(data)
 
                         if (/*opaque(currentVoxel)*/ !voxel.isAir()) {
                             fun face(neighborData: Int, face: UnitCube.CubeFaceData, side: VoxelSide) {
@@ -70,24 +82,23 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
                                 if(opaque(neighborVoxel) || (voxel == neighborVoxel && voxel.selfOpaque))
                                     return
 
-                                val tex = voxel.voxelTextures[side.ordinal]
-                                if(tex.color != null)
-                                    color.set(tex.color)
+                                val voxelTexture = voxel.getVoxelTexture(cell, side)
+                                //if(voxelTexture.color != null)
+                                //    color.set(voxelTexture.color)
 
-                                val textureName = "voxels/textures/"+tex.name+".png"
-                                //val textureName = "voxels/textures/"+(if(Math.random() > 0.5) "stone" else "dirt")+".png"
-                                //println(textureName)
+                                //if(voxelTexture.name.startsWith("concrete"))
+                                //    println(voxelTexture.name)
+
+                                val textureName = "voxels/textures/"+voxelTexture.name.replace('.','/')+".png"
                                 val textureId = (virtualTexturingContext.translate(backend.textures[textureName]) as VirtualTexturing.TranslationResult.Success).id
-                                //val textureId = (virtualTexturingContext.translate(backend.textures.defaultTexture2D) as VirtualTexturing.TranslationResult.Success).id
-                                //val textureId = 0
 
-                                if (color.w < 1.0f)
-                                    color.mul(Vector4f(0f, 1f, 0.3f, 1.0f))
+                                //if (color.w < 1.0f)
+                                //    color.mul(Vector4f(0f, 1f, 0.3f, 1.0f))
 
                                 val sunlight = VoxelFormat.sunlight(neighborData)
                                 val blocklight = VoxelFormat.blocklight(neighborData)
 
-                                color.mul(sunlight * 0.9f + rng.nextFloat() * 0.1f)
+                                //color.mul(sunlight * 0.9f + rng.nextFloat() * 0.1f)
 
                                 for((vertex, texcoord) in face.vertices) {
                                     buffer.putFloat(vertex[0] + x + chunk.chunkX * 32f)

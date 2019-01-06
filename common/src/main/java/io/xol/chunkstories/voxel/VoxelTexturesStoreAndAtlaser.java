@@ -107,6 +107,8 @@ public class VoxelTexturesStoreAndAtlaser implements Content.Voxels.VoxelTexture
 
                             voxelTexturesSortedBySize.add(voxelTexture);
                             totalSurfacedNeeded += voxelTexture.imageFileDimensions * voxelTexture.imageFileDimensions;
+
+                            //System.out.println(textureName);
                         }
                     }
                 }

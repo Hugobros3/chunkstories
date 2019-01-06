@@ -89,12 +89,18 @@ class EntityDefinitionsStore(content: GameContentStore) : EntityDefinitions {
 
     public fun EntityDefinitionsParser.PropertiesContext.extractIn(map: MutableMap<String, String>, prefix: String) {
         this.property().forEach {
-            map.put(prefix + it.Name().text, it.value().text)
+            map.put(prefix + it.Name().text, it.value().getValue())
         }
 
         this.compoundProperty().forEach {
             map.put(prefix + it.Name().text, "exists")
             it.properties().extractIn(map, prefix + it.Name().text + ".")
         }
+    }
+
+    private fun EntityDefinitionsParser.ValueContext.getValue(): String {
+        if (this.Text() != null)
+            return this.Text().text.substring(1, this.Text().text.length - 1)
+        else return this.text
     }
 }

@@ -5,6 +5,7 @@ import io.xol.chunkstories.api.graphics.Window
 import io.xol.chunkstories.client.ClientImplementation
 import io.xol.chunkstories.graphics.GLFWBasedGraphicsBackend
 import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
+import io.xol.chunkstories.graphics.vulkan.util.iterator
 import io.xol.chunkstories.input.lwjgl3.Lwjgl3ClientInputsManager
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWVulkan.glfwVulkanSupported
@@ -69,10 +70,32 @@ class GLFWWindow(val client: ClientImplementation) : Window {
         if (!glfwInit())
             throw Exception("Could not initialize GLFW")
 
+        /*glfwSetErrorCallback { error, description ->
+            println("GLFW error: error: $error description: $description")
+        }
+
+        val monitors = glfwGetMonitors()!!
+        for(i in 0 until monitors.limit()) {
+            val monitor = monitors[i]
+            val xScale = floatArrayOf(0f)
+            val yScale = floatArrayOf(0f)
+            glfwGetMonitorContentScale(monitor, xScale, yScale)
+            //glfwGetMonitor
+            val name = glfwGetMonitorName(monitor)
+
+            val xmm = intArrayOf(0)
+            val ymm = intArrayOf(0)
+
+            glfwGetMonitorPhysicalSize(monitor, xmm, ymm)
+            println("MONITOR $name scale = [${xScale[0]}:${yScale[0]}] [${xmm[0]}:${ymm[0]}]")
+        }
+
+        glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE)*/
+
         // Pick a backend !
         val selectedGraphicsBackend = pickBackend()
-
         glfwWindowHint(GLFW_CLIENT_API, selectedGraphicsBackend.glfwApiHint)
+
         glfwWindowHandle = glfwCreateWindow(width, height, title, 0L, 0L)
         if(glfwWindowHandle == 0L)
             throw Exception("Failed to create GLFW window")

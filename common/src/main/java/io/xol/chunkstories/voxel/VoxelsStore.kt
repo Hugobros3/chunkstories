@@ -116,7 +116,7 @@ class VoxelsStore(private val content: GameContentStore) : Content.Voxels {
 
     public fun VoxelDefinitionsParser.PropertiesContext.extractIn(map: MutableMap<String, String>, prefix: String) {
         this.property().forEach {
-            map.put(prefix + it.Name().text, it.value().text)
+            map.put(prefix + it.Name().text, it.value().getValue())
         }
 
         this.compoundProperty().forEach {
@@ -124,4 +124,11 @@ class VoxelsStore(private val content: GameContentStore) : Content.Voxels {
             it.properties().extractIn(map, prefix + it.Name().text + ".")
         }
     }
+
+    private fun VoxelDefinitionsParser.ValueContext.getValue(): String {
+        if (this.Text() != null)
+            return this.Text().text.substring(1, this.Text().text.length - 1)
+        else return this.text
+    }
+
 }

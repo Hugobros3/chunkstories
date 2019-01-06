@@ -94,19 +94,62 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
         swapchain = SwapChain(this, renderToBackbuffer, null)
 
         GLFW.glfwSetWindowSizeCallback(window.glfwWindowHandle) { handle, newWidth, newHeight ->
-                if(newWidth != 0 && newHeight != 0) {
-                    window.width = newWidth
-                    window.height = newHeight
+            println("resized 2 to $newWidth:$newHeight")
+
+            if(newWidth != 0 && newHeight != 0) {
+                window.width = newWidth
+                window.height = newHeight
 
                 this@VulkanGraphicsBackend.swapchain.expired = true
             }
         }
+
+        GLFW.glfwSetFramebufferSizeCallback(window.glfwWindowHandle) { handle, newWidth, newHeight ->
+            println("resized to $newWidth:$newHeight")
+
+            if(newWidth != 0 && newHeight != 0) {
+                window.width = newWidth
+                window.height = newHeight
+
+                this@VulkanGraphicsBackend.swapchain.expired = true
+            }
+        }
+
+        GLFW.glfwSetWindowContentScaleCallback(window.glfwWindowHandle) { handle, xScale, yScale ->
+            println("scaled to $xScale:$yScale")
+
+            val w = intArrayOf(0)
+            val h = intArrayOf(0)
+            GLFW.glfwGetWindowSize(handle, w, h)
+
+            window.width = (w[0] * xScale).toInt()
+            window.height = (h[0] * yScale).toInt()
+
+            this@VulkanGraphicsBackend.swapchain.expired = true
+        }
+
 
         renderGraph = VulkanRenderGraph(this, queuedRenderGraph!!)
         queuedRenderGraph = null
     }
 
     override fun drawFrame(frameNumber: Int) {
+
+        /*val w = floatArrayOf(0f)
+        val h = floatArrayOf(0f)
+
+        val monitor = GLFW.glfwGetWindowMonitor(window.glfwWindowHandle)
+
+        if(monitor != 0L)
+            GLFW.glfwGetMonitorContentScale(monitor, w, h)
+        println("monitor $monitor scaled to ${w[0]}:${h[0]}")*/
+
+        /*val w = floatArrayOf(0f)
+        val h = floatArrayOf(0f)
+
+        GLFW.glfwGetWindowContentScale(window.glfwWindowHandle, w, h)
+        println(" scaled to ${w[0]}:${h[0]}")*/
+
         val queuedRenderGraph = this.queuedRenderGraph
         if(queuedRenderGraph != null) {
             vkDeviceWaitIdle(logicalDevice.vkDevice)
