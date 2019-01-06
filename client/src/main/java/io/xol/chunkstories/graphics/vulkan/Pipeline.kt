@@ -181,8 +181,8 @@ class Pipeline(val backend: VulkanGraphicsBackend, val pass: VulkanPass, val ver
         }
 
         val pipelineLayoutCreateInfo = VkPipelineLayoutCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO).apply {
-            val pDescriptorSets = stackMallocLong(program.descriptorSetLayouts.size)
-            program.descriptorSetLayouts.forEach { pDescriptorSets.put(it) }
+            val pDescriptorSets = stackMallocLong(program.slotLayouts.size)
+            program.slotLayouts.forEach { pDescriptorSets.put(it.vulkanLayout) }
             pDescriptorSets.flip()
 
             pSetLayouts(pDescriptorSets)

@@ -23,26 +23,26 @@ open class ShaderFactory(open val classLoader: ClassLoader) {
 
     interface GLSLUniformResource {
         val name: String
-        val descriptorSet: Int
+        val descriptorSetSlot: Int
         val binding: Int
     }
 
     data class GLSLUniformBlock(
             override val name: String,
-            override val descriptorSet: Int,
+            override val descriptorSetSlot: Int,
             override val binding: Int,
             val mapper: InterfaceBlockGLSLMapping) : GLSLUniformResource
 
     data class GLSLUnusedUniform(
             override val name: String,
-            override val descriptorSet: Int,
+            override val descriptorSetSlot: Int,
             override val binding: Int
     ) : GLSLUniformResource
 
     /** Represents a (potentially an array of) sampler2D uniform resource declared in one of the stages of the GLSL program */
     data class GLSLUniformSampler2D(
             override val name: String,
-            override val descriptorSet: Int,
+            override val descriptorSetSlot: Int,
             override val binding: Int,
             val count: Int) : GLSLUniformResource
 }

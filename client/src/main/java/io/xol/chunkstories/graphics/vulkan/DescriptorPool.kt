@@ -5,7 +5,7 @@ import io.xol.chunkstories.api.graphics.structs.UniformUpdateFrequency
 import io.xol.chunkstories.graphics.common.shaderc.ShaderFactory
 import io.xol.chunkstories.graphics.vulkan.buffers.VulkanUniformBuffer
 import io.xol.chunkstories.graphics.vulkan.resources.Cleanable
-import io.xol.chunkstories.graphics.vulkan.shaders.VulkanShaderFactory
+import io.xol.chunkstories.graphics.vulkan.shaders.VulkanShaderProgram
 import io.xol.chunkstories.graphics.vulkan.swapchain.Frame
 import io.xol.chunkstories.graphics.vulkan.textures.VulkanSampler
 import io.xol.chunkstories.graphics.vulkan.textures.VulkanTexture2D
@@ -16,7 +16,7 @@ import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 
 /** Holds the descriptors a shader program needs */
-class DescriptorPool(val backend: VulkanGraphicsBackend, val program: VulkanShaderFactory.VulkanShaderProgram) : Cleanable {
+class DescriptorPool(val backend: VulkanGraphicsBackend, val program: VulkanShaderProgram) : Cleanable {
     val handle: VkDescriptorPool
 
     // Array of array of descriptor sets
@@ -33,7 +33,7 @@ class DescriptorPool(val backend: VulkanGraphicsBackend, val program: VulkanShad
         val descriptorsCountPerType = mutableMapOf<Int, Int>()
         resources@ for(resource in program.glslProgram.resources ) {
             // Ignore resources from descriptor set zero when allocating this pool
-            if(resource.descriptorSet == 0)
+            if(resource.descriptorSetSlot == 0)
                 continue
 
             val descriptorType = when (resource) {
@@ -83,7 +83,7 @@ class DescriptorPool(val backend: VulkanGraphicsBackend, val program: VulkanShad
             val layouts = stackMallocLong(descriptorSetsCount)
             for (setLayoutIndex in 1 until (UniformUpdateFrequency.values().size) + 2) {
                 for (j in 0 until backend.swapchain.maxFramesInFlight)
-                    layouts.put(program.descriptorSetLayouts[setLayoutIndex])
+                    layouts.put(program.slotLayouts[setLayoutIndex].vulkanLayout)
             }
             layouts.flip()
 
@@ -138,7 +138,7 @@ class DescriptorPool(val backend: VulkanGraphicsBackend, val program: VulkanShad
         }
 
         // Update *that* set
-        val destinationSet = allocatedSets[resource.descriptorSet]!![frame.inflightFrameIndex]
+        val destinationSet = allocatedSets[resource.descriptorSetSlot]!![frame.inflightFrameIndex]
 
         // Just update it
         val stuffToWrite = VkWriteDescriptorSet.callocStack(1).sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET).apply {

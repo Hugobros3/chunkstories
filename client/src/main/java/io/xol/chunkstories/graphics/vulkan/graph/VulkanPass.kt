@@ -6,7 +6,7 @@ import io.xol.chunkstories.graphics.vulkan.CommandPool
 import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import io.xol.chunkstories.graphics.vulkan.resources.Cleanable
 import io.xol.chunkstories.graphics.vulkan.resources.InflightFrameResource
-import io.xol.chunkstories.graphics.vulkan.shaders.VulkanShaderFactory
+import io.xol.chunkstories.graphics.vulkan.shaders.VulkanShaderProgram
 import io.xol.chunkstories.graphics.vulkan.swapchain.Frame
 import io.xol.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
 import io.xol.chunkstories.graphics.vulkan.textures.vulkanFormat
@@ -22,7 +22,7 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
     val outputRenderBuffers: List<VulkanRenderBuffer>
     val resolvedDepthBuffer: VulkanRenderBuffer?
 
-    val program: VulkanShaderFactory.VulkanShaderProgram
+    val program: VulkanShaderProgram
 
     var renderPass: VkRenderPass = -1
         private set
@@ -374,8 +374,10 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
                 commandBuffers.put(0, this@VulkanPass.commandBuffers[frame])
                 pCommandBuffers(commandBuffers)
 
-                val semaphoresToSignal = MemoryStack.stackLongs(passDoneSemaphore[frame])
-                pSignalSemaphores(semaphoresToSignal)
+                /*if(this@VulkanPass.final) {
+                    val semaphoresToSignal = MemoryStack.stackLongs(passDoneSemaphore[frame])
+                    pSignalSemaphores(semaphoresToSignal)
+                }*/
             }
 
             backend.logicalDevice.graphicsQueue.mutex.acquireUninterruptibly()
