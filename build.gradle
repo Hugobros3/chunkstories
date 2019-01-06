@@ -158,7 +158,7 @@ subprojects { subproject ->
 		}
 
 		project.ext.natives = ["natives-windows", "natives-linux", "natives-macos"];
-		project.ext.lwjglVersion = "3.2.1-SNAPSHOT"
+		project.ext.lwjglVersion = "3.2.1"
 
 		configurations {
 			multiplatform {
