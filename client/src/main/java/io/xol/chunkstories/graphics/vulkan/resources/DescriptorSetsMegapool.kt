@@ -28,7 +28,7 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
     }
 
     /** A pool of descriptor pools contaning only instances of a single descriptor set type. The descriptor sets get recycled. */
-    inner class LayoutSubpool(val layout: DescriptorSlotLayout) : Cleanable {
+    inner class LayoutSubpool internal constructor(val layout: DescriptorSlotLayout) : Cleanable {
         var allocationSize = 4
         var allocatedTotal = 0
         val pools = mutableListOf<VkDescriptorPool>()
@@ -55,6 +55,8 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
                 pPoolSizes(resourcesSize)
                 maxSets(descriptorSetsCount)
             }
+
+            println(layout)
 
             val pDescriptorPool = stackMallocLong(1)
             vkCreateDescriptorPool(backend.logicalDevice.vkDevice, poolCreateInfo, null, pDescriptorPool)
@@ -100,8 +102,10 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
         }
     }
 
+    fun getBindingContext(frame: Frame, pipeline: Pipeline, commandBuffer: VkCommandBuffer) = ShaderBindingContext(frame, pipeline, commandBuffer)
+
     /** Thread UNSAFE semi-immediate mode emulation of the conventional binding model */
-    inner class ShaderBindingContext private constructor(val frame: Frame, val pipeline: Pipeline, val commandBuffer: VkCommandBuffer) {
+    inner class ShaderBindingContext internal constructor(val frame: Frame, val pipeline: Pipeline, val commandBuffer: VkCommandBuffer) {
         val sets = mutableMapOf<Int, VkDescriptorSet>()
         val dirty = mutableSetOf<Int>()
 
@@ -115,9 +119,11 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
 
             if (set == null) {
                 set = subpool.acquireDescriptorSet()
+                sets.put(slot, set)
             } else if (dirty.remove(slot)) {
                 val oldset = set
                 set = subpool.acquireDescriptorSet()
+                sets.put(slot, set)
 
                 backend.copyDescriptorSet(oldset, set, slotLayout.bindingsCountTotal)
 
@@ -138,6 +144,7 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
             val buffer = VulkanUniformBuffer(backend, uboBindPoint.mapper)
             buffer.upload(interfaceBlock)
             backend.updateDescriptorSet(set, uboBindPoint.binding, buffer)
+            tempBuffers.add(buffer)
         }
 
         fun bindTextureAndSampler(name: String, texture: VulkanTexture2D, sampler: VulkanSampler) {
@@ -173,7 +180,7 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
                 i++
             }
 
-            println("Recycled $i sets")
+            //println("Recycled $i sets")
 
             for(buffer in tempBuffers)
                 buffer.cleanup()
@@ -181,7 +188,7 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
     }
 
     override fun cleanup() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        mainPool.values.forEach { it.cleanup() }
     }
 }
 

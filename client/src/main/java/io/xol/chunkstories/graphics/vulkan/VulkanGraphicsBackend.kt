@@ -10,6 +10,7 @@ import io.xol.chunkstories.graphics.vulkan.devices.LogicalDevice
 import io.xol.chunkstories.graphics.vulkan.devices.PhysicalDevice
 import io.xol.chunkstories.graphics.vulkan.graph.VulkanPass
 import io.xol.chunkstories.graphics.vulkan.graph.VulkanRenderGraph
+import io.xol.chunkstories.graphics.vulkan.resources.DescriptorSetsMegapool
 import io.xol.chunkstories.graphics.vulkan.resources.VmaAllocator
 import io.xol.chunkstories.graphics.vulkan.resources.VulkanMemoryManager
 import io.xol.chunkstories.graphics.vulkan.shaders.VulkanShaderFactory
@@ -62,6 +63,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
 
     val renderToBackbuffer : VkRenderPass
 
+    val descriptorMegapool = DescriptorSetsMegapool(this)
     val shaderFactory = VulkanShaderFactory(this, window.client)
     val textures: VulkanTextures
     val virtualTexturing: VirtualTexturing
@@ -305,6 +307,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
 
         textures.cleanup()
         virtualTexturing.cleanup()
+        descriptorMegapool.cleanup()
 
         vmaAllocator.cleanup()
         memoryManager.cleanup()

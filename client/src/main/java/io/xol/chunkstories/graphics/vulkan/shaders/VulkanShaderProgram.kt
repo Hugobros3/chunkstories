@@ -48,7 +48,7 @@ data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsB
                     }
 
                     Pair(descriptorType, descriptorsNeeded)
-                }.toMap()
+                }.groupBy { it.first }.mapValues { it.value.sumBy { it.second } }
     }
 
     //TODO create the layout from getDescriptorCountByType(): Map<Int, Int>

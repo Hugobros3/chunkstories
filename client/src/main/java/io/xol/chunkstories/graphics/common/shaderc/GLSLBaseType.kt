@@ -4,18 +4,26 @@ import org.joml.*
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSubclassOf
 
-enum class GLSLBaseType(val klass: KClass<*>, val glslToken: String, val alignment: Int, val size: Int) {
-    FLOAT(Float::class, "float", 4, 4),
-    INT(Int::class, "int", 4, 4),
-    UINT(Int::class, "uint", 4, 4),
-    LONG(Long::class, "int", 4, 4),
+enum class GLSLBaseType(val klass: KClass<*>, val alignment: Int, val size: Int, val glslToken: String) {
+    FLOAT(Float::class, 4, 4, "float"),
+    INT(Int::class, 4, 4, "int"),
+    UINT(Int::class, 4, 4, "uint"),
+    LONG(Long::class, 4, 4, "int"),
 
-    VEC2(Vector2fc::class, "vec2", 2 * 4, 2 * 4),
-    VEC3(Vector3fc::class, "vec3", 4 * 4, 3 * 4),
-    VEC4(Vector4fc::class, "vec4", 4 * 4, 4 * 4),
+    VEC2(Vector2fc::class, 2 * 4, 2 * 4, "vec2"),
+    VEC3(Vector3fc::class, 4 * 4, 3 * 4, "vec3"),
+    VEC4(Vector4fc::class, 4 * 4, 4 * 4, "vec4"),
 
-    MAT3(Matrix3fc::class, "mat3", 4 * 4, 3 * 3 * 4),
-    MAT4(Matrix4fc::class, "mat4", 4 * 4, 4 * 4 * 4),
+    IVEC2(Vector2ic::class, 2 * 4, 2 * 4, "ivec2"),
+    IVEC3(Vector3ic::class, 4 * 4, 3 * 4, "ivec3"),
+    IVEC4(Vector4ic::class, 4 * 4, 4 * 4, "ivec4"),
+
+    UVEC2(Vector2ic::class, 2 * 4, 2 * 4, "uvec2"),
+    UVEC3(Vector3ic::class, 4 * 4, 3 * 4, "uvec3"),
+    UVEC4(Vector4ic::class, 4 * 4, 4 * 4, "uvec4"),
+
+    MAT3(Matrix3fc::class, 4 * 4, 3 * 3 * 4, "mat3"),
+    MAT4(Matrix4fc::class, 4 * 4, 4 * 4 * 4, "mat4"),
     ;
 
     val fieldType: InterfaceBlockFieldType

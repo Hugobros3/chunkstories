@@ -101,9 +101,10 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
                                 //color.mul(sunlight * 0.9f + rng.nextFloat() * 0.1f)
 
                                 for((vertex, texcoord) in face.vertices) {
-                                    buffer.putFloat(vertex[0] + x + chunk.chunkX * 32f)
-                                    buffer.putFloat(vertex[1] + y + chunk.chunkY * 32f)
-                                    buffer.putFloat(vertex[2] + z + chunk.chunkZ * 32f)
+                                    buffer.put((vertex[0] + x).toByte())// + chunk.chunkX * 32f)
+                                    buffer.put((vertex[1] + y).toByte())// + chunk.chunkY * 32f)
+                                    buffer.put((vertex[2] + z).toByte())// + chunk.chunkZ * 32f)
+                                    buffer.put(0)
 
                                     fun Float.toSNORM(): Byte = ((this + 0.0f) * 0.5f * 255f).toInt().clamp(-128, 127).toByte()
                                     fun Float.toUNORM16(): Short = (this * 65535f).toInt().clamp(0, 65535).toShort()
