@@ -106,8 +106,8 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val script: RenderGr
         for(pass in passesInOrder) {
             when(pass) {
                 passesInOrder[0] -> pass.render(frame, waitOn)
-                finalPass -> pass.render(frame, waitOn)
-                else -> pass.render(frame, waitOn)
+                finalPass -> pass.render(frame, null)
+                else -> pass.render(frame, null)
             }
 
             waitOn = pass.passDoneSemaphore[frame]
@@ -211,10 +211,10 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val script: RenderGr
             }
 
             val submitInfo = VkSubmitInfo.callocStack().sType(VK_STRUCTURE_TYPE_SUBMIT_INFO).apply {
-                val waitOnSemaphores = MemoryStack.stackMallocLong(1)
+                /*val waitOnSemaphores = MemoryStack.stackMallocLong(1)
                 waitOnSemaphores.put(0, finalPass.passDoneSemaphore[frame])
                 pWaitSemaphores(waitOnSemaphores)
-                waitSemaphoreCount(1)
+                waitSemaphoreCount(1)*/
 
                 val waitStages = MemoryStack.stackMallocInt(1)
                 waitStages.put(0, VK_PIPELINE_STAGE_TRANSFER_BIT)

@@ -267,7 +267,7 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
     }
 
     //TODO for now let's assume there is only one pass so we can use head/tail semaphores from the frame object
-    fun render(frame: Frame, inSemaphore: VkSemaphore) {
+    fun render(frame: Frame, passBeginSemaphore: VkSemaphore?) {
         stackPush().use {
             commandBuffers[frame].apply {
                 val beginInfo = VkCommandBufferBeginInfo.callocStack().sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO).apply {
@@ -359,10 +359,12 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
             }
 
             val submitInfo = VkSubmitInfo.callocStack().sType(VK_STRUCTURE_TYPE_SUBMIT_INFO).apply {
-                val waitOnSemaphores = MemoryStack.stackMallocLong(1)
-                waitOnSemaphores.put(0, inSemaphore)
-                pWaitSemaphores(waitOnSemaphores)
-                waitSemaphoreCount(1)
+                if(passBeginSemaphore != null) {
+                    val waitOnSemaphores = MemoryStack.stackMallocLong(1)
+                    waitOnSemaphores.put(0, passBeginSemaphore)
+                    pWaitSemaphores(waitOnSemaphores)
+                    waitSemaphoreCount(1)
+                }
 
                 //val waitStages = MemoryStack.stackMallocInt(1)
                 //waitStages.put(0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
