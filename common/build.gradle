@@ -37,6 +37,13 @@ test {
 	}
 }
 
+compileKotlin {
+	dependsOn ':common:generateGrammarSource'
+}
+
+compileJava {
+	dependsOn ':common:generateGrammarSource'
+}
 
 task setupContentLocation() {
 	String actualContentLocation;
