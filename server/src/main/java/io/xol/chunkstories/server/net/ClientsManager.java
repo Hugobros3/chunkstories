@@ -6,15 +6,17 @@
 
 package io.xol.chunkstories.server.net;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-
 import io.xol.chunkstories.api.player.Player;
-import io.xol.chunkstories.api.util.IterableIterator;
-import io.xol.chunkstories.net.http.HttpRequests;
+import io.xol.chunkstories.net.http.SimpleWebRequest;
 import io.xol.chunkstories.server.DedicatedServer;
 import io.xol.chunkstories.server.player.ServerPlayer;
 import io.xol.chunkstories.util.VersionInfo;
+
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class ClientsManager {
 
@@ -35,8 +37,8 @@ public abstract class ClientsManager {
 		this.server = server;
 		this.packetsProcessor = new ServerPacketsProcessorImplementation(server);
 
-		externalIP = HttpRequests.sendPost("https://chunkstories.xyz/api/sayMyName.php?ip=1", "");
-		hostname = HttpRequests.sendPost("https://chunkstories.xyz/api/sayMyName.php?host=1", "");
+		externalIP = new SimpleWebRequest("https://chunkstories.xyz/api/sayMyName.php?ip=1").waitForResult();
+		hostname = new SimpleWebRequest("https://chunkstories.xyz/api/sayMyName.php?host=1").waitForResult();
 
 		this.maxClients = server.getServerConfig().getIntValue("server.maxUsers");
 	}
@@ -111,10 +113,8 @@ public abstract class ClientsManager {
 	}
 
 	public void sendServerInfo(ClientConnection clientConnection) {
-		clientConnection.sendTextMessage("info/name:"
-				+ getServer().getServerConfig().getValue("serverName"));
-		clientConnection.sendTextMessage(
-				"info/motd:" + getServer().getServerConfig().getValue("serverDescription"));
+		clientConnection.sendTextMessage("info/name:" + getServer().getServerConfig().getValue("serverName"));
+		clientConnection.sendTextMessage("info/motd:" + getServer().getServerConfig().getValue("serverDescription"));
 		clientConnection.sendTextMessage("info/connected:" + getPlayersNumber() + ":" + getMaxClients());
 		clientConnection.sendTextMessage("info/version:" + VersionInfo.version);
 		clientConnection.sendTextMessage("info/mods:" + getServer().getModsProvider().getModsString());
@@ -125,14 +125,18 @@ public abstract class ClientsManager {
 		clientConnection.flush();
 	}
 
-	/** Used by ClientConnection after a successfull login procedure */
+	/**
+	 * Used by ClientConnection after a successfull login procedure
+	 */
 	void registerPlayer(ClientConnection clientConnection) {
 		ServerPlayer player = clientConnection.getPlayer();
 		this.players.put(player.getName(), player);
 		this.playersByUUID.put(player.getUUID(), player);
 	}
 
-	/** Used by ClientConnection during the close() method */
+	/**
+	 * Used by ClientConnection during the close() method
+	 */
 	void removeClient(ClientConnection clientConnection) {
 		this.clients.remove(clientConnection);
 

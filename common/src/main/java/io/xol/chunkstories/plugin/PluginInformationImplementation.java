@@ -37,6 +37,7 @@ import io.xol.chunkstories.content.GameDirectory;
 /**
  * Loads the plugin definition from it's Jar file and allows to instanciate it
  */
+//TODO use JSON like a normal person
 public class PluginInformationImplementation extends URLClassLoader implements PluginInformation {
 	private String pluginName;
 	private String authors;
@@ -118,41 +119,21 @@ public class PluginInformationImplementation extends URLClassLoader implements P
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see io.xol.chunkstories.plugin.PluginInformation#getName()
-	 */
 	@Override
 	public String getName() {
 		return this.pluginName;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see io.xol.chunkstories.plugin.PluginInformation#getPluginVersion()
-	 */
 	@Override
 	public String getPluginVersion() {
 		return this.pluginVersion;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see io.xol.chunkstories.plugin.PluginInformation#getAuthor()
-	 */
 	@Override
 	public String getAuthor() {
 		return this.authors;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see io.xol.chunkstories.plugin.PluginInformation#getPluginType()
-	 */
 	@Override
 	public PluginType getPluginType() {
 		return pluginType;
@@ -201,8 +182,6 @@ public class PluginInformationImplementation extends URLClassLoader implements P
 			}
 		}
 
-		// System.out.println("Loaded info : " + pluginName + " version " +
-		// pluginVersion + " by " + authors + " EP:" + entryPoint);
 		br.close();
 	}
 
@@ -212,12 +191,6 @@ public class PluginInformationImplementation extends URLClassLoader implements P
 				+ "]";
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see io.xol.chunkstories.plugin.PluginInformation#createInstance(io.xol.
-	 * chunkstories.api.GameContext)
-	 */
 	@Override
 	@SuppressWarnings("serial")
 	public ChunkStoriesPlugin createInstance(GameContext pluginExecutionContext) throws PluginCreationException {

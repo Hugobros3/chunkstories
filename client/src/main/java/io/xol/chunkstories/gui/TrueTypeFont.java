@@ -27,7 +27,7 @@ import java.io.IOException;
  * @new version edited by David Aaron Muhar (bobjob)
  * @new version edited by Hugo Devillers (gobrosse)
  */
-//TODO: rip out this bullshit and just use STB like every other cool kid
+//TODO: rip out this bullshit and just use stb_truetype like every other cool kid
 public class TrueTypeFont implements Font {
 	/**
 	 * Array that holds necessary information about the font characters
@@ -293,53 +293,6 @@ public class TrueTypeFont implements Font {
 	public int getLineHeight() {
 		return fontHeight;
 	}
-
-
-
-	/*public static Texture2DGL loadImageIntoOpenGLTexture(int offset, BufferedImage bufferedImage) {
-		try {
-			short width = (short) bufferedImage.getWidth();
-			short height = (short) bufferedImage.getHeight();
-
-			int bpp = (byte) bufferedImage.getColorModel().getPixelSize();
-			ByteBuffer handles;
-			DataBuffer db = bufferedImage.getData().getDataBuffer();
-			if (db instanceof DataBufferInt) {
-				int intI[] = ((DataBufferInt) (bufferedImage.getData().getDataBuffer())).getData();
-				byte newI[] = new byte[intI.length * 4];
-				for (int i = 0; i < intI.length; i++) {
-					byte b[] = intToByteArray(intI[i]);
-					int newIndex = i * 4;
-
-					newI[newIndex] = b[1];
-					newI[newIndex + 1] = b[2];
-					newI[newIndex + 2] = b[3];
-					newI[newIndex + 3] = b[0];
-				}
-
-				handles = ByteBuffer.allocateDirect(width * height * (bpp / 8)).order(ByteOrder.nativeOrder())
-						.put(newI);
-			} else {
-				handles = ByteBuffer.allocateDirect(width * height * (bpp / 8)).order(ByteOrder.nativeOrder())
-						.put(((DataBufferByte) (bufferedImage.getData().getDataBuffer())).getData());
-			}
-			handles.flip();
-
-			Texture2DGL texture = new Texture2DRenderTargetGL(TextureFormat.RGBA_8BPP, width, height);
-
-			texture.uploadTextureData(width, height, handles);
-			texture.setLinearFiltering(false);
-			texture.setTextureWrapping(false);
-
-			return texture;
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.exit(-1);
-		}
-
-		return null;
-	}*/
 
 	public static boolean isSupported(String fontname) {
 		java.awt.Font[] font = getFonts();

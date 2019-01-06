@@ -79,7 +79,7 @@ public class SimpleWebRequest extends Thread {
 		}
 	}
 
-	public String result() {
+	public String waitForResult() {
 		doneFence.acquireUninterruptibly();
 		return result;
 	}
