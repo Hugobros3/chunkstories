@@ -212,10 +212,10 @@ public class InventoryGridRenderer {
                 int amountToDisplay = pile.getAmount();
 
                 // If we selected this item
-                if (InventoryView.selectedItem != null && InventoryView.selectedItem.getInventory() != null
-                        && getInventory().equals(InventoryView.selectedItem.getInventory())
-                        && InventoryView.selectedItem.getX() == i && InventoryView.selectedItem.getY() == j) {
-                    amountToDisplay -= InventoryView.selectedItemAmount;
+                if (InventoryView.Companion.getDraggingPile() != null && InventoryView.Companion.getDraggingPile().getInventory() != null
+                        && getInventory().equals(InventoryView.Companion.getDraggingPile().getInventory())
+                        && InventoryView.Companion.getDraggingPile().getX() == i && InventoryView.Companion.getDraggingPile().getY() == j) {
+                    amountToDisplay -= InventoryView.Companion.getDraggingQuantity();
                 }
 
                 // Draw amount of items in the pile

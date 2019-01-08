@@ -73,7 +73,7 @@ class IngameLayer(window: Gui, private val client: IngameClientImplementation) :
 
         // Draw the GUI
         if (!guiHidden) {
-            chatManager.render(renderer)
+            chatManager.drawChatWindow(renderer)
 
             // Draw inventory
             inventoryBarDrawer?.drawPlayerInventorySummary(renderer, gui.viewportWidth / 2, 8)
@@ -97,7 +97,7 @@ class IngameLayer(window: Gui, private val client: IngameClientImplementation) :
         // Auto-switch to pause if it detects the game isn't in focus anymore
         if (!client.gameWindow.hasFocus() && !isCovered) {
             focus(false)
-            gui.topLayer = PauseMenu(gui, gui.topLayer)
+            gui.topLayer = PauseMenu(gui, this)
         }
     }
 
@@ -114,7 +114,7 @@ class IngameLayer(window: Gui, private val client: IngameClientImplementation) :
         // Block inputs if chatting
         when {
             input.name == "chat" -> {
-                gui.topLayer = chatManager.ChatPanelOverlay(gui, this)
+                gui.topLayer = chatManager.ChatLayer(gui, this)
                 focus(false)
                 guiHidden = false
                 return true

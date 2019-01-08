@@ -56,6 +56,6 @@ class ClientGui(override val client: ClientImplementation) : Gui {
         val ingameClient = client.ingame ?: return logger.warn("Asked to open an inventory but the client currently isn't ingame !")
 
         ingameClient.ingameGuiLayer.focus(false)
-        ingameClient.gui.topLayer = InventoryView(ingameClient.gui, ingameClient.ingameGuiLayer, inventories)
+        ingameClient.gui.topLayer = InventoryView(ingameClient.gui, ingameClient.ingameGuiLayer, inventories.toList())
     }
 }

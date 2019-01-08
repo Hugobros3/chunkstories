@@ -90,7 +90,7 @@ class MainMenu(gui: Gui, parent: Layer?) : Layer(gui, parent) {
 
     override fun handleTextInput(c: Char): Boolean {
         when (c) {
-            'e' -> gui.topLayer = InventoryView(gui, this, arrayOf<Inventory>(BasicInventory(10, 4)))
+            'e' -> gui.topLayer = InventoryView(gui, this, listOf(BasicInventory(10, 4)))
             'd' -> gui.topLayer = DeathScreen(gui, this)
             'r' -> gui.topLayer = MessageBox(gui, this, "Error : error")
             'l' -> gui.topLayer = LanguageSelectionScreen(gui, this, true)
