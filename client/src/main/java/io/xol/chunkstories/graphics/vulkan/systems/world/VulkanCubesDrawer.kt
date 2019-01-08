@@ -3,20 +3,25 @@ package io.xol.chunkstories.graphics.vulkan.systems.world
 import io.xol.chunkstories.api.client.IngameClient
 import io.xol.chunkstories.api.entity.traits.serializable.TraitControllable
 import io.xol.chunkstories.api.graphics.structs.Camera
+import io.xol.chunkstories.api.graphics.structs.WorldConditions
 import io.xol.chunkstories.api.physics.Frustrum
 import io.xol.chunkstories.api.util.kotlin.toVec3i
+import io.xol.chunkstories.api.world.World
 import io.xol.chunkstories.client.InternalClientOptions
 import io.xol.chunkstories.graphics.common.FaceCullingMode
 import io.xol.chunkstories.graphics.common.Primitive
 import io.xol.chunkstories.graphics.common.world.ChunkRenderInfo
-import io.xol.chunkstories.graphics.vulkan.*
+import io.xol.chunkstories.graphics.vulkan.Pipeline
+import io.xol.chunkstories.graphics.vulkan.VertexInputConfiguration
+import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import io.xol.chunkstories.graphics.vulkan.graph.VulkanPass
 import io.xol.chunkstories.graphics.vulkan.swapchain.Frame
 import io.xol.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
 import io.xol.chunkstories.world.WorldClientCommon
+import org.joml.Vector3d
 import org.joml.Vector3f
 import org.lwjgl.system.MemoryStack
-import org.lwjgl.system.MemoryStack.*
+import org.lwjgl.system.MemoryStack.stackLongs
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 
@@ -90,9 +95,11 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
 
         val entity = client.player.controlledEntity
         val camera = entity?.traits?.get(TraitControllable::class)?.camera ?: Camera()
+        val world = client.world as WorldClientCommon
 
         //descriptorPool.configure(frame, camera)
         bindingContext.bindUBO(camera)
+        bindingContext.bindUBO(world.getConditions())
 
         val frustrum = Frustrum(camera, client.gameWindow)
 
@@ -101,8 +108,6 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
 
         //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 1, descriptorPool.setsForFrame(frame), null as? IntArray)
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
-
-        val world = client.world as WorldClientCommon
 
         val camChunk = camera.position.toVec3i()
         camChunk.x /= 32
@@ -131,7 +136,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         }.sortedBy { chunk ->
             val chunkCenter = Vector3f(chunk.chunkX * 32 + 16.0f, chunk.chunkY * 32 + 16.0f, chunk.chunkZ * 32 + 16.0f)
             chunkCenter.distance(camera.position) + 0.0f
-        }.distinct()//.take(50)
+        }.distinct()
 
         for (chunk in sortedChunks) {
             if (chunk.chunkX !in (camChunk.x - drawDistance)..(camChunk.x + drawDistance))
@@ -145,7 +150,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
 
             if (chunk.meshData is ChunkVkMeshProperty) {
                 val block = (chunk.meshData as ChunkVkMeshProperty).get()
-                if(block != null)
+                if (block != null)
                     usedData.add(block)
 
                 if (block?.vertexBuffer != null) {
@@ -168,7 +173,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
             } else {
                 // This avoids the condition where the meshData is created after the chunk is destroyed
                 chunk.chunkDestructionSemaphore.acquireUninterruptibly()
-                if(!chunk.isDestroyed)
+                if (!chunk.isDestroyed)
                     chunk.meshData = ChunkVkMeshProperty(backend, chunk)
                 chunk.chunkDestructionSemaphore.release()
             }
@@ -191,4 +196,18 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         //descriptorPool.cleanup()
         pipeline.cleanup()
     }
+}
+
+fun World.getConditions(): WorldConditions {
+    //val time = (System.currentTimeMillis() % 100000L) / 2L
+    val time01 = (time % 10000L) / 10000f
+    val sunPos = Vector3d(0.5, -1.0, 0.0)
+    if (time01 > 0f)
+        sunPos.rotateAbout(time01 * Math.PI * 2.0, 1.0, 0.0, 0.0).normalize()
+    //println("${time01.toString()}:${sunPos.x} ${sunPos.y} + ${sunPos.z}")
+    return WorldConditions(
+            time = time01,
+            sunPosition = sunPos,
+            cloudyness = this.weather
+    )
 }

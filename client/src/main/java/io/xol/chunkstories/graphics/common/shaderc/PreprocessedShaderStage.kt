@@ -1,5 +1,8 @@
 package io.xol.chunkstories.graphics.common.shaderc
 
+import io.xol.chunkstories.api.GameContext
+import io.xol.chunkstories.api.content.Asset
+import io.xol.chunkstories.api.content.Content
 import io.xol.chunkstories.api.graphics.ShaderStage
 import io.xol.chunkstories.api.graphics.structs.InterfaceBlock
 import kotlin.reflect.KClass
@@ -7,7 +10,7 @@ import kotlin.reflect.KClass
 /** Backend-agnostic preprocessing of GLSL shader stage snippets, crunches the custom GLSL flavour used by the game into a common Vulkan/OpenGL GLSL
  * subset, and also extracts a bunch of usefull metadata
  */
-class PreprocessedShaderStage(private val factory: ShaderFactory, private val originalShaderCode: String, private val stage: ShaderStage) {
+class PreprocessedShaderStage(private val factory: ShaderFactory, private val originalShaderCode: String, private val stage: ShaderStage, val content: Content?, val shadersAssetBaseDir : String?) {
     /** interfaceblock structs yet to include (declared via #include struct but not reached yet) */
     internal val todo = mutableListOf<KClass<InterfaceBlock>>()
     //internal val done = mutableListOf<KClass<InterfaceBlock>>()
@@ -46,6 +49,24 @@ class PreprocessedShaderStage(private val factory: ShaderFactory, private val or
                     return@map classByThatName
                 }
             }
+            else if(it.startsWith("#include ")) {
+                it.split(' ')[1].let {
+                    //val parent = asset!!.name.substring(0, asset!!.name.lastIndexOf('/'))
+                    var includeDir = it
+                    var resolvedDir = shadersAssetBaseDir!!
+                    while(includeDir.startsWith("../")) {
+                        resolvedDir = resolvedDir.substring(0, resolvedDir.lastIndexOf('/'))
+                        includeDir = includeDir.substring(3)
+                    }
+                    resolvedDir = resolvedDir + "/" + includeDir
+
+                    println(resolvedDir)
+                    val referencedAsset = content!!.getAsset(resolvedDir)!!
+                    val shaderCode = referencedAsset.reader().readText()
+                    return@map shaderCode
+                }
+            }
+
             it
         }
 

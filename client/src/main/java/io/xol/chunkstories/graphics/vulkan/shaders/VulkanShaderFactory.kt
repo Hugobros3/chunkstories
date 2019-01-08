@@ -7,26 +7,31 @@ import io.xol.chunkstories.graphics.common.shaderc.ShaderFactory
 import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 
 class VulkanShaderFactory(val backend: VulkanGraphicsBackend, val client: Client) : ShaderFactory(VulkanShaderFactory::class.java.classLoader) {
+    @Suppress("UNNECESSARY_SAFE_CALL")
     override val classLoader: ClassLoader
         //Note: We NEED that ?. operator because we're calling into this before Client is done initializing
         get() = (client?.content?.modsManager() as? ModsManagerImplementation)?.finalClassLoader ?: VulkanShaderFactory::class.java.classLoader
 
-    private fun readShaderStage(path: String): String {
-        val res = javaClass.getResource("/shaders/$path")
-        if (res != null)
-            return res.readText()
-        val asset = client.content.getAsset("shaders/$path") ?: throw Exception("Shader not found in either built-in resources or assets: $path")
-        return asset.reader().readText()
-    }
-
     fun loadProgram(basePath: String): GLSLProgram {
+        var shaderBaseDir : String? = null
+
+        fun readShaderStage(path: String): String {
+            val res = javaClass.getResource("/shaders/$path")
+            if (res != null)
+                return res.readText()
+            val asset = client.content.getAsset("shaders/$path") ?: throw Exception("Shader not found in either built-in resources or assets: $path")
+            shaderBaseDir = asset.name.substring(0, asset.name.lastIndexOf('/'))
+
+            return asset.reader().readText()
+        }
+
         val vertexShader = readShaderStage("$basePath.vert")
         val fragmentShader = readShaderStage("$basePath.frag")
 
         val stages = mapOf(ShaderStage.VERTEX to vertexShader, ShaderStage.FRAGMENT to fragmentShader)
 
         return try {
-            translateGLSL(GLSLDialect.VULKAN, stages)
+            translateGLSL(GLSLDialect.VULKAN, stages, client.content, shaderBaseDir)
         } catch (e: Exception) {
             e.printStackTrace()
             throw Exception("Failed to load program $basePath, $e")
@@ -34,5 +39,4 @@ class VulkanShaderFactory(val backend: VulkanGraphicsBackend, val client: Client
     }
 
     fun createProgram(backend: VulkanGraphicsBackend, basePath: String) = VulkanShaderProgram(backend, loadProgram(basePath))
-
 }

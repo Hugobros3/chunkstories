@@ -5,6 +5,7 @@ import io.xol.chunkstories.api.dsl.RenderGraphDeclarationScript
 import io.xol.chunkstories.api.graphics.TextureFormat.*
 import io.xol.chunkstories.api.graphics.rendergraph.PassOutput.BlendMode.*
 import io.xol.chunkstories.api.gui.GuiDrawer
+import io.xol.chunkstories.graphics.vulkan.systems.SkyDrawer
 import io.xol.chunkstories.graphics.vulkan.systems.world.VulkanCubesDrawer
 import io.xol.chunkstories.graphics.vulkan.systems.debug.VulkanDebugDrawer
 import io.xol.chunkstories.graphics.vulkan.systems.VulkanSpinningCubeDrawer
@@ -114,7 +115,25 @@ object BuiltInRendergraphs {
 
         passes {
             pass {
+                name = "sky"
+
+                draws {
+                    system(SkyDrawer::class)
+                }
+
+                outputs {
+                    output {
+                        name = "colorBuffer"
+                        clear = true
+                        clearColor = Vector4d(0.0, 0.5, 1.0, 1.0)
+                    }
+                }
+            }
+
+            pass {
                 name = "cubes"
+
+                dependsOn("sky")
 
                 draws {
                     system(VulkanCubesDrawer::class)
@@ -123,8 +142,6 @@ object BuiltInRendergraphs {
                 outputs {
                     output {
                         name = "colorBuffer"
-                        clear = true
-                        clearColor = Vector4d(0.0, 0.5, 1.0, 1.0)
                     }
 
                     output {

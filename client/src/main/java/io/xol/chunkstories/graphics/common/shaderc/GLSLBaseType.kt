@@ -7,12 +7,20 @@ import kotlin.reflect.full.isSubclassOf
 enum class GLSLBaseType(val klass: KClass<*>, val alignment: Int, val size: Int, val glslToken: String) {
     FLOAT(Float::class, 4, 4, "float"),
     INT(Int::class, 4, 4, "int"),
+    // Signed ? Unsigned ? The JVM doesn't know !
     UINT(Int::class, 4, 4, "uint"),
+
+    // For now double-precision still gets mapped to single precision
     LONG(Long::class, 4, 4, "int"),
 
     VEC2(Vector2fc::class, 2 * 4, 2 * 4, "vec2"),
     VEC3(Vector3fc::class, 4 * 4, 3 * 4, "vec3"),
     VEC4(Vector4fc::class, 4 * 4, 4 * 4, "vec4"),
+
+    // For now double-precision still gets mapped to single precision
+    VEC2D(Vector2dc::class, 2 * 4, 2 * 4, "vec2"),
+    VEC3D(Vector3dc::class, 4 * 4, 3 * 4, "vec3"),
+    VEC4D(Vector4dc::class, 4 * 4, 4 * 4, "vec4"),
 
     IVEC2(Vector2ic::class, 2 * 4, 2 * 4, "ivec2"),
     IVEC3(Vector3ic::class, 4 * 4, 3 * 4, "ivec3"),

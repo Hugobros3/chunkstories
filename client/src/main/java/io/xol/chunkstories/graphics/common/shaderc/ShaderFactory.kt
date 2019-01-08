@@ -1,5 +1,7 @@
 package io.xol.chunkstories.graphics.common.shaderc
 
+import io.xol.chunkstories.api.GameContext
+import io.xol.chunkstories.api.content.Content
 import io.xol.chunkstories.api.graphics.ShaderStage
 import io.xol.chunkstories.api.graphics.structs.InterfaceBlock
 import kotlin.reflect.KClass
@@ -14,8 +16,8 @@ open class ShaderFactory(open val classLoader: ClassLoader) {
     /** All the data structure that are explicitely included in the shader string *or* implicitely included due to use in an included struct */
     val structures = mutableMapOf<KClass<InterfaceBlock>, InterfaceBlockGLSLMapping>()
 
-    fun translateGLSL(dialect: GLSLDialect, stagesCode: Map<ShaderStage, String>): GLSLProgram =
-            SpirvCrossHelper.translateGLSLDialect(this, dialect, stagesCode)
+    fun translateGLSL(dialect: GLSLDialect, stagesCode: Map<ShaderStage, String>, context: Content? = null, shadersAssetBaseDir : String? = null): GLSLProgram =
+            SpirvCrossHelper.translateGLSLDialect(this, dialect, stagesCode, context, shadersAssetBaseDir)
 
     data class GLSLProgram(val sourceCode: Map<ShaderStage, String>, val vertexInputs: List<GLSLVertexAttribute>, val resources: List<GLSLUniformResource>)
 

@@ -1,12 +1,12 @@
 package io.xol.chunkstories.graphics.vulkan.buffers
 
 import io.xol.chunkstories.api.graphics.structs.InterfaceBlock
-import io.xol.chunkstories.graphics.common.shaderc.InterfaceBlockGLSLMapping
 import io.xol.chunkstories.graphics.common.shaderc.GLSLBaseType
+import io.xol.chunkstories.graphics.common.shaderc.InterfaceBlockGLSLMapping
 import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import org.joml.*
 import org.lwjgl.system.MemoryStack.*
-import org.lwjgl.vulkan.VK10.*
+import org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT
 
 class VulkanUniformBuffer(backend: VulkanGraphicsBackend, val mapper: InterfaceBlockGLSLMapping) :
         VulkanBuffer(backend, mapper.size.toLong(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, true) {
@@ -16,15 +16,16 @@ class VulkanUniformBuffer(backend: VulkanGraphicsBackend, val mapper: InterfaceB
 
         val fillMe = stackMalloc(mapper.size)
 
-        for(field in mapper.fields) {
+        for (field in mapper.fields) {
             fillMe.position(field.offset)
 
-            when(field.type) {
+            when (field.type) {
                 GLSLBaseType.FLOAT.fieldType -> fillMe.putFloat(field.property.getter.call(interfaceBlock) as Float)
                 GLSLBaseType.INT.fieldType -> fillMe.putInt(field.property.getter.call(interfaceBlock) as Int)
                 GLSLBaseType.UINT.fieldType -> fillMe.putInt(field.property.getter.call(interfaceBlock) as Int)
                 GLSLBaseType.LONG.fieldType -> fillMe.putInt((field.property.getter.call(interfaceBlock) as Long).toInt())
 
+                // SP vectors
                 GLSLBaseType.VEC2.fieldType -> {
                     val vec = field.property.getter.call(interfaceBlock) as? Vector2fc ?: zero2
                     fillMe.putFloat(vec.x())
@@ -46,6 +47,29 @@ class VulkanUniformBuffer(backend: VulkanGraphicsBackend, val mapper: InterfaceB
                     fillMe.putFloat(vec.w())
                 }
 
+                // DP vectors
+                GLSLBaseType.VEC2D.fieldType -> {
+                    val vec = field.property.getter.call(interfaceBlock) as? Vector2dc ?: zero2d
+                    fillMe.putFloat(vec.x().toFloat())
+                    fillMe.putFloat(vec.y().toFloat())
+                }
+
+                GLSLBaseType.VEC3D.fieldType -> {
+                    val vec = field.property.getter.call(interfaceBlock) as? Vector3dc ?: zero3d
+                    fillMe.putFloat(vec.x().toFloat())
+                    fillMe.putFloat(vec.y().toFloat())
+                    fillMe.putFloat(vec.z().toFloat())
+                }
+
+                GLSLBaseType.VEC4D.fieldType -> {
+                    val vec = field.property.getter.call(interfaceBlock) as? Vector4dc ?: zero4d
+                    fillMe.putFloat(vec.x().toFloat())
+                    fillMe.putFloat(vec.y().toFloat())
+                    fillMe.putFloat(vec.z().toFloat())
+                    fillMe.putFloat(vec.w().toFloat())
+                }
+
+                // Int vectors
                 GLSLBaseType.IVEC2.fieldType -> {
                     val vec = field.property.getter.call(interfaceBlock) as? Vector2ic ?: zero2i
                     fillMe.putInt(vec.x())
@@ -67,6 +91,7 @@ class VulkanUniformBuffer(backend: VulkanGraphicsBackend, val mapper: InterfaceB
                     fillMe.putInt(vec.w())
                 }
 
+                // UInt vectors
                 GLSLBaseType.UVEC2.fieldType -> {
                     val vec = field.property.getter.call(interfaceBlock) as? Vector2ic ?: zero2i
                     fillMe.putInt(vec.x())
@@ -94,6 +119,19 @@ class VulkanUniformBuffer(backend: VulkanGraphicsBackend, val mapper: InterfaceB
                     //fillMe.position(fillMe.position())
                 }
 
+                GLSLBaseType.MAT3.fieldType -> {
+                    val mat3 = field.property.getter.call(interfaceBlock) as? Matrix3fc ?: mat3identity
+                    val vec3 = Vector3f()
+                    for (i in 0..2) {
+                        mat3.getColumn(i, vec3)
+                        fillMe.putFloat(vec3.x)
+                        fillMe.putFloat(vec3.y)
+                        fillMe.putFloat(vec3.z)
+                        fillMe.putFloat(0f)
+                    }
+                    //fillMe.position(fillMe.position())
+                }
+
                 else -> throw Exception("field type ${field.type} does not have a byte buffer translation branch")
             }
         }
@@ -110,10 +148,15 @@ class VulkanUniformBuffer(backend: VulkanGraphicsBackend, val mapper: InterfaceB
         val zero3 = Vector3f(0.0F)
         val zero4 = Vector4f(0.0F)
 
+        val zero2d = Vector2d(0.0)
+        val zero3d = Vector3d(0.0)
+        val zero4d = Vector4d(0.0)
+
         val zero2i = Vector2i(0)
         val zero3i = Vector3i(0)
         val zero4i = Vector4i(0)
 
         val mat4identity = Matrix4f()
+        val mat3identity = Matrix3f()
     }
 }

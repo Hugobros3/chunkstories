@@ -1,6 +1,7 @@
 package io.xol.chunkstories.graphics.common.shaderc
 
 import graphics.scenery.spirvcrossj.*
+import io.xol.chunkstories.api.content.Content
 import io.xol.chunkstories.api.graphics.ShaderStage
 import io.xol.chunkstories.api.graphics.structs.InterfaceBlock
 import io.xol.chunkstories.api.graphics.structs.UniformUpdateFrequency
@@ -41,7 +42,7 @@ object SpirvCrossHelper {
         }
 
     //TODO actually nuke this and translate glsl manually, it'll be less painfull than dealing with this mess
-    fun translateGLSLDialect(factory: ShaderFactory, dialect: ShaderFactory.GLSLDialect, shaderCodePerStage: Map<ShaderStage, String>): ShaderFactory.GLSLProgram {
+    fun translateGLSLDialect(factory: ShaderFactory, dialect: ShaderFactory.GLSLDialect, shaderCodePerStage: Map<ShaderStage, String>, content: Content?, shadersAssetBaseDir : String?): ShaderFactory.GLSLProgram {
         libspirvcrossj.initializeProcess()
         val ressources = libspirvcrossj.getDefaultTBuiltInResource()
 
@@ -54,7 +55,7 @@ object SpirvCrossHelper {
         val ubosToProcess = mutableListOf<Pair<String, InterfaceBlockGLSLMapping>>()
 
         val stages = shaderCodePerStage.map { (stage, code) ->
-            val preprocessed = PreprocessedShaderStage(factory, code, stage)
+            val preprocessed = PreprocessedShaderStage(factory, code, stage, content, shadersAssetBaseDir)
 
             ubosToProcess.addAll(preprocessed.uniformBlocks)
 

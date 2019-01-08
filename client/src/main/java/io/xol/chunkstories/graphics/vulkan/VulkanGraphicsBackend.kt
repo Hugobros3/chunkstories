@@ -292,6 +292,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
             VulkanSpinningCubeDrawer::class.java -> VulkanSpinningCubeDrawer(pass)
             VulkanCubesDrawer::class.java -> VulkanCubesDrawer(pass, window.client.ingame!!)
             VulkanDebugDrawer::class.java -> VulkanDebugDrawer(pass, window.client.ingame!!)
+            SkyDrawer::class.java -> VulkanSkyDrawer(pass)
 
             else -> throw Exception("Unimplemented system on this backend: ${declaredDrawingSystem.clazz}")
         }
