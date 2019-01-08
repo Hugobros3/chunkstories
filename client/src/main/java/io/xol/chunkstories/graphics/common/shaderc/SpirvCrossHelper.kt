@@ -173,7 +173,15 @@ object SpirvCrossHelper {
                         ShaderFactory.GLSLDialect.OPENGL4 -> 0
                         ShaderFactory.GLSLDialect.VULKAN -> updateFrequency.ordinal + 2
                     }
-                    val binding = resourcesBuckets[descriptorSet].size
+
+                    var uboResource = resourcesBuckets[descriptorSet].find { it is ShaderFactory.GLSLUniformBlock && it.name == uniformBlockName && it.mapper == inlinedUBO.second }
+                    if(uboResource == null) {
+                        // Create and add the new resource to the corresponding bucket
+                        uboResource = ShaderFactory.GLSLUniformBlock(uniformBlockName, descriptorSet, resourcesBuckets[descriptorSet].size, inlinedUBO.second)
+                        resourcesBuckets[descriptorSet].add(uboResource)
+                    }
+
+                    val binding = uboResource.binding
 
                     // Set the descriptor set decoration (important!)
                     compiler.setDecoration(uniformBufferBlock.id, Decoration.DecorationDescriptorSet, descriptorSet.toLong())
@@ -181,9 +189,6 @@ object SpirvCrossHelper {
 
                     // Check we did set the Descriptor Set
                     assert(compiler.getDecoration(uniformBufferBlock.id, Decoration.DecorationDescriptorSet) == descriptorSet.toLong())
-
-                    // Add the new resource to the corresponding bucket
-                    resourcesBuckets[descriptorSet].add(ShaderFactory.GLSLUniformBlock(uniformBlockName, descriptorSet, binding, inlinedUBO.second))
 
                     println("Bound UBO $uniformBlockName to ($descriptorSet, $binding)")
                 } else {
