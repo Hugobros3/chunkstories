@@ -68,7 +68,7 @@ class VulkanSkyDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass), SkyDrawer {
     }
 
     override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer) {
-        val bindingContext = backend.descriptorMegapool.getBindingContext(frame, pipeline, commandBuffer)
+        val bindingContext = backend.descriptorMegapool.getBindingContext(pipeline)
 
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
         vkCmdBindVertexBuffers(commandBuffer, 0, MemoryStack.stackLongs(vertexBuffer.handle), MemoryStack.stackLongs(0))
@@ -83,7 +83,7 @@ class VulkanSkyDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass), SkyDrawer {
         bindingContext.bindUBO(camera)
         bindingContext.bindUBO(world.getConditions())
 
-        bindingContext.preDraw()
+        bindingContext.preDraw(commandBuffer)
         vkCmdDraw(commandBuffer, 3 * 2, 1, 0, 0)
 
         frame.recyclingTasks.add() {

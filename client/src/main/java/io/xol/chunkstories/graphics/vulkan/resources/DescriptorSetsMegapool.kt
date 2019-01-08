@@ -102,10 +102,10 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
         }
     }
 
-    fun getBindingContext(frame: Frame, pipeline: Pipeline, commandBuffer: VkCommandBuffer) = ShaderBindingContext(frame, pipeline, commandBuffer)
+    fun getBindingContext(pipeline: Pipeline) = ShaderBindingContext(pipeline)
 
     /** Thread UNSAFE semi-immediate mode emulation of the conventional binding model */
-    inner class ShaderBindingContext internal constructor(val frame: Frame, val pipeline: Pipeline, val commandBuffer: VkCommandBuffer) {
+    inner class ShaderBindingContext internal constructor(val pipeline: Pipeline) {
         val sets = mutableMapOf<Int, VkDescriptorSet>()
         val dirty = mutableSetOf<Int>()
 
@@ -125,6 +125,7 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
                 set = subpool.acquireDescriptorSet()
                 sets.put(slot, set)
 
+                //TODO don't do this idk
                 backend.copyDescriptorSet(oldset, set, slotLayout.bindingsCountTotal)
 
                 spentSets.getOrPut(subpool) { mutableListOf() }.add(oldset)
@@ -156,7 +157,7 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
             backend.updateDescriptorSet(set, resource.binding, texture, sampler)
         }
 
-        fun preDraw() {
+        fun preDraw(commandBuffer: VkCommandBuffer) {
             stackPush()
             for ((slot, set) in sets.entries) {
                 vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, slot, stackLongs(set), null as? IntBuffer)

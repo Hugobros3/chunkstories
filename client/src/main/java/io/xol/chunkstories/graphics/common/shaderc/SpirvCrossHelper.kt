@@ -149,7 +149,7 @@ object SpirvCrossHelper {
             compiler.options = options
 
             fun KClass<InterfaceBlock>.updateFrequency(): UniformUpdateFrequency =
-                    this.annotations.filterIsInstance<UpdateFrequency>().firstOrNull()?.frequency ?: UniformUpdateFrequency.ONCE_PER_BATCH
+                    this.annotations.filterIsInstance<UpdateFrequency>().firstOrNull()?.frequency ?: UniformUpdateFrequency.ONCE_PER_FRAME
 
             val uniformBufferBlocks = compiler.shaderResources.uniformBuffers
             for (i in 0 until uniformBufferBlocks.size().toInt()) {

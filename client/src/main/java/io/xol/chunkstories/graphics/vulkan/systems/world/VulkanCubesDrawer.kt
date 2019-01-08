@@ -91,7 +91,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
     override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer) {
         MemoryStack.stackPush()
 
-        val bindingContext = backend.descriptorMegapool.getBindingContext(frame, pipeline, commandBuffer)
+        val bindingContext = backend.descriptorMegapool.getBindingContext(pipeline)
 
         val entity = client.player.controlledEntity
         val camera = entity?.traits?.get(TraitControllable::class)?.camera ?: Camera()
@@ -100,6 +100,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         //descriptorPool.configure(frame, camera)
         bindingContext.bindUBO(camera)
         bindingContext.bindUBO(world.getConditions())
+        bindingContext.preDraw(commandBuffer)
 
         val frustrum = Frustrum(camera, client.gameWindow)
 
@@ -157,13 +158,18 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
                     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 0, stackLongs(block.virtualTexturingContext!!.setHandle), null)
                     vkCmdBindVertexBuffers(commandBuffer, 0, stackLongs(block.vertexBuffer.handle), stackLongs(0))
 
-                    val chunkRenderInfo = ChunkRenderInfo().apply {
-                        chunkX = chunk.chunkX
-                        chunkY = chunk.chunkY
-                        chunkZ = chunk.chunkZ
+                    if(block.perChunkBindings == null) {
+                        val chunkRenderInfo = ChunkRenderInfo().apply {
+                            chunkX = chunk.chunkX
+                            chunkY = chunk.chunkY
+                            chunkZ = chunk.chunkZ
+                        }
+                        block.perChunkBindings = backend.descriptorMegapool.getBindingContext(pipeline).also {
+                            it.bindUBO(chunkRenderInfo)
+                        }
                     }
-                    bindingContext.bindUBO(chunkRenderInfo)
-                    bindingContext.preDraw()
+
+                    block.perChunkBindings!!.preDraw(commandBuffer)
                     //vkCmdDraw(commandBuffer, 3 * 2 * 6, block.count, 0, 0)
                     vkCmdDraw(commandBuffer, block.count, 1, 0, 0)
 
@@ -181,7 +187,6 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
 
         frame.recyclingTasks.add {
             usedData.forEach(ChunkVkMeshProperty.ChunkVulkanMeshData::release)
-
             bindingContext.recycle()
         }
 

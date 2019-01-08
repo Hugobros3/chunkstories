@@ -3,6 +3,7 @@ package io.xol.chunkstories.graphics.vulkan.systems.world
 import io.xol.chunkstories.api.world.chunk.Chunk
 import io.xol.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import io.xol.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
+import io.xol.chunkstories.graphics.vulkan.resources.DescriptorSetsMegapool
 import io.xol.chunkstories.graphics.vulkan.textures.VirtualTexturing
 import io.xol.chunkstories.world.chunk.CubicChunk
 import io.xol.chunkstories.world.chunk.deriveddata.AutoRebuildingProperty
@@ -36,7 +37,11 @@ class ChunkVkMeshProperty(val backend: VulkanGraphicsBackend, val chunk: CubicCh
             val virtualTexturingContext: VirtualTexturing.VirtualTexturingContext?,
             val count: Int, property: RefCountedProperty<*>
     ) : RefCountedRecyclable(property) {
+
+        var perChunkBindings: DescriptorSetsMegapool.ShaderBindingContext? = null
+
         override fun cleanup() {
+            perChunkBindings?.recycle()
             vertexBuffer?.cleanup()
             virtualTexturingContext?.returnToPool()
         }
