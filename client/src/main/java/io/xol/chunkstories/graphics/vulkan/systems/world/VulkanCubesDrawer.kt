@@ -18,6 +18,7 @@ import io.xol.chunkstories.graphics.vulkan.graph.VulkanPass
 import io.xol.chunkstories.graphics.vulkan.swapchain.Frame
 import io.xol.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
 import io.xol.chunkstories.world.WorldClientCommon
+import io.xol.chunkstories.world.chunk.CubicChunk
 import org.joml.Vector3d
 import org.joml.Vector3f
 import org.lwjgl.system.MemoryStack
@@ -127,17 +128,32 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
 
         val boxCenter = Vector3f(0f)
         val boxSize = Vector3f(32f, 32f, 32f)
+        val boxSize2 = Vector3f(256f, 256f, 256f)
 
-        val sortedChunks = world.allLoadedChunks.filter { chunk ->
-            boxCenter.x = chunk.chunkX * 32.0f + 16.0f
-            boxCenter.y = chunk.chunkY * 32.0f + 16.0f
-            boxCenter.z = chunk.chunkZ * 32.0f + 16.0f
+        val sortedChunks = mutableListOf<CubicChunk>()
 
-            frustrum.isBoxInFrustrum(boxCenter, boxSize) && !chunk.isAirChunk
-        }.sortedBy { chunk ->
+        for (region in world.allLoadedRegions) {
+            boxCenter.x = region.regionX * 256.0f + 128.0f
+            boxCenter.y = region.regionY * 256.0f + 128.0f
+            boxCenter.z = region.regionZ * 256.0f + 128.0f
+
+            if(!frustrum.isBoxInFrustrum(boxCenter, boxSize2))
+                continue
+
+            for (chunk in region.loadedChunks) {
+                boxCenter.x = chunk.chunkX * 32.0f + 16.0f
+                boxCenter.y = chunk.chunkY * 32.0f + 16.0f
+                boxCenter.z = chunk.chunkZ * 32.0f + 16.0f
+
+                if (frustrum.isBoxInFrustrum(boxCenter, boxSize) && !chunk.isAirChunk)
+                    sortedChunks.add(chunk as CubicChunk)
+            }
+        }
+
+        sortedChunks.sortBy { chunk ->
             val chunkCenter = Vector3f(chunk.chunkX * 32 + 16.0f, chunk.chunkY * 32 + 16.0f, chunk.chunkZ * 32 + 16.0f)
             chunkCenter.distance(camera.position) + 0.0f
-        }.distinct()
+        }
 
         for (chunk in sortedChunks) {
             if (chunk.chunkX !in (camChunk.x - drawDistance)..(camChunk.x + drawDistance))
@@ -158,7 +174,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
                     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 0, stackLongs(block.virtualTexturingContext!!.setHandle), null)
                     vkCmdBindVertexBuffers(commandBuffer, 0, stackLongs(block.vertexBuffer.handle), stackLongs(0))
 
-                    if(block.perChunkBindings == null) {
+                    if (block.perChunkBindings == null) {
                         val chunkRenderInfo = ChunkRenderInfo().apply {
                             chunkX = chunk.chunkX
                             chunkY = chunk.chunkY

@@ -35,6 +35,7 @@ import io.xol.chunkstories.api.world.chunk.Chunk.ChunkCell
 import io.xol.chunkstories.api.world.chunk.ChunkHolder
 import io.xol.chunkstories.api.world.generator.WorldGenerator
 import io.xol.chunkstories.api.world.heightmap.Heightmap
+import io.xol.chunkstories.api.world.region.Region
 import io.xol.chunkstories.content.sandbox.UnthrustedUserContentSecurityManager
 import io.xol.chunkstories.content.translator.AbstractContentTranslator
 import io.xol.chunkstories.content.translator.IncompatibleContentException
@@ -131,7 +132,10 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
         }
 
     override val allLoadedChunks: Sequence<CubicChunk>
-        get() = regionsStorage.regionsList.asSequence().flatMap { it.loadedChunks }
+        get() = regionsStorage.regionsList.asSequence().flatMap { it.loadedChunks.asSequence() }
+
+    override val allLoadedRegions: Collection<Region>
+        get() = regionsStorage.regionsList
 
     final override val gameLogic: GameLogic
         get() = worldThread

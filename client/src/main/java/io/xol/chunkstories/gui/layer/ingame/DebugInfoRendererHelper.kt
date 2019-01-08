@@ -45,7 +45,14 @@ class DebugInfoRendererHelper(ingameLayer: IngameLayer) {
         debugLine("Tasks queued: ${client.tasks.submittedTasks()} IO operations queud: ${world.ioHandler.size}")
 
         debugLine("Vertices drawn: ${VulkanCubesDrawer.totalCubesDrawn} within ${VulkanCubesDrawer.totalBuffersUsed} vertex buffers")
-        debugLine("World info : ${world.allLoadedChunks.count()} chunks loaded, ${world.regionsStorage.regionsList.count()} regions")
+
+        var chunksCount = 0
+        var regionsCount = 0
+        for(region in world.allLoadedRegions) {
+            regionsCount++
+            chunksCount += region.loadedChunks.size
+        }
+        debugLine("World info : $chunksCount chunks loaded, within $regionsCount regions")
 
         //debugLine("#FFFF00Extra counters for debug info ${CubicChunk.chunksCounter.get()}")
 

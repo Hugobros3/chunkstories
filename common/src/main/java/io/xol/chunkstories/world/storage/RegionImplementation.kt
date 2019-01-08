@@ -59,11 +59,11 @@ class RegionImplementation(override val world: WorldImplementation, override val
     private val chunkHolders: Array<ChunkHolderImplementation>
 
     internal var loadedChunksSet = ConcurrentHashMap.newKeySet<CubicChunk>()
-    override val loadedChunks: Sequence<CubicChunk>
-        get() = loadedChunksSet.asSequence()
+    override val loadedChunks: Collection<CubicChunk>
+        get() = loadedChunksSet
 
     override val entitiesWithinRegion: Sequence<Entity>
-        get() = loadedChunks.flatMap { it.localEntities.asSequence() }
+        get() = loadedChunks.asSequence().flatMap { it.localEntities.asSequence() }
 
     init {
         if (regionX < 0 || regionY < 0 || regionZ < 0)
