@@ -4,7 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.chunkstories.scrap;
+package xyz.chunkstories.scrap;
 
 import java.awt.FontFormatException;
 import java.io.IOException;
@@ -14,13 +14,13 @@ import java.util.TreeMap;
 import org.joml.Vector4f;
 import org.joml.Vector4fc;
 
-import io.xol.chunkstories.api.math.HexTools;
-import io.xol.chunkstories.api.rendering.text.FontRenderer;
-import io.xol.chunkstories.api.rendering.text.TextMesh;
-import io.xol.chunkstories.api.util.ColorsTools;
-import io.xol.chunkstories.renderer.OpenGLRenderingContext;
-import io.xol.chunkstories.renderer.mesh.TextMeshObject;
-import io.xol.chunkstories.renderer.opengl.texture.Texture2DGL;
+import xyz.chunkstories.api.math.HexTools;
+import xyz.chunkstories.api.rendering.text.FontRenderer;
+import xyz.chunkstories.api.rendering.text.TextMesh;
+import xyz.chunkstories.api.util.ColorsTools;
+import xyz.chunkstories.renderer.OpenGLRenderingContext;
+import xyz.chunkstories.renderer.mesh.TextMeshObject;
+import xyz.chunkstories.renderer.opengl.texture.Texture2DGL;
 
 /** Very messy and shitty way of spitting text */
 public class TrueTypeFontRenderer implements FontRenderer {

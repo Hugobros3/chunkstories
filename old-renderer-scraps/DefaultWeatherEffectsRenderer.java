@@ -4,7 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.chunkstories.scrap;
+package xyz.chunkstories.scrap;
 
 import java.nio.FloatBuffer;
 import java.util.Random;
@@ -12,20 +12,20 @@ import java.util.Random;
 import org.joml.Vector2f;
 import org.lwjgl.BufferUtils;
 
-import io.xol.chunkstories.api.Location;
-import io.xol.chunkstories.api.entity.Entity;
-import io.xol.chunkstories.api.math.Math2;
-import io.xol.chunkstories.api.rendering.RenderingInterface;
-import io.xol.chunkstories.api.rendering.StateMachine.CullingMode;
-import io.xol.chunkstories.api.rendering.shader.Shader;
-import io.xol.chunkstories.api.rendering.vertex.Primitive;
-import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
-import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
-import io.xol.chunkstories.api.rendering.world.WorldEffectsRenderer;
-import io.xol.chunkstories.api.rendering.world.WorldRenderer;
-import io.xol.chunkstories.api.sound.SoundSource;
-import io.xol.chunkstories.api.sound.SoundSource.Mode;
-import io.xol.chunkstories.api.world.WorldClient;
+import xyz.chunkstories.api.Location;
+import xyz.chunkstories.api.entity.Entity;
+import xyz.chunkstories.api.math.Math2;
+import xyz.chunkstories.api.rendering.RenderingInterface;
+import xyz.chunkstories.api.rendering.StateMachine.CullingMode;
+import xyz.chunkstories.api.rendering.shader.Shader;
+import xyz.chunkstories.api.rendering.vertex.Primitive;
+import xyz.chunkstories.api.rendering.vertex.VertexBuffer;
+import xyz.chunkstories.api.rendering.vertex.VertexFormat;
+import xyz.chunkstories.api.rendering.world.WorldEffectsRenderer;
+import xyz.chunkstories.api.rendering.world.WorldRenderer;
+import xyz.chunkstories.api.sound.SoundSource;
+import xyz.chunkstories.api.sound.SoundSource.Mode;
+import xyz.chunkstories.api.world.WorldClient;
 
 public class DefaultWeatherEffectsRenderer implements WorldEffectsRenderer {
 	private Random random = new Random();

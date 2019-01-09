@@ -1,9 +1,9 @@
 package xyz.chunkstories.client
 
-import io.xol.chunkstories.api.graphics.ShaderStage
-import io.xol.chunkstories.api.graphics.structs.InterfaceBlock
-import io.xol.chunkstories.graphics.common.shaderc.ShaderFactory
-import io.xol.chunkstories.graphics.common.shaderc.PreprocessedShaderStage
+import xyz.chunkstories.api.graphics.ShaderStage
+import xyz.chunkstories.api.graphics.structs.InterfaceBlock
+import xyz.chunkstories.graphics.common.shaderc.ShaderFactory
+import xyz.chunkstories.graphics.common.shaderc.PreprocessedShaderStage
 import org.joml.Matrix3f
 import org.junit.Test
 

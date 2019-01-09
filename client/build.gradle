@@ -68,7 +68,7 @@ dependencies {
 }
 
 // Define the main class for the application
-mainClassName = 'io.xol.chunkstories.client.ClientImplementation'
+mainClassName = 'xyz.chunkstories.client.ClientImplementation'
 
 jar {
 	manifest {

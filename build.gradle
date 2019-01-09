@@ -65,10 +65,10 @@ import org.ajoberstar.grgit.Grgit
 
 version = 'Alpha1.0.1'
 description = 'A voxel game engine'
-group = 'io.xol.chunkstories'
+group = 'xyz.chunkstories'
 
 ext {
-	apiRevisionBuiltAgainst = '200'
+	apiRevisionBuiltAgainst = '201'
 	//contentRevisionBuiltAgainst = '130'
 	
 	useEclipseCompiler = false
@@ -119,7 +119,7 @@ if(ext.useEclipseCompiler) {
 
 subprojects { subproject ->
 
-	//Put them all in the io.xol.chunkstories group.
+	//Put them all in the xyz.chunkstories group.
 	group = rootProject.group
 
 	plugins.withType(JavaPlugin) 
@@ -198,7 +198,7 @@ subprojects { subproject ->
 
 			compile group: 'com.carrotsearch', name: 'hppc', version: '0.7.2'
 			
-			compile group: 'io.xol.chunkstories', name: 'api', version: apiRevisionBuiltAgainst
+			compile group: 'xyz.chunkstories', name: 'api', version: apiRevisionBuiltAgainst
 			compile group: 'io.xol.enklume', name: 'enklume', version: 100
 			
 			compile group: 'ch.qos.logback', name: 'logback-core', version: '1.0.13'

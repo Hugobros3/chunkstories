@@ -3,7 +3,7 @@
 in vec3 vertexIn;
 out vec4 color;
 
-#include struct <io.xol.chunkstories.api.graphics.structs.Camera>
+#include struct <xyz.chunkstories.api.graphics.structs.Camera>
 uniform Camera camera;
 
 void main()

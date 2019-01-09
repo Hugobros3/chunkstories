@@ -19,7 +19,7 @@ buildscript {
 apply plugin: 'com.github.johnrengelman.shadow'
 
 // Define the main class for the application
-mainClassName = 'io.xol.chunkstories.server.DedicatedServer'
+mainClassName = 'xyz.chunkstories.server.DedicatedServer'
 
 dependencies {
 	compile project(':common')
@@ -45,7 +45,7 @@ shadowJar {
 	configurations = [project.configurations.multiplatform]
 	
 	dependencies {
-		//exclude(dependency(group: 'io.xol.chunkstories', name: 'core', version: contentRevisionBuiltAgainst, ext: 'jar'))
+		//exclude(dependency(group: 'xyz.chunkstories', name: 'core', version: contentRevisionBuiltAgainst, ext: 'jar'))
     }
 }
 

@@ -4,7 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.chunkstories.scrap;
+package xyz.chunkstories.scrap;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -13,21 +13,21 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.lwjgl.system.MemoryUtil;
 
-import io.xol.chunkstories.api.Location;
-import io.xol.chunkstories.api.client.ClientInterface;
-import io.xol.chunkstories.api.player.Player;
-import io.xol.chunkstories.api.rendering.textures.ArrayTexture;
-import io.xol.chunkstories.api.rendering.textures.TextureFormat;
-import io.xol.chunkstories.api.rendering.world.WorldRenderer.SummariesTexturesHolder;
-import io.xol.chunkstories.api.voxel.Voxel;
-import io.xol.chunkstories.api.voxel.VoxelFormat;
-import io.xol.chunkstories.api.voxel.VoxelSide;
-import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.api.world.heightmap.Heightmap;
-import io.xol.chunkstories.renderer.opengl.texture.ArrayTextureGL;
-import io.xol.chunkstories.voxel.VoxelTextureAtlased;
-import io.xol.chunkstories.world.cell.ScratchCell;
-import io.xol.chunkstories.world.heightmap.HeightmapImplementation;
+import xyz.chunkstories.api.Location;
+import xyz.chunkstories.api.client.ClientInterface;
+import xyz.chunkstories.api.player.Player;
+import xyz.chunkstories.api.rendering.textures.ArrayTexture;
+import xyz.chunkstories.api.rendering.textures.TextureFormat;
+import xyz.chunkstories.api.rendering.world.WorldRenderer.SummariesTexturesHolder;
+import xyz.chunkstories.api.voxel.Voxel;
+import xyz.chunkstories.api.voxel.VoxelFormat;
+import xyz.chunkstories.api.voxel.VoxelSide;
+import xyz.chunkstories.api.world.World;
+import xyz.chunkstories.api.world.heightmap.Heightmap;
+import xyz.chunkstories.renderer.opengl.texture.ArrayTextureGL;
+import xyz.chunkstories.voxel.VoxelTextureAtlased;
+import xyz.chunkstories.world.cell.ScratchCell;
+import xyz.chunkstories.world.heightmap.HeightmapImplementation;
 
 public class HeightmapArrayTexture implements SummariesTexturesHolder {
 	final ArrayTextureGL heights;

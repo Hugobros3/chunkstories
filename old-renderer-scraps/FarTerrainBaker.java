@@ -4,21 +4,21 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.chunkstories.scrap;
+package xyz.chunkstories.scrap;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.xol.chunkstories.util.math.HeightmapMesher;
+import xyz.chunkstories.util.math.HeightmapMesher;
 import org.lwjgl.BufferUtils;
 
-import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
-import io.xol.chunkstories.renderer.opengl.vbo.VertexBufferGL;
-import io.xol.chunkstories.util.math.HeightmapMesher.Surface;
-import io.xol.chunkstories.world.WorldClientCommon;
-import io.xol.chunkstories.world.WorldImplementation;
-import io.xol.chunkstories.world.heightmap.HeightmapImplementation;
+import xyz.chunkstories.api.rendering.vertex.VertexBuffer;
+import xyz.chunkstories.renderer.opengl.vbo.VertexBufferGL;
+import xyz.chunkstories.util.math.HeightmapMesher.Surface;
+import xyz.chunkstories.world.WorldClientCommon;
+import xyz.chunkstories.world.WorldImplementation;
+import xyz.chunkstories.world.heightmap.HeightmapImplementation;
 
 public class FarTerrainBaker {
 	public FarTerrainBaker(ByteBuffer regionMeshBuffer, WorldClientCommon world, int cameraChunkX, int cameraChunkZ) {

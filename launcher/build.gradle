@@ -23,7 +23,7 @@ buildscript {
 apply plugin: 'edu.sc.seis.launch4j'
 
 // Define the main class for the application
-mainClassName = 'io.xol.chunkstories.updater.ChunkStoriesLauncher'
+mainClassName = 'xyz.chunkstories.updater.ChunkStoriesLauncher'
 
 dependencies {
     //compile project(':core')

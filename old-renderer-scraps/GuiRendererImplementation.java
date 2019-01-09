@@ -4,7 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.chunkstories.scrap;
+package xyz.chunkstories.scrap;
 
 import java.nio.ByteBuffer;
 
@@ -12,20 +12,20 @@ import org.joml.Vector4f;
 import org.joml.Vector4fc;
 import org.lwjgl.BufferUtils;
 
-import io.xol.chunkstories.api.gui.GuiRenderer;
-import io.xol.chunkstories.api.rendering.StateMachine.BlendMode;
-import io.xol.chunkstories.api.rendering.StateMachine.CullingMode;
-import io.xol.chunkstories.api.rendering.StateMachine.DepthTestMode;
-import io.xol.chunkstories.api.rendering.textures.Texture2D;
-import io.xol.chunkstories.api.rendering.vertex.Primitive;
-import io.xol.chunkstories.api.rendering.vertex.VertexBuffer;
-import io.xol.chunkstories.api.rendering.vertex.VertexFormat;
-import io.xol.chunkstories.api.util.ColorsTools;
-import io.xol.chunkstories.renderer.OpenGLRenderingContext;
-import io.xol.chunkstories.renderer.opengl.texture.Texture2DGL;
-import io.xol.chunkstories.renderer.opengl.texture.TexturesHandler;
-import io.xol.chunkstories.renderer.opengl.vbo.VertexBufferGL;
-import io.xol.chunkstories.renderer.opengl.vbo.VertexBufferGL.UploadRegime;
+import xyz.chunkstories.api.gui.GuiRenderer;
+import xyz.chunkstories.api.rendering.StateMachine.BlendMode;
+import xyz.chunkstories.api.rendering.StateMachine.CullingMode;
+import xyz.chunkstories.api.rendering.StateMachine.DepthTestMode;
+import xyz.chunkstories.api.rendering.textures.Texture2D;
+import xyz.chunkstories.api.rendering.vertex.Primitive;
+import xyz.chunkstories.api.rendering.vertex.VertexBuffer;
+import xyz.chunkstories.api.rendering.vertex.VertexFormat;
+import xyz.chunkstories.api.util.ColorsTools;
+import xyz.chunkstories.renderer.OpenGLRenderingContext;
+import xyz.chunkstories.renderer.opengl.texture.Texture2DGL;
+import xyz.chunkstories.renderer.opengl.texture.TexturesHandler;
+import xyz.chunkstories.renderer.opengl.vbo.VertexBufferGL;
+import xyz.chunkstories.renderer.opengl.vbo.VertexBufferGL.UploadRegime;
 
 public class GuiRendererImplementation implements GuiRenderer {
 	private OpenGLRenderingContext renderingContext;
@@ -55,7 +55,7 @@ public class GuiRendererImplementation implements GuiRenderer {
 	 * @see io.xol.engine.graphics.util.GuiRenderer#drawBoxWindowsSpace(float,
 	 * float, float, float, float, float, float, float,
 	 * io.xol.engine.graphics.textures.Texture2D, boolean, boolean,
-	 * io.xol.chunkstories.api.math.Vector4f)
+	 * xyz.chunkstories.api.math.Vector4f)
 	 */
 	@Override
 	public void drawBoxWindowsSpace(float startX, float startY, float endX, float endY, float textureStartX,
@@ -75,7 +75,7 @@ public class GuiRendererImplementation implements GuiRenderer {
 	 * io.xol.engine.graphics.util.GuiRenderer#drawBox(float,
 	 * float, float, float, float, float, float, float,
 	 * io.xol.engine.graphics.textures.Texture2D, boolean, boolean,
-	 * io.xol.chunkstories.api.math.Vector4f)
+	 * xyz.chunkstories.api.math.Vector4f)
 	 */
 	@Override
 	public void drawBox(float startX, float startY, float width, float height, float textureStartX,
@@ -95,7 +95,7 @@ public class GuiRendererImplementation implements GuiRenderer {
 	 * 
 	 * @see io.xol.engine.graphics.util.GuiRenderer#drawBox(float, float, float,
 	 * float, float, float, float, float, io.xol.engine.graphics.textures.Texture2D,
-	 * boolean, boolean, io.xol.chunkstories.api.math.Vector4f)
+	 * boolean, boolean, xyz.chunkstories.api.math.Vector4f)
 	 */
 	@Override
 	public void drawBox(float startX, float startY, float endX, float endY, float textureStartX, float textureStartY,

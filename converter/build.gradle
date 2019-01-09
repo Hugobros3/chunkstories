@@ -19,11 +19,11 @@ buildscript {
 apply plugin: 'com.github.johnrengelman.shadow'
 
 // Define the main class for the application
-mainClassName = 'io.xol.chunkstories.converter.OfflineWorldConverter'
+mainClassName = 'xyz.chunkstories.converter.OfflineWorldConverter'
 
 dependencies {
 	compile project(':common')
-	//compile group: 'io.xol.chunkstories', name: 'core', version: contentRevisionBuiltAgainst, ext: 'jar'
+	//compile group: 'xyz.chunkstories', name: 'core', version: contentRevisionBuiltAgainst, ext: 'jar'
 }
 
 processResources {
@@ -41,7 +41,7 @@ shadowJar {
 	configurations = [project.configurations.multiplatform]
 	
 	dependencies {
-		//exclude(dependency(group: 'io.xol.chunkstories', name: 'core', version: contentRevisionBuiltAgainst, ext: 'jar'))
+		//exclude(dependency(group: 'xyz.chunkstories', name: 'core', version: contentRevisionBuiltAgainst, ext: 'jar'))
     }
 }
 

@@ -1,8 +1,8 @@
 package xyz.chunkstories.client
 
-import io.xol.chunkstories.api.graphics.ShaderStage
-import io.xol.chunkstories.graphics.common.shaderc.PreprocessedShaderStage
-import io.xol.chunkstories.graphics.common.shaderc.ShaderFactory
+import xyz.chunkstories.api.graphics.ShaderStage
+import xyz.chunkstories.graphics.common.shaderc.PreprocessedShaderStage
+import xyz.chunkstories.graphics.common.shaderc.ShaderFactory
 import org.junit.Test
 
 class InlineIncludedStructTest {

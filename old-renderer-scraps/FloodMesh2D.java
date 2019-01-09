@@ -4,7 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.chunkstories.scrap;
+package xyz.chunkstories.scrap;
 
 /**
  * Inspired by "greedy meshing" code It's simpler, provides an "ok" mesh

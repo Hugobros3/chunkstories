@@ -4,7 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.chunkstories.scrap;
+package xyz.chunkstories.scrap;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -24,13 +24,13 @@ import java.nio.ByteOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.xol.chunkstories.api.content.Asset;
-import io.xol.chunkstories.api.math.HexTools;
-import io.xol.chunkstories.api.rendering.text.FontRenderer;
-import io.xol.chunkstories.api.rendering.textures.Texture2D;
-import io.xol.chunkstories.api.rendering.textures.TextureFormat;
-import io.xol.chunkstories.renderer.opengl.texture.Texture2DGL;
-import io.xol.chunkstories.renderer.opengl.texture.Texture2DRenderTargetGL;
+import xyz.chunkstories.api.content.Asset;
+import xyz.chunkstories.api.math.HexTools;
+import xyz.chunkstories.api.rendering.text.FontRenderer;
+import xyz.chunkstories.api.rendering.textures.Texture2D;
+import xyz.chunkstories.api.rendering.textures.TextureFormat;
+import xyz.chunkstories.renderer.opengl.texture.Texture2DGL;
+import xyz.chunkstories.renderer.opengl.texture.Texture2DRenderTargetGL;
 
 /**
  * A TrueType font implementation originally for Slick, edited for Bobjob's

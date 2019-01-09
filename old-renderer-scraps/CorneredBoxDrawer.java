@@ -4,14 +4,14 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.chunkstories.scrap;
+package xyz.chunkstories.scrap;
 
-import io.xol.chunkstories.client.ClientImplementation;
+import xyz.chunkstories.client.ClientImplementation;
 import org.joml.Vector4f;
 
-import io.xol.chunkstories.api.gui.GuiRenderer;
-import io.xol.chunkstories.api.rendering.textures.Texture2D;
-import io.xol.chunkstories.renderer.OpenGLRenderingContext;
+import xyz.chunkstories.api.gui.GuiRenderer;
+import xyz.chunkstories.api.rendering.textures.Texture2D;
+import xyz.chunkstories.renderer.OpenGLRenderingContext;
 
 public class CorneredBoxDrawer {
 	public static void drawCorneredBoxTiled_(float posx, float posy, float width, float height, int cornerSize,

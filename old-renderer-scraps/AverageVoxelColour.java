@@ -4,18 +4,18 @@
 // Website: http://chunkstories.xyz
 //
 
-package io.xol.chunkstories.scrap;
+package xyz.chunkstories.scrap;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Iterator;
 
-import io.xol.chunkstories.api.rendering.textures.Texture1D;
-import io.xol.chunkstories.api.rendering.textures.TextureFormat;
-import io.xol.chunkstories.api.voxel.textures.VoxelTexture;
-import io.xol.chunkstories.api.world.World;
-import io.xol.chunkstories.renderer.opengl.texture.Texture1DGL;
-import io.xol.chunkstories.voxel.VoxelTextureAtlased;
+import xyz.chunkstories.api.rendering.textures.Texture1D;
+import xyz.chunkstories.api.rendering.textures.TextureFormat;
+import xyz.chunkstories.api.voxel.textures.VoxelTexture;
+import xyz.chunkstories.api.world.World;
+import xyz.chunkstories.renderer.opengl.texture.Texture1DGL;
+import xyz.chunkstories.voxel.VoxelTextureAtlased;
 
 public class AverageVoxelColour {
 
