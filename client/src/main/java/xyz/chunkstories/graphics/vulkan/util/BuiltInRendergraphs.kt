@@ -158,7 +158,7 @@ object BuiltInRendergraphs {
                 }
             }
 
-            pass {
+            /*pass {
                 name = "debug"
                 shaderName = "wireframe"
 
@@ -179,12 +179,12 @@ object BuiltInRendergraphs {
                     enabled = true
                     depthBuffer = "depthBuffer"
                 }
-            }
+            }*/
 
             pass {
                 name = "postprocess"
 
-                dependsOn("cubes", "debug")
+                dependsOn("cubes")
 
                 inputs {
                     imageInput {

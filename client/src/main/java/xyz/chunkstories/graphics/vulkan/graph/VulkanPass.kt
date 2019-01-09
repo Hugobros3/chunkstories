@@ -368,7 +368,8 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
 
                 //val waitStages = MemoryStack.stackMallocInt(1)
                 //waitStages.put(0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
-                pWaitDstStageMask(stackInts(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT))
+                if(passBeginSemaphore != null)
+                   pWaitDstStageMask(stackInts(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT))
 
                 val commandBuffers = MemoryStack.stackMallocPointer(1)
                 commandBuffers.put(0, this@VulkanPass.commandBuffers[frame])

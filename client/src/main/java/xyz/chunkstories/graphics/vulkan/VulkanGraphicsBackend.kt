@@ -46,7 +46,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
     private var cookie = true
 
     /** All the physical devices available to Vulkan */
-    val physicalDevices: List<PhysicalDevice>
+    private val physicalDevices: List<PhysicalDevice>
 
     /** The physical device in use by the application */
     val physicalDevice: PhysicalDevice
@@ -95,7 +95,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
         renderToBackbuffer = RenderPassHelpers.createWindowSurfaceRenderPass(this)
         swapchain = SwapChain(this, renderToBackbuffer, null)
 
-        GLFW.glfwSetWindowSizeCallback(window.glfwWindowHandle) { handle, newWidth, newHeight ->
+        /*GLFW.glfwSetWindowSizeCallback(window.glfwWindowHandle) { handle, newWidth, newHeight ->
             println("resized 2 to $newWidth:$newHeight")
 
             if(newWidth != 0 && newHeight != 0) {
@@ -104,7 +104,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
 
                 this@VulkanGraphicsBackend.swapchain.expired = true
             }
-        }
+        }*/
 
         GLFW.glfwSetFramebufferSizeCallback(window.glfwWindowHandle) { handle, newWidth, newHeight ->
             println("resized to $newWidth:$newHeight")
@@ -283,18 +283,18 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
         return bestPhysicalDevice ?: throw Exception("Could not find suitable physical device !")
     }
 
-    override fun createDrawingSystem(pass: Pass, declaredDrawingSystem: RegisteredDrawingSystem): VulkanDrawingSystem {
-        val pass = pass as? VulkanPass ?: throw Exception("Pass didn't originate from a Vulkan backend !!!")
+    override fun createDrawingSystem(pass: Pass, registeredDrawingSystem: RegisteredDrawingSystem): VulkanDrawingSystem {
+        val vulkanPass = pass as? VulkanPass ?: throw Exception("Pass didn't originate from a Vulkan backend !!!")
 
-        return when (declaredDrawingSystem.clazz) {
-            GuiDrawer::class.java -> VulkanGuiDrawer(pass, window.client.gui)
-            FullscreenQuadDrawer::class.java -> VulkanFullscreenQuadDrawer(pass)
-            VulkanSpinningCubeDrawer::class.java -> VulkanSpinningCubeDrawer(pass)
-            VulkanCubesDrawer::class.java -> VulkanCubesDrawer(pass, window.client.ingame!!)
-            VulkanDebugDrawer::class.java -> VulkanDebugDrawer(pass, window.client.ingame!!)
-            SkyDrawer::class.java -> VulkanSkyDrawer(pass)
+        return when (registeredDrawingSystem.clazz) {
+            GuiDrawer::class.java -> VulkanGuiDrawer(vulkanPass, window.client.gui)
+            FullscreenQuadDrawer::class.java -> VulkanFullscreenQuadDrawer(vulkanPass)
+            VulkanSpinningCubeDrawer::class.java -> VulkanSpinningCubeDrawer(vulkanPass)
+            VulkanCubesDrawer::class.java -> VulkanCubesDrawer(vulkanPass, window.client.ingame!!)
+            VulkanDebugDrawer::class.java -> VulkanDebugDrawer(vulkanPass, window.client.ingame!!)
+            SkyDrawer::class.java -> VulkanSkyDrawer(vulkanPass)
 
-            else -> throw Exception("Unimplemented system on this backend: ${declaredDrawingSystem.clazz}")
+            else -> throw Exception("Unimplemented system on this backend: ${registeredDrawingSystem.clazz}")
         }
     }
 
@@ -327,7 +327,6 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
 
     companion object {
         var useValidationLayer = false
-
-        val logger = LoggerFactory.getLogger("client.vulkan")
+        val logger = LoggerFactory.getLogger("client.vulkan")!!
     }
 }

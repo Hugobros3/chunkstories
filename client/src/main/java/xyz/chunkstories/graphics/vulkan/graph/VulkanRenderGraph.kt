@@ -29,9 +29,9 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val script: RenderGr
     override val viewportSize: Vector2i
             get() = Vector2i(backend.window.width, backend.window.height)
 
-    lateinit var passesInOrder: List<VulkanPass>
+    var passesInOrder: List<VulkanPass>
 
-    internal val parser = VulkanRenderGraphBuilder(this)
+    private val parser = VulkanRenderGraphBuilder(this)
 
     init {
         commandPool = CommandPool(backend, backend.logicalDevice.graphicsQueue.family, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT or VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
@@ -105,7 +105,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val script: RenderGr
 
         for(pass in passesInOrder) {
             when(pass) {
-                passesInOrder[0] -> pass.render(frame, waitOn)
+                passesInOrder[0] -> pass.render(frame, null)
                 finalPass -> pass.render(frame, null)
                 else -> pass.render(frame, null)
             }
@@ -215,6 +215,11 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val script: RenderGr
                 waitOnSemaphores.put(0, finalPass.passDoneSemaphore[frame])
                 pWaitSemaphores(waitOnSemaphores)
                 waitSemaphoreCount(1)*/
+
+                val waitOnSemaphores = MemoryStack.stackMallocLong(1)
+                waitOnSemaphores.put(0, frame.renderCanBeginSemaphore)
+                pWaitSemaphores(waitOnSemaphores)
+                waitSemaphoreCount(1)
 
                 val waitStages = MemoryStack.stackMallocInt(1)
                 waitStages.put(0, VK_PIPELINE_STAGE_TRANSFER_BIT)
