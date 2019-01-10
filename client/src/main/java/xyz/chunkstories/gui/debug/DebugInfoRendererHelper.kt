@@ -1,4 +1,4 @@
-package xyz.chunkstories.gui.layer.ingame
+package xyz.chunkstories.gui.debug
 
 import xyz.chunkstories.api.entity.traits.TraitVoxelSelection
 import xyz.chunkstories.api.entity.traits.serializable.TraitRotation
@@ -9,9 +9,9 @@ import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.resources.VmaAllocator
 import xyz.chunkstories.graphics.vulkan.systems.world.VulkanCubesDrawer
 import xyz.chunkstories.gui.ClientGui
+import xyz.chunkstories.gui.layer.ingame.IngameLayer
 import xyz.chunkstories.util.VersionInfo
 import xyz.chunkstories.world.WorldImplementation
-import xyz.chunkstories.world.chunk.CubicChunk
 
 class DebugInfoRendererHelper(ingameLayer: IngameLayer) {
     val gui = ingameLayer.gui

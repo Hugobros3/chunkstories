@@ -13,6 +13,7 @@ import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VK11.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2
 import org.lwjgl.vulkan.VK11.vkGetPhysicalDeviceFeatures2
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.client.InternalClientOptions
 import java.nio.IntBuffer
 
 class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vkPhysicalDevice: VkPhysicalDevice) {
@@ -137,7 +138,7 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
 
         val presentationModeToUse: PresentationMode
             get() {
-                val preferredPresentationModes = when (backend.window.client.configuration.getValue("client.graphics.syncMode")) {
+                val preferredPresentationModes = when (backend.window.client.configuration.getValue(InternalClientOptions.syncMode)) {
                     "vsync" -> listOf(PresentationMode.FIFO)
                     "tripleBuffering" -> listOf(PresentationMode.MAILBOX, PresentationMode.FIFO)
                     else -> listOf(PresentationMode.IMMEDIATE, PresentationMode.MAILBOX, PresentationMode.FIFO_RELAXED, PresentationMode.FIFO)

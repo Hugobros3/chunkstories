@@ -1,23 +1,27 @@
 package xyz.chunkstories.graphics.vulkan.systems
 
+import org.lwjgl.system.MemoryStack.*
+import org.lwjgl.vulkan.VK10.*
+import org.lwjgl.vulkan.VkCommandBuffer
+import xyz.chunkstories.api.client.IngameClient
 import xyz.chunkstories.api.graphics.ImageInput
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
-import xyz.chunkstories.graphics.vulkan.DescriptorPool
 import xyz.chunkstories.graphics.vulkan.Pipeline
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
+import xyz.chunkstories.graphics.vulkan.resources.DescriptorSetsMegapool
 import xyz.chunkstories.graphics.vulkan.swapchain.Frame
 import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
 import xyz.chunkstories.graphics.vulkan.vertexInputConfiguration
-import org.lwjgl.system.MemoryStack.*
-import org.lwjgl.vulkan.VK10.*
-import org.lwjgl.vulkan.VkCommandBuffer
 
 class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
     val backend: VulkanGraphicsBackend
         get() = pass.backend
+
+    val client: IngameClient
+        get() = backend.window.client.ingame!!
 
     val vertexInputConfiguration = vertexInputConfiguration {
         binding {
@@ -34,7 +38,7 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
         }
     }
     val pipeline = Pipeline(backend, pass, vertexInputConfiguration, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
-    val descriptorPool = DescriptorPool(backend, pass.program)
+    //val descriptorPool = DescriptorPool(backend, pass.program)
     val sampler = VulkanSampler(backend)
 
     private val vertexBuffer: VulkanVertexBuffer
@@ -60,20 +64,37 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
         }
     }
 
+    var bindings: (VulkanFullscreenQuadDrawer.(DescriptorSetsMegapool.ShaderBindingContext) -> Unit)? = null
+
+    fun shaderBindings(bindings: VulkanFullscreenQuadDrawer.(bindingContext: DescriptorSetsMegapool.ShaderBindingContext) -> Unit) {
+        this.bindings = bindings
+    }
+
     override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer) {
+        val bindingContext = backend.descriptorMegapool.getBindingContext(pipeline)
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
-        for(input in pass.imageInputs) {
+        for (input in pass.imageInputs) {
             val source = input.source
-            when(source) {
+            when (source) {
                 is ImageInput.ImageSource.RenderBufferReference -> {
-                    descriptorPool.configureTextureAndSampler(frame, input.name, pass.graph.buffers[source.renderBufferName]?.texture!!, sampler)
+                    bindingContext.bindTextureAndSampler(input.name, pass.graph.buffers[source.renderBufferName]?.texture!!, sampler)
                 }
             }
         }
-        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 1, descriptorPool.setsForFrame(frame), null as? IntArray)
+
+        //println("pass ${pass.name}  $bindings")
+        bindings?.invoke(this, bindingContext)
+
+        //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 1, descriptorPool.setsForFrame(frame), null as? IntArray)
 
         vkCmdBindVertexBuffers(commandBuffer, 0, stackLongs(vertexBuffer.handle), stackLongs(0))
+
+        bindingContext.preDraw(commandBuffer)
         vkCmdDraw(commandBuffer, 3 * 2, 1, 0, 0)
+
+        frame.recyclingTasks.add {
+            bindingContext.recycle()
+        }
     }
 
     override fun cleanup() {
@@ -81,6 +102,6 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
 
         vertexBuffer.cleanup()
         pipeline.cleanup()
-        descriptorPool.cleanup()
+        //descriptorPool.cleanup()
     }
 }

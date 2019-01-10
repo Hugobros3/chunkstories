@@ -67,5 +67,5 @@ object RenderPassHelpers {
         return handle
     }
 
-    val logger = LoggerFactory.getLogger("client.vulkan")
+    val logger = LoggerFactory.getLogger("client.vulkan")!!
 }

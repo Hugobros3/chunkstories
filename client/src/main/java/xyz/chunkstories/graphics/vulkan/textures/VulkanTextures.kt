@@ -80,6 +80,18 @@ class VulkanTextures(val backend: VulkanGraphicsBackend) : GraphicsEngine.Textur
 val TextureFormat.vulkanFormat: VulkanFormat
     get() = when (this) {
         TextureFormat.RGBA_8 -> VulkanFormat.VK_FORMAT_R8G8B8A8_UNORM
+        TextureFormat.RGB_HDR -> VulkanFormat.VK_FORMAT_R16G16B16A16_SFLOAT
         TextureFormat.DEPTH_32 -> VulkanFormat.VK_FORMAT_D32_SFLOAT
+        TextureFormat.RGB_8 -> TODO()
+        TextureFormat.RG_8 -> TODO()
+        TextureFormat.RED_8 -> TODO()
+        TextureFormat.DEPTH_24 -> TODO()
+        TextureFormat.RED_32F -> TODO()
+        TextureFormat.RED_16I -> TODO()
+        TextureFormat.RED_16F -> TODO()
+        TextureFormat.RGBA_3x10_2 -> TODO()
+        TextureFormat.RGBA_16F -> TODO()
+        TextureFormat.RGBA_32F -> TODO()
+        TextureFormat.RED_8UI -> TODO()
         else -> throw Exception("Unmapped texture format $this")
     }

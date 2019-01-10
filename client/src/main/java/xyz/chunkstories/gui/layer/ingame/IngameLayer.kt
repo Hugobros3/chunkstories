@@ -20,6 +20,8 @@ import xyz.chunkstories.api.util.configuration.Configuration
 import xyz.chunkstories.client.InternalClientOptions
 import xyz.chunkstories.client.ingame.IngameClientImplementation
 import xyz.chunkstories.gui.InventoryGridRenderer
+import xyz.chunkstories.gui.debug.DebugInfoRendererHelper
+import xyz.chunkstories.gui.debug.FrametimesGraph
 import xyz.chunkstories.world.WorldClientCommon
 import xyz.chunkstories.world.WorldClientRemote
 
@@ -57,7 +59,7 @@ class IngameLayer(window: Gui, private val client: IngameClientImplementation) :
         return if (isCovered) false else gui.mouse.isGrabbed
     }
 
-    override fun render(renderer: GuiDrawer) {
+    override fun render(drawer: GuiDrawer) {
         var playerEntity = player.controlledEntity
 
         // Update the inventory previewer
@@ -73,15 +75,17 @@ class IngameLayer(window: Gui, private val client: IngameClientImplementation) :
 
         // Draw the GUI
         if (!guiHidden) {
-            chatManager.drawChatWindow(renderer)
+            chatManager.drawChatWindow(drawer)
 
             // Draw inventory
-            inventoryBarDrawer?.drawPlayerInventorySummary(renderer, gui.viewportWidth / 2, 8)
+            inventoryBarDrawer?.drawPlayerInventorySummary(drawer, gui.viewportWidth / 2, 8)
 
             // Draw debug info
             if (client.configuration.getBooleanValue(InternalClientOptions.showDebugInformation))
-                debugInfoRendererHelper.drawDebugInfo(renderer)
-            renderer.drawBox(gui.viewportWidth / 2 - 8, gui.viewportHeight / 2 - 8, 16, 16, "textures/gui/cursor.png")
+                debugInfoRendererHelper.drawDebugInfo(drawer)
+            if(client.configuration.getBooleanValue(InternalClientOptions.showFrametimeGraph))
+                FrametimesGraph.draw(drawer)
+            drawer.drawBox(gui.viewportWidth / 2 - 8, gui.viewportHeight / 2 - 8, 16, 16, "textures/gui/cursor.png")
         }
 
         // Lack of overlay should infer autofocus

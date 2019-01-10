@@ -7,9 +7,12 @@ import xyz.chunkstories.api.graphics.rendergraph.PassOutput.BlendMode.*
 import xyz.chunkstories.api.gui.GuiDrawer
 import xyz.chunkstories.graphics.vulkan.systems.SkyDrawer
 import xyz.chunkstories.graphics.vulkan.systems.world.VulkanCubesDrawer
-import xyz.chunkstories.graphics.vulkan.systems.debug.VulkanDebugDrawer
 import xyz.chunkstories.graphics.vulkan.systems.VulkanSpinningCubeDrawer
 import org.joml.Vector4d
+import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
+import xyz.chunkstories.api.graphics.structs.Camera
+import xyz.chunkstories.graphics.vulkan.systems.VulkanFullscreenQuadDrawer
+import xyz.chunkstories.graphics.vulkan.systems.world.getConditions
 
 object BuiltInRendergraphs {
     val onlyGuiRenderGraph : RenderGraphDeclarationScript = {
@@ -106,6 +109,13 @@ object BuiltInRendergraphs {
             }
 
             renderBuffer {
+                name = "shadedBuffer"
+
+                format = RGB_HDR
+                size = viewportSize
+            }
+
+            renderBuffer {
                 name = "finalBuffer"
 
                 format = RGBA_8
@@ -123,7 +133,7 @@ object BuiltInRendergraphs {
 
                 outputs {
                     output {
-                        name = "colorBuffer"
+                        name = "shadedBuffer"
                         clear = true
                         clearColor = Vector4d(0.0, 0.5, 1.0, 1.0)
                     }
@@ -142,6 +152,8 @@ object BuiltInRendergraphs {
                 outputs {
                     output {
                         name = "colorBuffer"
+                        clear = true
+                        clearColor = Vector4d(0.0, 0.0, 0.0, 0.0)
                     }
 
                     output {
@@ -182,7 +194,7 @@ object BuiltInRendergraphs {
             }*/
 
             pass {
-                name = "postprocess"
+                name = "deferredShading"
 
                 dependsOn("cubes")
 
@@ -190,6 +202,41 @@ object BuiltInRendergraphs {
                     imageInput {
                         name = "colorBuffer"
                         source = renderBuffer("colorBuffer")
+                    }
+
+                    imageInput {
+                        name = "normalBuffer"
+                        source = renderBuffer("normalBuffer")
+                    }
+                }
+
+                draws {
+                    system(VulkanFullscreenQuadDrawer::class) {
+                        shaderBindings {
+                            val camera = client.player.controlledEntity?.traits?.get(TraitControllable::class)?.camera ?: Camera()
+                            it.bindUBO(camera)
+                            it.bindUBO(client.world.getConditions())
+                        }
+                    }
+                }
+
+                outputs {
+                    output {
+                        name = "shadedBuffer"
+                        blending = OVERWRITE
+                    }
+                }
+            }
+
+            pass {
+                name = "postprocess"
+
+                dependsOn("deferredShading")
+
+                inputs {
+                    imageInput {
+                        name = "shadedBuffer"
+                        source = renderBuffer("shadedBuffer")
                     }
                 }
 

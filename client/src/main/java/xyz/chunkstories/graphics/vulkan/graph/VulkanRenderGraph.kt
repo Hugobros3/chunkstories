@@ -10,6 +10,7 @@ import xyz.chunkstories.graphics.vulkan.swapchain.Frame
 import xyz.chunkstories.graphics.vulkan.util.ensureIs
 import org.joml.Vector2i
 import org.lwjgl.system.MemoryStack
+import org.lwjgl.system.MemoryStack.stackPop
 import org.lwjgl.system.MemoryStack.stackPush
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
@@ -100,18 +101,24 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val script: RenderGr
     }
 
     fun renderFrame(frame: Frame) {
-        //TODO fence this up
-        var waitOn = frame.renderCanBeginSemaphore
 
         for(pass in passesInOrder) {
-            when(pass) {
-                passesInOrder[0] -> pass.render(frame, null)
-                finalPass -> pass.render(frame, null)
-                else -> pass.render(frame, null)
-            }
-
-            waitOn = pass.passDoneSemaphore[frame]
+            pass.render(frame, null)
         }
+
+        stackPush()
+        val submitInfo = VkSubmitInfo.callocStack().sType(VK_STRUCTURE_TYPE_SUBMIT_INFO).apply {
+            val commandBuffers = MemoryStack.stackMallocPointer(passesInOrder.size)
+            for(pass in passesInOrder)
+                commandBuffers.put(pass.commandBuffers[frame])
+            commandBuffers.flip()
+            pCommandBuffers(commandBuffers)
+        }
+
+        backend.logicalDevice.graphicsQueue.mutex.acquireUninterruptibly()
+        vkQueueSubmit(backend.logicalDevice.graphicsQueue.handle, submitInfo, /*frame.renderFinishedFence*/ VK_NULL_HANDLE).ensureIs("Failed to submit command buffer", VK_SUCCESS)
+        backend.logicalDevice.graphicsQueue.mutex.release()
+        stackPop()
 
         copyFinalRenderbuffer(frame)
     }

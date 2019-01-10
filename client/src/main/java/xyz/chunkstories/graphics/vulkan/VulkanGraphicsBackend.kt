@@ -288,7 +288,10 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
 
         return when (registeredDrawingSystem.clazz) {
             GuiDrawer::class.java -> VulkanGuiDrawer(vulkanPass, window.client.gui)
-            FullscreenQuadDrawer::class.java -> VulkanFullscreenQuadDrawer(vulkanPass)
+
+            FullscreenQuadDrawer::class.java, VulkanFullscreenQuadDrawer::class.java -> VulkanFullscreenQuadDrawer(vulkanPass)
+            //VulkanFullscreenQuadDrawer::class.java -> VulkanFullscreenQuadDrawer(vulkanPass)
+
             VulkanSpinningCubeDrawer::class.java -> VulkanSpinningCubeDrawer(vulkanPass)
             VulkanCubesDrawer::class.java -> VulkanCubesDrawer(vulkanPass, window.client.ingame!!)
             VulkanDebugDrawer::class.java -> VulkanDebugDrawer(vulkanPass, window.client.ingame!!)

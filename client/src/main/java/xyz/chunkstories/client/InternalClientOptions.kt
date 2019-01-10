@@ -7,9 +7,11 @@ object InternalClientOptions {
     // We use those fields to capture the fully-qualified option name so we can't make spelling errors
     lateinit var debugMode: String private set
     lateinit var showDebugInformation: String private set
+    lateinit var showFrametimeGraph: String private set
     lateinit var debugWireframe: String private set
 
     lateinit var viewDistance: String private set
+    lateinit var syncMode: String private set
 
     val options: OptionsDeclarationCtx.() -> Unit = {
         section("client" ) {
@@ -24,6 +26,10 @@ object InternalClientOptions {
                     default = false
                 }
 
+                showFrametimeGraph = optionBoolean("showFrametimeGraph") {
+                    default = false
+                }
+
                 debugWireframe = optionBoolean("debugWireframe") {
                     default = false
                 }
@@ -33,6 +39,11 @@ object InternalClientOptions {
                 viewDistance = optionMultipleChoicesInt("viewDistance") {
                     default = 128
                     possibleChoices = listOf(64, 128, 192, 256, 384, 512, 768, 1024)
+                }
+
+                syncMode = optionMultipleChoices("syncMode") {
+                    default = "fastest"
+                    possibleChoices = listOf("fastest", "vsync", "tripleBuffering")
                 }
             }
         }

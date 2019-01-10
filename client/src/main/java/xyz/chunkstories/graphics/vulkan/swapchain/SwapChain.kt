@@ -39,10 +39,14 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
     var expired = false
 
     init {
-        logger.debug("Creating swapchain...")
+        val presentationMode = backend.physicalDevice.swapchainDetails.presentationModeToUse
+
+        logger.debug("Creating swapchain using $presentationMode ...")
         stackPush()
 
         imagesCount = backend.physicalDevice.swapchainDetails.imageCount.first + 1
+        //TODO test
+        //imagesCount = 3
         if (imagesCount > backend.physicalDevice.swapchainDetails.imageCount.last)
             imagesCount = backend.physicalDevice.swapchainDetails.imageCount.last
         logger.debug("Asking for $imagesCount in the swapchain")
@@ -56,7 +60,7 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
             imageExtent().height(backend.window.height)
 
             logger.debug("Using presentation mode ${backend.physicalDevice.swapchainDetails.presentationModeToUse}")
-            presentMode(backend.physicalDevice.swapchainDetails.presentationModeToUse.ordinal)
+            presentMode(presentationMode.ordinal)
             //imageExtent(backend.physicalDevice.swapchainDetails.swapExtentToUse)
             imageArrayLayers(1)
             //TODO maybe not needed once we do everything in offscreen buffers
@@ -196,7 +200,7 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
                 vkGetPhysicalDeviceSurfaceCapabilitiesKHR(backend.physicalDevice.vkPhysicalDevice, backend.surface.handle, pSurfaceCapabilities)
 
                 if (backend.window.width == 0 || backend.window.height == 0)
-                    logger.debug("Was minized, waiting to become a workable size again")
+                    logger.debug("Was minimized, waiting to become a workable size again")
                 else if (backend.window.width > pSurfaceCapabilities.maxImageExtent().width() || backend.window.height > pSurfaceCapabilities.maxImageExtent().height())
                     logger.debug("Weird condition, game window is exceeding the max extent of the surface, waiting until conditions change...")
                 else {

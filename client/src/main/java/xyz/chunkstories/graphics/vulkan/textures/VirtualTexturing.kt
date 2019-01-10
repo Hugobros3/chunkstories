@@ -3,13 +3,11 @@ package xyz.chunkstories.graphics.vulkan.textures
 import xyz.chunkstories.api.graphics.Texture2D
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.resources.Cleanable
-import xyz.chunkstories.graphics.vulkan.resources.InflightFrameResource
 import xyz.chunkstories.graphics.vulkan.util.VkDescriptorPool
 import xyz.chunkstories.graphics.vulkan.util.VkDescriptorSet
 import xyz.chunkstories.graphics.vulkan.util.VkDescriptorSetLayout
 import xyz.chunkstories.graphics.vulkan.util.ensureIs
 import org.lwjgl.system.MemoryStack.*
-import org.lwjgl.system.MemoryUtil.memFree
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import java.util.concurrent.ConcurrentLinkedDeque
@@ -145,6 +143,7 @@ class VirtualTexturing(val backend: VulkanGraphicsBackend) : Cleanable {
         }
     }
 
+    @Suppress("NAME_SHADOWING")
     inner class VirtualTexturingContext internal constructor(val setHandle: VkDescriptorSet) {
         val ids = mutableMapOf<VulkanTexture2D, Int>()
         val content = mutableListOf<VulkanTexture2D>()

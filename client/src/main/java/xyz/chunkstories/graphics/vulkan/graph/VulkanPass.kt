@@ -83,6 +83,7 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
         val drawingSystems = mutableListOf<VulkanDrawingSystem>()
         for (declaredDrawingSystem in this.declaredDrawingSystems) {
             val drawingSystem = backend.createDrawingSystem(this, declaredDrawingSystem)
+            drawingSystem.apply(declaredDrawingSystem.init)
             drawingSystems.add(drawingSystem)
         }
 
@@ -358,7 +359,7 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
                 vkEndCommandBuffer(this)
             }
 
-            val submitInfo = VkSubmitInfo.callocStack().sType(VK_STRUCTURE_TYPE_SUBMIT_INFO).apply {
+            /*val submitInfo = VkSubmitInfo.callocStack().sType(VK_STRUCTURE_TYPE_SUBMIT_INFO).apply {
                 if(passBeginSemaphore != null) {
                     val waitOnSemaphores = MemoryStack.stackMallocLong(1)
                     waitOnSemaphores.put(0, passBeginSemaphore)
@@ -383,7 +384,7 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
 
             backend.logicalDevice.graphicsQueue.mutex.acquireUninterruptibly()
             vkQueueSubmit(backend.logicalDevice.graphicsQueue.handle, submitInfo, /*frame.renderFinishedFence*/ VK_NULL_HANDLE).ensureIs("Failed to submit command buffer", VK_SUCCESS)
-            backend.logicalDevice.graphicsQueue.mutex.release()
+            backend.logicalDevice.graphicsQueue.mutex.release()*/
         }
     }
 
