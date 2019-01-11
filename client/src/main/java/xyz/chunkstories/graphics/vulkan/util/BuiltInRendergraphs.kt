@@ -208,6 +208,11 @@ object BuiltInRendergraphs {
                         name = "normalBuffer"
                         source = renderBuffer("normalBuffer")
                     }
+
+                    imageInput {
+                        name = "depthBuffer"
+                        source = renderBuffer("depthBuffer")
+                    }
                 }
 
                 draws {

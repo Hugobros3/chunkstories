@@ -13,6 +13,26 @@ import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 import org.lwjgl.vulkan.VkImageMemoryBarrier
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.graphics.vulkan.util.VkImageLayout
+
+enum class UsageState {
+    NONE,
+    INPUT,
+    OUTPUT
+}
+
+enum class UsageType {
+    COLOR, DEPTH
+}
+
+fun getLayoutForStateAndType(usageState: UsageState, usageType: UsageType) : VkImageLayout = when(usageState) {
+    UsageState.NONE -> VK_IMAGE_LAYOUT_UNDEFINED
+    UsageState.INPUT -> VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+    UsageState.OUTPUT -> when(usageType) {
+        UsageType.COLOR -> VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+        UsageType.DEPTH -> VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+    }
+}
 
 class VulkanRenderBuffer(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGraph, val config: RenderBuffer.() -> Unit) : RenderBuffer(), Cleanable {
 
@@ -21,11 +41,7 @@ class VulkanRenderBuffer(val backend: VulkanGraphicsBackend, val graph: VulkanRe
     /** Set late by the RenderGraph */
     lateinit var layoutPerStage: Map<VulkanPass, Int>
 
-    val usage: UsageType
-
-    enum class UsageType {
-        COLOR, DEPTH
-    }
+    val usageType: UsageType
 
     fun UsageType.usageBits() = when(this) {
             UsageType.DEPTH -> VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
@@ -35,12 +51,12 @@ class VulkanRenderBuffer(val backend: VulkanGraphicsBackend, val graph: VulkanRe
     init {
         this.apply(config)
 
-        usage = when(format) {
+        usageType = when(format) {
             TextureFormat.DEPTH_24, TextureFormat.DEPTH_32 -> UsageType.DEPTH
             else -> UsageType.COLOR
         }
 
-        texture = VulkanTexture2D(backend, format, size.x, size.y, usage.usageBits())
+        texture = VulkanTexture2D(backend, format, size.x, size.y, usageType.usageBits())
         //texture.transitionLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL)
         //texture.transitionToRenderBufferLayout()
     }
@@ -52,14 +68,8 @@ class VulkanRenderBuffer(val backend: VulkanGraphicsBackend, val graph: VulkanRe
             logger.debug("Resizing render buffer $name")
             size = newSize
             texture.cleanup()
-            texture = VulkanTexture2D(backend, format, size.x, size.y, usage.usageBits())
+            texture = VulkanTexture2D(backend, format, size.x, size.y, usageType.usageBits())
         }
-    }
-
-    enum class UsageState(val vkLayout: Int) {
-        NONE(VK_IMAGE_LAYOUT_UNDEFINED),
-        INPUT(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
-        OUTPUT(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
     }
 
     fun UsageType.aspectMask() : Int = when(this) {
@@ -82,15 +92,15 @@ class VulkanRenderBuffer(val backend: VulkanGraphicsBackend, val graph: VulkanRe
     fun transitionUsage(commandBuffer: VkCommandBuffer, previousUsage: UsageState, newUsage: UsageState) {
         stackPush()
         val imageBarrier = VkImageMemoryBarrier.callocStack(1).sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER).apply {
-            oldLayout(previousUsage.vkLayout)
-            newLayout(newUsage.vkLayout)
+            oldLayout(getLayoutForStateAndType(previousUsage, usageType))
+            newLayout(getLayoutForStateAndType(newUsage, usageType))
 
             srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
             dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
             image(texture.imageHandle)
 
             subresourceRange().apply {
-                aspectMask(usage.aspectMask())
+                aspectMask(usageType.aspectMask())
                 baseMipLevel(0)
                 levelCount(1)
                 baseArrayLayer(0)
@@ -117,19 +127,19 @@ class VulkanRenderBuffer(val backend: VulkanGraphicsBackend, val graph: VulkanRe
         stackPop()
     }
 
-    fun findUsageInPass(pass: VulkanPass) : VulkanRenderBuffer.UsageState {
+    fun findUsageInPass(pass: VulkanPass) : UsageState {
         if(pass.outputRenderBuffers.contains(this) || pass.resolvedDepthBuffer == this)
-            return VulkanRenderBuffer.UsageState.OUTPUT
+            return UsageState.OUTPUT
 
         //TODO use resolved variant
         pass.imageInputs.forEach { when(val source = it.source) {
             is ImageInput.ImageSource.RenderBufferReference -> {
                 if(source.renderBufferName == this.name)
-                    return VulkanRenderBuffer.UsageState.INPUT
+                    return UsageState.INPUT
             }
         }}
 
-        return VulkanRenderBuffer.UsageState.NONE
+        return UsageState.NONE
     }
 
     companion object {

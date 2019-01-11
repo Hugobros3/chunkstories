@@ -91,20 +91,20 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
         MemoryStack.stackPop()
     }
 
-    fun VulkanRenderBuffer.findPreviousUsage() : VulkanRenderBuffer.UsageState {
+    fun VulkanRenderBuffer.findPreviousUsage() : UsageState {
         val thisPassIndex = graph.passesInOrder.indexOf(this@VulkanPass)
         if(thisPassIndex == 0)
-            return VulkanRenderBuffer.UsageState.NONE
+            return UsageState.NONE
 
         //Check all the previous pass to look for a previous usage
         for(index in (thisPassIndex - 1) downTo 0) {
             val usageThere = findUsageInPass(graph.passesInOrder[index])
 
-            if(usageThere != VulkanRenderBuffer.UsageState.NONE)
+            if(usageThere != UsageState.NONE)
                 return usageThere
         }
 
-        return VulkanRenderBuffer.UsageState.NONE
+        return UsageState.NONE
     }
 
     private fun createRenderPass(): VkRenderPass {
@@ -113,7 +113,7 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
             val renderbuffer = outputRenderBuffers[index]
 
             val previousUsage = renderbuffer.findPreviousUsage()
-            val currentUsage = VulkanRenderBuffer.UsageState.OUTPUT
+            val currentUsage = UsageState.OUTPUT
 
             attachmentDescription[index].apply {
 
@@ -123,7 +123,7 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
                 if (output.clear)
                     loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
                 else {
-                    if(previousUsage == VulkanRenderBuffer.UsageState.NONE)
+                    if(previousUsage == UsageState.NONE)
                         loadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
                     else
                         loadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
@@ -136,8 +136,8 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
                 stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
                 stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
 
-                initialLayout(previousUsage.vkLayout)
-                finalLayout(currentUsage.vkLayout)
+                initialLayout(getLayoutForStateAndType(previousUsage, renderbuffer.usageType))
+                finalLayout(getLayoutForStateAndType(currentUsage, renderbuffer.usageType))
             }
         }
 
@@ -147,7 +147,7 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
                 val renderbuffer = resolvedDepthBuffer!!
 
                 val previousUsage = renderbuffer.findPreviousUsage()
-                val currentUsage = VulkanRenderBuffer.UsageState.OUTPUT
+                val currentUsage = UsageState.OUTPUT
 
                 format(renderbuffer.format.vulkanFormat.ordinal)
                 samples(VK_SAMPLE_COUNT_1_BIT)
@@ -155,7 +155,7 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
                 if (depth.clear)
                     loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
                 else {
-                    if (previousUsage == VulkanRenderBuffer.UsageState.NONE)
+                    if (previousUsage == UsageState.NONE)
                         loadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
                     else
                         loadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
@@ -168,8 +168,8 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
                 stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
                 stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
 
-                initialLayout(previousUsage.vkLayout)
-                finalLayout(currentUsage.vkLayout)
+                initialLayout(getLayoutForStateAndType(previousUsage, renderbuffer.usageType))
+                finalLayout(getLayoutForStateAndType(currentUsage, renderbuffer.usageType))
             }
         }
 
@@ -340,7 +340,7 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
                             val renderBuffer = graph.buffers[input.name]!!
 
                             val previousUsage = renderBuffer.findPreviousUsage()
-                            val currentUsage = VulkanRenderBuffer.UsageState.INPUT
+                            val currentUsage = UsageState.INPUT
 
                             renderBuffer.transitionUsage(this, previousUsage, currentUsage)
                         }

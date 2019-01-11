@@ -174,7 +174,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
                     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 0, stackLongs(block.virtualTexturingContext!!.setHandle), null)
                     vkCmdBindVertexBuffers(commandBuffer, 0, stackLongs(block.vertexBuffer.handle), stackLongs(0))
 
-                    if (block.perChunkBindings == null) {
+                    if (block.perChunkBindings == null || block.perChunkBindings!!.pipeline !== pipeline) {
                         val chunkRenderInfo = ChunkRenderInfo().apply {
                             chunkX = chunk.chunkX
                             chunkY = chunk.chunkY
@@ -186,6 +186,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
                     }
 
                     block.perChunkBindings!!.preDraw(commandBuffer)
+
                     //vkCmdDraw(commandBuffer, 3 * 2 * 6, block.count, 0, 0)
                     vkCmdDraw(commandBuffer, block.count, 1, 0, 0)
 
