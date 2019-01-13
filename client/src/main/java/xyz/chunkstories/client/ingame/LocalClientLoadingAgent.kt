@@ -50,7 +50,7 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
             val cameraChunkZ = Math2.floor(controlledEntity.location.z() / 32)
 
             val chunksViewDistance = world.client.configuration.getIntValue(InternalClientOptions.viewDistance) / 32
-            val chunksViewDistanceHeight = 4
+            val chunksViewDistanceHeight = 6
 
             for (chunkX in cameraChunkX - chunksViewDistance - 1..cameraChunkX + chunksViewDistance + 1) {
                 for (chunkZ in cameraChunkZ - chunksViewDistance - 1..cameraChunkZ + chunksViewDistance + 1)

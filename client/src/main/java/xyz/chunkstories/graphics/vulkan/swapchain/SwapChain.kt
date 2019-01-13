@@ -44,7 +44,11 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
         logger.debug("Creating swapchain using $presentationMode ...")
         stackPush()
 
-        imagesCount = backend.physicalDevice.swapchainDetails.imageCount.first + 1
+        imagesCount = backend.physicalDevice.swapchainDetails.imageCount.first
+
+        if(presentationMode == PresentationMode.IMMEDIATE)
+            imagesCount++
+
         //TODO test
         //imagesCount = 3
         if (imagesCount > backend.physicalDevice.swapchainDetails.imageCount.last)

@@ -45,7 +45,9 @@ class VoxelMaterialsStore(private val voxels: VoxelsStore) : Content.Voxels.Voxe
 
             for (definition in parser.voxelMaterialDefinitions().voxelMaterialDefinition()) {
                 val name = definition.Name().text
-                val properties = definition.properties().toMap()
+                val properties = definition.properties().toMap().toMutableMap()
+
+                properties["name"] = name
 
                 val voxelMaterial = VoxelMaterial(this, name, properties)
                 materials.put(name, voxelMaterial)

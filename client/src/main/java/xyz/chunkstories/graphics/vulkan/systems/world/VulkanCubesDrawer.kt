@@ -117,7 +117,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         camChunk.z /= 32
 
         val drawDistance = world.client.configuration.getIntValue(InternalClientOptions.viewDistance) / 32
-        val drawDistanceH = 4
+        val drawDistanceH = 6
 
         val usedData = mutableListOf<ChunkVkMeshProperty.ChunkVulkanMeshData>()
 
