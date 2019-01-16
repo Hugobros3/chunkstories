@@ -14,6 +14,8 @@ import xyz.chunkstories.graphics.vulkan.util.VkDescriptorPool
 import xyz.chunkstories.graphics.vulkan.util.VkDescriptorSet
 import xyz.chunkstories.graphics.vulkan.util.ensureIs
 import org.lwjgl.system.MemoryStack.*
+import org.lwjgl.system.MemoryUtil.memAllocLong
+import org.lwjgl.system.MemoryUtil.memFree
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import java.nio.IntBuffer
@@ -64,7 +66,7 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
             val newDescriptorPool = pDescriptorPool.get(0)
 
             // Allocate every set we need from this pool
-            val layouts = stackMallocLong(descriptorSetsCount)
+            val layouts = memAllocLong(descriptorSetsCount) // allocate on heap because this gets big
             for (i in 0 until allocationSize) {
                 layouts.put(layout.vulkanLayout)
             }
@@ -77,6 +79,8 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
 
             val pDescriptorSets = stackMallocLong(descriptorSetsCount)
             vkAllocateDescriptorSets(backend.logicalDevice.vkDevice, allocInfo, pDescriptorSets).ensureIs("Failed to allocate descriptor sets :( ", VK_SUCCESS)
+
+            memFree(layouts)
 
             val instances = LongArray(allocationSize)
             pDescriptorSets.get(instances)

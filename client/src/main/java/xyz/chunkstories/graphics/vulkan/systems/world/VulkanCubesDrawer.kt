@@ -25,6 +25,10 @@ import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryStack.stackLongs
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
+import xyz.chunkstories.api.world.chunk.Chunk
+import xyz.chunkstories.api.world.region.Region
+import xyz.chunkstories.world.storage.RegionImplementation
+import java.util.*
 
 class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDrawingSystem(pass) {
     val backend: VulkanGraphicsBackend
@@ -98,6 +102,8 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         val camera = entity?.traits?.get(TraitControllable::class)?.camera ?: Camera()
         val world = client.world as WorldClientCommon
 
+        val camPos = camera.position
+
         //descriptorPool.configure(frame, camera)
         bindingContext.bindUBO(camera)
         bindingContext.bindUBO(world.getConditions())
@@ -111,7 +117,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 1, descriptorPool.setsForFrame(frame), null as? IntArray)
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
 
-        val camChunk = camera.position.toVec3i()
+        val camChunk = camPos.toVec3i()
         camChunk.x /= 32
         camChunk.y /= 32
         camChunk.z /= 32
@@ -121,49 +127,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
 
         val usedData = mutableListOf<ChunkVkMeshProperty.ChunkVulkanMeshData>()
 
-        //var box = Box(Vector3d(0.0), Vector3d(0.0))
-        //box.xWidth = 32.0
-        //box.yHeight = 32.0
-        //box.zWidth = 32.0
-
-        val boxCenter = Vector3f(0f)
-        val boxSize = Vector3f(32f, 32f, 32f)
-        val boxSize2 = Vector3f(256f, 256f, 256f)
-
-        val sortedChunks = mutableListOf<CubicChunk>()
-
-        for (region in world.allLoadedRegions) {
-            boxCenter.x = region.regionX * 256.0f + 128.0f
-            boxCenter.y = region.regionY * 256.0f + 128.0f
-            boxCenter.z = region.regionZ * 256.0f + 128.0f
-
-            if(!frustrum.isBoxInFrustrum(boxCenter, boxSize2))
-                continue
-
-            for (chunk in region.loadedChunks) {
-                boxCenter.x = chunk.chunkX * 32.0f + 16.0f
-                boxCenter.y = chunk.chunkY * 32.0f + 16.0f
-                boxCenter.z = chunk.chunkZ * 32.0f + 16.0f
-
-                if (frustrum.isBoxInFrustrum(boxCenter, boxSize) && !chunk.isAirChunk)
-                    sortedChunks.add(chunk as CubicChunk)
-            }
-        }
-
-        sortedChunks.sortBy { chunk ->
-            val chunkCenter = Vector3f(chunk.chunkX * 32 + 16.0f, chunk.chunkY * 32 + 16.0f, chunk.chunkZ * 32 + 16.0f)
-            chunkCenter.distance(camera.position) + 0.0f
-        }
-
-        for (chunk in sortedChunks) {
-            if (chunk.chunkX !in (camChunk.x - drawDistance)..(camChunk.x + drawDistance))
-                continue
-
-            if ((chunk.chunkZ !in (camChunk.z - drawDistance)..(camChunk.z + drawDistance)))
-                continue
-
-            if ((chunk.chunkY !in (camChunk.y - drawDistanceH)..(camChunk.y + drawDistanceH)))
-                continue
+        fun renderChunk(chunk: CubicChunk) {
 
             if (chunk.meshData is ChunkVkMeshProperty) {
                 val block = (chunk.meshData as ChunkVkMeshProperty).get()
@@ -199,6 +163,108 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
                 if (!chunk.isDestroyed)
                     chunk.meshData = ChunkVkMeshProperty(backend, chunk)
                 chunk.chunkDestructionSemaphore.release()
+            }
+        }
+
+        val boxCenter = Vector3f(0f)
+        val boxSize = Vector3f(32f, 32f, 32f)
+        val boxSize2 = Vector3f(256f, 256f, 256f)
+
+        val sortedChunks = ArrayList<CubicChunk>()
+
+        val visibleRegions = arrayOfNulls<RegionImplementation>(1024)
+        var visibleRegionsCount = 0
+
+        //val unsortedRegions = ArrayList<RegionImplementation>()
+
+        var rc = 0
+        for (region in world.allLoadedRegions) {
+            boxCenter.x = region.regionX * 256.0f + 128.0f
+            boxCenter.y = region.regionY * 256.0f + 128.0f
+            boxCenter.z = region.regionZ * 256.0f + 128.0f
+
+            rc++
+
+            if(frustrum.isBoxInFrustrum(boxCenter, boxSize2)) {
+
+                /*for (chunk in region.loadedChunks) {
+                boxCenter.x = chunk.chunkX * 32.0f + 16.0f
+                boxCenter.y = chunk.chunkY * 32.0f + 16.0f
+                boxCenter.z = chunk.chunkZ * 32.0f + 16.0f
+
+                //if (frustrum.isBoxInFrustrum(boxCenter, boxSize) && !chunk.isAirChunk)
+                if(!chunk.isAirChunk)
+                    sortedChunks.add(chunk as CubicChunk)
+            }*/
+
+                //unsortedRegions.add(region as RegionImplementation)
+                visibleRegions[visibleRegionsCount++] = region as RegionImplementation
+            }
+        }
+
+        //println("rc: $rc")
+
+        Arrays.sort(visibleRegions, 0, visibleRegionsCount) { a, b ->
+            fun distSquared(r: Region) : Float {
+                val rcx = r.regionX * 256.0f + 128.0f
+                val rcy = r.regionY * 256.0f + 128.0f
+                val rcz = r.regionZ * 256.0f + 128.0f
+
+                val dx = camPos.x() - rcx
+                val dy = camPos.y() - rcy
+                val dz = camPos.z() - rcz
+
+                return dx * dx + dy * dy + dz * dz
+            }
+
+            (distSquared(a!!) - distSquared(b!!)).toInt()
+        }
+
+        val visibleRegionChunks = arrayOfNulls<CubicChunk>(8 * 8 * 8)
+        var visibleRegionChunksCount : Int
+
+        val visibilityRangeX = (camChunk.x - drawDistance)..(camChunk.x + drawDistance)
+        val visibilityRangeY = (camChunk.y - drawDistance)..(camChunk.y + drawDistance)
+        val visibilityRangeZ = (camChunk.z - drawDistance)..(camChunk.z + drawDistance)
+
+        for(i in 0 until visibleRegionsCount) {
+            val region = visibleRegions[i]!!
+
+            visibleRegionChunksCount = 0
+            for (chunk in region.loadedChunks) {
+                boxCenter.x = chunk.chunkX * 32.0f + 16.0f
+                boxCenter.y = chunk.chunkY * 32.0f + 16.0f
+                boxCenter.z = chunk.chunkZ * 32.0f + 16.0f
+
+                if(!chunk.isAirChunk) {
+                    if(chunk.chunkX in visibilityRangeX && chunk.chunkY in visibilityRangeY && chunk.chunkZ in visibilityRangeZ) {
+
+                        if (frustrum.isBoxInFrustrum(boxCenter, boxSize)) {
+                            visibleRegionChunks[visibleRegionChunksCount++] = chunk
+                            //sortedChunks.add(chunk)
+                        }
+                    }
+                }
+            }
+
+            Arrays.sort(visibleRegionChunks, 0, visibleRegionChunksCount) { a, b ->
+                fun distSquared(c: Chunk) : Float {
+                    val ccx = c.chunkX * 32.0f + 16.0f
+                    val ccy = c.chunkY * 32.0f + 16.0f
+                    val ccz = c.chunkZ * 32.0f + 16.0f
+
+                    val dx = camPos.x() - ccx
+                    val dy = camPos.y() - ccy
+                    val dz = camPos.z() - ccz
+
+                    return dx * dx + dy * dy + dz * dz
+                }
+
+                (distSquared(a!!) - distSquared(b!!)).toInt()
+            }
+
+            for(j in 0 until visibleRegionChunksCount) {
+                renderChunk(visibleRegionChunks[j]!!)
             }
         }
 
