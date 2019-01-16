@@ -38,19 +38,15 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
         }
     }
     val pipeline = Pipeline(backend, pass, vertexInputConfiguration, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
-    //val descriptorPool = DescriptorPool(backend, pass.program)
     val sampler = VulkanSampler(backend)
 
     private val vertexBuffer: VulkanVertexBuffer
 
     init {
         val vertices = floatArrayOf(
-                -1.0F, -1.0F,
-                1.0F, 1.0F,
-                -1.0F, 1.0F,
-                -1.0F, -1.0F,
-                1.0F, -1.0F,
-                1.0F, 1.0F
+                -1.0F, -3.0F,
+                3.0F, 1.0F,
+                -1.0F, 1.0F
         )
 
         vertexBuffer = VulkanVertexBuffer(backend, vertices.size * 4L)
@@ -85,12 +81,9 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
         //println("pass ${pass.name}  $bindings")
         bindings?.invoke(this, bindingContext)
 
-        //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 1, descriptorPool.setsForFrame(frame), null as? IntArray)
-
         vkCmdBindVertexBuffers(commandBuffer, 0, stackLongs(vertexBuffer.handle), stackLongs(0))
-
         bindingContext.preDraw(commandBuffer)
-        vkCmdDraw(commandBuffer, 3 * 2, 1, 0, 0)
+        vkCmdDraw(commandBuffer, 3 * 1, 1, 0, 0)
 
         frame.recyclingTasks.add {
             bindingContext.recycle()
