@@ -38,6 +38,9 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
 
     var expired = false
 
+    //TODO make it an option
+    fun getMaxFramesInFlight() = 3//imagesCount
+
     init {
         val presentationMode = backend.physicalDevice.swapchainDetails.presentationModeToUse
 
@@ -50,10 +53,11 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
             imagesCount++
 
         //TODO test
-        //imagesCount = 3
+        imagesCount = 3
+
         if (imagesCount > backend.physicalDevice.swapchainDetails.imageCount.last)
             imagesCount = backend.physicalDevice.swapchainDetails.imageCount.last
-        logger.debug("Asking for $imagesCount in the swapchain")
+        logger.debug("Asking for a swapchain with $imagesCount images")
 
         val vkSwapchainCreateInfoKHR = VkSwapchainCreateInfoKHR.callocStack().sType(VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR).apply {
             surface(backend.surface.handle)
@@ -156,9 +160,6 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
         }
         stackPop()
     }
-
-    //TODO make it an option
-    fun getMaxFramesInFlight() = imagesCount
 
     private fun createSemaphores() {
         maxFramesInFlight = getMaxFramesInFlight()

@@ -32,7 +32,7 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
     lateinit var drawingSystems: List<VulkanDrawingSystem>
         private set
 
-    val passDoneSemaphore: InflightFrameResource<VkSemaphore>
+    //val passDoneSemaphore: InflightFrameResource<VkSemaphore>
 
     val commandPool = CommandPool(backend, backend.logicalDevice.graphicsQueue.family, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT or VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
     val commandBuffers: InflightFrameResource<VkCommandBuffer>
@@ -48,7 +48,7 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
 
         MemoryStack.stackPush()
 
-        passDoneSemaphore = InflightFrameResource(backend) { backend.createSemaphore() }
+        //passDoneSemaphore = InflightFrameResource(backend) { backend.createSemaphore() }
 
         outputRenderBuffers = outputs.map { output ->
             graph.buffers[output.outputBuffer ?: output.name] ?: throw Exception("Buffer ${output.outputBuffer} isn't declared !")
@@ -400,7 +400,7 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
         commandPool.cleanup()
         //commandBuffers.cleanup() // useless, cleaning the commandpool cleans those implicitely
 
-        passDoneSemaphore.cleanup { vkDestroySemaphore(backend.logicalDevice.vkDevice, it, null) }
+        //passDoneSemaphore.cleanup { vkDestroySemaphore(backend.logicalDevice.vkDevice, it, null) }
 
         drawingSystems.forEach(Cleanable::cleanup)
 

@@ -44,7 +44,6 @@ fun VulkanGraphicsBackend.createSemaphore() : VkSemaphore {
     return semaphore
 }
 
-
 fun VulkanGraphicsBackend.createFence(createSignalled : Boolean) : VkFence {
     stackPush()
     val fenceCreateInfo = VkFenceCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_FENCE_CREATE_INFO).apply {

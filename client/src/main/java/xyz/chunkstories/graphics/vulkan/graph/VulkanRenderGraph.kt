@@ -106,24 +106,30 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val script: RenderGr
             pass.render(frame, null)
         }
 
-        stackPush()
-        val submitInfo = VkSubmitInfo.callocStack().sType(VK_STRUCTURE_TYPE_SUBMIT_INFO).apply {
-            val commandBuffers = MemoryStack.stackMallocPointer(passesInOrder.size)
-            for(pass in passesInOrder)
-                commandBuffers.put(pass.commandBuffers[frame])
-            commandBuffers.flip()
-            pCommandBuffers(commandBuffers)
-        }
+        stackPush().use {
+            val submitInfo = VkSubmitInfo.callocStack().sType(VK_STRUCTURE_TYPE_SUBMIT_INFO).apply {
+                val commandBuffers = MemoryStack.stackMallocPointer(passesInOrder.size)
+                for (pass in passesInOrder)
+                    commandBuffers.put(pass.commandBuffers[frame])
+                commandBuffers.flip()
+                pCommandBuffers(commandBuffers)
+            }
 
-        backend.logicalDevice.graphicsQueue.mutex.acquireUninterruptibly()
-        vkQueueSubmit(backend.logicalDevice.graphicsQueue.handle, submitInfo, /*frame.renderFinishedFence*/ VK_NULL_HANDLE).ensureIs("Failed to submit command buffer", VK_SUCCESS)
-        backend.logicalDevice.graphicsQueue.mutex.release()
-        stackPop()
+            //println("submitting: ${submitInfo.waitSemaphoreCount()} + ${submitInfo.signalSemaphoreCount()}")
+
+            backend.logicalDevice.graphicsQueue.mutex.acquireUninterruptibly()
+            vkQueueSubmit(backend.logicalDevice.graphicsQueue.handle, submitInfo, /*frame.renderFinishedFence*/ VK_NULL_HANDLE).ensureIs("Failed to submit command buffer", VK_SUCCESS)
+            backend.logicalDevice.graphicsQueue.mutex.release()
+
+            //println("frame ${frame.frameNumber} ifi: ${frame.inflightFrameIndex} semIn: ${frame.renderCanBeginSemaphore} semOut: ${frame.renderFinishedSemaphore}")
+
+            //   stackPop()
+        }
 
         copyFinalRenderbuffer(frame)
     }
 
-    private fun copyFinalRenderbuffer(frame: Frame) {
+    private fun copyFinalRenderbuffer(frame: Frame)  {
         stackPush().use {
             commandBuffers[frame].apply {
                 val beginInfo = VkCommandBufferBeginInfo.callocStack().sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO).apply {
@@ -133,13 +139,15 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val script: RenderGr
 
                 vkBeginCommandBuffer(this, beginInfo)
 
-                val finalRenderBufferReadyCopyBarrier = VkImageMemoryBarrier.callocStack(1).sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER).apply {
+                val barriers = VkImageMemoryBarrier.callocStack(2)
+
+                val finalRenderBufferReadyCopyBarrier = barriers[1].sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER).apply {
                     //TODO check last use
                     oldLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
                     newLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
-
                     srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
                     dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+
                     image(finalPass.outputRenderBuffers[0].texture.imageHandle)
 
                     subresourceRange().apply {
@@ -153,13 +161,12 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val script: RenderGr
                     srcAccessMask(VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT or VK_ACCESS_COLOR_ATTACHMENT_READ_BIT)
                     dstAccessMask(VK_ACCESS_TRANSFER_READ_BIT)
                 }
-                vkCmdPipelineBarrier(this, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, null, null, finalRenderBufferReadyCopyBarrier)
-
-                val swapchainImageReadyCopyBarrier = VkImageMemoryBarrier.callocStack(1).sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER).apply {
+                val swapchainImageReadyCopyBarrier = barriers[0].sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER).apply {
                     oldLayout(VK_IMAGE_LAYOUT_UNDEFINED)
                     newLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
                     srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
                     dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+
                     image(frame.swapchainImage)
 
                     subresourceRange().apply {
@@ -173,7 +180,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val script: RenderGr
                     srcAccessMask(0)
                     dstAccessMask(VK_ACCESS_TRANSFER_WRITE_BIT)
                 }
-                vkCmdPipelineBarrier(this, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, null, null, swapchainImageReadyCopyBarrier)
+                vkCmdPipelineBarrier(this, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, null, null, barriers)
 
                 val region = VkImageCopy.callocStack(1).apply {
                     this.extent().width(finalPass.outputRenderBuffers[0].size.x)
@@ -189,8 +196,9 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val script: RenderGr
 
                     dstSubresource().set(srcSubresource())
                 }
+
                 vkCmdCopyImage(this, finalPass.outputRenderBuffers[0].texture.imageHandle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                        frame.swapchainImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, region)
+                       frame.swapchainImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, region)
 
                 val swapchainImageReadyPresentBarrier = VkImageMemoryBarrier.callocStack(1).sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER).apply {
                     oldLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
@@ -218,11 +226,6 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val script: RenderGr
             }
 
             val submitInfo = VkSubmitInfo.callocStack().sType(VK_STRUCTURE_TYPE_SUBMIT_INFO).apply {
-                /*val waitOnSemaphores = MemoryStack.stackMallocLong(1)
-                waitOnSemaphores.put(0, finalPass.passDoneSemaphore[frame])
-                pWaitSemaphores(waitOnSemaphores)
-                waitSemaphoreCount(1)*/
-
                 val waitOnSemaphores = MemoryStack.stackMallocLong(1)
                 waitOnSemaphores.put(0, frame.renderCanBeginSemaphore)
                 pWaitSemaphores(waitOnSemaphores)
