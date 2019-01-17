@@ -39,7 +39,7 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
     var expired = false
 
     //TODO make it an option
-    fun getMaxFramesInFlight() = 3//imagesCount
+    fun getMaxFramesInFlight() = imagesCount
 
     init {
         val presentationMode = backend.physicalDevice.swapchainDetails.presentationModeToUse
@@ -53,7 +53,7 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
             imagesCount++
 
         //TODO test
-        imagesCount = 3
+        //imagesCount = 3
 
         if (imagesCount > backend.physicalDevice.swapchainDetails.imageCount.last)
             imagesCount = backend.physicalDevice.swapchainDetails.imageCount.last

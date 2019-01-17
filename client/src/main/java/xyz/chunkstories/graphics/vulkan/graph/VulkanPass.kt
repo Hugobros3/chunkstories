@@ -17,7 +17,7 @@ import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 
-class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGraph, config: Pass.() -> Unit) : Pass(), Cleanable {
+open class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGraph, config: Pass.() -> Unit) : Pass(), Cleanable {
 
     val outputRenderBuffers: List<VulkanRenderBuffer>
     val resolvedDepthBuffer: VulkanRenderBuffer?
@@ -27,7 +27,7 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
     var renderPass: VkRenderPass = -1
         private set
     var framebuffer: VkFramebuffer = -1
-        private set
+        internal set
 
     lateinit var drawingSystems: List<VulkanDrawingSystem>
         private set
@@ -51,7 +51,11 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
         //passDoneSemaphore = InflightFrameResource(backend) { backend.createSemaphore() }
 
         outputRenderBuffers = outputs.map { output ->
-            graph.buffers[output.outputBuffer ?: output.name] ?: throw Exception("Buffer ${output.outputBuffer} isn't declared !")
+            val resolvedName = output.outputBuffer ?: output.name
+            if(resolvedName == "_swapchain")
+                graph.dummySwapchainRenderBuffer
+            else
+                graph.buffers[resolvedName] ?: throw Exception("Buffer $resolvedName isn't declared !")
         }
 
         commandBuffers = InflightFrameResource(backend) {
@@ -107,7 +111,7 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
         return UsageState.NONE
     }
 
-    private fun createRenderPass(): VkRenderPass {
+    internal open fun createRenderPass(): VkRenderPass {
         val attachmentDescription = VkAttachmentDescription.callocStack(outputs.size + if(depth.enabled) 1 else 0)
         outputs.mapIndexed { index, output ->
             val renderbuffer = outputRenderBuffers[index]
@@ -243,7 +247,7 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
         return pRenderPass.get(0)
     }
 
-    private fun createFramebuffer(): VkFramebuffer {
+    internal open fun createFramebuffer(): VkFramebuffer {
         stackPush()
         val pAttachments = stackMallocLong(outputs.size + if(depth.enabled) 1 else 0)
 
@@ -268,7 +272,7 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
     }
 
     //TODO for now let's assume there is only one pass so we can use head/tail semaphores from the frame object
-    fun render(frame: Frame, passBeginSemaphore: VkSemaphore?) {
+    open fun render(frame: Frame, passBeginSemaphore: VkSemaphore?) {
         stackPush().use {
             commandBuffers[frame].apply {
                 val beginInfo = VkCommandBufferBeginInfo.callocStack().sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO).apply {
@@ -309,9 +313,9 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
                     renderArea().extent().width(backend.window.width)
                     renderArea().extent().height(backend.window.height)
 
-                    val clearColor = VkClearValue.callocStack(outputRenderBuffers.size + if(depth.enabled) 1 else 0)
+                    val clearColor = VkClearValue.callocStack(outputs.size + if(depth.enabled) 1 else 0)
 
-                    (0 until outputRenderBuffers.size).map { clearColor[it] }.forEachIndexed { i, cc ->
+                    (0 until outputs.size).map { clearColor[it] }.forEachIndexed { i, cc ->
                         cc.color().float32().apply {
                             val clearColor = outputs[i].clearColor
                             this.put(0, clearColor.x().toFloat())
@@ -322,7 +326,7 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
                     }
 
                     if(depth.enabled) {
-                        val depthBufferAttachmentIndex = outputRenderBuffers.size
+                        val depthBufferAttachmentIndex = outputs.size
                         clearColor[depthBufferAttachmentIndex].let {
                             it.depthStencil().depth(1f)
                         }
@@ -337,7 +341,7 @@ class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGrap
 
                     when(source) {
                         is ImageInput.ImageSource.RenderBufferReference -> {
-                            val renderBuffer = graph.buffers[input.name]!!
+                            val renderBuffer = graph.buffers[source.renderBufferName] ?: throw Exception("Couldn't find render buffer ${input.name}")
 
                             val previousUsage = renderBuffer.findPreviousUsage()
                             val currentUsage = UsageState.INPUT

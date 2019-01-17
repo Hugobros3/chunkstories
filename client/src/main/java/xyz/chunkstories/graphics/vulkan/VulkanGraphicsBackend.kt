@@ -37,7 +37,7 @@ import java.awt.image.BufferedImage
 
 class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(window) {
     internal val enableValidation = useValidationLayer
-    internal var enableDivergingUniformSamplerIndexing = true
+    internal val enableDivergingUniformSamplerIndexing : Boolean
 
     val requiredDeviceExtensions = listOf(KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME)
 
@@ -84,6 +84,8 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
         physicalDevice = pickPhysicalDevice(true)
 
         logicalDevice = LogicalDevice(this, physicalDevice)
+
+        enableDivergingUniformSamplerIndexing = physicalDevice.canDoNonUniformSamplerIndexing
 
         vmaAllocator = VmaAllocator(this)
         //TODO remove

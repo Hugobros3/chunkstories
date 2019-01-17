@@ -56,7 +56,8 @@ class VulkanRenderBuffer(val backend: VulkanGraphicsBackend, val graph: VulkanRe
             else -> UsageType.COLOR
         }
 
-        texture = VulkanTexture2D(backend, format, size.x, size.y, usageType.usageBits())
+        if(name != "_swapchain")
+            texture = VulkanTexture2D(backend, format, size.x, size.y, usageType.usageBits())
         //texture.transitionLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL)
         //texture.transitionToRenderBufferLayout()
     }

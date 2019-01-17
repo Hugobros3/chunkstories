@@ -15,6 +15,10 @@ import org.lwjgl.system.MemoryStack.stackPush
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
 import org.lwjgl.vulkan.VK10.*
+import xyz.chunkstories.api.graphics.ImageInput
+import xyz.chunkstories.api.graphics.systems.drawing.FullscreenQuadDrawer
+import xyz.chunkstories.graphics.vulkan.systems.VulkanFullscreenQuadDrawer
+import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
 
 class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val script: RenderGraphDeclarationScript) : RenderGraph, Cleanable {
 
@@ -33,6 +37,8 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val script: RenderGr
     var passesInOrder: List<VulkanPass>
 
     private val parser = VulkanRenderGraphBuilder(this)
+
+    internal val dummySwapchainRenderBuffer: VulkanRenderBuffer
 
     init {
         commandPool = CommandPool(backend, backend.logicalDevice.graphicsQueue.family, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT or VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
@@ -58,6 +64,38 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val script: RenderGr
         }
 
         passesInOrder = buildGraph()
+
+        dummySwapchainRenderBuffer = VulkanRenderBuffer(backend, this) {
+            name = "_swapchain"
+        }
+
+        val presentPass = PresentationPass(backend, this) {
+            this.shaderName = "blit"
+
+            this.dependencies.add(passesInOrder.last().name)
+
+            this.imageInputs.add(ImageInput().apply {
+                this.name = "diffuseTexture"
+                this.source = ImageInput.ImageSource.RenderBufferReference(passesInOrder.last().outputs[0].name)
+            })
+
+            this.outputs.add(PassOutput().apply {
+                this.name = "_swapchain"
+
+                this.blending = PassOutput.BlendMode.OVERWRITE
+            })
+
+            declaredDrawingSystems.add(RegisteredDrawingSystem(FullscreenQuadDrawer::class.java) {
+                /*val fsDrawer = this as VulkanFullscreenQuadDrawer
+                fsDrawer.shaderBindings {
+                    it.bindTextureAndSampler("diffuseTexture", passesInOrder.last().outputRenderBuffers[0].texture, VulkanSampler(backend))
+                }*/
+            })
+        }
+
+        passesInOrder = passesInOrder.toMutableList()
+        (passesInOrder as MutableList<VulkanPass>).add(presentPass)
+
         passesInOrder.forEach { it.postGraphBuild() }
     }
 
@@ -113,12 +151,24 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val script: RenderGr
                     commandBuffers.put(pass.commandBuffers[frame])
                 commandBuffers.flip()
                 pCommandBuffers(commandBuffers)
+
+                val waitOnSemaphores = MemoryStack.stackMallocLong(1)
+                waitOnSemaphores.put(0, frame.renderCanBeginSemaphore)
+                pWaitSemaphores(waitOnSemaphores)
+                waitSemaphoreCount(1)
+
+                val waitStages = MemoryStack.stackMallocInt(1)
+                waitStages.put(0, VK_PIPELINE_STAGE_TRANSFER_BIT)
+                pWaitDstStageMask(waitStages)
+
+                val semaphoresToSignal = MemoryStack.stackLongs(frame.renderFinishedSemaphore)
+                pSignalSemaphores(semaphoresToSignal)
             }
 
             //println("submitting: ${submitInfo.waitSemaphoreCount()} + ${submitInfo.signalSemaphoreCount()}")
 
             backend.logicalDevice.graphicsQueue.mutex.acquireUninterruptibly()
-            vkQueueSubmit(backend.logicalDevice.graphicsQueue.handle, submitInfo, /*frame.renderFinishedFence*/ VK_NULL_HANDLE).ensureIs("Failed to submit command buffer", VK_SUCCESS)
+            vkQueueSubmit(backend.logicalDevice.graphicsQueue.handle, submitInfo, frame.renderFinishedFence).ensureIs("Failed to submit command buffer", VK_SUCCESS)
             backend.logicalDevice.graphicsQueue.mutex.release()
 
             //println("frame ${frame.frameNumber} ifi: ${frame.inflightFrameIndex} semIn: ${frame.renderCanBeginSemaphore} semOut: ${frame.renderFinishedSemaphore}")
@@ -126,7 +176,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val script: RenderGr
             //   stackPop()
         }
 
-        copyFinalRenderbuffer(frame)
+        //copyFinalRenderbuffer(frame)
     }
 
     private fun copyFinalRenderbuffer(frame: Frame)  {
@@ -226,6 +276,10 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val script: RenderGr
             }
 
             val submitInfo = VkSubmitInfo.callocStack().sType(VK_STRUCTURE_TYPE_SUBMIT_INFO).apply {
+                val commandBuffers = MemoryStack.stackMallocPointer(1)
+                commandBuffers.put(0, this@VulkanRenderGraph.commandBuffers[frame])
+                pCommandBuffers(commandBuffers)
+
                 val waitOnSemaphores = MemoryStack.stackMallocLong(1)
                 waitOnSemaphores.put(0, frame.renderCanBeginSemaphore)
                 pWaitSemaphores(waitOnSemaphores)
@@ -234,10 +288,6 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val script: RenderGr
                 val waitStages = MemoryStack.stackMallocInt(1)
                 waitStages.put(0, VK_PIPELINE_STAGE_TRANSFER_BIT)
                 pWaitDstStageMask(waitStages)
-
-                val commandBuffers = MemoryStack.stackMallocPointer(1)
-                commandBuffers.put(0, this@VulkanRenderGraph.commandBuffers[frame])
-                pCommandBuffers(commandBuffers)
 
                 val semaphoresToSignal = MemoryStack.stackLongs(frame.renderFinishedSemaphore)
                 pSignalSemaphores(semaphoresToSignal)

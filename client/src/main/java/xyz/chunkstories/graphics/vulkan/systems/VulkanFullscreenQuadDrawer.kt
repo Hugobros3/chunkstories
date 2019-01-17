@@ -75,6 +75,8 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
                 is ImageInput.ImageSource.RenderBufferReference -> {
                     bindingContext.bindTextureAndSampler(input.name, pass.graph.buffers[source.renderBufferName]?.texture!!, sampler)
                 }
+                is ImageInput.ImageSource.AssetReference -> TODO()
+                is ImageInput.ImageSource.TextureReference -> TODO()
             }
         }
 
