@@ -47,18 +47,20 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
         logger.debug("Creating swapchain using $presentationMode ...")
         stackPush()
 
-        imagesCount = backend.physicalDevice.swapchainDetails.imageCount.first
-
-        if(presentationMode == PresentationMode.IMMEDIATE)
-            imagesCount++
-
-        //TODO test
-        //imagesCount = 3
+        imagesCount = when (presentationMode) {
+            PresentationMode.IMMEDIATE -> 2
+            PresentationMode.MAILBOX -> 3
+            PresentationMode.FIFO -> 2
+            PresentationMode.FIFO_RELAXED -> 2
+        }
 
         if (imagesCount > backend.physicalDevice.swapchainDetails.imageCount.last)
             imagesCount = backend.physicalDevice.swapchainDetails.imageCount.last
+        if (imagesCount < backend.physicalDevice.swapchainDetails.imageCount.first)
+            imagesCount = backend.physicalDevice.swapchainDetails.imageCount.first
         logger.debug("Asking for a swapchain with $imagesCount images")
 
+        // Create the views & framebuffers
         val vkSwapchainCreateInfoKHR = VkSwapchainCreateInfoKHR.callocStack().sType(VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR).apply {
             surface(backend.surface.handle)
             minImageCount(imagesCount)
