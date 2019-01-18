@@ -85,12 +85,9 @@ fun ShaderCompiler.createGLSLStructFromJVMClass(klass: KClass<InterfaceBlock>, b
         val propertyGlslType = jvmTypeToGlslType(propertyType, propertyValue)
 
         // Maintain proper alignment
-        val misalignment = currentOffset % propertyGlslType.alignment
-        if (misalignment != 0) {
-            //println("Current offset $currentOffset is misaligned for base alignment ${structFieldType.alignment} of the data type of ${property.name} (${structFieldType.glslToken})")
+        if (currentOffset % propertyGlslType.alignment != 0) {
             currentOffset = (currentOffset / propertyGlslType.alignment) * propertyGlslType.alignment
             currentOffset += propertyGlslType.alignment
-            //println("corrected to $currentOffset")
         }
 
         val structField = JvmStructField(property.name, currentOffset, propertyGlslType, property)

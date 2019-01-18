@@ -1,6 +1,7 @@
 package xyz.chunkstories.graphics.common.shaders.compiler.preprocessing
 
 import xyz.chunkstories.api.graphics.ShaderStage
+import xyz.chunkstories.graphics.common.shaders.GLSLFragmentOutput
 import xyz.chunkstories.graphics.common.shaders.GLSLResource
 import xyz.chunkstories.graphics.common.shaders.GLSLType
 import xyz.chunkstories.graphics.common.shaders.GLSLVertexInput
@@ -22,4 +23,18 @@ fun analyseVertexShaderInputs(shaderCode: String) : List<GLSLVertexInput> {
     return inputs
 }
 
-//TODO fragment outputs
+fun analyseFragmentShaderOutputs(shaderCode: String) : List<GLSLFragmentOutput> {
+    val inputs = mutableListOf<GLSLFragmentOutput>()
+
+    var i = 0
+    for(line in shaderCode.lines()) {
+        if(line.startsWith("out")) {
+            val glslType = line.split(" ")[1]
+            val name = line.split(" ")[2]
+
+            inputs.add(GLSLFragmentOutput(name, GLSLType.BaseType.get(glslType)!!, i++))
+        }
+    }
+
+    return inputs
+}

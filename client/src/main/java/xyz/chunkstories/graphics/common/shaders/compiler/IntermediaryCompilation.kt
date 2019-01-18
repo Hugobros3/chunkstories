@@ -101,6 +101,7 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
                 }
             }
 
+            //TODO handle other dimensionalities
             resources.add(when(dimensionality) {
                 1 -> GLSLUniformSampler2D(sampledImageName, setSlot, binding, arraySize)
                 else -> throw Exception("Not handled yet")
@@ -109,8 +110,48 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
 
         for(i in 0 until stageResources.uniformBuffers.size().toInt()) {
             val uniformBuffer = stageResources.uniformBuffers[i]
+            //TODO
         }
+
+        //TODO SSBO
     }
 
     return resources
+}
+
+fun ShaderCompiler.addDecorations(intermediarCompilationResults: IntermediaryCompilationResults, glslResources: List<GLSLResource>) {
+    for((stage, compiler) in intermediarCompilationResults.compilers) {
+        val stageResources = compiler.shaderResources
+
+        for (i in 0 until stageResources.sampledImages.size().toInt()) {
+            val spirvResource = stageResources.sampledImages[i]
+            val glslResource = glslResources.find { it.name == spirvResource.name } as GLSLUniformSampler2D
+
+            compiler.setDecoration(spirvResource.id, Decoration.DecorationDescriptorSet, glslResource.descriptorSetSlot.toLong())
+            compiler.setDecoration(spirvResource.id, Decoration.DecorationBinding, glslResource.binding.toLong())
+        }
+
+        //TODO UBOS/SSBOS
+    }
+}
+
+fun ShaderCompiler.toIntermediateGLSL(intermediarCompilationResults: IntermediaryCompilationResults): Map<ShaderStage, String> {
+    return intermediarCompilationResults.compilers.mapValues {(stage, compiler) ->
+        val options = CompilerGLSL.Options()
+
+        when (dialect) {
+            GLSLDialect.OPENGL4 -> {
+                options.version = 400L
+                options.vulkanSemantics = false
+                options.enable420packExtension = false
+            }
+            GLSLDialect.VULKAN -> {
+                options.version = 450L
+                options.vulkanSemantics = true
+            }
+        }
+        compiler.options = options
+
+        compiler.compile()
+    }
 }

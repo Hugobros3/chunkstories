@@ -7,10 +7,10 @@ import xyz.chunkstories.api.graphics.structs.InterfaceBlock
 import xyz.chunkstories.graphics.common.shaders.GLSLDialect
 import xyz.chunkstories.graphics.common.shaders.GLSLProgram
 import xyz.chunkstories.graphics.common.shaders.GLSLType
-import xyz.chunkstories.graphics.common.shaders.compiler.preprocessing.addStructsDeclaration
-import xyz.chunkstories.graphics.common.shaders.compiler.preprocessing.findUsedJvmClasses
-import xyz.chunkstories.graphics.common.shaders.compiler.preprocessing.getGlslStruct
-import xyz.chunkstories.graphics.common.shaders.compiler.preprocessing.processFileIncludes
+import xyz.chunkstories.graphics.common.shaders.compiler.postprocessing.annotateForNonUniformAccess
+import xyz.chunkstories.graphics.common.shaders.compiler.postprocessing.removeVersionString
+import xyz.chunkstories.graphics.common.shaders.compiler.preprocessing.*
+import xyz.chunkstories.graphics.vulkan.shaders.VulkanShaderFactory
 import xyz.chunkstories.util.OSHelper
 import xyz.chunkstories.util.SupportedOS
 import java.io.File
@@ -67,6 +67,8 @@ abstract class ShaderCompiler(val dialect: GLSLDialect) {
 
         var stages = mapOf(ShaderStage.VERTEX to vertexShader, ShaderStage.FRAGMENT to fragmentShader)
 
+        //stages = stages.mapValues { (stage, shaderCode) -> removeVersionString(shaderCode) }
+
         // Process #include statements
         stages = stages.mapValues { (stage, shaderCode) -> processFileIncludes(shaderBaseDir, shaderCode) }
 
@@ -82,13 +84,23 @@ abstract class ShaderCompiler(val dialect: GLSLDialect) {
         //TODO virtual texturing magic code
         //TODO per-instance data magic code
 
-        val intermediaryCompilationResults = buildIntermediaryStructure(stages)
+        val vertexInputs = analyseVertexShaderInputs(stages[ShaderStage.VERTEX]!!)
+        val fragmentOutputs = analyseFragmentShaderOutputs(stages[ShaderStage.FRAGMENT]!!)
 
+        val intermediaryCompilationResults = buildIntermediaryStructure(stages)
         val resources = createShaderResources(intermediaryCompilationResults)
 
         println(resources)
 
-        TODO()
+        addDecorations(intermediaryCompilationResults, resources)
+        stages = toIntermediateGLSL(intermediaryCompilationResults)
+
+        if(this is VulkanShaderFactory && this.backend.enableDivergingUniformSamplerIndexing)
+            stages = stages.mapValues { (stage, shaderCode) -> annotateForNonUniformAccess(shaderCode) }
+
+        println(stages)
+
+        return GLSLProgram(shaderName, dialect, vertexInputs, fragmentOutputs, resources, stages)
     }
 
     fun readShaderFile(path: String): String? {
