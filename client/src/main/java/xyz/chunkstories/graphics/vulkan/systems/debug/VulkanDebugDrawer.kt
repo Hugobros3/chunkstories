@@ -7,7 +7,6 @@ import xyz.chunkstories.client.InternalClientOptions
 import xyz.chunkstories.client.ingame.LocalPlayerImplementation
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
-import xyz.chunkstories.graphics.vulkan.DescriptorPool
 import xyz.chunkstories.graphics.vulkan.Pipeline
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
@@ -27,8 +26,6 @@ class VulkanDebugDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
     val backend: VulkanGraphicsBackend
         get() = pass.backend
 
-    //val guiShaderProgram = backend.shaderFactory.createProgram(backend, "/shaders/cubes/cubes")
-    val descriptorPool = DescriptorPool(backend, pass.program)
     val vertexInputConfiguration = vertexInputConfiguration {
         binding {
             binding(0)
@@ -59,7 +56,9 @@ class VulkanDebugDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
     override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer) {
         val entity = client.player.controlledEntity
         val camera = entity?.traits?.get(TraitControllable::class)?.camera ?: Camera()
-        descriptorPool.configure(frame, camera)
+
+        val bindingContext = backend.descriptorMegapool.getBindingContext(pipeline)
+        bindingContext.bindUBO(camera)
 
         var linesCount = 0
         val buffer = memAlloc(debugBufferSize)
@@ -146,18 +145,20 @@ class VulkanDebugDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         memFree(buffer)
 
         if(linesCount > 0) {
-            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 1, descriptorPool.setsForFrame(frame), null as? IntArray)
+            //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 1, descriptorPool.setsForFrame(frame), null as? IntArray)
             vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
+            bindingContext.preDraw(commandBuffer)
             vkCmdBindVertexBuffers(commandBuffer, 0, stackLongs(vertexBuffers[frame].handle), stackLongs(0))
             vkCmdDraw(commandBuffer, 2 * linesCount, 1, 0, 0)
+        }
+
+        frame.recyclingTasks.add {
+            bindingContext.recycle()
         }
     }
 
     override fun cleanup() {
         vertexBuffers.cleanup()
-
-        descriptorPool.cleanup()
-
         pipeline.cleanup()
     }
 }

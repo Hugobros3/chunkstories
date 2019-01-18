@@ -1,12 +1,10 @@
 package xyz.chunkstories.graphics.vulkan.systems
 
 import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
-import xyz.chunkstories.api.graphics.ImageInput
 import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.api.graphics.systems.drawing.DrawingSystem
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
-import xyz.chunkstories.graphics.vulkan.DescriptorPool
 import xyz.chunkstories.graphics.vulkan.Pipeline
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
@@ -17,7 +15,6 @@ import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
 import xyz.chunkstories.graphics.vulkan.vertexInputConfiguration
 import xyz.chunkstories.world.WorldClientCommon
 import org.lwjgl.system.MemoryStack
-import org.lwjgl.vulkan.VK10
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 

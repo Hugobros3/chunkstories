@@ -5,7 +5,6 @@ import xyz.chunkstories.api.gui.Gui
 import xyz.chunkstories.graphics.common.DummyGuiDrawer
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
-import xyz.chunkstories.graphics.vulkan.DescriptorPool
 import xyz.chunkstories.graphics.vulkan.Pipeline
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
@@ -76,10 +75,7 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
     }
 
     val pipeline = Pipeline(backend, pass, vertexInputConfiguration, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
-
-    val descriptorPool = DescriptorPool(backend, pass.program)
     val sampler = VulkanSampler(backend)
-
     val vertexBuffers: InflightFrameResource<VulkanVertexBuffer>
 
     init {
@@ -87,8 +83,6 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
             VulkanVertexBuffer(backend, guiBufferSize.toLong(), true)
         }
     }
-
-    //val virtualTexturing = VirtualTexturingHelper(backend, pass.program)
 
     //TODO this is hacky af, fix this plz
     val usedContexts = mutableListOf<VirtualTexturing.VirtualTexturingContext>()
@@ -399,8 +393,6 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
 
         pipeline.cleanup()
         //virtualTexturing.cleanup()
-
-        descriptorPool.cleanup()
 
         MemoryUtil.memFree(stagingByteBuffer)
     }

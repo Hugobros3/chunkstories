@@ -4,7 +4,6 @@ import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.api.voxel.VoxelSide
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
-import xyz.chunkstories.graphics.vulkan.DescriptorPool
 import xyz.chunkstories.graphics.vulkan.Pipeline
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
@@ -20,9 +19,6 @@ import org.lwjgl.vulkan.VK10.*
 class VulkanSpinningCubeDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
     val backend: VulkanGraphicsBackend
         get() = pass.backend
-
-    //val guiShaderProgram = backend.shaderFactory.createProgram(backend, "/shaders/cube/cube")
-    val descriptorPool = DescriptorPool(backend, pass.program)
 
      val vertexInputConfiguration = vertexInputConfiguration {
          binding {
@@ -130,18 +126,22 @@ class VulkanSpinningCubeDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
 
         val camera = Camera(cameraPosition, cubePosition, up, fov, modelViewMatrix, projectionMatrix)
 
-        descriptorPool.configure(frame, camera)
-        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 1, descriptorPool.setsForFrame(frame), null as? IntArray)
+        val bindingContext = backend.descriptorMegapool.getBindingContext(pipeline)
 
+        bindingContext.bindUBO(camera)
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
+
+        bindingContext.preDraw(commandBuffer)
         vkCmdBindVertexBuffers(commandBuffer, 0, stackLongs(vertexBuffer.handle), stackLongs(0))
         vkCmdDraw(commandBuffer, 3 * 2 * 6, 1, 0, 0)
 
-    }
+        frame.recyclingTasks.add {
+            bindingContext.recycle()
+        }
+     }
 
     override fun cleanup() {
         vertexBuffer.cleanup()
-        descriptorPool.cleanup()
 
         pipeline.cleanup()
     }
