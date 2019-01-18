@@ -1,14 +1,15 @@
-package xyz.chunkstories.graphics.common.shaderc
+package xyz.chunkstories.graphics.common.shaders
 
 import graphics.scenery.spirvcrossj.*
+import org.lwjgl.opengl.GL20.GL_SAMPLER_2D
+import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.content.Content
 import xyz.chunkstories.api.graphics.ShaderStage
 import xyz.chunkstories.api.graphics.structs.InterfaceBlock
 import xyz.chunkstories.api.graphics.structs.UniformUpdateFrequency
 import xyz.chunkstories.api.graphics.structs.UpdateFrequency
+import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompiler
 import xyz.chunkstories.graphics.vulkan.shaders.VulkanShaderFactory
-import org.lwjgl.opengl.GL20.GL_SAMPLER_2D
-import org.slf4j.LoggerFactory
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.reflect.KClass
@@ -42,14 +43,14 @@ object SpirvCrossHelper {
         }
 
     //TODO actually nuke this and translate glsl manually, it'll be less painfull than dealing with this mess
-    fun translateGLSLDialect(factory: ShaderFactory, dialect: ShaderFactory.GLSLDialect, shaderCodePerStage: Map<ShaderStage, String>, content: Content?, shadersAssetBaseDir : String?): ShaderFactory.GLSLProgram {
+    /*fun translateGLSLDialect(factory: ShaderCompiler, dialect: GLSLDialect, shaderCodePerStage: Map<ShaderStage, String>, content: Content?, shadersAssetBaseDir: String?): GLSLProgram {
         libspirvcrossj.initializeProcess()
         val ressources = libspirvcrossj.getDefaultTBuiltInResource()
 
         val program = TProgram()
 
         /** Vertex inputs that need a binding and a location decoration */
-        val vertexInputsToProcess = mutableListOf<PreprocessedShaderStage.VertexInputDeclaration>()
+        val vertexInputsToProcess = mutableListOf<VertexInputDeclaration>()
 
         /** ubos that need a set/location decoration */
         val ubosToProcess = mutableListOf<Pair<String, InterfaceBlockGLSLMapping>>()
@@ -78,7 +79,7 @@ object SpirvCrossHelper {
             messages = messages or EShMessages.EShMsgSpvRules
 
             val parse = stage.tShader.parse(ressources, 450, false, messages)
-            if (parse) logger.debug("parse1 OK") else {
+            if (!parse) {
                 logger.warn(stage.tShader.infoLog)
                 logger.warn(stage.tShader.infoDebugLog)
             }
@@ -87,32 +88,34 @@ object SpirvCrossHelper {
         }
 
         val link = program.link(EShMessages.EShMsgDefault)
-        if (link) logger.debug("link OK") else logger.warn("link failed")
+        if (!link) logger.warn("link failed")
 
         val ioMap = program.mapIO()
-        if (ioMap) logger.debug("io mapping OK") else logger.warn("io map failed")
+        if (!ioMap) logger.warn("io map failed")
 
         if (!link || !ioMap) {
             logger.warn(program.infoLog)
             logger.warn(program.infoDebugLog)
 
-            throw Exception("Failed to link/map program !")
+            throw Exception("Failed to link or map stages of the shader program")
         }
 
-        val bucketsCount  = when (dialect) {
-            ShaderFactory.GLSLDialect.OPENGL4 -> 1 // ONE bucket, because descriptor sets aren't a thing in OpenGL
+        val bucketsCount = when (dialect) {
+            GLSLDialect.OPENGL4 -> 1 // ONE bucket, because descriptor sets aren't a thing in OpenGL
 
             /**
              * Bucket0: Virtual texturing descriptors
              * Bucket1: Static texturing descriptors ( declared samplers in the shader, you feed them manually )
              * Bucket2 .. BucketN+2: Descriptors for UBOs with frequency N
              */
-            ShaderFactory.GLSLDialect.VULKAN -> UniformUpdateFrequency.values().size + 2
+            GLSLDialect.VULKAN -> UniformUpdateFrequency.values().size + 2
         }
 
-        val resourcesBuckets = Array<MutableList<ShaderFactory.GLSLUniformResource>>(bucketsCount) { mutableListOf() }
+        val resourcesBuckets = Array<MutableList<GLSLResource>>(bucketsCount) { mutableListOf() }
 
         program.buildReflection()
+
+        libspirvcrossj.finalizeProcess()
 
         // TODO this is a hack because I can't use reflection to get info on the sampler itself
         val uniformTypeMap = mutableMapOf<String, Pair<Int, Int>>()
@@ -122,7 +125,7 @@ object SpirvCrossHelper {
 
         var vertexInputLocation = 0
         val vertexInputs = vertexInputsToProcess.map { input ->
-            ShaderFactory.GLSLVertexAttribute(input.name, input.type, vertexInputLocation++, null)
+            GLSLVertexInput(input.name, input.type, vertexInputLocation++)
         }
 
         fun ProgramStage.analyzeAndDecorateStageResources(): CompilerGLSL {
@@ -136,12 +139,12 @@ object SpirvCrossHelper {
             val options = CompilerGLSL.Options()
 
             when (dialect) {
-                ShaderFactory.GLSLDialect.OPENGL4 -> {
+                ShaderCompiler.GLSLDialect.OPENGL4 -> {
                     options.version = 400L
                     options.vulkanSemantics = false
                     options.enable420packExtension = false
                 }
-                ShaderFactory.GLSLDialect.VULKAN -> {
+                ShaderCompiler.GLSLDialect.VULKAN -> {
                     options.version = 450L
                     options.vulkanSemantics = true
                 }
@@ -158,6 +161,12 @@ object SpirvCrossHelper {
                 var uniformBlockName = uniformBufferBlock.name
 
                 /** Go over the uniform blocks and assign those a set & id */
+
+                /** Go over the uniform blocks and assign those a set & id */
+
+                /** Go over the uniform blocks and assign those a set & id */
+
+                /** Go over the uniform blocks and assign those a set & id */
                 if (uniformBlockName.startsWith("_inlined")) {
 
                     uniformBlockName = uniformBlockName.substring(uniformBlockName.indexOf('_') + 1)
@@ -171,14 +180,14 @@ object SpirvCrossHelper {
                     val updateFrequency = inlinedUBO.second.klass.updateFrequency()
 
                     val descriptorSet = when (dialect) {
-                        ShaderFactory.GLSLDialect.OPENGL4 -> 0
-                        ShaderFactory.GLSLDialect.VULKAN -> updateFrequency.ordinal + 2
+                        ShaderCompiler.GLSLDialect.OPENGL4 -> 0
+                        ShaderCompiler.GLSLDialect.VULKAN -> updateFrequency.ordinal + 2
                     }
 
-                    var uboResource = resourcesBuckets[descriptorSet].find { it is ShaderFactory.GLSLUniformBlock && it.name == uniformBlockName && it.mapper == inlinedUBO.second }
-                    if(uboResource == null) {
+                    var uboResource = resourcesBuckets[descriptorSet].find { it is ShaderCompiler.GLSLUniformBlock && it.name == uniformBlockName && it.mapper == inlinedUBO.second }
+                    if (uboResource == null) {
                         // Create and add the new resource to the corresponding bucket
-                        uboResource = ShaderFactory.GLSLUniformBlock(uniformBlockName, descriptorSet, resourcesBuckets[descriptorSet].size, inlinedUBO.second)
+                        uboResource = ShaderCompiler.GLSLUniformBlock(uniformBlockName, descriptorSet, resourcesBuckets[descriptorSet].size, inlinedUBO.second)
                         resourcesBuckets[descriptorSet].add(uboResource)
                     }
 
@@ -212,12 +221,12 @@ object SpirvCrossHelper {
                 val samplerArraySize = hack.second
 
                 // Set 0 is reserved for virtual textures, Set 1 is for static textures (accross all the draw)
-                val descriptorSet = if(samplerName == "virtualTextures") 0 else 1
+                val descriptorSet = if (samplerName == "virtualTextures") 0 else 1
                 val binding = resourcesBuckets[descriptorSet].size
 
                 resourcesBuckets[descriptorSet].add(when (samplerType) {
-                    GL_SAMPLER_2D -> ShaderFactory.GLSLUniformSampler2D(samplerName, descriptorSet, binding, samplerArraySize)
-                    else -> ShaderFactory.GLSLUnusedUniform(samplerName, descriptorSet, binding)
+                    GL_SAMPLER_2D -> ShaderCompiler.GLSLUniformSampler2D(samplerName, descriptorSet, binding, samplerArraySize)
+                    else -> throw Exception("Unmapped/unhandled sampler type: $samplerType")//ShaderFactory.GLSLUnusedUniform(samplerName, descriptorSet, binding)
                 })
 
                 compiler.setDecoration(sampler.id, Decoration.DecorationDescriptorSet, descriptorSet.toLong())
@@ -256,8 +265,6 @@ object SpirvCrossHelper {
             return compiler
         }
 
-        libspirvcrossj.finalizeProcess()
-
         val partiallyDecoratedShaderStages = stages.map { it.analyzeAndDecorateStageResources() }
         val resources = resourcesBuckets.toList().merge().toMutableList()
 
@@ -281,8 +288,8 @@ object SpirvCrossHelper {
             //TODO OpenGL 4
 
             else -> partiallyDecoratedShaderStages.forEach {
-                it.addHeaderLine("// I guessed because this isn't actually linked to any concrete factory")
-                it.addHeaderLine("layout(set=0, location=0) uniform sampler2D virtualTextures[32];")
+                //it.addHeaderLine("// I guessed because this isn't actually linked to any concrete factory")
+                //it.addHeaderLine("layout(set=0, location=0) uniform sampler2D virtualTextures[32];")
 
                 //TODO when that api works maybe ? it.shaderResources.sampledImages.pushBack(CombinedImageSampler())
             }
@@ -291,28 +298,29 @@ object SpirvCrossHelper {
         val sources = mapOf(*(partiallyDecoratedShaderStages.mapIndexed { index, compiler ->
             var compiledSource = compiler.compile()
 
-            if (dialect == ShaderFactory.GLSLDialect.VULKAN ) {
-                val backend = (factory as VulkanShaderFactory).backend
-                if (backend.enableDivergingUniformSamplerIndexing && backend.physicalDevice.canDoNonUniformSamplerIndexing) {
-                    // Like, I could do this stuff cleanly using reflection and put the correct decoration in the spirvcode...
-                    // But this works and stops me from wasting my time fighting the spirvcross swig nonsense
-                    compiledSource = compiledSource.replace(Regex("virtualTextures\\[(([a-z]|[A-Z]).*)\\]")) {
-                        "virtualTextures[nonuniformEXT(${it.groupValues[1]})]"
-                    }
+            if (dialect == ShaderCompiler.GLSLDialect.VULKAN) {
+                val backend = (factory as? VulkanShaderFactory)?.backend
+                if (backend != null) {
+                    if (backend.enableDivergingUniformSamplerIndexing && backend.physicalDevice.canDoNonUniformSamplerIndexing) {
 
-                    //println(compiledSource)
+                        // Like, I could do this stuff cleanly using reflection and put the correct decoration in the spirvcode...
+                        // But this works and stops me from wasting my time fighting the spirvcross swig nonsense
+                        compiledSource = compiledSource.replace(Regex("virtualTextures\\[(([a-z]|[A-Z]).*)\\]")) {
+                            "virtualTextures[nonuniformEXT(${it.groupValues[1]})]"
+                        }
+                    }
+                } else {
+                    logger.warn("Compiling to Vulkan semantics but this isn't a VulkanShaderFactory; Not annotating virtual texturing calls !")
                 }
             }
 
             Pair(stages[index].stage, compiledSource)
         }).toTypedArray())
 
-        //println(sources[ShaderStage.FRAGMENT])
+        return GLSLProgram(sources, vertexInputs, resources)
+    }*/
 
-        return ShaderFactory.GLSLProgram(sources, vertexInputs, resources)
-    }
-
-    fun generateSpirV(transpiledGLSL: ShaderFactory.GLSLProgram): GeneratedSpirV {
+    fun generateSpirV(transpiledGLSL: GLSLProgram): GeneratedSpirV {
         libspirvcrossj.initializeProcess()
         val ressources = libspirvcrossj.getDefaultTBuiltInResource()
 
@@ -332,7 +340,7 @@ object SpirvCrossHelper {
             messages = messages or EShMessages.EShMsgSpvRules
 
             val parse = stage.tShader.parse(ressources, 450, false, messages)
-            if (parse) logger.debug("parse OK") else {
+            if (!parse) {
                 logger.warn(stage.tShader.infoLog)
                 logger.warn(stage.tShader.infoDebugLog)
             }
@@ -341,10 +349,7 @@ object SpirvCrossHelper {
         }
 
         val link = program.link(EShMessages.EShMsgDefault)
-        if (link) logger.debug("link OK") else logger.warn("link failed")
-
         val ioMap = program.mapIO()
-        if (ioMap) logger.debug("io mapping OK") else logger.warn("io map failed")
 
         if (!link || !ioMap) {
             logger.warn(program.infoLog)
@@ -365,12 +370,10 @@ object SpirvCrossHelper {
         libspirvcrossj.finalizeProcess()
 
         return GeneratedSpirV(transpiledGLSL, stages.associateBy({ it.stage }, { it.generateSpirV() }))
-
-        //return GeneratedSpirV(transpiledGLSL, mapOf(*stages.map { Pair(it.stage, it.generateSpirV()) }.toTypedArray()))
     }
 
     /** the generated spirv the engine can ingest for that shader program */
-    data class GeneratedSpirV(val source: ShaderFactory.GLSLProgram, val stages: Map<ShaderStage, ByteBuffer>) {
+    data class GeneratedSpirV(val source: GLSLProgram, val stages: Map<ShaderStage, ByteBuffer>) {
 
     }
 }
@@ -404,12 +407,14 @@ private fun IntVec.byteBuffer(): ByteBuffer {
     return bytes
 }
 
+//TODO move
 private fun ByteBuffer.bytes(): ByteArray {
     val bytes2 = ByteArray(this.limit())
     this.get(bytes2)
     return bytes2
 }
 
+//TODO move
 public fun Int.hex(): String {
     var lol = ""
     var t = this
@@ -423,4 +428,5 @@ public fun Int.hex(): String {
     return lol
 }
 
+//TODO move
 val hexs = "0123456789ABCDEF".toCharArray()

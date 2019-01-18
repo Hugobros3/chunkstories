@@ -1,13 +1,12 @@
 package xyz.chunkstories.graphics.vulkan.resources
 
 import xyz.chunkstories.api.graphics.structs.InterfaceBlock
-import xyz.chunkstories.graphics.common.shaderc.ShaderFactory
+import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompiler
 import xyz.chunkstories.graphics.vulkan.Pipeline
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanUniformBuffer
 import xyz.chunkstories.graphics.vulkan.shaders.DescriptorSlotLayout
-import xyz.chunkstories.graphics.vulkan.swapchain.Frame
 import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
 import xyz.chunkstories.graphics.vulkan.textures.VulkanTexture2D
 import xyz.chunkstories.graphics.vulkan.util.VkDescriptorPool
@@ -18,6 +17,8 @@ import org.lwjgl.system.MemoryUtil.memAllocLong
 import org.lwjgl.system.MemoryUtil.memFree
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
+import xyz.chunkstories.graphics.common.shaders.GLSLUniformBlock
+import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampler2D
 import java.nio.IntBuffer
 import java.util.concurrent.ConcurrentLinkedDeque
 
@@ -139,21 +140,23 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
         }
 
         fun bindUBO(interfaceBlock: InterfaceBlock) {
-            val uboBindPoint = pipeline.program.glslProgram.resources.filterIsInstance<ShaderFactory.GLSLUniformBlock>().find {
-                it.mapper.klass == interfaceBlock.javaClass.kotlin //TODO ::class ?
+
+            //TODO path w/ name instead of IB class
+            val uboBindPoint = pipeline.program.glslProgram.resources.filterIsInstance<GLSLUniformBlock>().find {
+                it.struct.kClass == interfaceBlock.javaClass.kotlin //TODO ::class ?
             } ?: throw Exception("I can't find a program resource matching that interface block :s")
 
             val set = getSet(uboBindPoint.descriptorSetSlot)
 
             //TODO UBO MEGAPOOL
-            val buffer = VulkanUniformBuffer(backend, uboBindPoint.mapper)
+            val buffer = VulkanUniformBuffer(backend, uboBindPoint.struct)
             buffer.upload(interfaceBlock)
             backend.updateDescriptorSet(set, uboBindPoint.binding, buffer)
             tempBuffers.add(buffer)
         }
 
         fun bindTextureAndSampler(name: String, texture: VulkanTexture2D, sampler: VulkanSampler) {
-            val resource = pipeline.program.glslProgram.resources.filterIsInstance<ShaderFactory.GLSLUniformSampler2D>().find {
+            val resource = pipeline.program.glslProgram.resources.filterIsInstance<GLSLUniformSampler2D>().find {
                 it.name == name
             } ?: throw Exception("I can't find a program sampler2D resource matching that name '$name' :s")
 

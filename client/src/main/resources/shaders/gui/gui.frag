@@ -1,6 +1,7 @@
 #version 450
 
 layout(set=0, location=0) uniform sampler2D virtualTextures[1024];
+uniform sampler2DArray crotte;
  
 in vec2 texCoord;
 in vec4 color;

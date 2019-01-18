@@ -1,16 +1,15 @@
-package xyz.chunkstories.graphics.common.shaderc
+/*package xyz.chunkstories.graphics.common.shaders
 
-import xyz.chunkstories.api.GameContext
-import xyz.chunkstories.api.content.Asset
 import xyz.chunkstories.api.content.Content
 import xyz.chunkstories.api.graphics.ShaderStage
 import xyz.chunkstories.api.graphics.structs.InterfaceBlock
+import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompiler
 import kotlin.reflect.KClass
 
 /** Backend-agnostic preprocessing of GLSL shader stage snippets, crunches the custom GLSL flavour used by the game into a common Vulkan/OpenGL GLSL
  * subset, and also extracts a bunch of usefull metadata
  */
-class PreprocessedShaderStage(private val factory: ShaderFactory, private val originalShaderCode: String, private val stage: ShaderStage, val content: Content?, val shadersAssetBaseDir : String?) {
+class PreprocessedShaderStage(private val factory: ShaderCompiler, private val originalShaderCode: String, private val stage: ShaderStage, val content: Content? = null, val shadersAssetBaseDir : String? = null) {
     /** interfaceblock structs yet to include (declared via #include struct but not reached yet) */
     internal val todo = mutableListOf<KClass<InterfaceBlock>>()
     //internal val done = mutableListOf<KClass<InterfaceBlock>>()
@@ -187,7 +186,7 @@ class PreprocessedShaderStage(private val factory: ShaderFactory, private val or
                     continue
 
                 val interfaceBlock = factory.structures.values.find { it.glslToken == typeName }
-                val baseType = GLSLBaseType.get(typeName)
+                val baseType = GLSLType.get(typeName)
 
                 when {
                     interfaceBlock != null -> {
@@ -200,7 +199,7 @@ class PreprocessedShaderStage(private val factory: ShaderFactory, private val or
 
                     baseType != null -> {
                         //val instanced = previousLine == "#instanced"
-                        inputs.add(VertexInputDeclaration(inputName, baseType, null))
+                        inputs.add(VertexInputDeclaration(inputName, baseType))
                     }
 
                     else -> throw Exception("What do I do with input type $typeName ? ")
@@ -212,15 +211,11 @@ class PreprocessedShaderStage(private val factory: ShaderFactory, private val or
 
             if (translatedLine != null)
                 processed += translatedLine + "\n"
-
-            //previousLine = line
         }
-
-        println(inputs)
 
         this.vertexInputs = inputs
         this.transformedCode = processed
     }
 
-    data class VertexInputDeclaration(val name: String, val type: GLSLBaseType, val interfaceBlock: InterfaceBlockGLSLMapping?)
-}
+    data class VertexInputDeclaration(val name: String, val type: GLSLType)
+}*/

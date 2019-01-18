@@ -5,7 +5,6 @@ import xyz.chunkstories.api.graphics.rendergraph.DepthTestingConfiguration.Depth
 import xyz.chunkstories.api.graphics.rendergraph.PassOutput
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
-import xyz.chunkstories.graphics.common.shaderc.ShaderFactory
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.vulkan.util.VkPipeline
 import xyz.chunkstories.graphics.vulkan.util.VkPipelineLayout
@@ -14,13 +13,14 @@ import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.graphics.common.shaders.GLSLProgram
 
 fun vertexInputConfiguration(declaration: VertexInputConfigurationContext.() -> Unit) = VertexInputConfiguration(declaration)
 
 data class VertexInputConfiguration(val declaration: VertexInputConfigurationContext.() -> Unit)
 
 interface VertexInputConfigurationContext {
-    val program: ShaderFactory.GLSLProgram
+    val program: GLSLProgram
 
     fun binding(decl: VkVertexInputBindingDescription.() -> Unit)
 
@@ -57,7 +57,7 @@ class Pipeline(val backend: VulkanGraphicsBackend, val pass: VulkanPass, val ver
             val attributes = mutableListOf<VkVertexInputAttributeDescription>()
 
             val localConfigCtx = object : VertexInputConfigurationContext {
-                override val program: ShaderFactory.GLSLProgram
+                override val program: GLSLProgram
                     get() = this@Pipeline.program.glslProgram
 
                 override fun binding(decl: VkVertexInputBindingDescription.() -> Unit) {

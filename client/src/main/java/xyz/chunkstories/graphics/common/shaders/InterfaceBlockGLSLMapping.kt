@@ -1,14 +1,15 @@
-package xyz.chunkstories.graphics.common.shaderc
+/*package xyz.chunkstories.graphics.common.shaders
 
 import xyz.chunkstories.api.graphics.structs.IgnoreGLSL
 import xyz.chunkstories.api.graphics.structs.InterfaceBlock
+import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompiler
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.superclasses
 import kotlin.reflect.jvm.javaField
 
-class InterfaceBlockGLSLMapping(val klass: KClass<InterfaceBlock>, factory: ShaderFactory, shaderMetadata: PreprocessedShaderStage) : InterfaceBlockFieldType(klass) {
+class InterfaceBlockGLSLMapping(val klass: KClass<InterfaceBlock>, factory: ShaderCompiler, shaderMetadata: PreprocessedShaderStage) : InterfaceBlockFieldType(klass) {
     private val interfaceBlockClass = klass.findOutActualInterfaceBlockClass()
     internal val sampleInstance: InterfaceBlock
 
@@ -52,7 +53,7 @@ class InterfaceBlockGLSLMapping(val klass: KClass<InterfaceBlock>, factory: Shad
             property.javaField!!.isAccessible = true
 
             fun translateFieldType(type: KClass<out Any>, value: Any?): InterfaceBlockFieldType {
-                val staticType = GLSLBaseType.get(type)
+                val staticType = GLSLType.get(type)
 
                 return when {
                     // Base GLSL types
@@ -70,12 +71,12 @@ class InterfaceBlockGLSLMapping(val klass: KClass<InterfaceBlock>, factory: Shad
                     }
                     value is IntArray -> {
                         if (value.size > 0) {
-                            InterfaceBlockArrayTypeType(type as KClass<Array<*>>, value.size, GLSLBaseType.get(Int::class)?.fieldType!!)
+                            InterfaceBlockArrayTypeType(type as KClass<Array<*>>, value.size, GLSLType.get(Int::class)?.fieldType!!)
                         } else throw Exception("Who uses zero sized arrays ???")
                     }
                     value is FloatArray -> {
                         if (value.size > 0) {
-                            InterfaceBlockArrayTypeType(type as KClass<Array<*>>, value.size, GLSLBaseType.get(Float::class)?.fieldType!!)
+                            InterfaceBlockArrayTypeType(type as KClass<Array<*>>, value.size, GLSLType.get(Float::class)?.fieldType!!)
                         } else throw Exception("Who uses zero sized arrays ???")
                     }
 
@@ -199,3 +200,4 @@ private class InterfaceBlockArrayTypeType(kClass: KClass<Array<*>>, val arraySiz
 
 class InterfaceBlockBaseFieldType(kClass: KClass<*>, override val glslToken: String, override val alignment: Int, override val size: Int) : InterfaceBlockFieldType(kClass)
 
+*/

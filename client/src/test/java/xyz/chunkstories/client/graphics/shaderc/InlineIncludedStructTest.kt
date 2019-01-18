@@ -1,8 +1,8 @@
-package xyz.chunkstories.client
-
+package xyz.chunkstories.client.graphics.shaderc
+/*
 import xyz.chunkstories.api.graphics.ShaderStage
-import xyz.chunkstories.graphics.common.shaderc.PreprocessedShaderStage
-import xyz.chunkstories.graphics.common.shaderc.ShaderFactory
+import xyz.chunkstories.graphics.common.shaders.PreprocessedShaderStage
+import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompiler
 import org.junit.Test
 
 class InlineIncludedStructTest {
@@ -24,9 +24,9 @@ class InlineIncludedStructTest {
             }
         """.trimIndent()
 
-        val factory = ShaderFactory(this.javaClass.classLoader)
+        val factory = ShaderCompiler(this.javaClass.classLoader)
         val meta = PreprocessedShaderStage(factory, shaderCode, ShaderStage.VERTEX)
 
         println("Processed GLSL :\n${meta.transformedCode}")
     }
-}
+}*/
