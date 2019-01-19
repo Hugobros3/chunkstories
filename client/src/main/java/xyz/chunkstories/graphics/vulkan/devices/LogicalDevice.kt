@@ -85,7 +85,7 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
         var requestedExtensions = backend.requiredDeviceExtensions.toSet()
         //requestedExtensions += "VK_KHR_get_memory_requirements2"
 
-        if (backend.enableDivergingUniformSamplerIndexing)
+        if (backend.physicalDevice.canDoNonUniformSamplerIndexing)
             requestedExtensions = setOf("VK_EXT_descriptor_indexing", "VK_KHR_maintenance3").union(requestedExtensions)
 
         val pRequiredExtensions = stackMallocPointer(requestedExtensions.size)
@@ -98,7 +98,7 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
             ppEnabledLayerNames(requestedLayers)
         }
 
-        if(backend.enableDivergingUniformSamplerIndexing && physicalDevice.canDoNonUniformSamplerIndexing) {
+        if(physicalDevice.canDoNonUniformSamplerIndexing) {
             val descriptorIndexingExtCreateInfo = VkPhysicalDeviceDescriptorIndexingFeaturesEXT.callocStack().sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT).apply {
                 shaderSampledImageArrayNonUniformIndexing(true)
             }

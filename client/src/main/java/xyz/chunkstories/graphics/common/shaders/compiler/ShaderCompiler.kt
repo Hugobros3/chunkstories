@@ -64,8 +64,8 @@ abstract class ShaderCompiler(val dialect: GLSLDialect) {
         val intermediaryCompilationResults = buildIntermediaryStructure(stages)
         val resources = createShaderResources(intermediaryCompilationResults)
 
-        println(vertexInputs)
-        println(resources)
+        //println(vertexInputs)
+        //println(resources)
 
         addDecorations(intermediaryCompilationResults, resources)
         stages = toIntermediateGLSL(intermediaryCompilationResults)
@@ -73,7 +73,7 @@ abstract class ShaderCompiler(val dialect: GLSLDialect) {
         if(this is VulkanShaderFactory && this.backend.enableDivergingUniformSamplerIndexing)
             stages = stages.mapValues { (stage, shaderCode) -> annotateForNonUniformAccess(shaderCode) }
 
-        println(stages)
+        //println(stages)
 
         return GLSLProgram(shaderName, dialect, vertexInputs, fragmentOutputs, resources, stages)
     }
