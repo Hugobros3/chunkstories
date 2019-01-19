@@ -10,6 +10,9 @@ fun ShaderCompiler.processFileIncludes(shaderBaseDir: String, shaderCode: String
         line.startsWith("#include") -> line.split(' ')[1].let { fileToInclude ->
             var includePath = fileToInclude
 
+            if(includePath == "struct")
+                return@let line
+
             //TODO this bit of code is duplicated and there is an util function for that
             var resolvedDir = shaderBaseDir
             while (includePath.startsWith("../")) {
@@ -30,7 +33,7 @@ fun ShaderCompiler.findUsedJvmClasses(shaderCode: String) : List<KClass<Interfac
     val includedStructsList = mutableListOf<KClass<InterfaceBlock>>()
 
     for(line in shaderCode.lines()) {
-        if(line.startsWith("#using struct")) {
+        if(line.startsWith("#include struct")) {
             val className = line.split(" ").getOrNull(2) ?: throw Exception("Missing class name for #include struct statement")
 
             val classByThatName = (Class.forName(className, true, classLoader) ?: throw Exception("Couldn't find the class $className"))
@@ -72,7 +75,7 @@ fun ShaderCompiler.addStructsDeclaration(shaderCode: String, list: List<GLSLType
         usedStruct.extractDeps()
 
     return shaderCode.lines().mapNotNull {
-        if(it.startsWith("#using struct")){
+        if(it.startsWith("#include struct")){
             val structName = it.split(" ")[2]
             val struct = list.find { it.kClass.qualifiedName == structName }!!
             struct.extractDeps()
@@ -91,7 +94,7 @@ fun ShaderCompiler.inlineUniformStructs(shaderCode: String, structs: List<GLSLTy
         val uniformName = line.split(' ').getOrNull(2)?.trimEnd(';')
 
         structs.find { it.glslToken == structName }?.run {
-            "layout(std140) uniform _inlined${structName}_$uniformName {\n" + this.innerGLSLCode() + "} $uniformName;\n"
+            "layout(std140) uniform inlined_${structName}_$uniformName {\n" + this.innerGLSLCode() + "} $uniformName;\n"
         } ?: line
     } else
         line

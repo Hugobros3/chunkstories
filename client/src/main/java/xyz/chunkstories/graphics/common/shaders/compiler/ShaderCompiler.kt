@@ -55,7 +55,6 @@ abstract class ShaderCompiler(val dialect: GLSLDialect) {
         stages = stages.mapValues { (stage, shaderCode) -> addStructsDeclaration(shaderCode, jvmStructsUsed[stage]!! ) }
 
         stages = stages.mapValues { (stage, shaderCode) -> inlineUniformStructs(shaderCode, jvmStructsUsed[stage]!! ) }
-        println(stages)
         //TODO virtual texturing magic code
         //TODO per-instance data magic code
 
@@ -65,6 +64,7 @@ abstract class ShaderCompiler(val dialect: GLSLDialect) {
         val intermediaryCompilationResults = buildIntermediaryStructure(stages)
         val resources = createShaderResources(intermediaryCompilationResults)
 
+        println(vertexInputs)
         println(resources)
 
         addDecorations(intermediaryCompilationResults, resources)

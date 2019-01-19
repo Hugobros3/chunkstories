@@ -1,5 +1,4 @@
 #version 450
-#enable virtualTexturing
 
 layout(set=0, location=0) uniform sampler2D virtualTextures[1024];
  

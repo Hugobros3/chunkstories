@@ -7,31 +7,36 @@ import kotlin.reflect.KProperty
 import kotlin.reflect.full.isSubclassOf
 
 sealed class GLSLType(val glslToken: String, val alignment: Int, val size: Int) {
-    sealed class BaseType(glslToken: String, val classes: KClass<*>, alignment: Int, size: Int) : GLSLType(glslToken, alignment, size) {
+    sealed class BaseType(glslToken: String, val classes: KClass<*>, alignment: Int, size: Int, val dontMapFromGLSL: Boolean) : GLSLType(glslToken, alignment, size) {
         /** Integer map easily */
-        object GlslInt : BaseType("int", Int::class, 4, 4)
+        object GlslInt : BaseType("int", Int::class, 4, 4, false)
 
-        object GlslIVec2 : BaseType("ivec2", Vector2ic::class, 8, 8)
-        object GlslIVec3 : BaseType("ivec3", Vector3ic::class, 16, 8)
-        object GlslIVec4 : BaseType("ivec4", Vector4ic::class, 16, 8)
+        object GlslIVec2 : BaseType("ivec2", Vector2ic::class, 8, 8, false)
+        object GlslIVec3 : BaseType("ivec3", Vector3ic::class, 16, 8, false)
+        object GlslIVec4 : BaseType("ivec4", Vector4ic::class, 16, 8, false)
 
         /** The JVM doesn't really have unsigned integers, so we map GLSL uints to JVM ints */
-        object GlslUInt : BaseType("uint", Int::class, 4, 4)
+        object GlslUInt : BaseType("uint", Int::class, 4, 4, false)
 
-        object GlslUVec2 : BaseType("uvec2", Vector2ic::class, 8, 8)
-        object GlslUVec3 : BaseType("uvec3", Vector3ic::class, 16, 8)
-        object GlslUVec4 : BaseType("uvec4", Vector4ic::class, 16, 8)
+        object GlslUVec2 : BaseType("uvec2", Vector2ic::class, 8, 8, false)
+        object GlslUVec3 : BaseType("uvec3", Vector3ic::class, 16, 8, false)
+        object GlslUVec4 : BaseType("uvec4", Vector4ic::class, 16, 8, false)
 
         /** Java longs map to GLSL ints */
-        object GlslLong : BaseType("int", Long::class, 4, 4)
+        object GlslLong : BaseType("int", Long::class, 4, 4, true)
 
-        object GlslFloat : BaseType("float", Float::class, 4, 4)
-        object GlslVec2 : BaseType("vec2", Vector2fc::class, 8, 8)
-        object GlslVec3 : BaseType("vec3", Vector3fc::class, 16, 8)
-        object GlslVec4 : BaseType("vec4", Vector4fc::class, 16, 8)
+        object GlslFloat : BaseType("float", Float::class, 4, 4, false)
+        object GlslVec2 : BaseType("vec2", Vector2fc::class, 8, 8, false)
+        object GlslVec3 : BaseType("vec3", Vector3fc::class, 16, 8, false)
+        object GlslVec4 : BaseType("vec4", Vector4fc::class, 16, 8, false)
 
-        object GlslMat3 : BaseType("mat3", Matrix3fc::class, 16, 36)
-        object GlslMat4 : BaseType("mat4", Matrix4fc::class, 16, 64)
+        object GlslDouble: BaseType("float", Double::class, 4, 4, true)
+        object GlslVec2d : BaseType("vec2", Vector2dc::class, 8, 8, true)
+        object GlslVec3d : BaseType("vec3", Vector3dc::class, 16, 8, true)
+        object GlslVec4d : BaseType("vec4", Vector4dc::class, 16, 8, true)
+
+        object GlslMat3 : BaseType("mat3", Matrix3fc::class, 16, 36, false)
+        object GlslMat4 : BaseType("mat4", Matrix4fc::class, 16, 64, false)
 
         companion object {
             val list: List<GLSLType.BaseType> = GLSLType.BaseType::class.nestedClasses.mapNotNull {
@@ -40,7 +45,7 @@ sealed class GLSLType(val glslToken: String, val alignment: Int, val size: Int) 
 
             //TODO find a way to ensure we'll never map Int::class to uint by accident
             fun get(kClass: KClass<*>): GLSLType? = list.find { kClass.isSubclassOf(it.classes) }
-            fun get(glslToken: String) = list.find { it.glslToken == glslToken }
+            fun get(glslToken: String) = list.find { !it.dontMapFromGLSL && it.glslToken == glslToken }
         }
     }
 

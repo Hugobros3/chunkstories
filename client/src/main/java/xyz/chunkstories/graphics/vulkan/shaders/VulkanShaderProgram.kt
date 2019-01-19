@@ -7,6 +7,7 @@ import xyz.chunkstories.graphics.vulkan.util.VkDescriptorSetLayout
 import xyz.chunkstories.graphics.vulkan.util.ensureIs
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10
+import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkDescriptorSetLayoutBinding
 import org.lwjgl.vulkan.VkDescriptorSetLayoutCreateInfo
 import xyz.chunkstories.graphics.common.shaders.*
@@ -34,8 +35,8 @@ data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsB
                 .filter { it.descriptorSetSlot == slot } // Filter only those who match this descriptor set slot
                 .mapNotNull { resource ->
                     val descriptorType = when (resource) {
-                        is GLSLUniformBlock -> VK10.VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
-                        is GLSLUniformSampler2D -> VK10.VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+                        is GLSLUniformBlock -> VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+                        is GLSLUniformSampler2D -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
                         is GLSLUnusedUniform -> return@mapNotNull null
                         else -> throw Exception("Missing mapping from GLSLResource type to Vulkan descriptor type !")
                     }
@@ -59,6 +60,8 @@ data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsB
                 .mapNotNull { resource ->
                     // And depending on their type we'll make them correspond to the relevant Vulkan objects
 
+                    println("FUUU $slot $resource")
+
                     if (resource is GLSLUnusedUniform)
                         return@mapNotNull null
 
@@ -66,8 +69,8 @@ data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsB
                         binding(resource.binding)
 
                         descriptorType(when (resource) {
-                            is GLSLUniformSampler2D -> VK10.VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
-                            is GLSLUniformBlock -> VK10.VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+                            is GLSLUniformSampler2D -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+                            is GLSLUniformBlock -> VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
                             else -> throw Exception("Unmappped GLSL Uniform resource type")
                         })
 
@@ -89,13 +92,13 @@ data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsB
         } else null
         pLayoutBindings?.flip()
 
-        val setLayoutCreateInfo = VkDescriptorSetLayoutCreateInfo.callocStack().sType(VK10.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO).apply {
+        val setLayoutCreateInfo = VkDescriptorSetLayoutCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO).apply {
             pBindings(pLayoutBindings)
         }
 
         val pDescriptorSetLayout = MemoryStack.stackLongs(1)
-        VK10.vkCreateDescriptorSetLayout(backend.logicalDevice.vkDevice, setLayoutCreateInfo, null, pDescriptorSetLayout)
-                .ensureIs("Failed to create descriptor set layout", VK10.VK_SUCCESS)
+        vkCreateDescriptorSetLayout(backend.logicalDevice.vkDevice, setLayoutCreateInfo, null, pDescriptorSetLayout)
+                .ensureIs("Failed to create descriptor set layout", VK_SUCCESS)
 
         return pDescriptorSetLayout.get(0)
     }

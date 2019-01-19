@@ -5,8 +5,10 @@ import graphics.scenery.spirvcrossj.*
 import xyz.chunkstories.api.graphics.ShaderStage
 import xyz.chunkstories.graphics.common.shaders.GLSLDialect
 import xyz.chunkstories.graphics.common.shaders.GLSLResource
+import xyz.chunkstories.graphics.common.shaders.GLSLUniformBlock
 import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampler2D
 import xyz.chunkstories.graphics.common.shaders.SpirvCrossHelper.spirvStageInt
+import xyz.chunkstories.graphics.common.shaders.compiler.preprocessing.updateFrequency
 
 fun ShaderCompiler.buildIntermediaryStructure(stages: Map<ShaderStage, String>): IntermediaryCompilationResults {
     libspirvcrossj.initializeProcess()
@@ -77,7 +79,7 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
             //println("${imageType.arrayed} ${imageType.dim} ${imageType.depth} ${imageType.access} ${imageType.type} ${imageType.format}")
 
             val sampledImageName = sampledImage.name
-            val arraySize = Array(type.array.size().toInt()) { type.array[it].toInt() }.toList().getOrNull(0) ?: 0
+            val arraySize = Array(type.array.size().toInt()) { type.array[it].toInt() }.toList().getOrNull(0) ?: 1
             /** https://www.khronos.org/registry/spir-v/specs/1.0/SPIRV.html#Dim */
             val dimensionality = imageType.dim
             //TODO handle those:
@@ -110,7 +112,32 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
 
         for(i in 0 until stageResources.uniformBuffers.size().toInt()) {
             val uniformBuffer = stageResources.uniformBuffers[i]
-            //TODO
+            val uniformBufferName = uniformBuffer.name
+
+            val type = uniformBufferName.split("_")[1]
+            val instanceName = uniformBufferName.split("_")[2]
+
+            println("type: $type instanceName: $instanceName")
+
+            if(resources.find{it is GLSLUniformBlock && it.name == instanceName} != null)
+                continue
+
+            val jvmStruct = jvmGlslMappings.values.find { it.glslToken == type }!!
+
+            val setSlot: Int; val binding: Int
+
+            when(dialect) {
+                GLSLDialect.VULKAN -> {
+                    setSlot = jvmStruct.kClass.updateFrequency().ordinal + 2
+                    binding = (resources.filter { it.descriptorSetSlot == setSlot }.maxBy { it.binding }?.binding ?: -1) + 1
+                }
+                GLSLDialect.OPENGL4 -> {
+                    setSlot = 0
+                    binding = resources.size
+                }
+            }
+
+            resources.add(GLSLUniformBlock(instanceName, setSlot, binding, jvmStruct))
         }
 
         //TODO SSBO
@@ -131,7 +158,17 @@ fun ShaderCompiler.addDecorations(intermediarCompilationResults: IntermediaryCom
             compiler.setDecoration(spirvResource.id, Decoration.DecorationBinding, glslResource.binding.toLong())
         }
 
-        //TODO UBOS/SSBOS
+        for(i in 0 until stageResources.uniformBuffers.size().toInt()) {
+            val spirvResource = stageResources.uniformBuffers[i]
+            val instanceName = spirvResource.name.split("_")[2]
+
+            val glslResource = glslResources.find { it.name == instanceName } as GLSLUniformBlock
+
+            compiler.setDecoration(spirvResource.id, Decoration.DecorationDescriptorSet, glslResource.descriptorSetSlot.toLong())
+            compiler.setDecoration(spirvResource.id, Decoration.DecorationBinding, glslResource.binding.toLong())
+        }
+
+        //TODO SSBOS
     }
 }
 
