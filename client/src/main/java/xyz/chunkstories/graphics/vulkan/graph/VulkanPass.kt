@@ -403,11 +403,9 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRende
 
         commandPool.cleanup()
         //commandBuffers.cleanup() // useless, cleaning the commandpool cleans those implicitely
-
         //passDoneSemaphore.cleanup { vkDestroySemaphore(backend.logicalDevice.vkDevice, it, null) }
 
         drawingSystems.forEach(Cleanable::cleanup)
-
         program.cleanup()
     }
 

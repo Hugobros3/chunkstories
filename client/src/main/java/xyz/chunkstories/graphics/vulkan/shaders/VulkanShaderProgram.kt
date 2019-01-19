@@ -11,6 +11,7 @@ import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkDescriptorSetLayoutBinding
 import org.lwjgl.vulkan.VkDescriptorSetLayoutCreateInfo
 import xyz.chunkstories.graphics.common.shaders.*
+import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.SpirvCrossHelper
 
 data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsBackend, val glslProgram: GLSLProgram) {
     val spirvCode = SpirvCrossHelper.generateSpirV(glslProgram)
@@ -105,7 +106,6 @@ data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsB
 
     fun cleanup() {
         modules.values.forEach { it.cleanup() }
-
-        //descriptorSetLayouts.forEach { vkDestroyDescriptorSetLayout(backend.logicalDevice.vkDevice, it, null) }
+        slotLayouts.forEach { it.cleanup(backend) }
     }
 }

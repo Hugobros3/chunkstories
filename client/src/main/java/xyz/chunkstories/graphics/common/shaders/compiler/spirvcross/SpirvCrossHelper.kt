@@ -1,8 +1,9 @@
-package xyz.chunkstories.graphics.common.shaders
+package xyz.chunkstories.graphics.common.shaders.compiler.spirvcross
 
 import graphics.scenery.spirvcrossj.*
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.graphics.ShaderStage
+import xyz.chunkstories.graphics.common.shaders.GLSLProgram
 import xyz.chunkstories.util.OSHelper
 import xyz.chunkstories.util.SupportedOS
 import java.io.File
@@ -120,9 +121,7 @@ object SpirvCrossHelper {
     }
 
     /** the generated spirv the engine can ingest for that shader program */
-    data class GeneratedSpirV(val source: GLSLProgram, val stages: Map<ShaderStage, ByteBuffer>) {
-
-    }
+    data class GeneratedSpirV(val source: GLSLProgram, val stages: Map<ShaderStage, ByteBuffer>)
 }
 
 private fun <E> List<List<E>>.merge(): List<E> {
@@ -134,19 +133,11 @@ private fun <E> List<List<E>>.merge(): List<E> {
 private fun IntVec.byteBuffer(): ByteBuffer {
     val size = this.size().toInt()
     val bytes = ByteBuffer.allocateDirect(size * 4)
-    //println(bytes.order())
     bytes.order(ByteOrder.LITTLE_ENDIAN)
 
     for (i in 0 until size) {
-        //val ri = i * 4
-
         val wth = this.get(i)
-        //if(wth > Int.MAX_VALUE)
-        //   println("rip")
-
         val wth2 = wth.toInt()
-        //println("$i ${ri.hex()} $wth ${wth2}")
-
         bytes.putInt(wth2)
     }
 

@@ -8,15 +8,13 @@ import xyz.chunkstories.api.graphics.structs.InterfaceBlock
 import xyz.chunkstories.graphics.common.shaders.GLSLDialect
 import xyz.chunkstories.graphics.common.shaders.GLSLProgram
 import xyz.chunkstories.graphics.common.shaders.GLSLType
-import xyz.chunkstories.graphics.common.shaders.SpirvCrossHelper.initSpirvCross
 import xyz.chunkstories.graphics.common.shaders.compiler.postprocessing.annotateForNonUniformAccess
-import xyz.chunkstories.graphics.common.shaders.compiler.postprocessing.removeVersionString
 import xyz.chunkstories.graphics.common.shaders.compiler.preprocessing.*
+import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.addDecorations
+import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.buildIntermediaryStructure
+import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.createShaderResources
+import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.toIntermediateGLSL
 import xyz.chunkstories.graphics.vulkan.shaders.VulkanShaderFactory
-import xyz.chunkstories.util.OSHelper
-import xyz.chunkstories.util.SupportedOS
-import java.io.File
-import java.util.*
 import kotlin.reflect.KClass
 
 abstract class ShaderCompiler(val dialect: GLSLDialect) {
@@ -64,16 +62,11 @@ abstract class ShaderCompiler(val dialect: GLSLDialect) {
         val intermediaryCompilationResults = buildIntermediaryStructure(stages)
         val resources = createShaderResources(intermediaryCompilationResults)
 
-        //println(vertexInputs)
-        //println(resources)
-
         addDecorations(intermediaryCompilationResults, resources)
         stages = toIntermediateGLSL(intermediaryCompilationResults)
 
         if(this is VulkanShaderFactory && this.backend.enableDivergingUniformSamplerIndexing)
             stages = stages.mapValues { (stage, shaderCode) -> annotateForNonUniformAccess(shaderCode) }
-
-        //println(stages)
 
         return GLSLProgram(shaderName, dialect, vertexInputs, fragmentOutputs, resources, stages)
     }
