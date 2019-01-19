@@ -1,5 +1,6 @@
 package xyz.chunkstories.graphics.common.shaders.compiler
 
+import graphics.scenery.spirvcrossj.Loader
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.content.Content
 import xyz.chunkstories.api.graphics.ShaderStage
@@ -7,6 +8,7 @@ import xyz.chunkstories.api.graphics.structs.InterfaceBlock
 import xyz.chunkstories.graphics.common.shaders.GLSLDialect
 import xyz.chunkstories.graphics.common.shaders.GLSLProgram
 import xyz.chunkstories.graphics.common.shaders.GLSLType
+import xyz.chunkstories.graphics.common.shaders.SpirvCrossHelper.initSpirvCross
 import xyz.chunkstories.graphics.common.shaders.compiler.postprocessing.annotateForNonUniformAccess
 import xyz.chunkstories.graphics.common.shaders.compiler.postprocessing.removeVersionString
 import xyz.chunkstories.graphics.common.shaders.compiler.preprocessing.*
@@ -26,36 +28,8 @@ abstract class ShaderCompiler(val dialect: GLSLDialect) {
     val jvmGlslMappings = mutableMapOf<KClass<InterfaceBlock>, GLSLType.JvmStruct>()
 
     init {
-        val nativeLib = when(OSHelper.os) {
-            SupportedOS.WINDOWS -> "/spirvcrossj.dll"
-            SupportedOS.LINUX -> TODO()
-            SupportedOS.OSX -> TODO()
-        }
-
-        val libRes = javaClass.getResource(nativeLib)
-        val file = libRes.file
-
-        println(libRes)
-
-        val random = Random()
-
-        if(libRes.toString().startsWith("jar:")) {
-            println("Extracting libspirvcrossj natives manually...")
-
-            val nativeLibTempDirPath = "./cache/${random.nextInt()}"
-            val nativeLibTempDir = File(nativeLibTempDirPath)
-            nativeLibTempDir.mkdirs()
-            nativeLibTempDir.deleteOnExit()
-
-            val nativeLibDest = File("$nativeLibTempDirPath/$nativeLib")
-            val bytes = javaClass.getResourceAsStream(nativeLib).readBytes()
-            nativeLibDest.writeBytes(bytes)
-            println("Done, written to $nativeLibDest")
-
-            nativeLibDest.deleteOnExit()
-
-            System.load(nativeLibDest.absolutePath)
-        }
+        Loader.loadNatives()
+        //initSpirvCross()
     }
 
     fun loadGLSLProgram(shaderName: String) : GLSLProgram {
@@ -80,7 +54,8 @@ abstract class ShaderCompiler(val dialect: GLSLDialect) {
         // Add their declarations, in the right order.
         stages = stages.mapValues { (stage, shaderCode) -> addStructsDeclaration(shaderCode, jvmStructsUsed[stage]!! ) }
 
-        //TODO inline UBOs
+        stages = stages.mapValues { (stage, shaderCode) -> inlineUniformStructs(shaderCode, jvmStructsUsed[stage]!! ) }
+        println(stages)
         //TODO virtual texturing magic code
         //TODO per-instance data magic code
 

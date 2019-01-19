@@ -23,6 +23,14 @@ class TestShaderCompiler {
     }
 
     @Test
+    fun structAsUBO() {
+        LogbackSetupHelper.setupLoggingForTesting()
+        val shaderCompiler = HeadlessShaderCompiler(GLSLDialect.VULKAN, javaClass.classLoader, null)
+
+        shaderCompiler.loadGLSLProgram("structAsUBO")
+    }
+
+    @Test
     fun gui() {
         LogbackSetupHelper.setupLoggingForTesting()
         val shaderCompiler = HeadlessShaderCompiler(GLSLDialect.VULKAN, javaClass.classLoader, null)

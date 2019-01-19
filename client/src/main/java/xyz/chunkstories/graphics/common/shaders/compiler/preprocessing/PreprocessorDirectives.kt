@@ -85,6 +85,14 @@ fun ShaderCompiler.addStructsDeclaration(shaderCode: String, list: List<GLSLType
     }.joinToString(separator = "\n")
 }
 
-fun ShaderCompiler.inlineUniformStructs(shaderCode: String) : String = shaderCode.lines().map {
+fun ShaderCompiler.inlineUniformStructs(shaderCode: String, structs: List<GLSLType.JvmStruct>) : String = shaderCode.lines().map {line ->
+    if(line.startsWith("uniform")) {
+        val structName = line.split(' ').getOrNull(1)
+        val uniformName = line.split(' ').getOrNull(2)?.trimEnd(';')
 
+        structs.find { it.glslToken == structName }?.run {
+            "layout(std140) uniform _inlined${structName}_$uniformName {\n" + this.innerGLSLCode() + "} $uniformName;\n"
+        } ?: line
+    } else
+        line
 }.joinToString(separator = "\n")
