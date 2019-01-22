@@ -34,8 +34,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
     val backend: VulkanGraphicsBackend
         get() = pass.backend
 
-    //private val descriptorPool = DescriptorPool(backend, pass.program)
-    private val vertexInputConfiguration = VertexInputConfiguration {
+    private val meshesVertexInputCfg = VertexInputConfiguration {
         var offset = 0
 
         attribute {
@@ -85,8 +84,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         }
     }
 
-    private val pipeline = Pipeline(backend, pass, vertexInputConfiguration, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
-
+    private val meshesPipeline = Pipeline(backend, pass, backend.shaderFactory.createProgram("cubes"), meshesVertexInputCfg, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
 
     companion object {
         var totalCubesDrawn = 0
@@ -96,7 +94,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
     override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer) {
         MemoryStack.stackPush()
 
-        val bindingContext = backend.descriptorMegapool.getBindingContext(pipeline)
+        val bindingContext = backend.descriptorMegapool.getBindingContext(meshesPipeline)
 
         val entity = client.player.controlledEntity
         val camera = entity?.traits?.get(TraitControllable::class)?.camera ?: Camera()
@@ -104,7 +102,6 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
 
         val camPos = camera.position
 
-        //descriptorPool.configure(frame, camera)
         bindingContext.bindUBO(camera)
         bindingContext.bindUBO(world.getConditions())
         bindingContext.preDraw(commandBuffer)
@@ -114,8 +111,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         totalCubesDrawn = 0
         totalBuffersUsed = 0
 
-        //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 1, descriptorPool.setsForFrame(frame), null as? IntArray)
-        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshesPipeline.handle)
 
         val camChunk = camPos.toVec3i()
         camChunk.x /= 32
@@ -135,16 +131,16 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
                     usedData.add(block)
 
                 if (block?.vertexBuffer != null) {
-                    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 0, stackLongs(block.virtualTexturingContext!!.setHandle), null)
+                    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshesPipeline.layout, 0, stackLongs(block.virtualTexturingContext!!.setHandle), null)
                     vkCmdBindVertexBuffers(commandBuffer, 0, stackLongs(block.vertexBuffer.handle), stackLongs(0))
 
-                    if (block.perChunkBindings == null || block.perChunkBindings!!.pipeline !== pipeline) {
+                    if (block.perChunkBindings == null || block.perChunkBindings!!.pipeline !== meshesPipeline) {
                         val chunkRenderInfo = ChunkRenderInfo().apply {
                             chunkX = chunk.chunkX
                             chunkY = chunk.chunkY
                             chunkZ = chunk.chunkZ
                         }
-                        block.perChunkBindings = backend.descriptorMegapool.getBindingContext(pipeline).also {
+                        block.perChunkBindings = backend.descriptorMegapool.getBindingContext(meshesPipeline).also {
                             it.bindUBO(chunkRenderInfo)
                         }
                     }
@@ -186,23 +182,9 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
             rc++
 
             if(frustrum.isBoxInFrustrum(boxCenter, boxSize2)) {
-
-                /*for (chunk in region.loadedChunks) {
-                boxCenter.x = chunk.chunkX * 32.0f + 16.0f
-                boxCenter.y = chunk.chunkY * 32.0f + 16.0f
-                boxCenter.z = chunk.chunkZ * 32.0f + 16.0f
-
-                //if (frustrum.isBoxInFrustrum(boxCenter, boxSize) && !chunk.isAirChunk)
-                if(!chunk.isAirChunk)
-                    sortedChunks.add(chunk as CubicChunk)
-            }*/
-
-                //unsortedRegions.add(region as RegionImplementation)
                 visibleRegions[visibleRegionsCount++] = region as RegionImplementation
             }
         }
-
-        //println("rc: $rc")
 
         Arrays.sort(visibleRegions, 0, visibleRegionsCount) { a, b ->
             fun distSquared(r: Region) : Float {
@@ -224,7 +206,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         var visibleRegionChunksCount : Int
 
         val visibilityRangeX = (camChunk.x - drawDistance)..(camChunk.x + drawDistance)
-        val visibilityRangeY = (camChunk.y - drawDistance)..(camChunk.y + drawDistance)
+        val visibilityRangeY = (camChunk.y - drawDistanceH)..(camChunk.y + drawDistanceH)
         val visibilityRangeZ = (camChunk.z - drawDistance)..(camChunk.z + drawDistance)
 
         for(i in 0 until visibleRegionsCount) {
@@ -277,12 +259,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
     }
 
     override fun cleanup() {
-        /*for (chunk in client.world.allLoadedChunks) {
-            (chunk.mesh() as? VulkanChunkRenderData)?.destroy()
-        }*/
-
-        //descriptorPool.cleanup()
-        pipeline.cleanup()
+        meshesPipeline.cleanup()
     }
 }
 

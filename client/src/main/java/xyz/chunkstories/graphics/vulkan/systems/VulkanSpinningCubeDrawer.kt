@@ -42,7 +42,7 @@ class VulkanSpinningCubeDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
         }
     }
 
-    val pipeline = Pipeline(backend, pass, vertexInputConfiguration, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
+    val pipeline = Pipeline(backend, pass, pass.program, vertexInputConfiguration, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
 
     private val vertexBuffer: VulkanVertexBuffer
 

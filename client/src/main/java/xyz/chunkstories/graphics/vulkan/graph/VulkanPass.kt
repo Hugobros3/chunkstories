@@ -32,8 +32,6 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRende
     lateinit var drawingSystems: List<VulkanDrawingSystem>
         private set
 
-    //val passDoneSemaphore: InflightFrameResource<VkSemaphore>
-
     val commandPool = CommandPool(backend, backend.logicalDevice.graphicsQueue.family, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT or VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
     val commandBuffers: InflightFrameResource<VkCommandBuffer>
 
@@ -43,12 +41,9 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRende
     init {
         this.apply(config)
 
-        //TODO handle custom shaders from mods
-        program = backend.shaderFactory.createProgram(backend, shaderName)
+        program = backend.shaderFactory.createProgram(shaderName)
 
         MemoryStack.stackPush()
-
-        //passDoneSemaphore = InflightFrameResource(backend) { backend.createSemaphore() }
 
         outputRenderBuffers = outputs.map { output ->
             val resolvedName = output.outputBuffer ?: output.name
@@ -362,33 +357,6 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRende
                 vkCmdEndRenderPass(this)
                 vkEndCommandBuffer(this)
             }
-
-            /*val submitInfo = VkSubmitInfo.callocStack().sType(VK_STRUCTURE_TYPE_SUBMIT_INFO).apply {
-                if(passBeginSemaphore != null) {
-                    val waitOnSemaphores = MemoryStack.stackMallocLong(1)
-                    waitOnSemaphores.put(0, passBeginSemaphore)
-                    pWaitSemaphores(waitOnSemaphores)
-                    waitSemaphoreCount(1)
-                }
-
-                //val waitStages = MemoryStack.stackMallocInt(1)
-                //waitStages.put(0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
-                if(passBeginSemaphore != null)
-                   pWaitDstStageMask(stackInts(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT))
-
-                val commandBuffers = MemoryStack.stackMallocPointer(1)
-                commandBuffers.put(0, this@VulkanPass.commandBuffers[frame])
-                pCommandBuffers(commandBuffers)
-
-                /*if(this@VulkanPass.final) {
-                    val semaphoresToSignal = MemoryStack.stackLongs(passDoneSemaphore[frame])
-                    pSignalSemaphores(semaphoresToSignal)
-                }*/
-            }
-
-            backend.logicalDevice.graphicsQueue.mutex.acquireUninterruptibly()
-            vkQueueSubmit(backend.logicalDevice.graphicsQueue.handle, submitInfo, /*frame.renderFinishedFence*/ VK_NULL_HANDLE).ensureIs("Failed to submit command buffer", VK_SUCCESS)
-            backend.logicalDevice.graphicsQueue.mutex.release()*/
         }
     }
 
@@ -403,7 +371,6 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRende
 
         commandPool.cleanup()
         //commandBuffers.cleanup() // useless, cleaning the commandpool cleans those implicitely
-        //passDoneSemaphore.cleanup { vkDestroySemaphore(backend.logicalDevice.vkDevice, it, null) }
 
         drawingSystems.forEach(Cleanable::cleanup)
         program.cleanup()

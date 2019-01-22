@@ -37,7 +37,7 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
             offset(0)
         }
     }
-    val pipeline = Pipeline(backend, pass, vertexInputConfiguration, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
+    val pipeline = Pipeline(backend, pass, pass.program, vertexInputConfiguration, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
     val sampler = VulkanSampler(backend)
 
     private val vertexBuffer: VulkanVertexBuffer

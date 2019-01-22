@@ -94,6 +94,13 @@ object BuiltInRendergraphs {
                 size = viewportSize
             }
 
+            /*renderBuffer {
+                name = "shadowMap"
+
+                format = DEPTH_32
+                size = 1024 by 1024
+            }*/
+
             renderBuffer {
                 name = "colorBuffer"
 
@@ -169,6 +176,20 @@ object BuiltInRendergraphs {
                     clear = true
                 }
             }
+
+            /*pass {
+                name = "shadow"
+
+                draws {
+                    system(VulkanCubesDrawer::class)
+                }
+
+                depth {
+                    enabled = true
+                    depthBuffer = "shadowMap"
+                    clear = true
+                }
+            }*/
 
             /*pass {
                 name = "debug"

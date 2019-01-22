@@ -14,6 +14,7 @@ import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.graphics.common.shaders.GLSLProgram
+import xyz.chunkstories.graphics.vulkan.shaders.VulkanShaderProgram
 
 fun vertexInputConfiguration(declaration: VertexInputConfigurationContext.() -> Unit) = VertexInputConfiguration(declaration)
 
@@ -27,17 +28,14 @@ interface VertexInputConfigurationContext {
     fun attribute(decl: VkVertexInputAttributeDescription.() -> Unit)
 }
 
-class Pipeline(val backend: VulkanGraphicsBackend, val pass: VulkanPass, val vertexInputConfiguration: VertexInputConfiguration, val primitiveType: Primitive, val faceCullingMode: FaceCullingMode) {
+class Pipeline(val backend: VulkanGraphicsBackend, val pass: VulkanPass, val program : VulkanShaderProgram = pass.program, val vertexInputConfiguration: VertexInputConfiguration, val primitiveType: Primitive, val faceCullingMode: FaceCullingMode) {
     val layout: VkPipelineLayout
     val handle: VkPipeline
-
-    val program = pass.program
 
     init {
         logger.info("Creating pipeline")
 
         stackPush()
-
         val vertexStagesCreateInfos = program.modules.map { (stage, module) ->
             VkPipelineShaderStageCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO).apply {
                 stage(stage.vkShaderStageBit)
@@ -51,8 +49,6 @@ class Pipeline(val backend: VulkanGraphicsBackend, val pass: VulkanPass, val ver
         shaderStagesCreateInfo.flip()
 
         fun VertexInputConfiguration.fillVkVertexInputStruct(struct: VkPipelineVertexInputStateCreateInfo) {
-            //val bindingsList = mutableListOf<VkVertexInputBindingDescription.() -> Unit>()
-            //val attributesList = mutableListOf<VkVertexInputAttributeDescription.() -> Unit>()
             val bindings = mutableListOf<VkVertexInputBindingDescription>()
             val attributes = mutableListOf<VkVertexInputAttributeDescription>()
 
