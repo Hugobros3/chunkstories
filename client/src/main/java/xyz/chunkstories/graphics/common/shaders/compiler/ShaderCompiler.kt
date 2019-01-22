@@ -8,6 +8,7 @@ import xyz.chunkstories.api.graphics.structs.InterfaceBlock
 import xyz.chunkstories.graphics.common.shaders.GLSLDialect
 import xyz.chunkstories.graphics.common.shaders.GLSLProgram
 import xyz.chunkstories.graphics.common.shaders.GLSLType
+import xyz.chunkstories.graphics.common.shaders.compiler.postprocessing.addVirtualTexturingHeader
 import xyz.chunkstories.graphics.common.shaders.compiler.postprocessing.annotateForNonUniformAccess
 import xyz.chunkstories.graphics.common.shaders.compiler.preprocessing.*
 import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.addDecorations
@@ -54,6 +55,7 @@ abstract class ShaderCompiler(val dialect: GLSLDialect) {
 
         stages = stages.mapValues { (stage, shaderCode) -> inlineUniformStructs(shaderCode, jvmStructsUsed[stage]!! ) }
         //TODO virtual texturing magic code
+        stages = stages.mapValues { (stage, shaderCode) -> addVirtualTexturingHeader(shaderCode) }
         //TODO per-instance data magic code
 
         val vertexInputs = analyseVertexShaderInputs(stages[ShaderStage.VERTEX]!!)
@@ -65,8 +67,9 @@ abstract class ShaderCompiler(val dialect: GLSLDialect) {
         addDecorations(intermediaryCompilationResults, resources)
         stages = toIntermediateGLSL(intermediaryCompilationResults)
 
-        if(this is VulkanShaderFactory && this.backend.enableDivergingUniformSamplerIndexing)
-            stages = stages.mapValues { (stage, shaderCode) -> annotateForNonUniformAccess(shaderCode) }
+        //if(this is VulkanShaderFactory && this.backend.enableDivergingUniformSamplerIndexing)
+        if(dialect == GLSLDialect.VULKAN)
+           stages = stages.mapValues { (stage, shaderCode) -> annotateForNonUniformAccess(shaderCode) }
 
         return GLSLProgram(shaderName, dialect, vertexInputs, fragmentOutputs, resources, stages)
     }

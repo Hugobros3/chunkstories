@@ -41,7 +41,7 @@ class VulkanDebugDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         }
     }
 
-    val pipeline = Pipeline(backend, pass, vertexInputConfiguration, Primitive.LINES, FaceCullingMode.DISABLED)
+    val pipeline = Pipeline(backend, pass, pass.program, vertexInputConfiguration, Primitive.LINES, FaceCullingMode.DISABLED)
 
     val vertexBuffers: InflightFrameResource<VulkanVertexBuffer>
 

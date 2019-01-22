@@ -3,7 +3,7 @@
 in vec3 fragColor;
 out vec4 outColor;
 
-#using struct xyz.chunkstories.client.graphics.shaders.TestStructure
+#include struct xyz.chunkstories.client.graphics.shaders.TestStructure
 uniform TestStructure testUBO;
 
 void main() {

@@ -45,3 +45,15 @@ data class GLSLUniformSampler2D(
         override val descriptorSetSlot: Int,
         override val binding: Int,
         val count: Int) : GLSLResource
+
+data class GLSLUniformImage2D(
+        override val name: String,
+        override val descriptorSetSlot: Int,
+        override val binding: Int,
+        val count: Int) : GLSLResource
+
+data class GLSLSampler(
+        override val name: String,
+        override val descriptorSetSlot: Int,
+        override val binding: Int
+) : GLSLResource

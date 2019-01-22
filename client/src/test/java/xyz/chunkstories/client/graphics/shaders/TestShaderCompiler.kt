@@ -11,7 +11,10 @@ class TestShaderCompiler {
         LogbackSetupHelper.setupLoggingForTesting()
         val shaderCompiler = HeadlessShaderCompiler(GLSLDialect.VULKAN, javaClass.classLoader, null)
 
-        shaderCompiler.loadGLSLProgram("simpleCase")
+        val program = shaderCompiler.loadGLSLProgram("simpleCase")
+        println("OK")
+        println(program.resources)
+        println(program.sourceCode)
     }
 
     @Test
@@ -19,7 +22,10 @@ class TestShaderCompiler {
         LogbackSetupHelper.setupLoggingForTesting()
         val shaderCompiler = HeadlessShaderCompiler(GLSLDialect.VULKAN, javaClass.classLoader, null)
 
-        shaderCompiler.loadGLSLProgram("usingStruct")
+        val program = shaderCompiler.loadGLSLProgram("usingStruct")
+        println("OK")
+        println(program.resources)
+        println(program.sourceCode)
     }
 
     @Test
@@ -27,7 +33,21 @@ class TestShaderCompiler {
         LogbackSetupHelper.setupLoggingForTesting()
         val shaderCompiler = HeadlessShaderCompiler(GLSLDialect.VULKAN, javaClass.classLoader, null)
 
-        shaderCompiler.loadGLSLProgram("structAsUBO")
+        val program = shaderCompiler.loadGLSLProgram("structAsUBO")
+        println("OK")
+        println(program.resources)
+        println(program.sourceCode)
+    }
+
+    @Test
+    fun bindlessTextures() {
+        LogbackSetupHelper.setupLoggingForTesting()
+        val shaderCompiler = HeadlessShaderCompiler(GLSLDialect.VULKAN, javaClass.classLoader, null)
+
+        val program = shaderCompiler.loadGLSLProgram("bindlessTextures")
+        println("OK")
+        println(program.resources)
+        println(program.sourceCode)
     }
 
     @Test
@@ -35,6 +55,9 @@ class TestShaderCompiler {
         LogbackSetupHelper.setupLoggingForTesting()
         val shaderCompiler = HeadlessShaderCompiler(GLSLDialect.VULKAN, javaClass.classLoader, null)
 
-        shaderCompiler.loadGLSLProgram("gui")
+        val program = shaderCompiler.loadGLSLProgram("gui")
+        println("OK")
+        println(program.resources)
+        println(program.sourceCode)
     }
 }

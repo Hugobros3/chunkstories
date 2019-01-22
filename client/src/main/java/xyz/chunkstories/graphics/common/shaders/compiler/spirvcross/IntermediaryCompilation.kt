@@ -1,22 +1,19 @@
 package xyz.chunkstories.graphics.common.shaders.compiler.spirvcross
 
 import graphics.scenery.spirvcrossj.*
-
 import xyz.chunkstories.api.graphics.ShaderStage
-import xyz.chunkstories.graphics.common.shaders.GLSLDialect
-import xyz.chunkstories.graphics.common.shaders.GLSLResource
-import xyz.chunkstories.graphics.common.shaders.GLSLUniformBlock
-import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampler2D
-import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.SpirvCrossHelper.spirvStageInt
+import xyz.chunkstories.graphics.common.shaders.*
 import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompiler
+import xyz.chunkstories.graphics.common.shaders.compiler.preprocessing.magicTexturesNames
 import xyz.chunkstories.graphics.common.shaders.compiler.preprocessing.updateFrequency
+import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.SpirvCrossHelper.spirvStageInt
 
 fun ShaderCompiler.buildIntermediaryStructure(stages: Map<ShaderStage, String>): IntermediaryCompilationResults {
     libspirvcrossj.initializeProcess()
     val ressources = libspirvcrossj.getDefaultTBuiltInResource()
 
     val tProgram = TProgram()
-    val tShaders = stages.mapValues {(stage, shaderCode) ->
+    val tShaders = stages.mapValues { (stage, shaderCode) ->
         val tShader = TShader(stage.spirvStageInt)
 
         tShader.setStrings(arrayOf(shaderCode), 1)
@@ -31,6 +28,9 @@ fun ShaderCompiler.buildIntermediaryStructure(stages: Map<ShaderStage, String>):
         if (!parse) {
             ShaderCompiler.logger.warn(tShader.infoLog)
             ShaderCompiler.logger.warn(tShader.infoDebugLog)
+
+            println(shaderCode)
+            throw Exception("Failed to parse stage $stage of the shader program")
         }
 
         tProgram.addShader(tShader)
@@ -50,7 +50,7 @@ fun ShaderCompiler.buildIntermediaryStructure(stages: Map<ShaderStage, String>):
     tProgram.buildReflection()
     libspirvcrossj.finalizeProcess()
 
-    val compilers = stages.mapValues {(stage, _) ->
+    val compilers = stages.mapValues { (stage, _) ->
         val intermediate = tProgram.getIntermediate(stage.spirvStageInt)
         val intVec = IntVec()
         libspirvcrossj.glslangToSpv(intermediate, intVec)
@@ -65,13 +65,13 @@ fun ShaderCompiler.buildIntermediaryStructure(stages: Map<ShaderStage, String>):
 
 data class IntermediaryCompilationResults(val tProgram: TProgram, val tShaders: Map<ShaderStage, TShader>, val compilers: Map<ShaderStage, CompilerGLSL>)
 
-fun ShaderCompiler.createShaderResources(intermediarCompilationResults: IntermediaryCompilationResults) : List<GLSLResource> {
+fun ShaderCompiler.createShaderResources(intermediarCompilationResults: IntermediaryCompilationResults): List<GLSLResource> {
     val resources = mutableListOf<GLSLResource>()
 
-    for((stage, compiler) in intermediarCompilationResults.compilers) {
+    for ((stage, compiler) in intermediarCompilationResults.compilers) {
         val stageResources = compiler.shaderResources
 
-        for(i in 0 until stageResources.sampledImages.size().toInt()) {
+        for (i in 0 until stageResources.sampledImages.size().toInt()) {
             val sampledImage = stageResources.sampledImages[i]
             val type = compiler.getType(sampledImage.typeId)
             val imageType = type.image
@@ -86,16 +86,19 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
             //TODO handle those:
             val shadowSampler = imageType.depth
             val arrayTexture = imageType.arrayed
+            val combined = imageType.sampled
+            println("$sampledImageName $combined")
 
             // Don't duplicate resources
-            if(resources.find { it is GLSLUniformSampler2D && it.name == sampledImageName } != null)
+            if (resources.find { it is GLSLUniformSampler2D && it.name == sampledImageName } != null)
                 continue
 
-            val setSlot: Int; val binding: Int
+            val setSlot: Int;
+            val binding: Int
 
-            when(dialect) {
+            when (dialect) {
                 GLSLDialect.VULKAN -> {
-                    setSlot = if(sampledImageName == "virtualTextures") 0 else 1
+                    setSlot = 1
                     binding = (resources.filter { it.descriptorSetSlot == setSlot }.maxBy { it.binding }?.binding ?: -1) + 1
                 }
                 GLSLDialect.OPENGL4 -> {
@@ -105,29 +108,103 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
             }
 
             //TODO handle other dimensionalities
-            resources.add(when(dimensionality) {
+            resources.add(when (dimensionality) {
                 1 -> GLSLUniformSampler2D(sampledImageName, setSlot, binding, arraySize)
                 else -> throw Exception("Not handled yet")
             })
         }
 
-        for(i in 0 until stageResources.uniformBuffers.size().toInt()) {
+        for (i in 0 until stageResources.separateImages.size().toInt()) {
+            val separateImage = stageResources.separateImages[i]
+            val type = compiler.getType(separateImage.typeId)
+            val imageType = type.image
+            //println("i:$i $sampledImage ${sampledImage.name} ${sampledImage.typeId} ${sampledImage.baseTypeId}")
+            //println("$type ${type.array.size()} ${type.basetype} ${type.typeAlias} ${type.parentType} ${type.vecsize} ${type.columns} ${type.image} ${type.memberTypes}")
+            //println("${imageType.arrayed} ${imageType.dim} ${imageType.depth} ${imageType.access} ${imageType.type} ${imageType.format}")
+
+            val separateImageName = separateImage.name
+            val arraySize =
+                    if (separateImageName in magicTexturesNames)
+                        -1
+                    else
+                        Array(type.array.size().toInt()) { type.array[it].toInt() }.toList().getOrNull(0) ?: 1
+            /** https://www.khronos.org/registry/spir-v/specs/1.0/SPIRV.html#Dim */
+            val dimensionality = imageType.dim
+            //TODO handle those:
+            val shadowSampler = imageType.depth
+            val arrayTexture = imageType.arrayed
+            val combined = imageType.sampled
+
+            // Don't duplicate resources
+            if (resources.find { it is GLSLUniformImage2D && it.name == separateImageName } != null)
+                continue
+
+            val setSlot: Int
+            val binding: Int
+
+            when (dialect) {
+                GLSLDialect.VULKAN -> {
+                    setSlot = if (separateImageName in magicTexturesNames) 0 else 1
+                    binding =
+                            if (separateImageName in magicTexturesNames) 1
+                            else
+                                (resources.filter { it.descriptorSetSlot == setSlot }.maxBy { it.binding }?.binding ?: -1) + 1
+                }
+                GLSLDialect.OPENGL4 -> {
+                    setSlot = 0
+                    binding = resources.size
+                }
+            }
+
+            //TODO handle other dimensionalities
+            resources.add(when (dimensionality) {
+                1 -> GLSLUniformImage2D(separateImageName, setSlot, binding, arraySize)
+                else -> throw Exception("Not handled yet")
+            })
+        }
+
+        for(i in 0 until stageResources.separateSamplers.size().toInt()) {
+            val sampler = stageResources.separateSamplers[i]
+            val samplerName = sampler.name
+
+            val setSlot: Int
+            val binding: Int
+
+            when (dialect) {
+                GLSLDialect.VULKAN -> {
+                    setSlot = 0
+                    binding = 0
+                }
+                GLSLDialect.OPENGL4 -> {
+                    setSlot = 0
+                    binding = resources.size
+                }
+            }
+
+            if (resources.find { it is GLSLSampler && it.name == samplerName } != null)
+                continue
+
+            resources.add(GLSLSampler(samplerName, setSlot, binding))
+        }
+
+        for (i in 0 until stageResources.uniformBuffers.size().toInt()) {
             val uniformBuffer = stageResources.uniformBuffers[i]
             val uniformBufferName = uniformBuffer.name
 
             val type = uniformBufferName.split("_")[1]
             val instanceName = uniformBufferName.split("_")[2]
 
-            println("type: $type instanceName: $instanceName")
+            println("found ubo type: $type instanceName: $instanceName")
 
-            if(resources.find{it is GLSLUniformBlock && it.name == instanceName} != null)
+            if (resources.find { it is GLSLUniformBlock && it.name == instanceName } != null)
                 continue
 
             val jvmStruct = jvmGlslMappings.values.find { it.glslToken == type }!!
 
-            val setSlot: Int; val binding: Int
+            val setSlot: Int
+            val binding: Int
 
-            when(dialect) {
+            when (dialect) {
                 GLSLDialect.VULKAN -> {
                     setSlot = jvmStruct.kClass.updateFrequency().ordinal + 2
                     binding = (resources.filter { it.descriptorSetSlot == setSlot }.maxBy { it.binding }?.binding ?: -1) + 1
@@ -148,7 +225,7 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
 }
 
 fun ShaderCompiler.addDecorations(intermediarCompilationResults: IntermediaryCompilationResults, glslResources: List<GLSLResource>) {
-    for((stage, compiler) in intermediarCompilationResults.compilers) {
+    for ((stage, compiler) in intermediarCompilationResults.compilers) {
         val stageResources = compiler.shaderResources
 
         for (i in 0 until stageResources.sampledImages.size().toInt()) {
@@ -159,7 +236,23 @@ fun ShaderCompiler.addDecorations(intermediarCompilationResults: IntermediaryCom
             compiler.setDecoration(spirvResource.id, Decoration.DecorationBinding, glslResource.binding.toLong())
         }
 
-        for(i in 0 until stageResources.uniformBuffers.size().toInt()) {
+        for (i in 0 until stageResources.separateImages.size().toInt()) {
+            val spirvResource = stageResources.separateImages[i]
+            val glslResource = glslResources.find { it.name == spirvResource.name } as GLSLUniformImage2D
+
+            compiler.setDecoration(spirvResource.id, Decoration.DecorationDescriptorSet, glslResource.descriptorSetSlot.toLong())
+            compiler.setDecoration(spirvResource.id, Decoration.DecorationBinding, glslResource.binding.toLong())
+        }
+
+        for(i in 0 until stageResources.separateSamplers.size().toInt()) {
+            val spirvResource = stageResources.separateSamplers[i]
+            val glslResource = glslResources.find { it.name == spirvResource.name } as GLSLSampler
+
+            compiler.setDecoration(spirvResource.id, Decoration.DecorationDescriptorSet, glslResource.descriptorSetSlot.toLong())
+            compiler.setDecoration(spirvResource.id, Decoration.DecorationBinding, glslResource.binding.toLong())
+        }
+
+        for (i in 0 until stageResources.uniformBuffers.size().toInt()) {
             val spirvResource = stageResources.uniformBuffers[i]
             val instanceName = spirvResource.name.split("_")[2]
 
@@ -174,7 +267,7 @@ fun ShaderCompiler.addDecorations(intermediarCompilationResults: IntermediaryCom
 }
 
 fun ShaderCompiler.toIntermediateGLSL(intermediarCompilationResults: IntermediaryCompilationResults): Map<ShaderStage, String> {
-    return intermediarCompilationResults.compilers.mapValues {(stage, compiler) ->
+    return intermediarCompilationResults.compilers.mapValues { (stage, compiler) ->
         val options = CompilerGLSL.Options()
 
         when (dialect) {
