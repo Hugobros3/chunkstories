@@ -15,6 +15,7 @@ import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.addDecoratio
 import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.buildIntermediaryStructure
 import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.createShaderResources
 import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.toIntermediateGLSL
+import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.SpirvCrossHelper
 import xyz.chunkstories.graphics.vulkan.shaders.VulkanShaderFactory
 import kotlin.reflect.KClass
 
@@ -27,8 +28,8 @@ abstract class ShaderCompiler(val dialect: GLSLDialect) {
     val jvmGlslMappings = mutableMapOf<KClass<InterfaceBlock>, GLSLType.JvmStruct>()
 
     init {
-        Loader.loadNatives()
-        //initSpirvCross()
+        //Loader.loadNatives()
+        SpirvCrossHelper.initSpirvCross()
     }
 
     fun loadGLSLProgram(shaderName: String) : GLSLProgram {
