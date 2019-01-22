@@ -4,7 +4,6 @@ import xyz.chunkstories.api.world.chunk.Chunk
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
 import xyz.chunkstories.graphics.vulkan.resources.DescriptorSetsMegapool
-import xyz.chunkstories.graphics.vulkan.textures.VirtualTexturing
 import xyz.chunkstories.world.chunk.CubicChunk
 import xyz.chunkstories.world.chunk.deriveddata.AutoRebuildingProperty
 
@@ -27,14 +26,14 @@ class ChunkVkMeshProperty(val backend: VulkanGraphicsBackend, val chunk: CubicCh
         }
     }
 
-    fun acceptNewData(vertexBuffer: VulkanVertexBuffer?, virtualTexturingContext: VirtualTexturing.VirtualTexturingContext?, count: Int) {
-        val data = ChunkVulkanMeshData(vertexBuffer, virtualTexturingContext, count, property)
+    fun acceptNewData(vertexBuffer: VulkanVertexBuffer?, /*virtualTexturingContext: VirtualTexturing.VirtualTexturingContext?, */count: Int) {
+        val data = ChunkVulkanMeshData(vertexBuffer, /*virtualTexturingContext, */count, property)
         property.set(data)
     }
 
     inner class ChunkVulkanMeshData(
             val vertexBuffer: VulkanVertexBuffer?,
-            val virtualTexturingContext: VirtualTexturing.VirtualTexturingContext?,
+            /*val virtualTexturingContext: VirtualTexturing.VirtualTexturingContext?,*/
             val count: Int, property: RefCountedProperty<*>
     ) : RefCountedRecyclable(property) {
 
@@ -43,7 +42,7 @@ class ChunkVkMeshProperty(val backend: VulkanGraphicsBackend, val chunk: CubicCh
         override fun cleanup() {
             perChunkBindings?.recycle()
             vertexBuffer?.cleanup()
-            virtualTexturingContext?.returnToPool()
+            //virtualTexturingContext?.returnToPool()
         }
     }
 

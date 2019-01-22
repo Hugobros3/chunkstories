@@ -9,12 +9,12 @@ import xyz.chunkstories.api.world.chunk.ChunkHolder
 import xyz.chunkstories.graphics.common.UnitCube
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
-import xyz.chunkstories.graphics.vulkan.textures.VirtualTexturing
 import xyz.chunkstories.world.cell.ScratchCell
 import xyz.chunkstories.world.chunk.CubicChunk
 import xyz.chunkstories.world.chunk.deriveddata.AutoRebuildingProperty
 import org.joml.Vector4f
 import org.lwjgl.system.MemoryUtil
+import xyz.chunkstories.graphics.vulkan.textures.VulkanTexture2D
 import java.util.*
 
 class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicChunk, attachedProperty: AutoRebuildingProperty, updates: Int) : AutoRebuildingProperty.UpdateTask(attachedProperty, updates) {
@@ -46,15 +46,15 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
         val rng = Random(1)
         var count = 0
         val vertexBuffer: VulkanVertexBuffer?
-        val virtualTexturingContext: VirtualTexturing.VirtualTexturingContext?
+        //val virtualTexturingContext: VirtualTexturing.VirtualTexturingContext?
 
         val chunkDataRef = chunk.voxelDataArray
         if (chunk.isAirChunk || chunkDataRef == null) {
             vertexBuffer = null
-            virtualTexturingContext = null
+            //virtualTexturingContext = null
         } else {
             rawChunkData = chunkDataRef
-            virtualTexturingContext = backend.virtualTexturing.getVirtualTexturingContext()
+            //virtualTexturingContext = backend.virtualTexturing.getVirtualTexturingContext()
 
             val buffer = MemoryUtil.memAlloc(1024 * 1024 * 4 * 4)
 
@@ -90,7 +90,8 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
                                 //    println(voxelTexture.name)
 
                                 val textureName = "voxels/textures/"+voxelTexture.name.replace('.','/')+".png"
-                                val textureId = (virtualTexturingContext.translate(backend.textures[textureName]) as VirtualTexturing.TranslationResult.Success).id
+                                val textureId = (backend.textures[textureName] as VulkanTexture2D).mapping
+                                //(virtualTexturingContext.translate(backend.textures[textureName]) as VirtualTexturing.TranslationResult.Success).id
 
                                 //if (color.w < 1.0f)
                                 //    color.mul(Vector4f(0f, 1f, 0.3f, 1.0f))
@@ -159,12 +160,10 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
 
             MemoryUtil.memFree(buffer)
 
-            virtualTexturingContext.updateContents()
+            //virtualTexturingContext.updateContents()
         }
 
-        //val generatedData = VulkanChunkRenderData.ChunkMeshInstance(chunk, vertexBuffer, count)
-        //(chunk.meshData as VulkanChunkRenderData).acceptNewData(generatedData)
-        (chunk.meshData as ChunkVkMeshProperty).acceptNewData(vertexBuffer, virtualTexturingContext, count)
+        (chunk.meshData as ChunkVkMeshProperty).acceptNewData(vertexBuffer, /*virtualTexturingContext, */count)
         return true
     }
 

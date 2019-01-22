@@ -120,10 +120,10 @@ class MagicTexturing(val backend: VulkanGraphicsBackend) : Cleanable {
             }
 
             val allocateInfoVL = VkDescriptorSetVariableDescriptorCountAllocateInfoEXT.callocStack().sType(VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO_EXT).apply {
-                pDescriptorCounts(stackInts(512))
+                pDescriptorCounts(stackInts(2048    ))
             }
 
-            //allocInfo.pNext(allocateInfoVL.address())
+            allocInfo.pNext(allocateInfoVL.address())
 
             val pDescriptorSets = MemoryStack.stackMallocLong(1)
             vkAllocateDescriptorSets(backend.logicalDevice.vkDevice, allocInfo, pDescriptorSets).ensureIs("Failed to allocate descriptor sets :( ", VK_SUCCESS)
