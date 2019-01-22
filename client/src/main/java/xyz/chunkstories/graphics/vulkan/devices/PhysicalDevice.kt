@@ -65,7 +65,13 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
         }
         vkGetPhysicalDeviceFeatures2(vkPhysicalDevice, vkPhysicalDeviceFeatures2)
 
-        canDoNonUniformSamplerIndexing = deviceIndexingFeatures?.shaderSampledImageArrayNonUniformIndexing() == true
+        canDoNonUniformSamplerIndexing =
+                deviceIndexingFeatures != null &&
+                deviceIndexingFeatures.shaderSampledImageArrayNonUniformIndexing() &&
+                deviceIndexingFeatures.descriptorBindingVariableDescriptorCount() &&
+                deviceIndexingFeatures.descriptorBindingSampledImageUpdateAfterBind() &&
+                deviceIndexingFeatures.descriptorBindingPartiallyBound() &&
+                deviceIndexingFeatures.runtimeDescriptorArray()
 
         // Query queue families properties
         val pQueueFamilyCount = MemoryStack.stackMallocInt(1)
@@ -103,7 +109,6 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
         swapchainDetails = SwapChainSupportDetails(pSurfaceCapabilities, pSurfaceFormats, pPresentModes)
 
         // Look for diverging descriptor access capability
-
 
         // Decide if suitable or not based on all that
         suitable = vkPhysicalDeviceFeatures2.features().geometryShader() && availableExtensions.containsAll(backend.requiredDeviceExtensions) && swapchainDetails.suitable

@@ -1,17 +1,22 @@
 package xyz.chunkstories.graphics.vulkan.shaders
 
-import xyz.chunkstories.api.graphics.ShaderStage
-import xyz.chunkstories.api.graphics.structs.UniformUpdateFrequency
-import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
-import xyz.chunkstories.graphics.vulkan.util.VkDescriptorSetLayout
-import xyz.chunkstories.graphics.vulkan.util.ensureIs
 import org.lwjgl.system.MemoryStack
+import org.lwjgl.system.MemoryStack.stackCallocInt
+import org.lwjgl.vulkan.EXTDescriptorIndexing.*
 import org.lwjgl.vulkan.VK10
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkDescriptorSetLayoutBinding
+import org.lwjgl.vulkan.VkDescriptorSetLayoutBindingFlagsCreateInfoEXT
 import org.lwjgl.vulkan.VkDescriptorSetLayoutCreateInfo
+import xyz.chunkstories.api.graphics.ShaderStage
+import xyz.chunkstories.api.graphics.structs.UniformUpdateFrequency
 import xyz.chunkstories.graphics.common.shaders.*
 import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.SpirvCrossHelper
+import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
+import xyz.chunkstories.graphics.vulkan.textures.MagicTexturing.Companion.magicTexturesNames
+import xyz.chunkstories.graphics.vulkan.textures.MagicTexturing.Companion.magicTexturesUpperBound
+import xyz.chunkstories.graphics.vulkan.util.VkDescriptorSetLayout
+import xyz.chunkstories.graphics.vulkan.util.ensureIs
 
 data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsBackend, val glslProgram: GLSLProgram) {
     val spirvCode = SpirvCrossHelper.generateSpirV(glslProgram)
@@ -25,7 +30,7 @@ data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsB
         modules = spirvCode.stages.mapValues { ShaderModule(backend, it.value) }
 
         slotLayouts = Array(UniformUpdateFrequency.values().size + 2) { slot ->
-            DescriptorSlotLayout(createLayoutForSlot(slot), getDescriptorCountByType(slot))
+            DescriptorSlotLayout(createLayoutForSlot(slot), getDescriptorCountByType(slot), slot == 0)
         }
 
         MemoryStack.stackPop()
@@ -37,16 +42,18 @@ data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsB
                 .mapNotNull { resource ->
                     val descriptorType = when (resource) {
                         is GLSLUniformBlock -> VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
-                        is GLSLUniformSampler2D -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
                         is GLSLUniformImage2D -> VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE
-                        is GLSLUnusedUniform -> return@mapNotNull null
+                        is GLSLUniformSampler2D -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+                        is GLSLUniformSampler -> VK_DESCRIPTOR_TYPE_SAMPLER
+                        //is GLSLUnusedUniform -> return@mapNotNull null
                         else -> throw Exception("Missing mapping from GLSLResource type to Vulkan descriptor type !")
                     }
 
                     val descriptorsNeeded = when (resource) {
                         is GLSLUniformBlock -> 1
+                        is GLSLUniformSampler -> 1
                         is GLSLUniformSampler2D -> resource.count
-                        is GLSLUniformImage2D -> resource.count
+                        is GLSLUniformImage2D -> if (resource.count != 0) resource.count else magicTexturesUpperBound
                         else -> throw Exception("Missing mapping from GLSLResource type to Vulkan descriptor type !")
                     }
 
@@ -56,33 +63,40 @@ data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsB
 
     //TODO create the layout from getDescriptorCountByType(): Map<Int, Int>
     //TODO and reuse the layouts
-    private fun createLayoutForSlot(slot: Int) : VkDescriptorSetLayout {
+    private fun createLayoutForSlot(slot: Int): VkDescriptorSetLayout {
         // We want a list of all the bindings the layout for the set #i, we'll start by taking all the shader resources ...
-        val layoutBindings = glslProgram.resources
+        val bindingsMap = glslProgram.resources
                 .filter { it.descriptorSetSlot == slot } // Filter only those who match this descriptor set slot
-                .mapNotNull { resource ->
+                .associateWith { resource ->
                     // And depending on their type we'll make them correspond to the relevant Vulkan objects
 
                     println("FUUU $slot $resource")
 
-                    if (resource is GLSLUnusedUniform)
-                        return@mapNotNull null
+                    //if (resource is GLSLUnusedUniform)
+                    //    return@mapNotNull null
 
                     VkDescriptorSetLayoutBinding.callocStack().apply {
                         binding(resource.binding)
 
                         descriptorType(when (resource) {
-                            is GLSLUniformSampler2D -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
                             is GLSLUniformBlock -> VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+                            is GLSLUniformSampler -> VK_DESCRIPTOR_TYPE_SAMPLER
+                            is GLSLUniformSampler2D -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
                             is GLSLUniformImage2D -> VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE
                             else -> throw Exception("Unmappped GLSL Uniform resource type")
                         })
 
                         descriptorCount(when (resource) {
+                            is GLSLUniformBlock -> 1
+                            is GLSLUniformSampler -> 1
                             is GLSLUniformSampler2D -> resource.count
-                            is GLSLUniformImage2D -> resource.count
+                            is GLSLUniformImage2D -> if (resource.count != 0) resource.count else magicTexturesUpperBound
                             else -> 1 //TODO maybe allow arrays of ubo ? not for now
                         })
+
+                        if (slot == 0 && resource.name in magicTexturesNames) {
+                            // we can't set the binding flags here, see VkDescriptorSetLayoutBindingFlagsCreateInfoEXT below
+                        }
 
                         stageFlags(VK10.VK_SHADER_STAGE_ALL_GRAPHICS) //TODO we could be more precise here
                         //pImmutableSamplers() //TODO
@@ -90,15 +104,41 @@ data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsB
                 }
 
         // (Transforming the above struct into native-friendly stuff )
-        val pLayoutBindings = if (layoutBindings.isNotEmpty()) {
-            val them = VkDescriptorSetLayoutBinding.callocStack(layoutBindings.size)
-            layoutBindings.forEach { them.put(it) }
+        val pBindings = if (bindingsMap.isNotEmpty()) {
+            val them = VkDescriptorSetLayoutBinding.callocStack(bindingsMap.size)
+            bindingsMap.forEach { (_, it) -> them.put(it) }
             them
         } else null
-        pLayoutBindings?.flip()
+        pBindings?.flip()
 
         val setLayoutCreateInfo = VkDescriptorSetLayoutCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO).apply {
-            pBindings(pLayoutBindings)
+            pBindings(pBindings)
+            if (slot == 0)
+                flags(VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT_EXT)
+        }
+
+        if (slot == 0) {
+            val bindingFlags = stackCallocInt(bindingsMap.size)
+            for ((resource, _) in bindingsMap) {
+                bindingFlags.put(when (resource) {
+                    is GLSLUniformImage2D ->
+                        VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT_EXT or
+                                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT_EXT or
+                                VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT_EXT
+                    else -> 0
+                })
+            }
+            bindingFlags.flip()
+
+            val bindingFlagsCreateInfo = VkDescriptorSetLayoutBindingFlagsCreateInfoEXT.callocStack().apply {
+                sType(VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO_EXT)
+
+                bindingCount(2)
+                pBindingFlags(bindingFlags)
+                pNext(setLayoutCreateInfo.pNext())
+            }
+
+            setLayoutCreateInfo.pNext(bindingFlagsCreateInfo.address())
         }
 
         val pDescriptorSetLayout = MemoryStack.stackLongs(1)

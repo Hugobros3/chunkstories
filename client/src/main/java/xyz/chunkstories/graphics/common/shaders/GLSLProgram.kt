@@ -33,11 +33,11 @@ data class GLSLUniformBlock(
         override val binding: Int,
         val struct: GLSLType.JvmStruct) : GLSLResource
 
-data class GLSLUnusedUniform(
+/*data class GLSLUnusedUniform(
         override val name: String,
         override val descriptorSetSlot: Int,
         override val binding: Int
-) : GLSLResource
+) : GLSLResource*/
 
 /** Represents a (potentially an array of) sampler2D uniform resource declared in one of the stages of the GLSL program */
 data class GLSLUniformSampler2D(
@@ -52,7 +52,7 @@ data class GLSLUniformImage2D(
         override val binding: Int,
         val count: Int) : GLSLResource
 
-data class GLSLSampler(
+data class GLSLUniformSampler(
         override val name: String,
         override val descriptorSetSlot: Int,
         override val binding: Int

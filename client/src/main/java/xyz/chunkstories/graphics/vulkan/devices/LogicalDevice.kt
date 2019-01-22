@@ -101,6 +101,10 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
         if(physicalDevice.canDoNonUniformSamplerIndexing) {
             val descriptorIndexingExtCreateInfo = VkPhysicalDeviceDescriptorIndexingFeaturesEXT.callocStack().sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT).apply {
                 shaderSampledImageArrayNonUniformIndexing(true)
+                descriptorBindingVariableDescriptorCount(true)
+                descriptorBindingSampledImageUpdateAfterBind(true)
+                descriptorBindingPartiallyBound(true)
+                runtimeDescriptorArray(true)
             }
             vkDeviceCreateInfo.pNext(descriptorIndexingExtCreateInfo.address())
             logger.info("Enabling diverging uniform sampler indexing !")

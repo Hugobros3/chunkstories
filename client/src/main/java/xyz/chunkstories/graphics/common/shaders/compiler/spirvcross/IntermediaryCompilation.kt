@@ -4,9 +4,9 @@ import graphics.scenery.spirvcrossj.*
 import xyz.chunkstories.api.graphics.ShaderStage
 import xyz.chunkstories.graphics.common.shaders.*
 import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompiler
-import xyz.chunkstories.graphics.common.shaders.compiler.preprocessing.magicTexturesNames
 import xyz.chunkstories.graphics.common.shaders.compiler.preprocessing.updateFrequency
 import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.SpirvCrossHelper.spirvStageInt
+import xyz.chunkstories.graphics.vulkan.textures.MagicTexturing.Companion.magicTexturesNames
 
 fun ShaderCompiler.buildIntermediaryStructure(stages: Map<ShaderStage, String>): IntermediaryCompilationResults {
     libspirvcrossj.initializeProcess()
@@ -125,7 +125,7 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
             val separateImageName = separateImage.name
             val arraySize =
                     if (separateImageName in magicTexturesNames)
-                        -1
+                        0
                     else
                         Array(type.array.size().toInt()) { type.array[it].toInt() }.toList().getOrNull(0) ?: 1
             /** https://www.khronos.org/registry/spir-v/specs/1.0/SPIRV.html#Dim */
@@ -181,10 +181,10 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
                 }
             }
 
-            if (resources.find { it is GLSLSampler && it.name == samplerName } != null)
+            if (resources.find { it is GLSLUniformSampler && it.name == samplerName } != null)
                 continue
 
-            resources.add(GLSLSampler(samplerName, setSlot, binding))
+            resources.add(GLSLUniformSampler(samplerName, setSlot, binding))
         }
 
         for (i in 0 until stageResources.uniformBuffers.size().toInt()) {
@@ -246,7 +246,7 @@ fun ShaderCompiler.addDecorations(intermediarCompilationResults: IntermediaryCom
 
         for(i in 0 until stageResources.separateSamplers.size().toInt()) {
             val spirvResource = stageResources.separateSamplers[i]
-            val glslResource = glslResources.find { it.name == spirvResource.name } as GLSLSampler
+            val glslResource = glslResources.find { it.name == spirvResource.name } as GLSLUniformSampler
 
             compiler.setDecoration(spirvResource.id, Decoration.DecorationDescriptorSet, glslResource.descriptorSetSlot.toLong())
             compiler.setDecoration(spirvResource.id, Decoration.DecorationBinding, glslResource.binding.toLong())

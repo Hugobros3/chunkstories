@@ -33,6 +33,7 @@ import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.EXTDebugReport.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.graphics.vulkan.textures.MagicTexturing
 import java.awt.image.BufferedImage
 
 class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(window) {
@@ -66,6 +67,8 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
     val descriptorMegapool = DescriptorSetsMegapool(this)
     val shaderFactory = VulkanShaderFactory(this, window.client)
     val textures: VulkanTextures
+    val magicTexturing: MagicTexturing
+
     val virtualTexturing: VirtualTexturing
 
     var renderGraph: VulkanRenderGraph
@@ -91,6 +94,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
         //TODO remove
         memoryManager = VulkanMemoryManager(this, logicalDevice)
 
+        magicTexturing = MagicTexturing(this)
         textures = VulkanTextures(this)
         virtualTexturing = VirtualTexturing(this)
 
@@ -311,6 +315,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
         vkDestroyRenderPass(logicalDevice.vkDevice, renderToBackbuffer, null)
         swapchain.cleanup()
 
+        magicTexturing.cleanup()
         textures.cleanup()
         virtualTexturing.cleanup()
         descriptorMegapool.cleanup()

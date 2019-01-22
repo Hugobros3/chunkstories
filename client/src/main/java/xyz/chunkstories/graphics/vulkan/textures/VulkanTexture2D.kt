@@ -22,6 +22,8 @@ class VulkanTexture2D(val backend: VulkanGraphicsBackend, override val format: T
     val imageMemory: VkDeviceMemory
     val imageView: VkImageView
 
+    val mapping: Int
+
     init {
         stackPush()
 
@@ -76,6 +78,8 @@ class VulkanTexture2D(val backend: VulkanGraphicsBackend, override val format: T
         val pImageView= stackMallocLong(1)
         vkCreateImageView(backend.logicalDevice.vkDevice, viewInfo, null, pImageView)
         imageView = pImageView.get(0)
+
+        mapping = backend.magicTexturing.getMapping(this)
 
         stackPop()
     }

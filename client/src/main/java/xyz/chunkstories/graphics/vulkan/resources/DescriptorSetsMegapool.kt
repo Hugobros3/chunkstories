@@ -19,6 +19,7 @@ import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import xyz.chunkstories.graphics.common.shaders.GLSLUniformBlock
 import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampler2D
+import xyz.chunkstories.graphics.vulkan.util.updateDescriptorSet
 import java.nio.IntBuffer
 import java.util.concurrent.ConcurrentLinkedDeque
 
@@ -37,6 +38,11 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
         val pools = mutableListOf<VkDescriptorPool>()
 
         val available = ConcurrentLinkedDeque<VkDescriptorSet>()
+
+        init {
+            if(layout.variableSize)
+                TODO("Handle variable size layouts")
+        }
 
         fun createMoreDescriptorSets() {
             stackPush()
@@ -131,7 +137,8 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
                 sets.put(slot, set)
 
                 //TODO don't do this idk
-                backend.copyDescriptorSet(oldset, set, slotLayout.bindingsCountTotal)
+                TODO("kill")
+                //backend.copyDescriptorSet(oldset, set, slotLayout.bindingsCountTotal)
 
                 spentSets.getOrPut(subpool) { mutableListOf() }.add(oldset)
             }
@@ -198,68 +205,4 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
     override fun cleanup() {
         mainPool.values.forEach { it.cleanup() }
     }
-}
-
-private fun VulkanGraphicsBackend.updateDescriptorSet(set: VkDescriptorSet, binding: Int, buffer: VulkanUniformBuffer) {
-    stackPush()
-
-    val bufferInfo = VkDescriptorBufferInfo.callocStack(1).apply {
-        buffer(buffer.handle)
-        offset(0)
-        range(VK_WHOLE_SIZE)
-    }
-
-    val stuffToWrite = VkWriteDescriptorSet.callocStack(1).sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET).apply {
-        dstSet(set)
-        dstBinding(binding)
-        dstArrayElement(0)
-        descriptorType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
-
-        // Just update the descriptor for our lone ubo buffer
-        pBufferInfo(bufferInfo)
-    }
-
-    vkUpdateDescriptorSets(logicalDevice.vkDevice, stuffToWrite, null)
-
-    stackPop()
-}
-
-private fun VulkanGraphicsBackend.updateDescriptorSet(set: VkDescriptorSet, binding: Int, texture: VulkanTexture2D, sampler: VulkanSampler) {
-    stackPush()
-
-    val imageInfo = VkDescriptorImageInfo.callocStack(1).apply {
-        imageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) //TODO maybe we can get that from VulkanTexture2D current layout field ?
-        imageView(texture.imageView)
-        sampler(sampler.handle)
-    }
-
-    val stuffToWrite = VkWriteDescriptorSet.callocStack(1).sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET).apply {
-        dstSet(set)
-        dstBinding(binding)
-        dstArrayElement(0)
-        descriptorType(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
-
-        // Just update the descriptor for our lone ubo buffer
-        pImageInfo(imageInfo)
-    }
-
-    vkUpdateDescriptorSets(logicalDevice.vkDevice, stuffToWrite, null)
-
-    stackPop()
-}
-
-private fun VulkanGraphicsBackend.copyDescriptorSet(source: VkDescriptorSet, destination: VkDescriptorSet, setSize: Int) {
-    stackPush()
-
-    val copies = VkCopyDescriptorSet.callocStack(1).apply {
-        srcSet(source)
-        dstSet(destination)
-        descriptorCount(setSize)
-
-        this.descriptorCount()
-    }
-
-    vkUpdateDescriptorSets(logicalDevice.vkDevice, null, copies)
-
-    stackPop()
 }
