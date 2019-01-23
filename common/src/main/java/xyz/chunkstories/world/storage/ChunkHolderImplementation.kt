@@ -282,7 +282,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
             when (state) {
                 ChunkHolder.State.WaitForRegionInitialLoad -> { /* legal, don't care */
                 }
-                ChunkHolder.State.Unloaded -> if (compressedData != null) transitionLoading() else transitionGenerating()
+                ChunkHolder.State.Unloaded -> if (region.state is Region.State.Generating) transitionGenerating() else transitionLoading()
                 is ChunkHolder.State.Generating -> { /* legal, don't care */
                 }
                 is ChunkHolder.State.Loading -> throw Exception("This doesn't make sense $stateHistory")
@@ -300,7 +300,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
                 throw Exception("Illegal state change")
 
             if (users.isNotEmpty()) {
-                if (compressedData != null) transitionLoading() else transitionGenerating()
+                if (region.state is Region.State.Generating) transitionGenerating() else transitionLoading()
             } else {
                 transitionUnloaded()
             }
