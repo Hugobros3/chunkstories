@@ -66,7 +66,6 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
     val descriptorMegapool = DescriptorSetsMegapool(this)
     val shaderFactory = VulkanShaderFactory(this, window.client)
     val textures: VulkanTextures
-    val magicTexturing: MagicTexturing
 
     //val virtualTexturing: VirtualTexturing
 
@@ -93,7 +92,6 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
         //TODO remove
         memoryManager = VulkanMemoryManager(this, logicalDevice)
 
-        magicTexturing = MagicTexturing(this)
         textures = VulkanTextures(this)
         //virtualTexturing = VirtualTexturing(this)
 
@@ -314,7 +312,6 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
         vkDestroyRenderPass(logicalDevice.vkDevice, renderToBackbuffer, null)
         swapchain.cleanup()
 
-        magicTexturing.cleanup()
         textures.cleanup()
         //virtualTexturing.cleanup()
         descriptorMegapool.cleanup()

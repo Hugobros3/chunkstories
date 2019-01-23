@@ -108,7 +108,8 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
             }
             vkDeviceCreateInfo.pNext(descriptorIndexingExtCreateInfo.address())
             logger.info("Enabling diverging uniform sampler indexing !")
-        }
+        } else
+            throw Exception("You need VK_ext_descriptor_indexing support !")
 
         val pDevice = stackMallocPointer(1)
         vkCreateDevice(physicalDevice.vkPhysicalDevice, vkDeviceCreateInfo, null, pDevice).ensureIs("Failed to create device from $physicalDevice", VK10.VK_SUCCESS)

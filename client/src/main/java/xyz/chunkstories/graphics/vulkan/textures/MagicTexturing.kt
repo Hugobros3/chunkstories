@@ -58,7 +58,8 @@ class MagicTexturing(val backend: VulkanGraphicsBackend) : Cleanable {
         bindingFlags.put(1,
                         VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT_EXT or
                         VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT_EXT or
-                        VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT_EXT)
+                        VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT_EXT
+        )
 
         val bindingFlagsCreateInfo = VkDescriptorSetLayoutBindingFlagsCreateInfoEXT.callocStack().apply {
             sType(VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO_EXT)
@@ -120,7 +121,7 @@ class MagicTexturing(val backend: VulkanGraphicsBackend) : Cleanable {
             }
 
             val allocateInfoVL = VkDescriptorSetVariableDescriptorCountAllocateInfoEXT.callocStack().sType(VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO_EXT).apply {
-                pDescriptorCounts(stackInts(2048    ))
+                pDescriptorCounts(stackInts(2048))
             }
 
             allocInfo.pNext(allocateInfoVL.address())
@@ -135,11 +136,24 @@ class MagicTexturing(val backend: VulkanGraphicsBackend) : Cleanable {
         val id = mappings.size
         mappings[vulkanTexture2D] = id
         backend.updateDescriptorSet(theSet, 1, vulkanTexture2D, id)
+
+        //Thread.dumpStack()
+        //println("$vulkanTexture2D")
+
+        if(!prepared) {
+            for(i in 0 until 2048) {
+                backend.updateDescriptorSet(theSet, 1, vulkanTexture2D, i)
+            }
+            prepared = true
+        }
+
         return id
     }
 
+    var prepared = false
+
     companion object {
-        val magicTexturesUpperBound = 16384
+        val magicTexturesUpperBound = 2048
         val magicTexturesNames = setOf("textures2D")
     }
 

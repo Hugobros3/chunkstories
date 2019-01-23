@@ -112,7 +112,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         totalBuffersUsed = 0
 
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshesPipeline.handle)
-        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshesPipeline.layout, 0, stackLongs(backend.magicTexturing.theSet), null)
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshesPipeline.layout, 0, stackLongs(backend.textures.magicTexturing.theSet), null)
 
         val camChunk = camPos.toVec3i()
         camChunk.x /= 32
