@@ -7,5 +7,5 @@ out vec4 outColor;
 uniform TestStructure testUBO;
 
 void main() {
-    outColor = vec4(fragColor, testUBO.nik);
+    outColor = vec4(fragColor, testUBO.floater);
 }

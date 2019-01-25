@@ -7,6 +7,7 @@ import xyz.chunkstories.api.graphics.ShaderStage
 import xyz.chunkstories.api.graphics.structs.InterfaceBlock
 import xyz.chunkstories.graphics.common.shaders.GLSLDialect
 import xyz.chunkstories.graphics.common.shaders.GLSLProgram
+import xyz.chunkstories.graphics.common.shaders.GLSLShaderStorage
 import xyz.chunkstories.graphics.common.shaders.GLSLType
 import xyz.chunkstories.graphics.common.shaders.compiler.postprocessing.addVirtualTexturingHeader
 import xyz.chunkstories.graphics.common.shaders.compiler.postprocessing.annotateForNonUniformAccess
@@ -55,24 +56,25 @@ abstract class ShaderCompiler(val dialect: GLSLDialect) {
         stages = stages.mapValues { (stage, shaderCode) -> addStructsDeclaration(shaderCode, jvmStructsUsed[stage]!! ) }
 
         stages = stages.mapValues { (stage, shaderCode) -> inlineUniformStructs(shaderCode, jvmStructsUsed[stage]!! ) }
-        //TODO virtual texturing magic code
+        stages = stages.mapValues { (stage, shaderCode) -> inlinePerInstanceData(shaderCode, jvmStructsUsed[stage]!! ) }
+
         stages = stages.mapValues { (stage, shaderCode) -> addVirtualTexturingHeader(shaderCode) }
-        //TODO per-instance data magic code
 
         val vertexInputs = analyseVertexShaderInputs(stages[ShaderStage.VERTEX]!!)
         val fragmentOutputs = analyseFragmentShaderOutputs(stages[ShaderStage.FRAGMENT]!!)
 
         val intermediaryCompilationResults = buildIntermediaryStructure(stages)
-        val resources = createShaderResources(intermediaryCompilationResults)
+        val (perInstanceDataInputs, resources) = createShaderResources(intermediaryCompilationResults)
 
-        addDecorations(intermediaryCompilationResults, resources)
+        addDecorations(intermediaryCompilationResults, resources, perInstanceDataInputs)
         stages = toIntermediateGLSL(intermediaryCompilationResults)
 
         //if(this is VulkanShaderFactory && this.backend.enableDivergingUniformSamplerIndexing)
         if(dialect == GLSLDialect.VULKAN)
            stages = stages.mapValues { (stage, shaderCode) -> annotateForNonUniformAccess(shaderCode) }
 
-        return GLSLProgram(shaderName, dialect, vertexInputs, fragmentOutputs, resources, stages)
+        //val perInstanceDataInputs = resources.filterIsInstance<GLSLShaderStorage>().mapNotNull { it.associatedInstanceData }
+        return GLSLProgram(shaderName, dialect, vertexInputs, fragmentOutputs, perInstanceDataInputs, resources, stages)
     }
 
     fun readShaderFile(path: String): String? {

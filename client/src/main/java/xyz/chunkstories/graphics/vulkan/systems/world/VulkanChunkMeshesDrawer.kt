@@ -84,7 +84,8 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         }
     }
 
-    private val meshesPipeline = Pipeline(backend, pass, backend.shaderFactory.createProgram("cubes"), meshesVertexInputCfg, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
+    val cubesProgram = backend.shaderFactory.createProgram("cubes")
+    private val meshesPipeline = Pipeline(backend, pass, cubesProgram, meshesVertexInputCfg, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
 
     companion object {
         var totalCubesDrawn = 0
@@ -261,6 +262,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
 
     override fun cleanup() {
         meshesPipeline.cleanup()
+        cubesProgram.cleanup()
     }
 }
 

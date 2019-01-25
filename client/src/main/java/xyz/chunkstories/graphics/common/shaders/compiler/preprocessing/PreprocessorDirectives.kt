@@ -94,7 +94,27 @@ fun ShaderCompiler.inlineUniformStructs(shaderCode: String, structs: List<GLSLTy
         val uniformName = line.split(' ').getOrNull(2)?.trimEnd(';')
 
         structs.find { it.glslToken == structName }?.run {
-            "layout(std140) uniform inlined_${structName}_$uniformName {\n" + this.innerGLSLCode() + "} $uniformName;\n"
+            """layout(std140) uniform inlined_${structName}_$uniformName {
+                ${this.innerGLSLCode()}
+                } $uniformName;
+            """.trim()
+        } ?: line
+    } else
+        line
+}.joinToString(separator = "\n")
+
+fun ShaderCompiler.inlinePerInstanceData(shaderCode: String, structs: List<GLSLType.JvmStruct>) : String = shaderCode.lines().map { line ->
+    if(line.startsWith("instanced")) {
+        val structName = line.split(' ').getOrNull(1)
+        val instanceData = line.split(' ').getOrNull(2)?.trimEnd(';')
+
+        structs.find { it.glslToken == structName }?.run {
+            """layout(std140) buffer inlined_${structName}_$instanceData {
+                $structName data[];
+                } ${instanceData}_buffer;
+
+                #define $instanceData ${instanceData}_buffer.data[gl_InstanceIndex]
+            """.trim()
         } ?: line
     } else
         line

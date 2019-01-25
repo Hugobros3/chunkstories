@@ -69,12 +69,6 @@ data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsB
                 .filter { it.descriptorSetSlot == slot } // Filter only those who match this descriptor set slot
                 .associateWith { resource ->
                     // And depending on their type we'll make them correspond to the relevant Vulkan objects
-
-                    println("FUUU $slot $resource")
-
-                    //if (resource is GLSLUnusedUniform)
-                    //    return@mapNotNull null
-
                     VkDescriptorSetLayoutBinding.callocStack().apply {
                         binding(resource.binding)
 

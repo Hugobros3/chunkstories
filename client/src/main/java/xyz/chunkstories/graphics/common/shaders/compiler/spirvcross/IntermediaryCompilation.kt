@@ -2,6 +2,8 @@ package xyz.chunkstories.graphics.common.shaders.compiler.spirvcross
 
 import graphics.scenery.spirvcrossj.*
 import xyz.chunkstories.api.graphics.ShaderStage
+import xyz.chunkstories.api.graphics.structs.UniformUpdateFrequency
+import xyz.chunkstories.api.graphics.structs.UpdateFrequency
 import xyz.chunkstories.graphics.common.shaders.*
 import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompiler
 import xyz.chunkstories.graphics.common.shaders.compiler.preprocessing.updateFrequency
@@ -65,8 +67,9 @@ fun ShaderCompiler.buildIntermediaryStructure(stages: Map<ShaderStage, String>):
 
 data class IntermediaryCompilationResults(val tProgram: TProgram, val tShaders: Map<ShaderStage, TShader>, val compilers: Map<ShaderStage, CompilerGLSL>)
 
-fun ShaderCompiler.createShaderResources(intermediarCompilationResults: IntermediaryCompilationResults): List<GLSLResource> {
+fun ShaderCompiler.createShaderResources(intermediarCompilationResults: IntermediaryCompilationResults): Pair<List<GLSLInstancedInput>, List<GLSLResource>> {
     val resources = mutableListOf<GLSLResource>()
+    val instancedInputs = mutableListOf<GLSLInstancedInput>()
 
     for ((stage, compiler) in intermediarCompilationResults.compilers) {
         val stageResources = compiler.shaderResources
@@ -87,7 +90,6 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
             val shadowSampler = imageType.depth
             val arrayTexture = imageType.arrayed
             val combined = imageType.sampled
-            println("$sampledImageName $combined")
 
             // Don't duplicate resources
             if (resources.find { it is GLSLUniformSampler2D && it.name == sampledImageName } != null)
@@ -194,7 +196,7 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
             val type = uniformBufferName.split("_")[1]
             val instanceName = uniformBufferName.split("_")[2]
 
-            println("found ubo type: $type instanceName: $instanceName")
+            //println("found ubo type: $type instanceName: $instanceName")
 
             if (resources.find { it is GLSLUniformBlock && it.name == instanceName } != null)
                 continue
@@ -219,12 +221,47 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
         }
 
         //TODO SSBO
+        for(i in 0 until stageResources.storageBuffers.size().toInt()) {
+            val storageBuffer = stageResources.storageBuffers[i]
+            val storageBufferName = storageBuffer.name
+
+            val split = storageBufferName.split("_")
+            if(split.size < 3) // Maybe this is just a normal SSBO !
+                continue
+
+            val type = split[1]
+            val instanceName = split[2]
+
+            if (resources.find { it is GLSLShaderStorage && it.name == instanceName } != null)
+                continue
+
+            val jvmStruct = jvmGlslMappings.values.find { it.glslToken == type }!!
+
+            val setSlot: Int
+            val binding: Int
+
+            when (dialect) {
+                GLSLDialect.VULKAN -> {
+                    setSlot = UniformUpdateFrequency.ONCE_PER_BATCH.ordinal + 2
+                    binding = (resources.filter { it.descriptorSetSlot == setSlot }.maxBy { it.binding }?.binding ?: -1) + 1
+                }
+                GLSLDialect.OPENGL4 -> {
+                    setSlot = 0
+                    binding = resources.size
+                }
+            }
+
+            val glslResource = GLSLShaderStorage(instanceName, setSlot, binding)
+            val instancedInput = GLSLInstancedInput(instanceName, jvmStruct, glslResource)
+            instancedInputs.add(instancedInput)
+            resources.add(glslResource)
+        }
     }
 
-    return resources
+    return Pair(instancedInputs, resources)
 }
 
-fun ShaderCompiler.addDecorations(intermediarCompilationResults: IntermediaryCompilationResults, glslResources: List<GLSLResource>) {
+fun ShaderCompiler.addDecorations(intermediarCompilationResults: IntermediaryCompilationResults, glslResources: List<GLSLResource>, glslInstancedInputs: List<GLSLInstancedInput>) {
     for ((stage, compiler) in intermediarCompilationResults.compilers) {
         val stageResources = compiler.shaderResources
 
@@ -263,6 +300,16 @@ fun ShaderCompiler.addDecorations(intermediarCompilationResults: IntermediaryCom
         }
 
         //TODO SSBOS
+        for(i in 0 until stageResources.storageBuffers.size().toInt()) {
+            val spirvResource = stageResources.storageBuffers[i]
+            val instanceName = spirvResource.name.split("_")[2]
+
+            val glslInstancedInput = glslInstancedInputs.find { it.name == instanceName }!!
+            val glslResource = glslInstancedInput.shaderStorage
+
+            compiler.setDecoration(spirvResource.id, Decoration.DecorationDescriptorSet, glslResource.descriptorSetSlot.toLong())
+            compiler.setDecoration(spirvResource.id, Decoration.DecorationBinding, glslResource.binding.toLong())
+        }
     }
 }
 

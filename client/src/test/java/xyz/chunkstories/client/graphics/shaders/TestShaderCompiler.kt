@@ -51,6 +51,18 @@ class TestShaderCompiler {
     }
 
     @Test
+    fun ssbo() {
+        LogbackSetupHelper.setupLoggingForTesting()
+        val shaderCompiler = HeadlessShaderCompiler(GLSLDialect.VULKAN, javaClass.classLoader, null)
+
+        val program = shaderCompiler.loadGLSLProgram("ssbo")
+        println("OK")
+        println(program.instancedInputs)
+        println(program.resources)
+        println(program.sourceCode)
+    }
+
+    @Test
     fun gui() {
         LogbackSetupHelper.setupLoggingForTesting()
         val shaderCompiler = HeadlessShaderCompiler(GLSLDialect.VULKAN, javaClass.classLoader, null)

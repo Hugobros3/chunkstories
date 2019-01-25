@@ -7,6 +7,7 @@ data class GLSLProgram(
         val dialect: GLSLDialect,
         val vertexInputs: List<GLSLVertexInput>,
         val fragmentOutputs: List<GLSLFragmentOutput>,
+        val instancedInputs: List<GLSLInstancedInput>,
         val resources: List<GLSLResource>,
         val sourceCode: Map<ShaderStage, String>
 )
@@ -14,6 +15,8 @@ data class GLSLProgram(
 data class GLSLVertexInput(val name: String, val format: GLSLType.BaseType, val location: Int)
 
 data class GLSLFragmentOutput(val name: String, val format: GLSLType.BaseType, val location: Int)
+
+data class GLSLInstancedInput(val name: String, val struct: GLSLType.JvmStruct, val shaderStorage: GLSLShaderStorage)
 
 enum class GLSLDialect {
     VULKAN,
@@ -32,6 +35,12 @@ data class GLSLUniformBlock(
         override val descriptorSetSlot: Int,
         override val binding: Int,
         val struct: GLSLType.JvmStruct) : GLSLResource
+
+data class GLSLShaderStorage(
+        override val name: String,
+        override val descriptorSetSlot: Int,
+        override val binding: Int
+) : GLSLResource
 
 /*data class GLSLUnusedUniform(
         override val name: String,
