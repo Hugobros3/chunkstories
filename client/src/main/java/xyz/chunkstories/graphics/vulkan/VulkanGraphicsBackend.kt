@@ -309,12 +309,12 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
 
         renderGraph.cleanup()
 
-        vkDestroyRenderPass(logicalDevice.vkDevice, renderToBackbuffer, null)
-        swapchain.cleanup()
-
         textures.cleanup()
         //virtualTexturing.cleanup()
         descriptorMegapool.cleanup()
+
+        vkDestroyRenderPass(logicalDevice.vkDevice, renderToBackbuffer, null)
+        swapchain.cleanup()
 
         vmaAllocator.cleanup()
         memoryManager.cleanup()
@@ -322,10 +322,12 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
         logicalDevice.cleanup()
 
         vkDestroyDebugReportCallbackEXT(instance, debugCallback, null)
-        if(cookie)
-            logger.debug("You get a cookie for not making the validation layer unhappy :)")
-        else
-            logger.debug("The validation layer found errors, no cookie for you !")
+        if(useValidationLayer) {
+            if (cookie)
+                logger.debug("You get a cookie for not making the validation layer unhappy :)")
+            else
+                logger.debug("The validation layer found errors, no cookie for you !")
+        }
 
         vkDestroyInstance(instance, null)
         logger.debug("Successfully finished cleaning up Vulkan objects")

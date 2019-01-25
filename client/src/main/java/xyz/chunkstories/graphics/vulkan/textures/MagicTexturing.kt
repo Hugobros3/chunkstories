@@ -153,11 +153,13 @@ class MagicTexturing(val backend: VulkanGraphicsBackend) : Cleanable {
     var prepared = false
 
     companion object {
-        val magicTexturesUpperBound = 2048
+        val magicTexturesUpperBound = 65536
         val magicTexturesNames = setOf("textures2D")
     }
 
     override fun cleanup() {
+        sampler.cleanup()
+
         vkDestroyDescriptorSetLayout(backend.logicalDevice.vkDevice, setLayout, null)
         vkDestroyDescriptorPool(backend.logicalDevice.vkDevice, pool, null)
     }

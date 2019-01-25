@@ -40,6 +40,8 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val script: RenderGr
 
     internal val dummySwapchainRenderBuffer: VulkanRenderBuffer
 
+    private var presentPass: PresentationPass
+
     init {
         commandPool = CommandPool(backend, backend.logicalDevice.graphicsQueue.family, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT or VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
 
@@ -69,7 +71,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val script: RenderGr
             name = "_swapchain"
         }
 
-        val presentPass = PresentationPass(backend, this) {
+        presentPass = PresentationPass(backend, this) {
             this.shaderName = "blit"
 
             this.dependencies.add(passesInOrder.last().name)
@@ -303,6 +305,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val script: RenderGr
         passes.values.forEach(Cleanable::cleanup)
         buffers.values.forEach(Cleanable::cleanup)
 
+        presentPass.cleanup()
         commandPool.cleanup()
         //commandBuffers.cleanup() // useless, cleaning the commandpool cleans those implicitely
     }

@@ -139,7 +139,7 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
     }
 
     fun cleanup() {
-        allQueues
+        allQueues.forEach(Cleanable::cleanup)
 
         vkDestroyDevice(vkDevice, null)
     }
@@ -148,7 +148,7 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
         return "LogicalDevice(handle=$handle, graphicsQueue=$graphicsQueue)"
     }
 
-    inner class Queue(val handle: VkQueue, val family: PhysicalDevice.QueueFamily) {
+    inner class Queue(val handle: VkQueue, val family: PhysicalDevice.QueueFamily) : Cleanable{
         val mutex = Semaphore(1)
 
         val threadSafePools: ThreadLocal<CommandPool>
@@ -162,7 +162,7 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
             }
         }
 
-        fun cleanup() {
+        override fun cleanup() {
             allocatedThreadSafePools.forEach(Cleanable::cleanup)
         }
 

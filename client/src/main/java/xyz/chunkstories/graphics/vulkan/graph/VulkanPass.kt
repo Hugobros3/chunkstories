@@ -366,13 +366,17 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val graph: VulkanRende
     }
 
     override fun cleanup() {
-        vkDestroyFramebuffer(backend.logicalDevice.vkDevice, framebuffer, null)
-        vkDestroyRenderPass(backend.logicalDevice.vkDevice, renderPass, null)
+        drawingSystems.forEach(Cleanable::cleanup)
+
+        // Presentation pass doesn't get to destroy it's resources.
+        if(this !is PresentationPass) {
+            vkDestroyFramebuffer(backend.logicalDevice.vkDevice, framebuffer, null)
+            vkDestroyRenderPass(backend.logicalDevice.vkDevice, renderPass, null)
+        }
 
         commandPool.cleanup()
         //commandBuffers.cleanup() // useless, cleaning the commandpool cleans those implicitely
 
-        drawingSystems.forEach(Cleanable::cleanup)
         program.cleanup()
     }
 

@@ -65,12 +65,11 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
                 maxSets(descriptorSetsCount)
             }
 
-            println(layout)
-
             val pDescriptorPool = stackMallocLong(1)
             vkCreateDescriptorPool(backend.logicalDevice.vkDevice, poolCreateInfo, null, pDescriptorPool)
                     .ensureIs("Failed to create descriptor pool !", VK_SUCCESS)
             val newDescriptorPool = pDescriptorPool.get(0)
+            pools.add(newDescriptorPool)
 
             // Allocate every set we need from this pool
             val layouts = memAllocLong(descriptorSetsCount) // allocate on heap because this gets big
