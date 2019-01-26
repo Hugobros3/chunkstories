@@ -23,10 +23,15 @@ import org.joml.Vector3d
 import org.joml.Vector3f
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryStack.stackLongs
+import org.lwjgl.system.MemoryUtil.memAlloc
+import org.lwjgl.system.MemoryUtil.memFree
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 import xyz.chunkstories.api.world.chunk.Chunk
 import xyz.chunkstories.api.world.region.Region
+import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
+import xyz.chunkstories.graphics.vulkan.buffers.extractInterfaceBlockField
+import xyz.chunkstories.graphics.vulkan.resources.InflightFrameResource
 import xyz.chunkstories.world.storage.RegionImplementation
 import java.util.*
 
@@ -92,6 +97,16 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         var totalBuffersUsed = 0
     }
 
+    val chunkInfoID = cubesProgram.glslProgram.instancedInputs.find { it.name == "chunkInfo" }!!
+    val structSize = chunkInfoID.struct.size
+    val sizeAligned16 = if(structSize % 16 == 0) structSize else (structSize / 16 * 16) + 16
+
+    val sizeFor2048Elements = sizeAligned16 * 2048L
+
+    private val ssboDataTest = InflightFrameResource(backend) {
+        VulkanBuffer(backend, sizeFor2048Elements, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, false)
+    }
+
     override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer) {
         MemoryStack.stackPush()
 
@@ -105,7 +120,6 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
 
         bindingContext.bindUBO(camera)
         bindingContext.bindUBO(world.getConditions())
-        bindingContext.preDraw(commandBuffer)
 
         val frustrum = Frustrum(camera, client.gameWindow)
 
@@ -125,6 +139,11 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
 
         val usedData = mutableListOf<ChunkVkMeshProperty.ChunkVulkanMeshData>()
 
+        val ssboStuff = memAlloc(ssboDataTest[frame].bufferSize.toInt())
+        var instance = 0
+        bindingContext.bindSSBO("chunkInfo", ssboDataTest[frame])
+        bindingContext.preDraw(commandBuffer)
+
         fun renderChunk(chunk: CubicChunk) {
 
             if (chunk.meshData is ChunkVkMeshProperty) {
@@ -136,7 +155,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
                     //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshesPipeline.layout, 0, stackLongs(block.virtualTexturingContext!!.setHandle), null)
                     vkCmdBindVertexBuffers(commandBuffer, 0, stackLongs(block.vertexBuffer.handle), stackLongs(0))
 
-                    if (block.perChunkBindings == null || block.perChunkBindings!!.pipeline !== meshesPipeline) {
+                    /*if (block.perChunkBindings == null || block.perChunkBindings!!.pipeline !== meshesPipeline) {
                         val chunkRenderInfo = ChunkRenderInfo().apply {
                             chunkX = chunk.chunkX
                             chunkY = chunk.chunkY
@@ -146,11 +165,21 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
                             it.bindUBO(chunkRenderInfo)
                         }
                     }
+                    block.perChunkBindings!!.preDraw(commandBuffer)*/
 
-                    block.perChunkBindings!!.preDraw(commandBuffer)
+                    ssboStuff.position(instance * sizeAligned16)
+                    val chunkRenderInfo = ChunkRenderInfo().apply {
+                        chunkX = chunk.chunkX
+                        chunkY = chunk.chunkY
+                        chunkZ = chunk.chunkZ
+                    }
 
-                    //vkCmdDraw(commandBuffer, 3 * 2 * 6, block.count, 0, 0)
-                    vkCmdDraw(commandBuffer, block.count, 1, 0, 0)
+                    for (field in chunkInfoID.struct.fields) {
+                        ssboStuff.position(instance * sizeAligned16 + field.offset)
+                        extractInterfaceBlockField(field, ssboStuff, chunkRenderInfo)
+                    }
+
+                    vkCmdDraw(commandBuffer, block.count, 1, 0, instance++)
 
                     totalCubesDrawn += block.count
                     totalBuffersUsed++
@@ -251,6 +280,10 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
                 renderChunk(visibleRegionChunks[j]!!)
             }
         }
+
+        ssboStuff.flip()
+        ssboDataTest[frame].upload(ssboStuff)
+        memFree(ssboStuff)
 
         frame.recyclingTasks.add {
             usedData.forEach(ChunkVkMeshProperty.ChunkVulkanMeshData::release)

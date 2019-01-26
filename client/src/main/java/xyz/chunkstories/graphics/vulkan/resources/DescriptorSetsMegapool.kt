@@ -9,9 +9,6 @@ import xyz.chunkstories.graphics.vulkan.buffers.VulkanUniformBuffer
 import xyz.chunkstories.graphics.vulkan.shaders.DescriptorSlotLayout
 import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
 import xyz.chunkstories.graphics.vulkan.textures.VulkanTexture2D
-import xyz.chunkstories.graphics.vulkan.util.VkDescriptorPool
-import xyz.chunkstories.graphics.vulkan.util.VkDescriptorSet
-import xyz.chunkstories.graphics.vulkan.util.ensureIs
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.system.MemoryUtil.memAllocLong
 import org.lwjgl.system.MemoryUtil.memFree
@@ -19,7 +16,7 @@ import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import xyz.chunkstories.graphics.common.shaders.GLSLUniformBlock
 import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampler2D
-import xyz.chunkstories.graphics.vulkan.util.updateDescriptorSet
+import xyz.chunkstories.graphics.vulkan.util.*
 import java.nio.IntBuffer
 import java.util.concurrent.ConcurrentLinkedDeque
 
@@ -159,6 +156,14 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
             buffer.upload(interfaceBlock)
             backend.updateDescriptorSet(set, uboBindPoint.binding, buffer)
             tempBuffers.add(buffer)
+        }
+
+        fun bindSSBO(name: String, buffer: VulkanBuffer) {
+            val ssboBindPoint = pipeline.program.glslProgram.instancedInputs.find { it.name == name }!!.shaderStorage
+
+            val set = getSet(ssboBindPoint.descriptorSetSlot)
+
+            backend.updateDescriptorSet_ssbo(set, ssboBindPoint.binding, buffer)
         }
 
         fun bindTextureAndSampler(name: String, texture: VulkanTexture2D, sampler: VulkanSampler) {

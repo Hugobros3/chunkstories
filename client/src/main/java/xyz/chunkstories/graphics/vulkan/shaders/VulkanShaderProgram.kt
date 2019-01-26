@@ -43,6 +43,7 @@ data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsB
                     val descriptorType = when (resource) {
                         is GLSLUniformBlock -> VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
                         is GLSLUniformImage2D -> VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE
+                        is GLSLShaderStorage -> VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
                         is GLSLUniformSampler2D -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
                         is GLSLUniformSampler -> VK_DESCRIPTOR_TYPE_SAMPLER
                         //is GLSLUnusedUniform -> return@mapNotNull null
@@ -52,6 +53,7 @@ data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsB
                     val descriptorsNeeded = when (resource) {
                         is GLSLUniformBlock -> 1
                         is GLSLUniformSampler -> 1
+                        is GLSLShaderStorage -> 1
                         is GLSLUniformSampler2D -> resource.count
                         is GLSLUniformImage2D -> if (resource.count != 0) resource.count else magicTexturesUpperBound
                         else -> throw Exception("Missing mapping from GLSLResource type to Vulkan descriptor type !")
@@ -75,6 +77,7 @@ data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsB
                         descriptorType(when (resource) {
                             is GLSLUniformBlock -> VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
                             is GLSLUniformSampler -> VK_DESCRIPTOR_TYPE_SAMPLER
+                            is GLSLShaderStorage -> VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
                             is GLSLUniformSampler2D -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
                             is GLSLUniformImage2D -> VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE
                             else -> throw Exception("Unmappped GLSL Uniform resource type")
@@ -83,6 +86,7 @@ data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsB
                         descriptorCount(when (resource) {
                             is GLSLUniformBlock -> 1
                             is GLSLUniformSampler -> 1
+                            is GLSLShaderStorage -> 1
                             is GLSLUniformSampler2D -> resource.count
                             is GLSLUniformImage2D -> if (resource.count != 0) resource.count else magicTexturesUpperBound
                             else -> 1 //TODO maybe allow arrays of ubo ? not for now

@@ -72,6 +72,8 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
         // The features we need
         val requestedDeviceFeatures = VkPhysicalDeviceFeatures.callocStack()
         requestedDeviceFeatures.shaderSampledImageArrayDynamicIndexing(true)
+        requestedDeviceFeatures.vertexPipelineStoresAndAtomics(true)
+        //TODO why is that off
         //requestedDeviceFeatures.independentBlend(true)
 
         // The layers we need

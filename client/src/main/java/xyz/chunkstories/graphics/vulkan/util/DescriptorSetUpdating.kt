@@ -4,6 +4,7 @@ import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
+import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanUniformBuffer
 import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
 import xyz.chunkstories.graphics.vulkan.textures.VulkanTexture2D
@@ -23,6 +24,30 @@ fun VulkanGraphicsBackend.updateDescriptorSet(set: VkDescriptorSet, binding: Int
         dstBinding(binding)
         dstArrayElement(0)
         descriptorType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
+
+        // Just update the descriptor for our lone ubo buffer
+        pBufferInfo(bufferInfo)
+    }
+
+    vkUpdateDescriptorSets(logicalDevice.vkDevice, stuffToWrite, null)
+
+    MemoryStack.stackPop()
+}
+
+fun VulkanGraphicsBackend.updateDescriptorSet_ssbo(set: VkDescriptorSet, binding: Int, buffer: VulkanBuffer) {
+    MemoryStack.stackPush()
+
+    val bufferInfo = VkDescriptorBufferInfo.callocStack(1).apply {
+        buffer(buffer.handle)
+        offset(0)
+        range(buffer.bufferSize)
+    }
+
+    val stuffToWrite = VkWriteDescriptorSet.callocStack(1).sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET).apply {
+        dstSet(set)
+        dstBinding(binding)
+        dstArrayElement(0)
+        descriptorType(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER)
 
         // Just update the descriptor for our lone ubo buffer
         pBufferInfo(bufferInfo)
