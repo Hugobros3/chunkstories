@@ -1,6 +1,5 @@
 package xyz.chunkstories.graphics.vulkan.systems.world
 
-import glm_.func.common.clamp
 import xyz.chunkstories.api.voxel.Voxel
 import xyz.chunkstories.api.voxel.VoxelFormat
 import xyz.chunkstories.api.voxel.VoxelSide
@@ -15,6 +14,8 @@ import xyz.chunkstories.world.chunk.deriveddata.AutoRebuildingProperty
 import org.joml.Vector4f
 import org.lwjgl.system.MemoryUtil
 import xyz.chunkstories.graphics.vulkan.textures.VulkanTexture2D
+import java.lang.Integer.max
+import java.lang.Integer.min
 import java.util.*
 
 class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicChunk, attachedProperty: AutoRebuildingProperty, updates: Int) : AutoRebuildingProperty.UpdateTask(attachedProperty, updates) {
@@ -182,3 +183,5 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
         }
     }
 }
+
+private fun Int.clamp(min: Int, max: Int) = max(min, min(this, max))

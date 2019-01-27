@@ -1,6 +1,5 @@
 package xyz.chunkstories.graphics.vulkan.textures
 
-import assimp.format.blender.Tex
 import xyz.chunkstories.api.graphics.Texture2D
 import xyz.chunkstories.api.graphics.TextureFormat
 import xyz.chunkstories.graphics.vulkan.CommandPool

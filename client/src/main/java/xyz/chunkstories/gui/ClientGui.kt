@@ -1,6 +1,5 @@
 package xyz.chunkstories.gui
 
-import glm_.closestPointToLines
 import xyz.chunkstories.api.gui.Fonts
 import xyz.chunkstories.api.gui.Gui
 import xyz.chunkstories.api.gui.Layer
