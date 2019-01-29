@@ -90,7 +90,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
     }
 
     val cubesProgram = backend.shaderFactory.createProgram("cubes")
-    private val meshesPipeline = Pipeline(backend, pass, cubesProgram, meshesVertexInputCfg, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
+    private val meshesPipeline = Pipeline(backend, cubesProgram, pass, meshesVertexInputCfg, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
 
     companion object {
         var totalCubesDrawn = 0
@@ -127,7 +127,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         totalBuffersUsed = 0
 
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshesPipeline.handle)
-        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshesPipeline.layout, 0, stackLongs(backend.textures.magicTexturing.theSet), null)
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshesPipeline.pipelineLayout, 0, stackLongs(backend.textures.magicTexturing.theSet), null)
 
         val camChunk = camPos.toVec3i()
         camChunk.x /= 32

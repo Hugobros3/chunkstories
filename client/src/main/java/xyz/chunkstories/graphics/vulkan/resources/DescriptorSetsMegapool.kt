@@ -1,7 +1,6 @@
 package xyz.chunkstories.graphics.vulkan.resources
 
 import xyz.chunkstories.api.graphics.structs.InterfaceBlock
-import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompiler
 import xyz.chunkstories.graphics.vulkan.Pipeline
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
@@ -178,7 +177,7 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
         fun preDraw(commandBuffer: VkCommandBuffer) {
             stackPush()
             for ((slot, set) in sets.entries) {
-                vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, slot, stackLongs(set), null as? IntBuffer)
+                vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, slot, stackLongs(set), null as? IntBuffer)
             }
 
             dirty.addAll(sets.keys)

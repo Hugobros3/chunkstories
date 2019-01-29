@@ -37,7 +37,9 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
             offset(0)
         }
     }
-    val pipeline = Pipeline(backend, pass, pass.program, vertexInputConfiguration, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
+
+    val program = backend.shaderFactory.createProgram(pass.declaration.name)
+    val pipeline = Pipeline(backend, program, pass, vertexInputConfiguration, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
     val sampler = VulkanSampler(backend)
 
     private val vertexBuffer: VulkanVertexBuffer
@@ -69,7 +71,8 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
     override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer) {
         val bindingContext = backend.descriptorMegapool.getBindingContext(pipeline)
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
-        for (input in pass.imageInputs) {
+        //TODO
+        /*for (input in pass.imageInputs) {
             val source = input.source
             when (source) {
                 is ImageInput.ImageSource.RenderBufferReference -> {
@@ -78,7 +81,7 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
                 is ImageInput.ImageSource.AssetReference -> TODO()
                 is ImageInput.ImageSource.TextureReference -> TODO()
             }
-        }
+        }*/
 
         //println("pass ${pass.name}  $bindings")
         bindings?.invoke(this, bindingContext)
@@ -97,6 +100,7 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
 
         vertexBuffer.cleanup()
         pipeline.cleanup()
+        program.cleanup()
         //descriptorPool.cleanup()
     }
 }

@@ -1,7 +1,5 @@
 package xyz.chunkstories.graphics.vulkan.util
 
-import xyz.chunkstories.api.dsl.RenderGraphDeclarationScript
-
 import xyz.chunkstories.api.graphics.TextureFormat.*
 import xyz.chunkstories.api.graphics.rendergraph.PassOutput.BlendMode.*
 import xyz.chunkstories.api.gui.GuiDrawer
@@ -10,75 +8,78 @@ import xyz.chunkstories.graphics.vulkan.systems.world.VulkanCubesDrawer
 import xyz.chunkstories.graphics.vulkan.systems.VulkanSpinningCubeDrawer
 import org.joml.Vector4d
 import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
+import xyz.chunkstories.api.graphics.rendergraph.RenderGraphDeclarationScript
 import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.graphics.vulkan.systems.VulkanFullscreenQuadDrawer
 import xyz.chunkstories.graphics.vulkan.systems.world.getConditions
 
 object BuiltInRendergraphs {
     val onlyGuiRenderGraph : RenderGraphDeclarationScript = {
-        renderBuffers {
-            renderBuffer {
-                name = "menuDepth"
+        renderTask {
+            name = "main"
 
-                format = DEPTH_32
-                size = viewportSize
-            }
+            finalPass = "gui"
 
-            renderBuffer {
-                name = "guiColorBuffer"
+            renderBuffers {
+                renderBuffer {
+                    name = "menuDepth"
 
-                format = RGBA_8
-                size = viewportSize
-            }
-        }
-
-        passes {
-            pass {
-                name = "menuBackground"
-                shaderName = "cube"
-
-                draws {
-                    //fullscreenQuad()
-                    system(VulkanSpinningCubeDrawer::class)
+                    format = DEPTH_32
+                    size = viewportSize
                 }
 
-                outputs {
-                    output {
-                        name = "guiColorBuffer"
+                renderBuffer {
+                    name = "guiColorBuffer"
+
+                    format = RGBA_8
+                    size = viewportSize
+                }
+            }
+
+            passes {
+                pass {
+                    name = "menuBackground"
+
+                    draws {
+                        //fullscreenQuad()
+                        system(VulkanSpinningCubeDrawer::class)
+                    }
+
+                    outputs {
+                        output {
+                            name = "guiColorBuffer"
+                            clear = true
+                        }
+                    }
+
+                    depth {
+                        enabled = true
+                        depthBuffer = "menuDepth"
                         clear = true
                     }
                 }
 
-                depth {
-                    enabled = true
-                    depthBuffer = "menuDepth"
-                    clear = true
-                }
-            }
+                pass {
+                    name = "gui"
 
-            pass {
-                name = "gui"
+                    dependsOn("menuBackground")
 
-                dependsOn("menuBackground")
-
-                draws {
-                    system(GuiDrawer::class)
-                }
-
-                outputs {
-                    output {
-                        name = "guiColorBuffer"
-
-                        //clear = true
-                        blending = MIX
+                    draws {
+                        system(GuiDrawer::class)
                     }
-                }
 
-                default = true
-                final = true
+                    outputs {
+                        output {
+                            name = "guiColorBuffer"
 
-                depth {
-                    enabled = false
+                            //clear = true
+                            blending = MIX
+                        }
+                    }
+
+                    depth {
+                        enabled = false
+                    }
                 }
             }
         }
@@ -86,218 +87,182 @@ object BuiltInRendergraphs {
 
 
     val debugRenderGraph : RenderGraphDeclarationScript = {
-        renderBuffers {
-            renderBuffer {
-                name = "depthBuffer"
 
-                format = DEPTH_32
-                size = viewportSize
-            }
+        renderTask {
+            name = "main"
+            renderBuffers {
+                renderBuffer {
+                    name = "depthBuffer"
 
-            /*renderBuffer {
+                    format = DEPTH_32
+                    size = viewportSize
+                }
+
+                /*renderBuffer {
                 name = "shadowMap"
 
                 format = DEPTH_32
                 size = 1024 by 1024
             }*/
 
-            renderBuffer {
-                name = "colorBuffer"
+                renderBuffer {
+                    name = "colorBuffer"
 
-                format = RGBA_8
-                size = viewportSize
-            }
-
-            renderBuffer {
-                name = "normalBuffer"
-
-                format = RGBA_8
-                size = viewportSize
-            }
-
-            renderBuffer {
-                name = "shadedBuffer"
-
-                format = RGB_HDR
-                size = viewportSize
-            }
-
-            renderBuffer {
-                name = "finalBuffer"
-
-                format = RGBA_8
-                size = viewportSize
-            }
-        }
-
-        passes {
-            pass {
-                name = "sky"
-
-                draws {
-                    system(SkyDrawer::class)
+                    format = RGBA_8
+                    size = viewportSize
                 }
 
-                outputs {
-                    output {
-                        name = "shadedBuffer"
-                        clear = true
-                        clearColor = Vector4d(0.0, 0.5, 1.0, 1.0)
-                    }
+                renderBuffer {
+                    name = "normalBuffer"
+
+                    format = RGBA_8
+                    size = viewportSize
+                }
+
+                renderBuffer {
+                    name = "shadedBuffer"
+
+                    format = RGB_HDR
+                    size = viewportSize
+                }
+
+                renderBuffer {
+                    name = "finalBuffer"
+
+                    format = RGBA_8
+                    size = viewportSize
                 }
             }
 
-            pass {
-                name = "cubes"
+            passes {
+                pass {
+                    name = "sky"
 
-                dependsOn("sky")
-
-                draws {
-                    system(VulkanCubesDrawer::class)
-                }
-
-                outputs {
-                    output {
-                        name = "colorBuffer"
-                        clear = true
-                        clearColor = Vector4d(0.0, 0.0, 0.0, 0.0)
+                    draws {
+                        system(SkyDrawer::class)
                     }
 
-                    output {
-                        name = "normalBuffer"
-                        clear = true
-                        clearColor = Vector4d(0.0, 0.0, 0.0, 0.0)
-                    }
-                }
-
-                depth {
-                    enabled = true
-                    depthBuffer = "depthBuffer"
-                    clear = true
-                }
-            }
-
-            /*pass {
-                name = "shadow"
-
-                draws {
-                    system(VulkanCubesDrawer::class)
-                }
-
-                depth {
-                    enabled = true
-                    depthBuffer = "shadowMap"
-                    clear = true
-                }
-            }*/
-
-            /*pass {
-                name = "debug"
-                shaderName = "wireframe"
-
-                dependsOn("cubes")
-
-                draws {
-                    system(VulkanDebugDrawer::class)
-                }
-
-                outputs {
-                    output {
-                        name = "colorBuffer"
-                        blending = OVERWRITE
-                    }
-                }
-
-                depth {
-                    enabled = true
-                    depthBuffer = "depthBuffer"
-                }
-            }*/
-
-            pass {
-                name = "deferredShading"
-
-                dependsOn("cubes")
-
-                inputs {
-                    imageInput {
-                        name = "colorBuffer"
-                        source = renderBuffer("colorBuffer")
-                    }
-
-                    imageInput {
-                        name = "normalBuffer"
-                        source = renderBuffer("normalBuffer")
-                    }
-
-                    imageInput {
-                        name = "depthBuffer"
-                        source = renderBuffer("depthBuffer")
-                    }
-                }
-
-                draws {
-                    system(VulkanFullscreenQuadDrawer::class) {
-                        shaderBindings {
-                            val camera = client.player.controlledEntity?.traits?.get(TraitControllable::class)?.camera ?: Camera()
-                            it.bindUBO(camera)
-                            it.bindUBO(client.world.getConditions())
+                    outputs {
+                        output {
+                            name = "shadedBuffer"
+                            clear = true
+                            clearColor = Vector4d(0.0, 0.5, 1.0, 1.0)
                         }
                     }
                 }
 
-                outputs {
-                    output {
-                        name = "shadedBuffer"
-                        blending = OVERWRITE
+                pass {
+                    name = "cubes"
+
+                    dependsOn("sky")
+
+                    draws {
+                        system(VulkanCubesDrawer::class)
                     }
-                }
-            }
 
-            pass {
-                name = "postprocess"
+                    outputs {
+                        output {
+                            name = "colorBuffer"
+                            clear = true
+                            clearColor = Vector4d(0.0, 0.0, 0.0, 0.0)
+                        }
 
-                dependsOn("deferredShading")
-
-                inputs {
-                    imageInput {
-                        name = "shadedBuffer"
-                        source = renderBuffer("shadedBuffer")
+                        output {
+                            name = "normalBuffer"
+                            clear = true
+                            clearColor = Vector4d(0.0, 0.0, 0.0, 0.0)
+                        }
                     }
-                }
 
-                draws {
-                    fullscreenQuad()
-                }
-
-                outputs {
-                    output {
-                        name = "finalBuffer"
-                        blending = OVERWRITE
-                    }
-                }
-            }
-
-            pass {
-                name = "gui"
-
-                dependsOn("postprocess")
-
-                draws {
-                    system(GuiDrawer::class)
-                }
-
-                outputs {
-                    output {
-                        name = "finalBuffer"
-
-                        //clear = true
-                        blending = MIX
+                    depth {
+                        enabled = true
+                        depthBuffer = "depthBuffer"
+                        clear = true
                     }
                 }
 
-                default = true
-                final = true
+                pass {
+                    name = "deferredShading"
+
+                    dependsOn("cubes")
+
+                    /*inputs {
+                        imageInput {
+                            name = "colorBuffer"
+                            source = renderBuffer("colorBuffer")
+                        }
+
+                        imageInput {
+                            name = "normalBuffer"
+                            source = renderBuffer("normalBuffer")
+                        }
+
+                        imageInput {
+                            name = "depthBuffer"
+                            source = renderBuffer("depthBuffer")
+                        }
+                    }*/
+
+                    draws {
+                        /*system(VulkanFullscreenQuadDrawer::class) {
+                            shaderBindings {
+                                val camera = client.player.controlledEntity?.traits?.get(TraitControllable::class)?.camera ?: Camera()
+                                it.bindUBO(camera)
+                                it.bindUBO(client.world.getConditions())
+                            }
+                        }*/
+                    }
+
+                    outputs {
+                        output {
+                            name = "shadedBuffer"
+                            blending = OVERWRITE
+                        }
+                    }
+                }
+
+                pass {
+                    name = "postprocess"
+
+                    dependsOn("deferredShading")
+
+                    /*inputs {
+                        imageInput {
+                            name = "shadedBuffer"
+                            source = renderBuffer("shadedBuffer")
+                        }
+                    }*/
+
+                    draws {
+                        fullscreenQuad()
+                    }
+
+                    outputs {
+                        output {
+                            name = "finalBuffer"
+                            blending = OVERWRITE
+                        }
+                    }
+                }
+
+                pass {
+                    name = "gui"
+
+                    dependsOn("postprocess")
+
+                    draws {
+                        system(GuiDrawer::class)
+                    }
+
+                    outputs {
+                        output {
+                            name = "finalBuffer"
+
+                            //clear = true
+                            blending = MIX
+                        }
+                    }
+                }
             }
         }
     }

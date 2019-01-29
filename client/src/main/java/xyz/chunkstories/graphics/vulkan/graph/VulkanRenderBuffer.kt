@@ -1,9 +1,8 @@
 package xyz.chunkstories.graphics.vulkan.graph
 
+import org.joml.Vector2i
 import xyz.chunkstories.api.graphics.ImageInput
 import xyz.chunkstories.api.graphics.TextureFormat
-import xyz.chunkstories.api.graphics.rendergraph.RenderBuffer
-import xyz.chunkstories.graphics.common.DummyRenderBuffer
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.resources.Cleanable
 import xyz.chunkstories.graphics.vulkan.textures.VulkanTexture2D
@@ -13,7 +12,10 @@ import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 import org.lwjgl.vulkan.VkImageMemoryBarrier
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.api.graphics.rendergraph.RenderBufferDeclaration
+import xyz.chunkstories.api.graphics.rendergraph.RenderBufferSize
 import xyz.chunkstories.graphics.vulkan.util.VkImageLayout
+import kotlin.math.roundToInt
 
 enum class UsageState {
     NONE,
@@ -34,9 +36,9 @@ fun getLayoutForStateAndType(usageState: UsageState, usageType: UsageType) : VkI
     }
 }
 
-class VulkanRenderBuffer(val backend: VulkanGraphicsBackend, val graph: VulkanRenderGraph, val config: RenderBuffer.() -> Unit) : RenderBuffer(), Cleanable {
-
-    override lateinit var texture: VulkanTexture2D
+class VulkanRenderBuffer(val backend: VulkanGraphicsBackend, val declaration: RenderBufferDeclaration) : Cleanable {
+    lateinit var texture: VulkanTexture2D
+    var size: Vector2i
 
     /** Set late by the RenderGraph */
     lateinit var layoutPerStage: Map<VulkanPass, Int>
@@ -49,27 +51,32 @@ class VulkanRenderBuffer(val backend: VulkanGraphicsBackend, val graph: VulkanRe
         } or VK_IMAGE_USAGE_SAMPLED_BIT or VK_IMAGE_USAGE_TRANSFER_SRC_BIT // In all cases it'll be sampled and transferred !
 
     init {
-        this.apply(config)
-
-        usageType = when(format) {
+        usageType = when(declaration.format) {
             TextureFormat.DEPTH_24, TextureFormat.DEPTH_32 -> UsageType.DEPTH
             else -> UsageType.COLOR
         }
 
-        if(name != "_swapchain")
-            texture = VulkanTexture2D(backend, format, size.x, size.y, usageType.usageBits())
+        size = declaration.size.actual
+
+        if(declaration.name != "_swapchain")
+            texture = VulkanTexture2D(backend, declaration.format, size.x, size.y, usageType.usageBits())
         //texture.transitionLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL)
         //texture.transitionToRenderBufferLayout()
     }
 
+    val RenderBufferSize.actual: Vector2i
+        get() = when(this) {
+            is RenderBufferSize.FixedSize -> Vector2i(width, height)
+            is RenderBufferSize.ViewportRelativeSize -> Vector2i((backend.window.width * scaleHorizontal).roundToInt(), (backend.window.height * scaleVertical).roundToInt())
+        }
+
     fun resize() {
-        val scratchBuffer = DummyRenderBuffer().apply(config)
-        val newSize = scratchBuffer.size
+        val newSize = declaration.size.actual
         if(newSize != size) {
-            logger.debug("Resizing render buffer $name")
+            logger.debug("Resizing render buffer ${declaration.name}")
             size = newSize
             texture.cleanup()
-            texture = VulkanTexture2D(backend, format, size.x, size.y, usageType.usageBits())
+            texture = VulkanTexture2D(backend, declaration.format, size.x, size.y, usageType.usageBits())
         }
     }
 
@@ -132,13 +139,13 @@ class VulkanRenderBuffer(val backend: VulkanGraphicsBackend, val graph: VulkanRe
         if(pass.outputRenderBuffers.contains(this) || pass.resolvedDepthBuffer == this)
             return UsageState.OUTPUT
 
-        //TODO use resolved variant
-        pass.imageInputs.forEach { when(val source = it.source) {
+        TODO()
+        /*pass.imageInputs.forEach { when(val source = it.source) {
             is ImageInput.ImageSource.RenderBufferReference -> {
                 if(source.renderBufferName == this.name)
                     return UsageState.INPUT
             }
-        }}
+        }}*/
 
         return UsageState.NONE
     }

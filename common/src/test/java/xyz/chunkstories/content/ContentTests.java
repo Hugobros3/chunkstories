@@ -27,7 +27,7 @@ public class ContentTests {
 		m = testContext.getContent().meshes().getMesh("./voxels/blockmodels/model_template.dae");
 		System.out.println(m.getVertices() + " lol:" + m.getClass());
 
-		System.out.println(m.getMaterials());
+		System.out.println(m.getDefaultMaterials());
 
 		// System.out.println(m.getVertices().getVoxelComponent(0)+":"+m.getVertices().getVoxelComponent(1)+":"+m.getVertices().getVoxelComponent(2));
 		/*

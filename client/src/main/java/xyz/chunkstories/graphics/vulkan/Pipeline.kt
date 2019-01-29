@@ -13,6 +13,8 @@ import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.api.graphics.rendergraph.DepthTestingConfiguration
+import xyz.chunkstories.api.graphics.rendergraph.PassOutputsDeclaration
 import xyz.chunkstories.graphics.common.shaders.GLSLProgram
 import xyz.chunkstories.graphics.vulkan.shaders.VulkanShaderProgram
 
@@ -28,9 +30,12 @@ interface VertexInputConfigurationContext {
     fun attribute(decl: VkVertexInputAttributeDescription.() -> Unit)
 }
 
-class Pipeline(val backend: VulkanGraphicsBackend, val pass: VulkanPass, val program : VulkanShaderProgram = pass.program, val vertexInputConfiguration: VertexInputConfiguration, val primitiveType: Primitive, val faceCullingMode: FaceCullingMode) {
-    val layout: VkPipelineLayout
+class Pipeline(val backend: VulkanGraphicsBackend, val program : VulkanShaderProgram, val renderPass: RenderPass, val outputs: PassOutputsDeclaration, val depth: DepthTestingConfiguration, val vertexInputConfiguration: VertexInputConfiguration, val primitiveType: Primitive, val faceCullingMode: FaceCullingMode) {
+    val pipelineLayout: VkPipelineLayout
     val handle: VkPipeline
+
+    constructor(backend: VulkanGraphicsBackend, program: VulkanShaderProgram, pass: VulkanPass, vertexInputConfiguration: VertexInputConfiguration, primitiveType: Primitive, faceCullingMode: FaceCullingMode) :
+            this(backend, program, pass.renderpass, pass.declaration.outputs, pass.declaration.depthTestingConfiguration, vertexInputConfiguration, primitiveType, faceCullingMode)
 
     init {
         logger.info("Creating pipeline")
@@ -118,10 +123,10 @@ class Pipeline(val backend: VulkanGraphicsBackend, val pass: VulkanPass, val pro
         }
 
         val depthStencilStateCreateInfo = VkPipelineDepthStencilStateCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO).apply {
-            depthTestEnable(pass.depth.enabled)
-            depthWriteEnable(pass.depth.write)
+            depthTestEnable(depth.enabled)
+            depthWriteEnable(depth.write)
 
-            depthCompareOp(when(pass.depth.mode) {
+            depthCompareOp(when(depth.mode) {
                 GREATER -> VK_COMPARE_OP_GREATER
                 GREATER_OR_EQUAL -> VK_COMPARE_OP_GREATER_OR_EQUAL
                 EQUAL -> VK_COMPARE_OP_EQUAL
@@ -137,8 +142,8 @@ class Pipeline(val backend: VulkanGraphicsBackend, val pass: VulkanPass, val pro
             stencilTestEnable(false)
         }
 
-        val staticBlendState = VkPipelineColorBlendAttachmentState.callocStack(pass.outputs.size)
-        pass.outputs.forEachIndexed { index, passOutput -> staticBlendState[index].apply {
+        val staticBlendState = VkPipelineColorBlendAttachmentState.callocStack(outputs.outputs.size)
+        outputs.outputs.forEachIndexed { index, passOutput -> staticBlendState[index].apply {
             colorWriteMask(VK_COLOR_COMPONENT_R_BIT or VK_COLOR_COMPONENT_G_BIT or VK_COLOR_COMPONENT_B_BIT or VK_COLOR_COMPONENT_A_BIT)
 
             when(passOutput.blending) {
@@ -187,7 +192,7 @@ class Pipeline(val backend: VulkanGraphicsBackend, val pass: VulkanPass, val pro
 
         val pPipelineLayout = stackMallocLong(1)
         vkCreatePipelineLayout(backend.logicalDevice.vkDevice, pipelineLayoutCreateInfo, null, pPipelineLayout).ensureIs("Failed to create pipeline layout", VK_SUCCESS)
-        layout = pPipelineLayout.get(0)
+        pipelineLayout = pPipelineLayout.get(0)
 
         val pipelineCreateInfo = VkGraphicsPipelineCreateInfo.callocStack(1).sType(VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO).apply {
             pStages(shaderStagesCreateInfo)
@@ -202,9 +207,10 @@ class Pipeline(val backend: VulkanGraphicsBackend, val pass: VulkanPass, val pro
             pDepthStencilState(depthStencilStateCreateInfo)
             pColorBlendState(blendStateCreateInfo)
 
-            layout(layout)
+            layout(pipelineLayout)
 
-            renderPass(pass.renderPass)
+            //TODO handle subpasses ?
+            renderPass(renderPass.handle)
             subpass(0)
 
             basePipelineHandle(VK_NULL_HANDLE)
@@ -220,7 +226,7 @@ class Pipeline(val backend: VulkanGraphicsBackend, val pass: VulkanPass, val pro
 
     fun cleanup() {
         vkDestroyPipeline(backend.logicalDevice.vkDevice, handle, null)
-        vkDestroyPipelineLayout(backend.logicalDevice.vkDevice, layout, null)
+        vkDestroyPipelineLayout(backend.logicalDevice.vkDevice, pipelineLayout, null)
     }
 
     companion object {

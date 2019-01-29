@@ -74,7 +74,8 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
         }
     }
 
-    val pipeline = Pipeline(backend, pass, pass.program, vertexInputConfiguration, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
+    val program = backend.shaderFactory.createProgram("gui")
+    val pipeline = Pipeline(backend, program, pass, vertexInputConfiguration, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
     val sampler = VulkanSampler(backend)
     val vertexBuffers: InflightFrameResource<VulkanVertexBuffer>
 
@@ -349,7 +350,7 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
             gui.topLayer?.render(drawer)
             afterTextureSwitch()
             val primitivesCount = stagingDraws.sumBy { it.first }
-            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 0, stackLongs(backend.textures.magicTexturing.theSet), null)
+            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, stackLongs(backend.textures.magicTexturing.theSet), null)
             vkCmdDraw(this.commandBuffer, primitivesCount, 1, 0, 0)
             stagingDraws.clear()
 
@@ -375,6 +376,7 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
         vertexBuffers.cleanup()
 
         pipeline.cleanup()
+        program.cleanup()
         //virtualTexturing.cleanup()
 
         MemoryUtil.memFree(stagingByteBuffer)

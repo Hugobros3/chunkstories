@@ -1,7 +1,5 @@
 package xyz.chunkstories.graphics.vulkan
 
-import xyz.chunkstories.api.graphics.rendergraph.Pass
-import xyz.chunkstories.api.graphics.rendergraph.RegisteredDrawingSystem
 import xyz.chunkstories.api.graphics.systems.drawing.FullscreenQuadDrawer
 import xyz.chunkstories.api.gui.GuiDrawer
 import xyz.chunkstories.client.glfw.GLFWWindow
@@ -32,7 +30,8 @@ import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.EXTDebugReport.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
-import xyz.chunkstories.graphics.vulkan.textures.MagicTexturing
+import xyz.chunkstories.api.graphics.systems.RegisteredGraphicSystem
+import xyz.chunkstories.api.graphics.systems.drawing.DrawingSystem
 import java.awt.image.BufferedImage
 
 class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(window) {
@@ -139,22 +138,6 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
     }
 
     override fun drawFrame(frameNumber: Int) {
-
-        /*val w = floatArrayOf(0f)
-        val h = floatArrayOf(0f)
-
-        val monitor = GLFW.glfwGetWindowMonitor(window.glfwWindowHandle)
-
-        if(monitor != 0L)
-            GLFW.glfwGetMonitorContentScale(monitor, w, h)
-        println("monitor $monitor scaled to ${w[0]}:${h[0]}")*/
-
-        /*val w = floatArrayOf(0f)
-        val h = floatArrayOf(0f)
-
-        GLFW.glfwGetWindowContentScale(window.glfwWindowHandle, w, h)
-        println(" scaled to ${w[0]}:${h[0]}")*/
-
         val queuedRenderGraph = this.queuedRenderGraph
         if(queuedRenderGraph != null) {
             vkDeviceWaitIdle(logicalDevice.vkDevice)
@@ -165,9 +148,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
         }
 
         val frame = swapchain.beginFrame(frameNumber)
-
         renderGraph.renderFrame(frame)
-
         swapchain.finishFrame(frame)
     }
 
@@ -286,7 +267,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
         return bestPhysicalDevice ?: throw Exception("Could not find suitable physical device !")
     }
 
-    override fun createDrawingSystem(pass: Pass, registeredDrawingSystem: RegisteredDrawingSystem): VulkanDrawingSystem {
+    fun <T : DrawingSystem> createDrawingSystem(pass: VulkanPass, registeredDrawingSystem: RegisteredGraphicSystem<T>): VulkanDrawingSystem {
         val vulkanPass = pass as? VulkanPass ?: throw Exception("Pass didn't originate from a Vulkan backend !!!")
 
         return when (registeredDrawingSystem.clazz) {

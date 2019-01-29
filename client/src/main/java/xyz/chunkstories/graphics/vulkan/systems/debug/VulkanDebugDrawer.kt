@@ -41,7 +41,8 @@ class VulkanDebugDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         }
     }
 
-    val pipeline = Pipeline(backend, pass, pass.program, vertexInputConfiguration, Primitive.LINES, FaceCullingMode.DISABLED)
+    val program = backend.shaderFactory.createProgram("debug")
+    val pipeline = Pipeline(backend, program, pass, vertexInputConfiguration, Primitive.LINES, FaceCullingMode.DISABLED)
 
     val vertexBuffers: InflightFrameResource<VulkanVertexBuffer>
 
@@ -160,5 +161,6 @@ class VulkanDebugDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
     override fun cleanup() {
         vertexBuffers.cleanup()
         pipeline.cleanup()
+        program.cleanup()
     }
 }

@@ -38,7 +38,9 @@ class VulkanSkyDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass), SkyDrawer {
             offset(0)
         }
     }
-    val pipeline = Pipeline(backend, pass, pass.program, vertexInputConfiguration, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
+
+    val program = backend.shaderFactory.createProgram(pass.declaration.name)
+    val pipeline = Pipeline(backend, program, pass, vertexInputConfiguration, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
     val sampler = VulkanSampler(backend)
 
     private val vertexBuffer: VulkanVertexBuffer
@@ -93,6 +95,7 @@ class VulkanSkyDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass), SkyDrawer {
 
         vertexBuffer.cleanup()
         pipeline.cleanup()
+        program.cleanup()
         //descriptorPool.cleanup()
     }
 }

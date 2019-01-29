@@ -16,7 +16,6 @@ import xyz.chunkstories.api.graphics.Mesh;
 import xyz.chunkstories.api.graphics.MeshAttributeSet;
 import xyz.chunkstories.api.graphics.MeshMaterial;
 import xyz.chunkstories.api.graphics.VertexFormat;
-import xyz.chunkstories.api.graphics.representation.Surface;
 import xyz.chunkstories.util.FoldersUtils;
 import kotlin.ranges.IntRange;
 import org.slf4j.Logger;
@@ -212,12 +211,13 @@ public class AssimpMeshLoader {
 
             int lastVertex = vertices.size() / 3 - 1;
 
+            /* TODO()
             Surface surface = new Surface(materialTextures);
             String materialName = aiMesh.getName();
             if(materialName == null || materialName.equals(""))
                 materialName = "Material"+meshMaterials.size();
             MeshMaterial meshMaterial = new MeshMaterial(materialName, surface, new IntRange(firstVertex, lastVertex));
-            meshMaterials.add(meshMaterial);
+            meshMaterials.add(meshMaterial);*/
         }
 
         List<MeshAttributeSet> attributes = new LinkedList<>();
