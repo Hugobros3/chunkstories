@@ -354,13 +354,6 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
             vkCmdDraw(this.commandBuffer, primitivesCount, 1, 0, 0)
             stagingDraws.clear()
 
-            /*val usedContexts2 = usedContexts.toList()
-            usedContexts.clear()
-            frame.recyclingTasks.add {
-                //println("returning ${usedContexts2.size}")
-                usedContexts2.forEach(VirtualTexturing.VirtualTexturingContext::returnToPool)
-            }*/
-
             // Upload the vertex buffer contents
             vertexBuffers[frame].apply {
                 stagingByteBuffer.flip()

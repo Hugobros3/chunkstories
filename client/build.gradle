@@ -47,6 +47,9 @@ dependencies {
 	runtime "org.lwjgl:lwjgl-vma:${lwjglVersion}:${lwjglNatives}"
 	runtime "graphics.scenery:spirvcrossj:$spirvCrossVersion:$lwjglNatives"
 
+	compile "guru.nidi:graphviz-java:0.8.0"
+	compile group: 'guru.nidi', name: 'graphviz-java', version: '0.8.0'
+
 	//When compiling a redistribuable jar, we need ALL natives in it!
 	project.ext.natives.each {
 		//multiplatform ("org.lwjgl:lwjgl:${lwjglVersion}:" + it)

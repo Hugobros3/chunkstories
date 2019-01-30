@@ -5,9 +5,7 @@ import org.lwjgl.system.MemoryStack.stackPop
 import org.lwjgl.system.MemoryStack.stackPush
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
-import xyz.chunkstories.api.graphics.rendergraph.DepthTestingConfiguration
-import xyz.chunkstories.api.graphics.rendergraph.PassOutputsDeclaration
-import xyz.chunkstories.graphics.vulkan.graph.UsageState
+import xyz.chunkstories.graphics.vulkan.graph.UsageType
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.vulkan.graph.getLayoutForStateAndType
 import xyz.chunkstories.graphics.vulkan.resources.Cleanable
@@ -15,7 +13,7 @@ import xyz.chunkstories.graphics.vulkan.textures.vulkanFormat
 import xyz.chunkstories.graphics.vulkan.util.VkRenderPass
 import xyz.chunkstories.graphics.vulkan.util.ensureIs
 
-class RenderPass(val backend: VulkanGraphicsBackend, val pass: VulkanPass) : Cleanable {
+class RenderPass(val backend: VulkanGraphicsBackend, val pass: VulkanPass, val previousUsages: (List<UsageType>)?) : Cleanable {
 
     val outputsDeclaration = pass.declaration.outputs
     val depth = pass.declaration.depthTestingConfiguration
@@ -26,10 +24,12 @@ class RenderPass(val backend: VulkanGraphicsBackend, val pass: VulkanPass) : Cle
         stackPush()
         val attachmentDescription = VkAttachmentDescription.callocStack(outputsDeclaration.outputs.size + if (depth.enabled) 1 else 0)
         outputsDeclaration.outputs.mapIndexed { index, output ->
-            val renderbuffer = pass.outputRenderBuffers[index]
+            val renderbuffer = pass.outputColorRenderBuffers[index]
 
-            val previousUsage = UsageState.OUTPUT//TODO()//renderbuffer.findPreviousUsage()
-            val currentUsage = UsageState.OUTPUT
+            val usagesIndex = index + if(depth.enabled) 1 else 0
+
+            val previousUsage = previousUsages?.get(usagesIndex) ?: UsageType.NONE
+            val currentUsage = UsageType.OUTPUT
 
             attachmentDescription[index].apply {
 
@@ -39,7 +39,7 @@ class RenderPass(val backend: VulkanGraphicsBackend, val pass: VulkanPass) : Cle
                 if (output.clear)
                     loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
                 else {
-                    if (previousUsage == UsageState.NONE)
+                    if (previousUsage == UsageType.NONE)
                         loadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
                     else
                         loadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
@@ -52,18 +52,20 @@ class RenderPass(val backend: VulkanGraphicsBackend, val pass: VulkanPass) : Cle
                 stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
                 stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
 
-                initialLayout(getLayoutForStateAndType(previousUsage, renderbuffer.usageType))
-                finalLayout(getLayoutForStateAndType(currentUsage, renderbuffer.usageType))
+                initialLayout(getLayoutForStateAndType(previousUsage, renderbuffer.attachementType))
+                finalLayout(getLayoutForStateAndType(currentUsage, renderbuffer.attachementType))
             }
         }
 
         if (depth.enabled) {
             val depthBufferAttachmentIndex = attachmentDescription.capacity() - 1
             attachmentDescription[depthBufferAttachmentIndex].apply {
-                val renderbuffer = pass.resolvedDepthBuffer!!
+                val renderbuffer = pass.outputDepthRenderBuffer!!
 
-                val previousUsage = UsageState.OUTPUT//TODO()//renderbuffer.findPreviousUsage()
-                val currentUsage = UsageState.OUTPUT
+                val usagesIndex = 0
+                val previousUsage = previousUsages?.get(usagesIndex) ?: UsageType.NONE
+
+                val currentUsage = UsageType.OUTPUT
 
                 format(renderbuffer.declaration.format.vulkanFormat.ordinal)
                 samples(VK_SAMPLE_COUNT_1_BIT)
@@ -71,7 +73,7 @@ class RenderPass(val backend: VulkanGraphicsBackend, val pass: VulkanPass) : Cle
                 if (depth.clear)
                     loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
                 else {
-                    if (previousUsage == UsageState.NONE)
+                    if (previousUsage == UsageType.NONE)
                         loadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
                     else
                         loadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
@@ -84,8 +86,8 @@ class RenderPass(val backend: VulkanGraphicsBackend, val pass: VulkanPass) : Cle
                 stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
                 stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
 
-                initialLayout(getLayoutForStateAndType(previousUsage, renderbuffer.usageType))
-                finalLayout(getLayoutForStateAndType(currentUsage, renderbuffer.usageType))
+                initialLayout(getLayoutForStateAndType(previousUsage, renderbuffer.attachementType))
+                finalLayout(getLayoutForStateAndType(currentUsage, renderbuffer.attachementType))
             }
         }
 
@@ -94,7 +96,6 @@ class RenderPass(val backend: VulkanGraphicsBackend, val pass: VulkanPass) : Cle
             colorAttachmentReference[index].apply {
                 attachment(index)
                 layout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-                //layout(VK_IMAGE_LAYOUT_GENERAL)
             }
         }
 
@@ -122,7 +123,7 @@ class RenderPass(val backend: VulkanGraphicsBackend, val pass: VulkanPass) : Cle
             dstSubpass(0)
 
             //TODO we could be really smart here and be aware of the read/writes between passes to further optimize those masks
-            //TODO maybe even do different scheduling absed on that. Unfortunately I just want to get this renderer going atm
+            //TODO maybe even do different scheduling based on that. Unfortunately I just want to get this renderer going atm
             //var stages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
             var access = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT or VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
             if (depth.enabled) {
@@ -137,9 +138,8 @@ class RenderPass(val backend: VulkanGraphicsBackend, val pass: VulkanPass) : Cle
             // If this is the first pass we just want to wait on the image being available
             /*if (graph.passesInOrder.indexOf(this@VulkanPass) == 0)
                 srcAccessMask(0)
-            else
-                srcAccessMask(access)*/
-            //TODO
+            else*/ //TODO is this sort of optimisation worth it ?
+            //srcAccessMask(access)
 
             srcAccessMask(0)
 
@@ -169,6 +169,6 @@ class RenderPass(val backend: VulkanGraphicsBackend, val pass: VulkanPass) : Cle
     }
 
     override fun cleanup() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        vkDestroyRenderPass(backend.logicalDevice.vkDevice, handle, null)
     }
 }

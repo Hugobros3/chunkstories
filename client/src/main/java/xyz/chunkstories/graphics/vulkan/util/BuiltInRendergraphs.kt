@@ -90,6 +90,9 @@ object BuiltInRendergraphs {
 
         renderTask {
             name = "main"
+
+            finalPass = "gui"
+
             renderBuffers {
                 renderBuffer {
                     name = "depthBuffer"
@@ -186,7 +189,7 @@ object BuiltInRendergraphs {
 
                     dependsOn("cubes")
 
-                    /*inputs {
+                    inputs {
                         imageInput {
                             name = "colorBuffer"
                             source = renderBuffer("colorBuffer")
@@ -201,16 +204,16 @@ object BuiltInRendergraphs {
                             name = "depthBuffer"
                             source = renderBuffer("depthBuffer")
                         }
-                    }*/
+                    }
 
                     draws {
-                        /*system(VulkanFullscreenQuadDrawer::class) {
+                        system(VulkanFullscreenQuadDrawer::class) {
                             shaderBindings {
                                 val camera = client.player.controlledEntity?.traits?.get(TraitControllable::class)?.camera ?: Camera()
                                 it.bindUBO(camera)
                                 it.bindUBO(client.world.getConditions())
                             }
-                        }*/
+                        }
                     }
 
                     outputs {
@@ -226,12 +229,12 @@ object BuiltInRendergraphs {
 
                     dependsOn("deferredShading")
 
-                    /*inputs {
+                    inputs {
                         imageInput {
                             name = "shadedBuffer"
                             source = renderBuffer("shadedBuffer")
                         }
-                    }*/
+                    }
 
                     draws {
                         fullscreenQuad()

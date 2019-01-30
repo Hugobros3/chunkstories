@@ -1,15 +1,27 @@
 package xyz.chunkstories.graphics.vulkan.graph
 
+import org.lwjgl.system.MemoryStack
+import org.lwjgl.system.MemoryStack.stackPush
+import org.lwjgl.vulkan.VK10.*
+import org.lwjgl.vulkan.VkSubmitInfo
 import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
-import xyz.chunkstories.api.graphics.rendergraph.*
+import xyz.chunkstories.api.graphics.rendergraph.RenderGraphDeclaration
+import xyz.chunkstories.api.graphics.rendergraph.RenderGraphDeclarationScript
+import xyz.chunkstories.api.graphics.rendergraph.RenderTaskDeclaration
 import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.resources.Cleanable
 import xyz.chunkstories.graphics.vulkan.swapchain.Frame
+import xyz.chunkstories.graphics.vulkan.swapchain.SwapchainBlitHelper
+import xyz.chunkstories.graphics.vulkan.util.ensureIs
 
 class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderGraphDeclarationScript) : Cleanable {
     val taskDeclarations: List<RenderTaskDeclaration>
     val tasks: Map<String, VulkanRenderTask>
+
+    val blitHelper = SwapchainBlitHelper(backend)
+
+    var fresh = true
 
     init {
         taskDeclarations = RenderGraphDeclaration().also(dslCode).renderTasks.values.toList()
@@ -25,77 +37,93 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
         val mainTaskName = "main"
 
         val mainTask = tasks[mainTaskName]!!
-        val graph = FrameGraph(mainTask, mainCamera)
-    }
+        val graph = FrameGraph(this, mainTask, mainCamera)
 
-    sealed class Node {
-        val depends = mutableListOf<Node>()
+        val sequencedGraph = graph.sequenceGraph()
 
-        data class PassNode(val contextNode: RenderContextNode, val pass: VulkanPass) : Node()
-        data class RenderContextNode(val renderContext: FrameGraph.VulkanRenderingContext) : Node()
-    }
+        //println(sequencedGraph)
 
-    inner class FrameGraph(startTask: VulkanRenderTask, mainCamera: Camera) {
-        val rootNode: Node
-        val allNodes = mutableSetOf<Node>()
+        val globalStates = mutableMapOf<VulkanRenderBuffer, UsageType>()
+        for(i in 0 until sequencedGraph.size) {
+            val graphNode = sequencedGraph[i]
 
-        init {
-            rootNode = Node.RenderContextNode(VulkanRenderingContext(startTask, mainCamera, emptyMap(), null))
-            rootNode.addDependencies()
-        }
+            if(graphNode is FrameGraph.FrameGraphNode.PassNode) {
+                val pass = graphNode.pass
 
-        inner class VulkanRenderingContext(val renderTask: VulkanRenderTask, override val camera: Camera, override val parameters: Map<String, Any>, val callback: (Map<String, Any>.() -> Unit)?) : RenderingContext {
-            //override val bindings: ShaderBindingInterface
-            //    get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+                val requiredRenderBufferStates = pass.renderBufferUsages
+                /*
+                /** Contains the old (to transition) layouts of buffers this pass requires */
+                val previousRenderBufferStates = requiredRenderBufferStates.keys.associateWith {
+                    globalStates[it] ?: UsageType.NONE
+                }*/
 
-            override val artifacts =  mutableMapOf<String, Any>()
+                /**
+                 * The layout transitions and storage/load operations for color/depth attachements are embedded in the RenderPass.
+                 * This list will be used to index into a RenderPass cache.
+                 */
+                val previousRenderPassAttachementStates = mutableListOf<UsageType>()
+                if(pass.outputDepthRenderBuffer != null)
+                    previousRenderPassAttachementStates.add(globalStates[pass.outputDepthRenderBuffer] ?: UsageType.NONE)
+                for(rb in pass.outputColorRenderBuffers)
+                    previousRenderPassAttachementStates.add(globalStates[rb] ?: UsageType.NONE)
 
-            override fun dispatchRenderTask(camera: Camera, renderTaskName: String, parameters: Map<String, Any>, callback: Map<String, Any>.() -> Unit) {
-                // Hack because we can't have the reference in both way :(
-                val thisNode = allNodes.find { it is Node.RenderContextNode && it.renderContext == this }!!
-
-                val task = tasks[renderTaskName]  ?: throw Exception("Can't find task $renderTaskName")
-                val childNode = Node.RenderContextNode(VulkanRenderingContext(task, camera, parameters, callback))
-
-                thisNode.depends.add(childNode)
-                allNodes.add(childNode)
-
-                childNode.addDependencies()
-            }
-        }
-
-        private fun Node.addDependencies() {
-            when (this) {
-                is Node.PassNode -> {
-                    for (dependency in this.pass.declaration.passDependencies) {
-                        val passThatWeDependOn = this.contextNode.renderContext.renderTask.passes[dependency] ?: throw Exception("Can't find pass $dependency")
-
-                        // Does a node for that pass in that context exist already
-                        val existingDependencyNode = allNodes.find { it is Node.PassNode && it.pass == passThatWeDependOn && it.contextNode == contextNode }
-
-                        val dependencyNode = existingDependencyNode ?: Node.PassNode(contextNode, passThatWeDependOn)
-                        depends.add(dependencyNode)
-
-                        if (existingDependencyNode == null) {
-                            allNodes.add(dependencyNode)
-                            dependencyNode.addDependencies()
-                        }
-                    }
-
-                    //TODO here goes dynamic rendertask deps from systems
-                    /*pass.drawingSystems.forEach {
-                        it.registerAdditionalRenderTasks(this.contextNode.renderContext)
-                    }*/
+                /** Lists the image inputs that currently are in the wrong layout */
+                val inputRenderBuffersToTransition = mutableListOf<Pair<VulkanRenderBuffer, UsageType>>()
+                for(rb in pass.inputRenderBuffers) {
+                    val currentState = globalStates[rb] ?: UsageType.NONE
+                    if(currentState != UsageType.INPUT)
+                        inputRenderBuffersToTransition.add(Pair(rb, currentState))
                 }
-                is Node.RenderContextNode -> {
-                    val rootPass = this.renderContext.renderTask.rootPass
-                    val passNode = Node.PassNode(this, rootPass)
-                    depends.add(passNode)
-                    allNodes.add(passNode)
-                    passNode.addDependencies()
-                }
+
+                //println("Pass ${pass.declaration.name}")
+                //println("Used buffers previous state: $previousRenderBufferStates")
+                //println("Used buffers required state: $requiredRenderBufferStates")
+                //println("Renderpass attachements previous states: $previousRenderPassAttachementStates")
+                //println("Input render buffers to transition: $inputRenderBuffersToTransition")
+
+                pass.render(frame, previousRenderPassAttachementStates, inputRenderBuffersToTransition)
+
+                for(entry in requiredRenderBufferStates)
+                    globalStates[entry.key] = entry.value
             }
+
         }
+
+        // Validation also makes it so we output a rendergraph image
+        if(fresh && backend.enableValidation) {
+            lookIDontCare(graph)
+            fresh = false
+        }
+
+        val passes = sequencedGraph.mapNotNull { (it as? FrameGraph.FrameGraphNode.PassNode)?.pass }
+
+        stackPush().use {
+            val submitInfo = VkSubmitInfo.callocStack().sType(VK_STRUCTURE_TYPE_SUBMIT_INFO).apply {
+                val commandBuffers = MemoryStack.stackMallocPointer(passes.size)
+                for (pass in passes)
+                    commandBuffers.put(pass.commandBuffers[frame])
+                commandBuffers.flip()
+                pCommandBuffers(commandBuffers)
+
+                val waitOnSemaphores = MemoryStack.stackMallocLong(1)
+                waitOnSemaphores.put(0, frame.renderCanBeginSemaphore)
+                pWaitSemaphores(waitOnSemaphores)
+                waitSemaphoreCount(1)
+
+                val waitStages = MemoryStack.stackMallocInt(1)
+                waitStages.put(0, VK_PIPELINE_STAGE_TRANSFER_BIT)
+                pWaitDstStageMask(waitStages)
+
+                //val semaphoresToSignal = MemoryStack.stackLongs(frame.renderFinishedSemaphore)
+                //pSignalSemaphores(semaphoresToSignal)
+            }
+
+            backend.logicalDevice.graphicsQueue.mutex.acquireUninterruptibly()
+            vkQueueSubmit(backend.logicalDevice.graphicsQueue.handle, submitInfo, VK_NULL_HANDLE).ensureIs("Failed to submit command buffer", VK_SUCCESS)
+            backend.logicalDevice.graphicsQueue.mutex.release()
+        }
+
+        blitHelper.copyFinalRenderbuffer(frame, passes.last().outputColorRenderBuffers[0])
     }
 
     fun resizeBuffers() {
@@ -107,5 +135,6 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
 
     override fun cleanup() {
         tasks.values.forEach(Cleanable::cleanup)
+        blitHelper.cleanup()
     }
 }

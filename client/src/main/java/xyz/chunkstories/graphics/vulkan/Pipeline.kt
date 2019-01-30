@@ -35,7 +35,7 @@ class Pipeline(val backend: VulkanGraphicsBackend, val program : VulkanShaderPro
     val handle: VkPipeline
 
     constructor(backend: VulkanGraphicsBackend, program: VulkanShaderProgram, pass: VulkanPass, vertexInputConfiguration: VertexInputConfiguration, primitiveType: Primitive, faceCullingMode: FaceCullingMode) :
-            this(backend, program, pass.renderpass, pass.declaration.outputs, pass.declaration.depthTestingConfiguration, vertexInputConfiguration, primitiveType, faceCullingMode)
+            this(backend, program, pass.canonicalRenderPass, pass.declaration.outputs, pass.declaration.depthTestingConfiguration, vertexInputConfiguration, primitiveType, faceCullingMode)
 
     init {
         logger.info("Creating pipeline")

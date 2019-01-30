@@ -30,6 +30,7 @@ import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.EXTDebugReport.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.api.graphics.systems.GraphicSystem
 import xyz.chunkstories.api.graphics.systems.RegisteredGraphicSystem
 import xyz.chunkstories.api.graphics.systems.drawing.DrawingSystem
 import java.awt.image.BufferedImage
@@ -267,7 +268,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
         return bestPhysicalDevice ?: throw Exception("Could not find suitable physical device !")
     }
 
-    fun <T : DrawingSystem> createDrawingSystem(pass: VulkanPass, registeredDrawingSystem: RegisteredGraphicSystem<T>): VulkanDrawingSystem {
+    fun <T : GraphicSystem> createDrawingSystem(pass: VulkanPass, registeredDrawingSystem: RegisteredGraphicSystem<T>): VulkanDrawingSystem {
         val vulkanPass = pass as? VulkanPass ?: throw Exception("Pass didn't originate from a Vulkan backend !!!")
 
         return when (registeredDrawingSystem.clazz) {

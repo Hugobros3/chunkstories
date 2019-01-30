@@ -48,6 +48,7 @@ hs_err_pid*
 *.trace
 *.cap
 injectee.dll
+rendergraph.png
 
 # Hide eclipse projects
 .classpath

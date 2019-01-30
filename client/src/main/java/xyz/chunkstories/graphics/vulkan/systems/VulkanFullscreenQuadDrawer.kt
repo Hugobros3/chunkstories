@@ -71,17 +71,17 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
     override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer) {
         val bindingContext = backend.descriptorMegapool.getBindingContext(pipeline)
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
-        //TODO
-        /*for (input in pass.imageInputs) {
+
+        for (input in pass.declaration.inputs?.imageInputs ?: emptyList<ImageInput>()) {
             val source = input.source
             when (source) {
                 is ImageInput.ImageSource.RenderBufferReference -> {
-                    bindingContext.bindTextureAndSampler(input.name, pass.graph.buffers[source.renderBufferName]?.texture!!, sampler)
+                    bindingContext.bindTextureAndSampler(input.name, pass.renderTask.buffers[source.renderBufferName]?.texture!!, sampler)
                 }
                 is ImageInput.ImageSource.AssetReference -> TODO()
                 is ImageInput.ImageSource.TextureReference -> TODO()
             }
-        }*/
+        }
 
         //println("pass ${pass.name}  $bindings")
         bindings?.invoke(this, bindingContext)

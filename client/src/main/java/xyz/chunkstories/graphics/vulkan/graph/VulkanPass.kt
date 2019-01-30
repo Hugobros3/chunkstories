@@ -7,6 +7,7 @@ import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.graphics.ImageInput
 import xyz.chunkstories.api.graphics.rendergraph.PassDeclaration
+import xyz.chunkstories.api.graphics.systems.GraphicSystem
 import xyz.chunkstories.graphics.vulkan.CommandPool
 import xyz.chunkstories.graphics.vulkan.RenderPass
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
@@ -14,25 +15,23 @@ import xyz.chunkstories.graphics.vulkan.resources.Cleanable
 import xyz.chunkstories.graphics.vulkan.resources.InflightFrameResource
 import xyz.chunkstories.graphics.vulkan.swapchain.Frame
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
-import xyz.chunkstories.graphics.vulkan.textures.vulkanFormat
 import xyz.chunkstories.graphics.vulkan.util.VkFramebuffer
-import xyz.chunkstories.graphics.vulkan.util.VkRenderPass
-import xyz.chunkstories.graphics.vulkan.util.VkSemaphore
 import xyz.chunkstories.graphics.vulkan.util.ensureIs
 
 open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: VulkanRenderTask, val declaration: PassDeclaration) : Cleanable {
 
-    val outputRenderBuffers: List<VulkanRenderBuffer>
-    val resolvedDepthBuffer: VulkanRenderBuffer?
+    val inputRenderBuffers: List<VulkanRenderBuffer>
 
-    //val program: VulkanShaderProgram
+    val outputColorRenderBuffers: List<VulkanRenderBuffer>
+    val outputDepthRenderBuffer: VulkanRenderBuffer?
 
-    var renderPass: VkRenderPass = -1
-        private set
     var framebuffer: VkFramebuffer = -1
         internal set
 
-    val renderpass: RenderPass
+    val canonicalRenderPass: RenderPass
+    val renderPassesMap = mutableMapOf<List<UsageType>, RenderPass>()
+
+    val renderBufferUsages: Map<VulkanRenderBuffer, UsageType>
 
     lateinit var drawingSystems: List<VulkanDrawingSystem>
         private set
@@ -40,13 +39,19 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
     val commandPool = CommandPool(backend, backend.logicalDevice.graphicsQueue.family, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT or VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
     val commandBuffers: InflightFrameResource<VkCommandBuffer>
 
-    /** Set late by the RenderGraph */
-    lateinit var passDependencies: List<VulkanPass>
-
     init {
         MemoryStack.stackPush()
 
-        outputRenderBuffers = declaration.outputs.outputs.map { output ->
+        inputRenderBuffers = declaration.inputs?.imageInputs?.mapNotNull {
+            val source = it.source
+            if(source is ImageInput.ImageSource.RenderBufferReference) {
+                val rb = renderTask.buffers[source.renderBufferName]!!
+                rb
+            } else
+                null
+        } ?: emptyList<VulkanRenderBuffer>()
+
+        outputColorRenderBuffers = declaration.outputs.outputs.map { output ->
             val resolvedName = output.outputBuffer ?: output.name
             if (resolvedName == "_swapchain")
                 TODO()//graph.dummySwapchainRenderBuffer
@@ -54,7 +59,7 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
                 renderTask.buffers[resolvedName] ?: throw Exception("Buffer $resolvedName isn't declared !")
         }
 
-        resolvedDepthBuffer =
+        outputDepthRenderBuffer =
                 if (declaration.depthTestingConfiguration.enabled)
                     renderTask.buffers[declaration.depthTestingConfiguration.depthBuffer]
                 else null
@@ -74,199 +79,55 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
             commandBuffer
         }
 
-        renderpass = RenderPass(backend, this)
-
-        MemoryStack.stackPop()
-    }
-
-    /** We need to know how the graph is laid out to feed Vulkan enough intel */
-    fun postGraphBuild() {
-        MemoryStack.stackPush()
-        renderPass = createRenderPass()
+        canonicalRenderPass = RenderPass(backend, this, null)
         framebuffer = createFramebuffer()
 
-        /*val drawingSystems = mutableListOf<VulkanDrawingSystem>()
-        for (declaredDrawingSystem in declaration.draws.registeredSystems) {
-            val drawingSystem = backend.createDrawingSystem(this, declaredDrawingSystem)
-            drawingSystem.apply(declaredDrawingSystem.init)
-            drawingSystems.add(drawingSystem)
+        renderBufferUsages = createRenderBufferUsageMap(declaration)
+
+        val drawingSystems = mutableListOf<VulkanDrawingSystem>()
+        val rs = declaration.draws?.registeredSystems
+        if(rs != null) {
+            for (declaredDrawingSystem in rs) {
+                val drawingSystem = backend.createDrawingSystem(this, declaredDrawingSystem) as VulkanDrawingSystem
+
+                val d = declaredDrawingSystem.dslCode as GraphicSystem.() -> Unit
+                    drawingSystem.apply(d)
+                drawingSystems.add(drawingSystem)
+            }
         }
 
-        this.drawingSystems = drawingSystems*/
-        TODO()
+        this.drawingSystems = drawingSystems
+
         MemoryStack.stackPop()
     }
 
-    fun VulkanRenderBuffer.findPreviousUsage(): UsageState {
-        TODO()
-        /*val thisPassIndex = graph.passesInOrder.indexOf(this@VulkanPass)
-        if (thisPassIndex == 0)
-            return UsageState.NONE
+    private fun createRenderBufferUsageMap(declaration: PassDeclaration): Map<VulkanRenderBuffer, UsageType> {
+        val map = mutableMapOf<VulkanRenderBuffer, UsageType>()
 
-        //Check all the previous pass to look for a previous usage
-        for (index in (thisPassIndex - 1) downTo 0) {
-            val usageThere = findUsageInPass(graph.passesInOrder[index])
+        for(inputBuffer in inputRenderBuffers)
+            map[inputBuffer] = UsageType.INPUT
 
-            if (usageThere != UsageState.NONE)
-                return usageThere
+        for (outputBuffer in outputColorRenderBuffers) {
+            map[outputBuffer] = UsageType.OUTPUT
         }
 
-        return UsageState.NONE*/
+        if (outputDepthRenderBuffer != null)
+            map[outputDepthRenderBuffer] = UsageType.OUTPUT
+
+        return map
     }
 
-    internal open fun createRenderPass(): VkRenderPass {
-        val outputs = declaration.outputs.outputs
-        val depth = declaration.depthTestingConfiguration
-
-        val attachmentDescription = VkAttachmentDescription.callocStack(outputs.size + if (depth.enabled) 1 else 0)
-        outputs.mapIndexed { index, output ->
-            val renderbuffer = outputRenderBuffers[index]
-
-            val previousUsage = renderbuffer.findPreviousUsage()
-            val currentUsage = UsageState.OUTPUT
-
-            attachmentDescription[index].apply {
-
-                format(renderbuffer.declaration.format.vulkanFormat.ordinal)
-                samples(VK_SAMPLE_COUNT_1_BIT)
-
-                if (output.clear)
-                    loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
-                else {
-                    if (previousUsage == UsageState.NONE)
-                        loadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
-                    else
-                        loadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
-                }
-
-                //TODO use DONT_CARE when it can be determined we won't be needing the data
-                storeOp(VK_ATTACHMENT_STORE_OP_STORE)
-
-                //TODO we don't even use stencil why is this here
-                stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
-                stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
-
-                initialLayout(getLayoutForStateAndType(previousUsage, renderbuffer.usageType))
-                finalLayout(getLayoutForStateAndType(currentUsage, renderbuffer.usageType))
-            }
-        }
-
-        if (depth.enabled) {
-            val depthBufferAttachmentIndex = attachmentDescription.capacity() - 1
-            attachmentDescription[depthBufferAttachmentIndex].apply {
-                val renderbuffer = resolvedDepthBuffer!!
-
-                val previousUsage = renderbuffer.findPreviousUsage()
-                val currentUsage = UsageState.OUTPUT
-
-                format(renderbuffer.declaration.format.vulkanFormat.ordinal)
-                samples(VK_SAMPLE_COUNT_1_BIT)
-
-                if (depth.clear)
-                    loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
-                else {
-                    if (previousUsage == UsageState.NONE)
-                        loadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
-                    else
-                        loadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
-                }
-
-                //TODO use DONT_CARE when it can be determined we won't be needing the data
-                storeOp(VK_ATTACHMENT_STORE_OP_STORE)
-
-                //TODO we don't even use stencil why is this here
-                stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
-                stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
-
-                initialLayout(getLayoutForStateAndType(previousUsage, renderbuffer.usageType))
-                finalLayout(getLayoutForStateAndType(currentUsage, renderbuffer.usageType))
-            }
-        }
-
-        val colorAttachmentReference = VkAttachmentReference.callocStack(outputs.size)
-        outputs.mapIndexed { index, output ->
-            colorAttachmentReference[index].apply {
-                attachment(index)
-                layout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-                //layout(VK_IMAGE_LAYOUT_GENERAL)
-            }
-        }
-
-        val subpassDescription = VkSubpassDescription.callocStack(1).apply {
-            pipelineBindPoint(VK_PIPELINE_BIND_POINT_GRAPHICS)
-
-            pColorAttachments(colorAttachmentReference)
-            colorAttachmentCount(colorAttachmentReference.capacity())
-
-            if (depth.enabled) {
-                val depthBufferAttachmentIndex = attachmentDescription.capacity() - 1
-                val depthAttachmentReference = VkAttachmentReference.callocStack().apply {
-                    attachment(depthBufferAttachmentIndex)
-                    if (depth.write)
-                        layout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
-                    else
-                        layout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL)
-                }
-                pDepthStencilAttachment(depthAttachmentReference)
-            }
-        }
-
-        val dependencies = VkSubpassDependency.calloc(1).apply {
-            srcSubpass(VK_SUBPASS_EXTERNAL)
-            dstSubpass(0)
-
-            //TODO we could be really smart here and be aware of the read/writes between passes to further optimize those masks
-            //TODO maybe even do different scheduling absed on that. Unfortunately I just want to get this renderer going atm
-            //var stages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
-            var access = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT or VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
-            if (depth.enabled) {
-                access = access or VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT or VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT
-            }
-
-            if (depth.enabled)
-                srcStageMask(VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT or VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
-            else
-                srcStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
-
-            // If this is the first pass we just want to wait on the image being available
-            /*if (graph.passesInOrder.indexOf(this@VulkanPass) == 0)
-                srcAccessMask(0)
-            else
-                srcAccessMask(access)*/
-            //TODO
-
-            srcAccessMask(0)
-
-            if (depth.enabled)
-                dstStageMask(VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT or VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
-            else
-                dstStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
-            dstAccessMask(access)
-        }
-
-        val renderPassCreateInfo = VkRenderPassCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO).apply {
-            pAttachments(attachmentDescription)
-            pSubpasses(subpassDescription)
-
-            pDependencies(dependencies)
-        }
-
-        val pRenderPass = MemoryStack.stackMallocLong(1)
-        vkCreateRenderPass(backend.logicalDevice.vkDevice, renderPassCreateInfo, null, pRenderPass).ensureIs("Failed to create render pass", VK_SUCCESS)
-        return pRenderPass.get(0)
-    }
-
-    internal open fun createFramebuffer(): VkFramebuffer {
+    fun createFramebuffer(): VkFramebuffer {
         stackPush()
         val pAttachments = stackMallocLong(declaration.outputs.outputs.size + if (declaration.depthTestingConfiguration.enabled) 1 else 0)
 
-        outputRenderBuffers.forEach { renderBuffer -> pAttachments.put(renderBuffer.texture.imageView) }
+        outputColorRenderBuffers.forEach { renderBuffer -> pAttachments.put(renderBuffer.texture.imageView) }
         if (declaration.depthTestingConfiguration.enabled)
-            pAttachments.put(resolvedDepthBuffer!!.texture.imageView)
+            pAttachments.put(outputDepthRenderBuffer!!.texture.imageView)
         pAttachments.flip()
 
         val framebufferCreateInfo = VkFramebufferCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO).apply {
-            renderPass(renderPass)
+            renderPass(canonicalRenderPass.handle)
             pAttachments(pAttachments)
             width(backend.window.width)
             height(backend.window.height)
@@ -280,10 +141,13 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
         return handle
     }
 
-    //TODO for now let's assume there is only one pass so we can use head/tail semaphores from the frame object
-    open fun render(frame: Frame, passBeginSemaphore: VkSemaphore?) {
+    fun render(frame: Frame, attachementsPreviousState: List<UsageType>, imageInputstoTransition: List<Pair<VulkanRenderBuffer, UsageType>>) {
         val outputs = declaration.outputs.outputs
         val depth = declaration.depthTestingConfiguration
+
+        val relevantRenderPass = renderPassesMap.getOrPut(attachementsPreviousState) {
+            RenderPass(backend, this, attachementsPreviousState)
+        }
 
         stackPush().use {
             commandBuffers[frame].apply {
@@ -317,7 +181,7 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
                 vkCmdSetScissor(this, 0, scissor)
 
                 val renderPassBeginInfo = VkRenderPassBeginInfo.callocStack().sType(VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO).apply {
-                    renderPass(renderPass)
+                    renderPass(relevantRenderPass.handle)
                     framebuffer(framebuffer)
 
                     renderArea().offset().x(0)
@@ -347,21 +211,10 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
                     pClearValues(clearColor)
                 }
 
-                TODO()
-                /*imageInputs.forEach { input ->
-                    val source = input.source
 
-                    when (source) {
-                        is ImageInput.ImageSource.RenderBufferReference -> {
-                            val renderBuffer = graph.buffers[source.renderBufferName] ?: throw Exception("Couldn't find render buffer ${input.name}")
-
-                            val previousUsage = renderBuffer.findPreviousUsage()
-                            val currentUsage = UsageState.INPUT
-
-                            renderBuffer.transitionUsage(this, previousUsage, currentUsage)
-                        }
-                    }
-                }*/
+                for((rb, ou) in imageInputstoTransition) {
+                    rb.transitionUsage(this, ou, UsageType.INPUT)
+                }
 
                 vkCmdBeginRenderPass(this, renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE)
 
@@ -385,11 +238,11 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
     override fun cleanup() {
         drawingSystems.forEach(Cleanable::cleanup)
 
-        // Presentation pass doesn't get to destroy it's resources.
         vkDestroyFramebuffer(backend.logicalDevice.vkDevice, framebuffer, null)
-        vkDestroyRenderPass(backend.logicalDevice.vkDevice, renderPass, null)
 
-        renderpass.cleanup()
+        canonicalRenderPass.cleanup()
+        for(renderPass in renderPassesMap.values)
+            renderPass.cleanup()
 
         commandPool.cleanup()
     }
