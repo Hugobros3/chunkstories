@@ -3,12 +3,12 @@ package xyz.chunkstories.graphics.vulkan.graph
 import xyz.chunkstories.api.graphics.rendergraph.RenderingContext
 import xyz.chunkstories.api.graphics.structs.Camera
 
-class FrameGraph(val renderGraph: VulkanRenderGraph, val startTask: VulkanRenderTask, val mainCamera: Camera) {
+class FrameGraph(val renderGraph: VulkanRenderGraph, startTask: VulkanRenderTask, mainCamera: Camera, parameters: Map<String, Any>) {
     val rootFrameGraphNode: FrameGraphNode
     val allNodes = mutableSetOf<FrameGraphNode>()
 
     init {
-        rootFrameGraphNode = FrameGraphNode.RenderingContextNode(this, startTask, mainCamera, emptyMap(), null)
+        rootFrameGraphNode = FrameGraphNode.RenderingContextNode(this, startTask, mainCamera, parameters, null)
         allNodes.add(rootFrameGraphNode)
         rootFrameGraphNode.addDependencies()
     }
@@ -23,22 +23,36 @@ class FrameGraph(val renderGraph: VulkanRenderGraph, val startTask: VulkanRender
         }
     }
 
-    class VulkanRenderingContext(val frameGraphNode: FrameGraphNode.RenderingContextNode, val renderTask: VulkanRenderTask, override val camera: Camera, override val parameters: Map<String, Any>, val callback: (Map<String, Any>.() -> Unit)?) : RenderingContext {
+    class VulkanRenderingContext(val frameGraphNode: FrameGraphNode.RenderingContextNode, val renderTask: VulkanRenderTask, override val camera: Camera, parameters: Map<String, Any>, val callback: (Map<String, Any>.() -> Unit)?) : RenderingContext {
         override val artifacts = mutableMapOf<String, Any>()
 
+        override val parameters: MutableMap<String, Any>
+
+        init {
+            this.parameters = parameters.toMutableMap()
+            this.parameters["camera"] = camera
+        }
+
         override fun dispatchRenderTask(camera: Camera, renderTaskName: String, parameters: Map<String, Any>, callback: Map<String, Any>.() -> Unit) {
-            // Hack because we can't have the reference in both way :(
-            val thisNode = frameGraphNode.frameGraph.allNodes.find { it is FrameGraphNode.RenderingContextNode && it.renderContext == this }!!
+            throw Exception("actuall no")
+        }
+    }
 
-            val task = frameGraphNode.frameGraph.renderGraph.tasks[renderTaskName] ?: throw Exception("Can't find task $renderTaskName")
-            val childNode = FrameGraphNode.RenderingContextNode(frameGraphNode.frameGraph, task, camera, parameters, callback)
+    inner class RenderTaskDispatching(private val passNode: FrameGraphNode.PassNode) {
+        fun dispatchRenderTask(camera: Camera, renderTaskName: String, parameters: Map<String, Any>, callback: Map<String, Any>.() -> Unit) {
 
-            thisNode.depends.add(childNode)
-            frameGraphNode.frameGraph.allNodes.add(childNode)
+            val task = renderGraph.tasks[renderTaskName] ?: throw Exception("Can't find task $renderTaskName")
+            val childNode = FrameGraphNode.RenderingContextNode(this@FrameGraph, task, camera, parameters, callback)
 
-            with(frameGraphNode.frameGraph) {
+            passNode.depends.add(childNode)
+            //println("NODE DEPENDENCY XD $passNode to $childNode")
+            allNodes.add(childNode)
+
+            with(passNode.frameGraph) {
                 childNode.addDependencies()
             }
+
+            passNode.taskNode.renderContext.artifacts.put("TENTATIVE_SYNTAX_SUBTASK", childNode.renderContext)
         }
     }
 
@@ -61,9 +75,10 @@ class FrameGraph(val renderGraph: VulkanRenderGraph, val startTask: VulkanRender
                 }
 
                 //TODO here goes dynamic rendertask deps from systems
-                /*pass.drawingSystems.forEach {
-                    it.registerAdditionalRenderTasks(this.contextNode.renderContext)
-                }*/
+                val dispatching = RenderTaskDispatching(this)
+                pass.drawingSystems.forEach {
+                    it.registerAdditionalRenderTasks(this.taskNode.renderContext, dispatching)
+                }
             }
             is FrameGraphNode.RenderingContextNode -> {
                 val rootPass = this.renderContext.renderTask.rootPass
@@ -81,11 +96,11 @@ class FrameGraph(val renderGraph: VulkanRenderGraph, val startTask: VulkanRender
 
         //TODO less naive graph sorting method
         outerWhile@
-        while(todo.isNotEmpty()) {
-            for(node in todo) {
+        while (todo.isNotEmpty()) {
+            for (node in todo) {
                 val outstandingDependencies = node.depends.count { !sortedList.contains(it) }
                 //println("node $node has $outstandingDependencies unsolved deps")
-                if(outstandingDependencies > 0)
+                if (outstandingDependencies > 0)
                     continue
                 else {
                     //println("node $node can execute, adding to list")

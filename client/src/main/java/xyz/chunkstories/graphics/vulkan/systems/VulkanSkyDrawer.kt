@@ -17,6 +17,7 @@ import xyz.chunkstories.world.WorldClientCommon
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
+import xyz.chunkstories.api.graphics.rendergraph.RenderingContext
 
 interface SkyDrawer : DrawingSystem
 
@@ -41,7 +42,7 @@ class VulkanSkyDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass), SkyDrawer {
 
     val program = backend.shaderFactory.createProgram(pass.declaration.name)
     val pipeline = Pipeline(backend, program, pass, vertexInputConfiguration, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
-    val sampler = VulkanSampler(backend)
+    val sampler = VulkanSampler(backend, false)
 
     private val vertexBuffer: VulkanVertexBuffer
 
@@ -66,7 +67,7 @@ class VulkanSkyDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass), SkyDrawer {
         }
     }
 
-    override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer) {
+    override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer, renderingContext: RenderingContext) {
         val bindingContext = backend.descriptorMegapool.getBindingContext(pipeline)
 
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
@@ -79,8 +80,8 @@ class VulkanSkyDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass), SkyDrawer {
         val world = client.world as WorldClientCommon
 
         //descriptorPool.configure(frame, camera)
-        bindingContext.bindUBO(camera)
-        bindingContext.bindUBO(world.getConditions())
+        bindingContext.bindUBO("camera", camera)
+        bindingContext.bindUBO("world", world.getConditions())
 
         bindingContext.preDraw(commandBuffer)
         vkCmdDraw(commandBuffer, 3 * 2, 1, 0, 0)

@@ -7,6 +7,7 @@ import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.graphics.ImageInput
 import xyz.chunkstories.api.graphics.rendergraph.PassDeclaration
+import xyz.chunkstories.api.graphics.rendergraph.RenderingContext
 import xyz.chunkstories.api.graphics.systems.GraphicSystem
 import xyz.chunkstories.graphics.vulkan.CommandPool
 import xyz.chunkstories.graphics.vulkan.RenderPass
@@ -117,6 +118,27 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
         return map
     }
 
+    fun getRenderBufferUsages(renderingContext: RenderingContext) : Map<VulkanRenderBuffer, UsageType> {
+        val map = renderBufferUsages.toMutableMap()
+        for(system in drawingSystems) {
+            for(irb in system.provideAdditionalConsumedInputRenderBuffers(renderingContext)) {
+                //println("Pass $this will use additional input RB $irb")
+                map[irb] = UsageType.INPUT
+            }
+        }
+        return map
+    }
+
+    fun getAllInputRenderBuffers(renderingContext: FrameGraph.VulkanRenderingContext): List<VulkanRenderBuffer> {
+        val list = inputRenderBuffers.toMutableList()
+        for(system in drawingSystems) {
+            for(irb in system.provideAdditionalConsumedInputRenderBuffers(renderingContext)) {
+                list.add(irb)
+            }
+        }
+        return list
+    }
+
     fun createFramebuffer(): VkFramebuffer {
         stackPush()
         val pAttachments = stackMallocLong(declaration.outputs.outputs.size + if (declaration.depthTestingConfiguration.enabled) 1 else 0)
@@ -126,11 +148,13 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
             pAttachments.put(outputDepthRenderBuffer!!.texture.imageView)
         pAttachments.flip()
 
+        val viewportSize = (outputDepthRenderBuffer ?: outputColorRenderBuffers[0]!!).size
+
         val framebufferCreateInfo = VkFramebufferCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO).apply {
             renderPass(canonicalRenderPass.handle)
             pAttachments(pAttachments)
-            width(backend.window.width)
-            height(backend.window.height)
+            width(viewportSize.x)
+            height(viewportSize.y)
             layers(1)
         }
 
@@ -141,9 +165,11 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
         return handle
     }
 
-    fun render(frame: Frame, attachementsPreviousState: List<UsageType>, imageInputstoTransition: List<Pair<VulkanRenderBuffer, UsageType>>) {
+    fun render(frame: Frame, renderingContext: RenderingContext, attachementsPreviousState: List<UsageType>, imageInputstoTransition: List<Pair<VulkanRenderBuffer, UsageType>>) {
         val outputs = declaration.outputs.outputs
         val depth = declaration.depthTestingConfiguration
+
+        val viewportSize = (outputDepthRenderBuffer ?: outputColorRenderBuffers[0]!!).size
 
         val relevantRenderPass = renderPassesMap.getOrPut(attachementsPreviousState) {
             RenderPass(backend, this, attachementsPreviousState)
@@ -161,8 +187,8 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
                 val viewport = VkViewport.callocStack(1).apply {
                     x(0.0F)
                     y(0.0F)
-                    width(backend.window.width.toFloat())
-                    height(backend.window.height.toFloat())
+                    width(viewportSize.x.toFloat())
+                    height(viewportSize.y.toFloat())
                     minDepth(0.0F)
                     maxDepth(1.0F)
                 }
@@ -173,8 +199,8 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
                 }
                 val scissor = VkRect2D.callocStack(1).apply {
                     offset(zeroZero)
-                    extent().width(backend.window.width)
-                    extent().height(backend.window.height)
+                    extent().width(viewportSize.x)
+                    extent().height(viewportSize.y)
                 }
 
                 vkCmdSetViewport(this, 0, viewport)
@@ -186,8 +212,8 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
 
                     renderArea().offset().x(0)
                     renderArea().offset().y(0)
-                    renderArea().extent().width(backend.window.width)
-                    renderArea().extent().height(backend.window.height)
+                    renderArea().extent().width(viewportSize.x)
+                    renderArea().extent().height(viewportSize.y)
 
                     val clearColor = VkClearValue.callocStack(outputs.size + if (depth.enabled) 1 else 0)
 
@@ -221,7 +247,7 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
                 // Transition image layouts now !
 
                 for (drawingSystem in drawingSystems) {
-                    drawingSystem.registerDrawingCommands(frame, this)
+                    drawingSystem.registerDrawingCommands(frame, this, renderingContext)
                 }
 
                 vkCmdEndRenderPass(this)

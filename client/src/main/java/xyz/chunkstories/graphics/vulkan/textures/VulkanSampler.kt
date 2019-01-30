@@ -8,7 +8,7 @@ import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkSamplerCreateInfo
 
-class VulkanSampler(val backend: VulkanGraphicsBackend) : Cleanable {
+class VulkanSampler(val backend: VulkanGraphicsBackend, val shadowSampler: Boolean) : Cleanable {
     val handle : VkSampler
 
     init {
@@ -25,8 +25,16 @@ class VulkanSampler(val backend: VulkanGraphicsBackend) : Cleanable {
 
             unnormalizedCoordinates(false)
 
-            compareEnable(false)
-            compareOp(VK_COMPARE_OP_ALWAYS) //TODO shadowmap pcf will go here
+            if(shadowSampler) {
+                compareEnable(true)
+                compareOp(VK_COMPARE_OP_LESS_OR_EQUAL)
+                //compareOp(VK_COMPARE_OP_GREATER_OR_EQUAL)
+                magFilter(VK_FILTER_LINEAR)
+                minFilter(VK_FILTER_LINEAR)
+            } else {
+                compareEnable(false)
+                compareOp(VK_COMPARE_OP_ALWAYS)
+            }
 
             mipmapMode(VK_SAMPLER_MIPMAP_MODE_LINEAR)
             mipLodBias(0.0F)

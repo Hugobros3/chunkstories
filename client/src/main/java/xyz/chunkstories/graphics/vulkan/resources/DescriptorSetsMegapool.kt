@@ -141,11 +141,12 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
             return set
         }
 
-        fun bindUBO(interfaceBlock: InterfaceBlock) {
+        fun bindUBO(instanceName: String, interfaceBlock: InterfaceBlock) {
 
             //TODO path w/ name instead of IB class
             val uboBindPoint = pipeline.program.glslProgram.resources.filterIsInstance<GLSLUniformBlock>().find {
                 it.struct.kClass == interfaceBlock.javaClass.kotlin //TODO ::class ?
+                && it.name == instanceName
             } ?: throw Exception("I can't find a program resource matching that interface block :s")
 
             val set = getSet(uboBindPoint.descriptorSetSlot)

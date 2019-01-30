@@ -15,6 +15,7 @@ import org.joml.Vector3f
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
+import xyz.chunkstories.api.graphics.rendergraph.RenderingContext
 
 class VulkanSpinningCubeDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
     val backend: VulkanGraphicsBackend
@@ -104,7 +105,7 @@ class VulkanSpinningCubeDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
         }
     }
 
-    override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer) {
+    override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer, renderingContext: RenderingContext) {
         val fov = (90.0 / 360.0 * (Math.PI * 2)).toFloat()
         val aspect = backend.window.width.toFloat() / backend.window.height
         val projectionMatrix = Matrix4f().perspective(fov, aspect, 0.1f, 1000f, true)
@@ -130,7 +131,7 @@ class VulkanSpinningCubeDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
 
         val bindingContext = backend.descriptorMegapool.getBindingContext(pipeline)
 
-        bindingContext.bindUBO(camera)
+        bindingContext.bindUBO("camera", camera)
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
 
         bindingContext.preDraw(commandBuffer)

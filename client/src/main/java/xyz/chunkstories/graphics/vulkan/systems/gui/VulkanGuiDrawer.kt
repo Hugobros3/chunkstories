@@ -25,6 +25,7 @@ import org.lwjgl.system.MemoryUtil
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.api.graphics.rendergraph.RenderingContext
 
 internal const val guiBufferSize = 2 * 1024 * 1024
 
@@ -76,7 +77,7 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
 
     val program = backend.shaderFactory.createProgram("gui")
     val pipeline = Pipeline(backend, program, pass, vertexInputConfiguration, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
-    val sampler = VulkanSampler(backend)
+    val sampler = VulkanSampler(backend, false)
     val vertexBuffers: InflightFrameResource<VulkanVertexBuffer>
 
     init {
@@ -335,7 +336,7 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
         sameTextureCount = 0
     }
 
-    override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer) {
+    override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer, renderingContext: RenderingContext) {
         stackPush().use {
             vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
             vkCmdBindVertexBuffers(commandBuffer, 0, MemoryStack.stackLongs(vertexBuffers[frame].handle), MemoryStack.stackLongs(0))
@@ -351,7 +352,8 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
             afterTextureSwitch()
             val primitivesCount = stagingDraws.sumBy { it.first }
             vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, stackLongs(backend.textures.magicTexturing.theSet), null)
-            vkCmdDraw(this.commandBuffer, primitivesCount, 1, 0, 0)
+            if(primitivesCount > 0)
+                vkCmdDraw(this.commandBuffer, primitivesCount, 1, 0, 0)
             stagingDraws.clear()
 
             // Upload the vertex buffer contents

@@ -19,6 +19,7 @@ class VulkanUniformBuffer(backend: VulkanGraphicsBackend, val mapper: GLSLType.J
 
         for (field in mapper.fields) {
             fillMe.position(field.offset)
+            //println("${field.name} ${fillMe.position()}")
             extractInterfaceBlockField(field, fillMe, interfaceBlock)
         }
 

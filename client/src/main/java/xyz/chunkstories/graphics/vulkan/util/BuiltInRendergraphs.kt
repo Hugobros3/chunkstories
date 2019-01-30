@@ -1,20 +1,21 @@
 package xyz.chunkstories.graphics.vulkan.util
 
-import xyz.chunkstories.api.graphics.TextureFormat.*
-import xyz.chunkstories.api.graphics.rendergraph.PassOutput.BlendMode.*
-import xyz.chunkstories.api.gui.GuiDrawer
-import xyz.chunkstories.graphics.vulkan.systems.SkyDrawer
-import xyz.chunkstories.graphics.vulkan.systems.world.VulkanCubesDrawer
-import xyz.chunkstories.graphics.vulkan.systems.VulkanSpinningCubeDrawer
 import org.joml.Vector4d
 import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
+import xyz.chunkstories.api.graphics.TextureFormat.*
+import xyz.chunkstories.api.graphics.rendergraph.PassOutput.BlendMode.MIX
+import xyz.chunkstories.api.graphics.rendergraph.PassOutput.BlendMode.OVERWRITE
 import xyz.chunkstories.api.graphics.rendergraph.RenderGraphDeclarationScript
 import xyz.chunkstories.api.graphics.structs.Camera
+import xyz.chunkstories.api.gui.GuiDrawer
+import xyz.chunkstories.graphics.vulkan.systems.SkyDrawer
 import xyz.chunkstories.graphics.vulkan.systems.VulkanFullscreenQuadDrawer
+import xyz.chunkstories.graphics.vulkan.systems.VulkanSpinningCubeDrawer
+import xyz.chunkstories.graphics.vulkan.systems.world.VulkanCubesDrawer
 import xyz.chunkstories.graphics.vulkan.systems.world.getConditions
 
 object BuiltInRendergraphs {
-    val onlyGuiRenderGraph : RenderGraphDeclarationScript = {
+    val onlyGuiRenderGraph: RenderGraphDeclarationScript = {
         renderTask {
             name = "main"
 
@@ -85,8 +86,7 @@ object BuiltInRendergraphs {
         }
     }
 
-
-    val debugRenderGraph : RenderGraphDeclarationScript = {
+    val debugRenderGraph: RenderGraphDeclarationScript = {
 
         renderTask {
             name = "main"
@@ -100,13 +100,6 @@ object BuiltInRendergraphs {
                     format = DEPTH_32
                     size = viewportSize
                 }
-
-                /*renderBuffer {
-                name = "shadowMap"
-
-                format = DEPTH_32
-                size = 1024 by 1024
-            }*/
 
                 renderBuffer {
                     name = "colorBuffer"
@@ -210,9 +203,12 @@ object BuiltInRendergraphs {
                         system(VulkanFullscreenQuadDrawer::class) {
                             shaderBindings {
                                 val camera = client.player.controlledEntity?.traits?.get(TraitControllable::class)?.camera ?: Camera()
-                                it.bindUBO(camera)
-                                it.bindUBO(client.world.getConditions())
+                                it.bindUBO("camera", camera)
+                                it.bindUBO("world",client.world.getConditions())
                             }
+
+                            //TODO hacky api, plz fix
+                            doShadowMap = true
                         }
                     }
 
@@ -264,6 +260,41 @@ object BuiltInRendergraphs {
                             //clear = true
                             blending = MIX
                         }
+                    }
+                }
+            }
+        }
+
+        renderTask {
+            name = "sunShadow"
+
+            finalPass = "cubes"
+
+            renderBuffers {
+                renderBuffer {
+                    name = "shadowBuffer"
+
+                    format = DEPTH_32
+                    size = 1024 by 1024
+                }
+            }
+
+            passes {
+                pass {
+                    name = "cubes"
+
+                    draws {
+                        system(VulkanCubesDrawer::class)
+                    }
+
+                    outputs {
+
+                    }
+
+                    depth {
+                        enabled = true
+                        depthBuffer = "shadowBuffer"
+                        clear = true
                     }
                 }
             }

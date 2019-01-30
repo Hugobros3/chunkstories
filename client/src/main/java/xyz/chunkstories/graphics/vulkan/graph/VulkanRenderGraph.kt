@@ -37,7 +37,14 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
         val mainTaskName = "main"
 
         val mainTask = tasks[mainTaskName]!!
-        val graph = FrameGraph(this, mainTask, mainCamera)
+
+        val entity = backend.window.client.ingame?.player?.controlledEntity
+        val camera = entity?.traits?.get(TraitControllable::class)?.camera ?: Camera()
+
+        val map = mutableMapOf<String, Any>()
+        map["camera"] = camera
+
+        val graph = FrameGraph(this, mainTask, mainCamera, map)
 
         val sequencedGraph = graph.sequenceGraph()
 
@@ -50,7 +57,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
             if(graphNode is FrameGraph.FrameGraphNode.PassNode) {
                 val pass = graphNode.pass
 
-                val requiredRenderBufferStates = pass.renderBufferUsages
+                val requiredRenderBufferStates = pass.getRenderBufferUsages(graphNode.taskNode.renderContext)
                 /*
                 /** Contains the old (to transition) layouts of buffers this pass requires */
                 val previousRenderBufferStates = requiredRenderBufferStates.keys.associateWith {
@@ -69,7 +76,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
 
                 /** Lists the image inputs that currently are in the wrong layout */
                 val inputRenderBuffersToTransition = mutableListOf<Pair<VulkanRenderBuffer, UsageType>>()
-                for(rb in pass.inputRenderBuffers) {
+                for(rb in pass.getAllInputRenderBuffers(graphNode.taskNode.renderContext)) {
                     val currentState = globalStates[rb] ?: UsageType.NONE
                     if(currentState != UsageType.INPUT)
                         inputRenderBuffersToTransition.add(Pair(rb, currentState))
@@ -81,7 +88,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
                 //println("Renderpass attachements previous states: $previousRenderPassAttachementStates")
                 //println("Input render buffers to transition: $inputRenderBuffersToTransition")
 
-                pass.render(frame, previousRenderPassAttachementStates, inputRenderBuffersToTransition)
+                pass.render(frame, graphNode.taskNode.renderContext, previousRenderPassAttachementStates, inputRenderBuffersToTransition)
 
                 for(entry in requiredRenderBufferStates)
                     globalStates[entry.key] = entry.value

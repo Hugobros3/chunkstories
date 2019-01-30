@@ -1,10 +1,8 @@
 package xyz.chunkstories.graphics.vulkan.systems.world
 
 import xyz.chunkstories.api.client.IngameClient
-import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
 import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.api.graphics.structs.WorldConditions
-import xyz.chunkstories.api.physics.Frustrum
 import xyz.chunkstories.api.util.kotlin.toVec3i
 import xyz.chunkstories.api.world.World
 import xyz.chunkstories.client.InternalClientOptions
@@ -27,6 +25,7 @@ import org.lwjgl.system.MemoryUtil.memAlloc
 import org.lwjgl.system.MemoryUtil.memFree
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
+import xyz.chunkstories.api.graphics.rendergraph.RenderingContext
 import xyz.chunkstories.api.world.chunk.Chunk
 import xyz.chunkstories.api.world.region.Region
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
@@ -107,21 +106,20 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         VulkanBuffer(backend, sizeFor2048Elements, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, false)
     }
 
-    override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer) {
+    override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer, renderingContext: RenderingContext) {
         MemoryStack.stackPush()
 
         val bindingContext = backend.descriptorMegapool.getBindingContext(meshesPipeline)
 
-        val entity = client.player.controlledEntity
-        val camera = entity?.traits?.get(TraitControllable::class)?.camera ?: Camera()
+        val camera = renderingContext.parameters["camera"] as Camera
         val world = client.world as WorldClientCommon
 
         val camPos = camera.position
 
-        bindingContext.bindUBO(camera)
-        bindingContext.bindUBO(world.getConditions())
+        bindingContext.bindUBO("camera", camera)
+        bindingContext.bindUBO("world", world.getConditions())
 
-        val frustrum = Frustrum(camera, client.gameWindow)
+        //val frustrum = Frustrum(camera, client.gameWindow)
 
         totalCubesDrawn = 0
         totalBuffersUsed = 0
@@ -212,7 +210,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
 
             rc++
 
-            if(frustrum.isBoxInFrustrum(boxCenter, boxSize2)) {
+            if(camera.frustrum.isBoxInFrustrum(boxCenter, boxSize2)) {
                 visibleRegions[visibleRegionsCount++] = region as RegionImplementation
             }
         }
@@ -252,7 +250,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
                 if(!chunk.isAirChunk) {
                     if(chunk.chunkX in visibilityRangeX && chunk.chunkY in visibilityRangeY && chunk.chunkZ in visibilityRangeZ) {
 
-                        if (frustrum.isBoxInFrustrum(boxCenter, boxSize)) {
+                        if (camera.frustrum.isBoxInFrustrum(boxCenter, boxSize)) {
                             visibleRegionChunks[visibleRegionChunksCount++] = chunk
                             //sortedChunks.add(chunk)
                         }
@@ -300,14 +298,14 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
 }
 
 fun World.getConditions(): WorldConditions {
-    //val time = (System.currentTimeMillis() % 100000L) / 2L
-    val time01 = (time % 10000L) / 10000f
+    //val time = System.currentTimeMillis()
+    val dayCycle = (time % 10000L) / 10000f
     val sunPos = Vector3d(0.5, -1.0, 0.0)
-    if (time01 > 0f)
-        sunPos.rotateAbout(time01 * Math.PI * 2.0, 1.0, 0.0, 0.0).normalize()
-    //println("${time01.toString()}:${sunPos.x} ${sunPos.y} + ${sunPos.z}")
+    if (dayCycle > 0f)
+        sunPos.rotateAbout(dayCycle * Math.PI * 2.0, 1.0, 0.0, 0.0).normalize()
+    //val sunPos = Vector3d(0.0, 1.0, 0.0).normalize()
     return WorldConditions(
-            time = time01,
+            time = dayCycle,
             sunPosition = sunPos,
             cloudyness = this.weather
     )
