@@ -63,8 +63,8 @@ class TaskGenerateWorldSlice(private val world: WorldImplementation, val heightm
             heightmap.eventGenerationFinished()
 
             for (region in regions!!) {
-                region!!.unregisterUser(this)
                 region!!.eventGeneratingFinishes()
+                region!!.unregisterUser(this)
             }
 
             return true
