@@ -6,15 +6,14 @@
 
 package xyz.chunkstories.voxel.material
 
-import MaterialDefinitionsLexer
-import MaterialDefinitionsParser
+import com.google.gson.Gson
+import com.google.gson.internal.LinkedTreeMap
 import xyz.chunkstories.api.content.Asset
 import xyz.chunkstories.api.content.Content
 import xyz.chunkstories.api.voxel.materials.VoxelMaterial
 import xyz.chunkstories.content.GameContentStore
 import xyz.chunkstories.voxel.VoxelsStore
-import org.antlr.v4.runtime.ANTLRInputStream
-import org.antlr.v4.runtime.CommonTokenStream
+import org.hjson.JsonValue
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -36,16 +35,22 @@ class VoxelMaterialsStore(private val voxels: VoxelsStore) : Content.Voxels.Voxe
 
     fun reload() {
         materials.clear()
+        val gson = Gson()
 
         fun readDefinitions(a: Asset) {
             logger().debug("Reading voxel material definitions in : $a")
 
-            val text = a.reader().use { it.readText() }
-            val parser = MaterialDefinitionsParser(CommonTokenStream(MaterialDefinitionsLexer(ANTLRInputStream(text))))
+            //val text = a.reader().use { it.readText() }
+            //val parser = MaterialDefinitionsParser(CommonTokenStream(MaterialDefinitionsLexer(ANTLRInputStream(text))))
 
-            for (definition in parser.voxelMaterialDefinitions().voxelMaterialDefinition()) {
-                val name = definition.Name().text
-                val properties = definition.properties().toMap().toMutableMap()
+            val json = JsonValue.readHjson(a.reader()).toString()
+            val map = gson.fromJson(json, LinkedTreeMap::class.java)
+
+            val materials2 = map["materials"] as LinkedTreeMap<*, *>
+
+            for (definition in materials2.entries) {
+                val name = definition.key as String
+                val properties = (definition.value as LinkedTreeMap<*, *>).entries.toMap().toMutableMap() as MutableMap<String, String>
 
                 properties["name"] = name
 
@@ -59,7 +64,7 @@ class VoxelMaterialsStore(private val voxels: VoxelsStore) : Content.Voxels.Voxe
             }
         }
 
-        for (asset in store.modsManager().allAssets.filter { it.name.startsWith("voxels/materials/") && it.name.endsWith(".def") }) {
+        for (asset in store.modsManager().allAssets.filter { it.name.startsWith("voxels/materials/") && it.name.endsWith(".hjson") }) {
             readDefinitions(asset)
         }
     }
@@ -104,6 +109,8 @@ class VoxelMaterialsStore(private val voxels: VoxelsStore) : Content.Voxels.Voxe
         }
     }
 }
+
+private fun Collection<MutableMap.MutableEntry<*, *>>.toMap() = map { Pair(it.key, it.value) }.toMap()
 
 //TODO apply that to all
 private fun MaterialDefinitionsParser.ValueContext.getValue(): String {

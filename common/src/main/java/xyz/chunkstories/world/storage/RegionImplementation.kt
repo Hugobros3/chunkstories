@@ -173,6 +173,7 @@ class RegionImplementation(override val world: WorldImplementation, override val
 
         try {
             stateLock.lock()
+
             when {
                 usersCount == 0 -> transitionSaving()
                 else -> transitionAvailable()
