@@ -282,7 +282,14 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
             when (state) {
                 ChunkHolder.State.WaitForRegionInitialLoad -> { /* legal, don't care */
                 }
-                ChunkHolder.State.Unloaded -> if (region.state is Region.State.Generating) transitionGenerating() else transitionLoading()
+                ChunkHolder.State.Unloaded -> {
+                    if (compressedData != null)
+                        transitionLoading()
+                    else if(region.state is Region.State.Generating)
+                        transitionGenerating()
+                    else
+                        TODO()
+                }
                 is ChunkHolder.State.Generating -> { /* legal, don't care */
                 }
                 is ChunkHolder.State.Loading -> throw Exception("This doesn't make sense $stateHistory")
@@ -300,7 +307,12 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
                 throw Exception("Illegal state change")
 
             if (users.isNotEmpty()) {
-                if (region.state is Region.State.Generating) transitionGenerating() else transitionLoading()
+                if (compressedData != null)
+                    transitionLoading()
+                else if(region.state is Region.State.Generating)
+                    transitionGenerating()
+                else
+                    TODO()
             } else {
                 transitionUnloaded()
             }
@@ -412,33 +424,35 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
     private fun transitionUnloaded() {
         try {
             region.stateLock.lock()
-            if (state is ChunkHolder.State.Available) {
-                val chunk = (state as ChunkHolder.State.Available).chunk as CubicChunk
+            when (state) {
+                is ChunkHolder.State.Available, is ChunkHolder.State.Generating -> {
+                    val chunk = (state as ChunkHolder.State.Available).chunk as CubicChunk
 
-                // Unlist it immediately
-                region.loadedChunksSet.remove(chunk)
+                    // Unlist it immediately
+                    region.loadedChunksSet.remove(chunk)
 
-                // Remove the entities from this chunk from the world
-                region.world.entitiesLock.writeLock().lock()
-                for (entity in chunk.localEntities) {
-                    // If there is no controller
-                    if (entity.traits[TraitControllable::class]?.controller == null)
-                        region.world.removeEntityFromList(entity)
+                    // Remove the entities from this chunk from the world
+                    region.world.entitiesLock.writeLock().lock()
+                    for (entity in chunk.localEntities) {
+                        // If there is no controller
+                        if (entity.traits[TraitControllable::class]?.controller == null)
+                            region.world.removeEntityFromList(entity)
+                    }
+                    region.world.entitiesLock.writeLock().unlock()
+
+                    // Lock it down
+                    chunk.entitiesLock.lock()
+
+                    // Compress chunk one last time before it has to go
+                    compressedData = compressChunkData(chunk)
+
+                    // destroy it (returns any internal data using up ressources)
+                    chunk.destroy()
+                    CubicChunk.chunksCounter.decrementAndGet()
+
+                    // unlock it (whoever messes with it now, his problem)
+                    chunk.entitiesLock.unlock()
                 }
-                region.world.entitiesLock.writeLock().unlock()
-
-                // Lock it down
-                chunk.entitiesLock.lock()
-
-                // Compress chunk one last time before it has to go
-                compressedData = compressChunkData(chunk)
-
-                // destroy it (returns any internal data using up ressources)
-                chunk.destroy()
-                CubicChunk.chunksCounter.decrementAndGet()
-
-                // unlock it (whoever messes with it now, his problem)
-                chunk.entitiesLock.unlock()
             }
 
             transitionState(ChunkHolder.State.Unloaded)
