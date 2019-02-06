@@ -173,7 +173,7 @@ class ChatManager(private val ingameClient: IngameClient, private val ingameGuiL
             linesDrew += actualLines
             var textFade = (line.time + 10000L - System.currentTimeMillis()) / 1000f
 
-            if (textFade > 0f) {
+            if (textFade > 0f || gui.topLayer is ChatLayer) {
                 if (textFade > 1 || gui.topLayer is ChatLayer)
                     textFade = 1f
 
