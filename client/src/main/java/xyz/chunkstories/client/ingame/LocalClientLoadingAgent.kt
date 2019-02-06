@@ -25,6 +25,7 @@ import xyz.chunkstories.world.heightmap.HeightmapImplementation
 import xyz.chunkstories.world.storage.ChunkHolderImplementation
 import xyz.chunkstories.world.storage.RegionImplementation
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.world.WorldImplementation
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
 
@@ -123,7 +124,7 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
 
             // We load the region summaries we fancy
             val summaryDistance = 32//(int) (world.getClient().getConfiguration().getIntOption("client.rendering.viewDistance") / 24);
-            for (chunkX in cameraChunkX - summaryDistance until cameraChunkX + summaryDistance)
+            /*for (chunkX in cameraChunkX - summaryDistance until cameraChunkX + summaryDistance)
                 for (chunkZ in cameraChunkZ - summaryDistance until cameraChunkZ + summaryDistance) {
                     if (chunkX % 8 == 0 && chunkZ % 8 == 0) {
                         var regionX = (chunkX / 8) % sizeInRegions
@@ -150,7 +151,7 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
                             }
                         }
                     }
-                }
+                }*/
 
             val cameraRegionX = cameraChunkX / 8
             val cameraRegionZ = cameraChunkZ / 8
@@ -245,7 +246,13 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
 
         for(heightmap in acquiredHeightmaps) {
             heightmap.unregisterUser(player)
-            (heightmap as HeightmapImplementation).waitUntilStateIs(Heightmap.State.Zombie::class.java)
+            (heightmap as HeightmapImplementation).waitUntilStateIs(Heightmap.State.Zombie::class.java).traverse()
+        }
+
+        logger.debug("Additional wait for heightmaps that were transitively loaded")
+
+        for(heightmap in (world as WorldImplementation).regionsSummariesHolder.all()) {
+            (heightmap as HeightmapImplementation).waitUntilStateIs(Heightmap.State.Zombie::class.java).traverse()
         }
 
         logger.debug("Done waiting! World should be saved now :)")

@@ -72,7 +72,7 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
 
     init {
         if (world is WorldMaster) {
-            file = File(world.folderPath + "/summaries/" + regionX + "." + regionZ + ".sum")
+            file = File(world.folderPath + "/heightmaps/" + regionX + "." + regionZ + ".heightmap")
 
             if (file.exists()) {
                 val task = IOTaskLoadHeightmap(this)

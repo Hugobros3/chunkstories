@@ -59,6 +59,7 @@ class DebugInfoRendererHelper(ingameLayer: IngameLayer) {
         val playerEntity = client.player.controlledEntity
         if(playerEntity != null ) {
             val region = world.getRegionLocation(playerEntity.location)
+            val heightmap = region?.heightmap
             val holder = region?.let {
                 val cx = playerEntity.location.x.toInt() / 32
                 val cy = playerEntity.location.y.toInt() / 32
@@ -68,6 +69,7 @@ class DebugInfoRendererHelper(ingameLayer: IngameLayer) {
             val chunk = holder?.chunk
 
             debugLine("Region: $region")
+            debugLine("Heightmap: $heightmap")
             debugLine("ChunkHolder: $holder")
             debugLine("Chunk: $chunk")
 
