@@ -8,10 +8,8 @@ package xyz.chunkstories.world.generator
 
 import xyz.chunkstories.api.workers.Task
 import xyz.chunkstories.api.workers.TaskExecutor
-import xyz.chunkstories.api.world.World
 import xyz.chunkstories.api.world.WorldUser
 import xyz.chunkstories.api.world.heightmap.Heightmap
-import xyz.chunkstories.api.world.region.Region
 import xyz.chunkstories.world.WorldImplementation
 import xyz.chunkstories.world.heightmap.HeightmapImplementation
 import xyz.chunkstories.world.storage.RegionImplementation
@@ -25,9 +23,9 @@ class TaskGenerateWorldSlice(private val world: WorldImplementation, val heightm
     private var wave = 0
     private var tasks: Array<Task?>? = null
 
-    private var initYet = false
+    private var initialized = false
 
-    private val isWorkDone: Boolean
+    private val isDoneWithCurrentWork: Boolean
         get() {
             if(tasks == null)
                 return true
@@ -43,13 +41,13 @@ class TaskGenerateWorldSlice(private val world: WorldImplementation, val heightm
         }
 
     override fun task(taskExecutor: TaskExecutor): Boolean {
-        if (!initYet) {
+        if (!initialized) {
             val heightInRegions = world.worldInfo.size.heightInChunks / 8
             this.regions = arrayOfNulls(heightInRegions)
             for (ry in 0 until heightInRegions) {
                 regions[ry] = world.acquireRegion(this, heightmap.regionX, ry, heightmap.regionZ)
             }
-            initYet = true
+            initialized = true
         }
 
         if (heightmap.state !is Heightmap.State.Generating) {
@@ -57,7 +55,7 @@ class TaskGenerateWorldSlice(private val world: WorldImplementation, val heightm
         }
 
         if (wave == 8) {
-            if (!isWorkDone)
+            if (!isDoneWithCurrentWork)
             // not QUITE done yet!
                 return false
 
@@ -72,7 +70,7 @@ class TaskGenerateWorldSlice(private val world: WorldImplementation, val heightm
             return true
         }
 
-        if (isWorkDone) {
+        if (isDoneWithCurrentWork) {
             var directed_relative_chunkX: Int
             var directed_relative_chunkZ: Int
 

@@ -169,10 +169,13 @@ class RegionImplementation(override val world: WorldImplementation, override val
     }
 
     fun eventGeneratingFinishes() {
+        if(world !is WorldMaster)
+            throw Exception("This event only makes sense in a Master world.")
+
         try {
             stateLock.lock()
             when {
-                usersCount == 0 && world is WorldMaster -> transitionSaving()
+                usersCount == 0 -> transitionSaving()
                 else -> transitionAvailable()
             }
 
@@ -182,6 +185,9 @@ class RegionImplementation(override val world: WorldImplementation, override val
     }
 
     fun eventSavingFinishes() {
+        if(world !is WorldMaster)
+            throw Exception("This event only makes sense in a Master world.")
+
         try {
             stateLock.lock()
             when {
@@ -212,6 +218,8 @@ class RegionImplementation(override val world: WorldImplementation, override val
 
             when (state) {
                 is Region.State.Generating -> {
+                    if(world !is WorldMaster)
+                        throw Exception("How did we get to here ?")
                 }
                 is Region.State.Loading -> {
                     // Transition to zombie state ONLY if cancel is successful

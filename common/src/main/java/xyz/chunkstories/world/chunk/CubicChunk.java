@@ -233,8 +233,8 @@ public class CubicChunk implements Chunk {
 			// Empty chunk ?
 			// Use the heightmap to figure out wether or not that getCell should be skylit.
 			int sunlight = 0;
-			int groundHeight = world.getRegionsSummariesHolder().getHeightAtWorldCoordinates(chunkX * 32 + x,
-					chunkZ * 32 + z);
+			int groundHeight = holdingRegion.getHeightmap().getHeight(x, z);
+			//int groundHeight = world.getRegionsSummariesHolder().getHeightAtWorldCoordinates(chunkX * 32 + x, chunkZ * 32 + z);
 			if (groundHeight < y + chunkY * 32 && groundHeight != Heightmap.Companion.getNO_DATA())
 				sunlight = 15;
 
