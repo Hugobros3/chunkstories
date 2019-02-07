@@ -12,6 +12,7 @@ target/
 /mods/
 screenshots/
 skyboxscreens/
+gamePassword.dat
 
 # Caches
 res/textures/tiles_merged*
