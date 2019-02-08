@@ -119,10 +119,6 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
         val baos = ByteArrayOutputStream()
         val daos = DataOutputStream(baos)
 
-        // ByteBuffer smallBuffer = MemoryUtil.memAlloc(4096);
-        // byte[] smallArray = new byte[4096];
-
-        // ByteBufferOutputStream bbos = new ByteBufferOutputStream(smallBuffer);
         val bbos = ByteArrayOutputStream()
         val dos = DataOutputStream(bbos)
 
@@ -140,21 +136,15 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
 
                     // Push the component in the temporary buffer
                     value.push(region.handler!!, dos)
-                    // smallBuffer.flip();
 
                     val bytesPushed = bbos.toByteArray()
                     bbos.reset()
 
                     // Write how many bytes the temporary buffer now contains
-                    // int bytesPushed = smallBuffer.limit();
                     daos.writeShort(bytesPushed.size)
 
                     // Get those bytes as an array then write it in the compressed stuff
-                    // smallBuffer.getVoxelComponent(smallArray);
                     daos.write(bytesPushed, 0, bytesPushed.size)
-
-                    // Reset the temporary buffer
-                    // smallBuffer.clear();
                 }
 
                 daos.writeUTF("\n")
@@ -170,8 +160,6 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
 
         // Extract the byte array from the baos
         val voxelComponentsData = baos.toByteArray()
-
-        // MemoryUtil.memFree(smallBuffer);
 
         // Stage 3: Compress entities
         baos.reset()
@@ -288,7 +276,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
                     else if(region.state is Region.State.Generating)
                         transitionGenerating()
                     else
-                        TODO()
+                        throw Exception("Broken assertion: If the chunk is unloaded, either it has to have unloaded data, or be in a yet region pending generation!")
                 }
                 is ChunkHolder.State.Generating -> { /* legal, don't care */
                 }
@@ -312,7 +300,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
                 else if(region.state is Region.State.Generating)
                     transitionGenerating()
                 else
-                    TODO()
+                    throw Exception("Broken assertion: If the chunk is unloaded, either it has to have unloaded data, or be in a yet region pending generation!")
             } else {
                 transitionUnloaded()
             }
@@ -353,6 +341,9 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
     fun eventGenerationFinishes(chunk: CubicChunk) {
         val playersToSendDataTo: List<RemotePlayer>?
 
+        // Get the compressed data done first, to avoid keeping the lock for longer than necessary
+        val compressedData = compressChunkData(chunk)
+
         try {
             region.stateLock.lock()
 
@@ -360,6 +351,8 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
                 logger.error("Illegal state change: Received data but wasn't in the Generating state! (was $state)")
                 return
             }
+
+            this.compressedData = compressedData
 
             if (users.isNotEmpty()) {
                 transitionAvailable(chunk)
