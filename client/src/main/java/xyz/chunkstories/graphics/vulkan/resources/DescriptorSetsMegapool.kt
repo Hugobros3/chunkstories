@@ -166,13 +166,13 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
             backend.updateDescriptorSet_ssbo(set, ssboBindPoint.binding, buffer)
         }
 
-        fun bindTextureAndSampler(name: String, texture: VulkanTexture2D, sampler: VulkanSampler) {
+        fun bindTextureAndSampler(name: String, texture: VulkanTexture2D, sampler: VulkanSampler, index: Int = 0) {
             val resource = pipeline.program.glslProgram.resources.filterIsInstance<GLSLUniformSampler2D>().find {
                 it.name == name
             } ?: throw Exception("I can't find a program sampler2D resource matching that name '$name' :s")
 
             val set = getSet(resource.descriptorSetSlot)
-            backend.updateDescriptorSet(set, resource.binding, texture, sampler)
+            backend.updateDescriptorSet(set, resource.binding, texture, sampler, index)
         }
 
         fun preDraw(commandBuffer: VkCommandBuffer) {

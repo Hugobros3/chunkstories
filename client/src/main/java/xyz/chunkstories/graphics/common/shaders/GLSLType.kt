@@ -51,7 +51,7 @@ sealed class GLSLType(val glslToken: String, val alignment: Int, val size: Int) 
     }
 
     class Array(val baseType: GLSLType, val elements: Int) :
-            GLSLType("${baseType.glslToken}[${if (elements > 0) "$elements" else ""}]", 16, elements * 16)
+            GLSLType("${baseType.glslToken}[${if (elements > 0) "$elements" else ""}]", 16, elements * baseType.size)
 
     class JvmStruct(glslToken: String, val kClass: KClass<InterfaceBlock>, val fields: List<JvmStructField>, alignment: Int, size: Int) : GLSLType(glslToken, alignment, size) {
         override fun toString(): String {

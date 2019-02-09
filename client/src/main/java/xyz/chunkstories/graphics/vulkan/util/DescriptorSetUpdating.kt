@@ -58,7 +58,7 @@ fun VulkanGraphicsBackend.updateDescriptorSet_ssbo(set: VkDescriptorSet, binding
     MemoryStack.stackPop()
 }
 
-fun VulkanGraphicsBackend.updateDescriptorSet(set: VkDescriptorSet, binding: Int, texture: VulkanTexture2D, sampler: VulkanSampler) {
+fun VulkanGraphicsBackend.updateDescriptorSet(set: VkDescriptorSet, binding: Int, texture: VulkanTexture2D, sampler: VulkanSampler, dstArrayElement: Int = 0) {
     MemoryStack.stackPush()
 
     val imageInfo = VkDescriptorImageInfo.callocStack(1).apply {
@@ -70,7 +70,7 @@ fun VulkanGraphicsBackend.updateDescriptorSet(set: VkDescriptorSet, binding: Int
     val stuffToWrite = VkWriteDescriptorSet.callocStack(1).sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET).apply {
         dstSet(set)
         dstBinding(binding)
-        dstArrayElement(0)
+        dstArrayElement(dstArrayElement)
         descriptorType(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
 
         // Just update the descriptor for our lone ubo buffer
