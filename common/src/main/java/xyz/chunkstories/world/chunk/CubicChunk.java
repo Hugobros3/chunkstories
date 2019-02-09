@@ -93,7 +93,7 @@ public class CubicChunk implements Chunk {
 
 	public static final AtomicInteger chunksCounter = new AtomicInteger(0);
 
-	public CubicChunk(ChunkHolderImplementation holder, int chunkX, int chunkY, int chunkZ, CompressedData data) {
+	public CubicChunk(ChunkHolderImplementation holder, int chunkX, int chunkY, int chunkZ, CompressedData compressedData) {
 		chunksCounter.incrementAndGet();
 
 		this.chunkHolder = holder;
@@ -111,12 +111,12 @@ public class CubicChunk implements Chunk {
 		occlusion = new ChunkOcclusionProperty(this);
 		lightingManager = new ChunkLightBaker(this);
 
-		if (data != null) {
+		if (compressedData != null) {
 			try {
-				this.voxelDataArray = data.getVoxelData();
+				this.voxelDataArray = compressedData.getVoxelData();
 
-				if (data.voxelComponentsCompressedData != null) {
-					ByteArrayInputStream bais = new ByteArrayInputStream(data.voxelComponentsCompressedData);
+				if (compressedData.voxelComponentsCompressedData != null) {
+					ByteArrayInputStream bais = new ByteArrayInputStream(compressedData.voxelComponentsCompressedData);
 					DataInputStream dis = new DataInputStream(bais);
 
 					byte[] smallArray = new byte[4096];
@@ -164,8 +164,8 @@ public class CubicChunk implements Chunk {
 					}
 				}
 
-				if (data.entitiesCompressedData != null) {
-					ByteArrayInputStream bais = new ByteArrayInputStream(data.entitiesCompressedData);
+				if (compressedData.entitiesCompressedData != null) {
+					ByteArrayInputStream bais = new ByteArrayInputStream(compressedData.entitiesCompressedData);
 					DataInputStream dis = new DataInputStream(bais);
 
 					// Read entities until we hit -1
@@ -188,8 +188,8 @@ public class CubicChunk implements Chunk {
 		meshData = DummyChunkRenderingData.INSTANCE;
 
 		// Send chunk to whoever already subscribed
-		if (data == null)
-			data = new CompressedData(null, null, null);
+		if (compressedData == null)
+			compressedData = new CompressedData(null, null, null);
 	}
 
 	public int getChunkX() {

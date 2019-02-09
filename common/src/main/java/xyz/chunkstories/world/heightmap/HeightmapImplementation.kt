@@ -142,8 +142,6 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
         } finally {
             stateLock.unlock()
         }
-
-        return false
     }
 
     override fun unregisterUser(user: WorldUser): Boolean {

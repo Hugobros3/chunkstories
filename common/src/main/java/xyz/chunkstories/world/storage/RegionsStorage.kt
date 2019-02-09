@@ -168,8 +168,8 @@ class RegionsStorage(val world: WorldImplementation) {
                 region.stateLock.unlock()
             }
 
-            if (user !is TaskGenerateWorldSlice)
-                heightmap.unregisterUser(bootStrapper)
+            //if (user !is TaskGenerateWorldSlice)
+            heightmap.unregisterUser(bootStrapper)
 
             return region.getChunkHolder(chunkX, chunkY, chunkZ)
         } finally {

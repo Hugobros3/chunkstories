@@ -18,6 +18,7 @@ import xyz.chunkstories.world.WorldTool
 import xyz.chunkstories.world.chunk.CubicChunk
 import xyz.chunkstories.world.region.format.CSFRegionFile
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.world.chunk.CompressedData
 import java.io.File
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -94,7 +95,10 @@ class RegionImplementation(override val world: WorldImplementation, override val
                 chunkHolders.forEach { it.eventRegionIsReady() }
             } else {
                 transitionState(Region.State.Available())
-                chunkHolders.forEach { it.eventRegionIsReady() }
+                chunkHolders.forEach {
+                    it.compressedData = CompressedData(null, null, null)
+                    it.eventRegionIsReady()
+                }
             }
 
         } else {
