@@ -133,7 +133,8 @@ fun extractInterfaceBlockField(field: JvmStructField, fillMe: ByteBuffer, interf
         is GLSLType.Array -> {
             val array = data as? Array<*> ?: throw Exception("Not an array !")
             for (element in array) {
-                when(val baseType = field.type.baseType) {
+                val baseType = field.type.baseType
+                when(baseType) {
                     is GLSLType.BaseType -> {
                         extractBaseTypeRawData(baseType, element, fillMe)
 
@@ -151,9 +152,12 @@ fun extractInterfaceBlockField(field: JvmStructField, fillMe: ByteBuffer, interf
                     }
                     else -> TODO()
                 }
-                if(fillMe.position() % field.type.alignment != 0) {
-                    fillMe.position((fillMe.position() / field.type.alignment) * field.type.alignment + field.type.size)
+
+                val baseTypeAlignment = baseType.alignment
+                if(fillMe.position() % baseTypeAlignment != 0) {
+                    fillMe.position((fillMe.position() / baseTypeAlignment) * baseTypeAlignment + baseType.size)
                 }
+                //println("element:${baseType.size} ${baseType.alignment}"+fillMe)
             }
         }
         is GLSLType.JvmStruct -> {

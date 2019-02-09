@@ -143,6 +143,8 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
         if(queuedRenderGraph != null) {
             vkDeviceWaitIdle(logicalDevice.vkDevice)
 
+            swapchain.flush()
+
             renderGraph.cleanup()
             renderGraph = VulkanRenderGraph(this, queuedRenderGraph)
             this.queuedRenderGraph = null

@@ -264,12 +264,16 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
         stackPop()
     }
 
-    fun cleanup() {
+    fun flush() {
         // Finish the recycling tasks for the frames that were in-flight
         for(i in 0 until maxFramesInFlight) {
             inFlightFrames[i]?.recyclingTasks?.forEach { it.invoke() }
             inFlightFrames[i] = null
         }
+    }
+
+    fun cleanup() {
+        flush()
 
         inFlightFences.forEach { vkDestroyFence(backend.logicalDevice.vkDevice, it, null) }
         imageAvailableSemaphores.forEach { vkDestroySemaphore(backend.logicalDevice.vkDevice, it, null) }

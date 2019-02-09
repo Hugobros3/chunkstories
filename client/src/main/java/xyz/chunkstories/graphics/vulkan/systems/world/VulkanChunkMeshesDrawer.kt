@@ -101,9 +101,9 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
 
     val sizeFor2048Elements = sizeAligned16 * 2048L
 
-    private val ssboDataTest = InflightFrameResource(backend) {
+    /*private val ssboDataTest = InflightFrameResource(backend) {
         VulkanBuffer(backend, sizeFor2048Elements, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, false)
-    }
+    }*/
 
     override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer, passContext: VulkanFrameGraph.FrameGraphNode.PassNode) {
         MemoryStack.stackPush()
@@ -136,9 +136,12 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
 
         val usedData = mutableListOf<ChunkVkMeshProperty.ChunkVulkanMeshData>()
 
-        val ssboStuff = memAlloc(ssboDataTest[frame].bufferSize.toInt())
+        //TODO pool those
+        val ssboDataTest = VulkanBuffer(backend, sizeFor2048Elements, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, false)
+
+        val ssboStuff = memAlloc(ssboDataTest.bufferSize.toInt())
         var instance = 0
-        bindingContext.bindSSBO("chunkInfo", ssboDataTest[frame])
+        bindingContext.bindSSBO("chunkInfo", ssboDataTest)
         bindingContext.preDraw(commandBuffer)
 
         fun renderChunk(chunk: CubicChunk) {
@@ -279,12 +282,13 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         }
 
         ssboStuff.flip()
-        ssboDataTest[frame].upload(ssboStuff)
+        ssboDataTest.upload(ssboStuff)
         memFree(ssboStuff)
 
         frame.recyclingTasks.add {
             usedData.forEach(ChunkVkMeshProperty.ChunkVulkanMeshData::release)
             bindingContext.recycle()
+            ssboDataTest.cleanup()//TODO recycle don't destroy!
         }
 
         MemoryStack.stackPop()

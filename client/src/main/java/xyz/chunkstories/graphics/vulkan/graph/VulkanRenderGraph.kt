@@ -38,11 +38,11 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
 
         val mainTask = tasks[mainTaskName]!!
 
-        val entity = backend.window.client.ingame?.player?.controlledEntity
-        val camera = entity?.traits?.get(TraitControllable::class)?.camera ?: Camera()
+        //val entity = backend.window.client.ingame?.player?.controlledEntity
+        //val camera = entity?.traits?.get(TraitControllable::class)?.camera ?: Camera()
 
         val map = mutableMapOf<String, Any>()
-        map["camera"] = camera
+        map["camera"] = mainCamera
 
         val graph = VulkanFrameGraph(frame, this, mainTask, mainCamera, map)
 
@@ -56,9 +56,9 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
 
             when (graphNode) {
                 is VulkanFrameGraph.FrameGraphNode.PassNode -> {
-                    val pass = graphNode.pass
+                    val pass = graphNode.vulkanPass
 
-                    val requiredRenderBufferStates = pass.getRenderBufferUsages(graphNode)
+                    /*val requiredRenderBufferStates = pass.getRenderBufferUsages(graphNode)
 
                     /**
                      * The layout transitions and storage/load operations for color/depth attachements are embedded in the RenderPass.
@@ -76,13 +76,13 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
                         val currentState = globalStates[rb] ?: UsageType.NONE
                         if(currentState != UsageType.INPUT)
                             inputRenderBuffersToTransition.add(Pair(rb, currentState))
-                    }
+                    }*/
 
-                    pass.render(frame, graphNode, previousAttachementStates, inputRenderBuffersToTransition)
+                    pass.render(frame, graphNode, globalStates)
 
-                    /** Update the state of the buffers used in that pass */
+                    /*/** Update the state of the buffers used in that pass */
                     for(entry in requiredRenderBufferStates)
-                        globalStates[entry.key] = entry.value
+                        globalStates[entry.key] = entry.value*/
                 }
                 is VulkanFrameGraph.FrameGraphNode.RenderingContextNode -> graphNode.callback?.invoke(graphNode)
             }
@@ -94,13 +94,17 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
             fresh = false
         }
 
-        val passes = sequencedGraph.mapNotNull { (it as? VulkanFrameGraph.FrameGraphNode.PassNode)?.pass }
+        val passesInstances = sequencedGraph.mapNotNull { (it as? VulkanFrameGraph.FrameGraphNode.PassNode) }
+        val vulkanPasses = passesInstances.map { it.vulkanPass }
+
+        //println(passesInstances.map { "${it.vulkanPass.declaration.name}:${it.context.name}" })
 
         stackPush().use {
             val submitInfo = VkSubmitInfo.callocStack().sType(VK_STRUCTURE_TYPE_SUBMIT_INFO).apply {
-                val commandBuffers = MemoryStack.stackMallocPointer(passes.size)
-                for (pass in passes)
-                    commandBuffers.put(pass.commandBuffers[frame])
+                val commandBuffers = MemoryStack.stackMallocPointer(passesInstances.size)
+                for (passInstance in passesInstances)
+                    commandBuffers.put(passInstance.commandBuffer)
+
                 commandBuffers.flip()
                 pCommandBuffers(commandBuffers)
 
@@ -122,13 +126,13 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
             backend.logicalDevice.graphicsQueue.mutex.release()
         }
 
-        blitHelper.copyFinalRenderbuffer(frame, passes.last().outputColorRenderBuffers[0])
+        blitHelper.copyFinalRenderbuffer(frame, passesInstances.last().resolvedOutputs[vulkanPasses.last().declaration.outputs.outputs[0]] !!)
     }
 
     fun resizeBuffers() {
         tasks.values.forEach {
             it.buffers.values.forEach { it.resize() }
-            it.passes.values.forEach { it.recreateFramebuffer() }
+            //it.passes.values.forEach { it.recreateFramebuffer() }
         }
     }
 

@@ -5,6 +5,8 @@ import org.lwjgl.system.MemoryStack.stackPop
 import org.lwjgl.system.MemoryStack.stackPush
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
+import xyz.chunkstories.api.graphics.rendergraph.RenderTarget
+import xyz.chunkstories.graphics.vulkan.graph.AttachementType
 import xyz.chunkstories.graphics.vulkan.graph.UsageType
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.vulkan.graph.getLayoutForStateAndType
@@ -24,16 +26,23 @@ class RenderPass(val backend: VulkanGraphicsBackend, val pass: VulkanPass, val p
         stackPush()
         val attachmentDescription = VkAttachmentDescription.callocStack(outputsDeclaration.outputs.size + if (depth.enabled) 1 else 0)
         outputsDeclaration.outputs.mapIndexed { index, output ->
-            val renderbuffer = pass.outputColorRenderBuffers[index]
+            //val renderbuffer = pass.outputColorRenderBuffers[index]
+            val renderTarget = output.target
+            val format = when(renderTarget) {
+                RenderTarget.BackBuffer -> TODO()
+                is RenderTarget.RenderBufferReference -> pass.renderTask.declaration.renderBuffersDeclarations.renderBuffers.find { it.name == renderTarget.renderBufferName }!!.format
+                null ->  pass.renderTask.declaration.renderBuffersDeclarations.renderBuffers.find { it.name == output.name }!!.format
+                is RenderTarget.TaskInput -> pass.renderTask.declaration.inputs!!.inputs.find { it.name == renderTarget.name }!!.format
+            }
 
-            val usagesIndex = index + if(depth.enabled) 1 else 0
+            val usagesIndex = index
 
             val previousUsage = previousUsages?.get(usagesIndex) ?: UsageType.NONE
             val currentUsage = UsageType.OUTPUT
 
             attachmentDescription[index].apply {
 
-                format(renderbuffer.declaration.format.vulkanFormat.ordinal)
+                format(format.vulkanFormat.ordinal)
                 samples(VK_SAMPLE_COUNT_1_BIT)
 
                 if (output.clear)
@@ -52,22 +61,29 @@ class RenderPass(val backend: VulkanGraphicsBackend, val pass: VulkanPass, val p
                 stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
                 stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
 
-                initialLayout(getLayoutForStateAndType(previousUsage, renderbuffer.attachementType))
-                finalLayout(getLayoutForStateAndType(currentUsage, renderbuffer.attachementType))
+                val attachementType = AttachementType.COLOR
+                initialLayout(getLayoutForStateAndType(previousUsage, attachementType))
+                finalLayout(getLayoutForStateAndType(currentUsage, attachementType))
             }
         }
 
         if (depth.enabled) {
             val depthBufferAttachmentIndex = attachmentDescription.capacity() - 1
             attachmentDescription[depthBufferAttachmentIndex].apply {
-                val renderbuffer = pass.outputDepthRenderBuffer!!
+                //val renderbuffer = pass.outputDepthRenderBuffer!!
+                val renderTarget = depth.depthBuffer!!
+                val format = when(renderTarget) {
+                    RenderTarget.BackBuffer -> TODO()
+                    is RenderTarget.RenderBufferReference -> pass.renderTask.declaration.renderBuffersDeclarations.renderBuffers.find { it.name == renderTarget.renderBufferName }!!.format
+                    is RenderTarget.TaskInput -> pass.renderTask.declaration.inputs!!.inputs.find { it.name == renderTarget.name }!!.format
+                }
 
-                val usagesIndex = 0
+                val usagesIndex = depthBufferAttachmentIndex
                 val previousUsage = previousUsages?.get(usagesIndex) ?: UsageType.NONE
 
                 val currentUsage = UsageType.OUTPUT
 
-                format(renderbuffer.declaration.format.vulkanFormat.ordinal)
+                format(format.vulkanFormat.ordinal)
                 samples(VK_SAMPLE_COUNT_1_BIT)
 
                 if (depth.clear)
@@ -86,8 +102,9 @@ class RenderPass(val backend: VulkanGraphicsBackend, val pass: VulkanPass, val p
                 stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
                 stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
 
-                initialLayout(getLayoutForStateAndType(previousUsage, renderbuffer.attachementType))
-                finalLayout(getLayoutForStateAndType(currentUsage, renderbuffer.attachementType))
+                val attachementType = AttachementType.DEPTH
+                initialLayout(getLayoutForStateAndType(previousUsage, attachementType))
+                finalLayout(getLayoutForStateAndType(currentUsage, attachementType))
             }
         }
 

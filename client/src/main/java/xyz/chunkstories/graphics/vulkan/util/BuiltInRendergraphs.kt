@@ -19,7 +19,7 @@ object BuiltInRendergraphs {
         renderTask {
             name = "main"
 
-            finalPass = "gui"
+            finalPassName = "gui"
 
             renderBuffers {
                 renderBuffer {
@@ -55,7 +55,7 @@ object BuiltInRendergraphs {
 
                     depth {
                         enabled = true
-                        depthBuffer = "menuDepth"
+                        depthBuffer = renderBuffer("menuDepth")
                         clear = true
                     }
                 }
@@ -91,7 +91,7 @@ object BuiltInRendergraphs {
         renderTask {
             name = "main"
 
-            finalPass = "gui"
+            finalPassName = "gui"
 
             renderBuffers {
                 renderBuffer {
@@ -127,6 +127,34 @@ object BuiltInRendergraphs {
 
                     format = RGBA_8
                     size = viewportSize
+                }
+
+                renderBuffer {
+                    name = "shadowBuffer0"
+
+                    format = DEPTH_32
+                    size = 1024 by 1024
+                }
+
+                renderBuffer {
+                    name = "shadowBuffer1"
+
+                    format = DEPTH_32
+                    size = 1024 by 1024
+                }
+
+                renderBuffer {
+                    name = "shadowBuffer2"
+
+                    format = DEPTH_32
+                    size = 1024 by 1024
+                }
+
+                renderBuffer {
+                    name = "shadowBuffer3"
+
+                    format = DEPTH_32
+                    size = 1024 by 1024
                 }
             }
 
@@ -172,7 +200,7 @@ object BuiltInRendergraphs {
 
                     depth {
                         enabled = true
-                        depthBuffer = "depthBuffer"
+                        depthBuffer = renderBuffer("depthBuffer")
                         clear = true
                     }
                 }
@@ -268,14 +296,21 @@ object BuiltInRendergraphs {
         renderTask {
             name = "sunShadow"
 
-            finalPass = "cubes"
+            finalPassName = "cubes"
 
             renderBuffers {
-                renderBuffer {
+                /*renderBuffer {
                     name = "shadowBuffer"
 
                     format = DEPTH_32
                     size = 1024 by 1024
+                }*/
+            }
+
+            taskInputs {
+                input {
+                    name = "shadowBuffer"
+                    format = DEPTH_32
                 }
             }
 
@@ -293,7 +328,7 @@ object BuiltInRendergraphs {
 
                     depth {
                         enabled = true
-                        depthBuffer = "shadowBuffer"
+                        depthBuffer = taskInput("shadowBuffer")
                         clear = true
                     }
                 }

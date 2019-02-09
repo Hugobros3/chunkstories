@@ -21,7 +21,7 @@ class VulkanRenderTask(val backend: VulkanGraphicsBackend, val declaration: Rend
             Pair(it.name, vulkanPass)
         }.toMap()
 
-        rootPass = passes.values.find { it.declaration.name == declaration.finalPass }!!
+        rootPass = passes.values.find { it.declaration.name == declaration.finalPassName }!!
     }
 
     override fun cleanup() {
