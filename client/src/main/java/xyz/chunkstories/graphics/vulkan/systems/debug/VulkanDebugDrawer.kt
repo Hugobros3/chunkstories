@@ -22,6 +22,7 @@ import org.lwjgl.system.MemoryUtil.memFree
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import xyz.chunkstories.api.graphics.rendergraph.RenderingContext
+import xyz.chunkstories.graphics.vulkan.graph.FrameGraph
 
 class VulkanDebugDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDrawingSystem(pass) {
     val backend: VulkanGraphicsBackend
@@ -55,7 +56,7 @@ class VulkanDebugDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         }
     }
 
-    override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer, renderingContext: RenderingContext) {
+    override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer, passContext: FrameGraph.FrameGraphNode.PassNode) {
         val entity = client.player.controlledEntity
         val camera = entity?.traits?.get(TraitControllable::class)?.camera ?: Camera()
 

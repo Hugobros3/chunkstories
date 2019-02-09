@@ -45,7 +45,7 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
 
         inputRenderBuffers = declaration.inputs?.imageInputs?.mapNotNull {
             val source = it.source
-            if(source is ImageInput.ImageSource.RenderBufferReference) {
+            if (source is ImageInput.ImageSource.RenderBufferReference) {
                 val rb = renderTask.buffers[source.renderBufferName]!!
                 rb
             } else
@@ -87,12 +87,12 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
 
         val drawingSystems = mutableListOf<VulkanDrawingSystem>()
         val rs = declaration.draws?.registeredSystems
-        if(rs != null) {
+        if (rs != null) {
             for (declaredDrawingSystem in rs) {
                 val drawingSystem = backend.createDrawingSystem(this, declaredDrawingSystem) as VulkanDrawingSystem
 
                 val d = declaredDrawingSystem.dslCode as GraphicSystem.() -> Unit
-                    drawingSystem.apply(d)
+                drawingSystem.apply(d)
                 drawingSystems.add(drawingSystem)
             }
         }
@@ -105,7 +105,7 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
     private fun createRenderBufferUsageMap(declaration: PassDeclaration): Map<VulkanRenderBuffer, UsageType> {
         val map = mutableMapOf<VulkanRenderBuffer, UsageType>()
 
-        for(inputBuffer in inputRenderBuffers)
+        for (inputBuffer in inputRenderBuffers)
             map[inputBuffer] = UsageType.INPUT
 
         for (outputBuffer in outputColorRenderBuffers) {
@@ -118,24 +118,21 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
         return map
     }
 
-    fun getRenderBufferUsages(renderingContext: RenderingContext) : Map<VulkanRenderBuffer, UsageType> {
+    fun getRenderBufferUsages(passNode: FrameGraph.FrameGraphNode.PassNode): Map<VulkanRenderBuffer, UsageType> {
         val map = renderBufferUsages.toMutableMap()
-        for(system in drawingSystems) {
-            for(irb in system.provideAdditionalConsumedInputRenderBuffers(renderingContext)) {
-                //println("Pass $this will use additional input RB $irb")
-                map[irb] = UsageType.INPUT
-            }
+        for (irb in passNode.extraInputRenderBuffers) {
+            map[irb] = UsageType.INPUT
         }
+
         return map
     }
 
-    fun getAllInputRenderBuffers(renderingContext: FrameGraph.VulkanRenderingContext): List<VulkanRenderBuffer> {
+    fun getAllInputRenderBuffers(passNode: FrameGraph.FrameGraphNode.PassNode): List<VulkanRenderBuffer> {
         val list = inputRenderBuffers.toMutableList()
-        for(system in drawingSystems) {
-            for(irb in system.provideAdditionalConsumedInputRenderBuffers(renderingContext)) {
-                list.add(irb)
-            }
+        for (irb in passNode.extraInputRenderBuffers) {
+            list.add(irb)
         }
+
         return list
     }
 
@@ -165,7 +162,7 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
         return handle
     }
 
-    fun render(frame: Frame, renderingContext: RenderingContext, attachementsPreviousState: List<UsageType>, imageInputstoTransition: List<Pair<VulkanRenderBuffer, UsageType>>) {
+    fun render(frame: Frame, passInstance: FrameGraph.FrameGraphNode.PassNode, attachementsPreviousState: List<UsageType>, imageInputstoTransition: List<Pair<VulkanRenderBuffer, UsageType>>) {
         val outputs = declaration.outputs.outputs
         val depth = declaration.depthTestingConfiguration
 
@@ -238,7 +235,7 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
                 }
 
 
-                for((rb, ou) in imageInputstoTransition) {
+                for ((rb, ou) in imageInputstoTransition) {
                     rb.transitionUsage(this, ou, UsageType.INPUT)
                 }
 
@@ -247,7 +244,7 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
                 // Transition image layouts now !
 
                 for (drawingSystem in drawingSystems) {
-                    drawingSystem.registerDrawingCommands(frame, this, renderingContext)
+                    drawingSystem.registerDrawingCommands(frame, this, passInstance)
                 }
 
                 vkCmdEndRenderPass(this)
@@ -267,7 +264,7 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
         vkDestroyFramebuffer(backend.logicalDevice.vkDevice, framebuffer, null)
 
         canonicalRenderPass.cleanup()
-        for(renderPass in renderPassesMap.values)
+        for (renderPass in renderPassesMap.values)
             renderPass.cleanup()
 
         commandPool.cleanup()

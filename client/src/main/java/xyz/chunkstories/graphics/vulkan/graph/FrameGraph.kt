@@ -2,8 +2,9 @@ package xyz.chunkstories.graphics.vulkan.graph
 
 import xyz.chunkstories.api.graphics.rendergraph.RenderingContext
 import xyz.chunkstories.api.graphics.structs.Camera
+import xyz.chunkstories.graphics.vulkan.swapchain.Frame
 
-class FrameGraph(val renderGraph: VulkanRenderGraph, startTask: VulkanRenderTask, mainCamera: Camera, parameters: Map<String, Any>) {
+class FrameGraph(val frame: Frame, val renderGraph: VulkanRenderGraph, startTask: VulkanRenderTask, mainCamera: Camera, parameters: Map<String, Any>) {
     val rootFrameGraphNode: FrameGraphNode
     val allNodes = mutableSetOf<FrameGraphNode>()
 
@@ -16,29 +17,58 @@ class FrameGraph(val renderGraph: VulkanRenderGraph, startTask: VulkanRenderTask
     sealed class FrameGraphNode(val frameGraph: FrameGraph) {
         val depends = mutableListOf<FrameGraphNode>()
 
-        class PassNode(graph: FrameGraph, val taskNode: RenderingContextNode, val pass: VulkanPass) : FrameGraphNode(graph)
+        val renderGraph: VulkanRenderGraph
+            get() = frameGraph.renderGraph
 
-        class RenderingContextNode(graph: FrameGraph, renderTask: VulkanRenderTask, camera: Camera, parameters: Map<String, Any>, callback: (Map<String, Any>.() -> Unit)?) : FrameGraphNode(graph) {
-            val renderContext: FrameGraph.VulkanRenderingContext = VulkanRenderingContext(this, renderTask, camera, parameters, callback)
+        class PassNode(graph: FrameGraph, val taskNode: RenderingContextNode, val pass: VulkanPass) : FrameGraphNode(graph) {
+            fun dispatchRenderTask(taskInstanceName: String, camera: Camera, renderTaskName: String, parameters: Map<String, Any>, callback: (RenderingContextNode) -> Unit) {
+
+                val task = renderGraph.tasks[renderTaskName] ?: throw Exception("Can't find task $renderTaskName")
+                val childNode = FrameGraphNode.RenderingContextNode(frameGraph, task, camera, parameters, callback)
+
+                this.depends.add(childNode)
+                this.frameGraph.allNodes.add(childNode)
+
+                with(frameGraph) {
+                    childNode.addDependencies()
+                }
+
+                taskNode.artifacts.put(taskInstanceName, childNode)
+            }
+
+            val extraInputRenderBuffers = mutableListOf<VulkanRenderBuffer>()
+            fun markRenderBufferAsInput(renderBuffer: VulkanRenderBuffer) {
+                extraInputRenderBuffers.add(renderBuffer)
+            }
+        }
+
+        class RenderingContextNode(graph: FrameGraph, val renderTask: VulkanRenderTask, override val camera: Camera, parameters: Map<String, Any>, val callback: ((RenderingContextNode) -> Unit)?) : FrameGraphNode(graph), RenderingContext {
+            override val artifacts = mutableMapOf<String, Any>()
+            override val parameters: MutableMap<String, Any> = parameters.toMutableMap()
+
+            init {
+                this.parameters["camera"] = camera // Implicitly part of the parameters //TODO should we
+            }
         }
     }
 
-    class VulkanRenderingContext(val frameGraphNode: FrameGraphNode.RenderingContextNode, val renderTask: VulkanRenderTask, override val camera: Camera, parameters: Map<String, Any>, val callback: (Map<String, Any>.() -> Unit)?) : RenderingContext {
+    /*inner class VulkanPassInstance(val frameGraphNode: FrameGraphNode.PassNode) {
+
+
+
+    }
+
+    inner class VulkanRenderingContext(val frameGraphNode: FrameGraphNode.RenderingContextNode/*, val renderTask: VulkanRenderTask, override val camera: Camera, parameters: Map<String, Any>, val callback: (Map<String, Any>.() -> Unit)?*/) : RenderingContext {
         override val artifacts = mutableMapOf<String, Any>()
 
-        override val parameters: MutableMap<String, Any>
+        override val parameters: MutableMap<String, Any> = parameters.toMutableMap()
 
         init {
-            this.parameters = parameters.toMutableMap()
-            this.parameters["camera"] = camera
+            this.parameters["camera"] = camera // Implicitly part of the parameters //TODO should we
         }
+    }*/
 
-        override fun dispatchRenderTask(camera: Camera, renderTaskName: String, parameters: Map<String, Any>, callback: Map<String, Any>.() -> Unit) {
-            throw Exception("actuall no")
-        }
-    }
-
-    inner class RenderTaskDispatching(private val passNode: FrameGraphNode.PassNode) {
+    /*inner class RenderTaskDispatching(private val passNode: FrameGraphNode.PassNode) {
         fun dispatchRenderTask(camera: Camera, renderTaskName: String, parameters: Map<String, Any>, callback: Map<String, Any>.() -> Unit) {
 
             val task = renderGraph.tasks[renderTaskName] ?: throw Exception("Can't find task $renderTaskName")
@@ -54,13 +84,13 @@ class FrameGraph(val renderGraph: VulkanRenderGraph, startTask: VulkanRenderTask
 
             passNode.taskNode.renderContext.artifacts.put("TENTATIVE_SYNTAX_SUBTASK", childNode.renderContext)
         }
-    }
+    }*/
 
     fun FrameGraphNode.addDependencies() {
         when (this) {
             is FrameGraphNode.PassNode -> {
                 for (dependency in this.pass.declaration.passDependencies) {
-                    val passThatWeDependOn = this.taskNode.renderContext.renderTask.passes[dependency] ?: throw Exception("Can't find pass $dependency")
+                    val passThatWeDependOn = this.taskNode.renderTask.passes[dependency] ?: throw Exception("Can't find pass $dependency")
 
                     // Does a node for that pass in that context exist already
                     val existingDependencyNode = allNodes.find { it is FrameGraphNode.PassNode && it.pass == passThatWeDependOn && it.taskNode == taskNode }
@@ -75,13 +105,12 @@ class FrameGraph(val renderGraph: VulkanRenderGraph, startTask: VulkanRenderTask
                 }
 
                 //TODO here goes dynamic rendertask deps from systems
-                val dispatching = RenderTaskDispatching(this)
                 pass.drawingSystems.forEach {
-                    it.registerAdditionalRenderTasks(this.taskNode.renderContext, dispatching)
+                    it.registerAdditionalRenderTasks(this)
                 }
             }
             is FrameGraphNode.RenderingContextNode -> {
-                val rootPass = this.renderContext.renderTask.rootPass
+                val rootPass = this.renderTask.rootPass
                 val passNode = FrameGraphNode.PassNode(frameGraph, this, rootPass)
                 depends.add(passNode)
                 allNodes.add(passNode)

@@ -26,6 +26,7 @@ import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.graphics.rendergraph.RenderingContext
+import xyz.chunkstories.graphics.vulkan.graph.FrameGraph
 
 internal const val guiBufferSize = 2 * 1024 * 1024
 
@@ -336,7 +337,7 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
         sameTextureCount = 0
     }
 
-    override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer, renderingContext: RenderingContext) {
+    override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer, passContext: FrameGraph.FrameGraphNode.PassNode) {
         stackPush().use {
             vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
             vkCmdBindVertexBuffers(commandBuffer, 0, MemoryStack.stackLongs(vertexBuffers[frame].handle), MemoryStack.stackLongs(0))

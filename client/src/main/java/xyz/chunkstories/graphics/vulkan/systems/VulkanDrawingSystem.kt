@@ -14,11 +14,11 @@ import xyz.chunkstories.graphics.vulkan.graph.VulkanRenderGraph
 abstract class VulkanDrawingSystem(val pass: VulkanPass) : DrawingSystem, Cleanable{
 
     /** Registers drawing commands (pipeline bind, vertex buffer binds, draw calls etc */
-    abstract fun registerDrawingCommands(frame : Frame, commandBuffer: VkCommandBuffer, renderingContext: RenderingContext)
+    abstract fun registerDrawingCommands(frame : Frame, commandBuffer: VkCommandBuffer, passContext: FrameGraph.FrameGraphNode.PassNode)
 
-    open fun registerAdditionalRenderTasks(renderContext: RenderingContext, dispatching: FrameGraph.RenderTaskDispatching) {
+    open fun registerAdditionalRenderTasks(passContext: FrameGraph.FrameGraphNode.PassNode) {
         // Does nothing by default
     }
 
-    open fun provideAdditionalConsumedInputRenderBuffers(renderingContext: RenderingContext) = emptyList<VulkanRenderBuffer>()
+    //open fun provideAdditionalConsumedInputRenderBuffers(renderingContext: RenderingContext) = emptyList<VulkanRenderBuffer>()
 }

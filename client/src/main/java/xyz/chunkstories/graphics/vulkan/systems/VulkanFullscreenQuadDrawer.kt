@@ -80,9 +80,9 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
         this.bindings = bindings
     }
 
-    override fun registerAdditionalRenderTasks(renderContext: RenderingContext, dispatching: FrameGraph.RenderTaskDispatching) {
+    override fun registerAdditionalRenderTasks(passContext: FrameGraph.FrameGraphNode.PassNode) {
         if (doShadowMap) {
-            val mainCamera = renderContext.parameters["camera"] as Camera
+            val mainCamera = passContext.taskNode.camera
 
             val shadowMapDepthRange = 256f
             val shadowMapExtent = 256f
@@ -111,18 +111,20 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
 
             val sunCamera = Camera(viewMatrix = shadowMatrix, fov = 0f, position = mainCamera.position)
 
-            dispatching.dispatchRenderTask(sunCamera, "sunShadow", emptyMap(), {})
+            passContext.dispatchRenderTask("TENTATIVE_SYNTAX_SHADOWMAP", sunCamera, "sunShadow", emptyMap()) {
+                passContext.markRenderBufferAsInput(it.renderTask.rootPass.outputDepthRenderBuffer!!)
+            }
         }
     }
 
-    override fun provideAdditionalConsumedInputRenderBuffers(renderingContext: RenderingContext): List<VulkanRenderBuffer> {
+    /*override fun provideAdditionalConsumedInputRenderBuffers(renderingContext: RenderingContext): List<VulkanRenderBuffer> {
         return if(doShadowMap) {
             val shadowSubctx = renderingContext.artifacts["TENTATIVE_SYNTAX_SUBTASK"] as FrameGraph.VulkanRenderingContext
-            listOf(shadowSubctx.frameGraphNode.renderContext.renderTask.rootPass.outputDepthRenderBuffer!!)
+            listOf(shadowSubctx.frameGraphNode.renderingContext.renderTask.rootPass.outputDepthRenderBuffer!!)
         } else emptyList<VulkanRenderBuffer>()
-    }
+    }*/
 
-    override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer, renderingContext: RenderingContext) {
+    override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer, passContext: FrameGraph.FrameGraphNode.PassNode) {
         val bindingContext = backend.descriptorMegapool.getBindingContext(pipeline)
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
 
@@ -141,11 +143,12 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
         bindings?.invoke(this, bindingContext)
 
         if(doShadowMap) {
-            val shadowSubctx = renderingContext.artifacts["TENTATIVE_SYNTAX_SUBTASK"] as FrameGraph.VulkanRenderingContext
+            //val shadowSubctx = renderingContext.artifacts["TENTATIVE_SYNTAX_SUBTASK"] as FrameGraph.VulkanRenderingContext
+            val shadowSubctx = passContext.taskNode.artifacts["TENTATIVE_SYNTAX_SHADOWMAP"] as FrameGraph.FrameGraphNode.RenderingContextNode
 
             val shadowCamera = shadowSubctx.parameters["camera"] as Camera
             bindingContext.bindUBO("shadowCamera", shadowCamera)
-            bindingContext.bindTextureAndSampler("shadowBuffer", shadowSubctx.frameGraphNode.renderContext.renderTask.rootPass.outputDepthRenderBuffer!!.texture, samplerShadow)
+            bindingContext.bindTextureAndSampler("shadowBuffer", shadowSubctx.renderTask.rootPass.outputDepthRenderBuffer!!.texture, samplerShadow)
         }
 
         vkCmdBindVertexBuffers(commandBuffer, 0, stackLongs(vertexBuffer.handle), stackLongs(0))

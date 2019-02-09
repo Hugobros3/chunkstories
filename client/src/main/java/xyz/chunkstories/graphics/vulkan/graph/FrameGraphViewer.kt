@@ -15,7 +15,7 @@ fun lookIDontCare(frameGraph: FrameGraph) {
                 it.with(Label.of("passNode(pass=${node.pass.declaration.name})")).with(Color.BLUE1)
             }
             is FrameGraph.FrameGraphNode.RenderingContextNode -> {
-                it.with(Label.of("renderContext(task=${node.renderContext.renderTask.declaration.name})")).with(Color.RED)
+                it.with(Label.of("renderContext(task=${node.renderTask.declaration.name})")).with(Color.RED)
             }
         }
     }

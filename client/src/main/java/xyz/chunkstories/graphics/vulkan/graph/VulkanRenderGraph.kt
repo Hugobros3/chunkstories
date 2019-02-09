@@ -8,6 +8,7 @@ import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
 import xyz.chunkstories.api.graphics.rendergraph.RenderGraphDeclaration
 import xyz.chunkstories.api.graphics.rendergraph.RenderGraphDeclarationScript
 import xyz.chunkstories.api.graphics.rendergraph.RenderTaskDeclaration
+import xyz.chunkstories.api.graphics.rendergraph.RenderingContext
 import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.resources.Cleanable
@@ -44,7 +45,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
         val map = mutableMapOf<String, Any>()
         map["camera"] = camera
 
-        val graph = FrameGraph(this, mainTask, mainCamera, map)
+        val graph = FrameGraph(frame, this, mainTask, mainCamera, map)
 
         val sequencedGraph = graph.sequenceGraph()
 
@@ -54,46 +55,38 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
         for(i in 0 until sequencedGraph.size) {
             val graphNode = sequencedGraph[i]
 
-            if(graphNode is FrameGraph.FrameGraphNode.PassNode) {
-                val pass = graphNode.pass
+            when (graphNode) {
+                is FrameGraph.FrameGraphNode.PassNode -> {
+                    val pass = graphNode.pass
 
-                val requiredRenderBufferStates = pass.getRenderBufferUsages(graphNode.taskNode.renderContext)
-                /*
-                /** Contains the old (to transition) layouts of buffers this pass requires */
-                val previousRenderBufferStates = requiredRenderBufferStates.keys.associateWith {
-                    globalStates[it] ?: UsageType.NONE
-                }*/
+                    val requiredRenderBufferStates = pass.getRenderBufferUsages(graphNode)
 
-                /**
-                 * The layout transitions and storage/load operations for color/depth attachements are embedded in the RenderPass.
-                 * This list will be used to index into a RenderPass cache.
-                 */
-                val previousRenderPassAttachementStates = mutableListOf<UsageType>()
-                if(pass.outputDepthRenderBuffer != null)
-                    previousRenderPassAttachementStates.add(globalStates[pass.outputDepthRenderBuffer] ?: UsageType.NONE)
-                for(rb in pass.outputColorRenderBuffers)
-                    previousRenderPassAttachementStates.add(globalStates[rb] ?: UsageType.NONE)
+                    /**
+                     * The layout transitions and storage/load operations for color/depth attachements are embedded in the RenderPass.
+                     * This list will be used to index into a RenderPass cache.
+                     */
+                    val previousAttachementStates = mutableListOf<UsageType>()
+                    if(pass.outputDepthRenderBuffer != null)
+                        previousAttachementStates.add(globalStates[pass.outputDepthRenderBuffer] ?: UsageType.NONE)
+                    for(rb in pass.outputColorRenderBuffers)
+                        previousAttachementStates.add(globalStates[rb] ?: UsageType.NONE)
 
-                /** Lists the image inputs that currently are in the wrong layout */
-                val inputRenderBuffersToTransition = mutableListOf<Pair<VulkanRenderBuffer, UsageType>>()
-                for(rb in pass.getAllInputRenderBuffers(graphNode.taskNode.renderContext)) {
-                    val currentState = globalStates[rb] ?: UsageType.NONE
-                    if(currentState != UsageType.INPUT)
-                        inputRenderBuffersToTransition.add(Pair(rb, currentState))
+                    /** Lists the image inputs that currently are in the wrong layout */
+                    val inputRenderBuffersToTransition = mutableListOf<Pair<VulkanRenderBuffer, UsageType>>()
+                    for(rb in pass.getAllInputRenderBuffers(graphNode)) {
+                        val currentState = globalStates[rb] ?: UsageType.NONE
+                        if(currentState != UsageType.INPUT)
+                            inputRenderBuffersToTransition.add(Pair(rb, currentState))
+                    }
+
+                    pass.render(frame, graphNode, previousAttachementStates, inputRenderBuffersToTransition)
+
+                    /** Update the state of the buffers used in that pass */
+                    for(entry in requiredRenderBufferStates)
+                        globalStates[entry.key] = entry.value
                 }
-
-                //println("Pass ${pass.declaration.name}")
-                //println("Used buffers previous state: $previousRenderBufferStates")
-                //println("Used buffers required state: $requiredRenderBufferStates")
-                //println("Renderpass attachements previous states: $previousRenderPassAttachementStates")
-                //println("Input render buffers to transition: $inputRenderBuffersToTransition")
-
-                pass.render(frame, graphNode.taskNode.renderContext, previousRenderPassAttachementStates, inputRenderBuffersToTransition)
-
-                for(entry in requiredRenderBufferStates)
-                    globalStates[entry.key] = entry.value
+                is FrameGraph.FrameGraphNode.RenderingContextNode -> graphNode.callback?.invoke(graphNode)
             }
-
         }
 
         // Validation also makes it so we output a rendergraph image

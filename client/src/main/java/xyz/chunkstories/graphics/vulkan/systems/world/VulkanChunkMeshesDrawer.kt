@@ -30,6 +30,7 @@ import xyz.chunkstories.api.world.chunk.Chunk
 import xyz.chunkstories.api.world.region.Region
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
 import xyz.chunkstories.graphics.vulkan.buffers.extractInterfaceBlockField
+import xyz.chunkstories.graphics.vulkan.graph.FrameGraph
 import xyz.chunkstories.graphics.vulkan.resources.InflightFrameResource
 import xyz.chunkstories.world.storage.RegionImplementation
 import java.util.*
@@ -106,12 +107,12 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         VulkanBuffer(backend, sizeFor2048Elements, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, false)
     }
 
-    override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer, renderingContext: RenderingContext) {
+    override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer, passContext: FrameGraph.FrameGraphNode.PassNode) {
         MemoryStack.stackPush()
 
         val bindingContext = backend.descriptorMegapool.getBindingContext(meshesPipeline)
 
-        val camera = renderingContext.parameters["camera"] as Camera
+        val camera = passContext.taskNode.camera
         val world = client.world as WorldClientCommon
 
         val camPos = camera.position
