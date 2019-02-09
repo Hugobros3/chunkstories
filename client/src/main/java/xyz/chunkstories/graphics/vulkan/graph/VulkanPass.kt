@@ -7,7 +7,6 @@ import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.graphics.ImageInput
 import xyz.chunkstories.api.graphics.rendergraph.PassDeclaration
-import xyz.chunkstories.api.graphics.rendergraph.RenderingContext
 import xyz.chunkstories.api.graphics.systems.GraphicSystem
 import xyz.chunkstories.graphics.vulkan.CommandPool
 import xyz.chunkstories.graphics.vulkan.RenderPass
@@ -118,7 +117,7 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
         return map
     }
 
-    fun getRenderBufferUsages(passNode: FrameGraph.FrameGraphNode.PassNode): Map<VulkanRenderBuffer, UsageType> {
+    fun getRenderBufferUsages(passNode: VulkanFrameGraph.FrameGraphNode.PassNode): Map<VulkanRenderBuffer, UsageType> {
         val map = renderBufferUsages.toMutableMap()
         for (irb in passNode.extraInputRenderBuffers) {
             map[irb] = UsageType.INPUT
@@ -127,7 +126,7 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
         return map
     }
 
-    fun getAllInputRenderBuffers(passNode: FrameGraph.FrameGraphNode.PassNode): List<VulkanRenderBuffer> {
+    fun getAllInputRenderBuffers(passNode: VulkanFrameGraph.FrameGraphNode.PassNode): List<VulkanRenderBuffer> {
         val list = inputRenderBuffers.toMutableList()
         for (irb in passNode.extraInputRenderBuffers) {
             list.add(irb)
@@ -162,7 +161,7 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
         return handle
     }
 
-    fun render(frame: Frame, passInstance: FrameGraph.FrameGraphNode.PassNode, attachementsPreviousState: List<UsageType>, imageInputstoTransition: List<Pair<VulkanRenderBuffer, UsageType>>) {
+    fun render(frame: Frame, passInstance: VulkanFrameGraph.FrameGraphNode.PassNode, attachementsPreviousState: List<UsageType>, imageInputstoTransition: List<Pair<VulkanRenderBuffer, UsageType>>) {
         val outputs = declaration.outputs.outputs
         val depth = declaration.depthTestingConfiguration
 

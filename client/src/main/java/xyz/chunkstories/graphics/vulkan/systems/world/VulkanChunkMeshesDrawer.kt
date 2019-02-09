@@ -1,7 +1,6 @@
 package xyz.chunkstories.graphics.vulkan.systems.world
 
 import xyz.chunkstories.api.client.IngameClient
-import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.api.graphics.structs.WorldConditions
 import xyz.chunkstories.api.util.kotlin.toVec3i
 import xyz.chunkstories.api.world.World
@@ -25,12 +24,11 @@ import org.lwjgl.system.MemoryUtil.memAlloc
 import org.lwjgl.system.MemoryUtil.memFree
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
-import xyz.chunkstories.api.graphics.rendergraph.RenderingContext
 import xyz.chunkstories.api.world.chunk.Chunk
 import xyz.chunkstories.api.world.region.Region
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
 import xyz.chunkstories.graphics.vulkan.buffers.extractInterfaceBlockField
-import xyz.chunkstories.graphics.vulkan.graph.FrameGraph
+import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
 import xyz.chunkstories.graphics.vulkan.resources.InflightFrameResource
 import xyz.chunkstories.world.storage.RegionImplementation
 import java.util.*
@@ -107,12 +105,12 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         VulkanBuffer(backend, sizeFor2048Elements, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, false)
     }
 
-    override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer, passContext: FrameGraph.FrameGraphNode.PassNode) {
+    override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer, passContext: VulkanFrameGraph.FrameGraphNode.PassNode) {
         MemoryStack.stackPush()
 
         val bindingContext = backend.descriptorMegapool.getBindingContext(meshesPipeline)
 
-        val camera = passContext.taskNode.camera
+        val camera = passContext.context.camera
         val world = client.world as WorldClientCommon
 
         val camPos = camera.position

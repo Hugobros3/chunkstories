@@ -17,8 +17,7 @@ import xyz.chunkstories.world.WorldClientCommon
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
-import xyz.chunkstories.api.graphics.rendergraph.RenderingContext
-import xyz.chunkstories.graphics.vulkan.graph.FrameGraph
+import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
 
 interface SkyDrawer : DrawingSystem
 
@@ -68,7 +67,7 @@ class VulkanSkyDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass), SkyDrawer {
         }
     }
 
-    override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer, passContext: FrameGraph.FrameGraphNode.PassNode) {
+    override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer, passContext: VulkanFrameGraph.FrameGraphNode.PassNode) {
         val bindingContext = backend.descriptorMegapool.getBindingContext(pipeline)
 
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)

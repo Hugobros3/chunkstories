@@ -8,7 +8,6 @@ import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
 import xyz.chunkstories.api.graphics.rendergraph.RenderGraphDeclaration
 import xyz.chunkstories.api.graphics.rendergraph.RenderGraphDeclarationScript
 import xyz.chunkstories.api.graphics.rendergraph.RenderTaskDeclaration
-import xyz.chunkstories.api.graphics.rendergraph.RenderingContext
 import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.resources.Cleanable
@@ -45,7 +44,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
         val map = mutableMapOf<String, Any>()
         map["camera"] = camera
 
-        val graph = FrameGraph(frame, this, mainTask, mainCamera, map)
+        val graph = VulkanFrameGraph(frame, this, mainTask, mainCamera, map)
 
         val sequencedGraph = graph.sequenceGraph()
 
@@ -56,7 +55,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
             val graphNode = sequencedGraph[i]
 
             when (graphNode) {
-                is FrameGraph.FrameGraphNode.PassNode -> {
+                is VulkanFrameGraph.FrameGraphNode.PassNode -> {
                     val pass = graphNode.pass
 
                     val requiredRenderBufferStates = pass.getRenderBufferUsages(graphNode)
@@ -85,7 +84,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
                     for(entry in requiredRenderBufferStates)
                         globalStates[entry.key] = entry.value
                 }
-                is FrameGraph.FrameGraphNode.RenderingContextNode -> graphNode.callback?.invoke(graphNode)
+                is VulkanFrameGraph.FrameGraphNode.RenderingContextNode -> graphNode.callback?.invoke(graphNode)
             }
         }
 
@@ -95,7 +94,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
             fresh = false
         }
 
-        val passes = sequencedGraph.mapNotNull { (it as? FrameGraph.FrameGraphNode.PassNode)?.pass }
+        val passes = sequencedGraph.mapNotNull { (it as? VulkanFrameGraph.FrameGraphNode.PassNode)?.pass }
 
         stackPush().use {
             val submitInfo = VkSubmitInfo.callocStack().sType(VK_STRUCTURE_TYPE_SUBMIT_INFO).apply {

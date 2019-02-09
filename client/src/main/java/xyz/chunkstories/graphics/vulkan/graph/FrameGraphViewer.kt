@@ -8,13 +8,13 @@ import guru.nidi.graphviz.model.Factory.*
 import java.io.File
 
 
-fun lookIDontCare(frameGraph: FrameGraph) {
-    fun node2viz(node: FrameGraph.FrameGraphNode) = node("${node.hashCode()}").let {
+fun lookIDontCare(frameGraph: VulkanFrameGraph) {
+    fun node2viz(node: VulkanFrameGraph.FrameGraphNode) = node("${node.hashCode()}").let {
         when (node) {
-            is FrameGraph.FrameGraphNode.PassNode -> {
+            is VulkanFrameGraph.FrameGraphNode.PassNode -> {
                 it.with(Label.of("passNode(pass=${node.pass.declaration.name})")).with(Color.BLUE1)
             }
-            is FrameGraph.FrameGraphNode.RenderingContextNode -> {
+            is VulkanFrameGraph.FrameGraphNode.RenderingContextNode -> {
                 it.with(Label.of("renderContext(task=${node.renderTask.declaration.name})")).with(Color.RED)
             }
         }

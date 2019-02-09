@@ -14,7 +14,7 @@ import xyz.chunkstories.graphics.common.Primitive
 import xyz.chunkstories.graphics.vulkan.Pipeline
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
-import xyz.chunkstories.graphics.vulkan.graph.FrameGraph
+import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.vulkan.resources.DescriptorSetsMegapool
 import xyz.chunkstories.graphics.vulkan.swapchain.Frame
@@ -79,9 +79,9 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
         this.bindings = bindings
     }
 
-    override fun registerAdditionalRenderTasks(passContext: FrameGraph.FrameGraphNode.PassNode) {
+    override fun registerAdditionalRenderTasks(passContext: VulkanFrameGraph.FrameGraphNode.PassNode) {
         if (doShadowMap) {
-            val mainCamera = passContext.taskNode.camera
+            val mainCamera = passContext.context.camera
 
             val shadowMapDepthRange = 256f
             val shadowMapExtent = 256f
@@ -111,12 +111,12 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
             val sunCamera = Camera(viewMatrix = shadowMatrix, fov = 0f, position = mainCamera.position)
 
             passContext.dispatchRenderTask("shadowmapCascade0", sunCamera, "sunShadow", emptyMap()) {
-                passContext.markRenderBufferAsInput(it.renderTask.rootPass.outputDepthRenderBuffer!!)
+                passContext.markRenderBufferAsInput((it as VulkanFrameGraph.FrameGraphNode.RenderingContextNode).renderTask.rootPass.outputDepthRenderBuffer!!)
             }
         }
     }
 
-    override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer, passContext: FrameGraph.FrameGraphNode.PassNode) {
+    override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer, passContext: VulkanFrameGraph.FrameGraphNode.PassNode) {
         val bindingContext = backend.descriptorMegapool.getBindingContext(pipeline)
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
 
@@ -135,7 +135,7 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
         bindings?.invoke(this, bindingContext)
 
         if(doShadowMap) {
-            val shadowSubctx0 = passContext.taskNode.artifacts["shadowmapCascade0"] as FrameGraph.FrameGraphNode.RenderingContextNode
+            val shadowSubctx0 = passContext.context.artifacts["shadowmapCascade0"] as VulkanFrameGraph.FrameGraphNode.RenderingContextNode
             val shadowCamera0 = shadowSubctx0.parameters["camera"] as Camera
 
             val shadowInfo = ShadowMappingInfo()
