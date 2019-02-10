@@ -89,7 +89,7 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
             for(i in 0 until 4) {
                 val rez = rezs[i]
 
-                val shadowMapDepthRange = rez
+                val shadowMapDepthRange = 256f
                 val shadowMapExtent = rez
 
                 val shadowMapContentsMatrix = Matrix4f().ortho(-shadowMapExtent, shadowMapExtent, -shadowMapExtent, shadowMapExtent, -shadowMapDepthRange, shadowMapDepthRange, true)

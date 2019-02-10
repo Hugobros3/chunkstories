@@ -11,24 +11,14 @@ import xyz.chunkstories.graphics.vulkan.CommandPool
 import xyz.chunkstories.graphics.vulkan.RenderPass
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.resources.Cleanable
-import xyz.chunkstories.graphics.vulkan.resources.InflightFrameResource
 import xyz.chunkstories.graphics.vulkan.swapchain.Frame
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
 import xyz.chunkstories.graphics.vulkan.util.VkFramebuffer
 import xyz.chunkstories.graphics.vulkan.util.ensureIs
 
 open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: VulkanRenderTask, val declaration: PassDeclaration) : Cleanable {
-    //val inputRenderBuffers: List<VulkanRenderBuffer>
-    //val outputColorRenderBuffers: List<VulkanRenderBuffer>
-    //val outputDepthRenderBuffer: VulkanRenderBuffer?
-
-    //var framebuffer: VkFramebuffer = -1
-    //    internal set
-
     val canonicalRenderPass: RenderPass
     val renderPassesMap = mutableMapOf<List<UsageType>, RenderPass>()
-
-    //val renderBufferUsages: Map<VulkanRenderBuffer, UsageType>
 
     lateinit var drawingSystems: List<VulkanDrawingSystem>
         private set
@@ -38,53 +28,7 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
 
     init {
         MemoryStack.stackPush()
-
-        /*inputRenderBuffers = declaration.inputs?.imageInputs?.mapNotNull {
-            val source = it.source
-            when (source) {
-                is ImageSource.RenderBufferReference -> {
-                    val rb = renderTask.buffers[source.renderBufferName]!!
-                    rb
-                }
-                is ImageSource.AssetReference -> TODO()
-                is ImageSource.TextureReference -> TODO()
-                is ImageSource.TaskOutput -> TODO()
-            }
-        } ?: emptyList<VulkanRenderBuffer>()
-
-        outputColorRenderBuffers = declaration.outputs.outputs.map { output ->
-            val resolvedName = output.outputBuffer ?: output.name
-            if (resolvedName == "_swapchain")
-                TODO()//graph.dummySwapchainRenderBuffer
-            else
-                renderTask.buffers[resolvedName] ?: throw Exception("Buffer $resolvedName isn't declared !")
-        }
-
-        outputDepthRenderBuffer =
-                if (declaration.depthTestingConfiguration.enabled)
-                    renderTask.buffers[declaration.depthTestingConfiguration.depthBuffer]
-                else null*/
-
-        /*commandBuffers = InflightFrameResource(backend) {
-            val commandBufferAllocateInfo = VkCommandBufferAllocateInfo.callocStack().sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO).apply {
-                commandPool(commandPool.handle)
-                level(VK_COMMAND_BUFFER_LEVEL_PRIMARY)
-                commandBufferCount(1)
-            }
-
-            val pCmdBuffers = MemoryStack.stackMallocPointer(1)
-            vkAllocateCommandBuffers(backend.logicalDevice.vkDevice, commandBufferAllocateInfo, pCmdBuffers)
-
-            val commandBuffer = VkCommandBuffer(pCmdBuffers.get(0), backend.logicalDevice.vkDevice)
-
-            commandBuffer
-        }*/
-
         canonicalRenderPass = RenderPass(backend, this, null)
-        //framebuffer = createFramebuffer()
-
-        //renderBufferUsages = createRenderBufferUsageMap(declaration)
-
         val drawingSystems = mutableListOf<VulkanDrawingSystem>()
         val rs = declaration.draws?.registeredSystems
         if (rs != null) {
@@ -101,40 +45,6 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
 
         MemoryStack.stackPop()
     }
-
-    /*private fun createRenderBufferUsageMap(declaration: PassDeclaration): Map<VulkanRenderBuffer, UsageType> {
-        val map = mutableMapOf<VulkanRenderBuffer, UsageType>()
-
-        for (inputBuffer in inputRenderBuffers)
-            map[inputBuffer] = UsageType.INPUT
-
-        for (outputBuffer in outputColorRenderBuffers) {
-            map[outputBuffer] = UsageType.OUTPUT
-        }
-
-        if (outputDepthRenderBuffer != null)
-            map[outputDepthRenderBuffer] = UsageType.OUTPUT
-
-        return map
-    }
-
-    fun getRenderBufferUsages(passNode: VulkanFrameGraph.FrameGraphNode.PassNode): Map<VulkanRenderBuffer, UsageType> {
-        val map = renderBufferUsages.toMutableMap()
-        for (irb in passNode.extraInputRenderBuffers) {
-            map[irb] = UsageType.INPUT
-        }
-
-        return map
-    }
-
-    fun getAllInputRenderBuffers(passNode: VulkanFrameGraph.FrameGraphNode.PassNode): List<VulkanRenderBuffer> {
-        val list = inputRenderBuffers.toMutableList()
-        for (irb in passNode.extraInputRenderBuffers) {
-            list.add(irb)
-        }
-
-        return list
-    }*/
 
     fun createFramebuffer(resolvedDepthAndColorBuffers: MutableList<VulkanRenderBuffer>): VkFramebuffer {
         stackPush()
@@ -312,10 +222,55 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
                     pClearValues(clearColor)
                 }
 
+                if(imageInputstoTransition.size > 0) {
+                    stackPush()
+                    val imageBarriers = VkImageMemoryBarrier.callocStack(imageInputstoTransition.size)
+                    var tightestSrcStageMask: Int = 1
+                    var tighestDstStageMask: Int = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT
+                    for (index in 0 until imageInputstoTransition.size) {
+                        val (renderBuffer, previousUsage) = imageInputstoTransition[index]
+                        val newUsage = UsageType.INPUT
 
-                for ((rb, ou) in imageInputstoTransition) {
-                    //println("rb: $rb")
-                    rb.transitionUsage(this, ou, UsageType.INPUT)
+                        imageBarriers[index].sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER).apply {
+                            oldLayout(getLayoutForStateAndType(previousUsage, renderBuffer.attachementType))
+                            newLayout(getLayoutForStateAndType(newUsage, renderBuffer.attachementType))
+
+                            srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+                            dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+                            image(renderBuffer.texture.imageHandle)
+
+                            subresourceRange().apply {
+                                aspectMask(renderBuffer.attachementType.aspectMask())
+                                baseMipLevel(0)
+                                levelCount(1)
+                                baseArrayLayer(0)
+                                layerCount(1)
+                            }
+
+                            srcAccessMask(previousUsage.accessMask())
+                            dstAccessMask(newUsage.accessMask())
+                        }
+
+                        val srcStageMask = when (previousUsage) {
+                            UsageType.INPUT -> VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
+                            UsageType.OUTPUT -> VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+                            UsageType.NONE -> VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT
+                        }
+
+                        val dstStageMask = when (newUsage) {
+                            UsageType.INPUT -> VK_PIPELINE_STAGE_VERTEX_SHADER_BIT
+                            UsageType.OUTPUT -> VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+                            UsageType.NONE -> VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT
+                        }
+
+                        if (srcStageMask > tightestSrcStageMask)
+                            tightestSrcStageMask = srcStageMask
+
+                        if (dstStageMask < tighestDstStageMask)
+                            tighestDstStageMask = dstStageMask
+                    }
+                    vkCmdPipelineBarrier(commandBuffer, tightestSrcStageMask, tighestDstStageMask, 0, null, null, imageBarriers)
+                    stackPop()
                 }
 
                 vkCmdBeginRenderPass(this, renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE)
@@ -343,15 +298,8 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
         }
     }
 
-    /*fun recreateFramebuffer() {
-        vkDestroyFramebuffer(backend.logicalDevice.vkDevice, framebuffer, null)
-        framebuffer = createFramebuffer(resolvedDepthAndColorBuffers)
-    }*/
-
     override fun cleanup() {
         drawingSystems.forEach(Cleanable::cleanup)
-
-        //vkDestroyFramebuffer(backend.logicalDevice.vkDevice, framebuffer, null)
 
         canonicalRenderPass.cleanup()
         for (renderPass in renderPassesMap.values)
