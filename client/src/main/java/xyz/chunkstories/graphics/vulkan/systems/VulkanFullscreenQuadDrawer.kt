@@ -84,7 +84,7 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
         if (doShadowMap) {
             val mainCamera = passContext.context.camera
 
-            val rezs = floatArrayOf(512f, 256f, 64f, 16f)
+            val rezs = floatArrayOf(256f, 128f, 64f, 32f)
 
             for(i in 0 until 4) {
                 val rez = rezs[i]
@@ -141,7 +141,9 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
                 bindingContext.bindTextureAndSampler("shadowBuffers", backend.textures.get("logo.png") as VulkanTexture2D, samplerShadow, i)
 
             for(i in 0 until shadowInfo.cascadesCount) {
-                val shadowSubcontext = passContext.context.artifacts["shadowmapCascade$i"] as VulkanFrameGraph.FrameGraphNode.RenderingContextNode
+                val shadowSubcontext = passContext.context.artifacts["shadowmapCascade$i"] as? VulkanFrameGraph.FrameGraphNode.RenderingContextNode
+                if(shadowSubcontext == null)
+                    continue
                 bindingContext.bindTextureAndSampler("shadowBuffers", shadowSubcontext.rootPassInstance.resolvedDepthBuffer.texture, samplerShadow, i)
                 shadowInfo.cameras[i] = shadowSubcontext.parameters["camera"] as Camera
                 //println(shadowInfo.cameras[i].viewMatrix.hashCode())
@@ -167,6 +169,5 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
         vertexBuffer.cleanup()
         pipeline.cleanup()
         program.cleanup()
-        //descriptorPool.cleanup()
     }
 }

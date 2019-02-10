@@ -291,6 +291,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
     override fun cleanup() {
         vkDeviceWaitIdle(logicalDevice.vkDevice)
 
+        swapchain.flush()
         renderGraph.cleanup()
 
         textures.cleanup()

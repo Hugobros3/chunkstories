@@ -26,6 +26,7 @@ import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 import xyz.chunkstories.api.world.chunk.Chunk
 import xyz.chunkstories.api.world.region.Region
+import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompilationParameters
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
 import xyz.chunkstories.graphics.vulkan.buffers.extractInterfaceBlockField
 import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
@@ -87,7 +88,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         }
     }
 
-    val cubesProgram = backend.shaderFactory.createProgram("cubes")
+    val cubesProgram = backend.shaderFactory.createProgram("cubes", ShaderCompilationParameters(outputs = pass.declaration.outputs))
     private val meshesPipeline = Pipeline(backend, cubesProgram, pass, meshesVertexInputCfg, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
 
     companion object {
@@ -99,11 +100,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
     val structSize = chunkInfoID.struct.size
     val sizeAligned16 = if(structSize % 16 == 0) structSize else (structSize / 16 * 16) + 16
 
-    val sizeFor2048Elements = sizeAligned16 * 2048L
-
-    /*private val ssboDataTest = InflightFrameResource(backend) {
-        VulkanBuffer(backend, sizeFor2048Elements, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, false)
-    }*/
+    val sizeFor4096Elements = sizeAligned16 * 4096L
 
     override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer, passContext: VulkanFrameGraph.FrameGraphNode.PassNode) {
         MemoryStack.stackPush()
@@ -117,11 +114,6 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
 
         bindingContext.bindUBO("camera", camera)
         bindingContext.bindUBO("world", world.getConditions())
-
-        //val frustrum = Frustrum(camera, client.gameWindow)
-
-        totalCubesDrawn = 0
-        totalBuffersUsed = 0
 
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshesPipeline.handle)
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshesPipeline.pipelineLayout, 0, stackLongs(backend.textures.magicTexturing.theSet), null)
@@ -137,7 +129,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         val usedData = mutableListOf<ChunkVkMeshProperty.ChunkVulkanMeshData>()
 
         //TODO pool those
-        val ssboDataTest = VulkanBuffer(backend, sizeFor2048Elements, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, false)
+        val ssboDataTest = VulkanBuffer(backend, sizeFor4096Elements, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, false)
 
         val ssboStuff = memAlloc(ssboDataTest.bufferSize.toInt())
         var instance = 0
@@ -152,20 +144,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
                     usedData.add(block)
 
                 if (block?.vertexBuffer != null) {
-                    //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshesPipeline.layout, 0, stackLongs(block.virtualTexturingContext!!.setHandle), null)
                     vkCmdBindVertexBuffers(commandBuffer, 0, stackLongs(block.vertexBuffer.handle), stackLongs(0))
-
-                    /*if (block.perChunkBindings == null || block.perChunkBindings!!.pipeline !== meshesPipeline) {
-                        val chunkRenderInfo = ChunkRenderInfo().apply {
-                            chunkX = chunk.chunkX
-                            chunkY = chunk.chunkY
-                            chunkZ = chunk.chunkZ
-                        }
-                        block.perChunkBindings = backend.descriptorMegapool.getBindingContext(meshesPipeline).also {
-                            it.bindUBO(chunkRenderInfo)
-                        }
-                    }
-                    block.perChunkBindings!!.preDraw(commandBuffer)*/
 
                     ssboStuff.position(instance * sizeAligned16)
                     val chunkRenderInfo = ChunkRenderInfo().apply {
@@ -201,8 +180,6 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
 
         val visibleRegions = arrayOfNulls<RegionImplementation>(1024)
         var visibleRegionsCount = 0
-
-        //val unsortedRegions = ArrayList<RegionImplementation>()
 
         var rc = 0
         for (region in world.allLoadedRegions) {

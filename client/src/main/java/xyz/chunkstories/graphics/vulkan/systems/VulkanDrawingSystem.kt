@@ -16,6 +16,4 @@ abstract class VulkanDrawingSystem(val pass: VulkanPass) : DrawingSystem, Cleana
     open fun registerAdditionalRenderTasks(passContext: VulkanFrameGraph.FrameGraphNode.PassNode) {
         // Does nothing by default
     }
-
-    //open fun provideAdditionalConsumedInputRenderBuffers(renderingContext: RenderingContext) = emptyList<VulkanRenderBuffer>()
 }

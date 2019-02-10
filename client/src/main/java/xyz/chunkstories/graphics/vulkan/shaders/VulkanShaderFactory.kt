@@ -6,6 +6,7 @@ import xyz.chunkstories.api.graphics.ShaderStage
 import xyz.chunkstories.content.mods.ModsManagerImplementation
 import xyz.chunkstories.graphics.common.shaders.GLSLDialect
 import xyz.chunkstories.graphics.common.shaders.GLSLProgram
+import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompilationParameters
 import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompiler
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 
@@ -20,5 +21,5 @@ class VulkanShaderFactory(val backend: VulkanGraphicsBackend, val client: Client
         //Note: We NEED that ?. operator because we're calling into this before Client is done initializing
         get() = (client?.content?.modsManager() as? ModsManagerImplementation)?.finalClassLoader ?: VulkanShaderFactory::class.java.classLoader
 
-    fun createProgram(basePath: String) = VulkanShaderProgram(backend, loadGLSLProgram(basePath))
+    fun createProgram(basePath: String, shaderCompilationParameters: ShaderCompilationParameters = ShaderCompilationParameters()) = VulkanShaderProgram(backend, loadGLSLProgram(basePath, shaderCompilationParameters))
 }

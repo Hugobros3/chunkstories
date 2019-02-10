@@ -33,7 +33,7 @@ abstract class ShaderCompiler(val dialect: GLSLDialect) {
         SpirvCrossHelper.initSpirvCross()
     }
 
-    fun loadGLSLProgram(shaderName: String) : GLSLProgram {
+    fun loadGLSLProgram(shaderName: String, compilationParameters: ShaderCompilationParameters = ShaderCompilationParameters()) : GLSLProgram {
         val shaderBaseDir = "shaders/$shaderName"
 
         val vertexShader = readShaderFile("$shaderBaseDir/$shaderName.vert") ?: throw Exception("Vertex shader stage not found in either built-in resources or assets for shader: $shaderName")
@@ -62,6 +62,11 @@ abstract class ShaderCompiler(val dialect: GLSLDialect) {
 
         val vertexInputs = analyseVertexShaderInputs(stages[ShaderStage.VERTEX]!!)
         val fragmentOutputs = analyseFragmentShaderOutputs(stages[ShaderStage.FRAGMENT]!!)
+
+        compilationParameters.outputs?.let {
+            stages = stages.toMutableMap()
+            (stages as MutableMap<ShaderStage, String>)[ShaderStage.FRAGMENT] = removeUnusedOutputs(stages[ShaderStage.FRAGMENT]!!, fragmentOutputs, it)
+        }
 
         val intermediaryCompilationResults = buildIntermediaryStructure(stages)
         val (perInstanceDataInputs, resources) = createShaderResources(intermediaryCompilationResults)

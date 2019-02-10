@@ -45,6 +45,8 @@ class DebugInfoRendererHelper(ingameLayer: IngameLayer) {
         debugLine("Tasks queued: ${client.tasks.submittedTasks()} IO operations queud: ${world.ioHandler.size}")
 
         debugLine("Vertices drawn: ${VulkanCubesDrawer.totalCubesDrawn} within ${VulkanCubesDrawer.totalBuffersUsed} vertex buffers")
+        VulkanCubesDrawer.totalCubesDrawn = 0
+        VulkanCubesDrawer.totalBuffersUsed = 0
 
         var chunksCount = 0
         var regionsCount = 0
@@ -81,15 +83,8 @@ class DebugInfoRendererHelper(ingameLayer: IngameLayer) {
             val standingAt = playerEntity.location.toVec3i()
             val standingIn = world.peekSafely(playerEntity.location)
             debugLine("Standing at $standingAt in ${standingIn.voxel} (solid=${standingIn.voxel?.solid}, box=${standingIn.voxel?.collisionBoxes?.getOrNull(0)})")
-
-            /*holder?.apply {
-                debugLine("${CubicChunk.chunksCounter} history: H: ${holder.stateHistory} R: ${region.stateHistory}")
-            }*/
         }
 
         (guiDrawer.gui as ClientGui).guiScaleOverride = -1
-
-        //val inp = client.inputsManager.getInputByName("forward") as Lwjgl3KeyBind
-        //debugLine("forward key ${inp.name} ${inp.isPressed}")
     }
 }
