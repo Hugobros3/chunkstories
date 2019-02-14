@@ -129,7 +129,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         val usedData = mutableListOf<ChunkVkMeshProperty.ChunkVulkanMeshData>()
 
         //TODO pool those
-        val ssboDataTest = VulkanBuffer(backend, sizeFor4096Elements, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, false)
+        val ssboDataTest = VulkanBuffer(backend, sizeFor4096Elements, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, true)
 
         val ssboStuff = memAlloc(ssboDataTest.bufferSize.toInt())
         var instance = 0
