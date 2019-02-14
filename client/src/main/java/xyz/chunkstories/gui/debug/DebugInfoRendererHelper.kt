@@ -41,7 +41,7 @@ class DebugInfoRendererHelper(ingameLayer: IngameLayer) {
         debugLine("#FF0000Rendering: ${performanceMetrics.lastFrametimeNs/1000000}ms fps: ${performanceMetrics.avgFps.toInt()} (min ${performanceMetrics.minFps.toInt()}, max ${performanceMetrics.maxFps.toInt()}) #00FFFFSimulation performance : ${world.gameLogic.simulationFps}")
 
         debugLine("RAM usage: ${Runtime.getRuntime().freeMemory() / 1024 / 1024} mb free")
-        debugLine("VRAM usage: ${VulkanMemoryManager.allocations} allocations totalling ${VulkanMemoryManager.allocatedBytes.get()/1024/1024}mb ")
+        debugLine("VRAM usage: ${VulkanMemoryManager.allocations} allocations totalling ${VulkanMemoryManager.allocatedBytes.get()/1024/1024}mb (repart=${VulkanMemoryManager.allocationsPerType})")
         debugLine("VMA usage: ${VmaAllocator.allocations} allocations totalling ${VmaAllocator.allocatedBytes.get()/1024/1024}mb ")
 
         debugLine("Tasks queued: ${client.tasks.submittedTasks()} IO operations queud: ${world.ioHandler.size}")

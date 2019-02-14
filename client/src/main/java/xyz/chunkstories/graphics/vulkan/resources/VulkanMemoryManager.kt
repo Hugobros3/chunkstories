@@ -9,6 +9,7 @@ import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.devices.LogicalDevice
 import xyz.chunkstories.graphics.vulkan.util.VkDeviceMemory
 import xyz.chunkstories.graphics.vulkan.util.ensureIs
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 
@@ -60,11 +61,13 @@ class VulkanMemoryManager(val backend: VulkanGraphicsBackend, val device: Logica
         init {
             allocations.addAndGet(1)
             allocatedBytes.addAndGet(allocationSize)
+            allocationsPerType.getOrPut(memoryTypeIndex) { AtomicInteger() }.incrementAndGet()
         }
 
         override fun cleanup() {
             allocations.addAndGet(-1)
             allocatedBytes.addAndGet(-allocationSize)
+            allocationsPerType.getOrPut(memoryTypeIndex) { AtomicInteger() }.decrementAndGet()
             vkFreeMemory(backend.logicalDevice.vkDevice, deviceMemory, null)
         }
 
@@ -77,6 +80,8 @@ class VulkanMemoryManager(val backend: VulkanGraphicsBackend, val device: Logica
     companion object {
         val allocatedBytes = AtomicLong(0)
         val allocations = AtomicInteger(0)
+
+        val allocationsPerType = ConcurrentHashMap<Int, AtomicInteger>()
     }
 
 }
