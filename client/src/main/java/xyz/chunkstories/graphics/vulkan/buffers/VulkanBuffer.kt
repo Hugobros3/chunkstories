@@ -15,6 +15,7 @@ import xyz.chunkstories.graphics.vulkan.util.ensureIs
 import xyz.chunkstories.graphics.vulkan.util.waitFence
 import java.nio.ByteBuffer
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.concurrent.withLock
 
 open class VulkanBuffer(val backend: VulkanGraphicsBackend, val bufferSize: Long, bufferUsageBits: Int, val memoryUsage: MemoryUsagePattern) : Cleanable {
     val handle: VkBuffer
@@ -60,7 +61,9 @@ open class VulkanBuffer(val backend: VulkanGraphicsBackend, val bufferSize: Long
 
         allocation = backend.memoryManager.allocateMemoryGivenRequirements(requirements, requiredFlags)*/
         allocation = backend.memoryManager.allocateMemory(requirements, memoryUsage)
-        vkBindBufferMemory(backend.logicalDevice.vkDevice, handle, allocation.deviceMemory, allocation.offset)
+        allocation.lock.withLock {
+            vkBindBufferMemory(backend.logicalDevice.vkDevice, handle, allocation.deviceMemory, allocation.offset)
+        }
 
         /*val vmaAllocCreateInfo = VmaAllocationCreateInfo.callocStack().apply {
             //usage(VMA_MEMORY_USAGE_GPU_ONLY)
@@ -94,15 +97,17 @@ open class VulkanBuffer(val backend: VulkanGraphicsBackend, val bufferSize: Long
         //    println("${Thread.currentThread().name} stack size ${pushed.frameIndex} + $hostVisible ${pushed.pointer}")
 
         if (memoryUsage.hostVisible) {
-            val ppData = stackMallocPointer(1)
-            //vmaMapMemory(backend.vmaAllocator.handle, allocation, ppData).ensureIs("VMA: Failed to map memory", VK_SUCCESS)
-            vkMapMemory(backend.logicalDevice.vkDevice, allocation.deviceMemory, 0, bufferSize, 0, ppData)
+            allocation.lock.withLock {
+                val ppData = stackMallocPointer(1)
+                //vmaMapMemory(backend.vmaAllocator.handle, allocation, ppData).ensureIs("VMA: Failed to map memory", VK_SUCCESS)
+                vkMapMemory(backend.logicalDevice.vkDevice, allocation.deviceMemory, allocation.offset, bufferSize, 0, ppData)
 
-            val mappedMemory = ppData.getByteBuffer(bufferSize.toInt())
-            mappedMemory.put(data)
+                val mappedMemory = ppData.getByteBuffer(bufferSize.toInt())
+                mappedMemory.put(data)
 
-            //vmaUnmapMemory(backend.vmaAllocator.handle, allocation)
-            vkUnmapMemory(backend.logicalDevice.vkDevice, allocation.deviceMemory)
+                //vmaUnmapMemory(backend.vmaAllocator.handle, allocation)
+                vkUnmapMemory(backend.logicalDevice.vkDevice, allocation.deviceMemory)
+            }
         } else {
             val pool = backend.logicalDevice.transferQueue.threadSafePools.get()
 

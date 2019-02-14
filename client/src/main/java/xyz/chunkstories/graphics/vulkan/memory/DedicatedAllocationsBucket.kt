@@ -9,6 +9,7 @@ import xyz.chunkstories.graphics.vulkan.resources.Cleanable
 import xyz.chunkstories.graphics.vulkan.util.VkDeviceMemory
 import xyz.chunkstories.graphics.vulkan.util.ensureIs
 import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.locks.ReentrantLock
 
 class DedicatedAllocationsBucket(memoryManager: VulkanMemoryManager, memoryTypeIndex: Int, memoryType: VkMemoryType) : VulkanMemoryManager.Bucket(memoryManager, memoryTypeIndex, memoryType) {
 
@@ -16,9 +17,11 @@ class DedicatedAllocationsBucket(memoryManager: VulkanMemoryManager, memoryTypeI
     override val allocatedBytesTotal: Long
         get() = allocatedBytesTotalAtomic.get()
 
-    val slices = mutableListOf<DedicatedSlice>()
+    val allocations = mutableListOf<DedicatedSlice>()
 
-    inner class DedicatedSlice(requirements: VkMemoryRequirements) : VulkanMemoryManager.Allocation {
+    inner class DedicatedSlice(requirements: VkMemoryRequirements) : VulkanMemoryManager.Allocation() {
+
+        override val lock = ReentrantLock()
 
         override val size = requirements.size()
         override val offset = 0L
@@ -43,21 +46,21 @@ class DedicatedAllocationsBucket(memoryManager: VulkanMemoryManager, memoryTypeI
         override fun cleanup() {
             VK10.vkFreeMemory(memoryManager.backend.logicalDevice.vkDevice, deviceMemory, null)
             allocatedBytesTotalAtomic.addAndGet(-size)
-            slices.remove(this)
+            allocations.remove(this)
         }
     }
 
     override fun allocateSlice(requirements: VkMemoryRequirements): VulkanMemoryManager.Allocation {
         val slice = DedicatedSlice(requirements)
-        slices.add(slice)
+        allocations.add(slice)
         return slice
     }
 
     override fun cleanup() {
-        slices.forEach(Cleanable::cleanup)
+        allocations.forEach(Cleanable::cleanup)
     }
 
     override fun toString(): String {
-        return "DedicatedAllocationsBucket(memoryType=${memoryTypeIndex} allocCount=${slices.size} allocTotal=${allocatedBytesTotal/1024}kb)"
+        return "DedicatedAllocationsBucket(memoryType=${memoryTypeIndex} allocCount=${allocations.size} allocTotal=${allocatedBytesTotal/1024}kb)"
     }
 }

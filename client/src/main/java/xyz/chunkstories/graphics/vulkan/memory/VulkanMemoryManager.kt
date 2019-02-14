@@ -9,6 +9,9 @@ import xyz.chunkstories.graphics.vulkan.devices.LogicalDevice
 import xyz.chunkstories.graphics.vulkan.resources.Cleanable
 import xyz.chunkstories.graphics.vulkan.util.VkDeviceMemory
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.locks.Lock
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 enum class MemoryUsagePattern(val hostVisible: Boolean) {
     /** For resources that you load once and (barely) ever deallocate, like textures. Can be linearly allocated */
@@ -28,6 +31,7 @@ class VulkanMemoryManager(val backend: VulkanGraphicsBackend, val device: Logica
 
     val vkPhysicalDeviceMemoryProperties: VkPhysicalDeviceMemoryProperties = VkPhysicalDeviceMemoryProperties.malloc()
     val buckets = mutableMapOf<Int, MutableMap<MemoryUsagePattern, Bucket>>()
+    val bucketsLock = ReentrantLock()
 
     val fastBucketAccess = ConcurrentHashMap<Long, Bucket>()
     val allocatedBytesTotal: Long
@@ -60,72 +64,57 @@ class VulkanMemoryManager(val backend: VulkanGraphicsBackend, val device: Logica
         throw Exception("Unsatisfiable condition: Can't find an appropriate memory type suiting both buffer requirements and usage requirements")
     }
 
-    /*private fun allocateMemoryGivenRequirements(requirements: VkMemoryRequirements, memoryPropertiesFlags: Int): Allocation {
-        stackPush()
-        try {
-            val pDeviceMemory = stackMallocLong(1)
-            val memoryType = findMemoryTypeToUse(requirements, memoryPropertiesFlags)
-            val memoryAllocationInfo = VkMemoryAllocateInfo.callocStack().sType(VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO).apply {
-                allocationSize(requirements.size())
-                memoryTypeIndex(memoryType)
-            }
-            vkAllocateMemory(backend.logicalDevice.vkDevice, memoryAllocationInfo, null, pDeviceMemory).ensureIs("Failed to allocate memory !", VK_SUCCESS)
-            val deviceMemory = pDeviceMemory.get(0)
-            return Allocation(deviceMemory, requirements.size(), memoryType)
-        } finally {
-            stackPop()
-        }
-    }*/
-
     fun allocateMemory(requirements: VkMemoryRequirements, usagePattern: MemoryUsagePattern): Allocation {
         // Find bucket to use
         val bucketHashId = (requirements.memoryTypeBits().toLong() shl 32) or usagePattern.ordinal.toLong()
 
-        return fastBucketAccess.getOrPut(bucketHashId) {
-            val acceptableMemoryTypesBitfield = requirements.memoryTypeBits()
-            var acceptableBucket: Bucket? = null
+        return bucketsLock.withLock {
+            fastBucketAccess.getOrPut(bucketHashId) {
+                val acceptableMemoryTypesBitfield = requirements.memoryTypeBits()
+                var acceptableBucket: Bucket? = null
 
-            // Check if we got an existing bucket matching the usage pattern
-            // and one of the acceptable memory types
-            for (memoryTypeIndex in 0 until vkPhysicalDeviceMemoryProperties.memoryTypeCount()) {
-                // each bit in acceptableMemoryTypesBitfield refers to an acceptable memory type, via it's index in the memoryTypes list of deviceMemoryProperties
-                // it's rather confusing at first. We just have to shift the index and AND it with the requirements bits to know if the type is suitable
-                if (acceptableMemoryTypesBitfield and (1 shl memoryTypeIndex) != 0) {
-                    val bucket = buckets[memoryTypeIndex]?.get(usagePattern)
+                // Check if we got an existing bucket matching the usage pattern
+                // and one of the acceptable memory types
+                for (memoryTypeIndex in 0 until vkPhysicalDeviceMemoryProperties.memoryTypeCount()) {
+                    // each bit in acceptableMemoryTypesBitfield refers to an acceptable memory type, via it's index in the memoryTypes list of deviceMemoryProperties
+                    // it's rather confusing at first. We just have to shift the index and AND it with the requirements bits to know if the type is suitable
+                    if (acceptableMemoryTypesBitfield and (1 shl memoryTypeIndex) != 0) {
+                        val bucket = buckets[memoryTypeIndex]?.get(usagePattern)
 
-                    if (bucket != null)
-                        acceptableBucket = bucket
+                        if (bucket != null)
+                            acceptableBucket = bucket
+                    }
                 }
-            }
 
-            if (acceptableBucket != null) {
-                fastBucketAccess[bucketHashId] = acceptableBucket
-                return@getOrPut acceptableBucket
-            }
+                if (acceptableBucket != null) {
+                    fastBucketAccess[bucketHashId] = acceptableBucket
+                    return@getOrPut acceptableBucket
+                }
 
-            val newBucket = createBucketForTypeAndUsagePattern(acceptableMemoryTypesBitfield, usagePattern)
-            buckets.getOrPut(newBucket.memoryTypeIndex) { mutableMapOf() }[usagePattern] = newBucket
-            fastBucketAccess[bucketHashId] = newBucket
-            return@getOrPut  newBucket
+                val newBucket = createBucketForTypeAndUsagePattern(acceptableMemoryTypesBitfield, usagePattern)
+                buckets.getOrPut(newBucket.memoryTypeIndex) { mutableMapOf() }[usagePattern] = newBucket
+                fastBucketAccess[bucketHashId] = newBucket
+                return@getOrPut newBucket
+            }
         }.allocateSlice(requirements)
     }
 
     private fun createBucketForTypeAndUsagePattern(acceptableMemoryTypesBitfield: Int, usagePattern: MemoryUsagePattern): Bucket = when (usagePattern) {
         MemoryUsagePattern.STATIC -> {
             val (memoryTypeIndex, memoryType) = findMemoryTypeToUse(acceptableMemoryTypesBitfield, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
-            DedicatedAllocationsBucket(this, memoryTypeIndex, memoryType)
+            BuddyAllocationBucket(this, memoryTypeIndex, memoryType)
         }
         MemoryUsagePattern.SEMI_STATIC -> {
             val (memoryTypeIndex, memoryType) = findMemoryTypeToUse(acceptableMemoryTypesBitfield, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
-            DedicatedAllocationsBucket(this, memoryTypeIndex, memoryType)
+            BuddyAllocationBucket(this, memoryTypeIndex, memoryType)
         }
         MemoryUsagePattern.DYNAMIC -> {
             val (memoryTypeIndex, memoryType) = findMemoryTypeToUse(acceptableMemoryTypesBitfield, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
-            DedicatedAllocationsBucket(this, memoryTypeIndex, memoryType)
+            BuddyAllocationBucket(this, memoryTypeIndex, memoryType)
         }
         MemoryUsagePattern.STAGING -> {
             val (memoryTypeIndex, memoryType) = findMemoryTypeToUse(acceptableMemoryTypesBitfield, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
-            DedicatedAllocationsBucket(this, memoryTypeIndex, memoryType)
+            BuddyAllocationBucket(this, memoryTypeIndex, memoryType)
         }
     }
 
@@ -135,10 +124,11 @@ class VulkanMemoryManager(val backend: VulkanGraphicsBackend, val device: Logica
         abstract fun allocateSlice(requirements: VkMemoryRequirements): Allocation
     }
 
-    interface Allocation : Cleanable {
-        val deviceMemory: VkDeviceMemory
-        val offset: Long
-        val size: Long
+    abstract class Allocation : Cleanable {
+        abstract val lock : Lock
+        abstract val deviceMemory: VkDeviceMemory
+        abstract val offset: Long
+        abstract val size: Long
     }
 
     override fun cleanup() {

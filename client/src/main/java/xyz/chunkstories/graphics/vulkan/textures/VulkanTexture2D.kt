@@ -12,6 +12,7 @@ import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import xyz.chunkstories.graphics.vulkan.memory.VulkanMemoryManager
 import xyz.chunkstories.graphics.vulkan.resources.Cleanable
 import xyz.chunkstories.graphics.vulkan.util.*
+import kotlin.concurrent.withLock
 
 class VulkanTexture2D(val backend: VulkanGraphicsBackend, override val format: TextureFormat, override val width: Int, override val height: Int,
                       val usageFlags: Int) : Texture2D, Cleanable {
@@ -19,7 +20,7 @@ class VulkanTexture2D(val backend: VulkanGraphicsBackend, override val format: T
     val vulkanFormat = format.vulkanFormat
 
     val imageHandle: VkImage
-    val imageMemory: VulkanMemoryManager.Allocation
+    val allocation: VulkanMemoryManager.Allocation
     val imageView: VkImageView
 
     val mapping: Int by lazy { backend.textures.magicTexturing.getMapping(this) }
@@ -58,10 +59,12 @@ class VulkanTexture2D(val backend: VulkanGraphicsBackend, override val format: T
         val usagePattern = if (usageFlags and VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT != 0 || usageFlags and VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT != 0) MemoryUsagePattern.SEMI_STATIC
         else
             MemoryUsagePattern.STATIC
-        imageMemory = backend.memoryManager.allocateMemory(memRequirements, usagePattern)
+        allocation = backend.memoryManager.allocateMemory(memRequirements, usagePattern)
         //backend.memoryManager.allocateMemoryGivenRequirements(memRequirements,  VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
 
-        vkBindImageMemory(backend.logicalDevice.vkDevice, imageHandle, imageMemory.deviceMemory, imageMemory.offset)
+        allocation.lock.withLock {
+            vkBindImageMemory(backend.logicalDevice.vkDevice, imageHandle, allocation.deviceMemory, allocation.offset)
+        }
 
         val viewInfo = VkImageViewCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO).apply {
             image(imageHandle)
@@ -215,7 +218,7 @@ class VulkanTexture2D(val backend: VulkanGraphicsBackend, override val format: T
 
         vkDestroyImage(backend.logicalDevice.vkDevice, imageHandle, null)
 
-        imageMemory.cleanup()//vkFreeMemory(backend.logicalDevice.vkDevice, imageMemory, null)
+        allocation.cleanup()//vkFreeMemory(backend.logicalDevice.vkDevice, imageMemory, null)
     }
 
     companion object {
