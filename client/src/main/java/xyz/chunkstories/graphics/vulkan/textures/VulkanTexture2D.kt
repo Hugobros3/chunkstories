@@ -1,17 +1,17 @@
 package xyz.chunkstories.graphics.vulkan.textures
 
-import xyz.chunkstories.api.graphics.Texture2D
-import xyz.chunkstories.api.graphics.TextureFormat
-import xyz.chunkstories.graphics.vulkan.CommandPool
-import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
-import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
-import xyz.chunkstories.graphics.vulkan.resources.Cleanable
-import xyz.chunkstories.graphics.vulkan.util.*
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
-import xyz.chunkstories.graphics.vulkan.resources.VulkanMemoryManager
+import xyz.chunkstories.api.graphics.Texture2D
+import xyz.chunkstories.api.graphics.TextureFormat
+import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
+import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
+import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
+import xyz.chunkstories.graphics.vulkan.memory.VulkanMemoryManager
+import xyz.chunkstories.graphics.vulkan.resources.Cleanable
+import xyz.chunkstories.graphics.vulkan.util.*
 
 class VulkanTexture2D(val backend: VulkanGraphicsBackend, override val format: TextureFormat, override val width: Int, override val height: Int,
                       val usageFlags: Int) : Texture2D, Cleanable {
@@ -19,7 +19,7 @@ class VulkanTexture2D(val backend: VulkanGraphicsBackend, override val format: T
     val vulkanFormat = format.vulkanFormat
 
     val imageHandle: VkImage
-    val imageMemory: VulkanMemoryManager.MemoryAllocation
+    val imageMemory: VulkanMemoryManager.Allocation
     val imageView: VkImageView
 
     val mapping: Int by lazy { backend.textures.magicTexturing.getMapping(this) }
@@ -55,16 +55,20 @@ class VulkanTexture2D(val backend: VulkanGraphicsBackend, override val format: T
         val memRequirements = VkMemoryRequirements.callocStack()
         vkGetImageMemoryRequirements(backend.logicalDevice.vkDevice, imageHandle, memRequirements)
 
-        imageMemory = backend.memoryManager.allocateMemoryGivenRequirements(memRequirements,  VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
+        val usagePattern = if (usageFlags and VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT != 0 || usageFlags and VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT != 0) MemoryUsagePattern.SEMI_STATIC
+        else
+            MemoryUsagePattern.STATIC
+        imageMemory = backend.memoryManager.allocateMemory(memRequirements, usagePattern)
+        //backend.memoryManager.allocateMemoryGivenRequirements(memRequirements,  VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
 
-        vkBindImageMemory(backend.logicalDevice.vkDevice, imageHandle, imageMemory.deviceMemory, 0)
+        vkBindImageMemory(backend.logicalDevice.vkDevice, imageHandle, imageMemory.deviceMemory, imageMemory.offset)
 
         val viewInfo = VkImageViewCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO).apply {
             image(imageHandle)
             viewType(VK_IMAGE_VIEW_TYPE_2D)
             format(vulkanFormat.ordinal)
             subresourceRange().apply {
-                if(format == TextureFormat.DEPTH_32 || format == TextureFormat.DEPTH_24)
+                if (format == TextureFormat.DEPTH_32 || format == TextureFormat.DEPTH_24)
                     aspectMask(VK_IMAGE_ASPECT_DEPTH_BIT)
                 else
                     aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
@@ -75,7 +79,7 @@ class VulkanTexture2D(val backend: VulkanGraphicsBackend, override val format: T
             }
         }
 
-        val pImageView= stackMallocLong(1)
+        val pImageView = stackMallocLong(1)
         vkCreateImageView(backend.logicalDevice.vkDevice, viewInfo, null, pImageView)
         imageView = pImageView.get(0)
 
@@ -213,6 +217,7 @@ class VulkanTexture2D(val backend: VulkanGraphicsBackend, override val format: T
 
         imageMemory.cleanup()//vkFreeMemory(backend.logicalDevice.vkDevice, imageMemory, null)
     }
+
     companion object {
         val logger = LoggerFactory.getLogger("client.vulkan")
     }

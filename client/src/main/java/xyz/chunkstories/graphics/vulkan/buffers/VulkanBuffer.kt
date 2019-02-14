@@ -1,9 +1,5 @@
 package xyz.chunkstories.graphics.vulkan.buffers
 
-//import xyz.chunkstories.graphics.vulkan.resources.VmaAllocator
-/*import org.lwjgl.util.vma.Vma.*
-import org.lwjgl.util.vma.VmaAllocationCreateInfo
-import org.lwjgl.util.vma.VmaAllocationInfo*/
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkBufferCopy
@@ -11,7 +7,8 @@ import org.lwjgl.vulkan.VkBufferCreateInfo
 import org.lwjgl.vulkan.VkMemoryRequirements
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.resources.Cleanable
-import xyz.chunkstories.graphics.vulkan.resources.VulkanMemoryManager
+import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
+import xyz.chunkstories.graphics.vulkan.memory.VulkanMemoryManager
 import xyz.chunkstories.graphics.vulkan.util.VkBuffer
 import xyz.chunkstories.graphics.vulkan.util.createFence
 import xyz.chunkstories.graphics.vulkan.util.ensureIs
@@ -19,17 +16,17 @@ import xyz.chunkstories.graphics.vulkan.util.waitFence
 import java.nio.ByteBuffer
 import java.util.concurrent.atomic.AtomicBoolean
 
-open class VulkanBuffer(val backend: VulkanGraphicsBackend, val bufferSize: Long, usageBits: Int, val hostVisible: Boolean) : Cleanable {
+open class VulkanBuffer(val backend: VulkanGraphicsBackend, val bufferSize: Long, bufferUsageBits: Int, val memoryUsage: MemoryUsagePattern) : Cleanable {
     val handle: VkBuffer
     //val allocation: Long
     //val memoryType: Int
     // private val allocatedMemory: VkDeviceMemory
 
-    constructor(backend: VulkanGraphicsBackend, initialData: ByteBuffer, usageBits: Int) : this(backend, initialData.capacity().toLong(), usageBits, false) {
+    constructor(backend: VulkanGraphicsBackend, initialData: ByteBuffer, usageBits: Int, memoryUsage: MemoryUsagePattern) : this(backend, initialData.capacity().toLong(), usageBits, memoryUsage) {
         upload(initialData)
     }
 
-    private var allocation: VulkanMemoryManager.MemoryAllocation
+    private var allocation: VulkanMemoryManager.Allocation
 
     init {
         /*VmaAllocator.allocatedBytes.addAndGet(bufferSize )
@@ -39,10 +36,11 @@ open class VulkanBuffer(val backend: VulkanGraphicsBackend, val bufferSize: Long
         val bufferInfo = VkBufferCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO).apply {
             size(bufferSize)
 
-            if (hostVisible)
-                usage(usageBits)
-            else
-                usage(usageBits or VK_BUFFER_USAGE_TRANSFER_DST_BIT)
+            when(memoryUsage) {
+                MemoryUsagePattern.STATIC, MemoryUsagePattern.SEMI_STATIC -> usage(bufferUsageBits or VK_BUFFER_USAGE_TRANSFER_DST_BIT)
+                MemoryUsagePattern.DYNAMIC -> usage(bufferUsageBits)
+                MemoryUsagePattern.STAGING -> usage(bufferUsageBits) //TODO this could just be transfer src ?
+            }
 
             sharingMode(VK_SHARING_MODE_EXCLUSIVE)
             flags(0)
@@ -55,13 +53,14 @@ open class VulkanBuffer(val backend: VulkanGraphicsBackend, val bufferSize: Long
         val requirements = VkMemoryRequirements.callocStack()
         vkGetBufferMemoryRequirements(backend.logicalDevice.vkDevice, handle, requirements)
 
-        val requiredFlags = if (hostVisible) {
+        /*val requiredFlags = if (hostVisible) {
             /*VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT or */VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
         } else
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 
-        allocation = backend.memoryManager.allocateMemoryGivenRequirements(requirements, requiredFlags)
-        vkBindBufferMemory(backend.logicalDevice.vkDevice, handle, allocation.deviceMemory, 0)
+        allocation = backend.memoryManager.allocateMemoryGivenRequirements(requirements, requiredFlags)*/
+        allocation = backend.memoryManager.allocateMemory(requirements, memoryUsage)
+        vkBindBufferMemory(backend.logicalDevice.vkDevice, handle, allocation.deviceMemory, allocation.offset)
 
         /*val vmaAllocCreateInfo = VmaAllocationCreateInfo.callocStack().apply {
             //usage(VMA_MEMORY_USAGE_GPU_ONLY)
@@ -94,7 +93,7 @@ open class VulkanBuffer(val backend: VulkanGraphicsBackend, val bufferSize: Long
         //if(Thread.currentThread().name.startsWith("Main"))
         //    println("${Thread.currentThread().name} stack size ${pushed.frameIndex} + $hostVisible ${pushed.pointer}")
 
-        if (hostVisible) {
+        if (memoryUsage.hostVisible) {
             val ppData = stackMallocPointer(1)
             //vmaMapMemory(backend.vmaAllocator.handle, allocation, ppData).ensureIs("VMA: Failed to map memory", VK_SUCCESS)
             vkMapMemory(backend.logicalDevice.vkDevice, allocation.deviceMemory, 0, bufferSize, 0, ppData)
@@ -109,7 +108,7 @@ open class VulkanBuffer(val backend: VulkanGraphicsBackend, val bufferSize: Long
 
             val fence = backend.createFence(false)
 
-            val stagingBuffer = VulkanBuffer(backend, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, true)
+            val stagingBuffer = VulkanBuffer(backend, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, MemoryUsagePattern.STAGING)
             stagingBuffer.upload(data)
 
             val commandBuffer = pool.createOneUseCB()
@@ -153,6 +152,6 @@ open class VulkanBuffer(val backend: VulkanGraphicsBackend, val bufferSize: Long
     }
 
     override fun toString(): String {
-        return "VulkanBuffer(bufferSize=$bufferSize, hostVisible=$hostVisible, memory=$allocation)"
+        return "VulkanBuffer(bufferSize=$bufferSize, memUsage=$memoryUsage, alloc=$allocation)"
     }
 }

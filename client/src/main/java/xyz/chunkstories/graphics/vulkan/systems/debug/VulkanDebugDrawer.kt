@@ -22,6 +22,7 @@ import org.lwjgl.system.MemoryUtil.memFree
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
+import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 
 class VulkanDebugDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDrawingSystem(pass) {
     val backend: VulkanGraphicsBackend
@@ -51,7 +52,7 @@ class VulkanDebugDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
 
     init {
         vertexBuffers = InflightFrameResource(backend) {
-            VulkanVertexBuffer(backend, debugBufferSize.toLong())
+            VulkanVertexBuffer(backend, debugBufferSize.toLong(), MemoryUsagePattern.SEMI_STATIC)
         }
     }
 

@@ -16,6 +16,7 @@ import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
+import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 
 class VulkanSpinningCubeDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
     val backend: VulkanGraphicsBackend
@@ -94,7 +95,7 @@ class VulkanSpinningCubeDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
                 -1.0f, -1.0f,  1.0f,   0.0f, 1.0f
         )
 
-        vertexBuffer = VulkanVertexBuffer(backend, vertices.size * 4L)
+        vertexBuffer = VulkanVertexBuffer(backend, vertices.size * 4L, MemoryUsagePattern.STATIC)
 
         stackPush().use {
             val byteBuffer = stackMalloc(vertices.size * 4)

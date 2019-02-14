@@ -18,6 +18,7 @@ import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
+import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 
 interface SkyDrawer : DrawingSystem
 
@@ -56,7 +57,7 @@ class VulkanSkyDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass), SkyDrawer {
                 1.0F, 1.0F
         )
 
-        vertexBuffer = VulkanVertexBuffer(backend, vertices.size * 4L)
+        vertexBuffer = VulkanVertexBuffer(backend, vertices.size * 4L, MemoryUsagePattern.STATIC)
 
         MemoryStack.stackPush().use {
             val byteBuffer = MemoryStack.stackMalloc(vertices.size * 4)

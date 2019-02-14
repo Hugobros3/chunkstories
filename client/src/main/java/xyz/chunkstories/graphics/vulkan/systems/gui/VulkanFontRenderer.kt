@@ -21,6 +21,7 @@ import xyz.chunkstories.gui.TrueTypeFont
 import org.joml.Vector4f
 import org.joml.Vector4fc
 import org.lwjgl.vulkan.VK10.*
+import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 
 /** Very messy and shitty way of spitting text  */
 class VulkanFontRenderer(internal val backend: VulkanGraphicsBackend) : Cleanable {
@@ -74,7 +75,7 @@ class VulkanFontRenderer(internal val backend: VulkanGraphicsBackend) : Cleanabl
 
                 val byteBuffer = image!!.toByteBuffer()
 
-                val stagingBuffer = VulkanBuffer(backend, byteBuffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT)
+                val stagingBuffer = VulkanBuffer(backend, byteBuffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, MemoryUsagePattern.STAGING)
                 val pageTexture = VulkanTexture2D(backend, TextureFormat.RGBA_8, TrueTypeFont.textureWidth, TrueTypeFont.textureHeight, VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT)
 
                 pageTexture.transitionLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)

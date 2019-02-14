@@ -13,6 +13,7 @@ import xyz.chunkstories.world.chunk.CubicChunk
 import xyz.chunkstories.world.chunk.deriveddata.AutoRebuildingProperty
 import org.joml.Vector4f
 import org.lwjgl.system.MemoryUtil
+import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import xyz.chunkstories.graphics.vulkan.textures.VulkanTexture2D
 import java.lang.Integer.max
 import java.lang.Integer.min
@@ -154,7 +155,7 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
             buffer.flip()
 
             if (buffer.remaining() > 0) {
-                vertexBuffer = VulkanVertexBuffer(backend, buffer.limit().toLong())
+                vertexBuffer = VulkanVertexBuffer(backend, buffer.limit().toLong(), MemoryUsagePattern.SEMI_STATIC)
                 vertexBuffer.upload(buffer)
             } else
                 vertexBuffer = null

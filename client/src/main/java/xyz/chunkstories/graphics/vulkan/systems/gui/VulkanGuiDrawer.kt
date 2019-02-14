@@ -26,6 +26,7 @@ import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
+import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 
 internal const val guiBufferSize = 2 * 1024 * 1024
 
@@ -82,7 +83,7 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
 
     init {
         vertexBuffers = InflightFrameResource(backend) {
-            VulkanVertexBuffer(backend, guiBufferSize.toLong(), true)
+            VulkanVertexBuffer(backend, guiBufferSize.toLong(), MemoryUsagePattern.SEMI_STATIC)
         }
     }
 

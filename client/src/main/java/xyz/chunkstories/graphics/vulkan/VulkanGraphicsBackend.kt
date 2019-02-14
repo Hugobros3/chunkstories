@@ -10,7 +10,7 @@ import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.vulkan.graph.VulkanRenderGraph
 import xyz.chunkstories.graphics.vulkan.resources.DescriptorSetsMegapool
 import xyz.chunkstories.graphics.vulkan.resources.VmaAllocator
-import xyz.chunkstories.graphics.vulkan.resources.VulkanMemoryManager
+import xyz.chunkstories.graphics.vulkan.memory.VulkanMemoryManager
 import xyz.chunkstories.graphics.vulkan.shaders.VulkanShaderFactory
 import xyz.chunkstories.graphics.vulkan.swapchain.SwapChain
 import xyz.chunkstories.graphics.vulkan.swapchain.WindowSurface
@@ -32,7 +32,6 @@ import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.graphics.systems.GraphicSystem
 import xyz.chunkstories.api.graphics.systems.RegisteredGraphicSystem
-import xyz.chunkstories.api.graphics.systems.drawing.DrawingSystem
 import java.awt.image.BufferedImage
 
 class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(window) {

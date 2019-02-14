@@ -14,6 +14,7 @@ import org.lwjgl.system.MemoryStack.stackPush
 import org.lwjgl.system.MemoryUtil.memAlloc
 import org.lwjgl.system.MemoryUtil.memFree
 import org.lwjgl.vulkan.VK10.*
+import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import xyz.chunkstories.graphics.vulkan.util.updateDescriptorSet
 import java.util.concurrent.locks.ReentrantLock
 
@@ -49,7 +50,7 @@ class VulkanTextures(val backend: VulkanGraphicsBackend) : GraphicsEngine.Textur
                 decoder.decode(buffer, width * 4, PNGDecoder.Format.RGBA)
                 buffer.flip()
 
-                val vkBuffer = VulkanBuffer(backend, buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT)
+                val vkBuffer = VulkanBuffer(backend, buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, MemoryUsagePattern.STAGING)
 
                 val format = TextureFormat.RGBA_8 // TODO when adding support for HDR change that as well
                 val texture2D = VulkanTexture2D(backend, format, width, height, VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT)

@@ -30,6 +30,7 @@ import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompilationParame
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
 import xyz.chunkstories.graphics.vulkan.buffers.extractInterfaceBlockField
 import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
+import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import xyz.chunkstories.graphics.vulkan.resources.InflightFrameResource
 import xyz.chunkstories.world.storage.RegionImplementation
 import java.util.*
@@ -129,7 +130,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         val usedData = mutableListOf<ChunkVkMeshProperty.ChunkVulkanMeshData>()
 
         //TODO pool those
-        val ssboDataTest = VulkanBuffer(backend, sizeFor4096Elements, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, true)
+        val ssboDataTest = VulkanBuffer(backend, sizeFor4096Elements, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, MemoryUsagePattern.DYNAMIC)
 
         val ssboStuff = memAlloc(ssboDataTest.bufferSize.toInt())
         var instance = 0

@@ -7,10 +7,11 @@ import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT
 import xyz.chunkstories.graphics.common.shaders.GLSLType
 import xyz.chunkstories.graphics.common.shaders.JvmStructField
+import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import java.nio.ByteBuffer
 
 class VulkanUniformBuffer(backend: VulkanGraphicsBackend, val mapper: GLSLType.JvmStruct) :
-        VulkanBuffer(backend, mapper.size.toLong(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, true) {
+        VulkanBuffer(backend, mapper.size.toLong(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, MemoryUsagePattern.DYNAMIC) {
 
     fun upload(interfaceBlock: InterfaceBlock) {
         stackPush()
