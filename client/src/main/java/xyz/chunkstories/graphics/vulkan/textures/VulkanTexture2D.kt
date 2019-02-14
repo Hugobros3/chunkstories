@@ -11,6 +11,7 @@ import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.graphics.vulkan.resources.VulkanMemoryManager
 
 class VulkanTexture2D(val backend: VulkanGraphicsBackend, override val format: TextureFormat, override val width: Int, override val height: Int,
                       val usageFlags: Int) : Texture2D, Cleanable {
@@ -18,7 +19,7 @@ class VulkanTexture2D(val backend: VulkanGraphicsBackend, override val format: T
     val vulkanFormat = format.vulkanFormat
 
     val imageHandle: VkImage
-    val imageMemory: VkDeviceMemory
+    val imageMemory: VulkanMemoryManager.MemoryAllocation
     val imageView: VkImageView
 
     val mapping: Int by lazy { backend.textures.magicTexturing.getMapping(this) }
@@ -56,7 +57,7 @@ class VulkanTexture2D(val backend: VulkanGraphicsBackend, override val format: T
 
         imageMemory = backend.memoryManager.allocateMemoryGivenRequirements(memRequirements,  VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
 
-        vkBindImageMemory(backend.logicalDevice.vkDevice, imageHandle, imageMemory, 0)
+        vkBindImageMemory(backend.logicalDevice.vkDevice, imageHandle, imageMemory.deviceMemory, 0)
 
         val viewInfo = VkImageViewCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO).apply {
             image(imageHandle)
@@ -209,7 +210,8 @@ class VulkanTexture2D(val backend: VulkanGraphicsBackend, override val format: T
         vkDestroyImageView(backend.logicalDevice.vkDevice, imageView, null)
 
         vkDestroyImage(backend.logicalDevice.vkDevice, imageHandle, null)
-        vkFreeMemory(backend.logicalDevice.vkDevice, imageMemory, null)
+
+        imageMemory.cleanup()//vkFreeMemory(backend.logicalDevice.vkDevice, imageMemory, null)
     }
     companion object {
         val logger = LoggerFactory.getLogger("client.vulkan")

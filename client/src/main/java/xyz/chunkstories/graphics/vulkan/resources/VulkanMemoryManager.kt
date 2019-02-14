@@ -1,16 +1,16 @@
 package xyz.chunkstories.graphics.vulkan.resources
 
-import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
-import xyz.chunkstories.graphics.vulkan.devices.LogicalDevice
-import xyz.chunkstories.graphics.vulkan.util.VkDeviceMemory
-import xyz.chunkstories.graphics.vulkan.util.ensureIs
 import org.lwjgl.system.MemoryStack.*
-import org.lwjgl.vulkan.VK10
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkMemoryAllocateInfo
 import org.lwjgl.vulkan.VkMemoryRequirements
 import org.lwjgl.vulkan.VkPhysicalDeviceMemoryProperties
-import java.nio.LongBuffer
+import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
+import xyz.chunkstories.graphics.vulkan.devices.LogicalDevice
+import xyz.chunkstories.graphics.vulkan.util.VkDeviceMemory
+import xyz.chunkstories.graphics.vulkan.util.ensureIs
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicLong
 
 class VulkanMemoryManager(val backend: VulkanGraphicsBackend, val device: LogicalDevice) : Cleanable {
 
@@ -20,7 +20,7 @@ class VulkanMemoryManager(val backend: VulkanGraphicsBackend, val device: Logica
         vkGetPhysicalDeviceMemoryProperties(backend.physicalDevice.vkPhysicalDevice, vkPhysicalDeviceMemoryProperties)
     }
 
-    fun findMemoryTypeToUse(memoryRequirements: VkMemoryRequirements, requiredFlags: Int): Int {
+    private fun findMemoryTypeToUse(memoryRequirements: VkMemoryRequirements, requiredFlags: Int): Int {
         for (i in 0 until vkPhysicalDeviceMemoryProperties.memoryTypeCount()) {
             // each bit in memoryTypeBits refers to an acceptable memory type, via it's index in the memoryTypes list of deviceMemoryProperties
             // it's rather confusing at first. We just have to shift the index and AND it with the requirements bits to know if the type is suitable
@@ -35,34 +35,48 @@ class VulkanMemoryManager(val backend: VulkanGraphicsBackend, val device: Logica
         return -1
     }
 
-    fun allocateMemoryGivenRequirements(requirements: VkMemoryRequirements, memoryFlags: Int, deviceMemory: LongBuffer) {
-        val memoryType = findMemoryTypeToUse(requirements, memoryFlags)
-        if (memoryType == -1)
-            throw Exception("Unsatisfiable condition: Can't find an appropriate memory type suiting both buffer requirements and usage requirements")
-
+    fun allocateMemoryGivenRequirements(requirements: VkMemoryRequirements, memoryFlags: Int): MemoryAllocation {
         stackPush()
-        val memoryAllocationInfo = VkMemoryAllocateInfo.callocStack().sType(VK10.VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO).apply {
-            allocationSize(requirements.size())
-            memoryTypeIndex(memoryType)
+        try {
+            val pDeviceMemory = stackMallocLong(1)
+            val memoryType = findMemoryTypeToUse(requirements, memoryFlags)
+            if (memoryType == -1)
+                throw Exception("Unsatisfiable condition: Can't find an appropriate memory type suiting both buffer requirements and usage requirements")
+            val memoryAllocationInfo = VkMemoryAllocateInfo.callocStack().sType(VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO).apply {
+                allocationSize(requirements.size())
+                memoryTypeIndex(memoryType)
+            }
+            vkAllocateMemory(backend.logicalDevice.vkDevice, memoryAllocationInfo, null, pDeviceMemory)
+                    .ensureIs("Failed to allocate memory !", VK_SUCCESS)
+            val deviceMemory = pDeviceMemory.get(0)
+            return MemoryAllocation(deviceMemory, requirements.size(), memoryType)
+        } finally {
+            stackPop()
         }
-
-        vkAllocateMemory(backend.logicalDevice.vkDevice, memoryAllocationInfo, null, deviceMemory)
-                .ensureIs("Failed to allocate memory !", VK_SUCCESS)
-
-        stackPop()
     }
 
-    fun allocateMemoryGivenRequirements(requirements: VkMemoryRequirements, memoryFlags: Int): VkDeviceMemory {
-        stackPush()
-        val pDeviceMemory = stackMallocLong(1)
-        allocateMemoryGivenRequirements(requirements, memoryFlags, pDeviceMemory)
-        val deviceMemory = pDeviceMemory.get(0)
-        stackPop()
+    inner class MemoryAllocation internal constructor(val deviceMemory: VkDeviceMemory, val allocationSize: Long, val memoryTypeIndex: Int) : Cleanable {
 
-        return deviceMemory
+        init {
+            allocations.addAndGet(1)
+            allocatedBytes.addAndGet(allocationSize)
+        }
+
+        override fun cleanup() {
+            allocations.addAndGet(-1)
+            allocatedBytes.addAndGet(-allocationSize)
+            vkFreeMemory(backend.logicalDevice.vkDevice, deviceMemory, null)
+        }
+
     }
 
     override fun cleanup() {
         vkPhysicalDeviceMemoryProperties.free()
     }
+
+    companion object {
+        val allocatedBytes = AtomicLong(0)
+        val allocations = AtomicInteger(0)
+    }
+
 }
