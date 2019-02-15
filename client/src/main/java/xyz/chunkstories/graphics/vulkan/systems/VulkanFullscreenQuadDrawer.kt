@@ -13,6 +13,7 @@ import xyz.chunkstories.api.util.kotlin.toVec3f
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
 import xyz.chunkstories.graphics.vulkan.Pipeline
+import xyz.chunkstories.graphics.vulkan.VulkanBackendOptions
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
 import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
@@ -85,9 +86,18 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
         if (doShadowMap) {
             val mainCamera = passContext.context.camera
 
-            val rezs = floatArrayOf(256f, 128f, 64f, 32f)
+            val shadowCascades = client.configuration.getIntValue(VulkanBackendOptions.shadowCascades)
+            val rezs = when(shadowCascades) {
+                0 -> floatArrayOf()
+                1 -> floatArrayOf(64f)
+                2 -> floatArrayOf(128f, 32f)
+                3 -> floatArrayOf(140f, 64f, 24f)
+                4 -> floatArrayOf(384f, 128f, 48f, 16f)
+                else -> throw Exception()
+            }
 
-            for(i in 0 until 4) {
+            for(i in 0 until shadowCascades) {
+                //println("$i $shadowCascades")
                 val rez = rezs[i]
 
                 val shadowMapDepthRange = 256f
@@ -137,16 +147,17 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
             //println(passContext.extraInputRenderBuffers.map { it.texture.imageHandle })
 
             val shadowInfo = ShadowMappingInfo()
-            shadowInfo.cascadesCount = 4
+            shadowInfo.cascadesCount = 0
             for(i in 0 until 4)
                 bindingContext.bindTextureAndSampler("shadowBuffers", backend.textures.get("logo.png") as VulkanTexture2D, samplerShadow, i)
 
-            for(i in 0 until shadowInfo.cascadesCount) {
+            for(i in 0 until 4) {
                 val shadowSubcontext = passContext.context.artifacts["shadowmapCascade$i"] as? VulkanFrameGraph.FrameGraphNode.RenderingContextNode
                 if(shadowSubcontext == null)
                     continue
                 bindingContext.bindTextureAndSampler("shadowBuffers", shadowSubcontext.rootPassInstance.resolvedDepthBuffer.texture, samplerShadow, i)
                 shadowInfo.cameras[i] = shadowSubcontext.parameters["camera"] as Camera
+                shadowInfo.cascadesCount = i + 1
                 //println(shadowInfo.cameras[i].viewMatrix.hashCode())
             }
 

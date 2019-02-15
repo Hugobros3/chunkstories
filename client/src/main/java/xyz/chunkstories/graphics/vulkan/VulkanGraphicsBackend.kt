@@ -74,6 +74,8 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
         if (!glfwVulkanSupported())
             throw Exception("Vulkan is not supported on this machine")
 
+        window.client.configuration.addOptions(VulkanBackendOptions.options)
+
         val requiredExtensions = glfwGetRequiredInstanceExtensions() ?: throw Exception("Vulkan is not supported for windowed rendering on this machine.")
 
         instance = createVkInstance(requiredExtensions)
