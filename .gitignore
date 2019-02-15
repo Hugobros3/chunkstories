@@ -41,7 +41,6 @@ server.jar
 logs-reporter.jar
 
 # Debug stuff is hidden too
-
 apitrace/
 wrappers/
 hs_err_pid*
@@ -50,6 +49,7 @@ hs_err_pid*
 *.cap
 injectee.dll
 rendergraph.png
+/memLayout*
 
 # Hide eclipse projects
 .classpath

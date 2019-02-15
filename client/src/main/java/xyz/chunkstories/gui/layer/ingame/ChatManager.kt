@@ -25,6 +25,8 @@ import xyz.chunkstories.api.input.Input
 import xyz.chunkstories.api.input.Mouse.MouseScroll
 import xyz.chunkstories.api.plugin.ChunkStoriesPlugin
 import xyz.chunkstories.api.util.ColorsTools
+import xyz.chunkstories.client.glfw.GLFWWindow
+import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.world.WorldClientLocal
 import xyz.chunkstories.world.WorldClientRemote
 
@@ -201,46 +203,56 @@ class ChatManager(private val ingameClient: IngameClient, private val ingameGuiL
                 args = chatMsg.substring(chatMsg.indexOf(" ") + 1, chatMsg.length).split(" ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
             }
 
-            if (ingameClient.pluginManager.dispatchCommand(ingameClient.player, cmdName, args)) {
-                if (sent.size == 0 || sent[0] != input) {
-                    sent.add(0, input)
-                    sentMessages++
+            when {
+                ingameClient.pluginManager.dispatchCommand(ingameClient.player, cmdName, args) -> {
+                    if (sent.size == 0 || sent[0] != input) {
+                        sent.add(0, input)
+                        sentMessages++
+                    }
+                    return
                 }
-                return
-            } else if (cmdName == "plugins") {
-                var list = ""
+                cmdName == "plugins" -> {
+                    var list = ""
 
-                val i = ingameClient.pluginManager.activePlugins()
-                while (i.hasNext()) {
-                    val plugin = i.next()
-                    list += plugin.name + if (i.hasNext()) ", " else ""
+                    val i = ingameClient.pluginManager.activePlugins()
+                    while (i.hasNext()) {
+                        val plugin = i.next()
+                        list += plugin.name + if (i.hasNext()) ", " else ""
+                    }
+
+                    if (ingameClient.world is WorldClientLocal)
+                        insert("#00FFD0$i active client [master] plugins : $list")
+                    else
+                        insert("#74FFD0$i active client [remote] plugins : $list")
+
+                    if (sent.size == 0 || sent[0] != input) {
+                        sent.add(0, input)
+                        sentMessages++
+                    }
                 }
+                cmdName == "mods" -> {
+                    var list = ""
+                    var i = 0
+                    for (mod in ingameClient.content.modsManager().currentlyLoadedMods) {
+                        i++
+                        list += mod.modInfo.name + if (i == ingameClient.content.modsManager().currentlyLoadedMods.size) "" else ", "
+                    }
 
-                if (ingameClient.world is WorldClientLocal)
-                    insert("#00FFD0$i active client [master] plugins : $list")
-                else
-                    insert("#74FFD0$i active client [remote] plugins : $list")
+                    if (ingameClient.world is WorldClientLocal)
+                        insert("#FF0000$i active client [master] mods : $list")
+                    else
+                        insert("#FF7070$i active client [remote] mods : $list")
 
-                if (sent.size == 0 || sent[0] != input) {
-                    sent.add(0, input)
-                    sentMessages++
+                    if (sent.size == 0 || sent[0] != input) {
+                        sent.add(0, input)
+                        sentMessages++
+                    }
                 }
-            } else if (cmdName == "mods") {
-                var list = ""
-                var i = 0
-                for (mod in ingameClient.content.modsManager().currentlyLoadedMods) {
-                    i++
-                    list += mod.modInfo.name + if (i == ingameClient.content.modsManager().currentlyLoadedMods.size) "" else ", "
-                }
-
-                if (ingameClient.world is WorldClientLocal)
-                    insert("#FF0000$i active client [master] mods : $list")
-                else
-                    insert("#FF7070$i active client [remote] mods : $list")
-
-                if (sent.size == 0 || sent[0] != input) {
-                    sent.add(0, input)
-                    sentMessages++
+                cmdName == "buddydbg" -> {
+                    val glfwWindow = ingameClient.gameWindow as GLFWWindow
+                    val graphicsBackend = glfwWindow.graphicsBackend as VulkanGraphicsBackend
+                    graphicsBackend.memoryManager.debug()
+                    insert("#FF7070FUCK")
                 }
             }
         }

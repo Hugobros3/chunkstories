@@ -8,6 +8,7 @@ import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.devices.LogicalDevice
 import xyz.chunkstories.graphics.vulkan.resources.Cleanable
 import xyz.chunkstories.graphics.vulkan.util.VkDeviceMemory
+import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
@@ -134,5 +135,15 @@ class VulkanMemoryManager(val backend: VulkanGraphicsBackend, val device: Logica
     override fun cleanup() {
         buckets.values.forEach { it.values.forEach(Cleanable::cleanup) }
         vkPhysicalDeviceMemoryProperties.free()
+    }
+
+    fun debug() {
+        buckets.forEach { type, map ->
+            map.forEach {
+                usage, bucket ->
+                val file = File("memLayout_${type}_$usage.png")
+                (bucket as? BuddyAllocationBucket)?.exportAllocGraph(file)
+            }
+        }
     }
 }
