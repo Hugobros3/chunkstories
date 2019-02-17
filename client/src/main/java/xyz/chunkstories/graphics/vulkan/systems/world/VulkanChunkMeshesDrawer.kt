@@ -31,7 +31,6 @@ import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
 import xyz.chunkstories.graphics.vulkan.buffers.extractInterfaceBlockField
 import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
-import xyz.chunkstories.graphics.vulkan.resources.InflightFrameResource
 import xyz.chunkstories.world.storage.RegionImplementation
 import java.util.*
 
@@ -101,7 +100,8 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
     val structSize = chunkInfoID.struct.size
     val sizeAligned16 = if(structSize % 16 == 0) structSize else (structSize / 16 * 16) + 16
 
-    val sizeFor4096Elements = sizeAligned16 * 4096L
+    val maxChunksRendered = 4096
+    val ssboBufferSize = (sizeAligned16 * maxChunksRendered).toLong()
 
     override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer, passContext: VulkanFrameGraph.FrameGraphNode.PassNode) {
         MemoryStack.stackPush()
@@ -127,10 +127,10 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         val drawDistance = world.client.configuration.getIntValue(InternalClientOptions.viewDistance) / 32
         val drawDistanceH = 6
 
-        val usedData = mutableListOf<ChunkVkMeshProperty.ChunkVulkanMeshData>()
+        val usedData = mutableListOf<ChunkMeshData>()
 
         //TODO pool those
-        val ssboDataTest = VulkanBuffer(backend, sizeFor4096Elements, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, MemoryUsagePattern.DYNAMIC)
+        val ssboDataTest = VulkanBuffer(backend, ssboBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, MemoryUsagePattern.DYNAMIC)
 
         val ssboStuff = memAlloc(ssboDataTest.bufferSize.toInt())
         var instance = 0
@@ -264,7 +264,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         memFree(ssboStuff)
 
         frame.recyclingTasks.add {
-            usedData.forEach(ChunkVkMeshProperty.ChunkVulkanMeshData::release)
+            usedData.forEach(ChunkMeshData::release)
             bindingContext.recycle()
             ssboDataTest.cleanup()//TODO recycle don't destroy!
         }

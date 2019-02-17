@@ -28,7 +28,7 @@ class RefCountedProperty<R: RefCountedRecyclable> {
     }
 }
 
-abstract class RefCountedRecyclable(val property: RefCountedProperty<*>){
+abstract class RefCountedRecyclable(val property: RefCountedProperty<*>) : Recyclable {
     private var users = 1
 
     internal inline fun acquire() {
@@ -42,7 +42,7 @@ abstract class RefCountedRecyclable(val property: RefCountedProperty<*>){
         }
     }
 
-    fun release() {
+    override fun release() {
         try {
             property.lock.lock()
 
