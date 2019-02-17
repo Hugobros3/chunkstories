@@ -238,8 +238,8 @@ class BuddyAllocationBucket(memoryManager: VulkanMemoryManager, memoryTypeIndex:
                             bufferedImage.drawRect(middle, i * 64, end, i * 64 + 48, red.toInt())
                     }
                     BuddyState.SPLIT -> {
-                        drawBuddy(buddy.left!!)
-                        drawBuddy(buddy.right!!)
+                        buddy.left?.let { drawBuddy(it) }
+                        buddy.right?.let { drawBuddy(it) }
                     }
                 }
             }
@@ -250,6 +250,36 @@ class BuddyAllocationBucket(memoryManager: VulkanMemoryManager, memoryTypeIndex:
         ImageIO.write(bufferedImage, "PNG", file)
         println("exported to $file")
     }
+
+    override val stats: String
+        get() {
+            val allocs = this.blocks.toList()
+
+            var used = 0L
+            var wasted = 0L
+            var free = 0L
+
+            allocs.forEach { alloc ->
+
+                fun countBuddy(buddy: SharedAllocation.Buddy) {
+                    when(buddy.state) {
+                        BuddyState.FREE -> free += buddy.size
+                        BuddyState.IN_USE -> {
+                            used += buddy.usedSize
+                            wasted += buddy.size - buddy.usedSize
+                        }
+                        BuddyState.SPLIT -> {
+                            buddy.left?.let { countBuddy(it) }
+                            buddy.right?.let { countBuddy(it) }
+                        }
+                    }
+                }
+
+                countBuddy(alloc.mainBuddy)
+            }
+
+            return "#00FF00used ${used/1024/1024}mb #FFFFFF; #FF0000wasted ${wasted/1024/1024}mb #FFFFFF; #0000FFfree ${free/1024/1024}mb#FFFFFF"
+        }
 }
 
 fun BufferedImage.drawRect(x0: Int, y0: Int, x1: Int, y1: Int, rgb: Int) {

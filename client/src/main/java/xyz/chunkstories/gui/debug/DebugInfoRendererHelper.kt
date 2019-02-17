@@ -43,7 +43,7 @@ class DebugInfoRendererHelper(ingameLayer: IngameLayer) {
         val graphicsBackend = (client.gameWindow as GLFWWindow).graphicsBackend
         when(graphicsBackend) {
             is VulkanGraphicsBackend -> {
-                debugLine("VRAM usage: ${graphicsBackend.memoryManager.buckets}  totalling ${graphicsBackend.memoryManager.allocatedBytesTotal/1024/1024}mb ")
+                debugLine("VRAM usage: ${graphicsBackend.memoryManager.stats}")
             }
         }
         //debugLine("VMA usage: ${VmaAllocator.allocations} allocations totalling ${VmaAllocator.allocatedBytes.get()/1024/1024}mb ")

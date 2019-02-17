@@ -16,6 +16,9 @@ import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
 class StaticBucket(memoryManager: VulkanMemoryManager, memoryTypeIndex: Int, memoryType: VkMemoryType) : VulkanMemoryManager.Bucket(memoryManager, memoryTypeIndex, memoryType) {
+    override val stats: String
+        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+
     val allocatedBytesTotalAtomic = AtomicLong(0)
     override val allocatedBytesTotal: Long
         get() = allocatedBytesTotalAtomic.get()

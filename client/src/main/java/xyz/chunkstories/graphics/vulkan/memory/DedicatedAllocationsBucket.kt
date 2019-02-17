@@ -12,6 +12,8 @@ import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.locks.ReentrantLock
 
 class DedicatedAllocationsBucket(memoryManager: VulkanMemoryManager, memoryTypeIndex: Int, memoryType: VkMemoryType) : VulkanMemoryManager.Bucket(memoryManager, memoryTypeIndex, memoryType) {
+    override val stats: String
+        get() = "${allocations.size} allocations, total ${allocatedBytesTotal/1024}kb"
 
     val allocatedBytesTotalAtomic = AtomicLong(0)
     override val allocatedBytesTotal: Long

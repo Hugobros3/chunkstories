@@ -123,6 +123,8 @@ class VulkanMemoryManager(val backend: VulkanGraphicsBackend, val device: Logica
         abstract val allocatedBytesTotal: Long
 
         abstract fun allocateSlice(requirements: VkMemoryRequirements): Allocation
+
+        abstract val stats: String
     }
 
     abstract class Allocation : Cleanable {
@@ -146,4 +148,18 @@ class VulkanMemoryManager(val backend: VulkanGraphicsBackend, val device: Logica
             }
         }
     }
+
+    override fun toString(): String {
+        return "VulkanMemoryManager($stats)"
+    }
+
+    val stats : String
+        get() {
+            return buckets.flatMap { (type, map) ->
+                map.map {
+                    (usage, bucket) ->
+                    "[$usage, $type: ${bucket.stats}]"
+                }
+            }.joinToString(", ") + " total: ${allocatedBytesTotal/1024/1024}MB"
+        }
 }
