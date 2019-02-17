@@ -48,21 +48,17 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
         val rng = Random(1)
         var count = 0
         val vertexBuffer: VulkanVertexBuffer?
-        //val virtualTexturingContext: VirtualTexturing.VirtualTexturingContext?
 
         val chunkDataRef = chunk.voxelDataArray
         if (chunk.isAirChunk || chunkDataRef == null) {
             vertexBuffer = null
-            //virtualTexturingContext = null
         } else {
             rawChunkData = chunkDataRef
-            //virtualTexturingContext = backend.virtualTexturing.getVirtualTexturingContext()
 
             val buffer = MemoryUtil.memAlloc(1024 * 1024 * 4 * 4)
 
             val cell = ScratchCell(chunk.world)
 
-            //val color = Vector4f()
             for (x in 0..31) {
                 for (y in 0..31) {
                     for (z in 0..31) {
@@ -78,58 +74,38 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
                         cell.sunlight = VoxelFormat.sunlight(data)
                         cell.blocklight = VoxelFormat.blocklight(data)
 
-                        if (/*opaque(currentVoxel)*/ !voxel.isAir()) {
+                        if (!voxel.isAir()) {
                             fun face(neighborData: Int, face: UnitCube.CubeFaceData, side: VoxelSide) {
                                 val neighborVoxel = chunk.world.contentTranslator.getVoxelForId(VoxelFormat.id(neighborData))!!
                                 if(opaque(neighborVoxel) || (voxel == neighborVoxel && voxel.selfOpaque))
                                     return
 
                                 val voxelTexture = voxel.getVoxelTexture(cell, side)
-                                //if(voxelTexture.color != null)
-                                //    color.set(voxelTexture.color)
-
-                                //if(voxelTexture.name.startsWith("concrete"))
-                                //    println(voxelTexture.name)
 
                                 val textureName = "voxels/textures/"+voxelTexture.name.replace('.','/')+".png"
                                 val textureId = (backend.textures[textureName] as VulkanTexture2D).mapping
-                                //(virtualTexturingContext.translate(backend.textures[textureName]) as VirtualTexturing.TranslationResult.Success).id
-
-                                //if (color.w < 1.0f)
-                                //    color.mul(Vector4f(0f, 1f, 0.3f, 1.0f))
 
                                 val sunlight = VoxelFormat.sunlight(neighborData)
                                 val blocklight = VoxelFormat.blocklight(neighborData)
 
-                                //color.mul(sunlight * 0.9f + rng.nextFloat() * 0.1f)
-
                                 for((vertex, texcoord) in face.vertices) {
-                                    buffer.put((vertex[0] + x).toByte())// + chunk.chunkX * 32f)
-                                    buffer.put((vertex[1] + y).toByte())// + chunk.chunkY * 32f)
-                                    buffer.put((vertex[2] + z).toByte())// + chunk.chunkZ * 32f)
+                                    buffer.put((vertex[0] + x).toByte())
+                                    buffer.put((vertex[1] + y).toByte())
+                                    buffer.put((vertex[2] + z).toByte())
                                     buffer.put(0)
 
                                     fun Float.toSNORM(): Byte = ((this + 0.0f) * 0.5f * 255f).toInt().clamp(-128, 127).toByte()
                                     fun Float.toUNORM16(): Short = (this * 65535f).toInt().clamp(0, 65535).toShort()
 
-                                    //buffer.putFloat(sunlight.toFloat() / 15f)
-                                    //buffer.putFloat(blocklight.toFloat() / 15f)
-                                    //buffer.putFloat(0.0f)
                                     buffer.put((sunlight * 16).toByte())
                                     buffer.put((blocklight * 16).toByte())
                                     buffer.put(0)
                                     buffer.put(0)
 
-                                    /*buffer.putFloat(face.normalDirection.x())
-                                    buffer.putFloat(face.normalDirection.y())
-                                    buffer.putFloat(face.normalDirection.z())*/
                                     buffer.put(face.normalDirection.x().toSNORM())
                                     buffer.put(face.normalDirection.y().toSNORM())
                                     buffer.put(face.normalDirection.z().toSNORM())
                                     buffer.put(0)
-
-                                    /*buffer.putFloat(texcoord[0])
-                                    buffer.putFloat(texcoord[1])*/
 
                                     buffer.putShort(texcoord[0].toUNORM16())
                                     buffer.putShort(texcoord[1].toUNORM16())
@@ -161,11 +137,9 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
                 vertexBuffer = null
 
             MemoryUtil.memFree(buffer)
-
-            //virtualTexturingContext.updateContents()
         }
 
-        (chunk.meshData as ChunkVkMeshProperty).acceptNewData(vertexBuffer, /*virtualTexturingContext, */count)
+        (chunk.meshData as ChunkVkMeshProperty).acceptNewData(vertexBuffer, count)
         return true
     }
 

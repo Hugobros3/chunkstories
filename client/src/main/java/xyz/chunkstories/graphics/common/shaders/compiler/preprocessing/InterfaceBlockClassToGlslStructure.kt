@@ -20,7 +20,7 @@ fun ShaderCompiler.getGlslStruct(kclass: KClass<InterfaceBlock>): GLSLType.JvmSt
 
 /**
  * Builds a GLSLType.JvmStructure from a JVM class. May generate additional JvmStructure.
- * Will throw an exception of one InterfaceBlock class has a member property that could allow for loops in the data structure.
+ * Will throw an exception of one InterfaceBlock class has a member actualProperty that could allow for loops in the data structure.
  */
 fun ShaderCompiler.createGLSLStructFromJVMClass(klass: KClass<InterfaceBlock>, banned: Set<KClass<InterfaceBlock>>): GLSLType.JvmStruct {
     val structName = klass.simpleName ?: throw Exception("Don't use anonymous classes for use as GLSL structs !")
@@ -76,7 +76,7 @@ fun ShaderCompiler.createGLSLStructFromJVMClass(klass: KClass<InterfaceBlock>, b
                 jvmGlslMappings[propertyClass] ?: createGLSLStructFromJVMClass(propertyClass, banned.union(setOf(klass)))
             }
 
-            else -> throw Exception("No idea what to do with type $propertyType in property ${property.name} of class ${legitClass.qualifiedName}")
+            else -> throw Exception("No idea what to do with type $propertyType in actualProperty ${property.name} of class ${legitClass.qualifiedName}")
         }
 
         val propertyValue = property.get(sampleInstance)

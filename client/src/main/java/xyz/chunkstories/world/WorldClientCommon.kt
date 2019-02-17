@@ -24,7 +24,7 @@ constructor(override val client: IngameClientImplementation, info: WorldInfo, tr
     val pluginManager: ClientPluginManager
         get() = client.pluginManager
 
-    /** We cast and return the super property because of callbacks in the superconstructor expect this to be set before we have a chance to in this constructor */
+    /** We cast and return the super actualProperty because of callbacks in the superconstructor expect this to be set before we have a chance to in this constructor */
     override val gameContext: IngameClientImplementation
         get() = super.gameContext as IngameClientImplementation
 

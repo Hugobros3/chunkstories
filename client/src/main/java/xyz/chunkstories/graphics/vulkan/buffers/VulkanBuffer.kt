@@ -19,20 +19,14 @@ import kotlin.concurrent.withLock
 
 open class VulkanBuffer(val backend: VulkanGraphicsBackend, val bufferSize: Long, bufferUsageBits: Int, val memoryUsage: MemoryUsagePattern) : Cleanable {
     val handle: VkBuffer
-    //val allocation: Long
-    //val memoryType: Int
-    // private val allocatedMemory: VkDeviceMemory
+    private val deleteOnce = AtomicBoolean()
+    private val allocation: VulkanMemoryManager.Allocation
 
     constructor(backend: VulkanGraphicsBackend, initialData: ByteBuffer, usageBits: Int, memoryUsage: MemoryUsagePattern) : this(backend, initialData.capacity().toLong(), usageBits, memoryUsage) {
         upload(initialData)
     }
 
-    private var allocation: VulkanMemoryManager.Allocation
-
     init {
-        /*VmaAllocator.allocatedBytes.addAndGet(bufferSize )
-        VmaAllocator.allocations.incrementAndGet()
-        backend.vmaAllocator.lock.lock()*/
         stackPush()
         val bufferInfo = VkBufferCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO).apply {
             size(bufferSize)
@@ -54,67 +48,36 @@ open class VulkanBuffer(val backend: VulkanGraphicsBackend, val bufferSize: Long
         val requirements = VkMemoryRequirements.callocStack()
         vkGetBufferMemoryRequirements(backend.logicalDevice.vkDevice, handle, requirements)
 
-        /*val requiredFlags = if (hostVisible) {
-            /*VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT or */VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
-        } else
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-
-        allocation = backend.memoryManager.allocateMemoryGivenRequirements(requirements, requiredFlags)*/
         allocation = backend.memoryManager.allocateMemory(requirements, memoryUsage)
         allocation.lock.withLock {
             vkBindBufferMemory(backend.logicalDevice.vkDevice, handle, allocation.deviceMemory, allocation.offset)
         }
-
-        /*val vmaAllocCreateInfo = VmaAllocationCreateInfo.callocStack().apply {
-            //usage(VMA_MEMORY_USAGE_GPU_ONLY)
-            if(hostVisible) {
-                requiredFlags(/*VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT or */VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
-            } else
-                requiredFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
-        }
-
-        val pBuffer = stackMallocLong(1)
-        val pAllocation = stackMallocPointer(1)
-
-        val allocationInfo = VmaAllocationInfo.calloc()
-        vmaCreateBuffer(backend.vmaAllocator.handle, bufferInfo, vmaAllocCreateInfo, pBuffer, pAllocation, allocationInfo).ensureIs("VMA: failed to allocate vram :(", VK_SUCCESS)
-        memoryType = allocationInfo.memoryType()
-        handle = pBuffer.get(0)
-        allocation = pAllocation.get(0)
-
-        backend.vmaAllocator.lock.unlock()*/
         stackPop()
     }
 
     /** Memory-maps the buffer and updates it */
-    fun upload(data: ByteBuffer) {
-        assert(data.remaining() <= bufferSize)
+    fun upload(dataToUpload: ByteBuffer) {
+        if(dataToUpload.remaining() > bufferSize)
+            throw Exception("This buffer does not have enough capacity (${dataToUpload.remaining()} > $bufferSize)")
 
-        backend.vmaAllocator.lock.lock()
-        val pushed = stackPush()
-
-        //if(Thread.currentThread().name.startsWith("Main"))
-        //    println("${Thread.currentThread().name} stack size ${pushed.frameIndex} + $hostVisible ${pushed.pointer}")
+        stackPush()
 
         if (memoryUsage.hostVisible) {
             allocation.lock.withLock {
                 val ppData = stackMallocPointer(1)
-                //vmaMapMemory(backend.vmaAllocator.handle, allocation, ppData).ensureIs("VMA: Failed to map memory", VK_SUCCESS)
                 vkMapMemory(backend.logicalDevice.vkDevice, allocation.deviceMemory, allocation.offset, bufferSize, 0, ppData)
 
                 val mappedMemory = ppData.getByteBuffer(bufferSize.toInt())
-                mappedMemory.put(data)
+                mappedMemory.put(dataToUpload)
 
-                //vmaUnmapMemory(backend.vmaAllocator.handle, allocation)
                 vkUnmapMemory(backend.logicalDevice.vkDevice, allocation.deviceMemory)
             }
         } else {
             val pool = backend.logicalDevice.transferQueue.threadSafePools.get()
-
             val fence = backend.createFence(false)
 
             val stagingBuffer = VulkanBuffer(backend, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, MemoryUsagePattern.STAGING)
-            stagingBuffer.upload(data)
+            stagingBuffer.upload(dataToUpload)
 
             val commandBuffer = pool.createOneUseCB()
             val region = VkBufferCopy.callocStack(1).apply {
@@ -133,27 +96,16 @@ open class VulkanBuffer(val backend: VulkanGraphicsBackend, val bufferSize: Long
             stagingBuffer.cleanup()
         }
 
-        backend.vmaAllocator.lock.unlock()
         stackPop()
     }
-
-    val deleteOnce = AtomicBoolean()
 
     override fun cleanup() {
         if (!deleteOnce.compareAndSet(false, true)) {
             Thread.dumpStack()
-            println("cleaned buffer TWICE wtf")
         }
 
         vkDestroyBuffer(backend.logicalDevice.vkDevice, handle, null)
         allocation.cleanup()
-
-        /*VmaAllocator.allocatedBytes.addAndGet(-(bufferSize))
-        VmaAllocator.allocations.decrementAndGet()
-
-        backend.vmaAllocator.lock.lock()
-        vmaDestroyBuffer(backend.vmaAllocator.handle, handle, allocation)
-        backend.vmaAllocator.lock.unlock()*/
     }
 
     override fun toString(): String {

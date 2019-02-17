@@ -1,6 +1,5 @@
 package xyz.chunkstories.graphics.common.world
 
-import xyz.chunkstories.api.graphics.UniformInput
 import xyz.chunkstories.api.graphics.structs.InterfaceBlock
 import xyz.chunkstories.api.graphics.structs.UniformUpdateFrequency
 import xyz.chunkstories.api.graphics.structs.UpdateFrequency
