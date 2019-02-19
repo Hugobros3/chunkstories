@@ -40,9 +40,6 @@ class VoxelMaterialsStore(private val voxels: VoxelsStore) : Content.Voxels.Voxe
         fun readDefinitions(a: Asset) {
             logger().debug("Reading voxel material definitions in : $a")
 
-            //val text = a.reader().use { it.readText() }
-            //val parser = MaterialDefinitionsParser(CommonTokenStream(MaterialDefinitionsLexer(ANTLRInputStream(text))))
-
             val json = JsonValue.readHjson(a.reader()).toString()
             val map = gson.fromJson(json, LinkedTreeMap::class.java)
 
@@ -50,7 +47,7 @@ class VoxelMaterialsStore(private val voxels: VoxelsStore) : Content.Voxels.Voxe
 
             for (definition in materials2.entries) {
                 val name = definition.key as String
-                val properties = (definition.value as LinkedTreeMap<*, *>).entries.toMap().toMutableMap() as MutableMap<String, String>
+                val properties = (definition.value as LinkedTreeMap<String, *>).extractProperties()
 
                 properties["name"] = name
 
@@ -86,35 +83,23 @@ class VoxelMaterialsStore(private val voxels: VoxelsStore) : Content.Voxels.Voxe
     companion object {
         private val logger = LoggerFactory.getLogger("content.materials")
     }
-
-    public fun MaterialDefinitionsParser.PropertiesContext?.toMap(): Map<String, String> {
-        if (this == null)
-            return emptyMap()
-
-        val map = mutableMapOf<String, String>()
-
-        this.extractIn(map, "")
-
-        return map
-    }
-
-    public fun MaterialDefinitionsParser.PropertiesContext.extractIn(map: MutableMap<String, String>, prefix: String) {
-        this.property().forEach {
-            map.put(prefix + it.Name().text, it.value().getValue())
-        }
-
-        this.compoundProperty().forEach {
-            map.put(prefix + it.Name().text, "exists")
-            it.properties().extractIn(map, prefix + it.Name().text + ".")
-        }
-    }
 }
 
-private fun Collection<MutableMap.MutableEntry<*, *>>.toMap() = map { Pair(it.key, it.value) }.toMap()
 
-//TODO apply that to all
-private fun MaterialDefinitionsParser.ValueContext.getValue(): String {
-    if (this.Text() != null)
-        return this.Text().text.substring(1, this.Text().text.length - 1)
-    else return this.text
+private fun LinkedTreeMap<String, *>.extractProperties(): MutableMap<String, String> {
+    val map = mutableMapOf<String, String>()
+    fun extract(prefix: String, subtree: LinkedTreeMap<String, *>) {
+        for(entry in subtree.entries) {
+            val propertyName = prefix + entry.key
+            val propertyValue = entry.value
+            if(propertyValue is String) {
+                map[propertyName] = propertyValue
+            } else if(propertyValue is LinkedTreeMap<*, *>) {
+                map[propertyName] = "exists"
+                extract("$propertyName.", propertyValue as LinkedTreeMap<String, *>)
+            }
+        }
+    }
+    extract("", this)
+    return map
 }
