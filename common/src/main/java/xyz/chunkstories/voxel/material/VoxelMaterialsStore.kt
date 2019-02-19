@@ -16,6 +16,7 @@ import xyz.chunkstories.voxel.VoxelsStore
 import org.hjson.JsonValue
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.content.extractProperties
 import java.util.*
 
 class VoxelMaterialsStore(private val voxels: VoxelsStore) : Content.Voxels.VoxelMaterials {
@@ -43,16 +44,16 @@ class VoxelMaterialsStore(private val voxels: VoxelsStore) : Content.Voxels.Voxe
             val json = JsonValue.readHjson(a.reader()).toString()
             val map = gson.fromJson(json, LinkedTreeMap::class.java)
 
-            val materials2 = map["materials"] as LinkedTreeMap<*, *>
+            val materialsTreeMap = map["materials"] as LinkedTreeMap<*, *>
 
-            for (definition in materials2.entries) {
+            for (definition in materialsTreeMap.entries) {
                 val name = definition.key as String
                 val properties = (definition.value as LinkedTreeMap<String, *>).extractProperties()
 
                 properties["name"] = name
 
                 val voxelMaterial = VoxelMaterial(this, name, properties)
-                materials.put(name, voxelMaterial)
+                materials[name] = voxelMaterial
 
                 if (voxelMaterial.name == "default")
                     defaultMaterial = voxelMaterial
@@ -83,23 +84,4 @@ class VoxelMaterialsStore(private val voxels: VoxelsStore) : Content.Voxels.Voxe
     companion object {
         private val logger = LoggerFactory.getLogger("content.materials")
     }
-}
-
-
-private fun LinkedTreeMap<String, *>.extractProperties(): MutableMap<String, String> {
-    val map = mutableMapOf<String, String>()
-    fun extract(prefix: String, subtree: LinkedTreeMap<String, *>) {
-        for(entry in subtree.entries) {
-            val propertyName = prefix + entry.key
-            val propertyValue = entry.value
-            if(propertyValue is String) {
-                map[propertyName] = propertyValue
-            } else if(propertyValue is LinkedTreeMap<*, *>) {
-                map[propertyName] = "exists"
-                extract("$propertyName.", propertyValue as LinkedTreeMap<String, *>)
-            }
-        }
-    }
-    extract("", this)
-    return map
 }

@@ -6,18 +6,19 @@
 
 package xyz.chunkstories.voxel
 
-import VoxelDefinitionsLexer
 import VoxelDefinitionsParser
+import com.google.gson.Gson
+import com.google.gson.internal.LinkedTreeMap
 import xyz.chunkstories.api.content.Asset
 import xyz.chunkstories.api.content.Content
 import xyz.chunkstories.api.voxel.Voxel
 import xyz.chunkstories.api.voxel.VoxelDefinition
 import xyz.chunkstories.content.GameContentStore
 import xyz.chunkstories.voxel.material.VoxelMaterialsStore
-import org.antlr.v4.runtime.ANTLRInputStream
-import org.antlr.v4.runtime.CommonTokenStream
+import org.hjson.JsonValue
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.content.extractProperties
 import java.util.*
 
 class VoxelsStore(private val content: GameContentStore) : Content.Voxels {
@@ -46,8 +47,9 @@ class VoxelsStore(private val content: GameContentStore) : Content.Voxels {
 
     private fun reloadVoxelTypes() {
         voxelsByName.clear()
+        val gson = Gson()
 
-        fun readDefinitions(a: Asset) {
+        /*fun readDefinitions(a: Asset) {
             val loadedVoxels = 0
             logger().debug("Reading voxels definitions in : $a")
 
@@ -65,6 +67,28 @@ class VoxelsStore(private val content: GameContentStore) : Content.Voxels {
             }
 
             logger().debug("Parsed file $a correctly, loading $loadedVoxels voxels.")
+        }*/
+
+        fun readDefinitions(a: Asset) {
+            logger().debug("Reading blocks definitions in : $a")
+
+            val json = JsonValue.readHjson(a.reader()).toString()
+            val map = gson.fromJson(json, LinkedTreeMap::class.java)
+
+            val blocksTreeMap = map["blocks"] as LinkedTreeMap<*, *>
+
+            for (definition in blocksTreeMap.entries) {
+                val name = definition.key as String
+                val properties = (definition.value as LinkedTreeMap<String, *>).extractProperties()
+
+                properties["name"] = name
+
+                val voxelDefinition = VoxelDefinition(this, name, properties)
+                val voxel : Voxel = voxelDefinition.create()
+                voxelsByName[name] = voxel
+
+                logger.debug("Loaded $voxelDefinition from $a, created $voxel")
+            }
         }
 
         air = Voxel(VoxelDefinition(this, "air", mapOf(
@@ -73,7 +97,7 @@ class VoxelsStore(private val content: GameContentStore) : Content.Voxels {
         )))
         voxelsByName["air"] = air
 
-        for(asset in content.modsManager().allAssets.filter { it.name.startsWith("voxels/") && !it.name.startsWith("voxels/materials/") && it.name.endsWith(".def") }) {
+        for(asset in content.modsManager().allAssets.filter { it.name.startsWith("voxels/") && !it.name.startsWith("voxels/materials/") && it.name.endsWith(".hjson") }) {
             readDefinitions(asset)
         }
     }
