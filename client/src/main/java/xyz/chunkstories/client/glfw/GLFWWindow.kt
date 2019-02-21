@@ -1,15 +1,11 @@
 package xyz.chunkstories.client.glfw
 
-import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
 import xyz.chunkstories.api.graphics.Window
 import xyz.chunkstories.client.ClientImplementation
-import xyz.chunkstories.graphics.GLFWBasedGraphicsBackend
-import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
-import xyz.chunkstories.graphics.vulkan.util.iterator
-import xyz.chunkstories.input.lwjgl3.Lwjgl3ClientInputsManager
 import org.lwjgl.glfw.GLFW.*
-import org.lwjgl.glfw.GLFWVulkan.glfwVulkanSupported
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.graphics.GraphicsBackendsEnum
+import xyz.chunkstories.graphics.GraphicsEngineImplementation
 import java.awt.image.BufferedImage
 import java.io.File
 import java.text.SimpleDateFormat
@@ -28,12 +24,8 @@ import kotlin.UnsupportedOperationException
  *
  * For now only implements a Vulkan graphicsBackend
  */
-class GLFWWindow(val client: ClientImplementation) : Window {
-    constructor(client: ClientImplementation, title: String) : this(client) {
-        this.title = title
-    }
-
-    var title = "Untitled"
+class GLFWWindow(val client: ClientImplementation, val graphicsEngine: GraphicsEngineImplementation, selectedBackend: GraphicsBackendsEnum, title: String) : Window {
+    var title = title
         set(value) {
             field = value
             mainThread { glfwSetWindowTitle(glfwWindowHandle, value) }
@@ -43,32 +35,10 @@ class GLFWWindow(val client: ClientImplementation) : Window {
     override var height: Int = 640
 
     val glfwWindowHandle: Long
-    val graphicsBackend: GLFWBasedGraphicsBackend
-    val inputsManager : Lwjgl3ClientInputsManager
-
-    enum class GraphicsBackends(val glfwApiHint: Int, val usable: () -> Boolean, val creator : (GLFWWindow) -> GLFWBasedGraphicsBackend) {
-        VULKAN(GLFW_NO_API, { glfwVulkanSupported() },  { VulkanGraphicsBackend(it) }),
-        OPENGL(GLFW_OPENGL_API, { true }, { TODO("Not implemented yet !") });
-    }
-
-    private fun pickBackend(): GraphicsBackends {
-        val configuredBackend = client.configuration.getValue("client.graphics.backend")
-        // If one backend was configured by the user, try to find it, otherwise use Vulkan by default
-        var backendToUse = GraphicsBackends.values().find { it.name == configuredBackend } ?: GraphicsBackends.VULKAN
-
-        // If the selected or default backend isn't usable, use OpenGL as a failsafe
-        if(!backendToUse.usable()) {
-            //TODO messagebox
-            logger.warn("$backendToUse can't be used here, defaulting to OpenGL")
-            backendToUse = GraphicsBackends.OPENGL
-        }
-
-        return backendToUse
-    }
+    //val graphicsBackend: GLFWBasedGraphicsBackend
+    //val inputsManager : Lwjgl3ClientInputsManager
 
     init {
-        if (!glfwInit())
-            throw Exception("Could not initialize GLFW")
 
         /*glfwSetErrorCallback { error, description ->
             println("GLFW error: error: $error description: $description")
@@ -92,42 +62,25 @@ class GLFWWindow(val client: ClientImplementation) : Window {
 
         glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE)*/
 
-        // Pick a backend !
-        val selectedGraphicsBackend = pickBackend()
-        glfwWindowHint(GLFW_CLIENT_API, selectedGraphicsBackend.glfwApiHint)
+        glfwWindowHint(GLFW_CLIENT_API, selectedBackend.glfwApiHint)
 
         glfwWindowHandle = glfwCreateWindow(width, height, title, 0L, 0L)
         if(glfwWindowHandle == 0L)
             throw Exception("Failed to create GLFW window")
-
-        graphicsBackend = selectedGraphicsBackend.creator(this)
-        inputsManager = Lwjgl3ClientInputsManager(this)
     }
 
-    var frameNumber = 0
-
-    fun mainLoop() {
-        while(!glfwWindowShouldClose(glfwWindowHandle)) {
-            mainThreadQueue.removeAll { it.invoke(this); true }
-            glfwPollEvents()
-            inputsManager.updateInputs()
-            client.soundManager.updateAllSoundSources()
-
-            client.ingame?.player?.controlledEntity?.let { it.traits[TraitControllable::class]?.onEachFrame() }
-
-            graphicsBackend.drawFrame(frameNumber)
-
-            inFocus = glfwGetWindowAttrib(glfwWindowHandle, GLFW_FOCUSED) == GLFW_TRUE
-            frameNumber++
-        }
-
-        client.ingame?.exitToMainMenu()
-
-        cleanup()
+    fun executeMainThreadChores() {
+        mainThreadQueue.removeAll { it.invoke(this); true }
     }
 
-    fun cleanup() {
-        graphicsBackend.cleanup()
+    fun checkStillInFocus() {
+        inFocus = glfwGetWindowAttrib(glfwWindowHandle, GLFW_FOCUSED) == org.lwjgl.glfw.GLFW.GLFW_TRUE
+    }
+
+    fun cleanup()
+    {
+        executeMainThreadChores()
+
         glfwDestroyWindow(glfwWindowHandle)
         glfwTerminate()
     }
@@ -137,7 +90,7 @@ class GLFWWindow(val client: ClientImplementation) : Window {
 
     override fun takeScreenshot() {
         try {
-            val image: BufferedImage = graphicsBackend.captureFramebuffer()
+            val image: BufferedImage = graphicsEngine.backend.captureFramebuffer()
 
             val cal = Calendar.getInstance()
             val sdf = SimpleDateFormat("YYYY.MM.dd HH.mm.ss")
@@ -153,6 +106,9 @@ class GLFWWindow(val client: ClientImplementation) : Window {
     fun mainThread(function: GLFWWindow.() -> Unit) {
         mainThreadQueue.addLast(function)
     }
+
+    val shouldClose
+        get() = org.lwjgl.glfw.GLFW.glfwWindowShouldClose(glfwWindowHandle)
 
     companion object {
         val logger = LoggerFactory.getLogger("client.glfw")

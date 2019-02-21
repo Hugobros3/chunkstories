@@ -32,9 +32,10 @@ import org.lwjgl.glfw.GLFWMouseButtonCallback
 import org.lwjgl.glfw.GLFWScrollCallback
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.graphics.vulkan.resources.Cleanable
 
 class Lwjgl3ClientInputsManager// private final IngameLayer scene;
-(val gameWindow: GLFWWindow) : ClientInputsManager, InputsManagerLoader {
+(val gameWindow: GLFWWindow) : ClientInputsManager, InputsManagerLoader, Cleanable {
     private val gui: Gui
 
     internal var inputs = mutableListOf<Input>()
@@ -325,7 +326,7 @@ class Lwjgl3ClientInputsManager// private final IngameLayer scene;
         return mouse
     }
 
-    fun destroy() {
+    override fun cleanup() {
         this.keyCallback.free()
         this.mouseButtonCallback.free()
         this.scrollCallback.free()

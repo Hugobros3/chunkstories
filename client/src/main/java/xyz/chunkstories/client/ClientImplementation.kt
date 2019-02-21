@@ -6,13 +6,13 @@
 
 package xyz.chunkstories.client
 
+import org.lwjgl.glfw.GLFW
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
 import xyz.chunkstories.api.GameContext
 import xyz.chunkstories.api.client.Client
-import xyz.chunkstories.api.gui.Gui
 import xyz.chunkstories.api.plugin.PluginManager
 import xyz.chunkstories.client.glfw.GLFWWindow
 import xyz.chunkstories.client.ingame.IngameClientImplementation
@@ -24,8 +24,10 @@ import org.slf4j.LoggerFactory
 
 import xyz.chunkstories.Constants
 import xyz.chunkstories.api.client.ClientIdentity
+import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
 import xyz.chunkstories.api.util.configuration.Configuration
 import xyz.chunkstories.content.GameDirectory
+import xyz.chunkstories.graphics.GraphicsEngineImplementation
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.gui.layer.LoginPrompt
 import xyz.chunkstories.gui.layer.SkyBoxBackground
@@ -44,15 +46,19 @@ class ClientImplementation internal constructor(coreContentLocation: File, modsS
     override val content: GameContentStore
     override val tasks: ClientTasksPool
 
+
+    override val graphics: GraphicsEngineImplementation
+    override val inputsManager: Lwjgl3ClientInputsManager
+
     override val gameWindow: GLFWWindow
+        get() = graphics.window
+
     override val soundManager: ALSoundManager
 
     override val gui = ClientGui(this)
 
     override var ingame: IngameClientImplementation? = null
 
-    override val inputsManager: Lwjgl3ClientInputsManager
-        get() = gameWindow.inputsManager
 
     override val pluginManager: PluginManager
         get() = throw UnsupportedOperationException("There is no plugin manager in a non-ingame context ! Use an IngameClient object instead.")
@@ -77,8 +83,8 @@ class ClientImplementation internal constructor(coreContentLocation: File, modsS
 
         soundManager = ALSoundManager(this)
 
-        // Creates game window, no use of any user content up to this point
-        gameWindow = GLFWWindow(this, "Chunk Stories " + VersionInfo.version)
+        graphics = GraphicsEngineImplementation(this)
+        inputsManager = Lwjgl3ClientInputsManager(gameWindow)
 
         // Create game content manager
         content = GameContentStore(this, coreContentLocation, modsStringArgument)
@@ -111,18 +117,38 @@ class ClientImplementation internal constructor(coreContentLocation: File, modsS
         // Initlializes windows screen to main menu ( and ask for login )
         gui.topLayer = LoginPrompt(gui, SkyBoxBackground(gui))
 
-        gameWindow.mainLoop()
+        mainLoop()
         cleanup()
     }
 
+    fun mainLoop() {
+        while(!gameWindow.shouldClose) {
+            gameWindow.executeMainThreadChores()
+            gameWindow.checkStillInFocus()
+
+            GLFW.glfwPollEvents()
+            inputsManager.updateInputs()
+
+            soundManager.updateAllSoundSources()
+
+            ingame?.player?.controlledEntity?.let { it.traits[TraitControllable::class]?.onEachFrame() }
+
+            graphics.renderGame()
+        }
+
+        ingame?.exitToMainMenu()
+    }
+
     fun cleanup() {
+        graphics.cleanup()
+        inputsManager.cleanup()
         tasks.destroy()
         configuration.save()
     }
 
     fun reloadAssets() {
         content.reload()
-        gameWindow.inputsManager.reload()
+        inputsManager.reload()
         //TODO hook some rendering stuff in here
     }
 

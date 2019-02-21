@@ -31,21 +31,20 @@ class DebugInfoRendererHelper(ingameLayer: IngameLayer) {
         val client = gui.client.ingame!!
         val window = (client.gameWindow as GLFWWindow)
         val world = client.world as WorldImplementation
-        val swapchain = (window.graphicsBackend as VulkanGraphicsBackend).swapchain
+        val graphicsBackend = window.graphicsEngine.backend
 
-        debugLine("Chunk Stories ${VersionInfo.version} running on the ${window.graphicsBackend.javaClass.simpleName}")
+        debugLine("Chunk Stories ${VersionInfo.version} running on the ${graphicsBackend.javaClass.simpleName}")
 
-        val performanceMetrics = swapchain.performanceCounter
-        debugLine("#FF0000Rendering: ${performanceMetrics.lastFrametimeNs/1000000}ms fps: ${performanceMetrics.avgFps.toInt()} (min ${performanceMetrics.minFps.toInt()}, max ${performanceMetrics.maxFps.toInt()}) #00FFFFSimulation performance : ${world.gameLogic.simulationFps}")
-
-        debugLine("RAM usage: ${Runtime.getRuntime().freeMemory() / 1024 / 1024} mb free")
-
-        val graphicsBackend = (client.gameWindow as GLFWWindow).graphicsBackend
         when(graphicsBackend) {
             is VulkanGraphicsBackend -> {
+                val swapchain = graphicsBackend.swapchain
+                val performanceMetrics = swapchain.performanceCounter
+                debugLine("#FF0000Rendering: ${performanceMetrics.lastFrametimeNs/1000000}ms fps: ${performanceMetrics.avgFps.toInt()} (min ${performanceMetrics.minFps.toInt()}, max ${performanceMetrics.maxFps.toInt()}) #00FFFFSimulation performance : ${world.gameLogic.simulationFps}")
+
                 debugLine("VRAM usage: ${graphicsBackend.memoryManager.stats}")
             }
         }
+        debugLine("RAM usage: ${Runtime.getRuntime().freeMemory() / 1024 / 1024} mb free")
         //debugLine("VMA usage: ${VmaAllocator.allocations} allocations totalling ${VmaAllocator.allocatedBytes.get()/1024/1024}mb ")
 
         debugLine("Tasks queued: ${client.tasks.submittedTasks()} IO operations queud: ${world.ioHandler.size}")

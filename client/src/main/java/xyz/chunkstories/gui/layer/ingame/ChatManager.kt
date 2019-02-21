@@ -250,7 +250,7 @@ class ChatManager(private val ingameClient: IngameClient, private val ingameGuiL
                 }
                 cmdName == "buddydbg" -> {
                     val glfwWindow = ingameClient.gameWindow as GLFWWindow
-                    val graphicsBackend = glfwWindow.graphicsBackend as VulkanGraphicsBackend
+                    val graphicsBackend = glfwWindow.graphicsEngine.backend as VulkanGraphicsBackend
                     graphicsBackend.memoryManager.debug()
                     insert("#FF7070FUCK")
                 }

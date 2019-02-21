@@ -39,7 +39,7 @@ class ReloadContentCommand(private val client: IngameClient) : CommandHandler {
 
                     }
                     "rendergraph" -> {
-                        val backend = (client.gameWindow as GLFWWindow).graphicsBackend
+                        val backend = (client.gameWindow as GLFWWindow).graphicsEngine.backend
                         if(backend is VulkanGraphicsBackend)
                             backend.queuedRenderGraph = backend.renderGraph.dslCode
                         else

@@ -27,10 +27,12 @@ import xyz.chunkstories.client.commands.ReloadContentCommand
 import xyz.chunkstories.client.commands.installClientCommands
 import xyz.chunkstories.world.WorldClientCommon
 import org.slf4j.Logger
+import xyz.chunkstories.api.graphics.GraphicsEngine
 
 abstract class IngameClientImplementation protected constructor(val client: ClientImplementation, worldInitializer: (IngameClientImplementation) -> WorldClientCommon) : IngameClient {
     final override val configuration: Configuration = client.configuration
     final override val gameWindow: Window = client.gameWindow
+    final override val graphics: GraphicsEngine = client.graphics
     final override val gui: Gui = client.gui
     final override val inputsManager: ClientInputsManager = client.inputsManager
     final override val soundManager: ClientSoundManager = client.soundManager
@@ -73,7 +75,7 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
             internalWorld.spawnPlayer(player)
 
         client.ingame = this
-        client.gameWindow.graphicsBackend.queuedRenderGraph = BuiltInRendergraphs.debugRenderGraph
+        client.gameWindow.graphicsEngine.loadRenderGraph(BuiltInRendergraphs.debugRenderGraph)
 
         ingameGuiLayer = IngameLayer(gui, this)
         val connectionProgressLayer = gui.topLayer as? RemoteConnectionGuiLayer
@@ -105,7 +107,7 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
     open fun exitCommon() {
         pluginManager.disablePlugins()
 
-        client.gameWindow.graphicsBackend.queuedRenderGraph = BuiltInRendergraphs.onlyGuiRenderGraph
+        client.gameWindow.graphicsEngine.loadRenderGraph(BuiltInRendergraphs.onlyGuiRenderGraph)
 
         // Destroy the world
         internalWorld.destroy()
