@@ -10,9 +10,6 @@ import org.junit.Test;
 
 /**
  * Testing my 1-2 byte packets Ids thing
- * 
- * @author gobrosse
- *
  */
 public class TestVariableWidthPackets {
 	@Test

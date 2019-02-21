@@ -15,12 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import xyz.chunkstories.Constants;
-import xyz.chunkstories.api.util.concurrency.Fence;
 import xyz.chunkstories.api.workers.TaskExecutor;
 import xyz.chunkstories.world.WorldImplementation;
-import xyz.chunkstories.world.storage.ChunkHolderImplementation;
-import xyz.chunkstories.world.heightmap.HeightmapImplementation;
-import xyz.chunkstories.world.storage.RegionImplementation;
 
 /**
  * This thread does I/O work in queue. Extended by IOTaskMultiplayerClient and
@@ -59,7 +55,7 @@ public class IOTasks extends Thread implements TaskExecutor {
 	public void run() {
 		logger().info("IO Thread started for '" + this.world.getWorldInfo().getName() + "'");
 
-		this.setPriority(Constants.IO_THREAD_PRIOTITY);
+		this.setPriority(Constants.IO_THREAD_PRIORITY);
 		this.setName("IO thread for '" + this.world.getWorldInfo().getName() + "'");
 		while (true) {
 			IOTask task = null;
