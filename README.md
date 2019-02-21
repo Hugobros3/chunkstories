@@ -1,4 +1,4 @@
-# Chunk Stories
+# Chunk Stories (CURRENTLY UNPLAYABLE DUE TO BUGS!!!!)
 
 ![alt text](http://chunkstories.xyz/img/github_header.png "Header screenshot")
 
