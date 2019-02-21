@@ -13,7 +13,7 @@ class ChunkVkMeshProperty(val backend: VulkanGraphicsBackend, val chunk: CubicCh
     val actualProperty = RefCountedProperty<ChunkMeshData>()
 
     init {
-        requestUpdate()
+        //requestUpdate()
     }
 
     fun get(): ChunkMeshData? {

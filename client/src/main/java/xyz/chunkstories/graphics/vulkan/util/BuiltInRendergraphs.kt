@@ -189,12 +189,14 @@ object BuiltInRendergraphs {
                             name = "colorBuffer"
                             clear = true
                             clearColor = Vector4d(0.0, 0.0, 0.0, 0.0)
+                            blending = OVERWRITE
                         }
 
                         output {
                             name = "normalBuffer"
                             clear = true
                             clearColor = Vector4d(0.0, 0.0, 0.0, 0.0)
+                            blending = OVERWRITE
                         }
                     }
 

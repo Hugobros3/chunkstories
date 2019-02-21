@@ -67,9 +67,9 @@ class VoxelMaterialsStore(private val voxels: VoxelsStore) : Content.Voxels.Voxe
         }
     }
 
-    override fun getVoxelMaterial(name: String): VoxelMaterial {
+    override fun getVoxelMaterial(name: String): VoxelMaterial? {
         val material = materials[name]
-        return material ?: getVoxelMaterial("undefined")
+        return material
 
     }
 

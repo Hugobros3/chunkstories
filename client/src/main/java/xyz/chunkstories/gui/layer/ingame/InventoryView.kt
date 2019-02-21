@@ -31,7 +31,7 @@ class InventoryView(gui: Gui, parent: Layer, private val inventories: List<Inven
         var draggingQuantity: Int = 0
     }
 
-    override fun render(drawer: GuiDrawer?) {
+    override fun render(drawer: GuiDrawer) {
         if (parentLayer != null) {
             parentLayer!!.render(drawer)
         }
@@ -71,18 +71,24 @@ class InventoryView(gui: Gui, parent: Layer, private val inventories: List<Inven
             }
         }
 
+        val draggingPile = draggingPile
         if (draggingPile != null) {
-            val slotSize = 24 * 2
+            val slotSize = 24
 
-            val width = slotSize * draggingPile!!.item.definition.slotsWidth
-            val height = slotSize * draggingPile!!.item.definition.slotsHeight
-            //TODO
+            val width = slotSize * draggingPile.item.definition.slotsWidth
+            val height = slotSize * draggingPile.item.definition.slotsHeight
+
+            val itemIcon = draggingPile.item.getTextureName(draggingPile)
+            val cx = mouse.cursorX.toInt()
+            val cy = mouse.cursorY.toInt()
+
+            drawer.drawBox(cx - 12, cy - 12, 24, 24, itemIcon)
             //selectedItem.getItem().getDefinition().getRenderer().renderItemInInventory(drawer, selectedItem, (float) mouse.getCursorX() - width / 2, (float) mouse.getCursorY() - height / 2, 2);
 
             if (draggingQuantity != 1)
-                drawer!!.drawStringWithShadow(drawer.fonts.defaultFont(2),
-                        mouse.cursorX.toInt() - width / 2 + (draggingPile!!.item.definition.slotsWidth - 1) * slotSize,
-                        mouse.cursorY.toInt() - height / 2, draggingQuantity.toString() + "", -1, Vector4f(1f))
+                drawer.drawStringWithShadow(drawer.fonts.defaultFont(2),
+                        cx - width / 2 + (draggingPile.item.definition.slotsWidth - 1) * slotSize,
+                        cy - height / 2, draggingQuantity.toString() + "", -1, Vector4f(1f))
 
         }
     }
