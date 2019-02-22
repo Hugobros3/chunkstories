@@ -31,6 +31,7 @@ import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
 import xyz.chunkstories.graphics.vulkan.buffers.extractInterfaceBlockField
 import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
+import xyz.chunkstories.graphics.vulkan.textures.voxels.VulkanVoxelTexturesArray
 import xyz.chunkstories.world.storage.RegionImplementation
 import java.util.*
 
@@ -134,6 +135,8 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
 
         val ssboStuff = memAlloc(ssboDataTest.bufferSize.toInt())
         var instance = 0
+        val voxelTexturesArray = client.content.voxels().textures() as VulkanVoxelTexturesArray
+        bindingContext.bindTextureAndSampler("albedoTextures", voxelTexturesArray.albedoOnionTexture, backend.textures.magicTexturing.sampler)
         bindingContext.bindSSBO("chunkInfo", ssboDataTest)
         bindingContext.preDraw(commandBuffer)
 

@@ -14,7 +14,9 @@ import org.lwjgl.system.MemoryUtil.memFree
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import xyz.chunkstories.graphics.common.shaders.GLSLUniformBlock
-import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampler2D
+import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampledImage2D
+import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampledImage2DArray
+import xyz.chunkstories.graphics.vulkan.textures.VulkanOnionTexture2D
 import xyz.chunkstories.graphics.vulkan.util.*
 import java.nio.IntBuffer
 import java.util.concurrent.ConcurrentLinkedDeque
@@ -167,7 +169,16 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
         }
 
         fun bindTextureAndSampler(name: String, texture: VulkanTexture2D, sampler: VulkanSampler, index: Int = 0) {
-            val resource = pipeline.program.glslProgram.resources.filterIsInstance<GLSLUniformSampler2D>().find {
+            val resource = pipeline.program.glslProgram.resources.filterIsInstance<GLSLUniformSampledImage2D>().find {
+                it.name == name
+            } ?: throw Exception("I can't find a program sampler2D resource matching that name '$name' :s")
+
+            val set = getSet(resource.descriptorSetSlot)
+            backend.updateDescriptorSet(set, resource.binding, texture, sampler, index)
+        }
+
+        fun bindTextureAndSampler(name: String, texture: VulkanOnionTexture2D, sampler: VulkanSampler, index: Int = 0) {
+            val resource = pipeline.program.glslProgram.resources.filterIsInstance<GLSLUniformSampledImage2DArray>().find {
                 it.name == name
             } ?: throw Exception("I can't find a program sampler2D resource matching that name '$name' :s")
 

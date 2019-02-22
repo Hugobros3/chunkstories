@@ -30,11 +30,15 @@ import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.EXTDebugReport.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.api.content.Content
 import xyz.chunkstories.api.graphics.systems.GraphicSystem
 import xyz.chunkstories.api.graphics.systems.RegisteredGraphicSystem
+import xyz.chunkstories.graphics.vulkan.textures.voxels.VulkanVoxelTexturesArray
+import xyz.chunkstories.voxel.DummyVoxelTextures
+import xyz.chunkstories.voxel.VoxelTexturesSupport
 import java.awt.image.BufferedImage
 
-class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(window) {
+class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(window), VoxelTexturesSupport {
     internal val enableValidation = useValidationLayer
     internal val enableDivergingUniformSamplerIndexing : Boolean
 
@@ -65,8 +69,6 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
     val descriptorMegapool = DescriptorSetsMegapool(this)
     val shaderFactory = VulkanShaderFactory(this, window.client)
     val textures: VulkanTextures
-
-    //val virtualTexturing: VirtualTexturing
 
     var renderGraph: VulkanRenderGraph
 
@@ -288,6 +290,8 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
             else -> throw Exception("Unimplemented system on this backend: ${registeredDrawingSystem.clazz}")
         }
     }
+
+    override fun createVoxelTextures(voxels: Content.Voxels) = VulkanVoxelTexturesArray(this, voxels)
 
     override fun cleanup() {
         vkDeviceWaitIdle(logicalDevice.vkDevice)

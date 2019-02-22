@@ -13,7 +13,7 @@ import xyz.chunkstories.graphics.vulkan.util.*
 class MagicTexturing(val backend: VulkanGraphicsBackend) : Cleanable {
 
     private val setLayout : VkDescriptorSetLayout
-    private val sampler = VulkanSampler(backend, false)
+    val sampler = VulkanSampler(backend, false)
 
     private val pool: VkDescriptorPool
     val theSet : VkDescriptorSet
@@ -132,7 +132,7 @@ class MagicTexturing(val backend: VulkanGraphicsBackend) : Cleanable {
         }
     }
 
-    fun getMapping(vulkanTexture2D: VulkanTexture2D) : Int {
+    fun assignId(vulkanTexture2D: VulkanTexture2D) : Int {
         val id = mappings.size
         mappings[vulkanTexture2D] = id
         backend.updateDescriptorSet(theSet, 1, vulkanTexture2D, id)

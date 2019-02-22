@@ -3,7 +3,6 @@ package xyz.chunkstories.graphics.common.shaders.compiler.spirvcross
 import graphics.scenery.spirvcrossj.*
 import xyz.chunkstories.api.graphics.ShaderStage
 import xyz.chunkstories.api.graphics.structs.UniformUpdateFrequency
-import xyz.chunkstories.api.graphics.structs.UpdateFrequency
 import xyz.chunkstories.graphics.common.shaders.*
 import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompiler
 import xyz.chunkstories.graphics.common.shaders.compiler.preprocessing.updateFrequency
@@ -92,10 +91,10 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
             val combined = imageType.sampled
 
             // Don't duplicate resources
-            if (resources.find { it is GLSLUniformSampler2D && it.name == sampledImageName } != null)
+            if (resources.find { it is GLSLUniformSampledImage && it.name == sampledImageName } != null)
                 continue
 
-            val setSlot: Int;
+            val setSlot: Int
             val binding: Int
 
             when (dialect) {
@@ -110,10 +109,17 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
             }
 
             //TODO handle other dimensionalities
-            resources.add(when (dimensionality) {
-                1 -> GLSLUniformSampler2D(sampledImageName, setSlot, binding, arraySize)
-                else -> throw Exception("Not handled yet")
-            })
+            if(arrayTexture) {
+                resources.add(when (dimensionality) {
+                    1 -> GLSLUniformSampledImage2DArray(sampledImageName, setSlot, binding)
+                    else -> throw Exception("Not handled yet")
+                })
+            } else {
+                resources.add(when (dimensionality) {
+                    1 -> GLSLUniformSampledImage2D(sampledImageName, setSlot, binding, arraySize)
+                    else -> throw Exception("Not handled yet")
+                })
+            }
         }
 
         for (i in 0 until stageResources.separateImages.size().toInt()) {
@@ -267,7 +273,7 @@ fun ShaderCompiler.addDecorations(intermediarCompilationResults: IntermediaryCom
 
         for (i in 0 until stageResources.sampledImages.size().toInt()) {
             val spirvResource = stageResources.sampledImages[i]
-            val glslResource = glslResources.find { it.name == spirvResource.name } as GLSLUniformSampler2D
+            val glslResource = glslResources.find { it.name == spirvResource.name } as GLSLResource
 
             compiler.setDecoration(spirvResource.id, Decoration.DecorationDescriptorSet, glslResource.descriptorSetSlot.toLong())
             compiler.setDecoration(spirvResource.id, Decoration.DecorationBinding, glslResource.binding.toLong())

@@ -7,8 +7,7 @@ import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanUniformBuffer
 import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
-import xyz.chunkstories.graphics.vulkan.textures.VulkanTexture2D
-
+import xyz.chunkstories.graphics.vulkan.textures.VulkanTexture
 
 fun VulkanGraphicsBackend.updateDescriptorSet(set: VkDescriptorSet, binding: Int, buffer: VulkanUniformBuffer) {
     MemoryStack.stackPush()
@@ -58,7 +57,7 @@ fun VulkanGraphicsBackend.updateDescriptorSet_ssbo(set: VkDescriptorSet, binding
     MemoryStack.stackPop()
 }
 
-fun VulkanGraphicsBackend.updateDescriptorSet(set: VkDescriptorSet, binding: Int, texture: VulkanTexture2D, sampler: VulkanSampler, dstArrayElement: Int = 0) {
+fun VulkanGraphicsBackend.updateDescriptorSet(set: VkDescriptorSet, binding: Int, texture: VulkanTexture, sampler: VulkanSampler, dstArrayElement: Int = 0) {
     MemoryStack.stackPush()
 
     val imageInfo = VkDescriptorImageInfo.callocStack(1).apply {
@@ -82,7 +81,7 @@ fun VulkanGraphicsBackend.updateDescriptorSet(set: VkDescriptorSet, binding: Int
     MemoryStack.stackPop()
 }
 
-fun VulkanGraphicsBackend.updateDescriptorSet(set: VkDescriptorSet, binding: Int, texture: VulkanTexture2D, dstArrayElement: Int = 0) {
+fun VulkanGraphicsBackend.updateDescriptorSet(set: VkDescriptorSet, binding: Int, texture: VulkanTexture, dstArrayElement: Int = 0) {
     MemoryStack.stackPush()
 
     val imageInfo = VkDescriptorImageInfo.callocStack(1).apply {

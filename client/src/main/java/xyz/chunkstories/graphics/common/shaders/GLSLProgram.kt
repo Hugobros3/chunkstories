@@ -48,12 +48,21 @@ data class GLSLShaderStorage(
         override val binding: Int
 ) : GLSLResource*/
 
+interface GLSLUniformSampledImage : GLSLResource {
+}
+
 /** Represents a (potentially an array of) sampler2D uniform resource declared in one of the stages of the GLSL program */
-data class GLSLUniformSampler2D(
+data class GLSLUniformSampledImage2D(
         override val name: String,
         override val descriptorSetSlot: Int,
         override val binding: Int,
-        val count: Int) : GLSLResource
+        val count: Int) : GLSLUniformSampledImage
+
+/** The onion sort of 2D textures */
+data class GLSLUniformSampledImage2DArray(
+        override val name: String,
+        override val descriptorSetSlot: Int,
+        override val binding: Int) : GLSLUniformSampledImage
 
 data class GLSLUniformImage2D(
         override val name: String,

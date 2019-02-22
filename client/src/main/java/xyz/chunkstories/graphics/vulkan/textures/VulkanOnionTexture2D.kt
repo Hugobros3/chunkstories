@@ -1,25 +1,22 @@
 package xyz.chunkstories.graphics.vulkan.textures
 
-import org.lwjgl.system.MemoryStack.stackPop
-import org.lwjgl.system.MemoryStack.stackPush
+import org.lwjgl.system.MemoryStack
+import org.lwjgl.vulkan.VK10
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkBufferImageCopy
-import xyz.chunkstories.api.graphics.Texture2D
 import xyz.chunkstories.api.graphics.TextureFormat
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
 import xyz.chunkstories.graphics.vulkan.util.createFence
 import xyz.chunkstories.graphics.vulkan.util.waitFence
 
-class VulkanTexture2D(backend: VulkanGraphicsBackend, format: TextureFormat, override val width: Int, override val height: Int, usageFlags: Int) :
+class VulkanOnionTexture2D(backend: VulkanGraphicsBackend, format: TextureFormat, val width: Int, val height: Int, val layerCount: Int, usageFlags: Int) :
         VulkanTexture(backend, format,
-                width, height, 1, 1,
-                VK_IMAGE_TYPE_2D, VK_IMAGE_VIEW_TYPE_2D, usageFlags), Texture2D {
-
-    val mapping: Int by lazy { backend.textures.magicTexturing.assignId(this) }
+                width, height, 1, layerCount,
+                VK_IMAGE_TYPE_2D, VK_IMAGE_VIEW_TYPE_2D_ARRAY, usageFlags) {
 
     fun copyBufferToImage(buffer: VulkanBuffer) {
-        stackPush()
+        MemoryStack.stackPush()
         val operationsPool = backend.logicalDevice.graphicsQueue.threadSafePools.get()
         val commandBuffer = operationsPool.createOneUseCB()
 
@@ -34,7 +31,7 @@ class VulkanTexture2D(backend: VulkanGraphicsBackend, format: TextureFormat, ove
                 aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
                 mipLevel(0)
                 baseArrayLayer(0)
-                layerCount(1)
+                layerCount(layerCount)
             }
 
             imageOffset().apply {
@@ -60,6 +57,6 @@ class VulkanTexture2D(backend: VulkanGraphicsBackend, format: TextureFormat, ove
         vkDestroyFence(backend.logicalDevice.vkDevice, fence, null)
         vkFreeCommandBuffers(backend.logicalDevice.vkDevice, operationsPool.handle, commandBuffer)
 
-        stackPop()
+        MemoryStack.stackPop()
     }
 }

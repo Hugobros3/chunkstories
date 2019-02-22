@@ -6,11 +6,8 @@
 
 package xyz.chunkstories.content;
 
-import java.io.File;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import xyz.chunkstories.animation.BVHLibrary;
 import xyz.chunkstories.api.GameContext;
 import xyz.chunkstories.api.content.Asset;
@@ -28,6 +25,8 @@ import xyz.chunkstories.particle.ParticlesTypesStore;
 import xyz.chunkstories.voxel.VoxelsStore;
 import xyz.chunkstories.world.generator.WorldGeneratorsStore;
 
+import java.io.File;
+
 public class GameContentStore implements Content {
 	private final GameContext context;
 	private final ModsManager modsManager;
@@ -41,7 +40,7 @@ public class GameContentStore implements Content {
 
 	private final BVHLibrary bvhLibrary;
 
-	protected final MeshStore meshes;
+	private final MeshStore meshes;
 
 	private final LocalizationManagerImplementation localizationManager;
 	private final static Logger contentLogger = LoggerFactory.getLogger("content");
@@ -90,28 +89,23 @@ public class GameContentStore implements Content {
 		localizationManager.reload();
 	}
 
-	@Override
-	public VoxelsStore voxels() {
+	@Override public VoxelsStore voxels() {
 		return voxels;
 	}
 
-	@Override
-	public ItemDefinitionsStore items() {
+	@Override public ItemDefinitionsStore items() {
 		return items;
 	}
 
-	@Override
-	public EntityDefinitionsStore entities() {
+	@Override public EntityDefinitionsStore entities() {
 		return entities;
 	}
 
-	@Override
-	public ParticlesTypesStore particles() {
+	@Override public ParticlesTypesStore particles() {
 		return particles;
 	}
 
-	@Override
-	public PacketsStore packets() {
+	@Override public PacketsStore packets() {
 		return packets;
 	}
 
@@ -119,38 +113,31 @@ public class GameContentStore implements Content {
 		return context;
 	}
 
-	@Override
-	public ModsManager modsManager() {
+	@Override public ModsManager modsManager() {
 		return modsManager;
 	}
 
-	@Override
-	public Asset getAsset(String assetName) {
+	@Override public Asset getAsset(String assetName) {
 		return modsManager.getAsset(assetName);
 	}
 
-	@Override
-	public WorldGeneratorsStore generators() {
+	@Override public WorldGeneratorsStore generators() {
 		return generators;
 	}
 
-	@Override
-	public BVHLibrary getAnimationsLibrary() {
+	@Override public BVHLibrary getAnimationsLibrary() {
 		return bvhLibrary;
 	}
 
-	@Override
-	public LocalizationManager localization() {
+	@Override public LocalizationManager localization() {
 		return localizationManager;
 	}
 
-	@Override
-	public MeshStore meshes() {
+	@Override public MeshStore meshes() {
 		return meshes;
 	}
 
-	@Override
-	public Logger logger() {
+	@Override public Logger logger() {
 		return contentLogger;
 	}
 }

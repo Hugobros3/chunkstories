@@ -15,6 +15,7 @@ import org.joml.Vector4f
 import org.lwjgl.system.MemoryUtil
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import xyz.chunkstories.graphics.vulkan.textures.VulkanTexture2D
+import xyz.chunkstories.graphics.vulkan.textures.voxels.VoxelTexturesArray
 import java.lang.Integer.max
 import java.lang.Integer.min
 import java.util.*
@@ -80,10 +81,11 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
                                 if(opaque(neighborVoxel) || (voxel == neighborVoxel && voxel.selfOpaque))
                                     return
 
-                                val voxelTexture = voxel.getVoxelTexture(cell, side)
+                                val voxelTexture = voxel.getVoxelTexture(cell, side) as VoxelTexturesArray.VoxelTextureInArray
 
                                 val textureName = "voxels/textures/"+voxelTexture.name.replace('.','/')+".png"
-                                val textureId = (backend.textures[textureName] as VulkanTexture2D).mapping
+                                //val textureId = (backend.textures[textureName] as VulkanTexture2D).mapping
+                                val textureId = voxelTexture.textureArrayIndex
 
                                 val sunlight = VoxelFormat.sunlight(neighborData)
                                 val blocklight = VoxelFormat.blocklight(neighborData)
