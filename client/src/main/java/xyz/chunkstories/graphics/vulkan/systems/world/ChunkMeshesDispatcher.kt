@@ -5,7 +5,5 @@ import xyz.chunkstories.api.graphics.systems.dispatching.RepresentationsGobbler
 import xyz.chunkstories.world.WorldClientCommon
 
 class ChunkMeshesDispatcher(val world: WorldClientCommon) : DispatchingSystem<ChunkMeshData> {
-    override fun gatherRepresentations(representationsGobbler: RepresentationsGobbler<ChunkMeshData>) {
 
-    }
 }

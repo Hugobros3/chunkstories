@@ -40,7 +40,6 @@ import java.awt.image.BufferedImage
 
 class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(window), VoxelTexturesSupport {
     internal val enableValidation = useValidationLayer
-    internal val enableDivergingUniformSamplerIndexing : Boolean
 
     val requiredDeviceExtensions = listOf(KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME)
 
@@ -58,7 +57,6 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
     val logicalDevice: LogicalDevice
 
     val memoryManager: VulkanMemoryManager
-    val vmaAllocator: VmaAllocator
 
     /** The actual surface we're drawing onto */
     internal var surface: WindowSurface
@@ -89,10 +87,6 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
 
         logicalDevice = LogicalDevice(this, physicalDevice)
 
-        enableDivergingUniformSamplerIndexing = physicalDevice.canDoNonUniformSamplerIndexing
-
-        vmaAllocator = VmaAllocator(this)
-        //TODO remove
         memoryManager = VulkanMemoryManager(this, logicalDevice)
 
         textures = VulkanTextures(this)
@@ -176,7 +170,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
         }
 
         val additionalInstanceExtensions = mutableSetOf(EXTDebugReport.VK_EXT_DEBUG_REPORT_EXTENSION_NAME)
-        if(enableDivergingUniformSamplerIndexing)
+        //if(enableDivergingUniformSamplerIndexing)
             additionalInstanceExtensions += "VK_KHR_get_physical_device_properties2"
 
         val pRequestedInstanceExtensions = MemoryStack.stackMallocPointer(requiredExtensions.remaining() + additionalInstanceExtensions.size)
@@ -306,7 +300,6 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
         vkDestroyRenderPass(logicalDevice.vkDevice, renderToBackbuffer, null)
         swapchain.cleanup()
 
-        vmaAllocator.cleanup()
         memoryManager.cleanup()
 
         logicalDevice.cleanup()

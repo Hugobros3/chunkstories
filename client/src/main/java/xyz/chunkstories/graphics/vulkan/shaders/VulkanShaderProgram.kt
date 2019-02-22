@@ -119,7 +119,7 @@ data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsB
                 flags(VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT_EXT)
         }
 
-        if (slot == 0) {
+        if (slot == 0 && backend.logicalDevice.enableMagicTexturing) {
             val bindingFlags = stackCallocInt(bindingsMap.size)
             for ((resource, _) in bindingsMap) {
                 bindingFlags.put(when (resource) {

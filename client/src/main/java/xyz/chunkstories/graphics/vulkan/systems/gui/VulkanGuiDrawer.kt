@@ -25,8 +25,10 @@ import org.lwjgl.system.MemoryUtil
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.api.graphics.Texture2D
 import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
+import xyz.chunkstories.graphics.vulkan.resources.DescriptorSetsMegapool
 
 internal const val guiBufferSize = 2 * 1024 * 1024
 
@@ -94,9 +96,10 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
 
     /** Accumulation for GUI contents */
     val stagingByteBuffer = MemoryUtil.memAlloc(guiBufferSize)
-    val stagingDraws = mutableListOf<Pair<Int, Int>>()
+    //val stagingDraws = mutableListOf<Pair<Int, Int>>()
+    var recyclingBind = mutableListOf<DescriptorSetsMegapool.ShaderBindingContext>()
 
-    var previousTexture = -1
+    var previousTexture: Texture2D? = null
     var sameTextureCount = 0
     var previousOffset = 0
 
@@ -137,24 +140,18 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
             val vulkanTexture = (if (texture != null) backend.textures.getOrLoadTexture2D(texture) else backend.textures.defaultTexture2D)
                     as VulkanTexture2D
 
-            var translatedId: Int = vulkanTexture.mapping
-            /*loop@ while (true) {
-                val result = virtualTexturingContext.translate(vulkanTexture)
-                when (result) {
-                    is VirtualTexturing.TranslationResult.Success -> {
-                        translatedId = result.id
-                        break@loop
-                    }
-                    VirtualTexturing.TranslationResult.Full -> finishTexturingContext(false)
-                }
+            val translatedId = 0
 
-            }*/
-
-            // Create new group when changing texture
-            if (previousTexture != translatedId)
+            if (texture != null && previousTexture != vulkanTexture) {
                 afterTextureSwitch()
 
-            previousTexture = translatedId
+                val bindingCtx = backend.descriptorMegapool.getBindingContext(pipeline)
+                bindingCtx.bindTextureAndSampler("currentTexture", vulkanTexture, sampler)
+                bindingCtx.preDraw(commandBuffer)
+                recyclingBind.add(bindingCtx)
+            }
+
+            previousTexture = vulkanTexture
 
             vertex((startX), startY)
             texCoord(textureStartX, textureStartY)
@@ -190,23 +187,18 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
         }
 
         override fun drawQuad(startX: Float, startY: Float, width: Float, height: Float, textureStartX: Float, textureStartY: Float, textureEndX: Float, textureEndY: Float, texture: VulkanTexture2D, color: Vector4fc?) {
-            var translatedId: Int = texture.mapping
-            /*loop@ while (true) {
-                val result = virtualTexturingContext.translate(texture)
-                when (result) {
-                    is VirtualTexturing.TranslationResult.Success -> {
-                        translatedId = result.id
-                        break@loop
-                    }
-                    VirtualTexturing.TranslationResult.Full -> finishTexturingContext(false)
-                }
+            val translatedId = 0
 
-            }*/
-            // Create new group when changing texture
-            if (previousTexture != translatedId)
+            if (texture != null && previousTexture != texture) {
                 afterTextureSwitch()
 
-            previousTexture = translatedId
+                val bindingCtx = backend.descriptorMegapool.getBindingContext(pipeline)
+                bindingCtx.bindTextureAndSampler("currentTexture", texture, sampler)
+                bindingCtx.preDraw(commandBuffer)
+                recyclingBind.add(bindingCtx)
+            }
+
+            previousTexture = texture
 
             vertex((startX), startY)
             texCoord(textureStartX, textureStartY)
@@ -331,7 +323,8 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
         val primitivesCount = 3 * 2 * sameTextureCount
 
         if (sameTextureCount > 0)
-            stagingDraws.add(Pair(primitivesCount, previousOffset))
+        //    stagingDraws.add(Pair(primitivesCount, previousOffset))
+            vkCmdDraw(this.commandBuffer, primitivesCount, 1, previousOffset, 0)
 
         previousOffset += primitivesCount
         sameTextureCount = 0
@@ -351,16 +344,22 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
 
             gui.topLayer?.render(drawer)
             afterTextureSwitch()
-            val primitivesCount = stagingDraws.sumBy { it.first }
-            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, stackLongs(backend.textures.magicTexturing.theSet), null)
-            if(primitivesCount > 0)
-                vkCmdDraw(this.commandBuffer, primitivesCount, 1, 0, 0)
-            stagingDraws.clear()
+            //val primitivesCount = stagingDraws.sumBy { it.first }
+            //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, stackLongs(backend.textures.magicTexturing.theSet), null)
+            //if(primitivesCount > 0)
+            //    vkCmdDraw(this.commandBuffer, primitivesCount, 1, 0, 0)
+            //stagingDraws.clear()
 
             // Upload the vertex buffer contents
             vertexBuffers[frame].apply {
                 stagingByteBuffer.flip()
                 this.upload(stagingByteBuffer)
+            }
+
+            val bindingCtxes = recyclingBind.toList()
+            recyclingBind.clear()
+            frame.recyclingTasks.add {
+                bindingCtxes.forEach { it.recycle() }
             }
         }
     }

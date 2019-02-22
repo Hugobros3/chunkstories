@@ -31,6 +31,7 @@ import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
 import xyz.chunkstories.graphics.vulkan.buffers.extractInterfaceBlockField
 import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
+import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
 import xyz.chunkstories.graphics.vulkan.textures.voxels.VulkanVoxelTexturesArray
 import xyz.chunkstories.world.storage.RegionImplementation
 import java.util.*
@@ -89,6 +90,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         }
     }
 
+    val sampler = VulkanSampler(backend, false)
     val cubesProgram = backend.shaderFactory.createProgram("cubes", ShaderCompilationParameters(outputs = pass.declaration.outputs))
     private val meshesPipeline = Pipeline(backend, cubesProgram, pass, meshesVertexInputCfg, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
 
@@ -118,7 +120,9 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         bindingContext.bindUBO("world", world.getConditions())
 
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshesPipeline.handle)
-        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshesPipeline.pipelineLayout, 0, stackLongs(backend.textures.magicTexturing.theSet), null)
+
+        if(backend.logicalDevice.enableMagicTexturing)
+            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshesPipeline.pipelineLayout, 0, stackLongs(backend.textures.magicTexturing!!.theSet), null)
 
         val camChunk = camPos.toVec3i()
         camChunk.x /= 32
@@ -136,7 +140,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
         val ssboStuff = memAlloc(ssboDataTest.bufferSize.toInt())
         var instance = 0
         val voxelTexturesArray = client.content.voxels().textures() as VulkanVoxelTexturesArray
-        bindingContext.bindTextureAndSampler("albedoTextures", voxelTexturesArray.albedoOnionTexture, backend.textures.magicTexturing.sampler)
+        bindingContext.bindTextureAndSampler("albedoTextures", voxelTexturesArray.albedoOnionTexture, sampler)
         bindingContext.bindSSBO("chunkInfo", ssboDataTest)
         bindingContext.preDraw(commandBuffer)
 
@@ -276,6 +280,7 @@ class VulkanCubesDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
     }
 
     override fun cleanup() {
+        sampler.cleanup()
         meshesPipeline.cleanup()
         cubesProgram.cleanup()
     }

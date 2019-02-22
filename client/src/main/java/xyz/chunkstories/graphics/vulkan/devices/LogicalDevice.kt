@@ -22,6 +22,8 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
     internal val handle: Long
     internal val vkDevice: VkDevice
 
+    val enableMagicTexturing: Boolean
+
     data class QueueRequest(val family: PhysicalDevice.QueueFamily, val target: (queue: Queue) -> Unit)
 
     init {
@@ -87,7 +89,9 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
         var requestedExtensions = backend.requiredDeviceExtensions.toSet()
         //requestedExtensions += "VK_KHR_get_memory_requirements2"
 
-        if (backend.physicalDevice.canDoNonUniformSamplerIndexing)
+        enableMagicTexturing = backend.physicalDevice.canDoNonUniformSamplerIndexing
+
+        if (enableMagicTexturing)
             requestedExtensions = setOf("VK_EXT_descriptor_indexing", "VK_KHR_maintenance3").union(requestedExtensions)
 
         val pRequiredExtensions = stackMallocPointer(requestedExtensions.size)
@@ -100,7 +104,7 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
             ppEnabledLayerNames(requestedLayers)
         }
 
-        if(physicalDevice.canDoNonUniformSamplerIndexing) {
+        if(enableMagicTexturing) {
             val descriptorIndexingExtCreateInfo = VkPhysicalDeviceDescriptorIndexingFeaturesEXT.callocStack().sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT).apply {
                 shaderSampledImageArrayNonUniformIndexing(true)
                 descriptorBindingVariableDescriptorCount(true)
@@ -110,8 +114,9 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
             }
             vkDeviceCreateInfo.pNext(descriptorIndexingExtCreateInfo.address())
             logger.info("Enabling diverging uniform sampler indexing !")
-        } else
-            throw Exception("You need VK_ext_descriptor_indexing support !")
+        }
+        //else
+        //throw Exception("You need VK_ext_descriptor_indexing support !")
 
         val pDevice = stackMallocPointer(1)
         vkCreateDevice(physicalDevice.vkPhysicalDevice, vkDeviceCreateInfo, null, pDevice).ensureIs("Failed to create device from $physicalDevice", VK10.VK_SUCCESS)

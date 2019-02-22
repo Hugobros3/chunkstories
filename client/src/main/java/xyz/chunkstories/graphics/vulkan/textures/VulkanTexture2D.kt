@@ -16,7 +16,7 @@ class VulkanTexture2D(backend: VulkanGraphicsBackend, format: TextureFormat, ove
                 width, height, 1, 1,
                 VK_IMAGE_TYPE_2D, VK_IMAGE_VIEW_TYPE_2D, usageFlags), Texture2D {
 
-    val mapping: Int by lazy { backend.textures.magicTexturing.assignId(this) }
+    val mapping: Int by lazy { backend.textures.magicTexturing!!.assignId(this) }
 
     fun copyBufferToImage(buffer: VulkanBuffer) {
         stackPush()

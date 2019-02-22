@@ -24,11 +24,14 @@ class VulkanTextures(val backend: VulkanGraphicsBackend) : GraphicsEngine.Textur
     val commandPool: CommandPool
     val loadedTextures2D = mutableMapOf<String, VulkanTexture2D>()
 
-    val magicTexturing: MagicTexturing
+    val magicTexturing: MagicTexturing?
 
     init {
         commandPool = CommandPool(backend, backend.logicalDevice.graphicsQueue.family, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT or VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
-        magicTexturing = MagicTexturing(backend)
+        if(backend.logicalDevice.enableMagicTexturing)
+            magicTexturing = MagicTexturing(backend)
+        else
+            magicTexturing = null
     }
 
     override val defaultTexture2D: Texture2D
@@ -78,7 +81,7 @@ class VulkanTextures(val backend: VulkanGraphicsBackend) : GraphicsEngine.Textur
     override fun cleanup() {
         dropLoadedTextures()
         commandPool.cleanup()
-        magicTexturing.cleanup()
+        magicTexturing?.cleanup()
     }
 }
 
