@@ -34,10 +34,10 @@ class VulkanTextures(val backend: VulkanGraphicsBackend) : GraphicsEngine.Textur
             magicTexturing = null
     }
 
-    override val defaultTexture2D: Texture2D
+    override val defaultTexture2D: VulkanTexture2D
         get() = getOrLoadTexture2D("textures/notex.png")
 
-    override fun getOrLoadTexture2D(assetName: String): Texture2D {
+    override fun getOrLoadTexture2D(assetName: String): VulkanTexture2D {
         try {
             lock.lock()
 

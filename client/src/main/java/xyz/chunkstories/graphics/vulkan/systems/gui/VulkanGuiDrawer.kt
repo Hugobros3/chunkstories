@@ -45,7 +45,7 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
     val vertexInputConfiguration = vertexInputConfiguration {
         binding {
             binding(0)
-            stride(2 * 4 + 2 * 4 + 4 * 4 + 4)
+            stride(2 * 4 + 2 * 4 + 4 * 4)
             inputRate(VK_VERTEX_INPUT_RATE_VERTEX)
         }
 
@@ -70,12 +70,12 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
             offset(2 * 4 + 2 * 4)
         }
 
-        attribute {
+        /*attribute {
             binding(0)
             location(program.vertexInputs.find { it.name == "textureIdIn" }?.location!!)
             format(VK_FORMAT_R32_SINT)
             offset(2 * 4 + 2 * 4 + 4 * 4)
-        }
+        }*/
     }
 
     val program = backend.shaderFactory.createProgram("gui")
@@ -90,13 +90,10 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
     }
 
     //TODO this is hacky af, fix this plz
-    //val usedContexts = mutableListOf<VirtualTexturing.VirtualTexturingContext>()
-    //lateinit var virtualTexturingContext: VirtualTexturing.VirtualTexturingContext
     lateinit var commandBuffer: VkCommandBuffer
 
     /** Accumulation for GUI contents */
     val stagingByteBuffer = MemoryUtil.memAlloc(guiBufferSize)
-    //val stagingDraws = mutableListOf<Pair<Int, Int>>()
     var recyclingBind = mutableListOf<DescriptorSetsMegapool.ShaderBindingContext>()
 
     var previousTexture: Texture2D? = null
@@ -132,17 +129,10 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
             stagingByteBuffer.putFloat(color?.w() ?: 1.0F)
         }
 
-        fun textureId(id: Int) {
-            stagingByteBuffer.putInt(id)
-        }
-
         override fun drawBox(startX: Int, startY: Int, width: Int, height: Int, textureStartX: Float, textureStartY: Float, textureEndX: Float, textureEndY: Float, texture: String?, color: Vector4fc?) {
-            val vulkanTexture = (if (texture != null) backend.textures.getOrLoadTexture2D(texture) else backend.textures.defaultTexture2D)
-                    as VulkanTexture2D
+            val vulkanTexture = if (texture != null) backend.textures.getOrLoadTexture2D(texture) else backend.textures.getOrLoadTexture2D("textures/white.png")
 
-            val translatedId = 0
-
-            if (texture != null && previousTexture != vulkanTexture) {
+            if (previousTexture != vulkanTexture) {
                 afterTextureSwitch()
 
                 val bindingCtx = backend.descriptorMegapool.getBindingContext(pipeline)
@@ -156,32 +146,26 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
             vertex((startX), startY)
             texCoord(textureStartX, textureStartY)
             color(color)
-            textureId(translatedId)
 
             vertex((startX), (startY + height))
             texCoord(textureStartX, textureEndY)
             color(color)
-            textureId(translatedId)
 
             vertex((startX + width), (startY + height))
             texCoord(textureEndX, textureEndY)
             color(color)
-            textureId(translatedId)
 
             vertex((startX), startY)
             texCoord(textureStartX, textureStartY)
             color(color)
-            textureId(translatedId)
 
             vertex((startX + width), (startY + height))
             texCoord(textureEndX, textureEndY)
             color(color)
-            textureId(translatedId)
 
             vertex((startX + width), (startY))
             texCoord(textureEndX, textureStartY)
             color(color)
-            textureId(translatedId)
 
             sameTextureCount++
         }
@@ -189,7 +173,7 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
         override fun drawQuad(startX: Float, startY: Float, width: Float, height: Float, textureStartX: Float, textureStartY: Float, textureEndX: Float, textureEndY: Float, texture: VulkanTexture2D, color: Vector4fc?) {
             val translatedId = 0
 
-            if (texture != null && previousTexture != texture) {
+            if (previousTexture != texture) {
                 afterTextureSwitch()
 
                 val bindingCtx = backend.descriptorMegapool.getBindingContext(pipeline)
@@ -203,32 +187,26 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
             vertex((startX), startY)
             texCoord(textureStartX, textureStartY)
             color(color)
-            textureId(translatedId)
 
             vertex((startX), (startY + height))
             texCoord(textureStartX, textureEndY)
             color(color)
-            textureId(translatedId)
 
             vertex((startX + width), (startY + height))
             texCoord(textureEndX, textureEndY)
             color(color)
-            textureId(translatedId)
 
             vertex((startX), startY)
             texCoord(textureStartX, textureStartY)
             color(color)
-            textureId(translatedId)
 
             vertex((startX + width), (startY + height))
             texCoord(textureEndX, textureEndY)
             color(color)
-            textureId(translatedId)
 
             vertex((startX + width), (startY))
             texCoord(textureEndX, textureStartY)
             color(color)
-            textureId(translatedId)
 
             sameTextureCount++
         }
@@ -323,7 +301,6 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
         val primitivesCount = 3 * 2 * sameTextureCount
 
         if (sameTextureCount > 0)
-        //    stagingDraws.add(Pair(primitivesCount, previousOffset))
             vkCmdDraw(this.commandBuffer, primitivesCount, 1, previousOffset, 0)
 
         previousOffset += primitivesCount
@@ -335,20 +312,20 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
             vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
             vkCmdBindVertexBuffers(commandBuffer, 0, MemoryStack.stackLongs(vertexBuffers[frame].handle), MemoryStack.stackLongs(0))
 
+            val bindingCtx = backend.descriptorMegapool.getBindingContext(pipeline)
+            bindingCtx.bindTextureAndSampler("currentTexture", backend.textures.getOrLoadTexture2D("textures/white.png"), sampler)
+            bindingCtx.preDraw(commandBuffer)
+            recyclingBind.add(bindingCtx)
+
             stagingByteBuffer.clear()
             previousOffset = 0
             sameTextureCount = 0
+            previousTexture = null
 
             this.commandBuffer = commandBuffer
-            //virtualTexturingContext = backend.virtualTexturing.getVirtualTexturingContext()
 
             gui.topLayer?.render(drawer)
             afterTextureSwitch()
-            //val primitivesCount = stagingDraws.sumBy { it.first }
-            //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, stackLongs(backend.textures.magicTexturing.theSet), null)
-            //if(primitivesCount > 0)
-            //    vkCmdDraw(this.commandBuffer, primitivesCount, 1, 0, 0)
-            //stagingDraws.clear()
 
             // Upload the vertex buffer contents
             vertexBuffers[frame].apply {
