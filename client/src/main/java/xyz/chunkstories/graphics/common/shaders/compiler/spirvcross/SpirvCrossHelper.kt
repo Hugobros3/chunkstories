@@ -18,7 +18,7 @@ object SpirvCrossHelper {
     fun initSpirvCross() {
         val nativeLib = when (OSHelper.os) {
             SupportedOS.WINDOWS -> "/spirvcrossj.dll"
-            SupportedOS.LINUX -> TODO()
+            SupportedOS.LINUX -> "/libspirvcrossj.so"
             SupportedOS.OSX -> TODO()
         }
 
