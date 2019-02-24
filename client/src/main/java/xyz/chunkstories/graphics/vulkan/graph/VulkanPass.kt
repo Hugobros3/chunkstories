@@ -7,11 +7,15 @@ import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.graphics.rendergraph.*
 import xyz.chunkstories.api.graphics.systems.GraphicSystem
+import xyz.chunkstories.api.graphics.systems.RegisteredGraphicSystem
+import xyz.chunkstories.api.graphics.systems.dispatching.DispatchingSystem
+import xyz.chunkstories.api.graphics.systems.drawing.DrawingSystem
 import xyz.chunkstories.graphics.vulkan.CommandPool
 import xyz.chunkstories.graphics.vulkan.RenderPass
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.resources.Cleanable
 import xyz.chunkstories.graphics.vulkan.swapchain.Frame
+import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
 import xyz.chunkstories.graphics.vulkan.util.VkFramebuffer
 import xyz.chunkstories.graphics.vulkan.util.ensureIs
@@ -23,6 +27,9 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
     lateinit var drawingSystems: List<VulkanDrawingSystem>
         private set
 
+    lateinit var dispatchingDrawers: List<VulkanDispatchingSystem.Drawer>
+        private set
+
     val commandPool = CommandPool(backend, backend.logicalDevice.graphicsQueue.family, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT or VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
     //val commandBuffers: InflightFrameResource<VkCommandBuffer>
 
@@ -30,18 +37,36 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
         MemoryStack.stackPush()
         canonicalRenderPass = RenderPass(backend, this, null)
         val drawingSystems = mutableListOf<VulkanDrawingSystem>()
+        val dispatchingDrawers = mutableListOf<VulkanDispatchingSystem.Drawer>()
+
         val rs = declaration.draws?.registeredSystems
         if (rs != null) {
             for (declaredDrawingSystem in rs) {
-                val drawingSystem = backend.createDrawingSystem(this, declaredDrawingSystem) as VulkanDrawingSystem
 
-                val d = declaredDrawingSystem.dslCode as GraphicSystem.() -> Unit
-                drawingSystem.apply(d)
-                drawingSystems.add(drawingSystem)
+                if (DrawingSystem::class.java.isAssignableFrom(declaredDrawingSystem.clazz)) {
+                    val drawingSystem = backend.createDrawingSystem(this, declaredDrawingSystem as RegisteredGraphicSystem<DrawingSystem>) as VulkanDrawingSystem
+
+                    val d = declaredDrawingSystem.dslCode as GraphicSystem.() -> Unit
+                    drawingSystem.apply(d)
+
+                    drawingSystems.add(drawingSystem)
+                } else if (DispatchingSystem::class.java.isAssignableFrom(declaredDrawingSystem.clazz)) {
+                    val dispatchingSystem = backend.getOrCreateDispatchingSystem(declaredDrawingSystem as RegisteredGraphicSystem<DispatchingSystem<*>>)
+                    val drawer = dispatchingSystem.createDrawerForPass(this)
+
+                    //val d = declaredDrawingSystem.dslCode as GraphicSystem.() -> Unit
+                    //drawer.apply(d)
+
+                    dispatchingDrawers.add(drawer)
+                }
+                else
+                    throw Exception("What is this")
+
             }
         }
 
         this.drawingSystems = drawingSystems
+        this.dispatchingDrawers = dispatchingDrawers
 
         MemoryStack.stackPop()
     }
@@ -104,9 +129,12 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
         for (imageInput in declaration.inputs?.imageInputs ?: emptyList<ImageInput>()) {
             val source = imageInput.source
             when (source) {
-                is ImageSource.AssetReference -> { }
-                is ImageSource.TextureReference -> { }
-                is ImageSource.RenderBufferReference -> resolvedInputBuffers.add(renderTask.buffers[source.renderBufferName] ?: throw Exception("No renderbuffer named ${source.renderBufferName}"))
+                is ImageSource.AssetReference -> {
+                }
+                is ImageSource.TextureReference -> {
+                }
+                is ImageSource.RenderBufferReference -> resolvedInputBuffers.add(renderTask.buffers[source.renderBufferName]
+                        ?: throw Exception("No renderbuffer named ${source.renderBufferName}"))
                 is ImageSource.TaskOutput -> {
                     val referencedContext = source.context as VulkanFrameGraph.FrameGraphNode.RenderingContextNode
 
@@ -130,7 +158,7 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
             }
         }
 
-        for(image in passInstance.extraInputRenderBuffers) {
+        for (image in passInstance.extraInputRenderBuffers) {
             resolvedInputBuffers += image
         }
 
@@ -149,9 +177,9 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
 
         //TODO
         val imageInputstoTransition = mutableListOf<Pair<VulkanRenderBuffer, UsageType>>()
-        for(imageInputResolved in resolvedInputBuffers) {
+        for (imageInputResolved in resolvedInputBuffers) {
             val currentUsage = allBufferStates[imageInputResolved] ?: UsageType.NONE
-            if(currentUsage != UsageType.INPUT)
+            if (currentUsage != UsageType.INPUT)
                 imageInputstoTransition.add(Pair(imageInputResolved, currentUsage))
         }
 
@@ -222,7 +250,7 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
                     pClearValues(clearColor)
                 }
 
-                if(imageInputstoTransition.size > 0) {
+                if (imageInputstoTransition.size > 0) {
                     stackPush()
                     val imageBarriers = VkImageMemoryBarrier.callocStack(imageInputstoTransition.size)
                     var tightestSrcStageMask: Int = 1
@@ -281,15 +309,19 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
                     drawingSystem.registerDrawingCommands(frame, this, passInstance)
                 }
 
+                for(drawer in dispatchingDrawers) {
+                    drawer.registerDrawingCommands(frame, this, passInstance)
+                }
+
                 vkCmdEndRenderPass(this)
                 vkEndCommandBuffer(this)
             }
         }
 
-        for(output in resolvedDepthAndColorBuffers)
+        for (output in resolvedDepthAndColorBuffers)
             allBufferStates[output] = UsageType.OUTPUT
 
-        for(input in resolvedInputBuffers)
+        for (input in resolvedInputBuffers)
             allBufferStates[input] = UsageType.INPUT
 
         frame.recyclingTasks.add {
@@ -300,6 +332,7 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
 
     override fun cleanup() {
         drawingSystems.forEach(Cleanable::cleanup)
+        dispatchingDrawers.forEach(Cleanable::cleanup)
 
         canonicalRenderPass.cleanup()
         for (renderPass in renderPassesMap.values)

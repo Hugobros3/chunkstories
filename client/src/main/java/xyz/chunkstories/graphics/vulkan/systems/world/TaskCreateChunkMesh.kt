@@ -13,17 +13,19 @@ import xyz.chunkstories.world.chunk.CubicChunk
 import xyz.chunkstories.world.chunk.deriveddata.AutoRebuildingProperty
 import org.joml.Vector4f
 import org.lwjgl.system.MemoryUtil
+import org.lwjgl.system.MemoryUtil.memFree
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import xyz.chunkstories.graphics.vulkan.textures.VulkanTexture2D
 import xyz.chunkstories.graphics.vulkan.textures.voxels.VoxelTexturesArray
 import java.lang.Integer.max
 import java.lang.Integer.min
+import java.nio.ByteBuffer
 import java.util.*
 
 class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicChunk, attachedProperty: AutoRebuildingProperty, updates: Int) : AutoRebuildingProperty.UpdateTask(attachedProperty, updates) {
     lateinit var rawChunkData: IntArray
 
-    inline fun opaque(voxel: Voxel) = voxel.opaque || voxel.name == "water"
+    inline fun opaque(voxel: Voxel) = voxel.opaque// || voxel.name == "water"
 
     inline fun opaque(data: Int) = if(data == 0) false else opaque(chunk.world.contentTranslator.getVoxelForId(VoxelFormat.id(data))!!)
 
@@ -48,15 +50,17 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
 
         val rng = Random(1)
         var count = 0
-        val vertexBuffer: VulkanVertexBuffer?
 
         val chunkDataRef = chunk.voxelDataArray
+
+        val sections = mutableMapOf<String, ByteBuffer>()
+
         if (chunk.isAirChunk || chunkDataRef == null) {
-            vertexBuffer = null
+
         } else {
             rawChunkData = chunkDataRef
 
-            val buffer = MemoryUtil.memAlloc(1024 * 1024 * 4 * 4)
+            //val buffer = MemoryUtil.memAlloc(1024 * 1024 * 4 * 4)
 
             val cell = ScratchCell(chunk.world)
 
@@ -65,6 +69,12 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
                     for (z in 0..31) {
                         val data = rawChunkData[x * 32 * 32 + y * 32 + z]
                         val voxel = chunk.world.contentTranslator.getVoxelForId(VoxelFormat.id(data))!!
+
+                        val passName = if(voxel.name == "water") "water" else "cubes"
+
+                        val buffer = sections.getOrPut(passName) {
+                            MemoryUtil.memAlloc(1024 * 1024 * 4 * 4)
+                        }
 
                         cell.x = (chunk.chunkX shl 5) + x
                         cell.y = (chunk.chunkX shl 5) + y
@@ -83,7 +93,7 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
 
                                 val voxelTexture = voxel.getVoxelTexture(cell, side) as VoxelTexturesArray.VoxelTextureInArray
 
-                                val textureName = "voxels/textures/"+voxelTexture.name.replace('.','/')+".png"
+                                //val textureName = "voxels/textures/"+voxelTexture.name.replace('.','/')+".png"
                                 //val textureId = (backend.textures[textureName] as VulkanTexture2D).mapping
                                 val textureId = voxelTexture.textureArrayIndex
 
@@ -129,19 +139,22 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
                     }
                 }
             }
-
-            buffer.flip()
-
-            if (buffer.remaining() > 0) {
-                vertexBuffer = VulkanVertexBuffer(backend, buffer.limit().toLong(), MemoryUsagePattern.SEMI_STATIC)
-                vertexBuffer.upload(buffer)
-            } else
-                vertexBuffer = null
-
-            MemoryUtil.memFree(buffer)
         }
 
-        (chunk.meshData as ChunkVkMeshProperty).acceptNewData(vertexBuffer, count)
+        val sections2 = sections.filter { it.value.position() > 0 }.mapValues {
+            val buffer = it.value
+            buffer.flip()
+
+            val vertexBuffer = VulkanVertexBuffer(backend, buffer.limit().toLong(), MemoryUsagePattern.SEMI_STATIC)
+            vertexBuffer.upload(buffer)
+
+            val count = (vertexBuffer.bufferSize / (4 * 5)).toInt()
+
+            memFree(it.value)
+            ChunkMeshData.Section(it.key, vertexBuffer, count)
+        }
+
+        (chunk.meshData as ChunkVkMeshProperty).acceptNewData(sections2)
         return true
     }
 

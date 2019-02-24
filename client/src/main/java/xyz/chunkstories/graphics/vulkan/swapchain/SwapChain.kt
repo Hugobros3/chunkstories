@@ -36,6 +36,8 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
     private lateinit var renderingSemaphores: List<VkSemaphore>
     private lateinit var inFlightFences: List<VkFence>
 
+    lateinit var lastFrame: Frame private set
+
     var expired = false
 
     //TODO make it an option
@@ -234,6 +236,7 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
 
         val frame =  Frame(frameNumber, swapchainImageIndex, swapChainImages[swapchainImageIndex], swapChainImageViews[swapchainImageIndex], swapChainFramebuffers[swapchainImageIndex], inflightFrameIndex, imageAvailableSemaphore, renderingFinishedSemaphore, fence, System.nanoTime())
         performanceCounter.whenFrameBegins(frame)
+        lastFrame = frame
 
         inFlightFrames[inflightFrameIndex] = frame
         return frame

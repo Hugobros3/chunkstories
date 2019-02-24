@@ -9,7 +9,6 @@ import xyz.chunkstories.graphics.vulkan.devices.PhysicalDevice
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.vulkan.graph.VulkanRenderGraph
 import xyz.chunkstories.graphics.vulkan.resources.DescriptorSetsMegapool
-import xyz.chunkstories.graphics.vulkan.resources.VmaAllocator
 import xyz.chunkstories.graphics.vulkan.memory.VulkanMemoryManager
 import xyz.chunkstories.graphics.vulkan.shaders.VulkanShaderFactory
 import xyz.chunkstories.graphics.vulkan.swapchain.SwapChain
@@ -17,7 +16,6 @@ import xyz.chunkstories.graphics.vulkan.swapchain.WindowSurface
 import xyz.chunkstories.graphics.vulkan.systems.*
 import xyz.chunkstories.graphics.vulkan.systems.debug.VulkanDebugDrawer
 import xyz.chunkstories.graphics.vulkan.systems.gui.VulkanGuiDrawer
-import xyz.chunkstories.graphics.vulkan.systems.world.VulkanCubesDrawer
 import xyz.chunkstories.graphics.vulkan.textures.VulkanTextures
 import xyz.chunkstories.graphics.vulkan.util.*
 import org.lwjgl.PointerBuffer
@@ -31,10 +29,12 @@ import org.lwjgl.vulkan.EXTDebugReport.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.content.Content
-import xyz.chunkstories.api.graphics.systems.GraphicSystem
+import xyz.chunkstories.api.graphics.representation.Representation
 import xyz.chunkstories.api.graphics.systems.RegisteredGraphicSystem
+import xyz.chunkstories.api.graphics.systems.dispatching.DispatchingSystem
+import xyz.chunkstories.api.graphics.systems.drawing.DrawingSystem
+import xyz.chunkstories.graphics.vulkan.systems.world.ChunkMeshesDispatcher
 import xyz.chunkstories.graphics.vulkan.textures.voxels.VulkanVoxelTexturesArray
-import xyz.chunkstories.voxel.DummyVoxelTextures
 import xyz.chunkstories.voxel.VoxelTexturesSupport
 import java.awt.image.BufferedImage
 
@@ -267,22 +267,37 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
         return bestPhysicalDevice ?: throw Exception("Could not find suitable physical device !")
     }
 
-    fun <T : GraphicSystem> createDrawingSystem(pass: VulkanPass, registeredDrawingSystem: RegisteredGraphicSystem<T>): VulkanDrawingSystem {
+    fun <T : DrawingSystem> createDrawingSystem(pass: VulkanPass, drawingSystemRegistration: RegisteredGraphicSystem<T>): VulkanDrawingSystem {
         val vulkanPass = pass as? VulkanPass ?: throw Exception("Pass didn't originate from a Vulkan backend !!!")
 
-        return when (registeredDrawingSystem.clazz) {
+        return when (drawingSystemRegistration.clazz) {
             GuiDrawer::class.java -> VulkanGuiDrawer(vulkanPass, window.client.gui)
 
             FullscreenQuadDrawer::class.java, VulkanFullscreenQuadDrawer::class.java -> VulkanFullscreenQuadDrawer(vulkanPass)
             //VulkanFullscreenQuadDrawer::class.java -> VulkanFullscreenQuadDrawer(vulkanPass)
 
             VulkanSpinningCubeDrawer::class.java -> VulkanSpinningCubeDrawer(vulkanPass)
-            VulkanCubesDrawer::class.java -> VulkanCubesDrawer(vulkanPass, window.client.ingame!!)
+            //VulkanCubesDrawer::class.java -> VulkanCubesDrawer(vulkanPass, window.client.ingame!!)
             VulkanDebugDrawer::class.java -> VulkanDebugDrawer(vulkanPass, window.client.ingame!!)
             SkyDrawer::class.java -> VulkanSkyDrawer(vulkanPass)
 
-            else -> throw Exception("Unimplemented system on this backend: ${registeredDrawingSystem.clazz}")
+            else -> throw Exception("Unimplemented system on this backend: ${drawingSystemRegistration.clazz}")
         }
+    }
+
+    fun <T: DispatchingSystem<*>> getOrCreateDispatchingSystem(dispatchingSystemRegistration: RegisteredGraphicSystem<T>): VulkanDispatchingSystem<*> {
+        val existing = renderGraph.dispatchingSystems.find { dispatchingSystemRegistration.clazz.isAssignableFrom(it::class.java) }
+        if(existing != null)
+            return existing
+
+        val new = when(dispatchingSystemRegistration.clazz) {
+            ChunkMeshesDispatcher::class.java -> ChunkMeshesDispatcher(this)
+            else -> throw Exception("Unimplemented system on this backend: ${dispatchingSystemRegistration.clazz}")
+        }
+
+        renderGraph.dispatchingSystems.add(new)
+
+        return new
     }
 
     override fun createVoxelTextures(voxels: Content.Voxels) = VulkanVoxelTexturesArray(this, voxels)

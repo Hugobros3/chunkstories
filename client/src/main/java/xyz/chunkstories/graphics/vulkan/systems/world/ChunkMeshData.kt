@@ -5,12 +5,15 @@ import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
 import xyz.chunkstories.graphics.vulkan.resources.RefCountedProperty
 import xyz.chunkstories.graphics.vulkan.resources.RefCountedRecyclable
 
-class ChunkMeshData(
-        val vertexBuffer: VulkanVertexBuffer?,
-        val count: Int, property: RefCountedProperty<*>
+class ChunkMeshData(val sections: Map<String, Section>, property: RefCountedProperty<*>
 ) : RefCountedRecyclable(property), Representation {
 
     override fun cleanup() {
-        vertexBuffer?.cleanup()
+        sections.values.forEach {
+            it.buffer.cleanup()
+        }
+    }
+
+    class Section(val name: String, val buffer: VulkanVertexBuffer, val count: Int) {
     }
 }

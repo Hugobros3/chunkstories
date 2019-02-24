@@ -13,11 +13,14 @@ import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.resources.Cleanable
 import xyz.chunkstories.graphics.vulkan.swapchain.Frame
 import xyz.chunkstories.graphics.vulkan.swapchain.SwapchainBlitHelper
+import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.util.ensureIs
 
 class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderGraphDeclarationScript) : Cleanable {
     val taskDeclarations: List<RenderTaskDeclaration>
     val tasks: Map<String, VulkanRenderTask>
+
+    val dispatchingSystems = mutableListOf<VulkanDispatchingSystem<*>>()
 
     val blitHelper = SwapchainBlitHelper(backend)
 
@@ -137,6 +140,8 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
     }
 
     override fun cleanup() {
+        dispatchingSystems.forEach(Cleanable::cleanup)
+
         tasks.values.forEach(Cleanable::cleanup)
         blitHelper.cleanup()
     }

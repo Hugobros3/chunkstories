@@ -28,8 +28,8 @@ class ChunkVkMeshProperty(val backend: VulkanGraphicsBackend, val chunk: CubicCh
         }
     }
 
-    fun acceptNewData(vertexBuffer: VulkanVertexBuffer?, count: Int) {
-        val data = ChunkMeshData(vertexBuffer, count, actualProperty)
+    fun acceptNewData(sections: Map<String, ChunkMeshData.Section>) {
+        val data = ChunkMeshData(sections, actualProperty)
         actualProperty.set(data)
     }
 

@@ -11,7 +11,7 @@ import xyz.chunkstories.api.gui.GuiDrawer
 import xyz.chunkstories.graphics.vulkan.systems.SkyDrawer
 import xyz.chunkstories.graphics.vulkan.systems.VulkanFullscreenQuadDrawer
 import xyz.chunkstories.graphics.vulkan.systems.VulkanSpinningCubeDrawer
-import xyz.chunkstories.graphics.vulkan.systems.world.VulkanCubesDrawer
+import xyz.chunkstories.graphics.vulkan.systems.world.ChunkMeshesDispatcher
 import xyz.chunkstories.graphics.vulkan.systems.world.getConditions
 
 object BuiltInRendergraphs {
@@ -181,7 +181,7 @@ object BuiltInRendergraphs {
                     dependsOn("sky")
 
                     draws {
-                        system(VulkanCubesDrawer::class)
+                        system(ChunkMeshesDispatcher::class)
                     }
 
                     outputs {
@@ -251,9 +251,31 @@ object BuiltInRendergraphs {
                 }
 
                 pass {
-                    name = "postprocess"
+                    name = "water"
 
                     dependsOn("deferredShading")
+
+                    draws {
+                        system(ChunkMeshesDispatcher::class)
+                    }
+
+                    outputs {
+                        output {
+                            name = "shadedBuffer"
+                            blending = MIX
+                        }
+                    }
+
+                    depth {
+                        enabled = true
+                        depthBuffer = renderBuffer("depthBuffer")
+                    }
+                }
+
+                pass {
+                    name = "postprocess"
+
+                    dependsOn("deferredShading", "water")
 
                     inputs {
                         imageInput {
@@ -321,7 +343,7 @@ object BuiltInRendergraphs {
                     name = "cubes"
 
                     draws {
-                        system(VulkanCubesDrawer::class)
+                        system(ChunkMeshesDispatcher::class)
                     }
 
                     outputs {

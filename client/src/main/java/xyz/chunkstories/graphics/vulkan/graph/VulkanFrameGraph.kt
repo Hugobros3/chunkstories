@@ -88,6 +88,10 @@ class VulkanFrameGraph(val frame: Frame, val renderGraph: VulkanRenderGraph, sta
                 vulkanPass.drawingSystems.forEach {
                     it.registerAdditionalRenderTasks(this)
                 }
+
+                vulkanPass.dispatchingDrawers.forEach {
+                    it.registerAdditionalRenderTasks(this)
+                }
             }
             is FrameGraphNode.RenderingContextNode -> {
                 val rootPass = this.renderTask.rootPass

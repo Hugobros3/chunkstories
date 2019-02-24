@@ -6,7 +6,6 @@ import xyz.chunkstories.api.gui.GuiDrawer
 import xyz.chunkstories.api.util.kotlin.toVec3i
 import xyz.chunkstories.client.glfw.GLFWWindow
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
-import xyz.chunkstories.graphics.vulkan.systems.world.VulkanCubesDrawer
 import xyz.chunkstories.gui.ClientGui
 import xyz.chunkstories.gui.layer.ingame.IngameLayer
 import xyz.chunkstories.util.VersionInfo
@@ -42,6 +41,10 @@ class DebugInfoRendererHelper(ingameLayer: IngameLayer) {
                 debugLine("#FF0000Rendering: ${performanceMetrics.lastFrametimeNs/1000000}ms fps: ${performanceMetrics.avgFps.toInt()} (min ${performanceMetrics.minFps.toInt()}, max ${performanceMetrics.maxFps.toInt()}) #00FFFFSimulation performance : ${world.gameLogic.simulationFps}")
 
                 debugLine("VRAM usage: ${graphicsBackend.memoryManager.stats}")
+
+                val frame = swapchain.lastFrame
+                val stats = frame.stats
+                debugLine("Vertices drawn: ${stats.totalVerticesDrawn} in ${stats.totalDrawcalls} drawcalls")
             }
         }
         debugLine("RAM usage: ${Runtime.getRuntime().freeMemory() / 1024 / 1024} mb free")
@@ -49,9 +52,6 @@ class DebugInfoRendererHelper(ingameLayer: IngameLayer) {
 
         debugLine("Tasks queued: ${client.tasks.submittedTasks()} IO operations queud: ${world.ioHandler.size}")
 
-        debugLine("Vertices drawn: ${VulkanCubesDrawer.totalCubesDrawn} within ${VulkanCubesDrawer.totalBuffersUsed} vertex buffers")
-        VulkanCubesDrawer.totalCubesDrawn = 0
-        VulkanCubesDrawer.totalBuffersUsed = 0
 
         var chunksCount = 0
         var regionsCount = 0
