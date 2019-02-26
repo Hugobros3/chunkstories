@@ -11,11 +11,9 @@ import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
 import xyz.chunkstories.world.cell.ScratchCell
 import xyz.chunkstories.world.chunk.CubicChunk
 import xyz.chunkstories.world.chunk.deriveddata.AutoRebuildingProperty
-import org.joml.Vector4f
 import org.lwjgl.system.MemoryUtil
 import org.lwjgl.system.MemoryUtil.memFree
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
-import xyz.chunkstories.graphics.vulkan.textures.VulkanTexture2D
 import xyz.chunkstories.graphics.vulkan.textures.voxels.VoxelTexturesArray
 import java.lang.Integer.max
 import java.lang.Integer.min
@@ -53,7 +51,7 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
 
         val chunkDataRef = chunk.voxelDataArray
 
-        val sections = mutableMapOf<String, ByteBuffer>()
+        val buffers = mutableMapOf<String, ByteBuffer>()
 
         if (chunk.isAirChunk || chunkDataRef == null) {
 
@@ -72,7 +70,7 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
 
                         val passName = if(voxel.name == "water") "water" else "cubes"
 
-                        val buffer = sections.getOrPut(passName) {
+                        val buffer = buffers.getOrPut(passName) {
                             MemoryUtil.memAlloc(1024 * 1024 * 4 * 4)
                         }
 
@@ -141,7 +139,7 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
             }
         }
 
-        val sections2 = sections.filter { it.value.position() > 0 }.mapValues {
+        val sections = buffers.filter { it.value.position() > 0 }.mapValues {
             val buffer = it.value
             buffer.flip()
 
@@ -150,11 +148,14 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
 
             val count = (vertexBuffer.bufferSize / (4 * 5)).toInt()
 
-            memFree(it.value)
             ChunkMeshData.Section(it.key, vertexBuffer, count)
         }
 
-        (chunk.meshData as ChunkVkMeshProperty).acceptNewData(sections2)
+        buffers.forEach {
+            memFree(it.value)
+        }
+
+        (chunk.meshData as ChunkVkMeshProperty).acceptNewData(sections)
         return true
     }
 
