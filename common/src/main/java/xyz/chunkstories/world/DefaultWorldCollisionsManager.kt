@@ -101,7 +101,12 @@ class DefaultWorldCollisionsManager(private val world: WorldImplementation) : Wo
             y = voxelCoords[1]
             z = voxelCoords[2]
             cell = world.peekSafely(x, y, z)
-            if (cell.getVoxel()!!.solid || selectable) {
+            val voxel = cell.getVoxel()!!
+
+            if (voxel.solid || (selectable && voxel.definition["liquid"] != "true")) {
+                if(voxel.isAir())
+                    continue
+
                 var collides = false
                 for (box in cell.getTranslatedCollisionBoxes()!!) {
                     // System.out.println(box);
