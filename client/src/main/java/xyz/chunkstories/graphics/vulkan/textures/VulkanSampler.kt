@@ -7,8 +7,9 @@ import xyz.chunkstories.graphics.vulkan.util.ensureIs
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkSamplerCreateInfo
+import xyz.chunkstories.api.graphics.TextureTilingMode
 
-class VulkanSampler(val backend: VulkanGraphicsBackend, val shadowSampler: Boolean) : Cleanable {
+class VulkanSampler(val backend: VulkanGraphicsBackend, val shadowSampler: Boolean = false, val tilingMode: TextureTilingMode = TextureTilingMode.CLAMP_TO_EDGE)  : Cleanable {
     val handle : VkSampler
 
     init {
@@ -16,9 +17,14 @@ class VulkanSampler(val backend: VulkanGraphicsBackend, val shadowSampler: Boole
         val samplerInfo = VkSamplerCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO).apply {
             magFilter(VK_FILTER_NEAREST)
             minFilter(VK_FILTER_NEAREST)
-            addressModeU(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
-            addressModeV(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
-            addressModeW(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
+
+            val addressMode = when(tilingMode) {
+                TextureTilingMode.CLAMP_TO_EDGE -> VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE
+                TextureTilingMode.REPEAT -> VK_SAMPLER_ADDRESS_MODE_REPEAT
+            }
+            addressModeU(addressMode)
+            addressModeV(addressMode)
+            addressModeW(addressMode)
 
             anisotropyEnable(false)
             maxAnisotropy(1F) // 16F

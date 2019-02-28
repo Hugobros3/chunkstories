@@ -13,7 +13,7 @@ import xyz.chunkstories.graphics.vulkan.util.*
 class MagicTexturing(val backend: VulkanGraphicsBackend) : Cleanable {
 
     private val setLayout : VkDescriptorSetLayout
-    val sampler = VulkanSampler(backend, false)
+    val sampler = VulkanSampler(backend)
 
     private val pool: VkDescriptorPool
     val theSet : VkDescriptorSet

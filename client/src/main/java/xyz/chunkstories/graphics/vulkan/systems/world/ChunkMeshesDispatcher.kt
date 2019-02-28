@@ -5,6 +5,7 @@ import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil
 import org.lwjgl.vulkan.VK10
 import org.lwjgl.vulkan.VkCommandBuffer
+import xyz.chunkstories.api.graphics.TextureTilingMode
 import xyz.chunkstories.api.util.kotlin.toVec3i
 import xyz.chunkstories.api.world.chunk.Chunk
 import xyz.chunkstories.api.world.region.Region
@@ -82,7 +83,7 @@ class ChunkMeshesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingS
         }
     }
 
-    val sampler = VulkanSampler(backend, false)
+    val sampler = VulkanSampler(backend, tilingMode = TextureTilingMode.REPEAT)
 
     inner class Drawer(pass: VulkanPass) : VulkanDispatchingSystem.Drawer(pass) {
         val cubesProgram = backend.shaderFactory.createProgram(if(pass.declaration.name == "water") "water" else "cubes", ShaderCompilationParameters(outputs = pass.declaration.outputs))
@@ -133,6 +134,12 @@ class ChunkMeshesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingS
             val voxelTexturesArray = client.content.voxels().textures() as VulkanVoxelTexturesArray
             bindingContext.bindTextureAndSampler("albedoTextures", voxelTexturesArray.albedoOnionTexture, sampler)
             bindingContext.bindSSBO("chunkInfo", ssboDataTest)
+
+            if(pass.declaration.name == "water") {
+                bindingContext.bindTextureAndSampler("waterNormalDeep", backend.textures.getOrLoadTexture2D("textures/water/deep.png"), sampler)
+                bindingContext.bindTextureAndSampler("waterNormalShallow", backend.textures.getOrLoadTexture2D("textures/water/shallow.png"), sampler)
+            }
+
             bindingContext.preDraw(commandBuffer)
 
             fun renderChunk(chunk: CubicChunk) {

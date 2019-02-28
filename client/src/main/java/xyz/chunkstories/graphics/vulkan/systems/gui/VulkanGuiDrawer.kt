@@ -80,7 +80,7 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
 
     val program = backend.shaderFactory.createProgram("gui")
     val pipeline = Pipeline(backend, program, pass, vertexInputConfiguration, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
-    val sampler = VulkanSampler(backend, false)
+    val sampler = VulkanSampler(backend)
     val vertexBuffers: InflightFrameResource<VulkanVertexBuffer>
 
     init {
