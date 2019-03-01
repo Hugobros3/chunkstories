@@ -29,16 +29,18 @@ import org.lwjgl.vulkan.EXTDebugReport.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.content.Content
-import xyz.chunkstories.api.graphics.representation.Representation
 import xyz.chunkstories.api.graphics.systems.RegisteredGraphicSystem
 import xyz.chunkstories.api.graphics.systems.dispatching.DispatchingSystem
 import xyz.chunkstories.api.graphics.systems.drawing.DrawingSystem
-import xyz.chunkstories.graphics.vulkan.systems.world.ChunkMeshesDispatcher
+import xyz.chunkstories.graphics.GraphicsEngineImplementation
+import xyz.chunkstories.graphics.vulkan.systems.world.ChunkRepresentationsDispatcher
 import xyz.chunkstories.graphics.vulkan.textures.voxels.VulkanVoxelTexturesArray
+import xyz.chunkstories.graphics.vulkan.world.VulkanWorldRenderer
 import xyz.chunkstories.voxel.VoxelTexturesSupport
+import xyz.chunkstories.world.WorldClientCommon
 import java.awt.image.BufferedImage
 
-class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(window), VoxelTexturesSupport {
+class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window: GLFWWindow) : GLFWBasedGraphicsBackend(graphicsEngine, window), VoxelTexturesSupport {
     internal val enableValidation = useValidationLayer
 
     val requiredDeviceExtensions = listOf(KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME)
@@ -291,7 +293,7 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
             return existing
 
         val new = when(dispatchingSystemRegistration.clazz) {
-            ChunkMeshesDispatcher::class.java -> ChunkMeshesDispatcher(this)
+            ChunkRepresentationsDispatcher::class.java -> ChunkRepresentationsDispatcher(this)
             else -> throw Exception("Unimplemented system on this backend: ${dispatchingSystemRegistration.clazz}")
         }
 
@@ -301,6 +303,8 @@ class VulkanGraphicsBackend(window: GLFWWindow) : GLFWBasedGraphicsBackend(windo
     }
 
     override fun createVoxelTextures(voxels: Content.Voxels) = VulkanVoxelTexturesArray(this, voxels)
+
+    override fun createWorldRenderer(world: WorldClientCommon) = VulkanWorldRenderer(this, world)
 
     override fun cleanup() {
         vkDeviceWaitIdle(logicalDevice.vkDevice)

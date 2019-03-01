@@ -46,7 +46,7 @@ class GraphicsEngineImplementation(val client: ClientImplementation) : GraphicsE
         window = GLFWWindow(client, this, selectedGraphicsBackend, "Chunk Stories " + VersionInfo.version)
 
         //TODO modify those to take the GraphicsEngine as param
-        backend = selectedGraphicsBackend.init(window)
+        backend = selectedGraphicsBackend.init(this, window)
     }
 
     var frameNumber = 0

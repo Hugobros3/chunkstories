@@ -10,6 +10,7 @@ import xyz.chunkstories.api.graphics.rendergraph.RenderGraphDeclarationScript
 import xyz.chunkstories.api.graphics.rendergraph.RenderTaskDeclaration
 import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
+import xyz.chunkstories.graphics.vulkan.representations.gatherRepresentations
 import xyz.chunkstories.graphics.vulkan.resources.Cleanable
 import xyz.chunkstories.graphics.vulkan.swapchain.Frame
 import xyz.chunkstories.graphics.vulkan.swapchain.SwapchainBlitHelper
@@ -51,11 +52,12 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
 
         val sequencedGraph = graph.sequenceGraph()
 
-        //println(sequencedGraph)
+        val gathered = backend.graphicsEngine.gatherRepresentations(graph, sequencedGraph)
 
+        var passIndex = 0
         val globalStates = mutableMapOf<VulkanRenderBuffer, UsageType>()
-        for(i in 0 until sequencedGraph.size) {
-            val graphNode = sequencedGraph[i]
+        for(graphNodeIndex in 0 until sequencedGraph.size) {
+            val graphNode = sequencedGraph[graphNodeIndex]
 
             when (graphNode) {
                 is VulkanFrameGraph.FrameGraphNode.PassNode -> {
@@ -81,7 +83,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
                             inputRenderBuffersToTransition.add(Pair(rb, currentState))
                     }*/
 
-                    pass.render(frame, graphNode, globalStates)
+                    pass.render(frame, graphNode, passIndex++, globalStates, gathered)
 
                     /*/** Update the state of the buffers used in that pass */
                     for(entry in requiredRenderBufferStates)
@@ -93,7 +95,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
 
         // Validation also makes it so we output a rendergraph image
         if(fresh && backend.enableValidation) {
-            lookIDontCare(graph)
+            exportRenderGraphPng(graph)
             fresh = false
         }
 

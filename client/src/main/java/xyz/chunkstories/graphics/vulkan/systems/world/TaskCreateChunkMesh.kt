@@ -148,7 +148,7 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
 
             val count = (vertexBuffer.bufferSize / (4 * 5)).toInt()
 
-            ChunkMeshData.Section(it.key, vertexBuffer, count)
+            ChunkRepresentation.Section(it.key, vertexBuffer, count)
         }
 
         buffers.forEach {

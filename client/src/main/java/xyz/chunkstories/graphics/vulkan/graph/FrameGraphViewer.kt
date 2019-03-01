@@ -8,7 +8,7 @@ import guru.nidi.graphviz.model.Factory.*
 import java.io.File
 
 
-fun lookIDontCare(frameGraph: VulkanFrameGraph) {
+fun exportRenderGraphPng(frameGraph: VulkanFrameGraph) {
     fun node2viz(node: VulkanFrameGraph.FrameGraphNode) = node("${node.hashCode()}").let {
         when (node) {
             is VulkanFrameGraph.FrameGraphNode.PassNode -> {

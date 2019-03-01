@@ -13,6 +13,7 @@ import xyz.chunkstories.api.graphics.systems.drawing.DrawingSystem
 import xyz.chunkstories.graphics.vulkan.CommandPool
 import xyz.chunkstories.graphics.vulkan.RenderPass
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
+import xyz.chunkstories.graphics.vulkan.representations.RepresentationsGathered
 import xyz.chunkstories.graphics.vulkan.resources.Cleanable
 import xyz.chunkstories.graphics.vulkan.swapchain.Frame
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
@@ -27,7 +28,7 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
     lateinit var drawingSystems: List<VulkanDrawingSystem>
         private set
 
-    lateinit var dispatchingDrawers: List<VulkanDispatchingSystem.Drawer>
+    lateinit var dispatchingDrawers: List<VulkanDispatchingSystem.Drawer<*>>
         private set
 
     val commandPool = CommandPool(backend, backend.logicalDevice.graphicsQueue.family, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT or VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
@@ -37,7 +38,7 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
         MemoryStack.stackPush()
         canonicalRenderPass = RenderPass(backend, this, null)
         val drawingSystems = mutableListOf<VulkanDrawingSystem>()
-        val dispatchingDrawers = mutableListOf<VulkanDispatchingSystem.Drawer>()
+        val dispatchingDrawers = mutableListOf<VulkanDispatchingSystem.Drawer<*>>()
 
         val rs = declaration.draws?.registeredSystems
         if (rs != null) {
@@ -95,7 +96,12 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
         return handle
     }
 
-    fun render(frame: Frame, passInstance: VulkanFrameGraph.FrameGraphNode.PassNode, allBufferStates: MutableMap<VulkanRenderBuffer, UsageType>/*attachementsPreviousState: List<UsageType>, imageInputstoTransition: List<Pair<VulkanRenderBuffer, UsageType>>*/) {
+    fun render(frame: Frame,
+               passInstance: VulkanFrameGraph.FrameGraphNode.PassNode,
+               passInstanceIndex: Int,
+               allBufferStates: MutableMap<VulkanRenderBuffer, UsageType>,
+               representationsGathered: RepresentationsGathered
+    ) {
         val outputs = declaration.outputs.outputs
         val depth = declaration.depthTestingConfiguration
 
@@ -310,7 +316,11 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
                 }
 
                 for(drawer in dispatchingDrawers) {
-                    drawer.registerDrawingCommands(frame, this, passInstance)
+                    val relevantBucket = representationsGathered.buckets[drawer.system.representationName] ?: continue
+
+                    val filter = 1 shl passInstanceIndex
+                    val filteredByIndex = relevantBucket.representations.asSequence().filterIndexed { i, r -> relevantBucket.visibility[i] and filter != 0 }
+                    drawer.registerDrawingCommands(frame, passInstance, this, filteredByIndex as Sequence<Nothing>)
                 }
 
                 vkCmdEndRenderPass(this)

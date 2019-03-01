@@ -11,7 +11,7 @@ import xyz.chunkstories.api.gui.GuiDrawer
 import xyz.chunkstories.graphics.vulkan.systems.SkyDrawer
 import xyz.chunkstories.graphics.vulkan.systems.VulkanFullscreenQuadDrawer
 import xyz.chunkstories.graphics.vulkan.systems.VulkanSpinningCubeDrawer
-import xyz.chunkstories.graphics.vulkan.systems.world.ChunkMeshesDispatcher
+import xyz.chunkstories.graphics.vulkan.systems.world.ChunkRepresentationsDispatcher
 import xyz.chunkstories.graphics.vulkan.systems.world.getConditions
 
 object BuiltInRendergraphs {
@@ -181,7 +181,7 @@ object BuiltInRendergraphs {
                     dependsOn("sky")
 
                     draws {
-                        system(ChunkMeshesDispatcher::class)
+                        system(ChunkRepresentationsDispatcher::class)
                     }
 
                     outputs {
@@ -256,7 +256,7 @@ object BuiltInRendergraphs {
                     dependsOn("deferredShading")
 
                     draws {
-                        system(ChunkMeshesDispatcher::class)
+                        system(ChunkRepresentationsDispatcher::class)
                     }
 
                     outputs {
@@ -343,7 +343,7 @@ object BuiltInRendergraphs {
                     name = "cubes"
 
                     draws {
-                        system(ChunkMeshesDispatcher::class)
+                        system(ChunkRepresentationsDispatcher::class)
                     }
 
                     outputs {

@@ -11,13 +11,15 @@ import xyz.chunkstories.graphics.vulkan.swapchain.Frame
 
 abstract class VulkanDispatchingSystem<T: Representation>(val backend: VulkanGraphicsBackend) : DispatchingSystem<T>, Cleanable {
 
-    abstract class Drawer(val pass: VulkanPass) : Cleanable {
-        abstract fun registerDrawingCommands(frame : Frame, commandBuffer: VkCommandBuffer, passContext: VulkanFrameGraph.FrameGraphNode.PassNode)
+    abstract class Drawer<T: Representation>(val pass: VulkanPass) : Cleanable {
+        abstract val system: VulkanDispatchingSystem<T>
+
+        abstract fun registerDrawingCommands(frame : Frame, context: VulkanFrameGraph.FrameGraphNode.PassNode, commandBuffer: VkCommandBuffer, representations: Sequence<T>)
 
         open fun registerAdditionalRenderTasks(passContext: VulkanFrameGraph.FrameGraphNode.PassNode) {
             // Does nothing by default
         }
     }
 
-    abstract fun createDrawerForPass(pass: VulkanPass) : Drawer
+    abstract fun createDrawerForPass(pass: VulkanPass) : Drawer<T>
 }
