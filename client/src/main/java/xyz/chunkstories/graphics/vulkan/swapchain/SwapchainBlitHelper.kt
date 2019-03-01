@@ -92,7 +92,7 @@ class SwapchainBlitHelper(val backend: VulkanGraphicsBackend) : Cleanable {
                 }
                 vkCmdPipelineBarrier(this, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, null, null, barriers)
 
-                val region = VkImageCopy.callocStack(1).apply {
+                /*val region = VkImageCopy.callocStack(1).apply {
                     this.extent().width(finalRenderBuffer.size.x)
                     this.extent().height(finalRenderBuffer.size.y)
                     this.extent().depth(1)
@@ -107,8 +107,30 @@ class SwapchainBlitHelper(val backend: VulkanGraphicsBackend) : Cleanable {
                     dstSubresource().set(srcSubresource())
                 }
 
-                vkCmdCopyImage(this, finalRenderBuffer.texture.imageHandle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                        frame.swapchainImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, region)
+                vkCmdCopyImage(this, finalRenderBuffer.texture.imageHandle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, frame.swapchainImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, region)*/
+                val region = VkImageBlit.callocStack(1).apply {
+                    srcSubresource().apply {
+                        aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
+                        mipLevel(0)
+                        baseArrayLayer(0)
+                        layerCount(1)
+                    }
+
+                    dstSubresource().set(srcSubresource())
+
+                    srcOffsets()[1].apply {
+                        x(finalRenderBuffer.size.x)
+                        y(finalRenderBuffer.size.y)
+                        z(1)
+                    }
+
+                    dstOffsets()[1].apply {
+                        x(backend.window.width)
+                        y(backend.window.height)
+                        z(1)
+                    }
+                }
+                vkCmdBlitImage(this, finalRenderBuffer.texture.imageHandle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, frame.swapchainImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, region, VK_FILTER_LINEAR)
 
                 val swapchainImageReadyPresentBarrier = VkImageMemoryBarrier.callocStack(1).sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER).apply {
                     oldLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
