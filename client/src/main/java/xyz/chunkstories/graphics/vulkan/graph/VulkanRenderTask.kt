@@ -2,7 +2,7 @@ package xyz.chunkstories.graphics.vulkan.graph
 
 import xyz.chunkstories.api.graphics.rendergraph.RenderTaskDeclaration
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
-import xyz.chunkstories.graphics.vulkan.resources.Cleanable
+import xyz.chunkstories.graphics.common.Cleanable
 
 class VulkanRenderTask(val backend: VulkanGraphicsBackend, val declaration: RenderTaskDeclaration) : Cleanable {
     var buffers: Map<String, VulkanRenderBuffer>

@@ -5,11 +5,9 @@ import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkMemoryAllocateInfo
 import org.lwjgl.vulkan.VkMemoryRequirements
 import org.lwjgl.vulkan.VkMemoryType
-import xyz.chunkstories.graphics.vulkan.resources.Cleanable
+import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.vulkan.util.VkDeviceMemory
 import xyz.chunkstories.graphics.vulkan.util.ensureIs
-import xyz.chunkstories.gui.logger
-import java.util.*
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock

@@ -14,7 +14,7 @@ import xyz.chunkstories.graphics.common.util.toByteBuffer
 import xyz.chunkstories.graphics.vulkan.CommandPool
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
-import xyz.chunkstories.graphics.vulkan.resources.Cleanable
+import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.vulkan.textures.VulkanTexture2D
 import xyz.chunkstories.gui.Glyph
 import xyz.chunkstories.gui.TrueTypeFont

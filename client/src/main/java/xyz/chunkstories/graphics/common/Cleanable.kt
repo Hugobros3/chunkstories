@@ -1,4 +1,4 @@
-package xyz.chunkstories.graphics.vulkan.resources
+package xyz.chunkstories.graphics.common
 
 interface Cleanable {
     fun cleanup()

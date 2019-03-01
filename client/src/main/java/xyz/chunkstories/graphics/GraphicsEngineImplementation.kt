@@ -5,7 +5,7 @@ import xyz.chunkstories.api.graphics.GraphicsEngine
 import xyz.chunkstories.api.graphics.rendergraph.RenderGraphDeclarationScript
 import xyz.chunkstories.client.ClientImplementation
 import xyz.chunkstories.client.glfw.GLFWWindow
-import xyz.chunkstories.graphics.vulkan.resources.Cleanable
+import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.util.VersionInfo
 
 class GraphicsEngineImplementation(val client: ClientImplementation) : GraphicsEngine, Cleanable {

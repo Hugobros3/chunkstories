@@ -3,7 +3,7 @@ package xyz.chunkstories.graphics.vulkan.graph
 import org.joml.Vector2i
 import xyz.chunkstories.api.graphics.TextureFormat
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
-import xyz.chunkstories.graphics.vulkan.resources.Cleanable
+import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.vulkan.textures.VulkanTexture2D
 import org.lwjgl.system.MemoryStack.stackPop
 import org.lwjgl.system.MemoryStack.stackPush
@@ -13,7 +13,6 @@ import org.lwjgl.vulkan.VkImageMemoryBarrier
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.graphics.rendergraph.RenderBufferDeclaration
 import xyz.chunkstories.api.graphics.rendergraph.RenderBufferSize
-import xyz.chunkstories.graphics.vulkan.util.VkImageLayout
 import kotlin.math.roundToInt
 
 class VulkanRenderBuffer(val backend: VulkanGraphicsBackend, val declaration: RenderBufferDeclaration) : Cleanable {

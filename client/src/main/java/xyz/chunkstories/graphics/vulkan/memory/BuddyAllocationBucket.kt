@@ -5,7 +5,7 @@ import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkMemoryAllocateInfo
 import org.lwjgl.vulkan.VkMemoryRequirements
 import org.lwjgl.vulkan.VkMemoryType
-import xyz.chunkstories.graphics.vulkan.resources.Cleanable
+import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.vulkan.util.VkDeviceMemory
 import xyz.chunkstories.graphics.vulkan.util.ensureIs
 import java.awt.image.BufferedImage

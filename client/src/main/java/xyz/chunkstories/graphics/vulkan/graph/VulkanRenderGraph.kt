@@ -11,7 +11,7 @@ import xyz.chunkstories.api.graphics.rendergraph.RenderTaskDeclaration
 import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.representations.gatherRepresentations
-import xyz.chunkstories.graphics.vulkan.resources.Cleanable
+import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.vulkan.swapchain.Frame
 import xyz.chunkstories.graphics.vulkan.swapchain.SwapchainBlitHelper
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem

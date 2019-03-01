@@ -6,7 +6,7 @@ import xyz.chunkstories.api.graphics.systems.dispatching.DispatchingSystem
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
-import xyz.chunkstories.graphics.vulkan.resources.Cleanable
+import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.vulkan.swapchain.Frame
 
 abstract class VulkanDispatchingSystem<T: Representation>(val backend: VulkanGraphicsBackend) : DispatchingSystem<T>, Cleanable {

@@ -2,7 +2,7 @@ package xyz.chunkstories.graphics.vulkan.devices
 
 import xyz.chunkstories.graphics.vulkan.CommandPool
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
-import xyz.chunkstories.graphics.vulkan.resources.Cleanable
+import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.vulkan.util.ensureIs
 import org.lwjgl.PointerBuffer
 import org.lwjgl.system.MemoryStack.*
@@ -155,7 +155,7 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
         return "LogicalDevice(handle=$handle, graphicsQueue=$graphicsQueue)"
     }
 
-    inner class Queue(val handle: VkQueue, val family: PhysicalDevice.QueueFamily) : Cleanable{
+    inner class Queue(val handle: VkQueue, val family: PhysicalDevice.QueueFamily) : Cleanable {
         val mutex = Semaphore(1)
 
         val threadSafePools: ThreadLocal<CommandPool>

@@ -2,12 +2,11 @@ package xyz.chunkstories.graphics.vulkan.textures
 
 import de.matthiasmann.twl.utils.PNGDecoder
 import xyz.chunkstories.api.graphics.GraphicsEngine
-import xyz.chunkstories.api.graphics.Texture2D
 import xyz.chunkstories.api.graphics.TextureFormat
 import xyz.chunkstories.graphics.vulkan.CommandPool
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
-import xyz.chunkstories.graphics.vulkan.resources.Cleanable
+import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.vulkan.util.VulkanFormat
 import org.lwjgl.system.MemoryStack.stackPop
 import org.lwjgl.system.MemoryStack.stackPush
@@ -15,7 +14,6 @@ import org.lwjgl.system.MemoryUtil.memAlloc
 import org.lwjgl.system.MemoryUtil.memFree
 import org.lwjgl.vulkan.VK10.*
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
-import xyz.chunkstories.graphics.vulkan.util.updateDescriptorSet
 import java.util.concurrent.locks.ReentrantLock
 
 class VulkanTextures(val backend: VulkanGraphicsBackend) : GraphicsEngine.Textures, Cleanable {

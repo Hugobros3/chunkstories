@@ -1,18 +1,15 @@
 package xyz.chunkstories.graphics.vulkan.textures.voxels
 
-import de.matthiasmann.twl.utils.PNGDecoder
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil
-import org.lwjgl.vulkan.VK10
 import org.lwjgl.vulkan.VK10.*
 import xyz.chunkstories.api.content.Content
 import xyz.chunkstories.api.graphics.TextureFormat
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
-import xyz.chunkstories.graphics.vulkan.resources.Cleanable
+import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.vulkan.textures.VulkanOnionTexture2D
-import xyz.chunkstories.graphics.vulkan.textures.VulkanTexture2D
 import xyz.chunkstories.util.toByteBuffer
 import java.awt.image.BufferedImage
 

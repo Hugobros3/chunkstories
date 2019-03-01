@@ -5,9 +5,8 @@ import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.EXTDescriptorIndexing.*
 import org.lwjgl.vulkan.VK10.*
-import xyz.chunkstories.graphics.common.shaders.GLSLUniformImage2D
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
-import xyz.chunkstories.graphics.vulkan.resources.Cleanable
+import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.vulkan.util.*
 
 class MagicTexturing(val backend: VulkanGraphicsBackend) : Cleanable {

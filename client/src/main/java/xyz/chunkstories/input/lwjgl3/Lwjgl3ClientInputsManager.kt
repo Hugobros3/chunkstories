@@ -32,7 +32,7 @@ import org.lwjgl.glfw.GLFWMouseButtonCallback
 import org.lwjgl.glfw.GLFWScrollCallback
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import xyz.chunkstories.graphics.vulkan.resources.Cleanable
+import xyz.chunkstories.graphics.common.Cleanable
 
 class Lwjgl3ClientInputsManager// private final IngameLayer scene;
 (val gameWindow: GLFWWindow) : ClientInputsManager, InputsManagerLoader, Cleanable {

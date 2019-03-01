@@ -2,7 +2,7 @@ package xyz.chunkstories.graphics.vulkan
 
 import xyz.chunkstories.graphics.vulkan.devices.LogicalDevice
 import xyz.chunkstories.graphics.vulkan.devices.PhysicalDevice
-import xyz.chunkstories.graphics.vulkan.resources.Cleanable
+import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.vulkan.util.VkCommandPool
 import xyz.chunkstories.graphics.vulkan.util.VkFence
 import xyz.chunkstories.graphics.vulkan.util.ensureIs

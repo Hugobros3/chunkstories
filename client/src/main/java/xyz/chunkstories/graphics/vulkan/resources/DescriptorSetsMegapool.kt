@@ -13,6 +13,7 @@ import org.lwjgl.system.MemoryUtil.memAllocLong
 import org.lwjgl.system.MemoryUtil.memFree
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
+import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.common.shaders.GLSLUniformBlock
 import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampledImage2D
 import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampledImage2DArray

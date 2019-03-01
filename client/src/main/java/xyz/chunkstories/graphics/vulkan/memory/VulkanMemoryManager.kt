@@ -6,7 +6,7 @@ import org.lwjgl.vulkan.VkMemoryType
 import org.lwjgl.vulkan.VkPhysicalDeviceMemoryProperties
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.devices.LogicalDevice
-import xyz.chunkstories.graphics.vulkan.resources.Cleanable
+import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.vulkan.util.VkDeviceMemory
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap

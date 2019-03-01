@@ -10,7 +10,7 @@ import xyz.chunkstories.graphics.vulkan.graph.AttachementType
 import xyz.chunkstories.graphics.vulkan.graph.UsageType
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.vulkan.graph.getLayoutForStateAndType
-import xyz.chunkstories.graphics.vulkan.resources.Cleanable
+import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.vulkan.textures.vulkanFormat
 import xyz.chunkstories.graphics.vulkan.util.VkRenderPass
 import xyz.chunkstories.graphics.vulkan.util.ensureIs

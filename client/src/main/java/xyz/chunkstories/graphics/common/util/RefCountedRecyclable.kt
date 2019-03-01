@@ -1,5 +1,6 @@
 package xyz.chunkstories.graphics.vulkan.resources
 
+import xyz.chunkstories.graphics.common.Recyclable
 import java.util.concurrent.locks.ReentrantLock
 
 class RefCountedProperty<R: RefCountedRecyclable> {

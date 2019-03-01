@@ -4,6 +4,7 @@ import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.swapchain.Frame
 import org.lwjgl.system.MemoryStack.stackPop
 import org.lwjgl.system.MemoryStack.stackPush
+import xyz.chunkstories.graphics.common.Cleanable
 
 /** Declares a resource type that is instanced N times as there are N frames in flight */
 class InflightFrameResource<R : Any>(val backend: VulkanGraphicsBackend, val initLambda: () -> R) {

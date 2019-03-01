@@ -6,6 +6,7 @@ import org.lwjgl.util.vma.Vma.vmaCreateAllocator
 import org.lwjgl.util.vma.Vma.vmaDestroyAllocator
 import org.lwjgl.util.vma.VmaAllocatorCreateInfo
 import org.lwjgl.util.vma.VmaVulkanFunctions
+import xyz.chunkstories.graphics.common.Cleanable
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.locks.ReentrantLock
