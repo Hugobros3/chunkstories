@@ -25,14 +25,13 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
     val canonicalRenderPass: RenderPass
     val renderPassesMap = mutableMapOf<List<UsageType>, RenderPass>()
 
-    lateinit var drawingSystems: List<VulkanDrawingSystem>
+    var drawingSystems: List<VulkanDrawingSystem>
         private set
 
-    lateinit var dispatchingDrawers: List<VulkanDispatchingSystem.Drawer<*>>
+    var dispatchingDrawers: List<VulkanDispatchingSystem.Drawer<*>>
         private set
 
-    val commandPool = CommandPool(backend, backend.logicalDevice.graphicsQueue.family, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT or VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
-    //val commandBuffers: InflightFrameResource<VkCommandBuffer>
+    private val commandPool = CommandPool(backend, backend.logicalDevice.graphicsQueue.family, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT or VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
 
     init {
         MemoryStack.stackPush()
@@ -310,7 +309,6 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
                 vkCmdBeginRenderPass(this, renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE)
 
                 // Transition image layouts now !
-
                 for (drawingSystem in drawingSystems) {
                     drawingSystem.registerDrawingCommands(frame, this, passInstance)
                 }

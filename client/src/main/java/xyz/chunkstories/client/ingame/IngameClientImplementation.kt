@@ -23,11 +23,11 @@ import xyz.chunkstories.gui.layer.SkyBoxBackground
 import xyz.chunkstories.gui.layer.ingame.IngameLayer
 import xyz.chunkstories.gui.layer.ingame.RemoteConnectionGuiLayer
 import xyz.chunkstories.server.commands.InstallServerCommands
-import xyz.chunkstories.client.commands.ReloadContentCommand
 import xyz.chunkstories.client.commands.installClientCommands
 import xyz.chunkstories.world.WorldClientCommon
 import org.slf4j.Logger
 import xyz.chunkstories.api.graphics.GraphicsEngine
+import xyz.chunkstories.graphics.common.DefaultIngameRendergraph
 import xyz.chunkstories.graphics.common.WorldRenderer
 
 abstract class IngameClientImplementation protected constructor(val client: ClientImplementation, worldInitializer: (IngameClientImplementation) -> WorldClientCommon) : IngameClient {
@@ -78,7 +78,7 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
             internalWorld.spawnPlayer(player)
 
         client.ingame = this
-        client.gameWindow.graphicsEngine.loadRenderGraph(BuiltInRendergraphs.debugRenderGraph)
+        client.gameWindow.graphicsEngine.loadRenderGraph(DefaultIngameRendergraph.instructions)
 
         worldRenderer = client.gameWindow.graphicsEngine.backend.createWorldRenderer(internalWorld)
 

@@ -82,12 +82,12 @@ class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
         override val system: VulkanDispatchingSystem<ChunkRepresentation>
             get() = this@ChunkRepresentationsDispatcher
 
-        val cubesProgram = backend.shaderFactory.createProgram(if(pass.declaration.name == "water") "water" else "cubes", ShaderCompilationParameters(outputs = pass.declaration.outputs))
+        val cubesProgram = backend.shaderFactory.createProgram(if (pass.declaration.name == "water") "water" else "cubes", ShaderCompilationParameters(outputs = pass.declaration.outputs))
         private val meshesPipeline = Pipeline(backend, cubesProgram, pass, meshesVertexInputCfg, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
 
         val chunkInfoID = cubesProgram.glslProgram.instancedInputs.find { it.name == "chunkInfo" }!!
         val structSize = chunkInfoID.struct.size
-        val sizeAligned16 = if(structSize % 16 == 0) structSize else (structSize / 16 * 16) + 16
+        val sizeAligned16 = if (structSize % 16 == 0) structSize else (structSize / 16 * 16) + 16
 
         val maxChunksRendered = 4096
         val ssboBufferSize = (sizeAligned16 * maxChunksRendered).toLong()
@@ -107,7 +107,7 @@ class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
 
             vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshesPipeline.handle)
 
-            if(backend.logicalDevice.enableMagicTexturing)
+            if (backend.logicalDevice.enableMagicTexturing)
                 vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshesPipeline.pipelineLayout, 0, MemoryStack.stackLongs(backend.textures.magicTexturing!!.theSet), null)
 
             //TODO pool those
@@ -119,16 +119,15 @@ class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
             bindingContext.bindTextureAndSampler("albedoTextures", voxelTexturesArray.albedoOnionTexture, sampler)
             bindingContext.bindSSBO("chunkInfo", ssboDataTest)
 
-            if(pass.declaration.name == "water") {
+            if (pass.declaration.name == "water") {
                 bindingContext.bindTextureAndSampler("waterNormalDeep", backend.textures.getOrLoadTexture2D("textures/water/deep.png"), sampler)
                 bindingContext.bindTextureAndSampler("waterNormalShallow", backend.textures.getOrLoadTexture2D("textures/water/shallow.png"), sampler)
             }
 
             bindingContext.preDraw(commandBuffer)
 
-            fun renderRepresentation(chunkRepresentation: ChunkRepresentation) {
-                val section = chunkRepresentation?.sections?.get(pass.declaration.name)
-
+            for (chunkRepresentation in chunks) {
+                val section = chunkRepresentation.sections.get(pass.declaration.name)
                 if (section != null) {
                     vkCmdBindVertexBuffers(commandBuffer, 0, MemoryStack.stackLongs(section.buffer.handle), MemoryStack.stackLongs(0))
 
@@ -151,133 +150,6 @@ class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
                 }
             }
 
-            /*fun renderChunk(chunk: CubicChunk) {
-
-                if (chunk.meshData is ChunkVkMeshProperty) {
-                    val block = (chunk.meshData as ChunkVkMeshProperty).get()
-                    if (block != null)
-                        usedData.add(block)
-
-                    val section = block?.sections?.get(pass.declaration.name)
-
-                    if (section != null) {
-                        vkCmdBindVertexBuffers(commandBuffer, 0, MemoryStack.stackLongs(section.buffer.handle), MemoryStack.stackLongs(0))
-
-                        ssboStuff.position(instance * sizeAligned16)
-                        val chunkRenderInfo = ChunkRenderInfo().apply {
-                            chunkX = chunk.chunkX
-                            chunkY = chunk.chunkY
-                            chunkZ = chunk.chunkZ
-                        }
-
-                        for (field in chunkInfoID.struct.fields) {
-                            ssboStuff.position(instance * sizeAligned16 + field.offset)
-                            extractInterfaceBlockField(field, ssboStuff, chunkRenderInfo)
-                        }
-
-                        vkCmdDraw(commandBuffer, section.count, 1, 0, instance++)
-
-                        frame.stats.totalVerticesDrawn += section.count
-                        frame.stats.totalDrawcalls++
-                    }
-                } else {
-                    // This avoids the condition where the meshData is created after the chunk is destroyed
-                    chunk.chunkDestructionSemaphore.acquireUninterruptibly()
-                    if (!chunk.isDestroyed)
-                        chunk.meshData = ChunkVkMeshProperty(backend, chunk)
-                    chunk.chunkDestructionSemaphore.release()
-                }
-            }
-
-            val boxCenter = Vector3f(0f)
-            val boxSize = Vector3f(32f, 32f, 32f)
-            val boxSize2 = Vector3f(256f, 256f, 256f)
-
-            val sortedChunks = ArrayList<CubicChunk>()
-
-            val visibleRegions = arrayOfNulls<RegionImplementation>(1024)
-            var visibleRegionsCount = 0
-
-            var rc = 0
-            for (region in world.allLoadedRegions) {
-                boxCenter.x = region.regionX * 256.0f + 128.0f
-                boxCenter.y = region.regionY * 256.0f + 128.0f
-                boxCenter.z = region.regionZ * 256.0f + 128.0f
-
-                rc++
-
-                if(camera.frustrum.isBoxInFrustrum(boxCenter, boxSize2)) {
-                    visibleRegions[visibleRegionsCount++] = region as RegionImplementation
-                }
-            }
-
-            Arrays.sort(visibleRegions, 0, visibleRegionsCount) { a, b ->
-                fun distSquared(r: Region) : Float {
-                    val rcx = r.regionX * 256.0f + 128.0f
-                    val rcy = r.regionY * 256.0f + 128.0f
-                    val rcz = r.regionZ * 256.0f + 128.0f
-
-                    val dx = camPos.x() - rcx
-                    val dy = camPos.y() - rcy
-                    val dz = camPos.z() - rcz
-
-                    return dx * dx + dy * dy + dz * dz
-                }
-
-                (distSquared(a!!) - distSquared(b!!)).toInt()
-            }
-
-            val visibleRegionChunks = arrayOfNulls<CubicChunk>(8 * 8 * 8)
-            var visibleRegionChunksCount : Int
-
-            val visibilityRangeX = (camChunk.x - drawDistance)..(camChunk.x + drawDistance)
-            val visibilityRangeY = (camChunk.y - drawDistanceH)..(camChunk.y + drawDistanceH)
-            val visibilityRangeZ = (camChunk.z - drawDistance)..(camChunk.z + drawDistance)
-
-            for(i in 0 until visibleRegionsCount) {
-                val region = visibleRegions[i]!!
-
-                visibleRegionChunksCount = 0
-                for (chunk in region.loadedChunks) {
-                    boxCenter.x = chunk.chunkX * 32.0f + 16.0f
-                    boxCenter.y = chunk.chunkY * 32.0f + 16.0f
-                    boxCenter.z = chunk.chunkZ * 32.0f + 16.0f
-
-                    if(!chunk.isAirChunk) {
-                        if(chunk.chunkX in visibilityRangeX && chunk.chunkY in visibilityRangeY && chunk.chunkZ in visibilityRangeZ) {
-
-                            if (camera.frustrum.isBoxInFrustrum(boxCenter, boxSize)) {
-                                visibleRegionChunks[visibleRegionChunksCount++] = chunk
-                                //sortedChunks.add(chunk)
-                            }
-                        }
-                    }
-                }
-
-                Arrays.sort(visibleRegionChunks, 0, visibleRegionChunksCount) { a, b ->
-                    fun distSquared(c: Chunk) : Float {
-                        val ccx = c.chunkX * 32.0f + 16.0f
-                        val ccy = c.chunkY * 32.0f + 16.0f
-                        val ccz = c.chunkZ * 32.0f + 16.0f
-
-                        val dx = camPos.x() - ccx
-                        val dy = camPos.y() - ccy
-                        val dz = camPos.z() - ccz
-
-                        return dx * dx + dy * dy + dz * dz
-                    }
-
-                    (distSquared(a!!) - distSquared(b!!)).toInt()
-                }
-
-                for(j in 0 until visibleRegionChunksCount) {
-                    renderChunk(visibleRegionChunks[j]!!)
-                }
-            }*/
-
-            for(chunkRepresentation in chunks)
-                renderRepresentation(chunkRepresentation)
-
             ssboStuff.flip()
             ssboDataTest.upload(ssboStuff)
             MemoryUtil.memFree(ssboStuff)
@@ -295,7 +167,7 @@ class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
         }
     }
 
-    override fun createDrawerForPass(pass: VulkanPass): Drawer  = Drawer(pass)
+    override fun createDrawerForPass(pass: VulkanPass): Drawer = Drawer(pass)
 
     override fun cleanup() {
         sampler.cleanup()
