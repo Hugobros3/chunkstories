@@ -6,6 +6,7 @@
 
 package xyz.chunkstories.content;
 
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.chunkstories.animation.BVHLibrary;
@@ -40,7 +41,7 @@ public class GameContentStore implements Content {
 
 	private final BVHLibrary bvhLibrary;
 
-	private final MeshStore meshes;
+	private final MeshStore models;
 
 	private final LocalizationManagerImplementation localizationManager;
 	private final static Logger contentLogger = LoggerFactory.getLogger("content");
@@ -63,7 +64,7 @@ public class GameContentStore implements Content {
 
 		bvhLibrary = new BVHLibrary(this);
 
-		meshes = new MeshStore(this);
+		models = new MeshStore(this);
 
 		localizationManager = new LocalizationManagerImplementation(this, "en");
 	}
@@ -84,7 +85,7 @@ public class GameContentStore implements Content {
 
 		bvhLibrary.reloadAll();
 
-		meshes.reloadAll();
+		models.reloadAll();
 
 		localizationManager.reload();
 	}
@@ -133,11 +134,11 @@ public class GameContentStore implements Content {
 		return localizationManager;
 	}
 
-	@Override public MeshStore meshes() {
-		return meshes;
-	}
-
 	@Override public Logger logger() {
 		return contentLogger;
+	}
+
+	@NotNull @Override public Models getModels() {
+		return models;
 	}
 }

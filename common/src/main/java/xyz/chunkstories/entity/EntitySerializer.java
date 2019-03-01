@@ -90,7 +90,7 @@ public class EntitySerializer {
                     boolean found = false;
                     for (Trait trait : entity.traits.all()) {
                         if (trait instanceof TraitSerializable
-                                && ((TraitSerializable) trait).name.equals(componentName)) {
+                                && ((TraitSerializable) trait).getTraitName().equals(componentName)) {
                             try {
                                 ((TraitSerializable) trait).tryPull(source, in);
                             } catch (IOException e) {

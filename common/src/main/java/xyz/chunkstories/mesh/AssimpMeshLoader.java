@@ -12,10 +12,7 @@ import com.carrotsearch.hppc.FloatArrayList;
 import glm_.vec3.Vec3;
 import xyz.chunkstories.api.content.Asset;
 import xyz.chunkstories.api.exceptions.content.MeshLoadException;
-import xyz.chunkstories.api.graphics.Mesh;
-import xyz.chunkstories.api.graphics.MeshAttributeSet;
-import xyz.chunkstories.api.graphics.MeshMaterial;
-import xyz.chunkstories.api.graphics.VertexFormat;
+import xyz.chunkstories.api.graphics.*;
 import xyz.chunkstories.util.FoldersUtils;
 import kotlin.ranges.IntRange;
 import org.slf4j.Logger;
@@ -49,7 +46,7 @@ public class AssimpMeshLoader {
         float totalWeight = 0.0f;
     }
 
-    public Mesh load(Asset mainAsset) throws MeshLoadException {
+    public Model load(Asset mainAsset) throws MeshLoadException {
         if (mainAsset == null)
             throw new MeshLoadException(mainAsset);
 
@@ -66,6 +63,8 @@ public class AssimpMeshLoader {
             return null;
         }
 
+        List<Mesh> meshes = new LinkedList<>();
+
         FloatArrayList vertices = new FloatArrayList();
         FloatArrayList normals = new FloatArrayList();
         FloatArrayList texcoords = new FloatArrayList();
@@ -73,14 +72,6 @@ public class AssimpMeshLoader {
         Map<String, Integer> boneNamesToIds = new HashMap<>();
         ByteArrayList boneIds = new ByteArrayList();
         ByteArrayList boneWeights = new ByteArrayList();
-
-        List<MeshMaterial> meshMaterials = new ArrayList<>();
-
-
-        boolean hasAnimationData = scene.getMeshes().get(0).getHasBones();
-        Map<Integer, VertexBoneWeights> boneWeightsForeachVertex = null;
-        if (hasAnimationData)
-            boneWeightsForeachVertex = new HashMap<>();
 
         String assetFolder = mainAsset.getName().substring(0, mainAsset.getName().lastIndexOf('/') + 1);
 
@@ -132,7 +123,12 @@ public class AssimpMeshLoader {
                 }
             }
 
+            boolean hasAnimationData = aiMesh.getHasBones();
+            Map<Integer, VertexBoneWeights> boneWeightsForeachVertex = null;
+
             if (hasAnimationData) {
+                boneWeightsForeachVertex = new HashMap<>();
+
                 // Create objects to receive the animation data for all the vertices of this submesh
                 for (int i = 0; i < aiMesh.getNumVertices(); i++) {
                     boneWeightsForeachVertex.put(firstVertex + i, new VertexBoneWeights());
@@ -213,31 +209,41 @@ public class AssimpMeshLoader {
 
             /* TODO()
             Surface surface = new Surface(materialTextures);
-            String materialName = aiMesh.getName();
             if(materialName == null || materialName.equals(""))
-                materialName = "Material"+meshMaterials.size();
-            MeshMaterial meshMaterial = new MeshMaterial(materialName, surface, new IntRange(firstVertex, lastVertex));
-            meshMaterials.add(meshMaterial);*/
+                materialName = "Material"+meshMaterials.size();*/
+            String materialName = aiMesh.getName();
+            MeshMaterial meshMaterial = new MeshMaterial(materialName, materialTextures);
+
+            List<MeshAttributeSet> attributes = new LinkedList<>();
+
+            attributes.add(new MeshAttributeSet("vertexPosition", 3, VertexFormat.FLOAT, toByteBuffer(vertices)));
+            attributes.add(new MeshAttributeSet("vertexNormal", 3, VertexFormat.FLOAT, toByteBuffer(normals)));
+            attributes.add(new MeshAttributeSet("textureCoordinate", 2, VertexFormat.FLOAT, toByteBuffer(texcoords)));
+            if(hasAnimationData) {
+                attributes.add(new MeshAttributeSet("vertexPosition", 2, VertexFormat.BYTE, toByteBuffer(boneIds)));
+                attributes.add(new MeshAttributeSet("vertexPosition", 2, VertexFormat.NORMALIZED_UBYTE, toByteBuffer(boneWeights)));
+            }
+
+            vertices.clear();
+            normals.clear();
+            texcoords.clear();
+
+            boneIds.clear();
+            boneWeights.clear();
+
+            meshes.add(new Mesh(vertices.size() / 3, attributes, meshMaterial));
         }
 
-        List<MeshAttributeSet> attributes = new LinkedList<>();
-
-        attributes.add(new MeshAttributeSet("vertexPosition", 3, VertexFormat.FLOAT, toByteBuffer(vertices)));
-        attributes.add(new MeshAttributeSet("vertexNormal", 3, VertexFormat.FLOAT, toByteBuffer(normals)));
-        attributes.add(new MeshAttributeSet("textureCoordinate", 2, VertexFormat.FLOAT, toByteBuffer(texcoords)));
-        if(hasAnimationData) {
-            attributes.add(new MeshAttributeSet("vertexPosition", 2, VertexFormat.BYTE, toByteBuffer(boneIds)));
-            attributes.add(new MeshAttributeSet("vertexPosition", 2, VertexFormat.NORMALIZED_UBYTE, toByteBuffer(boneWeights)));
-        }
+        return new Model(meshes);
 
         // TODO unused, left in because might be needed, see earlier in the file
-        String[] boneNamesArray = new String[boneNamesToIds.size()];
+        /*String[] boneNamesArray = new String[boneNamesToIds.size()];
         for (Entry<String, Integer> e : boneNamesToIds.entrySet()) {
             boneNamesArray[e.getValue()] = e.getKey();
         }
 
         int verticesCount = vertices.size();
-        return new Mesh(verticesCount, attributes, meshMaterials);
+        return new Mesh(verticesCount, attributes, meshMaterials);*/
     }
 
     private FloatBuffer toFloatBuffer(FloatArrayList array) {

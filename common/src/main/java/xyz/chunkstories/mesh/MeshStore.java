@@ -6,26 +6,25 @@
 
 package xyz.chunkstories.mesh;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import xyz.chunkstories.api.graphics.Mesh;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import xyz.chunkstories.api.content.Asset;
 import xyz.chunkstories.api.content.Content;
 import xyz.chunkstories.api.content.mods.ModsManager;
 import xyz.chunkstories.api.exceptions.content.MeshLoadException;
+import xyz.chunkstories.api.graphics.Model;
 import xyz.chunkstories.content.GameContentStore;
 
-public class MeshStore implements Content.Meshes {
+import java.util.HashMap;
+import java.util.Map;
+
+public class MeshStore implements Content.Models {
 
 	protected final Content content;
 	protected final ModsManager modsManager;
 
-	protected Map<String, Mesh> meshes = new HashMap<>();
+	protected Map<String, Model> models = new HashMap<>();
 
 	AssimpMeshLoader loader = new AssimpMeshLoader(this);
 
@@ -35,29 +34,27 @@ public class MeshStore implements Content.Meshes {
 	}
 
 	public void reloadAll() {
-		meshes.clear();
+		models.clear();
 	}
 
-	@Override
-	public Mesh getMesh(String meshName) {
+	@Override public Model get(String modelName) {
 
-		Mesh mesh = meshes.get(meshName);
+		Model model = models.get(modelName);
 
-		if (mesh == null) {
-			Asset a = modsManager.getAsset(meshName);
+		if (model == null) {
+			Asset a = modsManager.getAsset(modelName);
 			try {
-				mesh = loader.load(a);
+				model = loader.load(a);
 			} catch (MeshLoadException e) {
 				e.printStackTrace();
-				logger().error("Mesh " + meshName + " couldn't be load using MeshLoader " + loader.getClass().getName()
-						+ " ,stack trace above.");
-				return null;
+				logger().error("Model " + modelName + " couldn't be load using " + loader.getClass().getName() + ", stack trace above.");
+				return getDefaultModel();
 			}
 
-			meshes.put(meshName, mesh);
+			models.put(modelName, model);
 		}
 
-		return mesh;
+		return model;
 	}
 
 	public Content parent() {
@@ -70,9 +67,11 @@ public class MeshStore implements Content.Meshes {
 		return logger;
 	}
 
-	@NotNull
-	@Override
-	public Mesh getDefaultMesh() {
-		return null;
+	@NotNull @Override public Model getDefaultModel() {
+		return get("models/error.obj");
+	}
+
+	@NotNull @Override public Model getOrLoadModel(@NotNull String s) {
+		return get(s);
 	}
 }
