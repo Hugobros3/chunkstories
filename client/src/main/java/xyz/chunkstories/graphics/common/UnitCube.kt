@@ -45,21 +45,21 @@ object UnitCube {
 
     /** Y+ */
     val topFace = CubeFaceData(Vector3f(0f, 1f, 0f), listOf(
-            CubeVertexAttributes(floatArrayOf(0.0f, 1.0f, 0.0f), floatArrayOf(0.0f, 1.0f)),
-            CubeVertexAttributes(floatArrayOf(1.0f, 1.0f, 1.0f), floatArrayOf(1.0f, 0.0f)),
-            CubeVertexAttributes(floatArrayOf(1.0f, 1.0f, 0.0f), floatArrayOf(1.0f, 1.0f)),
-            CubeVertexAttributes(floatArrayOf(0.0f, 1.0f, 0.0f), floatArrayOf(0.0f, 1.0f)),
-            CubeVertexAttributes(floatArrayOf(0.0f, 1.0f, 1.0f), floatArrayOf(0.0f, 0.0f)),
-            CubeVertexAttributes(floatArrayOf(1.0f, 1.0f, 1.0f), floatArrayOf(1.0f, 0.0f))))
+            CubeVertexAttributes(floatArrayOf(0.0f, 1.0f, 0.0f), floatArrayOf(1.0f, 1.0f)),
+            CubeVertexAttributes(floatArrayOf(1.0f, 1.0f, 1.0f), floatArrayOf(0.0f, 0.0f)),
+            CubeVertexAttributes(floatArrayOf(1.0f, 1.0f, 0.0f), floatArrayOf(0.0f, 1.0f)),
+            CubeVertexAttributes(floatArrayOf(0.0f, 1.0f, 0.0f), floatArrayOf(1.0f, 1.0f)),
+            CubeVertexAttributes(floatArrayOf(0.0f, 1.0f, 1.0f), floatArrayOf(1.0f, 0.0f)),
+            CubeVertexAttributes(floatArrayOf(1.0f, 1.0f, 1.0f), floatArrayOf(0.0f, 0.0f))))
 
     /** Y- */
     val bottomFace = CubeFaceData(Vector3f(0f, -1f, 0f), listOf(
-            CubeVertexAttributes(floatArrayOf(0.0f, 0.0f, 0.0f), floatArrayOf(0.0f, 0.0f)),
-            CubeVertexAttributes(floatArrayOf(1.0f, 0.0f, 0.0f), floatArrayOf(1.0f, 0.0f)),
-            CubeVertexAttributes(floatArrayOf(1.0f, 0.0f, 1.0f), floatArrayOf(1.0f, 1.0f)),
-            CubeVertexAttributes(floatArrayOf(0.0f, 0.0f, 0.0f), floatArrayOf(0.0f, 0.0f)),
-            CubeVertexAttributes(floatArrayOf(1.0f, 0.0f, 1.0f), floatArrayOf(1.0f, 1.0f)),
-            CubeVertexAttributes(floatArrayOf(0.0f, 0.0f, 1.0f), floatArrayOf(0.0f, 1.0f))))
+            CubeVertexAttributes(floatArrayOf(0.0f, 0.0f, 0.0f), floatArrayOf(1.0f, 0.0f)),
+            CubeVertexAttributes(floatArrayOf(1.0f, 0.0f, 0.0f), floatArrayOf(0.0f, 0.0f)),
+            CubeVertexAttributes(floatArrayOf(1.0f, 0.0f, 1.0f), floatArrayOf(0.0f, 1.0f)),
+            CubeVertexAttributes(floatArrayOf(0.0f, 0.0f, 0.0f), floatArrayOf(1.0f, 0.0f)),
+            CubeVertexAttributes(floatArrayOf(1.0f, 0.0f, 1.0f), floatArrayOf(0.0f, 1.0f)),
+            CubeVertexAttributes(floatArrayOf(0.0f, 0.0f, 1.0f), floatArrayOf(1.0f, 1.0f))))
 
     val faces = listOf(leftFace, frontFace, rightFace, backFace, topFace, bottomFace)
 }
