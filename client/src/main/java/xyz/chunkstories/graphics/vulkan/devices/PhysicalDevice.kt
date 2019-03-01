@@ -130,16 +130,19 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
 
         val transformToUse : Int
         val formatToUse: VulkanFormat
-            get() =
+            get() {
                 if (availableFormats == listOf(VulkanFormat.VK_FORMAT_UNDEFINED))
-                    VulkanFormat.VK_FORMAT_R8G8B8A8_UNORM
+                    return VulkanFormat.VK_FORMAT_R8G8B8A8_UNORM
                 else {
-                    val preferredFormat = VulkanFormat.VK_FORMAT_R8G8B8A8_UNORM
-                    if (availableFormats.contains(preferredFormat))
-                        preferredFormat
-                    else
-                        availableFormats[0]
+                    val preferredFormats = listOf(VulkanFormat.VK_FORMAT_R8G8B8A8_UNORM, VulkanFormat.VK_FORMAT_B8G8R8A8_UNORM)
+
+                    for (preferredFormat in preferredFormats)
+                        if (availableFormats.contains(preferredFormat))
+                            return preferredFormat
+
+                    return availableFormats[0]
                 }
+            }
 
         val presentationModeToUse: PresentationMode
             get() {

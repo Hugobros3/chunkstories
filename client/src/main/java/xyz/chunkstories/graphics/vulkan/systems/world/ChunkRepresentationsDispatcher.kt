@@ -150,6 +150,7 @@ class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
                 }
             }
 
+            ssboStuff.position(instance * sizeAligned16)
             ssboStuff.flip()
             ssboDataTest.upload(ssboStuff)
             MemoryUtil.memFree(ssboStuff)
