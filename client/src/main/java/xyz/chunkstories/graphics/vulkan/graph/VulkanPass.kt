@@ -13,7 +13,7 @@ import xyz.chunkstories.api.graphics.systems.drawing.DrawingSystem
 import xyz.chunkstories.graphics.vulkan.CommandPool
 import xyz.chunkstories.graphics.vulkan.RenderPass
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
-import xyz.chunkstories.graphics.vulkan.representations.RepresentationsGathered
+import xyz.chunkstories.graphics.common.representations.RepresentationsGathered
 import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.vulkan.swapchain.Frame
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
