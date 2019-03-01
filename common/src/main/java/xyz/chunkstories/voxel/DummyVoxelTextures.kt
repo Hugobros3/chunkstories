@@ -22,7 +22,7 @@ class DummyVoxelTextures(val voxels: Content.Voxels) : ReloadableVoxelTextures {
     private val voxelTextures = mutableMapOf<String, DummyVoxelTexture>()
 
     init {
-        reload()
+        //reload()
     }
 
     override fun reload() {

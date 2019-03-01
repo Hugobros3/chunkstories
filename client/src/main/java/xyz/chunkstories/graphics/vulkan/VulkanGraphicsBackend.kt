@@ -33,6 +33,7 @@ import xyz.chunkstories.api.graphics.systems.RegisteredGraphicSystem
 import xyz.chunkstories.api.graphics.systems.dispatching.DispatchingSystem
 import xyz.chunkstories.api.graphics.systems.drawing.DrawingSystem
 import xyz.chunkstories.graphics.GraphicsEngineImplementation
+import xyz.chunkstories.graphics.vulkan.systems.models.VulkanModelsDispatcher
 import xyz.chunkstories.graphics.vulkan.systems.world.ChunkRepresentationsDispatcher
 import xyz.chunkstories.graphics.vulkan.textures.voxels.VulkanVoxelTexturesArray
 import xyz.chunkstories.graphics.vulkan.world.VulkanWorldRenderer
@@ -294,6 +295,7 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
 
         val new = when(dispatchingSystemRegistration.clazz) {
             ChunkRepresentationsDispatcher::class.java -> ChunkRepresentationsDispatcher(this)
+            VulkanModelsDispatcher::class.java -> VulkanModelsDispatcher(this)
             else -> throw Exception("Unimplemented system on this backend: ${dispatchingSystemRegistration.clazz}")
         }
 

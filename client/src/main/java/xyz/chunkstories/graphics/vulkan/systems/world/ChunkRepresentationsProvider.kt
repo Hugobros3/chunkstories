@@ -14,8 +14,6 @@ import xyz.chunkstories.world.storage.RegionImplementation
 import java.util.*
 
 class ChunkRepresentationsProvider(val backend: VulkanGraphicsBackend, val world: WorldClientCommon) : RepresentationsProvider {
-    override val representationName: String = ChunkRepresentation::class.java.canonicalName
-
     override fun gatherRepresentations(representationsGobbler: RepresentationsGobbler) {
         val passes = representationsGobbler.passInstances
         val cameras = passes.map { it.context.camera }

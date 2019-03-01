@@ -52,7 +52,7 @@ public class GameContentStore implements Content {
 			this.modsManager = new ModsManagerImplementation(coreContentLocation, enabledModsLaunchArguments);
 		} catch (NonExistentCoreContent e) {
 			logger().error("Could not find core content at the location: " + coreContentLocation.getAbsolutePath());
-			throw new RuntimeException("Throwing a RuntimeException to make the process crash and burn");
+			throw new RuntimeException("Could not find core content at the location: " + coreContentLocation.getAbsolutePath());
 		}
 
 		items = new ItemDefinitionsStore(this);

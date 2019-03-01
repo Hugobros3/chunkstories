@@ -13,7 +13,7 @@ import xyz.chunkstories.api.content.Asset;
 import xyz.chunkstories.api.content.Content;
 import xyz.chunkstories.api.content.mods.ModsManager;
 import xyz.chunkstories.api.exceptions.content.MeshLoadException;
-import xyz.chunkstories.api.graphics.Model;
+import xyz.chunkstories.api.graphics.representation.Model;
 import xyz.chunkstories.content.GameContentStore;
 
 import java.util.HashMap;
@@ -26,10 +26,11 @@ public class MeshStore implements Content.Models {
 
 	protected Map<String, Model> models = new HashMap<>();
 
-	AssimpMeshLoader loader = new AssimpMeshLoader(this);
+	private final AssimpMeshLoader loader;
 
 	public MeshStore(GameContentStore gameContentStore) {
 		this.content = gameContentStore;
+		this.loader = new AssimpMeshLoader(this);
 		this.modsManager = gameContentStore.modsManager();
 	}
 
@@ -43,6 +44,11 @@ public class MeshStore implements Content.Models {
 
 		if (model == null) {
 			Asset a = modsManager.getAsset(modelName);
+			if(a == null) {
+				logger().error("model: "+modelName+" not found in assets");
+				return getDefaultModel();
+			}
+
 			try {
 				model = loader.load(a);
 			} catch (MeshLoadException e) {

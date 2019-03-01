@@ -13,6 +13,7 @@ import glm_.vec3.Vec3;
 import xyz.chunkstories.api.content.Asset;
 import xyz.chunkstories.api.exceptions.content.MeshLoadException;
 import xyz.chunkstories.api.graphics.*;
+import xyz.chunkstories.api.graphics.representation.Model;
 import xyz.chunkstories.util.FoldersUtils;
 import kotlin.ranges.IntRange;
 import org.slf4j.Logger;
@@ -214,8 +215,13 @@ public class AssimpMeshLoader {
             String materialName = aiMesh.getName();
             MeshMaterial meshMaterial = new MeshMaterial(materialName, materialTextures);
 
-            List<MeshAttributeSet> attributes = new LinkedList<>();
 
+            int verticesCount = vertices.size() / 3;
+
+            if(verticesCount == 0)
+                continue;
+
+            List<MeshAttributeSet> attributes = new LinkedList<>();
             attributes.add(new MeshAttributeSet("vertexPosition", 3, VertexFormat.FLOAT, toByteBuffer(vertices)));
             attributes.add(new MeshAttributeSet("vertexNormal", 3, VertexFormat.FLOAT, toByteBuffer(normals)));
             attributes.add(new MeshAttributeSet("textureCoordinate", 2, VertexFormat.FLOAT, toByteBuffer(texcoords)));
@@ -224,6 +230,7 @@ public class AssimpMeshLoader {
                 attributes.add(new MeshAttributeSet("vertexPosition", 2, VertexFormat.NORMALIZED_UBYTE, toByteBuffer(boneWeights)));
             }
 
+
             vertices.clear();
             normals.clear();
             texcoords.clear();
@@ -231,7 +238,7 @@ public class AssimpMeshLoader {
             boneIds.clear();
             boneWeights.clear();
 
-            meshes.add(new Mesh(vertices.size() / 3, attributes, meshMaterial));
+            meshes.add(new Mesh(verticesCount, attributes, meshMaterial));
         }
 
         return new Model(meshes);
@@ -259,7 +266,7 @@ public class AssimpMeshLoader {
     private ByteBuffer toByteBuffer(FloatArrayList array) {
         ByteBuffer byteBuffer = ByteBuffer.allocateDirect(array.size() * 4).order(ByteOrder.nativeOrder());
         for (int i = 0; i < array.size(); i++) {
-            byteBuffer.putFloat(i, array.get(i));
+            byteBuffer.putFloat(array.get(i));
         }
         byteBuffer.flip();
         return byteBuffer;

@@ -9,6 +9,7 @@ import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.api.gui.GuiDrawer
 import xyz.chunkstories.graphics.vulkan.systems.SkyDrawer
 import xyz.chunkstories.graphics.vulkan.systems.VulkanFullscreenQuadDrawer
+import xyz.chunkstories.graphics.vulkan.systems.models.VulkanModelsDispatcher
 import xyz.chunkstories.graphics.vulkan.systems.world.ChunkRepresentationsDispatcher
 import xyz.chunkstories.graphics.vulkan.systems.world.getConditions
 
@@ -109,6 +110,7 @@ object DefaultIngameRendergraph {
 
                     draws {
                         system(ChunkRepresentationsDispatcher::class)
+                        system(VulkanModelsDispatcher::class)
                     }
 
                     outputs {

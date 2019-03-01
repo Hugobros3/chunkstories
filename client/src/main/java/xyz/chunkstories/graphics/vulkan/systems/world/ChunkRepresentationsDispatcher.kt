@@ -163,6 +163,7 @@ class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
         }
 
         override fun cleanup() {
+            meshesPipeline.cleanup()
             cubesProgram.cleanup()
         }
     }

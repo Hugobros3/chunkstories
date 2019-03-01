@@ -29,7 +29,7 @@ class TestGameContext(mods: String) : GameContext {
 
     init {
 
-        val coreContentLocation = System.getProperty("coreContentLocation", "../chunkstories-core/res/")
+        val coreContentLocation = System.getProperty("coreContentLocation", "../../chunkstories-core/res/")
 
         content = GameContentStore(this, File(coreContentLocation), mods)
         content.reload()

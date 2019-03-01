@@ -16,8 +16,6 @@ class GraphicsEngineImplementation(val client: ClientImplementation) : GraphicsE
 
     override val representationsProviders = RepresentationsProvidersImplem()
 
-    override val models: GraphicsEngine.Models
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
     override val textures: GraphicsEngine.Textures
         get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
 

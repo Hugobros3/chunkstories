@@ -8,15 +8,16 @@ package xyz.chunkstories.content;
 
 import xyz.chunkstories.api.graphics.Mesh;
 import org.junit.Test;
+import xyz.chunkstories.api.graphics.representation.Model;
 
 public class ContentTests {
 
     @Test
     public void testAssimpMeshes() {
-        TestGameContext testContext = new TestGameContext(null);
+        TestGameContext testContext = new TestGameContext("");
 
-        Mesh m = testContext.getContent().meshes().getMesh("./models/human/human.dae");
-        System.out.println(m.getVertices() + " lol:" + m.getClass());
+        Model m = testContext.getContent().getModels().getOrLoadModel("./models/human/human.dae");
+        System.out.println(m.getMeshes().get(0).getVertices() + " lol:" + m.getClass());
 
         // m = testContext.getContent().meshes().getMesh("./models/human.obj");
         // System.out.println(m.getVerticesCount()+" lol:"+m.getClass());
@@ -24,10 +25,10 @@ public class ContentTests {
         // m = testContext.getContent().meshes().getMesh("./models/human.dae");
         // System.out.println(m.getVerticesCount()+" lol:"+m.getClass());
 
-        m = testContext.getContent().meshes().getMesh("./voxels/blockmodels/model_template.dae");
-        System.out.println(m.getVertices() + " lol:" + m.getClass());
+        m = testContext.getContent().getModels().getOrLoadModel("./voxels/blockmodels/model_template.dae");
+        System.out.println(m.getMeshes().get(0).getVertices() + " lol:" + m.getMeshes().get(0).getAttributes().get(0).getData());
 
-        System.out.println(m.getDefaultMaterials());
+        System.out.println(m.getMeshes().get(0).getMaterial());
 
         // System.out.println(m.getVertices().getVoxelComponent(0)+":"+m.getVertices().getVoxelComponent(1)+":"+m.getVertices().getVoxelComponent(2));
         /*
