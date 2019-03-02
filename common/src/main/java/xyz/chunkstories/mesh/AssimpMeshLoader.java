@@ -206,12 +206,6 @@ public class AssimpMeshLoader {
                     logger.warn("Should triangulate! (face=" + aiFace.size() + ")");
             }
 
-            int lastVertex = vertices.size() / 3 - 1;
-
-            /* TODO()
-            Surface surface = new Surface(materialTextures);
-            if(materialName == null || materialName.equals(""))
-                materialName = "Material"+meshMaterials.size();*/
             String materialName = aiMesh.getName();
             MeshMaterial meshMaterial = new MeshMaterial(materialName, materialTextures);
 
@@ -221,12 +215,12 @@ public class AssimpMeshLoader {
                 continue;
 
             List<MeshAttributeSet> attributes = new LinkedList<>();
-            attributes.add(new MeshAttributeSet("vertexPosition", 3, VertexFormat.FLOAT, toByteBuffer(vertices)));
-            attributes.add(new MeshAttributeSet("vertexNormal", 3, VertexFormat.FLOAT, toByteBuffer(normals)));
-            attributes.add(new MeshAttributeSet("textureCoordinate", 2, VertexFormat.FLOAT, toByteBuffer(texcoords)));
+            attributes.add(new MeshAttributeSet("vertexIn", 3, VertexFormat.FLOAT, toByteBuffer(vertices)));
+            attributes.add(new MeshAttributeSet("normalIn", 3, VertexFormat.FLOAT, toByteBuffer(normals)));
+            attributes.add(new MeshAttributeSet("texCoordIn", 2, VertexFormat.FLOAT, toByteBuffer(texcoords)));
             if(hasAnimationData) {
-                attributes.add(new MeshAttributeSet("vertexPosition", 2, VertexFormat.BYTE, toByteBuffer(boneIds)));
-                attributes.add(new MeshAttributeSet("vertexPosition", 2, VertexFormat.NORMALIZED_UBYTE, toByteBuffer(boneWeights)));
+                attributes.add(new MeshAttributeSet("boneIdIn", 4, VertexFormat.BYTE, toByteBuffer(boneIds)));
+                attributes.add(new MeshAttributeSet("boneWeightIn", 4, VertexFormat.NORMALIZED_UBYTE, toByteBuffer(boneWeights)));
             }
 
 
@@ -250,16 +244,6 @@ public class AssimpMeshLoader {
 
         int verticesCount = vertices.size();
         return new Mesh(verticesCount, attributes, meshMaterials);*/
-    }
-
-    private FloatBuffer toFloatBuffer(FloatArrayList array) {
-        FloatBuffer fb = ByteBuffer.allocateDirect(array.size() * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        for (int i = 0; i < array.size(); i++) {
-            fb.put(i, array.get(i));
-        }
-        fb.position(0);
-        fb.limit(fb.capacity());
-        return fb;
     }
 
     private ByteBuffer toByteBuffer(FloatArrayList array) {

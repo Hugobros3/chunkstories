@@ -63,9 +63,14 @@ abstract class ShaderCompiler(val dialect: GLSLDialect) {
         val vertexInputs = analyseVertexShaderInputs(stages[ShaderStage.VERTEX]!!)
         val fragmentOutputs = analyseFragmentShaderOutputs(stages[ShaderStage.FRAGMENT]!!)
 
+        stages = stages.toMutableMap()
+
         compilationParameters.outputs?.let {
-            stages = stages.toMutableMap()
             (stages as MutableMap<ShaderStage, String>)[ShaderStage.FRAGMENT] = removeUnusedOutputs(stages[ShaderStage.FRAGMENT]!!, fragmentOutputs, it)
+        }
+
+        compilationParameters.inputs?.let {
+            (stages as MutableMap<ShaderStage, String>)[ShaderStage.VERTEX] = removeMissingInputs(stages[ShaderStage.VERTEX]!!, vertexInputs, it)
         }
 
         val intermediaryCompilationResults = buildIntermediaryStructure(stages)
