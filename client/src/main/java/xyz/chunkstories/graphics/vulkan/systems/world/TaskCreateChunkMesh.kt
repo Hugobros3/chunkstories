@@ -155,7 +155,7 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
             memFree(it.value)
         }
 
-        (chunk.meshData as ChunkVkMeshProperty).acceptNewData(sections)
+        (chunk.meshData as VulkanChunkMeshProperty).acceptNewData(sections)
         return true
     }
 

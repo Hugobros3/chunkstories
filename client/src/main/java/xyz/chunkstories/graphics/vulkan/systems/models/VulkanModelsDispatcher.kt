@@ -122,9 +122,6 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
             bindingContext.preDraw(commandBuffer)
 
             for (modelInstance in modelInstances) {
-
-                //println("dispatching: "+modelInstance)
-
                 val model: Model = modelInstance.model
                 val modelOnGpu = getGpuModelData(model)
 
