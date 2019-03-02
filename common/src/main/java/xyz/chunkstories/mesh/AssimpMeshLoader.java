@@ -90,7 +90,7 @@ public class AssimpMeshLoader {
                     case ambient:
                         break;
                     case diffuse:
-                        materialTextures.put("albedo", FoldersUtils.combineNames(assetFolder, tex.getFile()));
+                        materialTextures.put("albedoTexture", FoldersUtils.combineNames(assetFolder, tex.getFile()));
                         break;
                     case displacement:
                         break;
@@ -103,18 +103,18 @@ public class AssimpMeshLoader {
                     case none:
                         break;
                     case normals:
-                        materialTextures.put("normal", FoldersUtils.combineNames(assetFolder, tex.getFile()));
+                        materialTextures.put("normalTexture", FoldersUtils.combineNames(assetFolder, tex.getFile()));
                         break;
                     case opacity:
-                        materialTextures.put("ao", FoldersUtils.combineNames(assetFolder, tex.getFile()));
+                        materialTextures.put("aoTexture", FoldersUtils.combineNames(assetFolder, tex.getFile()));
                         break;
                     case reflection:
                         break;
                     case shininess:
-                        materialTextures.put("roughness", FoldersUtils.combineNames(assetFolder, tex.getFile()));
+                        materialTextures.put("roughnessTexture", FoldersUtils.combineNames(assetFolder, tex.getFile()));
                         break;
                     case specular:
-                        materialTextures.put("metallic", FoldersUtils.combineNames(assetFolder, tex.getFile()));
+                        materialTextures.put("metallicTexture", FoldersUtils.combineNames(assetFolder, tex.getFile()));
                         break;
                     case unknown:
                         break;

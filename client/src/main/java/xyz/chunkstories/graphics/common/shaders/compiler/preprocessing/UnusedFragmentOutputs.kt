@@ -17,7 +17,7 @@ fun ShaderCompiler.removeUnusedOutputs(shaderCode: String, shaderOutputs: List<G
                 if(trimmed.startsWith(match)) {
                     val used = usedOutputs.outputs.find { it.name == output.name } != null
                     if(!used) {
-                        println("found unused shader output, killing it off !")
+                        //println("found unused shader output, killing it off !")
                         return@map line.replace(match, "//${output.format.glslToken} garbage${i++} =")
                     }
                 }

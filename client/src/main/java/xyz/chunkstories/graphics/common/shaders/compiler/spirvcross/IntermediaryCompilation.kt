@@ -3,6 +3,7 @@ package xyz.chunkstories.graphics.common.shaders.compiler.spirvcross
 import graphics.scenery.spirvcrossj.*
 import xyz.chunkstories.api.graphics.ShaderStage
 import xyz.chunkstories.api.graphics.structs.UniformUpdateFrequency
+import xyz.chunkstories.api.graphics.structs.UpdateFrequency
 import xyz.chunkstories.graphics.common.shaders.*
 import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompiler
 import xyz.chunkstories.graphics.common.shaders.compiler.preprocessing.updateFrequency
@@ -66,7 +67,7 @@ fun ShaderCompiler.buildIntermediaryStructure(stages: Map<ShaderStage, String>):
 
 data class IntermediaryCompilationResults(val tProgram: TProgram, val tShaders: Map<ShaderStage, TShader>, val compilers: Map<ShaderStage, CompilerGLSL>)
 
-fun ShaderCompiler.createShaderResources(intermediarCompilationResults: IntermediaryCompilationResults): Pair<List<GLSLInstancedInput>, List<GLSLResource>> {
+fun ShaderCompiler.createShaderResources(intermediarCompilationResults: IntermediaryCompilationResults, materialBoundResources: MutableSet<String>): Pair<List<GLSLInstancedInput>, List<GLSLResource>> {
     val resources = mutableListOf<GLSLResource>()
     val instancedInputs = mutableListOf<GLSLInstancedInput>()
 
@@ -99,7 +100,10 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
 
             when (dialect) {
                 GLSLDialect.VULKAN -> {
-                    setSlot = 1
+                    setSlot = when(sampledImageName) {
+                        in materialBoundResources -> UniformUpdateFrequency.ONCE_PER_BATCH.ordinal + 2
+                        else -> 1
+                    }
                     binding = (resources.filter { it.descriptorSetSlot == setSlot }.maxBy { it.binding }?.binding ?: -1) + 1
                 }
                 GLSLDialect.OPENGL4 -> {
@@ -152,7 +156,11 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
 
             when (dialect) {
                 GLSLDialect.VULKAN -> {
-                    setSlot = if (separateImageName in magicTexturesNames) 0 else 1
+                    setSlot = when (separateImageName) {
+                        in magicTexturesNames -> 0
+                        in materialBoundResources -> UniformUpdateFrequency.ONCE_PER_BATCH.ordinal + 2
+                        else -> 1
+                    }
                     binding =
                             if (separateImageName in magicTexturesNames) 1
                             else
@@ -178,6 +186,7 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
             val setSlot: Int
             val binding: Int
 
+            //TODO there is no reason all samplers should go here!
             when (dialect) {
                 GLSLDialect.VULKAN -> {
                     setSlot = 0

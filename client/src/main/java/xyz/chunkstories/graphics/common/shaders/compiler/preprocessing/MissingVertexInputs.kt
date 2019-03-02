@@ -25,7 +25,7 @@ fun ShaderCompiler.removeMissingInputs(shaderCode: String, shaderInputs: List<GL
             if(trimmed.startsWith(match3)) {
                 val supplied = availableInputs.find { it.name == input.name } != null
                 if(!supplied) {
-                    println("REPLACING $line with \n"+"#define ${input.name} ${input.format.glslToken}(0)")
+                    //println("REPLACING $line with \n"+"#define ${input.name} ${input.format.glslToken}(0)")
                     return@map "#define ${input.name} ${input.format.glslToken}(0)"
                 }
             }

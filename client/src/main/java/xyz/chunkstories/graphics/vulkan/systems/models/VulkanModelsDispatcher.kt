@@ -13,6 +13,7 @@ import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
 import xyz.chunkstories.graphics.common.shaders.GLSLInstancedInput
+import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampledImage2D
 import xyz.chunkstories.graphics.common.shaders.compiler.AvailableVertexInput
 import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompilationParameters
 import xyz.chunkstories.graphics.vulkan.Pipeline
@@ -28,6 +29,7 @@ import xyz.chunkstories.graphics.vulkan.resources.DescriptorSetsMegapool
 import xyz.chunkstories.graphics.vulkan.swapchain.Frame
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.systems.world.getConditions
+import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
 import xyz.chunkstories.graphics.vulkan.util.getVulkanFormat
 import xyz.chunkstories.world.WorldClientCommon
 import java.nio.ByteBuffer
@@ -36,6 +38,7 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
     override val representationName: String = ModelInstance::class.java.canonicalName
 
     val gpuUploadedModels = mutableMapOf<Model, GpuModelData>()
+    val sampler = VulkanSampler(backend)
 
     inner class GpuModelData(val model: Model) : Cleanable {
         val meshesData = model.meshes.map { GpuMeshesData(it) }
@@ -206,8 +209,6 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
                 val instancePositionsBuffer = MemoryUtil.memAlloc(instancePositionSSBO.bufferSize.toInt())
                 var instance = 0
 
-                bindingContext.bindSSBO("modelPosition", instancePositionSSBO)
-
                 bindingContext.preDraw(commandBuffer)
 
                 val modelPositionII = specializedPipeline.program.glslProgram.instancedInputs.find { it.name == "modelPosition" }!!
@@ -243,6 +244,20 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
 
                     //instancePositionsBuffer.position(instance * modelPositionPaddedSize)
                     writeInterfaceBlock(instancePositionsBuffer, instance * modelPositionPaddedSize, modelInstance.position, modelPositionII)
+
+                    val perMeshBindingContext = backend.descriptorMegapool.getBindingContext(pipeline)
+                    bindingContexts += perMeshBindingContext
+
+                    val material = modelInstance.materials[meshIndex] ?: mesh.material
+                    for(materialImageSlot in pipeline.program.glslProgram.materialImages) {
+                        val textureName = material.textures[materialImageSlot.name] ?: "textures/notex.png"
+                        perMeshBindingContext.bindTextureAndSampler(materialImageSlot.name, backend.textures.getOrLoadTexture2D(textureName), sampler)
+                        //println(pipeline.program.glslProgram)
+                    }
+
+
+                    perMeshBindingContext.bindSSBO("modelPosition", instancePositionSSBO)
+                    perMeshBindingContext.preDraw(commandBuffer)
 
                     vkCmdDraw(commandBuffer, mesh.vertices, 1, 0, instance)
 
@@ -282,5 +297,7 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
     override fun cleanup() {
         gpuUploadedModels.values.forEach(Cleanable::cleanup)
         gpuUploadedModels.clear()
+
+        sampler.cleanup()
     }
 }

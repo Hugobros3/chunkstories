@@ -1,14 +1,13 @@
 package xyz.chunkstories.graphics.common.shaders.compiler
 
-import graphics.scenery.spirvcrossj.Loader
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.content.Content
 import xyz.chunkstories.api.graphics.ShaderStage
 import xyz.chunkstories.api.graphics.structs.InterfaceBlock
 import xyz.chunkstories.graphics.common.shaders.GLSLDialect
 import xyz.chunkstories.graphics.common.shaders.GLSLProgram
-import xyz.chunkstories.graphics.common.shaders.GLSLShaderStorage
 import xyz.chunkstories.graphics.common.shaders.GLSLType
+import xyz.chunkstories.graphics.common.shaders.MaterialImage
 import xyz.chunkstories.graphics.common.shaders.compiler.postprocessing.addVirtualTexturingHeader
 import xyz.chunkstories.graphics.common.shaders.compiler.postprocessing.annotateForNonUniformAccess
 import xyz.chunkstories.graphics.common.shaders.compiler.preprocessing.*
@@ -17,7 +16,6 @@ import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.buildInterme
 import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.createShaderResources
 import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.toIntermediateGLSL
 import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.SpirvCrossHelper
-import xyz.chunkstories.graphics.vulkan.shaders.VulkanShaderFactory
 import kotlin.reflect.KClass
 
 abstract class ShaderCompiler(val dialect: GLSLDialect) {
@@ -60,6 +58,9 @@ abstract class ShaderCompiler(val dialect: GLSLDialect) {
 
         stages = stages.mapValues { (stage, shaderCode) -> addVirtualTexturingHeader(shaderCode) }
 
+        val materialBoundResources = mutableSetOf<String>()
+        stages = stages.mapValues { (stage, shaderCode) -> findAndReplaceMaterialBoundResources(shaderCode, materialBoundResources) }
+
         val vertexInputs = analyseVertexShaderInputs(stages[ShaderStage.VERTEX]!!)
         val fragmentOutputs = analyseFragmentShaderOutputs(stages[ShaderStage.FRAGMENT]!!)
 
@@ -74,7 +75,7 @@ abstract class ShaderCompiler(val dialect: GLSLDialect) {
         }
 
         val intermediaryCompilationResults = buildIntermediaryStructure(stages)
-        val (perInstanceDataInputs, resources) = createShaderResources(intermediaryCompilationResults)
+        val (perInstanceDataInputs, resources) = createShaderResources(intermediaryCompilationResults, materialBoundResources)
 
         addDecorations(intermediaryCompilationResults, resources, perInstanceDataInputs)
         stages = toIntermediateGLSL(intermediaryCompilationResults)
@@ -84,7 +85,7 @@ abstract class ShaderCompiler(val dialect: GLSLDialect) {
            stages = stages.mapValues { (stage, shaderCode) -> annotateForNonUniformAccess(shaderCode) }
 
         //val perInstanceDataInputs = resources.filterIsInstance<GLSLShaderStorage>().mapNotNull { it.associatedInstanceData }
-        return GLSLProgram(shaderName, dialect, vertexInputs, fragmentOutputs, perInstanceDataInputs, resources, stages)
+        return GLSLProgram(shaderName, dialect, vertexInputs, fragmentOutputs, perInstanceDataInputs, resources, materialBoundResources.map { MaterialImage(it) }, stages)
     }
 
     fun readShaderFile(path: String): String? {
