@@ -275,6 +275,7 @@ object DefaultIngameRendergraph {
                         system(ChunkRepresentationsDispatcher::class) {
 
                         }
+                        system(VulkanModelsDispatcher::class)
                     }
 
                     outputs {

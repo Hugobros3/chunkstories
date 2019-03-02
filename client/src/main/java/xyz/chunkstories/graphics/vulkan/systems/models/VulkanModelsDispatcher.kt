@@ -113,11 +113,11 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
             //    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, MemoryStack.stackLongs(backend.textures.magicTexturing!!.theSet), null)
 
             //TODO pool those
-            val ssboDataTest = VulkanBuffer(backend, ssboBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, MemoryUsagePattern.DYNAMIC)
-            val ssboStuff = MemoryUtil.memAlloc(ssboDataTest.bufferSize.toInt())
+            val instancePositionSSBO = VulkanBuffer(backend, ssboBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, MemoryUsagePattern.DYNAMIC)
+            val instancePositionsBuffer = MemoryUtil.memAlloc(instancePositionSSBO.bufferSize.toInt())
             var instance = 0
 
-            bindingContext.bindSSBO("modelPosition", ssboDataTest)
+            bindingContext.bindSSBO("modelPosition", instancePositionSSBO)
 
             bindingContext.preDraw(commandBuffer)
 
@@ -136,11 +136,11 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
 
                     vkCmdBindVertexBuffers(commandBuffer, 0, stackLongs(meshOnGpu.attributesVertexBuffers[vertexPosAttributeIndex].handle), stackLongs(0))
 
-                    ssboStuff.position(instance * sizeAligned16)
+                    instancePositionsBuffer.position(instance * sizeAligned16)
 
                     for (field in instancedStruct.struct.fields) {
-                        ssboStuff.position(instance * sizeAligned16 + field.offset)
-                        extractInterfaceBlockField(field, ssboStuff, modelInstance.position)
+                        instancePositionsBuffer.position(instance * sizeAligned16 + field.offset)
+                        extractInterfaceBlockField(field, instancePositionsBuffer, modelInstance.position)
                     }
 
                     vkCmdDraw(commandBuffer, mesh.vertices, 1, 0, instance)
@@ -152,14 +152,16 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
                 }
             }
 
-            ssboStuff.position(instance * sizeAligned16)
-            ssboStuff.flip()
-            ssboDataTest.upload(ssboStuff)
-            MemoryUtil.memFree(ssboStuff)
+            instancePositionsBuffer.position(instance * sizeAligned16)
+            instancePositionsBuffer.flip()
+
+            instancePositionSSBO.upload(instancePositionsBuffer)
+
+            MemoryUtil.memFree(instancePositionsBuffer)
 
             frame.recyclingTasks.add {
                 bindingContext.recycle()
-                ssboDataTest.cleanup()//TODO recycle don't destroy!
+                instancePositionSSBO.cleanup()//TODO recycle don't destroy!
             }
 
             MemoryStack.stackPop()

@@ -3,12 +3,12 @@ package xyz.chunkstories.graphics.vulkan.world
 import xyz.chunkstories.graphics.common.WorldRenderer
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.systems.world.ChunkRepresentationsProvider
-import xyz.chunkstories.graphics.vulkan.world.entities.VulkanEntitiesRenderer
+import xyz.chunkstories.graphics.vulkan.world.entities.EntitiesRepresentationsProvider
 import xyz.chunkstories.world.WorldClientCommon
 
 class VulkanWorldRenderer(val backend: VulkanGraphicsBackend, world: WorldClientCommon) : WorldRenderer(world) {
     val chunksRepresentationsProvider = ChunkRepresentationsProvider(backend, world)
-    val entitiesProvider = VulkanEntitiesRenderer(world)
+    val entitiesProvider = EntitiesRepresentationsProvider(world)
 
     init {
         backend.graphicsEngine.representationsProviders.registerProvider(chunksRepresentationsProvider)

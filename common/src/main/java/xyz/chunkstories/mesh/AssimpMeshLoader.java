@@ -215,7 +215,6 @@ public class AssimpMeshLoader {
             String materialName = aiMesh.getName();
             MeshMaterial meshMaterial = new MeshMaterial(materialName, materialTextures);
 
-
             int verticesCount = vertices.size() / 3;
 
             if(verticesCount == 0)

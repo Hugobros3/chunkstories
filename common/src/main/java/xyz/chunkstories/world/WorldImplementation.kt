@@ -8,6 +8,9 @@
 
 package xyz.chunkstories.world
 
+import org.joml.Vector3dc
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.GameContext
 import xyz.chunkstories.api.GameLogic
 import xyz.chunkstories.api.Location
@@ -49,11 +52,8 @@ import xyz.chunkstories.world.heightmap.HeightmapsStorage
 import xyz.chunkstories.world.io.IOTasks
 import xyz.chunkstories.world.iterators.AABBVoxelIterator
 import xyz.chunkstories.world.logic.WorldLogicThread
-import xyz.chunkstories.world.storage.RegionsStorage
 import xyz.chunkstories.world.storage.RegionImplementation
-import org.joml.Vector3dc
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import xyz.chunkstories.world.storage.RegionsStorage
 import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
@@ -172,7 +172,7 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
                 this.contentTranslator.save(File(this.folderPath!! + "/content_mappings.dat"))
 
                 internalDataFile = File(folder.path + "/internal.dat")
-                if(internalDataFile.exists())
+                if (internalDataFile.exists())
                     this.internalData.load(FileReader(internalDataFile))
 
                 this.entitiesUUIDGenerator.set(internalData.getProperty("entities-ids-counter", "0").toLong())
@@ -253,6 +253,9 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
     }
 
     override fun addEntity(entity: Entity) {
+        if (entity.world != this)
+            throw Exception("This entity was not created for this world")
+
         // Assign an UUID to entities lacking one
         if (this is WorldMaster && entity.UUID == -1L) {
             val nextUUID = nextEntityId()
@@ -260,23 +263,11 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
         }
 
         val check = this.getEntityByUUID(entity.UUID)
-        if (check != null) {
-            logger().error(
-                    "Added an entity twice " + check + " conflits with " + entity + " UUID: " + entity.UUID)
-            // logger().save();
-            Thread.dumpStack()
-            return // System.exit(-1);
-        }
+        if (check != null)
+            throw java.lang.Exception("Added an entity twice " + check + " conflits with " + entity + " UUID: " + entity.UUID)
 
         // Add it to the world
         entity.traitLocation.onSpawn()
-
-        assert(entity.getWorld() === this)
-
-        /*
-		 * Chunk chunk = this.getChunkWorldCoordinates(entity.getLocation()); if(chunk
-		 * != null) { ((EntityBase)entity).positionComponent.trySnappingToChunk(); }
-		 */
 
         this.entities.insertEntity(entity)
     }
@@ -290,8 +281,6 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
             removeEntityFromList(entity)
 
             return true
-
-            return false
         } finally {
             entitiesLock.writeLock().unlock()
         }
@@ -300,8 +289,8 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
     override fun removeEntityByUUID(uuid: Long): Boolean {
         val entityFound = this.getEntityByUUID(uuid)
 
-        return if (entityFound != null) removeEntity(entityFound) else false
-
+        return if (entityFound != null)
+            removeEntity(entityFound) else false
     }
 
     /**
