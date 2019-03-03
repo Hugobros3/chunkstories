@@ -5,6 +5,8 @@ import org.lwjgl.system.MemoryUtil
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 import xyz.chunkstories.api.graphics.TextureTilingMode
+import xyz.chunkstories.api.graphics.representation.Representation
+import xyz.chunkstories.api.graphics.systems.dispatching.ChunksRenderer
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
 import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompilationParameters
@@ -24,6 +26,7 @@ import xyz.chunkstories.graphics.vulkan.textures.voxels.VulkanVoxelTexturesArray
 import xyz.chunkstories.world.WorldClientCommon
 
 class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingSystem<ChunkRepresentation>(backend) {
+
     override val representationName: String = ChunkRepresentation::class.java.canonicalName
 
     private val meshesVertexInputCfg = VertexInputConfiguration {
@@ -78,9 +81,16 @@ class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
 
     val sampler = VulkanSampler(backend, tilingMode = TextureTilingMode.REPEAT)
 
-    inner class Drawer(pass: VulkanPass) : VulkanDispatchingSystem.Drawer<ChunkRepresentation>(pass) {
+    inner class Drawer(pass: VulkanPass, initCode: Drawer.() -> Unit) : VulkanDispatchingSystem.Drawer<ChunkRepresentation>(pass), ChunksRenderer {
+        override lateinit var materialTag: String
+        override lateinit var shader: String
+
         override val system: VulkanDispatchingSystem<ChunkRepresentation>
             get() = this@ChunkRepresentationsDispatcher
+
+        init {
+            this.apply(initCode)
+        }
 
         val cubesProgram = backend.shaderFactory.createProgram(if (pass.declaration.name == "water") "water" else "cubes", ShaderCompilationParameters(outputs = pass.declaration.outputs))
         private val meshesPipeline = Pipeline(backend, cubesProgram, pass, meshesVertexInputCfg, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
@@ -169,7 +179,15 @@ class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
         }
     }
 
-    override fun createDrawerForPass(pass: VulkanPass): Drawer = Drawer(pass)
+    override fun createDrawerForPass(pass: VulkanPass, drawerInitCode: VulkanDispatchingSystem.Drawer<ChunkRepresentation>.() -> Unit) =
+            Drawer(pass, drawerInitCode)
+
+    override fun sort(representation: ChunkRepresentation, drawers: Array<VulkanDispatchingSystem.Drawer<*>>, outputs: List<MutableList<Representation>>) {
+        //TODO look at material/tag and decide where to send it
+        for(output in outputs){
+            output.add(representation)
+        }
+    }
 
     override fun cleanup() {
         sampler.cleanup()

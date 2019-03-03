@@ -6,6 +6,8 @@ import xyz.chunkstories.api.graphics.TextureFormat
 import xyz.chunkstories.api.graphics.rendergraph.PassOutput
 import xyz.chunkstories.api.graphics.rendergraph.RenderGraphDeclarationScript
 import xyz.chunkstories.api.graphics.structs.Camera
+import xyz.chunkstories.api.graphics.systems.dispatching.ChunksRenderer
+import xyz.chunkstories.api.graphics.systems.dispatching.ModelsRenderer
 import xyz.chunkstories.api.gui.GuiDrawer
 import xyz.chunkstories.graphics.vulkan.systems.SkyDrawer
 import xyz.chunkstories.graphics.vulkan.systems.VulkanFullscreenQuadDrawer
@@ -109,8 +111,14 @@ object DefaultIngameRendergraph {
                     dependsOn("sky")
 
                     draws {
-                        system(ChunkRepresentationsDispatcher::class)
-                        system(VulkanModelsDispatcher::class)
+                        system(ChunksRenderer::class) {
+                            shader = "cubes"
+                            materialTag = "opaque"
+                        }
+                        system(ModelsRenderer::class) {
+                            shader = "models"
+                            materialTag = "opaque"
+                        }
                     }
 
                     outputs {
@@ -185,7 +193,10 @@ object DefaultIngameRendergraph {
                     dependsOn("deferredShading")
 
                     draws {
-                        system(ChunkRepresentationsDispatcher::class)
+                        system(ChunksRenderer::class) {
+                            shader = "water"
+                            materialTag = "water"
+                        }
                     }
 
                     outputs {
@@ -272,10 +283,14 @@ object DefaultIngameRendergraph {
                     name = "cubes"
 
                     draws {
-                        system(ChunkRepresentationsDispatcher::class) {
-
+                        system(ChunksRenderer::class) {
+                            shader = "cubes"
+                            materialTag = "opaque"
                         }
-                        system(VulkanModelsDispatcher::class)
+                        system(ModelsRenderer::class) {
+                            shader = "models"
+                            materialTag = "opaque"
+                        }
                     }
 
                     outputs {

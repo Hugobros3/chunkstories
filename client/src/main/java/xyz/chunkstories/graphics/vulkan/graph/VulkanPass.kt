@@ -6,6 +6,7 @@ import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.graphics.rendergraph.*
+import xyz.chunkstories.api.graphics.representation.Representation
 import xyz.chunkstories.api.graphics.systems.GraphicSystem
 import xyz.chunkstories.api.graphics.systems.RegisteredGraphicSystem
 import xyz.chunkstories.api.graphics.systems.dispatching.DispatchingSystem
@@ -13,7 +14,6 @@ import xyz.chunkstories.api.graphics.systems.drawing.DrawingSystem
 import xyz.chunkstories.graphics.vulkan.CommandPool
 import xyz.chunkstories.graphics.vulkan.RenderPass
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
-import xyz.chunkstories.graphics.common.representations.RepresentationsGathered
 import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.vulkan.swapchain.Frame
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
@@ -51,12 +51,10 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
 
                     drawingSystems.add(drawingSystem)
                 } else if (DispatchingSystem::class.java.isAssignableFrom(declaredDrawingSystem.clazz)) {
-                    val dispatchingSystem = backend.getOrCreateDispatchingSystem(declaredDrawingSystem as RegisteredGraphicSystem<DispatchingSystem<*>>)
-                    val drawer = dispatchingSystem.createDrawerForPass(this)
+                    val dispatchingSystem = backend.getOrCreateDispatchingSystem(renderTask.renderGraph.dispatchingSystems, declaredDrawingSystem as RegisteredGraphicSystem<DispatchingSystem>)
+                    val drawer = dispatchingSystem.createDrawerForPass(this, declaredDrawingSystem.dslCode as VulkanDispatchingSystem.Drawer<*>.() -> Unit)
 
-                    //val d = declaredDrawingSystem.dslCode as GraphicSystem.() -> Unit
-                    //drawer.apply(d)
-
+                    dispatchingSystem.drawersInstances.add(drawer)
                     dispatchingDrawers.add(drawer)
                 }
                 else
@@ -99,7 +97,7 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
                passInstance: VulkanFrameGraph.FrameGraphNode.PassNode,
                passInstanceIndex: Int,
                allBufferStates: MutableMap<VulkanRenderBuffer, UsageType>,
-               representationsGathered: RepresentationsGathered
+               representationsGathered: MutableMap<VulkanDispatchingSystem.Drawer<*>, ArrayList<Representation>>
     ) {
         val outputs = declaration.outputs.outputs
         val depth = declaration.depthTestingConfiguration
@@ -314,11 +312,12 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
                 }
 
                 for(drawer in dispatchingDrawers) {
-                    val relevantBucket = representationsGathered.buckets[drawer.system.representationName] ?: continue
+                    val relevantBucket = representationsGathered[drawer] ?: continue
 
-                    val filter = 1 shl passInstanceIndex
-                    val filteredByIndex = relevantBucket.representations.asSequence().filterIndexed { i, r -> relevantBucket.visibility[i] and filter != 0 }
-                    drawer.registerDrawingCommands(frame, passInstance, this, filteredByIndex as Sequence<Nothing>)
+                    //val filter = 1 shl passInstanceIndex
+                    //val filteredByIndex = relevantBucket.representations.asSequence().filterIndexed { i, r -> relevantBucket.visibility[i] and filter != 0 }
+                    //drawer.registerDrawingCommands(frame, passInstance, this, filteredByIndex as Sequence<Nothing>)
+                    drawer.registerDrawingCommands(frame, passInstance, this, relevantBucket.toList().asSequence() as Sequence<Nothing>)
                 }
 
                 vkCmdEndRenderPass(this)

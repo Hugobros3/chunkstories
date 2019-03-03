@@ -30,7 +30,9 @@ import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.content.Content
 import xyz.chunkstories.api.graphics.systems.RegisteredGraphicSystem
+import xyz.chunkstories.api.graphics.systems.dispatching.ChunksRenderer
 import xyz.chunkstories.api.graphics.systems.dispatching.DispatchingSystem
+import xyz.chunkstories.api.graphics.systems.dispatching.ModelsRenderer
 import xyz.chunkstories.api.graphics.systems.drawing.DrawingSystem
 import xyz.chunkstories.graphics.GraphicsEngineImplementation
 import xyz.chunkstories.graphics.vulkan.systems.models.VulkanModelsDispatcher
@@ -288,18 +290,25 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
         }
     }
 
-    fun <T: DispatchingSystem<*>> getOrCreateDispatchingSystem(dispatchingSystemRegistration: RegisteredGraphicSystem<T>): VulkanDispatchingSystem<*> {
-        val existing = renderGraph.dispatchingSystems.find { dispatchingSystemRegistration.clazz.isAssignableFrom(it::class.java) }
+    fun <T: DispatchingSystem> getOrCreateDispatchingSystem(list: MutableList<VulkanDispatchingSystem<*>>, dispatchingSystemRegistration: RegisteredGraphicSystem<T>): VulkanDispatchingSystem<*> {
+        val implemClass =  when(dispatchingSystemRegistration.clazz) {
+            ChunksRenderer::class.java -> ChunkRepresentationsDispatcher::class
+            ModelsRenderer::class.java -> VulkanModelsDispatcher::class
+            else -> throw Exception("Unimplemented system on this backend: ${dispatchingSystemRegistration.clazz}")
+        }.java
+
+        val existing = list.find { implemClass.isAssignableFrom(it::class.java) }
         if(existing != null)
             return existing
 
+        //val new = implemClass.getConstructor(VulkanGraphicsBackend::class.java).newInstance(this)
         val new = when(dispatchingSystemRegistration.clazz) {
-            ChunkRepresentationsDispatcher::class.java -> ChunkRepresentationsDispatcher(this)
-            VulkanModelsDispatcher::class.java -> VulkanModelsDispatcher(this)
+            ChunksRenderer::class.java -> ChunkRepresentationsDispatcher(this)
+            ModelsRenderer::class.java -> VulkanModelsDispatcher(this)
             else -> throw Exception("Unimplemented system on this backend: ${dispatchingSystemRegistration.clazz}")
         }
 
-        renderGraph.dispatchingSystems.add(new)
+        list.add(new)
 
         return new
     }

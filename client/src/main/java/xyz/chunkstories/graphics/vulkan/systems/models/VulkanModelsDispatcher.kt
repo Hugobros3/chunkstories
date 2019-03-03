@@ -8,7 +8,9 @@ import org.lwjgl.vulkan.VkCommandBuffer
 import xyz.chunkstories.api.graphics.Mesh
 import xyz.chunkstories.api.graphics.representation.Model
 import xyz.chunkstories.api.graphics.representation.ModelInstance
+import xyz.chunkstories.api.graphics.representation.Representation
 import xyz.chunkstories.api.graphics.structs.InterfaceBlock
+import xyz.chunkstories.api.graphics.systems.dispatching.ModelsRenderer
 import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
@@ -35,6 +37,7 @@ import xyz.chunkstories.world.WorldClientCommon
 import java.nio.ByteBuffer
 
 class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingSystem<ModelInstance>(backend) {
+
     override val representationName: String = ModelInstance::class.java.canonicalName
 
     val gpuUploadedModels = mutableMapOf<Model, GpuModelData>()
@@ -67,24 +70,6 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
     fun getGpuModelData(model: Model) =
             gpuUploadedModels.getOrPut(model) { GpuModelData(model) }
 
-    /*private val meshesVertexInputCfg = VertexInputConfiguration {
-        var offset = 0
-
-        attribute {
-            binding(0)
-            location(program.vertexInputs.find { it.name == "vertexIn" }!!.location)
-            format(VK_FORMAT_R32G32B32_SFLOAT)
-            offset(offset)
-        }
-        offset += 4 * 3
-
-        binding {
-            binding(0)
-            stride(offset)
-            inputRate(VK_VERTEX_INPUT_RATE_VERTEX)
-        }
-    }*/
-
     data class SpecializedPipelineKey(val shader: String, val inputs: List<AvailableVertexInput>)
 
     fun getSpecializedPipelineKeyForMeshAndShader(mesh: Mesh, shader: String): SpecializedPipelineKey {
@@ -92,9 +77,16 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
         return SpecializedPipelineKey(shader, inputs)
     }
 
-    inner class Drawer(pass: VulkanPass) : VulkanDispatchingSystem.Drawer<ModelInstance>(pass) {
+    inner class Drawer(pass: VulkanPass, initCode: Drawer.() -> Unit) : VulkanDispatchingSystem.Drawer<ModelInstance>(pass), ModelsRenderer {
+        override lateinit var materialTag: String
+        override lateinit var shader: String
+
         override val system: VulkanDispatchingSystem<ModelInstance>
             get() = this@VulkanModelsDispatcher
+
+        init {
+            this.apply(initCode)
+        }
 
         inner class SpecializedPipeline(val key: SpecializedPipelineKey) : Cleanable {
             val program = backend.shaderFactory.createProgram(key.shader, ShaderCompilationParameters(outputs = pass.declaration.outputs, inputs = key.inputs))
@@ -292,7 +284,14 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
         }
     }
 
-    override fun createDrawerForPass(pass: VulkanPass) = Drawer(pass)
+    override fun createDrawerForPass(pass: VulkanPass, drawerInitCode: VulkanDispatchingSystem.Drawer<ModelInstance>.() -> Unit) = Drawer(pass, drawerInitCode)
+
+    override fun sort(representation: ModelInstance, drawers: Array<VulkanDispatchingSystem.Drawer<*>>, outputs: List<MutableList<Representation>>) {
+        //TODO look at material/tag and decide where to send it
+        for(output in outputs){
+            output.add(representation)
+        }
+    }
 
     override fun cleanup() {
         gpuUploadedModels.values.forEach(Cleanable::cleanup)

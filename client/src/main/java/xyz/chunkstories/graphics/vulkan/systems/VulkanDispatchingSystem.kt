@@ -9,10 +9,15 @@ import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.vulkan.swapchain.Frame
 
-abstract class VulkanDispatchingSystem<T: Representation>(val backend: VulkanGraphicsBackend) : DispatchingSystem<T>, Cleanable {
+abstract class VulkanDispatchingSystem<T: Representation>(val backend: VulkanGraphicsBackend) : /*DispatchingSystem<T>, */Cleanable {
 
-    abstract class Drawer<T: Representation>(val pass: VulkanPass) : Cleanable {
+    abstract val representationName: String
+
+    abstract class Drawer<T: Representation>(val pass: VulkanPass) : Cleanable, DispatchingSystem {
         abstract val system: VulkanDispatchingSystem<T>
+
+        override val representationName: String
+            get() = system.representationName
 
         abstract fun registerDrawingCommands(frame : Frame, context: VulkanFrameGraph.FrameGraphNode.PassNode, commandBuffer: VkCommandBuffer, representations: Sequence<T>)
 
@@ -21,5 +26,9 @@ abstract class VulkanDispatchingSystem<T: Representation>(val backend: VulkanGra
         }
     }
 
-    abstract fun createDrawerForPass(pass: VulkanPass) : Drawer<T>
+    abstract fun createDrawerForPass(pass: VulkanPass, drawerInitCode: Drawer<T>.() -> Unit) : Drawer<T>
+
+    val drawersInstances = mutableListOf<Drawer<*>>()
+
+    abstract fun sort(representation: T, drawers: Array<Drawer<*>>, outputs: List<MutableList<Representation>>)
 }

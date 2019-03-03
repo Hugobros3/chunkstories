@@ -5,13 +5,12 @@ import org.lwjgl.system.MemoryStack.stackPush
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkSubmitInfo
 import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
-import xyz.chunkstories.api.graphics.rendergraph.RenderGraphDeclaration
-import xyz.chunkstories.api.graphics.rendergraph.RenderGraphDeclarationScript
-import xyz.chunkstories.api.graphics.rendergraph.RenderTaskDeclaration
+import xyz.chunkstories.api.graphics.rendergraph.*
+import xyz.chunkstories.api.graphics.representation.Representation
 import xyz.chunkstories.api.graphics.structs.Camera
-import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
-import xyz.chunkstories.graphics.common.representations.gatherRepresentations
 import xyz.chunkstories.graphics.common.Cleanable
+import xyz.chunkstories.graphics.common.representations.gatherRepresentations
+import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.swapchain.Frame
 import xyz.chunkstories.graphics.vulkan.swapchain.SwapchainBlitHelper
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
@@ -30,7 +29,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
     init {
         taskDeclarations = RenderGraphDeclaration().also(dslCode).renderTasks.values.toList()
         tasks = taskDeclarations.map {
-            val vulkanRenderTask = VulkanRenderTask(backend, it)
+            val vulkanRenderTask = VulkanRenderTask(backend, this, it)
             Pair(it.name, vulkanRenderTask)
         }.toMap()
     }
@@ -54,9 +53,63 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
 
         val gathered = backend.graphicsEngine.gatherRepresentations(graph, sequencedGraph)
 
+        val onlyPassesSequence = sequencedGraph.filterIsInstance<PassInstance>()
+        val allRenderingContexts = sequencedGraph.filterIsInstance<RenderingContext>()
+
+        //println(sequencedGraph)
+
+        val jobs = onlyPassesSequence.map {
+            mutableMapOf<VulkanDispatchingSystem.Drawer<*>, ArrayList<Representation>>()
+        }
+
+        /*val drawersPerContext = allRenderingContexts.associateWith { ctx ->
+            onlyPassesSequence.filter { it.context == ctx }.flatMap { (it as VulkanPass).dispatchingDrawers }
+        }*/
+
+        for ((passInstanceIndex, pass) in onlyPassesSequence.withIndex()) {
+            val pass = pass as VulkanFrameGraph.FrameGraphNode.PassNode
+
+            val renderContextIndex = allRenderingContexts.indexOf(pass.context)
+            val ctxMask = 1 shl renderContextIndex
+            val jobsForPassInstance = jobs[passInstanceIndex]
+            //val drawers = drawersPerContext[context]!!
+
+            for ((key, contents) in gathered.buckets) {
+                val responsibleSystem = dispatchingSystems.find { it.representationName == key } ?: continue
+
+                val drawers = pass.vulkanPass.dispatchingDrawers.filter {
+                    it.system == responsibleSystem
+                    //it.representationName == key
+                }
+                //val drawers = responsibleSystem.drawersInstances
+                val drawersArray = drawers.toTypedArray()
+
+                /*val allowedOutputs = drawers.associateWith {
+                    jobsForContext.getOrPut(it) {
+                        arrayListOf()
+                    }
+                }*/
+                val allowedOutputs = drawers.map {
+                    jobsForPassInstance.getOrPut(it) {
+                        arrayListOf()
+                    }
+                }
+
+                for (i in 0 until contents.representations.size) {
+                    val item = contents.representations[i]
+                    val mask = contents.masks[i]
+
+                    if (mask and ctxMask == 0)
+                        continue
+
+                    (responsibleSystem as VulkanDispatchingSystem<Representation>).sort(item, drawersArray, allowedOutputs)
+                }
+            }
+        }
+
         var passIndex = 0
         val globalStates = mutableMapOf<VulkanRenderBuffer, UsageType>()
-        for(graphNodeIndex in 0 until sequencedGraph.size) {
+        for (graphNodeIndex in 0 until sequencedGraph.size) {
             val graphNode = sequencedGraph[graphNodeIndex]
 
             when (graphNode) {
@@ -83,18 +136,22 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
                             inputRenderBuffersToTransition.add(Pair(rb, currentState))
                     }*/
 
-                    pass.render(frame, graphNode, passIndex++, globalStates, gathered)
+                    //println("ctx=${graphNode.context.name} ${pass.declaration.name} jobs[$passIndex]=${jobs[passIndex].mapValues { it.value.size }}")
+                    pass.render(frame, graphNode, passIndex, globalStates, jobs[passIndex])
 
+                    passIndex++
                     /*/** Update the state of the buffers used in that pass */
                     for(entry in requiredRenderBufferStates)
                         globalStates[entry.key] = entry.value*/
                 }
-                is VulkanFrameGraph.FrameGraphNode.RenderingContextNode -> graphNode.callback?.invoke(graphNode)
+                is VulkanFrameGraph.FrameGraphNode.RenderingContextNode -> {
+                    graphNode.callback?.invoke(graphNode)
+                }
             }
         }
 
         // Validation also makes it so we output a rendergraph image
-        if(fresh && backend.enableValidation) {
+        if (fresh && backend.enableValidation) {
             exportRenderGraphPng(graph)
             fresh = false
         }
@@ -131,7 +188,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
             backend.logicalDevice.graphicsQueue.mutex.release()
         }
 
-        blitHelper.copyFinalRenderbuffer(frame, passesInstances.last().resolvedOutputs[vulkanPasses.last().declaration.outputs.outputs[0]] !!)
+        blitHelper.copyFinalRenderbuffer(frame, passesInstances.last().resolvedOutputs[vulkanPasses.last().declaration.outputs.outputs[0]]!!)
     }
 
     fun resizeBuffers() {
