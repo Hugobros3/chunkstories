@@ -179,10 +179,10 @@ class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
         }
     }
 
-    override fun createDrawerForPass(pass: VulkanPass, drawerInitCode: VulkanDispatchingSystem.Drawer<ChunkRepresentation>.() -> Unit) =
+    override fun createDrawerForPass(pass: VulkanPass, drawerInitCode: VulkanDispatchingSystem.Drawer<*>.() -> Unit) =
             Drawer(pass, drawerInitCode)
 
-    override fun sort(representation: ChunkRepresentation, drawers: Array<VulkanDispatchingSystem.Drawer<*>>, outputs: List<MutableList<Representation>>) {
+    override fun sort(representation: ChunkRepresentation, drawers: Array<VulkanDispatchingSystem.Drawer<*>>, outputs: List<MutableList<Any>>) {
         //TODO look at material/tag and decide where to send it
         for(output in outputs){
             output.add(representation)

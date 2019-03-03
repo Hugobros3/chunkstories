@@ -97,7 +97,7 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
                passInstance: VulkanFrameGraph.FrameGraphNode.PassNode,
                passInstanceIndex: Int,
                allBufferStates: MutableMap<VulkanRenderBuffer, UsageType>,
-               representationsGathered: MutableMap<VulkanDispatchingSystem.Drawer<*>, ArrayList<Representation>>
+               representationsGathered: MutableMap<VulkanDispatchingSystem.Drawer<*>, ArrayList<*>>
     ) {
         val outputs = declaration.outputs.outputs
         val depth = declaration.depthTestingConfiguration

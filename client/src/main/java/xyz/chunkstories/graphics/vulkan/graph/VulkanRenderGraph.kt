@@ -59,7 +59,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
         //println(sequencedGraph)
 
         val jobs = onlyPassesSequence.map {
-            mutableMapOf<VulkanDispatchingSystem.Drawer<*>, ArrayList<Representation>>()
+            mutableMapOf<VulkanDispatchingSystem.Drawer<*>, ArrayList<*>>()
         }
 
         /*val drawersPerContext = allRenderingContexts.associateWith { ctx ->
@@ -91,7 +91,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
                 }*/
                 val allowedOutputs = drawers.map {
                     jobsForPassInstance.getOrPut(it) {
-                        arrayListOf()
+                        arrayListOf<Any>()
                     }
                 }
 
@@ -102,7 +102,8 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
                     if (mask and ctxMask == 0)
                         continue
 
-                    (responsibleSystem as VulkanDispatchingSystem<Representation>).sort(item, drawersArray, allowedOutputs)
+                    (responsibleSystem as VulkanDispatchingSystem<Representation>).
+                            sort(item, drawersArray as Array<VulkanDispatchingSystem.Drawer<*>>, allowedOutputs as List<MutableList<Any>>)
                 }
             }
         }
