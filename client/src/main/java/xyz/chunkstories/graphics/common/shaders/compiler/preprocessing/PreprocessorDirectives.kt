@@ -29,6 +29,15 @@ fun ShaderCompiler.processFileIncludes(shaderBaseDir: String, shaderCode: String
     }
 }.joinToString(separator = "\n")
 
+
+fun ShaderCompiler.addDefines(shaderCode: String, defines: Map<String, String>): String {
+    val lines = shaderCode.lines().toMutableList()
+
+    lines.add(1, defines.map { (key, value) -> "#define $key $value" }.joinToString(separator = "\n"))
+
+    return lines.joinToString(separator = "\n")
+}
+
 fun ShaderCompiler.findUsedJvmClasses(shaderCode: String) : List<KClass<InterfaceBlock>>{
     val includedStructsList = mutableListOf<KClass<InterfaceBlock>>()
 

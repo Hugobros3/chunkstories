@@ -44,6 +44,8 @@ abstract class ShaderCompiler(val dialect: GLSLDialect) {
 
         // Process #include statements
         stages = stages.mapValues { (stage, shaderCode) -> processFileIncludes(shaderBaseDir, shaderCode) }
+        stages = stages.mapValues { (stage, shaderCode) -> addDefines(shaderCode, compilationParameters.defines) }
+        stages = stages.mapValues { (stage, shaderCode) -> runPrePreProcessor(shaderCode) }
 
         // Process #using struct statements
         // Find them and extract the required classes
@@ -73,6 +75,7 @@ abstract class ShaderCompiler(val dialect: GLSLDialect) {
         compilationParameters.inputs?.let {
             (stages as MutableMap<ShaderStage, String>)[ShaderStage.VERTEX] = removeMissingInputs(stages[ShaderStage.VERTEX]!!, vertexInputs, it)
         }
+
 
         val intermediaryCompilationResults = buildIntermediaryStructure(stages)
         val (perInstanceDataInputs, resources) = createShaderResources(intermediaryCompilationResults, materialBoundResources)

@@ -13,13 +13,16 @@ abstract class VulkanDispatchingSystem<R: Representation>(val backend: VulkanGra
 
     abstract val representationName: String
 
+    /** The drawer's job is to draw "things". The term is deliberatly loose: the drawer might directly work with the representations
+     * the parent system is fed, or it might operate on a different type, perhaps a component of the bigger Representation like it's done
+     * for ModelInstances or ChunkRepresentations*/
     abstract class Drawer<T>(val pass: VulkanPass) : Cleanable, DispatchingSystem {
         abstract val system: VulkanDispatchingSystem<*>
 
         override val representationName: String
             get() = system.representationName
 
-        abstract fun registerDrawingCommands(frame : Frame, context: VulkanFrameGraph.FrameGraphNode.PassNode, commandBuffer: VkCommandBuffer, representations: Sequence<T>)
+        abstract fun registerDrawingCommands(frame : Frame, context: VulkanFrameGraph.FrameGraphNode.PassNode, commandBuffer: VkCommandBuffer, work: Sequence<T>)
 
         open fun registerAdditionalRenderTasks(passContext: VulkanFrameGraph.FrameGraphNode.PassNode) {
             // Does nothing by default

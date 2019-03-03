@@ -223,7 +223,6 @@ public class AssimpMeshLoader {
                 attributes.add(new MeshAttributeSet("boneWeightIn", 4, VertexFormat.NORMALIZED_UBYTE, toByteBuffer(boneWeights)));
             }
 
-
             vertices.clear();
             normals.clear();
             texcoords.clear();
@@ -231,18 +230,23 @@ public class AssimpMeshLoader {
             boneIds.clear();
             boneWeights.clear();
 
-            meshes.add(new Mesh(verticesCount, attributes, meshMaterial));
+            /*String[] boneNamesArray = null;
+            if(hasAnimationData) {
+                // TODO unused, left in because might be needed, see earlier in the file
+                boneNamesArray = new String[boneNamesToIds.size()];
+                for (Entry<String, Integer> e : boneNamesToIds.entrySet()) {
+                    boneNamesArray[e.getValue()] = e.getKey();
+                }
+            }*/
+
+            if(!hasAnimationData)
+                boneNamesToIds = null;
+
+            meshes.add(new Mesh(verticesCount, attributes, meshMaterial, boneNamesToIds));
         }
 
         return new Model(meshes);
-
-        // TODO unused, left in because might be needed, see earlier in the file
-        /*String[] boneNamesArray = new String[boneNamesToIds.size()];
-        for (Entry<String, Integer> e : boneNamesToIds.entrySet()) {
-            boneNamesArray[e.getValue()] = e.getKey();
-        }
-
-        int verticesCount = vertices.size();
+        /*int verticesCount = vertices.size();
         return new Mesh(verticesCount, attributes, meshMaterials);*/
     }
 

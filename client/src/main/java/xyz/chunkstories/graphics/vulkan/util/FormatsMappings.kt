@@ -49,9 +49,9 @@ fun getVulkanFormat(vertexFormat: VertexFormat, components: Int) =
             VertexFormat.SHORT -> TODO()
             VertexFormat.USHORT -> TODO()
             VertexFormat.NORMALIZED_USHORT -> TODO()
-            VertexFormat.BYTE -> TODO()
-            VertexFormat.UBYTE -> TODO()
-            VertexFormat.NORMALIZED_UBYTE -> TODO()
+            VertexFormat.BYTE -> VK_FORMAT_R8G8B8A8_SINT
+            VertexFormat.UBYTE -> VK_FORMAT_R8G8B8A8_UINT
+            VertexFormat.NORMALIZED_UBYTE -> VK_FORMAT_R8G8B8A8_UNORM
             VertexFormat.U1010102 -> TODO()
         }
         else -> throw Exception()

@@ -27,6 +27,7 @@ import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import xyz.chunkstories.graphics.vulkan.resources.DescriptorSetsMegapool
+import xyz.chunkstories.graphics.vulkan.shaders.VulkanShaderProgram
 import xyz.chunkstories.graphics.vulkan.swapchain.Frame
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.systems.world.getConditions
@@ -69,16 +70,19 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
     fun getGpuModelData(model: Model) =
             gpuUploadedModels.getOrPut(model) { GpuModelData(model) }
 
-    data class SpecializedPipelineKey(val shader: String, val inputs: List<AvailableVertexInput>)
+    data class SpecializedPipelineKey(val shader: String, val enableAnimations: Boolean, val inputs: List<AvailableVertexInput>)
 
-    fun getSpecializedPipelineKeyForMeshAndShader(mesh: Mesh, shader: String): SpecializedPipelineKey {
+    fun getSpecializedPipelineKeyForMeshAndShader(mesh: Mesh, shader: String, shaderSupportsAnimations: Boolean, meshInstanceHasAnimationData: Boolean ): SpecializedPipelineKey {
         val inputs = mesh.attributes.map { AvailableVertexInput(it.name, it.components, it.format) }
-        return SpecializedPipelineKey(shader, inputs)
+        val meshHasAnimationData = mesh.attributes.find { it.name == "boneIdIn" } != null
+
+        return SpecializedPipelineKey(shader, meshHasAnimationData && shaderSupportsAnimations && meshInstanceHasAnimationData, inputs)
     }
 
     inner class Drawer(pass: VulkanPass, initCode: Drawer.() -> Unit) : VulkanDispatchingSystem.Drawer<MeshInstance>(pass), ModelsRenderer {
         override lateinit var materialTag: String
         override lateinit var shader: String
+        override var supportsAnimations: Boolean = false
 
         override val system: VulkanDispatchingSystem<ModelInstance>
             get() = this@VulkanModelsDispatcher
@@ -88,21 +92,28 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
         }
 
         inner class SpecializedPipeline(val key: SpecializedPipelineKey) : Cleanable {
-            val program = backend.shaderFactory.createProgram(key.shader, ShaderCompilationParameters(outputs = pass.declaration.outputs, inputs = key.inputs))
+            val program: VulkanShaderProgram
             val pipeline: Pipeline
 
-            val canDoAnimation = false
-
-            val compatibleInputs = key.inputs.mapNotNull { input ->
-                if (program.glslProgram.vertexInputs.find { it.name == input.name } == null)
-                    return@mapNotNull null
-                else
-                    input
-            }
-
-            val compatibleInputsIndexes = compatibleInputs.map { key.inputs.indexOf(it) }
+            val compatibleInputs: List<AvailableVertexInput>
+            val compatibleInputsIndexes: List<Int>
 
             init {
+                val defines = mutableMapOf<String, String>()
+                if(key.enableAnimations)
+                    defines["ENABLE_ANIMATIONS"] = "true"
+
+                program = backend.shaderFactory.createProgram(key.shader, ShaderCompilationParameters(outputs = pass.declaration.outputs, inputs = key.inputs, defines = defines))
+
+                compatibleInputs = key.inputs.mapNotNull { input ->
+                    if (program.glslProgram.vertexInputs.find { it.name == input.name } == null)
+                        return@mapNotNull null
+                    else
+                        input
+                }
+
+                compatibleInputsIndexes = compatibleInputs.map { key.inputs.indexOf(it) }
+
                 val vertexInputs = VertexInputConfiguration {
                     for ((i, input) in compatibleInputs.withIndex()) {
                         val j = i
@@ -147,37 +158,21 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
         val ssboBufferSize = 1024 * 1024L
 
         override fun registerDrawingCommands(frame: Frame, context: VulkanFrameGraph.FrameGraphNode.PassNode, commandBuffer: VkCommandBuffer, work: Sequence<MeshInstance>) {
+            MemoryStack.stackPush()
+
             val client = backend.window.client.ingame ?: return
 
-            //Efficient scheduling:
-            //Make Pair<Mesh, ModelInstance>
-            //Sort these in buckets by specialized pipeline key, cache key per mesh because key is sort heavy to create
-            //Foreach bucket: bind pipeline and render meshes
-
             val buckets = mutableMapOf<SpecializedPipelineKey, ArrayList<MeshInstance>>()
-
-            /*for (instance in modelInstances) {
-                for ((i, mesh) in instance.model.meshes.withIndex()) {
-                    if (instance.meshesMask and (1 shl i) == 0)
-                        continue
-
-                    val paired = Pair(mesh, instance)
-                    //all.add(paired)
-
-                    val key = getSpecializedPipelineKeyForMeshAndShader(mesh, "models") //TODO mesh.material.shader & instance.materialOverride.shader
-                    val bucket = buckets.getOrPut(key) { arrayListOf() }
-
-                    bucket.add(paired)
-                }
-            }*/
             for (meshInstance in work) {
-                val key = getSpecializedPipelineKeyForMeshAndShader(meshInstance.mesh, shader) //TODO mesh.material.shader & instance.materialOverride.shader
+                val key = getSpecializedPipelineKeyForMeshAndShader(meshInstance.mesh, shader, supportsAnimations, meshInstance.modelInstance.animator != null) //TODO cache keys per meshes
                 val bucket = buckets.getOrPut(key) { arrayListOf() }
 
                 bucket.add(meshInstance)
             }
 
-            MemoryStack.stackPush()
+            val realWorldTimeTruncated = (System.nanoTime() % 1000_000_000_000)
+            val realWorldTimeMs = realWorldTimeTruncated / 1000_000
+            val animationTime = (realWorldTimeMs / 1000.0) * 1000.0
 
             val bindingContexts = mutableListOf<DescriptorSetsMegapool.ShaderBindingContext>()
 
@@ -197,9 +192,6 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
 
                 vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
 
-                //if (backend.logicalDevice.enableMagicTexturing)
-                //    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, MemoryStack.stackLongs(backend.textures.magicTexturing!!.theSet), null)
-
                 //TODO pool those
                 val instancePositionSSBO = VulkanBuffer(backend, ssboBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, MemoryUsagePattern.DYNAMIC)
                 val instancePositionsBuffer = MemoryUtil.memAlloc(instancePositionSSBO.bufferSize.toInt())
@@ -215,14 +207,7 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
                     val modelOnGpu = getGpuModelData(model)
 
                     val meshIndex = model.meshes.indexOf(mesh)
-
-                    //for ((meshIndex, mesh) in model.meshes.withIndex()) {
                     val meshOnGpu = modelOnGpu.meshesData[meshIndex]
-
-                    /*val vertexPosAttribute = mesh.attributes.find { it.name == "vertexPosition" }!!
-                    val vertexPosAttributeIndex = mesh.attributes.indexOf(vertexPosAttribute)
-
-                    vkCmdBindVertexBuffers(commandBuffer, 0, stackLongs(meshOnGpu.attributesVertexBuffers[vertexPosAttributeIndex].handle), stackLongs(0))*/
 
                     for (inputIndex in specializedPipeline.compatibleInputsIndexes) {
                         val vertexBuffer = meshOnGpu.attributesVertexBuffers[inputIndex]
@@ -238,19 +223,26 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
                         }
                     }
 
-                    //instancePositionsBuffer.position(instance * modelPositionPaddedSize)
                     writeInterfaceBlock(instancePositionsBuffer, instance * modelPositionPaddedSize, modelInstance.position, modelPositionII)
 
                     val perMeshBindingContext = backend.descriptorMegapool.getBindingContext(pipeline)
                     bindingContexts += perMeshBindingContext
 
-                    val material = modelInstance.materials[meshIndex] ?: mesh.material
                     for (materialImageSlot in pipeline.program.glslProgram.materialImages) {
                         val textureName = material.textures[materialImageSlot.name] ?: "textures/notex.png"
                         perMeshBindingContext.bindTextureAndSampler(materialImageSlot.name, backend.textures.getOrLoadTexture2D(textureName), sampler)
                         //println(pipeline.program.glslProgram)
                     }
 
+                    if(specializedPipeline.key.enableAnimations) {
+                        val bonez = ExperimentalBonesData()
+                        val animator = modelInstance.animator!!
+                        for((boneName, i) in mesh.boneIds!!) {
+                            bonez.bones[i].set(animator.getBoneHierarchyTransformationMatrixWithOffset(boneName, animationTime))
+                        }
+
+                        perMeshBindingContext.bindUBO("animationData", bonez)
+                    }
 
                     perMeshBindingContext.bindSSBO("modelPosition", instancePositionSSBO)
                     perMeshBindingContext.preDraw(commandBuffer)

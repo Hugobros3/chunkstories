@@ -4,20 +4,20 @@
 // Website: http://chunkstories.xyz
 //
 
-package xyz.chunkstories.content;
+package xyz.chunkstories.content
 
-import xyz.chunkstories.api.graphics.Mesh;
-import org.junit.Test;
-import xyz.chunkstories.api.graphics.representation.Model;
+import org.junit.Test
 
-public class ContentTests {
+class ContentTests {
 
     @Test
-    public void testAssimpMeshes() {
-        TestGameContext testContext = new TestGameContext("");
+    fun testAssimpMeshes() {
+        val testContext = TestGameContext("")
 
-        Model m = testContext.getContent().getModels().getOrLoadModel("./models/human/human.dae");
-        System.out.println(m.getMeshes().get(0).getVertices() + " lol:" + m.getClass());
+        var m = testContext.content.models.getOrLoadModel("./models/human/human.dae")
+        println("${m.meshes[0].vertices} lol:${m.javaClass}")
+
+        println("${m.meshes.map { it.attributes.map { it.name } }}")
 
         // m = testContext.getContent().meshes().getMesh("./models/human.obj");
         // System.out.println(m.getVerticesCount()+" lol:"+m.getClass());
@@ -25,10 +25,10 @@ public class ContentTests {
         // m = testContext.getContent().meshes().getMesh("./models/human.dae");
         // System.out.println(m.getVerticesCount()+" lol:"+m.getClass());
 
-        m = testContext.getContent().getModels().getOrLoadModel("./voxels/blockmodels/model_template.dae");
-        System.out.println(m.getMeshes().get(0).getVertices() + " lol:" + m.getMeshes().get(0).getAttributes().get(0).getData());
+        m = testContext.content.models.getOrLoadModel("./voxels/blockmodels/model_template.dae")
+        println("${m.meshes[0].vertices} lol:${m.meshes[0].attributes[0].data}")
 
-        System.out.println(m.getMeshes().get(0).getMaterial());
+        println(m.meshes[0].material)
 
         // System.out.println(m.getVertices().getVoxelComponent(0)+":"+m.getVertices().getVoxelComponent(1)+":"+m.getVertices().getVoxelComponent(2));
         /*
@@ -44,7 +44,7 @@ public class ContentTests {
     }
 
     @Test
-    public void testContentLoadByItself() {
-        TestGameContext testContext = new TestGameContext(null);
+    fun testContentLoadByItself() {
+        val testContext = TestGameContext(null!!)
     }
 }

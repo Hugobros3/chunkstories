@@ -116,6 +116,7 @@ object DefaultIngameRendergraph {
                         system(ModelsRenderer::class) {
                             shader = "models"
                             materialTag = "opaque"
+                            supportsAnimations = true
                         }
                     }
 
@@ -288,6 +289,7 @@ object DefaultIngameRendergraph {
                         system(ModelsRenderer::class) {
                             shader = "models"
                             materialTag = "opaque"
+                            supportsAnimations = true
                         }
                     }
 
