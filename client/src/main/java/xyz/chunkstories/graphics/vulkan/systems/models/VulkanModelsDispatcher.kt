@@ -6,16 +6,15 @@ import org.lwjgl.system.MemoryUtil
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 import xyz.chunkstories.api.graphics.Mesh
+import xyz.chunkstories.api.graphics.MeshMaterial
 import xyz.chunkstories.api.graphics.representation.Model
 import xyz.chunkstories.api.graphics.representation.ModelInstance
-import xyz.chunkstories.api.graphics.representation.Representation
 import xyz.chunkstories.api.graphics.structs.InterfaceBlock
 import xyz.chunkstories.api.graphics.systems.dispatching.ModelsRenderer
 import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
 import xyz.chunkstories.graphics.common.shaders.GLSLInstancedInput
-import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampledImage2D
 import xyz.chunkstories.graphics.common.shaders.compiler.AvailableVertexInput
 import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompilationParameters
 import xyz.chunkstories.graphics.vulkan.Pipeline
@@ -77,7 +76,7 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
         return SpecializedPipelineKey(shader, inputs)
     }
 
-    inner class Drawer(pass: VulkanPass, initCode: Drawer.() -> Unit) : VulkanDispatchingSystem.Drawer<ModelInstance>(pass), ModelsRenderer {
+    inner class Drawer(pass: VulkanPass, initCode: Drawer.() -> Unit) : VulkanDispatchingSystem.Drawer<MeshInstance>(pass), ModelsRenderer {
         override lateinit var materialTag: String
         override lateinit var shader: String
 
@@ -147,7 +146,7 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
 
         val ssboBufferSize = 1024 * 1024L
 
-        override fun registerDrawingCommands(frame: Frame, context: VulkanFrameGraph.FrameGraphNode.PassNode, commandBuffer: VkCommandBuffer, modelInstances: Sequence<ModelInstance>) {
+        override fun registerDrawingCommands(frame: Frame, context: VulkanFrameGraph.FrameGraphNode.PassNode, commandBuffer: VkCommandBuffer, work: Sequence<MeshInstance>) {
             val client = backend.window.client.ingame ?: return
 
             //Efficient scheduling:
@@ -155,10 +154,9 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
             //Sort these in buckets by specialized pipeline key, cache key per mesh because key is sort heavy to create
             //Foreach bucket: bind pipeline and render meshes
 
-            val buckets = mutableMapOf<SpecializedPipelineKey, ArrayList<Pair<Mesh, ModelInstance>>>()
+            val buckets = mutableMapOf<SpecializedPipelineKey, ArrayList<MeshInstance>>()
 
-            //val all = arrayListOf<Pair<Mesh, ModelInstance>>()
-            for (instance in modelInstances) {
+            /*for (instance in modelInstances) {
                 for ((i, mesh) in instance.model.meshes.withIndex()) {
                     if (instance.meshesMask and (1 shl i) == 0)
                         continue
@@ -171,6 +169,12 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
 
                     bucket.add(paired)
                 }
+            }*/
+            for (meshInstance in work) {
+                val key = getSpecializedPipelineKeyForMeshAndShader(meshInstance.mesh, shader) //TODO mesh.material.shader & instance.materialOverride.shader
+                val bucket = buckets.getOrPut(key) { arrayListOf() }
+
+                bucket.add(meshInstance)
             }
 
             MemoryStack.stackPush()
@@ -206,7 +210,7 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
                 val modelPositionII = specializedPipeline.program.glslProgram.instancedInputs.find { it.name == "modelPosition" }!!
                 val modelPositionPaddedSize = getAlignedsizeForStruct(modelPositionII)
 
-                for ((mesh, modelInstance) in meshInstances) {
+                for ((mesh, material, modelInstance) in meshInstances) {
                     val model: Model = modelInstance.model
                     val modelOnGpu = getGpuModelData(model)
 
@@ -241,7 +245,7 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
                     bindingContexts += perMeshBindingContext
 
                     val material = modelInstance.materials[meshIndex] ?: mesh.material
-                    for(materialImageSlot in pipeline.program.glslProgram.materialImages) {
+                    for (materialImageSlot in pipeline.program.glslProgram.materialImages) {
                         val textureName = material.textures[materialImageSlot.name] ?: "textures/notex.png"
                         perMeshBindingContext.bindTextureAndSampler(materialImageSlot.name, backend.textures.getOrLoadTexture2D(textureName), sampler)
                         //println(pipeline.program.glslProgram)
@@ -290,10 +294,20 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }*/
 
-    override fun sort(representation: ModelInstance, drawers: Array<VulkanDispatchingSystem.Drawer<*>>, outputs: List<MutableList<Any>>) {
-        //TODO look at material/tag and decide where to send it
-        for(output in outputs){
-            output.add(representation)
+    data class MeshInstance(val mesh: Mesh, val material: MeshMaterial, val modelInstance: ModelInstance)
+
+    override fun sort(instance: ModelInstance, drawers: Array<VulkanDispatchingSystem.Drawer<*>>, outputs: List<MutableList<Any>>) {
+        for ((i, mesh) in instance.model.meshes.withIndex()) {
+            if (instance.meshesMask and (1 shl i) == 0)
+                continue
+
+            val meshInstance = MeshInstance(mesh, instance.materials[i] ?: mesh.material, instance)
+
+            for ((index, drawer) in drawers.withIndex()) {
+                if ((drawer as VulkanModelsDispatcher.Drawer).materialTag == meshInstance.material.tag) {
+                    outputs[index].add(meshInstance)
+                }
+            }
         }
     }
 

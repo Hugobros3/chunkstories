@@ -5,7 +5,6 @@ import org.lwjgl.system.MemoryUtil
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 import xyz.chunkstories.api.graphics.TextureTilingMode
-import xyz.chunkstories.api.graphics.representation.Representation
 import xyz.chunkstories.api.graphics.systems.dispatching.ChunksRenderer
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
@@ -81,7 +80,7 @@ class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
 
     val sampler = VulkanSampler(backend, tilingMode = TextureTilingMode.REPEAT)
 
-    inner class Drawer(pass: VulkanPass, initCode: Drawer.() -> Unit) : VulkanDispatchingSystem.Drawer<ChunkRepresentation>(pass), ChunksRenderer {
+    inner class Drawer(pass: VulkanPass, initCode: Drawer.() -> Unit) : VulkanDispatchingSystem.Drawer<ChunkRepresentation.Section>(pass), ChunksRenderer {
         override lateinit var materialTag: String
         override lateinit var shader: String
 
@@ -102,7 +101,7 @@ class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
         val maxChunksRendered = 4096
         val ssboBufferSize = (sizeAligned16 * maxChunksRendered).toLong()
 
-        override fun registerDrawingCommands(frame: Frame, passContext: VulkanFrameGraph.FrameGraphNode.PassNode, commandBuffer: VkCommandBuffer, chunks: Sequence<ChunkRepresentation>) {
+        override fun registerDrawingCommands(frame: Frame, passContext: VulkanFrameGraph.FrameGraphNode.PassNode, commandBuffer: VkCommandBuffer, work: Sequence<ChunkRepresentation.Section>) {
             val client = backend.window.client.ingame ?: return
 
             MemoryStack.stackPush()
@@ -136,29 +135,31 @@ class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
 
             bindingContext.preDraw(commandBuffer)
 
-            for (chunkRepresentation in chunks) {
-                val section = chunkRepresentation.sections.get(pass.declaration.name)
-                if (section != null) {
-                    vkCmdBindVertexBuffers(commandBuffer, 0, MemoryStack.stackLongs(section.buffer.handle), MemoryStack.stackLongs(0))
+            //for (chunkRepresentation in chunks) {
+            //val section = chunkRepresentation.sections.get(pass.declaration.name)
+            //if (section != null) {
+            for (section in work) {
+                val chunkRepresentation = section.parent
+                vkCmdBindVertexBuffers(commandBuffer, 0, MemoryStack.stackLongs(section.buffer.handle), MemoryStack.stackLongs(0))
 
-                    ssboStuff.position(instance * sizeAligned16)
-                    val chunkRenderInfo = ChunkRenderInfo().apply {
-                        chunkX = chunkRepresentation.chunk.chunkX
-                        chunkY = chunkRepresentation.chunk.chunkY
-                        chunkZ = chunkRepresentation.chunk.chunkZ
-                    }
-
-                    for (field in chunkInfoID.struct.fields) {
-                        ssboStuff.position(instance * sizeAligned16 + field.offset)
-                        extractInterfaceBlockField(field, ssboStuff, chunkRenderInfo)
-                    }
-
-                    vkCmdDraw(commandBuffer, section.count, 1, 0, instance++)
-
-                    frame.stats.totalVerticesDrawn += section.count
-                    frame.stats.totalDrawcalls++
+                ssboStuff.position(instance * sizeAligned16)
+                val chunkRenderInfo = ChunkRenderInfo().apply {
+                    chunkX = chunkRepresentation.chunk.chunkX
+                    chunkY = chunkRepresentation.chunk.chunkY
+                    chunkZ = chunkRepresentation.chunk.chunkZ
                 }
+
+                for (field in chunkInfoID.struct.fields) {
+                    ssboStuff.position(instance * sizeAligned16 + field.offset)
+                    extractInterfaceBlockField(field, ssboStuff, chunkRenderInfo)
+                }
+
+                vkCmdDraw(commandBuffer, section.count, 1, 0, instance++)
+
+                frame.stats.totalVerticesDrawn += section.count
+                frame.stats.totalDrawcalls++
             }
+            //}
 
             ssboStuff.position(instance * sizeAligned16)
             ssboStuff.flip()
@@ -184,8 +185,12 @@ class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
 
     override fun sort(representation: ChunkRepresentation, drawers: Array<VulkanDispatchingSystem.Drawer<*>>, outputs: List<MutableList<Any>>) {
         //TODO look at material/tag and decide where to send it
-        for(output in outputs){
-            output.add(representation)
+        for (section in representation.sections.values) {
+            for ((index, drawer) in drawers.withIndex()) {
+                if ((drawer as ChunkRepresentationsDispatcher.Drawer).materialTag == section.materialTag) {
+                    outputs[index].add(section)
+                }
+            }
         }
     }
 

@@ -9,7 +9,13 @@ import xyz.chunkstories.world.chunk.CubicChunk
 class ChunkRepresentation(val chunk: CubicChunk, val sections: Map<String, Section>, property: RefCountedProperty<*>
 ) : RefCountedRecyclable(property), Representation {
 
-    class Section(val name: String, val buffer: VulkanVertexBuffer, val count: Int)
+    class Section(val materialTag: String, val buffer: VulkanVertexBuffer, val count: Int) {
+        lateinit var parent: ChunkRepresentation
+    }
+
+    init {
+        sections.values.forEach { it.parent = this }
+    }
 
     override fun cleanup() {
         sections.values.forEach {

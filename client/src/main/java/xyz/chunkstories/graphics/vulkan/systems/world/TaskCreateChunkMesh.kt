@@ -46,6 +46,8 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
         if (neighborsPresent < neighborsIndexes.size)
             return true
 
+        val receiver = chunk.meshData as VulkanChunkMeshProperty
+
         val rng = Random(1)
         var count = 0
 
@@ -68,9 +70,9 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
                         val data = rawChunkData[x * 32 * 32 + y * 32 + z]
                         val voxel = chunk.world.contentTranslator.getVoxelForId(VoxelFormat.id(data))!!
 
-                        val passName = if(voxel.name == "water") "water" else "cubes"
+                        val materialTagName = if(voxel.name == "water") "water" else "opaque"
 
-                        val buffer = buffers.getOrPut(passName) {
+                        val buffer = buffers.getOrPut(materialTagName) {
                             MemoryUtil.memAlloc(1024 * 1024 * 4 * 4)
                         }
 
@@ -155,7 +157,7 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
             memFree(it.value)
         }
 
-        (chunk.meshData as VulkanChunkMeshProperty).acceptNewData(sections)
+        receiver.acceptNewData(sections)
         return true
     }
 
