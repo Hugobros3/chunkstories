@@ -269,13 +269,13 @@ class Lwjgl3ClientInputsManager// private final IngameLayer scene;
 
         // There has to be a controlled entity for sending inputs to make sense.
 
-        val world = playerEntity.getWorld()
+        val world = playerEntity.world
 
         // Send input to server
         if (world is WorldClientRemote) {
             // MouseScroll inputs are strictly client-side
             if (input !is MouseScroll) {
-                val connection = (playerEntity.getWorld() as WorldClientRemote).connection
+                val connection = (playerEntity.world as WorldClientRemote).connection
                 val packet = PacketInput(world)
                 packet.input = input
                 packet.isPressed = true
@@ -307,9 +307,9 @@ class Lwjgl3ClientInputsManager// private final IngameLayer scene;
         // There has to be a controlled entity for sending inputs to make sense.
 
         // Send input to server
-        val world = entityControlled.getWorld()
+        val world = entityControlled.world
         if (world is WorldClientRemote) {
-            val connection = (entityControlled.getWorld() as WorldClientRemote).connection
+            val connection = (entityControlled.world as WorldClientRemote).connection
             val packet = PacketInput(world)
             packet.input = input
             packet.isPressed = false

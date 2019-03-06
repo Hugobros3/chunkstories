@@ -72,8 +72,8 @@ public class GiveCommand extends ServerCommandBasic {
 			if (voxel != null) {
 				// Spawn new itemPile in his inventory
 				ItemVoxel itemVoxel = (ItemVoxel) gameContent.items().getItemDefinition("item_voxel").newItem();
-				itemVoxel.voxel = voxel;
-				itemVoxel.voxelMeta = voxelMeta;
+				itemVoxel.setVoxel(voxel);
+				itemVoxel.setVoxelMeta(voxelMeta);
 
 				item = itemVoxel;
 			}

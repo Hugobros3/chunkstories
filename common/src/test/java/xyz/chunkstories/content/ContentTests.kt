@@ -44,6 +44,16 @@ class ContentTests {
     }
 
     @Test
+    fun testAssimpCube() {
+        val testContext = TestGameContext("")
+
+        val cubeModel = testContext.content.models.getOrLoadModel("voxels/blockmodels/cube.dae")
+        for(mesh in cubeModel.meshes) {
+            println(mesh)
+        }
+    }
+
+    @Test
     fun testContentLoadByItself() {
         val testContext = TestGameContext(null!!)
     }

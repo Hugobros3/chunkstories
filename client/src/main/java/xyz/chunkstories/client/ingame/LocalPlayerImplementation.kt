@@ -48,15 +48,15 @@ class LocalPlayerImplementation(internal val client: IngameClientImplementation,
             // If a world master, directly set the entity's controller
             if (world is WorldMaster)
                 ec.controller = this
-            else if (entity.getWorld() is WorldClientNetworkedRemote) {
+            else if (entity.world is WorldClientNetworkedRemote) {
                 // When changing controlled entity, first unsubscribe the remote server from the
                 // one we no longer own
                 if (controlledEntity != null && entity !== controlledEntity)
-                    (controlledEntity!!.getWorld() as WorldClientNetworkedRemote).remoteServer
+                    (controlledEntity!!.world as WorldClientNetworkedRemote).remoteServer
                             .unsubscribe(controlledEntity)
 
                 // Let know the server of new changes
-                (entity.getWorld() as WorldClientNetworkedRemote).remoteServer.subscribe(entity)
+                (entity.world as WorldClientNetworkedRemote).remoteServer.subscribe(entity)
             }// In remote networked worlds, we need to subscribe the server to our player
             // actions to the controlled entity so he gets updates
 
@@ -65,8 +65,8 @@ class LocalPlayerImplementation(internal val client: IngameClientImplementation,
             // Directly unset it
             if (world is WorldMaster)
                 controlledEntity!!.traits[TraitControllable::class]?.let { it.controller = null }
-            else if (controlledEntity!!.getWorld() is WorldClientNetworkedRemote)
-                (controlledEntity!!.getWorld() as WorldClientNetworkedRemote).remoteServer
+            else if (controlledEntity!!.world is WorldClientNetworkedRemote)
+                (controlledEntity!!.world as WorldClientNetworkedRemote).remoteServer
                         .unsubscribe(controlledEntity)// When loosing control over an entity, stop sending the server updates about it
 
             controlledEntity = null
@@ -172,7 +172,7 @@ class LocalPlayerImplementation(internal val client: IngameClientImplementation,
 
     override fun getWorld(): World? {
         val controlledEntity = this.controlledEntity
-        return controlledEntity?.getWorld()
+        return controlledEntity?.world
     }
 
     override fun hasPermission(permissionNode: String): Boolean {

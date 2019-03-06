@@ -176,12 +176,12 @@ class ServerPlayer(val playerConnection: ClientConnection, private val playerNam
         val controlledEntity = this.controlledEntity ?: return
 
         // Cache (idk if HotSpot makes it redudant but whatever)
-        val world_size = controlledEntity.getWorld().worldSize
+        val world_size = controlledEntity.world.worldSize
         val controlledTraitLocation = controlledEntity.location
 
         val ENTITY_VISIBILITY_SIZE = 192.0
 
-        val inRangeEntitiesIterator = controlledEntity.getWorld().getEntitiesInBox(controlledTraitLocation,
+        val inRangeEntitiesIterator = controlledEntity.world.getEntitiesInBox(controlledTraitLocation,
                 Vector3d(ENTITY_VISIBILITY_SIZE, ENTITY_VISIBILITY_SIZE, ENTITY_VISIBILITY_SIZE))
         while (inRangeEntitiesIterator.hasNext()) {
             val e = inRangeEntitiesIterator.next()
