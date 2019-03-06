@@ -7,6 +7,7 @@
 package xyz.chunkstories.gui.layer.ingame
 
 import xyz.chunkstories.api.client.LocalPlayer
+import xyz.chunkstories.api.entity.traits.TraitHasOverlay
 import xyz.chunkstories.api.entity.traits.serializable.TraitHealth
 import xyz.chunkstories.api.entity.traits.serializable.TraitInventory
 import xyz.chunkstories.api.entity.traits.serializable.TraitSelectedItem
@@ -75,6 +76,7 @@ class IngameLayer(window: Gui, private val client: IngameClientImplementation) :
 
         // Draw the GUI
         if (!guiHidden) {
+            playerEntity?.traits?.get(TraitHasOverlay::class)?.drawEntityOverlay(drawer)
             chatManager.drawChatWindow(drawer)
 
             // Draw inventory

@@ -104,7 +104,7 @@ object DefaultIngameRendergraph {
                 }
 
                 pass {
-                    name = "cubes"
+                    name = "opaque"
 
                     dependsOn("sky")
 
@@ -146,7 +146,7 @@ object DefaultIngameRendergraph {
                 pass {
                     name = "deferredShading"
 
-                    dependsOn("cubes")
+                    dependsOn("opaque")
 
                     inputs {
                         imageInput {
