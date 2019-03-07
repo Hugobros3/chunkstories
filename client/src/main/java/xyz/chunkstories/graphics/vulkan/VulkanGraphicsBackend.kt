@@ -167,11 +167,11 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
 
     /** Creates a Vulkan instance */
     private fun createVkInstance(requiredExtensions: PointerBuffer): VkInstance = stackPush().use {
-        val appInfoStruct = VkApplicationInfo.callocStack().sType(VK10.VK_STRUCTURE_TYPE_APPLICATION_INFO).apply {
+        val appInfoStruct = VkApplicationInfo.callocStack().sType(VK_STRUCTURE_TYPE_APPLICATION_INFO).apply {
             pApplicationName(MemoryStack.stackUTF8("Chunk Stories"))
             pEngineName(MemoryStack.stackUTF8("Chunk Stories Vulkan Backend"))
 
-            apiVersion(VK10.VK_MAKE_VERSION(1, 1, 70))
+            apiVersion(VK_MAKE_VERSION(1, 1, 70))
         }
 
         val additionalInstanceExtensions = mutableSetOf(EXTDebugReport.VK_EXT_DEBUG_REPORT_EXTENSION_NAME)
@@ -191,14 +191,27 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
             pRequestedLayers.flip()
         }
 
-        val createInfoStruct = VkInstanceCreateInfo.callocStack().sType(VK10.VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO).apply {
+        val createInfoStruct = VkInstanceCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO).apply {
             pApplicationInfo(appInfoStruct)
             ppEnabledExtensionNames(pRequestedInstanceExtensions)
             ppEnabledLayerNames(pRequestedLayers)
         }
 
         val pInstance = MemoryStack.stackMallocPointer(1)
-        VK10.vkCreateInstance(createInfoStruct, null, pInstance).ensureIs("Failed to create Vulkan instance", VK10.VK_SUCCESS)
+        vkCreateInstance(createInfoStruct, null, pInstance).let {
+            val exceptionMessage = when(it) {
+                VK_SUCCESS -> return@let
+                VK_ERROR_OUT_OF_HOST_MEMORY -> "Out of host memory (somehow)!"
+                VK_ERROR_OUT_OF_DEVICE_MEMORY -> "Out of device memory!"
+                VK_ERROR_LAYER_NOT_PRESENT -> "Layer not present"
+                VK_ERROR_EXTENSION_NOT_PRESENT -> "A required extension not present, check your graphics hardware is supported and your drivers are up to date"
+                VK_ERROR_FEATURE_NOT_PRESENT -> "A required device feature isn't supported, check your graphics hardware is supported and your drivers are up to date"
+                VK_ERROR_INCOMPATIBLE_DRIVER -> "Incompatible driver, check your graphics hardware is supported and your drivers are up to date"
+                else -> "unknown error (code=$it)"
+            }
+
+            throw Exception("Failed to create Vulkan instance: $exceptionMessage")
+        }
 
         val vkInstance = VkInstance(pInstance.get(0), createInfoStruct)
 
@@ -224,7 +237,7 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
             }
 
             val pCallback = MemoryStack.stackMallocLong(1)
-            vkCreateDebugReportCallbackEXT(vkInstance, dbgSetupStruct, null, pCallback).ensureIs("Failed to create debug callback !", VK10.VK_SUCCESS)
+            vkCreateDebugReportCallbackEXT(vkInstance, dbgSetupStruct, null, pCallback).ensureIs("Failed to create debug callback !", VK_SUCCESS)
             logger.info("Successfully registered debug callback")
             return pCallback.get(0)
         }
