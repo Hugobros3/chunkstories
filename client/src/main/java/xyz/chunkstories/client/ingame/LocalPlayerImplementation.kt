@@ -133,7 +133,7 @@ class LocalPlayerImplementation(internal val client: IngameClientImplementation,
     }
 
     override fun hasFocus(): Boolean {
-        return client.gui.hasFocus()
+        return client.gui.hasFocus() && inputsManager.mouse.isGrabbed
     }
 
     override fun getName(): String {
