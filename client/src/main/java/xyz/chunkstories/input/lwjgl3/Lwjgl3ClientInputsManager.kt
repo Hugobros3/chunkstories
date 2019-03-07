@@ -16,7 +16,6 @@ import xyz.chunkstories.api.gui.Gui
 import xyz.chunkstories.api.input.Input
 import xyz.chunkstories.api.input.Mouse
 import xyz.chunkstories.api.input.Mouse.MouseButton
-import xyz.chunkstories.api.input.Mouse.MouseScroll
 import xyz.chunkstories.client.glfw.GLFWWindow
 import xyz.chunkstories.gui.layer.config.KeyBindSelectionOverlay
 import xyz.chunkstories.input.InputVirtual
@@ -50,6 +49,9 @@ class Lwjgl3ClientInputsManager// private final IngameLayer scene;
     private val mouseButtonCallback: GLFWMouseButtonCallback
     private val scrollCallback: GLFWScrollCallback
     private val characterCallback: GLFWCharCallback
+
+    override val allInputs: Collection<Input>
+        get() = inputs
 
     init {
         this.gui = gameWindow.client.gui
@@ -138,10 +140,6 @@ class Lwjgl3ClientInputsManager// private final IngameLayer scene;
         //reload();
     }
 
-    override fun getAllInputs(): Iterator<Input> {
-        return inputs.iterator()
-    }
-
     /**
      * Returns null or a KeyBind matching the name
      */
@@ -224,7 +222,7 @@ class Lwjgl3ClientInputsManager// private final IngameLayer scene;
             "keyBind" -> input = Lwjgl3KeyBind(this, name, value!!, arguments.contains("hidden"), arguments.contains("repeat"))
             "virtual" -> input = InputVirtual(name)
             "keyBindCompound" -> {
-                val keyCompound = Lwjgl3KeyBindCompound(this, name, value)
+                val keyCompound = Lwjgl3KeyBindCompound(this, name, value!!)
                 input = keyCompound
             }
             else -> return
@@ -274,7 +272,7 @@ class Lwjgl3ClientInputsManager// private final IngameLayer scene;
         // Send input to server
         if (world is WorldClientRemote) {
             // MouseScroll inputs are strictly client-side
-            if (input !is MouseScroll) {
+            if (input !is Mouse.MouseScroll) {
                 val connection = (playerEntity.world as WorldClientRemote).connection
                 val packet = PacketInput(world)
                 packet.input = input

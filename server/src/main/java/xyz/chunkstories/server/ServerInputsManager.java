@@ -41,8 +41,8 @@ public class ServerInputsManager implements InputsManager, InputsManagerLoader {
 	}
 
 	@Override
-	public Iterator<Input> getAllInputs() {
-		return inputs.iterator();
+	public Collection<Input> getAllInputs() {
+		return inputs;
 	}
 
 	public Input getInputFromHash(long hash) {

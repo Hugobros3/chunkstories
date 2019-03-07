@@ -168,7 +168,7 @@ class LoginPrompt(gui: Gui, parent: Layer) : Layer(gui, parent) {
         else if (input.name == "enter")
             connect()
         else if (input.name == "tab") {
-            val shift = if (gui.client.inputsManager.getInputByName("shift").isPressed) -1 else 1
+            val shift = if (gui.client.inputsManager.getInputByName("shift")!!.isPressed) -1 else 1
             var i = this.elements.indexOf(this.focusedElement)
 
             var elem: GuiElement? = null

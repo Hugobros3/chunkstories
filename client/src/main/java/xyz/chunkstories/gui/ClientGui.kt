@@ -42,8 +42,10 @@ class ClientGui(override val client: ClientImplementation) : Gui {
     // Fake out the mouse object
     override val mouse : Mouse by lazy {
         object : Mouse by client.inputsManager.mouse {
-            override fun getCursorX() = client.inputsManager.mouse.cursorX / guiScale
-            override fun getCursorY() = client.inputsManager.mouse.cursorY / guiScale
+            override val cursorX: Double
+                get() = client.inputsManager.mouse.cursorX / guiScale
+            override val cursorY: Double
+                get() = client.inputsManager.mouse.cursorY / guiScale
         }
     }
 

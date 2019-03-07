@@ -15,10 +15,7 @@ import xyz.chunkstories.input.Pollable
 /**
  * Describes a key assignated to some action
  */
-class Lwjgl3KeyBind
-//private Configuration.OptionKeyBind option;
-
-internal constructor(private val inputsManager: Lwjgl3ClientInputsManager, name: String, defaultKeyName: String, val hidden: Boolean, val repeat: Boolean) : Lwjgl3Input(inputsManager, name), KeyboardKeyInput, Pollable {
+class Lwjgl3KeyBind internal constructor(private val inputsManager: Lwjgl3ClientInputsManager, name: String, defaultKeyName: String, val hidden: Boolean, val repeat: Boolean) : Lwjgl3Input(inputsManager, name), KeyboardKeyInput, Pollable {
 
     /**
      * Internal to the engine, should not be interfered with by external mods
@@ -54,10 +51,11 @@ internal constructor(private val inputsManager: Lwjgl3ClientInputsManager, name:
     }
 
     /** Returns true if the key is pressed and we're either not ingame or there is no GUI overlay blocking gameplay input  */
-    override fun isPressed(): Boolean {
-        val ingameClient = inputsManager.gameWindow.client.ingame
-        return if (ingameClient != null) isDown && ingameClient.player.hasFocus() else isDown
-    }
+    override val isPressed: Boolean
+        get(): Boolean {
+            val ingameClient = inputsManager.gameWindow.client.ingame
+            return if (ingameClient != null) isDown && ingameClient.player.hasFocus() else isDown
+        }
 
     /**
      * When reloading from the config file (options changed)
