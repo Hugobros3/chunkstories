@@ -91,7 +91,7 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
             pDescriptorSets.get(instances)
             available.addAll(instances.asList())
 
-            println("Created $allocationSize new descriptors for layout $layout")
+            //println("Created $allocationSize new descriptors for layout $layout")
 
             // Geometric growth for our descriptor sets pools
             allocatedTotal += allocationSize

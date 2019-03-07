@@ -42,10 +42,6 @@ class BuddyAllocationBucket(memoryManager: VulkanMemoryManager, memoryTypeIndex:
         return a
     }
 
-    init {
-        println("lolwut")
-    }
-
     inner class SharedAllocation(val firstBlock: Boolean) : Cleanable {
         val size = pow2(maxOrder).toLong()
         val deviceMemory: VkDeviceMemory

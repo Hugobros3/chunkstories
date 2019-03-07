@@ -15,8 +15,8 @@ fun runPrePreProcessor(shaderCode: String): String {
         when {
             trimmedLine.startsWith("#define") -> {
                 val key = trimmedLine.split(" ")[1]
-                val value = trimmedLine.removePrefix("#define $key")
-                println("found define '$key' => '$value'")
+                val value = trimmedLine.removePrefix("#define $key") //TODO parse properly
+                //println("found define '$key' => '$value'")
                 defines.put(key, value)
 
                 line

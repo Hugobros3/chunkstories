@@ -86,7 +86,7 @@ open class VoxelTexturesArray(val voxels: Content.Voxels) : ReloadableVoxelTextu
                 return originalImage
             else {
                 val image2 = BufferedImage(textureResolution, textureResolution, originalImage.type)
-                logger.debug("Resizing image $asset")
+                //logger.debug("Resizing image $asset")
 
                 //TODO this is the world's worst nearest-neighbor ever
                 for (x in 0 until image2.width)
