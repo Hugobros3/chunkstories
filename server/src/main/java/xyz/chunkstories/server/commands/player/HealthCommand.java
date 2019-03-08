@@ -19,7 +19,7 @@ public class HealthCommand extends ServerCommandBasic {
 
 	public HealthCommand(Server serverConsole) {
 		super(serverConsole);
-		server.getPluginManager().registerCommand("health").setHandler(this);
+		server.getPluginManager().registerCommand("health", this);
 	}
 
 	// Lazy, why does Java standard lib doesn't have a clean way to do this tho

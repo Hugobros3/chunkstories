@@ -16,7 +16,7 @@ public class DebugTasksCommand extends ServerCommandBasic {
 
 	public DebugTasksCommand(Server serverConsole) {
 		super(serverConsole);
-		server.getPluginManager().registerCommand("tasks").setHandler(this);
+		server.getPluginManager().registerCommand("tasks", this);
 	}
 
 	@Override

@@ -15,7 +15,7 @@ public class SayCommand extends ServerCommandBasic {
 
 	public SayCommand(Server serverConsole) {
 		super(serverConsole);
-		server.getPluginManager().registerCommand("say").setHandler(this);
+		server.getPluginManager().registerCommand("say", this);
 	}
 
 	@Override

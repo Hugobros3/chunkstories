@@ -19,7 +19,7 @@ public class ClearCommand extends ServerCommandBasic {
 
 	public ClearCommand(Server serverConsole) {
 		super(serverConsole);
-		server.getPluginManager().registerCommand("clear").setHandler(this);
+		server.getPluginManager().registerCommand("clear", this);
 	}
 
 	@Override

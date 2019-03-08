@@ -20,10 +20,10 @@ public class DebugWorldDataCommands extends ServerCommandBasic {
 
 	public DebugWorldDataCommands(Server serverConsole) {
 		super(serverConsole);
-		server.getPluginManager().registerCommand("chunk").setHandler(this);
-		server.getPluginManager().registerCommand("region").setHandler(this);
-		server.getPluginManager().registerCommand("heightmap").setHandler(this);
-		server.getPluginManager().registerCommand("heightmaps").setHandler(this);
+		server.getPluginManager().registerCommand("chunk", this);
+		server.getPluginManager().registerCommand("region", this);
+		server.getPluginManager().registerCommand("heightmap", this);
+		server.getPluginManager().registerCommand("heightmaps", this);
 	}
 
 	@Override

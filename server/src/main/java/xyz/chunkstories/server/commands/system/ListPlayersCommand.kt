@@ -14,7 +14,7 @@ import xyz.chunkstories.server.commands.ServerCommandBasic
 class ListPlayersCommand(serverConsole: Server) : ServerCommandBasic(serverConsole) {
 
     init {
-        server.pluginManager.registerCommand("list").handler = this
+        server.pluginManager.registerCommand("list", this)
     }
 
     override fun handleCommand(emitter: CommandEmitter, command: Command, arguments: Array<String>): Boolean {

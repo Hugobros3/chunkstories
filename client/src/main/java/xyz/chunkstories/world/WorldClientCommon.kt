@@ -8,7 +8,7 @@ package xyz.chunkstories.world
 
 import xyz.chunkstories.api.graphics.systems.dispatching.DecalsManager
 import xyz.chunkstories.api.particles.ParticlesManager
-import xyz.chunkstories.api.plugin.ClientPluginManager
+import xyz.chunkstories.api.plugin.PluginManager
 import xyz.chunkstories.api.world.WorldClient
 import xyz.chunkstories.api.world.WorldInfo
 import xyz.chunkstories.client.ingame.IngameClientImplementation
@@ -21,7 +21,7 @@ import java.io.File
 abstract class WorldClientCommon @Throws(WorldLoadingException::class)
 constructor(override val client: IngameClientImplementation, info: WorldInfo, translator: AbstractContentTranslator?, folder: File?) : WorldImplementation(client, info, translator, folder), WorldClient {
 
-    val pluginManager: ClientPluginManager
+    val pluginManager: PluginManager
         get() = client.pluginManager
 
     /** We cast and return the super actualProperty because of callbacks in the superconstructor expect this to be set before we have a chance to in this constructor */

@@ -16,7 +16,7 @@ public class WeatherCommand extends ServerCommandBasic {
 
 	public WeatherCommand(Server serverConsole) {
 		super(serverConsole);
-		server.getPluginManager().registerCommand("weather").setHandler(this);
+		server.getPluginManager().registerCommand("weather", this);
 	}
 
 	@Override

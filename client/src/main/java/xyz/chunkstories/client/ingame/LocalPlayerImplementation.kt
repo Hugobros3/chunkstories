@@ -136,9 +136,8 @@ class LocalPlayerImplementation(internal val client: IngameClientImplementation,
         return client.gui.hasFocus() && inputsManager.mouse.isGrabbed
     }
 
-    override fun getName(): String {
-        return client.user.name
-    }
+    override val name: String
+        get() = client.user.name
 
     override fun getDisplayName(): String {
         return name

@@ -6,20 +6,15 @@
 
 package xyz.chunkstories.server.player
 
-import java.io.File
-import java.io.FileWriter
-import java.io.IOException
-import java.util.Properties
-import java.util.concurrent.ConcurrentHashMap
-
-import xyz.chunkstories.api.graphics.systems.dispatching.DecalsManager
 import org.joml.Vector3d
-
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.Location
 import xyz.chunkstories.api.entity.Entity
 import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
 import xyz.chunkstories.api.entity.traits.serializable.TraitInventory
 import xyz.chunkstories.api.entity.traits.serializable.TraitSerializable
+import xyz.chunkstories.api.graphics.systems.dispatching.DecalsManager
 import xyz.chunkstories.api.input.InputsManager
 import xyz.chunkstories.api.item.inventory.Inventory
 import xyz.chunkstories.api.math.LoopingMathHelper
@@ -38,10 +33,13 @@ import xyz.chunkstories.server.propagation.VirtualServerDecalsManager.ServerPlay
 import xyz.chunkstories.server.propagation.VirtualServerParticlesManager.ServerPlayerVirtualParticlesManager
 import xyz.chunkstories.sound.VirtualSoundManager.ServerPlayerVirtualSoundManager
 import xyz.chunkstories.world.WorldServer
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import java.io.File
+import java.io.FileWriter
+import java.io.IOException
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
-class ServerPlayer(val playerConnection: ClientConnection, private val playerName: String) : RemotePlayer {
+class ServerPlayer(val playerConnection: ClientConnection, override val name: String) : RemotePlayer {
     protected val server: Server
 
     private val playerMetadata: Properties
@@ -65,7 +63,7 @@ class ServerPlayer(val playerConnection: ClientConnection, private val playerNam
 
     val lastPosition: Location?
         get() = if (this.playerMetadata.containsKey("posX")) {
-            Location(getWorld(), playerMetadata.getProperty("posX").toDouble(), playerMetadata.getProperty("posY").toDouble(),
+            Location(getWorld()!!, playerMetadata.getProperty("posX").toDouble(), playerMetadata.getProperty("posY").toDouble(),
                     playerMetadata.getProperty("posZ").toDouble())
         } else null
 
@@ -74,7 +72,7 @@ class ServerPlayer(val playerConnection: ClientConnection, private val playerNam
         this.server = playerConnection.context
 
         //TODO this should use revised UUIDs
-        this.playerMetadataFile = File("./players/" + playerName.toLowerCase() + ".metadata")
+        this.playerMetadataFile = File("./players/" + name.toLowerCase() + ".metadata")
         this.playerMetadata = Properties()//OldStyleConfigFile("./players/" + playerName.toLowerCase() + ".cfg");
 
         this.serverInputsManager = ServerInputsManager(this)
@@ -84,8 +82,6 @@ class ServerPlayer(val playerConnection: ClientConnection, private val playerNam
         if (this.playerMetadata.getProperty("firstlogin", "nope") == "nope")
             this.playerMetadata.setProperty("firstlogin", "" + System.currentTimeMillis())
     }
-
-    override fun getName() = playerName
 
     override fun getUUID(): Long {
         // TODO make them longer
@@ -142,13 +138,13 @@ class ServerPlayer(val playerConnection: ClientConnection, private val playerNam
         synchronized(this) {
             val oldEntity = controlledEntity
 
-            if(newEntity == oldEntity)
+            if (newEntity == oldEntity)
                 return false
 
-            if(oldEntity != null)
+            if (oldEntity != null)
                 oldEntity.traits[TraitControllable::class]?.controller = null
 
-            if(newEntity != null)
+            if (newEntity != null)
                 newEntity.traits[TraitControllable::class]?.controller = this
 
             controlledEntity = newEntity
@@ -255,7 +251,7 @@ class ServerPlayer(val playerConnection: ClientConnection, private val playerNam
             val entity = iterator.next()
             // If one of the entities is controllable ...
             entity.traits[TraitControllable::class]?.apply {
-                if(controller == this)
+                if (controller == this)
                     controller = null
             }
 
@@ -323,7 +319,7 @@ class ServerPlayer(val playerConnection: ClientConnection, private val playerNam
             val controlledTraitLocation = controlledEntity!!.location
 
             // Safely assumes as a SERVER the world will be master ;)
-            val world = controlledTraitLocation.getWorld() as WorldMaster
+            val world = controlledTraitLocation.world as WorldMaster
 
             playerMetadata.setProperty("posX", controlledTraitLocation.x().toString())
             playerMetadata.setProperty("posY", controlledTraitLocation.y().toString())
@@ -332,23 +328,23 @@ class ServerPlayer(val playerConnection: ClientConnection, private val playerNam
 
             // Serializes the whole player entity !!!
             val playerEntityFile = SerializedEntityFile(
-                    world.folderPath + "/players/" + this.getName().toLowerCase() + ".csf")
+                    world.folderPath + "/players/" + this.name.toLowerCase() + ".csf")
             playerEntityFile.write(controlledEntity)
         }
 
         // Telemetry (zomg so EVIL)
         playerMetadata.setProperty("timeplayed", "" + (lastTime + (System.currentTimeMillis() - lastLogin)))
         try {
-            playerMetadata.store(FileWriter(playerMetadataFile), "Metadata file for player$playerName")
+            playerMetadata.store(FileWriter(playerMetadataFile), "Metadata file for player$name")
         } catch (e: IOException) {
             e.printStackTrace()
         }
 
-        logger.info("Player profile $playerName saved.")
+        logger.info("Player profile $name saved.")
     }
 
     override fun toString(): String {
-        return getName()
+        return name
     }
 
     fun destroy() {

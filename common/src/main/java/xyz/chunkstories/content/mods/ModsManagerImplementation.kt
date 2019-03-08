@@ -17,10 +17,11 @@ import xyz.chunkstories.api.exceptions.plugins.PluginLoadException
 import xyz.chunkstories.content.GameDirectory
 import xyz.chunkstories.content.sandbox.ForeignCodeClassLoader
 import xyz.chunkstories.plugin.NotAPluginException
-import xyz.chunkstories.plugin.PluginInformationImplementation
 import xyz.chunkstories.util.FoldersUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.api.plugin.PluginInformation
+import xyz.chunkstories.plugin.loadPluginInfo
 
 import java.io.*
 import java.util.*
@@ -44,7 +45,7 @@ class ModsManagerImplementation @Throws(NonExistentCoreContent::class)
     private var cacheFolder: File? = null
 
     //TODO move, probably
-    val pluginsWithinEnabledMods = ArrayList<PluginInformationImplementation>()
+    val pluginsWithinEnabledMods = ArrayList<PluginInformation>()
 
     var finalClassLoader: ClassLoader? = null
         private set
@@ -270,8 +271,7 @@ class ModsManagerImplementation @Throws(NonExistentCoreContent::class)
         // Load any plugins those jar files might be
         for (jarFile in jarFiles) {
             try {
-                val pluginInformation = PluginInformationImplementation(jarFile,
-                        classLoader)
+                val pluginInformation = loadPluginInfo(jarFile) ?: continue
                 logger.info("Found plugin $pluginInformation in $mod")
                 pluginsWithinEnabledMods.add(pluginInformation)
             } catch (nap: NotAPluginException) {

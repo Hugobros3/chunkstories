@@ -16,7 +16,7 @@ public class StopServerCommand extends ServerCommandBasic {
 
 	public StopServerCommand(Server serverConsole) {
 		super(serverConsole);
-		server.getPluginManager().registerCommand("stop").setHandler(this);
+		server.getPluginManager().registerCommand("stop", this);
 	}
 
 	@Override

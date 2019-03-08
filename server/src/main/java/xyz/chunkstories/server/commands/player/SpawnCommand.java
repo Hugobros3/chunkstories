@@ -18,7 +18,7 @@ public class SpawnCommand extends ServerCommandBasic {
 
 	public SpawnCommand(Server serverConsole) {
 		super(serverConsole);
-		server.getPluginManager().registerCommand("spawn").setHandler(this);
+		server.getPluginManager().registerCommand("spawn", this);
 	}
 
 	@Override

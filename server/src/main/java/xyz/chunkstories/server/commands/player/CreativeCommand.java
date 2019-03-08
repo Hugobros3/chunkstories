@@ -19,7 +19,7 @@ public class CreativeCommand extends ServerCommandBasic {
 
 	public CreativeCommand(Server serverConsole) {
 		super(serverConsole);
-		server.getPluginManager().registerCommand("creative").setHandler(this);
+		server.getPluginManager().registerCommand("creative", this);
 	}
 
 	@Override

@@ -22,7 +22,7 @@ public class SpawnEntityCommand extends ServerCommandBasic {
 
     public SpawnEntityCommand(Server serverConsole) {
         super(serverConsole);
-        server.getPluginManager().registerCommand("spawnentity").setHandler(this);
+        server.getPluginManager().registerCommand("spawnentity", this);
     }
 
     // Lazy, why does Java standard lib doesn't have a clean way to do this tho
@@ -71,7 +71,7 @@ public class SpawnEntityCommand extends ServerCommandBasic {
             return true;
         }
 
-        Entity entity = entityType.newEntity(spawnLocation.world);
+        Entity entity = entityType.newEntity(spawnLocation.getWorld());
         entity.traitLocation.set(spawnLocation);
 
         spawnLocation.getWorld().addEntity(entity);

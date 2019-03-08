@@ -16,7 +16,7 @@ public class SaveCommand extends ServerCommandBasic {
 
 	public SaveCommand(Server serverConsole) {
 		super(serverConsole);
-		server.getPluginManager().registerCommand("save").setHandler(this);
+		server.getPluginManager().registerCommand("save", this);
 	}
 
 	@Override

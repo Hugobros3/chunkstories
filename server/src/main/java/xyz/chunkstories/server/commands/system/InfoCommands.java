@@ -22,11 +22,11 @@ public class InfoCommands extends ServerCommandBasic {
 	public InfoCommands(Server serverConsole) {
 		super(serverConsole);
 
-		server.getPluginManager().registerCommand("uptime").setHandler(this);
-		server.getPluginManager().registerCommand("info").setHandler(this);
-		server.getPluginManager().registerCommand("help").setHandler(this);
-		server.getPluginManager().registerCommand("plugins").setHandler(this);
-		server.getPluginManager().registerCommand("mods").setHandler(this);
+		server.getPluginManager().registerCommand("uptime", this);
+		server.getPluginManager().registerCommand("info", this);
+		server.getPluginManager().registerCommand("help", this);
+		server.getPluginManager().registerCommand("plugins", this);
+		server.getPluginManager().registerCommand("mods", this);
 	}
 
 	@Override
@@ -56,7 +56,7 @@ public class InfoCommands extends ServerCommandBasic {
 		} else if (cmd.getName().equals("plugins")) {
 			String list = "";
 
-			Iterator<ChunkStoriesPlugin> i = server.getPluginManager().activePlugins();
+			Iterator<ChunkStoriesPlugin> i = server.getPluginManager().activePlugins().iterator();
 			while (i.hasNext()) {
 				ChunkStoriesPlugin plugin = i.next();
 				list += plugin.getName() + (i.hasNext() ? ", " : "");

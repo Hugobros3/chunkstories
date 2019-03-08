@@ -17,7 +17,7 @@ import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 class ReloadContentCommand(private val client: IngameClient) : CommandHandler {
 
     init {
-        client.pluginManager.registerCommand("reload").handler = this
+        client.pluginManager.registerCommand("reload", this)
     }
 
     override fun handleCommand(emitter: CommandEmitter, command: Command, arguments: Array<String>): Boolean {

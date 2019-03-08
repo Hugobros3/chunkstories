@@ -23,7 +23,7 @@ public class GiveCommand extends ServerCommandBasic {
 
 	public GiveCommand(Server serverConsole) {
 		super(serverConsole);
-		server.getPluginManager().registerCommand("give").setHandler(this);
+		server.getPluginManager().registerCommand("give", this);
 	}
 
 	@Override

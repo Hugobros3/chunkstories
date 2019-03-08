@@ -15,7 +15,7 @@ public class MiscDebugCommands extends ServerCommandBasic {
 
 	public MiscDebugCommands(Server serverConsole) {
 		super(serverConsole);
-		server.getPluginManager().registerCommand("gc").setHandler(this);
+		server.getPluginManager().registerCommand("gc", this);
 	}
 
 	@Override

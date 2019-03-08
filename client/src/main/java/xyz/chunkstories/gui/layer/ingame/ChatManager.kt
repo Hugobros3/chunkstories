@@ -212,18 +212,13 @@ class ChatManager(private val ingameClient: IngameClient, private val ingameGuiL
                     return
                 }
                 cmdName == "plugins" -> {
-                    var list = ""
-
-                    val i = ingameClient.pluginManager.activePlugins()
-                    while (i.hasNext()) {
-                        val plugin = i.next()
-                        list += plugin.name + if (i.hasNext()) ", " else ""
-                    }
+                    val count = ingameClient.pluginManager.activePlugins().count()
+                    val list = ingameClient.pluginManager.activePlugins().map { it.name }.joinToString(", ")
 
                     if (ingameClient.world is WorldClientLocal)
-                        insert("#00FFD0$i active client [master] plugins : $list")
+                        insert("#00FFD0$count active client [master] plugins : $list")
                     else
-                        insert("#74FFD0$i active client [remote] plugins : $list")
+                        insert("#74FFD0$count active client [remote] plugins : $list")
 
                     if (sent.size == 0 || sent[0] != input) {
                         sent.add(0, input)

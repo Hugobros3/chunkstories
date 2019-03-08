@@ -6,36 +6,21 @@
 
 package xyz.chunkstories.server
 
+import org.fusesource.jansi.Ansi.Color.*
 import org.fusesource.jansi.Ansi.ansi
-import org.fusesource.jansi.Ansi.Color.BLACK
-import org.fusesource.jansi.Ansi.Color.CYAN
-import org.fusesource.jansi.Ansi.Color.RED
-import org.fusesource.jansi.Ansi.Color.WHITE
-
-import java.io.BufferedReader
-import java.io.File
-import java.io.IOException
-import java.io.InputStreamReader
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.concurrent.atomic.AtomicBoolean
-
-import xyz.chunkstories.api.plugin.ServerPluginManager
-import xyz.chunkstories.api.server.Server
-import xyz.chunkstories.api.util.configuration.Configuration
-import xyz.chunkstories.world.*
-import xyz.chunkstories.world.WorldLoadingException
 import org.fusesource.jansi.AnsiConsole
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-
 import xyz.chunkstories.api.content.Content
 import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.server.PermissionsManager
+import xyz.chunkstories.api.server.Server
 import xyz.chunkstories.api.util.ColorsTools
+import xyz.chunkstories.api.util.configuration.Configuration
 import xyz.chunkstories.api.workers.Tasks
 import xyz.chunkstories.content.GameContentStore
 import xyz.chunkstories.content.GameDirectory
+import xyz.chunkstories.plugin.DefaultPluginManager
 import xyz.chunkstories.server.commands.DedicatedServerConsole
 import xyz.chunkstories.server.commands.InstallServerCommands
 import xyz.chunkstories.server.net.ClientsManager
@@ -45,7 +30,16 @@ import xyz.chunkstories.server.propagation.ServerModsProvider
 import xyz.chunkstories.task.WorkerThreadPool
 import xyz.chunkstories.util.LogbackSetupHelper
 import xyz.chunkstories.util.VersionInfo
+import xyz.chunkstories.world.WorldLoadingException
 import xyz.chunkstories.world.WorldServer
+import xyz.chunkstories.world.deserializeWorldInfo
+import java.io.BufferedReader
+import java.io.File
+import java.io.IOException
+import java.io.InputStreamReader
+import java.text.SimpleDateFormat
+import java.util.*
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * The server class handles and make the link between all server components It
@@ -72,7 +66,7 @@ class DedicatedServer internal constructor(coreContentLocation: File, modsString
     val handler: ClientsManager
 
     override val userPrivileges = FileBasedUsersPrivileges()
-    override lateinit var permissionsManager : PermissionsManager
+    override lateinit var permissionsManager: PermissionsManager
 
     // Sleeper thread to keep servers list updated
     private var announcer: ServerAnnouncerThread? = null
@@ -81,8 +75,7 @@ class DedicatedServer internal constructor(coreContentLocation: File, modsString
     val modsProvider: ServerModsProvider
 
     //private var pluginsManager: DefaultServerPluginManager? = null
-    override val pluginManager: ServerPluginManager
-
+    override val pluginManager: DefaultPluginManager
 
     override val connectedPlayers: Set<Player>
         get() = handler.players
@@ -145,7 +138,7 @@ class DedicatedServer internal constructor(coreContentLocation: File, modsString
 
             // load users privs
             // UsersPrivilegesFile.load();
-            pluginManager = DefaultServerPluginManager(this)
+            pluginManager = DefaultPluginManager(this)
 
             // Load the world(s)
             val worldName = serverConfig.getValue("server.world")
@@ -166,21 +159,21 @@ class DedicatedServer internal constructor(coreContentLocation: File, modsString
             }
 
             // Opens socket and starts accepting clients
-            handler!!.open()
+            handler.open()
             // Initializes the announcer ( server listings )
             announcer = ServerAnnouncerThread(this)
             announcer!!.start()
 
-            permissionsManager = PermissionsManager { player, permissionNode -> userPrivileges.isUserAdmin(player.getName()) }
+            permissionsManager = PermissionsManager { player, permissionNode -> userPrivileges.isUserAdmin(player.name) }
 
             // Load plugins
             pluginManager.reloadPlugins()
             InstallServerCommands(this)
 
             // Finally start logic
-            world!!.startLogic()
+            world.startLogic()
         } catch (e: Exception) {
-            logger!!.error("Could not initialize server . Stacktrace below")
+            logger.error("Could not initialize server . Stacktrace below")
             throw RuntimeException(e)
         }
 
@@ -311,7 +304,7 @@ class DedicatedServer internal constructor(coreContentLocation: File, modsString
     }
 
     override fun getPlayerByName(playerName: String): Player? = handler.getPlayerByName(playerName)
-    override fun getPlayerByUUID(UUID: Long): Player?  = connectedPlayers.find { it.uuid == UUID }
+    override fun getPlayerByUUID(UUID: Long): Player? = connectedPlayers.find { it.uuid == UUID }
 
     override fun broadcastMessage(message: String) {
         logger().info(ColorsTools.convertToAnsi(message))

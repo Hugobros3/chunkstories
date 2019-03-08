@@ -16,11 +16,11 @@ public class ModerationCommands extends ServerCommandBasic {
 
 	public ModerationCommands(Server serverConsole) {
 		super(serverConsole);
-		server.getPluginManager().registerCommand("kick").setHandler(this);
-		server.getPluginManager().registerCommand("ban").setHandler(this);
-		server.getPluginManager().registerCommand("unban").setHandler(this);
-		server.getPluginManager().registerCommand("banip").setHandler(this);
-		server.getPluginManager().registerCommand("unbanip").setHandler(this);
+		server.getPluginManager().registerCommand("kick", this);
+		server.getPluginManager().registerCommand("ban", this);
+		server.getPluginManager().registerCommand("unban", this);
+		server.getPluginManager().registerCommand("banip", this);
+		server.getPluginManager().registerCommand("unbanip", this);
 	}
 
 	@Override

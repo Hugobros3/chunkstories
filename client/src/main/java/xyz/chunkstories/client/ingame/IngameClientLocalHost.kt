@@ -4,11 +4,9 @@ import xyz.chunkstories.api.events.player.PlayerLogoutEvent
 import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.server.PermissionsManager
 import xyz.chunkstories.api.server.Server
-import xyz.chunkstories.api.util.IterableIterator
 import xyz.chunkstories.api.world.WorldInfo
 import xyz.chunkstories.api.world.WorldMaster
 import xyz.chunkstories.client.ClientImplementation
-import xyz.chunkstories.client.ClientMasterPluginManager
 import xyz.chunkstories.entity.SerializedEntityFile
 import xyz.chunkstories.server.FileBasedUsersPrivileges
 import xyz.chunkstories.world.WorldClientLocal
@@ -16,6 +14,7 @@ import xyz.chunkstories.world.WorldLoadingException
 import xyz.chunkstories.world.deserializeWorldInfo
 import xyz.chunkstories.world.serializeWorldInfo
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.plugin.DefaultPluginManager
 import java.io.File
 
 fun ClientImplementation.enterExistingWorld(folder: File) : WorldClientLocal {
@@ -53,8 +52,8 @@ fun ClientImplementation.createAndEnterWorld(folder: File, worldInfo: WorldInfo)
 /** Represent an IngameClient that is also a local Server (with minimal server functionality). Used in local SP. */
 class IngameClientLocalHost(client: ClientImplementation, worldInitializer: (IngameClientImplementation) -> WorldClientLocal) : IngameClientImplementation(client, worldInitializer), Server {
     override val world: WorldClientLocal = super.internalWorld as WorldClientLocal
-    override val pluginManager: ClientMasterPluginManager
-            get() = super.internalPluginManager as ClientMasterPluginManager
+    override val pluginManager: DefaultPluginManager
+            get() = super.internalPluginManager
 
     override val userPrivileges = FileBasedUsersPrivileges()
     override var permissionsManager: PermissionsManager = PermissionsManager { _, _ ->

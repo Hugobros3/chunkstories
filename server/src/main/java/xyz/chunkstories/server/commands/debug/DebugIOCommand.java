@@ -16,7 +16,7 @@ public class DebugIOCommand extends ServerCommandBasic {
 
 	public DebugIOCommand(Server serverConsole) {
 		super(serverConsole);
-		server.getPluginManager().registerCommand("io").setHandler(this);
+		server.getPluginManager().registerCommand("io", this);
 	}
 
 	@Override

@@ -19,7 +19,7 @@ public class FlyCommand extends ServerCommandBasic {
 
 	public FlyCommand(Server serverConsole) {
 		super(serverConsole);
-		server.getPluginManager().registerCommand("fly").setHandler(this);
+		server.getPluginManager().registerCommand("fly", this);
 	}
 
 	@Override

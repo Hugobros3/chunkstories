@@ -18,7 +18,7 @@ public class EntitiesDebugCommands extends ServerCommandBasic {
 
 	public EntitiesDebugCommands(Server serverConsole) {
 		super(serverConsole);
-		server.getPluginManager().registerCommand("entities").setHandler(this);
+		server.getPluginManager().registerCommand("entities", this);
 	}
 
 	@Override

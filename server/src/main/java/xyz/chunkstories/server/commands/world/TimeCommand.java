@@ -16,7 +16,7 @@ public class TimeCommand extends ServerCommandBasic {
 
 	public TimeCommand(Server serverConsole) {
 		super(serverConsole);
-		server.getPluginManager().registerCommand("time").setHandler(this);
+		server.getPluginManager().registerCommand("time", this);
 	}
 
 	@Override

@@ -17,7 +17,7 @@ public class TpCommand extends ServerCommandBasic {
 
 	public TpCommand(Server serverConsole) {
 		super(serverConsole);
-		server.getPluginManager().registerCommand("tp").setHandler(this);
+		server.getPluginManager().registerCommand("tp", this);
 	}
 
 	@Override

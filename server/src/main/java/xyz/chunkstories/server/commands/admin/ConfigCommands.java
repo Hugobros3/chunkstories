@@ -15,7 +15,7 @@ public class ConfigCommands extends ServerCommandBasic {
 
 	public ConfigCommands(Server serverConsole) {
 		super(serverConsole);
-		server.getPluginManager().registerCommand("reloadConfig").setHandler(this);
+		server.getPluginManager().registerCommand("reloadConfig", this);
 	}
 
 	@Override

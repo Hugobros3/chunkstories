@@ -204,7 +204,7 @@ class InventoryView(gui: Gui, parent: Layer, private val inventories: List<Inven
                             sourceInventory?.setItemPileAt(draggingPile!!.x, draggingPile!!.y, null)
 
                             if (dropItemEvent.itemEntity != null)
-                                loc.getWorld().addEntity(dropItemEvent.itemEntity!!)
+                                loc.world.addEntity(dropItemEvent.itemEntity!!)
                         }
                     }
                 }

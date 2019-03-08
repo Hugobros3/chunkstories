@@ -1,34 +1,32 @@
 package xyz.chunkstories.client.ingame
 
+import org.slf4j.Logger
 import xyz.chunkstories.api.client.ClientIdentity
 import xyz.chunkstories.api.client.ClientInputsManager
 import xyz.chunkstories.api.client.ClientSoundManager
 import xyz.chunkstories.api.client.IngameClient
 import xyz.chunkstories.api.content.Content
+import xyz.chunkstories.api.graphics.GraphicsEngine
 import xyz.chunkstories.api.graphics.Window
 import xyz.chunkstories.api.graphics.systems.dispatching.DecalsManager
 import xyz.chunkstories.api.gui.Gui
 import xyz.chunkstories.api.particles.ParticlesManager
-import xyz.chunkstories.api.plugin.ClientPluginManager
 import xyz.chunkstories.api.util.configuration.Configuration
 import xyz.chunkstories.api.workers.Tasks
 import xyz.chunkstories.api.world.WorldMaster
 import xyz.chunkstories.client.ClientImplementation
-import xyz.chunkstories.client.ClientMasterPluginManager
-import xyz.chunkstories.client.ClientSlavePluginManager
+import xyz.chunkstories.client.commands.installClientCommands
+import xyz.chunkstories.graphics.common.DefaultIngameRendergraph
+import xyz.chunkstories.graphics.common.WorldRenderer
 import xyz.chunkstories.graphics.vulkan.util.BuiltInRendergraphs
 import xyz.chunkstories.gui.layer.MainMenu
 import xyz.chunkstories.gui.layer.MessageBox
 import xyz.chunkstories.gui.layer.SkyBoxBackground
 import xyz.chunkstories.gui.layer.ingame.IngameLayer
 import xyz.chunkstories.gui.layer.ingame.RemoteConnectionGuiLayer
+import xyz.chunkstories.plugin.DefaultPluginManager
 import xyz.chunkstories.server.commands.InstallServerCommands
-import xyz.chunkstories.client.commands.installClientCommands
 import xyz.chunkstories.world.WorldClientCommon
-import org.slf4j.Logger
-import xyz.chunkstories.api.graphics.GraphicsEngine
-import xyz.chunkstories.graphics.common.DefaultIngameRendergraph
-import xyz.chunkstories.graphics.common.WorldRenderer
 
 abstract class IngameClientImplementation protected constructor(val client: ClientImplementation, worldInitializer: (IngameClientImplementation) -> WorldClientCommon) : IngameClient {
     final override val configuration: Configuration = client.configuration
@@ -43,7 +41,7 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
 
     final override val ingame: IngameClient? = this
 
-    val internalPluginManager: ClientPluginManager
+    val internalPluginManager: DefaultPluginManager
     val internalWorld: WorldClientCommon = worldInitializer.invoke(this)
 
     abstract override val world: WorldClientCommon
@@ -62,7 +60,7 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
         particlesManager = internalWorld.particlesManager
 
         // We need the plugin manager very early so we make it in the common abstract class constructor
-        internalPluginManager = (this as? IngameClientLocalHost)?.let { ClientMasterPluginManager(it) } ?: ClientSlavePluginManager(this)
+        internalPluginManager = DefaultPluginManager(this)
         internalPluginManager.reloadPlugins()
 
         // Prepare command line
