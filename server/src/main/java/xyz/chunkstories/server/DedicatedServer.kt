@@ -22,7 +22,7 @@ import xyz.chunkstories.content.GameContentStore
 import xyz.chunkstories.content.GameDirectory
 import xyz.chunkstories.plugin.DefaultPluginManager
 import xyz.chunkstories.server.commands.DedicatedServerConsole
-import xyz.chunkstories.server.commands.InstallServerCommands
+import xyz.chunkstories.server.commands.installServerCommands
 import xyz.chunkstories.server.net.ClientsManager
 import xyz.chunkstories.server.net.announcer.ServerAnnouncerThread
 import xyz.chunkstories.server.net.vanillasockets.VanillaClientsManager
@@ -168,7 +168,7 @@ class DedicatedServer internal constructor(coreContentLocation: File, modsString
 
             // Load plugins
             pluginManager.reloadPlugins()
-            InstallServerCommands(this)
+            installServerCommands(this)
 
             // Finally start logic
             world.startLogic()

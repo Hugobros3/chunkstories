@@ -25,7 +25,7 @@ import xyz.chunkstories.gui.layer.SkyBoxBackground
 import xyz.chunkstories.gui.layer.ingame.IngameLayer
 import xyz.chunkstories.gui.layer.ingame.RemoteConnectionGuiLayer
 import xyz.chunkstories.plugin.DefaultPluginManager
-import xyz.chunkstories.server.commands.InstallServerCommands
+import xyz.chunkstories.server.commands.installServerCommands
 import xyz.chunkstories.world.WorldClientCommon
 
 abstract class IngameClientImplementation protected constructor(val client: ClientImplementation, worldInitializer: (IngameClientImplementation) -> WorldClientCommon) : IngameClient {
@@ -66,7 +66,7 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
         // Prepare command line
         installClientCommands(this)
         if (this is IngameClientLocalHost) {
-            InstallServerCommands(this)
+            installServerCommands(this)
         }
 
         player = LocalPlayerImplementation(this, internalWorld)
