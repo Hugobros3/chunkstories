@@ -6,18 +6,18 @@
 
 package xyz.chunkstories.item
 
-import ItemDefinitionsLexer
-import ItemDefinitionsParser
+import com.google.gson.Gson
+import com.google.gson.internal.LinkedTreeMap
+import org.hjson.JsonValue
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.content.Asset
 import xyz.chunkstories.api.content.Content
 import xyz.chunkstories.api.content.Content.ItemsDefinitions
 import xyz.chunkstories.api.content.mods.ModsManager
 import xyz.chunkstories.api.item.ItemDefinition
 import xyz.chunkstories.content.GameContentStore
-import org.antlr.v4.runtime.ANTLRInputStream
-import org.antlr.v4.runtime.CommonTokenStream
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import xyz.chunkstories.content.extractProperties
 import java.util.*
 
 class ItemDefinitionsStore(gameContentStore: GameContentStore) : ItemsDefinitions {
@@ -40,15 +40,21 @@ class ItemDefinitionsStore(gameContentStore: GameContentStore) : ItemsDefinition
     fun reload() {
         itemDefinitions.clear()
 
+        val gson = Gson()
+
         fun readDefinitions(a: Asset) {
             logger().debug("Reading items definitions in : $a")
 
-            val text = a.reader().use { it.readText() }
-            val parser = ItemDefinitionsParser(CommonTokenStream(ItemDefinitionsLexer(ANTLRInputStream(text))))
+            val json = JsonValue.readHjson(a.reader()).toString()
+            val map = gson.fromJson(json, LinkedTreeMap::class.java)
 
-            for (definition in parser.itemDefinitions().itemDefinition()) {
-                val name = definition.Name().text
-                val properties = definition.properties().toMap()
+            val materialsTreeMap = map["items"] as LinkedTreeMap<*, *>
+
+            for (definition in materialsTreeMap.entries) {
+                val name = definition.key as String
+                val properties = (definition.value as LinkedTreeMap<String, *>).extractProperties()
+
+                properties["name"] = name
 
                 val itemDefinition = ItemDefinition(this, name, properties)
                 itemDefinitions.put(name, itemDefinition)
@@ -57,7 +63,7 @@ class ItemDefinitionsStore(gameContentStore: GameContentStore) : ItemsDefinition
             }
         }
 
-        for(asset in content.modsManager().allAssets.filter { it.name.startsWith("items/") && it.name.endsWith(".def") }) {
+        for (asset in content.modsManager().allAssets.filter { it.name.startsWith("items/") && it.name.endsWith(".hjson") }) {
             readDefinitions(asset)
         }
     }
@@ -74,32 +80,4 @@ class ItemDefinitionsStore(gameContentStore: GameContentStore) : ItemsDefinition
     override fun parent(): Content {
         return content
     }
-
-    fun ItemDefinitionsParser.PropertiesContext?.toMap(): Map<String, String> {
-        if(this == null)
-            return emptyMap()
-
-        val map = mutableMapOf<String, String>()
-
-        this.extractIn(map, "")
-
-        return map
-    }
-
-    fun ItemDefinitionsParser.PropertiesContext.extractIn(map: MutableMap<String, String>, prefix: String) {
-        this.property().forEach {
-            map.put(prefix + it.Name().text, it.value().getValue())
-        }
-
-        this.compoundProperty().forEach {
-            map.put(prefix + it.Name().text, "exists")
-            it.properties().extractIn(map, prefix + it.Name().text + ".")
-        }
-    }
-}
-
-private fun ItemDefinitionsParser.ValueContext.getValue(): String {
-    if (this.Text() != null)
-        return this.Text().text.substring(1, this.Text().text.length - 1)
-    else return this.text
 }
