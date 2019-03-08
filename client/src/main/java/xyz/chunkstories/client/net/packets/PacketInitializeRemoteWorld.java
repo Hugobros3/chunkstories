@@ -34,6 +34,7 @@ public class PacketInitializeRemoteWorld extends PacketSendWorldInfo {
 			}
 
 			//TODO remake this mechanism but make it actually any good
+			throw new RuntimeException("TODO");
 			/*
 			IngameClientRemoteHost client = (IngameClientRemoteHost) cpp.getContext();
 			Fence fence = client.getGameWindow().queueSynchronousTask(new Runnable() {

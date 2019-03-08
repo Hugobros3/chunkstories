@@ -25,9 +25,15 @@ class SpawnEntityCommand(serverConsole: Server) : ServerCommandBasic(serverConso
     }
 
     override fun handleCommand(emitter: CommandEmitter, command: Command, arguments: Array<String>): Boolean {
-
         if (emitter !is Player) {
             emitter.sendMessage("You need to be a player to use this command.")
+            return true
+        }
+
+        val playerEntity = emitter.controlledEntity
+
+        if(playerEntity == null) {
+            emitter.sendMessage("You need to be controlling an entity")
             return true
         }
 
@@ -41,9 +47,9 @@ class SpawnEntityCommand(serverConsole: Server) : ServerCommandBasic(serverConso
             return false
         }
 
-        var spawnLocation = emitter.location
+        var spawnLocation = playerEntity.location
         if (arguments.size >= 4) {
-            spawnLocation = Location(emitter.world, java.lang.Double.parseDouble(arguments[1]), java.lang.Double.parseDouble(arguments[2]),
+            spawnLocation = Location(playerEntity.world, java.lang.Double.parseDouble(arguments[1]), java.lang.Double.parseDouble(arguments[2]),
                     java.lang.Double.parseDouble(arguments[3]))
         }
 

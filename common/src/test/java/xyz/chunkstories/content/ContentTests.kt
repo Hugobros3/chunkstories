@@ -29,18 +29,6 @@ class ContentTests {
         println("${m.meshes[0].vertices} lol:${m.meshes[0].attributes[0].data}")
 
         println(m.meshes[0].material)
-
-        // System.out.println(m.getVertices().getVoxelComponent(0)+":"+m.getVertices().getVoxelComponent(1)+":"+m.getVertices().getVoxelComponent(2));
-        /*
-         * try { Asset a =
-         * testContext.getContent().getAsset("./models/human_all_animations.dae");
-         * //Asset a = testContext.getContent().getAsset("./animations/human/ded.bvh");
-         *
-         * new NativeAssimpMesh(a, testContext.getContent().meshes()); new
-         * AssimpMeshLoader(a, testContext.getContent().meshes()); } catch
-         * (MeshLoadException e) { // TODO Auto-generated catch block
-         * e.printStackTrace(); }
-         */
     }
 
     @Test

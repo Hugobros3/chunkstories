@@ -21,9 +21,15 @@ class SpawnCommand(serverConsole: Server) : ServerCommandBasic(serverConsole) {
     }
 
     override fun handleCommand(emitter: CommandEmitter, command: Command, arguments: Array<String>): Boolean {
-
         if (emitter !is Player) {
             emitter.sendMessage("You need to be a player to use this command.")
+            return true
+        }
+
+        val playerEntity = emitter.controlledEntity
+
+        if(playerEntity == null) {
+            emitter.sendMessage("You need to be controlling an entity")
             return true
         }
 
@@ -33,8 +39,8 @@ class SpawnCommand(serverConsole: Server) : ServerCommandBasic(serverConsole) {
                 return true
             }
 
-            val loc = emitter.world.defaultSpawnLocation
-            emitter.location = loc
+            val loc = playerEntity.world.defaultSpawnLocation
+            playerEntity.location = loc
 
             emitter.sendMessage("#00FFD0Teleported to spawn")
             return true
@@ -44,8 +50,8 @@ class SpawnCommand(serverConsole: Server) : ServerCommandBasic(serverConsole) {
                 return true
             }
 
-            val loc = emitter.location
-            emitter.world.defaultSpawnLocation = loc
+            val loc = playerEntity.location
+            playerEntity.world.defaultSpawnLocation = loc
 
             emitter.sendMessage("#00FFD0Set default spawn to : $loc")
             return true

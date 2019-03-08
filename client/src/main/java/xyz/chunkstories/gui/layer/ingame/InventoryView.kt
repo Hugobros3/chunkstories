@@ -113,7 +113,8 @@ class InventoryView(gui: Gui, parent: Layer, private val inventories: List<Inven
         }
 
         val player = ingameClient.player
-        val world = player.world
+        val world = ingameClient.world
+
         for (i in drawers.indices) {
             // Close button
             if (drawers[i].isOverCloseButton) {
@@ -154,7 +155,7 @@ class InventoryView(gui: Gui, parent: Layer, private val inventories: List<Inven
                             val moveItemEvent = PlayerMoveItemEvent(player, draggingPile,
                                     draggingPile!!.inventory, inventories[i], draggingPile!!.x,
                                     draggingPile!!.y, x, y, draggingQuantity)
-                            player.context.pluginManager.fireEvent(moveItemEvent)
+                            world.gameContext.pluginManager.fireEvent(moveItemEvent)
 
                             // If move was successfull
                             if (!moveItemEvent.isCancelled)
@@ -187,7 +188,7 @@ class InventoryView(gui: Gui, parent: Layer, private val inventories: List<Inven
                     val moveItemEvent = PlayerMoveItemEvent(player, draggingPile,
                             draggingPile!!.inventory, null, draggingPile!!.x, draggingPile!!.y, 0, 0,
                             draggingQuantity)
-                    player.context.pluginManager.fireEvent(moveItemEvent)
+                    world.gameContext.pluginManager.fireEvent(moveItemEvent)
 
                     if (!moveItemEvent.isCancelled) {
                         // If we're pulling this out of an inventory ( and not /dev/null ), we need to
@@ -197,7 +198,7 @@ class InventoryView(gui: Gui, parent: Layer, private val inventories: List<Inven
                         val loc = playerEntity.location
                         val dropItemEvent = EventItemDroppedToWorld(loc, sourceInventory,
                                 draggingPile)
-                        player.context.pluginManager.fireEvent(dropItemEvent)
+                        world.gameContext.pluginManager.fireEvent(dropItemEvent)
 
                         if (!dropItemEvent.isCancelled) {
 

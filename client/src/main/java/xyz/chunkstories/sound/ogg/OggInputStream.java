@@ -53,7 +53,7 @@ public class OggInputStream extends InputStream {
 	private boolean getPageAndPacket() {
 		// grab some data at the head of the stream. We want the first page
 		// (which is guaranteed to be small and only contain the Vorbis
-		// stream initial header) We need the first page to getVoxelComponent the stream
+		// stream initial header) We need the first page to get the stream
 		// serialno.
 
 		// submit a 4k block to libvorbis' Ogg layer
@@ -128,7 +128,7 @@ public class OggInputStream extends InputStream {
 
 		// The next two packets in order are the comment and codebook headers.
 		// They're likely large and may span multiple pages. Thus we reead
-		// and submit data until we getVoxelComponent our two pacakets, watching that no
+		// and submit data until we get our two pacakets, watching that no
 		// pages are missing. If a page is missing, error out; losing a
 		// header page is the only place where missing data is fatal. */
 

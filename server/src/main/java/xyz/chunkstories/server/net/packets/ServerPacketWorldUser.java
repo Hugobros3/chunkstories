@@ -9,6 +9,7 @@ package xyz.chunkstories.server.net.packets;
 import java.io.DataInputStream;
 import java.io.IOException;
 
+import com.sun.xml.internal.bind.v2.TODO;
 import xyz.chunkstories.api.net.PacketReceptionContext;
 import xyz.chunkstories.api.net.PacketSender;
 import xyz.chunkstories.api.net.packets.PacketWorldUser;
@@ -49,7 +50,9 @@ public class ServerPacketWorldUser extends PacketWorldUser {
 
 		if (sender instanceof ServerPlayer) {
 			ServerPlayer player = (ServerPlayer) sender;
-			player.getLoadingAgent().handleClientRequest(this);
+			throw new UnsupportedOperationException();
+			//TODO
+			//player.getLoadingAgent().handleClientRequest(this);
 		}
 	}
 }

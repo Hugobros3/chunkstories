@@ -78,7 +78,7 @@ public class VersionFile {
 		// out.writeBytes(params);
 		out.flush();
 		out.close();
-		// getVoxelComponent response
+		// get response
 		BufferedReader in = new BufferedReader(new InputStreamReader(htc.getInputStream()));
 		StringBuffer rslt = new StringBuffer();
 		String line;

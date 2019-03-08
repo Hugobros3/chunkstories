@@ -56,8 +56,11 @@ class IngameClientLocalHost(client: ClientImplementation, worldInitializer: (Ing
             get() = super.internalPluginManager
 
     override val userPrivileges = FileBasedUsersPrivileges()
-    override var permissionsManager: PermissionsManager = PermissionsManager { _, _ ->
-        true // TODO implement something better
+    override var permissionsManager: PermissionsManager = object: PermissionsManager {
+        override fun hasPermission(player: Player, permissionNode: String): Boolean {
+            //TODO have an actual permissions system
+            return true
+        }
     }
 
     /** When exiting a localhost world, ensure to save everything */

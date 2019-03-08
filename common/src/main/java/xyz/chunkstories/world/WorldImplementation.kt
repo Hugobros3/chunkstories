@@ -348,10 +348,9 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
         return peek(location.x().toInt(), location.y().toInt(), location.z().toInt())
     }
 
+    /** Fancy getter method that throws exceptions when the world isn't loaded  */
     @Throws(WorldException::class)
-    override
-            /** Fancy getVoxelComponent method that throws exceptions when the world isn't loaded  */
-    fun peek(x: Int, y: Int, z: Int): ChunkCell {
+    override fun peek(x: Int, y: Int, z: Int): ChunkCell {
         var x = x
         var y = y
         var z = z

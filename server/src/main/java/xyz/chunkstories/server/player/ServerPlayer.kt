@@ -45,8 +45,45 @@ class ServerPlayer(val playerConnection: ClientConnection, override val name: St
     private val playerMetadata: Properties
     private val playerMetadataFile: File
 
-    private var world: WorldServer? = null
-    private var controlledEntity: Entity? = null
+    override val displayName: String
+        get() = ColorsTools.getUniqueColorPrefix(name) + name + "#FFFFFF"
+    override val inputsManager: InputsManager
+        get() = serverInputsManager
+    override val isConnected: Boolean
+        get() = playerConnection.isOpen
+
+    override val subscribedToList: Collection<Entity>
+        get() = subscribedEntities
+
+    //TODO ???
+    fun whenEnteringWorld(world: WorldServer?) {
+        if (world != null) {
+            this.virtualSoundManager = world.soundManager.ServerPlayerVirtualSoundManager(this)
+            this.virtualParticlesManager = world.particlesManager.ServerPlayerVirtualParticlesManager(this)
+            this.virtualDecalsManager = world.decalsManager.ServerPlayerVirtualDecalsManager(this)
+        }
+    }
+
+    override var controlledEntity: Entity? = null
+        set(newEntity: Entity?) {
+            synchronized(this) {
+                val oldEntity = controlledEntity
+
+                if (newEntity == oldEntity)
+                    return
+
+                if (oldEntity != null)
+                    oldEntity.traits[TraitControllable::class]?.controller = null
+
+                if (newEntity != null)
+                    newEntity.traits[TraitControllable::class]?.controller = this
+
+                field = newEntity
+            }
+        }
+
+    override val uuid
+        get() = this.name.hashCode().toLong()
 
     // Streaming control
     private val subscribedEntities = ConcurrentHashMap.newKeySet<Entity>()
@@ -59,16 +96,15 @@ class ServerPlayer(val playerConnection: ClientConnection, override val name: St
     private var virtualParticlesManager: ServerPlayerVirtualParticlesManager? = null
     private var virtualDecalsManager: ServerPlayerVirtualDecalsManager? = null
 
-    val loadingAgent = RemotePlayerLoadingAgent(this)
+    //val loadingAgent = RemotePlayerLoadingAgent(this)
 
-    val lastPosition: Location?
-        get() = if (this.playerMetadata.containsKey("posX")) {
-            Location(getWorld()!!, playerMetadata.getProperty("posX").toDouble(), playerMetadata.getProperty("posY").toDouble(),
+   /*val lastPosition: Location?
+        get() = if (this.playerMetadata.containsKey("posX")) { Location(world!!, playerMetadata.getProperty("posX").toDouble(), playerMetadata.getProperty("posY").toDouble(),
                     playerMetadata.getProperty("posZ").toDouble())
         } else null
+*/
 
     init {
-
         this.server = playerConnection.context
 
         //TODO this should use revised UUIDs
@@ -83,84 +119,24 @@ class ServerPlayer(val playerConnection: ClientConnection, override val name: St
             this.playerMetadata.setProperty("firstlogin", "" + System.currentTimeMillis())
     }
 
-    override fun getUUID(): Long {
-        // TODO make them longer
-        return this.name.hashCode().toLong()
-    }
-
-    /** Hashes the player name so he gets a nice color :) */
-    override fun getDisplayName(): String {
-        return ColorsTools.getUniqueColorPrefix(name) + name + "#FFFFFF"
-    }
-
     /** Asks the server's permission manager if the player is ok to do that  */
     override fun hasPermission(permissionNode: String): Boolean {
         return playerConnection.context.permissionsManager.hasPermission(this, permissionNode)
-    }
-
-    override fun getWorld(): WorldServer? {
-        return world
-    }
-
-    fun setWorld(world: WorldServer) {
-        this.world = world
-
-        this.virtualSoundManager = world.soundManager.ServerPlayerVirtualSoundManager(this)
-        this.virtualParticlesManager = world.particlesManager.ServerPlayerVirtualParticlesManager(this)
-        this.virtualDecalsManager = world.decalsManager.ServerPlayerVirtualDecalsManager(this)
     }
 
     override fun hasSpawned(): Boolean {
         return controlledEntity != null && !controlledEntity!!.traitLocation.wasRemoved()
     }
 
-    override fun getLocation(): Location? {
-        return if (controlledEntity != null) controlledEntity!!.location else null
-    }
-
-    override fun setLocation(l: Location) {
-        if (this.controlledEntity != null)
-            this.controlledEntity!!.traitLocation.set(l)
-    }
-
-    fun removeEntityFromWorld() {
-        if (controlledEntity != null) {
-            getWorld()!!.removeEntity(controlledEntity!!)
-        }
-        unsubscribeAll()
-    }
-
-    override fun getControlledEntity(): Entity? {
-        return controlledEntity
-    }
-
-    override fun setControlledEntity(newEntity: Entity?): Boolean {
-        synchronized(this) {
-            val oldEntity = controlledEntity
-
-            if (newEntity == oldEntity)
-                return false
-
-            if (oldEntity != null)
-                oldEntity.traits[TraitControllable::class]?.controller = null
-
-            if (newEntity != null)
-                newEntity.traits[TraitControllable::class]?.controller = this
-
-            controlledEntity = newEntity
-        }
-        return true
-    }
-
     override fun openInventory(inventory: Inventory) {
-        val entity = this.getControlledEntity()
-        if (inventory.isAccessibleTo(entity)) {
+        val entity = this.controlledEntity
+        if (entity != null && inventory.isAccessibleTo(entity)) {
             if (inventory is TraitInventory) {
                 inventory.pushComponent(this)
             }
 
             // this.sendMessage("Sending you the open inventory request.");
-            val open = PacketOpenInventory(getWorld(), inventory)
+            val open = PacketOpenInventory(entity.world, inventory)
             this.pushPacket(open)
         }
         // else
@@ -215,7 +191,7 @@ class ServerPlayer(val playerConnection: ClientConnection, override val name: St
         }
     }
 
-    override fun getSubscribedToList(): MutableIterator<Entity> {
+    fun getSubscribedToList(): MutableIterator<Entity> {
         return subscribedEntities.iterator()
     }
 
@@ -246,7 +222,7 @@ class ServerPlayer(val playerConnection: ClientConnection, override val name: St
     }
 
     override fun unsubscribeAll() {
-        val iterator = subscribedToList
+        val iterator = subscribedEntities.iterator()
         while (iterator.hasNext()) {
             val entity = iterator.next()
             // If one of the entities is controllable ...
@@ -262,23 +238,6 @@ class ServerPlayer(val playerConnection: ClientConnection, override val name: St
 
     fun isSubscribedTo(entity: Entity): Boolean {
         return subscribedEntities.contains(entity)
-    }
-
-    // Various subsystems managers
-    override fun getInputsManager(): InputsManager {
-        return serverInputsManager
-    }
-
-    override fun getSoundManager(): SoundManager? {
-        return virtualSoundManager
-    }
-
-    override fun getParticlesManager(): ParticlesManager? {
-        return virtualParticlesManager
-    }
-
-    override fun getDecalsManager(): DecalsManager? {
-        return virtualDecalsManager
     }
 
     override fun sendMessage(message: String) {
@@ -301,11 +260,7 @@ class ServerPlayer(val playerConnection: ClientConnection, override val name: St
         this.playerConnection.disconnect(disconnectionReason)
     }
 
-    override fun isConnected(): Boolean {
-        return playerConnection.isOpen
-    }
-
-    override fun getContext(): Server {
+    fun getContext(): Server {
         return server
     }
 
@@ -349,13 +304,14 @@ class ServerPlayer(val playerConnection: ClientConnection, override val name: St
 
     fun destroy() {
         save()
-        removeEntityFromWorld()
-
-        loadingAgent.destroy()
+        if (controlledEntity != null) {
+            controlledEntity?.world?.removeEntity(controlledEntity!!)
+        }
+        unsubscribeAll()
+        //loadingAgent.destroy()
     }
 
     companion object {
-
         private val logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)
     }
 }

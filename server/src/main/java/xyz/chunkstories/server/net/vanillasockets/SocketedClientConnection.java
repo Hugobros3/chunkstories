@@ -50,7 +50,7 @@ public class SocketedClientConnection extends ClientConnection {
 		this.clientsManager = clientsManager;
 		this.socket = socket;
 
-		// We getVoxelComponent exceptions early if this fails
+		// We get exceptions early if this fails
 		InputStream socketInputStream = socket.getInputStream();
 		OutputStream socketOutputStream = socket.getOutputStream();
 
@@ -99,10 +99,8 @@ public class SocketedClientConnection extends ClientConnection {
 		} else if (definition.getGenre() == PacketGenre.WORLD) {
 			// Queue packets for a specific world
 			if (player != null) {
-				WorldServer world = player.getWorld();
-				if (world != null) {
-					world.queueDatagram(datagram, player);
-				}
+				WorldServer world = (WorldServer) player.getControlledEntity().getWorld();
+				world.queueDatagram(datagram, player);
 			}
 		} else if (definition.getGenre() == PacketGenre.WORLD_STREAMING) {
 			// Server doesn't expect world streaming updates from the client

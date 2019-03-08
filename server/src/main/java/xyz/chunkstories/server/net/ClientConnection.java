@@ -119,13 +119,13 @@ public abstract class ClientConnection extends Connection implements Interlocuto
 			}
 
 		} else if (message.startsWith("world/")) {
-			// TODO this bit will obviously need to be rewritten when I getVoxelComponent arround to doing
+			// TODO this bit will obviously need to be rewritten when I get arround to doing
 			// multiworld support
 			WorldServer world = clientsManager.getServer().getWorld();
 			message = message.substring(6, message.length());
 
 			if (message.equals("enter")) {
-				player.setWorld(world);
+				player.whenEnteringWorld(world);
 				// Sends the construction info for the world, and then the player entity
 				PacketSendWorldInfo packet = new PacketSendWorldInfo(world.getWorldInfo());
 				pushPacket(packet);

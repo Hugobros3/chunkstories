@@ -50,9 +50,9 @@ class DebugWorldDataCommands(serverConsole: Server) : ServerCommandBasic(serverC
                 val z = Integer.parseInt(arguments[1])
                 sum = server.world.regionsSummariesHolder.getHeightmap(x, z)
             } else {
-
                 val player = emitter as Player
-                sum = player.world.regionsSummariesHolder.getHeightmapLocation(player.location)
+                val playerEntity = player.controlledEntity ?: throw Exception("Not currently controlling an entity !")
+                sum = playerEntity.world.regionsSummariesHolder.getHeightmapLocation(playerEntity.location)
             }
 
             emitter.sendMessage("#00FFD0" + sum!!)

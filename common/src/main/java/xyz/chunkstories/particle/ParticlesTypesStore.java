@@ -102,7 +102,7 @@ public class ParticlesTypesStore implements Content.ParticlesTypes {
 
 	/*
 	 * @Override public ParticleTypeHandler getParticleTypeHandlerById(int id) {
-	 * return particleTypesById.getVoxelComponent(id); }
+	 * return particleTypesById.get(id); }
 	 */
 
 	@Override

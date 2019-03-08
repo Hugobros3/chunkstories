@@ -28,11 +28,18 @@ class TimeCommand(serverConsole: Server) : ServerCommandBasic(serverConsole) {
             return true
         }
 
+        val playerEntity = emitter.controlledEntity
+
+        if(playerEntity == null) {
+            emitter.sendMessage("You need to be controlling an entity")
+            return true
+        }
+
         when {
-            arguments.isEmpty() -> emitter.sendMessage("#82FFDBCurrent time is: ${emitter.location.world.time}")
+            arguments.isEmpty() -> emitter.sendMessage("#82FFDBCurrent time is: ${playerEntity.location.world.time}")
             arguments.size == 1 -> {
                 val newTime = java.lang.Long.parseLong(arguments[0])
-                emitter.location.world.time = newTime
+                playerEntity.location.world.time = newTime
                 emitter.sendMessage("#82FFDBSet time to  :$newTime")
             }
             else -> emitter.sendMessage("#82FFDBSyntax : /time [0-10000]")

@@ -109,7 +109,7 @@ constructor(val server: DedicatedServer, worldInfo: WorldInfo, folder: File) : W
                     val packet = definition.createNew(false, this)
 
                     if (definition.genre != PacketGenre.WORLD || packet !is PacketWorld) {
-                        logger().error(definition.toString() + " isn't a PacketWorld")
+                        logger().error("$definition isn't a PacketWorld")
                     } else {
 
                         // packetsProcessor.getSender() is equivalent to player here
@@ -139,8 +139,7 @@ constructor(val server: DedicatedServer, worldInfo: WorldInfo, folder: File) : W
         // Does the server have this player ?
         val player = server.getPlayerByName(playerName) ?: return null
 
-        // We don't want players from other worlds
-        return if (player.world != this) null else player
-
+        //TODO We don't want players from other worlds
+        return player
     }
 }

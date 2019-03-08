@@ -131,7 +131,7 @@ public abstract class ClientsManager {
 	void registerPlayer(ClientConnection clientConnection) {
 		ServerPlayer player = clientConnection.getPlayer();
 		this.players.put(player.getName(), player);
-		this.playersByUUID.put(player.getUUID(), player);
+		this.playersByUUID.put(player.getUuid(), player);
 	}
 
 	/**
@@ -143,7 +143,7 @@ public abstract class ClientsManager {
 		ServerPlayer player = clientConnection.getPlayer();
 		if (player != null) {
 			this.players.remove(player.getName());
-			this.playersByUUID.remove(player.getUUID());
+			this.playersByUUID.remove(player.getUuid());
 		}
 	}
 

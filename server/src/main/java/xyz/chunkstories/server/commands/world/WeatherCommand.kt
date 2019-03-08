@@ -28,13 +28,20 @@ class WeatherCommand(serverConsole: Server) : ServerCommandBasic(serverConsole) 
             return true
         }
 
+        val playerEntity = emitter.controlledEntity
+
+        if(playerEntity == null) {
+            emitter.sendMessage("You need to be controlling an entity")
+            return true
+        }
+
         when {
             arguments.isEmpty() -> {
-                emitter.sendMessage("#82FFDBCurrent weather is ${emitter.location.world.weather}")
+                emitter.sendMessage("#82FFDBCurrent weather is ${playerEntity.location.world.weather}")
             }
             arguments.size == 1 -> {
                 val overcastFactor = java.lang.Float.parseFloat(arguments[0])
-                emitter.location.world.weather = overcastFactor
+                playerEntity.location.world.weather = overcastFactor
                 emitter.sendMessage("#82FFDBSet weather for world to $overcastFactor")
             }
             else -> emitter.sendMessage("#82FFDBSyntax : /weather [0.0 - 1.0]")

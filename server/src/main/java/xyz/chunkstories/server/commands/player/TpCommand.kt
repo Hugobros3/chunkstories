@@ -7,6 +7,7 @@
 package xyz.chunkstories.server.commands.player
 
 import xyz.chunkstories.api.Location
+import xyz.chunkstories.api.entity.Entity
 import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.plugin.commands.Command
 import xyz.chunkstories.api.plugin.commands.CommandEmitter
@@ -20,7 +21,6 @@ class TpCommand(serverConsole: Server) : ServerCommandBasic(serverConsole) {
     }
 
     override fun handleCommand(emitter: CommandEmitter, command: Command, arguments: Array<String>): Boolean {
-
         if (!emitter.hasPermission("server.tp")) {
             emitter.sendMessage("You don't have the permission.")
             return true
@@ -31,51 +31,61 @@ class TpCommand(serverConsole: Server) : ServerCommandBasic(serverConsole) {
             return true
         }
 
-        var who: Player? = emitter
+        val playerEntity = emitter.controlledEntity
 
-        var to: Location? = null
-
-        if (arguments.size == 1) {
-            val otherPlayer = server.getPlayerByName(arguments[0])
-            if (otherPlayer != null)
-                to = otherPlayer.location
-            else
-                emitter.sendMessage("#FF8966Player not found : " + arguments[0])
-        } else if (arguments.size == 2) {
-            who = server.getPlayerByName(arguments[0])
-            if (who == null)
-                emitter.sendMessage("#FF8966Player not found : " + arguments[0])
-
-            val otherPlayer = server.getPlayerByName(arguments[1])
-            if (otherPlayer != null)
-                to = otherPlayer.location
-            else
-                emitter.sendMessage("#FF8966Player not found : " + arguments[1])
-        } else if (arguments.size == 3) {
-            val x = Integer.parseInt(arguments[0])
-            val y = Integer.parseInt(arguments[1])
-            val z = Integer.parseInt(arguments[2])
-
-            to = Location(who!!.location.world, x.toDouble(), y.toDouble(), z.toDouble())
-        } else if (arguments.size == 4) {
-            who = server.getPlayerByName(arguments[0])
-            if (who == null)
-                emitter.sendMessage("#FF8966Player not found : " + arguments[0])
-
-            val x = Integer.parseInt(arguments[1])
-            val y = Integer.parseInt(arguments[2])
-            val z = Integer.parseInt(arguments[3])
-
-            to = Location(who!!.location.world, x.toDouble(), y.toDouble(), z.toDouble())
-        }
-
-        if (who != null && to != null) {
-            emitter.sendMessage("#FF8966Teleported to : $to")
-            who.location = to
+        if (playerEntity == null) {
+            emitter.sendMessage("You need to be controlling an entity")
             return true
         }
 
-        emitter.sendMessage("#FF8966Usage: /tp [who] (<x> <y> <z>)|(to)")
+        var who: Player = emitter
+        val what: Entity
+
+        val to: Location
+
+        when {
+            arguments.size == 1 -> {
+                val otherPlayer = server.getPlayerByName(arguments[0]) ?: throw Exception("#FF8966Player not found : " + arguments[0])
+                val otherPlayerEntity = otherPlayer?.controlledEntity ?: throw Exception("#FF8966Player $otherPlayer is not controlling an entity currently...")
+
+                to = otherPlayerEntity.location
+                what = who.controlledEntity ?: throw Exception("#FF8966Player $who is not controlling an entity currently...")
+            }
+            arguments.size == 2 -> {
+                who = server.getPlayerByName(arguments[0]) ?: throw Exception("#FF8966Player not found : " + arguments[0])
+                what = who.controlledEntity ?: throw Exception("#FF8966Player $who is not controlling an entity currently...")
+
+                val otherPlayer = server.getPlayerByName(arguments[1]) ?: throw Exception("#FF8966Player not found : " + arguments[1])
+                val otherPlayerEntity = otherPlayer.controlledEntity ?: throw Exception("#FF8966Player $otherPlayer is not controlling an entity currently...")
+
+                to = otherPlayerEntity.location
+            }
+            arguments.size == 3 -> {
+                val x = Integer.parseInt(arguments[0])
+                val y = Integer.parseInt(arguments[1])
+                val z = Integer.parseInt(arguments[2])
+
+                what = who.controlledEntity ?: throw Exception("#FF8966Player $who is not controlling an entity currently...")
+                to = Location(what.location.world, x.toDouble(), y.toDouble(), z.toDouble())
+            }
+            arguments.size == 4 -> {
+                who = server.getPlayerByName(arguments[0]) ?: throw Exception("#FF8966Player not found : " + arguments[0])
+
+                val x = Integer.parseInt(arguments[1])
+                val y = Integer.parseInt(arguments[2])
+                val z = Integer.parseInt(arguments[3])
+
+                what = who.controlledEntity ?: throw Exception("#FF8966Player $who is not controlling an entity currently...")
+                to = Location(what.location.world, x.toDouble(), y.toDouble(), z.toDouble())
+            }
+            else -> {
+                emitter.sendMessage("#FF8966Usage: /tp [who] (<x> <y> <z>)|(to)")
+                return true
+            }
+        }
+
+        emitter.sendMessage("#FF8966Teleported ${who.displayName} to : $to")
+        what.location = to
 
         return true
     }

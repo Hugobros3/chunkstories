@@ -164,7 +164,9 @@ class DedicatedServer internal constructor(coreContentLocation: File, modsString
             announcer = ServerAnnouncerThread(this)
             announcer!!.start()
 
-            permissionsManager = PermissionsManager { player, permissionNode -> userPrivileges.isUserAdmin(player.name) }
+            permissionsManager = object : PermissionsManager {
+                override fun hasPermission(player: Player, permissionNode: String) = userPrivileges.isUserAdmin(player.name)
+            }
 
             // Load plugins
             pluginManager.reloadPlugins()

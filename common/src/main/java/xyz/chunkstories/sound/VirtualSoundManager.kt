@@ -6,13 +6,8 @@
 
 package xyz.chunkstories.sound
 
-import java.lang.ref.WeakReference
-import java.util.concurrent.ConcurrentHashMap
-
 import org.joml.Vector3dc
 import org.joml.Vector3fc
-
-import xyz.chunkstories.api.Location
 import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.sound.SoundManager
 import xyz.chunkstories.api.sound.SoundSource
@@ -20,6 +15,8 @@ import xyz.chunkstories.api.sound.SoundSource.Mode
 import xyz.chunkstories.api.world.WorldMaster
 import xyz.chunkstories.net.packets.PacketSoundSource
 import xyz.chunkstories.sound.source.SoundSourceVirtual
+import java.lang.ref.WeakReference
+import java.util.concurrent.ConcurrentHashMap
 
 class VirtualSoundManager(private val worldServer: WorldMaster)// this.server = server;
     : SoundManager {
@@ -130,14 +127,12 @@ class VirtualSoundManager(private val worldServer: WorldMaster)// this.server = 
             if (soundSource.gain <= 0)
                 return true
 
-            // special case, we want to make sure the players always know when we shut up a
-            // source
+            // special case, we want to make sure the players always know when we shut up a source
             if (soundSource.isDonePlaying)
                 return true
 
-            val loc = serverPlayer.location ?: return false
-
-            // Null location == Not spawned == No positional sounds for you
+            // Null location == Not spawned == No positional sounds for you!
+            val loc = serverPlayer.controlledEntity?.location ?: return false
 
             return loc.distance(soundSource.position!!) < soundSource.attenuationEnd + 1.0
         }
