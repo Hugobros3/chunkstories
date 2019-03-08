@@ -6,18 +6,18 @@
 
 package xyz.chunkstories.world.generator
 
-import WorldGeneratorDefinitionsLexer
-import WorldGeneratorDefinitionsParser
+import com.google.gson.Gson
+import com.google.gson.internal.LinkedTreeMap
 import xyz.chunkstories.api.content.Asset
 import xyz.chunkstories.api.content.Content
 import xyz.chunkstories.api.content.mods.ModsManager
 import xyz.chunkstories.api.world.generator.BlankWorldGenerator
 import xyz.chunkstories.api.world.generator.WorldGeneratorDefinition
 import xyz.chunkstories.content.GameContentStore
-import org.antlr.v4.runtime.ANTLRInputStream
-import org.antlr.v4.runtime.CommonTokenStream
+import org.hjson.JsonValue
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.content.extractProperties
 import java.util.*
 
 class WorldGeneratorsStore(private val store: GameContentStore) : Content.WorldGenerators {
@@ -36,15 +36,21 @@ class WorldGeneratorsStore(private val store: GameContentStore) : Content.WorldG
         // Loads all generators
         generators.clear()
 
+        val gson = Gson()
+
         fun readDefinitions(a: Asset) {
-            logger().debug("Reading wrld generators definitions in : $a")
+            logger().debug("Reading generators definitions in : $a")
 
-            val text = a.reader().use { it.readText() }
-            val parser = WorldGeneratorDefinitionsParser(CommonTokenStream(WorldGeneratorDefinitionsLexer(ANTLRInputStream(text))))
+            val json = JsonValue.readHjson(a.reader()).toString()
+            val map = gson.fromJson(json, LinkedTreeMap::class.java)
 
-            for(definition in parser.worldGeneratorDefinitions().worldGeneratorDefinition()) {
-                val name = definition.Name().text
-                val properties = definition.properties().toMap()
+            val treeMap = map["generators"] as LinkedTreeMap<*, *>
+
+            for (definition in treeMap.entries) {
+                val name = definition.key as String
+                val properties = (definition.value as LinkedTreeMap<String, *>).extractProperties()
+
+                properties["name"] = name
 
                 val generatorDefinition = WorldGeneratorDefinition(this, name, properties)
                 generators.put(name, generatorDefinition)
@@ -52,7 +58,7 @@ class WorldGeneratorsStore(private val store: GameContentStore) : Content.WorldG
             }
         }
 
-        for(asset in store.modsManager().allAssets.filter { it.name.startsWith("generators/")  && it.name.endsWith(".def") }) {
+        for(asset in store.modsManager().allAssets.filter { it.name.startsWith("generators/")  && it.name.endsWith(".hjson") }) {
             readDefinitions(asset)
         }
     }
@@ -76,28 +82,6 @@ class WorldGeneratorsStore(private val store: GameContentStore) : Content.WorldG
 
     companion object {
         private val logger = LoggerFactory.getLogger("content.generators")
-    }
-
-    public fun WorldGeneratorDefinitionsParser.PropertiesContext?.toMap(): Map<String, String> {
-        if(this == null)
-            return emptyMap()
-
-        val map = mutableMapOf<String, String>()
-
-        this.extractIn(map, "")
-
-        return map
-    }
-
-    public fun WorldGeneratorDefinitionsParser.PropertiesContext.extractIn(map: MutableMap<String, String>, prefix: String) {
-        this.property().forEach {
-            map.put(prefix + it.Name().text, it.value().text)
-        }
-
-        this.compoundProperty().forEach {
-            map.put(prefix + it.Name().text, "exists")
-            it.properties().extractIn(map, prefix + it.Name().text + ".")
-        }
     }
 }
 
