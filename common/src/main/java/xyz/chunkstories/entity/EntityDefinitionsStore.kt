@@ -13,6 +13,8 @@ import org.slf4j.LoggerFactory
 
 import EntityDefinitionsLexer
 import EntityDefinitionsParser
+import com.google.gson.Gson
+import com.google.gson.internal.LinkedTreeMap
 import xyz.chunkstories.api.content.Asset
 import xyz.chunkstories.api.content.Content
 import xyz.chunkstories.api.content.Content.EntityDefinitions
@@ -20,6 +22,9 @@ import xyz.chunkstories.api.entity.EntityDefinition
 import xyz.chunkstories.content.GameContentStore
 import org.antlr.v4.runtime.ANTLRInputStream
 import org.antlr.v4.runtime.CommonTokenStream
+import org.hjson.JsonValue
+import xyz.chunkstories.api.item.ItemDefinition
+import xyz.chunkstories.content.extractProperties
 
 class EntityDefinitionsStore(content: GameContentStore) : EntityDefinitions {
     private val content: Content
@@ -37,15 +42,21 @@ class EntityDefinitionsStore(content: GameContentStore) : EntityDefinitions {
     fun reload() {
         entityDefinitions.clear()
 
+        val gson = Gson()
+
         fun readDefinitions(a: Asset) {
             logger().debug("Reading entities definitions in : $a")
 
-            val text = a.reader().use { it.readText() }
-            val parser = EntityDefinitionsParser(CommonTokenStream(EntityDefinitionsLexer(ANTLRInputStream(text))))
+            val json = JsonValue.readHjson(a.reader()).toString()
+            val map = gson.fromJson(json, LinkedTreeMap::class.java)
 
-            for(definition in parser.entitiesDefinitions().entitiesDefinition()) {
-                val name = definition.Name().text
-                val properties = definition.properties().toMap()
+            val materialsTreeMap = map["entities"] as LinkedTreeMap<*, *>
+
+            for (definition in materialsTreeMap.entries) {
+                val name = definition.key as String
+                val properties = (definition.value as LinkedTreeMap<String, *>).extractProperties()
+
+                properties["name"] = name
 
                 val entityDefinition = EntityDefinition(this, name, properties)
                 entityDefinitions.put(name, entityDefinition)
@@ -54,7 +65,7 @@ class EntityDefinitionsStore(content: GameContentStore) : EntityDefinitions {
             }
         }
 
-        for(asset in content.modsManager().allAssets.filter { it.name.startsWith("entities/") && it.name.endsWith(".def") }) {
+        for(asset in content.modsManager().allAssets.filter { it.name.startsWith("entities/") && it.name.endsWith(".hjson") }) {
             readDefinitions(asset)
         }
     }

@@ -114,7 +114,6 @@ class VoxelsStore(private val content: GameContentStore) : Content.Voxels {
     }
 
     companion object {
-
         private val logger = LoggerFactory.getLogger("content.voxels")
     }
 }
