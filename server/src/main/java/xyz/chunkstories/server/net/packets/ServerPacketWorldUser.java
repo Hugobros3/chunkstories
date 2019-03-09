@@ -9,7 +9,6 @@ package xyz.chunkstories.server.net.packets;
 import java.io.DataInputStream;
 import java.io.IOException;
 
-import com.sun.xml.internal.bind.v2.TODO;
 import xyz.chunkstories.api.net.PacketReceptionContext;
 import xyz.chunkstories.api.net.PacketSender;
 import xyz.chunkstories.api.net.packets.PacketWorldUser;
