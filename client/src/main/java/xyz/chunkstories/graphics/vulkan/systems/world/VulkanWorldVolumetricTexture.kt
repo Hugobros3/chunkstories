@@ -48,9 +48,9 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
             scratchByteBuffer.clear()
 
             val positioni = position.toVec3i()
-            val chunkPositionX = positioni.x / 32
-            val chunkPositionY = positioni.y / 32
-            val chunkPositionZ = positioni.z / 32
+            val chunkPositionX = (positioni.x + 16) / 32
+            val chunkPositionY = (positioni.y + 16) / 32
+            val chunkPositionZ = (positioni.z + 16) / 32
 
             val chunkStartX = chunkPositionX - chunksSidesCount / 2
             val chunkStartY = chunkPositionY - chunksSidesCount / 2
