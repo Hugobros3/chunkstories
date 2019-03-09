@@ -290,14 +290,12 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
 
         return when (drawingSystemRegistration.clazz) {
             GuiDrawer::class.java -> VulkanGuiDrawer(vulkanPass, window.client.gui)
-
             FullscreenQuadDrawer::class.java, VulkanFullscreenQuadDrawer::class.java -> VulkanFullscreenQuadDrawer(vulkanPass)
-            //VulkanFullscreenQuadDrawer::class.java -> VulkanFullscreenQuadDrawer(vulkanPass)
-
-            VulkanSpinningCubeDrawer::class.java -> VulkanSpinningCubeDrawer(vulkanPass)
-            //VulkanCubesDrawer::class.java -> VulkanCubesDrawer(vulkanPass, window.client.ingame!!)
-            VulkanDebugDrawer::class.java -> VulkanDebugDrawer(vulkanPass, window.client.ingame!!)
             SkyDrawer::class.java -> VulkanSkyDrawer(vulkanPass)
+
+            Vulkan3DVoxelRaytracer::class.java -> Vulkan3DVoxelRaytracer(vulkanPass)
+            VulkanSpinningCubeDrawer::class.java -> VulkanSpinningCubeDrawer(vulkanPass)
+            VulkanDebugDrawer::class.java -> VulkanDebugDrawer(vulkanPass, window.client.ingame!!)
 
             else -> throw Exception("Unimplemented system on this backend: ${drawingSystemRegistration.clazz}")
         }

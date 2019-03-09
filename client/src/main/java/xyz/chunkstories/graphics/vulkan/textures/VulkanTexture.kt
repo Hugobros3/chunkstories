@@ -1,11 +1,8 @@
 package xyz.chunkstories.graphics.vulkan.textures
 
 import org.lwjgl.system.MemoryStack.*
+import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
-import org.lwjgl.vulkan.VkImageCreateInfo
-import org.lwjgl.vulkan.VkImageMemoryBarrier
-import org.lwjgl.vulkan.VkImageViewCreateInfo
-import org.lwjgl.vulkan.VkMemoryRequirements
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.graphics.Texture
 import xyz.chunkstories.api.graphics.TextureFormat
@@ -96,6 +93,20 @@ open class VulkanTexture(val backend: VulkanGraphicsBackend, final override val 
         val operationsPool = backend.logicalDevice.graphicsQueue.threadSafePools.get()
         val commandBuffer = operationsPool.createOneUseCB()
 
+        transitionLayout(commandBuffer, oldLayout, newLayout)
+
+        val fence = backend.createFence(false)
+        operationsPool.submitOneTimeCB(commandBuffer, backend.logicalDevice.graphicsQueue, fence)
+
+        backend.waitFence(fence)
+
+        vkDestroyFence(backend.logicalDevice.vkDevice, fence, null)
+        vkFreeCommandBuffers(backend.logicalDevice.vkDevice, operationsPool.handle, commandBuffer)
+
+        stackPop()
+    }
+
+    private fun transitionLayout(commandBuffer: VkCommandBuffer, oldLayout: VkImageLayout, newLayout: VkImageLayout) {
         // What we want to make sure isn't interfered with
         var dstAccessMask = 0
         var dstStage = 0
@@ -135,6 +146,16 @@ open class VulkanTexture(val backend: VulkanGraphicsBackend, final override val 
                 srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT
             }
 
+            (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED) and (newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) -> {
+                // We want to write to the image in the transfer stage
+                dstAccessMask = VK_ACCESS_SHADER_READ_BIT
+                dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
+
+                // There is nothing writing to this image before us
+                srcAccessMask = 0
+                srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT
+            }
+
             else -> logger.error("Unhandled transition : $oldLayout to $newLayout")
         }
 
@@ -158,16 +179,6 @@ open class VulkanTexture(val backend: VulkanGraphicsBackend, final override val 
         }
 
         vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, null, null, imageBarrier)
-
-        val fence = backend.createFence(false)
-        operationsPool.submitOneTimeCB(commandBuffer, backend.logicalDevice.graphicsQueue, fence)
-
-        backend.waitFence(fence)
-
-        vkDestroyFence(backend.logicalDevice.vkDevice, fence, null)
-        vkFreeCommandBuffers(backend.logicalDevice.vkDevice, operationsPool.handle, commandBuffer)
-
-        stackPop()
     }
 
     override fun cleanup() {

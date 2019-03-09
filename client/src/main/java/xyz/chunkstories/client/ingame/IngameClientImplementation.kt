@@ -76,7 +76,6 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
             internalWorld.spawnPlayer(player)
 
         client.ingame = this
-        client.gameWindow.graphicsEngine.loadRenderGraph(DefaultIngameRendergraph.instructions)
 
         worldRenderer = client.gameWindow.graphicsEngine.backend.createWorldRenderer(internalWorld)
 

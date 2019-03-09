@@ -10,6 +10,7 @@ import xyz.chunkstories.api.graphics.systems.dispatching.ChunksRenderer
 import xyz.chunkstories.api.graphics.systems.dispatching.ModelsRenderer
 import xyz.chunkstories.api.gui.GuiDrawer
 import xyz.chunkstories.graphics.vulkan.systems.SkyDrawer
+import xyz.chunkstories.graphics.vulkan.systems.Vulkan3DVoxelRaytracer
 import xyz.chunkstories.graphics.vulkan.systems.VulkanFullscreenQuadDrawer
 import xyz.chunkstories.graphics.vulkan.systems.world.getConditions
 
@@ -187,7 +188,7 @@ object DefaultIngameRendergraph {
                 }
 
                 pass {
-                    name = "water"
+                    name = "forward"
 
                     dependsOn("deferredShading")
 
@@ -196,6 +197,7 @@ object DefaultIngameRendergraph {
                             shader = "water"
                             materialTag = "water"
                         }
+                        //system(Vulkan3DVoxelRaytracer::class)
                     }
 
                     outputs {
@@ -214,7 +216,7 @@ object DefaultIngameRendergraph {
                 pass {
                     name = "postprocess"
 
-                    dependsOn("deferredShading", "water")
+                    dependsOn("deferredShading", "forward")
 
                     inputs {
                         imageInput {

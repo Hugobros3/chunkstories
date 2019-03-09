@@ -56,6 +56,12 @@ data class GLSLUniformSampledImage2D(
         override val binding: Int,
         val count: Int) : GLSLUniformSampledImage
 
+data class GLSLUniformSampledImage3D(
+        override val name: String,
+        override val descriptorSetSlot: Int,
+        override val binding: Int,
+        val count: Int) : GLSLUniformSampledImage
+
 /** The onion sort of 2D textures */
 data class GLSLUniformSampledImage2DArray(
         override val name: String,

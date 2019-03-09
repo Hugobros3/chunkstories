@@ -36,30 +36,38 @@ data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsB
         MemoryStack.stackPop()
     }
 
+    val GLSLResource.vkDescriptorType: Int
+        get() = when (this) {
+            is GLSLUniformBlock -> VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+            is GLSLUniformImage2D -> VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE
+            is GLSLShaderStorage -> VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
+            is GLSLUniformSampledImage2D -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+            is GLSLUniformSampledImage3D -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+            is GLSLUniformSampledImage2DArray -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+            is GLSLUniformSampler -> VK_DESCRIPTOR_TYPE_SAMPLER
+            //is GLSLUnusedUniform -> return@mapNotNull null
+            else -> throw Exception("Missing mapping from GLSLResource type to Vulkan descriptor type !")
+        }
+
+    val GLSLResource.vkDescriptorCount: Int
+        get() = when (this) {
+            is GLSLUniformBlock -> 1
+            is GLSLUniformSampler -> 1
+            is GLSLShaderStorage -> 1
+            is GLSLUniformSampledImage2D -> this.count
+            is GLSLUniformSampledImage2DArray -> 1
+            is GLSLUniformSampledImage3D -> 1
+            is GLSLUniformImage2D -> if (this.count != 0) this.count else magicTexturesUpperBound
+            else -> throw Exception("Missing mapping from GLSLResource type to Vulkan descriptor type !")
+        }
+
     private fun getDescriptorCountByType(slot: Int): Map<Int, Int> {
         return glslProgram.resources
                 .filter { it.descriptorSetSlot == slot } // Filter only those who match this descriptor set slot
                 .mapNotNull { resource ->
-                    val descriptorType = when (resource) {
-                        is GLSLUniformBlock -> VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
-                        is GLSLUniformImage2D -> VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE
-                        is GLSLShaderStorage -> VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
-                        is GLSLUniformSampledImage2D -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
-                        is GLSLUniformSampledImage2DArray -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
-                        is GLSLUniformSampler -> VK_DESCRIPTOR_TYPE_SAMPLER
-                        //is GLSLUnusedUniform -> return@mapNotNull null
-                        else -> throw Exception("Missing mapping from GLSLResource type to Vulkan descriptor type !")
-                    }
 
-                    val descriptorsNeeded = when (resource) {
-                        is GLSLUniformBlock -> 1
-                        is GLSLUniformSampler -> 1
-                        is GLSLShaderStorage -> 1
-                        is GLSLUniformSampledImage2DArray -> 1
-                        is GLSLUniformSampledImage2D -> resource.count
-                        is GLSLUniformImage2D -> if (resource.count != 0) resource.count else magicTexturesUpperBound
-                        else -> throw Exception("Missing mapping from GLSLResource type to Vulkan descriptor type !")
-                    }
+                    val descriptorType = resource.vkDescriptorType
+                    val descriptorsNeeded = resource.vkDescriptorCount
 
                     Pair(descriptorType, descriptorsNeeded)
                 }.groupBy { it.first }.mapValues { it.value.sumBy { it.second } }
@@ -76,25 +84,11 @@ data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsB
                     VkDescriptorSetLayoutBinding.callocStack().apply {
                         binding(resource.binding)
 
-                        descriptorType(when (resource) {
-                            is GLSLUniformBlock -> VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
-                            is GLSLUniformSampler -> VK_DESCRIPTOR_TYPE_SAMPLER
-                            is GLSLShaderStorage -> VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
-                            is GLSLUniformSampledImage2D -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
-                            is GLSLUniformSampledImage2DArray -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
-                            is GLSLUniformImage2D -> VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE
-                            else -> throw Exception("Unmappped GLSL Uniform resource type")
-                        })
+                        val descriptorType = resource.vkDescriptorType
+                        val descriptorsNeeded = resource.vkDescriptorCount
 
-                        descriptorCount(when (resource) {
-                            is GLSLUniformBlock -> 1
-                            is GLSLUniformSampler -> 1
-                            is GLSLShaderStorage -> 1
-                            is GLSLUniformSampledImage2DArray -> 1
-                            is GLSLUniformSampledImage2D -> resource.count
-                            is GLSLUniformImage2D -> if (resource.count != 0) resource.count else magicTexturesUpperBound
-                            else -> 1 //TODO maybe allow arrays of ubo ? not for now
-                        })
+                        descriptorType(descriptorType)
+                        descriptorCount(descriptorsNeeded)
 
                         if (slot == 0 && resource.name in magicTexturesNames) {
                             // we can't set the binding flags here, see VkDescriptorSetLayoutBindingFlagsCreateInfoEXT below

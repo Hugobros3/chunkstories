@@ -121,6 +121,7 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
             } else {
                 resources.add(when (dimensionality) {
                     1 -> GLSLUniformSampledImage2D(sampledImageName, setSlot, binding, arraySize)
+                    2 -> GLSLUniformSampledImage3D(sampledImageName, setSlot, binding, arraySize)
                     else -> throw Exception("Not handled yet")
                 })
             }

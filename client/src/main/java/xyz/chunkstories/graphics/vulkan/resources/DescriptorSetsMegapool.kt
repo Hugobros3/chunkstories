@@ -17,7 +17,9 @@ import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.common.shaders.GLSLUniformBlock
 import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampledImage2D
 import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampledImage2DArray
+import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampledImage3D
 import xyz.chunkstories.graphics.vulkan.textures.VulkanOnionTexture2D
+import xyz.chunkstories.graphics.vulkan.textures.VulkanTexture3D
 import xyz.chunkstories.graphics.vulkan.util.*
 import java.nio.IntBuffer
 import java.util.concurrent.ConcurrentLinkedDeque
@@ -180,6 +182,15 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
 
         fun bindTextureAndSampler(name: String, texture: VulkanOnionTexture2D, sampler: VulkanSampler, index: Int = 0) {
             val resource = pipeline.program.glslProgram.resources.filterIsInstance<GLSLUniformSampledImage2DArray>().find {
+                it.name == name
+            } ?: throw Exception("I can't find a program sampler2D resource matching that name '$name' :s")
+
+            val set = getSet(resource.descriptorSetSlot)
+            backend.updateDescriptorSet(set, resource.binding, texture, sampler, index)
+        }
+
+        fun bindTextureAndSampler(name: String, texture: VulkanTexture3D, sampler: VulkanSampler, index: Int = 0) {
+            val resource = pipeline.program.glslProgram.resources.filterIsInstance<GLSLUniformSampledImage3D>().find {
                 it.name == name
             } ?: throw Exception("I can't find a program sampler2D resource matching that name '$name' :s")
 
