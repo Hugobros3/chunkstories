@@ -296,7 +296,7 @@ class Lwjgl3ClientInputsManager// private final IngameLayer scene;
     override fun onInputReleased(input: Input?): Boolean {
         val ingameClient = gameWindow.client.ingame ?: return false
 
-        val event = ClientInputReleasedEvent(gameWindow.client, input)
+        val event = ClientInputReleasedEvent(gameWindow.client, input!!)
         ingameClient.pluginManager.fireEvent(event)
 
         val player = ingameClient.player
@@ -314,7 +314,7 @@ class Lwjgl3ClientInputsManager// private final IngameLayer scene;
             connection.pushPacket(packet)
             return true
         } else {
-            val event2 = PlayerInputReleasedEvent(player, input)
+            val event2 = PlayerInputReleasedEvent(player, input!!)
             ingameClient.pluginManager.fireEvent(event2)
             return true
         }

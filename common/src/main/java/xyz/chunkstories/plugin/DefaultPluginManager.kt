@@ -211,7 +211,7 @@ open class DefaultPluginManager(private val pluginExecutionContext: GameContext)
     }
 
     override fun registerEventListener(listener: Listener, plugin: ChunkStoriesPlugin) {
-        println("Registering $listener")
+        //println("Registering $listener")
         try {
             // Get a list of all the classes methods
             val methods = HashSet<Method>()
@@ -232,7 +232,11 @@ open class DefaultPluginManager(private val pluginExecutionContext: GameContext)
                 }
                 val parameter = method.parameterTypes[0].asSubclass(Event::class.java)
                 // Create an EventExecutor to launch the event code
-                val executor = EventExecutor { event -> method.invoke(listener, event) }
+                val executor = object: EventExecutor {
+                    override fun fireEvent(event: Event) {
+                        method.invoke(listener, event)
+                    }
+                }
                 val registeredListener = RegisteredListener(listener, plugin, executor,
                         eventHandlerAnnotation.priority)
 

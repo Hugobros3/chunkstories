@@ -152,8 +152,8 @@ class InventoryView(gui: Gui, parent: Layer, private val inventories: List<Inven
                         }
 
                         if (world is WorldMaster) {
-                            val moveItemEvent = PlayerMoveItemEvent(player, draggingPile,
-                                    draggingPile!!.inventory, inventories[i], draggingPile!!.x,
+                            val moveItemEvent = PlayerMoveItemEvent(player, draggingPile!!,
+                                    draggingPile!!.inventory!!, inventories[i], draggingPile!!.x,
                                     draggingPile!!.y, x, y, draggingQuantity)
                             world.gameContext.pluginManager.fireEvent(moveItemEvent)
 
@@ -185,8 +185,8 @@ class InventoryView(gui: Gui, parent: Layer, private val inventories: List<Inven
                 // For local item drops, we need to make sure we have a sutiable entity
                 val playerEntity = player.controlledEntity
                 if (playerEntity != null) {
-                    val moveItemEvent = PlayerMoveItemEvent(player, draggingPile,
-                            draggingPile!!.inventory, null, draggingPile!!.x, draggingPile!!.y, 0, 0,
+                    val moveItemEvent = PlayerMoveItemEvent(player, draggingPile!!,
+                            draggingPile!!.inventory!!, null, draggingPile!!.x, draggingPile!!.y, 0, 0,
                             draggingQuantity)
                     world.gameContext.pluginManager.fireEvent(moveItemEvent)
 
