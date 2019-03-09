@@ -35,7 +35,7 @@ class PauseMenu internal constructor(gui: Gui, parent: Layer) : Layer(gui, paren
         elements.add(exitButton)
     }
 
-    override fun render(drawer: GuiDrawer?) {
+    override fun render(drawer: GuiDrawer) {
         parentLayer?.render(drawer)
 
         val font = drawer!!.fonts.getFont("LiberationSans-Regular", 11f)

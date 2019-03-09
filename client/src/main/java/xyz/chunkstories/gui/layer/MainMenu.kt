@@ -49,7 +49,7 @@ class MainMenu(gui: Gui, parent: Layer?) : Layer(gui, parent) {
         elements.add(largeOptions)
     }
 
-    override fun render(drawer: GuiDrawer?) {
+    override fun render(drawer: GuiDrawer) {
         parentLayer?.render(drawer)
 
         if (gui.topLayer === this && gui.client.configuration.getValue(LogPolicyAsk.logPolicyConfigNode) == "ask")

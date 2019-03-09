@@ -49,7 +49,7 @@ public class SkyBoxBackground extends Layer {
 		List<String> splashes = new ArrayList<String>();
 		try {
 			InputStreamReader ipsr = new InputStreamReader(
-					gui.getClient().getContent().getAsset("./splash.txt").read(), "UTF-8");
+					getGui().getClient().getContent().getAsset("./splash.txt").read(), "UTF-8");
 			BufferedReader br = new BufferedReader(ipsr);
 			String ligne;
 			while ((ligne = br.readLine()) != null) {
@@ -68,14 +68,14 @@ public class SkyBoxBackground extends Layer {
 
 	@Override
 	public void render(GuiDrawer drawer) {
-		if (gui.getTopLayer() == this)
-			gui.setTopLayer(new MainMenu(gui, this));
+		if (getGui().getTopLayer() == this)
+			getGui().setTopLayer(new MainMenu(getGui(), this));
 
 		float alphaIcon = (float) (0.25 + Math.sin((System.currentTimeMillis() % (1000 * 60 * 60) / 3000f)) * 0.25f);
 		int iconSize = 256;
 
-		drawer.drawBox(gui.getViewportWidth() / 2 - iconSize / 2,
-				gui.getViewportHeight() / 2 - iconSize / 2, iconSize,
+		drawer.drawBox(getGui().getViewportWidth() / 2 - iconSize / 2,
+				getGui().getViewportHeight() / 2 - iconSize / 2, iconSize,
 				iconSize, 0, 1, 1, 0, "./textures/gui/icon.png",
 				new Vector4f(1.0f, 1.0f, 1.0f, alphaIcon));
 

@@ -56,11 +56,11 @@ class LoginPrompt(gui: Gui, parent: Layer) : Layer(gui, parent) {
 
         loginButton.action = Runnable { this.connect() }
 
-        this.setFocusedElement(usernameForm)
+        this.focusedElement = usernameForm
         startCounter = System.currentTimeMillis()
     }
 
-    override fun render(drawer: GuiDrawer?) {
+    override fun render(drawer: GuiDrawer) {
         //parentLayer?.render(drawer)
 
         if (gui.client.configuration.getValue("client.game.language") == "undefined") {
@@ -169,7 +169,7 @@ class LoginPrompt(gui: Gui, parent: Layer) : Layer(gui, parent) {
             connect()
         else if (input.name == "tab") {
             val shift = if (gui.client.inputsManager.getInputByName("shift")!!.isPressed) -1 else 1
-            var i = this.elements.indexOf(this.focusedElement)
+            var i = focusedElement?.let {this.elements.indexOf(it) } ?: 0
 
             var elem: GuiElement? = null
 

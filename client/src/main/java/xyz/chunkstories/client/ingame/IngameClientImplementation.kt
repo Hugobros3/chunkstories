@@ -83,7 +83,7 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
         ingameGuiLayer = IngameLayer(gui, this)
         val connectionProgressLayer = gui.topLayer as? RemoteConnectionGuiLayer
         if (connectionProgressLayer != null) //TODO generalize to other loading hider overlays
-            connectionProgressLayer.parentLayer = ingameGuiLayer
+            TODO() //connectionProgressLayer.parentLayer = ingameGuiLayer
         else
             gui.topLayer = ingameGuiLayer
 

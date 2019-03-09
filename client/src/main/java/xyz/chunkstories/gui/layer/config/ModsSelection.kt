@@ -123,17 +123,17 @@ class ModsSelection(window: Gui, parent: Layer) : Layer(window, parent) {
         }
     }
 
-    override fun render(renderer: GuiDrawer?) {
-        parentLayer!!.rootLayer.render(renderer)
+    override fun render(drawer: GuiDrawer) {
+        parentLayer!!.rootLayer.render(drawer)
         val scale = 1
 
         val instructions = "Select the mods you want to use"
-        val font = renderer!!.fonts.getFont("LiberationSans-Regular", (16 * scale).toFloat())
-        renderer.drawStringWithShadow(font, 32, gui.viewportHeight - 24 * scale,
+        val font = drawer!!.fonts.getFont("LiberationSans-Regular", (16 * scale).toFloat())
+        drawer.drawStringWithShadow(font, 32, gui.viewportHeight - 24 * scale,
                 instructions, -1, Vector4f(1f))
 
         backOption.setPosition(xPosition + 8, 8)
-        backOption.render(renderer)
+        backOption.render(drawer)
 
         // Display buttons
 
@@ -151,21 +151,21 @@ class ModsSelection(window: Gui, parent: Layer) : Layer(window, parent) {
 
         locateExtMod.setPosition(buttonDisplayX, buttonDisplayY)
         buttonDisplayX += locateExtMod.width + spacing
-        locateExtMod.render(renderer)
+        locateExtMod.render(drawer)
 
         openModsFolder.setPosition(buttonDisplayX, buttonDisplayY)
         buttonDisplayX += openModsFolder.width + spacing
-        openModsFolder.render(renderer)
+        openModsFolder.render(drawer)
 
-        applyMods.setPosition(this.getWidth() - applyMods.width - 8, 8)
+        applyMods.setPosition(this.width - applyMods.width - 8, 8)
         buttonDisplayX += applyMods.width + spacing
-        applyMods.render(renderer)
+        applyMods.render(drawer)
 
         val offsetForButtons = applyMods.positionY + applyMods.height + 8 * scale
         val offsetForHeaderText = 32 * scale
         modsContainer.setPosition((width - 480 * scale) / 2, offsetForButtons)
         modsContainer.setSize(480 * scale, height - (offsetForButtons + offsetForHeaderText))
-        modsContainer.render(renderer)
+        modsContainer.render(drawer)
     }
 
     override fun handleInput(input: Input): Boolean {

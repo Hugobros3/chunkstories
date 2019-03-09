@@ -10,11 +10,8 @@ import java.io.File
 import java.io.IOException
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
-import java.util.Deque
 import java.util.HashMap
 import java.util.HashSet
-import java.util.LinkedList
-import kotlin.collections.Map.Entry
 import java.util.concurrent.LinkedBlockingDeque
 
 import org.slf4j.Logger
@@ -40,6 +37,11 @@ import xyz.chunkstories.api.plugin.commands.CommandHandler
 import xyz.chunkstories.api.server.Server
 import xyz.chunkstories.content.GameDirectory
 import xyz.chunkstories.content.mods.ModsManagerImplementation
+import kotlin.reflect.KProperty
+import kotlin.reflect.KProperty1
+import kotlin.reflect.full.companionObject
+import kotlin.reflect.full.companionObjectInstance
+import kotlin.reflect.full.memberProperties
 
 open class DefaultPluginManager(private val pluginExecutionContext: GameContext) : PluginManager {
     var activePlugins: MutableSet<ChunkStoriesPlugin> = HashSet()
@@ -211,39 +213,45 @@ open class DefaultPluginManager(private val pluginExecutionContext: GameContext)
     }
 
     override fun registerEventListener(listener: Listener, plugin: ChunkStoriesPlugin) {
-        //println("Registering $listener")
         try {
-            // Get a list of all the classes methods
             val methods = HashSet<Method>()
             for (method in listener.javaClass.methods)
-                methods.add(method)
-            for (method in listener.javaClass.declaredMethods)
                 methods.add(method)
             // Filter it so only interested in @EventHandler annoted methods
             for (method in methods) {
                 val eventHandlerAnnotation = method.getAnnotation(EventHandler::class.java) ?: continue
 
                 // We look for the annotation in the method
-
                 // TODO something about priority
                 if (method.parameterTypes.size != 1 || !Event::class.java.isAssignableFrom(method.parameterTypes[0])) {
                     logger().warn("Plugin $plugin attempted to register an invalid EventHandler")
                     continue
                 }
-                val parameter = method.parameterTypes[0].asSubclass(Event::class.java)
+
+                val eventClassToListenTo = method.parameterTypes[0].asSubclass(Event::class.java)
+
                 // Create an EventExecutor to launch the event code
                 val executor = object: EventExecutor {
                     override fun fireEvent(event: Event) {
                         method.invoke(listener, event)
                     }
                 }
-                val registeredListener = RegisteredListener(listener, plugin, executor,
-                        eventHandlerAnnotation.priority)
+                val registeredListener = RegisteredListener(listener, plugin, executor, eventHandlerAnnotation.priority)
 
                 // Get the listeners list for this event
-                val getListeners = parameter.getMethod("getListenersStatic")
-                getListeners.isAccessible = true
-                val thisEventKindOfListeners = getListeners.invoke(null) as EventListeners
+
+                val thisEventKindOfListeners = try {
+                    val getListeners = eventClassToListenTo.getMethod("getListenersStatic")
+                    getListeners.isAccessible = true
+                    getListeners.invoke(null) as EventListeners
+                } catch(e: NoSuchMethodException) {
+                    val kotlinClass = eventClassToListenTo.kotlin
+                    val companion = kotlinClass.companionObject
+                    val instance = kotlinClass.companionObjectInstance
+                    val property = companion!!.memberProperties.find { it.name == "listenersStatic" }!! as KProperty1<Any, Any>
+                    val listeners = property.get(instance!!) as EventListeners
+                    listeners
+                }
 
                 // Add our own to it
                 thisEventKindOfListeners.registerListener(registeredListener)
@@ -255,17 +263,14 @@ open class DefaultPluginManager(private val pluginExecutionContext: GameContext)
                     addRegisteredListenerToEventChildren(thisEventKindOfListeners, registeredListener,
                             eventHandlerAnnotation.listenToChildEvents == EventHandler.ListenToChildEvents.RECURSIVE)
 
-                logger().info("Successuflly added EventHandler for " + parameter.name + "in " + listener
-                        + " of plugin " + plugin)
+                logger().info("Successuflly added EventHandler for " + eventClassToListenTo.name + "in " + listener + " of plugin " + plugin)
             }
         } catch (e: Exception) {
             e.printStackTrace()
         }
-
     }
 
-    private fun addRegisteredListenerToEventChildren(listeners: EventListeners, registeredListener: RegisteredListener,
-                                                     recursive: Boolean) {
+    private fun addRegisteredListenerToEventChildren(listeners: EventListeners, registeredListener: RegisteredListener, recursive: Boolean) {
         for (el in listeners.childrens) {
             el.registerListener(registeredListener)
             registeredEventListeners[el] = registeredListener

@@ -75,7 +75,7 @@ class ChatManager(private val ingameClient: IngameClient, private val ingameGuiL
             // Add the inputBox
             this.inputBox = InputText(this, 0, 0, 500)
             this.elements.add(inputBox)
-            this.setFocusedElement(inputBox)
+            this.focusedElement = inputBox
 
             // Reset the scroll
             this@ChatManager.scroll = 0
@@ -84,7 +84,7 @@ class ChatManager(private val ingameClient: IngameClient, private val ingameGuiL
             this.delay = System.currentTimeMillis() + 30
         }
 
-        override fun render(drawer: GuiDrawer?) {
+        override fun render(drawer: GuiDrawer) {
             parentLayer!!.render(drawer)
 
             inputBox.setPosition(8, 48)

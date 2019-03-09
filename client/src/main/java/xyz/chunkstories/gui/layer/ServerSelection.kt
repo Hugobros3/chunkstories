@@ -39,7 +39,7 @@ class ServerSelection internal constructor(gui: Gui, parent: Layer, private val 
     init {
         elements.add(serverAddress)
 
-        this.setFocusedElement(serverAddress)
+        focusedElement = serverAddress
 
         this.connectButton.action = Runnable { login() }
         this.backOption.action = Runnable { gui.topLayer = parentLayer }
@@ -55,7 +55,7 @@ class ServerSelection internal constructor(gui: Gui, parent: Layer, private val 
         refreshServers()
     }
 
-    override fun render(drawer: GuiDrawer?) {
+    override fun render(drawer: GuiDrawer) {
         if (parentLayer != null) {
             //parentLayer.render(drawer);
         }
@@ -67,7 +67,7 @@ class ServerSelection internal constructor(gui: Gui, parent: Layer, private val 
             login()
 
         val instructions = "Select a server from the list or type in the address directly"
-        val titleFont = drawer!!.fonts.getFont("LiberationSans-Regular", 16f)
+        val titleFont = drawer.fonts.getFont("LiberationSans-Regular", 16f)
         drawer.drawStringWithShadow(titleFont, 8, gui.viewportHeight - 32, instructions, -1, Vector4f(1f))
 
         // gui

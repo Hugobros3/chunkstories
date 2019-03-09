@@ -22,7 +22,7 @@ class MessageBox(gui: Gui, parent: Layer, private val message: String) : Layer(g
         elements.add(okButton)
     }
 
-    override fun render(drawer: GuiDrawer?) {
+    override fun render(drawer: GuiDrawer) {
         parentLayer?.render(drawer)
 
         drawer!!.drawBox(0, 0, gui.viewportWidth, gui.viewportHeight, 0f, 0f, 0f, 0f, null, Vector4f(0.0f, 0.0f, 0.0f, 0.5f))
