@@ -33,7 +33,6 @@ class LevelSelection internal constructor(gui: Gui, parent: Layer) : Layer(gui, 
     private var scroll = 0
 
     init {
-
         this.backOption.action = Runnable { gui.popTopLayer() }
         this.newWorldOption.action = Runnable { gui.topLayer = LevelCreation(gui, this@LevelSelection) }
 
@@ -61,30 +60,35 @@ class LevelSelection internal constructor(gui: Gui, parent: Layer) : Layer(gui, 
     }
 
     override fun render(drawer: GuiDrawer) {
-        //parentLayer?.render(drawer)
-
         if (scroll < 0)
             scroll = 0
 
         var posY = gui.viewportHeight
 
-        posY -= 32
+        posY -= 24 + 4
         val titleFont = drawer.fonts.getFont("LiberationSans-Regular", 16f)
         drawer.drawStringWithShadow(titleFont, 8, posY, "Select a level...", -1, Vector4f(1f))
 
         val localWorldButtonHeight = 64 + 8
+        posY -= 4
 
-        var remainingSpace = gui.viewportHeight / localWorldButtonHeight - 2
-        while (scroll + remainingSpace > worldsButtons.size)
-            scroll--
+        var remainingSpace = posY - 8 - backOption.height
 
-        posY -= 64 + 8
+        //Keep the scrolling into visible stuff
+        val fittableEntries = 1 + (remainingSpace - 64) / localWorldButtonHeight
+        while(scroll + fittableEntries > worldsButtons.size)
+            scroll --
+
         var skip = scroll
         for (worldButton in worldsButtons) {
             if (skip-- > 0)
                 continue
-            if (remainingSpace-- <= 0)
+
+            if (remainingSpace < worldButton.height) {
                 break
+            }
+
+            posY -= 64
 
             val buttonMargin = 8
             val maxWidth = gui.viewportWidth - buttonMargin * 2
@@ -93,7 +97,9 @@ class LevelSelection internal constructor(gui: Gui, parent: Layer) : Layer(gui, 
             worldButton.setPosition(buttonMargin, posY)
             worldButton.render(drawer)
 
-            posY -= (localWorldButtonHeight + 8)
+            remainingSpace -= localWorldButtonHeight
+
+            posY -= 8
         }
 
         backOption.setPosition(8, 8)

@@ -33,14 +33,13 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.graphics.common.Cleanable
 
-class Lwjgl3ClientInputsManager// private final IngameLayer scene;
-(val gameWindow: GLFWWindow) : ClientInputsManager, InputsManagerLoader, Cleanable {
+class Lwjgl3ClientInputsManager(val gameWindow: GLFWWindow) : ClientInputsManager, InputsManagerLoader, Cleanable {
     private val gui: Gui
 
     internal var inputs = mutableListOf<Input>()
     internal var inputsMap: MutableMap<Long, Input> = mutableMapOf()
 
-    var mouse: Lwjgl3Mouse
+    override val mouse: Lwjgl3Mouse
     var LEFT: Lwjgl3MouseButton
     var RIGHT: Lwjgl3MouseButton
     var MIDDLE: Lwjgl3MouseButton
@@ -293,7 +292,7 @@ class Lwjgl3ClientInputsManager// private final IngameLayer scene;
         return playerEntity.traits.tryWithBoolean(TraitControllable::class) { this.onControllerInput(input) }
     }
 
-    override fun onInputReleased(input: Input?): Boolean {
+    override fun onInputReleased(input: Input): Boolean {
         val ingameClient = gameWindow.client.ingame ?: return false
 
         val event = ClientInputReleasedEvent(gameWindow.client, input!!)
@@ -318,10 +317,6 @@ class Lwjgl3ClientInputsManager// private final IngameLayer scene;
             ingameClient.pluginManager.fireEvent(event2)
             return true
         }
-    }
-
-    override fun getMouse(): Mouse {
-        return mouse
     }
 
     override fun cleanup() {

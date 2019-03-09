@@ -113,8 +113,7 @@ class ALSoundManager(private val client: ClientImplementation) : ClientSoundMana
         return DummySoundSource()
     }
 
-    override fun replicateServerSoundSource(soundEffect: String, mode: Mode, position: Vector3dc, pitch: Float,
-                                            gain: Float, attenuationStart: Float, attenuationEnd: Float, UUID: Long): SoundSource? {
+    override fun replicateServerSoundSource(soundEffect: String, mode: Mode, position: Vector3dc, pitch: Float, gain: Float, attenuationStart: Float, attenuationEnd: Float, UUID: Long): SoundSource {
         try {
             val soundSource = when(mode) {
                 Mode.STREAMED -> {
@@ -134,7 +133,7 @@ class ALSoundManager(private val client: ClientImplementation) : ClientSoundMana
             return soundSource
         } catch (e: SoundEffectNotFoundException) {
             logger.warn("Sound not found $soundEffect")
-            return null
+            throw e //return null
         }
     }
 
