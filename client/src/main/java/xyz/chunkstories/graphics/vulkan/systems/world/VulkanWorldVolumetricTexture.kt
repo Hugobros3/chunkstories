@@ -200,7 +200,7 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
                             byteBuffer.put(0)
                             byteBuffer.put(0)
                         } else {
-                            val topTexture = voxel.voxelTextures[VoxelSide.TOP.ordinal]
+                            val topTexture = voxel.getVoxelTexture(chunk.peek(x, y, z), VoxelSide.TOP)
                             val color = topTexture.color
 
                             byteBuffer.put((color.x() * 255).toInt().toByte())
