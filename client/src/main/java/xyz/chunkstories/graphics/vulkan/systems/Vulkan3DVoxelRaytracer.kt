@@ -17,6 +17,7 @@ import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import xyz.chunkstories.graphics.vulkan.swapchain.Frame
+import xyz.chunkstories.graphics.vulkan.systems.world.ViewportSize
 import xyz.chunkstories.graphics.vulkan.systems.world.VulkanWorldVolumetricTexture
 import xyz.chunkstories.graphics.vulkan.systems.world.getConditions
 import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
@@ -88,10 +89,16 @@ class Vulkan3DVoxelRaytracer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
 
         volumetricTexture.updateArround(passContext.context.camera.position.toVec3d())
 
+        val viewportSize = ViewportSize()
+        viewportSize.size.set(passContext.resolvedOutputs[pass.declaration.outputs.outputs[0]]!!.size)
+
+        bindingContext.bindUBO("viewportSize", viewportSize)
         bindingContext.bindUBO("camera", passContext.context.camera)
         bindingContext.bindUBO("voxelDataInfo", volumetricTexture.info)
         bindingContext.bindUBO("world", volumetricTexture.world.getConditions())
         bindingContext.bindTextureAndSampler("voxelData", volumetricTexture.texture, sampler)
+
+        bindingContext.bindTextureAndSampler("blueNoise", backend.textures.getOrLoadTexture2D("textures/noise/blue1024.png"), sampler)
 
         bindingContext.preDraw(commandBuffer)
 

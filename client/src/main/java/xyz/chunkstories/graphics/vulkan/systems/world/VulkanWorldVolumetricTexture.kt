@@ -44,6 +44,9 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
         val operationsPool = backend.logicalDevice.graphicsQueue.threadSafePools.get()
         val commandBuffer = operationsPool.createOneUseCB()
 
+        info.noise = (info.noise + 1) % 256
+        //println(info.noise)
+
         stackPush().use {
             scratchByteBuffer.clear()
 
@@ -60,7 +63,7 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
             info.baseChunkPos.y = chunkStartY
             info.baseChunkPos.z = chunkStartZ
 
-            if(info.baseChunkPos == lastPos)
+            if (info.baseChunkPos == lastPos)
                 return
 
             lastPos.set(info.baseChunkPos)
@@ -203,7 +206,11 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
                             byteBuffer.put((color.x() * 255).toInt().toByte())
                             byteBuffer.put((color.y() * 255).toInt().toByte())
                             byteBuffer.put((color.z() * 255).toInt().toByte())
-                            byteBuffer.put((color.w() * 255).toInt().toByte())
+
+                            if (topTexture.name.equals("grass_top"))
+                                byteBuffer.put((0.5 * 255).toInt().toByte())
+                            else
+                                byteBuffer.put((color.w() * 255).toInt().toByte())
                         }
                     }
         }
@@ -218,4 +225,6 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
 class VolumetricTextureMetadata : InterfaceBlock {
     val baseChunkPos = Vector3i(0)
     var size = 64
+
+    var noise = 0
 }

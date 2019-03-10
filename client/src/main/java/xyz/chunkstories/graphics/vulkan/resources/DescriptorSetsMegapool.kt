@@ -174,7 +174,7 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
         fun bindTextureAndSampler(name: String, texture: VulkanTexture2D, sampler: VulkanSampler, index: Int = 0) {
             val resource = pipeline.program.glslProgram.resources.filterIsInstance<GLSLUniformSampledImage2D>().find {
                 it.name == name
-            } ?: throw Exception("I can't find a program sampler2D resource matching that name '$name' :s")
+            } ?: return // ?: throw Exception("I can't find a program sampler2D resource matching that name '$name'")
 
             val set = getSet(resource.descriptorSetSlot)
             backend.updateDescriptorSet(set, resource.binding, texture, sampler, index)
@@ -183,7 +183,7 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
         fun bindTextureAndSampler(name: String, texture: VulkanOnionTexture2D, sampler: VulkanSampler, index: Int = 0) {
             val resource = pipeline.program.glslProgram.resources.filterIsInstance<GLSLUniformSampledImage2DArray>().find {
                 it.name == name
-            } ?: throw Exception("I can't find a program sampler2D resource matching that name '$name' :s")
+            } ?: return // ?: throw Exception("I can't find a program sampler2DArray resource matching that name '$name'")
 
             val set = getSet(resource.descriptorSetSlot)
             backend.updateDescriptorSet(set, resource.binding, texture, sampler, index)
@@ -192,7 +192,7 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
         fun bindTextureAndSampler(name: String, texture: VulkanTexture3D, sampler: VulkanSampler, index: Int = 0) {
             val resource = pipeline.program.glslProgram.resources.filterIsInstance<GLSLUniformSampledImage3D>().find {
                 it.name == name
-            } ?: throw Exception("I can't find a program sampler2D resource matching that name '$name' :s")
+            } ?: return // ?: throw Exception("I can't find a program sampler3D resource matching that name '$name'")
 
             val set = getSet(resource.descriptorSetSlot)
             backend.updateDescriptorSet(set, resource.binding, texture, sampler, index)
