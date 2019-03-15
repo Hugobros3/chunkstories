@@ -51,16 +51,16 @@ public class ModZip extends ModImplementation {
 				ZipEntry entry = e.nextElement();
 				if (!entry.isDirectory()) {
 					String assetName = entry.getName();
-					assets.put(assetName, new ModZipAsset(assetName, entry));
+					assets.put(assetName, new ModZipAsset(this, assetName, entry));
 				}
 			}
 
-			this.modInfo = ModInfoLoaderKt.loadModInfo(getAssetByName("modInfo.json").reader());
+			this.setModInfo(ModInfoLoaderKt.loadModInfo(getAssetByName("modInfo.json").reader()));
 		} catch (IOException e) {
 			throw new ModLoadFailureException(this, "Zip file not found or malformed");
 		}
 
-		logger = LoggerFactory.getLogger("mod." + this.modInfo.getInternalName());
+		setLogger(LoggerFactory.getLogger("mod." + this.getModInfo().getInternalName()));
 	}
 
 	@Override
@@ -68,40 +68,7 @@ public class ModZip extends ModImplementation {
 		return assets.get(name);
 	}
 
-	public class ModZipAsset implements Asset {
-		String assetName;
-		ZipEntry entry;
 
-		public ModZipAsset(String assetName, ZipEntry entry) {
-			this.assetName = assetName;
-			this.entry = entry;
-		}
-
-		@Override
-		public String getName() {
-			return assetName;
-		}
-
-		@Override
-		public InputStream read() {
-			try {
-				return zipFile.getInputStream(entry);
-			} catch (IOException e) {
-				logger().warn("Failed to read asset : " + assetName + " from " + ModZip.this);
-				e.printStackTrace();
-				return null;
-			}
-		}
-
-		@Override
-		public Mod getSource() {
-			return ModZip.this;
-		}
-
-		public String toString() {
-			return "[Asset: " + assetName + " from mod " + ModZip.this + "]";
-		}
-	}
 
 	@Override
 	public void close() {

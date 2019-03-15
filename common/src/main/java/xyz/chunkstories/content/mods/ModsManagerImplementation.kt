@@ -166,7 +166,7 @@ class ModsManagerImplementation @Throws(NonExistentCoreContent::class)
                 if (mod == null)
                     throw ModNotFoundException(name)
 
-                if (mods.put(mod.getModInfo().internalName, mod) != null)
+                if (mods.put(mod.modInfo.internalName, mod) != null)
                     throw ModLoadFailureException(mod, "Conflicting mod, another mod with the same name or hash is already loaded.")
                 modsInOrder.add(mod)
 
@@ -319,26 +319,20 @@ class ModsManagerImplementation @Throws(NonExistentCoreContent::class)
 
     }
 
-    override fun getAllUniqueEntries(): Collection<AssetHierarchy> = allEntriesCached
+    override val allUniqueEntries: Collection<AssetHierarchy>
+        get() = allEntriesCached
 
-    override fun getAllAssets(): Collection<Asset> = allAssetsCached
+    override val allAssets: Collection<Asset>
+        get() = allAssetsCached
 
-    override fun getAsset(assetName: String?): Asset? {
-        var assetName = assetName!!
+    override fun getAsset(assetName: String): Asset? {
+        var assetName = assetName
         var asset: ModsAssetHierarchy? = avaibleAssets[assetName]
 
         if (asset == null && assetName.startsWith("./")) {
             logger.warn("Requesting asset using the old deprecated ./ prefix !")
             //Thread.dumpStack()
             asset = avaibleAssets[assetName.substring(2)]
-        }
-
-        if (assetName.startsWith("@")) {
-            val strippedAndSplit = assetName.substring(1).split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-            val modName = strippedAndSplit[0]
-            assetName = strippedAndSplit[1]
-
-            val mod = mods[modName]
         }
 
         return asset?.topInstance
@@ -404,13 +398,11 @@ class ModsManagerImplementation @Throws(NonExistentCoreContent::class)
         }
     }
 
-    override fun getEnabledModsString(): Array<String> {
-        return modsToEnableInOrder
-    }
+    override val enabledModsString: Array<String>
+        get() = modsToEnableInOrder
 
-    override fun getCurrentlyLoadedMods(): Collection<Mod> {
-        return modsInOrder
-    }
+    override val currentlyLoadedMods: Collection<Mod>
+        get() = modsInOrder
 
     fun logger(): Logger {
         return logger

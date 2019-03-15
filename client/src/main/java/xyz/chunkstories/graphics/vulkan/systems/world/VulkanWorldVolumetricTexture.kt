@@ -225,7 +225,7 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
                         val data = voxelData[x * 32 * 32 + y * 32 + z]
                         val voxel = world.contentTranslator.getVoxelForId(VoxelFormat.id(data)) ?: world.content.voxels().air()
 
-                        if (voxel.isAir() || !voxel.solid) {
+                        if (voxel.isAir() || !voxel.solid || voxel.name.startsWith("glass")) {
                             byteBuffer.put(0)
                             byteBuffer.put(0)
                             byteBuffer.put(0)

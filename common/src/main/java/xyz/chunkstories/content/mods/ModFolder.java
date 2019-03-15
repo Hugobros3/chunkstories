@@ -43,9 +43,9 @@ public class ModFolder extends ModImplementation {
 
 		recursiveFolderRead(folder);
 
-		this.modInfo = ModInfoLoaderKt.loadModInfo(getAssetByName("modInfo.json").reader());
+		this.setModInfo(ModInfoLoaderKt.loadModInfo(getAssetByName("modInfo.json").reader()));
 		// loadModInformation();
-		logger = LoggerFactory.getLogger("mod." + this.modInfo.getInternalName());
+		setLogger(LoggerFactory.getLogger("mod." + this.getModInfo().getInternalName()));
 	}
 
 	private void recursiveFolderRead(File file) {
@@ -57,7 +57,7 @@ public class ModFolder extends ModImplementation {
 			fileName = fileName.replace('\\', '/');
 			String assetName = fileName;
 
-			assets.put(assetName, new ModFolderAsset(assetName, file));
+			assets.put(assetName, new ModFolderAsset(this, assetName, file));
 		}
 	}
 
@@ -66,44 +66,7 @@ public class ModFolder extends ModImplementation {
 		return assets.get(name);
 	}
 
-	public class ModFolderAsset implements Asset {
-		String assetName;
-		File file;
 
-		public ModFolderAsset(String assetName, File file) {
-			this.assetName = assetName;
-			this.file = file;
-		}
-
-		@Override
-		public String getName() {
-			return assetName;
-		}
-
-		@Override
-		public InputStream read() {
-			try {
-				return new FileInputStream(file);
-			} catch (IOException e) {
-				logger().warn("Failed to read asset : " + assetName + " from " + ModFolder.this);
-				e.printStackTrace();
-				return null;
-			}
-		}
-
-		@Override
-		public Mod getSource() {
-			return ModFolder.this;
-		}
-
-		public String toString() {
-			return "[Asset: " + assetName + " from mod " + ModFolder.this + "]";
-		}
-
-		public File getFile() {
-			return file;
-		}
-	}
 
 	@Override
 	public void close() {

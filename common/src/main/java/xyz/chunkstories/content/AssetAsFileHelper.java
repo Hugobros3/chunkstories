@@ -17,8 +17,8 @@ import org.slf4j.LoggerFactory;
 
 import xyz.chunkstories.api.GameContext;
 import xyz.chunkstories.api.content.Asset;
-import xyz.chunkstories.content.mods.ModFolder.ModFolderAsset;
-import xyz.chunkstories.content.mods.ModZip.ModZipAsset;
+import xyz.chunkstories.content.mods.ModFolderAsset;
+import xyz.chunkstories.content.mods.ModZipAsset;
 import xyz.chunkstories.util.FoldersUtils;
 
 /**

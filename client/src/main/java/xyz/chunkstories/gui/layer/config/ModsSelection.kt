@@ -59,10 +59,7 @@ class ModsSelection(window: Gui, parent: Layer) : Layer(window, parent) {
                     modsEnabled.add((modItem.mod as ModImplementation).loadString)
                 }
             }
-
-            val ok = arrayOfNulls<String>(modsEnabled.size)
-            modsEnabled.toTypedArray()
-            gui.client.content.modsManager().setEnabledMods(*ok)
+            gui.client.content.modsManager().setEnabledMods(*modsEnabled.toTypedArray())
 
             (gui.client as ClientImplementation).reloadAssets()
             buildModsList()
