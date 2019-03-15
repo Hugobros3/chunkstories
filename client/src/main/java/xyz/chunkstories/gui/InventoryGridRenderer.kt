@@ -179,12 +179,13 @@ class InventoryGridRenderer(val inventory: Inventory) {
             val i = pile!!.x
             val j = pile.y
             if (!summary || j == 0) {
+                val iconSize = 16
                 val center = if (summary) slotSize * (pile.item.definition.slotsHeight - 1) / 2 else 0
 
                 // TODO just icons now.
                 val itemIcon = pile.item.getTextureName(pile)
-                drawer.drawBox(x + cornerSize + i * slotSize,
-                y + cornerSize + j * slotSize, slotSize, slotSize, itemIcon)
+                drawer.drawBox(x + cornerSize + i * slotSize + 4, y + cornerSize + j * slotSize + 4,
+                        iconSize, iconSize, itemIcon)
                 //pile.getItem().getDefinition().getRenderer().renderItemInInventory(renderer, pile,
                 //        x + cornerSize + i * slotSize, y - center + cornerSize + j * slotSize, scale);
             }
@@ -211,6 +212,11 @@ class InventoryGridRenderer(val inventory: Inventory) {
                             x + cornerSize + (pile.item.definition.slotsWidth - 1 + i) * slotSize,
                             y + cornerSize + j * slotSize, amountToDisplay.toString() + "", -1,
                             Vector4f(1f, 1f, 1f, 1f))
+
+                /*drawer.drawStringWithShadow(drawer.fonts.defaultFont(),
+                        x + cornerSize + (pile.item.definition.slotsWidth - 1 + i) * slotSize,
+                        y + cornerSize + j * slotSize, pile.item.getTextureName(pile), -1,
+                        Vector4f(1f, 1f, 1f, 1f))*/
             }
         }
     }
