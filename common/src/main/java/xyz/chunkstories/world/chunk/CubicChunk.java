@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import xyz.chunkstories.world.chunk.deriveddata.AutoRebuildingProperty;
 import xyz.chunkstories.world.chunk.deriveddata.ChunkOcclusionProperty;
@@ -71,6 +72,7 @@ public class CubicChunk implements Chunk {
 
 	// Count unsaved edits atomically, fancy :]
 	public final AtomicInteger compressionUncommitedModifications = new AtomicInteger();
+	private final AtomicLong revision = new AtomicLong(0);
 
 	public final ChunkOcclusionManager occlusion;
 	public final ChunkLightBaker lightingManager;
@@ -371,6 +373,7 @@ public class CubicChunk implements Chunk {
 
 		// Increment the modifications counter
 		compressionUncommitedModifications.incrementAndGet();
+		revision.incrementAndGet();
 
 		// Don't spam the thread creation spawn
 		occlusion.requestUpdate();
@@ -681,5 +684,9 @@ public class CubicChunk implements Chunk {
 	@Override
 	public ChunkOcclusionManager occlusion() {
 		return occlusion;
+	}
+
+	public long getRevision() {
+		return revision.get();
 	}
 }

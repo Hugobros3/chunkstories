@@ -35,7 +35,7 @@ open class VoxelTexturesArray(val voxels: Content.Voxels) : ReloadableVoxelTextu
                 val asset = entry.topInstance
                 // For now only PNG is supported TODO: .hdr and more ?
                 if (asset.name.endsWith(".png")) {
-                    val textureName = name.replace(".png", "").replace("/", ".").replace("\\", ".")
+                    val textureName = name.replace(".png", "")/*.replace("/", ".").replace("\\", ".")*/
                     if (textureName.endsWith("_normal") || textureName.endsWith("_roughness") || textureName.endsWith("_metalness")
                             || textureName.endsWith("_n") || textureName.endsWith("_r") || textureName.endsWith("_m")) {
                         // Don't create entries for complementary textures!
