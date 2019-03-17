@@ -32,8 +32,8 @@ class ClearCommand(serverConsole: Server) : ServerCommandBasic(serverConsole) {
 
         val entity = emitter.controlledEntity
         entity?.traits?.get(TraitInventory::class)?.let { ei ->
-            emitter.sendMessage("#FF969BRemoving " + ei.size() + " items from your inventory.")
-            ei.clear()
+            emitter.sendMessage("#FF969BRemoving " + ei.inventory.size() + " items from your inventory.")
+            ei.inventory.clear()
         }
 
         return true

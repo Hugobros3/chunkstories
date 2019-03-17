@@ -24,7 +24,7 @@ class LocalPlayerImplementation(override val client: IngameClientImplementation,
         get() = name
     override val inputsManager: ClientInputsManager
         get() = client.inputsManager
-    override val isConnected: Boolean
+    val isConnected: Boolean
         get() = true
     override val subscribedToList: Collection<Entity>
         get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
@@ -119,7 +119,7 @@ class LocalPlayerImplementation(override val client: IngameClientImplementation,
         client.print(msg)
     }
 
-    override fun hasSpawned(): Boolean {
+    fun hasSpawned(): Boolean {
         return controlledEntity != null
     }
 
@@ -146,10 +146,10 @@ class LocalPlayerImplementation(override val client: IngameClientImplementation,
             // Directly open it without further concern
             // client.openInventories(inventory);
 
-            val TraitInventory = entity.traits[TraitInventory::class.java]
+            val traitInventory = entity.traits[TraitInventory::class.java]
 
-            if (TraitInventory != null)
-                client.gui.openInventories(TraitInventory, inventory)
+            if (traitInventory != null)
+                client.gui.openInventories(traitInventory.inventory, inventory)
             else
                 client.gui.openInventories(inventory)
         }

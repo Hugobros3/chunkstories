@@ -13,6 +13,7 @@ import xyz.chunkstories.api.item.inventory.Inventory
 import xyz.chunkstories.api.item.inventory.ItemPile
 import xyz.chunkstories.gui.layer.ingame.InventoryView
 import org.joml.Vector4f
+import xyz.chunkstories.api.entity.Entity
 
 
 /**
@@ -27,12 +28,14 @@ class InventoryGridRenderer(val inventory: Inventory) {
         private set
 
     fun drawPlayerInventorySummary(drawer: GuiDrawer, x: Int, y: Int) {
-        var selectedSlot = -1
-        if (inventory is TraitInventory) {
+        val selectedSlot = drawer.gui.client.ingame?.player?.controlledEntity?.traits?.get(TraitSelectedItem::class)?.getSelectedSlot() ?: -1
+        /*if (inventory.owner is Entity) {
+            val entity = inventory.owner as Entity
+
             val esi = inventory.entity.traits[TraitSelectedItem::class.java]
             if (esi != null)
                 selectedSlot = esi.selectedSlot
-        }
+        }*/
 
         drawInventory(drawer, x - slotsWidth(inventory.width) / 2, y /*- slotsHeight(getInventory().getHeight(), true, 0) / 2*/, true, 0, selectedSlot)
     }
@@ -175,8 +178,8 @@ class InventoryGridRenderer(val inventory: Inventory) {
 
 
         // Draw the actual items
-        for (pile in inventory) {
-            val i = pile!!.x
+        for (pile in inventory.contents) {
+            val i = pile.x
             val j = pile.y
             if (!summary || j == 0) {
                 val iconSize = 16
@@ -192,7 +195,7 @@ class InventoryGridRenderer(val inventory: Inventory) {
         }
 
         // Draws the item's text ( done later to allow fontRenderer to pool their draws )
-        for (pile in inventory) {
+        for (pile in inventory.contents) {
             val i = pile.x
             val j = pile.y
 

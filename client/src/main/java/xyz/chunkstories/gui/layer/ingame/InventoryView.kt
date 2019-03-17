@@ -6,17 +6,19 @@
 
 package xyz.chunkstories.gui.layer.ingame
 
+import org.joml.Vector4f
+import xyz.chunkstories.api.entity.EntityGroundItem
+import xyz.chunkstories.api.entity.traits.serializable.TraitInventory
+import xyz.chunkstories.api.events.player.PlayerDropItemEvent
+import xyz.chunkstories.api.events.player.PlayerMoveItemEvent
 import xyz.chunkstories.api.gui.Gui
 import xyz.chunkstories.api.gui.GuiDrawer
-import org.joml.Vector4f
-
-import xyz.chunkstories.api.events.item.EventItemDroppedToWorld
-import xyz.chunkstories.api.events.player.PlayerMoveItemEvent
 import xyz.chunkstories.api.gui.Layer
 import xyz.chunkstories.api.input.Input
 import xyz.chunkstories.api.input.Mouse.MouseButton
 import xyz.chunkstories.api.item.inventory.Inventory
 import xyz.chunkstories.api.item.inventory.ItemPile
+import xyz.chunkstories.api.item.inventory.moveTo
 import xyz.chunkstories.api.net.packets.PacketInventoryMoveItemPile
 import xyz.chunkstories.api.world.WorldClientNetworkedRemote
 import xyz.chunkstories.api.world.WorldMaster
@@ -152,21 +154,18 @@ class InventoryView(gui: Gui, parent: Layer, private val inventories: List<Inven
                         }
 
                         if (world is WorldMaster) {
-                            val moveItemEvent = PlayerMoveItemEvent(player, draggingPile!!,
-                                    draggingPile!!.inventory!!, inventories[i], draggingPile!!.x,
-                                    draggingPile!!.y, x, y, draggingQuantity)
+                            val moveItemEvent = PlayerMoveItemEvent(player, draggingPile!!, inventories[i], x, y, draggingQuantity)
                             world.gameContext.pluginManager.fireEvent(moveItemEvent)
 
                             // If move was successfull
                             if (!moveItemEvent.isCancelled)
-                                draggingPile!!.moveItemPileTo(inventories[i], x, y, draggingQuantity)
+                                draggingPile!!.moveTo(inventories[i], x, y, draggingQuantity)
+                            //draggingPile!!.moveItemPileTo(inventories[i], x, y, draggingQuantity)
 
                             draggingPile = null
                         } else if (world is WorldClientNetworkedRemote) {
                             // When in a remote MP scenario, send a packet
-                            val packetMove = PacketInventoryMoveItemPile(world,
-                                    draggingPile, draggingPile!!.inventory, inventories[i], draggingPile!!.x,
-                                    draggingPile!!.y, x, y, draggingQuantity)
+                            val packetMove = PacketInventoryMoveItemPile(world, draggingPile!!, draggingPile!!.inventory, inventories[i], draggingPile!!.x, draggingPile!!.y, x, y, draggingQuantity)
                             world.remoteServer.pushPacket(packetMove)
 
                             // And unsellect item
@@ -178,42 +177,34 @@ class InventoryView(gui: Gui, parent: Layer, private val inventories: List<Inven
             }
         }
 
+        val pile2drop = draggingPile
         // Clicked outside of any other inventory (drop!)
-        if (draggingPile != null) {
+        if (pile2drop != null) {
             // SP scenario, replicated logic in PacketInventoryMoveItemPile
             if (world is WorldMaster) {
                 // For local item drops, we need to make sure we have a sutiable entity
                 val playerEntity = player.controlledEntity
                 if (playerEntity != null) {
-                    val moveItemEvent = PlayerMoveItemEvent(player, draggingPile!!,
-                            draggingPile!!.inventory!!, null, draggingPile!!.x, draggingPile!!.y, 0, 0,
-                            draggingQuantity)
-                    world.gameContext.pluginManager.fireEvent(moveItemEvent)
 
-                    if (!moveItemEvent.isCancelled) {
+                    val loc = playerEntity.location
+                    val dropItemEvent = PlayerDropItemEvent(player, pile2drop, draggingQuantity, loc)
+                    world.gameContext.pluginManager.fireEvent(dropItemEvent)
+
+                    if (!dropItemEvent.isCancelled) {
                         // If we're pulling this out of an inventory ( and not /dev/null ), we need to
                         // remove it from that
-                        val sourceInventory = draggingPile!!.inventory
+                        val sourceInventory = pile2drop.inventory
 
-                        val loc = playerEntity.location
-                        val dropItemEvent = EventItemDroppedToWorld(loc, sourceInventory,
-                                draggingPile)
-                        world.gameContext.pluginManager.fireEvent(dropItemEvent)
+                        val entity = world.content.entities().getEntityDefinition("groundItem")!!.newEntity<EntityGroundItem>(world)
+                        entity.traits[TraitInventory::class]?.inventory?.addItem(pile2drop.item, draggingQuantity)
+                        loc.world.addEntity(entity)
 
-                        if (!dropItemEvent.isCancelled) {
-
-                            sourceInventory?.setItemPileAt(draggingPile!!.x, draggingPile!!.y, null)
-
-                            if (dropItemEvent.itemEntity != null)
-                                loc.world.addEntity(dropItemEvent.itemEntity!!)
-                        }
+                        pile2drop.amount -= draggingQuantity
                     }
                 }
                 draggingPile = null
             } else if (world is WorldClientNetworkedRemote) {
-                val packetMove = PacketInventoryMoveItemPile(world, draggingPile,
-                        draggingPile!!.inventory, null, draggingPile!!.x, draggingPile!!.y, 0, 0,
-                        draggingQuantity)
+                val packetMove = PacketInventoryMoveItemPile(world, pile2drop, pile2drop.inventory, null, draggingPile!!.x, draggingPile!!.y, 0, 0, draggingQuantity)
                 world.remoteServer.pushPacket(packetMove)
 
                 draggingPile = null

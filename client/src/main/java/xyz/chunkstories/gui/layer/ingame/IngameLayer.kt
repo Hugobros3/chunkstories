@@ -64,11 +64,11 @@ class IngameLayer(window: Gui, private val client: IngameClientImplementation) :
         var playerEntity = player.controlledEntity
 
         // Update the inventory previewer
-        val playerInventory = playerEntity?.run { traits[TraitInventory::class] }
-        if(playerInventory == null)
+        val traitInventory = playerEntity?.run { traits[TraitInventory::class] }
+        if(traitInventory == null)
             inventoryBarDrawer = null
-        else if(inventoryBarDrawer == null || inventoryBarDrawer?.inventory != playerInventory)
-            inventoryBarDrawer = InventoryGridRenderer(playerInventory)
+        else if(inventoryBarDrawer == null || inventoryBarDrawer?.inventory != traitInventory.inventory)
+            inventoryBarDrawer = InventoryGridRenderer(traitInventory.inventory)
 
         // TODO MOVE MOVE MOVE
         if (playerEntity != null && playerEntity.traits.tryWithBoolean(TraitHealth::class) { this.isDead } && gui.topLayer !is DeathScreen)
@@ -169,13 +169,14 @@ class IngameLayer(window: Gui, private val client: IngameClientImplementation) :
                         // Do not accept request to select non-existent inventories slots
                         var slot = passedrequestedInventorySlot
 
-                        if (slot > playerInventory.width)
+                        if (slot > playerInventory.inventory.width)
                             false
                         else {
-                            val p = playerInventory.getItemPileAt(slot, 0)
+                            val p = playerInventory.inventory.getItemPileAt(slot, 0)
                             if (p != null)
                                 slot = p.x
-                            this.selectedSlot = slot
+
+                            setSelectedSlot(slot)
                             true
                         }
                     }
@@ -194,12 +195,12 @@ class IngameLayer(window: Gui, private val client: IngameClientImplementation) :
 
                 playerEntity.traits[TraitSelectedItem::class]?.let { esi ->
                     var selected: ItemPile?
-                    var selectedInventorySlot = esi.selectedSlot
+                    var selectedInventorySlot = esi.getSelectedSlot()
 
                     val originalSlot = selectedInventorySlot
                     if (input.amount() < 0) {
-                        selectedInventorySlot %= playerInventory.width
-                        selected = playerInventory.getItemPileAt(selectedInventorySlot, 0)
+                        selectedInventorySlot %= playerInventory.inventory.width
+                        selected = playerInventory.inventory.getItemPileAt(selectedInventorySlot, 0)
                         if (selected != null)
                             selectedInventorySlot += selected.item.definition.slotsWidth
                         else
@@ -207,15 +208,15 @@ class IngameLayer(window: Gui, private val client: IngameClientImplementation) :
                     } else {
                         selectedInventorySlot--
                         if (selectedInventorySlot < 0)
-                            selectedInventorySlot += playerInventory.width
-                        selected = playerInventory.getItemPileAt(selectedInventorySlot, 0)
+                            selectedInventorySlot += playerInventory.inventory.width
+                        selected = playerInventory.inventory.getItemPileAt(selectedInventorySlot, 0)
                         if (selected != null)
                             selectedInventorySlot = selected.x
                     }
 
                     // Switch slot
                     if (originalSlot != selectedInventorySlot)
-                        esi.selectedSlot = selectedInventorySlot
+                        esi.setSelectedSlot(selectedInventorySlot)
                 }
 
                 return true

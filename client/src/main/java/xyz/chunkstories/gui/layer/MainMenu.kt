@@ -11,8 +11,6 @@ import xyz.chunkstories.api.gui.GuiDrawer
 import xyz.chunkstories.api.gui.Layer
 import xyz.chunkstories.api.gui.elements.LargeButton
 import xyz.chunkstories.api.gui.elements.LargeButtonWithIcon
-import xyz.chunkstories.api.item.inventory.BasicInventory
-import xyz.chunkstories.api.item.inventory.Inventory
 import xyz.chunkstories.gui.layer.config.LanguageSelectionScreen
 import xyz.chunkstories.gui.layer.config.LogPolicyAsk
 import xyz.chunkstories.gui.layer.config.ModsSelection
@@ -90,7 +88,6 @@ class MainMenu(gui: Gui, parent: Layer?) : Layer(gui, parent) {
 
     override fun handleTextInput(c: Char): Boolean {
         when (c) {
-            'e' -> gui.topLayer = InventoryView(gui, this, listOf(BasicInventory(10, 4)))
             'd' -> gui.topLayer = DeathScreen(gui, this)
             'r' -> gui.topLayer = MessageBox(gui, this, "Error : error")
             'l' -> gui.topLayer = LanguageSelectionScreen(gui, this, true)

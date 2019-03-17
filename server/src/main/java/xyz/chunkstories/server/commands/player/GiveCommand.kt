@@ -18,6 +18,7 @@ import xyz.chunkstories.api.plugin.commands.CommandEmitter
 import xyz.chunkstories.api.server.Server
 import xyz.chunkstories.api.voxel.Voxel
 import xyz.chunkstories.server.commands.ServerCommandBasic
+import java.lang.Integer.min
 
 class GiveCommand(serverConsole: Server) : ServerCommandBasic(serverConsole) {
 
@@ -95,16 +96,15 @@ class GiveCommand(serverConsole: Server) : ServerCommandBasic(serverConsole) {
             emitter.sendMessage("#FF969BPlayer \"" + arguments[2] + " can't be found.")
             return true
         }
-        val itemPile = ItemPile(item)
-        itemPile.amount = amount
+        /*val itemPile = ItemPile(item)
+        itemPile.amount = amount*/
 
-        val amountFinal = amount
+        val amountFinal = min(amount, item.definition.maxStackSize)
         val to2 = to
 
-        to.controlledEntity?.traits?.get(TraitInventory::class)?.let { ei ->
-            ei.addItemPile(itemPile)
-            emitter.sendMessage("#FF969BGave " + (if (amountFinal > 1) amountFinal.toString() + "x " else "") + "#4CFF00"
-                    + itemPile.item.name + " #FF969Bto " + to2.displayName)
+        to.controlledEntity?.traits?.get(TraitInventory::class)?.inventory?.apply {
+            addItem(item, amountFinal)
+            emitter.sendMessage("#FF969BGave " + (if (amountFinal > 1) amountFinal.toString() + "x " else "") + "#4CFF00" + item.name + " #FF969Bto " + to2.displayName)
         }
 
         return true

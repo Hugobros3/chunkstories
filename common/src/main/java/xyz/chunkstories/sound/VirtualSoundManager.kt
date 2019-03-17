@@ -39,9 +39,10 @@ class VirtualSoundManager(private val worldServer: WorldMaster)// this.server = 
 
         internal fun update() {
             // Stops caring when the player is disconnected
-            if (!serverPlayer.isConnected) {
+            /*if (!serverPlayer.isConnected) {
                 playersSoundManagers.remove(this)
-            }
+            }*/
+            TODO()
         }
 
         internal fun addSourceToPlayer(soundSource: SoundSourceVirtual) {

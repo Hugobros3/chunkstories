@@ -49,7 +49,8 @@ class ServerPlayer(val playerConnection: ClientConnection, override val name: St
         get() = ColorsTools.getUniqueColorPrefix(name) + name + "#FFFFFF"
     override val inputsManager: InputsManager
         get() = serverInputsManager
-    override val isConnected: Boolean
+
+    val isConnected: Boolean
         get() = playerConnection.isOpen
 
     override val subscribedToList: Collection<Entity>
@@ -124,15 +125,16 @@ class ServerPlayer(val playerConnection: ClientConnection, override val name: St
         return playerConnection.context.permissionsManager.hasPermission(this, permissionNode)
     }
 
-    override fun hasSpawned(): Boolean {
+    fun hasSpawned(): Boolean {
         return controlledEntity != null && !controlledEntity!!.traitLocation.wasRemoved()
     }
 
     override fun openInventory(inventory: Inventory) {
         val entity = this.controlledEntity
         if (entity != null && inventory.isAccessibleTo(entity)) {
-            if (inventory is TraitInventory) {
-                inventory.pushComponent(this)
+            if (inventory.owner is Entity) {
+                val trait = (inventory.owner as Entity).traits.all().find { it is TraitInventory && it.inventory == inventory }!! as TraitInventory
+                trait.pushComponent(this)
             }
 
             // this.sendMessage("Sending you the open inventory request.");

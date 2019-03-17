@@ -72,10 +72,11 @@ constructor(val server: DedicatedServer, worldInfo: WorldInfo, folder: File) : W
         // Update client tracking
         for (player in players) {
 
-            if (player.hasSpawned()) {
+            TODO()
+            /*if (player.hasSpawned()) {
                 // Update whatever he sees
                 (player as ServerPlayer).updateTrackedEntities()
-            }
+            }*/
 
             // Update time & weather
             val packetTime = PacketTime(this)

@@ -167,7 +167,7 @@ object DefaultIngameRendergraph {
                     }
 
                     draws {
-                        /*system(VulkanFullscreenQuadDrawer::class) {
+                        system(VulkanFullscreenQuadDrawer::class) {
                             shaderBindings {
                                 val camera = client.player.controlledEntity?.traits?.get(TraitControllable::class)?.camera ?: Camera()
                                 it.bindUBO("camera", camera)
@@ -176,8 +176,8 @@ object DefaultIngameRendergraph {
 
                             //TODO hacky api, plz fix
                             doShadowMap = true
-                        }*/
-                        system(Vulkan3DVoxelRaytracer::class)
+                        }
+                        //system(Vulkan3DVoxelRaytracer::class)
                     }
 
                     outputs {
