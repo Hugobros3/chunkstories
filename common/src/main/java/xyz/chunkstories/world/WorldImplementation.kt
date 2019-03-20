@@ -362,7 +362,7 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
                 ?: throw RegionNotLoadedException(this, x / 256, y / 256, z / 256)
 
         val chunk = region.getChunk(x / 32 % 8, y / 32 % 8, z / 32 % 8)
-                ?: throw ChunkNotLoadedException(region, x / 32 % 8, y / 32 % 8, z / 32 % 8)
+                ?: throw ChunkNotLoadedException(this, region, x / 32 % 8, y / 32 % 8, z / 32 % 8)
 
         return chunk.peek(x, y, z)
     }
@@ -466,7 +466,7 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
                 ?: throw RegionNotLoadedException(this, x / 256, y / 256, z / 256)
 
         val chunk = region.getChunk(x / 32 % 8, y / 32 % 8, z / 32 % 8)
-                ?: throw ChunkNotLoadedException(region, x / 32 % 8, y / 32 % 8, z / 32 % 8)
+                ?: throw ChunkNotLoadedException(this, region, x / 32 % 8, y / 32 % 8, z / 32 % 8)
 
         return chunk.poke(x, y, z, voxel, sunlight, blocklight, metadata, cause)
     }

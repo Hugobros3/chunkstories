@@ -121,7 +121,7 @@ public class IOTasksMultiplayerClient extends IOTasks {
 
 		// Else
 		else
-			throw new IllegalPacketException(packet) {
+			throw new IllegalPacketException(packet);/* {
 				private static final long serialVersionUID = 7843266994553911002L;
 
 				@Override
@@ -129,6 +129,6 @@ public class IOTasksMultiplayerClient extends IOTasks {
 					return "Illegal packet received : This type of World streaming packet isn't recognized ( "
 							+ packet.getClass().getName() + " )";
 				}
-			};
+			};*/
 	}
 }
