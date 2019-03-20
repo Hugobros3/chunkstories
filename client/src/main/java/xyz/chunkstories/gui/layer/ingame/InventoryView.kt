@@ -196,10 +196,13 @@ class InventoryView(gui: Gui, parent: Layer, private val inventories: List<Inven
                         val sourceInventory = pile2drop.inventory
 
                         val entity = world.content.entities().getEntityDefinition("groundItem")!!.newEntity<EntityGroundItem>(world)
+                        entity.location = playerEntity.location
                         entity.traits[TraitInventory::class]?.inventory?.addItem(pile2drop.item, draggingQuantity)
                         loc.world.addEntity(entity)
 
                         pile2drop.amount -= draggingQuantity
+
+                        //println("drop: $pile2drop")
                     }
                 }
                 draggingPile = null
