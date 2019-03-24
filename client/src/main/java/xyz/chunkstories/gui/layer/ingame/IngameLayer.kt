@@ -53,11 +53,7 @@ class IngameLayer(window: Gui, private val client: IngameClientImplementation) :
         this.debugInfoRendererHelper = DebugInfoRendererHelper(this)
 
         // Give focus
-        focus(true)
-    }
-
-    fun hasFocus(): Boolean {
-        return if (isCovered) false else gui.mouse.isGrabbed
+        // focus(true)
     }
 
     override fun render(drawer: GuiDrawer) {
