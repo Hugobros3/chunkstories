@@ -29,8 +29,8 @@ open class VoxelTexturesArray(val voxels: Content.Voxels) : ReloadableVoxelTextu
         voxelTextures.clear()
 
         for (entry in content.modsManager().allUniqueEntries) {
-            if (entry.name.startsWith("voxels/textures/")) {
-                val name = entry.name.replace("voxels/textures/", "")
+            if (entry.name.startsWith("voxels/textures/") || entry.name.startsWith("voxels/blockmodels/")) {
+                val name = entry.name.removePrefix("voxels/textures/").removePrefix("voxels/blockmodels/")
 
                 val asset = entry.topInstance
                 // For now only PNG is supported TODO: .hdr and more ?

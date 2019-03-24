@@ -67,6 +67,6 @@ public class ScratchCell implements CellData {
 	@Override
 	public CellData getNeightbor(int side_int) {
 		VoxelSide side = VoxelSide.values()[side_int];
-		return world.peekSafely(x + side.dx, y + side.dy, z + side.dz);
+		return world.peekSafely(x + side.getDx(), y + side.getDy(), z + side.getDz());
 	}
 }

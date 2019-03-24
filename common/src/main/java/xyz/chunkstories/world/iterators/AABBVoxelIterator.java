@@ -137,6 +137,6 @@ public class AABBVoxelIterator implements IterableIterator<CellData>, CellData {
 	@Override
 	public CellData getNeightbor(int side_int) {
 		VoxelSide side = VoxelSide.values()[side_int];
-		return world.peekSafely(getX() + side.dx, getY() + side.dy, getZ() + side.dz);
+		return world.peekSafely(getX() + side.getDx(), getY() + side.getDy(), getZ() + side.getDz());
 	}
 }

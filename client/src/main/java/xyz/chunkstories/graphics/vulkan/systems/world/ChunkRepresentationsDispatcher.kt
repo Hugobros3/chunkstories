@@ -34,10 +34,10 @@ class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
         attribute {
             binding(0)
             location(program.vertexInputs.find { it.name == "vertexIn" }!!.location)
-            format(VK_FORMAT_R8G8B8A8_UINT)
+            format(VK_FORMAT_R32G32B32_SFLOAT)
             offset(offset)
         }
-        offset += 4
+        offset += 4 * 3
 
         attribute {
             binding(0)
@@ -109,7 +109,7 @@ class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
             val bindingContext = backend.descriptorMegapool.getBindingContext(meshesPipeline)
 
             val camera = passContext.context.camera
-            val world = client.world as WorldClientCommon
+            val world = client.world
 
             bindingContext.bindUBO("camera", camera)
             bindingContext.bindUBO("world", world.getConditions())
@@ -135,9 +135,6 @@ class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
 
             bindingContext.preDraw(commandBuffer)
 
-            //for (chunkRepresentation in chunks) {
-            //val section = chunkRepresentation.sections.get(pass.declaration.name)
-            //if (section != null) {
             for (section in work) {
                 val chunkRepresentation = section.parent
                 vkCmdBindVertexBuffers(commandBuffer, 0, MemoryStack.stackLongs(section.buffer.handle), MemoryStack.stackLongs(0))
@@ -159,7 +156,6 @@ class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
                 frame.stats.totalVerticesDrawn += section.count
                 frame.stats.totalDrawcalls++
             }
-            //}
 
             ssboStuff.position(instance * sizeAligned16)
             ssboStuff.flip()

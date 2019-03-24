@@ -102,8 +102,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
                     if (mask and ctxMask == 0)
                         continue
 
-                    (responsibleSystem as VulkanDispatchingSystem<Representation>).
-                            sort(item, drawersArray as Array<VulkanDispatchingSystem.Drawer<*>>, allowedOutputs as List<MutableList<Any>>)
+                    (responsibleSystem as VulkanDispatchingSystem<Representation>).sort(item, drawersArray, allowedOutputs as List<MutableList<Any>>)
                 }
             }
         }

@@ -583,10 +583,10 @@ public class CubicChunk implements Chunk {
 			if ((side == VoxelSide.LEFT && x > 0) || (side == VoxelSide.RIGHT && x < 31)
 					|| (side == VoxelSide.BOTTOM && y > 0) || (side == VoxelSide.TOP && y < 31)
 					|| (side == VoxelSide.BACK && z > 0) || (side == VoxelSide.FRONT && z < 31)) {
-				return CubicChunk.this.peek(x + side.dx, y + side.dy, z + side.dz);
+				return CubicChunk.this.peek(x + side.getDx(), y + side.getDy(), z + side.getDz());
 			}
 
-			return world.peekSafely(getX() + side.dx, getY() + side.dy, getZ() + side.dz);
+			return world.peekSafely(getX() + side.getDx(), getY() + side.getDy(), getZ() + side.getDz());
 		}
 
 		@Override
