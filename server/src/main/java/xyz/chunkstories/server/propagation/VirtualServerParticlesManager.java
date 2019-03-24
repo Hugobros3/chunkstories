@@ -6,7 +6,12 @@
 
 package xyz.chunkstories.server.propagation;
 
+import kotlin.Unit;
+import kotlin.jvm.functions.Function1;
+import org.jetbrains.annotations.NotNull;
 import xyz.chunkstories.api.net.packets.PacketParticle;
+import xyz.chunkstories.api.particles.ParticleType;
+import xyz.chunkstories.api.particles.ParticleTypeDefinition;
 import xyz.chunkstories.api.particles.ParticlesManager;
 import xyz.chunkstories.api.player.Player;
 import xyz.chunkstories.server.DedicatedServer;
@@ -21,6 +26,14 @@ public class VirtualServerParticlesManager implements ParticlesManager {
 		this.worldServer = worldServer;
 	}
 
+	@Override public <T extends ParticleType.Particle> void spawnParticle(@NotNull String s, @NotNull Function1<? super T, Unit> function1) {
+
+	}
+
+	@Override public <T extends ParticleType.Particle> void spawnParticle(@NotNull ParticleTypeDefinition particleTypeDefinition, @NotNull Function1<? super T, Unit> function1) {
+
+	}
+
 	public class ServerPlayerVirtualParticlesManager implements ParticlesManager {
 		ServerPlayer serverPlayer;
 
@@ -28,25 +41,14 @@ public class VirtualServerParticlesManager implements ParticlesManager {
 			this.serverPlayer = serverPlayer;
 		}
 
-		@Override public void spawnParticleAtPosition(String particleTypeName, Vector3dc position) {
-			spawnParticleAtPositionWithVelocity(particleTypeName, position, null);
+		@Override public <T extends ParticleType.Particle> void spawnParticle(@NotNull String s, @NotNull Function1<? super T, Unit> function1) {
+
 		}
 
-		@Override public void spawnParticleAtPositionWithVelocity(String particleTypeName, Vector3dc position, Vector3dc velocity) {
-			VirtualServerParticlesManager.this.spawnParticleAtPositionWithVelocity(particleTypeName, position, velocity);
-		}
+		@Override public <T extends ParticleType.Particle> void spawnParticle(@NotNull ParticleTypeDefinition particleTypeDefinition, @NotNull Function1<? super T, Unit> function1) {
 
-	}
-
-	@Override public void spawnParticleAtPosition(String particleTypeName, Vector3dc position) {
-		spawnParticleAtPositionWithVelocity(particleTypeName, position, null);
-	}
-
-	@Override public void spawnParticleAtPositionWithVelocity(String particleTypeName, Vector3dc location, Vector3dc velocity) {
-		for (Player player : worldServer.getPlayers()) {
-			PacketParticle packet = new PacketParticle(worldServer, particleTypeName, location, velocity);
-			player.pushPacket(packet);
 		}
 	}
+
 
 }

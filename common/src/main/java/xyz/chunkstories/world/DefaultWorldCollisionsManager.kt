@@ -392,4 +392,25 @@ class DefaultWorldCollisionsManager(private val world: WorldImplementation) : Wo
         if (e != null)
             Collections.addAll(l, *e)
     }
+
+    override fun isPointSolid(point: Vector3dc): Boolean {
+        val peek = world.peekSafely(point)
+
+        if (peek.voxel!!.solid) {
+            // Fast check if the voxel is just a solid block
+            // TODO isOpaque doesn't mean that exactly, newEntity a new type variable that
+            // represents that specific trait
+            if (peek.voxel!!.opaque)
+                return true
+
+            // Else iterate over each box that make up that block
+            val boxes = peek.voxel!!.getTranslatedCollisionBoxes(peek)
+            if (boxes != null)
+                for (box in boxes)
+                    if (box.isPointInside(point))
+                        return true
+
+        }
+        return false
+    }
 }

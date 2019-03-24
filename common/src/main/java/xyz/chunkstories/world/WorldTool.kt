@@ -14,6 +14,8 @@ import org.joml.Vector3dc
 import org.joml.Vector3fc
 
 import xyz.chunkstories.api.GameContext
+import xyz.chunkstories.api.particles.ParticleType
+import xyz.chunkstories.api.particles.ParticleTypeDefinition
 import xyz.chunkstories.api.particles.ParticlesManager
 import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.sound.SoundManager
@@ -97,16 +99,10 @@ constructor(gameContext: GameContext, info: WorldInfo, folder: File, immediateIO
     }
 
     class NullParticlesManager : ParticlesManager {
-
-        override fun spawnParticleAtPosition(particleTypeName: String, location: Vector3dc) {
-            // TODO Auto-generated method stub
-
+        override fun <T : ParticleType.Particle> spawnParticle(typeName: String, init: T.() -> Unit) {
         }
 
-        override fun spawnParticleAtPositionWithVelocity(particleTypeName: String, location: Vector3dc,
-                                                         velocity: Vector3dc) {
-            // TODO Auto-generated method stub
-
+        override fun <T : ParticleType.Particle> spawnParticle(type: ParticleTypeDefinition, init: T.() -> Unit) {
         }
     }
 

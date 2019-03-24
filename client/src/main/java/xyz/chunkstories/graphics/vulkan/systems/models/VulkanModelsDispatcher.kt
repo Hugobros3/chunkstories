@@ -282,10 +282,6 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
 
     override fun createDrawerForPass(pass: VulkanPass, drawerInitCode: VulkanDispatchingSystem.Drawer<*>.() -> Unit) = Drawer(pass, drawerInitCode)
 
-    /*override fun <T> sort(representation: ModelInstance, drawers: Array<VulkanDispatchingSystem.Drawer<T>>, outputs: List<MutableList<T>>) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }*/
-
     data class MeshInstance(val mesh: Mesh, val material: MeshMaterial, val modelInstance: ModelInstance)
 
     override fun sort(instance: ModelInstance, drawers: Array<VulkanDispatchingSystem.Drawer<*>>, outputs: List<MutableList<Any>>) {
