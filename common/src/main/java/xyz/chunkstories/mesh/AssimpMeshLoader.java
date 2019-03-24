@@ -24,6 +24,7 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class AssimpMeshLoader {
 
@@ -47,46 +48,51 @@ public class AssimpMeshLoader {
         float totalWeight = 0.0f;
     }
 
+    ReentrantLock lock = new ReentrantLock();
+
     public Model load(Asset mainAsset) throws MeshLoadException {
         if (mainAsset == null)
             throw new MeshLoadException(mainAsset);
 
-        AiScene scene = im.readFile(mainAsset.getName(), im.getIoHandler(), 0);
+        try {
+            lock.lock();
 
-        if (scene == null) {
-            logger.error("Could not load meshes from asset: " + mainAsset);
-            throw new MeshLoadException(mainAsset);
-        }
+            AiScene scene = im.readFile(mainAsset.getName(), im.getIoHandler(), 0);
 
-        scene.getMeshes();
-        if (scene.getMeshes().size() == 0) {
-            logger.error("Loaded mesh did not contain any mesh data.");
-            return null;
-        }
+            if (scene == null) {
+                logger.error("Could not load meshes from asset: " + mainAsset);
+                throw new MeshLoadException(mainAsset);
+            }
 
-        List<Mesh> meshes = new LinkedList<>();
+            scene.getMeshes();
+            if (scene.getMeshes().size() == 0) {
+                logger.error("Loaded mesh did not contain any mesh data.");
+                return null;
+            }
 
-        FloatArrayList vertices = new FloatArrayList();
-        FloatArrayList normals = new FloatArrayList();
-        FloatArrayList texcoords = new FloatArrayList();
+            List<Mesh> meshes = new LinkedList<>();
 
-        Map<String, Integer> boneNamesToIds = new HashMap<>();
-        ByteArrayList boneIds = new ByteArrayList();
-        ByteArrayList boneWeights = new ByteArrayList();
+            FloatArrayList vertices = new FloatArrayList();
+            FloatArrayList normals = new FloatArrayList();
+            FloatArrayList texcoords = new FloatArrayList();
 
-        String assetFolder = mainAsset.getName().substring(0, mainAsset.getName().lastIndexOf('/') + 1);
+            Map<String, Integer> boneNamesToIds = new HashMap<>();
+            ByteArrayList boneIds = new ByteArrayList();
+            ByteArrayList boneWeights = new ByteArrayList();
 
-        int[] order = {0, 1, 2};
+            String assetFolder = mainAsset.getName().substring(0, mainAsset.getName().lastIndexOf('/') + 1);
 
-        // For each submesh ...
-        for (AiMesh aiMesh : scene.getMeshes()) {
-            int firstVertex = vertices.size() / 3;
+            int[] order = { 0, 1, 2 };
 
-            AiMaterial material = scene.getMaterials().get(aiMesh.getMaterialIndex());
-            HashMap<String, String> materialTextures = new HashMap<>();
+            // For each submesh ...
+            for (AiMesh aiMesh : scene.getMeshes()) {
+                int firstVertex = vertices.size() / 3;
 
-            for (AiMaterial.Texture tex : material.getTextures()) {
-                switch (tex.getType()) {
+                AiMaterial material = scene.getMaterials().get(aiMesh.getMaterialIndex());
+                HashMap<String, String> materialTextures = new HashMap<>();
+
+                for (AiMaterial.Texture tex : material.getTextures()) {
+                    switch (tex.getType()) {
                     case ambient:
                         break;
                     case diffuse:
@@ -121,114 +127,114 @@ public class AssimpMeshLoader {
                     default:
                         break;
 
-                }
-            }
-
-            boolean hasAnimationData = aiMesh.getHasBones();
-            Map<Integer, VertexBoneWeights> boneWeightsForeachVertex = null;
-
-            if (hasAnimationData) {
-                boneWeightsForeachVertex = new HashMap<>();
-
-                // Create objects to receive the animation data for all the vertices of this submesh
-                for (int i = 0; i < aiMesh.getNumVertices(); i++) {
-                    boneWeightsForeachVertex.put(firstVertex + i, new VertexBoneWeights());
-                }
-
-                // For each bone used in the submesh
-                for (AiBone aiBone : aiMesh.getBones()) {
-                    String boneName = aiBone.getName().substring(aiBone.getName().lastIndexOf('_') + 1);
-
-                    // Maps a bone id to a bone name (maybe useful later!)
-                    // TODO check if Assimp's bone ordering is the same as BVH, and if we need this
-                    int boneId = boneNamesToIds.getOrDefault(boneName, -1);
-                    if (boneId == -1) {
-                        boneId = boneNamesToIds.size();
-                        boneNamesToIds.put(boneName, boneId);
-                    }
-
-                    // For each weight this bone is applying
-                    for (AiVertexWeight aiWeight : aiBone.getWeights()) {
-                        int vertexId = firstVertex + aiWeight.getVertexId();
-                        VertexBoneWeights vertexBoneWeights = boneWeightsForeachVertex.get(vertexId);
-
-                        // Write the weight and bone information to the next available slot in that vertex
-                        vertexBoneWeights.bones[vertexBoneWeights.slot] = boneId;
-                        vertexBoneWeights.weights[vertexBoneWeights.slot] = aiWeight.getWeight();
-                        vertexBoneWeights.slot++;
-
-                        vertexBoneWeights.totalWeight += aiWeight.getWeight();
-
-                        if (vertexBoneWeights.totalWeight > 1.0f) {
-                            logger.warn("Total weight > 1 for vertex #" + vertexId);
-                        }
-                        if (vertexBoneWeights.slot >= 4) {
-                            logger.error("More than 4 bones weighted against vertex #" + vertexId);
-                            return null;
-                        }
                     }
                 }
-            }
 
-            // Now onto the main course, we need the actual mesh data
-            for (List<Integer> aiFace : aiMesh.getFaces()) {
-                if (aiFace.size() == 3) {
-                    for (int i : order) { // swap vertices order
-                        Vec3 vertex = aiMesh.getVertices().get(aiFace.get(i));
-                        Vec3 normal = aiMesh.getNormals().get(aiFace.get(i));
-                        float[] texcoord = aiMesh.getTextureCoords().get(0).get(aiFace.get(i));
+                boolean hasAnimationData = aiMesh.getHasBones();
+                Map<Integer, VertexBoneWeights> boneWeightsForeachVertex = null;
 
-                        if (mainAsset.getName().endsWith("dae")) {
-                            // swap Y and Z axises
-                            vertices.add(vertex.x, vertex.z, -vertex.y);
-                            normals.add(normal.x, normal.z, -normal.y);
-                        } else {
-                            vertices.add(vertex.x, vertex.y, vertex.z);
-                            normals.add(normal.x, normal.y, normal.z);
+                if (hasAnimationData) {
+                    boneWeightsForeachVertex = new HashMap<>();
+
+                    // Create objects to receive the animation data for all the vertices of this submesh
+                    for (int i = 0; i < aiMesh.getNumVertices(); i++) {
+                        boneWeightsForeachVertex.put(firstVertex + i, new VertexBoneWeights());
+                    }
+
+                    // For each bone used in the submesh
+                    for (AiBone aiBone : aiMesh.getBones()) {
+                        String boneName = aiBone.getName().substring(aiBone.getName().lastIndexOf('_') + 1);
+
+                        // Maps a bone id to a bone name (maybe useful later!)
+                        // TODO check if Assimp's bone ordering is the same as BVH, and if we need this
+                        int boneId = boneNamesToIds.getOrDefault(boneName, -1);
+                        if (boneId == -1) {
+                            boneId = boneNamesToIds.size();
+                            boneNamesToIds.put(boneName, boneId);
                         }
 
-                        texcoords.add(texcoord[0], 1.0f - texcoord[1]);
+                        // For each weight this bone is applying
+                        for (AiVertexWeight aiWeight : aiBone.getWeights()) {
+                            int vertexId = firstVertex + aiWeight.getVertexId();
+                            VertexBoneWeights vertexBoneWeights = boneWeightsForeachVertex.get(vertexId);
 
-                        if (hasAnimationData) {
-                            VertexBoneWeights boned = boneWeightsForeachVertex.get(firstVertex + aiFace.get(i));
-                            boneIds.add((byte) boned.bones[0]);
-                            boneIds.add((byte) boned.bones[1]);
-                            boneIds.add((byte) boned.bones[2]);
-                            boneIds.add((byte) boned.bones[3]);
+                            // Write the weight and bone information to the next available slot in that vertex
+                            vertexBoneWeights.bones[vertexBoneWeights.slot] = boneId;
+                            vertexBoneWeights.weights[vertexBoneWeights.slot] = aiWeight.getWeight();
+                            vertexBoneWeights.slot++;
 
-                            boneWeights.add((byte) (boned.weights[0] * 255));
-                            boneWeights.add((byte) (boned.weights[1] * 255));
-                            boneWeights.add((byte) (boned.weights[2] * 255));
-                            boneWeights.add((byte) (boned.weights[3] * 255));
+                            vertexBoneWeights.totalWeight += aiWeight.getWeight();
+
+                            if (vertexBoneWeights.totalWeight > 1.0f) {
+                                logger.warn("Total weight > 1 for vertex #" + vertexId);
+                            }
+                            if (vertexBoneWeights.slot >= 4) {
+                                logger.error("More than 4 bones weighted against vertex #" + vertexId);
+                                return null;
+                            }
                         }
                     }
-                } else
-                    logger.warn("Should triangulate! (face=" + aiFace.size() + ")");
-            }
+                }
 
-            String materialName = aiMesh.getName();
-            MeshMaterial meshMaterial = new MeshMaterial(materialName, materialTextures, "opaque");
+                // Now onto the main course, we need the actual mesh data
+                for (List<Integer> aiFace : aiMesh.getFaces()) {
+                    if (aiFace.size() == 3) {
+                        for (int i : order) { // swap vertices order
+                            Vec3 vertex = aiMesh.getVertices().get(aiFace.get(i));
+                            Vec3 normal = aiMesh.getNormals().get(aiFace.get(i));
+                            float[] texcoord = aiMesh.getTextureCoords().get(0).get(aiFace.get(i));
 
-            int verticesCount = vertices.size() / 3;
+                            if (mainAsset.getName().endsWith("dae")) {
+                                // swap Y and Z axises
+                                vertices.add(vertex.x, vertex.z, -vertex.y);
+                                normals.add(normal.x, normal.z, -normal.y);
+                            } else {
+                                vertices.add(vertex.x, vertex.y, vertex.z);
+                                normals.add(normal.x, normal.y, normal.z);
+                            }
 
-            if(verticesCount == 0)
-                continue;
+                            texcoords.add(texcoord[0], 1.0f - texcoord[1]);
 
-            List<MeshAttributeSet> attributes = new LinkedList<>();
-            attributes.add(new MeshAttributeSet("vertexIn", 3, VertexFormat.FLOAT, toByteBuffer(vertices)));
-            attributes.add(new MeshAttributeSet("normalIn", 3, VertexFormat.FLOAT, toByteBuffer(normals)));
-            attributes.add(new MeshAttributeSet("texCoordIn", 2, VertexFormat.FLOAT, toByteBuffer(texcoords)));
-            if(hasAnimationData) {
-                attributes.add(new MeshAttributeSet("boneIdIn", 4, VertexFormat.BYTE, toByteBuffer(boneIds)));
-                attributes.add(new MeshAttributeSet("boneWeightIn", 4, VertexFormat.NORMALIZED_UBYTE, toByteBuffer(boneWeights)));
-            }
+                            if (hasAnimationData) {
+                                VertexBoneWeights boned = boneWeightsForeachVertex.get(firstVertex + aiFace.get(i));
+                                boneIds.add((byte) boned.bones[0]);
+                                boneIds.add((byte) boned.bones[1]);
+                                boneIds.add((byte) boned.bones[2]);
+                                boneIds.add((byte) boned.bones[3]);
 
-            vertices.clear();
-            normals.clear();
-            texcoords.clear();
+                                boneWeights.add((byte) (boned.weights[0] * 255));
+                                boneWeights.add((byte) (boned.weights[1] * 255));
+                                boneWeights.add((byte) (boned.weights[2] * 255));
+                                boneWeights.add((byte) (boned.weights[3] * 255));
+                            }
+                        }
+                    } else
+                        logger.warn("Should triangulate! (face=" + aiFace.size() + ")");
+                }
 
-            boneIds.clear();
-            boneWeights.clear();
+                String materialName = aiMesh.getName();
+                MeshMaterial meshMaterial = new MeshMaterial(materialName, materialTextures, "opaque");
+
+                int verticesCount = vertices.size() / 3;
+
+                if (verticesCount == 0)
+                    continue;
+
+                List<MeshAttributeSet> attributes = new LinkedList<>();
+                attributes.add(new MeshAttributeSet("vertexIn", 3, VertexFormat.FLOAT, toByteBuffer(vertices)));
+                attributes.add(new MeshAttributeSet("normalIn", 3, VertexFormat.FLOAT, toByteBuffer(normals)));
+                attributes.add(new MeshAttributeSet("texCoordIn", 2, VertexFormat.FLOAT, toByteBuffer(texcoords)));
+                if (hasAnimationData) {
+                    attributes.add(new MeshAttributeSet("boneIdIn", 4, VertexFormat.BYTE, toByteBuffer(boneIds)));
+                    attributes.add(new MeshAttributeSet("boneWeightIn", 4, VertexFormat.NORMALIZED_UBYTE, toByteBuffer(boneWeights)));
+                }
+
+                vertices.clear();
+                normals.clear();
+                texcoords.clear();
+
+                boneIds.clear();
+                boneWeights.clear();
 
             /*String[] boneNamesArray = null;
             if(hasAnimationData) {
@@ -239,15 +245,18 @@ public class AssimpMeshLoader {
                 }
             }*/
 
-            if(!hasAnimationData)
-                boneNamesToIds = null;
+                if (!hasAnimationData)
+                    boneNamesToIds = null;
 
-            meshes.add(new Mesh(verticesCount, attributes, meshMaterial, boneNamesToIds));
-        }
+                meshes.add(new Mesh(verticesCount, attributes, meshMaterial, boneNamesToIds));
+            }
 
-        return new Model(meshes);
+            return new Model(meshes);
         /*int verticesCount = vertices.size();
         return new Mesh(verticesCount, attributes, meshMaterials);*/
+        } finally {
+            lock.unlock();
+        }
     }
 
     private ByteBuffer toByteBuffer(FloatArrayList array) {
