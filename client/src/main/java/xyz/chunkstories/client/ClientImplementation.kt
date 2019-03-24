@@ -7,33 +7,30 @@
 package xyz.chunkstories.client
 
 import org.lwjgl.glfw.GLFW
-import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Calendar
-
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import xyz.chunkstories.Constants
 import xyz.chunkstories.api.GameContext
 import xyz.chunkstories.api.client.Client
+import xyz.chunkstories.api.client.ClientIdentity
+import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
 import xyz.chunkstories.api.plugin.PluginManager
+import xyz.chunkstories.api.util.configuration.Configuration
 import xyz.chunkstories.client.glfw.GLFWWindow
 import xyz.chunkstories.client.ingame.IngameClientImplementation
 import xyz.chunkstories.content.GameContentStore
-import xyz.chunkstories.gui.ClientGui
-import xyz.chunkstories.sound.ALSoundManager
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-
-import xyz.chunkstories.Constants
-import xyz.chunkstories.api.client.ClientIdentity
-import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
-import xyz.chunkstories.api.util.configuration.Configuration
 import xyz.chunkstories.content.GameDirectory
 import xyz.chunkstories.graphics.GraphicsEngineImplementation
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
+import xyz.chunkstories.gui.ClientGui
 import xyz.chunkstories.gui.layer.LoginPrompt
-import xyz.chunkstories.gui.layer.SkyBoxBackground
 import xyz.chunkstories.input.lwjgl3.Lwjgl3ClientInputsManager
+import xyz.chunkstories.sound.ALSoundManager
 import xyz.chunkstories.util.LogbackSetupHelper
 import xyz.chunkstories.util.VersionInfo
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
 
 /** Client implementation entry point, is the root of the systems and holds state through them  */
 class ClientImplementation internal constructor(coreContentLocation: File, modsStringArgument: String?) : Client, GameContext {
@@ -96,7 +93,7 @@ class ClientImplementation internal constructor(coreContentLocation: File, modsS
         inputsManager.reload()
 
         // Spawns worker threads
-        var nbThreads : Int = configuration.getIntValue("client.performance.workerThreads")
+        var nbThreads: Int = configuration.getIntValue("client.performance.workerThreads")
 
         if (nbThreads <= 0) {
             nbThreads = Runtime.getRuntime().availableProcessors() / 2
@@ -110,19 +107,19 @@ class ClientImplementation internal constructor(coreContentLocation: File, modsS
         tasks.start()
 
         // Load the correct language
-        val lang : String = configuration.getValue("client.game.language")
+        val lang: String = configuration.getValue("client.game.language")
         if (lang != "")
             content.localization().loadTranslation(lang)
 
         // Initlializes windows screen to main menu ( and ask for login )
-        gui.topLayer = LoginPrompt(gui, SkyBoxBackground(gui))
+        gui.topLayer = LoginPrompt(gui, null)
 
         mainLoop()
         cleanup()
     }
 
     fun mainLoop() {
-        while(!gameWindow.shouldClose) {
+        while (!gameWindow.shouldClose) {
             gameWindow.executeMainThreadChores()
             gameWindow.checkStillInFocus()
 

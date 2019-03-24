@@ -16,12 +16,10 @@ import xyz.chunkstories.api.workers.Tasks
 import xyz.chunkstories.api.world.WorldMaster
 import xyz.chunkstories.client.ClientImplementation
 import xyz.chunkstories.client.commands.installClientCommands
-import xyz.chunkstories.graphics.common.DefaultIngameRendergraph
 import xyz.chunkstories.graphics.common.WorldRenderer
 import xyz.chunkstories.graphics.vulkan.util.BuiltInRendergraphs
 import xyz.chunkstories.gui.layer.MainMenu
 import xyz.chunkstories.gui.layer.MessageBox
-import xyz.chunkstories.gui.layer.SkyBoxBackground
 import xyz.chunkstories.gui.layer.ingame.IngameLayer
 import xyz.chunkstories.gui.layer.ingame.RemoteConnectionGuiLayer
 import xyz.chunkstories.plugin.DefaultPluginManager
@@ -93,7 +91,7 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
     override fun exitToMainMenu() {
         exitCommon()
 
-        gui.topLayer = MainMenu(gui, SkyBoxBackground(gui))
+        gui.topLayer = MainMenu(gui, null)
         soundManager.stopAnySound()
         client.ingame = null
     }
@@ -101,7 +99,7 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
     override fun exitToMainMenu(errorMessage: String) {
         exitCommon()
 
-        gui.topLayer = MessageBox(gui, SkyBoxBackground(gui), errorMessage)
+        gui.topLayer = MessageBox(gui, null, errorMessage)
         soundManager.stopAnySound()
         client.ingame = null
     }

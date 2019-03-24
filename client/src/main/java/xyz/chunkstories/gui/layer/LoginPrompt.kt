@@ -21,7 +21,7 @@ import xyz.chunkstories.net.http.SimplePostRequest
 import org.joml.Vector4f
 import org.slf4j.LoggerFactory
 
-class LoginPrompt(gui: Gui, parent: Layer) : Layer(gui, parent) {
+class LoginPrompt(gui: Gui, parent: Layer?) : Layer(gui, parent) {
     private val usernameForm = InputText(this, 0, 0, 250)
     private val passwordForm = InputText(this, 0, 0, 250)
 
@@ -147,7 +147,7 @@ class LoginPrompt(gui: Gui, parent: Layer) : Layer(gui, parent) {
                         t.start()
                     }
 
-                    gui.topLayer = MainMenu(gui, parentLayer!!)
+                    gui.topLayer = MainMenu(gui, parentLayer)
                 } else if (result.startsWith("ko")) {
                     failed_login = true
                     val reason = result.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[1]
