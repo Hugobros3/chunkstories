@@ -6,14 +6,12 @@
 
 package xyz.chunkstories.gui
 
-import xyz.chunkstories.api.entity.traits.serializable.TraitInventory
 import xyz.chunkstories.api.entity.traits.serializable.TraitSelectedItem
 import xyz.chunkstories.api.gui.GuiDrawer
 import xyz.chunkstories.api.item.inventory.Inventory
 import xyz.chunkstories.api.item.inventory.ItemPile
 import xyz.chunkstories.gui.layer.ingame.InventoryView
 import org.joml.Vector4f
-import xyz.chunkstories.api.entity.Entity
 
 
 /**
@@ -29,15 +27,7 @@ class InventoryGridRenderer(val inventory: Inventory) {
 
     fun drawPlayerInventorySummary(drawer: GuiDrawer, x: Int, y: Int) {
         val selectedSlot = drawer.gui.client.ingame?.player?.controlledEntity?.traits?.get(TraitSelectedItem::class)?.getSelectedSlot() ?: -1
-        /*if (inventory.owner is Entity) {
-            val entity = inventory.owner as Entity
-
-            val esi = inventory.entity.traits[TraitSelectedItem::class.java]
-            if (esi != null)
-                selectedSlot = esi.selectedSlot
-        }*/
-
-        drawInventory(drawer, x - slotsWidth(inventory.width) / 2, y /*- slotsHeight(getInventory().getHeight(), true, 0) / 2*/, true, 0, selectedSlot)
+        drawInventory(drawer, x - (16 + inventory.width * 24) / 2, y , true, 0, selectedSlot)
     }
 
     //TODO move to own layer
@@ -222,10 +212,6 @@ class InventoryGridRenderer(val inventory: Inventory) {
                         Vector4f(1f, 1f, 1f, 1f))*/
             }
         }
-    }
-
-    fun slotsWidth(slots: Int): Int {
-        return 8 + slots * 24
     }
 
     fun slotsHeight(slots: Int, summary: Boolean, blankLines: Int): Int {

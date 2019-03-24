@@ -61,7 +61,7 @@ class IngameLayer(window: Gui, private val client: IngameClientImplementation) :
     }
 
     override fun render(drawer: GuiDrawer) {
-        var playerEntity = player.controlledEntity
+        val playerEntity = player.controlledEntity
 
         // Update the inventory previewer
         val traitInventory = playerEntity?.run { traits[TraitInventory::class] }
