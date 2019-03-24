@@ -10,6 +10,9 @@ import java.nio.ByteBuffer
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
+import xyz.chunkstories.api.graphics.structs.InterfaceBlock
+import xyz.chunkstories.graphics.common.shaders.GLSLInstancedInput
+import xyz.chunkstories.graphics.vulkan.buffers.extractInterfaceBlockField
 
 //TODO test if inline helps (or if HotSpot does it by itself)
 public fun Int.ensureIs(exceptionMessage: String, compareTo: Int) = if (this != compareTo) throw Exception("Unexpected return code: $this : $exceptionMessage") else Unit
@@ -67,16 +70,19 @@ fun VulkanGraphicsBackend.waitFence(fence: VkFence) {
         }
     }
 }
-/*
-@ExperimentalContracts
-inline fun <T : Any?> stack(operations: () -> T) : T {
-    kotlin.contracts.contract {
-        callsInPlace(operations, InvocationKind.EXACTLY_ONCE)
+
+fun getAlignedsizeForStruct(instancedStruct: GLSLInstancedInput): Int {
+    //val instancedStruct = glslProgram.instancedInputs.find { it.name == name } ?: throw Exception("No instanced input named: $name")
+    val structSize = instancedStruct.struct.size
+    val sizeAligned16 = if (structSize % 16 == 0) structSize else (structSize / 16 * 16) + 16
+    return sizeAligned16
+}
+
+fun writeInterfaceBlock(byteBuffer: ByteBuffer, offset: Int, interfaceBlock: InterfaceBlock, glslResource: GLSLInstancedInput) {
+    byteBuffer.position(offset)
+
+    for (field in glslResource.struct.fields) {
+        byteBuffer.position(offset + field.offset)
+        extractInterfaceBlockField(field, byteBuffer, interfaceBlock)
     }
-
-    MemoryStack.stackPush()
-    val t = operations()
-    MemoryStack.stackPop()
-
-    return t
-}*/
+}

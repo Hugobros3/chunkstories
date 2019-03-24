@@ -32,7 +32,9 @@ import xyz.chunkstories.graphics.vulkan.swapchain.Frame
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.systems.world.getConditions
 import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
+import xyz.chunkstories.graphics.vulkan.util.getAlignedsizeForStruct
 import xyz.chunkstories.graphics.vulkan.util.getVulkanFormat
+import xyz.chunkstories.graphics.vulkan.util.writeInterfaceBlock
 import xyz.chunkstories.world.WorldClientCommon
 import java.nio.ByteBuffer
 
@@ -148,13 +150,6 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
 
         val specializedPipelines = mutableMapOf<SpecializedPipelineKey, SpecializedPipeline>()
 
-        fun getAlignedsizeForStruct(instancedStruct: GLSLInstancedInput): Int {
-            //val instancedStruct = glslProgram.instancedInputs.find { it.name == name } ?: throw Exception("No instanced input named: $name")
-            val structSize = instancedStruct.struct.size
-            val sizeAligned16 = if (structSize % 16 == 0) structSize else (structSize / 16 * 16) + 16
-            return sizeAligned16
-        }
-
         val ssboBufferSize = 1024 * 1024L
 
         override fun registerDrawingCommands(frame: Frame, context: VulkanFrameGraph.FrameGraphNode.PassNode, commandBuffer: VkCommandBuffer, work: Sequence<MeshInstance>) {
@@ -212,15 +207,6 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
                     for (inputIndex in specializedPipeline.compatibleInputsIndexes) {
                         val vertexBuffer = meshOnGpu.attributesVertexBuffers[inputIndex]
                         vkCmdBindVertexBuffers(commandBuffer, inputIndex, stackLongs(vertexBuffer.handle), stackLongs(0))
-                    }
-
-                    fun writeInterfaceBlock(byteBuffer: ByteBuffer, offset: Int, interfaceBlock: InterfaceBlock, glslResource: GLSLInstancedInput) {
-                        byteBuffer.position(offset)
-
-                        for (field in glslResource.struct.fields) {
-                            byteBuffer.position(offset + field.offset)
-                            extractInterfaceBlockField(field, byteBuffer, interfaceBlock)
-                        }
                     }
 
                     writeInterfaceBlock(instancePositionsBuffer, instance * modelPositionPaddedSize, modelInstance.position, modelPositionII)

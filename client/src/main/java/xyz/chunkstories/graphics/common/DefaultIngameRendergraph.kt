@@ -8,6 +8,7 @@ import xyz.chunkstories.api.graphics.rendergraph.RenderGraphDeclarationScript
 import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.api.graphics.systems.dispatching.ChunksRenderer
 import xyz.chunkstories.api.graphics.systems.dispatching.ModelsRenderer
+import xyz.chunkstories.api.graphics.systems.dispatching.SpritesRenderer
 import xyz.chunkstories.api.gui.GuiDrawer
 import xyz.chunkstories.graphics.vulkan.systems.SkyDrawer
 import xyz.chunkstories.graphics.vulkan.systems.Vulkan3DVoxelRaytracer
@@ -118,6 +119,10 @@ object DefaultIngameRendergraph {
                             shader = "models"
                             materialTag = "opaque"
                             supportsAnimations = true
+                        }
+                        system(SpritesRenderer::class) {
+                            shader = "sprites"
+                            materialTag = "opaque"
                         }
                     }
 
