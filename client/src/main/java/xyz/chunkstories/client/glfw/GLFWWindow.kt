@@ -4,6 +4,7 @@ import xyz.chunkstories.api.graphics.Window
 import xyz.chunkstories.client.ClientImplementation
 import org.lwjgl.glfw.GLFW.*
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.client.util.loadIcons
 import xyz.chunkstories.graphics.GraphicsBackendsEnum
 import xyz.chunkstories.graphics.GraphicsEngineImplementation
 import java.awt.image.BufferedImage
@@ -39,7 +40,6 @@ class GLFWWindow(val client: ClientImplementation, val graphicsEngine: GraphicsE
     //val inputsManager : Lwjgl3ClientInputsManager
 
     init {
-
         /*glfwSetErrorCallback { error, description ->
             println("GLFW error: error: $error description: $description")
         }
@@ -67,6 +67,8 @@ class GLFWWindow(val client: ClientImplementation, val graphicsEngine: GraphicsE
         glfwWindowHandle = glfwCreateWindow(width, height, title, 0L, 0L)
         if(glfwWindowHandle == 0L)
             throw Exception("Failed to create GLFW window")
+
+        loadIcons()
     }
 
     fun executeMainThreadChores() {
