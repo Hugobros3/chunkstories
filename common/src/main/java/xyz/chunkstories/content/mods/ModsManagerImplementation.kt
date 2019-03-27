@@ -224,7 +224,7 @@ class ModsManagerImplementation @Throws(NonExistentCoreContent::class)
         val jarFiles = LinkedList<File>()
 
         // For each asset in the said mod
-        for (asset in mod.assets()) {
+        for (asset in mod.assets) {
             // Skips mod.txt
             if (asset.name == "mod.txt")
                 continue

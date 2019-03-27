@@ -163,7 +163,7 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser {
 		String loggingFilename = "./logs/converter_" + time + ".log";
 		new LogbackSetupHelper(loggingFilename);
 
-		content = new GameContentStore(this, coreContentLocation, null);
+		content = new GameContentStore(this, coreContentLocation, "");
 		content.reload();
 
 		verbose("Loading converter_mapping.txt");

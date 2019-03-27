@@ -116,7 +116,7 @@ class DedicatedServer internal constructor(coreContentLocation: File, modsString
                     + VersionInfo.networkProtocolVersion)
 
             // Loads the mods/build filesystem
-            gameContent = GameContentStore(this, coreContentLocation, modsString)
+            gameContent = GameContentStore(this, coreContentLocation, modsString ?: "")
             gameContent.reload()
 
             // Spawns worker threads

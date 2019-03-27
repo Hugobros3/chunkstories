@@ -29,12 +29,7 @@ internal constructor() : Mod {
 
     protected var md5hash: String? = null
 
-    override val mD5Hash: String
-        get() {
-            if (md5hash == null)
-                computeMD5Hash()
-            return md5hash!!
-        }
+    override val mD5Hash: String by lazy { computeMD5Hash() }
 
     abstract val loadString: String
 
@@ -42,13 +37,11 @@ internal constructor() : Mod {
 
     abstract override fun getAssetByName(name: String): Asset?
 
-    abstract override fun assets(): IterableIterator<Asset>
-
     @Synchronized
-    private fun computeMD5Hash() {
+    private fun computeMD5Hash(): String {
         // Makes a sorted list of the names of all the assets
         val assetsSorted = ArrayList<String>()
-        for (asset in assets()) {
+        for (asset in assets) {
             assetsSorted.add(asset.name)
         }
 
@@ -84,7 +77,7 @@ internal constructor() : Mod {
         sb.append(hashedNames)
 
         // Hash the whole stuff again
-        md5hash = HexTools.byteArrayAsHexString(md.digest(sb.toString().toByteArray()))
+        return HexTools.byteArrayAsHexString(md.digest(sb.toString().toByteArray()))
     }
 
     abstract fun close()

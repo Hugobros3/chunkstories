@@ -26,11 +26,10 @@ import xyz.chunkstories.util.FoldersUtils;
  * Provides mods for connected users
  */
 public class ServerModsProvider {
-	// The mods string is just the list of md5 hashes of the mods enabled on the
-	// server
-	File cacheFolder;
-	Map<String, File> redistribuables = new HashMap<String, File>();
-	String modsString;
+	// The mods string is just the list of md5 hashes of the mods enabled on the server
+	private File cacheFolder;
+	private Map<String, File> redistribuables = new HashMap<String, File>();
+	private String modsString;
 
 	public ServerModsProvider(DedicatedServer server) {
 		server.logger().info("Starting to build server mods cache to provide to users");
@@ -64,7 +63,7 @@ public class ServerModsProvider {
 
 					byte[] buffer = new byte[4096];
 
-					for (Asset asset : mod.assets()) {
+					for (Asset asset : mod.getAssets()) {
 						ZipEntry entry = new ZipEntry(asset.getName().substring(2));
 						zos.putNextEntry(entry);
 

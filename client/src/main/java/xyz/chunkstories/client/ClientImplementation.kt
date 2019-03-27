@@ -84,7 +84,7 @@ class ClientImplementation internal constructor(coreContentLocation: File, modsS
         inputsManager = Lwjgl3ClientInputsManager(gameWindow)
 
         // Create game content manager
-        content = GameContentStore(this, coreContentLocation, modsStringArgument)
+        content = GameContentStore(this, coreContentLocation, modsStringArgument ?: "")
         content.reload()
 
         //gameWindow.stage_2_init(); // TODO this is bs, don't need this plz

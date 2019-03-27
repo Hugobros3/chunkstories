@@ -99,45 +99,6 @@ public class IOTasks extends Thread implements TaskExecutor {
 		return i;
 	}
 
-	/**
-	 * Loads the content of a region chunk slot
-	 */
-	/*public IOTaskLoadChunk requestChunkLoad(ChunkHolderImplementation chunkSlot) {
-		IOTaskLoadChunk task = new IOTaskLoadChunk(chunkSlot);
-		if (scheduleTask(task))
-			return task;
-		return null;
-	}*/
-
-	/*public Fence requestRegionLoad(RegionImplementation holder) {
-		// if (!isDoneSavingRegion(holder))
-		// return;
-
-		IOTask task = new IOTaskLoadRegion(holder);
-		scheduleTask(task);
-		return task;
-	}*/
-
-	/*public IOTask requestRegionSave(RegionImplementation holder) {
-		IOTask task = new IOTaskSaveRegion(holder);
-		scheduleTask(task);
-		return task;
-	}
-
-	public Fence requestHeightmapLoad(HeightmapImplementation summary) {
-		IOTaskLoadHeightmap task = new IOTaskLoadHeightmap(summary);
-		scheduleTask(task);
-
-		return task;
-	}
-
-	public IOTaskSaveHeightmap requestHeightmapSave(HeightmapImplementation summary) {
-		IOTaskSaveHeightmap task = new IOTaskSaveHeightmap(summary);
-		scheduleTask(task);
-
-		return task;
-	}*/
-
 	public void kill() {
 		scheduleTask(DIE);
 		synchronized (this) {
@@ -168,9 +129,7 @@ public class IOTasks extends Thread implements TaskExecutor {
 		// Hardcoding a security because you can fill the queue faster than you can
 		// iterate it
 		int hardLimit = 500;
-		Iterator<IOTask> i = this.tasks.iterator();
-		while (i.hasNext()) {
-			IOTask task = i.next();
+		for (IOTask task : this.tasks) {
 			hardLimit--;
 			if (hardLimit < 0)
 				return;

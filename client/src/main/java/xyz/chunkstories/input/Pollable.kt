@@ -4,15 +4,15 @@
 // Website: http://chunkstories.xyz
 //
 
-package xyz.chunkstories.input;
+package xyz.chunkstories.input
 
-import xyz.chunkstories.api.input.Input;
+import xyz.chunkstories.api.input.Input
 
 /**
  * LWJGL allows thread-safe accessing of keyboard and mouse objects, but it's
  * much better to poll them in the main thread and cache the results so the
  * other threads can't be stalled by rendering.
  */
-public interface Pollable extends Input {
-	public void updateStatus();
+interface Pollable : Input {
+    fun updateStatus()
 }
