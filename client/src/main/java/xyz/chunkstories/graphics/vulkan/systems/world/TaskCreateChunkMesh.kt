@@ -97,7 +97,7 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
                                 val textureId = voxelTexture.textureArrayIndex
 
                                 val sunlight = VoxelFormat.sunlight(neighborData)
-                                val blocklight = VoxelFormat.blocklight(neighborData)
+                                val blocklight = max(VoxelFormat.blocklight(neighborData), voxel.emittedLightLevel)
 
                                 for((vertex, texcoord) in face.vertices) {
                                     /*buffer.put((vertex[0] + x).toByte())

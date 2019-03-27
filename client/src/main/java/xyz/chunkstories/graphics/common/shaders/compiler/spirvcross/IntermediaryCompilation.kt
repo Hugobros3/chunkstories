@@ -10,7 +10,7 @@ import xyz.chunkstories.graphics.common.shaders.compiler.preprocessing.updateFre
 import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.SpirvCrossHelper.spirvStageInt
 import xyz.chunkstories.graphics.vulkan.textures.MagicTexturing.Companion.magicTexturesNames
 
-fun ShaderCompiler.buildIntermediaryStructure(stages: Map<ShaderStage, String>): IntermediaryCompilationResults {
+fun ShaderCompiler.buildIntermediaryStructure(stages: Map<ShaderStage, String>, dumpCodeOnError: Boolean): IntermediaryCompilationResults {
     libspirvcrossj.initializeProcess()
     val ressources = libspirvcrossj.getDefaultTBuiltInResource()
 
@@ -31,7 +31,8 @@ fun ShaderCompiler.buildIntermediaryStructure(stages: Map<ShaderStage, String>):
             ShaderCompiler.logger.warn(tShader.infoLog)
             ShaderCompiler.logger.warn(tShader.infoDebugLog)
 
-            println(shaderCode)
+            if(dumpCodeOnError)
+                println(shaderCode)
             throw Exception("Failed to parse stage $stage of the shader program")
         }
 

@@ -2,6 +2,7 @@ package xyz.chunkstories.graphics.vulkan.systems.world
 
 import org.joml.Vector3dc
 import org.joml.Vector3i
+import org.joml.Vector4f
 import org.lwjgl.system.MemoryStack.stackPush
 import org.lwjgl.system.MemoryUtil.memAlloc
 import org.lwjgl.system.MemoryUtil.memFree
@@ -91,11 +92,14 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
                             chunksCache[cacheIndex] = null
                             continue
                         }
-
-                        if(chunk == cacheEntry) {
+                        else if(chunk != cacheEntry) {
+                            chunksCache[cacheIndex] = null
+                        }
+                        else if(chunk == cacheEntry) {
                             val oldRevision = revisionCache[cacheIndex]
                             val newRevision = chunk.revision.get()
 
+                            //println("$newRevision")
                             if(oldRevision < newRevision) {
                                 revisionCache[cacheIndex] = newRevision
                             }
@@ -104,7 +108,7 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
                             }
                         }
 
-                        println("Uploading $chunk")
+                        //println("Uploading $chunk")
 
                         chunksCache[cacheIndex] = chunk
 
@@ -219,30 +223,44 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
                 byteBuffer.put(0)
             }
         } else {
+            val color = Vector4f()
             for (z in 0..31)
                 for (y in 0..31)
                     for (x in 0..31) {
                         val data = voxelData[x * 32 * 32 + y * 32 + z]
                         val voxel = world.contentTranslator.getVoxelForId(VoxelFormat.id(data)) ?: world.content.voxels().air()
 
-                        if (voxel.isAir() || !voxel.solid || voxel.name.startsWith("glass")) {
+                        if (voxel.isAir() || (!voxel.solid && voxel.emittedLightLevel == 0) || voxel.name.startsWith("glass")) {
                             byteBuffer.put(0)
                             byteBuffer.put(0)
                             byteBuffer.put(0)
                             byteBuffer.put(0)
+
+                            if(voxel.name.startsWith("lava"))
+                                println("shit" + voxel.emittedLightLevel)
                         } else {
                             val topTexture = voxel.getVoxelTexture(chunk.peek(x, y, z), VoxelSide.TOP)
-                            val color = topTexture.color
+                            color.set(topTexture.color)
+
+                            if (topTexture.name.equals("grass_top")) {
+                                color.set(0.2f, 1.0f, 0.5f, 0.5f)
+                            }
 
                             byteBuffer.put((color.x() * 255).toInt().toByte())
                             byteBuffer.put((color.y() * 255).toInt().toByte())
                             byteBuffer.put((color.z() * 255).toInt().toByte())
 
-                            if (topTexture.name.equals("grass_top"))
+                            byteBuffer.put(((0.5 + 0.5 * voxel.emittedLightLevel / 15.0) * 255).toInt().toByte())
+
+                            //if(voxel.emittedLightLevel > 1)
+                            //    println(((0.5 + 0.5 * voxel.emittedLightLevel / 15.0) * 255))
+
+                            /*if (topTexture.name.equals("grass_top"))
                                 byteBuffer.put((0.5 * 255).toInt().toByte())
                             else
-                                byteBuffer.put((color.w() * 255).toInt().toByte())
+                                byteBuffer.put((color.w() * 255).toInt().toByte())*/
                         }
+
                     }
         }
     }
