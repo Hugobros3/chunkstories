@@ -6,6 +6,7 @@
 
 package xyz.chunkstories.input.lwjgl3
 
+import org.lwjgl.glfw.GLFW
 import xyz.chunkstories.api.input.KeyboardKeyInput
 
 class Lwjgl3KeyBindCompound(im: Lwjgl3ClientInputsManager, name: String, internal val defaultKeysNames: String) : Lwjgl3Input(im, name), KeyboardKeyInput {
@@ -29,7 +30,7 @@ class Lwjgl3KeyBindCompound(im: Lwjgl3ClientInputsManager, name: String, interna
             val keyName = keyNames[i]
 
             val glfwKey = GLFWKeyIndexHelper.getGlfwKeyByName(keyName)
-            glfwKeys[i] = glfwKey
+            glfwKeys[i] = glfwKey ?: GLFW.GLFW_KEY_UNKNOWN
             // System.out.println(keyName+":"+glfwKey);
         }
 

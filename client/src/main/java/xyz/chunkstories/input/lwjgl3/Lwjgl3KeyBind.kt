@@ -6,6 +6,7 @@
 
 package xyz.chunkstories.input.lwjgl3
 
+import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFW.GLFW_PRESS
 import org.lwjgl.glfw.GLFW.glfwGetKey
 
@@ -24,7 +25,7 @@ class Lwjgl3KeyBind internal constructor(private val inputsManager: Lwjgl3Client
      */
     internal var lwjglKey: Int = 0
         private set
-    private val defaultKey: Int = GLFWKeyIndexHelper.getGlfwKeyByName(defaultKeyName)
+    private val defaultKey: Int = GLFWKeyIndexHelper.getGlfwKeyByName(defaultKeyName) ?: GLFW.GLFW_KEY_UNKNOWN
 
     private var isDown = false
 
