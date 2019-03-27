@@ -81,7 +81,7 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
         if (!glfwVulkanSupported())
             throw Exception("Vulkan is not supported on this machine")
 
-        window.client.configuration.addOptions(VulkanBackendOptions.options)
+        window.client.configuration.addOptions(VulkanBackendOptions.create(this))
 
         val requiredExtensions = glfwGetRequiredInstanceExtensions() ?: throw Exception("Vulkan is not supported for windowed rendering on this machine.")
 
@@ -359,6 +359,10 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
 
         vkDestroyInstance(instance, null)
         logger.debug("Successfully finished cleaning up Vulkan objects")
+    }
+
+    fun reloadRendergraph() {
+        this.queuedRenderGraph = this.renderGraph.dslCode
     }
 
     companion object {
