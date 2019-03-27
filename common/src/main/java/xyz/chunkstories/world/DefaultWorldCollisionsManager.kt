@@ -101,14 +101,14 @@ class DefaultWorldCollisionsManager(private val world: WorldImplementation) : Wo
             y = voxelCoords[1]
             z = voxelCoords[2]
             cell = world.peekSafely(x, y, z)
-            val voxel = cell.getVoxel()!!
+            val voxel = cell.voxel
 
             if (voxel.solid || (selectable && voxel.definition["liquid"] != "true")) {
                 if(voxel.isAir())
                     continue
 
                 var collides = false
-                for (box in cell.getTranslatedCollisionBoxes()!!) {
+                for (box in cell.translatedCollisionBoxes ?: emptyArray()) {
                     // System.out.println(box);
                     val collisionPoint = box.lineIntersection(initialPosition, direction)
                     if (collisionPoint != null) {
@@ -243,8 +243,8 @@ class DefaultWorldCollisionsManager(private val world: WorldImplementation) : Wo
                             for (k in Math.floor(pos.z()).toInt() - 1 until Math
                                     .ceil(pos.z() + checkerX.zWidth).toInt()) {
                                 cell = world.peekSafely(i, j, k)
-                                if (cell.getVoxel()!!.solid)
-                                    addAllSafe(boxes, cell.getTranslatedCollisionBoxes())
+                                if (cell.voxel.solid)
+                                    addAllSafe(boxes, cell.translatedCollisionBoxes)
                             }
                         }
                     }
@@ -283,8 +283,8 @@ class DefaultWorldCollisionsManager(private val world: WorldImplementation) : Wo
                             for (k in Math.floor(pos.z()).toInt() - 1 until Math
                                     .ceil(pos.z() + checkerY.zWidth).toInt()) {
                                 cell = world.peekSafely(i, j, k)
-                                if (cell.getVoxel()!!.solid)
-                                    addAllSafe(boxes, cell.getTranslatedCollisionBoxes())
+                                if (cell.voxel.solid)
+                                    addAllSafe(boxes, cell.translatedCollisionBoxes)
                             }
                         }
                     }
@@ -328,8 +328,8 @@ class DefaultWorldCollisionsManager(private val world: WorldImplementation) : Wo
                             for (k in Math.floor(pos.z()).toInt() - 1 until Math
                                     .ceil(pos.z() + checkerZ.zWidth).toInt()) {
                                 cell = world.peekSafely(i, j, k)
-                                if (cell.getVoxel()!!.solid)
-                                    addAllSafe(boxes, cell.getTranslatedCollisionBoxes())
+                                if (cell.voxel.solid)
+                                    addAllSafe(boxes, cell.translatedCollisionBoxes)
                             }
                         }
                     }

@@ -34,7 +34,7 @@ import xyz.chunkstories.api.world.*
 import xyz.chunkstories.api.world.cell.Cell
 import xyz.chunkstories.api.world.cell.CellData
 import xyz.chunkstories.api.world.cell.FutureCell
-import xyz.chunkstories.api.world.chunk.Chunk.ChunkCell
+import xyz.chunkstories.api.world.chunk.ChunkCell
 import xyz.chunkstories.api.world.chunk.ChunkHolder
 import xyz.chunkstories.api.world.generator.WorldGenerator
 import xyz.chunkstories.api.world.heightmap.Heightmap
@@ -367,7 +367,7 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
         return chunk.peek(x, y, z)
     }
 
-    override fun peekSafely(x: Int, y: Int, z: Int): World.WorldCell {
+    override fun peekSafely(x: Int, y: Int, z: Int): WorldCell {
         var x = x
         var y = y
         var z = z
@@ -386,7 +386,9 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
     }
 
     /** Safety: provide an alternative 'fake' getCell if the proper one isn't loaded  */
-    internal inner class UnloadedWorldCell(x: Int, y: Int, z: Int, voxel: Voxel, meta: Int, blocklight: Int, sunlight: Int) : Cell(x, y, z, voxel, meta, blocklight, sunlight), World.WorldCell {
+    internal inner class UnloadedWorldCell(x: Int, y: Int, z: Int, voxel: Voxel, meta: Int, blocklight: Int, sunlight: Int) : Cell(x, y, z, voxel, meta, blocklight, sunlight), WorldCell {
+        override val world: World
+            get() = this@WorldImplementation
 
         init {
 
@@ -397,14 +399,10 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
 
         override fun getNeightbor(side_int: Int): CellData {
             val side = VoxelSide.values()[side_int]
-            return peekSafely(getX() + side.dx, getY() + side.dy, getZ() + side.dz)
+            return peekSafely(x + side.dx, y + side.dy, z + side.dz)
         }
 
-        override fun getWorld(): World {
-            return this@WorldImplementation
-        }
-
-        override fun setVoxel(voxel: Voxel) {
+        /*override fun setVoxel(voxel: Voxel) {
             logger.warn("Trying to edit a UnloadedWorldCell." + this)
         }
 
@@ -418,10 +416,10 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
 
         override fun setBlocklight(blocklight: Int) {
             logger.warn("Trying to edit a UnloadedWorldCell." + this)
-        }
+        }*/
     }
 
-    override fun peekSafely(location: Vector3dc): World.WorldCell {
+    override fun peekSafely(location: Vector3dc): WorldCell {
         return peekSafely(location.x().toInt(), location.y().toInt(), location.z().toInt())
     }
 
@@ -568,7 +566,7 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
             return false
         }
 
-        return peek.getVoxel()!!.handleInteraction(entity, peek, input)
+        return peek.voxel.handleInteraction(entity, peek, input)
     }
 
     private fun sanitizeHorizontalCoordinate(coordinate: Int): Int {

@@ -155,7 +155,7 @@ class ChunkLightBaker(internal val chunk: CubicChunk) : AutoRebuildingProperty(c
 
                 // Have some blocks changed ?
                 if (modifications > 0)
-                    chunk.mesh().requestUpdate()
+                    chunk.mesh.requestUpdate()
 
                 return modifications
             } finally {
@@ -457,17 +457,17 @@ class ChunkLightBaker(internal val chunk: CubicChunk) : AutoRebuildingProperty(c
             }
 
             if (requestTop)
-                topChunk?.lightBaker()?.requestUpdate()
+                topChunk?.lightBaker?.requestUpdate()
             if (requestBot)
-                bottomChunk?.lightBaker()?.requestUpdate()
+                bottomChunk?.lightBaker?.requestUpdate()
             if (requestLeft)
-                leftChunk?.lightBaker()?.requestUpdate()
+                leftChunk?.lightBaker?.requestUpdate()
             if (requestRight)
-                rightChunk?.lightBaker()?.requestUpdate()
+                rightChunk?.lightBaker?.requestUpdate()
             if (requestBack)
-                backChunk?.lightBaker()?.requestUpdate()
+                backChunk?.lightBaker?.requestUpdate()
             if (requestFront)
-                frontChunk?.lightBaker()?.requestUpdate()
+                frontChunk?.lightBaker?.requestUpdate()
 
             return modifiedBlocks
         }
@@ -494,7 +494,7 @@ class ChunkLightBaker(internal val chunk: CubicChunk) : AutoRebuildingProperty(c
                         if (!hitGroundYet && csh != Heightmap.NO_DATA) {
                             if (chunkY * 32 + y >= csh) {
                                 if (chunkY * 32 + y <= csh ||
-                                        !world.contentTranslator.getVoxelForId(VoxelFormat.id(chunk.voxelDataArray[x * 1024 + y * 32 + z]))!!.isAir())
+                                        !world.contentTranslator.getVoxelForId(VoxelFormat.id(chunk.voxelDataArray!![x * 1024 + y * 32 + z]))!!.isAir())
                                     hitGroundYet = true
                                 else {
                                     cell.sunlight = 15
@@ -926,10 +926,10 @@ class ChunkLightBaker(internal val chunk: CubicChunk) : AutoRebuildingProperty(c
             val y = blockSources.removeLast()
             val x = blockSources.removeLast()
             peek(x, y, z, cell)
-            var ll = cell.getBlocklight()
+            var ll = cell.blocklight
 
-            if (cell.getVoxel()!!.opaque)
-                ll = cell.getVoxel()!!.getEmittedLightLevel(cell)
+            if (cell.voxel.opaque)
+                ll = cell.voxel.getEmittedLightLevel(cell)
 
             if (ll > 1) {
                 // X-propagation
@@ -1007,7 +1007,7 @@ class ChunkLightBaker(internal val chunk: CubicChunk) : AutoRebuildingProperty(c
             peek(x, y, z, cell)
             var ll = cell.sunlight
 
-            if (cell.getVoxel()!!.opaque)
+            if (cell.voxel.opaque)
                 ll = 0
 
             if (ll > 1) {
@@ -1015,7 +1015,7 @@ class ChunkLightBaker(internal val chunk: CubicChunk) : AutoRebuildingProperty(c
                 if (x < bounds) {
                     peek(x + 1, y, z, sideCell)
                     val llRight = ll - sideCell.voxel.getLightLevelModifier(sideCell, cell, VoxelSide.LEFT)
-                    if (!sideCell.getVoxel()!!.opaque && sideCell.sunlight < llRight - 1) {
+                    if (!sideCell.voxel.opaque && sideCell.sunlight < llRight - 1) {
                         sideCell.sunlight = llRight - 1
                         poke(sideCell)
                         modifiedBlocks++
@@ -1091,7 +1091,6 @@ class ChunkLightBaker(internal val chunk: CubicChunk) : AutoRebuildingProperty(c
         return modifiedBlocks
     }
 
-
     private inline fun peekRawFast(x: Int, y: Int, z: Int): Int =
             if (x in 0..31 && y in 0..31 && z in 0..31)
                 chunk.peekRaw(x, y, z)
@@ -1102,10 +1101,10 @@ class ChunkLightBaker(internal val chunk: CubicChunk) : AutoRebuildingProperty(c
         cell.y = y
         cell.z = z
         val rawData = peekRawFast(x, y, z)
-        cell.voxel = world.contentTranslator.getVoxelForId(VoxelFormat.id(rawData))
+        cell.voxel = world.contentTranslator.getVoxelForId(VoxelFormat.id(rawData)) ?: world.content.voxels().air()
         cell.sunlight = VoxelFormat.sunlight(rawData)
         cell.blocklight = VoxelFormat.blocklight(rawData)
-        cell.metadata = VoxelFormat.meta(rawData)
+        cell.metaData = VoxelFormat.meta(rawData)
     }
 
     private fun pokeRawFast(x: Int, y: Int, z: Int, data: Int) {
@@ -1119,14 +1118,14 @@ class ChunkLightBaker(internal val chunk: CubicChunk) : AutoRebuildingProperty(c
 
             val chunk = world.getChunkWorldCoordinates(x + chunkX * 32, y + chunkY * 32, z + chunkZ * 32)
             if (chunk != null && oldData != data)
-                chunk.lightBaker().requestUpdate()
+                chunk.lightBaker.requestUpdate()
 
             return
         }
     }
 
     private fun poke(cell: ScratchCell) {
-        val data = VoxelFormat.format(world.contentTranslator.getIdForVoxel(cell.voxel), cell.metadata, cell.sunlight, cell.blocklight)
+        val data = VoxelFormat.format(world.contentTranslator.getIdForVoxel(cell.voxel), cell.metaData, cell.sunlight, cell.blocklight)
         pokeRawFast(cell.x, cell.y, cell.z, data)
     }
 

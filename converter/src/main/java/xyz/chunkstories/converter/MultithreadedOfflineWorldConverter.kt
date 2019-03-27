@@ -261,7 +261,7 @@ constructor(verboseMode: Boolean, mcFolder: File, csFolder: File, mcWorldName: S
                 // Spreads lightning, from top to botton
                 for (chunkY in maxHeightPossible / 32 downTo 0) {
                     val chunk = csWorld.getChunk(chunkX, chunkY, chunkZ)
-                    val fence = chunk!!.lightingManager.requestUpdateAndGetFence()
+                    val fence = chunk!!.lightBaker.requestUpdateAndGetFence()
                     waveFence.add(fence)
                 }
 

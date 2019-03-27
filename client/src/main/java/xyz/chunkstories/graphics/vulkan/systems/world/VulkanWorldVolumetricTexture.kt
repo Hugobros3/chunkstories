@@ -94,7 +94,7 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
 
                         if(chunk == cacheEntry) {
                             val oldRevision = revisionCache[cacheIndex]
-                            val newRevision = chunk.revision
+                            val newRevision = chunk.revision.get()
 
                             if(oldRevision < newRevision) {
                                 revisionCache[cacheIndex] = newRevision

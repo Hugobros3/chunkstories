@@ -47,7 +47,7 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
         if (neighborsPresent < neighborsIndexes.size)
             return true
 
-        val receiver = chunk.meshData as VulkanChunkMeshProperty
+        val receiver = chunk.mesh as VulkanChunkMeshProperty
 
         val rng = Random(1)
         var count = 0
@@ -60,8 +60,6 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
 
         } else {
             rawChunkData = chunkDataRef
-
-            //val buffer = MemoryUtil.memAlloc(1024 * 1024 * 4 * 4)
 
             val cell = ScratchCell(chunk.world)
 
@@ -82,7 +80,7 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
                         cell.z = (chunk.chunkX shl 5) + z
 
                         cell.voxel = voxel
-                        cell.metadata = VoxelFormat.meta(cellData)
+                        cell.metaData = VoxelFormat.meta(cellData)
                         cell.sunlight = VoxelFormat.sunlight(cellData)
                         cell.blocklight = VoxelFormat.blocklight(cellData)
 

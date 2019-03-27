@@ -6,6 +6,9 @@
 
 package xyz.chunkstories.world.iterators;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import xyz.chunkstories.api.Location;
 import xyz.chunkstories.api.physics.Box;
 import xyz.chunkstories.api.util.IterableIterator;
 import xyz.chunkstories.api.voxel.Voxel;
@@ -138,5 +141,28 @@ public class AABBVoxelIterator implements IterableIterator<CellData>, CellData {
 	public CellData getNeightbor(int side_int) {
 		VoxelSide side = VoxelSide.values()[side_int];
 		return world.peekSafely(getX() + side.getDx(), getY() + side.getDy(), getZ() + side.getDz());
+	}
+
+	@NotNull
+	@Override
+	public Location getLocation() {
+		return new Location(world, getX(), getY(), getZ());
+	}
+
+	@Nullable
+	@Override
+	public xyz.chunkstories.api.physics.Box[] getTranslatedCollisionBoxes() {
+		return new Box[0];
+	}
+
+	@Override
+	public int getNeightborMetadata(int i) {
+		return 0;
+	}
+
+	@Nullable
+	@Override
+	public Voxel getNeightborVoxel(int i) {
+		return null;
 	}
 }

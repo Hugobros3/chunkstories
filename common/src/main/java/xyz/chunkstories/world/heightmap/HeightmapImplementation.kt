@@ -392,9 +392,8 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
 
     internal inner class SummaryCell(x: Int, y: Int, z: Int, voxel: Voxel, meta: Int, blocklight: Int, sunlight: Int) : Cell(x, y, z, voxel, meta, blocklight, sunlight) {
 
-        override fun getWorld(): World {
-            return world
-        }
+        override val world: World
+            get() = this@HeightmapImplementation.world
 
         override fun getNeightbor(side_int: Int): CellData {
             val side = VoxelSide.values()[side_int]

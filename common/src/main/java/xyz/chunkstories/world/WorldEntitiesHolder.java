@@ -91,7 +91,7 @@ public class WorldEntitiesHolder implements Iterable<Entity> {
 		if (csx == cex && csy == cey && csz == cez) {
 			Chunk chunk = world.getChunk(csx, csy, csz);
 			if (chunk != null)
-				return new DistanceCheckedIterator(chunk.getEntitiesWithinChunk(), box);
+				return new DistanceCheckedIterator(chunk.getEntitiesWithinChunk().iterator(), box);
 			else
 				return new NearEntitiesIterator() {
 
@@ -131,7 +131,7 @@ public class WorldEntitiesHolder implements Iterable<Entity> {
 						// System.out.println(cx+":"+cy+":"+cz);
 						Chunk chunk = world.getChunk(cx, cy, cz);
 						if (chunk != null)
-							iterators.add(chunk.getEntitiesWithinChunk());
+							iterators.add(chunk.getEntitiesWithinChunk().iterator());
 					}
 
 			return new DistanceCheckedIterator(new CompoundIterator<>(iterators), box);

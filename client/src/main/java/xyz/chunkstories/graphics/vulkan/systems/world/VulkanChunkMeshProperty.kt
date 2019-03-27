@@ -1,12 +1,13 @@
 package xyz.chunkstories.graphics.vulkan.systems.world
 
 import xyz.chunkstories.api.world.chunk.Chunk
+import xyz.chunkstories.api.world.chunk.ChunkMesh
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.resources.RefCountedProperty
 import xyz.chunkstories.world.chunk.CubicChunk
 import xyz.chunkstories.world.chunk.deriveddata.AutoRebuildingProperty
 
-class VulkanChunkMeshProperty(val backend: VulkanGraphicsBackend, val chunk: CubicChunk) : AutoRebuildingProperty(chunk.world.gameContext, true), Chunk.ChunkMesh {
+class VulkanChunkMeshProperty(val backend: VulkanGraphicsBackend, val chunk: CubicChunk) : AutoRebuildingProperty(chunk.world.gameContext, true), ChunkMesh {
     val actualProperty = RefCountedProperty<ChunkRepresentation>()
 
     init {

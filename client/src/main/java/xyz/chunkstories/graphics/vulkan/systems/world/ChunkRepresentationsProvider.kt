@@ -107,8 +107,8 @@ class ChunkRepresentationsProvider(val backend: VulkanGraphicsBackend, val world
         val usedData = mutableListOf<ChunkRepresentation>()
 
         fun obtainAndSendRepresentation(chunk: CubicChunk, visibility: Int) {
-            if (chunk.meshData is VulkanChunkMeshProperty) {
-                val block = (chunk.meshData as VulkanChunkMeshProperty).get()
+            if (chunk.mesh is VulkanChunkMeshProperty) {
+                val block = (chunk.mesh as VulkanChunkMeshProperty).get()
                 if (block != null) {
                     usedData.add(block)
                     representationsGobbler.acceptRepresentation(block, visibility)
@@ -117,7 +117,7 @@ class ChunkRepresentationsProvider(val backend: VulkanGraphicsBackend, val world
                 // This avoids the condition where the meshData is created after the chunk is destroyed
                 chunk.chunkDestructionSemaphore.acquireUninterruptibly()
                 if (!chunk.isDestroyed)
-                    chunk.meshData = VulkanChunkMeshProperty(backend, chunk)
+                    chunk.mesh = VulkanChunkMeshProperty(backend, chunk)
                 chunk.chunkDestructionSemaphore.release()
             }
         }

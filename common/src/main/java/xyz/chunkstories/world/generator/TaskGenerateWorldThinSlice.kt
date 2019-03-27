@@ -14,6 +14,7 @@ import xyz.chunkstories.api.world.WorldUser
 import xyz.chunkstories.api.world.cell.CellData
 import xyz.chunkstories.api.world.chunk.Chunk
 import xyz.chunkstories.api.world.chunk.ChunkHolder
+import xyz.chunkstories.api.world.chunk.FreshChunkCell
 import xyz.chunkstories.api.world.generator.WorldGenerator
 import xyz.chunkstories.api.world.heightmap.Heightmap
 import xyz.chunkstories.world.chunk.ChunkLightBaker
@@ -49,7 +50,7 @@ class TaskGenerateWorldThinSlice internal constructor(private val world: World, 
         // Doing the lord's work
         val chunks = arrayOfNulls<Chunk>(holders.size)
         for (chunkY in 0 until maxGenerationHeightInChunks) {
-            chunks[chunkY] = CubicChunk(holders[chunkY], chunkX, chunkY, chunkZ, null)
+            chunks[chunkY] = CubicChunk(holders[chunkY]!!, chunkX, chunkY, chunkZ, null)
         }
 
         generator.generateWorldSlice(chunks)
@@ -73,7 +74,7 @@ class TaskGenerateWorldThinSlice internal constructor(private val world: World, 
 
                         val rawData = data[x * 32 * 32 + i * 32 + z]
                         if(rawData != 0 && VoxelFormat.id(rawData) != 0) {
-                            val cell: Chunk.FreshChunkCell = chunk.peek(x, y, z)
+                            val cell: FreshChunkCell = chunk.peek(x, y, z)
                             if (cell.voxel!!.solid || cell.voxel!!.name == "water") {
                                 heightmap.setTopCell(cell)
                                 break
@@ -101,7 +102,7 @@ class TaskGenerateWorldThinSlice internal constructor(private val world: World, 
 
         // Let there be light
         for (chunkY in 0 until maxGenerationHeightInChunks) {
-            (holders[chunkY]!!.chunk!!.lightBaker() as ChunkLightBaker).hackyUpdateDirect()
+            (holders[chunkY]!!.chunk!!.lightBaker as ChunkLightBaker).hackyUpdateDirect()
         }
 
         // Let go the world data now
