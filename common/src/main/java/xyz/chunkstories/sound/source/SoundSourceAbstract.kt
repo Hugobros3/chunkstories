@@ -16,8 +16,8 @@ abstract class SoundSourceAbstract(
         soundData: SoundData,
         position: Vector3dc? = null,
         mode: SoundSource.Mode = SoundSource.Mode.NORMAL,
-        gain: Float = 1f,
         pitch: Float = 1f,
+        gain: Float = 1f,
         attenuationStart: Float = 1f,
         attenuationEnd: Float = 25f
 ) : SoundSource {
