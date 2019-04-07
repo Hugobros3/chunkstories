@@ -6,6 +6,8 @@
 
 package xyz.chunkstories.gui.layer.config
 
+import org.joml.Vector4f
+import org.lwjgl.glfw.GLFW.glfwGetKeyName
 import xyz.chunkstories.api.gui.Gui
 import xyz.chunkstories.api.gui.GuiDrawer
 import xyz.chunkstories.api.gui.Layer
@@ -13,10 +15,10 @@ import xyz.chunkstories.api.gui.elements.Button
 import xyz.chunkstories.api.gui.elements.LargeButtonWithIcon
 import xyz.chunkstories.api.input.Input
 import xyz.chunkstories.api.input.Mouse.MouseButton
+import xyz.chunkstories.api.sound.SoundSource
 import xyz.chunkstories.api.util.configuration.Configuration
 import xyz.chunkstories.api.util.configuration.Configuration.*
-import org.joml.Vector4f
-import org.lwjgl.glfw.GLFW.glfwGetKeyName
+import xyz.chunkstories.input.lwjgl3.Lwjgl3MouseButton
 import java.util.*
 
 class OptionsScreen(gui: Gui, parent: Layer) : Layer(gui, parent) {
@@ -24,23 +26,15 @@ class OptionsScreen(gui: Gui, parent: Layer) : Layer(gui, parent) {
     private val configTabs = ArrayList<ConfigTab>()
 
     private val tabsButtons = ArrayList<Button>()
-    private var selectedConfigTab = 0
+    private var selectedConfigTabIndex = 0
 
     private val clientConfiguration: Configuration
 
-    internal abstract inner class ConfigButton(open val option: Option<*>) : Button(this@OptionsScreen, 0, 0, option.name) {
-        var run: Runnable? = null
+    internal inner class ConfigTab(val name: String) {
+        val configButtons: MutableList<ConfigButton> = ArrayList()
+    }
 
-        fun setApplyAction(run: Runnable): ConfigButton {
-            this.run = run
-            return this
-        }
-
-        fun apply() {
-            if (run != null)
-                run!!.run()
-        }
-
+    internal abstract inner class ConfigButton(open val option: Option<*>, val tab: ConfigTab) : Button(this@OptionsScreen, 0, 0, option.name) {
         init {
             this.height = 24
             this.width = 160
@@ -50,16 +44,19 @@ class OptionsScreen(gui: Gui, parent: Layer) : Layer(gui, parent) {
             this.text = gui.localization().getLocalizedString(option.name) + " : " + option.value
         }
 
-        abstract fun onClick(posx: Float, posy: Float, button: Int)
+        //abstract fun onClick(posx: Float, posy: Float, button: Int)
     }
 
-    internal inner class ConfigButtonToggle(override val option: OptionBoolean) : ConfigButton(option) {
-        override fun onClick(posx: Float, posy: Float, button: Int) {
+    internal inner class ConfigButtonToggle(override val option: OptionBoolean, tab: ConfigTab) : ConfigButton(option, tab) {
+
+        override fun handleClick(mouseButton: MouseButton): Boolean {
             option.toggle()
+            this.layer.gui.client.soundManager.playSoundEffect("sounds/gui/gui_click2.ogg")
+            return true
         }
     }
 
-    internal inner class ConfigButtonMultiChoice(override val option: Configuration.OptionMultiChoice) : ConfigButton(option) {
+    internal inner class ConfigButtonMultiChoice(override val option: Configuration.OptionMultiChoice, tab: ConfigTab) : ConfigButton(option, tab) {
 
         var values: Array<String> = option.possibleChoices.toTypedArray()
         var cuVal = 0
@@ -71,20 +68,24 @@ class OptionsScreen(gui: Gui, parent: Layer) : Layer(gui, parent) {
             }
         }
 
-        override fun onClick(posx: Float, posy: Float, button: Int) {
-            if (button == 0)
+        override fun handleClick(mouseButton: MouseButton): Boolean {
+            if (mouseButton == gui.mouse.mainButton)
                 cuVal++
             else
                 cuVal--
+
             if (cuVal < 0)
                 cuVal = values.size - 1
             if (cuVal >= values.size)
                 cuVal = 0
             option.trySetting(values[cuVal])
+
+            this.layer.gui.client.soundManager.playSoundEffect("sounds/gui/gui_click2.ogg", SoundSource.Mode.NORMAL, null, if(mouseButton == gui.mouse.mainButton) 1f else 0.8f, 1f)
+            return true
         }
     }
 
-    internal inner class ConfigButtonMultiChoiceInt(override val option: Configuration.OptionMultiChoiceInt) : ConfigButton(option) {
+    internal inner class ConfigButtonMultiChoiceInt(override val option: Configuration.OptionMultiChoiceInt, tab: ConfigTab) : ConfigButton(option, tab) {
 
         var possibleValues: List<Int> = option.possibleChoices
         var currentValueIndex = 0
@@ -96,49 +97,72 @@ class OptionsScreen(gui: Gui, parent: Layer) : Layer(gui, parent) {
             }
         }
 
-        override fun onClick(posx: Float, posy: Float, button: Int) {
-            if (button == 0)
+        override fun handleClick(mouseButton: MouseButton): Boolean {
+            if (mouseButton == gui.mouse.mainButton)
                 currentValueIndex++
             else
                 currentValueIndex--
+
             if (currentValueIndex < 0)
                 currentValueIndex = possibleValues.size - 1
             if (currentValueIndex >= possibleValues.size)
                 currentValueIndex = 0
             option.trySetting(possibleValues[currentValueIndex])
+
+            this.layer.gui.client.soundManager.playSoundEffect("sounds/gui/gui_click2.ogg", SoundSource.Mode.NORMAL, null, if(mouseButton == gui.mouse.mainButton) 1f else 0.8f, 1f)
+            return true
         }
 
     }
 
 
-    internal inner class ConfigButtonKey internal constructor(override val option: OptionKeyBind) : ConfigButton(option) {
+    internal inner class ConfigButtonKey internal constructor(override val option: OptionKeyBind, tab: ConfigTab) : ConfigButton(option, tab) {
 
         override fun updateText() {
             this.text = gui.localization().getLocalizedString(option.name) + " : " + glfwGetKeyName(option.value, 0)// Keyboard.getKeyName(Integer.parseInt(value));
         }
 
-        override fun onClick(posx: Float, posy: Float, button: Int) {
+        override fun handleClick(mouseButton: MouseButton): Boolean {
             gui.topLayer = KeyBindSelectionOverlay(gui, this@OptionsScreen, this)
+            this.layer.gui.client.soundManager.playSoundEffect("sounds/gui/gui_click2.ogg")
+            return true
         }
 
         //TODO use a lambda
         internal fun callBack(key: Int) {
             option.trySetting(key)
-            apply()
         }
     }
 
-    internal inner class ConfigButtonScale(override val option: Configuration.OptionDoubleRange) : ConfigButton(option) {
+    internal inner class ConfigButtonScale(override val option: Configuration.OptionDoubleRange, tab: ConfigTab) : ConfigButton(option, tab) {
 
-        override fun onClick(mouseX: Float, mouseY: Float, button: Int) {
-            val relativeMouseXPosition = (mouseX - this.positionX).toDouble()
+        override fun handleClick(mouseButton: MouseButton): Boolean {
+            drag()
+            this.layer.gui.client.soundManager.playSoundEffect("sounds/gui/gui_click2.ogg")
+            return true
+        }
+
+        fun drag() {
+            val oldValue = option.value
+
+            val mouseX = gui.mouse.cursorX
+            val relativeMouseXPosition = (mouseX - this.positionX)
             //System.out.println(relativeMouseXPosition);
             var newValue = (0.0 + Math.min(320.0, Math.max(0.0, relativeMouseXPosition))) / 160.0f
 
             newValue *= option.maximumValue - option.minimumValue
             newValue += option.minimumValue
 
+
             option.trySetting(newValue)
+
+            val actualNewValue = option.value
+            val normalizedValue = (actualNewValue - option.minimumValue) / (option.maximumValue - option.minimumValue)
+
+            if(oldValue != actualNewValue) {
+                this.layer.gui.client.soundManager.playSoundEffect("sounds/gui/gui_drag_slider.ogg", SoundSource.Mode.NORMAL, null, 0.5f + normalizedValue.toFloat(), 1f)
+                //println("$oldValue != $actualNewValue $normalizedValue")
+            }
         }
 
         override fun render(drawer: GuiDrawer) {
@@ -156,24 +180,14 @@ class OptionsScreen(gui: Gui, parent: Layer) : Layer(gui, parent) {
 
             drawer.drawBoxWithCorners(positionX, positionY, width, height, 8, texture)
 
-            //TODO redo call with modern api
-            /*
-			ObjectRenderer.renderTexturedRect(
-					xPosition + this.width * scale() * (float) (option.getDoubleValue() - option.getMinimumValue())
-							/ (float) (option.getMaximumValue() - option.getMinimumValue()),
-					yPosition + 12 * scale(), 32 * scale(), 32 * scale(), 0, 0, 32, 32, 32,
-					"./textures/gui/barCursor.png");*/
+            val virtualMouse = gui.mouse
+            if (this.isMouseOver && (virtualMouse.mainButton as Lwjgl3MouseButton).isDown) {
+                drag()
+            }
 
+            val normalizedValue = (value - option.minimumValue) / (option.maximumValue - option.minimumValue)
+            drawer.drawBox(positionX - 16 + (width * normalizedValue).toInt(), positionY - 4, 32, 32, "textures/gui/barCursor.png")
             drawer.drawStringWithShadow(drawer.fonts.defaultFont(), positionX + textStartOffset, positionY + 4, localizedText, -1, Vector4f(1.0f))
-        }
-    }
-
-    internal inner class ConfigTab(var name: String) {
-        var configButtons: MutableList<ConfigButton> = ArrayList()
-
-        constructor(name: String, buttons: Array<ConfigButton>) : this(name) {
-            for (b in buttons)
-                configButtons.add(b)
         }
     }
 
@@ -187,7 +201,7 @@ class OptionsScreen(gui: Gui, parent: Layer) : Layer(gui, parent) {
 
         clientConfiguration = gui.client.configuration
 
-        for (option in clientConfiguration.options) {
+        loop@ for (option in clientConfiguration.options) {
             val name = option.name
             var category = name.substring("client.".length)
 
@@ -195,22 +209,6 @@ class OptionsScreen(gui: Gui, parent: Layer) : Layer(gui, parent) {
             category = category.substring(0, 1).toUpperCase() + category.substring(1).toLowerCase()
 
             val optionButton: ConfigButton
-
-            if (option is Configuration.OptionMultiChoice)
-                optionButton = ConfigButtonMultiChoice(option)
-            else if (option is Configuration.OptionDoubleRange)
-                optionButton = ConfigButtonScale(option)
-            else if (option is OptionBoolean)
-                optionButton = ConfigButtonToggle(option)
-            else if (option is Configuration.OptionMultiChoiceInt)
-                optionButton = ConfigButtonMultiChoiceInt(option)
-            else if (option is Configuration.OptionKeyBind) {
-                if (!option.hidden)
-                    optionButton = ConfigButtonKey(option)
-                else
-                    continue
-            } else
-                continue
 
             var relevantTab: ConfigTab? = null
             for (tab in configTabs) {
@@ -224,25 +222,41 @@ class OptionsScreen(gui: Gui, parent: Layer) : Layer(gui, parent) {
                 configTabs.add(0, relevantTab)
             }
 
+            when (option) {
+                is Configuration.OptionMultiChoice -> optionButton = ConfigButtonMultiChoice(option, relevantTab)
+                is Configuration.OptionDoubleRange -> optionButton = ConfigButtonScale(option, relevantTab)
+                is OptionBoolean -> optionButton = ConfigButtonToggle(option, relevantTab)
+                is Configuration.OptionMultiChoiceInt -> optionButton = ConfigButtonMultiChoiceInt(option, relevantTab)
+                is Configuration.OptionKeyBind -> if (!option.hidden) {
+                    optionButton = ConfigButtonKey(option, relevantTab)
+                } else
+                    continue@loop
+                else -> continue@loop
+            }
+
             relevantTab.configButtons.add(optionButton)
         }
 
-        var configTabIndex = 0
-        for (tab in configTabs) {
+        for ((configTabIndex, tab) in configTabs.withIndex()) {
             // Add all these elements to the Gui handler
-            elements.addAll(tab.configButtons)
-
             val tabButton = Button(this, 0, 0, tab.name)
 
-            // Make the action of the tab buttons switching tab effectively
-            val configTabIndex2 = configTabIndex
-            tabButton.action = Runnable { selectedConfigTab = configTabIndex2 }
+            // Capture the index for the lambda
+            //val capturedIndex = configTabIndex
 
-            configTabIndex++
+            // Clicking on a button removes the buttons from the previous tab, changes tab and adds it's buttons to the clickable elements
+            tabButton.action = Runnable {
+                val oldTab = configTabs[selectedConfigTabIndex]
+                elements.removeAll(oldTab.configButtons)
+                selectedConfigTabIndex = configTabIndex
+                elements.addAll(tab.configButtons)
+            }
 
             tabsButtons.add(tabButton)
             elements.add(tabButton)
         }
+
+        elements.addAll(configTabs[selectedConfigTabIndex].configButtons)
     }
 
     override fun render(renderer: GuiDrawer) {
@@ -265,7 +279,7 @@ class OptionsScreen(gui: Gui, parent: Layer) : Layer(gui, parent) {
         }
 
         // Display the current tab
-        val currentConfigTab = configTabs[selectedConfigTab]
+        val currentConfigTab = configTabs[selectedConfigTabIndex]
         var a = 0
         var b = 0
         val startPosX = gui.viewportWidth / 2 - optionsPanelSize / 2 + 16
@@ -279,10 +293,9 @@ class OptionsScreen(gui: Gui, parent: Layer) : Layer(gui, parent) {
             c.render(renderer)
 
             // Scale buttons work a bit hackyshly
-            if (c is ConfigButtonScale && c.isMouseOver && mouse.mainButton.isPressed) {
+            /*if (c is ConfigButtonScale && c.isMouseOver && mouse.mainButton.isPressed) {
                 c.onClick(mouse.cursorX.toFloat(), mouse.cursorY.toFloat(), 0)
-                c.apply()
-            }
+            }*/
 
             a++
             b = a % 2
@@ -300,14 +313,14 @@ class OptionsScreen(gui: Gui, parent: Layer) : Layer(gui, parent) {
             clientConfiguration.save()
             gui.popTopLayer()
             return true
-        } else if (input is MouseButton) {
-            for (b in configTabs[selectedConfigTab].configButtons) {
+        }/* else if (input is MouseButton) {
+            for (b in configTabs[selectedConfigTabIndex].configButtons) {
                 if (b.isMouseOver) {
-                    b.onClick(input.mouse.cursorX.toFloat(), input.mouse.cursorY.toFloat(), if (input.name == "mouse.left") 0 else 1)
-                    b.apply()
+                    val virtualMouse = gui.mouse
+                    b.onClick(virtualMouse.cursorX.toFloat(), virtualMouse.cursorY.toFloat(), if (input.name == "mouse.left") 0 else 1)
                 }
             }
-        }
+        }*/
 
         super.handleInput(input)
         return true

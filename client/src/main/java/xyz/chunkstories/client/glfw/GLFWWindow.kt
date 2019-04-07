@@ -40,7 +40,7 @@ class GLFWWindow(val client: ClientImplementation, val graphicsEngine: GraphicsE
     //val inputsManager : Lwjgl3ClientInputsManager
 
     init {
-        /*glfwSetErrorCallback { error, description ->
+        glfwSetErrorCallback { error, description ->
             println("GLFW error: error: $error description: $description")
         }
 
@@ -60,7 +60,7 @@ class GLFWWindow(val client: ClientImplementation, val graphicsEngine: GraphicsE
             println("MONITOR $name scale = [${xScale[0]}:${yScale[0]}] [${xmm[0]}:${ymm[0]}]")
         }
 
-        glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE)*/
+        glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_FALSE)
 
         glfwWindowHint(GLFW_CLIENT_API, selectedBackend.glfwApiHint)
 

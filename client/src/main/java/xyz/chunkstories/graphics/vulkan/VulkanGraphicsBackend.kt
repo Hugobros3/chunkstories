@@ -102,7 +102,7 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
         renderToBackbuffer = RenderPassHelpers.createWindowSurfaceRenderPass(this)
         swapchain = SwapChain(this, renderToBackbuffer, null)
 
-        /*GLFW.glfwSetWindowSizeCallback(window.glfwWindowHandle) { handle, newWidth, newHeight ->
+        GLFW.glfwSetWindowSizeCallback(window.glfwWindowHandle) { handle, newWidth, newHeight ->
             println("resized 2 to $newWidth:$newHeight")
 
             if(newWidth != 0 && newHeight != 0) {
@@ -111,7 +111,7 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
 
                 this@VulkanGraphicsBackend.swapchain.expired = true
             }
-        }*/
+        }
 
         GLFW.glfwSetFramebufferSizeCallback(window.glfwWindowHandle) { handle, newWidth, newHeight ->
             println("resized to $newWidth:$newHeight")
@@ -136,7 +136,6 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
 
             this@VulkanGraphicsBackend.swapchain.expired = true
         }
-
 
         renderGraph = VulkanRenderGraph(this, queuedRenderGraph!!)
         queuedRenderGraph = null

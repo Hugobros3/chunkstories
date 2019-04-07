@@ -16,7 +16,7 @@ import xyz.chunkstories.input.Pollable
 
 class Lwjgl3MouseButton(override val mouse: Lwjgl3Mouse, override val name: String, private val button: Int) : MouseButton, Pollable {
 
-    private var isDown = false
+    var isDown = false
 
     override val isPressed: Boolean
         get() {
