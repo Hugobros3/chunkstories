@@ -28,6 +28,32 @@ class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
 
     override val representationName: String = ChunkRepresentation::class.java.canonicalName
 
+    private val cubesVertexInput = VertexInputConfiguration {
+        var offset = 0
+
+        attribute {
+            binding(0)
+            location(program.vertexInputs.find { it.name == "vertexIn" }!!.location)
+            format(VK_FORMAT_R8G8B8A8_UINT)
+            offset(offset)
+        }
+        offset += 4
+
+        attribute {
+            binding(0)
+            location(program.vertexInputs.find { it.name == "textureIdIn" }!!.location)
+            format(VK_FORMAT_R32_UINT)
+            offset(offset)
+        }
+        offset += 4
+
+        binding {
+            binding(0)
+            stride(offset)
+            inputRate(VK_VERTEX_INPUT_RATE_VERTEX)
+        }
+    }
+
     private val meshesVertexInputCfg = VertexInputConfiguration {
         var offset = 0
 
@@ -91,8 +117,11 @@ class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
             this.apply(initCode)
         }
 
-        val cubesProgram = backend.shaderFactory.createProgram(shader, ShaderCompilationParameters(outputs = pass.declaration.outputs))
-        private val meshesPipeline = Pipeline(backend, cubesProgram, pass, meshesVertexInputCfg, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
+        private val cubesProgram = backend.shaderFactory.createProgram(/* TODO */"cubes", ShaderCompilationParameters(outputs = pass.declaration.outputs))
+        private val cubesPipeline = Pipeline(backend, cubesProgram, pass, cubesVertexInput, Primitive.POINTS, FaceCullingMode.CULL_BACK)
+
+        private val meshesProgram = backend.shaderFactory.createProgram(/* TODO */shader, ShaderCompilationParameters(outputs = pass.declaration.outputs))
+        private val meshesPipeline = Pipeline(backend, meshesProgram, pass, meshesVertexInputCfg, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
 
         val chunkInfoID = cubesProgram.glslProgram.instancedInputs.find { it.name == "chunkInfo" }!!
         val structSize = chunkInfoID.struct.size
@@ -104,74 +133,143 @@ class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
         override fun registerDrawingCommands(frame: Frame, passContext: VulkanFrameGraph.FrameGraphNode.PassNode, commandBuffer: VkCommandBuffer, work: Sequence<ChunkRepresentation.Section>) {
             val client = backend.window.client.ingame ?: return
 
+            val staticMeshes = work.mapNotNull { it.staticMesh }
+            val cubes = work.mapNotNull { it.cubes }
+
             MemoryStack.stackPush()
 
-            val bindingContext = backend.descriptorMegapool.getBindingContext(meshesPipeline)
+            fun drawCubes() {
+                val bindingContext = backend.descriptorMegapool.getBindingContext(cubesPipeline)
 
-            val camera = passContext.context.camera
-            val world = client.world
+                val camera = passContext.context.camera
+                val world = client.world
 
-            bindingContext.bindUBO("camera", camera)
-            bindingContext.bindUBO("world", world.getConditions())
+                bindingContext.bindUBO("camera", camera)
+                bindingContext.bindUBO("world", world.getConditions())
 
-            vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshesPipeline.handle)
+                vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, cubesPipeline.handle)
 
-            if (backend.logicalDevice.enableMagicTexturing)
-                vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshesPipeline.pipelineLayout, 0, MemoryStack.stackLongs(backend.textures.magicTexturing!!.theSet), null)
+                //TODO pool those
+                val ssboDataTest = VulkanBuffer(backend, ssboBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, MemoryUsagePattern.DYNAMIC)
 
-            //TODO pool those
-            val ssboDataTest = VulkanBuffer(backend, ssboBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, MemoryUsagePattern.DYNAMIC)
+                val ssboStuff = MemoryUtil.memAlloc(ssboDataTest.bufferSize.toInt())
+                var instance = 0
+                val voxelTexturesArray = client.content.voxels().textures() as VulkanVoxelTexturesArray
+                bindingContext.bindTextureAndSampler("albedoTextures", voxelTexturesArray.albedoOnionTexture, sampler)
+                bindingContext.bindSSBO("chunkInfo", ssboDataTest)
 
-            val ssboStuff = MemoryUtil.memAlloc(ssboDataTest.bufferSize.toInt())
-            var instance = 0
-            val voxelTexturesArray = client.content.voxels().textures() as VulkanVoxelTexturesArray
-            bindingContext.bindTextureAndSampler("albedoTextures", voxelTexturesArray.albedoOnionTexture, sampler)
-            bindingContext.bindSSBO("chunkInfo", ssboDataTest)
+                val viewportSize = ViewportSize()
+                viewportSize.size.set(pass.declaration.outputs.outputs.getOrNull(0)?.let { passContext.resolvedOutputs.get(it)?.size } ?: passContext.resolvedDepthBuffer!!.size)
+                bindingContext.bindUBO("viewportSize", viewportSize)
 
-            if (shader == "water") {
-                bindingContext.bindTextureAndSampler("waterNormalDeep", backend.textures.getOrLoadTexture2D("textures/water/deep.png"), sampler)
-                bindingContext.bindTextureAndSampler("waterNormalShallow", backend.textures.getOrLoadTexture2D("textures/water/shallow.png"), sampler)
-            }
+                bindingContext.preDraw(commandBuffer)
 
-            bindingContext.preDraw(commandBuffer)
+                for (staticMesh in cubes) {
+                    val chunkRepresentation = staticMesh.parent
+                    vkCmdBindVertexBuffers(commandBuffer, 0, MemoryStack.stackLongs(staticMesh.buffer.handle), MemoryStack.stackLongs(0))
 
-            for (section in work) {
-                val chunkRepresentation = section.parent
-                vkCmdBindVertexBuffers(commandBuffer, 0, MemoryStack.stackLongs(section.buffer.handle), MemoryStack.stackLongs(0))
+                    ssboStuff.position(instance * sizeAligned16)
+                    val chunkRenderInfo = ChunkRenderInfo().apply {
+                        chunkX = chunkRepresentation.chunk.chunkX
+                        chunkY = chunkRepresentation.chunk.chunkY
+                        chunkZ = chunkRepresentation.chunk.chunkZ
+                    }
+
+                    for (field in chunkInfoID.struct.fields) {
+                        ssboStuff.position(instance * sizeAligned16 + field.offset)
+                        extractInterfaceBlockField(field, ssboStuff, chunkRenderInfo)
+                    }
+
+                    vkCmdDraw(commandBuffer, staticMesh.count, 1, 0, instance++)
+
+                    frame.stats.totalVerticesDrawn += staticMesh.count
+                    frame.stats.totalDrawcalls++
+                }
 
                 ssboStuff.position(instance * sizeAligned16)
-                val chunkRenderInfo = ChunkRenderInfo().apply {
-                    chunkX = chunkRepresentation.chunk.chunkX
-                    chunkY = chunkRepresentation.chunk.chunkY
-                    chunkZ = chunkRepresentation.chunk.chunkZ
+                ssboStuff.flip()
+                ssboDataTest.upload(ssboStuff)
+                MemoryUtil.memFree(ssboStuff)
+
+                frame.recyclingTasks.add {
+                    bindingContext.recycle()
+                    ssboDataTest.cleanup()//TODO recycle don't destroy!
+                }
+            }
+            drawCubes()
+
+            fun drawStaticMeshes() {
+                val bindingContext = backend.descriptorMegapool.getBindingContext(meshesPipeline)
+
+                val camera = passContext.context.camera
+                val world = client.world
+
+                bindingContext.bindUBO("camera", camera)
+                bindingContext.bindUBO("world", world.getConditions())
+
+                vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshesPipeline.handle)
+
+                if (backend.logicalDevice.enableMagicTexturing)
+                    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshesPipeline.pipelineLayout, 0, MemoryStack.stackLongs(backend.textures.magicTexturing!!.theSet), null)
+
+                //TODO pool those
+                val ssboDataTest = VulkanBuffer(backend, ssboBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, MemoryUsagePattern.DYNAMIC)
+
+                val ssboStuff = MemoryUtil.memAlloc(ssboDataTest.bufferSize.toInt())
+                var instance = 0
+                val voxelTexturesArray = client.content.voxels().textures() as VulkanVoxelTexturesArray
+                bindingContext.bindTextureAndSampler("albedoTextures", voxelTexturesArray.albedoOnionTexture, sampler)
+                bindingContext.bindSSBO("chunkInfo", ssboDataTest)
+
+                if (shader == "water") {
+                    bindingContext.bindTextureAndSampler("waterNormalDeep", backend.textures.getOrLoadTexture2D("textures/water/deep.png"), sampler)
+                    bindingContext.bindTextureAndSampler("waterNormalShallow", backend.textures.getOrLoadTexture2D("textures/water/shallow.png"), sampler)
                 }
 
-                for (field in chunkInfoID.struct.fields) {
-                    ssboStuff.position(instance * sizeAligned16 + field.offset)
-                    extractInterfaceBlockField(field, ssboStuff, chunkRenderInfo)
+                bindingContext.preDraw(commandBuffer)
+
+                for (staticMesh in staticMeshes) {
+                    val chunkRepresentation = staticMesh.parent
+                    vkCmdBindVertexBuffers(commandBuffer, 0, MemoryStack.stackLongs(staticMesh.buffer.handle), MemoryStack.stackLongs(0))
+
+                    ssboStuff.position(instance * sizeAligned16)
+                    val chunkRenderInfo = ChunkRenderInfo().apply {
+                        chunkX = chunkRepresentation.chunk.chunkX
+                        chunkY = chunkRepresentation.chunk.chunkY
+                        chunkZ = chunkRepresentation.chunk.chunkZ
+                    }
+
+                    for (field in chunkInfoID.struct.fields) {
+                        ssboStuff.position(instance * sizeAligned16 + field.offset)
+                        extractInterfaceBlockField(field, ssboStuff, chunkRenderInfo)
+                    }
+
+                    vkCmdDraw(commandBuffer, staticMesh.count, 1, 0, instance++)
+
+                    frame.stats.totalVerticesDrawn += staticMesh.count
+                    frame.stats.totalDrawcalls++
                 }
 
-                vkCmdDraw(commandBuffer, section.count, 1, 0, instance++)
+                ssboStuff.position(instance * sizeAligned16)
+                ssboStuff.flip()
+                ssboDataTest.upload(ssboStuff)
+                MemoryUtil.memFree(ssboStuff)
 
-                frame.stats.totalVerticesDrawn += section.count
-                frame.stats.totalDrawcalls++
+                frame.recyclingTasks.add {
+                    bindingContext.recycle()
+                    ssboDataTest.cleanup()//TODO recycle don't destroy!
+                }
             }
-
-            ssboStuff.position(instance * sizeAligned16)
-            ssboStuff.flip()
-            ssboDataTest.upload(ssboStuff)
-            MemoryUtil.memFree(ssboStuff)
-
-            frame.recyclingTasks.add {
-                bindingContext.recycle()
-                ssboDataTest.cleanup()//TODO recycle don't destroy!
-            }
+            drawStaticMeshes()
 
             MemoryStack.stackPop()
         }
 
         override fun cleanup() {
             meshesPipeline.cleanup()
+            meshesProgram.cleanup()
+
+            cubesPipeline.cleanup()
             cubesProgram.cleanup()
         }
     }

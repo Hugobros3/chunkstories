@@ -9,6 +9,7 @@ import kotlin.reflect.KClass
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.superclasses
 import kotlin.reflect.jvm.javaField
+import kotlin.reflect.jvm.jvmErasure
 
 /* This file deals with performing reflection on JVM types to extract a GLSLType.JvmStructure that can be used
 to provide data to shaders.
@@ -47,7 +48,7 @@ fun ShaderCompiler.createGLSLStructFromJVMClass(klass: KClass<InterfaceBlock>, b
         }
 
         // We'll need that
-        property.javaField!!.isAccessible = true
+        property.javaField?.isAccessible = true
 
         fun jvmTypeToGlslType(propertyType: KClass<out Any>, value: Any?): GLSLType = GLSLType.BaseType.get(propertyType) ?: when {
             // Array types - Arrays *have* to be non-null
@@ -80,7 +81,7 @@ fun ShaderCompiler.createGLSLStructFromJVMClass(klass: KClass<InterfaceBlock>, b
         }
 
         val propertyValue = property.get(sampleInstance)
-        val propertyType = property.javaField!!.type.kotlin
+        val propertyType = property.returnType.jvmErasure//property.javaField?.type.kotlin
 
         val propertyGlslType = jvmTypeToGlslType(propertyType, propertyValue)
 

@@ -33,12 +33,12 @@ fun VulkanGraphicsBackend.updateDescriptorSet(set: VkDescriptorSet, binding: Int
     MemoryStack.stackPop()
 }
 
-fun VulkanGraphicsBackend.updateDescriptorSet_ssbo(set: VkDescriptorSet, binding: Int, buffer: VulkanBuffer) {
+fun VulkanGraphicsBackend.updateDescriptorSet(set: VkDescriptorSet, binding: Int, buffer: VulkanBuffer, offset: Long = 0) {
     MemoryStack.stackPush()
 
     val bufferInfo = VkDescriptorBufferInfo.callocStack(1).apply {
         buffer(buffer.handle)
-        offset(0)
+        offset(offset)
         range(buffer.bufferSize)
     }
 

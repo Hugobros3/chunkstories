@@ -9,17 +9,30 @@ import xyz.chunkstories.world.chunk.CubicChunk
 class ChunkRepresentation(val chunk: CubicChunk, val sections: Map<String, Section>, property: RefCountedProperty<*>
 ) : RefCountedRecyclable(property), Representation {
 
-    class Section(val materialTag: String, val buffer: VulkanVertexBuffer, val count: Int) {
+    class Section(val materialTag: String, val cubes: CubesInstances?, val staticMesh: StaticMesh?) {
         lateinit var parent: ChunkRepresentation
+
+        data class StaticMesh(val buffer: VulkanVertexBuffer, val count: Int) {
+            lateinit var parent: ChunkRepresentation
+        }
+
+        data class CubesInstances(val buffer: VulkanVertexBuffer, val count: Int) {
+            lateinit var parent: ChunkRepresentation
+        }
     }
 
     init {
-        sections.values.forEach { it.parent = this }
+        sections.values.forEach {
+            it.parent = this
+            it.cubes?.parent = this
+            it.staticMesh?.parent = this
+        }
     }
 
     override fun cleanup() {
         sections.values.forEach {
-            it.buffer.cleanup()
+            it.cubes?.buffer?.cleanup()
+            it.staticMesh?.buffer?.cleanup()
         }
     }
 }

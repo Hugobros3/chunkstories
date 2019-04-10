@@ -163,12 +163,12 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
             tempBuffers.add(buffer)
         }
 
-        fun bindSSBO(name: String, buffer: VulkanBuffer) {
+        fun bindSSBO(name: String, buffer: VulkanBuffer, offset: Long = 0) {
             val ssboBindPoint = pipeline.program.glslProgram.instancedInputs.find { it.name == name }!!.shaderStorage
 
             val set = getSet(ssboBindPoint.descriptorSetSlot)
 
-            backend.updateDescriptorSet_ssbo(set, ssboBindPoint.binding, buffer)
+            backend.updateDescriptorSet(set, ssboBindPoint.binding, buffer, offset)
         }
 
         fun bindTextureAndSampler(name: String, texture: VulkanTexture2D, sampler: VulkanSampler, index: Int = 0) {

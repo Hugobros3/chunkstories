@@ -118,7 +118,7 @@ class VulkanWorldRenderer(val backend: VulkanGraphicsBackend, world: WorldClient
 
                     draws {
                         system(ChunksRenderer::class) {
-                            shader = "cubes"
+                            shader = "blockMeshes"
                             materialTag = "opaque"
                         }
                         system(ModelsRenderer::class) {
@@ -301,7 +301,7 @@ class VulkanWorldRenderer(val backend: VulkanGraphicsBackend, world: WorldClient
 
                     draws {
                         system(ChunksRenderer::class) {
-                            shader = "cubes"
+                            shader = "blockMeshes"
                             materialTag = "opaque"
                         }
                         system(ModelsRenderer::class) {

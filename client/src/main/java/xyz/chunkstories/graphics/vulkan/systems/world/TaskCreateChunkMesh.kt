@@ -1,21 +1,22 @@
 package xyz.chunkstories.graphics.vulkan.systems.world
 
+import org.lwjgl.system.MemoryUtil
+import org.lwjgl.system.MemoryUtil.memFree
+import xyz.chunkstories.api.graphics.Mesh
 import xyz.chunkstories.api.voxel.Voxel
 import xyz.chunkstories.api.voxel.VoxelFormat
 import xyz.chunkstories.api.voxel.VoxelSide
 import xyz.chunkstories.api.workers.TaskExecutor
 import xyz.chunkstories.api.world.chunk.ChunkHolder
+import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.common.UnitCube
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
+import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
+import xyz.chunkstories.graphics.vulkan.textures.voxels.VoxelTexturesArray
 import xyz.chunkstories.world.cell.ScratchCell
 import xyz.chunkstories.world.chunk.CubicChunk
 import xyz.chunkstories.world.chunk.deriveddata.AutoRebuildingProperty
-import org.lwjgl.system.MemoryUtil
-import org.lwjgl.system.MemoryUtil.memFree
-import xyz.chunkstories.api.graphics.Mesh
-import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
-import xyz.chunkstories.graphics.vulkan.textures.voxels.VoxelTexturesArray
 import java.lang.Integer.max
 import java.lang.Integer.min
 import java.nio.ByteBuffer
@@ -26,7 +27,7 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
 
     inline fun opaque(voxel: Voxel) = voxel.opaque// || voxel.name == "water"
 
-    inline fun opaque(data: Int) = if(data == 0) false else opaque(chunk.world.contentTranslator.getVoxelForId(VoxelFormat.id(data))!!)
+    inline fun opaque(data: Int) = if (data == 0) false else opaque(chunk.world.contentTranslator.getVoxelForId(VoxelFormat.id(data))!!)
 
     inline fun opaque(x2: Int, y2: Int, z2: Int): Boolean = opaque(data(x2, y2, z2))
 
@@ -50,11 +51,21 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
         val receiver = chunk.mesh as VulkanChunkMeshProperty
 
         val rng = Random(1)
-        var count = 0
 
         val chunkDataRef = chunk.voxelDataArray
 
-        val buffers = mutableMapOf<String, ByteBuffer>()
+        class ScratchBuffer : Cleanable {
+            val cubesData: ByteBuffer = MemoryUtil.memAlloc(1024 * 1024 * 4 * 4)
+            var cubesCount = 0
+            val meshData: ByteBuffer = MemoryUtil.memAlloc(1024 * 1024 * 4 * 4)
+            var meshTriCount = 0
+            override fun cleanup() {
+                memFree(cubesData)
+                memFree(meshData)
+            }
+        }
+
+        val map = mutableMapOf<String, ScratchBuffer>()
 
         if (chunk.isAirChunk || chunkDataRef == null) {
 
@@ -69,11 +80,11 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
                         val cellData = rawChunkData[x * 32 * 32 + y * 32 + z]
                         val voxel = chunk.world.contentTranslator.getVoxelForId(VoxelFormat.id(cellData))!!
 
-                        val materialTagName = if(voxel.name == "water") "water" else "opaque"
+                        val materialTagName = if (voxel.name == "water") "water" else "opaque"
 
-                        val buffer = buffers.getOrPut(materialTagName) {
-                            MemoryUtil.memAlloc(1024 * 1024 * 4 * 4)
-                        }
+                        val scratch = map.getOrPut(materialTagName) { ScratchBuffer() }
+                        val meshData = scratch.meshData
+                        val cubesData = scratch.cubesData
 
                         cell.x = (chunk.chunkX shl 5) + x
                         cell.y = (chunk.chunkX shl 5) + y
@@ -84,10 +95,17 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
                         cell.sunlight = VoxelFormat.sunlight(cellData)
                         cell.blocklight = VoxelFormat.blocklight(cellData)
 
+                        fun shouldRenderFace(neighborData: Int, face: UnitCube.CubeFaceData, side: VoxelSide): Boolean {
+                            val neighborVoxel = chunk.world.contentTranslator.getVoxelForId(VoxelFormat.id(neighborData))!!
+                            if (opaque(neighborVoxel) || (voxel == neighborVoxel && voxel.selfOpaque))
+                                return false
+                            return true
+                        }
+
                         if (!voxel.isAir()) {
                             fun face(neighborData: Int, face: UnitCube.CubeFaceData, side: VoxelSide) {
                                 val neighborVoxel = chunk.world.contentTranslator.getVoxelForId(VoxelFormat.id(neighborData))!!
-                                if(opaque(neighborVoxel) || (voxel == neighborVoxel && voxel.selfOpaque))
+                                if (opaque(neighborVoxel) || (voxel == neighborVoxel && voxel.selfOpaque))
                                     return
 
                                 val voxelTexture = voxel.getVoxelTexture(cell, side) as VoxelTexturesArray.VoxelTextureInArray
@@ -99,34 +117,34 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
                                 val sunlight = VoxelFormat.sunlight(neighborData)
                                 val blocklight = max(VoxelFormat.blocklight(neighborData), voxel.emittedLightLevel)
 
-                                for((vertex, texcoord) in face.vertices) {
-                                    /*buffer.put((vertex[0] + x).toByte())
-                                    buffer.put((vertex[1] + y).toByte())
-                                    buffer.put((vertex[2] + z).toByte())
-                                    buffer.put(0)*/
-                                    buffer.putFloat(vertex[0] + x)
-                                    buffer.putFloat(vertex[1] + y)
-                                    buffer.putFloat(vertex[2] + z)
+                                for ((vertex, texcoord) in face.vertices) {
+                                    /*meshData.put((vertex[0] + x).toByte())
+                                    meshData.put((vertex[1] + y).toByte())
+                                    meshData.put((vertex[2] + z).toByte())
+                                    meshData.put(0)*/
+                                    meshData.putFloat(vertex[0] + x)
+                                    meshData.putFloat(vertex[1] + y)
+                                    meshData.putFloat(vertex[2] + z)
 
-                                    buffer.put((sunlight * 16).toByte())
-                                    buffer.put((blocklight * 16).toByte())
-                                    buffer.put(0)
-                                    buffer.put(0)
+                                    meshData.put((sunlight * 16).toByte())
+                                    meshData.put((blocklight * 16).toByte())
+                                    meshData.put(0)
+                                    meshData.put(0)
 
-                                    buffer.put(face.normalDirection.x().toSNORM())
-                                    buffer.put(face.normalDirection.y().toSNORM())
-                                    buffer.put(face.normalDirection.z().toSNORM())
-                                    buffer.put(0)
+                                    meshData.put(face.normalDirection.x().toSNORM())
+                                    meshData.put(face.normalDirection.y().toSNORM())
+                                    meshData.put(face.normalDirection.z().toSNORM())
+                                    meshData.put(0)
 
-                                    buffer.putShort(texcoord[0].toUNORM16())
-                                    buffer.putShort(texcoord[1].toUNORM16())
+                                    meshData.putShort(texcoord[0].toUNORM16())
+                                    meshData.putShort(texcoord[1].toUNORM16())
 
-                                    buffer.putInt(textureId)
-                                    count++
+                                    meshData.putInt(textureId)
+                                    scratch.meshTriCount++
                                 }
                             }
 
-                            if(voxel.name == "grass_prop") {
+                            if (voxel.name == "grass_prop") {
                                 val model = chunk.world.content.models["voxels/blockmodels/grass_prop/grass_prop.dae"]
 
                                 val sunlight = VoxelFormat.sunlight(cellData)
@@ -149,44 +167,44 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
                                     val normalIn = mesh.attributes.find { it.name == "normalIn" }?.data
                                     val texCoordIn = mesh.attributes.find { it.name == "texCoordIn" }?.data
 
-                                    for(i in 0 until mesh.vertices) {
-                                        buffer.putFloat(vertexIn.getFloat(i * 12 + 0) + x)
-                                        buffer.putFloat(vertexIn.getFloat(i * 12 + 4) + y)
-                                        buffer.putFloat(vertexIn.getFloat(i * 12 + 8) + z)
+                                    for (i in 0 until mesh.vertices) {
+                                        meshData.putFloat(vertexIn.getFloat(i * 12 + 0) + x)
+                                        meshData.putFloat(vertexIn.getFloat(i * 12 + 4) + y)
+                                        meshData.putFloat(vertexIn.getFloat(i * 12 + 8) + z)
 
-                                        buffer.put((sunlight * 16).toByte())
-                                        buffer.put((blocklight * 16).toByte())
-                                        buffer.put(0)
-                                        buffer.put(0)
+                                        meshData.put((sunlight * 16).toByte())
+                                        meshData.put((blocklight * 16).toByte())
+                                        meshData.put(0)
+                                        meshData.put(0)
 
-                                        if(normalIn != null) {
-                                            buffer.put(normalIn.getFloat(i * 12 + 0).toSNORM())
-                                            buffer.put(normalIn.getFloat(i * 12 + 4).toSNORM())
-                                            buffer.put(normalIn.getFloat(i * 12 + 8).toSNORM())
-                                            buffer.put(0)
+                                        if (normalIn != null) {
+                                            meshData.put(normalIn.getFloat(i * 12 + 0).toSNORM())
+                                            meshData.put(normalIn.getFloat(i * 12 + 4).toSNORM())
+                                            meshData.put(normalIn.getFloat(i * 12 + 8).toSNORM())
+                                            meshData.put(0)
                                         } else {
-                                            buffer.put(0)
-                                            buffer.put(0)
-                                            buffer.put(0)
-                                            buffer.put(0)
+                                            meshData.put(0)
+                                            meshData.put(0)
+                                            meshData.put(0)
+                                            meshData.put(0)
                                         }
 
-                                        if(texCoordIn != null) {
-                                            buffer.putShort(texCoordIn.getFloat(i * 8 + 0).toUNORM16())
-                                            buffer.putShort(texCoordIn.getFloat(i * 8 + 4).toUNORM16())
+                                        if (texCoordIn != null) {
+                                            meshData.putShort(texCoordIn.getFloat(i * 8 + 0).toUNORM16())
+                                            meshData.putShort(texCoordIn.getFloat(i * 8 + 4).toUNORM16())
                                         } else {
-                                            buffer.put(0)
-                                            buffer.put(0)
-                                            buffer.put(0)
-                                            buffer.put(0)
+                                            meshData.put(0)
+                                            meshData.put(0)
+                                            meshData.put(0)
+                                            meshData.put(0)
                                         }
 
-                                        buffer.putInt(textureId)
-                                        count++
+                                        meshData.putInt(textureId)
+                                        scratch.meshTriCount++
                                     }
                                 }
 
-                                for(mesh in model.meshes) {
+                                for (mesh in model.meshes) {
                                     renderMesh(mesh)
                                 }
 
@@ -199,6 +217,22 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
 
                                 face(data(x, y, z - 1), UnitCube.backFace, VoxelSide.BACK)
                                 face(data(x, y, z + 1), UnitCube.frontFace, VoxelSide.FRONT)
+
+                                /*if (shouldRenderFace(data(x, y - 1, z), UnitCube.bottomFace, VoxelSide.BOTTOM) ||
+                                        shouldRenderFace(data(x, y + 1, z), UnitCube.topFace, VoxelSide.TOP) ||
+                                        shouldRenderFace(data(x - 1, y, z), UnitCube.leftFace, VoxelSide.LEFT) ||
+                                        shouldRenderFace(data(x + 1, y, z), UnitCube.rightFace, VoxelSide.RIGHT) ||
+                                        shouldRenderFace(data(x, y, z - 1), UnitCube.backFace, VoxelSide.BACK) ||
+                                        shouldRenderFace(data(x, y, z + 1), UnitCube.frontFace, VoxelSide.FRONT)) {
+
+                                    cubesData.put(x.toByte())
+                                    cubesData.put(y.toByte())
+                                    cubesData.put(z.toByte())
+                                    cubesData.put(0)
+
+                                    cubesData.putInt(0)
+                                    scratch.cubesCount++
+                                }*/
                             }
                         }
                     }
@@ -206,21 +240,23 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
             }
         }
 
-        val sections = buffers.filter { it.value.position() > 0 }.mapValues {
-            val buffer = it.value
-            buffer.flip()
+        val sections = map.filter { it.value.cubesCount > 0 || it.value.meshTriCount > 0 }.mapValues {
+            val scratch = it.value
 
-            val vertexBuffer = VulkanVertexBuffer(backend, buffer.limit().toLong(), MemoryUsagePattern.SEMI_STATIC)
-            vertexBuffer.upload(buffer)
+            fun buf2vk(buffer: ByteBuffer): VulkanVertexBuffer {
+                buffer.flip()
+                val vertexBuffer = VulkanVertexBuffer(backend, buffer.limit().toLong(), MemoryUsagePattern.SEMI_STATIC)
+                vertexBuffer.upload(buffer)
+                return vertexBuffer
+            }
 
-            val count = (vertexBuffer.bufferSize / (4 * 7)).toInt()
+            val cubes = if (scratch.cubesCount > 0) ChunkRepresentation.Section.CubesInstances(buf2vk(scratch.cubesData), scratch.cubesCount) else null
+            val staticMesh = if (scratch.meshTriCount > 0) ChunkRepresentation.Section.StaticMesh(buf2vk(scratch.meshData), scratch.meshTriCount) else null
 
-            ChunkRepresentation.Section(it.key, vertexBuffer, count)
+            ChunkRepresentation.Section(it.key, cubes, staticMesh)
         }
 
-        buffers.forEach {
-            memFree(it.value)
-        }
+        map.values.forEach(Cleanable::cleanup)
 
         receiver.acceptNewData(sections)
         return true
