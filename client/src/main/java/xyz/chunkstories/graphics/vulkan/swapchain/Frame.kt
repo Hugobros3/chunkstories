@@ -6,7 +6,7 @@ import xyz.chunkstories.graphics.vulkan.util.*
  * The instructions for rendering the next frame: which swapchain image are we rendering in, what semaphore are we waiting on
  * and what semaphore and fence should we signal when we're done
  */
-data class Frame(val frameNumber: Int,
+data class Frame constructor(val frameNumber: Int,
                  val swapchainImageIndex: Int,
                  val swapchainImage: VkImage,
                  val swapchainImageView: VkImageView,

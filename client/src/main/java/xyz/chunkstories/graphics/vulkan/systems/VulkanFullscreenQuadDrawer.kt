@@ -133,7 +133,7 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
             val source = input.source
             when (source) {
                 is ImageSource.RenderBufferReference -> {
-                    bindingContext.bindTextureAndSampler(input.name, pass.renderTask.buffers[source.renderBufferName]?.texture!!, sampler)
+                    bindingContext.bindTextureAndSampler(input.name, pass.renderTask.buffers[source.renderBufferName]?.getRenderToTexture(frame)!!, sampler)
                 }
                 is ImageSource.AssetReference -> TODO()
                 is ImageSource.TextureReference -> TODO()
@@ -155,7 +155,7 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
                 val shadowSubcontext = passContext.context.artifacts["shadowmapCascade$i"] as? VulkanFrameGraph.FrameGraphNode.RenderingContextNode
                 if(shadowSubcontext == null)
                     continue
-                bindingContext.bindTextureAndSampler("shadowBuffers", shadowSubcontext.rootPassInstance.resolvedDepthBuffer.texture, samplerShadow, i)
+                bindingContext.bindTextureAndSampler("shadowBuffers", shadowSubcontext.rootPassInstance.resolvedDepthBuffer.getAttachementTexture(frame), samplerShadow, i)
                 shadowInfo.cameras[i] = shadowSubcontext.parameters["camera"] as Camera
                 shadowInfo.cascadesCount = i + 1
                 //println(shadowInfo.cameras[i].viewMatrix.hashCode())

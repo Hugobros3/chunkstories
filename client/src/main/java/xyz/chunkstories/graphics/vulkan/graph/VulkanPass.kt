@@ -6,7 +6,6 @@ import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.graphics.rendergraph.*
-import xyz.chunkstories.api.graphics.representation.Representation
 import xyz.chunkstories.api.graphics.systems.GraphicSystem
 import xyz.chunkstories.api.graphics.systems.RegisteredGraphicSystem
 import xyz.chunkstories.api.graphics.systems.dispatching.DispatchingSystem
@@ -69,14 +68,14 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
         MemoryStack.stackPop()
     }
 
-    fun createFramebuffer(resolvedDepthAndColorBuffers: MutableList<VulkanRenderBuffer>): VkFramebuffer {
+    fun createFramebuffer(frame: Frame, resolvedDepthAndColorBuffers: MutableList<VulkanRenderBuffer>): VkFramebuffer {
         stackPush()
         val pAttachments = stackMallocLong(resolvedDepthAndColorBuffers.size)
 
-        resolvedDepthAndColorBuffers.forEach { renderBuffer -> pAttachments.put(renderBuffer.texture.imageView) }
+        resolvedDepthAndColorBuffers.forEach { renderBuffer -> pAttachments.put(renderBuffer.getRenderToTexture(frame).imageView) }
         pAttachments.flip()
 
-        val viewportSize = resolvedDepthAndColorBuffers[0].size
+        val viewportSize = resolvedDepthAndColorBuffers[0].textureSize
 
         val framebufferCreateInfo = VkFramebufferCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO).apply {
             renderPass(canonicalRenderPass.handle)
@@ -176,7 +175,7 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
         }
 
         //TODO relevant framebuffer
-        val framebuffer = createFramebuffer(resolvedDepthAndColorBuffers)
+        val framebuffer = createFramebuffer(frame, resolvedDepthAndColorBuffers)
 
         //TODO
         val imageInputstoTransition = mutableListOf<Pair<VulkanRenderBuffer, UsageType>>()
@@ -186,7 +185,7 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
                 imageInputstoTransition.add(Pair(imageInputResolved, currentUsage))
         }
 
-        val viewportSize = resolvedDepthAndColorBuffers[0].size
+        val viewportSize = resolvedDepthAndColorBuffers[0].textureSize
 
         val commandBuffer = commandPool.createOneUseCB()
         passInstance.commandBuffer = commandBuffer
@@ -268,7 +267,7 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
 
                             srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
                             dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
-                            image(renderBuffer.texture.imageHandle)
+                            image(renderBuffer.getAttachementTexture(frame).imageHandle)
 
                             subresourceRange().apply {
                                 aspectMask(renderBuffer.attachementType.aspectMask())

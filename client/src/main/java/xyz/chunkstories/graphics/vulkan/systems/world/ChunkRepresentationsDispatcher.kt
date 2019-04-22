@@ -22,7 +22,6 @@ import xyz.chunkstories.graphics.vulkan.swapchain.Frame
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
 import xyz.chunkstories.graphics.vulkan.textures.voxels.VulkanVoxelTexturesArray
-import xyz.chunkstories.world.WorldClientCommon
 
 class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingSystem<ChunkRepresentation>(backend) {
 
@@ -159,7 +158,7 @@ class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
                 bindingContext.bindSSBO("chunkInfo", ssboDataTest)
 
                 val viewportSize = ViewportSize()
-                viewportSize.size.set(pass.declaration.outputs.outputs.getOrNull(0)?.let { passContext.resolvedOutputs.get(it)?.size } ?: passContext.resolvedDepthBuffer!!.size)
+                viewportSize.size.set(pass.declaration.outputs.outputs.getOrNull(0)?.let { passContext.resolvedOutputs.get(it)?.textureSize } ?: passContext.resolvedDepthBuffer!!.textureSize)
                 bindingContext.bindUBO("viewportSize", viewportSize)
 
                 bindingContext.preDraw(commandBuffer)

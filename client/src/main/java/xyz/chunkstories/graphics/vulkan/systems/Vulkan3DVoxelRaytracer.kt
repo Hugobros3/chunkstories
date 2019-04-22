@@ -80,7 +80,7 @@ class Vulkan3DVoxelRaytracer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
             val source = input.source
             when (source) {
                 is ImageSource.RenderBufferReference -> {
-                    bindingContext.bindTextureAndSampler(input.name, pass.renderTask.buffers[source.renderBufferName]?.texture!!, sampler)
+                    bindingContext.bindTextureAndSampler(input.name, pass.renderTask.buffers[source.renderBufferName]?.getAttachementTexture(frame)!!, sampler)
                 }
                 is ImageSource.AssetReference -> TODO()
                 is ImageSource.TextureReference -> TODO()
@@ -90,7 +90,7 @@ class Vulkan3DVoxelRaytracer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
         volumetricTexture.updateArround(passContext.context.camera.position.toVec3d())
 
         val viewportSize = ViewportSize()
-        viewportSize.size.set(passContext.resolvedOutputs[pass.declaration.outputs.outputs[0]]!!.size)
+        viewportSize.size.set(passContext.resolvedOutputs[pass.declaration.outputs.outputs[0]]!!.textureSize)
 
         bindingContext.bindUBO("viewportSize", viewportSize)
         bindingContext.bindUBO("camera", passContext.context.camera)

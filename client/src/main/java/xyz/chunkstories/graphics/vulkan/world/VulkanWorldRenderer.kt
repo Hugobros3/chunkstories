@@ -178,14 +178,12 @@ class VulkanWorldRenderer(val backend: VulkanGraphicsBackend, world: WorldClient
                     }
 
                     draws {
-
                         if (client.configuration.getBooleanValue(VulkanBackendOptions.raytracedGI)) {
                             system(Vulkan3DVoxelRaytracer::class)
                         } else {
                             system(VulkanFullscreenQuadDrawer::class) {
                                 shaderBindings {
-                                    val camera = client.player.controlledEntity?.traits?.get(TraitControllable::class)?.camera
-                                            ?: Camera()
+                                    val camera = client.player.controlledEntity?.traits?.get(TraitControllable::class)?.camera ?: Camera()
                                     it.bindUBO("camera", camera)
                                     it.bindUBO("world", client.world.getConditions())
                                 }
