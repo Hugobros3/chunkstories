@@ -10,15 +10,14 @@ import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.api.graphics.systems.dispatching.ChunksRenderer
 import xyz.chunkstories.api.graphics.systems.dispatching.ModelsRenderer
 import xyz.chunkstories.api.graphics.systems.dispatching.SpritesRenderer
+import xyz.chunkstories.api.graphics.systems.drawing.FullscreenQuadDrawer
 import xyz.chunkstories.api.gui.GuiDrawer
 import xyz.chunkstories.graphics.common.WorldRenderer
+import xyz.chunkstories.graphics.common.getConditions
 import xyz.chunkstories.graphics.vulkan.VulkanBackendOptions
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
-import xyz.chunkstories.graphics.vulkan.systems.SkyDrawer
 import xyz.chunkstories.graphics.vulkan.systems.Vulkan3DVoxelRaytracer
-import xyz.chunkstories.graphics.vulkan.systems.VulkanFullscreenQuadDrawer
 import xyz.chunkstories.graphics.vulkan.systems.world.ChunkRepresentationsProvider
-import xyz.chunkstories.graphics.vulkan.systems.world.getConditions
 import xyz.chunkstories.graphics.vulkan.world.entities.EntitiesRepresentationsProvider
 import xyz.chunkstories.world.WorldClientCommon
 
@@ -100,7 +99,16 @@ class VulkanWorldRenderer(val backend: VulkanGraphicsBackend, world: WorldClient
                     name = "sky"
 
                     draws {
-                        system(SkyDrawer::class)
+                        system(FullscreenQuadDrawer::class) {
+                            setup {
+                                val entity = client.player.controlledEntity
+                                val camera = entity?.traits?.get(TraitControllable::class)?.camera ?: Camera()
+                                val world = client.world
+
+                                shaderResources.supplyUniformBlock("camera", camera)
+                                shaderResources.supplyUniformBlock("world", world.getConditions())
+                            }
+                        }
                     }
 
                     outputs {
@@ -179,9 +187,10 @@ class VulkanWorldRenderer(val backend: VulkanGraphicsBackend, world: WorldClient
                         if (client.configuration.getBooleanValue(VulkanBackendOptions.raytracedGI)) {
                             system(Vulkan3DVoxelRaytracer::class)
                         } else {
-                            system(VulkanFullscreenQuadDrawer::class) {
+                            system(FullscreenQuadDrawer::class) {
                                 setup {
-                                    val camera = client.player.controlledEntity?.traits?.get(TraitControllable::class)?.camera ?: Camera()
+                                    val camera = client.player.controlledEntity?.traits?.get(TraitControllable::class)?.camera
+                                            ?: Camera()
 
                                     shaderResources.supplyUniformBlock("camera", camera)
                                     shaderResources.supplyUniformBlock("world", world.getConditions())

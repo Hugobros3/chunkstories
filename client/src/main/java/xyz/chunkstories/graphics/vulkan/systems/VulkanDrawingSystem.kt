@@ -11,10 +11,10 @@ import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
 abstract class VulkanDrawingSystem(val pass: VulkanPass) : DrawingSystem, Cleanable {
 
     /** Registers drawing commands (pipeline bind, vertex buffer binds, draw calls etc */
-    abstract fun registerDrawingCommands(frame : VulkanFrame, context: SystemExecutionContext, commandBuffer: VkCommandBuffer)
+    abstract fun registerDrawingCommands(frame : VulkanFrame, ctx: SystemExecutionContext, commandBuffer: VkCommandBuffer)
 
     val setupLambdas = mutableListOf<SystemExecutionContext.() -> Unit>()
-    fun setup(dslCode: SystemExecutionContext.() -> Unit) {
+    override fun setup(dslCode: SystemExecutionContext.() -> Unit) {
         setupLambdas.add(dslCode)
     }
 

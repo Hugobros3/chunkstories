@@ -1,4 +1,4 @@
-package xyz.chunkstories.graphics.vulkan.systems.world
+package xyz.chunkstories.graphics.common
 
 import org.joml.Vector3d
 import xyz.chunkstories.api.graphics.structs.WorldConditions

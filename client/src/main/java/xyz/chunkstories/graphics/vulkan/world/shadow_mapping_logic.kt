@@ -8,7 +8,7 @@ import xyz.chunkstories.api.util.kotlin.toVec3f
 import xyz.chunkstories.api.world.World
 import xyz.chunkstories.graphics.vulkan.VulkanBackendOptions
 import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
-import xyz.chunkstories.graphics.vulkan.systems.world.getConditions
+import xyz.chunkstories.graphics.common.getConditions
 import xyz.chunkstories.graphics.vulkan.util.ShadowMappingInfo
 
 fun doShadowMapping(ctx: SystemExecutionContext, world: World) {

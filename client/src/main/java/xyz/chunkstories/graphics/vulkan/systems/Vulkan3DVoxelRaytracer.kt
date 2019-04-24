@@ -5,8 +5,6 @@ import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 import xyz.chunkstories.api.client.IngameClient
 import xyz.chunkstories.api.graphics.TextureTilingMode
-import xyz.chunkstories.api.graphics.rendergraph.ImageInput
-import xyz.chunkstories.api.graphics.rendergraph.ImageSource
 import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
 import xyz.chunkstories.api.util.kotlin.toVec3d
 import xyz.chunkstories.graphics.common.FaceCullingMode
@@ -20,7 +18,7 @@ import xyz.chunkstories.graphics.vulkan.resources.bindShaderResources
 import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.systems.world.ViewportSize
 import xyz.chunkstories.graphics.vulkan.systems.world.VulkanWorldVolumetricTexture
-import xyz.chunkstories.graphics.vulkan.systems.world.getConditions
+import xyz.chunkstories.graphics.common.getConditions
 import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
 import xyz.chunkstories.graphics.vulkan.vertexInputConfiguration
 import xyz.chunkstories.world.WorldClientCommon
@@ -79,16 +77,6 @@ class Vulkan3DVoxelRaytracer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
         val bindingContext = backend.descriptorMegapool.getBindingContext(pipeline)
         ctx.bindShaderResources(bindingContext)
-        /*for (input in pass.declaration.inputs?.imageInputs ?: emptyList<ImageInput>()) {
-            val source = input.source
-            when (source) {
-                is ImageSource.RenderBufferReference -> {
-                    bindingContext.bindTextureAndSampler(input.name, pass.renderTask.buffers[source.renderBufferName]?.getAttachementTexture(frame)!!, sampler)
-                }
-                is ImageSource.AssetReference -> TODO()
-                is ImageSource.TextureReference -> TODO()
-            }
-        }*/
 
         volumetricTexture.updateArround(passInstance.taskInstance.camera.position.toVec3d())
 

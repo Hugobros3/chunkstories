@@ -291,8 +291,7 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
 
         return when (drawingSystemRegistration.clazz) {
             GuiDrawer::class.java -> VulkanGuiDrawer(vulkanPass, window.client.gui)
-            FullscreenQuadDrawer::class.java, VulkanFullscreenQuadDrawer::class.java -> VulkanFullscreenQuadDrawer(vulkanPass)
-            SkyDrawer::class.java -> VulkanSkyDrawer(vulkanPass)
+            FullscreenQuadDrawer::class.java -> VulkanFullscreenQuadDrawer(vulkanPass)
 
             Vulkan3DVoxelRaytracer::class.java -> Vulkan3DVoxelRaytracer(vulkanPass)
             VulkanSpinningCubeDrawer::class.java -> VulkanSpinningCubeDrawer(vulkanPass)

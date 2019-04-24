@@ -6,6 +6,7 @@ import xyz.chunkstories.api.gui.Gui
 import xyz.chunkstories.api.gui.GuiDrawer
 import org.joml.Vector4f
 import org.joml.Vector4fc
+import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
 
 open class DummyGuiDrawer(override val gui: Gui) : GuiDrawer {
     override val fonts: Fonts
@@ -52,5 +53,9 @@ open class DummyGuiDrawer(override val gui: Gui) : GuiDrawer {
 
     companion object {
         val white = Vector4f(1.0F)
+    }
+
+    override fun setup(dslCode: SystemExecutionContext.() -> Unit) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 }
