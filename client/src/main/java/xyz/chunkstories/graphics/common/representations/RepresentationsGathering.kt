@@ -1,17 +1,16 @@
 package xyz.chunkstories.graphics.common.representations
 
 import xyz.chunkstories.api.graphics.rendergraph.PassInstance
-import xyz.chunkstories.api.graphics.rendergraph.RenderingContext
+import xyz.chunkstories.api.graphics.rendergraph.RenderTaskInstance
 import xyz.chunkstories.api.graphics.representation.Representation
-import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.api.graphics.systems.dispatching.RepresentationsGobbler
 import xyz.chunkstories.graphics.GraphicsEngineImplementation
 import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
-import xyz.chunkstories.graphics.vulkan.swapchain.Frame
+import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 
-class RepresentationsGathered(val frame: Frame,
+class RepresentationsGathered(val frame: VulkanFrame,
                               val passInstances: Array<PassInstance>,
-                              override val renderingContexts: Array<RenderingContext>) : RepresentationsGobbler {
+                              override val renderTaskInstances: Array<RenderTaskInstance>) : RepresentationsGobbler {
     val buckets = mutableMapOf<String, Bucket>()
 
     inner class Bucket(val name: String) {
@@ -35,7 +34,7 @@ class RepresentationsGathered(val frame: Frame,
 
 fun GraphicsEngineImplementation.gatherRepresentations(frameGraph: VulkanFrameGraph, sequencedFrameGraph: List<VulkanFrameGraph.FrameGraphNode>): RepresentationsGathered {
     val passInstances: Array<PassInstance> = sequencedFrameGraph.filterIsInstance<PassInstance>().toTypedArray()
-    val renderingContexts: Array<RenderingContext> = sequencedFrameGraph.filterIsInstance<RenderingContext>().toTypedArray()
+    val renderingContexts: Array<RenderTaskInstance> = sequencedFrameGraph.filterIsInstance<RenderTaskInstance>().toTypedArray()
 
     val gathered = RepresentationsGathered(frameGraph.frame, passInstances, renderingContexts)
 

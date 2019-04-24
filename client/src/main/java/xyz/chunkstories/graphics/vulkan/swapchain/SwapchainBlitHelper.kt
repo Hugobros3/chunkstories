@@ -39,7 +39,7 @@ class SwapchainBlitHelper(val backend: VulkanGraphicsBackend) : Cleanable {
         commandPool.cleanup()
     }
 
-    fun copyFinalRenderbuffer(frame: Frame, finalRenderBuffer: VulkanRenderBuffer)  {
+    fun copyFinalRenderbuffer(frame: VulkanFrame, finalRenderBuffer: VulkanRenderBuffer)  {
         stackPush().use {
             commandBuffers[frame].apply {
                 val beginInfo = VkCommandBufferBeginInfo.callocStack().sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO).apply {

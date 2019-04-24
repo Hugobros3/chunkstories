@@ -26,6 +26,7 @@ import xyz.chunkstories.gui.ClientGui
 import xyz.chunkstories.gui.layer.LoginPrompt
 import xyz.chunkstories.input.lwjgl3.Lwjgl3ClientInputsManager
 import xyz.chunkstories.sound.ALSoundManager
+import xyz.chunkstories.task.WorkerThreadPool
 import xyz.chunkstories.util.LogbackSetupHelper
 import xyz.chunkstories.util.VersionInfo
 import java.io.File
@@ -41,8 +42,7 @@ class ClientImplementation internal constructor(coreContentLocation: File, modsS
     override val configuration: Configuration = Configuration(this, configFile)
 
     override val content: GameContentStore
-    override val tasks: ClientTasksPool
-
+    override val tasks: WorkerThreadPool
 
     override val graphics: GraphicsEngineImplementation
     override val inputsManager: Lwjgl3ClientInputsManager
@@ -55,7 +55,6 @@ class ClientImplementation internal constructor(coreContentLocation: File, modsS
     override val gui = ClientGui(this)
 
     override var ingame: IngameClientImplementation? = null
-
 
     override val pluginManager: PluginManager
         get() = throw UnsupportedOperationException("There is no plugin manager in a non-ingame context ! Use an IngameClient object instead.")
@@ -103,7 +102,7 @@ class ClientImplementation internal constructor(coreContentLocation: File, modsS
                 nbThreads = 1
         }
 
-        tasks = ClientTasksPool(this, nbThreads)
+        tasks = WorkerThreadPool(nbThreads)
         tasks.start()
 
         // Load the correct language

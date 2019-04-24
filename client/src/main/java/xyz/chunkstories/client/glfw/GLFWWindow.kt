@@ -20,8 +20,8 @@ import kotlin.String
 import kotlin.Unit
 import kotlin.UnsupportedOperationException
 
-/** Graphics-graphicsBackend independant implementation of the game window interface.
- * Does provide input management through the use of GLFW's input API
+/** Backend independant implementation of the game window interface.
+ * Provides input management through the use of GLFW's input API
  *
  * For now only implements a Vulkan graphicsBackend
  */
@@ -36,8 +36,6 @@ class GLFWWindow(val client: ClientImplementation, val graphicsEngine: GraphicsE
     override var height: Int = 640
 
     val glfwWindowHandle: Long
-    //val graphicsBackend: GLFWBasedGraphicsBackend
-    //val inputsManager : Lwjgl3ClientInputsManager
 
     init {
         glfwSetErrorCallback { error, description ->
@@ -45,7 +43,7 @@ class GLFWWindow(val client: ClientImplementation, val graphicsEngine: GraphicsE
         }
 
         val monitors = glfwGetMonitors()!!
-        for(i in 0 until monitors.limit()) {
+        for (i in 0 until monitors.limit()) {
             val monitor = monitors[i]
             val xScale = floatArrayOf(0f)
             val yScale = floatArrayOf(0f)
@@ -65,13 +63,14 @@ class GLFWWindow(val client: ClientImplementation, val graphicsEngine: GraphicsE
         glfwWindowHint(GLFW_CLIENT_API, selectedBackend.glfwApiHint)
 
         glfwWindowHandle = glfwCreateWindow(width, height, title, 0L, 0L)
-        if(glfwWindowHandle == 0L)
+        if (glfwWindowHandle == 0L)
             throw Exception("Failed to create GLFW window")
 
         loadIcons()
     }
 
-    fun executeMainThreadChores() {
+    /** Executes the actions that must run on the first thread and clears the list */
+    internal fun executeMainThreadChores() {
         mainThreadQueue.removeAll { it.invoke(this); true }
     }
 
@@ -79,8 +78,7 @@ class GLFWWindow(val client: ClientImplementation, val graphicsEngine: GraphicsE
         inFocus = glfwGetWindowAttrib(glfwWindowHandle, GLFW_FOCUSED) == org.lwjgl.glfw.GLFW.GLFW_TRUE
     }
 
-    fun cleanup()
-    {
+    fun cleanup() {
         executeMainThreadChores()
 
         glfwDestroyWindow(glfwWindowHandle)
@@ -98,13 +96,15 @@ class GLFWWindow(val client: ClientImplementation, val graphicsEngine: GraphicsE
             val sdf = SimpleDateFormat("YYYY.MM.dd HH.mm.ss")
 
             ImageIO.write(image, "PNG", File("./screenshots/${sdf.format(cal.time)}.png"))
-        } catch( err : UnsupportedOperationException) {
+        } catch (err: UnsupportedOperationException) {
             client.print("This graphicsBackend doesn't support taking screenshots !")
         }
     }
 
+    /** Some actions can only execute on the main thread */
     private val mainThreadQueue = ConcurrentLinkedDeque<GLFWWindow.() -> Unit>()
-    /** Schedules some work to be executed on the main thread (glfw spec requires so) */
+
+    /** Schedules some work to be executed on the main thread */
     fun mainThread(function: GLFWWindow.() -> Unit) {
         mainThreadQueue.addLast(function)
     }

@@ -5,20 +5,17 @@ import xyz.chunkstories.api.graphics.TextureFormat
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.vulkan.textures.VulkanTexture2D
-import org.lwjgl.system.MemoryStack.stackPop
-import org.lwjgl.system.MemoryStack.stackPush
 import org.lwjgl.vulkan.VK10.*
-import org.lwjgl.vulkan.VkCommandBuffer
-import org.lwjgl.vulkan.VkImageMemoryBarrier
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.graphics.rendergraph.RenderBufferDeclaration
 import xyz.chunkstories.api.graphics.rendergraph.RenderBufferSize
-import xyz.chunkstories.graphics.vulkan.swapchain.Frame
+import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import kotlin.math.roundToInt
 
 class VulkanRenderBuffer(val backend: VulkanGraphicsBackend, val declaration: RenderBufferDeclaration) : Cleanable {
-    val doubleBuffered = declaration.doubleBuffered
-    var textures: Array<VulkanTexture2D>
+    //val doubleBuffered = declaration.doubleBuffered
+    //var textures: Array<VulkanTexture2D>
+    lateinit var texture: VulkanTexture2D
     var textureSize: Vector2i
 
     val isSwapchain = declaration.name == "_swapchain"
@@ -41,12 +38,14 @@ class VulkanRenderBuffer(val backend: VulkanGraphicsBackend, val declaration: Re
 
         textureSize = declaration.size.actual
 
-        textures = if(!isSwapchain) {
+        /*textures = if(!isSwapchain) {
             val count = if(doubleBuffered) 2 else 1
             (1..count).map { VulkanTexture2D(backend, declaration.format, textureSize.x, textureSize.y, attachementType.usageBits()) }.toTypedArray()
         } else {
             emptyArray()
-        }
+        }*/
+        if(!isSwapchain)
+            texture = VulkanTexture2D(backend, declaration.format, textureSize.x, textureSize.y, attachementType.usageBits())
     }
 
     val RenderBufferSize.actual: Vector2i
@@ -60,13 +59,18 @@ class VulkanRenderBuffer(val backend: VulkanGraphicsBackend, val declaration: Re
         if(newSize != textureSize) {
             logger.debug("Resizing render buffer ${declaration.name}")
             textureSize = newSize
-            textures.forEach(Cleanable::cleanup)
+
+            /*textures.forEach(Cleanable::cleanup)
 
             textures = if(!isSwapchain) {
                 val count = if(doubleBuffered) 2 else 1
                 (1..count).map { VulkanTexture2D(backend, declaration.format, textureSize.x, textureSize.y, attachementType.usageBits()) }.toTypedArray()
             } else {
                 emptyArray()
+            }*/
+            if(!isSwapchain) {
+                texture.cleanup()
+                texture = VulkanTexture2D(backend, declaration.format, textureSize.x, textureSize.y, attachementType.usageBits())
             }
         }
     }
@@ -110,31 +114,34 @@ class VulkanRenderBuffer(val backend: VulkanGraphicsBackend, val declaration: Re
     }*/
 
     override fun cleanup() {
-        textures.forEach(Cleanable::cleanup)
+        texture.cleanup()
+        //textures.forEach(Cleanable::cleanup)
     }
 
     override fun toString(): String {
         return "VulkanRenderBuffer(name=${declaration.name}, format=${declaration.format}, size=$textureSize)"
     }
 
-    fun getRenderToTexture(frame: Frame): VulkanTexture2D {
+    fun getRenderToTexture(frame: VulkanFrame): VulkanTexture2D {
         if(isSwapchain)
             throw Exception("You're not meant to render to this, this is a dummy object!")
 
-        if(doubleBuffered)
+        /*if(doubleBuffered)
             return textures[(frame.frameNumber + 0) % 2]
         else
-            return textures[0]
+            return textures[0]*/
+        return texture
     }
 
-    fun getAttachementTexture(frame: Frame): VulkanTexture2D {
+    fun getAttachementTexture(frame: VulkanFrame): VulkanTexture2D {
         if(isSwapchain)
             throw Exception("You're not meant to render to this, this is a dummy object!")
 
-        if(doubleBuffered)
+        /*if(doubleBuffered)
             return textures[(frame.frameNumber + 1) % 2]
         else
-            return textures[0]
+            return textures[0]*/
+        return texture
     }
 
     companion object {

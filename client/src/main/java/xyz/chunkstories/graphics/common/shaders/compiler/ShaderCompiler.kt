@@ -2,7 +2,7 @@ package xyz.chunkstories.graphics.common.shaders.compiler
 
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.content.Content
-import xyz.chunkstories.api.graphics.ShaderStage
+import xyz.chunkstories.api.graphics.shader.ShaderStage
 import xyz.chunkstories.api.graphics.structs.InterfaceBlock
 import xyz.chunkstories.graphics.common.shaders.GLSLDialect
 import xyz.chunkstories.graphics.common.shaders.GLSLProgram

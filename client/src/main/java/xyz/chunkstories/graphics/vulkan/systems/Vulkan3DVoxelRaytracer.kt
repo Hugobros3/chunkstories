@@ -7,16 +7,17 @@ import xyz.chunkstories.api.client.IngameClient
 import xyz.chunkstories.api.graphics.TextureTilingMode
 import xyz.chunkstories.api.graphics.rendergraph.ImageInput
 import xyz.chunkstories.api.graphics.rendergraph.ImageSource
+import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
 import xyz.chunkstories.api.util.kotlin.toVec3d
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
 import xyz.chunkstories.graphics.vulkan.Pipeline
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
-import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
-import xyz.chunkstories.graphics.vulkan.swapchain.Frame
+import xyz.chunkstories.graphics.vulkan.resources.bindShaderResources
+import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.systems.world.ViewportSize
 import xyz.chunkstories.graphics.vulkan.systems.world.VulkanWorldVolumetricTexture
 import xyz.chunkstories.graphics.vulkan.systems.world.getConditions
@@ -72,11 +73,13 @@ class Vulkan3DVoxelRaytracer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
         }
     }
 
-    override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer, passContext: VulkanFrameGraph.FrameGraphNode.PassNode) {
+    override fun registerDrawingCommands(frame: VulkanFrame, ctx: SystemExecutionContext, commandBuffer: VkCommandBuffer) {
+        val passInstance = ctx.passInstance
+
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
         val bindingContext = backend.descriptorMegapool.getBindingContext(pipeline)
-
-        for (input in pass.declaration.inputs?.imageInputs ?: emptyList<ImageInput>()) {
+        ctx.bindShaderResources(bindingContext)
+        /*for (input in pass.declaration.inputs?.imageInputs ?: emptyList<ImageInput>()) {
             val source = input.source
             when (source) {
                 is ImageSource.RenderBufferReference -> {
@@ -85,15 +88,16 @@ class Vulkan3DVoxelRaytracer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
                 is ImageSource.AssetReference -> TODO()
                 is ImageSource.TextureReference -> TODO()
             }
-        }
+        }*/
 
-        volumetricTexture.updateArround(passContext.context.camera.position.toVec3d())
+        volumetricTexture.updateArround(passInstance.taskInstance.camera.position.toVec3d())
 
         val viewportSize = ViewportSize()
-        viewportSize.size.set(passContext.resolvedOutputs[pass.declaration.outputs.outputs[0]]!!.textureSize)
+        viewportSize.size.set(ctx.passInstance.renderTargetSize)
+        //viewportSize.size.set(passInstance.resolvedOutputs[pass.declaration.outputs.outputs[0]]!!.textureSize)
 
         bindingContext.bindUBO("viewportSize", viewportSize)
-        bindingContext.bindUBO("camera", passContext.context.camera)
+        bindingContext.bindUBO("camera", passInstance.taskInstance.camera)
         bindingContext.bindUBO("voxelDataInfo", volumetricTexture.info)
         bindingContext.bindUBO("world", volumetricTexture.world.getConditions())
         bindingContext.bindTextureAndSampler("voxelData", volumetricTexture.texture, sampler)

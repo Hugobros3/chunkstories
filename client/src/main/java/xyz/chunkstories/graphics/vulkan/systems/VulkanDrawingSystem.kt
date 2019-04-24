@@ -3,17 +3,26 @@ package xyz.chunkstories.graphics.vulkan.systems
 import xyz.chunkstories.api.graphics.systems.drawing.DrawingSystem
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.common.Cleanable
-import xyz.chunkstories.graphics.vulkan.swapchain.Frame
+import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import org.lwjgl.vulkan.VkCommandBuffer
-import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
+import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
 
 /** Drawing systems are instanced per-declared pass for now */
 abstract class VulkanDrawingSystem(val pass: VulkanPass) : DrawingSystem, Cleanable {
 
     /** Registers drawing commands (pipeline bind, vertex buffer binds, draw calls etc */
-    abstract fun registerDrawingCommands(frame : Frame, commandBuffer: VkCommandBuffer, passContext: VulkanFrameGraph.FrameGraphNode.PassNode)
+    abstract fun registerDrawingCommands(frame : VulkanFrame, context: SystemExecutionContext, commandBuffer: VkCommandBuffer)
 
-    open fun registerAdditionalRenderTasks(passContext: VulkanFrameGraph.FrameGraphNode.PassNode) {
-        // Does nothing by default
+    val setupLambdas = mutableListOf<SystemExecutionContext.() -> Unit>()
+    fun setup(dslCode: SystemExecutionContext.() -> Unit) {
+        setupLambdas.add(dslCode)
+    }
+
+    fun executePerFrameSetup(ctx: SystemExecutionContext) {
+        setupLambdas.forEach { it.invoke(ctx) }
+    }
+
+    open fun registerAdditionalRenderTasks(ctx: SystemExecutionContext) {
+
     }
 }

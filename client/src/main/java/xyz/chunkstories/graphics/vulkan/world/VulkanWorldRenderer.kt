@@ -5,6 +5,7 @@ import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
 import xyz.chunkstories.api.graphics.TextureFormat
 import xyz.chunkstories.api.graphics.rendergraph.PassOutput
 import xyz.chunkstories.api.graphics.rendergraph.RenderGraphDeclarationScript
+import xyz.chunkstories.api.graphics.rendergraph.renderBuffer
 import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.api.graphics.systems.dispatching.ChunksRenderer
 import xyz.chunkstories.api.graphics.systems.dispatching.ModelsRenderer
@@ -84,7 +85,7 @@ class VulkanWorldRenderer(val backend: VulkanGraphicsBackend, world: WorldClient
 
                 val shadowCascades = client.configuration.getIntValue(VulkanBackendOptions.shadowCascades)
                 val shadowResolution = client.configuration.getIntValue(VulkanBackendOptions.shadowMapSize)
-                for(i in 0 until shadowCascades) {
+                for (i in 0 until shadowCascades) {
                     renderBuffer {
                         name = "shadowBuffer$i"
 
@@ -160,19 +161,16 @@ class VulkanWorldRenderer(val backend: VulkanGraphicsBackend, world: WorldClient
 
                     dependsOn("opaque")
 
-                    inputs {
-                        imageInput {
-                            name = "colorBuffer"
+                    setup {
+                        shaderResources.supplyImage("colorBuffer") {
                             source = renderBuffer("colorBuffer")
                         }
 
-                        imageInput {
-                            name = "normalBuffer"
+                        shaderResources.supplyImage("normalBuffer") {
                             source = renderBuffer("normalBuffer")
                         }
 
-                        imageInput {
-                            name = "depthBuffer"
+                        shaderResources.supplyImage("depthBuffer") {
                             source = renderBuffer("depthBuffer")
                         }
                     }
@@ -182,14 +180,14 @@ class VulkanWorldRenderer(val backend: VulkanGraphicsBackend, world: WorldClient
                             system(Vulkan3DVoxelRaytracer::class)
                         } else {
                             system(VulkanFullscreenQuadDrawer::class) {
-                                shaderBindings {
+                                setup {
                                     val camera = client.player.controlledEntity?.traits?.get(TraitControllable::class)?.camera ?: Camera()
-                                    it.bindUBO("camera", camera)
-                                    it.bindUBO("world", client.world.getConditions())
-                                }
 
-                                //TODO hacky api, plz fix
-                                doShadowMap = true
+                                    shaderResources.supplyUniformBlock("camera", camera)
+                                    shaderResources.supplyUniformBlock("world", world.getConditions())
+
+                                    doShadowMapping(this, world)
+                                }
                             }
                         }
                     }
@@ -232,9 +230,8 @@ class VulkanWorldRenderer(val backend: VulkanGraphicsBackend, world: WorldClient
 
                     dependsOn("deferredShading", "forward")
 
-                    inputs {
-                        imageInput {
-                            name = "shadedBuffer"
+                    setup {
+                        shaderResources.supplyImage("shadedBuffer") {
                             source = renderBuffer("shadedBuffer")
                         }
                     }

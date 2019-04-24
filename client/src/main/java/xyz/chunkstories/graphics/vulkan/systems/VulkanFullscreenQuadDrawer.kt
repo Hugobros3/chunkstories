@@ -1,30 +1,20 @@
 package xyz.chunkstories.graphics.vulkan.systems
 
-import org.joml.Matrix4f
-import org.joml.Vector3f
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 import xyz.chunkstories.api.client.IngameClient
-import xyz.chunkstories.api.graphics.rendergraph.ImageInput
-import xyz.chunkstories.api.graphics.rendergraph.ImageSource
-import xyz.chunkstories.api.graphics.structs.Camera
-import xyz.chunkstories.api.util.kotlin.toVec3f
+import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
 import xyz.chunkstories.graphics.vulkan.Pipeline
-import xyz.chunkstories.graphics.vulkan.VulkanBackendOptions
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
-import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
-import xyz.chunkstories.graphics.vulkan.resources.DescriptorSetsMegapool
-import xyz.chunkstories.graphics.vulkan.swapchain.Frame
-import xyz.chunkstories.graphics.vulkan.systems.world.getConditions
+import xyz.chunkstories.graphics.vulkan.resources.bindShaderResources
+import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
-import xyz.chunkstories.graphics.vulkan.textures.VulkanTexture2D
-import xyz.chunkstories.graphics.vulkan.util.ShadowMappingInfo
 import xyz.chunkstories.graphics.vulkan.vertexInputConfiguration
 
 class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
@@ -52,7 +42,6 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
     val program = backend.shaderFactory.createProgram(pass.declaration.name)
     val pipeline = Pipeline(backend, program, pass, vertexInputConfiguration, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
     val sampler = VulkanSampler(backend)
-    val samplerShadow = VulkanSampler(backend, shadowSampler = true)
 
     private val vertexBuffer: VulkanVertexBuffer
 
@@ -74,16 +63,17 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
         }
     }
 
-    var bindings: (VulkanFullscreenQuadDrawer.(DescriptorSetsMegapool.ShaderBindingContext) -> Unit)? = null
+    /*var bindings: (VulkanFullscreenQuadDrawer.(DescriptorSetsMegapool.ShaderBindingContext) -> Unit)? = null
 
     var doShadowMap = false
 
     fun shaderBindings(bindings: VulkanFullscreenQuadDrawer.(bindingContext: DescriptorSetsMegapool.ShaderBindingContext) -> Unit) {
         this.bindings = bindings
-    }
+    }*/
 
-    override fun registerAdditionalRenderTasks(passContext: VulkanFrameGraph.FrameGraphNode.PassNode) {
-        if (doShadowMap) {
+    /*override fun registerAdditionalRenderTasks(ctx: SystemPreExecutionContext) {
+
+        /*if (doShadowMap) {
             val mainCamera = passContext.context.camera
 
             val shadowCascades = client.configuration.getIntValue(VulkanBackendOptions.shadowCascades)
@@ -122,14 +112,15 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
                     passContext.markRenderBufferAsInput(node.rootPassInstance.resolvedDepthBuffer)
                 }
             }
-        }
-    }
+        }*/
+    }*/
 
-    override fun registerDrawingCommands(frame: Frame, commandBuffer: VkCommandBuffer, passContext: VulkanFrameGraph.FrameGraphNode.PassNode) {
+    override fun registerDrawingCommands(frame: VulkanFrame, ctx: SystemExecutionContext, commandBuffer: VkCommandBuffer) {
         val bindingContext = backend.descriptorMegapool.getBindingContext(pipeline)
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
+        ctx.bindShaderResources(bindingContext)
 
-        for (input in pass.declaration.inputs?.imageInputs ?: emptyList<ImageInput>()) {
+        /*for (input in pass.declaration.inputs?.imageInputs ?: emptyList<ImageInput>()) {
             val source = input.source
             when (source) {
                 is ImageSource.RenderBufferReference -> {
@@ -140,10 +131,9 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
             }
         }
 
-        //println("pass ${pass.name}  $bindings")
-        bindings?.invoke(this, bindingContext)
+        bindings?.invoke(this, bindingContext)*/
 
-        if (doShadowMap) {
+        /*if (doShadowMap) {
             //println(passContext.extraInputRenderBuffers.map { it.texture.imageHandle })
 
             val shadowInfo = ShadowMappingInfo()
@@ -163,7 +153,7 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
 
             bindingContext.bindUBO("shadowInfo", shadowInfo)
             bindingContext.bindUBO("camera", passContext.context.camera)
-        }
+        }*/
 
         vkCmdBindVertexBuffers(commandBuffer, 0, stackLongs(vertexBuffer.handle), stackLongs(0))
         bindingContext.preDraw(commandBuffer)
@@ -176,7 +166,6 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
 
     override fun cleanup() {
         sampler.cleanup()
-        samplerShadow.cleanup()
 
         vertexBuffer.cleanup()
         pipeline.cleanup()

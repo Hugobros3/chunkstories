@@ -7,14 +7,13 @@ import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 import xyz.chunkstories.api.graphics.Mesh
 import xyz.chunkstories.api.graphics.MeshMaterial
+import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
 import xyz.chunkstories.api.graphics.representation.Model
 import xyz.chunkstories.api.graphics.representation.ModelInstance
-import xyz.chunkstories.api.graphics.structs.InterfaceBlock
 import xyz.chunkstories.api.graphics.systems.dispatching.ModelsRenderer
 import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
-import xyz.chunkstories.graphics.common.shaders.GLSLInstancedInput
 import xyz.chunkstories.graphics.common.shaders.compiler.AvailableVertexInput
 import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompilationParameters
 import xyz.chunkstories.graphics.vulkan.Pipeline
@@ -22,13 +21,12 @@ import xyz.chunkstories.graphics.vulkan.VertexInputConfiguration
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
-import xyz.chunkstories.graphics.vulkan.buffers.extractInterfaceBlockField
 import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import xyz.chunkstories.graphics.vulkan.resources.DescriptorSetsMegapool
 import xyz.chunkstories.graphics.vulkan.shaders.VulkanShaderProgram
-import xyz.chunkstories.graphics.vulkan.swapchain.Frame
+import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.systems.world.getConditions
 import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
@@ -36,7 +34,6 @@ import xyz.chunkstories.graphics.vulkan.util.getAlignedsizeForStruct
 import xyz.chunkstories.graphics.vulkan.util.getVulkanFormat
 import xyz.chunkstories.graphics.vulkan.util.writeInterfaceBlock
 import xyz.chunkstories.world.WorldClientCommon
-import java.nio.ByteBuffer
 
 class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingSystem<ModelInstance>(backend) {
 
@@ -152,7 +149,7 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
 
         val ssboBufferSize = 1024 * 1024L
 
-        override fun registerDrawingCommands(frame: Frame, context: VulkanFrameGraph.FrameGraphNode.PassNode, commandBuffer: VkCommandBuffer, work: Sequence<MeshInstance>) {
+        override fun registerDrawingCommands(frame: VulkanFrame, ctx: SystemExecutionContext, commandBuffer: VkCommandBuffer, work: Sequence<MeshInstance>) {
             MemoryStack.stackPush()
 
             val client = backend.window.client.ingame ?: return
@@ -179,7 +176,7 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
                 val bindingContext = backend.descriptorMegapool.getBindingContext(pipeline)
                 bindingContexts += bindingContext
 
-                val camera = context.context.camera
+                val camera = ctx.passInstance.taskInstance.camera
                 val world = client.world as WorldClientCommon
 
                 bindingContext.bindUBO("camera", camera)

@@ -1,15 +1,15 @@
 package xyz.chunkstories.graphics.vulkan.systems
 
 import org.lwjgl.vulkan.VkCommandBuffer
+import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
 import xyz.chunkstories.api.graphics.representation.Representation
 import xyz.chunkstories.api.graphics.systems.dispatching.DispatchingSystem
-import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
-import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
-import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.common.Cleanable
-import xyz.chunkstories.graphics.vulkan.swapchain.Frame
+import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
+import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
+import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 
-abstract class VulkanDispatchingSystem<R: Representation>(val backend: VulkanGraphicsBackend) : /*DispatchingSystem<T>, */Cleanable {
+abstract class VulkanDispatchingSystem<R : Representation>(val backend: VulkanGraphicsBackend) : /*DispatchingSystem<T>, */Cleanable {
 
     abstract val representationName: String
 
@@ -22,14 +22,23 @@ abstract class VulkanDispatchingSystem<R: Representation>(val backend: VulkanGra
         override val representationName: String
             get() = system.representationName
 
-        abstract fun registerDrawingCommands(frame : Frame, context: VulkanFrameGraph.FrameGraphNode.PassNode, commandBuffer: VkCommandBuffer, work: Sequence<T>)
+        abstract fun registerDrawingCommands(frame: VulkanFrame, context: SystemExecutionContext, commandBuffer: VkCommandBuffer, work: Sequence<T>)
 
-        open fun registerAdditionalRenderTasks(passContext: VulkanFrameGraph.FrameGraphNode.PassNode) {
-            // Does nothing by default
+        val setupLambdas = mutableListOf<SystemExecutionContext.() -> Unit>()
+        fun setup(dslCode: SystemExecutionContext.() -> Unit) {
+            setupLambdas.add(dslCode)
+        }
+
+        fun executePerFrameSetup(ctx: SystemExecutionContext) {
+            setupLambdas.forEach { it.invoke(ctx) }
+        }
+
+        open fun registerAdditionalRenderTasks(ctx: SystemExecutionContext) {
+
         }
     }
 
-    abstract fun createDrawerForPass(pass: VulkanPass, drawerInitCode: Drawer<*>.() -> Unit) : Drawer<*>
+    abstract fun createDrawerForPass(pass: VulkanPass, drawerInitCode: Drawer<*>.() -> Unit): Drawer<*>
 
     val drawersInstances = mutableListOf<Drawer<*>>()
 

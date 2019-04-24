@@ -28,6 +28,8 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
 
     private val mainPool = mutableMapOf<DescriptorSlotLayout, LayoutSubpool>()
 
+    val samplers = VulkanSamplers(backend)
+
     private fun getSubpoolForLayout(layout: DescriptorSlotLayout): LayoutSubpool = mainPool.getOrPut(layout) {
         LayoutSubpool(layout)
     }
@@ -120,6 +122,9 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
         val sets = mutableMapOf<Int, VkDescriptorSet>()
         val dirty = mutableSetOf<Int>()
 
+        val samplers: VulkanSamplers
+            get() = this@DescriptorSetsMegapool.samplers
+
         val spentSets = mutableMapOf<LayoutSubpool, MutableList<VkDescriptorSet>>()
         val tempBuffers = mutableListOf<VulkanBuffer>()
 
@@ -147,7 +152,6 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
         }
 
         fun bindUBO(instanceName: String, interfaceBlock: InterfaceBlock) {
-
             //TODO path w/ name instead of IB class
             val uboBindPoint = pipeline.program.glslProgram.resources.filterIsInstance<GLSLUniformBlock>().find {
                 it.struct.kClass == interfaceBlock.javaClass.kotlin //TODO ::class ?
@@ -231,5 +235,6 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
 
     override fun cleanup() {
         mainPool.values.forEach { it.cleanup() }
+        samplers.cleanup()
     }
 }

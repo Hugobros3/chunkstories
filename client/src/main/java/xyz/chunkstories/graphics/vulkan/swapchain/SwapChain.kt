@@ -29,14 +29,14 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
     val performanceCounter = VulkanPerformanceCounter(this)
 
     // We keep a reference to old frames to manage their data lifecycle, even past GPU execution
-    private lateinit var inFlightFrames: Array<Frame?>
+    private lateinit var inFlightFrames: Array<VulkanFrame?>
 
     // Those sync primitives get recycled accross multiple frames
     private lateinit var imageAvailableSemaphores: List<VkSemaphore>
     private lateinit var renderingSemaphores: List<VkSemaphore>
     private lateinit var inFlightFences: List<VkFence>
 
-    lateinit var lastFrame: Frame private set
+    lateinit var lastFrame: VulkanFrame private set
 
     var expired = false
 
@@ -171,10 +171,10 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
         imageAvailableSemaphores = List(maxFramesInFlight) { backend.createSemaphore() }
         renderingSemaphores = List(maxFramesInFlight) { backend.createSemaphore() }
         inFlightFences = List(maxFramesInFlight) { backend.createFence(true) }
-        inFlightFrames = arrayOfNulls<Frame?>(maxFramesInFlight)
+        inFlightFrames = arrayOfNulls<VulkanFrame?>(maxFramesInFlight)
     }
 
-    fun beginFrame(frameNumber: Int): Frame {
+    fun beginFrame(frameNumber: Int): VulkanFrame {
         // Are we retiring some older frame ? ( most often we do, except at initialization time )
         val retiringFrame = inFlightFrames[inflightFrameIndex]
 
@@ -234,7 +234,7 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
 
         stackPop()
 
-        val frame = Frame(frameNumber, swapchainImageIndex, swapChainImages[swapchainImageIndex], swapChainImageViews[swapchainImageIndex], swapChainFramebuffers[swapchainImageIndex], inflightFrameIndex, imageAvailableSemaphore, renderingFinishedSemaphore, fence, System.nanoTime())
+        val frame = VulkanFrame(frameNumber, swapchainImageIndex, swapChainImages[swapchainImageIndex], swapChainImageViews[swapchainImageIndex], swapChainFramebuffers[swapchainImageIndex], inflightFrameIndex, imageAvailableSemaphore, renderingFinishedSemaphore, fence, System.nanoTime())
         performanceCounter.whenFrameBegins(frame)
         lastFrame = frame
 
@@ -242,7 +242,7 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
         return frame
     }
 
-    fun finishFrame(frame: Frame) {
+    fun finishFrame(frame: VulkanFrame) {
         stackPush()
 
         val presentInfo = VkPresentInfoKHR.callocStack().sType(VK_STRUCTURE_TYPE_PRESENT_INFO_KHR).apply {

@@ -1,6 +1,5 @@
 package xyz.chunkstories.graphics.common.shaders.compiler.preprocessing
 
-import xyz.chunkstories.api.graphics.ShaderStage
 import xyz.chunkstories.graphics.common.shaders.GLSLFragmentOutput
 import xyz.chunkstories.graphics.common.shaders.GLSLResource
 import xyz.chunkstories.graphics.common.shaders.GLSLType

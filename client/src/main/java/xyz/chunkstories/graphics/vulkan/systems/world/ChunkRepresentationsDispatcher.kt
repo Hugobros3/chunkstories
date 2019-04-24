@@ -5,6 +5,7 @@ import org.lwjgl.system.MemoryUtil
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 import xyz.chunkstories.api.graphics.TextureTilingMode
+import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
 import xyz.chunkstories.api.graphics.systems.dispatching.ChunksRenderer
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
@@ -18,7 +19,7 @@ import xyz.chunkstories.graphics.vulkan.buffers.extractInterfaceBlockField
 import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
-import xyz.chunkstories.graphics.vulkan.swapchain.Frame
+import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
 import xyz.chunkstories.graphics.vulkan.textures.voxels.VulkanVoxelTexturesArray
@@ -129,7 +130,7 @@ class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
         val maxChunksRendered = 4096
         val ssboBufferSize = (sizeAligned16 * maxChunksRendered).toLong()
 
-        override fun registerDrawingCommands(frame: Frame, passContext: VulkanFrameGraph.FrameGraphNode.PassNode, commandBuffer: VkCommandBuffer, work: Sequence<ChunkRepresentation.Section>) {
+        override fun registerDrawingCommands(frame: VulkanFrame, ctx: SystemExecutionContext, commandBuffer: VkCommandBuffer, work: Sequence<ChunkRepresentation.Section>) {
             val client = backend.window.client.ingame ?: return
 
             val staticMeshes = work.mapNotNull { it.staticMesh }
@@ -140,7 +141,7 @@ class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
             fun drawCubes() {
                 val bindingContext = backend.descriptorMegapool.getBindingContext(cubesPipeline)
 
-                val camera = passContext.context.camera
+                val camera = ctx.passInstance.taskInstance.camera
                 val world = client.world
 
                 bindingContext.bindUBO("camera", camera)
@@ -158,7 +159,8 @@ class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
                 bindingContext.bindSSBO("chunkInfo", ssboDataTest)
 
                 val viewportSize = ViewportSize()
-                viewportSize.size.set(pass.declaration.outputs.outputs.getOrNull(0)?.let { passContext.resolvedOutputs.get(it)?.textureSize } ?: passContext.resolvedDepthBuffer!!.textureSize)
+                viewportSize.size.set(ctx.passInstance.renderTargetSize)
+                //viewportSize.size.set(pass.declaration.outputs.outputs.getOrNull(0)?.let { passContext.resolvedOutputs.get(it)?.textureSize } ?: passContext.resolvedDepthBuffer!!.textureSize)
                 bindingContext.bindUBO("viewportSize", viewportSize)
 
                 bindingContext.preDraw(commandBuffer)
@@ -200,7 +202,7 @@ class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
             fun drawStaticMeshes() {
                 val bindingContext = backend.descriptorMegapool.getBindingContext(meshesPipeline)
 
-                val camera = passContext.context.camera
+                val camera = ctx.passInstance.taskInstance.camera
                 val world = client.world
 
                 bindingContext.bindUBO("camera", camera)

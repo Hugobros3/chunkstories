@@ -10,11 +10,11 @@ import xyz.chunkstories.api.graphics.systems.GraphicSystem
 import xyz.chunkstories.api.graphics.systems.RegisteredGraphicSystem
 import xyz.chunkstories.api.graphics.systems.dispatching.DispatchingSystem
 import xyz.chunkstories.api.graphics.systems.drawing.DrawingSystem
+import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.vulkan.CommandPool
 import xyz.chunkstories.graphics.vulkan.RenderPass
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
-import xyz.chunkstories.graphics.common.Cleanable
-import xyz.chunkstories.graphics.vulkan.swapchain.Frame
+import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
 import xyz.chunkstories.graphics.vulkan.util.VkFramebuffer
@@ -55,8 +55,7 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
 
                     dispatchingSystem.drawersInstances.add(drawer)
                     dispatchingDrawers.add(drawer)
-                }
-                else
+                } else
                     throw Exception("What is this")
 
             }
@@ -68,7 +67,7 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
         MemoryStack.stackPop()
     }
 
-    fun createFramebuffer(frame: Frame, resolvedDepthAndColorBuffers: MutableList<VulkanRenderBuffer>): VkFramebuffer {
+    fun createFramebuffer(frame: VulkanFrame, resolvedDepthAndColorBuffers: MutableList<VulkanRenderBuffer>): VkFramebuffer {
         stackPush()
         val pAttachments = stackMallocLong(resolvedDepthAndColorBuffers.size)
 
@@ -92,12 +91,14 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
         return handle
     }
 
-    fun render(frame: Frame,
-               passInstance: VulkanFrameGraph.FrameGraphNode.PassNode,
+    fun render(frame: VulkanFrame,
+               passInstance: VulkanFrameGraph.FrameGraphNode.VulkanPassInstance,
                passInstanceIndex: Int,
                allBufferStates: MutableMap<VulkanRenderBuffer, UsageType>,
                representationsGathered: MutableMap<VulkanDispatchingSystem.Drawer<*>, ArrayList<*>>
     ) {
+        declaration.setupLambdas.forEach { it.invoke(passInstance) }
+
         val outputs = declaration.outputs.outputs
         val depth = declaration.depthTestingConfiguration
 
@@ -105,16 +106,33 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
             RenderTarget.BackBuffer -> TODO()
             is RenderTarget.RenderBufferReference -> renderTask.buffers[renderTarget.renderBufferName]
                     ?: throw Exception("Missing render target: No render buffer named '${renderTarget.renderBufferName}' found in RenderTask ${renderTask.declaration.name}")
-            is RenderTarget.TaskInput -> (passInstance.context.parameters[renderTarget.name]
-                    ?: throw Exception("The parent context lacks a '${renderTarget.name}' parameter")) as? VulkanRenderBuffer
-                    ?: throw Exception("The parent context lacks a '${renderTarget.name}' parameter is not a render buffer")
+            is RenderTarget.TaskInput -> {
+                val resolvedParameter = (passInstance.taskInstance.parameters[renderTarget.name]
+                        ?: throw Exception("The parent context lacks a '${renderTarget.name}' parameter"))
+
+                when (resolvedParameter) {
+                    is VulkanRenderBuffer -> resolvedParameter
+                    is RenderTarget.RenderBufferReference -> {
+                        val localRenderBuffer = renderTask.buffers[resolvedParameter.renderBufferName]
+                        if (localRenderBuffer != null)
+                            localRenderBuffer
+                        else {
+                            val parentRenderTask = passInstance.taskInstance.requester!!.taskInstance
+                            parentRenderTask.renderTask.buffers[resolvedParameter.renderBufferName]
+                                    ?: throw Exception("Can't find render buffer named: ${resolvedParameter.renderBufferName}")
+                        }
+                    }
+                    else -> throw Exception("The $resolvedParameter parameter is not a render buffer")
+                }
+            }
         }
 
         val resolvedOutputs = mutableMapOf<PassOutput, VulkanRenderBuffer>()
 
         val resolvedDepthAndColorBuffers = mutableListOf<VulkanRenderBuffer>()
         for (colorOutput in outputs) {
-            val resolved = resolveRenderTarget(colorOutput.target ?: RenderTarget.RenderBufferReference(colorOutput.name))
+            val resolved = resolveRenderTarget(colorOutput.target
+                    ?: RenderTarget.RenderBufferReference(colorOutput.name))
             resolvedDepthAndColorBuffers.add(resolved)
             resolvedOutputs[colorOutput] = resolved
         }
@@ -126,42 +144,49 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
 
         passInstance.resolvedOutputs = resolvedOutputs
 
-        //TODO also bind textures at that point?
         val resolvedInputBuffers = mutableListOf<VulkanRenderBuffer>()
-        for (imageInput in declaration.inputs?.imageInputs ?: emptyList<ImageInput>()) {
-            val source = imageInput.source
-            when (source) {
-                is ImageSource.AssetReference -> {
-                }
-                is ImageSource.TextureReference -> {
-                }
-                is ImageSource.RenderBufferReference -> resolvedInputBuffers.add(renderTask.buffers[source.renderBufferName]
-                        ?: throw Exception("No renderbuffer named ${source.renderBufferName}"))
-                is ImageSource.TaskOutput -> {
-                    val referencedContext = source.context as VulkanFrameGraph.FrameGraphNode.RenderingContextNode
 
-                    //TODO we only handle direct deps for now
-                    val rootPass = referencedContext.renderTask.rootPass
-                    val passInstance = referencedContext.depends.find { it is PassInstance && it.pass == rootPass.declaration } as VulkanFrameGraph.FrameGraphNode.PassNode
+        fun lookForRenderBufferImages(list: List<Triple<Any, Any, ImageInput>>) {
+            for ((_, _, imageInput) in list) {
+                val source = imageInput.source
+                when (source) {
+                    is ImageSource.AssetReference -> {
+                    }
+                    is ImageSource.TextureReference -> {
+                    }
+                    is ImageSource.RenderBufferReference -> {
+                        resolvedInputBuffers.add(renderTask.buffers[source.renderBufferName]
+                                ?: throw Exception("No renderbuffer named ${source.renderBufferName}"))
+                    }
+                    is ImageSource.TaskOutput -> {
+                        val referencedTaskInstance = source.context as VulkanFrameGraph.FrameGraphNode.VulkanRenderTaskInstance
 
-                    val outputInstance = passInstance.resolvedOutputs[source.output]!!
-                    resolvedInputBuffers.add(outputInstance)
-                }
-                is ImageSource.TaskOutputDepth -> {
-                    val referencedContext = source.context as VulkanFrameGraph.FrameGraphNode.RenderingContextNode
+                        //TODO we only handle direct deps for now
+                        val rootPass = referencedTaskInstance.renderTask.rootPass
+                        val passInstance = referencedTaskInstance.depends.find { it is PassInstance && it.declaration == rootPass.declaration } as VulkanFrameGraph.FrameGraphNode.VulkanPassInstance
 
-                    //TODO we only handle direct deps for now
-                    val rootPass = referencedContext.renderTask.rootPass
-                    val passInstance = referencedContext.depends.find { it is PassInstance && it.pass == rootPass.declaration } as VulkanFrameGraph.FrameGraphNode.PassNode
+                        val outputInstance = passInstance.resolvedOutputs[source.output]!!
+                        resolvedInputBuffers.add(outputInstance)
+                    }
+                    is ImageSource.TaskOutputDepth -> {
+                        val referencedTaskInstance = source.context as VulkanFrameGraph.FrameGraphNode.VulkanRenderTaskInstance
 
-                    val outputInstance = passInstance.resolvedDepthBuffer!!
-                    resolvedInputBuffers.add(outputInstance)
+                        //TODO we only handle direct deps for now
+                        val rootPass = referencedTaskInstance.renderTask.rootPass
+                        val passInstance = referencedTaskInstance.depends.find { it is PassInstance && it.declaration == rootPass.declaration } as VulkanFrameGraph.FrameGraphNode.VulkanPassInstance
+
+                        val outputInstance = passInstance.resolvedDepthBuffer!!
+                        resolvedInputBuffers.add(outputInstance)
+                    }
                 }
             }
         }
-
-        for (image in passInstance.extraInputRenderBuffers) {
-            resolvedInputBuffers += image
+        lookForRenderBufferImages(passInstance.shaderResources.images)
+        for(subsystem in passInstance.preparedDispatchingSystemsContexts) {
+            lookForRenderBufferImages(subsystem.shaderResources.images)
+        }
+        for(subsystem in passInstance.preparedDrawingSystemsContexts) {
+            lookForRenderBufferImages(subsystem.shaderResources.images)
         }
 
         val attachementsPreviousState = resolvedDepthAndColorBuffers.map {
@@ -174,18 +199,20 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
             RenderPass(backend, this, attachementsPreviousState)
         }
 
-        //TODO relevant framebuffer
+        //TODO Recycle framebuffers ?
         val framebuffer = createFramebuffer(frame, resolvedDepthAndColorBuffers)
 
-        //TODO
-        val imageInputstoTransition = mutableListOf<Pair<VulkanRenderBuffer, UsageType>>()
+        /** The images to transition using image barriers, with their current usage/layout */
+        val inputImageNeedingLayoutTransition = mutableListOf<Pair<VulkanRenderBuffer, UsageType>>()
+
         for (imageInputResolved in resolvedInputBuffers) {
             val currentUsage = allBufferStates[imageInputResolved] ?: UsageType.NONE
             if (currentUsage != UsageType.INPUT)
-                imageInputstoTransition.add(Pair(imageInputResolved, currentUsage))
+                inputImageNeedingLayoutTransition.add(Pair(imageInputResolved, currentUsage))
         }
 
         val viewportSize = resolvedDepthAndColorBuffers[0].textureSize
+        passInstance.renderTargetSize = viewportSize
 
         val commandBuffer = commandPool.createOneUseCB()
         passInstance.commandBuffer = commandBuffer
@@ -252,13 +279,13 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
                     pClearValues(clearColor)
                 }
 
-                if (imageInputstoTransition.size > 0) {
+                if (inputImageNeedingLayoutTransition.size > 0) {
                     stackPush()
-                    val imageBarriers = VkImageMemoryBarrier.callocStack(imageInputstoTransition.size)
+                    val imageBarriers = VkImageMemoryBarrier.callocStack(inputImageNeedingLayoutTransition.size)
                     var tightestSrcStageMask: Int = 1
                     var tighestDstStageMask: Int = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT
-                    for (index in 0 until imageInputstoTransition.size) {
-                        val (renderBuffer, previousUsage) = imageInputstoTransition[index]
+                    for (index in 0 until inputImageNeedingLayoutTransition.size) {
+                        val (renderBuffer, previousUsage) = inputImageNeedingLayoutTransition[index]
                         val newUsage = UsageType.INPUT
 
                         imageBarriers[index].sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER).apply {
@@ -306,17 +333,17 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
                 vkCmdBeginRenderPass(this, renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE)
 
                 // Transition image layouts now !
-                for (drawingSystem in drawingSystems) {
-                    drawingSystem.registerDrawingCommands(frame, this, passInstance)
+                for ((i, drawingSystem) in drawingSystems.withIndex()) {
+                    drawingSystem.registerDrawingCommands(frame, passInstance.preparedDrawingSystemsContexts[i], this)
                 }
 
-                for(drawer in dispatchingDrawers) {
+                for ((i, drawer) in dispatchingDrawers.withIndex()) {
                     val relevantBucket = representationsGathered[drawer] ?: continue
 
                     //val filter = 1 shl passInstanceIndex
                     //val filteredByIndex = relevantBucket.representations.asSequence().filterIndexed { i, r -> relevantBucket.visibility[i] and filter != 0 }
                     //drawer.registerDrawingCommands(frame, passInstance, this, filteredByIndex as Sequence<Nothing>)
-                    drawer.registerDrawingCommands(frame, passInstance, this, relevantBucket.toList().asSequence() as Sequence<Nothing>)
+                    drawer.registerDrawingCommands(frame, passInstance.preparedDispatchingSystemsContexts[i], this, relevantBucket.toList().asSequence() as Sequence<Nothing>)
                 }
 
                 vkCmdEndRenderPass(this)

@@ -23,7 +23,7 @@ class VulkanPerformanceCounter(val swapChain: SwapChain) : PerformanceMetrics {
     //val startedTimes = LongArray(swapChain.maxFramesInFlight)
     //var index = 0
 
-    fun whenFrameBegins(frame: Frame) {
+    fun whenFrameBegins(frame: VulkanFrame) {
         val now = System.nanoTime()
         val delta = now - lastResetTime
         if(delta > ONE_SECOND) {

@@ -7,15 +7,14 @@ import guru.nidi.graphviz.engine.Graphviz
 import guru.nidi.graphviz.model.Factory.*
 import java.io.File
 
-
 fun exportRenderGraphPng(frameGraph: VulkanFrameGraph) {
     fun node2viz(node: VulkanFrameGraph.FrameGraphNode) = node("${node.hashCode()}").let {
         when (node) {
-            is VulkanFrameGraph.FrameGraphNode.PassNode -> {
-                it.with(Label.of("passNode(pass=${node.pass.name})")).with(Color.BLUE1)
+            is VulkanFrameGraph.FrameGraphNode.VulkanPassInstance -> {
+                it.with(Label.of("passInstance(pass=${node.declaration.name})")).with(Color.BLUE1)
             }
-            is VulkanFrameGraph.FrameGraphNode.RenderingContextNode -> {
-                it.with(Label.of("renderContext(name=${node.name} task=${node.renderTask.declaration.name})")).with(Color.RED)
+            is VulkanFrameGraph.FrameGraphNode.VulkanRenderTaskInstance -> {
+                it.with(Label.of("renderTaskInstance(name=${node.name} task=${node.declaration.name})")).with(Color.RED)
             }
         }
     }

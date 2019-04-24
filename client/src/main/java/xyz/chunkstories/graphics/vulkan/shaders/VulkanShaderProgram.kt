@@ -8,7 +8,7 @@ import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkDescriptorSetLayoutBinding
 import org.lwjgl.vulkan.VkDescriptorSetLayoutBindingFlagsCreateInfoEXT
 import org.lwjgl.vulkan.VkDescriptorSetLayoutCreateInfo
-import xyz.chunkstories.api.graphics.ShaderStage
+import xyz.chunkstories.api.graphics.shader.ShaderStage
 import xyz.chunkstories.api.graphics.structs.UniformUpdateFrequency
 import xyz.chunkstories.graphics.common.shaders.*
 import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.SpirvCrossHelper

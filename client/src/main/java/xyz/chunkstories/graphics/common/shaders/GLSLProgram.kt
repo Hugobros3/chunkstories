@@ -1,6 +1,6 @@
 package xyz.chunkstories.graphics.common.shaders
 
-import xyz.chunkstories.api.graphics.ShaderStage
+import xyz.chunkstories.api.graphics.shader.ShaderStage
 
 data class GLSLProgram(
         val name: String,

@@ -2,7 +2,6 @@ package xyz.chunkstories.graphics.vulkan.shaders
 
 import xyz.chunkstories.api.client.Client
 import xyz.chunkstories.api.content.Content
-import xyz.chunkstories.api.graphics.ShaderStage
 import xyz.chunkstories.content.mods.ModsManagerImplementation
 import xyz.chunkstories.graphics.common.shaders.GLSLDialect
 import xyz.chunkstories.graphics.common.shaders.GLSLProgram

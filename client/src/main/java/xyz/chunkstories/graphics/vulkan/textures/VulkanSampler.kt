@@ -8,15 +8,23 @@ import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkSamplerCreateInfo
 import xyz.chunkstories.api.graphics.TextureTilingMode
+import xyz.chunkstories.api.graphics.rendergraph.ImageInput
 
-class VulkanSampler(val backend: VulkanGraphicsBackend, val shadowSampler: Boolean = false, val tilingMode: TextureTilingMode = TextureTilingMode.CLAMP_TO_EDGE)  : Cleanable {
+class VulkanSampler(val backend: VulkanGraphicsBackend,
+                    val scalingMode: ImageInput.ScalingMode = ImageInput.ScalingMode.NEAREST,
+                    val depthCompareMode: ImageInput.DepthCompareMode = ImageInput.DepthCompareMode.DISABLED,
+                    val tilingMode: TextureTilingMode = TextureTilingMode.CLAMP_TO_EDGE)  : Cleanable {
     val handle : VkSampler
 
     init {
         stackPush()
         val samplerInfo = VkSamplerCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO).apply {
-            magFilter(VK_FILTER_NEAREST)
-            minFilter(VK_FILTER_NEAREST)
+            val filter = when(scalingMode) {
+                ImageInput.ScalingMode.LINEAR -> VK_FILTER_LINEAR
+                ImageInput.ScalingMode.NEAREST -> VK_FILTER_NEAREST
+            }
+            magFilter(filter)
+            minFilter(filter)
 
             val addressMode = when(tilingMode) {
                 TextureTilingMode.CLAMP_TO_EDGE -> VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE
@@ -31,15 +39,18 @@ class VulkanSampler(val backend: VulkanGraphicsBackend, val shadowSampler: Boole
 
             unnormalizedCoordinates(false)
 
-            if(shadowSampler) {
-                compareEnable(true)
-                compareOp(VK_COMPARE_OP_LESS_OR_EQUAL)
-                //compareOp(VK_COMPARE_OP_GREATER_OR_EQUAL)
-                magFilter(VK_FILTER_LINEAR)
-                minFilter(VK_FILTER_LINEAR)
-            } else {
-                compareEnable(false)
-                compareOp(VK_COMPARE_OP_ALWAYS)
+            when (depthCompareMode) {
+                ImageInput.DepthCompareMode.SHADOWMAP -> {
+                    compareEnable(true)
+                    compareOp(VK_COMPARE_OP_LESS_OR_EQUAL)
+                    //compareOp(VK_COMPARE_OP_GREATER_OR_EQUAL)
+                    magFilter(VK_FILTER_LINEAR)
+                    minFilter(VK_FILTER_LINEAR)
+                }
+                ImageInput.DepthCompareMode.DISABLED -> {
+                    compareEnable(false)
+                    compareOp(VK_COMPARE_OP_ALWAYS)
+                }
             }
 
             mipmapMode(VK_SAMPLER_MIPMAP_MODE_LINEAR)

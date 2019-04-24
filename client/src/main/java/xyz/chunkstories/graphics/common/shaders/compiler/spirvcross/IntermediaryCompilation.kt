@@ -1,7 +1,7 @@
 package xyz.chunkstories.graphics.common.shaders.compiler.spirvcross
 
 import graphics.scenery.spirvcrossj.*
-import xyz.chunkstories.api.graphics.ShaderStage
+import xyz.chunkstories.api.graphics.shader.ShaderStage
 import xyz.chunkstories.api.graphics.structs.UniformUpdateFrequency
 import xyz.chunkstories.api.graphics.structs.UpdateFrequency
 import xyz.chunkstories.graphics.common.shaders.*

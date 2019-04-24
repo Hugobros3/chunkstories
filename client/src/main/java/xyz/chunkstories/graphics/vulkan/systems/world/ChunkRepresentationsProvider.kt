@@ -15,12 +15,12 @@ import xyz.chunkstories.world.storage.RegionImplementation
 class ChunkRepresentationsProvider(val backend: VulkanGraphicsBackend, val world: WorldClientCommon) : RepresentationsProvider {
     override fun gatherRepresentations(representationsGobbler: RepresentationsGobbler) {
         //val passes = representationsGobbler.con
-        val contexts=  representationsGobbler.renderingContexts
+        val contexts=  representationsGobbler.renderTaskInstances
         val cameras = contexts.map { it.camera }
 
         //val mainPass = passes.find { it.context.name == "main" }!! as VulkanFrameGraph.FrameGraphNode.PassNode
         //val mainContext = mainPass.context
-        val mainContext = contexts.find { it.name == "main" }!! as VulkanFrameGraph.FrameGraphNode.RenderingContextNode
+        val mainContext = contexts.find { it.name == "main" }!! as VulkanFrameGraph.FrameGraphNode.VulkanRenderTaskInstance
         val mainCamera = mainContext.camera
 
         val frame = mainContext.frameGraph.frame

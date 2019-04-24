@@ -1,7 +1,7 @@
 package xyz.chunkstories.graphics.vulkan.resources
 
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
-import xyz.chunkstories.graphics.vulkan.swapchain.Frame
+import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import org.lwjgl.system.MemoryStack.stackPop
 import org.lwjgl.system.MemoryStack.stackPush
 import xyz.chunkstories.graphics.common.Cleanable
@@ -21,7 +21,7 @@ class InflightFrameResource<R : Any>(val backend: VulkanGraphicsBackend, val ini
 
     lateinit var values : Array<Any>
 
-    operator fun get(frame: Frame) = values[frame.inflightFrameIndex] as R
+    operator fun get(frame: VulkanFrame) = values[frame.inflightFrameIndex] as R
 
     fun cleanup() {
         values.forEach { (it as? Cleanable)?.cleanup() }

@@ -1,6 +1,5 @@
 package xyz.chunkstories.graphics.vulkan
 
-import xyz.chunkstories.api.graphics.ShaderStage
 import xyz.chunkstories.api.graphics.rendergraph.DepthTestingConfiguration.DepthTestMode.*
 import xyz.chunkstories.api.graphics.rendergraph.PassOutput
 import xyz.chunkstories.graphics.common.FaceCullingMode
@@ -15,6 +14,7 @@ import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.graphics.rendergraph.DepthTestingConfiguration
 import xyz.chunkstories.api.graphics.rendergraph.PassOutputsDeclaration
+import xyz.chunkstories.api.graphics.shader.ShaderStage
 import xyz.chunkstories.graphics.common.shaders.GLSLProgram
 import xyz.chunkstories.graphics.vulkan.shaders.VulkanShaderProgram
 
@@ -236,7 +236,6 @@ class Pipeline(val backend: VulkanGraphicsBackend, val program : VulkanShaderPro
 
 val ShaderStage.vkShaderStageBit: Int
     get() = when(this) {
-
         ShaderStage.VERTEX -> VK_SHADER_STAGE_VERTEX_BIT
         ShaderStage.GEOMETRY -> VK_SHADER_STAGE_GEOMETRY_BIT
         ShaderStage.FRAGMENT -> VK_SHADER_STAGE_FRAGMENT_BIT

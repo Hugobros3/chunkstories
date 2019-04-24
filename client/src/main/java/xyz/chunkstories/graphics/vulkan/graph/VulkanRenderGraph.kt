@@ -11,7 +11,7 @@ import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.common.representations.gatherRepresentations
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
-import xyz.chunkstories.graphics.vulkan.swapchain.Frame
+import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.swapchain.SwapchainBlitHelper
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.util.ensureIs
@@ -34,7 +34,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
         }.toMap()
     }
 
-    fun renderFrame(frame: Frame) {
+    fun renderFrame(frame: VulkanFrame) {
         //TODO make that configurable
         val mainCamera = backend.window.client.ingame?.player?.controlledEntity?.traits?.get(TraitControllable::class)?.camera ?: Camera()
         val mainTaskName = "main"
@@ -54,10 +54,9 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
         val gathered = backend.graphicsEngine.gatherRepresentations(graph, sequencedGraph)
 
         val onlyPassesSequence = sequencedGraph.filterIsInstance<PassInstance>()
-        val allRenderingContexts = sequencedGraph.filterIsInstance<RenderingContext>()
+        val allRenderingContexts = sequencedGraph.filterIsInstance<RenderTaskInstance>()
 
-        //println(sequencedGraph)
-
+        // Fancy preparing of the representations to render
         val jobs = onlyPassesSequence.map {
             mutableMapOf<VulkanDispatchingSystem.Drawer<*>, ArrayList<*>>()
         }
@@ -66,12 +65,12 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
             onlyPassesSequence.filter { it.context == ctx }.flatMap { (it as VulkanPass).dispatchingDrawers }
         }*/
 
-        for ((passInstanceIndex, pass) in onlyPassesSequence.withIndex()) {
-            val pass = pass as VulkanFrameGraph.FrameGraphNode.PassNode
+        for ((index, pass) in onlyPassesSequence.withIndex()) {
+            val pass = pass as VulkanFrameGraph.FrameGraphNode.VulkanPassInstance
 
-            val renderContextIndex = allRenderingContexts.indexOf(pass.context)
+            val renderContextIndex = allRenderingContexts.indexOf(pass.taskInstance)
             val ctxMask = 1 shl renderContextIndex
-            val jobsForPassInstance = jobs[passInstanceIndex]
+            val jobsForPassInstance = jobs[index]
             //val drawers = drawersPerContext[context]!!
 
             for ((key, contents) in gathered.buckets) {
@@ -113,7 +112,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
             val graphNode = sequencedGraph[graphNodeIndex]
 
             when (graphNode) {
-                is VulkanFrameGraph.FrameGraphNode.PassNode -> {
+                is VulkanFrameGraph.FrameGraphNode.VulkanPassInstance -> {
                     val pass = graphNode.vulkanPass
 
                     /*val requiredRenderBufferStates = pass.getRenderBufferUsages(graphNode)
@@ -144,8 +143,8 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
                     for(entry in requiredRenderBufferStates)
                         globalStates[entry.key] = entry.value*/
                 }
-                is VulkanFrameGraph.FrameGraphNode.RenderingContextNode -> {
-                    graphNode.callback?.invoke(graphNode)
+                is VulkanFrameGraph.FrameGraphNode.VulkanRenderTaskInstance -> {
+                    graphNode.callbacks.forEach { it.invoke(graphNode) }
                 }
             }
         }
@@ -156,7 +155,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
             fresh = false
         }
 
-        val passesInstances = sequencedGraph.mapNotNull { (it as? VulkanFrameGraph.FrameGraphNode.PassNode) }
+        val passesInstances = sequencedGraph.mapNotNull { (it as? VulkanFrameGraph.FrameGraphNode.VulkanPassInstance) }
         val vulkanPasses = passesInstances.map { it.vulkanPass }
 
         //println(passesInstances.map { "${it.vulkanPass.declaration.name}:${it.context.name}" })
