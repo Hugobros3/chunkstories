@@ -117,7 +117,7 @@ class ClientImplementation internal constructor(coreContentLocation: File, modsS
         cleanup()
     }
 
-    fun mainLoop() {
+    private fun mainLoop() {
         while (!gameWindow.shouldClose) {
             gameWindow.executeMainThreadChores()
             gameWindow.checkStillInFocus()

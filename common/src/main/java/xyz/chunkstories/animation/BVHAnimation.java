@@ -170,27 +170,35 @@ public class BVHAnimation implements Animation {
 	}
 
 	public static Matrix4f transformBlenderBVHExportToChunkStoriesWorldSpace(Matrix4f matrix) {
-		// Swaps Y and Z axises arround
 		Matrix4f blender2ingame = new Matrix4f();
+		// Cs & Blender conventions are both right-handed, ez way to map them is
+		// Blender | Chunk Stories
+		// +X      | +Z
+		// +Y      | +X
+		// +Z      | +Y
+		blender2ingame.m00(0.0f);
 		blender2ingame.m11(0.0f);
 		blender2ingame.m22(0.0f);
-		blender2ingame.m12(1.0f);
+
+		blender2ingame.m02(1.0f);
+		blender2ingame.m10(1.0f);
 		blender2ingame.m21(1.0f);
 
 		// Rotate the matrix first to apply the transformation in blender space
 		blender2ingame.mul(matrix, matrix);
 
-		// Mirror it
-		Matrix4f mirror = new Matrix4f();
-		mirror.m22(-1.0f);
+		//Matrix4f out = new Matrix4f(blender2ingame);
+		//out.invert();
+		Matrix4f out = new Matrix4f();
+		out.m00(0.0f);
+		out.m11(0.0f);
+		out.m22(0.0f);
 
-		mirror.mul(matrix, matrix);
+		out.m20(1.0f);
+		out.m01(1.0f);
+		out.m12(1.0f);
 
-		// Rotate again after so it's back the correct way arround
-
-		matrix.mul(blender2ingame, matrix);
-
-		matrix.mul(mirror, matrix);
+		matrix.mul(out, matrix);
 
 		return matrix;
 	}
@@ -204,11 +212,10 @@ public class BVHAnimation implements Animation {
 		// Accumulate the transformation offset
 		BVHTreeBone loop = bone;
 		while (loop != null) {
-			// Swap yz arround and negate input Y to apply blender -> ingame coordinates
-			// system transformation
-			offsetTotal.x = (offsetTotal.x() + loop.offset.x());
+			// Coordinates systems n stuff
+			offsetTotal.x = (offsetTotal.x() + loop.offset.y());
 			offsetTotal.y = (offsetTotal.y() + loop.offset.z());
-			offsetTotal.z = (offsetTotal.z() + -loop.offset.y());
+			offsetTotal.z = (offsetTotal.z() + loop.offset.x());
 			loop = loop.parent;
 		}
 

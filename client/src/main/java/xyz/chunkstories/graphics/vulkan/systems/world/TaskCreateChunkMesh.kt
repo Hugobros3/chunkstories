@@ -146,6 +146,7 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
 
                             if (voxel.name == "grass_prop") {
                                 val model = chunk.world.content.models["voxels/blockmodels/grass_prop/grass_prop.dae"]
+                                //val model = chunk.world.content.models["models/human/human.dae"]
 
                                 val sunlight = VoxelFormat.sunlight(cellData)
                                 val blocklight = VoxelFormat.blocklight(cellData)

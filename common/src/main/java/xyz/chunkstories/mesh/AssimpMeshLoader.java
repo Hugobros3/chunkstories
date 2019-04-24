@@ -186,8 +186,11 @@ public class AssimpMeshLoader {
 
                             if (mainAsset.getName().endsWith("dae")) {
                                 // swap Y and Z axises
-                                vertices.add(vertex.x, vertex.z, -vertex.y);
-                                normals.add(normal.x, normal.z, -normal.y);
+                                //vertices.add(vertex.x, vertex.z, -vertex.y);
+                                //normals.add(normal.x, normal.z, -normal.y);
+
+                                vertices.add(vertex.y, vertex.z, vertex.x);
+                                normals.add(normal.y, normal.z, normal.x);
                             } else {
                                 vertices.add(vertex.x, vertex.y, vertex.z);
                                 normals.add(normal.x, normal.y, normal.z);

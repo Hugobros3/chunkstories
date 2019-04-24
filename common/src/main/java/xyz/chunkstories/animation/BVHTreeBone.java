@@ -99,9 +99,6 @@ public class BVHTreeBone implements Animation.SkeletonBone {
 		int frameUpper = (int) (frameUpperBound) % bvh.frames;
 
 		return getTransformationMatrixInterpolatedInternal(frameLower, frameUpper, interp);
-		// return
-		// BVHAnimation.transformBlenderBVHExportToChunkStoriesWorldSpace(getTransformationMatrixInterpolatedInternal(frameLower,
-		// frameUpper, interp));
 	}
 
 	private Matrix4f getTransformationMatrixInterpolatedInternal(int frameLower, int frameUpper, double t) {
