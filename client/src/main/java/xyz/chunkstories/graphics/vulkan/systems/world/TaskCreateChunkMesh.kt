@@ -1,8 +1,11 @@
 package xyz.chunkstories.graphics.vulkan.systems.world
 
+import org.joml.Vector3fc
 import org.lwjgl.system.MemoryUtil
 import org.lwjgl.system.MemoryUtil.memFree
-import xyz.chunkstories.api.graphics.Mesh
+import xyz.chunkstories.api.graphics.MeshMaterial
+import xyz.chunkstories.api.graphics.representation.Model
+import xyz.chunkstories.api.voxel.ChunkMeshRenderingInterface
 import xyz.chunkstories.api.voxel.Voxel
 import xyz.chunkstories.api.voxel.VoxelFormat
 import xyz.chunkstories.api.voxel.VoxelSide
@@ -73,18 +76,80 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
             rawChunkData = chunkDataRef
 
             val cell = ScratchCell(chunk.world)
+            var cellData = 0
+
+            val mesher = object : ChunkMeshRenderingInterface {
+                var x = 0; var y = 0; var z = 0
+
+                override fun addModel(model: Model, offset: Vector3fc?, materialsOverrides: Map<Int, MeshMaterial>) {
+                    val sunlight = VoxelFormat.sunlight(cellData)
+                    val blocklight = VoxelFormat.blocklight(cellData)
+
+                    var ox = x + (offset?.x() ?: 0f)
+                    var oy = y + (offset?.y() ?: 0f)
+                    var oz = z + (offset?.z() ?: 0f)
+
+                    for ((index, mesh) in model.meshes.withIndex()) {
+                        val material = materialsOverrides[index] ?: mesh.material
+                        val scratch = map.getOrPut(material.tag) { ScratchBuffer() }
+                        val meshData = scratch.meshData
+                        var texName = material.textures["albedoTexture"] ?: "notex"
+                        val asset = chunk.world.content.getAsset(texName)
+                        val assetName = asset?.name
+                        when {
+                            assetName != null && assetName.startsWith("voxels/blockmodels") -> texName = assetName.removePrefix("voxels/blockmodels/") ?: "notex"
+                            assetName != null && assetName.startsWith("voxels/textures") -> texName = assetName.removePrefix("voxels/textures/") ?: "notex"
+                        }
+                        texName = texName.removeSuffix(".png")
+                        val voxelTexture = chunk.world.content.voxels().textures().get(texName) as VoxelTexturesArray.VoxelTextureInArray
+                        val textureId = voxelTexture.textureArrayIndex
+                        val vertexIn = mesh.attributes.find { it.name == "vertexIn" }?.data!!
+                        val normalIn = mesh.attributes.find { it.name == "normalIn" }?.data
+                        val texCoordIn = mesh.attributes.find { it.name == "texCoordIn" }?.data
+                        for (i in 0 until mesh.vertices) {
+                            meshData.putFloat(vertexIn.getFloat(i * 12 + 0) + ox)
+                            meshData.putFloat(vertexIn.getFloat(i * 12 + 4) + oy)
+                            meshData.putFloat(vertexIn.getFloat(i * 12 + 8) + oz)
+
+                            meshData.put((sunlight * 16).toByte())
+                            meshData.put((blocklight * 16).toByte())
+                            meshData.put(0)
+                            meshData.put(0)
+
+                            if (normalIn != null) {
+                                meshData.put(normalIn.getFloat(i * 12 + 0).toSNORM())
+                                meshData.put(normalIn.getFloat(i * 12 + 4).toSNORM())
+                                meshData.put(normalIn.getFloat(i * 12 + 8).toSNORM())
+                                meshData.put(0)
+                            } else {
+                                meshData.put(0)
+                                meshData.put(0)
+                                meshData.put(0)
+                                meshData.put(0)
+                            }
+
+                            if (texCoordIn != null) {
+                                meshData.putShort(texCoordIn.getFloat(i * 8 + 0).toUNORM16())
+                                meshData.putShort(texCoordIn.getFloat(i * 8 + 4).toUNORM16())
+                            } else {
+                                meshData.put(0)
+                                meshData.put(0)
+                                meshData.put(0)
+                                meshData.put(0)
+                            }
+
+                            meshData.putInt(textureId)
+                            scratch.meshTriCount++
+                        }
+                    }
+                }
+            }
 
             for (x in 0..31) {
                 for (y in 0..31) {
                     for (z in 0..31) {
-                        val cellData = rawChunkData[x * 32 * 32 + y * 32 + z]
+                        cellData = rawChunkData[x * 32 * 32 + y * 32 + z]
                         val voxel = chunk.world.contentTranslator.getVoxelForId(VoxelFormat.id(cellData))!!
-
-                        val materialTagName = if (voxel.name == "water") "water" else "opaque"
-
-                        val scratch = map.getOrPut(materialTagName) { ScratchBuffer() }
-                        val meshData = scratch.meshData
-                        val cubesData = scratch.cubesData
 
                         cell.x = (chunk.chunkX shl 5) + x
                         cell.y = (chunk.chunkX shl 5) + y
@@ -103,121 +168,74 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
                         }
 
                         if (!voxel.isAir()) {
-                            fun face(neighborData: Int, face: UnitCube.CubeFaceData, side: VoxelSide) {
-                                val neighborVoxel = chunk.world.contentTranslator.getVoxelForId(VoxelFormat.id(neighborData))!!
-                                if (opaque(neighborVoxel) || (voxel == neighborVoxel && voxel.selfOpaque))
-                                    return
-
-                                val voxelTexture = voxel.getVoxelTexture(cell, side) as VoxelTexturesArray.VoxelTextureInArray
-
-                                //val textureName = "voxels/textures/"+voxelTexture.name.replace('.','/')+".png"
-                                //val textureId = (backend.textures[textureName] as VulkanTexture2D).mapping
-                                val textureId = voxelTexture.textureArrayIndex
-
-                                val sunlight = VoxelFormat.sunlight(neighborData)
-                                val blocklight = max(VoxelFormat.blocklight(neighborData), voxel.emittedLightLevel)
-
-                                for ((vertex, texcoord) in face.vertices) {
-                                    /*meshData.put((vertex[0] + x).toByte())
-                                    meshData.put((vertex[1] + y).toByte())
-                                    meshData.put((vertex[2] + z).toByte())
-                                    meshData.put(0)*/
-                                    meshData.putFloat(vertex[0] + x)
-                                    meshData.putFloat(vertex[1] + y)
-                                    meshData.putFloat(vertex[2] + z)
-
-                                    meshData.put((sunlight * 16).toByte())
-                                    meshData.put((blocklight * 16).toByte())
-                                    meshData.put(0)
-                                    meshData.put(0)
-
-                                    meshData.put(face.normalDirection.x().toSNORM())
-                                    meshData.put(face.normalDirection.y().toSNORM())
-                                    meshData.put(face.normalDirection.z().toSNORM())
-                                    meshData.put(0)
-
-                                    meshData.putShort(texcoord[0].toUNORM16())
-                                    meshData.putShort(texcoord[1].toUNORM16())
-
-                                    meshData.putInt(textureId)
-                                    scratch.meshTriCount++
+                            val routine = voxel.customRenderingRoutine
+                            if (routine != null) {
+                                mesher.let {
+                                    it.x = x
+                                    it.y = y
+                                    it.z = z
                                 }
-                            }
+                                routine.invoke(mesher, cell)
+                            } else {
+                                val materialTagName = if (voxel.name == "water") "water" else "opaque"
 
-                            if (voxel.name == "grass_prop") {
-                                val model = chunk.world.content.models["voxels/blockmodels/grass_prop/grass_prop.dae"]
-                                //val model = chunk.world.content.models["models/human/human.dae"]
+                                val scratch = map.getOrPut(materialTagName) { ScratchBuffer() }
+                                val meshData = scratch.meshData
+                                val cubesData = scratch.cubesData
 
-                                val sunlight = VoxelFormat.sunlight(cellData)
-                                val blocklight = VoxelFormat.blocklight(cellData)
+                                fun face(neighborData: Int, face: UnitCube.CubeFaceData, side: VoxelSide) {
+                                    val neighborVoxel = chunk.world.contentTranslator.getVoxelForId(VoxelFormat.id(neighborData))!!
+                                    if (opaque(neighborVoxel) || (voxel == neighborVoxel && voxel.selfOpaque))
+                                        return
 
-                                fun renderMesh(mesh: Mesh) {
-                                    val material = mesh.material
-                                    var texName = material.textures["albedoTexture"] ?: "notex"
-                                    val asset = chunk.world.content.getAsset(texName)
+                                    val voxelTexture = voxel.getVoxelTexture(cell, side) as VoxelTexturesArray.VoxelTextureInArray
 
-                                    //println("${material.textures} pre $texName asset $asset")
-                                    texName = asset?.name?.removePrefix("voxels/blockmodels/") ?: "notex"
-                                    texName = texName.removeSuffix(".png")
-
-                                    //println("texName $texName")
-                                    val voxelTexture = chunk.world.content.voxels().textures().get(texName) as VoxelTexturesArray.VoxelTextureInArray
+                                    //val textureName = "voxels/textures/"+voxelTexture.name.replace('.','/')+".png"
+                                    //val textureId = (backend.textures[textureName] as VulkanTexture2D).mapping
                                     val textureId = voxelTexture.textureArrayIndex
 
-                                    val vertexIn = mesh.attributes.find { it.name == "vertexIn" }?.data!!
-                                    val normalIn = mesh.attributes.find { it.name == "normalIn" }?.data
-                                    val texCoordIn = mesh.attributes.find { it.name == "texCoordIn" }?.data
+                                    val sunlight = VoxelFormat.sunlight(neighborData)
+                                    val blocklight = max(VoxelFormat.blocklight(neighborData), voxel.emittedLightLevel)
 
-                                    for (i in 0 until mesh.vertices) {
-                                        meshData.putFloat(vertexIn.getFloat(i * 12 + 0) + x)
-                                        meshData.putFloat(vertexIn.getFloat(i * 12 + 4) + y)
-                                        meshData.putFloat(vertexIn.getFloat(i * 12 + 8) + z)
+                                    for ((vertex, texcoord) in face.vertices) {
+                                        /*meshData.put((vertex[0] + x).toByte())
+                                        meshData.put((vertex[1] + y).toByte())
+                                        meshData.put((vertex[2] + z).toByte())
+                                        meshData.put(0)*/
+                                        meshData.putFloat(vertex[0] + x)
+                                        meshData.putFloat(vertex[1] + y)
+                                        meshData.putFloat(vertex[2] + z)
 
                                         meshData.put((sunlight * 16).toByte())
                                         meshData.put((blocklight * 16).toByte())
                                         meshData.put(0)
                                         meshData.put(0)
 
-                                        if (normalIn != null) {
-                                            meshData.put(normalIn.getFloat(i * 12 + 0).toSNORM())
-                                            meshData.put(normalIn.getFloat(i * 12 + 4).toSNORM())
-                                            meshData.put(normalIn.getFloat(i * 12 + 8).toSNORM())
-                                            meshData.put(0)
-                                        } else {
-                                            meshData.put(0)
-                                            meshData.put(0)
-                                            meshData.put(0)
-                                            meshData.put(0)
-                                        }
+                                        meshData.put(face.normalDirection.x().toSNORM())
+                                        meshData.put(face.normalDirection.y().toSNORM())
+                                        meshData.put(face.normalDirection.z().toSNORM())
+                                        meshData.put(0)
 
-                                        if (texCoordIn != null) {
-                                            meshData.putShort(texCoordIn.getFloat(i * 8 + 0).toUNORM16())
-                                            meshData.putShort(texCoordIn.getFloat(i * 8 + 4).toUNORM16())
-                                        } else {
-                                            meshData.put(0)
-                                            meshData.put(0)
-                                            meshData.put(0)
-                                            meshData.put(0)
-                                        }
+                                        meshData.putShort(texcoord[0].toUNORM16())
+                                        meshData.putShort(texcoord[1].toUNORM16())
 
                                         meshData.putInt(textureId)
                                         scratch.meshTriCount++
                                     }
                                 }
 
-                                for (mesh in model.meshes) {
-                                    renderMesh(mesh)
+                                fun cube() {
+                                    face(data(x, y - 1, z), UnitCube.bottomFace, VoxelSide.BOTTOM)
+                                    face(data(x, y + 1, z), UnitCube.topFace, VoxelSide.TOP)
+
+                                    face(data(x - 1, y, z), UnitCube.leftFace, VoxelSide.LEFT)
+                                    face(data(x + 1, y, z), UnitCube.rightFace, VoxelSide.RIGHT)
+
+                                    face(data(x, y, z - 1), UnitCube.backFace, VoxelSide.BACK)
+                                    face(data(x, y, z + 1), UnitCube.frontFace, VoxelSide.FRONT)
                                 }
 
-                            } else {
-                                face(data(x, y - 1, z), UnitCube.bottomFace, VoxelSide.BOTTOM)
-                                face(data(x, y + 1, z), UnitCube.topFace, VoxelSide.TOP)
-
-                                face(data(x - 1, y, z), UnitCube.leftFace, VoxelSide.LEFT)
-                                face(data(x + 1, y, z), UnitCube.rightFace, VoxelSide.RIGHT)
-
-                                face(data(x, y, z - 1), UnitCube.backFace, VoxelSide.BACK)
-                                face(data(x, y, z + 1), UnitCube.frontFace, VoxelSide.FRONT)
+                                cube()
 
                                 /*if (shouldRenderFace(data(x, y - 1, z), UnitCube.bottomFace, VoxelSide.BOTTOM) ||
                                         shouldRenderFace(data(x, y + 1, z), UnitCube.topFace, VoxelSide.TOP) ||

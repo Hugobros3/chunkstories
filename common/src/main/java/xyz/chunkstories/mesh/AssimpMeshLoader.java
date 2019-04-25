@@ -215,7 +215,7 @@ public class AssimpMeshLoader {
                         logger.warn("Should triangulate! (face=" + aiFace.size() + ")");
                 }
 
-                String materialName = aiMesh.getName();
+                String materialName = material.getName();//aiMesh.getName();
                 MeshMaterial meshMaterial = new MeshMaterial(materialName, materialTextures, "opaque");
 
                 int verticesCount = vertices.size() / 3;

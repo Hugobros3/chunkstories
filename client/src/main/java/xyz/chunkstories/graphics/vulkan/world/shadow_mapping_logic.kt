@@ -69,15 +69,5 @@ fun doShadowMapping(ctx: SystemExecutionContext, world: World) {
         }
     }
 
-    /*for(i in 0 until 4) {
-        val shadowSubcontext = passContext.context.artifacts["shadowmapCascade$i"] as? VulkanFrameGraph.FrameGraphNode.RenderingContextNode
-        if(shadowSubcontext == null)
-            continue
-        //shadowInfo.cameras[i] = shadowSubcontext.parameters["camera"] as Camera
-        //shadowInfo.cascadesCount = i + 1
-        //println(shadowInfo.cameras[i].viewMatrix.hashCode())
-    }*/
-
     ctx.shaderResources.supplyUniformBlock("shadowInfo", shadowInfo)
-    //ctx.shaderResources.supplyUniformBlock("camera", mainCamera)
 }
