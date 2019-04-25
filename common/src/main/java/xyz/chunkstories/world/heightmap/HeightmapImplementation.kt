@@ -76,8 +76,8 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
 
             if (file.exists()) {
                 val task = IOTaskLoadHeightmap(this)
-                world.ioHandler.scheduleTask(task)
                 transitionState(Heightmap.State.Loading(task))
+                world.ioHandler.scheduleTask(task)
             } else {
                 if(world is WorldTool && !world.isGenerationEnabled) {
                     this.heightData = IntArray(Math.ceil(256.0 * 256.0 * (1 + 1 / 3.0)).toInt())
