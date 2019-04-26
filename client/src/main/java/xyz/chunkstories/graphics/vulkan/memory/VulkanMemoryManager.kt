@@ -49,7 +49,7 @@ class VulkanMemoryManager(val backend: VulkanGraphicsBackend, val device: Logica
         vkGetPhysicalDeviceMemoryProperties(backend.physicalDevice.vkPhysicalDevice, vkPhysicalDeviceMemoryProperties)
     }
 
-    private fun findMemoryTypeToUse(acceptableMemoryTypesBitfield: Int, memoryPropertiesFlags: Int): Pair<Int, VkMemoryType> {
+    fun findMemoryTypeToUse(acceptableMemoryTypesBitfield: Int, memoryPropertiesFlags: Int): Pair<Int, VkMemoryType> {
         for (i in 0 until vkPhysicalDeviceMemoryProperties.memoryTypeCount()) {
             val memoryType = vkPhysicalDeviceMemoryProperties.memoryTypes(i)
             // each bit in memoryTypeBits refers to an acceptable memory type, via it's index in the memoryTypes list of deviceMemoryProperties

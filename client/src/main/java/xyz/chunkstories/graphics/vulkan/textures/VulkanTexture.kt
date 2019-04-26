@@ -2,14 +2,14 @@ package xyz.chunkstories.graphics.vulkan.textures
 
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
-import org.lwjgl.vulkan.VK10.*
+import org.lwjgl.vulkan.VK11.*
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.graphics.Texture
 import xyz.chunkstories.api.graphics.TextureFormat
+import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import xyz.chunkstories.graphics.vulkan.memory.VulkanMemoryManager
-import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.vulkan.util.*
 import kotlin.concurrent.withLock
 
@@ -18,7 +18,9 @@ open class VulkanTexture(val backend: VulkanGraphicsBackend, final override val 
                          private val imageType: Int, private val imageViewType: Int, private val usageFlags: Int) : Texture, Cleanable {
 
     private val vulkanFormat = format.vulkanFormat
-    private val allocation: VulkanMemoryManager.Allocation
+
+    private var dedicatedMemory: VkDeviceMemory = -1
+    private val sharedAllocation: VulkanMemoryManager.Allocation?
 
     val imageHandle: VkImage
     val imageView: VkImageView
@@ -51,18 +53,70 @@ open class VulkanTexture(val backend: VulkanGraphicsBackend, final override val 
 
         imageHandle = pImageHandle.get(0)
 
-        val memRequirements = VkMemoryRequirements.callocStack()
-        vkGetImageMemoryRequirements(backend.logicalDevice.vkDevice, imageHandle, memRequirements)
-
         val usagePattern =
                 when {
                     usageFlags and VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT != 0 || usageFlags and VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT != 0 -> MemoryUsagePattern.SEMI_STATIC
                     else -> MemoryUsagePattern.STATIC
                 }
-        allocation = backend.memoryManager.allocateMemory(memRequirements, usagePattern)
 
-        allocation.lock.withLock {
-            vkBindImageMemory(backend.logicalDevice.vkDevice, imageHandle, allocation.deviceMemory, allocation.offset)
+        val eligibleForDedicatedAllocation = ((usageFlags and VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT) != 0) || ((usageFlags and VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) != 0)
+
+        val useDedicatedAllocation: Boolean
+        if (eligibleForDedicatedAllocation) {
+            //println("texture $this is eligible for dedicated allocation")
+            val memReqInfo2 = VkImageMemoryRequirementsInfo2.callocStack().apply {
+                sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_REQUIREMENTS_INFO_2)
+                this.image(imageHandle)
+            }
+
+            val memReq2 = VkMemoryRequirements2.callocStack().apply {
+                sType(VK_STRUCTURE_TYPE_MEMORY_REQUIREMENTS_2)
+            }
+
+            val memDedicatedReq = VkMemoryDedicatedRequirements.callocStack().apply {
+                sType(VK_STRUCTURE_TYPE_MEMORY_DEDICATED_REQUIREMENTS)
+            }
+
+            memReq2.pNext(memDedicatedReq.address())
+
+            vkGetImageMemoryRequirements2(backend.logicalDevice.vkDevice, memReqInfo2, memReq2)
+            useDedicatedAllocation = memDedicatedReq.prefersDedicatedAllocation() || memDedicatedReq.requiresDedicatedAllocation()
+            //println("result is $useDedicatedAllocation")
+
+            if (useDedicatedAllocation) {
+                val (memoryTypeIndex, memoryType) = backend.memoryManager.findMemoryTypeToUse(memReq2.memoryRequirements().memoryTypeBits(), VK10.VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
+
+                val allocateInfo = VkMemoryAllocateInfo.callocStack().apply {
+                    sType(VK10.VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO)
+                    allocationSize(memReq2.memoryRequirements().size())
+                    memoryTypeIndex(memoryTypeIndex)
+                }
+
+                val dedicatedAllocateInfo = VkMemoryDedicatedAllocateInfo.callocStack().apply {
+                    sType(VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO)
+                    image(imageHandle)
+                }
+
+                allocateInfo.pNext(dedicatedAllocateInfo.address())
+
+                val pDedicatedMemory = stackLongs(0)
+                VK10.vkAllocateMemory(backend.logicalDevice.vkDevice, allocateInfo, null, pDedicatedMemory)
+                dedicatedMemory = pDedicatedMemory[0]
+                vkBindImageMemory(backend.logicalDevice.vkDevice, imageHandle, dedicatedMemory, 0)
+                logger.info("Successfully allocated ${memReq2.memoryRequirements().size()} dedicated bytes of DEVICE_LOCAL memory for texture $this")
+            }
+        } else useDedicatedAllocation = false
+
+        if (useDedicatedAllocation) {
+            sharedAllocation = null
+        } else {
+            val memRequirements = VkMemoryRequirements.callocStack()
+            vkGetImageMemoryRequirements(backend.logicalDevice.vkDevice, imageHandle, memRequirements)
+
+            sharedAllocation = backend.memoryManager.allocateMemory(memRequirements, usagePattern)
+            sharedAllocation.lock.withLock {
+                vkBindImageMemory(backend.logicalDevice.vkDevice, imageHandle, sharedAllocation.deviceMemory, sharedAllocation.offset)
+            }
         }
 
         val viewInfo = VkImageViewCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO).apply {
@@ -185,7 +239,10 @@ open class VulkanTexture(val backend: VulkanGraphicsBackend, final override val 
         vkDestroyImageView(backend.logicalDevice.vkDevice, imageView, null)
         vkDestroyImage(backend.logicalDevice.vkDevice, imageHandle, null)
 
-        allocation.cleanup()
+        sharedAllocation?.cleanup()
+        if (dedicatedMemory != -1L) {
+            VK10.vkFreeMemory(backend.logicalDevice.vkDevice, dedicatedMemory, null)
+        }
     }
 
     companion object {

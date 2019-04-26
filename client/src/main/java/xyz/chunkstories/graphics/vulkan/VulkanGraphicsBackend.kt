@@ -26,6 +26,7 @@ import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.EXTDebugReport.*
+import org.lwjgl.vulkan.KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.content.Content
@@ -48,7 +49,7 @@ import java.awt.image.BufferedImage
 class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window: GLFWWindow) : GLFWBasedGraphicsBackend(graphicsEngine, window), VoxelTexturesSupport {
     internal val enableValidation = useValidationLayer
 
-    val requiredDeviceExtensions = listOf(KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME)
+    val requiredDeviceExtensions = listOf(VK_KHR_SWAPCHAIN_EXTENSION_NAME, "VK_KHR_get_memory_requirements2", "VK_KHR_dedicated_allocation")
 
     internal var instance: VkInstance
     private val debugCallback: Long
