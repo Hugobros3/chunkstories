@@ -14,6 +14,7 @@ import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.swapchain.SwapchainBlitHelper
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
+import xyz.chunkstories.graphics.vulkan.util.VkFramebuffer
 import xyz.chunkstories.graphics.vulkan.util.ensureIs
 
 class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderGraphDeclarationScript) : Cleanable {
@@ -193,13 +194,12 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
     fun resizeBuffers() {
         tasks.values.forEach {
             it.buffers.values.forEach { it.resize() }
-            //it.passes.values.forEach { it.recreateFramebuffer() }
+            it.passes.values.forEach { it.dumpFramebuffers() }
         }
     }
 
     override fun cleanup() {
         dispatchingSystems.forEach(Cleanable::cleanup)
-
         tasks.values.forEach(Cleanable::cleanup)
         blitHelper.cleanup()
     }

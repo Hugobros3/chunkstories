@@ -53,12 +53,6 @@ class VulkanFrameGraph(val frame: VulkanFrame, val renderGraph: VulkanRenderGrap
 
                 taskInstance.artifacts[taskInstanceName] = childNode
             }
-
-            /*val extraInputRenderBuffers = mutableListOf<VulkanRenderBuffer>()
-
-            fun markRenderBufferAsInput(renderBuffer: VulkanRenderBuffer) {
-                extraInputRenderBuffers.add(renderBuffer)
-            }*/
         }
 
         class VulkanRenderTaskInstance(graph: VulkanFrameGraph, override val requester: VulkanPassInstance?, override val name: String, val renderTask: VulkanRenderTask, override val camera: Camera, parameters: Map<String, Any>) : FrameGraphNode(graph), RenderTaskInstance {

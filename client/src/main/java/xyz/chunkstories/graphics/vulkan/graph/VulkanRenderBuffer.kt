@@ -9,10 +9,9 @@ import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.graphics.rendergraph.RenderBufferDeclaration
 import xyz.chunkstories.api.graphics.rendergraph.RenderBufferSize
-import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import kotlin.math.roundToInt
 
-class VulkanRenderBuffer(val backend: VulkanGraphicsBackend, val declaration: RenderBufferDeclaration) : Cleanable {
+class VulkanRenderBuffer(val backend: VulkanGraphicsBackend, val declaration: RenderBufferDeclaration) : Cleanable, Comparable<VulkanRenderBuffer> {
     //val doubleBuffered = declaration.doubleBuffered
     //var textures: Array<VulkanTexture2D>
     lateinit var texture: VulkanTexture2D
@@ -122,30 +121,21 @@ class VulkanRenderBuffer(val backend: VulkanGraphicsBackend, val declaration: Re
         return "VulkanRenderBuffer(name=${declaration.name}, format=${declaration.format}, size=$textureSize)"
     }
 
-    fun getRenderToTexture(frame: VulkanFrame): VulkanTexture2D {
+    fun getRenderToTexture(): VulkanTexture2D {
         if(isSwapchain)
             throw Exception("You're not meant to render to this, this is a dummy object!")
-
-        /*if(doubleBuffered)
-            return textures[(frame.frameNumber + 0) % 2]
-        else
-            return textures[0]*/
-        return texture
-    }
-
-    fun getAttachementTexture(frame: VulkanFrame): VulkanTexture2D {
-        if(isSwapchain)
-            throw Exception("You're not meant to render to this, this is a dummy object!")
-
-        /*if(doubleBuffered)
-            return textures[(frame.frameNumber + 1) % 2]
-        else
-            return textures[0]*/
         return texture
     }
 
     companion object {
         val logger = LoggerFactory.getLogger("client.vulkan")
+    }
+
+    override fun compareTo(other: VulkanRenderBuffer): Int {
+        val a = if(isSwapchain) 0 else texture.imageHandle
+        val b = if(other.isSwapchain) 0 else other.texture.imageHandle
+
+        return a.compareTo(b)
     }
 }
 

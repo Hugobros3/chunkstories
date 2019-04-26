@@ -19,10 +19,14 @@ import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
 import xyz.chunkstories.graphics.vulkan.util.VkFramebuffer
 import xyz.chunkstories.graphics.vulkan.util.ensureIs
+import java.util.*
+import kotlin.collections.ArrayList
 
 open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: VulkanRenderTask, val declaration: PassDeclaration) : Cleanable {
     val canonicalRenderPass: RenderPass
     val renderPassesMap = mutableMapOf<List<UsageType>, RenderPass>()
+
+    val frameBuffers = mutableMapOf<List<VulkanRenderBuffer>, VkFramebuffer>()
 
     var drawingSystems: List<VulkanDrawingSystem>
         private set
@@ -65,30 +69,6 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
         this.dispatchingDrawers = dispatchingDrawers
 
         MemoryStack.stackPop()
-    }
-
-    fun createFramebuffer(frame: VulkanFrame, resolvedDepthAndColorBuffers: MutableList<VulkanRenderBuffer>): VkFramebuffer {
-        stackPush()
-        val pAttachments = stackMallocLong(resolvedDepthAndColorBuffers.size)
-
-        resolvedDepthAndColorBuffers.forEach { renderBuffer -> pAttachments.put(renderBuffer.getRenderToTexture(frame).imageView) }
-        pAttachments.flip()
-
-        val viewportSize = resolvedDepthAndColorBuffers[0].textureSize
-
-        val framebufferCreateInfo = VkFramebufferCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO).apply {
-            renderPass(canonicalRenderPass.handle)
-            pAttachments(pAttachments)
-            width(viewportSize.x)
-            height(viewportSize.y)
-            layers(1)
-        }
-
-        val pFramebuffer = stackMallocLong(1)
-        vkCreateFramebuffer(backend.logicalDevice.vkDevice, framebufferCreateInfo, null, pFramebuffer).ensureIs("Failed to create framebuffer", VK_SUCCESS)
-        val handle = pFramebuffer.get(0)
-        stackPop()
-        return handle
     }
 
     fun render(frame: VulkanFrame,
@@ -199,8 +179,9 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
             RenderPass(backend, this, attachementsPreviousState)
         }
 
-        //TODO Recycle framebuffers ?
-        val framebuffer = createFramebuffer(frame, resolvedDepthAndColorBuffers)
+        val framebuffer = frameBuffers.getOrPut(resolvedDepthAndColorBuffers) {
+            backend.createFramebuffer(this, resolvedDepthAndColorBuffers)
+        }
 
         /** The images to transition using image barriers, with their current usage/layout */
         val inputImageNeedingLayoutTransition = mutableListOf<Pair<VulkanRenderBuffer, UsageType>>()
@@ -294,7 +275,7 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
 
                             srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
                             dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
-                            image(renderBuffer.getAttachementTexture(frame).imageHandle)
+                            image(renderBuffer.getRenderToTexture().imageHandle)
 
                             subresourceRange().apply {
                                 aspectMask(renderBuffer.attachementType.aspectMask())
@@ -358,12 +339,21 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
             allBufferStates[input] = UsageType.INPUT
 
         frame.recyclingTasks.add {
-            vkDestroyFramebuffer(backend.logicalDevice.vkDevice, framebuffer, null)
+            //vkDestroyFramebuffer(backend.logicalDevice.vkDevice, framebuffer, null)
             vkFreeCommandBuffers(backend.logicalDevice.vkDevice, commandPool.handle, commandBuffer)
         }
     }
 
+    fun dumpFramebuffers() {
+        frameBuffers.values.forEach {
+            vkDestroyFramebuffer(backend.logicalDevice.vkDevice, it, null)
+        }
+        frameBuffers.clear()
+    }
+
     override fun cleanup() {
+        dumpFramebuffers()
+
         drawingSystems.forEach(Cleanable::cleanup)
         dispatchingDrawers.forEach(Cleanable::cleanup)
 
@@ -376,5 +366,29 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
 
     companion object {
         val logger = LoggerFactory.getLogger("client.vulkan")
+    }
+
+    private fun VulkanGraphicsBackend.createFramebuffer(vulkanPass: VulkanPass, renderBuffers: List<VulkanRenderBuffer>): VkFramebuffer {
+        stackPush()
+        val pAttachments = stackMallocLong(renderBuffers.size)
+
+        renderBuffers.forEach { renderBuffer -> pAttachments.put(renderBuffer.getRenderToTexture().imageView) }
+        pAttachments.flip()
+
+        val viewportSize = renderBuffers.first().textureSize
+
+        val framebufferCreateInfo = VkFramebufferCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO).apply {
+            renderPass(vulkanPass.canonicalRenderPass.handle)
+            pAttachments(pAttachments)
+            width(viewportSize.x)
+            height(viewportSize.y)
+            layers(1)
+        }
+
+        val pFramebuffer = stackMallocLong(1)
+        vkCreateFramebuffer(logicalDevice.vkDevice, framebufferCreateInfo, null, pFramebuffer).ensureIs("Failed to create framebuffer", VK_SUCCESS)
+        val handle = pFramebuffer.get(0)
+        stackPop()
+        return handle
     }
 }
