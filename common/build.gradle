@@ -48,9 +48,7 @@ task setupContentLocation() {
 	rootProject.ext.actualContentLocation = actualContentLocation
 	
 	doFirst {
-		
 		println "Setting up content location: " + actualContentLocation
-		
 		//args [args, [new String("--core="+actualContentLocation)]].flatten()
 		//println "New args: " + args
 	}

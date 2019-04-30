@@ -101,7 +101,7 @@ task versionTxt {
 		def file = new File("$projectDir/version.txt")
 		file.createNewFile()
 		file.text = """version: $version
-		commit: ${Grgit.open(dir: '.').head().id}
+		commit: ${Grgit.open(dir: "$projectDir").head().id}
 		buildtime: ${new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(new Date())}
 		"""
 	}
