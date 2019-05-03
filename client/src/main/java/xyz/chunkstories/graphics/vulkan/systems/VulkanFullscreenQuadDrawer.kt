@@ -14,10 +14,11 @@ import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import xyz.chunkstories.graphics.vulkan.resources.bindShaderResources
+import xyz.chunkstories.graphics.vulkan.shaders.VulkanShaderProgram
 import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.vertexInputConfiguration
 
-class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass), FullscreenQuadDrawer {
+class VulkanFullscreenQuadDrawer(pass: VulkanPass, dslCode: FullscreenQuadDrawer.() -> Unit) : VulkanDrawingSystem(pass), FullscreenQuadDrawer {
     val backend: VulkanGraphicsBackend
         get() = pass.backend
     val client: IngameClient
@@ -38,12 +39,19 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass), 
         }
     }
 
-    private val program = backend.shaderFactory.createProgram(pass.declaration.name)
-    private val pipeline = Pipeline(backend, program, pass, vertexInputConfiguration, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
+    override var shader = pass.declaration.name
+
+    private val program: VulkanShaderProgram
+    private val pipeline: Pipeline
 
     private val vertexBuffer: VulkanVertexBuffer
 
     init {
+        dslCode()
+
+        program = backend.shaderFactory.createProgram(shader)
+        pipeline = Pipeline(backend, program, pass, vertexInputConfiguration, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
+
         val vertices = floatArrayOf(-1.0F, -3.0F, 3.0F, 1.0F, -1.0F, 1.0F)
         vertexBuffer = VulkanVertexBuffer(backend, vertices.size * 4L, MemoryUsagePattern.STATIC)
 

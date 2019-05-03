@@ -3,6 +3,7 @@ package xyz.chunkstories.graphics.vulkan.world
 import org.joml.Vector4d
 import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
 import xyz.chunkstories.api.graphics.TextureFormat
+import xyz.chunkstories.api.graphics.rendergraph.ImageInput
 import xyz.chunkstories.api.graphics.rendergraph.PassOutput
 import xyz.chunkstories.api.graphics.rendergraph.RenderGraphDeclarationScript
 import xyz.chunkstories.api.graphics.rendergraph.renderBuffer
@@ -80,6 +81,20 @@ class VulkanWorldRenderer(val backend: VulkanGraphicsBackend, world: WorldClient
 
                     format = TextureFormat.RGBA_8
                     size = viewportSize
+                }
+
+                renderBuffer {
+                    name = "bloom_temp"
+
+                    format = TextureFormat.RGB_HDR
+                    size = viewportSize * 0.5
+                }
+
+                renderBuffer {
+                    name = "bloom"
+
+                    format = TextureFormat.RGB_HDR
+                    size = viewportSize * 0.5
                 }
 
                 val shadowCascades = client.configuration.getIntValue(VulkanBackendOptions.shadowCascades)
@@ -235,13 +250,73 @@ class VulkanWorldRenderer(val backend: VulkanGraphicsBackend, world: WorldClient
                 }
 
                 pass {
+                    name = "bloom_blurH"
+
+                    dependsOn("deferredShading", "forward")
+
+                    draws {
+                        system(FullscreenQuadDrawer::class) {
+                            shader = "blur_horizontal"
+                        }
+                    }
+
+                    setup {
+                        shaderResources.supplyImage("inputTexture") {
+                            source = renderBuffer("shadedBuffer")
+                            scalingMode = ImageInput.ScalingMode.LINEAR
+                        }
+                    }
+
+                    outputs {
+                        output {
+                            name = "fragColor"
+                            target = renderBuffer("bloom_temp")
+                            blending = PassOutput.BlendMode.OVERWRITE
+                        }
+                    }
+                }
+
+                pass {
+                    name = "bloom_blurV"
+
+                    dependsOn("bloom_blurH")
+
+                    draws {
+                        system(FullscreenQuadDrawer::class) {
+                            shader = "blur_vertical"
+                        }
+                    }
+
+                    setup {
+                        shaderResources.supplyImage("inputTexture") {
+                            source = renderBuffer("bloom_temp")
+                            scalingMode = ImageInput.ScalingMode.LINEAR
+                        }
+                    }
+
+                    outputs {
+                        output {
+                            name = "fragColor"
+                            target = renderBuffer("bloom")
+                            blending = PassOutput.BlendMode.OVERWRITE
+                        }
+                    }
+                }
+
+                pass {
                     name = "postprocess"
 
                     dependsOn("deferredShading", "forward")
+                    dependsOn("bloom_blurV")
 
                     setup {
                         shaderResources.supplyImage("shadedBuffer") {
                             source = renderBuffer("shadedBuffer")
+                        }
+
+                        shaderResources.supplyImage("bloomBuffer") {
+                            source = renderBuffer("bloom")
+                            scalingMode = ImageInput.ScalingMode.LINEAR
                         }
                     }
 

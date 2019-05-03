@@ -287,18 +287,20 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
         return bestPhysicalDevice ?: throw Exception("Could not find suitable physical device !")
     }
 
-    fun <T : DrawingSystem> createDrawingSystem(pass: VulkanPass, drawingSystemRegistration: RegisteredGraphicSystem<T>): VulkanDrawingSystem {
+    fun <T : DrawingSystem> createDrawingSystem(pass: VulkanPass, registration: RegisteredGraphicSystem<T>): VulkanDrawingSystem {
         val vulkanPass = pass as? VulkanPass ?: throw Exception("Pass didn't originate from a Vulkan backend !!!")
 
-        return when (drawingSystemRegistration.clazz) {
+        val dslCode = registration.dslCode as DrawingSystem.() -> Unit
+
+        return when (registration.clazz) {
             GuiDrawer::class.java -> VulkanGuiDrawer(vulkanPass, window.client.gui)
-            FullscreenQuadDrawer::class.java -> VulkanFullscreenQuadDrawer(vulkanPass)
+            FullscreenQuadDrawer::class.java -> VulkanFullscreenQuadDrawer(vulkanPass, dslCode)
 
-            Vulkan3DVoxelRaytracer::class.java -> Vulkan3DVoxelRaytracer(vulkanPass)
-            VulkanSpinningCubeDrawer::class.java -> VulkanSpinningCubeDrawer(vulkanPass)
-            VulkanDebugDrawer::class.java -> VulkanDebugDrawer(vulkanPass, window.client.ingame!!)
+            Vulkan3DVoxelRaytracer::class.java -> Vulkan3DVoxelRaytracer(vulkanPass, dslCode)
+            VulkanSpinningCubeDrawer::class.java -> VulkanSpinningCubeDrawer(vulkanPass, dslCode)
+            VulkanDebugDrawer::class.java -> VulkanDebugDrawer(vulkanPass, dslCode, window.client.ingame!!)
 
-            else -> throw Exception("Unimplemented system on this backend: ${drawingSystemRegistration.clazz}")
+            else -> throw Exception("Unimplemented system on this backend: ${registration.clazz}")
         }
     }
 

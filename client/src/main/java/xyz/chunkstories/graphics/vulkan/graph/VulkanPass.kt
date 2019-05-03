@@ -6,7 +6,6 @@ import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.graphics.rendergraph.*
-import xyz.chunkstories.api.graphics.systems.GraphicSystem
 import xyz.chunkstories.api.graphics.systems.RegisteredGraphicSystem
 import xyz.chunkstories.api.graphics.systems.dispatching.DispatchingSystem
 import xyz.chunkstories.api.graphics.systems.drawing.DrawingSystem
@@ -19,7 +18,6 @@ import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
 import xyz.chunkstories.graphics.vulkan.util.VkFramebuffer
 import xyz.chunkstories.graphics.vulkan.util.ensureIs
-import java.util.*
 import kotlin.collections.ArrayList
 
 open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: VulkanRenderTask, val declaration: PassDeclaration) : Cleanable {
@@ -49,8 +47,8 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
                 if (DrawingSystem::class.java.isAssignableFrom(declaredDrawingSystem.clazz)) {
                     val drawingSystem = backend.createDrawingSystem(this, declaredDrawingSystem as RegisteredGraphicSystem<DrawingSystem>) as VulkanDrawingSystem
 
-                    val d = declaredDrawingSystem.dslCode as GraphicSystem.() -> Unit
-                    drawingSystem.apply(d)
+                    //val d = declaredDrawingSystem.dslCode as GraphicSystem.() -> Unit
+                    //drawingSystem.apply(d)
 
                     drawingSystems.add(drawingSystem)
                 } else if (DispatchingSystem::class.java.isAssignableFrom(declaredDrawingSystem.clazz)) {
@@ -124,6 +122,8 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
 
         passInstance.resolvedOutputs = resolvedOutputs
 
+        passInstance.postResolve(resolvedDepthAndColorBuffers)
+
         val resolvedInputBuffers = mutableListOf<VulkanRenderBuffer>()
 
         fun lookForRenderBufferImages(list: List<Triple<Any, Any, ImageInput>>) {
@@ -193,7 +193,6 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
         }
 
         val viewportSize = resolvedDepthAndColorBuffers[0].textureSize
-        passInstance.renderTargetSize = viewportSize
 
         val commandBuffer = commandPool.createOneUseCB()
         passInstance.commandBuffer = commandBuffer

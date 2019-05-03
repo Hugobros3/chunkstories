@@ -6,6 +6,7 @@ import xyz.chunkstories.api.graphics.rendergraph.*
 import xyz.chunkstories.api.graphics.shader.ShaderResources
 import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
+import xyz.chunkstories.graphics.vulkan.systems.world.ViewportSize
 
 class VulkanFrameGraph(val frame: VulkanFrame, val renderGraph: VulkanRenderGraph, startTask: VulkanRenderTask, mainCamera: Camera, parameters: Map<String, Any>) {
     val rootFrameGraphNode: FrameGraphNode
@@ -36,6 +37,12 @@ class VulkanFrameGraph(val frame: VulkanFrame, val renderGraph: VulkanRenderGrap
             lateinit var preparedDrawingSystemsContexts: List<SystemExecutionContext>
             lateinit var preparedDispatchingSystemsContexts: List<SystemExecutionContext>
             override var renderTargetSize: Vector2i = Vector2i(0) // late-defined
+
+            fun postResolve(resolvedDepthAndColorBuffers: MutableList<VulkanRenderBuffer>) {
+                val viewportSize = ViewportSize()
+                viewportSize.size.set(resolvedDepthAndColorBuffers[0].textureSize)
+                shaderResources.supplyUniformBlock("viewportSize", viewportSize)
+            }
 
             override fun dispatchRenderTask(taskInstanceName: String, camera: Camera, renderTaskName: String, parameters: Map<String, Any>, callback: (RenderTaskInstance) -> Unit) {
                 val taskToDispatch = renderGraph.tasks[renderTaskName] ?: throw Exception("Can't find task $renderTaskName")

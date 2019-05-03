@@ -19,7 +19,7 @@ import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
 import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 
-class VulkanSpinningCubeDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
+class VulkanSpinningCubeDrawer(pass: VulkanPass, dslCode: VulkanSpinningCubeDrawer.() -> Unit) : VulkanDrawingSystem(pass) {
     val backend: VulkanGraphicsBackend
         get() = pass.backend
 
@@ -52,6 +52,8 @@ class VulkanSpinningCubeDrawer(pass: VulkanPass) : VulkanDrawingSystem(pass) {
     private val vertexBuffer: VulkanVertexBuffer
 
     init {
+        dslCode()
+
         val vertices = floatArrayOf(
                 -1.0f, -1.0f, -1.0f,   0.0f, 0.0f,
                 -1.0f,  1.0f,  1.0f,   1.0f, 1.0f,

@@ -25,7 +25,7 @@ import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
 import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 
-class VulkanDebugDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDrawingSystem(pass) {
+class VulkanDebugDrawer(pass: VulkanPass, dslCode: VulkanDebugDrawer.() -> Unit, val client: IngameClient) : VulkanDrawingSystem(pass) {
     val backend: VulkanGraphicsBackend
         get() = pass.backend
 
@@ -52,6 +52,8 @@ class VulkanDebugDrawer(pass: VulkanPass, val client: IngameClient) : VulkanDraw
     val debugBufferSize = 1024 * 1024 * 2
 
     init {
+        dslCode()
+
         vertexBuffers = InflightFrameResource(backend) {
             VulkanVertexBuffer(backend, debugBufferSize.toLong(), MemoryUsagePattern.SEMI_STATIC)
         }
