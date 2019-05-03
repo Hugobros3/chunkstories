@@ -22,7 +22,6 @@ import org.lwjgl.system.MemoryUtil.memFree
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
-import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 
 class VulkanDebugDrawer(pass: VulkanPass, dslCode: VulkanDebugDrawer.() -> Unit, val client: IngameClient) : VulkanDrawingSystem(pass) {

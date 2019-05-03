@@ -10,6 +10,7 @@ import org.lwjgl.vulkan.KHRSurface.vkGetPhysicalDeviceSurfaceCapabilitiesKHR
 import org.lwjgl.vulkan.KHRSwapchain.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.graphics.vulkan.resources.InflightFrameResource
 
 class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderPass, oldSwapChain: SwapChain?) {
 
@@ -40,6 +41,9 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
 
     var expired = false
 
+    /** We want to automatically resize the resources that are unique per inflight-frame */
+    internal val listeners = mutableListOf<InflightFrameResource<*>>()
+
     //TODO make it an option
     fun getMaxFramesInFlight() = imagesCount
 
@@ -52,7 +56,7 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
         imagesCount = when (presentationMode) {
             PresentationMode.IMMEDIATE -> 2
             PresentationMode.MAILBOX -> 3
-            PresentationMode.FIFO -> 2
+            PresentationMode.FIFO -> 1
             PresentationMode.FIFO_RELAXED -> 2
         }
 
@@ -139,6 +143,11 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
         createSemaphores()
 
         stackPop()
+
+        if(oldSwapChain != null) {
+            listeners.addAll(oldSwapChain.listeners)
+            listeners.forEach { it.whenSwapchainSizeChanges(imagesCount) }
+        }
     }
 
     private fun createFramebuffers(displayRenderPass: VkRenderPass) {
@@ -234,7 +243,7 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
 
         stackPop()
 
-        val frame = VulkanFrame(frameNumber, swapchainImageIndex, swapChainImages[swapchainImageIndex], swapChainImageViews[swapchainImageIndex], swapChainFramebuffers[swapchainImageIndex], inflightFrameIndex, imageAvailableSemaphore, renderingFinishedSemaphore, fence, System.nanoTime())
+        val frame = VulkanFrame(frameNumber, swapchainImageIndex, swapChainImages[swapchainImageIndex], swapChainImageViews[swapchainImageIndex], swapChainFramebuffers[swapchainImageIndex], imageAvailableSemaphore, renderingFinishedSemaphore, fence, System.nanoTime())
         performanceCounter.whenFrameBegins(frame)
         lastFrame = frame
 

@@ -26,7 +26,6 @@ import org.lwjgl.vulkan.VkCommandBuffer
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.graphics.Texture2D
 import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
-import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import xyz.chunkstories.graphics.vulkan.resources.DescriptorSetsMegapool
 

@@ -66,7 +66,7 @@ class ClientImplementation internal constructor(val arguments: Map<String, Strin
         Thread.currentThread().name = "Main thread"
         Thread.currentThread().priority = Constants.MAIN_THREAD_PRIORITY
 
-        configuration.addOptions(InternalClientOptions.options)
+        configuration.addOptions(InternalClientOptions.createOptions(this))
 
         // Start logging system
         val cal = Calendar.getInstance()

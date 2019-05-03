@@ -19,7 +19,7 @@ class SwapchainBlitHelper(val backend: VulkanGraphicsBackend) : Cleanable {
 
     init {
         commandPool = CommandPool(backend, backend.logicalDevice.graphicsQueue.family, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT or VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
-        commandBuffers = InflightFrameResource(backend) {
+        commandBuffers = InflightFrameResource(backend, false) {
             val commandBufferAllocateInfo = VkCommandBufferAllocateInfo.callocStack().sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO).apply {
                 commandPool(commandPool.handle)
                 level(VK_COMMAND_BUFFER_LEVEL_PRIMARY)

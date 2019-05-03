@@ -1,6 +1,7 @@
 package xyz.chunkstories.client
 
 import xyz.chunkstories.api.util.configuration.OptionsDeclarationCtx
+import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 
 /** Hidden and/or internal options this implementation of the client requires */
 object InternalClientOptions {
@@ -13,7 +14,7 @@ object InternalClientOptions {
     lateinit var viewDistance: String private set
     lateinit var syncMode: String private set
 
-    val options: OptionsDeclarationCtx.() -> Unit = {
+    fun createOptions(client: ClientImplementation): OptionsDeclarationCtx.() -> Unit = {
         section("client" ) {
             section("debug") {
 
@@ -44,6 +45,12 @@ object InternalClientOptions {
                 syncMode = optionMultipleChoices("syncMode") {
                     default = "fastest"
                     possibleChoices = listOf("fastest", "vsync", "tripleBuffering")
+
+                    hook {
+                        (client.gameWindow.graphicsEngine.backend as? VulkanGraphicsBackend)?.let {
+                            it.swapchain.expired = true
+                        }
+                    }
                 }
             }
         }
