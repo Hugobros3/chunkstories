@@ -19,7 +19,6 @@ import xyz.chunkstories.api.input.Mouse
 import xyz.chunkstories.api.input.Mouse.MouseButton
 import xyz.chunkstories.api.input.Mouse.MouseScroll
 import xyz.chunkstories.client.ClientImplementation
-import xyz.chunkstories.content.GameDirectory
 import xyz.chunkstories.content.mods.ModFolder
 import xyz.chunkstories.content.mods.ModImplementation
 import xyz.chunkstories.content.mods.ModZip
@@ -82,7 +81,7 @@ class ModsSelection(window: Gui, parent: Layer) : Layer(window, parent) {
         }
 
         // Then look for mods in folder fashion
-        for (f in File(GameDirectory.getGameFolderPath() + "/mods/").listFiles()!!) {
+        for (f in File("." + "/mods/").listFiles()!!) {
             if (f.isDirectory) {
                 val txt = File(f.absolutePath + "/mod.txt")
                 if (txt.exists()) {
@@ -104,7 +103,7 @@ class ModsSelection(window: Gui, parent: Layer) : Layer(window, parent) {
         }
         // Then look for .zips
         // First look for mods in folder fashion
-        for (f in File(GameDirectory.getGameFolderPath() + "/mods/").listFiles()!!) {
+        for (f in File("." + "/mods/").listFiles()!!) {
             if (f.name.endsWith(".zip")) {
                 try {
                     val mod = ModZip(f)

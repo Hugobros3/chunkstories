@@ -16,7 +16,6 @@ import xyz.chunkstories.api.gui.elements.ScrollableContainer
 import xyz.chunkstories.api.input.Input
 import xyz.chunkstories.api.input.Mouse.MouseButton
 import xyz.chunkstories.api.util.configuration.Configuration
-import xyz.chunkstories.content.GameDirectory
 import xyz.chunkstories.gui.layer.ServerSelection.ServerSelectionZone.ServerGuiItem
 import xyz.chunkstories.net.http.SimpleWebRequest
 import org.joml.Vector4f
@@ -183,7 +182,7 @@ class ServerSelection internal constructor(gui: Gui, parent: Layer, private val 
 
             init {
                 this.sd = ServerDataLoader(this, ip, port)
-                this.iconTextureLocation = GameDirectory.getGameFolderPath() + "/cache/server-icon-" + ip + "-" + port + ".png"
+                this.iconTextureLocation = "." + "/cache/server-icon-" + ip + "-" + port + ".png"
             }
 
             override fun handleClick(mouseButton: MouseButton): Boolean {
@@ -267,7 +266,7 @@ class ServerSelection internal constructor(gui: Gui, parent: Layer, private val 
 
                 if (fileLength > 0) {
                     val file = File(
-                            GameDirectory.getGameFolderPath() + "/cache/server-icon-" + ip + "-" + port + ".png")
+                            "." + "/cache/server-icon-" + ip + "-" + port + ".png")
                     val fos = FileOutputStream(file)
                     var remaining = fileLength
                     val buffer = ByteArray(4096)

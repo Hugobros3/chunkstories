@@ -35,9 +35,7 @@ import xyz.chunkstories.api.plugin.commands.Command
 import xyz.chunkstories.api.plugin.commands.CommandEmitter
 import xyz.chunkstories.api.plugin.commands.CommandHandler
 import xyz.chunkstories.api.server.Server
-import xyz.chunkstories.content.GameDirectory
 import xyz.chunkstories.content.mods.ModsManagerImplementation
-import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.companionObject
 import kotlin.reflect.full.companionObjectInstance
@@ -62,7 +60,7 @@ open class DefaultPluginManager(private val pluginExecutionContext: GameContext)
         val pluginsToLoad = mutableListOf<PluginInformation>()
 
         // Creates plugins folder if it isn't present.
-        val pluginsFolder = File(GameDirectory.getGameFolderPath() + "/plugins/")
+        val pluginsFolder = File("." + "/plugins/")
         pluginsFolder.mkdirs()
 
         // Iterates over files of the folder
@@ -311,7 +309,7 @@ open class DefaultPluginManager(private val pluginExecutionContext: GameContext)
     }
 
     override fun getPluginDirectory(plugin: ChunkStoriesPlugin): File {
-        val file = File(GameDirectory.getGameFolderPath() + "/" + plugin.name + "/")
+        val file = File("." + "/" + plugin.name + "/")
         file.mkdirs()
 
         return file

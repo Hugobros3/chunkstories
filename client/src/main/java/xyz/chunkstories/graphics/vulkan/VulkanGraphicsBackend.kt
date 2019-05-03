@@ -47,7 +47,7 @@ import xyz.chunkstories.world.WorldClientCommon
 import java.awt.image.BufferedImage
 
 class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window: GLFWWindow) : GLFWBasedGraphicsBackend(graphicsEngine, window), VoxelTexturesSupport {
-    internal val enableValidation = useValidationLayer
+    internal val enableValidation = window.client.arguments["enableValidation"] == "true"
 
     val requiredDeviceExtensions = listOf(VK_KHR_SWAPCHAIN_EXTENSION_NAME, "VK_KHR_get_memory_requirements2", "VK_KHR_dedicated_allocation")
 
@@ -349,7 +349,7 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
         logicalDevice.cleanup()
 
         vkDestroyDebugReportCallbackEXT(instance, debugCallback, null)
-        if(useValidationLayer) {
+        if(enableValidation) {
             if (cookie)
                 logger.debug("You get a cookie for not making the validation layer unhappy :)")
             else
@@ -365,7 +365,6 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
     }
 
     companion object {
-        var useValidationLayer = false
-        val logger = LoggerFactory.getLogger("client.vulkan")!!
+        val logger = LoggerFactory.getLogger("client.gfx_vk")!!
     }
 }

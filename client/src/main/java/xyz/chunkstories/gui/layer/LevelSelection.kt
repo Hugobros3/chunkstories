@@ -16,7 +16,6 @@ import xyz.chunkstories.api.input.Mouse.MouseScroll
 import xyz.chunkstories.api.world.WorldInfo
 import xyz.chunkstories.client.ClientImplementation
 import xyz.chunkstories.client.ingame.*
-import xyz.chunkstories.content.GameDirectory
 import xyz.chunkstories.world.*
 import org.joml.Vector4f
 import org.slf4j.LoggerFactory
@@ -39,7 +38,7 @@ class LevelSelection internal constructor(gui: Gui, parent: Layer) : Layer(gui, 
         elements.add(backOption)
         elements.add(newWorldOption)
 
-        val worldsFolder = File(GameDirectory.getGameFolderPath() + "/worlds")
+        val worldsFolder = File("." + "/worlds")
         if (!worldsFolder.exists())
             worldsFolder.mkdirs()
 

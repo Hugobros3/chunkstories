@@ -88,13 +88,13 @@ public class GameLauncher implements ActionListener {
 			// TODO make it configurable
 			// TODO mod support
 			Process process = Runtime.getRuntime().exec("java -d64 -Xmx2048M -jar chunkstories.jar", null,
-					new File(GameDirectory.getGameFolderPath()));
+					new File(GameDirectory.INSTANCE.getGameFolder()));
 
 			Calendar cal = Calendar.getInstance();
 			SimpleDateFormat sdf = new SimpleDateFormat("YYYY.MM.dd HH.mm.ss");
 			String time = sdf.format(cal.getTime());
 
-			File launcherLog = new File(GameDirectory.getGameFolderPath() + "/logs/launcher-debug-" + time + ".log");
+			File launcherLog = new File(GameDirectory.INSTANCE.getGameFolder() + "/logs/launcher-debug-" + time + ".log");
 			launcherLog.getParentFile().mkdirs();
 
 			FileOutputStream fos = null;

@@ -56,8 +56,7 @@ public class ChunkStoriesLauncher {
 
 	public static void main(String[] args) {
 		panel = new JPanelBackground();
-		GameDirectory.initClientPath();
-		GameDirectory.check();
+		GameDirectory.INSTANCE.initClientPath();
 
 		JFrame window = new JFrame();
 		// window.setUndecorated(true); // Remove title bar

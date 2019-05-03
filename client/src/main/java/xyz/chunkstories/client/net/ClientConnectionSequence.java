@@ -143,7 +143,7 @@ public class ClientConnectionSequence extends Thread {
 
 				requiredMd5s.add(modMd5Hash);
 
-				File cached = new File(GameDirectory.getGameFolderPath() + "/servermods/" + modMd5Hash + ".zip");
+				File cached = new File("servermods/" + modMd5Hash + ".zip");
 				if (!cached.exists()) {
 					// Sequentially download all the mods from the server
 					status = connection.obtainModFile(modMd5Hash, cached);

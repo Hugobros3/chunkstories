@@ -13,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import xyz.chunkstories.api.GameContext;
-import xyz.chunkstories.content.GameDirectory;
 
 /**
  * A straightforward class that look for hs_id_err files, uploads them and then
@@ -34,7 +33,7 @@ public class JavaCrashesUploader extends Thread {
 
 	@Override
 	public void run() {
-		File folder = new File(GameDirectory.getGameFolderPath());
+		File folder = new File(".");
 
 		if (!folder.exists() || !folder.isDirectory()) {
 			logger().error("JavaCrashesUploader: .chunkstories unfit");
@@ -62,7 +61,7 @@ public class JavaCrashesUploader extends Thread {
 						e.printStackTrace();
 					}
 
-					file.renameTo(new File(GameDirectory.getGameFolderPath() + "/logs/sent_" + file.getName()));
+					file.renameTo(new File( "logs/sent_" + file.getName()));
 				}
 			}
 		}

@@ -14,7 +14,6 @@ import xyz.chunkstories.api.exceptions.content.mods.ModLoadFailureException
 import xyz.chunkstories.api.exceptions.content.mods.ModNotFoundException
 import xyz.chunkstories.api.exceptions.content.mods.NotAllModsLoadedException
 import xyz.chunkstories.api.exceptions.plugins.PluginLoadException
-import xyz.chunkstories.content.GameDirectory
 import xyz.chunkstories.content.sandbox.ForeignCodeClassLoader
 import xyz.chunkstories.plugin.NotAPluginException
 import xyz.chunkstories.util.FoldersUtils
@@ -93,12 +92,12 @@ class ModsManagerImplementation @Throws(NonExistentCoreContent::class)
         val modLoadExceptions = LinkedList<ModLoadFailureException>()
 
         // Creates mods dir if it needs to
-        val modsDir = File(GameDirectory.getGameFolderPath() + "/mods")
+        val modsDir = File("." + "/mods")
         if (!modsDir.exists())
             modsDir.mkdirs()
 
         // Server mods
-        val serverMods = File(GameDirectory.getGameFolderPath() + "/servermods")
+        val serverMods = File("." + "/servermods")
         if (!serverMods.exists())
             serverMods.mkdirs()
 
@@ -188,7 +187,7 @@ class ModsManagerImplementation @Throws(NonExistentCoreContent::class)
 
         // Obtain a cache folder
         if (cacheFolder == null) {
-            cacheFolder = File(GameDirectory.getGameFolderPath() + "/cache/" + (Math.random() * 10000).toInt())
+            cacheFolder = File("." + "/cache/" + (Math.random() * 10000).toInt())
             cacheFolder!!.mkdirs()
             // cacheFolder.deleteOnExit();
             Runtime.getRuntime().addShutdownHook(Thread {

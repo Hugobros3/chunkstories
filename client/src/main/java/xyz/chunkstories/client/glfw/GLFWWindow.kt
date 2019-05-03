@@ -60,7 +60,7 @@ class GLFWWindow(val client: ClientImplementation, val graphicsEngine: GraphicsE
 
         glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_FALSE)
 
-        glfwWindowHint(GLFW_CLIENT_API, selectedBackend.glfwApiHint)
+        selectedBackend.glfwInitHints()
 
         glfwWindowHandle = glfwCreateWindow(width, height, title, 0L, 0L)
         if (glfwWindowHandle == 0L)

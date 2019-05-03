@@ -35,7 +35,7 @@ public class UpdaterThread extends Thread implements ActionListener {
 
 	public void checkVersion() {
 		ChunkStoriesLauncher.localVersion = VersionFile
-				.loadFromFile(new File(GameDirectory.getGameFolderPath() + "/version.txt"));
+				.loadFromFile(new File(GameDirectory.INSTANCE.getGameFolder() + "/version.txt"));
 
 		try {
 			ChunkStoriesLauncher.latestVersion = VersionFile.loadFromOnline();
@@ -71,7 +71,7 @@ public class UpdaterThread extends Thread implements ActionListener {
 		ChunkStoriesLauncher.label.setText("Computing files hashes");
 		localHashes.clear();
 		remoteHashes.clear();
-		browseDirsSafe(GameDirectory.getGameFolderPath());
+		browseDirsSafe(GameDirectory.INSTANCE.getGameFolder());
 		String remoteHashesText = ChunkStoriesLauncher.sendPost("https://chunkstories.xyz/api/updater/index.php", "");
 
 		here: for (String part : remoteHashesText.split(";")) {
@@ -110,7 +110,7 @@ public class UpdaterThread extends Thread implements ActionListener {
 					dir = "";
 				File f3 = new File(dir + "/" + f2.getName());
 				if (!f3.isDirectory())
-					localHashes.put(dir.replace(GameDirectory.getGameFolderPath(), "") + "/" + f2.getName(),
+					localHashes.put(dir.replace(GameDirectory.INSTANCE.getGameFolder(), "") + "/" + f2.getName(),
 							getMD5(f3));
 			}
 		}
@@ -126,7 +126,7 @@ public class UpdaterThread extends Thread implements ActionListener {
 					dir = "";
 				File f3 = new File(dir + "/" + f2.getName());
 				if (!f3.isDirectory())
-					localHashes.put(dir.replace(GameDirectory.getGameFolderPath(), "") + "/" + f2.getName(),
+					localHashes.put(dir.replace(GameDirectory.INSTANCE.getGameFolder(), "") + "/" + f2.getName(),
 							getMD5(f3));
 			}
 		}
@@ -176,7 +176,7 @@ public class UpdaterThread extends Thread implements ActionListener {
 
 			InputStream inp = url.openStream();
 			in = new BufferedInputStream(inp);
-			File f = new File(GameDirectory.getGameFolderPath() + "/" + file);
+			File f = new File(GameDirectory.INSTANCE.getGameFolder() + "/" + file);
 			if (f.getParentFile() != null && !f.getParentFile().exists())
 				f.getParentFile().mkdirs();
 			fout = new FileOutputStream(f);

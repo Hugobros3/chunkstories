@@ -20,8 +20,8 @@ import xyz.chunkstories.client.glfw.GLFWWindow
 import xyz.chunkstories.client.ingame.IngameClientImplementation
 import xyz.chunkstories.content.GameContentStore
 import xyz.chunkstories.content.GameDirectory
+import xyz.chunkstories.graphics.GraphicsBackendsEnum
 import xyz.chunkstories.graphics.GraphicsEngineImplementation
-import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.gui.ClientGui
 import xyz.chunkstories.gui.layer.LoginPrompt
 import xyz.chunkstories.input.lwjgl3.Lwjgl3ClientInputsManager
@@ -34,7 +34,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 /** Client implementation entry point, is the root of the systems and holds state through them  */
-class ClientImplementation internal constructor(coreContentLocation: File, modsStringArgument: String?) : Client, GameContext {
+class ClientImplementation internal constructor(val arguments: Map<String, String>) : Client, GameContext {
     private val logger: Logger
     private val chatLogger = LoggerFactory.getLogger("game.chat")
 
@@ -74,7 +74,7 @@ class ClientImplementation internal constructor(coreContentLocation: File, modsS
         val time = sdf.format(cal.time)
 
         logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)
-        val loggingFilename = GameDirectory.getGameFolderPath() + "/logs/" + time + ".log"
+        val loggingFilename = "./logs/$time.log"
         LogbackSetupHelper(loggingFilename)
 
         soundManager = ALSoundManager(this)
@@ -82,11 +82,12 @@ class ClientImplementation internal constructor(coreContentLocation: File, modsS
         graphics = GraphicsEngineImplementation(this)
         inputsManager = Lwjgl3ClientInputsManager(gameWindow)
 
+        val coreContentLocation = File(arguments["core"] ?: "core_content.zip")
+
         // Create game content manager
-        content = GameContentStore(this, coreContentLocation, modsStringArgument ?: "")
+        content = GameContentStore(this, coreContentLocation, arguments["mods"] ?: "")
         content.reload()
 
-        //gameWindow.stage_2_init(); // TODO this is bs, don't need this plz
         configuration.load()
 
         inputsManager.reload()
@@ -160,50 +161,52 @@ class ClientImplementation internal constructor(coreContentLocation: File, modsS
 
         @JvmStatic
         fun main(launchArguments: Array<String>) {
-            // Check for folder
-            GameDirectory.check()
-            GameDirectory.initClientPath()
-
-            //osx dirty fix
-            System.setProperty("java.awt.headless", "true")
-
-            var coreContentLocation = File("core_content.zip")
-
-            var modsStringArgument: String? = null
+            val argumentsMap = mutableMapOf<String, String>()
             for (launchArgument in launchArguments) {
-                when {
-                    launchArgument == "--forceobsolete" -> //TODO ClientLimitations.ignoreObsoleteHardware = false
-                        println("Ignoring hardware checks. This is absolutely definitely not going to make the game run, proceed at your own risk of imminent failure." + "You are stripped of any tech support rights when running the game using this.")
-                    launchArgument.contains("--mods") -> modsStringArgument = launchArgument.replace("--mods=", "")
-                    launchArgument.contains("--dir") -> GameDirectory.set(launchArgument.replace("--dir=", ""))
-                    launchArgument.contains("--enableValidation") -> VulkanGraphicsBackend.useValidationLayer = true
-                    launchArgument.contains("--core") -> {
-                        val coreContentLocationPath = launchArgument.replace("--core=", "")
-                        coreContentLocation = File(coreContentLocationPath)
+                if(launchArgument.startsWith("--")) {
+                    val stripped = launchArgument.removePrefix("--")
+
+                    if(launchArgument.contains('=')) {
+                        val firstIndex = stripped.indexOf('=')
+                        val argName = stripped.substring(0, firstIndex)
+                        val argValue = stripped.substring(firstIndex + 1, stripped.length).removeSurrounding("\"")
+
+                        argumentsMap[argName] = argValue
+                    } else {
+                        argumentsMap[stripped] = "true"
                     }
-                    else -> {
-                        var helpText = "Chunk Stories client " + VersionInfo.version + "\n"
-
-                        if (launchArgument == "-h" || launchArgument == "--help")
-                            helpText += "Command line help: \n"
-                        else
-                            helpText += "Unrecognized command: $launchArgument\n"
-
-                        helpText += "--forceobsolete Forces the game to run even if requirements aren't met. No support will be offered when using this! \n"
-                        helpText += "--mods=xxx,yyy | -mods=* Tells the game to start with those mods enabled\n"
-                        helpText += "--dir=whatever Tells the game not to look for .chunkstories at it's normal location and instead use the argument\n"
-                        helpText += "--core=whaterverfolder/ or --core=whatever.zip Tells the game to use some specific folder or archive as it's base content.\n"
-
-                        println(helpText)
-                        return
-                    }
+                } else {
+                    println("Unrecognized launch argument: $launchArgument")
                 }
             }
 
-            ClientImplementation(coreContentLocation, modsStringArgument)
+            if(argumentsMap["help"] != null) {
+                printHelp()
+                System.exit(0)
+            }
+
+            ClientImplementation(argumentsMap)
 
             // Not supposed to happen, gets there when ClientImplementation crashes badly.
             //System.exit(-1)
+        }
+
+        private fun printHelp() {
+            println("""
+                Chunk Stories Client version: ${VersionInfo.version}
+
+                Available commandline options:
+                --core=... Specifies the folder/file to use as the base content
+                --mods=... Specifies some mods to load
+                --backend=[${GraphicsBackendsEnum.values()}] Forces a specific backend to be used.
+
+                Backend-specific options:
+
+                Vulkan-specific options:
+                --enableValidation Enables the validation layers
+
+                OpenGL-specific options:
+            """.trimIndent())
         }
     }
 }

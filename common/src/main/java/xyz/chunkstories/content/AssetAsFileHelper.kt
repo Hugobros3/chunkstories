@@ -9,10 +9,8 @@ package xyz.chunkstories.content
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import java.io.InputStream
 import java.util.concurrent.atomic.AtomicBoolean
 
-import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 import xyz.chunkstories.api.GameContext
@@ -77,7 +75,7 @@ object AssetAsFileHelper {
     private fun getCacheFolder(): File? {
         // Obtain a cache folder
         if (createCacheFolder.compareAndSet(false, true)) {
-            cacheFolder = File(GameDirectory.getGameFolderPath() + "/cache/assimp/" + (Math.random() * 10000).toInt())
+            cacheFolder = File("." + "/cache/assimp/" + (Math.random() * 10000).toInt())
             cacheFolder!!.mkdirs()
             Runtime.getRuntime().addShutdownHook(object : Thread() {
                 override fun run() {

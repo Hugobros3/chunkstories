@@ -20,9 +20,10 @@ class GraphicsEngineImplementation(val client: ClientImplementation) : GraphicsE
         get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
 
     private fun pickBackend(): GraphicsBackendsEnum {
-        val configuredBackend = client.configuration.getValue("client.graphics.backend")
+        val configuredBackend = client.arguments["backend"] ?: client.configuration.getValue("client.graphics.backend")
+
         // If one backend was configured by the user, try to find it, otherwise use Vulkan by default
-        var backendToUse = GraphicsBackendsEnum.values().find { it.name == configuredBackend } ?: GraphicsBackendsEnum.VULKAN
+        var backendToUse = GraphicsBackendsEnum.values().find { it.name.toLowerCase() == configuredBackend.toLowerCase() } ?: GraphicsBackendsEnum.VULKAN
 
         // If the selected or default backend isn't usable, use OpenGL as a failsafe
         if(!backendToUse.usable()) {
@@ -40,6 +41,10 @@ class GraphicsEngineImplementation(val client: ClientImplementation) : GraphicsE
 
         // Pick a backend !
         val selectedGraphicsBackend = pickBackend()
+
+        // Dirty fix for OSX because le apple is special
+        // TODO check for MacOS first.
+        // System.setProperty("java.awt.headless", "true")
 
         window = GLFWWindow(client, this, selectedGraphicsBackend, "Chunk Stories " + VersionInfo.version)
 

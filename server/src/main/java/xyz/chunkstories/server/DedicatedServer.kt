@@ -109,7 +109,7 @@ class DedicatedServer internal constructor(coreContentLocation: File, modsString
 
             logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)
 
-            val loggingFilename = GameDirectory.getGameFolderPath() + "/serverlogs/" + time + ".log"
+            val loggingFilename = "." + "/serverlogs/" + time + ".log"
             LogbackSetupHelper(loggingFilename)
 
             logger!!.info("Starting Chunkstories server " + VersionInfo.version + " network protocol version "
@@ -142,7 +142,7 @@ class DedicatedServer internal constructor(coreContentLocation: File, modsString
 
             // Load the world(s)
             val worldName = serverConfig.getValue("server.world")
-            val worldPath = GameDirectory.getGameFolderPath() + "/worlds/" + worldName
+            val worldPath = "." + "/worlds/" + worldName
             val worldDir = File(worldPath)
             if (worldDir.exists()) {
                 val worldInfoFile = File(worldDir.path + "/worldInfo.dat")
@@ -336,8 +336,6 @@ class DedicatedServer internal constructor(coreContentLocation: File, modsString
             {
                 if (s.contains("--mods")) {
                     modsString = s.replace("--mods=", "")
-                } else if (s.contains("--dir")) {
-                    GameDirectory.set(s.replace("--dir=", ""))
                 } else if (s.contains("--core")) {
                     val coreContentLocationPath = s.replace("--core=", "")
                     coreContentLocation = File(coreContentLocationPath)
