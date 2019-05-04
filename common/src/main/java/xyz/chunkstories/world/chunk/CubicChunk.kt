@@ -290,6 +290,8 @@ class CubicChunk(override val holder: ChunkHolderImplementation, override val ch
             } else {
                 formerVoxel.onRemove(cell_pre, cause)
                 newVoxel.onPlace(future, cause)
+
+                raw_data = VoxelFormat.format(world.contentTranslator.getIdForVoxel(future.voxel), future.metaData, future.sunlight, future.blocklight)
             }
         } catch (e: WorldException) {
             // Abort !
