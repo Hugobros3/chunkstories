@@ -1,10 +1,14 @@
 package xyz.chunkstories.graphics.vulkan.systems.world
 
+import org.joml.Matrix4f
+import org.joml.Vector3f
 import org.joml.Vector3fc
+import org.joml.Vector4f
 import org.lwjgl.system.MemoryUtil
 import org.lwjgl.system.MemoryUtil.memFree
 import xyz.chunkstories.api.graphics.MeshMaterial
 import xyz.chunkstories.api.graphics.representation.Model
+import xyz.chunkstories.api.util.kotlin.getNormalMatrix
 import xyz.chunkstories.api.voxel.ChunkMeshRenderingInterface
 import xyz.chunkstories.api.voxel.Voxel
 import xyz.chunkstories.api.voxel.VoxelFormat
@@ -81,13 +85,17 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
             val mesher = object : ChunkMeshRenderingInterface {
                 var x = 0; var y = 0; var z = 0
 
-                override fun addModel(model: Model, offset: Vector3fc?, materialsOverrides: Map<Int, MeshMaterial>) {
+                override fun addModel(model: Model, matrix: Matrix4f?, materialsOverrides: Map<Int, MeshMaterial>) {
                     val sunlight = VoxelFormat.sunlight(cellData)
                     val blocklight = VoxelFormat.blocklight(cellData)
 
-                    var ox = x + (offset?.x() ?: 0f)
-                    var oy = y + (offset?.y() ?: 0f)
-                    var oz = z + (offset?.z() ?: 0f)
+                    var ox = x //+ (offset?.x() ?: 0f)
+                    var oy = y //+ (offset?.y() ?: 0f)
+                    var oz = z //+ (offset?.z() ?: 0f)
+
+                    val normalMatrix = matrix?.getNormalMatrix()
+                    val vertex = Vector4f()
+                    val normal = Vector3f()
 
                     for ((index, mesh) in model.meshes.withIndex()) {
                         val material = materialsOverrides[index] ?: mesh.material
@@ -107,9 +115,18 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
                         val normalIn = mesh.attributes.find { it.name == "normalIn" }?.data
                         val texCoordIn = mesh.attributes.find { it.name == "texCoordIn" }?.data
                         for (i in 0 until mesh.vertices) {
-                            meshData.putFloat(vertexIn.getFloat(i * 12 + 0) + ox)
-                            meshData.putFloat(vertexIn.getFloat(i * 12 + 4) + oy)
-                            meshData.putFloat(vertexIn.getFloat(i * 12 + 8) + oz)
+                            if(matrix != null) {
+                                vertex.set(vertexIn.getFloat(i * 12 + 0), vertexIn.getFloat(i * 12 + 4), vertexIn.getFloat(i * 12 + 8), 1f)
+                                matrix.transform(vertex)
+
+                                meshData.putFloat(vertex.x + ox)
+                                meshData.putFloat(vertex.y + oy)
+                                meshData.putFloat(vertex.z + oz)
+                            } else {
+                                meshData.putFloat(vertexIn.getFloat(i * 12 + 0) + ox)
+                                meshData.putFloat(vertexIn.getFloat(i * 12 + 4) + oy)
+                                meshData.putFloat(vertexIn.getFloat(i * 12 + 8) + oz)
+                            }
 
                             meshData.put((sunlight * 16).toByte())
                             meshData.put((blocklight * 16).toByte())
@@ -117,10 +134,20 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
                             meshData.put(0)
 
                             if (normalIn != null) {
-                                meshData.put(normalIn.getFloat(i * 12 + 0).toSNORM())
-                                meshData.put(normalIn.getFloat(i * 12 + 4).toSNORM())
-                                meshData.put(normalIn.getFloat(i * 12 + 8).toSNORM())
-                                meshData.put(0)
+                                if(normalMatrix != null) {
+                                    normal.set(normalIn.getFloat(i * 12 + 0), normalIn.getFloat(i * 12 + 4 ), normalIn.getFloat(i * 12 + 8))
+                                    normalMatrix.transform(normal)
+
+                                    meshData.put((normal.x).toSNORM())
+                                    meshData.put((normal.y).toSNORM())
+                                    meshData.put((normal.z).toSNORM())
+                                    meshData.put(0)
+                                } else {
+                                    meshData.put(normalIn.getFloat(i * 12 + 0).toSNORM())
+                                    meshData.put(normalIn.getFloat(i * 12 + 4).toSNORM())
+                                    meshData.put(normalIn.getFloat(i * 12 + 8).toSNORM())
+                                    meshData.put(0)
+                                }
                             } else {
                                 meshData.put(0)
                                 meshData.put(0)
@@ -152,8 +179,8 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
                         val voxel = chunk.world.contentTranslator.getVoxelForId(VoxelFormat.id(cellData))!!
 
                         cell.x = (chunk.chunkX shl 5) + x
-                        cell.y = (chunk.chunkX shl 5) + y
-                        cell.z = (chunk.chunkX shl 5) + z
+                        cell.y = (chunk.chunkY shl 5) + y
+                        cell.z = (chunk.chunkZ shl 5) + z
 
                         cell.voxel = voxel
                         cell.metaData = VoxelFormat.meta(cellData)
