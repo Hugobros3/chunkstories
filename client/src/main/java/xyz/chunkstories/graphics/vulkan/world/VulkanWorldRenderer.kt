@@ -252,7 +252,7 @@ class VulkanWorldRenderer(val backend: VulkanGraphicsBackend, world: WorldClient
                 pass {
                     name = "bloom_blurH"
 
-                    dependsOn("deferredShading", "forward")
+                    dependsOn("forward")
 
                     draws {
                         system(FullscreenQuadDrawer::class) {
@@ -306,7 +306,7 @@ class VulkanWorldRenderer(val backend: VulkanGraphicsBackend, world: WorldClient
                 pass {
                     name = "postprocess"
 
-                    dependsOn("deferredShading", "forward")
+                    dependsOn("forward")
                     dependsOn("bloom_blurV")
 
                     setup {
@@ -356,7 +356,7 @@ class VulkanWorldRenderer(val backend: VulkanGraphicsBackend, world: WorldClient
         renderTask {
             name = "sunShadow"
 
-            finalPassName = "cubes"
+            finalPassName = "opaque"
 
             renderBuffers {
                 /*renderBuffer {
@@ -376,7 +376,7 @@ class VulkanWorldRenderer(val backend: VulkanGraphicsBackend, world: WorldClient
 
             passes {
                 pass {
-                    name = "cubes"
+                    name = "opaque"
 
                     draws {
                         system(ChunksRenderer::class) {

@@ -102,11 +102,11 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
                         val scratch = map.getOrPut(material.tag) { ScratchBuffer() }
                         val meshData = scratch.meshData
                         var texName = material.textures["albedoTexture"] ?: "notex"
-                        val asset = chunk.world.content.getAsset(texName)
-                        val assetName = asset?.name
+                        //val asset = chunk.world.content.getAsset(texName)
+                        //val assetName = asset?.name
                         when {
-                            assetName != null && assetName.startsWith("voxels/blockmodels") -> texName = assetName.removePrefix("voxels/blockmodels/") ?: "notex"
-                            assetName != null && assetName.startsWith("voxels/textures") -> texName = assetName.removePrefix("voxels/textures/") ?: "notex"
+                            texName.startsWith("voxels/blockmodels") -> texName = texName.removePrefix("voxels/blockmodels/").substringAfter("/", "notex") ?: "notex"
+                            texName.startsWith("voxels/textures") -> texName = texName.removePrefix("voxels/textures/") ?: "notex"
                         }
                         texName = texName.removeSuffix(".png")
                         val voxelTexture = chunk.world.content.voxels().textures().get(texName) as VoxelTexturesArray.VoxelTextureInArray
