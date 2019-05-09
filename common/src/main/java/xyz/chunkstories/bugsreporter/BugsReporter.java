@@ -61,7 +61,6 @@ public class BugsReporter {
 			thread.start();
 		} else {
 			JOptionPane.showMessageDialog(null, "Invalid arguments.");
-			System.out.println("Fuck off");
 		}
 	}
 }

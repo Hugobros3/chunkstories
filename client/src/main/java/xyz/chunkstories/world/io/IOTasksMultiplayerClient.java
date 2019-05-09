@@ -108,8 +108,7 @@ public class IOTasksMultiplayerClient extends IOTasks {
 			RegionImplementation region = world.getRegionChunkCoordinates(((PacketChunkCompressedData) packet).x,
 					((PacketChunkCompressedData) packet).y, ((PacketChunkCompressedData) packet).z);
 
-			// This *can* happen, ie if the player flies fucking fast and the server sends
-			// the chunk but he's already fucking gone
+			// This *can* happen, ie if the player flies too fast and by the time he receives the chunk data the region has already been gc'ed
 			if (region == null)
 				return;
 

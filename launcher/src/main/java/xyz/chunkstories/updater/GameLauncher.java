@@ -51,7 +51,7 @@ public class GameLauncher implements ActionListener {
 				while ((line = br.readLine()) != null) {
 					System.out.println(type + line);
 
-					// If we get this error less than 5s after starting the game, it's fucked !
+					// We ain't got time for 32-bit support, if you have issues with this please consult your nearest open dump and pickup an optiplex
 					if (line.contains("This Java instance does not support a 64-bit JVM")
 							&& (System.currentTimeMillis() - t) < 5000) {
 						wrongJVM = true;

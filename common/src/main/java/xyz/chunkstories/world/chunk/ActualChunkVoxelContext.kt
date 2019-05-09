@@ -92,7 +92,7 @@ class ActualChunkVoxelContext(private val cubicChunk: CubicChunk, x: Int, y: Int
             4 -> return cubicChunk.world.peekRaw(x, y + 1, z)
             5 -> return cubicChunk.world.peekRaw(x, y - 1, z)
         }
-        throw RuntimeException("Fuck off")
+        throw RuntimeException("Pick a valid side")
     }
 
     override fun getNeightbor(side_int: Int): CellData {

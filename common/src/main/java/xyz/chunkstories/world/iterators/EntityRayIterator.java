@@ -23,7 +23,7 @@ public class EntityRayIterator implements Iterator<Entity> {
 	Vector3dc direction;
 
 	List<Entity> sortedEntities = new ArrayList<Entity>();
-	Iterator<Entity> lazyFuck;
+	Iterator<Entity> lazyBoi;
 
 	public EntityRayIterator(WorldImplementation world, Vector3dc initialPosition, Vector3dc direction, double limit) {
 		this.world = world;
@@ -69,17 +69,17 @@ public class EntityRayIterator implements Iterator<Entity> {
 			}
 		});
 
-		lazyFuck = sortedEntities.iterator();
+		lazyBoi = sortedEntities.iterator();
 	}
 
 	@Override
 	public boolean hasNext() {
-		return lazyFuck.hasNext();
+		return lazyBoi.hasNext();
 	}
 
 	@Override
 	public Entity next() {
-		return lazyFuck.next();
+		return lazyBoi.next();
 	}
 
 }

@@ -247,7 +247,7 @@ class ChatManager(private val ingameClient: IngameClient, private val ingameGuiL
                     val glfwWindow = ingameClient.gameWindow as GLFWWindow
                     val graphicsBackend = glfwWindow.graphicsEngine.backend as VulkanGraphicsBackend
                     graphicsBackend.memoryManager.debug()
-                    insert("#FF7070FUCK")
+                    insert("#FF7070FDumped debug visuals for buddy allocator")
                 }
             }
         }

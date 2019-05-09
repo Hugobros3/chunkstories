@@ -67,11 +67,6 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
                         val filteredChunkZ = chunkZ and size.maskForChunksCoordinates
 
                         val summed = (((filteredChunkX shl size.bitlengthOfVerticalChunksCoordinates) or filteredChunkY) shl size.bitlengthOfHorizontalChunksCoordinates) or filteredChunkZ
-                        //val summed2 = filteredChunkX shl size.bitlengthOfVerticalChunksCoordinates or filteredChunkY shl size.bitlengthOfHorizontalChunksCoordinates or filteredChunkZ
-                        //if(summed != summed2)
-                        //    println("fuck")
-
-                        //println(" d ${size.bitlengthOfVerticalChunksCoordinates} o ${size.bitlengthOfHorizontalChunksCoordinates}")
 
                         if (aquiredChunkHoldersMask.contains(summed)) {
                             //val chunkHolder = usedChunks.find { it.chunkX == filteredChunkX && it.chunkY == filteredChunkY && it.chunkZ == filteredChunkZ }

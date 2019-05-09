@@ -72,8 +72,6 @@ class InfoCommands(serverConsole: Server) : ServerCommandBasic(serverConsole) {
             return true
 
         }
-
-        println("fuck off")
         return false
     }
 

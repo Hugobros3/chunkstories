@@ -94,12 +94,6 @@ public class TrianglesClipper {
 		// Matrix4f.transform(toClipSpace, new Vector4f(vert3.x(), vert3.y(), vert3.z(),
 		// 1.0f), null);
 
-		/*
-		 * if(Float.isNaN(tv1.x())) {
-		 * System.out.println("Transform fucked vert1: "+vert1 + " in "+tv1);
-		 * System.out.println(toClipSpace); }
-		 */
-
 		if (tv1.x() < 0.0 && tv2.x() < 0.0 && tv3.x() < 0.0)
 			return 0;
 		if (tv1.y() < 0.0 && tv2.y() < 0.0 && tv3.y() < 0.0)
@@ -153,9 +147,9 @@ public class TrianglesClipper {
 		if (v1.x() <= v2.x() && v2.x() <= v3.x()) {
 
 		} else {
-			System.out.println("cullLeft: X ordering is fucked: " + v1.x() + " " + v2.x() + " " + v3.x());
+			/*System.out.println("cullLeft: X ordering is wrong: " + v1.x() + " " + v2.x() + " " + v3.x());
 			System.out.println("Input was: " + vert1.x() + " " + vert2.x() + " " + vert3.x());
-			System.out.println("Input aka: " + vert1 + " " + vert2 + " " + vert3);
+			System.out.println("Input aka: " + vert1 + " " + vert2 + " " + vert3);*/
 			return 0;
 		}
 
@@ -293,7 +287,7 @@ public class TrianglesClipper {
 		if (v1.y() <= v2.y() && v2.y() <= v3.y()) {
 
 		} else {
-			System.out.println("fuck Y" + v1 + v2 + v3);
+			System.out.println(":poop: Y" + v1 + v2 + v3);
 			return 0;
 		}
 		// Actual culling here
