@@ -10,6 +10,7 @@ import xyz.chunkstories.api.util.configuration.Configuration
 import xyz.chunkstories.net.http.SimplePostRequest
 import xyz.chunkstories.net.http.SimpleWebRequest
 import xyz.chunkstories.server.DedicatedServer
+import xyz.chunkstories.server.DedicatedServerOptions
 import xyz.chunkstories.util.VersionInfo
 
 import java.net.Inet4Address
@@ -27,15 +28,15 @@ class ServerAnnouncerThread(private val server: DedicatedServer) : Thread() {
     /**
      * Unique key used to authentificate on the servers list.
      */
-    private var lolcode: Int = 0 //TODO moar bits
+    private var lolcode: Int = 0 //TODO this is nowhere enough rng to be secure
 
     init {
 
-        lolcode = server.serverConfig.getIntValue("server.announcer.lolcode")
+        lolcode = server.serverConfig.getIntValue(DedicatedServerOptions.announcerLolcode)
         if (lolcode.toLong() == 0L) {
             val rnd = Random()
             lolcode = rnd.nextInt(Integer.MAX_VALUE)
-            val option = server.serverConfig.get<Configuration.OptionInt>("server.announcer.lolcode")
+            val option = server.serverConfig.get<Configuration.OptionInt>(DedicatedServerOptions.announcerLolcode)
             option!!.trySetting(lolcode)
         }
 
@@ -52,19 +53,20 @@ class ServerAnnouncerThread(private val server: DedicatedServer) : Thread() {
             val externalIp = SimpleWebRequest("https://chunkstories.xyz/api/sayMyName.php?ip=1").waitForResult()
 
             while (run.get()) {
-                if (server.serverConfig.getBooleanValue("server.announcer.enable")) {
+                if (server.serverConfig.getBooleanValue(DedicatedServerOptions.announcerEnable)) {
 
-                    val serverName = server.serverConfig.getValue("server.name")
-                    val serverDescription = server.serverConfig.getValue("server.description")
+                    val serverName = server.serverConfig.getValue(DedicatedServerOptions.serverName)
+                    val serverDescription = server.serverConfig.getValue(DedicatedServerOptions.serverDescription)
 
                     val postData = ("srvname=$serverName&desc=$serverDescription&ip=$externalIp&iip=$internalIp&mu=" + server.handler
                             .maxClients + "&u=" + server.handler.playersNumber + "&n=0&w=default&p=1&v=" + VersionInfo.version
                             + "&lolcode=" + lolcode)
 
                     SimplePostRequest("https://chunkstories.xyz/api/serverAnnounce.php", postData)
-                    Thread.sleep(server.serverConfig.getIntValue("server.announcer.dutyCycle").toLong())
+
+                    sleep(server.serverConfig.getIntValue(DedicatedServerOptions.announcerDutyCycle).toLong())
                 } else
-                    Thread.sleep(6000)
+                    sleep(6000)
             }
         } catch (e: Exception) {
             server.logger().error("An unexpected error happened during multiverse stuff. More info below.")

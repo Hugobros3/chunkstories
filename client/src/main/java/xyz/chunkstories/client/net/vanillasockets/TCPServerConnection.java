@@ -15,10 +15,8 @@ import xyz.chunkstories.api.net.PacketWorldStreaming;
 import xyz.chunkstories.api.net.RemoteServer;
 import xyz.chunkstories.api.net.packets.PacketText;
 import xyz.chunkstories.client.ClientImplementation;
-import xyz.chunkstories.client.net.ClientPacketsEncoderDecoder;
-import xyz.chunkstories.client.net.ConnectionStep;
-import xyz.chunkstories.client.net.RemoteServerImplementation;
-import xyz.chunkstories.client.net.ServerConnection;
+import xyz.chunkstories.client.ingame.IngameClientImplementation;
+import xyz.chunkstories.client.net.*;
 import xyz.chunkstories.net.Connection;
 import xyz.chunkstories.net.LogicalPacketDatagram;
 import xyz.chunkstories.net.PacketDefinitionImplementation;
@@ -51,10 +49,10 @@ public class TCPServerConnection extends ServerConnection {
 	// A representation of who we're talking to
 	private RemoteServer remoteServer;
 
-	public TCPServerConnection(ClientImplementation client, String remoteAddress, int port) {
-		super(remoteAddress, port);
+	public TCPServerConnection(ClientConnectionSequence connectionSequence) {
+		super(connectionSequence);
 
-		this.client = client;
+		this.client = connectionSequence.getClient();
 		remoteServer = new RemoteServerImplementation(this);
 		encoderDecoder = new ClientPacketsEncoderDecoder(client, this);
 	}
@@ -110,7 +108,11 @@ public class TCPServerConnection extends ServerConnection {
 
 		} else if (definition.getGenre() == PacketGenre.WORLD) {
 			WorldClientRemote world = getEncoderDecoder().getWorld();
-			world.queueDatagram(datagram);
+			if(world == null) {
+				logger.error("Received packet "+definition+" but no world is up yet !");
+			} else {
+				world.queueDatagram(datagram);
+			}
 
 		} else if (definition.getGenre() == PacketGenre.WORLD_STREAMING) {
 			WorldClientRemote world = getEncoderDecoder().getWorld();
@@ -125,7 +127,10 @@ public class TCPServerConnection extends ServerConnection {
 
 	public boolean handleSystemRequest(String msg) {
 		if (msg.startsWith("chat/")) {
-			client.print(msg.substring(5, msg.length()));
+			IngameClientImplementation ingame = client.getIngame();
+			if (ingame != null) {
+				ingame.print(msg.substring(5, msg.length()));
+			}
 		} else if (msg.startsWith("disconnect/")) {
 			String errorMessage = msg.replace("disconnect/", "");
 			logger.info("Disconnected by server : " + errorMessage);
@@ -151,47 +156,6 @@ public class TCPServerConnection extends ServerConnection {
 		return remoteServer;
 	}
 
-	/** Represents the step of downloading a mod from a server */
-	class ConnectionStepDownloadMod extends ConnectionStep {
-
-		public ConnectionStepDownloadMod(String text) {
-			super(text);
-		}
-
-		Semaphore wait = new Semaphore(0);
-		DownloadStatus downloadStatus;
-
-		@Override
-		public String getStepText() {
-			if (downloadStatus == null)
-				return super.getStepText();
-			return downloadStatus.bytesDownloaded() + " / " + downloadStatus.totalBytes();
-		}
-
-		@Override
-		public void waitForEnd() {
-			wait.acquireUninterruptibly();
-			downloadStatus.waitForEnd();
-			super.waitForEnd();
-		}
-
-		/** Called when we start to receive said mod */
-		public void callback(DownloadStatus progress) {
-			wait.release();
-			downloadStatus = progress;
-		}
-	}
-
-	@Override
-	public ConnectionStep obtainModFile(String modMd5Hash, File cached) {
-		ConnectionStepDownloadMod showProgress = new ConnectionStepDownloadMod("Waiting for download response...");
-
-		this.registerExpectedFileStreaming("md5:" + modMd5Hash, cached, (progress) -> showProgress.callback(progress));
-		sendTextMessage("send-mod/md5:" + modMd5Hash);
-
-		return showProgress;
-	}
-
 	@Override
 	public ClientPacketsEncoderDecoder getEncoderDecoder() {
 		return this.encoderDecoder;
@@ -204,9 +168,9 @@ public class TCPServerConnection extends ServerConnection {
 	}
 
 	@Override
-	public boolean close() {
+	public void close() {
 		if (!closeOnce.compareAndSet(false, true))
-			return false;
+			return;
 
 		try {
 			if (socket != null)
@@ -219,7 +183,6 @@ public class TCPServerConnection extends ServerConnection {
 			sendQueue.kill();
 
 		disconnected = true;
-		return true;
 	}
 
 	@Override

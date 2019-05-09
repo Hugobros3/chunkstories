@@ -20,6 +20,11 @@ import xyz.chunkstories.gui.layer.ServerSelection.ServerSelectionZone.ServerGuiI
 import xyz.chunkstories.net.http.SimpleWebRequest
 import org.joml.Vector4f
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.client.ClientImplementation
+import xyz.chunkstories.client.InternalClientOptions
+import xyz.chunkstories.client.ingame.connectToRemoteWorld
+import xyz.chunkstories.client.net.ClientConnectionSequence
+import xyz.chunkstories.gui.layer.ingame.RemoteConnectionGuiLayer
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.File
@@ -47,7 +52,7 @@ class ServerSelection internal constructor(gui: Gui, parent: Layer, private val 
         elements.add(serverSelectionZone)
         elements.add(backOption)
 
-        val lastServer = gui.client.configuration.getValue("client.game.lastServer")
+        val lastServer = gui.client.configuration.getValue(InternalClientOptions.lastServer)
         if (lastServer != "")
             serverAddress.text = lastServer
 
@@ -118,7 +123,7 @@ class ServerSelection internal constructor(gui: Gui, parent: Layer, private val 
         if (serverAddress.isEmpty())
             return
 
-        val lastServerOption: Configuration.OptionString = gui.client.configuration["client.game.lastServer"]!!
+        val lastServerOption: Configuration.OptionString = gui.client.configuration[InternalClientOptions.lastServer]!!
         lastServerOption.trySetting("$serverAddress:$port")
         gui.client.configuration.save()
 
@@ -129,6 +134,8 @@ class ServerSelection internal constructor(gui: Gui, parent: Layer, private val 
 
         //TODO create connection sequence (ongoing refactor of that)
         //gui.setTopLayer(new RemoteConnectionGuiLayer(gui, this, ip, port));
+        //gui.topLayer = RemoteConnectionGuiLayer(gui, this, ClientConnectionSequence(gui.client as ClientImplementation, serverAddress, port))
+        (gui.client as ClientImplementation).connectToRemoteWorld(serverAddress, port)
     }
 
     private fun updateServers() {

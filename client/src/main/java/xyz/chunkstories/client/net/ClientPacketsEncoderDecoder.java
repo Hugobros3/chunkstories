@@ -17,13 +17,15 @@ import xyz.chunkstories.world.WorldClientRemote;
 
 public class ClientPacketsEncoderDecoder extends PacketsEncoderDecoder implements ClientPacketsProcessor {
 
-	private IngameClient client = null;
-	final ServerConnection clientConnection;
+	//private IngameClient client = null;
+	private final Client client;
+	private final ServerConnection serverConnection;
 
-	public ClientPacketsEncoderDecoder(Client client, ServerConnection clientConnection) {
-		super(client.getContent().packets(), clientConnection);
+	public ClientPacketsEncoderDecoder(Client client, ServerConnection serverConnection) {
+		super(client.getContent().packets(), serverConnection);
 
-		this.clientConnection = clientConnection;
+		this.client = client;
+		this.serverConnection = serverConnection;
 
 		// Very basic content translator used to translate the system packets (those with an assignated fixedId)
 		// Gets replaced later during the connection process as we receive the actual mappings from the server !
@@ -32,27 +34,33 @@ public class ClientPacketsEncoderDecoder extends PacketsEncoderDecoder implement
 	}
 
 	public ServerConnection getConnection() {
-		return clientConnection;
+		return serverConnection;
 	}
 
 	@Override
 	public WorldClientRemote getWorld() {
-		return (WorldClientRemote) client.getWorld();
+		if(getContext() == null)
+			return null;
+		return (WorldClientRemote) getContext().getWorld();
 	}
 
 	@Override
 	public IngameClient getContext() {
+		return client.getIngame();
+	}
+
+	public Client getClient() {
 		return client;
 	}
 
 	@Override
 	public Interlocutor getInterlocutor() {
-		return clientConnection.getRemoteServer();
+		return serverConnection.getRemoteServer();
 	}
 
 	@Override
 	public LocalPlayer getPlayer() {
-		return client.getPlayer();
+		return getContext().getPlayer();
 	}
 
 	@Override

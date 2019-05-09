@@ -33,7 +33,7 @@ import xyz.chunkstories.server.net.ClientConnection;
 import xyz.chunkstories.server.net.ClientsManager;
 import xyz.chunkstories.world.WorldServer;
 
-public class SocketedClientConnection extends ClientConnection {
+public class TCPClientConnection extends ClientConnection {
 
 	final ClientsManager clientsManager;
 	final Socket socket;
@@ -44,7 +44,7 @@ public class SocketedClientConnection extends ClientConnection {
 	private StreamGobbler streamGobbler;
 	private SendQueue sendQueue;
 
-	public SocketedClientConnection(Server server, ClientsManager clientsManager, Socket socket)
+	public TCPClientConnection(Server server, ClientsManager clientsManager, Socket socket)
 			throws IOException {
 		super(server, clientsManager, socket.getInetAddress().getHostAddress(), socket.getPort());
 		this.clientsManager = clientsManager;
@@ -127,9 +127,9 @@ public class SocketedClientConnection extends ClientConnection {
 	}
 
 	@Override
-	public boolean close() {
+	public void close() {
 		if (!closeOnce.compareAndSet(false, true))
-			return false;
+			return;
 
 		try {
 			if (socket != null)
@@ -142,7 +142,7 @@ public class SocketedClientConnection extends ClientConnection {
 			sendQueue.kill();
 
 		disconnected = true;
-		return super.close();
+		super.close();
 	}
 
 	@Override

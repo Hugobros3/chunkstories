@@ -124,7 +124,7 @@ class LoginPrompt(gui: Gui, parent: Layer?) : Layer(gui, parent) {
         } else {
             logging_in = true
 
-            val postAction = RequestResultAction { result ->
+            SimplePostRequest("https://chunkstories.xyz/api/login.php", "user=" + usernameForm.text + "&pass=" + passwordForm.text, RequestResultAction { result ->
                 logger.debug("Received login answer")
 
                 logging_in = false
@@ -156,9 +156,7 @@ class LoginPrompt(gui: Gui, parent: Layer?) : Layer(gui, parent) {
                 } else {
                     message = "Unknown error"
                 }
-            }
-
-            SimplePostRequest("https://chunkstories.xyz/api/login.php", "user=" + usernameForm.text + "&pass=" + passwordForm.text, postAction)
+            })
         }
     }
 

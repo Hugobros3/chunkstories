@@ -23,6 +23,7 @@ import xyz.chunkstories.world.io.TaskLoadChunk
 import net.jpountz.lz4.LZ4Factory
 import org.lwjgl.system.MemoryUtil
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.api.world.WorldClientNetworkedRemote
 import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
 import java.io.IOException
@@ -203,6 +204,14 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
                     eventUsersNotEmpty()
 
                 globalRegisteredUsers.incrementAndGet()
+
+                if(user is RemotePlayer) {
+                    if(this.state is ChunkHolder.State.Available) {
+                        user.pushPacket(PacketChunkCompressedData(chunk, compressedData))
+                    } else {
+                        usersWaitingForIntialData.add(user)
+                    }
+                }
                 return true
             }
 
@@ -275,7 +284,9 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
                         transitionLoading()
                     else if(region.state is Region.State.Generating)
                         transitionGenerating()
-                    else
+                    else if(region.world is WorldClientNetworkedRemote) {
+                        transitionWaitingOnRemoteData()
+                    } else
                         throw Exception("Broken assertion: If the chunk is unloaded, either it has to have unloaded data, or be in a yet region pending generation!")
                 }
                 is ChunkHolder.State.Generating -> { /* legal, don't care */
@@ -399,6 +410,20 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
 
             if (region.world is WorldTool && !region.world.isGenerationEnabled)
                 eventGenerationFinishes(CubicChunk(this, chunkX, chunkY, chunkZ, null))
+        } finally {
+            region.stateLock.unlock()
+        }
+    }
+
+    private fun transitionWaitingOnRemoteData() {
+        try {
+            region.stateLock.lock()
+
+            if (state !is ChunkHolder.State.WaitForRegionInitialLoad && state !is ChunkHolder.State.Unloaded)
+                throw Exception("Illegal transition")
+
+            //TODO make special state here
+            transitionState(ChunkHolder.State.Loading(TrivialFence()))
         } finally {
             region.stateLock.unlock()
         }

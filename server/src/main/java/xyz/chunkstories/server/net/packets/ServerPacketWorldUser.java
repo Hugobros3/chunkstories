@@ -25,7 +25,8 @@ public class ServerPacketWorldUser extends PacketWorldUser {
 	public void process(PacketSender sender, DataInputStream in, PacketReceptionContext processor) throws IOException {
 		super.process(sender, in, processor);
 
-		if (type == Type.REGISTER_SUMMARY || type == Type.UNREGISTER_SUMMARY) {
+		// that was a fun debugging session >:(
+		/*if (type == Type.REGISTER_SUMMARY || type == Type.UNREGISTER_SUMMARY) {
 
 			int sizeInRegions = processor.getWorld().getSizeInChunks() / 8;
 			int filteredX = x % sizeInRegions;
@@ -37,21 +38,18 @@ public class ServerPacketWorldUser extends PacketWorldUser {
 				filteredZ += sizeInRegions;
 
 			if (x != filteredX || z != filteredZ) {
-				// System.out.println("warning: someone forgot to sanitize their region
-				// coordinates!");
+				// System.out.println("warning: someone forgot to sanitize their region coordinates!");
 				x = filteredX;
 				z = filteredZ;
 
 				// System.out.println("og: "+x+": "+z);
 				// System.out.println(filteredX+":"+filteredZ);
 			}
-		}
+		}*/
 
 		if (sender instanceof ServerPlayer) {
 			ServerPlayer player = (ServerPlayer) sender;
-			throw new UnsupportedOperationException();
-			//TODO
-			//player.getLoadingAgent().handleClientRequest(this);
+			player.getLoadingAgent().handleClientRequest(this);
 		}
 	}
 }

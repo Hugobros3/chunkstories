@@ -217,7 +217,7 @@ public abstract class ClientConnection extends Connection implements Interlocuto
 	}
 
 	@Override
-	public boolean close() {
+	public void close() {
 		clientsManager.removeClient(this);
 
 		if (player != null) {
@@ -227,6 +227,5 @@ public abstract class ClientConnection extends Connection implements Interlocuto
 
 			player.destroy();
 		}
-		return true;
 	}
 }

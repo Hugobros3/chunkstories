@@ -9,6 +9,7 @@ package xyz.chunkstories.server.net;
 import xyz.chunkstories.api.player.Player;
 import xyz.chunkstories.net.http.SimpleWebRequest;
 import xyz.chunkstories.server.DedicatedServer;
+import xyz.chunkstories.server.DedicatedServerOptions;
 import xyz.chunkstories.server.player.ServerPlayer;
 import xyz.chunkstories.util.VersionInfo;
 
@@ -40,7 +41,7 @@ public abstract class ClientsManager {
 		externalIP = new SimpleWebRequest("https://chunkstories.xyz/api/sayMyName.php?ip=1").waitForResult();
 		hostname = new SimpleWebRequest("https://chunkstories.xyz/api/sayMyName.php?host=1").waitForResult();
 
-		this.maxClients = server.getServerConfig().getIntValue("server.maxUsers");
+		this.maxClients = server.getServerConfig().getIntValue(DedicatedServerOptions.INSTANCE.getMaxUsers());
 	}
 
 	public DedicatedServer getServer() {
@@ -113,8 +114,8 @@ public abstract class ClientsManager {
 	}
 
 	public void sendServerInfo(ClientConnection clientConnection) {
-		clientConnection.sendTextMessage("info/name:" + getServer().getServerConfig().getValue("serverName"));
-		clientConnection.sendTextMessage("info/motd:" + getServer().getServerConfig().getValue("serverDescription"));
+		clientConnection.sendTextMessage("info/name:" + getServer().getServerConfig().getValue(DedicatedServerOptions.INSTANCE.getServerName()));
+		clientConnection.sendTextMessage("info/motd:" + getServer().getServerConfig().getValue(DedicatedServerOptions.INSTANCE.getServerDescription()));
 		clientConnection.sendTextMessage("info/connected:" + getPlayersNumber() + ":" + getMaxClients());
 		clientConnection.sendTextMessage("info/version:" + VersionInfo.version);
 		clientConnection.sendTextMessage("info/mods:" + getServer().getModsProvider().getModsString());

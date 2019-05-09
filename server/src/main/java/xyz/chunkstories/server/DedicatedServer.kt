@@ -19,7 +19,6 @@ import xyz.chunkstories.api.util.ColorsTools
 import xyz.chunkstories.api.util.configuration.Configuration
 import xyz.chunkstories.api.workers.Tasks
 import xyz.chunkstories.content.GameContentStore
-import xyz.chunkstories.content.GameDirectory
 import xyz.chunkstories.plugin.DefaultPluginManager
 import xyz.chunkstories.server.commands.DedicatedServerConsole
 import xyz.chunkstories.server.commands.installServerCommands
@@ -56,20 +55,19 @@ class DedicatedServer internal constructor(coreContentLocation: File, modsString
     val serverConfig = Configuration(this, configFile)
 
     private val running = AtomicBoolean(true)
-    val isRunning: Boolean
-        get() = running.get()
 
     private val initTimestamp = System.currentTimeMillis() / 1000
 
-    override lateinit var world: WorldServer private set
+    override val world: WorldServer
 
     val handler: ClientsManager
 
     override val userPrivileges = FileBasedUsersPrivileges()
-    override lateinit var permissionsManager: PermissionsManager
 
     // Sleeper thread to keep servers list updated
-    private var announcer: ServerAnnouncerThread? = null
+    private val announcer: ServerAnnouncerThread
+
+    override lateinit var permissionsManager: PermissionsManager
 
     // What mods are required to join this server ?
     val modsProvider: ServerModsProvider
@@ -97,7 +95,11 @@ class DedicatedServer internal constructor(coreContentLocation: File, modsString
     override val tasks: Tasks
         get() = workers
 
+    val logger: Logger
+
     init {
+        serverConfig.addOptions(DedicatedServerOptions.createOptions(this))
+        serverConfig.load(configFile)
         AnsiConsole.systemInstall()
 
         // Start server services
@@ -109,10 +111,10 @@ class DedicatedServer internal constructor(coreContentLocation: File, modsString
 
             logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)
 
-            val loggingFilename = "." + "/serverlogs/" + time + ".log"
+            val loggingFilename = "./serverlogs/$time.log"
             LogbackSetupHelper(loggingFilename)
 
-            logger!!.info("Starting Chunkstories server " + VersionInfo.version + " network protocol version "
+            logger.info("Starting Chunkstories server " + VersionInfo.version + " network protocol version "
                     + VersionInfo.networkProtocolVersion)
 
             // Loads the mods/build filesystem
@@ -120,7 +122,7 @@ class DedicatedServer internal constructor(coreContentLocation: File, modsString
             gameContent.reload()
 
             // Spawns worker threads
-            var nbThreads = this.serverConfig.getIntValue("server.performance.workerThreads")
+            var nbThreads = this.serverConfig.getIntValue(DedicatedServerOptions.workerThreads)
             if (nbThreads <= 0) {
                 nbThreads = Runtime.getRuntime().availableProcessors() - 2
 
@@ -133,36 +135,30 @@ class DedicatedServer internal constructor(coreContentLocation: File, modsString
             workers.start()
 
             handler = VanillaClientsManager(this)
-
             modsProvider = ServerModsProvider(this)
-
-            // load users privs
-            // UsersPrivilegesFile.load();
             pluginManager = DefaultPluginManager(this)
 
             // Load the world(s)
-            val worldName = serverConfig.getValue("server.world")
-            val worldPath = "." + "/worlds/" + worldName
+            val worldName = serverConfig.getValue(DedicatedServerOptions.worldName)
+            val worldPath = "./worlds/$worldName"
             val worldDir = File(worldPath)
             if (worldDir.exists()) {
                 val worldInfoFile = File(worldDir.path + "/worldInfo.dat")
                 if (!worldInfoFile.exists())
-                    throw WorldLoadingException("The folder \$folder doesn't contain a worldInfo.dat file !")
+                    throw WorldLoadingException("The folder $worldDir doesn't contain a worldInfo.dat file !")
 
                 val worldInfo = deserializeWorldInfo(worldInfoFile)
 
                 world = WorldServer(this, worldInfo, worldDir)
             } else {
-                serverConfig.save(configFile)
-                println("Can't find the world \"$worldName\" in $worldPath. Exiting !")
-                Runtime.getRuntime().exit(0)
+                throw Exception("Can't find the world $worldName in $worldPath.")
             }
 
             // Opens socket and starts accepting clients
             handler.open()
             // Initializes the announcer ( server listings )
             announcer = ServerAnnouncerThread(this)
-            announcer!!.start()
+            announcer.start()
 
             permissionsManager = object : PermissionsManager {
                 override fun hasPermission(player: Player, permissionNode: String) = userPrivileges.isUserAdmin(player.name)
@@ -174,11 +170,13 @@ class DedicatedServer internal constructor(coreContentLocation: File, modsString
 
             // Finally start logic
             world.startLogic()
-        } catch (e: Exception) {
-            logger.error("Could not initialize server . Stacktrace below")
-            throw RuntimeException(e)
-        }
 
+            serverConfig.save(configFile)
+        } catch (e: Exception) {
+            serverConfig.save(configFile)
+            e.printStackTrace()
+            error("Failed to initialize server, see exception")
+        }
     }
 
     //TODO move to another class
@@ -316,7 +314,7 @@ class DedicatedServer internal constructor(coreContentLocation: File, modsString
     }
 
     override fun print(message: String) {
-        logger!!.info(message)
+        logger.info(message)
     }
 
     override fun logger(): Logger {
@@ -324,7 +322,6 @@ class DedicatedServer internal constructor(coreContentLocation: File, modsString
     }
 
     companion object {
-        lateinit var logger: Logger
 
         @JvmStatic
         fun main(args: Array<String>) {

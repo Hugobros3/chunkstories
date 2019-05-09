@@ -29,8 +29,7 @@ import xyz.chunkstories.world.io.IOTasks
 import xyz.chunkstories.world.io.IOTasksMultiplayerClient
 
 class WorldClientRemote @Throws(WorldLoadingException::class)
-constructor(client: IngameClientRemoteHost, info: WorldInfo, translator: AbstractContentTranslator,
-            val connection: ServerConnection) : WorldClientCommon(client, info, translator, null), WorldClientNetworkedRemote {
+constructor(client: IngameClientRemoteHost, info: WorldInfo, translator: AbstractContentTranslator, val connection: ServerConnection) : WorldClientCommon(client, info, translator, null), WorldClientNetworkedRemote {
     private val packetsProcessor: PacketsEncoderDecoder
 
     override val ioHandler: IOTasksMultiplayerClient
@@ -57,7 +56,7 @@ constructor(client: IngameClientRemoteHost, info: WorldInfo, translator: Abstrac
 
     override fun destroy() {
         super.destroy()
-        connection.close()
+        //connection.close()
     }
 
     override fun tick() {
@@ -84,7 +83,7 @@ constructor(client: IngameClientRemoteHost, info: WorldInfo, translator: Abstrac
                     val definition = datagram.packetDefinition as PacketDefinitionImplementation // this.getContentTranslator().getPacketForId(datagram.packetTypeId);
                     val packet = definition.createNew(true, this)
                     if (definition.genre != PacketGenre.WORLD || packet !is PacketWorld) {
-                        logger().error(definition.toString() + " isn't a PacketWorld")
+                        logger().error("$definition isn't a PacketWorld")
                     } else {
 
                         // packetsProcessor.getSender() is equivalent to getRemoteServer() here

@@ -13,6 +13,7 @@ import java.net.SocketException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import xyz.chunkstories.server.DedicatedServer;
+import xyz.chunkstories.server.DedicatedServerOptions;
 import xyz.chunkstories.server.net.ClientConnection;
 import xyz.chunkstories.server.net.ClientsManager;
 
@@ -47,7 +48,7 @@ public class VanillaClientsManager extends ClientsManager {
 
 					ClientConnection clientConnection;
 					try {
-						clientConnection = new SocketedClientConnection(server, VanillaClientsManager.this,
+						clientConnection = new TCPClientConnection(server, VanillaClientsManager.this,
 								childrenSocket);
 
 						// Check for banned ip
@@ -84,7 +85,7 @@ public class VanillaClientsManager extends ClientsManager {
 			return false;
 
 		try {
-			ServerSocket serverSocket = new ServerSocket(server.getServerConfig().getIntValue("server.net.port"));
+			ServerSocket serverSocket = new ServerSocket(server.getServerConfig().getIntValue(DedicatedServerOptions.INSTANCE.getNetworkPort()));
 			server.logger().info(
 					"Started server on port " + serverSocket.getLocalPort() + ", ip=" + serverSocket.getInetAddress());
 

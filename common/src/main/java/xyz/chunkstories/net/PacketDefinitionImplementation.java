@@ -41,7 +41,7 @@ public class PacketDefinitionImplementation extends Definition implements Packet
 		super(name, properties);
 
 		streamed = Boolean.parseBoolean(this.resolveProperty("streamed", "false"));
-		fixedId = Integer.parseInt(this.resolveProperty("fixedId", "-1"));
+		fixedId = (int) Double.parseDouble(this.resolveProperty("fixedId", "-1"));
 
 		String afs = this.resolveProperty("allowedFrom", "all");
 		if (afs.equals("all"))
@@ -89,7 +89,7 @@ public class PacketDefinitionImplementation extends Definition implements Packet
 			this.commonClass = null;
 
 		// Security trips in case someone forgets to set up a handler
-		if (commonClass == null) {
+		if (this.commonClass == null) {
 			if (allowedFrom == AllowedFrom.ALL && (this.clientClass == null || this.serverClass == null)) {
 				throw new IllegalPacketDeclarationException(
 						"Packet can be received from both client and servers, but isn't provided with a way to handle both."
@@ -185,5 +185,20 @@ public class PacketDefinitionImplementation extends Definition implements Packet
 
 	public boolean isStreamed() {
 		return streamed;
+	}
+
+
+	@Override
+	public String toString() {
+		return "PacketDefinitionImplementation{" +
+				"name=" + getName() +
+				", allowedFrom=" + allowedFrom +
+				", genre=" + genre +
+				", streamed=" + streamed +
+				", fixedId=" + fixedId +
+				", clientClass=" + clientClass +
+				", serverClass=" + serverClass +
+				", commonClass=" + commonClass +
+				'}';
 	}
 }

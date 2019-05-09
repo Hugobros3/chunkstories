@@ -84,7 +84,7 @@ public class PacketReceiveFile extends PacketSendFile {
 		}
 
 		@Override
-		public boolean waitForEnd() {
+		public boolean waitsUntilDone() {
 			end.acquireUninterruptibly();
 			return true;
 		}

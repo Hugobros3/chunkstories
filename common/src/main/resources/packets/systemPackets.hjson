@@ -1,0 +1,69 @@
+{
+    packets: {
+        # System types: these have fixed ids that are not up for allocation
+
+        # UTF-8 text used for 'glue' logic: server login & authentification,
+        # chat, respawn requests, user commands etc
+        text: { 
+            allowedFrom: all
+            type: system
+            fixedId: 0
+            commonClass: xyz.chunkstories.api.net.packets.PacketText
+            //clientClass: xyz.chunkstories.client.net.packets.PacketReceiveText
+            //serverClass: xyz.chunkstories.server.net.packets.PacketReceiveText
+        }
+
+        # Sends an entire file over the wire
+        file: {
+            allowedFrom: server
+            type: system
+            fixedId: 1
+            streamed: true
+            commonClass: xyz.chunkstories.net.packets.PacketSendFile
+            clientClass: xyz.chunkstories.client.net.packets.PacketReceiveFile
+        }
+
+        # Contains every ID that will be used to communicate later
+        content_translator_setup: {
+            allowedFrom: server
+            type: system
+            fixedId: 2
+            commonClass: xyz.chunkstories.net.packets.PacketContentTranslator
+            clientClass: xyz.chunkstories.client.net.packets.PacketInitializeContentTranslator
+        }
+
+        # Sends the world.info data for a world to the client connecting to a server
+        world_info: {
+            allowedFrom: server
+            type: system
+            fixedId: 3
+            commonClass: xyz.chunkstories.net.packets.PacketSendWorldInfo
+            clientClass: xyz.chunkstories.client.net.packets.PacketInitializeRemoteWorld
+        }
+
+        # Sends compressed chunk data to a client who requested it
+        chunk_data: {
+            allowedFrom: server
+            type: world_streaming
+            fixedId: 4
+            commonClass: xyz.chunkstories.net.packets.PacketChunkCompressedData
+        }
+
+        # Sends compressed summary data (heightmap stuff) to a client who requested it
+        region_summary: {
+            allowedFrom: server
+            type: world_streaming
+            fixedId: 5
+            commonClass: xyz.chunkstories.net.packets.PacketHeightmap
+        }
+
+        world_user_requests: {
+            allowFrom: all
+            type: world
+            fixedId: 6
+            commonClass: xyz.chunkstories.api.net.packets.PacketWorldUser
+            clientClass: xyz.chunkstories.client.net.packets.ClientPacketWorldUser
+            serverClass: xyz.chunkstories.server.net.packets.ServerPacketWorldUser
+        }
+    }
+}

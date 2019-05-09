@@ -93,7 +93,7 @@ class ClientImplementation internal constructor(val arguments: Map<String, Strin
         inputsManager.reload()
 
         // Spawns worker threads
-        var nbThreads: Int = configuration.getIntValue("client.performance.workerThreads")
+        var nbThreads: Int = configuration.getIntValue(InternalClientOptions.workerThreads)
 
         if (nbThreads <= 0) {
             nbThreads = Runtime.getRuntime().availableProcessors() / 2
@@ -150,7 +150,9 @@ class ClientImplementation internal constructor(val arguments: Map<String, Strin
     }
 
     override fun print(message: String) {
-        chatLogger.info(message)
+        chatLogger.info(message+Math.random())
+        Thread.dumpStack()
+        //ingame?.print(message)
     }
 
     override fun logger(): Logger {

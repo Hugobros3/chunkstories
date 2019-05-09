@@ -56,13 +56,15 @@ class ServerPlayer(val playerConnection: ClientConnection, override val name: St
     override val subscribedToList: Collection<Entity>
         get() = subscribedEntities
 
-    //TODO ???
-    fun whenEnteringWorld(world: WorldServer?) {
-        if (world != null) {
-            this.virtualSoundManager = world.soundManager.ServerPlayerVirtualSoundManager(this)
-            this.virtualParticlesManager = world.particlesManager.ServerPlayerVirtualParticlesManager(this)
-            this.virtualDecalsManager = world.decalsManager.ServerPlayerVirtualDecalsManager(this)
-        }
+    fun whenEnteringWorld(world: WorldServer) {
+        if(::loadingAgent.isInitialized)
+            this.loadingAgent.destroy()
+
+        this.loadingAgent = ServerPlayerLoadingAgent(this, world)
+
+        this.virtualSoundManager = world.soundManager.ServerPlayerVirtualSoundManager(this)
+        this.virtualParticlesManager = world.particlesManager.ServerPlayerVirtualParticlesManager(this)
+        this.virtualDecalsManager = world.decalsManager.ServerPlayerVirtualDecalsManager(this)
     }
 
     override var controlledEntity: Entity? = null
@@ -97,6 +99,7 @@ class ServerPlayer(val playerConnection: ClientConnection, override val name: St
     private var virtualParticlesManager: ServerPlayerVirtualParticlesManager? = null
     private var virtualDecalsManager: ServerPlayerVirtualDecalsManager? = null
 
+    lateinit var loadingAgent: ServerPlayerLoadingAgent private set
     //val loadingAgent = RemotePlayerLoadingAgent(this)
 
    /*val lastPosition: Location?
@@ -109,7 +112,9 @@ class ServerPlayer(val playerConnection: ClientConnection, override val name: St
         this.server = playerConnection.context
 
         //TODO this should use revised UUIDs
+        File("players/").mkdirs()
         this.playerMetadataFile = File("./players/" + name.toLowerCase() + ".metadata")
+
         this.playerMetadata = Properties()//OldStyleConfigFile("./players/" + playerName.toLowerCase() + ".cfg");
 
         this.serverInputsManager = ServerInputsManager(this)
@@ -155,6 +160,10 @@ class ServerPlayer(val playerConnection: ClientConnection, override val name: St
 
         val ENTITY_VISIBILITY_SIZE = 192.0
 
+        //println(controlledEntity.world.allLoadedChunks.count())
+        if(!subscribedEntities.contains(controlledEntity))
+            subscribe(controlledEntity)
+
         val inRangeEntitiesIterator = controlledEntity.world.getEntitiesInBox(controlledTraitLocation,
                 Vector3d(ENTITY_VISIBILITY_SIZE, ENTITY_VISIBILITY_SIZE, ENTITY_VISIBILITY_SIZE))
         while (inRangeEntitiesIterator.hasNext()) {
@@ -165,7 +174,7 @@ class ServerPlayer(val playerConnection: ClientConnection, override val name: St
 
             if (shouldTrack && !contains)
                 this.subscribe(e)
-
+//entities
             if (!shouldTrack && contains)
                 this.unsubscribe(e)
         }
@@ -268,7 +277,7 @@ class ServerPlayer(val playerConnection: ClientConnection, override val name: St
 
     /** Serializes the stuff describing this player  */
     fun save() {
-        val lastTime = playerMetadata.getProperty("timeplayed").toLong()
+        val lastTime = playerMetadata.getProperty("timeplayed")?.toLong() ?: 0L
         val lastLogin = playerMetadata.getProperty("lastlogin").toLong()
 
         if (controlledEntity != null) {
@@ -310,7 +319,7 @@ class ServerPlayer(val playerConnection: ClientConnection, override val name: St
             controlledEntity?.world?.removeEntity(controlledEntity!!)
         }
         unsubscribeAll()
-        //loadingAgent.destroy()
+        loadingAgent.destroy()
     }
 
     companion object {

@@ -1,17 +1,10 @@
 package xyz.chunkstories.client.ingame
 
 import org.slf4j.Logger
-import xyz.chunkstories.api.client.ClientIdentity
-import xyz.chunkstories.api.client.ClientInputsManager
-import xyz.chunkstories.api.client.ClientSoundManager
+import xyz.chunkstories.api.client.Client
 import xyz.chunkstories.api.client.IngameClient
-import xyz.chunkstories.api.content.Content
-import xyz.chunkstories.api.graphics.GraphicsEngine
-import xyz.chunkstories.api.graphics.Window
 import xyz.chunkstories.api.graphics.systems.dispatching.DecalsManager
-import xyz.chunkstories.api.gui.Gui
 import xyz.chunkstories.api.particles.ParticlesManager
-import xyz.chunkstories.api.util.configuration.Configuration
 import xyz.chunkstories.api.workers.Tasks
 import xyz.chunkstories.api.world.WorldMaster
 import xyz.chunkstories.client.ClientImplementation
@@ -21,21 +14,20 @@ import xyz.chunkstories.graphics.vulkan.util.BuiltInRendergraphs
 import xyz.chunkstories.gui.layer.MainMenu
 import xyz.chunkstories.gui.layer.MessageBox
 import xyz.chunkstories.gui.layer.ingame.IngameLayer
-import xyz.chunkstories.gui.layer.ingame.RemoteConnectionGuiLayer
 import xyz.chunkstories.plugin.DefaultPluginManager
 import xyz.chunkstories.server.commands.installServerCommands
 import xyz.chunkstories.world.WorldClientCommon
 
-abstract class IngameClientImplementation protected constructor(val client: ClientImplementation, worldInitializer: (IngameClientImplementation) -> WorldClientCommon) : IngameClient {
-    final override val configuration: Configuration = client.configuration
-    final override val gameWindow: Window = client.gameWindow
-    final override val graphics: GraphicsEngine = client.graphics
-    final override val gui: Gui = client.gui
-    final override val inputsManager: ClientInputsManager = client.inputsManager
-    final override val soundManager: ClientSoundManager = client.soundManager
-    final override val content: Content = client.content
+abstract class IngameClientImplementation protected constructor(val client: ClientImplementation, worldInitializer: (IngameClientImplementation) -> WorldClientCommon) : IngameClient, Client by client {
+    //final override val configuration: Configuration = client.configuration
+    //final override val gameWindow: Window = client.gameWindow
+    //final override val graphics: GraphicsEngine = client.graphics
+    //final override val gui: Gui = client.gui
+    //final override val inputsManager: ClientInputsManager = client.inputsManager
+    //final override val soundManager: ClientSoundManager = client.soundManager
+    //final override val content: Content = client.content
     final override val tasks: Tasks = client.tasks
-    final override val user: ClientIdentity = client.user
+    //final override val user: ClientIdentity = client.user
 
     final override val ingame: IngameClient? = this
 
@@ -78,11 +70,11 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
         worldRenderer = client.gameWindow.graphicsEngine.backend.createWorldRenderer(internalWorld)
 
         ingameGuiLayer = IngameLayer(gui, this)
-        val connectionProgressLayer = gui.topLayer as? RemoteConnectionGuiLayer
+        /*val connectionProgressLayer = gui.topLayer as? RemoteConnectionGuiLayer
         if (connectionProgressLayer != null) //TODO generalize to other loading hider overlays
             TODO() //connectionProgressLayer.parentLayer = ingameGuiLayer
-        else
-            gui.topLayer = ingameGuiLayer
+        else*/
+        gui.topLayer = ingameGuiLayer
 
         // Start only the logic after all that
         internalWorld.startLogic()

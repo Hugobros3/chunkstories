@@ -28,10 +28,9 @@ class MessageBox(gui: Gui, parent: Layer?, private val message: String) : Layer(
         drawer!!.drawBox(0, 0, gui.viewportWidth, gui.viewportHeight, 0f, 0f, 0f, 0f, null, Vector4f(0.0f, 0.0f, 0.0f, 0.5f))
 
         val centeringOffset = drawer.fonts.defaultFont().getWidth(message)
-        drawer.drawStringWithShadow(drawer.fonts.defaultFont(), gui.viewportWidth / 2 - centeringOffset * 2, gui.viewportHeight / 2 + 64, message, -1, Vector4f(1f, 0.2f, 0.2f, 1f))
+        drawer.drawStringWithShadow(drawer.fonts.defaultFont(), gui.viewportWidth / 2 - centeringOffset / 2, gui.viewportHeight / 2 + 64, message, -1, Vector4f(1f, 0.2f, 0.2f, 1f))
 
-        okButton.setPosition(gui.viewportWidth / 2 - okButton.width / 2,
-                gui.viewportHeight / 2 - 32)
+        okButton.setPosition(gui.viewportWidth / 2 - okButton.width / 2, gui.viewportHeight / 2 - 32)
         okButton.render(drawer)
     }
 }

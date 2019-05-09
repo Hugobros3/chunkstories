@@ -6,19 +6,11 @@
 
 package xyz.chunkstories.world
 
-import java.io.File
-import java.io.IOException
-import java.util.Deque
-import java.util.concurrent.ConcurrentLinkedDeque
-
-import xyz.chunkstories.api.GameContext
 import xyz.chunkstories.api.exceptions.PacketProcessingException
-import xyz.chunkstories.api.net.Packet
 import xyz.chunkstories.api.net.PacketDefinition.PacketGenre
 import xyz.chunkstories.api.net.PacketWorld
 import xyz.chunkstories.api.net.packets.PacketTime
 import xyz.chunkstories.api.player.Player
-import xyz.chunkstories.api.util.IterableIterator
 import xyz.chunkstories.api.world.WorldInfo
 import xyz.chunkstories.api.world.WorldMaster
 import xyz.chunkstories.api.world.WorldNetworked
@@ -30,12 +22,13 @@ import xyz.chunkstories.server.propagation.VirtualServerDecalsManager
 import xyz.chunkstories.server.propagation.VirtualServerParticlesManager
 import xyz.chunkstories.sound.VirtualSoundManager
 import xyz.chunkstories.world.io.IOTasks
+import java.io.File
+import java.io.IOException
+import java.util.concurrent.ConcurrentLinkedDeque
 
 class WorldServer @Throws(WorldLoadingException::class)
 constructor(val server: DedicatedServer, worldInfo: WorldInfo, folder: File) : WorldImplementation(server, worldInfo, null, folder), WorldMaster, WorldNetworked {
     override val ioHandler: IOTasks
-
-    //private final AbstractContentTranslator translator;
 
     override val soundManager: VirtualSoundManager
     override val particlesManager: VirtualServerParticlesManager
@@ -53,9 +46,6 @@ constructor(val server: DedicatedServer, worldInfo: WorldInfo, folder: File) : W
         get() = server.connectedPlayers
 
     init {
-
-        //this.translator = (AbstractContentTranslator) super.getContentTranslator();
-
         this.soundManager = VirtualSoundManager(this)
         this.particlesManager = VirtualServerParticlesManager(this, server)
         this.decalsManager = VirtualServerDecalsManager(this, server)
@@ -71,12 +61,14 @@ constructor(val server: DedicatedServer, worldInfo: WorldInfo, folder: File) : W
 
         // Update client tracking
         for (player in players) {
+            if(player !is ServerPlayer)
+                continue
 
-            TODO()
-            /*if (player.hasSpawned()) {
-                // Update whatever he sees
-                (player as ServerPlayer).updateTrackedEntities()
-            }*/
+            if(!player.hasSpawned())
+                continue
+
+            // Update whatever he sees
+            (player as? ServerPlayer)?.updateTrackedEntities()
 
             // Update time & weather
             val packetTime = PacketTime(this)

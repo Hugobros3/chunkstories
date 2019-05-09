@@ -14,6 +14,10 @@ object InternalClientOptions {
     lateinit var viewDistance: String private set
     lateinit var syncMode: String private set
 
+    lateinit var workerThreads: String private set
+
+    lateinit var lastServer: String private set
+
     fun createOptions(client: ClientImplementation): OptionsDeclarationCtx.() -> Unit = {
         section("client" ) {
             section("debug") {
@@ -51,6 +55,19 @@ object InternalClientOptions {
                             it.swapchain.expired = true
                         }
                     }
+                }
+            }
+
+            section("performance") {
+                workerThreads = optionInt("workerThreads") {
+                    default = -1
+                }
+            }
+
+            section("game") {
+                lastServer = option("lastServer") {
+                    default = ""
+                    hidden = true
                 }
             }
         }

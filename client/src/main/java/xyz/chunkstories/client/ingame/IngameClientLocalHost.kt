@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory
 import xyz.chunkstories.plugin.DefaultPluginManager
 import java.io.File
 
-fun ClientImplementation.enterExistingWorld(folder: File) : WorldClientLocal {
+fun ClientImplementation.enterExistingWorld(folder: File) {
     if (!folder.exists() || !folder.isDirectory)
         throw WorldLoadingException("The folder $folder doesn't exist !")
 
@@ -33,10 +33,9 @@ fun ClientImplementation.enterExistingWorld(folder: File) : WorldClientLocal {
         WorldClientLocal(it as IngameClientLocalHost, worldInfo, folder)
     }
     this.ingame = localHostCtx
-    return localHostCtx.world
 }
 
-fun ClientImplementation.createAndEnterWorld(folder: File, worldInfo: WorldInfo) : WorldClientLocal {
+fun ClientImplementation.createAndEnterWorld(folder: File, worldInfo: WorldInfo) {
     if(folder.exists())
         throw Exception("The folder $folder already exists !")
 
@@ -46,7 +45,7 @@ fun ClientImplementation.createAndEnterWorld(folder: File, worldInfo: WorldInfo)
     worldInfoFile.writeText(serializeWorldInfo(worldInfo, true))
     logger().debug("Created directory & wrote worldInfo.dat ; now entering world")
 
-    return enterExistingWorld(folder)
+    enterExistingWorld(folder)
 }
 
 /** Represent an IngameClient that is also a local Server (with minimal server functionality). Used in local SP. */

@@ -18,6 +18,7 @@ import xyz.chunkstories.api.events.world.WorldTickEvent;
 import xyz.chunkstories.api.plugin.PluginManager;
 import xyz.chunkstories.api.plugin.Scheduler;
 import xyz.chunkstories.api.util.concurrency.Fence;
+import xyz.chunkstories.api.world.WorldMaster;
 import xyz.chunkstories.util.concurrency.SimpleFence;
 import xyz.chunkstories.util.concurrency.TrivialFence;
 import xyz.chunkstories.world.WorldImplementation;
@@ -95,8 +96,10 @@ public class WorldLogicThread extends Thread implements GameLogic {
 				// System.gc();
 
 				// Compresses pending chunk summaries
-				for (RegionImplementation region : world.getRegionsStorage().getRegionsList()) {
-					region.compressChangedChunks();
+				if(world instanceof WorldMaster) {
+					for (RegionImplementation region : world.getRegionsStorage().getRegionsList()) {
+						region.compressChangedChunks();
+					}
 				}
 
 				// Delete unused world data
