@@ -19,6 +19,7 @@ import xyz.chunkstories.gui.layer.ingame.DeathScreen
 import xyz.chunkstories.gui.layer.ingame.InventoryView
 import xyz.chunkstories.util.VersionInfo
 import org.joml.Vector4f
+import xyz.chunkstories.gui.printCopyrightNotice
 
 /** Gives quick access to the main features of the game  */
 class MainMenu(gui: Gui, parent: Layer?) : Layer(gui, parent) {
@@ -75,15 +76,7 @@ class MainMenu(gui: Gui, parent: Layer?) : Layer(gui, parent) {
         largeOptions.setPosition(rightButtonX, ySmall)
         largeOptions.render(drawer)
 
-        // Notices
-        val noticeColor = Vector4f(1f)
-        val version = "Chunk Stories Client " + VersionInfo.version
-        drawer.fonts.defaultFont().getWidth(version)
-        drawer.drawStringWithShadow(drawer.fonts.defaultFont(), 4, 0, version, -1, noticeColor)
-
-        val copyrightNotice = "https://github.com/Hugobros3/chunkstories"
-        val copyrightNoticeOffset = drawer.fonts.defaultFont().getWidth(copyrightNotice)
-        drawer.drawStringWithShadow(drawer.fonts.defaultFont(), gui.viewportWidth - copyrightNoticeOffset - 4, 0, copyrightNotice, -1, noticeColor)
+        printCopyrightNotice(drawer)
     }
 
     override fun handleTextInput(c: Char): Boolean {

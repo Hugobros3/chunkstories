@@ -20,6 +20,7 @@ import xyz.chunkstories.net.http.RequestResultAction
 import xyz.chunkstories.net.http.SimplePostRequest
 import org.joml.Vector4f
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.gui.printCopyrightNotice
 
 class LoginPrompt(gui: Gui, parent: Layer?) : Layer(gui, parent) {
     private val usernameForm = InputText(this, 0, 0, 250)
@@ -112,7 +113,7 @@ class LoginPrompt(gui: Gui, parent: Layer?) : Layer(gui, parent) {
             }
         }
 
-        drawer.drawStringWithShadow(drawer.fonts.defaultFont(), 12, 12, "2015-2018 XolioWare Interactive", -1, Vector4f(1.0f, 1.0f, 1.0f, 1.0f))
+        printCopyrightNotice(drawer)
     }
 
     private fun connect() {

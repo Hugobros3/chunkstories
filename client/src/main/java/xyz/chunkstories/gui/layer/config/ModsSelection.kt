@@ -120,7 +120,7 @@ class ModsSelection(window: Gui, parent: Layer) : Layer(window, parent) {
     }
 
     override fun render(drawer: GuiDrawer) {
-        parentLayer!!.rootLayer.render(drawer)
+        //parentLayer!!.rootLayer.render(drawer)
         val scale = 1
 
         val instructions = "Select the mods you want to use"
