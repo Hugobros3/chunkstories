@@ -260,6 +260,9 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
                 ChunkHolder.State.Unloaded -> throw Exception("This doesn't make sense $stateHistory")
                 is ChunkHolder.State.Generating -> { /* legal, don't care */
                 }
+                is ChunkHolder.State.LoadingFromServer -> {
+                    transitionUnloaded()
+                }
                 is ChunkHolder.State.Loading -> {
                     val task = (state as ChunkHolder.State.Loading).fence as TaskLoadChunk
                     if (task.tryCancel())
@@ -422,8 +425,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
             if (state !is ChunkHolder.State.WaitForRegionInitialLoad && state !is ChunkHolder.State.Unloaded)
                 throw Exception("Illegal transition")
 
-            //TODO make special state here
-            transitionState(ChunkHolder.State.Loading(TrivialFence()))
+            transitionState(ChunkHolder.State.LoadingFromServer(TrivialFence()))
         } finally {
             region.stateLock.unlock()
         }

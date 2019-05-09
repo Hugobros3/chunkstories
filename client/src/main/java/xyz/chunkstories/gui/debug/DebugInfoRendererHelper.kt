@@ -59,7 +59,7 @@ class DebugInfoRendererHelper(ingameLayer: IngameLayer) {
             regionsCount++
             chunksCount += region.loadedChunks.size
         }
-        debugLine("World info : $chunksCount chunks loaded, within $regionsCount regions")
+        debugLine("World info : $chunksCount chunks, $regionsCount regions, ${world.allLoadedEntities.count()} entities")
 
         //debugLine("#FFFF00Extra counters for debug info ${CubicChunk.chunksCounter.get()}")
 

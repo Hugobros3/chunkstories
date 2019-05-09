@@ -23,8 +23,6 @@ import org.slf4j.LoggerFactory
 import xyz.chunkstories.client.ClientImplementation
 import xyz.chunkstories.client.InternalClientOptions
 import xyz.chunkstories.client.ingame.connectToRemoteWorld
-import xyz.chunkstories.client.net.ClientConnectionSequence
-import xyz.chunkstories.gui.layer.ingame.RemoteConnectionGuiLayer
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.File
@@ -123,18 +121,16 @@ class ServerSelection internal constructor(gui: Gui, parent: Layer, private val 
         if (serverAddress.isEmpty())
             return
 
-        val lastServerOption: Configuration.OptionString = gui.client.configuration[InternalClientOptions.lastServer]!!
-        lastServerOption.trySetting("$serverAddress:$port")
-        gui.client.configuration.save()
-
         if (serverAddress.contains(":")) {
             port = Integer.parseInt(serverAddress.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[1])
             serverAddress = serverAddress.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[0]
         }
 
-        //TODO create connection sequence (ongoing refactor of that)
-        //gui.setTopLayer(new RemoteConnectionGuiLayer(gui, this, ip, port));
-        //gui.topLayer = RemoteConnectionGuiLayer(gui, this, ClientConnectionSequence(gui.client as ClientImplementation, serverAddress, port))
+        val lastServerOption: Configuration.OptionString = gui.client.configuration[InternalClientOptions.lastServer]!!
+        lastServerOption.trySetting("$serverAddress:$port")
+        gui.client.configuration.save()
+
+        // Launch the connection sequence
         (gui.client as ClientImplementation).connectToRemoteWorld(serverAddress, port)
     }
 
@@ -189,7 +185,7 @@ class ServerSelection internal constructor(gui: Gui, parent: Layer, private val 
 
             init {
                 this.sd = ServerDataLoader(this, ip, port)
-                this.iconTextureLocation = "." + "/cache/server-icon-" + ip + "-" + port + ".png"
+                //this.iconTextureLocation = "./cache/server-icon-$ip-$port.png"
             }
 
             override fun handleClick(mouseButton: MouseButton): Boolean {
@@ -273,7 +269,7 @@ class ServerSelection internal constructor(gui: Gui, parent: Layer, private val 
 
                 if (fileLength > 0) {
                     val file = File(
-                            "." + "/cache/server-icon-" + ip + "-" + port + ".png")
+                            "./cache/server-icon-$ip-$port.png")
                     val fos = FileOutputStream(file)
                     var remaining = fileLength
                     val buffer = ByteArray(4096)

@@ -151,8 +151,6 @@ class ClientImplementation internal constructor(val arguments: Map<String, Strin
 
     override fun print(message: String) {
         chatLogger.info(message+Math.random())
-        Thread.dumpStack()
-        //ingame?.print(message)
     }
 
     override fun logger(): Logger {

@@ -258,8 +258,7 @@ class DedicatedServer internal constructor(coreContentLocation: File, modsString
 
         txt += ansi().bg(BLACK).fg(WHITE)
 
-        print(
-                ansi().saveCursorPosition().cursor(0, 0).eraseLine().fg(RED).toString() + txt + ansi().restoreCursorPosition())
+        print(ansi().saveCursorPosition().cursor(0, 0).eraseLine().fg(RED).toString() + txt + ansi().restoreCursorPosition())
         System.out.flush()
     }
 

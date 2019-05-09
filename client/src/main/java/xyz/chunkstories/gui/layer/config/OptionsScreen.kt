@@ -205,7 +205,10 @@ class OptionsScreen(gui: Gui, parent: Layer) : Layer(gui, parent) {
             val name = option.name
             var category = name.substring("client.".length)
 
-            category = category.substring(0, category.indexOf("."))
+            val i = category.indexOf(".")
+            if(i < 0)
+                continue
+            category = category.substring(0, i)
             category = category.substring(0, 1).toUpperCase() + category.substring(1).toLowerCase()
 
             val optionButton: ConfigButton
