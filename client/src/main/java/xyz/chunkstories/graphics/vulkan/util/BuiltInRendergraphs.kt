@@ -35,7 +35,7 @@ object BuiltInRendergraphs {
 
                     draws {
                         //fullscreenQuad()
-                        system(VulkanSpinningCubeDrawer::class)
+                        //system(VulkanSpinningCubeDrawer::class)
                     }
 
                     outputs {

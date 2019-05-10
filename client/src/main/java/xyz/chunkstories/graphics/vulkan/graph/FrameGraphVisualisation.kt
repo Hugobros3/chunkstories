@@ -20,14 +20,14 @@ fun exportRenderGraphPng(frameGraph: VulkanFrameGraph) {
     }
 
 
-    val vizNodes = frameGraph.allNodes.associateWith { node2viz(it) }
+    val vizNodes = frameGraph.nodes.associateWith { node2viz(it) }
 
     val g2 = graph("example1").directed()
             .with(
-                    *(frameGraph.allNodes.map {a->
+                    *(frameGraph.nodes.map { a->
                         val vizA = vizNodes[a]!!
 
-                        vizA.link(*(a.depends.map { b ->
+                        vizA.link(*(a.dependencies.map { b ->
                             vizNodes[b]!!
                         }).toTypedArray())
 

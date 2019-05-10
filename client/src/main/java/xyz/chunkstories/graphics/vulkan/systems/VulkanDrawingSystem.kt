@@ -21,8 +21,4 @@ abstract class VulkanDrawingSystem(val pass: VulkanPass) : DrawingSystem, Cleana
     fun executePerFrameSetup(ctx: SystemExecutionContext) {
         setupLambdas.forEach { it.invoke(ctx) }
     }
-
-    open fun registerAdditionalRenderTasks(ctx: SystemExecutionContext) {
-
-    }
 }

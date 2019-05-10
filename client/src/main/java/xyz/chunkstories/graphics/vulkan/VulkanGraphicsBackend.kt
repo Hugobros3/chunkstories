@@ -288,17 +288,15 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
     }
 
     fun <T : DrawingSystem> createDrawingSystem(pass: VulkanPass, registration: RegisteredGraphicSystem<T>): VulkanDrawingSystem {
-        val vulkanPass = pass as? VulkanPass ?: throw Exception("Pass didn't originate from a Vulkan backend !!!")
-
         val dslCode = registration.dslCode as DrawingSystem.() -> Unit
 
         return when (registration.clazz) {
-            GuiDrawer::class.java -> VulkanGuiDrawer(vulkanPass, window.client.gui)
-            FullscreenQuadDrawer::class.java -> VulkanFullscreenQuadDrawer(vulkanPass, dslCode)
+            GuiDrawer::class.java -> VulkanGuiDrawer(pass, window.client.gui)
+            FullscreenQuadDrawer::class.java -> VulkanFullscreenQuadDrawer(pass, dslCode)
 
-            Vulkan3DVoxelRaytracer::class.java -> Vulkan3DVoxelRaytracer(vulkanPass, dslCode)
-            VulkanSpinningCubeDrawer::class.java -> VulkanSpinningCubeDrawer(vulkanPass, dslCode)
-            VulkanDebugDrawer::class.java -> VulkanDebugDrawer(vulkanPass, dslCode, window.client.ingame!!)
+            Vulkan3DVoxelRaytracer::class.java -> Vulkan3DVoxelRaytracer(pass, dslCode)
+            VulkanSpinningCubeDrawer::class.java -> VulkanSpinningCubeDrawer(pass, dslCode)
+            VulkanDebugDrawer::class.java -> VulkanDebugDrawer(pass, dslCode, window.client.ingame!!)
 
             else -> throw Exception("Unimplemented system on this backend: ${registration.clazz}")
         }
@@ -367,6 +365,6 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
     }
 
     companion object {
-        val logger = LoggerFactory.getLogger("client.gfx_vk")!!
+        val logger = LoggerFactory.getLogger("client.gfx_vk")
     }
 }

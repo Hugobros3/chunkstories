@@ -1,30 +1,28 @@
-package xyz.chunkstories.graphics.vulkan.graph
+package xyz.chunkstories.graphics.opengl.graph
 
 import org.joml.Vector2i
-import org.lwjgl.vulkan.VkCommandBuffer
 import xyz.chunkstories.api.graphics.rendergraph.*
 import xyz.chunkstories.api.graphics.shader.ShaderResources
 import xyz.chunkstories.api.graphics.structs.Camera
-import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
-import xyz.chunkstories.graphics.vulkan.systems.world.ViewportSize
+import xyz.chunkstories.graphics.opengl.OpenglFrame
 
-class VulkanFrameGraph(val frame: VulkanFrame, val renderGraph: VulkanRenderGraph, startTask: VulkanRenderTask, mainCamera: Camera, parameters: Map<String, Any>) {
+class OpenglFrameGraph(val frame: OpenglFrame, val renderGraph: OpenglRenderGraph, startTask: OpenglRenderTask, mainCamera: Camera, parameters: Map<String, Any>) {
     val rootNode: FrameGraphNode
     val nodes = mutableSetOf<FrameGraphNode>()
 
     init {
-        rootNode = FrameGraphNode.VulkanRenderTaskInstance( this, null, "main", startTask, mainCamera, parameters)
+        rootNode = FrameGraphNode.OpenglRenderTaskInstance( this, null, "main", startTask, mainCamera, parameters)
         nodes.add(rootNode)
         rootNode.addDependencies()
     }
 
-    sealed class FrameGraphNode(val frameGraph: VulkanFrameGraph) {
+    sealed class FrameGraphNode(val frameGraph: OpenglFrameGraph) {
         val dependencies = mutableListOf<FrameGraphNode>()
 
-        val renderGraph: VulkanRenderGraph
+        val renderGraph: OpenglRenderGraph
             get() = frameGraph.renderGraph
 
-        class VulkanPassInstance(graph: VulkanFrameGraph, override val taskInstance: VulkanRenderTaskInstance, val pass: VulkanPass) : FrameGraphNode(graph), PassInstance {
+        class OpenglPassInstance(graph: OpenglFrameGraph, override val taskInstance: OpenglRenderTaskInstance, val pass: OpenglPass) : FrameGraphNode(graph), PassInstance {
             override val declaration: PassDeclaration = pass.declaration
             override val shaderResources = ShaderResources(null)
             override var renderTargetSize: Vector2i = Vector2i(0) // late-defined
@@ -32,22 +30,11 @@ class VulkanFrameGraph(val frame: VulkanFrame, val renderGraph: VulkanRenderGrap
             lateinit var preparedDrawingSystemsContexts: List<SystemExecutionContext>
             lateinit var preparedDispatchingSystemsContexts: List<SystemExecutionContext>
 
-            lateinit var resolvedDepthBuffer: VulkanRenderBuffer
-            lateinit var resolvedOutputs: Map<PassOutput, VulkanRenderBuffer>
-
-            lateinit var commandBuffer: VkCommandBuffer
-
-            fun postResolve(resolvedDepthAndColorBuffers: MutableList<VulkanRenderBuffer>) {
-                val viewportSize = ViewportSize()
-                viewportSize.size.set(resolvedDepthAndColorBuffers[0].textureSize)
-                shaderResources.supplyUniformBlock("viewportSize", viewportSize)
-            }
-
             override fun dispatchRenderTask(taskInstanceName: String, camera: Camera, renderTaskName: String, parameters: Map<String, Any>, callback: (RenderTaskInstance) -> Unit) {
                 val taskToDispatch = renderGraph.tasks[renderTaskName] ?: throw Exception("Can't find task $renderTaskName")
 
                 //TODO lookup taskInstanceName
-                val childNode = FrameGraphNode.VulkanRenderTaskInstance(frameGraph, this, taskInstanceName, taskToDispatch, camera, parameters)
+                val childNode = FrameGraphNode.OpenglRenderTaskInstance(frameGraph, this, taskInstanceName, taskToDispatch, camera, parameters)
                 childNode.callbacks.add(callback)
 
                 this.dependencies.add(childNode)
@@ -61,7 +48,7 @@ class VulkanFrameGraph(val frame: VulkanFrame, val renderGraph: VulkanRenderGrap
             }
         }
 
-        class VulkanRenderTaskInstance(graph: VulkanFrameGraph, override val requester: VulkanPassInstance?, override val name: String, val renderTask: VulkanRenderTask, override val camera: Camera, parameters: Map<String, Any>) : FrameGraphNode(graph), RenderTaskInstance {
+        class OpenglRenderTaskInstance(graph: OpenglFrameGraph, override val requester: OpenglPassInstance?, override val name: String, val renderTask : OpenglRenderTask, override val camera: Camera, parameters: Map<String, Any>) : FrameGraphNode(graph), RenderTaskInstance {
             override val declaration: RenderTaskDeclaration = renderTask.declaration
             override val frame = frameGraph.frame
 
@@ -69,9 +56,6 @@ class VulkanFrameGraph(val frame: VulkanFrame, val renderGraph: VulkanRenderGrap
             override val parameters: MutableMap<String, Any> = parameters.toMutableMap()
 
             val callbacks = mutableListOf<(RenderTaskInstance) -> Unit>()
-
-            //TODO unused ?
-            lateinit var rootPassInstance: VulkanPassInstance
 
             init {
                 this.parameters["camera"] = camera // Implicitly part of the parameters //TODO should we
@@ -81,14 +65,14 @@ class VulkanFrameGraph(val frame: VulkanFrame, val renderGraph: VulkanRenderGrap
 
     fun FrameGraphNode.addDependencies() {
         when (this) {
-            is FrameGraphNode.VulkanPassInstance -> {
+            is FrameGraphNode.OpenglPassInstance -> {
                 for (dependency in this.declaration.passDependencies) {
                     val resolvedPass = this.taskInstance.renderTask.passes[dependency] ?: throw Exception("Can't find pass $dependency")
 
                     // Does a node for that pass in that context exist already
-                    val existingDependencyNode = nodes.find { it is FrameGraphNode.VulkanPassInstance && it.pass == resolvedPass && it.taskInstance == taskInstance }
+                    val existingDependencyNode = nodes.find { it is FrameGraphNode.OpenglPassInstance && it.pass == resolvedPass && it.taskInstance == taskInstance }
 
-                    val dependencyNode = existingDependencyNode ?: FrameGraphNode.VulkanPassInstance(frameGraph, taskInstance, resolvedPass)
+                    val dependencyNode = existingDependencyNode ?: FrameGraphNode.OpenglPassInstance(frameGraph, taskInstance, resolvedPass)
                     dependencies.add(dependencyNode)
 
                     if (existingDependencyNode == null) {
@@ -118,10 +102,9 @@ class VulkanFrameGraph(val frame: VulkanFrame, val renderGraph: VulkanRenderGrap
                     ctx
                 }
             }
-            is FrameGraphNode.VulkanRenderTaskInstance -> {
+            is FrameGraphNode.OpenglRenderTaskInstance -> {
                 val rootPass = this.renderTask.rootPass
-                val passNode = FrameGraphNode.VulkanPassInstance(frameGraph, this, rootPass)
-                this.rootPassInstance = passNode
+                val passNode = FrameGraphNode.OpenglPassInstance(frameGraph, this, rootPass)
                 dependencies.add(passNode)
                 nodes.add(passNode)
                 passNode.addDependencies()

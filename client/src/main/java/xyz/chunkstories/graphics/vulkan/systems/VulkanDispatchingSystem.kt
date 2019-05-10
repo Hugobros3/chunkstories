@@ -9,7 +9,7 @@ import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 
-abstract class VulkanDispatchingSystem<R : Representation>(val backend: VulkanGraphicsBackend) : /*DispatchingSystem<T>, */Cleanable {
+abstract class VulkanDispatchingSystem<R : Representation>(val backend: VulkanGraphicsBackend) : Cleanable {
 
     abstract val representationName: String
 
@@ -32,16 +32,11 @@ abstract class VulkanDispatchingSystem<R : Representation>(val backend: VulkanGr
         fun executePerFrameSetup(ctx: SystemExecutionContext) {
             setupLambdas.forEach { it.invoke(ctx) }
         }
-
-        open fun registerAdditionalRenderTasks(ctx: SystemExecutionContext) {
-
-        }
     }
 
     abstract fun createDrawerForPass(pass: VulkanPass, drawerInitCode: Drawer<*>.() -> Unit): Drawer<*>
 
     val drawersInstances = mutableListOf<Drawer<*>>()
 
-    //abstract fun <T> sort(representation: R, drawers: Array<Drawer<T>>, outputs: List<MutableList<T>>)
     abstract fun sort(representation: R, drawers: Array<Drawer<*>>, outputs: List<MutableList<Any>>)
 }

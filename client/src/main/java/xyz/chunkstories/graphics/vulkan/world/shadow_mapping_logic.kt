@@ -6,14 +6,15 @@ import xyz.chunkstories.api.graphics.rendergraph.*
 import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.api.util.kotlin.toVec3f
 import xyz.chunkstories.api.world.World
+import xyz.chunkstories.api.world.WorldClient
 import xyz.chunkstories.graphics.vulkan.VulkanBackendOptions
-import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
 import xyz.chunkstories.graphics.common.getConditions
 import xyz.chunkstories.graphics.vulkan.util.ShadowMappingInfo
 
 fun doShadowMapping(ctx: SystemExecutionContext, world: World) {
     //TODO hacky
-    val client = (ctx.passInstance as VulkanFrameGraph.FrameGraphNode.VulkanPassInstance).vulkanPass.backend.graphicsEngine.client
+    //val client = (ctx.passInstance as VulkanFrameGraph.FrameGraphNode.VulkanPassInstance).pass.backend.graphicsEngine.client
+    val client = (world as WorldClient).client
 
     val mainCamera = ctx.passInstance.taskInstance.camera
 
@@ -57,7 +58,7 @@ fun doShadowMapping(ctx: SystemExecutionContext, world: World) {
         shadowInfo.cameras[i] = sunCamera
 
         ctx.passInstance.dispatchRenderTask("shadowmapCascade$i", sunCamera, "sunShadow", mapOf("shadowBuffer" to RenderTarget.RenderBufferReference("shadowBuffer$i"))) {
-            val node = it as VulkanFrameGraph.FrameGraphNode.VulkanRenderTaskInstance
+            //val node = it as VulkanFrameGraph.FrameGraphNode.VulkanRenderTaskInstance
             //println("RESOLVED DB: ${node.rootPassInstance.resolvedDepthBuffer}")
             //passContext.markRenderBufferAsInput(node.rootPassInstance.resolvedDepthBuffer)
 

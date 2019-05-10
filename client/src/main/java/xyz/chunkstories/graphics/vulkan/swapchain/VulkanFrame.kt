@@ -17,7 +17,7 @@ data class VulkanFrame constructor(override val frameNumber: Int,
                                    val renderFinishedSemaphore: VkSemaphore,
                                    val renderFinishedFence: VkFence,
                                    /** Time when started, in nanoseconds */
-                 val started: Long) : Frame {
+                                   val started: Long) : Frame {
 
     /** When this frame has completed execution on the GPU, these tasks will be called */
     val recyclingTasks = mutableListOf<() -> Unit>()

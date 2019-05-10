@@ -33,7 +33,7 @@ private fun ShaderResources.bindTo(target: DescriptorSetsMegapool.ShaderBindingC
                 is GLSLUniformSampledImage2D -> {
                     val texture2d = when(val source = imageInput.source) {
                         is ImageSource.AssetReference -> {
-                            (passInstance as VulkanFrameGraph.FrameGraphNode.VulkanPassInstance).vulkanPass.backend.textures.getOrLoadTexture2D(source.assetName)
+                            (passInstance as VulkanFrameGraph.FrameGraphNode.VulkanPassInstance).pass.backend.textures.getOrLoadTexture2D(source.assetName)
                         }
                         is ImageSource.RenderBufferReference -> {
                             val vrti = passInstance.taskInstance as VulkanFrameGraph.FrameGraphNode.VulkanRenderTaskInstance
@@ -45,7 +45,7 @@ private fun ShaderResources.bindTo(target: DescriptorSetsMegapool.ShaderBindingC
 
                             //TODO we only handle direct deps for now
                             val rootPass = referencedTaskInstance.renderTask.rootPass
-                            val resolvedPassInstance = referencedTaskInstance.depends.find { it is PassInstance && it.declaration == rootPass.declaration } as VulkanFrameGraph.FrameGraphNode.VulkanPassInstance
+                            val resolvedPassInstance = referencedTaskInstance.dependencies.find { it is PassInstance && it.declaration == rootPass.declaration } as VulkanFrameGraph.FrameGraphNode.VulkanPassInstance
 
                             val resolvedRenderBuffer = resolvedPassInstance.resolvedOutputs[source.output]!!
                             resolvedRenderBuffer.texture
@@ -55,7 +55,7 @@ private fun ShaderResources.bindTo(target: DescriptorSetsMegapool.ShaderBindingC
 
                             //TODO we only handle direct deps for now
                             val rootPass = referencedTaskInstance.renderTask.rootPass
-                            val resolvedPassInstance = referencedTaskInstance.depends.find { it is PassInstance && it.declaration == rootPass.declaration } as VulkanFrameGraph.FrameGraphNode.VulkanPassInstance
+                            val resolvedPassInstance = referencedTaskInstance.dependencies.find { it is PassInstance && it.declaration == rootPass.declaration } as VulkanFrameGraph.FrameGraphNode.VulkanPassInstance
 
                             val resolvedRenderBuffer = resolvedPassInstance.resolvedDepthBuffer!!
                             resolvedRenderBuffer.texture

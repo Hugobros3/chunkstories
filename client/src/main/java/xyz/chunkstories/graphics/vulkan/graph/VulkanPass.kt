@@ -1,6 +1,5 @@
 package xyz.chunkstories.graphics.vulkan.graph
 
-import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
@@ -21,57 +20,50 @@ import xyz.chunkstories.graphics.vulkan.util.ensureIs
 import kotlin.collections.ArrayList
 
 open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: VulkanRenderTask, val declaration: PassDeclaration) : Cleanable {
+    val drawingSystems: List<VulkanDrawingSystem>
+    val dispatchingDrawers: List<VulkanDispatchingSystem.Drawer<*>>
+
     val canonicalRenderPass: RenderPass
     val renderPassesMap = mutableMapOf<List<UsageType>, RenderPass>()
 
     val frameBuffers = mutableMapOf<List<VulkanRenderBuffer>, VkFramebuffer>()
 
-    var drawingSystems: List<VulkanDrawingSystem>
-        private set
-
-    var dispatchingDrawers: List<VulkanDispatchingSystem.Drawer<*>>
-        private set
-
     private val commandPool = CommandPool(backend, backend.logicalDevice.graphicsQueue.family, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT or VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
 
     init {
-        MemoryStack.stackPush()
+        stackPush()
         canonicalRenderPass = RenderPass(backend, this, null)
-        val drawingSystems = mutableListOf<VulkanDrawingSystem>()
-        val dispatchingDrawers = mutableListOf<VulkanDispatchingSystem.Drawer<*>>()
+        drawingSystems = mutableListOf()
+        dispatchingDrawers = mutableListOf()
 
-        val rs = declaration.draws?.registeredSystems
-        if (rs != null) {
-            for (declaredDrawingSystem in rs) {
+        declaration.draws?.registeredSystems?.let {
+            for (registeredSystem in it) {
 
-                if (DrawingSystem::class.java.isAssignableFrom(declaredDrawingSystem.clazz)) {
-                    val drawingSystem = backend.createDrawingSystem(this, declaredDrawingSystem as RegisteredGraphicSystem<DrawingSystem>) as VulkanDrawingSystem
+                if (DrawingSystem::class.java.isAssignableFrom(registeredSystem.clazz)) {
+                    val drawingSystem = backend.createDrawingSystem(this, registeredSystem as RegisteredGraphicSystem<DrawingSystem>) as VulkanDrawingSystem
 
                     //val d = declaredDrawingSystem.dslCode as GraphicSystem.() -> Unit
                     //drawingSystem.apply(d)
 
                     drawingSystems.add(drawingSystem)
-                } else if (DispatchingSystem::class.java.isAssignableFrom(declaredDrawingSystem.clazz)) {
-                    val dispatchingSystem = backend.getOrCreateDispatchingSystem(renderTask.renderGraph.dispatchingSystems, declaredDrawingSystem as RegisteredGraphicSystem<DispatchingSystem>)
-                    val drawer = dispatchingSystem.createDrawerForPass(this, declaredDrawingSystem.dslCode as VulkanDispatchingSystem.Drawer<*>.() -> Unit)
+                } else if (DispatchingSystem::class.java.isAssignableFrom(registeredSystem.clazz)) {
+                    val dispatchingSystem = backend.getOrCreateDispatchingSystem(renderTask.renderGraph.dispatchingSystems, registeredSystem as RegisteredGraphicSystem<DispatchingSystem>)
+                    val drawer = dispatchingSystem.createDrawerForPass(this, registeredSystem.dslCode as VulkanDispatchingSystem.Drawer<*>.() -> Unit)
 
                     dispatchingSystem.drawersInstances.add(drawer)
                     dispatchingDrawers.add(drawer)
-                } else
-                    throw Exception("What is this")
+                } else {
+                    throw Exception("What is this :$registeredSystem ?")
+                }
 
             }
         }
 
-        this.drawingSystems = drawingSystems
-        this.dispatchingDrawers = dispatchingDrawers
-
-        MemoryStack.stackPop()
+        stackPop()
     }
 
     fun render(frame: VulkanFrame,
                passInstance: VulkanFrameGraph.FrameGraphNode.VulkanPassInstance,
-               passInstanceIndex: Int,
                allBufferStates: MutableMap<VulkanRenderBuffer, UsageType>,
                representationsGathered: MutableMap<VulkanDispatchingSystem.Drawer<*>, ArrayList<*>>
     ) {
@@ -143,7 +135,7 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
 
                         //TODO we only handle direct deps for now
                         val rootPass = referencedTaskInstance.renderTask.rootPass
-                        val passInstance = referencedTaskInstance.depends.find { it is PassInstance && it.declaration == rootPass.declaration } as VulkanFrameGraph.FrameGraphNode.VulkanPassInstance
+                        val passInstance = referencedTaskInstance.dependencies.find { it is PassInstance && it.declaration == rootPass.declaration } as VulkanFrameGraph.FrameGraphNode.VulkanPassInstance
 
                         val outputInstance = passInstance.resolvedOutputs[source.output]!!
                         resolvedInputBuffers.add(outputInstance)
@@ -153,7 +145,7 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
 
                         //TODO we only handle direct deps for now
                         val rootPass = referencedTaskInstance.renderTask.rootPass
-                        val passInstance = referencedTaskInstance.depends.find { it is PassInstance && it.declaration == rootPass.declaration } as VulkanFrameGraph.FrameGraphNode.VulkanPassInstance
+                        val passInstance = referencedTaskInstance.dependencies.find { it is PassInstance && it.declaration == rootPass.declaration } as VulkanFrameGraph.FrameGraphNode.VulkanPassInstance
 
                         val outputInstance = passInstance.resolvedDepthBuffer!!
                         resolvedInputBuffers.add(outputInstance)

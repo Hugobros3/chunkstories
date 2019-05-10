@@ -1,14 +1,13 @@
 package xyz.chunkstories.graphics.common.representations
 
+import xyz.chunkstories.api.graphics.rendergraph.Frame
 import xyz.chunkstories.api.graphics.rendergraph.PassInstance
 import xyz.chunkstories.api.graphics.rendergraph.RenderTaskInstance
 import xyz.chunkstories.api.graphics.representation.Representation
 import xyz.chunkstories.api.graphics.systems.dispatching.RepresentationsGobbler
 import xyz.chunkstories.graphics.GraphicsEngineImplementation
-import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
-import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 
-class RepresentationsGathered(val frame: VulkanFrame,
+class RepresentationsGathered(val frame: Frame,
                               val passInstances: Array<PassInstance>,
                               override val renderTaskInstances: Array<RenderTaskInstance>) : RepresentationsGobbler {
     val buckets = mutableMapOf<String, Bucket>()
@@ -32,11 +31,8 @@ class RepresentationsGathered(val frame: VulkanFrame,
     }
 }
 
-fun GraphicsEngineImplementation.gatherRepresentations(frameGraph: VulkanFrameGraph, sequencedFrameGraph: List<VulkanFrameGraph.FrameGraphNode>): RepresentationsGathered {
-    val passInstances: Array<PassInstance> = sequencedFrameGraph.filterIsInstance<PassInstance>().toTypedArray()
-    val renderingContexts: Array<RenderTaskInstance> = sequencedFrameGraph.filterIsInstance<RenderTaskInstance>().toTypedArray()
-
-    val gathered = RepresentationsGathered(frameGraph.frame, passInstances, renderingContexts)
+fun GraphicsEngineImplementation.gatherRepresentations(frame: Frame, passInstances: Array<PassInstance>, renderingContexts: Array<RenderTaskInstance> ): RepresentationsGathered {
+    val gathered = RepresentationsGathered(frame, passInstances, renderingContexts)
 
     for (provider in backend.graphicsEngine.representationsProviders.providers) {
         provider.gatherRepresentations(gathered)
