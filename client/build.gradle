@@ -110,7 +110,7 @@ run {
 //Create a properties.gradle with login credentials to use this.
 //Watch out: wagon-ssh is an old mess and WILL NOT TAKE EdDSA host keys
 //You MUST ask the server for one of those and replace whatever you had for it in known_hosts
-if(hasProperty('uploadUsername')) {
+/*if(hasProperty('uploadUsername')) {
 	println 'Login credentials found'
 	uploadArchives {
 		repositories {
@@ -138,3 +138,4 @@ configurations.archives.with { artifacts.remove artifacts.find { it.archiveTask.
 configurations.archives.with { artifacts.remove artifacts.find { it.archiveTask.is distTar } } 
 configurations.archives.with { artifacts.remove artifacts.find { it.archiveTask.is shadowDistZip } } 
 configurations.archives.with { artifacts.remove artifacts.find { it.archiveTask.is shadowDistTar } } 
+*/

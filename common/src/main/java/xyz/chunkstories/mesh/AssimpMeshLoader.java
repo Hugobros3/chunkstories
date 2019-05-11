@@ -189,11 +189,11 @@ public class AssimpMeshLoader {
                                 //vertices.add(vertex.x, vertex.z, -vertex.y);
                                 //normals.add(normal.x, normal.z, -normal.y);
 
-                                vertices.add(vertex.y, vertex.z, vertex.x);
-                                normals.add(normal.y, normal.z, normal.x);
+                                vertices.add(vertex.getY(), vertex.getZ(), vertex.getX());
+                                normals.add(normal.getY(), normal.getZ(), normal.getX());
                             } else {
-                                vertices.add(vertex.x, vertex.y, vertex.z);
-                                normals.add(normal.x, normal.y, normal.z);
+                                vertices.add(vertex.getX(), vertex.getY(), vertex.getZ());
+                                normals.add(normal.getX(), normal.getY(), normal.getZ());
                             }
 
                             texcoords.add(texcoord[0], 1.0f - texcoord[1]);

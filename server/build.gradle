@@ -64,7 +64,7 @@ run {
 	}
 }
 
-configurations.archives.with { artifacts.remove artifacts.find { it.archiveTask.is distZip } } 
+/*configurations.archives.with { artifacts.remove artifacts.find { it.archiveTask.is distZip } } 
 configurations.archives.with { artifacts.remove artifacts.find { it.archiveTask.is distTar } } 
 configurations.archives.with { artifacts.remove artifacts.find { it.archiveTask.is shadowDistZip } } 
-configurations.archives.with { artifacts.remove artifacts.find { it.archiveTask.is shadowDistTar } } 
+configurations.archives.with { artifacts.remove artifacts.find { it.archiveTask.is shadowDistTar } } */
