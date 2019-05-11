@@ -23,6 +23,8 @@ import xyz.chunkstories.graphics.opengl.shaders.OpenglShaderFactory
 import xyz.chunkstories.graphics.opengl.systems.OpenglDispatchingSystem
 import xyz.chunkstories.graphics.opengl.systems.OpenglDrawingSystem
 import xyz.chunkstories.graphics.opengl.systems.gui.OpenglGuiDrawer
+import xyz.chunkstories.graphics.opengl.textures.OpenglTexture
+import xyz.chunkstories.graphics.opengl.textures.OpenglTextures
 import xyz.chunkstories.world.WorldClientCommon
 import java.awt.image.BufferedImage
 import javax.swing.JOptionPane
@@ -34,6 +36,7 @@ class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
     var renderGraph: OpenglRenderGraph
 
     val shaderFactory: OpenglShaderFactory
+    val textures: OpenglTextures
 
     init {
         glfwMakeContextCurrent(window.glfwWindowHandle)
@@ -50,6 +53,8 @@ class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
         glBindVertexArray(vaoDontCare)
 
         shaderFactory = OpenglShaderFactory(this, window.client)
+        textures = OpenglTextures(this)
+
         renderGraph = OpenglRenderGraph(this, queuedRenderGraph!!)
     }
 

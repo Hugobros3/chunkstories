@@ -3,7 +3,6 @@ package xyz.chunkstories.graphics.common.shaders.compiler.spirvcross
 import graphics.scenery.spirvcrossj.*
 import xyz.chunkstories.api.graphics.shader.ShaderStage
 import xyz.chunkstories.api.graphics.structs.UniformUpdateFrequency
-import xyz.chunkstories.api.graphics.structs.UpdateFrequency
 import xyz.chunkstories.graphics.common.shaders.*
 import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompiler
 import xyz.chunkstories.graphics.common.shaders.compiler.preprocessing.updateFrequency
@@ -113,16 +112,18 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
                 }
             }
 
+            val openglTextureUnit = resources.count { it is GLSLUniformSampledImage }
+
             //TODO handle other dimensionalities
             if(arrayTexture) {
                 resources.add(when (dimensionality) {
-                    1 -> GLSLUniformSampledImage2DArray(sampledImageName, setSlot, binding)
+                    1 -> GLSLUniformSampledImage2DArray(sampledImageName, setSlot, binding, openglTextureUnit)
                     else -> throw Exception("Not handled yet")
                 })
             } else {
                 resources.add(when (dimensionality) {
-                    1 -> GLSLUniformSampledImage2D(sampledImageName, setSlot, binding, arraySize)
-                    2 -> GLSLUniformSampledImage3D(sampledImageName, setSlot, binding, arraySize)
+                    1 -> GLSLUniformSampledImage2D(sampledImageName, setSlot, binding, openglTextureUnit, arraySize)
+                    2 -> GLSLUniformSampledImage3D(sampledImageName, setSlot, binding, openglTextureUnit, arraySize)
                     else -> throw Exception("Not handled yet")
                 })
             }

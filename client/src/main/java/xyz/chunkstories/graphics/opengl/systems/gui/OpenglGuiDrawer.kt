@@ -20,6 +20,7 @@ import xyz.chunkstories.graphics.opengl.textures.OpenglTexture2D
 
 import org.lwjgl.opengl.GL30.*
 import xyz.chunkstories.graphics.opengl.buffers.OpenglVertexBuffer
+import xyz.chunkstories.graphics.opengl.shaders.bindTexture
 
 class OpenglGuiDrawer(pass: OpenglPass) : OpenglDrawingSystem(pass) {
 
@@ -101,8 +102,8 @@ class OpenglGuiDrawer(pass: OpenglPass) : OpenglDrawingSystem(pass) {
         }
 
         override fun drawBox(startX: Int, startY: Int, width: Int, height: Int, textureStartX: Float, textureStartY: Float, textureEndX: Float, textureEndY: Float, texture: String?, color: Vector4fc?) {
-            //val vulkanTexture = if (texture != null) backend.textures.getOrLoadTexture2D(texture) else backend.textures.getOrLoadTexture2D("textures/white.png")
-            val glTexture: OpenglTexture2D? = null
+            val glTexture = if (texture != null) backend.textures.getOrLoadTexture2D(texture) else backend.textures.getOrLoadTexture2D("textures/white.png")
+            //val glTexture: OpenglTexture2D? = null
 
             if (currentTexture != glTexture) {
                 atTextureSwap(glTexture)
@@ -268,7 +269,7 @@ class OpenglGuiDrawer(pass: OpenglPass) : OpenglDrawingSystem(pass) {
         val primitivesCount = 3 * 2 * sameTextureCount
 
         if (sameTextureCount > 0) {
-            drawCalls += Triple(primitivesCount, previousOffset, glTexture)
+            drawCalls += Triple(primitivesCount, previousOffset, currentTexture as OpenglTexture2D?)
             //vkCmdDraw(this.commandBuffer, primitivesCount, 1, previousOffset, 0)
         }
 
@@ -293,6 +294,7 @@ class OpenglGuiDrawer(pass: OpenglPass) : OpenglDrawingSystem(pass) {
 
         pipeline.bindVertexBuffer(0, vertexBuffer)
         for(drawcall in drawCalls) {
+            drawcall.third?.let { pipeline.bindTexture("currentTexture", it) }
             glDrawArrays(GL_TRIANGLES, drawcall.second, drawcall.first)
         }
 

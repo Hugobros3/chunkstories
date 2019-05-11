@@ -47,25 +47,33 @@ data class GLSLShaderStorage(
 ) : GLSLResource
 
 /** Represents all kind of combined sampler/image resources */
-interface GLSLUniformSampledImage : GLSLResource
+interface GLSLUniformSampledImage : GLSLResource {
+
+    /** For convenience every sampled image is mapped at compile-time to some texture unit.
+     * Only used when rendering with OpenGL of course. */
+    val openglTextureUnit: Int
+}
 
 /** Represents a (potentially an array of) sampler2D uniform resource declared in one of the stages of the GLSL program */
 data class GLSLUniformSampledImage2D(
         override val name: String,
         override val descriptorSetSlot: Int,
         override val binding: Int,
+        override val openglTextureUnit: Int,
         val count: Int) : GLSLUniformSampledImage
 
 data class GLSLUniformSampledImage3D(
         override val name: String,
         override val descriptorSetSlot: Int,
         override val binding: Int,
+        override val openglTextureUnit: Int,
         val count: Int) : GLSLUniformSampledImage
 
 /** The onion sort of 2D textures */
 data class GLSLUniformSampledImage2DArray(
         override val name: String,
         override val descriptorSetSlot: Int,
+        override val openglTextureUnit: Int,
         override val binding: Int) : GLSLUniformSampledImage
 
 /** Standalone image */
