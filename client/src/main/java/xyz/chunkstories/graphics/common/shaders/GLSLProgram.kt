@@ -24,7 +24,7 @@ data class MaterialImage(val name: String)
 
 enum class GLSLDialect {
     VULKAN,
-    OPENGL4,
+    OPENGL,
 }
 
 /** Describes anything that can be bound to a shader, has a name, a descriptor set slot and a binding within that slot. */

@@ -26,14 +26,11 @@ import org.lwjgl.vulkan.VkCommandBuffer
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.graphics.Texture2D
 import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
+import xyz.chunkstories.graphics.common.gui.InternalGuiDrawer
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import xyz.chunkstories.graphics.vulkan.resources.DescriptorSetsMegapool
 
 internal const val guiBufferSize = 2 * 1024 * 1024
-
-abstract class InternalGuiDrawer(gui: Gui) : DummyGuiDrawer(gui) {
-    abstract fun drawQuad(startX: Float, startY: Float, width: Float, height: Float, textureStartX: Float, textureStartY: Float, textureEndX: Float, textureEndY: Float, texture: VulkanTexture2D, color: Vector4fc?)
-}
 
 class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSystem(pass) {
 
@@ -169,19 +166,21 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
             sameTextureCount++
         }
 
-        override fun drawQuad(startX: Float, startY: Float, width: Float, height: Float, textureStartX: Float, textureStartY: Float, textureEndX: Float, textureEndY: Float, texture: VulkanTexture2D, color: Vector4fc?) {
+        override fun drawQuad(startX: Float, startY: Float, width: Float, height: Float, textureStartX: Float, textureStartY: Float, textureEndX: Float, textureEndY: Float, texture: Texture2D, color: Vector4fc?) {
             val translatedId = 0
 
-            if (previousTexture != texture) {
+            val vulkanTexture = texture as VulkanTexture2D
+
+            if (previousTexture != vulkanTexture) {
                 afterTextureSwitch()
 
                 val bindingCtx = backend.descriptorMegapool.getBindingContext(pipeline)
-                bindingCtx.bindTextureAndSampler("currentTexture", texture, sampler)
+                bindingCtx.bindTextureAndSampler("currentTexture", vulkanTexture, sampler)
                 bindingCtx.preDraw(commandBuffer)
                 recyclingBind.add(bindingCtx)
             }
 
-            previousTexture = texture
+            previousTexture = vulkanTexture
 
             vertex((startX), startY)
             texCoord(textureStartX, textureStartY)

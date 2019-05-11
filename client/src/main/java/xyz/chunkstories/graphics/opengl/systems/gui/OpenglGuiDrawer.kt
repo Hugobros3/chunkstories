@@ -1,9 +1,6 @@
 package xyz.chunkstories.graphics.opengl.systems.gui
 
 import org.joml.Vector4fc
-import org.lwjgl.opengl.GL11
-import org.lwjgl.opengl.GL11.*
-import org.lwjgl.opengl.GL15
 import org.lwjgl.system.MemoryUtil
 import org.lwjgl.system.MemoryUtil.memFree
 import xyz.chunkstories.api.graphics.Texture2D
@@ -19,6 +16,7 @@ import xyz.chunkstories.graphics.opengl.systems.OpenglDrawingSystem
 import xyz.chunkstories.graphics.opengl.textures.OpenglTexture2D
 
 import org.lwjgl.opengl.GL30.*
+import xyz.chunkstories.graphics.common.gui.InternalGuiDrawer
 import xyz.chunkstories.graphics.opengl.buffers.OpenglVertexBuffer
 import xyz.chunkstories.graphics.opengl.shaders.bindTexture
 
@@ -62,6 +60,8 @@ class OpenglGuiDrawer(pass: OpenglPass) : OpenglDrawingSystem(pass) {
     val program = backend.shaderFactory.createProgram("gui")
     val pipeline = FakePSO(backend, program, pass, vertexInputConfiguration, FaceCullingMode.CULL_BACK)
 
+    val fontRenderer = OpenglFontRenderer(backend)
+
     val vertexBuffer = OpenglVertexBuffer(backend)
 
     val guiBufferSize = 2 * 1024 * 1024
@@ -72,7 +72,7 @@ class OpenglGuiDrawer(pass: OpenglPass) : OpenglDrawingSystem(pass) {
     var sameTextureCount = 0
     var previousOffset = 0
 
-    val drawer: DummyGuiDrawer = object : DummyGuiDrawer(gui) {
+    val drawer = object : InternalGuiDrawer(gui) {
 
         val sx: Float
             get() = 1.0F / gui.viewportWidth.toFloat()
@@ -106,7 +106,7 @@ class OpenglGuiDrawer(pass: OpenglPass) : OpenglDrawingSystem(pass) {
             //val glTexture: OpenglTexture2D? = null
 
             if (currentTexture != glTexture) {
-                atTextureSwap(glTexture)
+                atTextureSwap()
             }
 
             currentTexture = glTexture
@@ -138,16 +138,11 @@ class OpenglGuiDrawer(pass: OpenglPass) : OpenglDrawingSystem(pass) {
             sameTextureCount++
         }
 
-        /*override fun drawQuad(startX: Float, startY: Float, width: Float, height: Float, textureStartX: Float, textureStartY: Float, textureEndX: Float, textureEndY: Float, texture: VulkanTexture2D, color: Vector4fc?) {
+        override fun drawQuad(startX: Float, startY: Float, width: Float, height: Float, textureStartX: Float, textureStartY: Float, textureEndX: Float, textureEndY: Float, texture: Texture2D, color: Vector4fc?) {
             val translatedId = 0
 
             if (currentTexture != texture) {
-                afterTextureSwitch()
-
-                val bindingCtx = backend.descriptorMegapool.getBindingContext(pipeline)
-                bindingCtx.bindTextureAndSampler("currentTexture", texture, sampler)
-                bindingCtx.preDraw(commandBuffer)
-                recyclingBind.add(bindingCtx)
+                atTextureSwap()
             }
 
             currentTexture = texture
@@ -177,7 +172,7 @@ class OpenglGuiDrawer(pass: OpenglPass) : OpenglDrawingSystem(pass) {
             color(color)
 
             sameTextureCount++
-        }*/
+        }
 
         override fun drawBoxWithCorners(posx: Int, posy: Int, width: Int, height: Int, cornerSizeDivider: Int, texture: String) {
             //val texture = "textures/gui/alignmentCheck.png"
@@ -261,16 +256,15 @@ class OpenglGuiDrawer(pass: OpenglPass) : OpenglDrawingSystem(pass) {
         }
 
         override fun drawString(font: Font, xPosition: Int, yPosition: Int, text: String, cutoffLength: Int, color: Vector4fc) {
-            //fontRenderer.drawString(this, font, xPosition.toFloat(), yPosition.toFloat(), text, cutoffLength.toFloat(), color)
+            fontRenderer.drawString(this, font, xPosition.toFloat(), yPosition.toFloat(), text, cutoffLength.toFloat(), color)
         }
     }
 
-    fun atTextureSwap(glTexture: OpenglTexture2D?) {
+    fun atTextureSwap() {
         val primitivesCount = 3 * 2 * sameTextureCount
 
         if (sameTextureCount > 0) {
             drawCalls += Triple(primitivesCount, previousOffset, currentTexture as OpenglTexture2D?)
-            //vkCmdDraw(this.commandBuffer, primitivesCount, 1, previousOffset, 0)
         }
 
         previousOffset += primitivesCount
@@ -287,7 +281,7 @@ class OpenglGuiDrawer(pass: OpenglPass) : OpenglDrawingSystem(pass) {
         currentTexture = null
 
         gui.topLayer?.render(drawer)
-        atTextureSwap(null)
+        atTextureSwap()
 
         stagingByteBuffer.flip()
         vertexBuffer.upload(stagingByteBuffer)
@@ -308,5 +302,7 @@ class OpenglGuiDrawer(pass: OpenglPass) : OpenglDrawingSystem(pass) {
 
         pipeline.cleanup()
         program.cleanup()
+
+        fontRenderer.cleanup()
     }
 }

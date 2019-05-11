@@ -15,7 +15,7 @@ fun FakePSO.bindTexture(textureName: String, texture: OpenglTexture2D) {
 
     glBindTextureUnit(resource.openglTextureUnit, texture.glTexId)
 
-    val uniformLocation = GL20.glGetUniformLocation(program.programId, resource.name)
-    println("$uniformLocation vs ${resource.binding}")
+    val uniformLocation = glGetUniformLocation(program.programId, resource.name)
+    //println("$uniformLocation vs ${resource.binding}")
     glUniform1i(uniformLocation, resource.openglTextureUnit)
 }

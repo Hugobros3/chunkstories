@@ -8,7 +8,7 @@ import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompilationParame
 import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompiler
 import xyz.chunkstories.graphics.opengl.OpenglGraphicsBackend
 
-class OpenglShaderFactory(val backend: OpenglGraphicsBackend, val client: Client) : ShaderCompiler(GLSLDialect.OPENGL4) {
+class OpenglShaderFactory(val backend: OpenglGraphicsBackend, val client: Client) : ShaderCompiler(GLSLDialect.OPENGL) {
     @Suppress("UNNECESSARY_SAFE_CALL")
     override val content: Content?
         get() = client?.content

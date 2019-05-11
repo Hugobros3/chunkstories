@@ -1,40 +1,21 @@
-package xyz.chunkstories.graphics.vulkan.systems.gui
+package xyz.chunkstories.graphics.opengl.systems.gui
 
-//
-// This file is a part of the Chunk Stories Implementation codebase
-// Check out README.md for more information
-// Website: http://chunkstories.xyz
-//
-
+import org.joml.Vector4f
+import org.joml.Vector4fc
 import xyz.chunkstories.api.graphics.TextureFormat
 import xyz.chunkstories.api.gui.Font
 import xyz.chunkstories.api.math.HexTools
 import xyz.chunkstories.api.util.ColorsTools
-import xyz.chunkstories.graphics.common.util.toByteBuffer
-import xyz.chunkstories.graphics.vulkan.CommandPool
-import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
-import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
 import xyz.chunkstories.graphics.common.Cleanable
-import xyz.chunkstories.graphics.vulkan.textures.VulkanTexture2D
+import xyz.chunkstories.graphics.common.gui.InternalGuiDrawer
+import xyz.chunkstories.graphics.common.util.toByteBuffer
+import xyz.chunkstories.graphics.opengl.OpenglGraphicsBackend
+import xyz.chunkstories.graphics.opengl.textures.OpenglTexture2D
 import xyz.chunkstories.gui.Glyph
 import xyz.chunkstories.gui.TrueTypeFont
-import org.joml.Vector4f
-import org.joml.Vector4fc
-import org.lwjgl.vulkan.VK10.*
-import xyz.chunkstories.graphics.common.gui.InternalGuiDrawer
-import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 
-/** Very messy and shitty way of spitting text  */
-class VulkanFontRenderer(internal val backend: VulkanGraphicsBackend) : Cleanable {
-
-    //internal var temp: VulkanTexture2D? = null
-    val texturePages = mutableMapOf<Font, MutableMap<Int, VulkanTexture2D>>()
-
-    private val commandPool: CommandPool
-
-    init {
-        commandPool = CommandPool(backend, backend.logicalDevice.graphicsQueue.family, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT or VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
-    }
+class OpenglFontRenderer (val backend: OpenglGraphicsBackend) : Cleanable {
+    val texturePages = mutableMapOf<Font, MutableMap<Int, OpenglTexture2D>>()
 
     fun drawString(drawer: InternalGuiDrawer, font: Font, x: Float, y: Float, whatchars: String, clipX: Float, color: Vector4fc) {
         val trueTypeFont = font as TrueTypeFont
@@ -71,19 +52,19 @@ class VulkanFontRenderer(internal val backend: VulkanGraphicsBackend) : Cleanabl
 				pageTexture = trueTypeFont.createPage(charCurrent / 256);*/
 
             val pageId = charCurrent / 256
-            fun createPage() : VulkanTexture2D {
+            fun createPage() : OpenglTexture2D {
                 val image = trueTypeFont.createPage(charCurrent / 256)
 
                 val byteBuffer = image!!.toByteBuffer()
 
-                val stagingBuffer = VulkanBuffer(backend, byteBuffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, MemoryUsagePattern.STAGING)
-                val pageTexture = VulkanTexture2D(backend, TextureFormat.RGBA_8, TrueTypeFont.textureWidth, TrueTypeFont.textureHeight, VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT)
+                val pageTexture = OpenglTexture2D(
+                        backend,
+                        TextureFormat.RGBA_8,
+                        TrueTypeFont.textureWidth,
+                        TrueTypeFont.textureHeight
+                )
 
-                pageTexture.transitionLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-                pageTexture.copyBufferToImage(stagingBuffer)
-                pageTexture.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-
-                stagingBuffer.cleanup()
+                pageTexture.upload(byteBuffer)
 
                 texturePages.getOrPut(font) { mutableMapOf()}[pageId] = pageTexture
 
@@ -150,8 +131,5 @@ class VulkanFontRenderer(internal val backend: VulkanGraphicsBackend) : Cleanabl
         texturePages.forEach {
             it.value.values.forEach(Cleanable::cleanup)
         }
-
-        commandPool.cleanup()
     }
-
 }

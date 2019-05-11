@@ -106,7 +106,7 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
                     }
                     binding = (resources.filter { it.descriptorSetSlot == setSlot }.maxBy { it.binding }?.binding ?: -1) + 1
                 }
-                GLSLDialect.OPENGL4 -> {
+                GLSLDialect.OPENGL -> {
                     setSlot = 0
                     binding = resources.size
                 }
@@ -169,7 +169,7 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
                             else
                                 (resources.filter { it.descriptorSetSlot == setSlot }.maxBy { it.binding }?.binding ?: -1) + 1
                 }
-                GLSLDialect.OPENGL4 -> {
+                GLSLDialect.OPENGL -> {
                     setSlot = 0
                     binding = resources.size
                 }
@@ -195,7 +195,7 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
                     setSlot = 0
                     binding = 0
                 }
-                GLSLDialect.OPENGL4 -> {
+                GLSLDialect.OPENGL -> {
                     setSlot = 0
                     binding = resources.size
                 }
@@ -229,7 +229,7 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
                     setSlot = jvmStruct.kClass.updateFrequency().ordinal + 2
                     binding = (resources.filter { it.descriptorSetSlot == setSlot }.maxBy { it.binding }?.binding ?: -1) + 1
                 }
-                GLSLDialect.OPENGL4 -> {
+                GLSLDialect.OPENGL -> {
                     setSlot = 0
                     binding = resources.size
                 }
@@ -263,7 +263,7 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
                     setSlot = UniformUpdateFrequency.ONCE_PER_BATCH.ordinal + 2
                     binding = (resources.filter { it.descriptorSetSlot == setSlot }.maxBy { it.binding }?.binding ?: -1) + 1
                 }
-                GLSLDialect.OPENGL4 -> {
+                GLSLDialect.OPENGL -> {
                     setSlot = 0
                     binding = resources.size
                 }
@@ -282,29 +282,38 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
 fun ShaderCompiler.addDecorations(intermediarCompilationResults: IntermediaryCompilationResults, glslResources: List<GLSLResource>, glslInstancedInputs: List<GLSLInstancedInput>) {
     for ((stage, compiler) in intermediarCompilationResults.compilers) {
         val stageResources = compiler.shaderResources
-
+        
+        fun decorate(spirvResource: Resource, glslResource: GLSLResource) {
+            when(dialect) {
+                GLSLDialect.VULKAN -> {
+                    compiler.setDecoration(spirvResource.id, Decoration.DecorationDescriptorSet, glslResource.descriptorSetSlot.toLong())
+                    compiler.setDecoration(spirvResource.id, Decoration.DecorationBinding, glslResource.binding.toLong())
+                }
+                GLSLDialect.OPENGL -> {
+                    compiler.setDecoration(spirvResource.id, Decoration.DecorationLocation, glslResource.binding.toLong())
+                }
+            }
+        }
+        
         for (i in 0 until stageResources.sampledImages.size().toInt()) {
             val spirvResource = stageResources.sampledImages[i]
             val glslResource = glslResources.find { it.name == spirvResource.name } as GLSLResource
 
-            compiler.setDecoration(spirvResource.id, Decoration.DecorationDescriptorSet, glslResource.descriptorSetSlot.toLong())
-            compiler.setDecoration(spirvResource.id, Decoration.DecorationBinding, glslResource.binding.toLong())
+            decorate(spirvResource, glslResource)
         }
 
         for (i in 0 until stageResources.separateImages.size().toInt()) {
             val spirvResource = stageResources.separateImages[i]
             val glslResource = glslResources.find { it.name == spirvResource.name } as GLSLUniformImage2D
 
-            compiler.setDecoration(spirvResource.id, Decoration.DecorationDescriptorSet, glslResource.descriptorSetSlot.toLong())
-            compiler.setDecoration(spirvResource.id, Decoration.DecorationBinding, glslResource.binding.toLong())
+            decorate(spirvResource, glslResource)
         }
 
         for(i in 0 until stageResources.separateSamplers.size().toInt()) {
             val spirvResource = stageResources.separateSamplers[i]
             val glslResource = glslResources.find { it.name == spirvResource.name } as GLSLUniformSampler
 
-            compiler.setDecoration(spirvResource.id, Decoration.DecorationDescriptorSet, glslResource.descriptorSetSlot.toLong())
-            compiler.setDecoration(spirvResource.id, Decoration.DecorationBinding, glslResource.binding.toLong())
+            decorate(spirvResource, glslResource)
         }
 
         for (i in 0 until stageResources.uniformBuffers.size().toInt()) {
@@ -313,8 +322,7 @@ fun ShaderCompiler.addDecorations(intermediarCompilationResults: IntermediaryCom
 
             val glslResource = glslResources.find { it.name == instanceName } as GLSLUniformBlock
 
-            compiler.setDecoration(spirvResource.id, Decoration.DecorationDescriptorSet, glslResource.descriptorSetSlot.toLong())
-            compiler.setDecoration(spirvResource.id, Decoration.DecorationBinding, glslResource.binding.toLong())
+            decorate(spirvResource, glslResource)
         }
 
         //TODO SSBOS
@@ -325,8 +333,7 @@ fun ShaderCompiler.addDecorations(intermediarCompilationResults: IntermediaryCom
             val glslInstancedInput = glslInstancedInputs.find { it.name == instanceName }!!
             val glslResource = glslInstancedInput.shaderStorage
 
-            compiler.setDecoration(spirvResource.id, Decoration.DecorationDescriptorSet, glslResource.descriptorSetSlot.toLong())
-            compiler.setDecoration(spirvResource.id, Decoration.DecorationBinding, glslResource.binding.toLong())
+            decorate(spirvResource, glslResource)
         }
     }
 }
@@ -336,8 +343,8 @@ fun ShaderCompiler.toIntermediateGLSL(intermediarCompilationResults: Intermediar
         val options = CompilerGLSL.Options()
 
         when (dialect) {
-            GLSLDialect.OPENGL4 -> {
-                options.version = 400L
+            GLSLDialect.OPENGL -> {
+                options.version = 330L
                 options.vulkanSemantics = false
                 options.enable420packExtension = false
             }

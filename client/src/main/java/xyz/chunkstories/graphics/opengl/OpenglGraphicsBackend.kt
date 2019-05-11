@@ -42,7 +42,7 @@ class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
         glfwMakeContextCurrent(window.glfwWindowHandle)
         capabilities = GL.createCapabilities()
 
-        JOptionPane.showMessageDialog(null, "The OpenGL backend is currently only a placeholder, it does not work yet. Please use the Vulkan backend instead.", "Information", JOptionPane.INFORMATION_MESSAGE)
+        //JOptionPane.showMessageDialog(null, "The OpenGL backend is currently only a placeholder, it does not work yet. Please use the Vulkan backend instead.", "Information", JOptionPane.INFORMATION_MESSAGE)
 
         checkForExtensions()
 
@@ -93,6 +93,7 @@ class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
 
             renderGraph.cleanup()
             renderGraph = OpenglRenderGraph(this, queuedRenderGraph!!)
+            this.queuedRenderGraph = null
         }
 
         val frame = OpenglFrame(frameNumber, System.currentTimeMillis())
