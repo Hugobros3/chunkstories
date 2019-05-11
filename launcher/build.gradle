@@ -1,10 +1,10 @@
-
-
 // Apply the java plugin to add support for Java
 apply plugin: 'java'
 
 // Apply the application plugin to add support for building an application
 apply plugin: 'application'
+
+apply plugin: 'com.github.johnrengelman.shadow'
 
 version = '1.2.1'
 description = 'Game launcher & updater'
@@ -14,8 +14,8 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.1'
-		classpath 'edu.sc.seis.gradle:launch4j:2.4.1'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.2'
+        classpath 'edu.sc.seis.gradle:launch4j:2.4.1'
     }
 }
 
@@ -27,52 +27,56 @@ mainClassName = 'xyz.chunkstories.updater.ChunkStoriesLauncher'
 
 dependencies {
     //compile project(':core')
-    compile project(':common')
+    //compile project(':common')
     testCompile 'junit:junit:4.12'
 }
 
 processResources {
-	dependsOn rootProject.versionTxt
+    dependsOn rootProject.versionTxt
 }
 
 test {
-	workingDir = rootProject.projectDir
-	testLogging {
+    workingDir = rootProject.projectDir
+    testLogging {
         events "passed", "skipped", "failed", "standardOut", "standardError"
     }
-	
-	dependsOn ':versionTxt'
+
+    dependsOn ':versionTxt'
 }
 
 jar {
-	archivesBaseName = 'launcher'
-	baseName = 'launcher'
-	
-	archiveName = "${jar.baseName}.${jar.extension}"
+    archivesBaseName = 'launcher'
+    baseName = 'launcher'
 
-	manifest {
-		attributes  'Implementation-Title': 'Chunk Stories Launcher',
-					'Implementation-Version': version,
-					'Main-Class': project.mainClassName
-	}
-	
-   classifier = null
-   
-   from(sourceSets.main.output.classesDir) {
-		include '**'
-	}
-	//include '**/persistence/**/*'
-	
-	from(project(":common").sourceSets.main.output.classesDir) {
-		//exclude '*'
-		include '**/io/xol/chunkstories/content/GameDirectory.class', 'io/xol/chunkstories/bugsreporter/*.class*'
-	}
-	
-	includeEmptyDirs = false
+    archiveName = "${jar.baseName}.${jar.extension}"
+
+    manifest {
+        attributes 'Implementation-Title': 'Chunk Stories Launcher',
+                'Implementation-Version': version,
+                'Main-Class': project.mainClassName
+    }
+
+    classifier = null
+
+    //from(sourceSets.main.output.classesDirs) {
+    //    include '**'
+    //}
+    //from(project(':common').sourceSets.main.output.classesDirs) {
+    //    include '**/xyz/chunkstories/content/GameDirectory.class', 'xyz/chunkstories/bugsreporter/*.class*'
+    //}
+
+    includeEmptyDirs = false
+    classifier = 'bare'
+}
+
+shadowJar {
+    baseName = 'launcher'
+    classifier = null
+    version = null
 }
 
 launch4j {
-	mainClassName = project.mainClassName;//'com.example.myapp.Start'
-	
-	icon = "${projectDir}/favicon.ico"
+    mainClassName = project.mainClassName;//'com.example.myapp.Start'
+
+    icon = "${projectDir}/favicon.ico"
 }

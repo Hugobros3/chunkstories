@@ -24,8 +24,6 @@ import java.util.Map;
 
 import javax.swing.JOptionPane;
 
-import xyz.chunkstories.content.GameDirectory;
-
 public class UpdaterThread extends Thread implements ActionListener {
 
 	public boolean done = false;

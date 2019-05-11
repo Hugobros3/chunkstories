@@ -6,25 +6,13 @@
 
 package xyz.chunkstories.updater;
 
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.concurrent.Semaphore;
-
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-
-import xyz.chunkstories.bugsreporter.ReportThread;
-import xyz.chunkstories.content.GameDirectory;
 
 public class GameLauncher implements ActionListener {
 
@@ -52,8 +40,7 @@ public class GameLauncher implements ActionListener {
 					System.out.println(type + line);
 
 					// We ain't got time for 32-bit support, if you have issues with this please consult your nearest open dump and pickup an optiplex
-					if (line.contains("This Java instance does not support a 64-bit JVM")
-							&& (System.currentTimeMillis() - t) < 5000) {
+					if (line.contains("This Java instance does not support a 64-bit JVM") && (System.currentTimeMillis() - t) < 5000) {
 						wrongJVM = true;
 					}
 
@@ -82,13 +69,11 @@ public class GameLauncher implements ActionListener {
 
 	boolean wrongJVM = false; // Set to 'true' if we are running a 32-bit JVM
 
-	@Override
-	public void actionPerformed(ActionEvent ee) {
+	@Override public void actionPerformed(ActionEvent ee) {
 		try {
 			// TODO make it configurable
 			// TODO mod support
-			Process process = Runtime.getRuntime().exec("java -d64 -Xmx2048M -jar chunkstories.jar", null,
-					new File(GameDirectory.INSTANCE.getGameFolder()));
+			Process process = Runtime.getRuntime().exec("java -d64 -Xmx2048M -jar chunkstories.jar", null, new File(GameDirectory.INSTANCE.getGameFolder()));
 
 			Calendar cal = Calendar.getInstance();
 			SimpleDateFormat sdf = new SimpleDateFormat("YYYY.MM.dd HH.mm.ss");
@@ -135,12 +120,11 @@ public class GameLauncher implements ActionListener {
 			System.out.println("ExitValue: " + exitVal);
 
 			if (wrongJVM) {
-				JOptionPane.showMessageDialog(null,
-						"Non 64 bit JVM detected. Please install 64-bit Java to run Chunk Stories.");
+				JOptionPane.showMessageDialog(null, "Non 64 bit JVM detected. Please install 64-bit Java to run Chunk Stories.");
 			} else if (exitVal != 0) {
 				int dialogButton = JOptionPane.YES_NO_OPTION;
-				int dialogResult = JOptionPane.showConfirmDialog(null, "The game crashed (exitval=" + exitVal
-						+ "), do you want to upload the log ? It surely will help us figure out where it went wrong.",
+				int dialogResult = JOptionPane.showConfirmDialog(null,
+						"The game crashed (exitval=" + exitVal + "), do you want to upload the log ? It surely will help us figure out where it went wrong.",
 						"The game crashed x_x", dialogButton);
 				if (dialogResult == JOptionPane.YES_OPTION) {
 

@@ -24,10 +24,6 @@ import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 
-import xyz.chunkstories.content.GameDirectory;
-
-//import xyz.chunkstories.content.GameDirectory;
-
 public class ChunkStoriesLauncher {
 
 	public static JLabel label = new JLabel();

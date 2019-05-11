@@ -12,7 +12,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.1'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.2'
     }
 }
 
@@ -21,53 +21,50 @@ apply plugin: 'com.github.johnrengelman.shadow'
 version = rootProject.version
 description = 'Multiplatform PC Client using LWJGL3'
 
-repositories {
+// Dependencies from subprojects
+dependencies {
+	compile project(':common')
+	compile project(':server')
 }
 
 dependencies {
 	ext.spirvCrossVersion = "0.5.0-1.1.85"
 	compile "graphics.scenery:spirvcrossj:$spirvCrossVersion"
 
-	compile "org.lwjgl:lwjgl-glfw:${lwjglVersion}"
-	//compile "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}"
-	compile "org.lwjgl:lwjgl-openal:${lwjglVersion}"
-	compile "org.lwjgl:lwjgl-opengl:${lwjglVersion}"
-	compile "org.lwjgl:lwjgl-vulkan:${lwjglVersion}"
-	compile "org.lwjgl:lwjgl-stb:${lwjglVersion}"
-	compile "org.lwjgl:lwjgl-tinyfd:${lwjglVersion}"
-	compile "org.lwjgl:lwjgl-vma:${lwjglVersion}"
+	compile "org.lwjgl:lwjgl-glfw:${rootProject.ext.lwjglVersion}"
+	//compile "org.lwjgl:lwjgl-jemalloc:${rootProject.ext.lwjglVersion}"
+	compile "org.lwjgl:lwjgl-openal:${rootProject.ext.lwjglVersion}"
+	compile "org.lwjgl:lwjgl-opengl:${rootProject.ext.lwjglVersion}"
+	compile "org.lwjgl:lwjgl-vulkan:${rootProject.ext.lwjglVersion}"
+	compile "org.lwjgl:lwjgl-stb:${rootProject.ext.lwjglVersion}"
+	compile "org.lwjgl:lwjgl-tinyfd:${rootProject.ext.lwjglVersion}"
+	compile "org.lwjgl:lwjgl-vma:${rootProject.ext.lwjglVersion}"
 
 	//When running on our debug computer, it's safe to assume the OS that will run the game is the same than the one who'll compile it.
-	runtime "org.lwjgl:lwjgl-glfw:${lwjglVersion}:${lwjglNatives}"
-	//runtime "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}:${lwjglNatives}"
-	runtime "org.lwjgl:lwjgl-openal:${lwjglVersion}:${lwjglNatives}"
-	runtime "org.lwjgl:lwjgl-opengl:${lwjglVersion}:${lwjglNatives}"
-	runtime "org.lwjgl:lwjgl-stb:${lwjglVersion}:${lwjglNatives}"
-	runtime "org.lwjgl:lwjgl-tinyfd:${lwjglVersion}:${lwjglNatives}"
-	runtime "org.lwjgl:lwjgl-vma:${lwjglVersion}:${lwjglNatives}"
-	runtime "graphics.scenery:spirvcrossj:$spirvCrossVersion:$lwjglNatives"
+	runtime "org.lwjgl:lwjgl-glfw:${rootProject.ext.lwjglVersion}:${rootProject.ext.lwjglNatives}"
+	//runtime "org.lwjgl:lwjgl-jemalloc:${rootProject.ext.lwjglVersion}:${rootProject.ext.lwjglNatives}"
+	runtime "org.lwjgl:lwjgl-openal:${rootProject.ext.lwjglVersion}:${rootProject.ext.lwjglNatives}"
+	runtime "org.lwjgl:lwjgl-opengl:${rootProject.ext.lwjglVersion}:${rootProject.ext.lwjglNatives}"
+	runtime "org.lwjgl:lwjgl-stb:${rootProject.ext.lwjglVersion}:${rootProject.ext.lwjglNatives}"
+	runtime "org.lwjgl:lwjgl-tinyfd:${rootProject.ext.lwjglVersion}:${rootProject.ext.lwjglNatives}"
+	runtime "org.lwjgl:lwjgl-vma:${rootProject.ext.lwjglVersion}:${rootProject.ext.lwjglNatives}"
+	runtime "graphics.scenery:spirvcrossj:$spirvCrossVersion:$rootProject.ext.lwjglNatives"
 
 	compile "guru.nidi:graphviz-java:0.8.0"
 	compile group: 'guru.nidi', name: 'graphviz-java', version: '0.8.0'
 
 	//When compiling a redistribuable jar, we need ALL natives in it!
-	project.ext.natives.each {
-		//multiplatform ("org.lwjgl:lwjgl:${lwjglVersion}:" + it)
-		multiplatform "org.lwjgl:lwjgl-glfw:${lwjglVersion}:" + it
-		//multiplatform "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}:" + it
-		multiplatform "org.lwjgl:lwjgl-openal:${lwjglVersion}:" + it
-		multiplatform "org.lwjgl:lwjgl-opengl:${lwjglVersion}:" + it
-		multiplatform "org.lwjgl:lwjgl-stb:${lwjglVersion}:" + it
-		multiplatform "org.lwjgl:lwjgl-tinyfd:${lwjglVersion}:" + it
-		multiplatform "org.lwjgl:lwjgl-vma:${lwjglVersion}:" + it
-		multiplatform "graphics.scenery:spirvcrossj:$spirvCrossVersion:$lwjglNatives"
+	rootProject.ext.natives.each {
+		//multiplatform ("org.lwjgl:lwjgl:${rootProject.ext.lwjglVersion}:" + it)
+		multiplatform "org.lwjgl:lwjgl-glfw:${rootProject.ext.lwjglVersion}:" + it
+		//multiplatform "org.lwjgl:lwjgl-jemalloc:${rootProject.ext.lwjglVersion}:" + it
+		multiplatform "org.lwjgl:lwjgl-openal:${rootProject.ext.lwjglVersion}:" + it
+		multiplatform "org.lwjgl:lwjgl-opengl:${rootProject.ext.lwjglVersion}:" + it
+		multiplatform "org.lwjgl:lwjgl-stb:${rootProject.ext.lwjglVersion}:" + it
+		multiplatform "org.lwjgl:lwjgl-tinyfd:${rootProject.ext.lwjglVersion}:" + it
+		multiplatform "org.lwjgl:lwjgl-vma:${rootProject.ext.lwjglVersion}:" + it
+		multiplatform "graphics.scenery:spirvcrossj:$spirvCrossVersion:$rootProject.ext.lwjglNatives"
 	}
-}
-
-// Dependencies from subprojects
-dependencies {
-	compile project(':common')
-	compile project(':server')
 }
 
 // Define the main class for the application

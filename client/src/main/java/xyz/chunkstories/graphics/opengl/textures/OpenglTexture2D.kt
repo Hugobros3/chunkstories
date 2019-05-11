@@ -1,6 +1,5 @@
 package xyz.chunkstories.graphics.opengl.textures
 
-import org.lwjgl.opengl.ARBDirectStateAccess
 import xyz.chunkstories.api.graphics.Texture2D
 import xyz.chunkstories.api.graphics.TextureFormat
 import xyz.chunkstories.graphics.opengl.OpenglGraphicsBackend
@@ -19,6 +18,6 @@ class OpenglTexture2D(backend: OpenglGraphicsBackend, format: TextureFormat,
     }
 
     fun upload(buffer: ByteBuffer) {
-        ARBDirectStateAccess.glTextureSubImage2D(glTexId, 0, 0, 0, width, height, format.glMapping.format, GL_UNSIGNED_BYTE, buffer)
+        glTextureSubImage2D(glTexId, 0, 0, 0, width, height, format.glMapping.format, GL_UNSIGNED_BYTE, buffer)
     }
 }

@@ -19,7 +19,6 @@ import xyz.chunkstories.api.util.configuration.Configuration
 import xyz.chunkstories.client.glfw.GLFWWindow
 import xyz.chunkstories.client.ingame.IngameClientImplementation
 import xyz.chunkstories.content.GameContentStore
-import xyz.chunkstories.content.GameDirectory
 import xyz.chunkstories.graphics.GraphicsBackendsEnum
 import xyz.chunkstories.graphics.GraphicsEngineImplementation
 import xyz.chunkstories.gui.ClientGui

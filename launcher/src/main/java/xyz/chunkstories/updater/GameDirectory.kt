@@ -4,7 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package xyz.chunkstories.content
+package xyz.chunkstories.updater
 
 import java.io.File
 
