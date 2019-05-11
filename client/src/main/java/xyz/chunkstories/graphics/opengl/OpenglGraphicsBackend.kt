@@ -31,7 +31,7 @@ import javax.swing.JOptionPane
 
 class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window: GLFWWindow) : GLFWBasedGraphicsBackend(graphicsEngine, window) {
     private val capabilities: GLCapabilities
-    private val requiredExtensions = setOf("GL_ARB_debug_output", "GL_ARB_texture_storage", "GL_ARB_direct_state_access")
+    private val requiredExtensions = setOf("GL_ARB_debug_output", "GL_ARB_texture_storage", "GL_ARB_direct_state_access", "GL_ARB_draw_buffers_blend")
 
     var renderGraph: OpenglRenderGraph
 

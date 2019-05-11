@@ -1,10 +1,15 @@
 package xyz.chunkstories.graphics.opengl
 
-import org.lwjgl.opengl.GL15
-import org.lwjgl.opengl.GL20
-import org.lwjgl.opengl.GL30
 import org.lwjgl.opengl.GL32.*
+import org.lwjgl.opengl.ARBDrawBuffersBlend.*
+import org.lwjgl.opengl.GL11
+import org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA
+import org.lwjgl.opengl.GL14
+import org.lwjgl.opengl.GL14.GL_FUNC_ADD
+import org.lwjgl.opengl.GL14.GL_SRC_ALPHA
+
 import xyz.chunkstories.api.graphics.VertexFormat
+import xyz.chunkstories.api.graphics.rendergraph.PassOutput
 
 import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.common.FaceCullingMode
@@ -18,10 +23,6 @@ class FakePSO(val backend: OpenglGraphicsBackend, val program: OpenglShaderProgr
               val vertexInputConfiguration: VertexInputConfiguration, faceCullingMode: FaceCullingMode) : Cleanable {
 
     val faceCullingMode = faceCullingMode
-
-
-    init {
-    }
 
     fun bind() {
         glUseProgram(program.programId)
@@ -40,6 +41,26 @@ class FakePSO(val backend: OpenglGraphicsBackend, val program: OpenglShaderProgr
 
         for (vertexInput in program.glslProgram.vertexInputs) {
             glEnableVertexAttribArray(vertexInput.location)
+        }
+
+        for((i, colorAttachement) in pass.declaration.outputs.outputs.withIndex()) {
+            when(colorAttachement.blending) {
+                PassOutput.BlendMode.OVERWRITE -> {
+                    glDisable(GL_BLEND)
+                }
+                PassOutput.BlendMode.ALPHA_TEST -> {
+                    glEnable(GL_BLEND)
+                    glBlendEquationiARB(i, GL_FUNC_ADD)
+                    glBlendFunciARB(i, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+                }
+                PassOutput.BlendMode.MIX -> {
+                    glEnable(GL_BLEND)
+                    glBlendEquationiARB(i, GL_FUNC_ADD)
+                    glBlendFunciARB(i, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+                }
+                PassOutput.BlendMode.ADD -> TODO()
+                PassOutput.BlendMode.PREMULTIPLIED_ALPHA -> TODO()
+            }
         }
     }
 
