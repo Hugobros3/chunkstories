@@ -1,4 +1,4 @@
-package xyz.chunkstories.graphics.vulkan.systems
+package xyz.chunkstories.graphics.vulkan.systems.debug
 
 import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.api.voxel.VoxelSide
@@ -16,8 +16,8 @@ import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
-import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
+import xyz.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
 
 class VulkanSpinningCubeDrawer(pass: VulkanPass, dslCode: VulkanSpinningCubeDrawer.() -> Unit) : VulkanDrawingSystem(pass) {
     val backend: VulkanGraphicsBackend

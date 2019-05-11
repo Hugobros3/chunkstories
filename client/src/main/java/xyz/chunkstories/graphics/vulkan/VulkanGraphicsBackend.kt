@@ -37,6 +37,7 @@ import xyz.chunkstories.api.graphics.systems.dispatching.ModelsRenderer
 import xyz.chunkstories.api.graphics.systems.dispatching.SpritesRenderer
 import xyz.chunkstories.api.graphics.systems.drawing.DrawingSystem
 import xyz.chunkstories.graphics.GraphicsEngineImplementation
+import xyz.chunkstories.graphics.vulkan.systems.debug.VulkanSpinningCubeDrawer
 import xyz.chunkstories.graphics.vulkan.systems.models.VulkanModelsDispatcher
 import xyz.chunkstories.graphics.vulkan.systems.models.VulkanSpritesDispatcher
 import xyz.chunkstories.graphics.vulkan.systems.world.ChunkRepresentationsDispatcher

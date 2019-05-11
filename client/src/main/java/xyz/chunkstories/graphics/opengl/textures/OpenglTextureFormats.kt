@@ -9,7 +9,7 @@ data class GLTextureFormatValues(val internalFormat: Int, val format: Int, val t
 
 val TextureFormat.glMapping
     get() = when (this) {
-        TextureFormat.RGBA_8 -> GLTextureFormatValues(GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE)
+        TextureFormat.RGBA_8 -> GLTextureFormatValues(GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE)
         TextureFormat.RGB_8 -> GLTextureFormatValues(GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE)
         TextureFormat.RG_8 -> GLTextureFormatValues(GL_RG8, GL_RG, GL_UNSIGNED_BYTE)
         TextureFormat.RED_8 -> GLTextureFormatValues(GL_R8, GL_RG, GL_UNSIGNED_BYTE)

@@ -7,7 +7,7 @@ import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.graphics.opengl.OpenglFrame
 
 class OpenglFrameGraph(val frame: OpenglFrame, val renderGraph: OpenglRenderGraph, startTask: OpenglRenderTask, mainCamera: Camera, parameters: Map<String, Any>) {
-    val rootNode: FrameGraphNode
+    val rootNode: FrameGraphNode.OpenglRenderTaskInstance
     val nodes = mutableSetOf<FrameGraphNode>()
 
     init {
@@ -57,6 +57,8 @@ class OpenglFrameGraph(val frame: OpenglFrame, val renderGraph: OpenglRenderGrap
 
             val callbacks = mutableListOf<(RenderTaskInstance) -> Unit>()
 
+            lateinit var rootPassInstance: OpenglPassInstance
+
             init {
                 this.parameters["camera"] = camera // Implicitly part of the parameters //TODO should we
             }
@@ -105,6 +107,7 @@ class OpenglFrameGraph(val frame: OpenglFrame, val renderGraph: OpenglRenderGrap
             is FrameGraphNode.OpenglRenderTaskInstance -> {
                 val rootPass = this.renderTask.rootPass
                 val passNode = FrameGraphNode.OpenglPassInstance(frameGraph, this, rootPass)
+                this.rootPassInstance = passNode
                 dependencies.add(passNode)
                 nodes.add(passNode)
                 passNode.addDependencies()

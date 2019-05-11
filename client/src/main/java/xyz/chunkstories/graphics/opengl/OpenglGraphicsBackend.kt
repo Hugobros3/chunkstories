@@ -5,6 +5,7 @@ import org.lwjgl.glfw.GLFW.glfwSwapBuffers
 import org.lwjgl.opengl.ARBDebugOutput.glDebugMessageCallbackARB
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL30.*
+import org.lwjgl.opengl.ARBDirectStateAccess.*
 import org.lwjgl.opengl.GLCapabilities
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.graphics.representation.Representation
@@ -18,6 +19,7 @@ import xyz.chunkstories.graphics.GraphicsEngineImplementation
 import xyz.chunkstories.graphics.common.WorldRenderer
 import xyz.chunkstories.graphics.opengl.graph.OpenglPass
 import xyz.chunkstories.graphics.opengl.graph.OpenglRenderGraph
+import xyz.chunkstories.graphics.opengl.shaders.OpenglShaderFactory
 import xyz.chunkstories.graphics.opengl.systems.OpenglDispatchingSystem
 import xyz.chunkstories.graphics.opengl.systems.OpenglDrawingSystem
 import xyz.chunkstories.graphics.opengl.systems.gui.OpenglGuiDrawer
@@ -31,6 +33,8 @@ class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
 
     var renderGraph: OpenglRenderGraph
 
+    val shaderFactory: OpenglShaderFactory
+
     init {
         glfwMakeContextCurrent(window.glfwWindowHandle)
         capabilities = GL.createCapabilities()
@@ -42,6 +46,10 @@ class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
         if(debugMode)
             setupDebugMode()
 
+        val vaoDontCare = glCreateVertexArrays()
+        glBindVertexArray(vaoDontCare)
+
+        shaderFactory = OpenglShaderFactory(this, window.client)
         renderGraph = OpenglRenderGraph(this, queuedRenderGraph!!)
     }
 

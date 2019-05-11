@@ -1,5 +1,8 @@
 package xyz.chunkstories.graphics.opengl.graph
 
+import org.lwjgl.opengl.GL30.*
+import org.lwjgl.opengl.ARBDirectStateAccess.*
+
 import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
 import xyz.chunkstories.api.graphics.rendergraph.PassInstance
 import xyz.chunkstories.api.graphics.rendergraph.RenderGraphDeclaration
@@ -78,6 +81,8 @@ class OpenglRenderGraph(val backend: OpenglGraphicsBackend, val dslCode: RenderG
             }
         }
 
+        var rootFbo = -1
+
         var passIndex = 0
         for (graphNodeIndex in 0 until sequencedGraph.size) {
             val graphNode = sequencedGraph[graphNodeIndex]
@@ -85,7 +90,10 @@ class OpenglRenderGraph(val backend: OpenglGraphicsBackend, val dslCode: RenderG
             when (graphNode) {
                 is OpenglFrameGraph.FrameGraphNode.OpenglPassInstance -> {
                     val pass = graphNode.pass
-                    pass.render(frame, graphNode, jobs[passIndex])
+                    val fboUsed = pass.render(frame, graphNode, jobs[passIndex])
+
+                    if(graphNode == graph.rootNode.rootPassInstance)
+                        rootFbo = fboUsed
 
                     passIndex++
                 }
@@ -96,6 +104,10 @@ class OpenglRenderGraph(val backend: OpenglGraphicsBackend, val dslCode: RenderG
         }
 
         //TODO blit
+        glBlitNamedFramebuffer(rootFbo, 0,
+                0, backend.window.height, backend.window.width, 0,
+                0, 0, backend.window.width, backend.window.height,
+                GL_COLOR_BUFFER_BIT, GL_NEAREST)
     }
 
     override fun cleanup() {

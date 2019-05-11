@@ -10,10 +10,11 @@ import kotlin.math.roundToInt
 
 class OpenglRenderBuffer(val backend: OpenglGraphicsBackend, val declaration: RenderBufferDeclaration) : Cleanable {
     var texture: OpenglTexture2D
+    val textureSize: Vector2i = Vector2i()
 
     init {
-        val actualSize = declaration.size.actual
-        texture = OpenglTexture2D(backend, declaration.format, actualSize.x, actualSize.y)
+        textureSize.set(declaration.size.actual)
+        texture = OpenglTexture2D(backend, declaration.format, textureSize.x, textureSize.y)
     }
 
     val RenderBufferSize.actual: Vector2i
@@ -29,7 +30,7 @@ class OpenglRenderBuffer(val backend: OpenglGraphicsBackend, val declaration: Re
     fun resize() {
         texture.cleanup()
 
-        val actualSize = declaration.size.actual
-        texture = OpenglTexture2D(backend, declaration.format, actualSize.x, actualSize.y)
+        textureSize.set(declaration.size.actual)
+        texture = OpenglTexture2D(backend, declaration.format, textureSize.x, textureSize.y)
     }
 }

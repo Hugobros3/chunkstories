@@ -7,6 +7,7 @@ package xyz.chunkstories.graphics.opengl
 //
 
 import org.lwjgl.opengl.GLDebugMessageARBCallbackI
+import org.lwjgl.system.MemoryUtil.memUTF8
 import org.slf4j.LoggerFactory
 
 /** Recycled class from the legacy GL renderer, does nothing special other than pretty-printing debug messages */
@@ -50,7 +51,7 @@ class OpenGLDebugOutputCallback : GLDebugMessageARBCallbackI {
             else -> "Unknown (0x" + Integer.toHexString(severity).toUpperCase() + ")"
         }
 
-        debugString += ": $message"
+        debugString += ": ${memUTF8(message)}"
 
         logger.info(debugString)
 

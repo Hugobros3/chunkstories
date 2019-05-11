@@ -4,9 +4,9 @@ import xyz.chunkstories.api.graphics.TextureFormat.*
 import xyz.chunkstories.api.graphics.rendergraph.PassOutput.BlendMode.MIX
 import xyz.chunkstories.api.graphics.rendergraph.RenderGraphDeclarationScript
 import xyz.chunkstories.api.gui.GuiDrawer
-import xyz.chunkstories.graphics.vulkan.systems.VulkanSpinningCubeDrawer
 
-object BuiltInRendergraphs {
+object
+BuiltInRendergraphs {
     val onlyGuiRenderGraph: RenderGraphDeclarationScript = {
         renderTask {
             name = "main"

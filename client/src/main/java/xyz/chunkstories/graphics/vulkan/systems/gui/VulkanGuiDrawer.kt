@@ -354,7 +354,7 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
     }
 
     companion object {
-        val logger = LoggerFactory.getLogger("client.vulkan.triangleTest")
+        val logger = LoggerFactory.getLogger("client.gfx_vk.gui")
     }
 
 }

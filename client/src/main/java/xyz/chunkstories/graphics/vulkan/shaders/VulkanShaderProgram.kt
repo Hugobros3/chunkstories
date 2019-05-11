@@ -10,6 +10,7 @@ import org.lwjgl.vulkan.VkDescriptorSetLayoutBindingFlagsCreateInfoEXT
 import org.lwjgl.vulkan.VkDescriptorSetLayoutCreateInfo
 import xyz.chunkstories.api.graphics.shader.ShaderStage
 import xyz.chunkstories.api.graphics.structs.UniformUpdateFrequency
+import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.common.shaders.*
 import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.SpirvCrossHelper
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
@@ -18,7 +19,7 @@ import xyz.chunkstories.graphics.vulkan.textures.MagicTexturing.Companion.magicT
 import xyz.chunkstories.graphics.vulkan.util.VkDescriptorSetLayout
 import xyz.chunkstories.graphics.vulkan.util.ensureIs
 
-data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsBackend, val glslProgram: GLSLProgram) {
+data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsBackend, val glslProgram: GLSLProgram) : Cleanable {
     val spirvCode = SpirvCrossHelper.generateSpirV(glslProgram)
     val modules: Map<ShaderStage, ShaderModule>
 
@@ -144,7 +145,7 @@ data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsB
         return pDescriptorSetLayout.get(0)
     }
 
-    fun cleanup() {
+    override fun cleanup() {
         modules.values.forEach { it.cleanup() }
         slotLayouts.forEach { it.cleanup(backend) }
     }
