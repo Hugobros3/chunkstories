@@ -53,7 +53,7 @@ open class WorkerThreadPool(protected var threadsCount: Int) : TasksPool<Task>()
         return "workers tc: " + this.threadsCount + ", todo: " + submittedTasks() + ""
     }
 
-    fun destroy() {
+    fun cleanup() {
         // Send threadsCount DIE orders
         for (i in 0 until threadsCount)
             this.scheduleTask(DIE)
@@ -83,7 +83,6 @@ open class WorkerThreadPool(protected var threadsCount: Int) : TasksPool<Task>()
     }
 
     companion object {
-
         private val logger = LoggerFactory.getLogger("workers")
     }
 }

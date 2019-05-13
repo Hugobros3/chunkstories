@@ -115,6 +115,8 @@ class ClientImplementation internal constructor(val arguments: Map<String, Strin
 
         mainLoop()
         cleanup()
+
+        System.exit(0)
     }
 
     private fun mainLoop() {
@@ -138,7 +140,7 @@ class ClientImplementation internal constructor(val arguments: Map<String, Strin
     fun cleanup() {
         graphics.cleanup()
         inputsManager.cleanup()
-        tasks.destroy()
+        tasks.cleanup()
         configuration.save()
     }
 
@@ -185,9 +187,6 @@ class ClientImplementation internal constructor(val arguments: Map<String, Strin
             }
 
             ClientImplementation(argumentsMap)
-
-            // Not supposed to happen, gets there when ClientImplementation crashes badly.
-            //System.exit(-1)
         }
 
         private fun printHelp() {

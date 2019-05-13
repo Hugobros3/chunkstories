@@ -287,7 +287,7 @@ class DedicatedServer internal constructor(coreContentLocation: File, modsString
 
     fun stop() {
         announcer!!.stopAnnouncer()
-        workers.destroy()
+        workers.cleanup()
 
         // When stopped, close sockets and save config.
         running.set(false)

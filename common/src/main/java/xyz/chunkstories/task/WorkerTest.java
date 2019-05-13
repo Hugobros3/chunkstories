@@ -40,6 +40,6 @@ public class WorkerTest {
 		System.out.println("Stats: " + pool.toString());
 
 		System.out.println("Done.");
-		pool.destroy();
+		pool.cleanup();
 	}
 }
