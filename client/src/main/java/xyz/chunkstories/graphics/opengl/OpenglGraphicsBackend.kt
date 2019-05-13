@@ -6,6 +6,7 @@ import org.lwjgl.opengl.ARBDebugOutput.glDebugMessageCallbackARB
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL30.*
 import org.lwjgl.opengl.ARBDirectStateAccess.*
+import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GLCapabilities
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.graphics.representation.Representation
@@ -23,7 +24,6 @@ import xyz.chunkstories.graphics.opengl.shaders.OpenglShaderFactory
 import xyz.chunkstories.graphics.opengl.systems.OpenglDispatchingSystem
 import xyz.chunkstories.graphics.opengl.systems.OpenglDrawingSystem
 import xyz.chunkstories.graphics.opengl.systems.gui.OpenglGuiDrawer
-import xyz.chunkstories.graphics.opengl.textures.OpenglTexture
 import xyz.chunkstories.graphics.opengl.textures.OpenglTextures
 import xyz.chunkstories.world.WorldClientCommon
 import java.awt.image.BufferedImage
@@ -59,9 +59,15 @@ class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
     }
 
     private fun checkForExtensions() {
-        val extensionsString = glGetString(GL_EXTENSIONS) ?: ""
-        val extensionsList = extensionsString.split(" ")
-        //println(extensionsList)
+        val versionString = glGetString(GL_VERSION) ?: "0.0"
+        println("Version:" + versionString)
+
+        //val extensionsString = glGetString(GL_EXTENSIONS) ?: throw Exception("Couldn't list extensions")
+        //val extensionsList = extensionsString.split(" ")
+        val extensionsCount = glGetInteger(GL_NUM_EXTENSIONS)
+        val extensionsList = Array(extensionsCount) { glGetStringi(GL_EXTENSIONS, it)}.toList()
+
+        println("Extensions: "+extensionsList)
 
         if(!extensionsList.containsAll(requiredExtensions)) {
             JOptionPane.showMessageDialog(null, """
