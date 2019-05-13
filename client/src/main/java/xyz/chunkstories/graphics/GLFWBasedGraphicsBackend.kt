@@ -10,7 +10,7 @@ import java.awt.image.BufferedImage
 
 /** This implementaiton uses GLFW and so the backends have to hook into that ! */
 abstract class GLFWBasedGraphicsBackend(val graphicsEngine: GraphicsEngineImplementation, val window: GLFWWindow) : GraphicsBackend {
-    var queuedRenderGraph: RenderGraphDeclarationScript? = BuiltInRendergraphs.onlyGuiRenderGraph
+    var queuedRenderGraph: RenderGraphDeclarationScript? = BuiltInRendergraphs.onlyGuiRenderGraph(window.client)
 
     abstract fun drawFrame(frameNumber : Int)
 

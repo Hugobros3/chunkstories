@@ -1,19 +1,19 @@
 package xyz.chunkstories.graphics.vulkan.textures
 
 import de.matthiasmann.twl.utils.PNGDecoder
-import xyz.chunkstories.api.graphics.GraphicsEngine
-import xyz.chunkstories.api.graphics.TextureFormat
-import xyz.chunkstories.graphics.vulkan.CommandPool
-import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
-import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
-import xyz.chunkstories.graphics.common.Cleanable
-import xyz.chunkstories.graphics.vulkan.util.VulkanFormat
 import org.lwjgl.system.MemoryStack.stackPop
 import org.lwjgl.system.MemoryStack.stackPush
 import org.lwjgl.system.MemoryUtil.memAlloc
 import org.lwjgl.system.MemoryUtil.memFree
 import org.lwjgl.vulkan.VK10.*
+import xyz.chunkstories.api.graphics.GraphicsEngine
+import xyz.chunkstories.api.graphics.TextureFormat
+import xyz.chunkstories.graphics.common.Cleanable
+import xyz.chunkstories.graphics.vulkan.CommandPool
+import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
+import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
+import xyz.chunkstories.graphics.vulkan.util.VulkanFormat
 import java.util.concurrent.locks.ReentrantLock
 
 class VulkanTextures(val backend: VulkanGraphicsBackend) : GraphicsEngine.Textures, Cleanable {
@@ -21,12 +21,13 @@ class VulkanTextures(val backend: VulkanGraphicsBackend) : GraphicsEngine.Textur
     val lock = ReentrantLock()
     val commandPool: CommandPool
     val loadedTextures2D = mutableMapOf<String, VulkanTexture2D>()
+    val loadedCubemaps = mutableMapOf<String, VulkanTextureCubemap>()
 
     val magicTexturing: MagicTexturing?
 
     init {
         commandPool = CommandPool(backend, backend.logicalDevice.graphicsQueue.family, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT or VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
-        if(backend.logicalDevice.enableMagicTexturing)
+        if (backend.logicalDevice.enableMagicTexturing)
             magicTexturing = MagicTexturing(backend)
         else
             magicTexturing = null
@@ -66,6 +67,44 @@ class VulkanTextures(val backend: VulkanGraphicsBackend) : GraphicsEngine.Textur
                 vkBuffer.cleanup()
 
                 texture2D
+            }
+        } finally {
+            lock.unlock()
+        }
+    }
+
+    fun getOrLoadCubemap(assetName: String): VulkanTextureCubemap {
+        try {
+            lock.lock()
+
+            return loadedCubemaps.getOrPut(assetName) {
+                val faces = listOf("right", "left", "top", "bottom", "front", "back")
+
+                var width = 0
+                var height = 0
+                var alloc = lazy {
+                    memAlloc(width * height * 4 * 6)
+                }
+                for (face in faces) {
+                    val asset = backend.window.client.content.getAsset("$assetName$face.png")!!
+                    val decoder = PNGDecoder(asset.read())
+                    width = decoder.width
+                    height = decoder.height
+                    decoder.decode(alloc.value, width * 4, PNGDecoder.Format.RGBA)
+                }
+
+                alloc.value.flip()
+
+                val cubemap = VulkanTextureCubemap(backend, TextureFormat.RGBA_8, width, height, VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT)
+                val vkBuffer = VulkanBuffer(backend, alloc.value, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, MemoryUsagePattern.STAGING)
+
+                cubemap.transitionLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+                cubemap.copyBufferToImage(vkBuffer)
+                cubemap.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+
+                memFree(alloc.value)
+                cubemap
+
             }
         } finally {
             lock.unlock()

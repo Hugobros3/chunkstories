@@ -76,6 +76,12 @@ data class GLSLUniformSampledImage2DArray(
         override val openglTextureUnit: Int,
         override val binding: Int) : GLSLUniformSampledImage
 
+data class GLSLUniformSampledImageCubemap(
+        override val name: String,
+        override val descriptorSetSlot: Int,
+        override val openglTextureUnit: Int,
+        override val binding: Int) : GLSLUniformSampledImage
+
 /** Standalone image */
 data class GLSLUniformImage2D(
         override val name: String,

@@ -30,7 +30,7 @@ fun ShaderCompiler.buildIntermediaryStructure(stages: Map<ShaderStage, String>, 
             ShaderCompiler.logger.warn(tShader.infoLog)
             ShaderCompiler.logger.warn(tShader.infoDebugLog)
 
-            if(dumpCodeOnError)
+            if (dumpCodeOnError)
                 println(shaderCode)
             throw Exception("Failed to parse stage $stage of the shader program")
         }
@@ -100,11 +100,12 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
 
             when (dialect) {
                 GLSLDialect.VULKAN -> {
-                    setSlot = when(sampledImageName) {
+                    setSlot = when (sampledImageName) {
                         in materialBoundResources -> UniformUpdateFrequency.ONCE_PER_BATCH.ordinal + 2
                         else -> 1
                     }
-                    binding = (resources.filter { it.descriptorSetSlot == setSlot }.maxBy { it.binding }?.binding ?: -1) + 1
+                    binding = (resources.filter { it.descriptorSetSlot == setSlot }.maxBy { it.binding }?.binding
+                            ?: -1) + 1
                 }
                 GLSLDialect.OPENGL -> {
                     setSlot = 0
@@ -115,7 +116,7 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
             val openglTextureUnit = resources.count { it is GLSLUniformSampledImage }
 
             //TODO handle other dimensionalities
-            if(arrayTexture) {
+            if (arrayTexture) {
                 resources.add(when (dimensionality) {
                     1 -> GLSLUniformSampledImage2DArray(sampledImageName, setSlot, binding, openglTextureUnit)
                     else -> throw Exception("Not handled yet")
@@ -124,6 +125,7 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
                 resources.add(when (dimensionality) {
                     1 -> GLSLUniformSampledImage2D(sampledImageName, setSlot, binding, openglTextureUnit, arraySize)
                     2 -> GLSLUniformSampledImage3D(sampledImageName, setSlot, binding, openglTextureUnit, arraySize)
+                    3 -> GLSLUniformSampledImageCubemap(sampledImageName, setSlot, binding, openglTextureUnit)
                     else -> throw Exception("Not handled yet")
                 })
             }
@@ -167,7 +169,8 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
                     binding =
                             if (separateImageName in magicTexturesNames) 1
                             else
-                                (resources.filter { it.descriptorSetSlot == setSlot }.maxBy { it.binding }?.binding ?: -1) + 1
+                                (resources.filter { it.descriptorSetSlot == setSlot }.maxBy { it.binding }?.binding
+                                        ?: -1) + 1
                 }
                 GLSLDialect.OPENGL -> {
                     setSlot = 0
@@ -182,7 +185,7 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
             })
         }
 
-        for(i in 0 until stageResources.separateSamplers.size().toInt()) {
+        for (i in 0 until stageResources.separateSamplers.size().toInt()) {
             val sampler = stageResources.separateSamplers[i]
             val samplerName = sampler.name
 
@@ -227,7 +230,8 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
             when (dialect) {
                 GLSLDialect.VULKAN -> {
                     setSlot = jvmStruct.kClass.updateFrequency().ordinal + 2
-                    binding = (resources.filter { it.descriptorSetSlot == setSlot }.maxBy { it.binding }?.binding ?: -1) + 1
+                    binding = (resources.filter { it.descriptorSetSlot == setSlot }.maxBy { it.binding }?.binding
+                            ?: -1) + 1
                 }
                 GLSLDialect.OPENGL -> {
                     setSlot = 0
@@ -239,12 +243,12 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
         }
 
         //TODO SSBO
-        for(i in 0 until stageResources.storageBuffers.size().toInt()) {
+        for (i in 0 until stageResources.storageBuffers.size().toInt()) {
             val storageBuffer = stageResources.storageBuffers[i]
             val storageBufferName = storageBuffer.name
 
             val split = storageBufferName.split("_")
-            if(split.size < 3) // Maybe this is just a normal SSBO !
+            if (split.size < 3) // Maybe this is just a normal SSBO !
                 continue
 
             val type = split[1]
@@ -261,7 +265,8 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
             when (dialect) {
                 GLSLDialect.VULKAN -> {
                     setSlot = UniformUpdateFrequency.ONCE_PER_BATCH.ordinal + 2
-                    binding = (resources.filter { it.descriptorSetSlot == setSlot }.maxBy { it.binding }?.binding ?: -1) + 1
+                    binding = (resources.filter { it.descriptorSetSlot == setSlot }.maxBy { it.binding }?.binding
+                            ?: -1) + 1
                 }
                 GLSLDialect.OPENGL -> {
                     setSlot = 0
@@ -282,9 +287,9 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
 fun ShaderCompiler.addDecorations(intermediarCompilationResults: IntermediaryCompilationResults, glslResources: List<GLSLResource>, glslInstancedInputs: List<GLSLInstancedInput>) {
     for ((stage, compiler) in intermediarCompilationResults.compilers) {
         val stageResources = compiler.shaderResources
-        
+
         fun decorate(spirvResource: Resource, glslResource: GLSLResource) {
-            when(dialect) {
+            when (dialect) {
                 GLSLDialect.VULKAN -> {
                     compiler.setDecoration(spirvResource.id, Decoration.DecorationDescriptorSet, glslResource.descriptorSetSlot.toLong())
                     compiler.setDecoration(spirvResource.id, Decoration.DecorationBinding, glslResource.binding.toLong())
@@ -294,7 +299,7 @@ fun ShaderCompiler.addDecorations(intermediarCompilationResults: IntermediaryCom
                 }
             }
         }
-        
+
         for (i in 0 until stageResources.sampledImages.size().toInt()) {
             val spirvResource = stageResources.sampledImages[i]
             val glslResource = glslResources.find { it.name == spirvResource.name } as GLSLResource
@@ -309,7 +314,7 @@ fun ShaderCompiler.addDecorations(intermediarCompilationResults: IntermediaryCom
             decorate(spirvResource, glslResource)
         }
 
-        for(i in 0 until stageResources.separateSamplers.size().toInt()) {
+        for (i in 0 until stageResources.separateSamplers.size().toInt()) {
             val spirvResource = stageResources.separateSamplers[i]
             val glslResource = glslResources.find { it.name == spirvResource.name } as GLSLUniformSampler
 
@@ -326,7 +331,7 @@ fun ShaderCompiler.addDecorations(intermediarCompilationResults: IntermediaryCom
         }
 
         //TODO SSBOS
-        for(i in 0 until stageResources.storageBuffers.size().toInt()) {
+        for (i in 0 until stageResources.storageBuffers.size().toInt()) {
             val spirvResource = stageResources.storageBuffers[i]
             val instanceName = spirvResource.name.split("_")[2]
 

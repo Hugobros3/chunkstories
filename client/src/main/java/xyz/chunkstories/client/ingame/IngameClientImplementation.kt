@@ -100,7 +100,7 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
         pluginManager.disablePlugins()
 
         worldRenderer.cleanup()
-        client.gameWindow.graphicsEngine.loadRenderGraph(BuiltInRendergraphs.onlyGuiRenderGraph)
+        client.gameWindow.graphicsEngine.loadRenderGraph(BuiltInRendergraphs.onlyGuiRenderGraph(client))
 
         // Destroy the world
         internalWorld.destroy()

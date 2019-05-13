@@ -45,6 +45,7 @@ data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsB
             is GLSLUniformSampledImage2D -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
             is GLSLUniformSampledImage3D -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
             is GLSLUniformSampledImage2DArray -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+            is GLSLUniformSampledImageCubemap -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
             is GLSLUniformSampler -> VK_DESCRIPTOR_TYPE_SAMPLER
             //is GLSLUnusedUniform -> return@mapNotNull null
             else -> throw Exception("Missing mapping from GLSLResource type to Vulkan descriptor type !")
@@ -58,6 +59,8 @@ data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsB
             is GLSLUniformSampledImage2D -> this.count
             is GLSLUniformSampledImage2DArray -> 1
             is GLSLUniformSampledImage3D -> 1
+            is GLSLUniformSampledImageCubemap -> 1
+
             is GLSLUniformImage2D -> if (this.count != 0) this.count else magicTexturesUpperBound
             else -> throw Exception("Missing mapping from GLSLResource type to Vulkan descriptor type !")
         }

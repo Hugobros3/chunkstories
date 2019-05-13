@@ -7,6 +7,7 @@ import xyz.chunkstories.api.graphics.shader.ShaderResources
 import xyz.chunkstories.graphics.common.shaders.GLSLUniformBlock
 import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampledImage
 import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampledImage2D
+import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampledImageCubemap
 import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
 import xyz.chunkstories.graphics.vulkan.textures.VulkanTexture2D
 
@@ -64,9 +65,17 @@ private fun ShaderResources.bindTo(target: DescriptorSetsMegapool.ShaderBindingC
                     target.bindTextureAndSampler(imageName, texture2d, sampler, index)
                     return@apply
                 }
+                is GLSLUniformSampledImageCubemap -> {
+                    val cubemap = when(val source = imageInput.source) {
+                        is ImageSource.AssetReference -> {
+                            (passInstance as VulkanFrameGraph.FrameGraphNode.VulkanPassInstance).pass.backend.textures.getOrLoadCubemap(source.assetName)
+                        }
+                        else -> throw Exception("Unhandled image source type ${source::class} for ${this::class}")
+                    }
+                    target.bindTextureAndSampler(imageName, cubemap, sampler, index)
+                }
+                else -> throw Exception("Unhandled image type :${this::class}")
             }
-
-            println("lol $imageName")
         }// ?: println("warning: didn't find an image named $imageName")
     }
 

@@ -6,20 +6,14 @@ import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanUniformBuffer
 import xyz.chunkstories.graphics.vulkan.shaders.DescriptorSlotLayout
-import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
-import xyz.chunkstories.graphics.vulkan.textures.VulkanTexture2D
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.system.MemoryUtil.memAllocLong
 import org.lwjgl.system.MemoryUtil.memFree
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import xyz.chunkstories.graphics.common.Cleanable
-import xyz.chunkstories.graphics.common.shaders.GLSLUniformBlock
-import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampledImage2D
-import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampledImage2DArray
-import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampledImage3D
-import xyz.chunkstories.graphics.vulkan.textures.VulkanOnionTexture2D
-import xyz.chunkstories.graphics.vulkan.textures.VulkanTexture3D
+import xyz.chunkstories.graphics.common.shaders.*
+import xyz.chunkstories.graphics.vulkan.textures.*
 import xyz.chunkstories.graphics.vulkan.util.*
 import java.nio.IntBuffer
 import java.util.concurrent.ConcurrentLinkedDeque
@@ -195,6 +189,15 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
 
         fun bindTextureAndSampler(name: String, texture: VulkanTexture3D, sampler: VulkanSampler, index: Int = 0) {
             val resource = pipeline.program.glslProgram.resources.filterIsInstance<GLSLUniformSampledImage3D>().find {
+                it.name == name
+            } ?: return // ?: throw Exception("I can't find a program sampler3D resource matching that name '$name'")
+
+            val set = getSet(resource.descriptorSetSlot)
+            backend.updateDescriptorSet(set, resource.binding, texture, sampler, index)
+        }
+
+        fun bindTextureAndSampler(name: String, texture: VulkanTextureCubemap, sampler: VulkanSampler, index: Int = 0) {
+            val resource = pipeline.program.glslProgram.resources.filterIsInstance<GLSLUniformSampledImageCubemap>().find {
                 it.name == name
             } ?: return // ?: throw Exception("I can't find a program sampler3D resource matching that name '$name'")
 

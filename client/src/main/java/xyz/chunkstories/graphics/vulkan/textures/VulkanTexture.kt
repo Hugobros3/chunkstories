@@ -45,7 +45,13 @@ open class VulkanTexture(val backend: VulkanGraphicsBackend, final override val 
             initialLayout(VK_IMAGE_LAYOUT_UNDEFINED)
             sharingMode(VK_SHARING_MODE_EXCLUSIVE)
             samples(VK_SAMPLE_COUNT_1_BIT)
-            flags(0)
+
+            var flags = 0
+
+            if(imageViewType == VK10.VK_IMAGE_VIEW_TYPE_CUBE || imageViewType == VK10.VK_IMAGE_VIEW_TYPE_CUBE_ARRAY)
+                flags = flags or VK10.VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT
+
+            flags(flags)
         }
 
         val pImageHandle = stackMallocLong(1)
