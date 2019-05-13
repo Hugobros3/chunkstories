@@ -25,12 +25,12 @@ To this end, Chunk Stories borrows heavily from one of two best things about the
  * Support for basically loading everything at runtime, with downloading at server connection time
  * Uses text files with simple syntax for content definitions (Blocks, Items, Entities, Particles, etc)
  * Advanced graphics with a rendergraph-based renderer
-    * **Vulkan** and OpenGL ES backends
+    * **Vulkan** and OpenGL 3.3* backends
     * Very high view distances, to 1km and above via heightmaps
     * Simple data-oriented API for having objects drawn on the screen and passing data to shaders
     * Advanced lighting via shadow mapping, deffered rendering and experimental PBR\*
     * Experimental voxel global illumination\*
- * Multiplayer, with a packet-based network system
+ * Multiplayer, with dedicated servers and the ability to serve mods
  * Worlds are wrap-arround style, with currently up to (64km)² maps
  * Entities and voxels use Components to store data and organize their logic
  * Built-in support for AABB physics, skeletal animations, Hitboxes and more
