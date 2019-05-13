@@ -13,7 +13,7 @@ import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
-import xyz.chunkstories.graphics.vulkan.resources.bindShaderResources
+import xyz.chunkstories.graphics.vulkan.shaders.bindShaderResources
 import xyz.chunkstories.graphics.vulkan.shaders.VulkanShaderProgram
 import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.vertexInputConfiguration

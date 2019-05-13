@@ -6,7 +6,6 @@ import org.lwjgl.system.MemoryStack.stackPush
 import org.lwjgl.system.MemoryUtil.memAlloc
 import org.lwjgl.system.MemoryUtil.memFree
 import xyz.chunkstories.api.graphics.GraphicsEngine
-import xyz.chunkstories.api.graphics.Texture2D
 import xyz.chunkstories.api.graphics.TextureFormat
 import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.opengl.OpenglGraphicsBackend
@@ -17,6 +16,7 @@ class OpenglTextures(val backend: OpenglGraphicsBackend) : GraphicsEngine.Textur
 
     val lock = ReentrantLock()
     val loadedTexture2D = mutableMapOf<String, OpenglTexture2D>()
+    val loadedCubemaps = mutableMapOf<String, OpenglTextureCubemap>()
 
     override val defaultTexture2D: OpenglTexture2D
         get() = getOrLoadTexture2D("textures/notex.png")
@@ -46,6 +46,41 @@ class OpenglTextures(val backend: OpenglGraphicsBackend) : GraphicsEngine.Textur
                 stackPop()
 
                 texture2D
+            }
+        } finally {
+            lock.unlock()
+        }
+    }
+
+    fun getOrLoadCubemap(assetName: String): OpenglTextureCubemap {
+        try {
+            lock.lock()
+
+            return loadedCubemaps.getOrPut(assetName) {
+                val faces = listOf("right", "left", "top", "bottom", "front", "back")
+
+                var width = 0
+                var height = 0
+                var alloc = lazy {
+                    Array(6) { memAlloc(width * height * 4) }
+                }
+                for ((i, face) in faces.withIndex()) {
+                    val asset = backend.window.client.content.getAsset("$assetName$face.png")!!
+                    val decoder = PNGDecoder(asset.read())
+                    width = decoder.width
+                    height = decoder.height
+                    decoder.decode(alloc.value[i], width * 4, PNGDecoder.Format.RGBA)
+                    alloc.value[i].flip()
+                }
+
+                val cubemap = OpenglTextureCubemap(backend, TextureFormat.RGBA_8, width, height)
+                for(i in 0..5) {
+                    cubemap.upload(alloc.value[i], i)
+                }
+
+                alloc.value.forEach { memFree(it) }
+                cubemap
+
             }
         } finally {
             lock.unlock()

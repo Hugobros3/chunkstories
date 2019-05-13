@@ -1,4 +1,4 @@
-package xyz.chunkstories.graphics.vulkan.resources
+package xyz.chunkstories.graphics.vulkan.shaders
 
 import xyz.chunkstories.api.graphics.rendergraph.ImageSource
 import xyz.chunkstories.api.graphics.rendergraph.PassInstance
@@ -9,6 +9,7 @@ import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampledImage
 import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampledImage2D
 import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampledImageCubemap
 import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
+import xyz.chunkstories.graphics.vulkan.resources.DescriptorSetsMegapool
 import xyz.chunkstories.graphics.vulkan.textures.VulkanTexture2D
 
 fun SystemExecutionContext.bindShaderResources(target: DescriptorSetsMegapool.ShaderBindingContext) {
@@ -23,18 +24,20 @@ fun PassInstance.bindShaderResources(source: ShaderResources, target: Descriptor
 private fun ShaderResources.bindTo(target: DescriptorSetsMegapool.ShaderBindingContext, passInstance: PassInstance) {
     parent?.bindTo(target, passInstance)
 
+    val backend = target.pipeline.backend
+
     val program = target.pipeline.program.glslProgram
     val resources = program.resources
     //TODO optimize those lookups using hashmaps
 
     for((imageName, index, imageInput) in images) {
-        program.resources.find { it is GLSLUniformSampledImage && it.name == imageName }?.apply {
+        resources.find { it is GLSLUniformSampledImage && it.name == imageName }?.apply {
             val sampler = target.samplers.getSamplerForImageInputParameters(imageInput)
             when(this) {
                 is GLSLUniformSampledImage2D -> {
                     val texture2d = when(val source = imageInput.source) {
                         is ImageSource.AssetReference -> {
-                            (passInstance as VulkanFrameGraph.FrameGraphNode.VulkanPassInstance).pass.backend.textures.getOrLoadTexture2D(source.assetName)
+                            backend.textures.getOrLoadTexture2D(source.assetName)
                         }
                         is ImageSource.RenderBufferReference -> {
                             val vrti = passInstance.taskInstance as VulkanFrameGraph.FrameGraphNode.VulkanRenderTaskInstance

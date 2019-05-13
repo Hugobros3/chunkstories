@@ -239,7 +239,7 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
                 }
             }
 
-            resources.add(GLSLUniformBlock(instanceName, setSlot, binding, jvmStruct))
+            resources.add(GLSLUniformBlock(instanceName, uniformBufferName, setSlot, binding, jvmStruct))
         }
 
         //TODO SSBO

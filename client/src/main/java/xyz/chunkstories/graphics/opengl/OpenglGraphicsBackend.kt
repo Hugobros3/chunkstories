@@ -6,13 +6,13 @@ import org.lwjgl.opengl.ARBDebugOutput.glDebugMessageCallbackARB
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL30.*
 import org.lwjgl.opengl.ARBDirectStateAccess.*
-import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GLCapabilities
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.graphics.representation.Representation
 import xyz.chunkstories.api.graphics.systems.RegisteredGraphicSystem
 import xyz.chunkstories.api.graphics.systems.dispatching.DispatchingSystem
 import xyz.chunkstories.api.graphics.systems.drawing.DrawingSystem
+import xyz.chunkstories.api.graphics.systems.drawing.FullscreenQuadDrawer
 import xyz.chunkstories.api.gui.GuiDrawer
 import xyz.chunkstories.client.glfw.GLFWWindow
 import xyz.chunkstories.graphics.GLFWBasedGraphicsBackend
@@ -23,6 +23,7 @@ import xyz.chunkstories.graphics.opengl.graph.OpenglRenderGraph
 import xyz.chunkstories.graphics.opengl.shaders.OpenglShaderFactory
 import xyz.chunkstories.graphics.opengl.systems.OpenglDispatchingSystem
 import xyz.chunkstories.graphics.opengl.systems.OpenglDrawingSystem
+import xyz.chunkstories.graphics.opengl.systems.OpenglFullscreenQuadDrawer
 import xyz.chunkstories.graphics.opengl.systems.gui.OpenglGuiDrawer
 import xyz.chunkstories.graphics.opengl.textures.OpenglTextures
 import xyz.chunkstories.world.WorldClientCommon
@@ -56,6 +57,7 @@ class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
         textures = OpenglTextures(this)
 
         renderGraph = OpenglRenderGraph(this, queuedRenderGraph!!)
+        queuedRenderGraph = null
     }
 
     private fun checkForExtensions() {
@@ -120,7 +122,8 @@ class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
         val dslCode = registration.dslCode as DrawingSystem.() -> Unit
 
         return when(registration.clazz) {
-            GuiDrawer::class.java -> OpenglGuiDrawer(pass)
+            GuiDrawer::class.java -> OpenglGuiDrawer(pass, dslCode)
+            FullscreenQuadDrawer::class.java -> OpenglFullscreenQuadDrawer(pass, dslCode)
             else -> throw Exception("Unimplemented system on this backend: ${registration.clazz}")
         }
     }

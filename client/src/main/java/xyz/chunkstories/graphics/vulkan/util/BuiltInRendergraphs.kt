@@ -10,7 +10,6 @@ import xyz.chunkstories.api.graphics.rendergraph.asset
 import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.api.graphics.systems.drawing.FullscreenQuadDrawer
 import xyz.chunkstories.api.gui.GuiDrawer
-import xyz.chunkstories.graphics.vulkan.resources.bindShaderResources
 
 object
 BuiltInRendergraphs {

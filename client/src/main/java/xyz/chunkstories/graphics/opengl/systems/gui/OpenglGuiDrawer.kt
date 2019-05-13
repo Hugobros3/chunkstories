@@ -8,7 +8,6 @@ import xyz.chunkstories.api.graphics.VertexFormat
 import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
 import xyz.chunkstories.api.gui.Font
 import xyz.chunkstories.api.gui.Gui
-import xyz.chunkstories.graphics.common.DummyGuiDrawer
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.opengl.*
 import xyz.chunkstories.graphics.opengl.graph.OpenglPass
@@ -16,11 +15,12 @@ import xyz.chunkstories.graphics.opengl.systems.OpenglDrawingSystem
 import xyz.chunkstories.graphics.opengl.textures.OpenglTexture2D
 
 import org.lwjgl.opengl.GL30.*
+import xyz.chunkstories.api.graphics.systems.drawing.DrawingSystem
 import xyz.chunkstories.graphics.common.gui.InternalGuiDrawer
 import xyz.chunkstories.graphics.opengl.buffers.OpenglVertexBuffer
 import xyz.chunkstories.graphics.opengl.shaders.bindTexture
 
-class OpenglGuiDrawer(pass: OpenglPass) : OpenglDrawingSystem(pass) {
+class OpenglGuiDrawer(pass: OpenglPass, dslCode: (DrawingSystem) -> Unit) : OpenglDrawingSystem(pass) {
 
     val backend: OpenglGraphicsBackend
         get() = pass.backend
@@ -55,6 +55,10 @@ class OpenglGuiDrawer(pass: OpenglPass) : OpenglDrawingSystem(pass) {
             format = Pair(VertexFormat.FLOAT, 4)
             offset = 16
         }
+    }
+
+    init {
+        dslCode(this)
     }
 
     val program = backend.shaderFactory.createProgram("gui")

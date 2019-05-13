@@ -13,6 +13,8 @@ import xyz.chunkstories.api.graphics.rendergraph.PassOutput
 
 import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.common.FaceCullingMode
+import xyz.chunkstories.graphics.common.shaders.GLSLUniformBlock
+import xyz.chunkstories.graphics.opengl.buffers.OpenglUniformBuffer
 import xyz.chunkstories.graphics.opengl.buffers.OpenglVertexBuffer
 import xyz.chunkstories.graphics.opengl.buffers.glVertexFormat
 import xyz.chunkstories.graphics.opengl.graph.OpenglPass
@@ -24,9 +26,18 @@ class FakePSO(val backend: OpenglGraphicsBackend, val program: OpenglShaderProgr
 
     val faceCullingMode = faceCullingMode
 
+    val ubos: Map<GLSLUniformBlock, OpenglUniformBuffer>
+
+    init {
+        ubos = program.glslProgram.resources.filterIsInstance<GLSLUniformBlock>().map {
+            Pair(it, OpenglUniformBuffer(backend, it.struct))
+        }.toMap()
+    }
+
     fun bind() {
         glUseProgram(program.programId)
 
+        // Set cull state
         when (faceCullingMode) {
             FaceCullingMode.DISABLED -> glDisable(GL_CULL_FACE)
             FaceCullingMode.CULL_FRONT -> {
@@ -39,10 +50,7 @@ class FakePSO(val backend: OpenglGraphicsBackend, val program: OpenglShaderProgr
             }
         }
 
-        for (vertexInput in program.glslProgram.vertexInputs) {
-            glEnableVertexAttribArray(vertexInput.location)
-        }
-
+        // Set blending state
         for((i, colorAttachement) in pass.declaration.outputs.outputs.withIndex()) {
             when(colorAttachement.blending) {
                 PassOutput.BlendMode.OVERWRITE -> {
@@ -61,6 +69,13 @@ class FakePSO(val backend: OpenglGraphicsBackend, val program: OpenglShaderProgr
                 PassOutput.BlendMode.ADD -> TODO()
                 PassOutput.BlendMode.PREMULTIPLIED_ALPHA -> TODO()
             }
+        }
+
+
+
+        // Configure vertex pulling
+        for (vertexInput in program.glslProgram.vertexInputs) {
+            glEnableVertexAttribArray(vertexInput.location)
         }
     }
 
@@ -94,6 +109,7 @@ class FakePSO(val backend: OpenglGraphicsBackend, val program: OpenglShaderProgr
     }
 
     override fun cleanup() {
+        ubos.values.forEach(Cleanable::cleanup)
     }
 }
 

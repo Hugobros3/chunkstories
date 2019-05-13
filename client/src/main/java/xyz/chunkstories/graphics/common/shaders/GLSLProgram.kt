@@ -36,6 +36,7 @@ interface GLSLResource {
 
 data class GLSLUniformBlock(
         override val name: String,
+        val rawName: String,
         override val descriptorSetSlot: Int,
         override val binding: Int,
         val struct: GLSLType.JvmStruct) : GLSLResource
