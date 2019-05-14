@@ -18,12 +18,12 @@ import xyz.chunkstories.graphics.common.getConditions
 import xyz.chunkstories.graphics.vulkan.VulkanBackendOptions
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.systems.Vulkan3DVoxelRaytracer
-import xyz.chunkstories.graphics.vulkan.systems.world.ChunkRepresentationsProvider
+import xyz.chunkstories.graphics.vulkan.systems.world.VulkanChunkRepresentationsProvider
 import xyz.chunkstories.graphics.vulkan.world.entities.EntitiesRepresentationsProvider
 import xyz.chunkstories.world.WorldClientCommon
 
 class VulkanWorldRenderer(val backend: VulkanGraphicsBackend, world: WorldClientCommon) : WorldRenderer(world) {
-    val chunksRepresentationsProvider = ChunkRepresentationsProvider(backend, world)
+    val chunksRepresentationsProvider = VulkanChunkRepresentationsProvider(backend, world)
     val entitiesProvider = EntitiesRepresentationsProvider(world)
 
     val client = world.gameContext

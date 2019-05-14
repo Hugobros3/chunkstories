@@ -24,9 +24,9 @@ import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
 import xyz.chunkstories.graphics.vulkan.textures.voxels.VulkanVoxelTexturesArray
 
-class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingSystem<ChunkRepresentation>(backend) {
+class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingSystem<VulkanChunkRepresentation>(backend) {
 
-    override val representationName: String = ChunkRepresentation::class.java.canonicalName
+    override val representationName: String = VulkanChunkRepresentation::class.java.canonicalName
 
     private val cubesVertexInput = VertexInputConfiguration {
         var offset = 0
@@ -106,11 +106,11 @@ class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
 
     val sampler = VulkanSampler(backend, tilingMode = TextureTilingMode.REPEAT)
 
-    inner class Drawer(pass: VulkanPass, initCode: Drawer.() -> Unit) : VulkanDispatchingSystem.Drawer<ChunkRepresentation.Section>(pass), ChunksRenderer {
+    inner class Drawer(pass: VulkanPass, initCode: Drawer.() -> Unit) : VulkanDispatchingSystem.Drawer<VulkanChunkRepresentation.Section>(pass), ChunksRenderer {
         override lateinit var materialTag: String
         override lateinit var shader: String
 
-        override val system: VulkanDispatchingSystem<ChunkRepresentation>
+        override val system: VulkanDispatchingSystem<VulkanChunkRepresentation>
             get() = this@ChunkRepresentationsDispatcher
 
         init {
@@ -130,7 +130,7 @@ class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
         val maxChunksRendered = 4096
         val ssboBufferSize = (sizeAligned16 * maxChunksRendered).toLong()
 
-        override fun registerDrawingCommands(frame: VulkanFrame, ctx: SystemExecutionContext, commandBuffer: VkCommandBuffer, work: Sequence<ChunkRepresentation.Section>) {
+        override fun registerDrawingCommands(frame: VulkanFrame, ctx: SystemExecutionContext, commandBuffer: VkCommandBuffer, work: Sequence<VulkanChunkRepresentation.Section>) {
             val client = backend.window.client.ingame ?: return
 
             val staticMeshes = work.mapNotNull { it.staticMesh }
@@ -278,11 +278,11 @@ class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
     override fun createDrawerForPass(pass: VulkanPass, drawerInitCode: VulkanDispatchingSystem.Drawer<*>.() -> Unit) =
             Drawer(pass, drawerInitCode)
 
-    override fun sort(representation: ChunkRepresentation, drawers: Array<VulkanDispatchingSystem.Drawer<*>>, outputs: List<MutableList<Any>>) {
+    override fun sort(representation: VulkanChunkRepresentation, drawers: Array<VulkanDispatchingSystem.Drawer<*>>, outputs: List<MutableList<Any>>) {
         //TODO look at material/tag and decide where to send it
         for (section in representation.sections.values) {
             for ((index, drawer) in drawers.withIndex()) {
-                if ((drawer as ChunkRepresentationsDispatcher.Drawer).materialTag == section.materialTag) {
+                if ((drawer as Drawer).materialTag == section.materialTag) {
                     outputs[index].add(section)
                 }
             }

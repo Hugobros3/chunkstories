@@ -1,34 +1,34 @@
-package xyz.chunkstories.graphics.vulkan.systems.world
+package xyz.chunkstories.graphics.common.world
 
 import org.joml.Vector3f
 import org.joml.Vector3fc
+import xyz.chunkstories.api.graphics.rendergraph.Frame
 import xyz.chunkstories.api.graphics.systems.dispatching.RepresentationsGobbler
 import xyz.chunkstories.api.graphics.systems.dispatching.RepresentationsProvider
 import xyz.chunkstories.api.util.kotlin.toVec3i
 import xyz.chunkstories.client.InternalClientOptions
-import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
-import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
 import xyz.chunkstories.world.WorldClientCommon
 import xyz.chunkstories.world.chunk.CubicChunk
 import xyz.chunkstories.world.storage.RegionImplementation
 
-class ChunkRepresentationsProvider(val backend: VulkanGraphicsBackend, val world: WorldClientCommon) : RepresentationsProvider {
-    override fun gatherRepresentations(representationsGobbler: RepresentationsGobbler) {
-        //val passes = representationsGobbler.con
-        val contexts=  representationsGobbler.renderTaskInstances
+abstract class ChunkRepresentationsProvider<R : ChunkRepresentation>(
+        val world: WorldClientCommon,
+        val getRepresentation: (Frame, CubicChunk) -> R?,
+        val postGather: (Frame, List<R>) -> Unit
+) : RepresentationsProvider {
+    final override fun gatherRepresentations(representationsGobbler: RepresentationsGobbler) {
+        val contexts = representationsGobbler.renderTaskInstances
         val cameras = contexts.map { it.camera }
 
-        //val mainPass = passes.find { it.context.name == "main" }!! as VulkanFrameGraph.FrameGraphNode.PassNode
-        //val mainContext = mainPass.context
-        val mainContext = contexts.find { it.name == "main" }!! as VulkanFrameGraph.FrameGraphNode.VulkanRenderTaskInstance
+        val mainContext = contexts.find { it.name == "main" }!!
         val mainCamera = mainContext.camera
 
-        val frame = mainContext.frameGraph.frame
+        val frame = mainContext.frame
 
         fun getVisibility(boxCenter: Vector3fc, boxSize: Vector3fc): Int {
             var mask = 0
-            for((index, camera) in cameras.withIndex()) {
-                if(camera.frustrum.isBoxInFrustrum(boxCenter, boxSize))
+            for ((index, camera) in cameras.withIndex()) {
+                if (camera.frustrum.isBoxInFrustrum(boxCenter, boxSize))
                     mask = mask or (1 shl index)
             }
             return mask
@@ -36,12 +36,12 @@ class ChunkRepresentationsProvider(val backend: VulkanGraphicsBackend, val world
 
         fun refineVisibility(boxCenter: Vector3fc, boxSize: Vector3fc, previousMask: Int): Int {
             var mask = 0
-            for((index, camera) in cameras.withIndex()) {
+            for ((index, camera) in cameras.withIndex()) {
                 val submask = (1 shl index)
-                if(previousMask and submask == 0)
+                if (previousMask and submask == 0)
                     continue
 
-                if(camera.frustrum.isBoxInFrustrum(boxCenter, boxSize))
+                if (camera.frustrum.isBoxInFrustrum(boxCenter, boxSize))
                     mask = mask or submask
             }
             return mask
@@ -64,7 +64,7 @@ class ChunkRepresentationsProvider(val backend: VulkanGraphicsBackend, val world
             rc++
 
             val regionVisMask = getVisibility(boxCenter, boxSize2)
-            if(regionVisMask != 0) {
+            if (regionVisMask != 0) {
                 regionVisibility[visibleRegionsCount] = regionVisMask
                 visibleRegions[visibleRegionsCount++] = region as RegionImplementation
             }
@@ -88,7 +88,7 @@ class ChunkRepresentationsProvider(val backend: VulkanGraphicsBackend, val world
 
         val visibleRegionChunks = arrayOfNulls<CubicChunk>(8 * 8 * 8)
         val chunksVisibilityMask = IntArray(8 * 8 * 8)
-        var visibleRegionChunksCount : Int
+        var visibleRegionChunksCount: Int
 
         val camPos = mainCamera.position
 
@@ -104,25 +104,13 @@ class ChunkRepresentationsProvider(val backend: VulkanGraphicsBackend, val world
         val visibilityRangeY = (camChunk.y - drawDistanceH)..(camChunk.y + drawDistanceH)
         val visibilityRangeZ = (camChunk.z - drawDistance)..(camChunk.z + drawDistance)
 
-        val usedData = mutableListOf<ChunkRepresentation>()
+        val usedData = mutableListOf<R>()
 
-        fun obtainAndSendRepresentation(chunk: CubicChunk, visibility: Int) {
-            if (chunk.mesh is VulkanChunkMeshProperty) {
-                val block = (chunk.mesh as VulkanChunkMeshProperty).get()
-                if (block != null) {
-                    usedData.add(block)
-                    representationsGobbler.acceptRepresentation(block, visibility)
-                }
-            } else {
-                // This avoids the condition where the meshData is created after the chunk is destroyed
-                chunk.chunkDestructionSemaphore.acquireUninterruptibly()
-                if (!chunk.isDestroyed)
-                    chunk.mesh = VulkanChunkMeshProperty(backend, chunk)
-                chunk.chunkDestructionSemaphore.release()
-            }
-        }
+        /*fun obtainAndSendRepresentation(chunk: CubicChunk): R? {
 
-        for(i in 0 until visibleRegionsCount) {
+        }*/
+
+        for (i in 0 until visibleRegionsCount) {
             val region = visibleRegions[i]!!
             val regionVis = regionVisibility[i]
 
@@ -132,8 +120,8 @@ class ChunkRepresentationsProvider(val backend: VulkanGraphicsBackend, val world
                 boxCenter.y = chunk.chunkY * 32.0f + 16.0f
                 boxCenter.z = chunk.chunkZ * 32.0f + 16.0f
 
-                if(!chunk.isAirChunk) {
-                    if(chunk.chunkX in visibilityRangeX && chunk.chunkY in visibilityRangeY && chunk.chunkZ in visibilityRangeZ) {
+                if (!chunk.isAirChunk) {
+                    if (chunk.chunkX in visibilityRangeX && chunk.chunkY in visibilityRangeY && chunk.chunkZ in visibilityRangeZ) {
 
                         val chunkVisibility = refineVisibility(boxCenter, boxSize, regionVis)
                         if (chunkVisibility != 0) {
@@ -160,13 +148,22 @@ class ChunkRepresentationsProvider(val backend: VulkanGraphicsBackend, val world
                 (distSquared(a!!) - distSquared(b!!)).toInt()
             }*/
 
-            for(j in 0 until visibleRegionChunksCount) {
-                obtainAndSendRepresentation(visibleRegionChunks[j]!!, chunksVisibilityMask[j])
-            }
+            gather4region(visibleRegionChunksCount, frame, visibleRegionChunks, usedData, representationsGobbler, chunksVisibilityMask, getRepresentation)
         }
 
-        frame.recyclingTasks.add {
-            usedData.forEach(ChunkRepresentation::release)
+        postGather(frame, usedData)
+    }
+
+    private inline fun gather4region(visibleRegionChunksCount: Int, frame: Frame, visibleRegionChunks: Array<CubicChunk?>,
+                                     usedData: MutableList<R>, representationsGobbler: RepresentationsGobbler, chunksVisibilityMask: IntArray,
+                                     getRepresentation: (Frame, CubicChunk) -> R?) {
+        for (j in 0 until visibleRegionChunksCount) {
+            //val r = obtainAndSendRepresentation(visibleRegionChunks[j]!!, chunksVisibilityMask[j])
+            val r = getRepresentation(frame, visibleRegionChunks[j]!!)
+            if (r != null) {
+                usedData.add(r)
+                representationsGobbler.acceptRepresentation(r, chunksVisibilityMask[j])
+            }
         }
     }
 

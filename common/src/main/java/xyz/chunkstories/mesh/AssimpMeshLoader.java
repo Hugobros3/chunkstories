@@ -9,21 +9,19 @@ package xyz.chunkstories.mesh;
 import assimp.*;
 import com.carrotsearch.hppc.ByteArrayList;
 import com.carrotsearch.hppc.FloatArrayList;
+
 import glm_.vec3.Vec3;
 import xyz.chunkstories.api.content.Asset;
 import xyz.chunkstories.api.exceptions.content.MeshLoadException;
 import xyz.chunkstories.api.graphics.*;
 import xyz.chunkstories.api.graphics.representation.Model;
 import xyz.chunkstories.util.FoldersUtils;
-import kotlin.ranges.IntRange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class AssimpMeshLoader {
@@ -189,11 +187,17 @@ public class AssimpMeshLoader {
                                 //vertices.add(vertex.x, vertex.z, -vertex.y);
                                 //normals.add(normal.x, normal.z, -normal.y);
 
-                                vertices.add(vertex.getY(), vertex.getZ(), vertex.getX());
-                                normals.add(normal.getY(), normal.getZ(), normal.getX());
+                                vertices.add(vertex.y, vertex.z, vertex.x);
+                                normals.add(normal.y, normal.z, normal.x);
+
+                                //vertices.add(vertex.getY(), vertex.getZ(), vertex.getX());
+                                //normals.add(normal.getY(), normal.getZ(), normal.getX());
                             } else {
-                                vertices.add(vertex.getX(), vertex.getY(), vertex.getZ());
-                                normals.add(normal.getX(), normal.getY(), normal.getZ());
+                                vertices.add(vertex.x, vertex.y, vertex.z);
+                                normals.add(normal.x, normal.y, normal.z);
+
+                                //vertices.add(vertex.getX(), vertex.getY(), vertex.getZ());
+                                //normals.add(normal.getX(), normal.getY(), normal.getZ());
                             }
 
                             texcoords.add(texcoord[0], 1.0f - texcoord[1]);

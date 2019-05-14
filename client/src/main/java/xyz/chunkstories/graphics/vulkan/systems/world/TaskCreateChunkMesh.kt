@@ -2,7 +2,6 @@ package xyz.chunkstories.graphics.vulkan.systems.world
 
 import org.joml.Matrix4f
 import org.joml.Vector3f
-import org.joml.Vector3fc
 import org.joml.Vector4f
 import org.lwjgl.system.MemoryUtil
 import org.lwjgl.system.MemoryUtil.memFree
@@ -296,10 +295,10 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
                 return vertexBuffer
             }
 
-            val cubes = if (scratch.cubesCount > 0) ChunkRepresentation.Section.CubesInstances(buf2vk(scratch.cubesData), scratch.cubesCount) else null
-            val staticMesh = if (scratch.meshTriCount > 0) ChunkRepresentation.Section.StaticMesh(buf2vk(scratch.meshData), scratch.meshTriCount) else null
+            val cubes = if (scratch.cubesCount > 0) VulkanChunkRepresentation.Section.CubesInstances(buf2vk(scratch.cubesData), scratch.cubesCount) else null
+            val staticMesh = if (scratch.meshTriCount > 0) VulkanChunkRepresentation.Section.StaticMesh(buf2vk(scratch.meshData), scratch.meshTriCount) else null
 
-            ChunkRepresentation.Section(it.key, cubes, staticMesh)
+            VulkanChunkRepresentation.Section(it.key, cubes, staticMesh)
         }
 
         map.values.forEach(Cleanable::cleanup)

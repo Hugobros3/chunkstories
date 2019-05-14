@@ -8,7 +8,7 @@ class RefCountedProperty<R: RefCountedRecyclable> {
 
     internal var data : R? = null
 
-    fun get() : R? {
+    fun getAndAcquire() : R? {
         try {
             lock.lock()
 

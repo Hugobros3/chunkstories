@@ -1,6 +1,5 @@
 package xyz.chunkstories.graphics.vulkan.systems.world
 
-import xyz.chunkstories.api.world.chunk.Chunk
 import xyz.chunkstories.api.world.chunk.ChunkMesh
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.resources.RefCountedProperty
@@ -8,16 +7,16 @@ import xyz.chunkstories.world.chunk.CubicChunk
 import xyz.chunkstories.world.chunk.deriveddata.AutoRebuildingProperty
 
 class VulkanChunkMeshProperty(val backend: VulkanGraphicsBackend, val chunk: CubicChunk) : AutoRebuildingProperty(chunk.world.gameContext, true), ChunkMesh {
-    val actualProperty = RefCountedProperty<ChunkRepresentation>()
+    val actualProperty = RefCountedProperty<VulkanChunkRepresentation>()
 
     init {
         //requestUpdate()
     }
 
-    fun get(): ChunkRepresentation? {
+    fun getAndAcquire(): VulkanChunkRepresentation? {
         try {
             lock.lock()
-            val value = actualProperty.get()
+            val value = actualProperty.getAndAcquire()
             if (value == null && task == null)
                 this.requestUpdate()
             return value
@@ -26,8 +25,8 @@ class VulkanChunkMeshProperty(val backend: VulkanGraphicsBackend, val chunk: Cub
         }
     }
 
-    fun acceptNewData(sections: Map<String, ChunkRepresentation.Section>) {
-        val data = ChunkRepresentation(chunk, sections, actualProperty)
+    fun acceptNewData(sections: Map<String, VulkanChunkRepresentation.Section>) {
+        val data = VulkanChunkRepresentation(chunk, sections, actualProperty)
         actualProperty.set(data)
     }
 
