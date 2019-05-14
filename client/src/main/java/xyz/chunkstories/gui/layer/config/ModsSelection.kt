@@ -120,13 +120,12 @@ class ModsSelection(window: Gui, parent: Layer) : Layer(window, parent) {
     }
 
     override fun render(drawer: GuiDrawer) {
-        //parentLayer!!.rootLayer.render(drawer)
-        val scale = 1
+        var posY = gui.viewportHeight
+        posY -= 24 + 4
 
+        val font = drawer!!.fonts.getFont("LiberationSans-Regular", 18f)
         val instructions = "Select the mods you want to use"
-        val font = drawer!!.fonts.getFont("LiberationSans-Regular", (16 * scale).toFloat())
-        drawer.drawStringWithShadow(font, 32, gui.viewportHeight - 24 * scale,
-                instructions, -1, Vector4f(1f))
+        drawer.drawStringWithShadow(font, 8, posY, instructions, -1, Vector4f(1f))
 
         backOption.setPosition(xPosition + 8, 8)
         backOption.render(drawer)
@@ -134,7 +133,7 @@ class ModsSelection(window: Gui, parent: Layer) : Layer(window, parent) {
         // Display buttons
 
         var totalLengthOfButtons = 0
-        val spacing = 2 * scale
+        val spacing = 2 * 1
 
         totalLengthOfButtons += applyMods.width
         totalLengthOfButtons += spacing
@@ -157,10 +156,10 @@ class ModsSelection(window: Gui, parent: Layer) : Layer(window, parent) {
         buttonDisplayX += applyMods.width + spacing
         applyMods.render(drawer)
 
-        val offsetForButtons = applyMods.positionY + applyMods.height + 8 * scale
-        val offsetForHeaderText = 32 * scale
-        modsContainer.setPosition((width - 480 * scale) / 2, offsetForButtons)
-        modsContainer.setSize(480 * scale, height - (offsetForButtons + offsetForHeaderText))
+        val offsetForButtons = applyMods.positionY + applyMods.height + 8 * 1
+        val offsetForHeaderText = 32 * 1
+        modsContainer.setPosition((width - 480 * 1) / 2, offsetForButtons)
+        modsContainer.setSize(480 * 1, height - (offsetForButtons + offsetForHeaderText))
         modsContainer.render(drawer)
     }
 

@@ -68,9 +68,13 @@ class ServerSelection internal constructor(gui: Gui, parent: Layer, private val 
         if (automaticLogin && serverAddress.text != "")
             login()
 
+        var posY = gui.viewportHeight
+        posY -= 24 + 4
+
+        val titleFont = drawer.fonts.getFont("LiberationSans-Regular", 18f)
+
         val instructions = "Select a server from the list or type in the address directly"
-        val titleFont = drawer.fonts.getFont("LiberationSans-Regular", 16f)
-        drawer.drawStringWithShadow(titleFont, 8, gui.viewportHeight - 32, instructions, -1, Vector4f(1f))
+        drawer.drawStringWithShadow(titleFont, 8, posY, instructions, -1, Vector4f(1f))
 
         // gui
         val ipTextboxSize = gui.viewportWidth - connectButton.width - 8 - 8

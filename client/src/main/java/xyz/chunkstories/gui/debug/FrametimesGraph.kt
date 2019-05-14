@@ -24,11 +24,11 @@ object FrametimesGraph {
         //println("kéké")
 
         for(x in 0 until size) {
-            guiDrawer.drawBox(x * 1, 0, 1, (data[x].toInt() / 1000) / 100, "textures/gui/grey.png", color)
+            guiDrawer.drawBox(x * 1, 0, 1, (data[x].toInt() / 1000) / 100, "textures/gui/white.png", color)
             //println(data[x] / 100000)
         }
 
-        guiDrawer.drawBox(0, 0, size, 166, "textures/gui/grey.png", Vector4f(0f, 1f, 0f, 0.25f))
+        guiDrawer.drawBox(0, 0, size, 166, "textures/gui/white.png", Vector4f(0f, 1f, 0f, 0.25f))
 
         (guiDrawer.gui as ClientGui).guiScaleOverride = -1
     }

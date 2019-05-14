@@ -18,6 +18,7 @@ import xyz.chunkstories.api.input.Mouse.MouseButton
 import xyz.chunkstories.api.sound.SoundSource
 import xyz.chunkstories.api.util.configuration.Configuration
 import xyz.chunkstories.api.util.configuration.Configuration.*
+import xyz.chunkstories.input.lwjgl3.GLFWKeyIndexHelper
 import xyz.chunkstories.input.lwjgl3.Lwjgl3MouseButton
 import java.util.*
 
@@ -115,11 +116,11 @@ class OptionsScreen(gui: Gui, parent: Layer) : Layer(gui, parent) {
 
     }
 
-
     internal inner class ConfigButtonKey internal constructor(override val option: OptionKeyBind, tab: ConfigTab) : ConfigButton(option, tab) {
 
         override fun updateText() {
-            this.text = gui.localization().getLocalizedString(option.name) + " : " + glfwGetKeyName(option.value, 0)// Keyboard.getKeyName(Integer.parseInt(value));
+            this.text = gui.localization().getLocalizedString(option.name) + ": " + (GLFWKeyIndexHelper.shortNames[option.value] ?: "?").toUpperCase()
+                    //glfwGetKeyName(option.value, 0)// Keyboard.getKeyName(Integer.parseInt(value));
         }
 
         override fun handleClick(mouseButton: MouseButton): Boolean {
@@ -277,8 +278,8 @@ class OptionsScreen(gui: Gui, parent: Layer) : Layer(gui, parent) {
         for (button in tabsButtons) {
             button.setPosition(gui.viewportWidth / 2 - optionsPanelSize / 2 + dekal, gui.viewportHeight - 64)
             button.render(renderer)
-            dekal += (button.width / 2f).toInt()
-            dekal += (button.width / 2f).toInt()
+
+            dekal += button.width + 2
         }
 
         // Display the current tab
