@@ -11,9 +11,15 @@ import org.slf4j.LoggerFactory
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 class CommandPool(val backend: VulkanGraphicsBackend, queueFamily: PhysicalDevice.QueueFamily, flags: Int) : Cleanable {
     val handle: VkCommandPool
+
+    val lock = ReentrantLock()
+    val cmdBuffers = mutableListOf<VkCommandBuffer>()
+    var n = 1
 
     init {
         stackPush()
@@ -30,6 +36,42 @@ class CommandPool(val backend: VulkanGraphicsBackend, queueFamily: PhysicalDevic
         handle = pCommandPool.get(0)
 
         stackPop()
+    }
+
+    private fun makeMoreCommandBuffers() {
+        for(i in 0 until n) {
+            stackPush().use {
+                val allocInfo = VkCommandBufferAllocateInfo.callocStack().sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO).apply {
+                    level(VK_COMMAND_BUFFER_LEVEL_PRIMARY)
+                    commandPool(handle)
+                    commandBufferCount(1)
+                }
+
+                val pCommandBuffer = stackMallocPointer(1)
+                vkAllocateCommandBuffers(backend.logicalDevice.vkDevice, allocInfo, pCommandBuffer).ensureIs("Failed to allocate CB !", VK_SUCCESS)
+                val commandBuffer: VkCommandBuffer = VkCommandBuffer(pCommandBuffer.get(0), backend.logicalDevice.vkDevice)
+
+                cmdBuffers.add(commandBuffer)
+            }
+        }
+        n *= 2
+    }
+
+    fun loanCommandBuffer() : VkCommandBuffer {
+        lock.withLock {
+            if(cmdBuffers.isEmpty())
+                makeMoreCommandBuffers()
+
+            return cmdBuffers.removeAt(0)
+        }
+    }
+
+    fun returnCommandBuffer(cmdBuffer: VkCommandBuffer) {
+        vkResetCommandBuffer(cmdBuffer, 0)
+
+        lock.withLock {
+            cmdBuffers.add(cmdBuffer)
+        }
     }
 
     fun createOneUseCB() : VkCommandBuffer {

@@ -28,8 +28,6 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
 
     val frameBuffers = mutableMapOf<List<VulkanRenderBuffer>, VkFramebuffer>()
 
-    private val commandPool = CommandPool(backend, backend.logicalDevice.graphicsQueue.family, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT or VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
-
     init {
         stackPush()
         canonicalRenderPass = RenderPass(backend, this, null)
@@ -186,17 +184,18 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
 
         val viewportSize = resolvedDepthAndColorBuffers[0].textureSize
 
-        val commandBuffer = commandPool.createOneUseCB()
+        //val commandBuffer = commandPool.createOneUseCB()
+        val commandBuffer = renderTask.renderGraph.commandPool.loanCommandBuffer()
         passInstance.commandBuffer = commandBuffer
 
         stackPush().use {
             commandBuffer.apply {
-                /*val beginInfo = VkCommandBufferBeginInfo.callocStack().sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO).apply {
+                val beginInfo = VkCommandBufferBeginInfo.callocStack().sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO).apply {
                     flags(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT)
                     pInheritanceInfo(null)
                 }
 
-                vkBeginCommandBuffer(this, beginInfo)*/
+                vkBeginCommandBuffer(this, beginInfo)
 
                 val viewport = VkViewport.callocStack(1).apply {
                     x(0.0F)
@@ -331,7 +330,8 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
 
         frame.recyclingTasks.add {
             //vkDestroyFramebuffer(backend.logicalDevice.vkDevice, framebuffer, null)
-            vkFreeCommandBuffers(backend.logicalDevice.vkDevice, commandPool.handle, commandBuffer)
+            //vkFreeCommandBuffers(backend.logicalDevice.vkDevice, commandPool.handle, commandBuffer)
+            renderTask.renderGraph.commandPool.returnCommandBuffer(commandBuffer)
         }
     }
 
@@ -351,8 +351,6 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
         canonicalRenderPass.cleanup()
         for (renderPass in renderPassesMap.values)
             renderPass.cleanup()
-
-        commandPool.cleanup()
     }
 
     companion object {
