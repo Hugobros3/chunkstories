@@ -96,6 +96,7 @@ class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
             offset(offset)
         }
         offset += 4
+        offset += 4
 
         binding {
             binding(0)

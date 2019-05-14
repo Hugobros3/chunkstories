@@ -163,6 +163,7 @@ abstract class TaskCreateChunkMesh(
                             }
 
                             meshData.putInt(textureId)
+                            meshData.putInt(0)
                             scratch.meshTriCount++
                         }
                     }
@@ -245,6 +246,7 @@ abstract class TaskCreateChunkMesh(
                                         meshData.putShort(texcoord[1].toUNORM16())
 
                                         meshData.putInt(textureId)
+                                        meshData.putInt(0)
                                         scratch.meshTriCount++
                                     }
                                 }
