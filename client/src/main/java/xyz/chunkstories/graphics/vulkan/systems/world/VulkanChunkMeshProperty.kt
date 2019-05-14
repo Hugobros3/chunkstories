@@ -30,7 +30,7 @@ class VulkanChunkMeshProperty(val backend: VulkanGraphicsBackend, val chunk: Cub
         actualProperty.set(data)
     }
 
-    override fun createTask(updatesToConsider: Int): UpdateTask = TaskCreateChunkMesh(backend, chunk, this, updatesToConsider)
+    override fun createTask(updatesToConsider: Int): UpdateTask = TaskCreateVulkanChunkRepresentation(backend, chunk, this, updatesToConsider)
 
     override fun cleanup() {
         actualProperty.data?.release()

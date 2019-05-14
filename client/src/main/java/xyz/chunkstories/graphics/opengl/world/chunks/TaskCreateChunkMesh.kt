@@ -1,10 +1,9 @@
-package xyz.chunkstories.graphics.vulkan.systems.world
+package xyz.chunkstories.graphics.opengl.world.chunks
 
 import org.joml.Matrix4f
 import org.joml.Vector3f
 import org.joml.Vector4f
 import org.lwjgl.system.MemoryUtil
-import org.lwjgl.system.MemoryUtil.memFree
 import xyz.chunkstories.api.graphics.MeshMaterial
 import xyz.chunkstories.api.graphics.representation.Model
 import xyz.chunkstories.api.util.kotlin.getNormalMatrix
@@ -12,23 +11,23 @@ import xyz.chunkstories.api.voxel.ChunkMeshRenderingInterface
 import xyz.chunkstories.api.voxel.Voxel
 import xyz.chunkstories.api.voxel.VoxelFormat
 import xyz.chunkstories.api.voxel.VoxelSide
+import xyz.chunkstories.api.voxel.textures.VoxelTexture
 import xyz.chunkstories.api.workers.TaskExecutor
 import xyz.chunkstories.api.world.chunk.ChunkHolder
 import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.common.UnitCube
-import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
-import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
-import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
-import xyz.chunkstories.graphics.vulkan.textures.voxels.VoxelTexturesArray
 import xyz.chunkstories.world.cell.ScratchCell
 import xyz.chunkstories.world.chunk.CubicChunk
 import xyz.chunkstories.world.chunk.deriveddata.AutoRebuildingProperty
-import java.lang.Integer.max
-import java.lang.Integer.min
 import java.nio.ByteBuffer
 import java.util.*
 
-class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicChunk, attachedProperty: AutoRebuildingProperty, updates: Int) : AutoRebuildingProperty.UpdateTask(attachedProperty, updates) {
+abstract class TaskCreateChunkMesh(
+        val chunk: CubicChunk, attachedProperty: AutoRebuildingProperty, updates: Int,
+        val voxelTextureId: (VoxelTexture) -> Int,
+        val done: (Map<String, ScratchBuffer>) -> Unit
+
+) : AutoRebuildingProperty.UpdateTask(attachedProperty, updates) {
     lateinit var rawChunkData: IntArray
 
     inline fun opaque(voxel: Voxel) = voxel.opaque// || voxel.name == "water"
@@ -43,6 +42,17 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
             else
                 chunk.world.peekRaw(x2 + chunk.chunkX * 32, y2 + chunk.chunkY * 32, z2 + chunk.chunkZ * 32)
 
+    class ScratchBuffer : Cleanable {
+        val cubesData: ByteBuffer = MemoryUtil.memAlloc(1024 * 1024 * 4 * 4)
+        var cubesCount = 0
+        val meshData: ByteBuffer = MemoryUtil.memAlloc(1024 * 1024 * 4 * 4)
+        var meshTriCount = 0
+        override fun cleanup() {
+            MemoryUtil.memFree(cubesData)
+            MemoryUtil.memFree(meshData)
+        }
+    }
+
     override fun update(taskExecutor: TaskExecutor): Boolean {
         if (chunk.holder().state !is ChunkHolder.State.Available)
             return true
@@ -54,22 +64,9 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
         if (neighborsPresent < neighborsIndexes.size)
             return true
 
-        val receiver = chunk.mesh as VulkanChunkMeshProperty
-
         val rng = Random(1)
 
         val chunkDataRef = chunk.voxelDataArray
-
-        class ScratchBuffer : Cleanable {
-            val cubesData: ByteBuffer = MemoryUtil.memAlloc(1024 * 1024 * 4 * 4)
-            var cubesCount = 0
-            val meshData: ByteBuffer = MemoryUtil.memAlloc(1024 * 1024 * 4 * 4)
-            var meshTriCount = 0
-            override fun cleanup() {
-                memFree(cubesData)
-                memFree(meshData)
-            }
-        }
 
         val map = mutableMapOf<String, ScratchBuffer>()
 
@@ -108,8 +105,9 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
                             texName.startsWith("voxels/textures") -> texName = texName.removePrefix("voxels/textures/") ?: "notex"
                         }
                         texName = texName.removeSuffix(".png")
-                        val voxelTexture = chunk.world.content.voxels().textures().get(texName) as VoxelTexturesArray.VoxelTextureInArray
-                        val textureId = voxelTexture.textureArrayIndex
+                        //val voxelTexture = chunk.world.content.voxels().textures().get(texName) as VoxelTexturesArray.VoxelTextureInArray
+                        val voxelTexture = chunk.world.content.voxels().textures().get(texName)
+                        val textureId = voxelTextureId(voxelTexture)
                         val vertexIn = mesh.attributes.find { it.name == "vertexIn" }?.data!!
                         val normalIn = mesh.attributes.find { it.name == "normalIn" }?.data
                         val texCoordIn = mesh.attributes.find { it.name == "texCoordIn" }?.data
@@ -214,14 +212,15 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
                                     if (opaque(neighborVoxel) || (voxel == neighborVoxel && voxel.selfOpaque))
                                         return
 
-                                    val voxelTexture = voxel.getVoxelTexture(cell, side) as VoxelTexturesArray.VoxelTextureInArray
+                                    val voxelTexture = voxel.getVoxelTexture(cell, side)// as VoxelTexturesArray.VoxelTextureInArray
 
                                     //val textureName = "voxels/textures/"+voxelTexture.name.replace('.','/')+".png"
                                     //val textureId = (backend.textures[textureName] as VulkanTexture2D).mapping
-                                    val textureId = voxelTexture.textureArrayIndex
+                                    //val textureId = voxelTexture.textureArrayIndex
+                                    val textureId = voxelTextureId(voxelTexture)
 
                                     val sunlight = VoxelFormat.sunlight(neighborData)
-                                    val blocklight = max(VoxelFormat.blocklight(neighborData), voxel.emittedLightLevel)
+                                    val blocklight = Integer.max(VoxelFormat.blocklight(neighborData), voxel.emittedLightLevel)
 
                                     for ((vertex, texcoord) in face.vertices) {
                                         /*meshData.put((vertex[0] + x).toByte())
@@ -285,25 +284,12 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
             }
         }
 
-        val sections = map.filter { it.value.cubesCount > 0 || it.value.meshTriCount > 0 }.mapValues {
-            val scratch = it.value
+        val sections = map.filter { it.value.cubesCount > 0 || it.value.meshTriCount > 0 }
 
-            fun buf2vk(buffer: ByteBuffer): VulkanVertexBuffer {
-                buffer.flip()
-                val vertexBuffer = VulkanVertexBuffer(backend, buffer.limit().toLong(), MemoryUsagePattern.SEMI_STATIC)
-                vertexBuffer.upload(buffer)
-                return vertexBuffer
-            }
-
-            val cubes = if (scratch.cubesCount > 0) VulkanChunkRepresentation.Section.CubesInstances(buf2vk(scratch.cubesData), scratch.cubesCount) else null
-            val staticMesh = if (scratch.meshTriCount > 0) VulkanChunkRepresentation.Section.StaticMesh(buf2vk(scratch.meshData), scratch.meshTriCount) else null
-
-            VulkanChunkRepresentation.Section(it.key, cubes, staticMesh)
-        }
+        done(sections)
 
         map.values.forEach(Cleanable::cleanup)
 
-        receiver.acceptNewData(sections)
         return true
     }
 
@@ -323,7 +309,7 @@ class TaskCreateChunkMesh(val backend: VulkanGraphicsBackend, val chunk: CubicCh
     }
 }
 
-private fun Int.clamp(min: Int, max: Int) = max(min, min(this, max))
+private fun Int.clamp(min: Int, max: Int) = Integer.max(min, Integer.min(this, max))
 
 fun Float.toSNORM(): Byte = ((this + 0.0f) * 0.5f * 255f).toInt().clamp(-128, 127).toByte()
 fun Float.toUNORM16(): Short = (this * 65535f).toInt().clamp(0, 65535).toShort()
