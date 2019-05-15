@@ -1,4 +1,4 @@
-package xyz.chunkstories.graphics.vulkan.world
+package xyz.chunkstories.graphics.common.world
 
 import org.joml.Matrix4f
 import org.joml.Vector3f
@@ -7,9 +7,9 @@ import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.api.util.kotlin.toVec3f
 import xyz.chunkstories.api.world.World
 import xyz.chunkstories.api.world.WorldClient
-import xyz.chunkstories.graphics.vulkan.VulkanBackendOptions
+import xyz.chunkstories.graphics.common.CommonGraphicsOptions
 import xyz.chunkstories.graphics.common.getConditions
-import xyz.chunkstories.graphics.vulkan.util.ShadowMappingInfo
+import xyz.chunkstories.graphics.common.structs.ShadowMappingInfo
 
 fun doShadowMapping(ctx: SystemExecutionContext, world: World) {
     //TODO hacky
@@ -18,7 +18,7 @@ fun doShadowMapping(ctx: SystemExecutionContext, world: World) {
 
     val mainCamera = ctx.passInstance.taskInstance.camera
 
-    val shadowCascades = client.configuration.getIntValue(VulkanBackendOptions.shadowCascades)
+    val shadowCascades = client.configuration.getIntValue(CommonGraphicsOptions.shadowCascades)
 
     val extentPerCascadeCount = when(shadowCascades) {
         0 -> floatArrayOf()

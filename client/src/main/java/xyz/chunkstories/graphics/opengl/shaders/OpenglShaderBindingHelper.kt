@@ -14,16 +14,16 @@ import xyz.chunkstories.graphics.opengl.textures.OpenglOnionTexture2D
 import xyz.chunkstories.graphics.opengl.textures.OpenglTexture2D
 import xyz.chunkstories.graphics.opengl.textures.OpenglTextureCubemap
 
-fun FakePSO.bindTexture(textureName: String, texture: OpenglTexture2D) {
+fun FakePSO.bindTexture(textureName: String, index: Int = 0, texture: OpenglTexture2D) {
     val resource = program.glslProgram.resources.find {
         it is GLSLUniformSampledImage2D && it.name == textureName
     } as? GLSLUniformSampledImage2D ?: return
 
-    ARBDirectStateAccess.glBindTextureUnit(resource.openglTextureUnit, texture.glTexId)
+    ARBDirectStateAccess.glBindTextureUnit(resource.openglTextureUnits[index], texture.glTexId)
 
     val uniformLocation = glGetUniformLocation(program.programId, resource.name)
     //println("$uniformLocation vs ${resource.binding}")
-    glUniform1i(uniformLocation, resource.openglTextureUnit)
+    glUniform1i(uniformLocation, resource.openglTextureUnits[index])
 }
 
 fun FakePSO.bindTexture(textureName: String, texture: OpenglTextureCubemap) {
@@ -31,11 +31,11 @@ fun FakePSO.bindTexture(textureName: String, texture: OpenglTextureCubemap) {
         it is GLSLUniformSampledImageCubemap && it.name == textureName
     } as? GLSLUniformSampledImageCubemap ?: return
 
-    ARBDirectStateAccess.glBindTextureUnit(resource.openglTextureUnit, texture.glTexId)
+    ARBDirectStateAccess.glBindTextureUnit(resource.openglTextureUnits[0], texture.glTexId)
 
     val uniformLocation = glGetUniformLocation(program.programId, resource.name)
     //println("$uniformLocation vs ${resource.binding}")
-    glUniform1i(uniformLocation, resource.openglTextureUnit)
+    glUniform1i(uniformLocation, resource.openglTextureUnits[0])
 }
 
 fun FakePSO.bindTexture(textureName: String, texture: OpenglOnionTexture2D) {
@@ -43,11 +43,11 @@ fun FakePSO.bindTexture(textureName: String, texture: OpenglOnionTexture2D) {
         it is GLSLUniformSampledImage2DArray && it.name == textureName
     } as? GLSLUniformSampledImage2DArray ?: return
 
-    ARBDirectStateAccess.glBindTextureUnit(resource.openglTextureUnit, texture.glTexId)
+    ARBDirectStateAccess.glBindTextureUnit(resource.openglTextureUnits[0], texture.glTexId)
 
     val uniformLocation = glGetUniformLocation(program.programId, resource.name)
     //println("$uniformLocation vs ${resource.binding}")
-    glUniform1i(uniformLocation, resource.openglTextureUnit)
+    glUniform1i(uniformLocation, resource.openglTextureUnits[0])
 }
 
 fun FakePSO.bindUBO(name: String, contents: InterfaceBlock) {

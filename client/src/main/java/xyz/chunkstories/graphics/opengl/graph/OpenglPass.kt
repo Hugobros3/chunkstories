@@ -103,6 +103,9 @@ class OpenglPass(val backend: OpenglGraphicsBackend, val renderTask: OpenglRende
                 null
         }
 
+        passInstance.resolvedColorOutputs = declaration.outputs.outputs.mapIndexed { i, o -> Pair(o, resolvedColorOutputs[i]) }.toMap()
+        passInstance.resolvedDepth = resolvedDepth
+
         // Prepare FBO
         val fbo = findOrCreateFbo(resolvedDepth, resolvedColorOutputs)
         glBindFramebuffer(GL_FRAMEBUFFER, fbo.glId)

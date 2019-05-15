@@ -1,4 +1,4 @@
-package xyz.chunkstories.graphics.vulkan.util
+package xyz.chunkstories.graphics.common.structs
 
 import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.api.graphics.structs.InterfaceBlock

@@ -48,14 +48,14 @@ private fun ShaderResources.bindTo(target: FakePSO, passInstance: PassInstance) 
                             vrti.renderTask.buffers[source.renderBufferName]!!.texture
                         }
                         is ImageSource.TextureReference -> source.texture as OpenglTexture2D
-                        /*is ImageSource.TaskOutput -> {
+                        is ImageSource.TaskOutput -> {
                             val referencedTaskInstance = source.context as OpenglFrameGraph.FrameGraphNode.OpenglRenderTaskInstance
 
                             //TODO we only handle direct deps for now
                             val rootPass = referencedTaskInstance.renderTask.rootPass
                             val resolvedPassInstance = referencedTaskInstance.dependencies.find { it is PassInstance && it.declaration == rootPass.declaration } as OpenglFrameGraph.FrameGraphNode.OpenglPassInstance
 
-                            val resolvedRenderBuffer = resolvedPassInstance.resolvedOutputs[source.output]!!
+                            val resolvedRenderBuffer = resolvedPassInstance.resolvedColorOutputs[source.output]!!
                             resolvedRenderBuffer.texture
                         }
                         is ImageSource.TaskOutputDepth -> {
@@ -65,15 +65,15 @@ private fun ShaderResources.bindTo(target: FakePSO, passInstance: PassInstance) 
                             val rootPass = referencedTaskInstance.renderTask.rootPass
                             val resolvedPassInstance = referencedTaskInstance.dependencies.find { it is PassInstance && it.declaration == rootPass.declaration } as OpenglFrameGraph.FrameGraphNode.OpenglPassInstance
 
-                            val resolvedRenderBuffer = resolvedPassInstance.resolvedDepthBuffer!!
+                            val resolvedRenderBuffer = resolvedPassInstance.resolvedDepth!!
                             resolvedRenderBuffer.texture
-                        }*/
+                        }
                         else -> TODO()
                     }
 
                     //TODO
                     //target.bindTextureAndSampler(imageName, texture2d, sampler, index)µ
-                    target.bindTexture(imageName, texture2d)
+                    target.bindTexture(imageName, index, texture2d)
                     return@apply
                 }
                 is GLSLUniformSampledImageCubemap -> {

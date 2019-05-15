@@ -291,7 +291,7 @@ class OpenglGuiDrawer(pass: OpenglPass, dslCode: (DrawingSystem) -> Unit) : Open
 
         pipeline.bindVertexBuffer(0, vertexBuffer)
         for(drawcall in drawCalls) {
-            drawcall.third?.let { pipeline.bindTexture("currentTexture", it) }
+            drawcall.third?.let { pipeline.bindTexture("currentTexture", 0, it) }
             glDrawArrays(GL_TRIANGLES, drawcall.second, drawcall.first)
         }
 

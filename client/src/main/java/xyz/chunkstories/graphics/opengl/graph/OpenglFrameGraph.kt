@@ -23,12 +23,17 @@ class OpenglFrameGraph(val frame: OpenglFrame, val renderGraph: OpenglRenderGrap
             get() = frameGraph.renderGraph
 
         class OpenglPassInstance(graph: OpenglFrameGraph, override val taskInstance: OpenglRenderTaskInstance, val pass: OpenglPass) : FrameGraphNode(graph), PassInstance {
+
+
             override val declaration: PassDeclaration = pass.declaration
             override val shaderResources = ShaderResources(null)
             override var renderTargetSize: Vector2i = Vector2i(0) // late-defined
 
             lateinit var preparedDrawingSystemsContexts: List<SystemExecutionContext>
             lateinit var preparedDispatchingSystemsContexts: List<SystemExecutionContext>
+
+            lateinit var resolvedColorOutputs: Map<PassOutput, OpenglRenderBuffer>
+            var resolvedDepth: OpenglRenderBuffer? = null
 
             override fun dispatchRenderTask(taskInstanceName: String, camera: Camera, renderTaskName: String, parameters: Map<String, Any>, callback: (RenderTaskInstance) -> Unit) {
                 val taskToDispatch = renderGraph.tasks[renderTaskName] ?: throw Exception("Can't find task $renderTaskName")

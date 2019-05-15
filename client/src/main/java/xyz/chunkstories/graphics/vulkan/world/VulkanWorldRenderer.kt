@@ -13,8 +13,10 @@ import xyz.chunkstories.api.graphics.systems.dispatching.ModelsRenderer
 import xyz.chunkstories.api.graphics.systems.dispatching.SpritesRenderer
 import xyz.chunkstories.api.graphics.systems.drawing.FullscreenQuadDrawer
 import xyz.chunkstories.api.gui.GuiDrawer
+import xyz.chunkstories.graphics.common.CommonGraphicsOptions
 import xyz.chunkstories.graphics.common.WorldRenderer
 import xyz.chunkstories.graphics.common.getConditions
+import xyz.chunkstories.graphics.common.world.doShadowMapping
 import xyz.chunkstories.graphics.vulkan.VulkanBackendOptions
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.systems.Vulkan3DVoxelRaytracer
@@ -97,8 +99,8 @@ class VulkanWorldRenderer(val backend: VulkanGraphicsBackend, world: WorldClient
                     size = viewportSize * 0.5
                 }
 
-                val shadowCascades = client.configuration.getIntValue(VulkanBackendOptions.shadowCascades)
-                val shadowResolution = client.configuration.getIntValue(VulkanBackendOptions.shadowMapSize)
+                val shadowCascades = client.configuration.getIntValue(CommonGraphicsOptions.shadowCascades)
+                val shadowResolution = client.configuration.getIntValue(CommonGraphicsOptions.shadowMapSize)
                 for (i in 0 until shadowCascades) {
                     renderBuffer {
                         name = "shadowBuffer$i"

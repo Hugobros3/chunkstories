@@ -74,6 +74,8 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
     for ((stage, compiler) in intermediarCompilationResults.compilers) {
         val stageResources = compiler.shaderResources
 
+        var availableTextureUnit = 0
+
         for (i in 0 until stageResources.sampledImages.size().toInt()) {
             val sampledImage = stageResources.sampledImages[i]
             val type = compiler.getType(sampledImage.typeId)
@@ -113,19 +115,20 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
                 }
             }
 
-            val openglTextureUnit = resources.count { it is GLSLUniformSampledImage }
+            //val firstAvailableTextureUnit = resources.count { it is GLSLUniformSampledImage }
+            val openglTextureUnits = (0 until arraySize).map { availableTextureUnit++ }.toIntArray()
 
             //TODO handle other dimensionalities
             if (arrayTexture) {
                 resources.add(when (dimensionality) {
-                    1 -> GLSLUniformSampledImage2DArray(sampledImageName, setSlot, binding, openglTextureUnit)
+                    1 -> GLSLUniformSampledImage2DArray(sampledImageName, setSlot, binding, openglTextureUnits)
                     else -> throw Exception("Not handled yet")
                 })
             } else {
                 resources.add(when (dimensionality) {
-                    1 -> GLSLUniformSampledImage2D(sampledImageName, setSlot, binding, openglTextureUnit, arraySize)
-                    2 -> GLSLUniformSampledImage3D(sampledImageName, setSlot, binding, openglTextureUnit, arraySize)
-                    3 -> GLSLUniformSampledImageCubemap(sampledImageName, setSlot, binding, openglTextureUnit)
+                    1 -> GLSLUniformSampledImage2D(sampledImageName, setSlot, binding, openglTextureUnits, arraySize)
+                    2 -> GLSLUniformSampledImage3D(sampledImageName, setSlot, binding, openglTextureUnits, arraySize)
+                    3 -> GLSLUniformSampledImageCubemap(sampledImageName, setSlot, binding, openglTextureUnits)
                     else -> throw Exception("Not handled yet")
                 })
             }

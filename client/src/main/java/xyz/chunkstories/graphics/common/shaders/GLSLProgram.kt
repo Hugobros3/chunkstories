@@ -52,7 +52,7 @@ interface GLSLUniformSampledImage : GLSLResource {
 
     /** For convenience every sampled image is mapped at compile-time to some texture unit.
      * Only used when rendering with OpenGL of course. */
-    val openglTextureUnit: Int
+    val openglTextureUnits: IntArray
 }
 
 /** Represents a (potentially an array of) sampler2D uniform resource declared in one of the stages of the GLSL program */
@@ -60,35 +60,39 @@ data class GLSLUniformSampledImage2D(
         override val name: String,
         override val descriptorSetSlot: Int,
         override val binding: Int,
-        override val openglTextureUnit: Int,
+        override val openglTextureUnits: IntArray,
         val count: Int) : GLSLUniformSampledImage
 
 data class GLSLUniformSampledImage3D(
         override val name: String,
         override val descriptorSetSlot: Int,
         override val binding: Int,
-        override val openglTextureUnit: Int,
-        val count: Int) : GLSLUniformSampledImage
+        override val openglTextureUnits: IntArray,
+        val count: Int
+) : GLSLUniformSampledImage
 
 /** The onion sort of 2D textures */
 data class GLSLUniformSampledImage2DArray(
         override val name: String,
         override val descriptorSetSlot: Int,
-        override val openglTextureUnit: Int,
-        override val binding: Int) : GLSLUniformSampledImage
+        override val binding: Int,
+        override val openglTextureUnits: IntArray
+) : GLSLUniformSampledImage
 
 data class GLSLUniformSampledImageCubemap(
         override val name: String,
         override val descriptorSetSlot: Int,
-        override val openglTextureUnit: Int,
-        override val binding: Int) : GLSLUniformSampledImage
+        override val binding: Int,
+        override val openglTextureUnits: IntArray
+) : GLSLUniformSampledImage
 
 /** Standalone image */
 data class GLSLUniformImage2D(
         override val name: String,
         override val descriptorSetSlot: Int,
         override val binding: Int,
-        val count: Int) : GLSLResource
+        val count: Int
+) : GLSLResource
 
 data class GLSLUniformSampler(
         override val name: String,
