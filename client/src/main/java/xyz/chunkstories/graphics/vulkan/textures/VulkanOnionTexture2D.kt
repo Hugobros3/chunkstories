@@ -1,7 +1,6 @@
 package xyz.chunkstories.graphics.vulkan.textures
 
 import org.lwjgl.system.MemoryStack
-import org.lwjgl.vulkan.VK10
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkBufferImageCopy
 import xyz.chunkstories.api.graphics.TextureFormat
@@ -18,7 +17,7 @@ class VulkanOnionTexture2D(backend: VulkanGraphicsBackend, format: TextureFormat
     fun copyBufferToImage(buffer: VulkanBuffer) {
         MemoryStack.stackPush()
         val operationsPool = backend.logicalDevice.graphicsQueue.threadSafePools.get()
-        val commandBuffer = operationsPool.createOneUseCB()
+        val commandBuffer = operationsPool.startCommandBuffer()
 
         val region = VkBufferImageCopy.callocStack(1).apply {
             bufferOffset(0)
@@ -50,12 +49,14 @@ class VulkanOnionTexture2D(backend: VulkanGraphicsBackend, format: TextureFormat
         vkCmdCopyBufferToImage(commandBuffer, buffer.handle, imageHandle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, region)
 
         val fence = backend.createFence(false)
-        operationsPool.submitOneTimeCB(commandBuffer, backend.logicalDevice.graphicsQueue, fence)
+        operationsPool.finishCommandBuffer(commandBuffer, backend.logicalDevice.graphicsQueue, fence)
 
         backend.waitFence(fence)
 
         vkDestroyFence(backend.logicalDevice.vkDevice, fence, null)
-        vkFreeCommandBuffers(backend.logicalDevice.vkDevice, operationsPool.handle, commandBuffer)
+
+        operationsPool.returnCommandBuffer(commandBuffer)
+        //vkFreeCommandBuffers(backend.logicalDevice.vkDevice, operationsPool.handle, commandBuffer)
 
         MemoryStack.stackPop()
     }

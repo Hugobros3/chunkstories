@@ -151,17 +151,19 @@ open class VulkanTexture(val backend: VulkanGraphicsBackend, final override val 
     fun transitionLayout(oldLayout: VkImageLayout, newLayout: VkImageLayout) {
         stackPush()
         val operationsPool = backend.logicalDevice.graphicsQueue.threadSafePools.get()
-        val commandBuffer = operationsPool.createOneUseCB()
+        val commandBuffer = operationsPool.startCommandBuffer()
 
         transitionLayout(commandBuffer, oldLayout, newLayout)
 
         val fence = backend.createFence(false)
-        operationsPool.submitOneTimeCB(commandBuffer, backend.logicalDevice.graphicsQueue, fence)
+        operationsPool.finishCommandBuffer(commandBuffer, backend.logicalDevice.graphicsQueue, fence)
 
         backend.waitFence(fence)
 
         vkDestroyFence(backend.logicalDevice.vkDevice, fence, null)
-        vkFreeCommandBuffers(backend.logicalDevice.vkDevice, operationsPool.handle, commandBuffer)
+
+        operationsPool.returnCommandBuffer(commandBuffer)
+        //vkFreeCommandBuffers(backend.logicalDevice.vkDevice, operationsPool.handle, commandBuffer)
 
         stackPop()
     }

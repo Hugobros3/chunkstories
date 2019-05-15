@@ -1,7 +1,6 @@
 package xyz.chunkstories.graphics.vulkan.textures
 
 import org.lwjgl.system.MemoryStack
-import org.lwjgl.vulkan.VK10
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkBufferImageCopy
 import org.lwjgl.vulkan.VkCommandBuffer
@@ -17,17 +16,19 @@ class VulkanTexture3D(backend: VulkanGraphicsBackend, format: TextureFormat, val
     fun copyBufferToImage(buffer: VulkanBuffer) {
         MemoryStack.stackPush()
         val operationsPool = backend.logicalDevice.graphicsQueue.threadSafePools.get()
-        val commandBuffer = operationsPool.createOneUseCB()
+        val commandBuffer = operationsPool.startCommandBuffer()
 
         copyBufferToImage(commandBuffer, buffer)
 
         val fence = backend.createFence(false)
-        operationsPool.submitOneTimeCB(commandBuffer, backend.logicalDevice.graphicsQueue, fence)
+        operationsPool.finishCommandBuffer(commandBuffer, backend.logicalDevice.graphicsQueue, fence)
 
         backend.waitFence(fence)
 
         vkDestroyFence(backend.logicalDevice.vkDevice, fence, null)
-        vkFreeCommandBuffers(backend.logicalDevice.vkDevice, operationsPool.handle, commandBuffer)
+
+        operationsPool.returnCommandBuffer(commandBuffer)
+        //vkFreeCommandBuffers(backend.logicalDevice.vkDevice, operationsPool.handle, commandBuffer)
 
         MemoryStack.stackPop()
     }

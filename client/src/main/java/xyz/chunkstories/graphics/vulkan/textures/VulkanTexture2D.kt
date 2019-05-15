@@ -21,7 +21,7 @@ class VulkanTexture2D(backend: VulkanGraphicsBackend, format: TextureFormat, ove
     fun copyBufferToImage(buffer: VulkanBuffer) {
         stackPush()
         val operationsPool = backend.logicalDevice.graphicsQueue.threadSafePools.get()
-        val commandBuffer = operationsPool.createOneUseCB()
+        val commandBuffer = operationsPool.startCommandBuffer()
 
         val region = VkBufferImageCopy.callocStack(1).apply {
             bufferOffset(0)
@@ -53,12 +53,14 @@ class VulkanTexture2D(backend: VulkanGraphicsBackend, format: TextureFormat, ove
         vkCmdCopyBufferToImage(commandBuffer, buffer.handle, imageHandle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, region)
 
         val fence = backend.createFence(false)
-        operationsPool.submitOneTimeCB(commandBuffer, backend.logicalDevice.graphicsQueue, fence)
+        operationsPool.finishCommandBuffer(commandBuffer, backend.logicalDevice.graphicsQueue, fence)
 
         backend.waitFence(fence)
 
         vkDestroyFence(backend.logicalDevice.vkDevice, fence, null)
-        vkFreeCommandBuffers(backend.logicalDevice.vkDevice, operationsPool.handle, commandBuffer)
+
+        operationsPool.returnCommandBuffer(commandBuffer)
+        //vkFreeCommandBuffers(backend.logicalDevice.vkDevice, operationsPool.handle, commandBuffer)
 
         stackPop()
     }
