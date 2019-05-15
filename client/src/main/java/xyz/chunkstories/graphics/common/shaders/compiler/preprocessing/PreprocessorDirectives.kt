@@ -1,6 +1,7 @@
 package xyz.chunkstories.graphics.common.shaders.compiler.preprocessing
 
 import xyz.chunkstories.api.graphics.structs.InterfaceBlock
+import xyz.chunkstories.graphics.common.shaders.GLSLDialect
 import xyz.chunkstories.graphics.common.shaders.GLSLType
 import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompiler
 import kotlin.reflect.KClass
@@ -103,7 +104,7 @@ fun ShaderCompiler.inlineUniformStructs(shaderCode: String, structs: List<GLSLTy
         val uniformName = line.split(' ').getOrNull(2)?.trimEnd(';')
 
         structs.find { it.glslToken == structName }?.run {
-            """layout(std140) uniform inlined_${structName}_$uniformName {
+            """layout(std140) uniform uniformstructinlined_${structName}_$uniformName {
                 ${this.innerGLSLCode()}
                 } $uniformName;
             """.trim()
@@ -118,12 +119,31 @@ fun ShaderCompiler.inlinePerInstanceData(shaderCode: String, structs: List<GLSLT
         val instanceData = line.split(' ').getOrNull(2)?.trimEnd(';')
 
         structs.find { it.glslToken == structName }?.run {
-            """layout(std140) buffer inlined_${structName}_$instanceData {
+            val canDoSSBO = when(dialect) {
+                GLSLDialect.VULKAN -> true
+                GLSLDialect.OPENGL -> false
+            }
+
+            if(canDoSSBO) {
+                """layout(std140) buffer instancedbuffer_${structName}_$instanceData {
                 $structName data[];
                 } ${instanceData}_buffer;
 
                 #define $instanceData ${instanceData}_buffer.data[gl_InstanceIndex]
-            """.trim()
+                """.trim()
+            } else {
+                /*"""layout(std140) uniform instancedbuffer_${structName}_$instanceData {
+                $structName data[];
+                } ${instanceData}_buffer;
+
+                #define $instanceData ${instanceData}_buffer.data[gl_InstanceIndex]
+                """.trim()*/
+
+                """layout(std140) uniform instancedbuffer_${structName}_$instanceData {
+                ${this.innerGLSLCode()}
+                } ${instanceData};
+                """.trim()
+            }
         } ?: line
     } else
         line

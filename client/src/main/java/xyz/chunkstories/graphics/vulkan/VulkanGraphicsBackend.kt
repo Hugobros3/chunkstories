@@ -332,6 +332,10 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
 
     override fun createWorldRenderer(world: WorldClientCommon) = VulkanWorldRenderer(this, world)
 
+    override fun reloadRendergraph() {
+        this.queuedRenderGraph = this.renderGraph.dslCode
+    }
+
     override fun cleanup() {
         vkDeviceWaitIdle(logicalDevice.vkDevice)
 
@@ -359,10 +363,6 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
 
         vkDestroyInstance(instance, null)
         logger.debug("Successfully finished cleaning up Vulkan objects")
-    }
-
-    fun reloadRendergraph() {
-        this.queuedRenderGraph = this.renderGraph.dslCode
     }
 
     companion object {

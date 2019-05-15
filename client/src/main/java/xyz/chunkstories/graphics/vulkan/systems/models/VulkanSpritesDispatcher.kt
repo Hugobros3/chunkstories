@@ -11,6 +11,7 @@ import xyz.chunkstories.api.graphics.representation.Sprite
 import xyz.chunkstories.api.graphics.systems.dispatching.SpritesRenderer
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
+import xyz.chunkstories.graphics.common.getConditions
 import xyz.chunkstories.graphics.common.shaders.GLSLInstancedInput
 import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompilationParameters
 import xyz.chunkstories.graphics.vulkan.Pipeline
@@ -18,16 +19,15 @@ import xyz.chunkstories.graphics.vulkan.VertexInputConfiguration
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
+import xyz.chunkstories.graphics.common.util.extractInterfaceBlock
+import xyz.chunkstories.graphics.common.util.getStd140AlignedSizeForStruct
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import xyz.chunkstories.graphics.vulkan.resources.DescriptorSetsMegapool
 import xyz.chunkstories.graphics.vulkan.shaders.VulkanShaderProgram
 import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
-import xyz.chunkstories.graphics.common.getConditions
 import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
-import xyz.chunkstories.graphics.vulkan.util.getAlignedsizeForStruct
-import xyz.chunkstories.graphics.vulkan.util.writeInterfaceBlock
 import xyz.chunkstories.world.WorldClientCommon
 
 class VulkanSpritesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingSystem<Sprite>(backend) {
@@ -84,7 +84,7 @@ class VulkanSpritesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchin
             vertexBuffer = VulkanVertexBuffer(backend, vertices.size * 4L, MemoryUsagePattern.STATIC)
 
             spriteII = pipeline.program.glslProgram.instancedInputs.find { it.name == "sprite" }!!
-            instanceDataPaddedSize = getAlignedsizeForStruct(spriteII)
+            instanceDataPaddedSize = getStd140AlignedSizeForStruct(spriteII.struct)
 
             MemoryStack.stackPush().use {
                 val byteBuffer = MemoryStack.stackMalloc(vertices.size * 4)
@@ -118,7 +118,7 @@ class VulkanSpritesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchin
                 val bindingContext = backend.descriptorMegapool.getBindingContext(pipeline)
                 bindingContexts.add(bindingContext)
 
-                writeInterfaceBlock(instancesBuffer, instance * instanceDataPaddedSize, sprite, spriteII)
+                extractInterfaceBlock(instancesBuffer, instance * instanceDataPaddedSize, sprite, spriteII.struct)
 
                 val material = sprite.material
 

@@ -18,4 +18,5 @@ abstract class GLFWBasedGraphicsBackend(val graphicsEngine: GraphicsEngineImplem
     abstract fun captureFramebuffer(): BufferedImage
 
     abstract fun createWorldRenderer(world: WorldClientCommon): WorldRenderer
+    abstract fun reloadRendergraph()
 }

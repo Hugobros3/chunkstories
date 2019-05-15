@@ -3,12 +3,13 @@ package xyz.chunkstories.graphics.opengl
 import org.lwjgl.opengl.GL32.*
 import org.lwjgl.opengl.ARBDrawBuffersBlend.*
 import org.lwjgl.opengl.GL11
-import org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA
+import org.lwjgl.opengl.GL11.*
 import org.lwjgl.opengl.GL14
 import org.lwjgl.opengl.GL14.GL_FUNC_ADD
 import org.lwjgl.opengl.GL14.GL_SRC_ALPHA
 
 import xyz.chunkstories.api.graphics.VertexFormat
+import xyz.chunkstories.api.graphics.rendergraph.DepthTestingConfiguration
 import xyz.chunkstories.api.graphics.rendergraph.PassOutput
 
 import xyz.chunkstories.graphics.common.Cleanable
@@ -50,6 +51,22 @@ class FakePSO(val backend: OpenglGraphicsBackend, val program: OpenglShaderProgr
             }
         }
 
+        if(pass.declaration.depthTestingConfiguration.enabled) {
+            GL11.glDepthRange(0.0, 1.0)
+            glEnable(GL_DEPTH_TEST)
+            glDepthFunc(when (pass.declaration.depthTestingConfiguration.mode) {
+                DepthTestingConfiguration.DepthTestMode.GREATER -> GL11.GL_GREATER
+                DepthTestingConfiguration.DepthTestMode.GREATER_OR_EQUAL -> GL11.GL_GEQUAL
+                DepthTestingConfiguration.DepthTestMode.EQUAL -> GL11.GL_EQUAL
+                DepthTestingConfiguration.DepthTestMode.LESS_OR_EQUAL -> GL11.GL_LEQUAL
+                DepthTestingConfiguration.DepthTestMode.LESS -> GL_LESS
+                DepthTestingConfiguration.DepthTestMode.ALWAYS -> GL_ALWAYS
+            })
+            //println("hmmmst")
+        } else {
+            glDisable(GL_DEPTH_TEST)
+        }
+
         // Set blending state
         for((i, colorAttachement) in pass.declaration.outputs.outputs.withIndex()) {
             when(colorAttachement.blending) {
@@ -70,8 +87,6 @@ class FakePSO(val backend: OpenglGraphicsBackend, val program: OpenglShaderProgr
                 PassOutput.BlendMode.PREMULTIPLIED_ALPHA -> TODO()
             }
         }
-
-
 
         // Configure vertex pulling
         for (vertexInput in program.glslProgram.vertexInputs) {
@@ -104,7 +119,10 @@ class FakePSO(val backend: OpenglGraphicsBackend, val program: OpenglShaderProgr
             val glVertexFormat = attribute.format.first.glVertexFormat
             val componentsCount = attribute.format.second
 
-            glVertexAttribPointer(attributeLocation, componentsCount, glVertexFormat.type, glVertexFormat.normalized, configuredVertexInput.stride, attribute.offset.toLong())
+            if(glVertexFormat.isInteger)
+                glVertexAttribIPointer(attributeLocation, componentsCount, glVertexFormat.type, configuredVertexInput.stride, attribute.offset.toLong())
+            else
+                glVertexAttribPointer(attributeLocation, componentsCount, glVertexFormat.type, glVertexFormat.normalized, configuredVertexInput.stride, attribute.offset.toLong())
         }
     }
 

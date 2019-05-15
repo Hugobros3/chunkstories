@@ -1,10 +1,81 @@
-package xyz.chunkstories.graphics.vulkan.buffers
+package xyz.chunkstories.graphics.common.util
 
 import org.joml.*
 import xyz.chunkstories.api.graphics.structs.InterfaceBlock
 import xyz.chunkstories.graphics.common.shaders.GLSLType
 import xyz.chunkstories.graphics.common.shaders.JvmStructField
+import xyz.chunkstories.graphics.vulkan.buffers.VulkanUniformBuffer
 import java.nio.ByteBuffer
+
+fun getStd140AlignedSizeForStruct(struct: GLSLType.JvmStruct): Int {
+    //val instancedStruct = glslProgram.instancedInputs.find { it.name == name } ?: throw Exception("No instanced input named: $name")
+    val structSize = struct.size
+    val sizeAligned16 = if (structSize % 16 == 0) structSize else (structSize / 16 * 16) + 16
+    return sizeAligned16
+}
+
+fun extractInterfaceBlock(target: ByteBuffer, offsetInTarget: Int = 0, instance: InterfaceBlock, struct: GLSLType.JvmStruct) {
+    for (field in struct.fields) {
+        target.position(offsetInTarget + field.offset)
+        extractInterfaceBlockField(target, instance, field)
+    }
+}
+
+private fun extractInterfaceBlockField(target: ByteBuffer, instance: InterfaceBlock, field: JvmStructField) {
+    val data = field.property.getter.call(instance)
+
+    when (field.type) {
+        is GLSLType.BaseType -> extractBaseTypeRawData(field.type, data, target)
+        is GLSLType.Array -> {
+            val array = data as? Array<*> ?: throw Exception("Not an array !")
+            val basePosition = target.position()
+            for ((i, element) in array.withIndex()) {
+                val baseType = field.type.baseType
+
+                target.position(basePosition + i * baseType.size)
+
+                val baseTypeAlignment = baseType.alignment
+                if(target.position() % baseTypeAlignment != 0) {
+                    target.position((target.position() / baseTypeAlignment) * baseTypeAlignment + baseTypeAlignment)
+                }
+
+                when(baseType) {
+                    is GLSLType.BaseType -> {
+                        extractBaseTypeRawData(baseType, element, target)
+
+                    }
+                    is GLSLType.JvmStruct -> {
+                        val basePos = target.position()
+                        val mapper = baseType
+                        val dataAsIb = element as InterfaceBlock
+
+                        for (field in mapper.fields) {
+                            target.position(field.offset + basePos)
+                            //println("${field.name} ${fillMe.position()}")
+                            extractInterfaceBlockField(target, dataAsIb, field)
+                        }
+                    }
+                    else -> TODO()
+                }
+
+
+                //println("element:${baseType.size} ${baseType.alignment}"+fillMe)
+            }
+        }
+        is GLSLType.JvmStruct -> {
+            val basePos = target.position()
+            val mapper = field.type
+            val dataAsIb = data as InterfaceBlock
+
+            for (field in mapper.fields) {
+                target.position(field.offset + basePos)
+                //println("${field.name} ${fillMe.position()}")
+                extractInterfaceBlockField(target, dataAsIb, field)
+            }
+        }
+        //else -> throw Exception("field type ${field.type} does not have a byte buffer translation branch")
+    }
+}
 
 private fun extractBaseTypeRawData(baseType: GLSLType.BaseType, data: Any?, fillMe: ByteBuffer) {
     when (baseType) {
@@ -121,62 +192,5 @@ private fun extractBaseTypeRawData(baseType: GLSLType.BaseType, data: Any?, fill
         }
 
         GLSLType.BaseType.GlslDouble -> TODO()
-    }
-}
-
-
-fun extractInterfaceBlockField(field: JvmStructField, fillMe: ByteBuffer, interfaceBlock: InterfaceBlock) {
-    val data = field.property.getter.call(interfaceBlock)
-
-    when (field.type) {
-        is GLSLType.BaseType -> extractBaseTypeRawData(field.type, data, fillMe)
-        is GLSLType.Array -> {
-            val array = data as? Array<*> ?: throw Exception("Not an array !")
-            val basePosition = fillMe.position()
-            for ((i, element) in array.withIndex()) {
-                val baseType = field.type.baseType
-
-                fillMe.position(basePosition + i * baseType.size)
-
-                val baseTypeAlignment = baseType.alignment
-                if(fillMe.position() % baseTypeAlignment != 0) {
-                    fillMe.position((fillMe.position() / baseTypeAlignment) * baseTypeAlignment + baseTypeAlignment)
-                }
-
-                when(baseType) {
-                    is GLSLType.BaseType -> {
-                        extractBaseTypeRawData(baseType, element, fillMe)
-
-                    }
-                    is GLSLType.JvmStruct -> {
-                        val basePos = fillMe.position()
-                        val mapper = baseType
-                        val dataAsIb = element as InterfaceBlock
-
-                        for (field in mapper.fields) {
-                            fillMe.position(field.offset + basePos)
-                            //println("${field.name} ${fillMe.position()}")
-                            extractInterfaceBlockField(field, fillMe, dataAsIb)
-                        }
-                    }
-                    else -> TODO()
-                }
-
-
-                //println("element:${baseType.size} ${baseType.alignment}"+fillMe)
-            }
-        }
-        is GLSLType.JvmStruct -> {
-            val basePos = fillMe.position()
-            val mapper = field.type
-            val dataAsIb = data as InterfaceBlock
-
-            for (field in mapper.fields) {
-                fillMe.position(field.offset + basePos)
-                //println("${field.name} ${fillMe.position()}")
-                extractInterfaceBlockField(field, fillMe, dataAsIb)
-            }
-        }
-        //else -> throw Exception("field type ${field.type} does not have a byte buffer translation branch")
     }
 }

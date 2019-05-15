@@ -1,6 +1,7 @@
 package xyz.chunkstories.graphics.opengl.graph
 
 import org.lwjgl.opengl.ARBDirectStateAccess.*
+import org.lwjgl.opengl.GL20
 import org.lwjgl.opengl.GL30.*
 
 import xyz.chunkstories.api.graphics.rendergraph.PassDeclaration
@@ -105,6 +106,13 @@ class OpenglPass(val backend: OpenglGraphicsBackend, val renderTask: OpenglRende
         // Prepare FBO
         val fbo = findOrCreateFbo(resolvedDepth, resolvedColorOutputs)
         glBindFramebuffer(GL_FRAMEBUFFER, fbo.glId)
+        when(glCheckFramebufferStatus(GL_FRAMEBUFFER)) {
+            GL_FRAMEBUFFER_COMPLETE -> {}
+            GL_FRAMEBUFFER_UNSUPPORTED -> println("unsupported")
+            else -> println("smth else")
+        }
+
+        glDrawBuffers(resolvedColorOutputs.mapIndexed { i, _ -> GL_COLOR_ATTACHMENT0 + i}.toIntArray())
 
         val viewportSize = (resolvedColorOutputs.getOrNull(0) ?: resolvedDepth!!).textureSize
         glViewport(0, 0, viewportSize.x, viewportSize.y)

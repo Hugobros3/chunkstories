@@ -210,36 +210,75 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
             resources.add(GLSLUniformSampler(samplerName, setSlot, binding))
         }
 
+        uboLoop@
         for (i in 0 until stageResources.uniformBuffers.size().toInt()) {
             val uniformBuffer = stageResources.uniformBuffers[i]
             val uniformBufferName = uniformBuffer.name
 
-            val type = uniformBufferName.split("_")[1]
-            val instanceName = uniformBufferName.split("_")[2]
+            val split = uniformBufferName.split("_")
+
+            if(split.size < 3)
+                continue
+
+            val ogStuffType = split[0]
+            val type = split[1]
+            val instanceName = split[2]
 
             //println("found ubo type: $type instanceName: $instanceName")
 
-            if (resources.find { it is GLSLUniformBlock && it.name == instanceName } != null)
-                continue
+            when(ogStuffType) {
+                "uniformstructinlined" -> {
+                    if (resources.find { it is GLSLUniformBlock && it.name == instanceName } != null)
+                        continue@uboLoop
 
-            val jvmStruct = jvmGlslMappings.values.find { it.glslToken == type }!!
+                    val jvmStruct = jvmGlslMappings.values.find { it.glslToken == type }!!
 
-            val setSlot: Int
-            val binding: Int
+                    val setSlot: Int
+                    val binding: Int
 
-            when (dialect) {
-                GLSLDialect.VULKAN -> {
-                    setSlot = jvmStruct.kClass.updateFrequency().ordinal + 2
-                    binding = (resources.filter { it.descriptorSetSlot == setSlot }.maxBy { it.binding }?.binding
-                            ?: -1) + 1
+                    when (dialect) {
+                        GLSLDialect.VULKAN -> {
+                            setSlot = jvmStruct.kClass.updateFrequency().ordinal + 2
+                            binding = (resources.filter { it.descriptorSetSlot == setSlot }.maxBy { it.binding }?.binding
+                                    ?: -1) + 1
+                        }
+                        GLSLDialect.OPENGL -> {
+                            setSlot = 0
+                            binding = resources.size
+                        }
+                    }
+
+                    resources.add(GLSLUniformBlock(instanceName, uniformBufferName, setSlot, binding, jvmStruct))
                 }
-                GLSLDialect.OPENGL -> {
-                    setSlot = 0
-                    binding = resources.size
+                "instancedbuffer" -> {
+                    if (resources.find { it is GLSLUniformBlock && it.name == instanceName } != null)
+                        continue@uboLoop
+
+                    val jvmStruct = jvmGlslMappings.values.find { it.glslToken == type }!!
+
+                    val setSlot: Int
+                    val binding: Int
+
+                    when (dialect) {
+                        GLSLDialect.VULKAN -> {
+                            setSlot = jvmStruct.kClass.updateFrequency().ordinal + 2
+                            binding = (resources.filter { it.descriptorSetSlot == setSlot }.maxBy { it.binding }?.binding
+                                    ?: -1) + 1
+                        }
+                        GLSLDialect.OPENGL -> {
+                            setSlot = 0
+                            binding = resources.size
+                        }
+                    }
+
+                    val resource = GLSLUniformBlock(instanceName, uniformBufferName, setSlot, binding, jvmStruct)
+                    resources.add(resource)
+
+                    val instancedInput = GLSLInstancedInput(instanceName, jvmStruct, resource)
+                    instancedInputs.add(instancedInput)
                 }
             }
 
-            resources.add(GLSLUniformBlock(instanceName, uniformBufferName, setSlot, binding, jvmStruct))
         }
 
         //TODO SSBO
@@ -248,7 +287,8 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
             val storageBufferName = storageBuffer.name
 
             val split = storageBufferName.split("_")
-            if (split.size < 3) // Maybe this is just a normal SSBO !
+
+            if (split.size < 3 || split[0] != "instancedbuffer") // Maybe this is just a normal SSBO !
                 continue
 
             val type = split[1]
@@ -336,7 +376,7 @@ fun ShaderCompiler.addDecorations(intermediarCompilationResults: IntermediaryCom
             val instanceName = spirvResource.name.split("_")[2]
 
             val glslInstancedInput = glslInstancedInputs.find { it.name == instanceName }!!
-            val glslResource = glslInstancedInput.shaderStorage
+            val glslResource = glslInstancedInput.associatedResource as GLSLShaderStorage
 
             decorate(spirvResource, glslResource)
         }

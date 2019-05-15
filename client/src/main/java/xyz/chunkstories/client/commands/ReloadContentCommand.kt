@@ -40,10 +40,7 @@ class ReloadContentCommand(private val client: IngameClient) : CommandHandler {
                     }
                     "rendergraph" -> {
                         val backend = (client.gameWindow as GLFWWindow).graphicsEngine.backend
-                        if(backend is VulkanGraphicsBackend)
-                            backend.reloadRendergraph()
-                        else
-                            throw Exception("Not supported yet by this backend :(")
+                        backend.reloadRendergraph()
 
                         emitter.sendMessage("Rendergraph reloaded!")
                     }

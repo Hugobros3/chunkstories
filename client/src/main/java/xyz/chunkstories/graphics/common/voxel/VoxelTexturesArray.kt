@@ -1,4 +1,4 @@
-package xyz.chunkstories.graphics.vulkan.textures.voxels
+package xyz.chunkstories.graphics.common.voxel
 
 import org.joml.Vector4f
 import org.joml.Vector4fc

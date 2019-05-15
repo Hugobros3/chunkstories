@@ -14,6 +14,7 @@ import xyz.chunkstories.api.graphics.systems.dispatching.ModelsRenderer
 import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
+import xyz.chunkstories.graphics.common.getConditions
 import xyz.chunkstories.graphics.common.shaders.compiler.AvailableVertexInput
 import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompilationParameters
 import xyz.chunkstories.graphics.vulkan.Pipeline
@@ -21,17 +22,16 @@ import xyz.chunkstories.graphics.vulkan.VertexInputConfiguration
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
+import xyz.chunkstories.graphics.common.util.extractInterfaceBlock
+import xyz.chunkstories.graphics.common.util.getStd140AlignedSizeForStruct
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import xyz.chunkstories.graphics.vulkan.resources.DescriptorSetsMegapool
 import xyz.chunkstories.graphics.vulkan.shaders.VulkanShaderProgram
 import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
-import xyz.chunkstories.graphics.common.getConditions
 import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
-import xyz.chunkstories.graphics.vulkan.util.getAlignedsizeForStruct
 import xyz.chunkstories.graphics.vulkan.util.getVulkanFormat
-import xyz.chunkstories.graphics.vulkan.util.writeInterfaceBlock
 import xyz.chunkstories.world.WorldClientCommon
 
 class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingSystem<ModelInstance>(backend) {
@@ -70,7 +70,7 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
 
     data class SpecializedPipelineKey(val shader: String, val enableAnimations: Boolean, val inputs: List<AvailableVertexInput>)
 
-    fun getSpecializedPipelineKeyForMeshAndShader(mesh: Mesh, shader: String, shaderSupportsAnimations: Boolean, meshInstanceHasAnimationData: Boolean ): SpecializedPipelineKey {
+    fun getSpecializedPipelineKeyForMeshAndShader(mesh: Mesh, shader: String, shaderSupportsAnimations: Boolean, meshInstanceHasAnimationData: Boolean): SpecializedPipelineKey {
         val inputs = mesh.attributes.map { AvailableVertexInput(it.name, it.components, it.format) }
         val meshHasAnimationData = mesh.attributes.find { it.name == "boneIdIn" } != null
 
@@ -98,7 +98,7 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
 
             init {
                 val defines = mutableMapOf<String, String>()
-                if(key.enableAnimations)
+                if (key.enableAnimations)
                     defines["ENABLE_ANIMATIONS"] = "true"
 
                 program = backend.shaderFactory.createProgram(key.shader, ShaderCompilationParameters(outputs = pass.declaration.outputs, inputs = key.inputs, defines = defines))
@@ -191,7 +191,7 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
                 bindingContext.preDraw(commandBuffer)
 
                 val modelPositionII = specializedPipeline.program.glslProgram.instancedInputs.find { it.name == "modelPosition" }!!
-                val modelPositionPaddedSize = getAlignedsizeForStruct(modelPositionII)
+                val modelPositionPaddedSize = getStd140AlignedSizeForStruct(modelPositionII.struct)
 
                 for ((mesh, material, modelInstance) in meshInstances) {
                     val model: Model = modelInstance.model
@@ -205,7 +205,7 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
                         vkCmdBindVertexBuffers(commandBuffer, inputIndex, stackLongs(vertexBuffer.handle), stackLongs(0))
                     }
 
-                    writeInterfaceBlock(instancePositionsBuffer, instance * modelPositionPaddedSize, modelInstance.position, modelPositionII)
+                    extractInterfaceBlock(instancePositionsBuffer, instance * modelPositionPaddedSize, modelInstance.position, modelPositionII.struct)
 
                     val perMeshBindingContext = backend.descriptorMegapool.getBindingContext(pipeline)
                     bindingContexts += perMeshBindingContext
@@ -216,10 +216,10 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
                         //println(pipeline.program.glslProgram)
                     }
 
-                    if(specializedPipeline.key.enableAnimations) {
+                    if (specializedPipeline.key.enableAnimations) {
                         val bonez = ExperimentalBonesData()
                         val animator = modelInstance.animator!!
-                        for((boneName, i) in mesh.boneIds!!) {
+                        for ((boneName, i) in mesh.boneIds!!) {
                             bonez.bones[i].set(animator.getBoneHierarchyTransformationMatrixWithOffset(boneName, animationTime))
                         }
 

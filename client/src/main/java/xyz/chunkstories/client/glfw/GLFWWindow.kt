@@ -1,9 +1,9 @@
 package xyz.chunkstories.client.glfw
 
-import xyz.chunkstories.api.graphics.Window
-import xyz.chunkstories.client.ClientImplementation
 import org.lwjgl.glfw.GLFW.*
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.api.graphics.Window
+import xyz.chunkstories.client.ClientImplementation
 import xyz.chunkstories.client.util.loadIcons
 import xyz.chunkstories.graphics.GraphicsBackendsEnum
 import xyz.chunkstories.graphics.GraphicsEngineImplementation
@@ -12,13 +12,8 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedDeque
+import java.util.concurrent.Semaphore
 import javax.imageio.ImageIO
-import kotlin.Boolean
-import kotlin.Int
-import kotlin.Long
-import kotlin.String
-import kotlin.Unit
-import kotlin.UnsupportedOperationException
 
 /** Backend independant implementation of the game window interface.
  * Provides input management through the use of GLFW's input API
@@ -71,7 +66,7 @@ class GLFWWindow(val client: ClientImplementation, val graphicsEngine: GraphicsE
 
     /** Executes the actions that must run on the first thread and clears the list */
     internal fun executeMainThreadChores() {
-        mainThreadQueue.removeAll { it.invoke(this); true }
+        mainThreadQueue.removeAll { it.action(this); it.semaphore.release(); true }
     }
 
     fun checkStillInFocus() {
@@ -102,11 +97,21 @@ class GLFWWindow(val client: ClientImplementation, val graphicsEngine: GraphicsE
     }
 
     /** Some actions can only execute on the main thread */
-    private val mainThreadQueue = ConcurrentLinkedDeque<GLFWWindow.() -> Unit>()
+    private val mainThreadQueue = ConcurrentLinkedDeque<MainThreadScheduledAction>()
+
+    data class MainThreadScheduledAction(val action: GLFWWindow.() -> Unit) {
+        val semaphore = Semaphore(0)
+    }
 
     /** Schedules some work to be executed on the main thread */
     fun mainThread(function: GLFWWindow.() -> Unit) {
-        mainThreadQueue.addLast(function)
+        mainThreadQueue.addLast(MainThreadScheduledAction(function))
+    }
+
+    fun mainThreadBlocking(function: GLFWWindow.() -> Unit) {
+        val scheduled = MainThreadScheduledAction(function)
+        mainThreadQueue.addLast(scheduled)
+        scheduled.semaphore.acquireUninterruptibly()
     }
 
     val shouldClose

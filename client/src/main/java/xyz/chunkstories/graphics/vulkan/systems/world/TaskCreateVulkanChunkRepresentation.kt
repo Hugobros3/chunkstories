@@ -1,10 +1,10 @@
 package xyz.chunkstories.graphics.vulkan.systems.world
 
-import xyz.chunkstories.graphics.opengl.world.chunks.TaskCreateChunkMesh
+import xyz.chunkstories.graphics.common.world.TaskCreateChunkMesh
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
-import xyz.chunkstories.graphics.vulkan.textures.voxels.VoxelTexturesArray
+import xyz.chunkstories.graphics.common.voxel.VoxelTexturesArray
 import xyz.chunkstories.world.chunk.CubicChunk
 import xyz.chunkstories.world.chunk.deriveddata.AutoRebuildingProperty
 import java.nio.ByteBuffer

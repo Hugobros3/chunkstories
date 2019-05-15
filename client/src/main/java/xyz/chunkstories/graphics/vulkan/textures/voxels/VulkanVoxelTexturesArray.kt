@@ -9,6 +9,7 @@ import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import xyz.chunkstories.graphics.common.Cleanable
+import xyz.chunkstories.graphics.common.voxel.VoxelTexturesArray
 import xyz.chunkstories.graphics.vulkan.textures.VulkanOnionTexture2D
 import xyz.chunkstories.util.toByteBuffer
 import java.awt.image.BufferedImage

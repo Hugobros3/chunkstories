@@ -8,8 +8,10 @@ import org.lwjgl.opengl.GL30.*
 import org.lwjgl.opengl.ARBDirectStateAccess.*
 import org.lwjgl.opengl.GLCapabilities
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.api.content.Content
 import xyz.chunkstories.api.graphics.representation.Representation
 import xyz.chunkstories.api.graphics.systems.RegisteredGraphicSystem
+import xyz.chunkstories.api.graphics.systems.dispatching.ChunksRenderer
 import xyz.chunkstories.api.graphics.systems.dispatching.DispatchingSystem
 import xyz.chunkstories.api.graphics.systems.drawing.DrawingSystem
 import xyz.chunkstories.api.graphics.systems.drawing.FullscreenQuadDrawer
@@ -26,11 +28,16 @@ import xyz.chunkstories.graphics.opengl.systems.OpenglDrawingSystem
 import xyz.chunkstories.graphics.opengl.systems.OpenglFullscreenQuadDrawer
 import xyz.chunkstories.graphics.opengl.systems.gui.OpenglGuiDrawer
 import xyz.chunkstories.graphics.opengl.textures.OpenglTextures
+import xyz.chunkstories.graphics.opengl.voxels.OpenglVoxelTexturesArray
+import xyz.chunkstories.graphics.opengl.world.OpenglWorldRenderer
+import xyz.chunkstories.graphics.opengl.world.chunks.OpenglChunkRepresentationsDispatcher
+import xyz.chunkstories.voxel.ReloadableVoxelTextures
+import xyz.chunkstories.voxel.VoxelTexturesSupport
 import xyz.chunkstories.world.WorldClientCommon
 import java.awt.image.BufferedImage
 import javax.swing.JOptionPane
 
-class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window: GLFWWindow) : GLFWBasedGraphicsBackend(graphicsEngine, window) {
+class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window: GLFWWindow) : GLFWBasedGraphicsBackend(graphicsEngine, window), VoxelTexturesSupport {
     private val capabilities: GLCapabilities
     private val requiredExtensions = setOf("GL_ARB_debug_output", "GL_ARB_texture_storage", "GL_ARB_direct_state_access", "GL_ARB_draw_buffers_blend")
 
@@ -114,9 +121,8 @@ class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun createWorldRenderer(world: WorldClientCommon): WorldRenderer {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun createWorldRenderer(world: WorldClientCommon): WorldRenderer =
+            OpenglWorldRenderer(this, world)
 
     fun <T : DrawingSystem> createDrawingSystem(pass: OpenglPass, registration: RegisteredGraphicSystem<T>): OpenglDrawingSystem {
         val dslCode = registration.dslCode as DrawingSystem.() -> Unit
@@ -130,22 +136,28 @@ class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
 
     fun <T : DispatchingSystem> getOrCreateDispatchingSystem(list: MutableList<OpenglDispatchingSystem<*>>, dispatchingSystemRegistration: RegisteredGraphicSystem<T>) : OpenglDispatchingSystem<*> {
         val implemClass: Class<out OpenglDispatchingSystem<out Representation>> = when(dispatchingSystemRegistration.clazz) {
-
+            ChunksRenderer::class.java -> OpenglChunkRepresentationsDispatcher::class
             else -> throw Exception("Unimplemented system on this backend: ${dispatchingSystemRegistration.clazz}")
-        }
+        }.java
 
         val existing = list.find { implemClass.isAssignableFrom(it::class.java) }
         if(existing != null)
             return existing
 
         val new: OpenglDispatchingSystem<out Representation> = when(dispatchingSystemRegistration.clazz) {
-
+            ChunksRenderer::class.java -> OpenglChunkRepresentationsDispatcher(this)
             else -> throw Exception("Unimplemented system on this backend: ${dispatchingSystemRegistration.clazz}")
         }
 
         list.add(new)
 
         return new
+    }
+
+    override fun createVoxelTextures(voxels: Content.Voxels) = OpenglVoxelTexturesArray(this, voxels)
+
+    override fun reloadRendergraph() {
+        this.queuedRenderGraph = this.renderGraph.dslCode
     }
 
     override fun cleanup() {

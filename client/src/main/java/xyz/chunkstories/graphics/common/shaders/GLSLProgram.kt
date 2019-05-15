@@ -17,7 +17,7 @@ data class GLSLVertexInput(val name: String, val format: GLSLType.BaseType, val 
 
 data class GLSLFragmentOutput(val name: String, val format: GLSLType.BaseType, val location: Int)
 
-data class GLSLInstancedInput(val name: String, val struct: GLSLType.JvmStruct, val shaderStorage: GLSLShaderStorage)
+data class GLSLInstancedInput(val name: String, val struct: GLSLType.JvmStruct, val associatedResource: GLSLResource)
 
 /** Represents one image that varies per material */
 data class MaterialImage(val name: String)

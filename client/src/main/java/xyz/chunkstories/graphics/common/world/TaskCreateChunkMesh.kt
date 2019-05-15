@@ -1,4 +1,4 @@
-package xyz.chunkstories.graphics.opengl.world.chunks
+package xyz.chunkstories.graphics.common.world
 
 import org.joml.Matrix4f
 import org.joml.Vector3f

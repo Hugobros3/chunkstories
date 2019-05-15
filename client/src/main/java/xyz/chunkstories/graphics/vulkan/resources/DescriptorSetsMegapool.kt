@@ -162,7 +162,7 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
         }
 
         fun bindSSBO(name: String, buffer: VulkanBuffer, offset: Long = 0) {
-            val ssboBindPoint = pipeline.program.glslProgram.instancedInputs.find { it.name == name }!!.shaderStorage
+            val ssboBindPoint = pipeline.program.glslProgram.instancedInputs.find { it.name == name }!!.associatedResource as GLSLShaderStorage
 
             val set = getSet(ssboBindPoint.descriptorSetSlot)
 

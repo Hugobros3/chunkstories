@@ -6,11 +6,13 @@ import org.lwjgl.system.MemoryStack
 import xyz.chunkstories.api.graphics.structs.InterfaceBlock
 import xyz.chunkstories.graphics.common.shaders.GLSLUniformBlock
 import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampledImage2D
+import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampledImage2DArray
 import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampledImageCubemap
+import xyz.chunkstories.graphics.common.util.extractInterfaceBlock
 import xyz.chunkstories.graphics.opengl.FakePSO
+import xyz.chunkstories.graphics.opengl.textures.OpenglOnionTexture2D
 import xyz.chunkstories.graphics.opengl.textures.OpenglTexture2D
 import xyz.chunkstories.graphics.opengl.textures.OpenglTextureCubemap
-import xyz.chunkstories.graphics.vulkan.buffers.extractInterfaceBlockField
 
 fun FakePSO.bindTexture(textureName: String, texture: OpenglTexture2D) {
     val resource = program.glslProgram.resources.find {
@@ -36,9 +38,21 @@ fun FakePSO.bindTexture(textureName: String, texture: OpenglTextureCubemap) {
     glUniform1i(uniformLocation, resource.openglTextureUnit)
 }
 
+fun FakePSO.bindTexture(textureName: String, texture: OpenglOnionTexture2D) {
+    val resource = program.glslProgram.resources.find {
+        it is GLSLUniformSampledImage2DArray && it.name == textureName
+    } as? GLSLUniformSampledImage2DArray ?: return
+
+    ARBDirectStateAccess.glBindTextureUnit(resource.openglTextureUnit, texture.glTexId)
+
+    val uniformLocation = glGetUniformLocation(program.programId, resource.name)
+    //println("$uniformLocation vs ${resource.binding}")
+    glUniform1i(uniformLocation, resource.openglTextureUnit)
+}
+
 fun FakePSO.bindUBO(name: String, contents: InterfaceBlock) {
     val resource = program.glslProgram.resources.find {
-        it is GLSLUniformBlock && it.name == name
+        it is GLSLUniformBlock && (it.name == name || it.rawName == name)
     } as? GLSLUniformBlock ?: return
 
     val buffer = ubos[resource]!!
@@ -47,10 +61,11 @@ fun FakePSO.bindUBO(name: String, contents: InterfaceBlock) {
 
     val fillMe = MemoryStack.stackMalloc(buffer.mapper.size)
 
-    for (field in buffer.mapper.fields) {
+    /*for (field in buffer.mapper.fields) {
         fillMe.position(field.offset)
         extractInterfaceBlockField(field, fillMe, contents)
-    }
+    }*/
+    extractInterfaceBlock(fillMe, 0, contents, buffer.mapper)
 
     fillMe.position(0)
     fillMe.limit(fillMe.capacity())

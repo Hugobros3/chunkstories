@@ -16,7 +16,8 @@ import xyz.chunkstories.graphics.vulkan.Pipeline
 import xyz.chunkstories.graphics.vulkan.VertexInputConfiguration
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
-import xyz.chunkstories.graphics.vulkan.buffers.extractInterfaceBlockField
+import xyz.chunkstories.graphics.common.util.extractInterfaceBlock
+import xyz.chunkstories.graphics.common.util.getStd140AlignedSizeForStruct
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
@@ -124,9 +125,9 @@ class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
         private val meshesProgram = backend.shaderFactory.createProgram(/* TODO */shader, ShaderCompilationParameters(outputs = pass.declaration.outputs))
         private val meshesPipeline = Pipeline(backend, meshesProgram, pass, meshesVertexInputCfg, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
 
-        val chunkInfoID = cubesProgram.glslProgram.instancedInputs.find { it.name == "chunkInfo" }!!
-        val structSize = chunkInfoID.struct.size
-        val sizeAligned16 = if (structSize % 16 == 0) structSize else (structSize / 16 * 16) + 16
+        val chunkInfoStruct = cubesProgram.glslProgram.instancedInputs.find { it.name == "chunkInfo" }!!.struct
+        val structSize = chunkInfoStruct.size
+        val sizeAligned16 = getStd140AlignedSizeForStruct(chunkInfoStruct)
 
         val maxChunksRendered = 4096
         val ssboBufferSize = (sizeAligned16 * maxChunksRendered).toLong()
@@ -170,17 +171,13 @@ class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
                     val chunkRepresentation = staticMesh.parent
                     vkCmdBindVertexBuffers(commandBuffer, 0, MemoryStack.stackLongs(staticMesh.buffer.handle), MemoryStack.stackLongs(0))
 
-                    ssboStuff.position(instance * sizeAligned16)
                     val chunkRenderInfo = ChunkRenderInfo().apply {
                         chunkX = chunkRepresentation.chunk.chunkX
                         chunkY = chunkRepresentation.chunk.chunkY
                         chunkZ = chunkRepresentation.chunk.chunkZ
                     }
 
-                    for (field in chunkInfoID.struct.fields) {
-                        ssboStuff.position(instance * sizeAligned16 + field.offset)
-                        extractInterfaceBlockField(field, ssboStuff, chunkRenderInfo)
-                    }
+                    extractInterfaceBlock(ssboStuff, instance * sizeAligned16, chunkRenderInfo, chunkInfoStruct)
 
                     vkCmdDraw(commandBuffer, staticMesh.count, 1, 0, instance++)
 
@@ -223,6 +220,7 @@ class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
                 bindingContext.bindTextureAndSampler("albedoTextures", voxelTexturesArray.albedoOnionTexture, sampler)
                 bindingContext.bindSSBO("chunkInfo", ssboDataTest)
 
+                //TODO hey that doesn't belong there !
                 if (shader == "water") {
                     bindingContext.bindTextureAndSampler("waterNormalDeep", backend.textures.getOrLoadTexture2D("textures/water/deep.png"), sampler)
                     bindingContext.bindTextureAndSampler("waterNormalShallow", backend.textures.getOrLoadTexture2D("textures/water/shallow.png"), sampler)
@@ -234,17 +232,13 @@ class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
                     val chunkRepresentation = staticMesh.parent
                     vkCmdBindVertexBuffers(commandBuffer, 0, MemoryStack.stackLongs(staticMesh.buffer.handle), MemoryStack.stackLongs(0))
 
-                    ssboStuff.position(instance * sizeAligned16)
                     val chunkRenderInfo = ChunkRenderInfo().apply {
                         chunkX = chunkRepresentation.chunk.chunkX
                         chunkY = chunkRepresentation.chunk.chunkY
                         chunkZ = chunkRepresentation.chunk.chunkZ
                     }
 
-                    for (field in chunkInfoID.struct.fields) {
-                        ssboStuff.position(instance * sizeAligned16 + field.offset)
-                        extractInterfaceBlockField(field, ssboStuff, chunkRenderInfo)
-                    }
+                    extractInterfaceBlock(ssboStuff, instance * sizeAligned16, chunkRenderInfo, chunkInfoStruct)
 
                     vkCmdDraw(commandBuffer, staticMesh.count, 1, 0, instance++)
 

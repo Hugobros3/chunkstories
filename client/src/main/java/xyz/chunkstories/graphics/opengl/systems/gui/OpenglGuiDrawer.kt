@@ -77,7 +77,6 @@ class OpenglGuiDrawer(pass: OpenglPass, dslCode: (DrawingSystem) -> Unit) : Open
     var previousOffset = 0
 
     val drawer = object : InternalGuiDrawer(gui) {
-
         val sx: Float
             get() = 1.0F / gui.viewportWidth.toFloat()
         val sy: Float
