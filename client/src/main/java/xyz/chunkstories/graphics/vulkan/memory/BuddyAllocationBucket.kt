@@ -134,7 +134,7 @@ class BuddyAllocationBucket(memoryManager: VulkanMemoryManager, memoryTypeIndex:
                 sizeToAllocate *= 2
             }
 
-            //println("Allocating order $orderRequired ($sizeToAllocate) for allocation exactly sized ${requirements.size()}")
+            //println("Allocating order $orderRequired ($sizeToAllocate) for allocation exactly sized ${requirements.size()} ${requirements.alignment()}")
             //println("pre alloc"+freeBuddies.toList().withIndex().map { (i, l) -> "$i: ${l.size}" })
 
             val buddyAvailableDirectly = freeBuddies[orderRequired].firstOrNull()

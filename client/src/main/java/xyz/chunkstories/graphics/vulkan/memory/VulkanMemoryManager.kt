@@ -107,7 +107,7 @@ class VulkanMemoryManager(val backend: VulkanGraphicsBackend, val device: Logica
         }
         MemoryUsagePattern.SEMI_STATIC -> {
             val (memoryTypeIndex, memoryType) = findMemoryTypeToUse(acceptableMemoryTypesBitfield, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
-            BuddyAllocationBucket(this, memoryTypeIndex, memoryType)
+            DedicatedAllocationsBucket(this, memoryTypeIndex, memoryType)
         }
         MemoryUsagePattern.DYNAMIC -> {
             val (memoryTypeIndex, memoryType) = findMemoryTypeToUse(acceptableMemoryTypesBitfield, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)

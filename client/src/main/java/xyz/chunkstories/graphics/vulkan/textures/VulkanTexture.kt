@@ -2,6 +2,7 @@ package xyz.chunkstories.graphics.vulkan.textures
 
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
+import org.lwjgl.vulkan.VK10.vkAllocateMemory
 import org.lwjgl.vulkan.VK11.*
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.graphics.Texture
@@ -86,7 +87,7 @@ open class VulkanTexture(val backend: VulkanGraphicsBackend, final override val 
             memReq2.pNext(memDedicatedReq.address())
 
             vkGetImageMemoryRequirements2(backend.logicalDevice.vkDevice, memReqInfo2, memReq2)
-            useDedicatedAllocation = memDedicatedReq.prefersDedicatedAllocation() || memDedicatedReq.requiresDedicatedAllocation()
+            useDedicatedAllocation = memDedicatedReq.prefersDedicatedAllocation() || memDedicatedReq.requiresDedicatedAllocation() || true
             //println("result is $useDedicatedAllocation")
 
             if (useDedicatedAllocation) {
@@ -106,7 +107,7 @@ open class VulkanTexture(val backend: VulkanGraphicsBackend, final override val 
                 allocateInfo.pNext(dedicatedAllocateInfo.address())
 
                 val pDedicatedMemory = stackLongs(0)
-                VK10.vkAllocateMemory(backend.logicalDevice.vkDevice, allocateInfo, null, pDedicatedMemory)
+                vkAllocateMemory(backend.logicalDevice.vkDevice, allocateInfo, null, pDedicatedMemory)
                 dedicatedMemory = pDedicatedMemory[0]
                 vkBindImageMemory(backend.logicalDevice.vkDevice, imageHandle, dedicatedMemory, 0)
                 logger.info("Successfully allocated ${memReq2.memoryRequirements().size()} dedicated bytes of DEVICE_LOCAL memory for texture $this")
@@ -118,6 +119,11 @@ open class VulkanTexture(val backend: VulkanGraphicsBackend, final override val 
         } else {
             val memRequirements = VkMemoryRequirements.callocStack()
             vkGetImageMemoryRequirements(backend.logicalDevice.vkDevice, imageHandle, memRequirements)
+
+            if(usagePattern == MemoryUsagePattern.SEMI_STATIC) {
+                //println("${memRequirements.size()} alignement: ${memRequirements.alignment()}")
+                //Thread.dumpStack()
+            }
 
             sharedAllocation = backend.memoryManager.allocateMemory(memRequirements, usagePattern)
             sharedAllocation.lock.withLock {
