@@ -154,6 +154,11 @@ class OpenglPass(val backend: OpenglGraphicsBackend, val renderTask: OpenglRende
         return fbo
     }
 
+    fun dumpFramebuffers() {
+        fbos.forEach(Cleanable::cleanup)
+        fbos.clear()
+    }
+
     override fun cleanup() {
         fbos.forEach(Cleanable::cleanup)
 

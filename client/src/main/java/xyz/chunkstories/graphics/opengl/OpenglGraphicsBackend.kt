@@ -1,5 +1,6 @@
 package xyz.chunkstories.graphics.opengl
 
+import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFW.glfwMakeContextCurrent
 import org.lwjgl.glfw.GLFW.glfwSwapBuffers
 import org.lwjgl.opengl.ARBClipControl.GL_ZERO_TO_ONE
@@ -8,6 +9,7 @@ import org.lwjgl.opengl.ARBDebugOutput.glDebugMessageCallbackARB
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL30.*
 import org.lwjgl.opengl.ARBDirectStateAccess.*
+import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GLCapabilities
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.content.Content
@@ -74,6 +76,18 @@ class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
 
         renderGraph = OpenglRenderGraph(this, queuedRenderGraph!!)
         queuedRenderGraph = null
+
+        GLFW.glfwSetFramebufferSizeCallback(window.glfwWindowHandle) { handle, newWidth, newHeight ->
+            println("resized to $newWidth:$newHeight")
+
+            if(newWidth != 0 && newHeight != 0) {
+                window.width = newWidth
+                window.height = newHeight
+
+                GL11.glViewport(0, 0, newWidth, newHeight)
+                renderGraph.resizeBuffers()
+            }
+        }
     }
 
     private fun checkForExtensions() {

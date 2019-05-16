@@ -110,6 +110,13 @@ class OpenglRenderGraph(val backend: OpenglGraphicsBackend, val dslCode: RenderG
                 GL_COLOR_BUFFER_BIT, GL_NEAREST)
     }
 
+    fun resizeBuffers() {
+        tasks.values.forEach {
+            it.buffers.values.forEach { it.resize() }
+            it.passes.values.forEach { it.dumpFramebuffers() }
+        }
+    }
+
     override fun cleanup() {
         dispatchingSystems.forEach(Cleanable::cleanup)
         tasks.values.forEach(Cleanable::cleanup)
