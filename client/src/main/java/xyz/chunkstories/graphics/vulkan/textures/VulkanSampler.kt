@@ -10,7 +10,9 @@ import org.lwjgl.vulkan.VkSamplerCreateInfo
 import xyz.chunkstories.api.graphics.TextureTilingMode
 import xyz.chunkstories.api.graphics.rendergraph.ImageInput
 
-class VulkanSampler(val backend: VulkanGraphicsBackend,
+class
+
+VulkanSampler(val backend: VulkanGraphicsBackend,
                     val scalingMode: ImageInput.ScalingMode = ImageInput.ScalingMode.NEAREST,
                     val depthCompareMode: ImageInput.DepthCompareMode = ImageInput.DepthCompareMode.DISABLED,
                     val tilingMode: TextureTilingMode = TextureTilingMode.CLAMP_TO_EDGE)  : Cleanable {
@@ -44,8 +46,8 @@ class VulkanSampler(val backend: VulkanGraphicsBackend,
                     compareEnable(true)
                     compareOp(VK_COMPARE_OP_LESS_OR_EQUAL)
                     //compareOp(VK_COMPARE_OP_GREATER_OR_EQUAL)
-                    magFilter(VK_FILTER_LINEAR)
-                    minFilter(VK_FILTER_LINEAR)
+                    //magFilter(VK_FILTER_LINEAR)
+                    //minFilter(VK_FILTER_LINEAR)
                 }
                 ImageInput.DepthCompareMode.DISABLED -> {
                     compareEnable(false)

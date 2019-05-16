@@ -2,6 +2,8 @@ package xyz.chunkstories.graphics.opengl
 
 import org.lwjgl.glfw.GLFW.glfwMakeContextCurrent
 import org.lwjgl.glfw.GLFW.glfwSwapBuffers
+import org.lwjgl.opengl.ARBClipControl.GL_ZERO_TO_ONE
+import org.lwjgl.opengl.ARBClipControl.glClipControl
 import org.lwjgl.opengl.ARBDebugOutput.glDebugMessageCallbackARB
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL30.*
@@ -22,6 +24,7 @@ import xyz.chunkstories.graphics.GraphicsEngineImplementation
 import xyz.chunkstories.graphics.common.WorldRenderer
 import xyz.chunkstories.graphics.opengl.graph.OpenglPass
 import xyz.chunkstories.graphics.opengl.graph.OpenglRenderGraph
+import xyz.chunkstories.graphics.opengl.resources.OpenglSamplers
 import xyz.chunkstories.graphics.opengl.shaders.OpenglShaderFactory
 import xyz.chunkstories.graphics.opengl.systems.OpenglDispatchingSystem
 import xyz.chunkstories.graphics.opengl.systems.OpenglDrawingSystem
@@ -46,6 +49,8 @@ class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
     val shaderFactory: OpenglShaderFactory
     val textures: OpenglTextures
 
+    val samplers: OpenglSamplers
+
     init {
         glfwMakeContextCurrent(window.glfwWindowHandle)
         capabilities = GL.createCapabilities()
@@ -60,8 +65,12 @@ class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
         val vaoDontCare = glCreateVertexArrays()
         glBindVertexArray(vaoDontCare)
 
+        //TODO NO BAD (rekts compatibility)
+        glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE)
+
         shaderFactory = OpenglShaderFactory(this, window.client)
         textures = OpenglTextures(this)
+        samplers = OpenglSamplers(this)
 
         renderGraph = OpenglRenderGraph(this, queuedRenderGraph!!)
         queuedRenderGraph = null
@@ -162,6 +171,7 @@ class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
 
     override fun cleanup() {
         renderGraph.cleanup()
+        samplers.cleanup()
         logger.debug("OpenGL backend done cleaning !")
     }
 

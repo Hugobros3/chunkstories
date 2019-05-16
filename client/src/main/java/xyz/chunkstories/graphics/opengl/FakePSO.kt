@@ -52,7 +52,7 @@ class FakePSO(val backend: OpenglGraphicsBackend, val program: OpenglShaderProgr
         }
 
         if(pass.declaration.depthTestingConfiguration.enabled) {
-            GL11.glDepthRange(0.0, 1.0)
+            //GL11.glDepthRange(0.0, 1.0)
             glEnable(GL_DEPTH_TEST)
             glDepthFunc(when (pass.declaration.depthTestingConfiguration.mode) {
                 DepthTestingConfiguration.DepthTestMode.GREATER -> GL11.GL_GREATER

@@ -64,6 +64,7 @@ fun doShadowMapping(ctx: SystemExecutionContext, world: World) {
 
             ctx.shaderResources.supplyImage("shadowBuffers", i, ImageInput().apply {
                 source = renderBuffer("shadowBuffer$i")
+                scalingMode = ImageInput.ScalingMode.LINEAR
                 depthCompareMode = ImageInput.DepthCompareMode.SHADOWMAP
             })
             //ctx.shaderResources.supplyImage("shadowBuffers", ImageSource.RenderBufferReference("shadowBuffer$i"), samplerShadow, i)

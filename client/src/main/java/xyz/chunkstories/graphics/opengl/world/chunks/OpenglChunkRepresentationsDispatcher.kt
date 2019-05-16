@@ -1,13 +1,6 @@
 package xyz.chunkstories.graphics.opengl.world.chunks
 
-import org.lwjgl.opengl.GL30.GL_TRIANGLES
-import org.lwjgl.opengl.GL30.glDrawArrays
-import org.lwjgl.opengl.GL31
-import org.lwjgl.opengl.GL32
 import org.lwjgl.opengl.GL32.*
-import org.lwjgl.system.MemoryStack
-import org.lwjgl.system.MemoryUtil.memAlloc
-import org.lwjgl.system.MemoryUtil.memFree
 import xyz.chunkstories.api.graphics.VertexFormat
 import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
 import xyz.chunkstories.api.graphics.systems.dispatching.ChunksRenderer
@@ -15,15 +8,10 @@ import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.getConditions
 import xyz.chunkstories.graphics.common.shaders.GLSLUniformBlock
 import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompilationParameters
-import xyz.chunkstories.graphics.common.util.extractInterfaceBlock
 import xyz.chunkstories.graphics.common.util.getStd140AlignedSizeForStruct
 import xyz.chunkstories.graphics.common.world.ChunkRenderInfo
 import xyz.chunkstories.graphics.opengl.*
-import xyz.chunkstories.graphics.opengl.buffers.OpenglUniformBuffer
-import xyz.chunkstories.graphics.opengl.buffers.OpenglVertexBuffer
 import xyz.chunkstories.graphics.opengl.graph.OpenglPass
-import xyz.chunkstories.graphics.opengl.shaders.OpenglShaderProgram
-import xyz.chunkstories.graphics.opengl.shaders.bindShaderResources
 import xyz.chunkstories.graphics.opengl.shaders.bindTexture
 import xyz.chunkstories.graphics.opengl.shaders.bindUBO
 import xyz.chunkstories.graphics.opengl.systems.OpenglDispatchingSystem

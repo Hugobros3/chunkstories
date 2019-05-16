@@ -1,5 +1,6 @@
 package xyz.chunkstories.graphics.opengl.systems
 
+import org.lwjgl.opengl.GL20
 import org.lwjgl.opengl.GL30.*
 import org.lwjgl.system.MemoryStack.stackMalloc
 import org.lwjgl.system.MemoryStack.stackPush
@@ -62,6 +63,10 @@ class OpenglFullscreenQuadDrawer(pass: OpenglPass, dslCode: DrawingSystem.() -> 
         pipeline.bind()
         pipeline.bindVertexBuffer(0, vertexBuffer)
         ctx.bindShaderResources(pipeline)
+
+        //GL20.glValidateProgram(pipeline.program.programId)
+        //println(GL20.glGetProgramInfoLog(pipeline.program.programId))
+
         glDrawArrays(GL_TRIANGLES, 0, 3)
         pipeline.unbind()
     }

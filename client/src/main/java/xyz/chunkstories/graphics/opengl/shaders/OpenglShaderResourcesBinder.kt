@@ -36,7 +36,8 @@ private fun ShaderResources.bindTo(target: FakePSO, passInstance: PassInstance) 
     for((imageName, index, imageInput) in images) {
         resources.find { it is GLSLUniformSampledImage && it.name == imageName }?.apply {
             //TODO
-            //val sampler = target.samplers.getSamplerForImageInputParameters(imageInput)
+            val sampler = target.backend.samplers.getSamplerForImageInputParameters(imageInput)
+
             when(this) {
                 is GLSLUniformSampledImage2D -> {
                     val texture2d = when(val source = imageInput.source) {
@@ -73,7 +74,7 @@ private fun ShaderResources.bindTo(target: FakePSO, passInstance: PassInstance) 
 
                     //TODO
                     //target.bindTextureAndSampler(imageName, texture2d, sampler, index)µ
-                    target.bindTexture(imageName, index, texture2d)
+                    target.bindTexture(imageName, index, texture2d, sampler)
                     return@apply
                 }
                 is GLSLUniformSampledImageCubemap -> {
