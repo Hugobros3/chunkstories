@@ -68,7 +68,7 @@ class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
         glBindVertexArray(vaoDontCare)
 
         //TODO NO BAD (rekts compatibility)
-        glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE)
+        //glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE)
 
         shaderFactory = OpenglShaderFactory(this, window.client)
         textures = OpenglTextures(this)

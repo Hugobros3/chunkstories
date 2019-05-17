@@ -1,8 +1,10 @@
 package xyz.chunkstories.graphics.opengl.shaders
 
+import org.joml.Matrix4f
 import org.lwjgl.opengl.ARBDirectStateAccess.glBindTextureUnit
 import org.lwjgl.opengl.GL33.*
 import org.lwjgl.system.MemoryStack
+import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.api.graphics.structs.InterfaceBlock
 import xyz.chunkstories.graphics.common.shaders.GLSLUniformBlock
 import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampledImage2D
@@ -70,11 +72,28 @@ fun FakePSO.bindUBO(name: String, contents: InterfaceBlock) {
 
     val fillMe = MemoryStack.stackMalloc(buffer.mapper.size)
 
+    var modifiedContents = contents
+
+    if(name == "camera" && contents is Camera) {
+        //hack up the projection matrices to get them to use the full depth range (-1, 1)
+        val hackedProjectionMatrix = Matrix4f(contents.projectionMatrix)
+
+        val modifierMatrix = Matrix4f()
+        modifierMatrix.translate(0f, 0f, -1f)
+        modifierMatrix.scale(1f, 1f, 2f)
+        modifierMatrix.mul(hackedProjectionMatrix, hackedProjectionMatrix)
+
+        //Thread.dumpStack()
+        //println("Cheating now: "+modifierMatrix)
+
+        modifiedContents = Camera(contents.position, contents.lookingAt, contents.up, contents.fov, contents.viewMatrix, hackedProjectionMatrix)
+    }
+
     /*for (field in buffer.mapper.fields) {
         fillMe.position(field.offset)
         extractInterfaceBlockField(field, fillMe, contents)
     }*/
-    extractInterfaceBlock(fillMe, 0, contents, buffer.mapper)
+    extractInterfaceBlock(fillMe, 0, modifiedContents, buffer.mapper)
 
     fillMe.position(0)
     fillMe.limit(fillMe.capacity())
