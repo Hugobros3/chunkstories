@@ -3,10 +3,8 @@ package xyz.chunkstories.graphics.vulkan.world
 import org.joml.Vector4d
 import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
 import xyz.chunkstories.api.graphics.TextureFormat
-import xyz.chunkstories.api.graphics.rendergraph.ImageInput
-import xyz.chunkstories.api.graphics.rendergraph.PassOutput
-import xyz.chunkstories.api.graphics.rendergraph.RenderGraphDeclarationScript
-import xyz.chunkstories.api.graphics.rendergraph.renderBuffer
+import xyz.chunkstories.api.graphics.TextureTilingMode
+import xyz.chunkstories.api.graphics.rendergraph.*
 import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.api.graphics.systems.dispatching.ChunksRenderer
 import xyz.chunkstories.api.graphics.systems.dispatching.ModelsRenderer
@@ -235,6 +233,19 @@ class VulkanWorldRenderer(val backend: VulkanGraphicsBackend, world: WorldClient
                         system(ChunksRenderer::class) {
                             shader = "water"
                             materialTag = "water"
+
+                            setup {
+                                shaderResources.supplyImage("waterNormalDeep") {
+                                    source = asset("textures/water/deep.png")
+                                    tilingMode = TextureTilingMode.REPEAT
+                                    scalingMode = ImageInput.ScalingMode.LINEAR
+                                }
+                                shaderResources.supplyImage("waterNormalShallow") {
+                                    source = asset("textures/water/shallow.png")
+                                    tilingMode = TextureTilingMode.REPEAT
+                                    scalingMode = ImageInput.ScalingMode.LINEAR
+                                }
+                            }
                         }
                     }
 

@@ -40,7 +40,7 @@ import xyz.chunkstories.graphics.GraphicsEngineImplementation
 import xyz.chunkstories.graphics.vulkan.systems.debug.VulkanSpinningCubeDrawer
 import xyz.chunkstories.graphics.vulkan.systems.models.VulkanModelsDispatcher
 import xyz.chunkstories.graphics.vulkan.systems.models.VulkanSpritesDispatcher
-import xyz.chunkstories.graphics.vulkan.systems.world.ChunkRepresentationsDispatcher
+import xyz.chunkstories.graphics.vulkan.systems.world.VulkanChunkRepresentationsDispatcher
 import xyz.chunkstories.graphics.vulkan.textures.voxels.VulkanVoxelTexturesArray
 import xyz.chunkstories.graphics.vulkan.world.VulkanWorldRenderer
 import xyz.chunkstories.voxel.VoxelTexturesSupport
@@ -305,7 +305,7 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
 
     fun <T: DispatchingSystem> getOrCreateDispatchingSystem(list: MutableList<VulkanDispatchingSystem<*>>, dispatchingSystemRegistration: RegisteredGraphicSystem<T>): VulkanDispatchingSystem<*> {
         val implemClass =  when(dispatchingSystemRegistration.clazz) {
-            ChunksRenderer::class.java -> ChunkRepresentationsDispatcher::class
+            ChunksRenderer::class.java -> VulkanChunkRepresentationsDispatcher::class
             ModelsRenderer::class.java -> VulkanModelsDispatcher::class
             SpritesRenderer::class.java -> VulkanSpritesDispatcher::class
             else -> throw Exception("Unimplemented system on this backend: ${dispatchingSystemRegistration.clazz}")
@@ -317,7 +317,7 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
 
         //val new = implemClass.getConstructor(VulkanGraphicsBackend::class.java).newInstance(this)
         val new = when(dispatchingSystemRegistration.clazz) {
-            ChunksRenderer::class.java -> ChunkRepresentationsDispatcher(this)
+            ChunksRenderer::class.java -> VulkanChunkRepresentationsDispatcher(this)
             ModelsRenderer::class.java -> VulkanModelsDispatcher(this)
             SpritesRenderer::class.java -> VulkanSpritesDispatcher(this)
             else -> throw Exception("Unimplemented system on this backend: ${dispatchingSystemRegistration.clazz}")

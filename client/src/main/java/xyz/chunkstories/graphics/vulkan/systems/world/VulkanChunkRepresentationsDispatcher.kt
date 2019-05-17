@@ -20,12 +20,13 @@ import xyz.chunkstories.graphics.common.util.extractInterfaceBlock
 import xyz.chunkstories.graphics.common.util.getStd140AlignedSizeForStruct
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
+import xyz.chunkstories.graphics.vulkan.shaders.bindShaderResources
 import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
 import xyz.chunkstories.graphics.vulkan.textures.voxels.VulkanVoxelTexturesArray
 
-class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingSystem<VulkanChunkRepresentation>(backend) {
+class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingSystem<VulkanChunkRepresentation>(backend) {
 
     override val representationName: String = VulkanChunkRepresentation::class.java.canonicalName
 
@@ -113,7 +114,7 @@ class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
         override lateinit var shader: String
 
         override val system: VulkanDispatchingSystem<VulkanChunkRepresentation>
-            get() = this@ChunkRepresentationsDispatcher
+            get() = this@VulkanChunkRepresentationsDispatcher
 
         init {
             this.apply(initCode)
@@ -220,11 +221,7 @@ class ChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
                 bindingContext.bindTextureAndSampler("albedoTextures", voxelTexturesArray.albedoOnionTexture, sampler)
                 bindingContext.bindSSBO("chunkInfo", ssboDataTest)
 
-                //TODO hey that doesn't belong there !
-                if (shader == "water") {
-                    bindingContext.bindTextureAndSampler("waterNormalDeep", backend.textures.getOrLoadTexture2D("textures/water/deep.png"), sampler)
-                    bindingContext.bindTextureAndSampler("waterNormalShallow", backend.textures.getOrLoadTexture2D("textures/water/shallow.png"), sampler)
-                }
+                ctx.bindShaderResources(bindingContext)
 
                 bindingContext.preDraw(commandBuffer)
 
