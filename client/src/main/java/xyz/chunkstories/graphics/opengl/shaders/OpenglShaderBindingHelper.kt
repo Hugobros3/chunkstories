@@ -75,7 +75,13 @@ fun FakePSO.bindUBO(name: String, contents: InterfaceBlock) {
     var modifiedContents = contents
 
     if(name == "camera" && contents is Camera) {
-        //hack up the projection matrices to get them to use the full depth range (-1, 1)
+        //All the matrix math in the game assumes Vulkan conventions, but OpenGL has different ones
+        //This hacks up the projection matrix to get the game renderer to use the full depth range (-1, 1) even though it assumes (0, 1) depth
+        //We leave the projctionInverse alone because it will get (0,1) depth range from reading the zbuffer already
+        //Notes:
+        //In OpenGL the clip-space is ((-1,-1,-1) to (1,1,1)) and texture-space ((0,0,0) to (1,1,1))
+        //In Vulkan the clip-space is ((-1,-1,0) to (1,1,1)) and so we don't bother touching the Z coordinate
+
         val hackedProjectionMatrix = Matrix4f(contents.projectionMatrix)
 
         val modifierMatrix = Matrix4f()
@@ -83,10 +89,7 @@ fun FakePSO.bindUBO(name: String, contents: InterfaceBlock) {
         modifierMatrix.scale(1f, 1f, 2f)
         modifierMatrix.mul(hackedProjectionMatrix, hackedProjectionMatrix)
 
-        //Thread.dumpStack()
-        //println("Cheating now: "+modifierMatrix)
-
-        modifiedContents = Camera(contents.position, contents.lookingAt, contents.up, contents.fov, contents.viewMatrix, hackedProjectionMatrix)
+        modifiedContents = Camera(contents.position, contents.lookingAt, contents.up, contents.fov, contents.viewMatrix, hackedProjectionMatrix, contents.normalMatrix, contents.viewMatrixInverted, contents.projectionMatrixInverted)
     }
 
     /*for (field in buffer.mapper.fields) {
