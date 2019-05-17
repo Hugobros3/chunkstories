@@ -36,6 +36,7 @@ import xyz.chunkstories.graphics.opengl.textures.OpenglTextures
 import xyz.chunkstories.graphics.opengl.voxels.OpenglVoxelTexturesArray
 import xyz.chunkstories.graphics.opengl.world.OpenglWorldRenderer
 import xyz.chunkstories.graphics.opengl.world.chunks.OpenglChunkRepresentationsDispatcher
+import xyz.chunkstories.graphics.vulkan.swapchain.PerformanceCounter
 import xyz.chunkstories.voxel.ReloadableVoxelTextures
 import xyz.chunkstories.voxel.VoxelTexturesSupport
 import xyz.chunkstories.world.WorldClientCommon
@@ -52,6 +53,7 @@ class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
     val textures: OpenglTextures
 
     val samplers: OpenglSamplers
+    val performance = PerformanceCounter()
 
     init {
         glfwMakeContextCurrent(window.glfwWindowHandle)
@@ -118,12 +120,8 @@ class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
     }
 
     override fun drawFrame(frameNumber: Int) {
-        /*if(System.currentTimeMillis() % 2000L < 1000L)
-            glClearColor(1.0f, 0f, 0f, 1.0f)
-        else
-            glClearColor(1.0f, 0.2f, 0f, 1.0f)
+        performance.whenFrameBegins()
 
-        glClear(GL_COLOR_BUFFER_BIT)*/
         val queuedRenderGraph = this.queuedRenderGraph
         if(queuedRenderGraph != null) {
             //TODO do we need this ?

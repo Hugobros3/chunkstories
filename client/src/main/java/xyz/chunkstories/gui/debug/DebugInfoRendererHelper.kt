@@ -5,7 +5,9 @@ import xyz.chunkstories.api.entity.traits.serializable.TraitRotation
 import xyz.chunkstories.api.gui.GuiDrawer
 import xyz.chunkstories.api.util.kotlin.toVec3i
 import xyz.chunkstories.client.glfw.GLFWWindow
+import xyz.chunkstories.graphics.opengl.OpenglGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
+import xyz.chunkstories.graphics.vulkan.swapchain.PerformanceCounter
 import xyz.chunkstories.gui.ClientGui
 import xyz.chunkstories.gui.layer.ingame.IngameLayer
 import xyz.chunkstories.util.VersionInfo
@@ -34,11 +36,18 @@ class DebugInfoRendererHelper(ingameLayer: IngameLayer) {
 
         debugLine("Chunk Stories ${VersionInfo.version} running on the ${graphicsBackend.javaClass.simpleName}")
 
+        fun PerformanceCounter.print() {
+            debugLine("#FF0000Rendering: ${lastFrametimeNs/1000000}ms fps: ${avgFps.toInt()} (min ${minFps.toInt()}, max ${maxFps.toInt()}) #00FFFFSimulation performance : ${world.gameLogic.simulationFps}")
+        }
+
         when(graphicsBackend) {
+            is OpenglGraphicsBackend -> {
+                graphicsBackend.performance.print()
+            }
             is VulkanGraphicsBackend -> {
                 val swapchain = graphicsBackend.swapchain
                 val performanceMetrics = swapchain.performanceCounter
-                debugLine("#FF0000Rendering: ${performanceMetrics.lastFrametimeNs/1000000}ms fps: ${performanceMetrics.avgFps.toInt()} (min ${performanceMetrics.minFps.toInt()}, max ${performanceMetrics.maxFps.toInt()}) #00FFFFSimulation performance : ${world.gameLogic.simulationFps}")
+                performanceMetrics.print()
 
                 debugLine("VRAM usage: ${graphicsBackend.memoryManager.stats}")
 

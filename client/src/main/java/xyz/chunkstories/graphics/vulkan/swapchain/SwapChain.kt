@@ -27,7 +27,7 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
         private set
     private var inflightFrameIndex = 0
 
-    val performanceCounter = VulkanPerformanceCounter(this)
+    val performanceCounter = PerformanceCounter()
 
     // We keep a reference to old frames to manage their data lifecycle, even past GPU execution
     private lateinit var inFlightFrames: Array<VulkanFrame?>
@@ -244,7 +244,7 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
         stackPop()
 
         val frame = VulkanFrame(frameNumber, swapchainImageIndex, swapChainImages[swapchainImageIndex], swapChainImageViews[swapchainImageIndex], swapChainFramebuffers[swapchainImageIndex], imageAvailableSemaphore, renderingFinishedSemaphore, fence, System.nanoTime())
-        performanceCounter.whenFrameBegins(frame)
+        performanceCounter.whenFrameBegins()
         lastFrame = frame
 
         inFlightFrames[inflightFrameIndex] = frame

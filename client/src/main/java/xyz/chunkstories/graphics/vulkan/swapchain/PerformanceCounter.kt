@@ -2,7 +2,7 @@ package xyz.chunkstories.graphics.vulkan.swapchain
 
 import xyz.chunkstories.gui.debug.FrametimesGraph
 
-class VulkanPerformanceCounter(val swapChain: SwapChain) : PerformanceMetrics {
+class PerformanceCounter : PerformanceMetrics {
     override var lastFrametimeNs: Long = 0
         private set
 
@@ -23,7 +23,7 @@ class VulkanPerformanceCounter(val swapChain: SwapChain) : PerformanceMetrics {
     //val startedTimes = LongArray(swapChain.maxFramesInFlight)
     //var index = 0
 
-    fun whenFrameBegins(frame: VulkanFrame) {
+    fun whenFrameBegins() {
         val now = System.nanoTime()
         val delta = now - lastResetTime
         if(delta > ONE_SECOND) {
