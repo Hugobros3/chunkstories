@@ -4,10 +4,8 @@ import org.joml.Vector4d
 import xyz.chunkstories.api.client.IngameClient
 import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
 import xyz.chunkstories.api.graphics.TextureFormat
-import xyz.chunkstories.api.graphics.rendergraph.ImageInput
-import xyz.chunkstories.api.graphics.rendergraph.PassOutput
-import xyz.chunkstories.api.graphics.rendergraph.RenderGraphDeclarationScript
-import xyz.chunkstories.api.graphics.rendergraph.renderBuffer
+import xyz.chunkstories.api.graphics.TextureTilingMode
+import xyz.chunkstories.api.graphics.rendergraph.*
 import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.api.graphics.systems.dispatching.ChunksRenderer
 import xyz.chunkstories.api.graphics.systems.dispatching.ModelsRenderer
@@ -215,9 +213,47 @@ class OpenglWorldRenderer(val backend: OpenglGraphicsBackend, world: WorldClient
                 }
 
                 pass {
-                    name = "bloom_blurH"
+                    name = "forward"
 
                     dependsOn("deferredShading")
+
+                    draws {
+                        system(ChunksRenderer::class) {
+                            shader = "water"
+                            materialTag = "water"
+
+                            setup {
+                                shaderResources.supplyImage("waterNormalDeep") {
+                                    source = asset("textures/water/deep.png")
+                                    tilingMode = TextureTilingMode.REPEAT
+                                    scalingMode = ImageInput.ScalingMode.LINEAR
+                                }
+                                shaderResources.supplyImage("waterNormalShallow") {
+                                    source = asset("textures/water/shallow.png")
+                                    tilingMode = TextureTilingMode.REPEAT
+                                    scalingMode = ImageInput.ScalingMode.LINEAR
+                                }
+                            }
+                        }
+                    }
+
+                    outputs {
+                        output {
+                            name = "shadedBuffer"
+                            blending = PassOutput.BlendMode.MIX
+                        }
+                    }
+
+                    depth {
+                        enabled = true
+                        depthBuffer = renderBuffer("depthBuffer")
+                    }
+                }
+
+                pass {
+                    name = "bloom_blurH"
+
+                    dependsOn("forward")
 
                     draws {
                         system(FullscreenQuadDrawer::class) {
@@ -271,7 +307,7 @@ class OpenglWorldRenderer(val backend: OpenglGraphicsBackend, world: WorldClient
                 pass {
                     name = "postprocess"
 
-                    dependsOn("deferredShading")
+                    dependsOn("forward")
                     dependsOn("bloom_blurV")
 
                     setup {

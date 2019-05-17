@@ -12,6 +12,7 @@ import xyz.chunkstories.graphics.common.util.getStd140AlignedSizeForStruct
 import xyz.chunkstories.graphics.common.world.ChunkRenderInfo
 import xyz.chunkstories.graphics.opengl.*
 import xyz.chunkstories.graphics.opengl.graph.OpenglPass
+import xyz.chunkstories.graphics.opengl.shaders.bindShaderResources
 import xyz.chunkstories.graphics.opengl.shaders.bindTexture
 import xyz.chunkstories.graphics.opengl.shaders.bindUBO
 import xyz.chunkstories.graphics.opengl.systems.OpenglDispatchingSystem
@@ -109,6 +110,7 @@ class OpenglChunkRepresentationsDispatcher(backend: OpenglGraphicsBackend) : Ope
 
             pipeline.bindUBO("camera", camera)
             pipeline.bindUBO("world", world.getConditions())
+            context.bindShaderResources(pipeline)
 
             // prepare uniform buffer
             /*val chunkInfoUBO = OpenglUniformBuffer(backend, chunkInfoStruct)
