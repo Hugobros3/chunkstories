@@ -40,6 +40,7 @@ class VulkanFrameGraph(val frame: VulkanFrame, val renderGraph: VulkanRenderGrap
             fun postResolve(resolvedDepthAndColorBuffers: MutableList<VulkanRenderBuffer>) {
                 val viewportSize = ViewportSize()
                 viewportSize.size.set(resolvedDepthAndColorBuffers[0].textureSize)
+                renderTargetSize.set(resolvedDepthAndColorBuffers[0].textureSize)
                 shaderResources.supplyUniformBlock("viewportSize", viewportSize)
             }
 

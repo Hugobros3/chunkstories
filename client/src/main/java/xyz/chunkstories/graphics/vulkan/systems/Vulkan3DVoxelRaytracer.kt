@@ -87,6 +87,8 @@ class Vulkan3DVoxelRaytracer(pass: VulkanPass, dslCode: Vulkan3DVoxelRaytracer.(
         //viewportSize.size.set(passInstance.resolvedOutputs[pass.declaration.outputs.outputs[0]]!!.textureSize)
 
         bindingContext.bindUBO("viewportSize", viewportSize)
+        //println(ctx.passInstance.renderTargetSize)
+
         bindingContext.bindUBO("camera", passInstance.taskInstance.camera)
         bindingContext.bindUBO("voxelDataInfo", volumetricTexture.info)
         bindingContext.bindUBO("world", volumetricTexture.world.getConditions())
