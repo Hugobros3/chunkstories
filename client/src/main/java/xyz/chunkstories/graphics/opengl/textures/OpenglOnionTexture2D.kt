@@ -30,8 +30,8 @@ class OpenglOnionTexture2D(backend: OpenglGraphicsBackend, format: TextureFormat
             glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0,0, index, width, height, 1, format.glMapping.format, GL_UNSIGNED_BYTE, buffer)
             //glTexImage3D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, format.glMapping.internalFormat, width, height, 0, format.glMapping.format, GL_UNSIGNED_BYTE, buffer)
 
-            glTextureParameteri(glTexId, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-            glTextureParameteri(glTexId, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+            glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+            glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
 
             glBindTexture(GL_TEXTURE_2D_ARRAY, t)
         }

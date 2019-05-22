@@ -220,7 +220,8 @@ abstract class TaskCreateChunkMesh(
                                     val blocklight = Integer.max(VoxelFormat.blocklight(neighborData), voxel.emittedLightLevel)
 
                                     // compute AO
-                                    val aoArray = arrayOf(0.25f, 0.5f, 0.75f, 1.0f)
+                                    //val aoArray = arrayOf(0.25f, 0.5f, 0.75f, 1.0f)
+                                    val aoArray = arrayOf(1f, 1f, 1f, 1.0f)
 
                                     var i = 0
                                     for ((vertex, texcoord) in face.vertices) {

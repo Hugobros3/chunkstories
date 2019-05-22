@@ -31,8 +31,8 @@ class OpenglTexture2D(backend: OpenglGraphicsBackend, format: TextureFormat,
             glBindTexture(GL_TEXTURE_2D, glTexId)
             glTexImage2D(GL_TEXTURE_2D, 0, format.glMapping.internalFormat, width, height, 0, format.glMapping.format, GL_UNSIGNED_BYTE, buffer)
 
-            glTextureParameteri(glTexId, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-            glTextureParameteri(glTexId, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
 
             glBindTexture(GL_TEXTURE_2D, t)
         }
