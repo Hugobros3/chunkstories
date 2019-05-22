@@ -3,8 +3,6 @@ package xyz.chunkstories.graphics.opengl
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFW.glfwMakeContextCurrent
 import org.lwjgl.glfw.GLFW.glfwSwapBuffers
-import org.lwjgl.opengl.ARBClipControl.GL_ZERO_TO_ONE
-import org.lwjgl.opengl.ARBClipControl.glClipControl
 import org.lwjgl.opengl.ARBDebugOutput.glDebugMessageCallbackARB
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL30.*
@@ -37,15 +35,27 @@ import xyz.chunkstories.graphics.opengl.voxels.OpenglVoxelTexturesArray
 import xyz.chunkstories.graphics.opengl.world.OpenglWorldRenderer
 import xyz.chunkstories.graphics.opengl.world.chunks.OpenglChunkRepresentationsDispatcher
 import xyz.chunkstories.graphics.vulkan.swapchain.PerformanceCounter
-import xyz.chunkstories.voxel.ReloadableVoxelTextures
 import xyz.chunkstories.voxel.VoxelTexturesSupport
 import xyz.chunkstories.world.WorldClientCommon
 import java.awt.image.BufferedImage
 import javax.swing.JOptionPane
 
+data class OpenglSupport(val dsaSupportTier: DsaSupportTier)
+
+enum class DsaSupportTier : Comparator<DsaSupportTier> {
+    NONE,
+    BORKED,
+    OK;
+
+    override fun compare(o1: DsaSupportTier?, o2: DsaSupportTier?): Int {
+        return o1?.ordinal?.compareTo(o2?.ordinal ?: 0) ?: 0
+    }
+}
+
 class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window: GLFWWindow) : GLFWBasedGraphicsBackend(graphicsEngine, window), VoxelTexturesSupport {
     private val capabilities: GLCapabilities
-    private val requiredExtensions = setOf("GL_ARB_debug_output", "GL_ARB_texture_storage", "GL_ARB_direct_state_access", "GL_ARB_draw_buffers_blend")
+    private val requiredExtensions = setOf("GL_ARB_debug_output", "GL_ARB_texture_storage", "GL_ARB_draw_buffers_blend")
+    val openglSupport: OpenglSupport
 
     var renderGraph: OpenglRenderGraph
 
@@ -59,18 +69,13 @@ class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
         glfwMakeContextCurrent(window.glfwWindowHandle)
         capabilities = GL.createCapabilities()
 
-        //JOptionPane.showMessageDialog(null, "The OpenGL backend is currently only a placeholder, it does not work yet. Please use the Vulkan backend instead.", "Information", JOptionPane.INFORMATION_MESSAGE)
-
-        checkForExtensions()
+        openglSupport = evaluateOpenglSupport()
 
         if(debugMode)
             setupDebugMode()
 
         val vaoDontCare = glCreateVertexArrays()
         glBindVertexArray(vaoDontCare)
-
-        //TODO NO BAD (rekts compatibility)
-        //glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE)
 
         shaderFactory = OpenglShaderFactory(this, window.client)
         textures = OpenglTextures(this)
@@ -92,16 +97,18 @@ class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
         }
     }
 
-    private fun checkForExtensions() {
-        val versionString = glGetString(GL_VERSION) ?: "0.0"
-        println("Version:" + versionString)
+    private fun evaluateOpenglSupport(): OpenglSupport {
+        val versionString = glGetString(GL_VERSION) ?: throw Exception("OpenGL implementation didn't return a GL_VERSION")
+        logger.debug("OpenGL Version: $versionString")
 
         //val extensionsString = glGetString(GL_EXTENSIONS) ?: throw Exception("Couldn't list extensions")
         //val extensionsList = extensionsString.split(" ")
         val extensionsCount = glGetInteger(GL_NUM_EXTENSIONS)
         val extensionsList = Array(extensionsCount) { glGetStringi(GL_EXTENSIONS, it)}.toList()
+        logger.debug("OpenGL Extensions: $extensionsList")
 
-        println("Extensions: "+extensionsList)
+        val renderer = glGetString(GL_RENDERER) ?: throw Exception("Can't identify device name (GL_RENDERER returned null)")
+        logger.debug("OpenGL Renderer: $renderer")
 
         if(!extensionsList.containsAll(requiredExtensions)) {
             JOptionPane.showMessageDialog(null, """
@@ -112,6 +119,26 @@ class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
                 """.trimIndent(), "Unsupported configuration", JOptionPane.ERROR_MESSAGE)
             System.exit(0)
         }
+
+        val supportsDsaAtAll = extensionsList.contains("GL_ARB_direct_state_access")
+
+        // AMD didn't fix their DSA until post-2015 drivers, at which point Terascale stuff was EOL
+        val devicesWithDodgyDsaDriverSupport = listOf("AMD Radeon HD 6", "AMD Radeon HD 5", "ATI Radeo")
+        val dsaBorked = devicesWithDodgyDsaDriverSupport.any { renderer.startsWith(it) }
+
+        val dsaSupportTier = if(supportsDsaAtAll) {
+            if(dsaBorked) {
+                DsaSupportTier.BORKED
+            } else {
+                DsaSupportTier.OK
+            }
+        } else {
+            DsaSupportTier.NONE
+        }
+
+        logger.debug("DSA support tier: $dsaSupportTier")
+
+        return OpenglSupport(dsaSupportTier)
     }
 
     private fun setupDebugMode() {

@@ -213,17 +213,26 @@ abstract class TaskCreateChunkMesh(
                                     if (opaque(neighborVoxel) || (voxel == neighborVoxel && voxel.selfOpaque))
                                         return
 
-                                    val voxelTexture = voxel.getVoxelTexture(cell, side)// as VoxelTexturesArray.VoxelTextureInArray
-
-                                    //val textureName = "voxels/textures/"+voxelTexture.name.replace('.','/')+".png"
-                                    //val textureId = (backend.textures[textureName] as VulkanTexture2D).mapping
-                                    //val textureId = voxelTexture.textureArrayIndex
+                                    val voxelTexture = voxel.getVoxelTexture(cell, side)
                                     val textureId = voxelTextureId(voxelTexture)
 
                                     val sunlight = VoxelFormat.sunlight(neighborData)
                                     val blocklight = Integer.max(VoxelFormat.blocklight(neighborData), voxel.emittedLightLevel)
 
+                                    // compute AO
+                                    val aoArray = arrayOf(0.25f, 0.5f, 0.75f, 1.0f)
+
+                                    var i = 0
                                     for ((vertex, texcoord) in face.vertices) {
+                                        val ao = when(i) {
+                                            0 -> aoArray[0]
+                                            1 -> aoArray[1]
+                                            2 -> aoArray[2]
+                                            3 -> aoArray[0]
+                                            4 -> aoArray[3]
+                                            5 -> aoArray[4]
+                                            else -> 1f
+                                        }
                                         /*meshData.put((vertex[0] + x).toByte())
                                         meshData.put((vertex[1] + y).toByte())
                                         meshData.put((vertex[2] + z).toByte())
@@ -234,7 +243,7 @@ abstract class TaskCreateChunkMesh(
 
                                         meshData.put((sunlight * 16).toByte())
                                         meshData.put((blocklight * 16).toByte())
-                                        meshData.put(0)
+                                        meshData.put(ao.toUNORM8())
                                         meshData.put(0)
 
                                         meshData.put(face.normalDirection.x().toSNORM())
@@ -248,6 +257,7 @@ abstract class TaskCreateChunkMesh(
                                         meshData.putInt(textureId)
                                         meshData.putInt(0)
                                         scratch.meshTriCount++
+                                        i++
                                     }
                                 }
 
@@ -314,4 +324,6 @@ abstract class TaskCreateChunkMesh(
 private fun Int.clamp(min: Int, max: Int) = Integer.max(min, Integer.min(this, max))
 
 fun Float.toSNORM(): Byte = ((this + 0.0f) * 0.5f * 255f).toInt().clamp(-128, 127).toByte()
+
+fun Float.toUNORM8(): Byte = (this * 255f).toInt().clamp(0, 255).toByte()
 fun Float.toUNORM16(): Short = (this * 65535f).toInt().clamp(0, 65535).toShort()
