@@ -1,8 +1,7 @@
 package xyz.chunkstories.graphics.opengl.graph
 
 import org.lwjgl.opengl.ARBDirectStateAccess.*
-import org.lwjgl.opengl.GL20
-import org.lwjgl.opengl.GL30.*
+import org.lwjgl.opengl.GL33.*
 
 import xyz.chunkstories.api.graphics.rendergraph.PassDeclaration
 import xyz.chunkstories.api.graphics.rendergraph.RenderTarget
@@ -23,16 +22,26 @@ class OpenglPass(val backend: OpenglGraphicsBackend, val renderTask: OpenglRende
 
     protected val fbos = mutableSetOf<FrameBuffer>()
 
-    protected data class FrameBuffer(val depth: OpenglRenderBuffer?, val colors: List<OpenglRenderBuffer>) : Cleanable {
+    protected data class FrameBuffer(val backend: OpenglGraphicsBackend, val depth: OpenglRenderBuffer?, val colors: List<OpenglRenderBuffer>) : Cleanable {
         val glId: Int
 
         init {
-            glId = glCreateFramebuffers()
-            if(depth != null)
-                glNamedFramebufferTexture(glId, GL_DEPTH_ATTACHMENT, depth.texture.glTexId, 0)
+            if(backend.openglSupport.dsaSupport) {
+                glId = glCreateFramebuffers()
+                if (depth != null)
+                    glNamedFramebufferTexture(glId, GL_DEPTH_ATTACHMENT, depth.texture.glTexId, 0)
 
-            for ((i, colorTarget) in colors.withIndex())
-                glNamedFramebufferTexture(glId, GL_COLOR_ATTACHMENT0 + i, colorTarget.texture.glTexId, 0)
+                for ((i, colorTarget) in colors.withIndex())
+                    glNamedFramebufferTexture(glId, GL_COLOR_ATTACHMENT0 + i, colorTarget.texture.glTexId, 0)
+            } else {
+                glId = glGenFramebuffers()
+                glBindFramebuffer(GL_DRAW_FRAMEBUFFER, glId)
+                if (depth != null)
+                    glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,  depth.texture.glTexId, 0)
+
+                for ((i, colorTarget) in colors.withIndex())
+                    glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, colorTarget.texture.glTexId, 0)
+            }
         }
 
         override fun cleanup() {
@@ -126,12 +135,24 @@ class OpenglPass(val backend: OpenglGraphicsBackend, val renderTask: OpenglRende
         for((i, colorOutput) in declaration.outputs.outputs.withIndex()) {
             if(colorOutput.clear) {
                 val clearColor = colorOutput.clearColor.toVec4f().let { floatArrayOf(it.x, it.y, it.z, it.w) }
-                glClearNamedFramebufferfv(fbo.glId, GL_COLOR, i, clearColor)
+
+                if(backend.openglSupport.dsaSupport) {
+                    glClearNamedFramebufferfv(fbo.glId, GL_COLOR, i, clearColor)
+                } else {
+                    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo.glId)
+                    glClearBufferfv(GL_COLOR, i, clearColor)
+                }
             }
         }
         declaration.depthTestingConfiguration.let {
-            if(it.enabled && it.clear)
-                glClearNamedFramebufferfv(fbo.glId, GL_DEPTH, 0, floatArrayOf(1f))
+            if(it.enabled && it.clear) {
+                if(backend.openglSupport.dsaSupport) {
+                    glClearNamedFramebufferfv(fbo.glId, GL_DEPTH, 0, floatArrayOf(1f))
+                } else {
+                    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo.glId)
+                    glClearBufferfv(GL_DEPTH, 0, floatArrayOf(1f))
+                }
+            }
         }
 
         // Draw systems
@@ -151,7 +172,7 @@ class OpenglPass(val backend: OpenglGraphicsBackend, val renderTask: OpenglRende
         val match = fbos.find { it.depth == depth && it.colors == colorOutputs }
         if(match != null)
             return match
-        val fbo = FrameBuffer(depth, colorOutputs)
+        val fbo = FrameBuffer(backend, depth, colorOutputs)
         fbos.add(fbo)
         return fbo
     }

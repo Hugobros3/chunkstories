@@ -2,18 +2,24 @@ package xyz.chunkstories.graphics.opengl.resources
 
 import org.lwjgl.opengl.GL33.*
 import org.lwjgl.opengl.ARBDirectStateAccess.*
+import org.lwjgl.opengl.GL11
 import xyz.chunkstories.api.graphics.TextureTilingMode
 import xyz.chunkstories.api.graphics.rendergraph.ImageInput
 import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.opengl.OpenglGraphicsBackend
-
 
 class OpenglSampler(val backend: OpenglGraphicsBackend, val scalingMode: ImageInput.ScalingMode, val depthCompareMode: ImageInput.DepthCompareMode, val tilingMode: TextureTilingMode) : Cleanable {
 
     val glId: Int
 
     init {
-        glId = glCreateSamplers()
+        if(backend.openglSupport.dsaSupport) {
+            glId = glCreateSamplers()
+        } else {
+            glId = glGenSamplers()
+            //val t = GL11.glGetInteger(GL_SAMPLER_BINDING)
+            glBindSampler(0, glId)
+        }
 
         when(scalingMode) {
             ImageInput.ScalingMode.LINEAR -> {

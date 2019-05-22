@@ -17,6 +17,15 @@ import xyz.chunkstories.graphics.opengl.textures.OpenglOnionTexture2D
 import xyz.chunkstories.graphics.opengl.textures.OpenglTexture2D
 import xyz.chunkstories.graphics.opengl.textures.OpenglTextureCubemap
 
+private fun FakePSO.bindTextureUnit(unit: Int, textureId: Int, type: Int) {
+    if(backend.openglSupport.dsaSupport) {
+        glBindTextureUnit(unit, textureId)
+    } else {
+        glActiveTexture(GL_TEXTURE0 + unit)
+        glBindTexture(type, textureId)
+    }
+}
+
 fun FakePSO.bindTexture(textureName: String, index: Int = 0, texture: OpenglTexture2D, sampler: OpenglSampler?) {
     val resource = program.glslProgram.resources.find {
         it is GLSLUniformSampledImage2D && it.name == textureName
@@ -24,7 +33,8 @@ fun FakePSO.bindTexture(textureName: String, index: Int = 0, texture: OpenglText
 
     val tetureUnit = resource.openglTextureUnits[index]
 
-    glBindTextureUnit(tetureUnit, texture.glTexId)
+    //glBindTextureUnit(tetureUnit, texture.glTexId)
+    bindTextureUnit(tetureUnit, texture.glTexId, GL_TEXTURE_2D)
     if(sampler != null) {
         glBindSampler(tetureUnit, sampler.glId)
     }
@@ -42,7 +52,8 @@ fun FakePSO.bindTexture(textureName: String, texture: OpenglTextureCubemap) {
         it is GLSLUniformSampledImageCubemap && it.name == textureName
     } as? GLSLUniformSampledImageCubemap ?: return
 
-    glBindTextureUnit(resource.openglTextureUnits[0], texture.glTexId)
+    //glBindTextureUnit(resource.openglTextureUnits[0], texture.glTexId)
+    bindTextureUnit(resource.openglTextureUnits[0], texture.glTexId, GL_TEXTURE_CUBE_MAP)
 
     val uniformLocation = glGetUniformLocation(program.programId, resource.name)
     //println("$uniformLocation vs ${resource.binding}")
@@ -54,7 +65,8 @@ fun FakePSO.bindTexture(textureName: String, texture: OpenglOnionTexture2D) {
         it is GLSLUniformSampledImage2DArray && it.name == textureName
     } as? GLSLUniformSampledImage2DArray ?: return
 
-    glBindTextureUnit(resource.openglTextureUnits[0], texture.glTexId)
+    //glBindTextureUnit(resource.openglTextureUnits[0], texture.glTexId)
+    bindTextureUnit(resource.openglTextureUnits[0], texture.glTexId, GL_TEXTURE_2D_ARRAY)
 
     val uniformLocation = glGetUniformLocation(program.programId, resource.name)
     //println("$uniformLocation vs ${resource.binding}")

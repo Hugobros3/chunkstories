@@ -227,10 +227,10 @@ abstract class TaskCreateChunkMesh(
                                         val ao = when(i) {
                                             0 -> aoArray[0]
                                             1 -> aoArray[1]
-                                            2 -> aoArray[2]
+                                            2 -> aoArray[3]
                                             3 -> aoArray[0]
-                                            4 -> aoArray[3]
-                                            5 -> aoArray[4]
+                                            4 -> aoArray[2]
+                                            5 -> aoArray[3]
                                             else -> 1f
                                         }
                                         /*meshData.put((vertex[0] + x).toByte())

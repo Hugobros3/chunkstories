@@ -40,17 +40,7 @@ import xyz.chunkstories.world.WorldClientCommon
 import java.awt.image.BufferedImage
 import javax.swing.JOptionPane
 
-data class OpenglSupport(val dsaSupportTier: DsaSupportTier)
-
-enum class DsaSupportTier : Comparator<DsaSupportTier> {
-    NONE,
-    BORKED,
-    OK;
-
-    override fun compare(o1: DsaSupportTier?, o2: DsaSupportTier?): Int {
-        return o1?.ordinal?.compareTo(o2?.ordinal ?: 0) ?: 0
-    }
-}
+data class OpenglSupport(val dsaSupport: Boolean)
 
 class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window: GLFWWindow) : GLFWBasedGraphicsBackend(graphicsEngine, window), VoxelTexturesSupport {
     private val capabilities: GLCapabilities
@@ -126,19 +116,11 @@ class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
         val devicesWithDodgyDsaDriverSupport = listOf("AMD Radeon HD 6", "AMD Radeon HD 5", "ATI Radeo")
         val dsaBorked = devicesWithDodgyDsaDriverSupport.any { renderer.startsWith(it) }
 
-        val dsaSupportTier = if(supportsDsaAtAll) {
-            if(dsaBorked) {
-                DsaSupportTier.BORKED
-            } else {
-                DsaSupportTier.OK
-            }
-        } else {
-            DsaSupportTier.NONE
-        }
+        val dsaSupport = supportsDsaAtAll && !dsaBorked
 
-        logger.debug("DSA support tier: $dsaSupportTier")
+        logger.debug("DSA support: $dsaSupport")
 
-        return OpenglSupport(dsaSupportTier)
+        return OpenglSupport(dsaSupport)
     }
 
     private fun setupDebugMode() {

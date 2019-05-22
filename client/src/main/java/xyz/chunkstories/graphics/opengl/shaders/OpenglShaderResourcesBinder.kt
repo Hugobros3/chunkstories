@@ -4,9 +4,6 @@ import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampledImage2D
 import xyz.chunkstories.graphics.opengl.FakePSO
 import xyz.chunkstories.graphics.opengl.textures.OpenglTexture2D
 
-import org.lwjgl.opengl.ARBDirectStateAccess.*
-import org.lwjgl.opengl.GL20
-import org.lwjgl.opengl.GL30.*
 import xyz.chunkstories.api.graphics.rendergraph.ImageSource
 import xyz.chunkstories.api.graphics.rendergraph.PassInstance
 import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext

@@ -103,11 +103,19 @@ class OpenglRenderGraph(val backend: OpenglGraphicsBackend, val dslCode: RenderG
             }
         }
 
-        //TODO blit
-        glBlitNamedFramebuffer(rootFbo, 0,
-                0, backend.window.height, backend.window.width, 0,
-                0, 0, backend.window.width, backend.window.height,
-                GL_COLOR_BUFFER_BIT, GL_NEAREST)
+        if(backend.openglSupport.dsaSupport) {
+            glBlitNamedFramebuffer(rootFbo, 0,
+                    0, backend.window.height, backend.window.width, 0,
+                    0, 0, backend.window.width, backend.window.height,
+                    GL_COLOR_BUFFER_BIT, GL_NEAREST)
+        } else {
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, rootFbo)
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0)
+            glBlitFramebuffer(
+                    0, backend.window.height, backend.window.width, 0,
+                    0, 0, backend.window.width, backend.window.height,
+                    GL_COLOR_BUFFER_BIT, GL_NEAREST)
+        }
     }
 
     fun resizeBuffers() {
