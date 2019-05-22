@@ -6,8 +6,6 @@ import org.lwjgl.glfw.GLFW.glfwSwapBuffers
 import org.lwjgl.opengl.ARBDebugOutput.glDebugMessageCallbackARB
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL30.*
-import org.lwjgl.opengl.ARBDirectStateAccess.*
-import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GLCapabilities
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.content.Content
@@ -64,7 +62,7 @@ class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
         if(debugMode)
             setupDebugMode()
 
-        val vaoDontCare = glCreateVertexArrays()
+        val vaoDontCare = glGenVertexArrays()
         glBindVertexArray(vaoDontCare)
 
         shaderFactory = OpenglShaderFactory(this, window.client)
@@ -81,7 +79,7 @@ class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
                 window.width = newWidth
                 window.height = newHeight
 
-                GL11.glViewport(0, 0, newWidth, newHeight)
+                glViewport(0, 0, newWidth, newHeight)
                 renderGraph.resizeBuffers()
             }
         }
