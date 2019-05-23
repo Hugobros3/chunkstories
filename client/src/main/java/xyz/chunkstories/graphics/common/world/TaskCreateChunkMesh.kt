@@ -127,7 +127,7 @@ abstract class TaskCreateChunkMesh(
 
                             meshData.put((sunlight * 16).toByte())
                             meshData.put((blocklight * 16).toByte())
-                            meshData.put(0)
+                            meshData.put(1f.toUNORM8())
                             meshData.put(0)
 
                             if (normalIn != null) {
@@ -220,20 +220,95 @@ abstract class TaskCreateChunkMesh(
                                     val blocklight = Integer.max(VoxelFormat.blocklight(neighborData), voxel.emittedLightLevel)
 
                                     // compute AO
-                                    //val aoArray = arrayOf(0.25f, 0.5f, 0.75f, 1.0f)
-                                    val aoArray = arrayOf(1f, 1f, 1f, 1.0f)
+                                    val aoArray = arrayOf(0.0f, 0.5f, 0.75f, 1.0f)
+                                    //val aoArray = arrayOf(1f, 1f, 1f, 1.0f)
+
+                                    fun vertexAo(side1: Boolean, side2: Boolean, corner: Boolean): Float = when {
+                                        side1 && side2 -> 0.25f
+                                        !side1 && side2 && corner -> 0.5f
+                                        side1 && !side2 && corner -> 0.5f
+                                        !side1 && !side2 && !corner -> 1f
+                                        else -> 0.75f
+                                    }
+
+                                    val opaquenessNearby = BooleanArray(9)
+                                    fun ao(ds: Int, dt: Int): Float {
+                                        val side1 = opaquenessNearby[((1 + ds) * 3) + (1)]
+                                        val side2 = opaquenessNearby[((1) * 3) + (1 + dt )]
+                                        val corner = opaquenessNearby[((1 + ds) * 3) + (1 + dt )]
+                                        return vertexAo(side1, side2, corner)
+                                    }
+
+                                    when(side) {
+                                        VoxelSide.TOP -> {
+                                            for(s in -1 .. 1) {
+                                                for(t in -1 .. 1) {
+                                                    val cs = s + 1
+                                                    val ct = t + 1
+
+                                                    opaquenessNearby[cs * 3 + ct] = opaque(x + s, y + 1, z + t)
+                                                }
+                                            }
+                                        }
+                                        VoxelSide.BOTTOM -> {
+                                            for(s in -1 .. 1) {
+                                                for(t in -1 .. 1) {
+                                                    val cs = s + 1
+                                                    val ct = t + 1
+
+                                                    opaquenessNearby[cs * 3 + ct] = opaque(x + s, y - 1, z + t)
+                                                }
+                                            }
+                                        }
+                                        VoxelSide.LEFT -> {
+                                            for(s in -1 .. 1) {
+                                                for(t in -1 .. 1) {
+                                                    val cs = s + 1
+                                                    val ct = t + 1
+
+                                                    opaquenessNearby[cs * 3 + ct] = opaque(x - 1, y + s, z + t)
+                                                }
+                                            }
+                                        }
+                                        VoxelSide.RIGHT -> {
+                                            for(s in -1 .. 1) {
+                                                for(t in -1 .. 1) {
+                                                    val cs = s + 1
+                                                    val ct = t + 1
+
+                                                    opaquenessNearby[cs * 3 + ct] = opaque(x + 1, y + s, z + t)
+                                                }
+                                            }
+                                        }
+                                        VoxelSide.FRONT -> {
+                                            for(s in -1 .. 1) {
+                                                for(t in -1 .. 1) {
+                                                    val cs = s + 1
+                                                    val ct = t + 1
+
+                                                    opaquenessNearby[cs * 3 + ct] = opaque(x + s, y + t, z + 1)
+                                                }
+                                            }
+                                        }
+                                        VoxelSide.BACK -> {
+                                            for(s in -1 .. 1) {
+                                                for(t in -1 .. 1) {
+                                                    val cs = s + 1
+                                                    val ct = t + 1
+
+                                                    opaquenessNearby[cs * 3 + ct] = opaque(x + s, y + t, z - 1)
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    aoArray[0] = ao(-1, -1)
+                                    aoArray[1] = ao(1, -1)
+                                    aoArray[2] = ao(-1, 1)
+                                    aoArray[3] = ao(1, 1)
 
                                     var i = 0
-                                    for ((vertex, texcoord) in face.vertices) {
-                                        val ao = when(i) {
-                                            0 -> aoArray[0]
-                                            1 -> aoArray[1]
-                                            2 -> aoArray[3]
-                                            3 -> aoArray[0]
-                                            4 -> aoArray[2]
-                                            5 -> aoArray[3]
-                                            else -> 1f
-                                        }
+                                    for ((vertex, texcoord, aoIndex) in face.vertices) {
                                         /*meshData.put((vertex[0] + x).toByte())
                                         meshData.put((vertex[1] + y).toByte())
                                         meshData.put((vertex[2] + z).toByte())
@@ -244,7 +319,7 @@ abstract class TaskCreateChunkMesh(
 
                                         meshData.put((sunlight * 16).toByte())
                                         meshData.put((blocklight * 16).toByte())
-                                        meshData.put(ao.toUNORM8())
+                                        meshData.put(aoArray[aoIndex].toUNORM8())
                                         meshData.put(0)
 
                                         meshData.put(face.normalDirection.x().toSNORM())
