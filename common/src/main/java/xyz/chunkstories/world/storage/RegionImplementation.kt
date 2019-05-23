@@ -232,7 +232,12 @@ class RegionImplementation(override val world: WorldImplementation, override val
                 }
                 is Region.State.Saving -> {
                 }
-                is Region.State.Available -> transitionSaving()
+                is Region.State.Available -> {
+                    if(world is WorldMaster)
+                        transitionSaving()
+                    else
+                        transitionZombie()
+                }
             }
 
         } finally {
