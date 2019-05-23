@@ -14,6 +14,7 @@ import xyz.chunkstories.api.gui.GuiDrawer
 import xyz.chunkstories.graphics.common.CommonGraphicsOptions
 import xyz.chunkstories.graphics.common.WorldRenderer
 import xyz.chunkstories.graphics.common.getConditions
+import xyz.chunkstories.graphics.common.world.EntitiesRepresentationsProvider
 import xyz.chunkstories.graphics.common.world.doShadowMapping
 import xyz.chunkstories.graphics.opengl.OpenglGraphicsBackend
 import xyz.chunkstories.graphics.opengl.world.chunks.OpenglChunksRepresentationsProvider
@@ -22,15 +23,18 @@ import xyz.chunkstories.world.WorldClientCommon
 class OpenglWorldRenderer(val backend: OpenglGraphicsBackend, world: WorldClientCommon) : WorldRenderer(world) {
 
     val chunksRepresentationsProvider = OpenglChunksRepresentationsProvider(backend, world)
+    val entitiesProvider = EntitiesRepresentationsProvider(world)
 
     init {
         backend.graphicsEngine.loadRenderGraph(createInstructions(world.client))
 
         backend.graphicsEngine.representationsProviders.registerProvider(chunksRepresentationsProvider)
+        backend.graphicsEngine.representationsProviders.registerProvider(entitiesProvider)
     }
 
     override fun cleanup() {
         backend.graphicsEngine.representationsProviders.unregisterProvider(chunksRepresentationsProvider)
+        backend.graphicsEngine.representationsProviders.unregisterProvider(entitiesProvider)
     }
 
     fun createInstructions(client: IngameClient): RenderGraphDeclarationScript = {
@@ -136,13 +140,12 @@ class OpenglWorldRenderer(val backend: OpenglGraphicsBackend, world: WorldClient
                             shader = "blockMeshes"
                             materialTag = "opaque"
                         }
-                        //system(GuiDrawer::class)
-                        /*system(ModelsRenderer::class) {
+                        system(ModelsRenderer::class) {
                             shader = "models"
                             materialTag = "opaque"
                             supportsAnimations = true
                         }
-                        system(SpritesRenderer::class) {
+                        /*system(SpritesRenderer::class) {
                             shader = "sprites"
                             materialTag = "opaque"
                         }*/
@@ -384,11 +387,11 @@ class OpenglWorldRenderer(val backend: OpenglGraphicsBackend, world: WorldClient
                             shader = "blockMeshes"
                             materialTag = "opaque"
                         }
-                        /*system(ModelsRenderer::class) {
+                        system(ModelsRenderer::class) {
                             shader = "models"
                             materialTag = "opaque"
                             supportsAnimations = true
-                        }*/
+                        }
                     }
 
                     outputs {

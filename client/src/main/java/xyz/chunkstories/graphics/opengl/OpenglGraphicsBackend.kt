@@ -13,6 +13,7 @@ import xyz.chunkstories.api.graphics.representation.Representation
 import xyz.chunkstories.api.graphics.systems.RegisteredGraphicSystem
 import xyz.chunkstories.api.graphics.systems.dispatching.ChunksRenderer
 import xyz.chunkstories.api.graphics.systems.dispatching.DispatchingSystem
+import xyz.chunkstories.api.graphics.systems.dispatching.ModelsRenderer
 import xyz.chunkstories.api.graphics.systems.drawing.DrawingSystem
 import xyz.chunkstories.api.graphics.systems.drawing.FullscreenQuadDrawer
 import xyz.chunkstories.api.gui.GuiDrawer
@@ -28,6 +29,7 @@ import xyz.chunkstories.graphics.opengl.systems.OpenglDispatchingSystem
 import xyz.chunkstories.graphics.opengl.systems.OpenglDrawingSystem
 import xyz.chunkstories.graphics.opengl.systems.OpenglFullscreenQuadDrawer
 import xyz.chunkstories.graphics.opengl.systems.gui.OpenglGuiDrawer
+import xyz.chunkstories.graphics.opengl.systems.world.OpenglModelsDispatcher
 import xyz.chunkstories.graphics.opengl.textures.OpenglTextures
 import xyz.chunkstories.graphics.opengl.voxels.OpenglVoxelTexturesArray
 import xyz.chunkstories.graphics.opengl.world.OpenglWorldRenderer
@@ -164,6 +166,7 @@ class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
 
     fun <T : DispatchingSystem> getOrCreateDispatchingSystem(list: MutableList<OpenglDispatchingSystem<*>>, dispatchingSystemRegistration: RegisteredGraphicSystem<T>) : OpenglDispatchingSystem<*> {
         val implemClass: Class<out OpenglDispatchingSystem<out Representation>> = when(dispatchingSystemRegistration.clazz) {
+            ModelsRenderer::class.java -> OpenglModelsDispatcher::class
             ChunksRenderer::class.java -> OpenglChunkRepresentationsDispatcher::class
             else -> throw Exception("Unimplemented system on this backend: ${dispatchingSystemRegistration.clazz}")
         }.java
@@ -173,6 +176,7 @@ class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
             return existing
 
         val new: OpenglDispatchingSystem<out Representation> = when(dispatchingSystemRegistration.clazz) {
+            ModelsRenderer::class.java -> OpenglModelsDispatcher(this)
             ChunksRenderer::class.java -> OpenglChunkRepresentationsDispatcher(this)
             else -> throw Exception("Unimplemented system on this backend: ${dispatchingSystemRegistration.clazz}")
         }

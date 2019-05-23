@@ -185,12 +185,12 @@ abstract class TaskCreateChunkMesh(
                         cell.sunlight = VoxelFormat.sunlight(cellData)
                         cell.blocklight = VoxelFormat.blocklight(cellData)
 
-                        fun shouldRenderFace(neighborData: Int, face: UnitCube.CubeFaceData, side: VoxelSide): Boolean {
+                        /*fun shouldRenderFace(neighborData: Int, face: UnitCube.CubeFaceData, side: VoxelSide): Boolean {
                             val neighborVoxel = chunk.world.contentTranslator.getVoxelForId(VoxelFormat.id(neighborData))!!
                             if (opaque(neighborVoxel) || (voxel == neighborVoxel && voxel.selfOpaque))
                                 return false
                             return true
-                        }
+                        }*/
 
                         if (!voxel.isAir()) {
                             val routine = voxel.customRenderingRoutine

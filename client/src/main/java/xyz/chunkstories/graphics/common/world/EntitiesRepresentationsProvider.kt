@@ -1,4 +1,4 @@
-package xyz.chunkstories.graphics.vulkan.world.entities
+package xyz.chunkstories.graphics.common.world
 
 import xyz.chunkstories.api.entity.traits.TraitRenderable
 import xyz.chunkstories.api.graphics.systems.dispatching.RepresentationsGobbler
