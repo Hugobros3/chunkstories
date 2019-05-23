@@ -31,8 +31,10 @@ class GLFWWindow(val client: ClientImplementation, val graphicsEngine: GraphicsE
     override var height: Int = 640
 
     val glfwWindowHandle: Long
+    val mainThread: Thread = Thread.currentThread()
 
     init {
+
         glfwSetErrorCallback { error, description ->
             println("GLFW error: error: $error description: $description")
         }
@@ -105,13 +107,21 @@ class GLFWWindow(val client: ClientImplementation, val graphicsEngine: GraphicsE
 
     /** Schedules some work to be executed on the main thread */
     fun mainThread(function: GLFWWindow.() -> Unit) {
-        mainThreadQueue.addLast(MainThreadScheduledAction(function))
+        if (Thread.currentThread() == mainThread) {
+            function(this)
+        } else {
+            mainThreadQueue.addLast(MainThreadScheduledAction(function))
+        }
     }
 
     fun mainThreadBlocking(function: GLFWWindow.() -> Unit) {
-        val scheduled = MainThreadScheduledAction(function)
-        mainThreadQueue.addLast(scheduled)
-        scheduled.semaphore.acquireUninterruptibly()
+        if (Thread.currentThread() == mainThread) {
+            function(this)
+        } else {
+            val scheduled = MainThreadScheduledAction(function)
+            mainThreadQueue.addLast(scheduled)
+            scheduled.semaphore.acquireUninterruptibly()
+        }
     }
 
     val shouldClose

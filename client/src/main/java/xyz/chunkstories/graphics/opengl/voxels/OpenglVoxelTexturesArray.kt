@@ -16,17 +16,19 @@ class OpenglVoxelTexturesArray(val backend: OpenglGraphicsBackend, voxels: Conte
     lateinit var albedoOnionTexture: OpenglOnionTexture2D
 
     override fun createTextureArray(textureResolution: Int, imageData: List<Array<BufferedImage>>) {
-        if(::albedoOnionTexture.isInitialized)
-            albedoOnionTexture.cleanup()
+        backend.window.mainThreadBlocking {
+            if (::albedoOnionTexture.isInitialized)
+                albedoOnionTexture.cleanup()
 
-        albedoOnionTexture = OpenglOnionTexture2D(backend, TextureFormat.RGBA_8, textureResolution, textureResolution, imageData.size)
+            albedoOnionTexture = OpenglOnionTexture2D(backend, TextureFormat.RGBA_8, textureResolution, textureResolution, imageData.size)
 
-        for((i, data) in imageData.withIndex()) {
-            val buffer = memAlloc(4 * textureResolution * textureResolution)
-            buffer.put(data[0].toByteBuffer())
-            buffer.flip()
-            albedoOnionTexture.upload(buffer, i)
-            memFree(buffer)
+            for ((i, data) in imageData.withIndex()) {
+                val buffer = memAlloc(4 * textureResolution * textureResolution)
+                buffer.put(data[0].toByteBuffer())
+                buffer.flip()
+                albedoOnionTexture.upload(buffer, i)
+                memFree(buffer)
+            }
         }
     }
 
