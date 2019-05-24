@@ -111,7 +111,7 @@ internal class PlayerAuthenticationHelper(private val connection: ClientConnecti
         loggedIn = true
         connection.sendTextMessage("login/ok")
         connection.flush()
-        connection.setPlayer(player)
+        connection.associatePlayer(player)
     }
 
     companion object {

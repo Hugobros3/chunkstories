@@ -49,7 +49,7 @@ class ClientConnectionSequence constructor(val client: ClientImplementation, val
     var state: ConnectionState
 
     init {
-        this.connection = object : TCPServerConnection(this) {
+        this.connection = object : TCPServerConnection(this@ClientConnectionSequence) {
 
             override fun handleSystemRequest(msg: String): Boolean {
                 if (msg.startsWith("info/mods:")) {

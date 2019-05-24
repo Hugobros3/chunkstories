@@ -41,11 +41,11 @@ public class PacketReceiveFile extends PacketSendFile {
 			// Class to report back the download status to whoever requested it via the
 			// onStart callback
 			PacketFileDownloadStatus status = new PacketFileDownloadStatus((int) fileLength);
-			if (pendingDownload.a != null)
-				pendingDownload.a.onStart(status);
+			if (pendingDownload.getA() != null)
+				pendingDownload.getA().invoke(status);
 
 			long remaining = fileLength;
-			FileOutputStream fos = new FileOutputStream(pendingDownload.f);
+			FileOutputStream fos = new FileOutputStream(pendingDownload.getF());
 			byte[] buffer = new byte[4096];
 			while (remaining > 0) {
 				long toRead = Math.min(4096, remaining);
