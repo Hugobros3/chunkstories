@@ -132,14 +132,6 @@ class LocalPlayerImplementation(override val client: IngameClientImplementation,
 
     }
 
-    override fun disconnect() {
-
-    }
-
-    override fun disconnect(disconnectionReason: String) {
-
-    }
-
     override fun openInventory(inventory: Inventory) {
         val entity = this.controlledEntity
         if (entity != null && inventory.isAccessibleTo(entity)) {

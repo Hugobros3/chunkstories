@@ -254,7 +254,7 @@ class ClientConnectionSequence constructor(val client: ClientImplementation, val
 
     @Throws(AbortException::class)
     private fun abort(text: String) {
-        this.connection.close()
+        this.connection.close("Aborted connection")
         this.state = Failure(text)
         //this.status = ConnectionStep(string)
         //this.aborted = string
@@ -263,7 +263,7 @@ class ClientConnectionSequence constructor(val client: ClientImplementation, val
 
     fun abort() {
         stop()
-        connection.close()
+        connection.close("Aborted connection")
     }
 
     private inner class AbortException : Exception()

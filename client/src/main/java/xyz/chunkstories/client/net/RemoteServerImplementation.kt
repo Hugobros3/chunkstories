@@ -49,13 +49,4 @@ class RemoteServerImplementation(internal val connection: ServerConnection) : Re
     override fun flush() {
         this.connection.flush()
     }
-
-    override fun disconnect() {
-        this.connection.close()
-    }
-
-    override fun disconnect(disconnectionReason: String) {
-        // TODO send reason if possible
-        this.connection.close()
-    }
 }

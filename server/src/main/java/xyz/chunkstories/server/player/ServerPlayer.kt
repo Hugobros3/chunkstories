@@ -263,10 +263,6 @@ class ServerPlayer(val playerConnection: ClientConnection, override val name: St
         this.playerConnection.flush()
     }
 
-    override fun disconnect() {
-        this.playerConnection.disconnect()
-    }
-
     override fun disconnect(disconnectionReason: String) {
         this.playerConnection.disconnect(disconnectionReason)
     }

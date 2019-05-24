@@ -26,10 +26,8 @@ import xyz.chunkstories.world.WorldClientRemote;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /** A clientside connection to a server using the TCP protocol. */
@@ -82,7 +80,6 @@ public class TCPServerConnection extends ServerConnection {
 	}
 
 	class ClientGobbler extends StreamGobbler {
-
 		public ClientGobbler(Connection connection, DataInputStream in) {
 			super(connection, in);
 		}
@@ -121,7 +118,7 @@ public class TCPServerConnection extends ServerConnection {
 			world.ioHandler().handlePacketWorldStreaming(packet);
 			datagram.dispose();
 		} else {
-			throw new RuntimeException("whut");
+			throw new RuntimeException("Unknown packet genre");
 		}
 	}
 
@@ -129,12 +126,12 @@ public class TCPServerConnection extends ServerConnection {
 		if (msg.startsWith("chat/")) {
 			IngameClientImplementation ingame = client.getIngame();
 			if (ingame != null) {
-				ingame.print(msg.substring(5, msg.length()));
+				ingame.print(msg.substring(5));
 			}
 		} else if (msg.startsWith("disconnect/")) {
 			String errorMessage = msg.replace("disconnect/", "");
-			logger.info("Disconnected by server : " + errorMessage);
-			close();
+			logger.info("Disconnected by server : "+ errorMessage);
+			close("Disconnected by server: \n"+errorMessage);
 		}
 
 		return false;
@@ -147,7 +144,7 @@ public class TCPServerConnection extends ServerConnection {
 		} catch (UnknowPacketException e) {
 			logger.error("Couldn't pushPacket()", e);
 		} catch (IOException e) {
-			close();
+			close("Failed to push packet");
 		}
 	}
 
@@ -168,7 +165,7 @@ public class TCPServerConnection extends ServerConnection {
 	}
 
 	@Override
-	public void close() {
+	public void close(String reason) {
 		if (!closeOnce.compareAndSet(false, true))
 			return;
 

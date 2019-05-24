@@ -146,11 +146,11 @@ public class SendQueue extends Thread {
 		}
 	}
 
-	private void disconnect(String string) {
+	private void disconnect(String reason) {
 		deathLock.lock();
-		this.connection.close();
+		this.connection.close(reason);
 		if (!dead) {
-			logger.error("Error in send queue: " + string);
+			logger.error("Error in send queue: " + reason);
 			dead = true;
 			try {
 				outputStream.close();
@@ -159,7 +159,6 @@ public class SendQueue extends Thread {
 			}
 		}
 		deathLock.unlock();
-		// connection.disconnect(string);
 	}
 
 	public void kill() {

@@ -98,7 +98,7 @@ public abstract class ClientConnection extends Connection implements Interlocuto
 
 		// Login-mandatory requests ( you need to be authentificated to use them )
 		if (message.equals("co/off")) {
-			this.disconnect("Client-terminated connection");
+			this.close("Client-terminated connection");
 
 		} else if (message.startsWith("send-mod/")) {
 			String modDescriptor = message.substring(9);
@@ -204,20 +204,16 @@ public abstract class ClientConnection extends Connection implements Interlocuto
 		return player;
 	}
 
-	@Override
-	public void disconnect() {
-		close();
-	}
-
-	@Override
+	/** Disconnects the remote party but tells them why */
 	public void disconnect(String disconnectionReason) {
-		// TODO send reason
-		logger.info("Disconnecting " + this + " reason:" + disconnectionReason);
-		close();
+		this.sendTextMessage("disconnect/"+disconnectionReason);
+		this.flush();
+		this.close(disconnectionReason);
 	}
 
 	@Override
-	public void close() {
+	public void close(String reason) {
+		logger.info("Disconnecting " + this + " :" + reason);
 		clientsManager.removeClient(this);
 
 		if (player != null) {

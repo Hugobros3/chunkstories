@@ -9,6 +9,7 @@ package xyz.chunkstories.server.commands.admin
 import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.plugin.commands.Command
 import xyz.chunkstories.api.plugin.commands.CommandEmitter
+import xyz.chunkstories.api.server.RemotePlayer
 import xyz.chunkstories.api.server.Server
 import xyz.chunkstories.server.commands.ServerCommandBasic
 
@@ -35,8 +36,7 @@ class ModerationCommands(serverConsole: Server) : ServerCommandBasic(serverConso
                 }
 
                 if (clientByName != null) {
-                    clientByName.disconnect("Kicked from server. \n$kickReason")
-                    // server.handler.disconnectClient(tokick);
+                    (clientByName as? RemotePlayer)?.disconnect("Kicked from server. \n$kickReason")
                     emitter.sendMessage("Kicked $clientByName for $kickReason")
                 } else {
                     emitter.sendMessage("User '$clientByName' not found.")

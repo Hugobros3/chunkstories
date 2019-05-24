@@ -44,22 +44,22 @@ public abstract class StreamGobbler extends Thread {
 			if (connection.isOpen()) {
 				logger.info("Closing socket.");
 			}
-			connection.close();
+			connection.close("Soc");
 		} catch (EOFException e) { // Natural too
-			connection.close();
+			connection.close("EOFException");
 			logger.info("Connection closed");
 		} catch (IOException e) {
-			connection.close();
+			connection.close("IOException: "+e.getMessage());
 			logger.info("Connection error", e);
 		} catch (UnknowPacketException e) {
 			logger.error("Unknown packet", e);
-			connection.close();
+			connection.close("Unknown packet: "+e.getMessage());
 		} catch (PacketProcessingException e) {
-			connection.close();
+			connection.close("Error processing packet:"+e.getMessage());
 			logger.error("Error processing packet", e);
 		} catch (IllegalPacketException e) {
 			logger.error("Illegal packet", e);
-			connection.close();
+			connection.close("Illegal packet: "+e);
 		}
 	}
 }

@@ -122,12 +122,12 @@ public class TCPClientConnection extends ClientConnection {
 		} catch (UnknowPacketException e) {
 			logger.error("Couldn't pushPacket()", e);
 		} catch (IOException e) {
-			close();
+			close("IOException "+e.getMessage());
 		}
 	}
 
 	@Override
-	public void close() {
+	public void close(String reason) {
 		if (!closeOnce.compareAndSet(false, true))
 			return;
 
@@ -142,7 +142,7 @@ public class TCPClientConnection extends ClientConnection {
 			sendQueue.kill();
 
 		disconnected = true;
-		super.close();
+		super.close(reason);
 	}
 
 	@Override

@@ -6,9 +6,6 @@
 
 package xyz.chunkstories.client.net;
 
-import java.io.File;
-
-import xyz.chunkstories.api.GameContext;
 import xyz.chunkstories.api.net.RemoteServer;
 import xyz.chunkstories.net.Connection;
 
@@ -22,8 +19,6 @@ public abstract class ServerConnection extends Connection {
 	}
 
 	public abstract RemoteServer getRemoteServer();
-
-	//public abstract ConnectionStep obtainModFile(String modMd5Hash, File cached);
 
 	public ClientConnectionSequence getConnectionSequence() {
 		return connectionSequence;

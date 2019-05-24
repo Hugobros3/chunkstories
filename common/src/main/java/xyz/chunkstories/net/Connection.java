@@ -58,7 +58,7 @@ public abstract class Connection {
 
     public abstract boolean isOpen();
 
-    public abstract void close();
+    public abstract void close(String reason);
 
     // Below is stuff for downloading/uploading of files
     private Map<String, PendingDownload> fileStreamingRequests = new ConcurrentHashMap<>();
