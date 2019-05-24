@@ -82,7 +82,7 @@ class MainMenu(gui: Gui, parent: Layer?) : Layer(gui, parent) {
     override fun handleTextInput(c: Char): Boolean {
         when (c) {
             'd' -> gui.topLayer = DeathScreen(gui, this)
-            'r' -> gui.topLayer = MessageBox(gui, this, "Error : error")
+            'r' -> gui.topLayer = MessageBox(gui, this, "Dummy error", "Oh noes")
             'l' -> gui.topLayer = LanguageSelectionScreen(gui, this, true)
             'o' -> gui.topLayer = LogPolicyAsk(gui, this)
             'c' -> // Fabricated crash

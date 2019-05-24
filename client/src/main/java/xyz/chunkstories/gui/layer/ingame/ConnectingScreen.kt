@@ -56,8 +56,7 @@ class ConnectingScreen(gui: Gui, parent: Layer?, private val connectionSequence:
 
         when (status) {
             is ClientConnectionSequence.Finished -> gui.popTopLayer()
-            is ClientConnectionSequence.Failure -> gui.client.ingame?.exitToMainMenu(statusText)
-                    ?: let { gui.topLayer = MessageBox(gui, MainMenu(gui, null), statusText) }
+            is ClientConnectionSequence.Failure -> gui.client.ingame?.exitToMainMenu(statusText) ?: let { gui.topLayer = MessageBox(gui, MainMenu(gui, null), "Connection failure", statusText) }
         }
     }
 }

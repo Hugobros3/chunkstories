@@ -91,7 +91,7 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
     override fun exitToMainMenu(errorMessage: String) {
         exitCommon()
 
-        gui.topLayer = MessageBox(gui, null, errorMessage)
+        gui.topLayer = MessageBox(gui, null, "Disconnected: ", errorMessage)
         soundManager.stopAnySound()
         client.ingame = null
     }
