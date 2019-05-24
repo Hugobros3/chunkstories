@@ -93,6 +93,20 @@ class OpenglWorldRenderer(val backend: OpenglGraphicsBackend, world: WorldClient
                     size = viewportSize * 0.5
                 }
 
+                renderBuffer {
+                    name = "bloom_temp2"
+
+                    format = TextureFormat.RGB_HDR
+                    size = viewportSize * 0.25
+                }
+
+                renderBuffer {
+                    name = "bloom2"
+
+                    format = TextureFormat.RGB_HDR
+                    size = viewportSize * 0.25
+                }
+
                 val shadowCascades = client.configuration.getIntValue(CommonGraphicsOptions.shadowCascades)
                 val shadowResolution = client.configuration.getIntValue(CommonGraphicsOptions.shadowMapSize)
                 for (i in 0 until shadowCascades) {
@@ -308,10 +322,64 @@ class OpenglWorldRenderer(val backend: OpenglGraphicsBackend, world: WorldClient
                 }
 
                 pass {
+                    name = "bloom_blurH2"
+
+                    dependsOn("bloom_blurV")
+
+                    draws {
+                        system(FullscreenQuadDrawer::class) {
+                            shader = "blur_horizontal"
+                        }
+                    }
+
+                    setup {
+                        shaderResources.supplyImage("inputTexture") {
+                            source = renderBuffer("bloom")
+                            scalingMode = ImageInput.ScalingMode.LINEAR
+                        }
+                    }
+
+                    outputs {
+                        output {
+                            name = "fragColor"
+                            target = renderBuffer("bloom_temp2")
+                            blending = PassOutput.BlendMode.OVERWRITE
+                        }
+                    }
+                }
+
+                pass {
+                    name = "bloom_blurV2"
+
+                    dependsOn("bloom_blurH2")
+
+                    draws {
+                        system(FullscreenQuadDrawer::class) {
+                            shader = "blur_vertical"
+                        }
+                    }
+
+                    setup {
+                        shaderResources.supplyImage("inputTexture") {
+                            source = renderBuffer("bloom_temp2")
+                            scalingMode = ImageInput.ScalingMode.LINEAR
+                        }
+                    }
+
+                    outputs {
+                        output {
+                            name = "fragColor"
+                            target = renderBuffer("bloom2")
+                            blending = PassOutput.BlendMode.OVERWRITE
+                        }
+                    }
+                }
+
+                pass {
                     name = "postprocess"
 
                     dependsOn("forward")
-                    dependsOn("bloom_blurV")
+                    dependsOn("bloom_blurV2")
 
                     setup {
                         shaderResources.supplyImage("shadedBuffer") {

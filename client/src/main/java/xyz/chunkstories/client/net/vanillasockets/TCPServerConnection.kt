@@ -30,8 +30,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 /** A clientside connection to a server using the TCP protocol.  */
 open class TCPServerConnection(connectionSequence: ClientConnectionSequence) : ServerConnection(connectionSequence) {
-    private val client: ClientImplementation
-    override val encoderDecoder: ClientPacketsEncoderDecoder
+    private val client: ClientImplementation = connectionSequence.client
+    final override val encoderDecoder: ClientPacketsEncoderDecoder
 
     private var socket: Socket? = null
 
@@ -44,13 +44,12 @@ open class TCPServerConnection(connectionSequence: ClientConnectionSequence) : S
     private var sendQueue: SendQueue? = null
 
     // A representation of who we're talking to
-    override val remoteServer: RemoteServer
+    final override val remoteServer: RemoteServer
 
     override val isOpen: Boolean
         get() = connected && !disconnected
 
     init {
-        this.client = connectionSequence.client
         remoteServer = RemoteServerImplementation(this)
         encoderDecoder = ClientPacketsEncoderDecoder(client, this)
     }
