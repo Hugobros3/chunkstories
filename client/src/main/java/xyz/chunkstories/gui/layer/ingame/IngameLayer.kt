@@ -91,10 +91,10 @@ class IngameLayer(window: Gui, private val client: IngameClientImplementation) :
             focus(true)
 
         // Check connection didn't died and change scene if it has
-        if (world is WorldClientRemote) {
+        /*if (world is WorldClientRemote) {
             if (!world.connection.isOpen)
                 client.exitToMainMenu("Connection terminated (TODO betterize)")
-        }
+        }*/
 
         // Auto-switch to pause if it detects the game isn't in focus anymore
         if (!client.gameWindow.hasFocus() && !isCovered) {

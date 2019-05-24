@@ -11,8 +11,6 @@ import java.io.BufferedOutputStream
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
-import java.io.InputStream
-import java.io.OutputStream
 import java.net.Socket
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -120,16 +118,15 @@ constructor(server: Server, clientsManager: ClientsManager, internal val socket:
         if (!closeOnce.compareAndSet(false, true))
             return
 
+        sendQueue?.shutdown()
+
         try {
-            socket?.close()
+            socket.close()
         } catch (e: IOException) {
             // Discard errors when disconnecting a connection
         }
 
-        sendQueue?.kill()
-
         disconnected = true
         super.close(reason)
     }
-
 }

@@ -216,6 +216,19 @@ public class TrueTypeFont implements Font {
 	}
 
 	public int getWidth(String whatchars) {
+		if(whatchars == null)
+			return 0;
+
+		if(whatchars.contains("\n")) {
+			int max = 0;
+			for(String line : whatchars.split("\n")) {
+				int l = getWidth(line);
+				if(l > max)
+					max = l;
+			}
+			return max;
+		}
+
 		int totalwidth = 0;
 		Glyph glyph = null;
 		int currentChar = 0;

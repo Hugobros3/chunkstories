@@ -69,6 +69,9 @@ class ClientConnectionSequence constructor(val client: ClientImplementation, val
                 return super.handleSystemRequest(msg)
             }
 
+            override fun onDisconnect(reason: String) {
+                client.ingame?.exitToMainMenu(reason)
+            }
         }
 
         state = ConnectionState("Establishing connection to $serverAddress:$serverPort")

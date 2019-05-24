@@ -11,6 +11,9 @@ import xyz.chunkstories.net.Connection
 
 /** A connection from a client *to* a server.  */
 abstract class ServerConnection(val connectionSequence: ClientConnectionSequence) : Connection(connectionSequence.serverAddress, connectionSequence.serverPort) {
-
     abstract val remoteServer: RemoteServer
+
+    open fun onDisconnect(reason: String) {
+
+    }
 }

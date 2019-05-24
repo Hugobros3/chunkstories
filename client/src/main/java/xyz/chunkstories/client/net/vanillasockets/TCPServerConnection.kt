@@ -15,14 +15,12 @@ import xyz.chunkstories.api.net.PacketWorldStreaming
 import xyz.chunkstories.api.net.RemoteServer
 import xyz.chunkstories.api.net.packets.PacketText
 import xyz.chunkstories.client.ClientImplementation
-import xyz.chunkstories.client.ingame.IngameClientImplementation
 import xyz.chunkstories.client.net.*
 import xyz.chunkstories.net.Connection
 import xyz.chunkstories.net.LogicalPacketDatagram
 import xyz.chunkstories.net.PacketDefinitionImplementation
 import xyz.chunkstories.net.vanillasockets.SendQueue
 import xyz.chunkstories.net.vanillasockets.StreamGobbler
-import xyz.chunkstories.world.WorldClientRemote
 
 import java.io.DataInputStream
 import java.io.DataOutputStream
@@ -124,9 +122,9 @@ open class TCPServerConnection(connectionSequence: ClientConnectionSequence) : S
             val ingame = client.ingame
             ingame?.print(msg.substring(5))
         } else if (msg.startsWith("disconnect/")) {
-            val errorMessage = msg.replace("disconnect/", "")
-            Connection.logger.info("Disconnected by server : $errorMessage")
-            close("Disconnected by server: \n$errorMessage")
+            val serverKickReason = msg.replace("disconnect/", "")
+            Connection.logger.info(serverKickReason)
+            close("Disconnected by server: \n$serverKickReason")
         }
 
         return false
@@ -152,6 +150,8 @@ open class TCPServerConnection(connectionSequence: ClientConnectionSequence) : S
         if (!closeOnce.compareAndSet(false, true))
             return
 
+        onDisconnect(reason)
+
         try {
             if (socket != null)
                 socket!!.close()
@@ -160,7 +160,7 @@ open class TCPServerConnection(connectionSequence: ClientConnectionSequence) : S
         }
 
         if (sendQueue != null)
-            sendQueue!!.kill()
+            sendQueue!!.shutdown()
 
         disconnected = true
     }

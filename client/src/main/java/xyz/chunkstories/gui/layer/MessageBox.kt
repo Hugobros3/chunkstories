@@ -18,7 +18,6 @@ class MessageBox(gui: Gui, parent: Layer?, private val title: String, private va
 
     init {
         this.okButton.action = Runnable { gui.popTopLayer() }
-
         elements.add(okButton)
     }
 
