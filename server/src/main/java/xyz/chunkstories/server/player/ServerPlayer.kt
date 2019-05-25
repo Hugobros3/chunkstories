@@ -9,25 +9,20 @@ package xyz.chunkstories.server.player
 import org.joml.Vector3d
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import xyz.chunkstories.api.Location
 import xyz.chunkstories.api.entity.Entity
 import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
 import xyz.chunkstories.api.entity.traits.serializable.TraitInventory
 import xyz.chunkstories.api.entity.traits.serializable.TraitSerializable
-import xyz.chunkstories.api.graphics.systems.dispatching.DecalsManager
 import xyz.chunkstories.api.input.InputsManager
 import xyz.chunkstories.api.item.inventory.Inventory
 import xyz.chunkstories.api.math.LoopingMathHelper
 import xyz.chunkstories.api.net.Packet
 import xyz.chunkstories.api.net.packets.PacketOpenInventory
-import xyz.chunkstories.api.particles.ParticlesManager
 import xyz.chunkstories.api.server.RemotePlayer
 import xyz.chunkstories.api.server.Server
-import xyz.chunkstories.api.sound.SoundManager
 import xyz.chunkstories.api.util.ColorsTools
 import xyz.chunkstories.api.world.WorldMaster
 import xyz.chunkstories.entity.SerializedEntityFile
-import xyz.chunkstories.server.ServerInputsManager
 import xyz.chunkstories.server.net.ClientConnection
 import xyz.chunkstories.server.propagation.VirtualServerDecalsManager.ServerPlayerVirtualDecalsManager
 import xyz.chunkstories.server.propagation.VirtualServerParticlesManager.ServerPlayerVirtualParticlesManager
@@ -40,7 +35,7 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 class ServerPlayer(val playerConnection: ClientConnection, override val name: String) : RemotePlayer {
-    protected val server: Server
+    private val server = playerConnection.context
 
     private val playerMetadata: Properties
     private val playerMetadataFile: File
@@ -50,14 +45,11 @@ class ServerPlayer(val playerConnection: ClientConnection, override val name: St
     override val inputsManager: InputsManager
         get() = serverInputsManager
 
-    val isConnected: Boolean
-        get() = playerConnection.isOpen
-
     override val subscribedToList: Collection<Entity>
         get() = subscribedEntities
 
     fun whenEnteringWorld(world: WorldServer) {
-        if(::loadingAgent.isInitialized)
+        if (::loadingAgent.isInitialized)
             this.loadingAgent.destroy()
 
         this.loadingAgent = ServerPlayerLoadingAgent(this, world)
@@ -68,7 +60,7 @@ class ServerPlayer(val playerConnection: ClientConnection, override val name: St
     }
 
     override var controlledEntity: Entity? = null
-        set(newEntity: Entity?) {
+        set(newEntity) {
             synchronized(this) {
                 val oldEntity = controlledEntity
 
@@ -92,7 +84,7 @@ class ServerPlayer(val playerConnection: ClientConnection, override val name: St
     private val subscribedEntities = ConcurrentHashMap.newKeySet<Entity>()
 
     // Mirror of client inputs
-    private val serverInputsManager: ServerInputsManager
+    private val serverInputsManager: ServerPlayerInputsManager
 
     // Dummy managers to relay synchronisation stuff
     private var virtualSoundManager: ServerPlayerVirtualSoundManager? = null
@@ -100,16 +92,8 @@ class ServerPlayer(val playerConnection: ClientConnection, override val name: St
     private var virtualDecalsManager: ServerPlayerVirtualDecalsManager? = null
 
     lateinit var loadingAgent: ServerPlayerLoadingAgent private set
-    //val loadingAgent = RemotePlayerLoadingAgent(this)
-
-   /*val lastPosition: Location?
-        get() = if (this.playerMetadata.containsKey("posX")) { Location(world!!, playerMetadata.getProperty("posX").toDouble(), playerMetadata.getProperty("posY").toDouble(),
-                    playerMetadata.getProperty("posZ").toDouble())
-        } else null
-*/
 
     init {
-        this.server = playerConnection.context
 
         //TODO this should use revised UUIDs
         File("players/").mkdirs()
@@ -117,7 +101,7 @@ class ServerPlayer(val playerConnection: ClientConnection, override val name: St
 
         this.playerMetadata = Properties()//OldStyleConfigFile("./players/" + playerName.toLowerCase() + ".cfg");
 
-        this.serverInputsManager = ServerInputsManager(this)
+        this.serverInputsManager = ServerPlayerInputsManager(this)
 
         // Sets dates
         this.playerMetadata.setProperty("lastlogin", "" + System.currentTimeMillis())
@@ -161,7 +145,7 @@ class ServerPlayer(val playerConnection: ClientConnection, override val name: St
         val ENTITY_VISIBILITY_SIZE = 192.0
 
         //println(controlledEntity.world.allLoadedChunks.count())
-        if(!subscribedEntities.contains(controlledEntity))
+        if (!subscribedEntities.contains(controlledEntity))
             subscribe(controlledEntity)
 
         val inRangeEntitiesIterator = controlledEntity.world.getEntitiesInBox(controlledTraitLocation,
@@ -174,7 +158,7 @@ class ServerPlayer(val playerConnection: ClientConnection, override val name: St
 
             if (shouldTrack && !contains)
                 this.subscribe(e)
-//entities
+
             if (!shouldTrack && contains)
                 this.unsubscribe(e)
         }

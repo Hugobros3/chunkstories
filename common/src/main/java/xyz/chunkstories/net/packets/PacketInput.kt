@@ -45,7 +45,7 @@ class PacketInput(world: World) : PacketWorld(world) {
             if (entity != null) {
                 // Get input of the client
                 val input = processor.player.inputsManager.getInputFromHash(code) as? InputVirtual ?: throw NullPointerException("Unknown input hash : $code")
-                input.setPressed(pressed)
+                input.isPressed = pressed
 
                 // Fire appropriate event
                 if (pressed) {

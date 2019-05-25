@@ -16,7 +16,7 @@ import xyz.chunkstories.input.Pollable
 /**
  * Describes a key assignated to some action
  */
-class Lwjgl3KeyBind internal constructor(private val inputsManager: Lwjgl3ClientInputsManager, name: String, defaultKeyName: String, val hidden: Boolean, val repeat: Boolean) : Lwjgl3Input(inputsManager, name), KeyboardKeyInput, Pollable {
+class Lwjgl3KeyBind internal constructor(inputsManager: Lwjgl3ClientInputsManager, name: String, defaultKeyName: String, val hidden: Boolean, val repeat: Boolean) : Lwjgl3Input(inputsManager, name), KeyboardKeyInput, Pollable {
 
     /**
      * Internal to the engine, should not be interfered with by external mods
@@ -42,15 +42,6 @@ class Lwjgl3KeyBind internal constructor(private val inputsManager: Lwjgl3Client
         }
     }
 
-    private fun parse(s: String): Int {
-        try {
-            return Integer.parseInt(s)
-        } catch (e: NumberFormatException) {
-            return 0
-        }
-
-    }
-
     /** Returns true if the key is pressed and we're either not ingame or there is no GUI overlay blocking gameplay input  */
     override val isPressed: Boolean
         get(): Boolean {
@@ -58,14 +49,8 @@ class Lwjgl3KeyBind internal constructor(private val inputsManager: Lwjgl3Client
             return if (ingameClient != null) isDown && ingameClient.player.hasFocus() else isDown
         }
 
-    /**
-     * When reloading from the config file (options changed)
-     */
-    override fun reload() {
-        // doesn't do stuff, we have a hook on the option directly
-    }
 
     override fun updateStatus() {
-        isDown = glfwGetKey(im.gameWindow.glfwWindowHandle, lwjglKey) == GLFW_PRESS
+        isDown = glfwGetKey(inputsManager.gameWindow.glfwWindowHandle, lwjglKey) == GLFW_PRESS
     }
 }

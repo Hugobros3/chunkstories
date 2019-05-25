@@ -9,19 +9,10 @@ package xyz.chunkstories.input.lwjgl3
 import org.lwjgl.glfw.GLFW
 import xyz.chunkstories.api.input.KeyboardKeyInput
 
-class Lwjgl3KeyBindCompound(im: Lwjgl3ClientInputsManager, name: String, internal val defaultKeysNames: String) : Lwjgl3Input(im, name), KeyboardKeyInput {
-    internal lateinit var glfwKeys: IntArray
+class Lwjgl3KeyBindCompound(inputsManager: Lwjgl3ClientInputsManager, name: String, internal val defaultKeysNames: String) : Lwjgl3Input(inputsManager, name), KeyboardKeyInput {
+    internal var glfwKeys: IntArray
 
     init {
-        reload()
-    }
-
-    override val isPressed: Boolean
-        get() {
-            return false
-        }
-
-    override fun reload() {
         val keyNamesString = defaultKeysNames
         val keyNames = keyNamesString.split("\\+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
@@ -34,7 +25,13 @@ class Lwjgl3KeyBindCompound(im: Lwjgl3ClientInputsManager, name: String, interna
             // System.out.println(keyName+":"+glfwKey);
         }
 
-        this.im.logger().debug("Initialized keyBindCompound " + name + " for " + glfwKeys.size + " keys.")
+        this.inputsManager.logger().debug("Initialized keyBindCompound " + name + " for " + glfwKeys.size + " keys.")
     }
+
+    override val isPressed: Boolean
+        get() {
+            //TODO
+            return false
+        }
 
 }

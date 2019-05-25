@@ -14,38 +14,30 @@ import org.lwjgl.glfw.GLFW.glfwGetInputMode
 import org.lwjgl.glfw.GLFW.glfwSetCursorPos
 import org.lwjgl.glfw.GLFW.glfwSetInputMode
 
-import java.nio.DoubleBuffer
-
 import xyz.chunkstories.api.client.Client
-import xyz.chunkstories.client.ClientImplementation
 import org.joml.Vector2d
 import org.lwjgl.system.MemoryUtil
 
 import xyz.chunkstories.api.input.Input
 import xyz.chunkstories.api.input.Mouse
 
-class Lwjgl3Mouse(internal var im: Lwjgl3ClientInputsManager) : Mouse {
+class Lwjgl3Mouse(internal val inputsManager: Lwjgl3ClientInputsManager) : Mouse {
+
+    override val mainButton = Lwjgl3MouseButton(this, "mouse.left", 0)
+    override val secondaryButton = Lwjgl3MouseButton(this, "mouse.right", 1)
+    override val middleButton = Lwjgl3MouseButton(this, "mouse.middle", 2)
 
     val mousePosition: Vector2d
         get() {
             val b1 = MemoryUtil.memAllocDouble(1)
             val b2 = MemoryUtil.memAllocDouble(1)
-            glfwGetCursorPos(im.gameWindow.glfwWindowHandle, b1, b2)
-            val vec2 = Vector2d(b1.get(), im.gameWindow.height - b2.get())
+            glfwGetCursorPos(inputsManager.gameWindow.glfwWindowHandle, b1, b2)
+            val vec2 = Vector2d(b1.get(), inputsManager.gameWindow.height - b2.get())
             MemoryUtil.memFree(b1)
             MemoryUtil.memFree(b2)
 
             return vec2
         }
-
-    override val mainButton: Mouse.MouseButton
-        get() = im.LEFT
-
-    override val secondaryButton: Mouse.MouseButton
-        get() = im.RIGHT
-
-    override val middleButton: Mouse.MouseButton
-        get() = im.MIDDLE
 
     override val cursorX: Double
         get(): Double {
@@ -57,24 +49,24 @@ class Lwjgl3Mouse(internal var im: Lwjgl3ClientInputsManager) : Mouse {
             return mousePosition.y()
         }
 
-    override fun setMouseCursorLocation(x: Double, y: Double) {
-        glfwSetCursorPos(im.gameWindow.glfwWindowHandle, x, y)
-    }
-
     override var isGrabbed: Boolean
         get(): Boolean {
-            return glfwGetInputMode(im.gameWindow.glfwWindowHandle, GLFW_CURSOR) == GLFW_CURSOR_DISABLED
+            return glfwGetInputMode(inputsManager.gameWindow.glfwWindowHandle, GLFW_CURSOR) == GLFW_CURSOR_DISABLED
         }
         set(grabbed) {
-            glfwSetInputMode(this.im.gameWindow.glfwWindowHandle, GLFW_CURSOR,
+            glfwSetInputMode(this.inputsManager.gameWindow.glfwWindowHandle, GLFW_CURSOR,
                     if (grabbed) GLFW_CURSOR_DISABLED else GLFW_CURSOR_NORMAL)
         }
 
-    fun scroll(yoffset: Double): Mouse.MouseScroll {
+    override fun setMouseCursorLocation(x: Double, y: Double) {
+        glfwSetCursorPos(inputsManager.gameWindow.glfwWindowHandle, x, y)
+    }
+
+    fun generalMouseScrollEvent(yOffset: Double): Mouse.MouseScroll {
         return object : Mouse.MouseScroll {
 
             override val client: Client
-                get() = im.gameWindow.client
+                get() = inputsManager.gameWindow.client
 
             override val name: String
                 get() = "mouse.scroll"
@@ -88,7 +80,7 @@ class Lwjgl3Mouse(internal var im: Lwjgl3ClientInputsManager) : Mouse {
                 }
 
             override fun amount(): Int {
-                return yoffset.toInt()
+                return yOffset.toInt()
             }
 
             override fun equals(o: Any?): Boolean {

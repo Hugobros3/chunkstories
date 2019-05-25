@@ -18,10 +18,6 @@ import xyz.chunkstories.api.input.Mouse
 import xyz.chunkstories.api.input.Mouse.MouseButton
 import xyz.chunkstories.client.glfw.GLFWWindow
 import xyz.chunkstories.gui.layer.config.KeyBindSelectionOverlay
-import xyz.chunkstories.input.InputVirtual
-import xyz.chunkstories.input.InputsLoaderHelper
-import xyz.chunkstories.input.InputsManagerLoader
-import xyz.chunkstories.input.Pollable
 import xyz.chunkstories.net.packets.PacketInput
 import xyz.chunkstories.world.WorldClientRemote
 import org.lwjgl.glfw.GLFW.*
@@ -31,34 +27,27 @@ import org.lwjgl.glfw.GLFWMouseButtonCallback
 import org.lwjgl.glfw.GLFWScrollCallback
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.api.GameContext
 import xyz.chunkstories.graphics.common.Cleanable
+import xyz.chunkstories.input.*
 
-class Lwjgl3ClientInputsManager(val gameWindow: GLFWWindow) : ClientInputsManager, InputsManagerLoader, Cleanable {
+class Lwjgl3ClientInputsManager(val gameWindow: GLFWWindow) : CommonInputsManager(), ClientInputsManager, /*InputsManagerLoader, */Cleanable {
     private val gui: Gui
 
-    internal var inputs = mutableListOf<Input>()
-    internal var inputsMap: MutableMap<Long, Input> = mutableMapOf()
+    override val context: GameContext
+        get() = gameWindow.client
 
     override val mouse: Lwjgl3Mouse
-    var LEFT: Lwjgl3MouseButton
-    var RIGHT: Lwjgl3MouseButton
-    var MIDDLE: Lwjgl3MouseButton
 
     private val keyCallback: GLFWKeyCallback
     private val mouseButtonCallback: GLFWMouseButtonCallback
     private val scrollCallback: GLFWScrollCallback
     private val characterCallback: GLFWCharCallback
 
-    override val allInputs: Collection<Input>
-        get() = inputs
-
     init {
         this.gui = gameWindow.client.gui
 
         mouse = Lwjgl3Mouse(this)
-        LEFT = Lwjgl3MouseButton(mouse, "mouse.left", 0)
-        RIGHT = Lwjgl3MouseButton(mouse, "mouse.right", 1)
-        MIDDLE = Lwjgl3MouseButton(mouse, "mouse.middle", 2)
 
         keyCallback = object : GLFWKeyCallback() {
             override fun invoke(window: Long, key: Int, scancode: Int, action: Int, mods: Int) {
@@ -96,9 +85,9 @@ class Lwjgl3ClientInputsManager(val gameWindow: GLFWWindow) : ClientInputsManage
             override fun invoke(window: Long, button: Int, action: Int, mods: Int) {
                 var mButton: MouseButton? = null
                 when (button) {
-                    0 -> mButton = LEFT
-                    1 -> mButton = RIGHT
-                    2 -> mButton = MIDDLE
+                    0 -> mButton = mouse.mainButton
+                    1 -> mButton = mouse.secondaryButton
+                    2 -> mButton = mouse.middleButton
                 }
 
                 if (mButton != null) {
@@ -115,8 +104,7 @@ class Lwjgl3ClientInputsManager(val gameWindow: GLFWWindow) : ClientInputsManage
         scrollCallback = object : GLFWScrollCallback() {
             override fun invoke(window: Long, xoffset: Double, yoffset: Double) {
 
-                val ms = mouse.scroll(yoffset)
-                onInputPressed(ms)
+                onInputPressed(mouse.generalMouseScrollEvent(yoffset))
 
                 // gameWindow.getCurrentScene().onScroll((int)yoffset);
             }
@@ -140,40 +128,18 @@ class Lwjgl3ClientInputsManager(val gameWindow: GLFWWindow) : ClientInputsManage
     }
 
     /**
-     * Returns null or a KeyBind matching the name
-     */
-    override fun getInputByName(bindName: String): Input? {
-        if (bindName == "mouse.left")
-            return LEFT
-        if (bindName == "mouse.right")
-            return RIGHT
-        if (bindName == "mouse.middle")
-            return MIDDLE
-
-        //TODO hash map !!!
-        for (keyBind in inputs) {
-            if (keyBind.name == bindName)
-                return keyBind
-        }
-        return null
-    }
-
-    /**
      * Returns null or a KeyBind matching the pressed key
-     *
-     * @param keyCode
-     * @return
      */
-    protected fun getKeyBoundForLWJGL3xKey(keyCode: Int): Lwjgl3KeyBind? {
-        for (keyBind in inputs) {
+    private fun getKeyBoundForLWJGL3xKey(keyCode: Int): Lwjgl3KeyBind? {
+        for (keyBind in allInputs) {
             if (keyBind is Lwjgl3KeyBind && keyBind.lwjglKey == keyCode)
                 return keyBind
         }
         return null
     }
 
-    protected fun getKeyCompoundFulForLWJGL3xKey(key: Int): Lwjgl3KeyBindCompound? {
-        inputs@ for (keyBind in inputs) {
+    private fun getKeyCompoundFulForLWJGL3xKey(key: Int): Lwjgl3KeyBindCompound? {
+        inputs@ for (keyBind in allInputs) {
             if (keyBind is Lwjgl3KeyBindCompound) {
 
                 // Check all other keys were pressed
@@ -189,50 +155,23 @@ class Lwjgl3ClientInputsManager(val gameWindow: GLFWWindow) : ClientInputsManage
         return null
     }
 
-    override fun getInputFromHash(hash: Long): Input? {
-        if (hash == 0L)
-            return LEFT
-        else if (hash == 1L)
-            return RIGHT
-        else if (hash == 2L)
-            return MIDDLE
-
-        return inputsMap[hash]
-    }
-
-    fun reload() {
-        inputs.clear()
-        inputsMap.clear()
-
-        InputsLoaderHelper.loadKeyBindsIntoManager(this, gameWindow.client.content.modsManager())
-
+    override fun addBuiltInInputs(inputs: MutableList<AbstractInput>) {
         // Add physical mouse buttons
-        inputs.add(LEFT)
-        inputsMap[LEFT.hash] = LEFT
-        inputs.add(RIGHT)
-        inputsMap[RIGHT.hash] = RIGHT
-        inputs.add(MIDDLE)
-        inputsMap[MIDDLE.hash] = MIDDLE
+        inputs.add(mouse.mainButton)
+        inputs.add(mouse.secondaryButton)
+        inputs.add(mouse.middleButton)
     }
 
-    override fun insertInput(type: String, name: String, value: String?, arguments: Collection<String>) {
-        val input: Input
-        when (type) {
-            "keyBind" -> input = Lwjgl3KeyBind(this, name, value!!, arguments.contains("hidden"), arguments.contains("repeat"))
-            "virtual" -> input = InputVirtual(name)
-            "keyBindCompound" -> {
-                val keyCompound = Lwjgl3KeyBindCompound(this, name, value!!)
-                input = keyCompound
-            }
-            else -> return
-        }
-
-        inputs.add(input)
-        inputsMap[input.hash] = input
+    override fun insertInput(inputs: MutableList<AbstractInput>, inputType: InputType, inputName: String, defaultValue: String?, arguments: MutableList<String>) {
+        inputs.add(when(inputType) {
+            InputType.KEY_BIND -> Lwjgl3KeyBind(this, inputName, defaultValue!!, arguments.contains("hidden"), arguments.contains("repeat"))
+            InputType.KEY_COMPOUND ->Lwjgl3KeyBindCompound(this, inputName, defaultValue!!)
+            InputType.VIRTUAL -> InputVirtual(this, inputName)
+        })
     }
 
     fun updateInputs() {
-        for (input in this.inputs) {
+        for (input in allInputs) {
             if (input is Pollable)
                 input.updateStatus()
         }
@@ -295,7 +234,7 @@ class Lwjgl3ClientInputsManager(val gameWindow: GLFWWindow) : ClientInputsManage
     override fun onInputReleased(input: Input): Boolean {
         val ingameClient = gameWindow.client.ingame ?: return false
 
-        val event = ClientInputReleasedEvent(gameWindow.client, input!!)
+        val event = ClientInputReleasedEvent(gameWindow.client, input)
         ingameClient.pluginManager.fireEvent(event)
 
         val player = ingameClient.player
@@ -305,17 +244,17 @@ class Lwjgl3ClientInputsManager(val gameWindow: GLFWWindow) : ClientInputsManage
 
         // Send input to server
         val world = entityControlled.world
-        if (world is WorldClientRemote) {
+        return if (world is WorldClientRemote) {
             val connection = (entityControlled.world as WorldClientRemote).connection
             val packet = PacketInput(world)
             packet.input = input
             packet.isPressed = false
             connection.pushPacket(packet)
-            return true
+            true
         } else {
             val event2 = PlayerInputReleasedEvent(player, input!!)
             ingameClient.pluginManager.fireEvent(event2)
-            return true
+            true
         }
     }
 
@@ -331,7 +270,6 @@ class Lwjgl3ClientInputsManager(val gameWindow: GLFWWindow) : ClientInputsManage
     }
 
     companion object {
-
         private val logger = LoggerFactory.getLogger("client.workers")
     }
 }

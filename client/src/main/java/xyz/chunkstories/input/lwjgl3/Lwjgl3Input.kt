@@ -6,12 +6,11 @@
 
 package xyz.chunkstories.input.lwjgl3
 
-import xyz.chunkstories.api.input.Input
-import xyz.chunkstories.input.InputsLoaderHelper
+import xyz.chunkstories.input.AbstractInput
 
-abstract class Lwjgl3Input(protected val im: Lwjgl3ClientInputsManager, override val name: String) : Input {
+abstract class Lwjgl3Input(protected val inputsManager: Lwjgl3ClientInputsManager, name: String) : AbstractInput(inputsManager, name) {
 
-    override var hash: Long = 0
+    /*override var hash: Long = 0
 
     init {
         computeHash(name)
@@ -35,7 +34,7 @@ abstract class Lwjgl3Input(protected val im: Lwjgl3ClientInputsManager, override
         hash = hash and -0xf01L or (digested[13].toLong() and 0xF shl 8)
         hash = hash and -0xf1L or (digested[14].toLong() and 0xF shl 4)
         hash = hash and -0x10L or (digested[15].toLong() and 0xF shl 0)
-    }
+    }*/
 
     override fun equals(o: Any?): Boolean {
         if (o == null)
@@ -51,6 +50,4 @@ abstract class Lwjgl3Input(protected val im: Lwjgl3ClientInputsManager, override
     override fun hashCode(): Int {
         return name.hashCode()
     }
-
-    abstract fun reload()
 }
