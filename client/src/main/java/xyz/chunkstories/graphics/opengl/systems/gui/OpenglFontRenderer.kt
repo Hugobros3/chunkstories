@@ -37,19 +37,9 @@ class OpenglFontRenderer (val backend: OpenglGraphicsBackend) : Cleanable {
             return
         var lineI = 0
 
-        /*int currentLineTotalLength = trueTypeFont.getWidth(lines[lineI]);
-		if (alignement == ALIGN_CENTER) {
-			if (currentLineTotalLength < clipX / scaleX)
-				totalwidth += (clipX / scaleX - currentLineTotalLength) / 2;
-		}*/
         var charsThisLine = 0
         while (i < whatchars.length) {
             charCurrent = whatchars[i].toInt()
-
-            /*Texture2DGL pageTexture = trueTypeFont.glTextures[charCurrent / 256];
-			// Generates any required unicode page
-			if (pageTexture == null)
-				pageTexture = trueTypeFont.createPage(charCurrent / 256);*/
 
             val pageId = charCurrent / 256
             fun createPage() : OpenglTexture2D {
@@ -88,7 +78,7 @@ class OpenglFontRenderer (val backend: OpenglGraphicsBackend) : Cleanable {
                         continue
                     }
                 } else if (charCurrent == '\n'.toInt()) {
-                    startY -= trueTypeFont.height.toFloat()
+                    startY -= trueTypeFont.lineHeight.toFloat()
                     totalwidth = 0
                     charsThisLine = 0
 
@@ -101,7 +91,7 @@ class OpenglFontRenderer (val backend: OpenglGraphicsBackend) : Cleanable {
 					}*/
                 } else {
                     if (clip && totalwidth + glyph.width > clipX / scaleX) {
-                        startY -= trueTypeFont.height.toFloat()
+                        startY -= trueTypeFont.lineHeight.toFloat()
                         totalwidth = 0
                         charsThisLine = 0
 

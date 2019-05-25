@@ -65,11 +65,6 @@ class VulkanFontRenderer(internal val backend: VulkanGraphicsBackend) : Cleanabl
         while (i < whatchars.length) {
             charCurrent = whatchars[i].toInt()
 
-            /*Texture2DGL pageTexture = trueTypeFont.glTextures[charCurrent / 256];
-			// Generates any required unicode page
-			if (pageTexture == null)
-				pageTexture = trueTypeFont.createPage(charCurrent / 256);*/
-
             val pageId = charCurrent / 256
             fun createPage() : VulkanTexture2D {
                 val image = trueTypeFont.createPage(charCurrent / 256)
@@ -107,20 +102,16 @@ class VulkanFontRenderer(internal val backend: VulkanGraphicsBackend) : Cleanabl
                         continue
                     }
                 } else if (charCurrent == '\n'.toInt()) {
-                    startY -= trueTypeFont.height.toFloat()
+                    startY -= trueTypeFont.lineHeight.toFloat()
                     totalwidth = 0
                     charsThisLine = 0
 
                     if (lineI < lines.size - 1)
                         lineI++
-                    /*currentLineTotalLength = trueTypeFont.getWidth(lines[lineI]);
-					if (alignement == ALIGN_CENTER) {
-						if (currentLineTotalLength < clipX / scaleX)
-							totalwidth += (clipX / scaleX - currentLineTotalLength) / 2;
-					}*/
+
                 } else {
                     if (clip && totalwidth + glyph.width > clipX / scaleX) {
-                        startY -= trueTypeFont.height.toFloat()
+                        startY -= trueTypeFont.lineHeight.toFloat()
                         totalwidth = 0
                         charsThisLine = 0
 

@@ -6,7 +6,7 @@ import xyz.chunkstories.api.gui.Fonts
 
 class FontsLibrary(val content: Content) : Fonts {
     val fonts = mutableMapOf<Pair<String, Float>, Font>()
-    val defaultFont = TrueTypeFont(content.getAsset("fonts/LiberationSans-Regular.ttf"), 12F, false)
+    val defaultFont = TrueTypeFont(content.getAsset("fonts/LiberationSans-Regular.ttf")!!, 12F, false)
 
     private fun loadFont(fontName: String, sizeInPx: Float) : Font? {
         val asset = content.getAsset("fonts/$fontName.ttf") ?: return null
