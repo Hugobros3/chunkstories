@@ -48,6 +48,7 @@ class DedicatedAllocationsBucket(memoryManager: VulkanMemoryManager, memoryTypeI
         override fun cleanup() {
             VK10.vkFreeMemory(memoryManager.backend.logicalDevice.vkDevice, deviceMemory, null)
             allocatedBytesTotalAtomic.addAndGet(-size)
+            allocations.remove(this)
         }
     }
 
@@ -58,7 +59,7 @@ class DedicatedAllocationsBucket(memoryManager: VulkanMemoryManager, memoryTypeI
     }
 
     override fun cleanup() {
-        allocations.forEach(Cleanable::cleanup)
+        allocations.toList().forEach(Cleanable::cleanup)
     }
 
     override fun toString(): String {

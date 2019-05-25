@@ -7,6 +7,7 @@ import xyz.chunkstories.api.graphics.TextureTilingMode
 import xyz.chunkstories.api.graphics.rendergraph.*
 import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.api.graphics.systems.dispatching.ChunksRenderer
+import xyz.chunkstories.api.graphics.systems.dispatching.LinesRenderer
 import xyz.chunkstories.api.graphics.systems.dispatching.ModelsRenderer
 import xyz.chunkstories.api.graphics.systems.dispatching.SpritesRenderer
 import xyz.chunkstories.api.graphics.systems.drawing.FullscreenQuadDrawer
@@ -20,6 +21,7 @@ import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.systems.Vulkan3DVoxelRaytracer
 import xyz.chunkstories.graphics.vulkan.systems.world.VulkanChunkRepresentationsProvider
 import xyz.chunkstories.graphics.common.world.EntitiesRepresentationsProvider
+import xyz.chunkstories.graphics.vulkan.systems.models.VulkanLinesDispatcher
 import xyz.chunkstories.world.WorldClientCommon
 
 class VulkanWorldRenderer(val backend: VulkanGraphicsBackend, world: WorldClientCommon) : WorldRenderer(world) {
@@ -259,6 +261,13 @@ class VulkanWorldRenderer(val backend: VulkanGraphicsBackend, world: WorldClient
                                     tilingMode = TextureTilingMode.REPEAT
                                     scalingMode = ImageInput.ScalingMode.LINEAR
                                 }
+                            }
+                        }
+
+                        system(LinesRenderer::class) {
+                            setup {
+                                val camera = client.player.controlledEntity?.traits?.get(TraitControllable::class)?.camera ?: Camera()
+                                shaderResources.supplyUniformBlock("camera", camera)
                             }
                         }
                     }

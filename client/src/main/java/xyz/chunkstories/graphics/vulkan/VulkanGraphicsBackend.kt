@@ -31,13 +31,11 @@ import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.content.Content
 import xyz.chunkstories.api.graphics.systems.RegisteredGraphicSystem
-import xyz.chunkstories.api.graphics.systems.dispatching.ChunksRenderer
-import xyz.chunkstories.api.graphics.systems.dispatching.DispatchingSystem
-import xyz.chunkstories.api.graphics.systems.dispatching.ModelsRenderer
-import xyz.chunkstories.api.graphics.systems.dispatching.SpritesRenderer
+import xyz.chunkstories.api.graphics.systems.dispatching.*
 import xyz.chunkstories.api.graphics.systems.drawing.DrawingSystem
 import xyz.chunkstories.graphics.GraphicsEngineImplementation
 import xyz.chunkstories.graphics.vulkan.systems.debug.VulkanSpinningCubeDrawer
+import xyz.chunkstories.graphics.vulkan.systems.models.VulkanLinesDispatcher
 import xyz.chunkstories.graphics.vulkan.systems.models.VulkanModelsDispatcher
 import xyz.chunkstories.graphics.vulkan.systems.models.VulkanSpritesDispatcher
 import xyz.chunkstories.graphics.vulkan.systems.world.VulkanChunkRepresentationsDispatcher
@@ -308,6 +306,7 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
             ChunksRenderer::class.java -> VulkanChunkRepresentationsDispatcher::class
             ModelsRenderer::class.java -> VulkanModelsDispatcher::class
             SpritesRenderer::class.java -> VulkanSpritesDispatcher::class
+            LinesRenderer::class.java -> VulkanLinesDispatcher::class
             else -> throw Exception("Unimplemented system on this backend: ${dispatchingSystemRegistration.clazz}")
         }.java
 
@@ -320,6 +319,7 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
             ChunksRenderer::class.java -> VulkanChunkRepresentationsDispatcher(this)
             ModelsRenderer::class.java -> VulkanModelsDispatcher(this)
             SpritesRenderer::class.java -> VulkanSpritesDispatcher(this)
+            LinesRenderer::class.java -> VulkanLinesDispatcher(this)
             else -> throw Exception("Unimplemented system on this backend: ${dispatchingSystemRegistration.clazz}")
         }
 
