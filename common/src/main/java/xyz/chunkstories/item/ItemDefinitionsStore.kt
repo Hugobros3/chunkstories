@@ -82,8 +82,8 @@ class ItemDefinitionsStore(gameContentStore: GameContentStore) : ItemsDefinition
         return if (itemDefinitions.containsKey(itemName)) itemDefinitions[itemName] else null
     }
 
-    override fun all(): Iterator<ItemDefinition> {
-        return itemDefinitions.values.iterator()
+    override fun all(): Collection<ItemDefinition> {
+        return itemDefinitions.values
     }
 
     override fun parent(): Content {

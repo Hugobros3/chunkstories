@@ -34,9 +34,7 @@ class InventoryView(gui: Gui, parent: Layer, private val inventories: List<Inven
     }
 
     override fun render(drawer: GuiDrawer) {
-        if (parentLayer != null) {
-            parentLayer!!.render(drawer)
-        }
+        parentLayer?.render(drawer)
 
         val mouse = gui.mouse
 
@@ -68,7 +66,7 @@ class InventoryView(gui: Gui, parent: Layer, private val inventories: List<Inven
                     val mx = mouse.cursorX.toInt()
                     val my = mouse.cursorY.toInt()
 
-                    drawer!!.drawStringWithShadow(drawer.fonts.defaultFont(2), mx, my, pileHighlighted.item.name, -1, Vector4f(1.0f))
+                    drawer.drawStringWithShadow(drawer.fonts.defaultFont(2), mx, my, pileHighlighted.item.name, -1, Vector4f(1.0f))
                 }
             }
         }
@@ -99,7 +97,7 @@ class InventoryView(gui: Gui, parent: Layer, private val inventories: List<Inven
         input is MouseButton -> handleClick(input)
         input.name == "exit" -> {
             gui.popTopLayer()
-            InventoryView.draggingPile = null
+            draggingPile = null
             true
         }
         else -> true
@@ -193,8 +191,6 @@ class InventoryView(gui: Gui, parent: Layer, private val inventories: List<Inven
                     if (!dropItemEvent.isCancelled) {
                         // If we're pulling this out of an inventory ( and not /dev/null ), we need to
                         // remove it from that
-                        val sourceInventory = pile2drop.inventory
-
                         val entity = world.content.entities().getEntityDefinition("groundItem")!!.newEntity<EntityGroundItem>(world)
                         entity.location = playerEntity.location
                         entity.traits[TraitInventory::class]?.inventory?.addItem(pile2drop.item, draggingQuantity)
@@ -215,6 +211,5 @@ class InventoryView(gui: Gui, parent: Layer, private val inventories: List<Inven
         }
 
         return true
-
     }
 }

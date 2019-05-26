@@ -11,19 +11,14 @@ import com.google.gson.internal.LinkedTreeMap
 import org.hjson.JsonValue
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import xyz.chunkstories.api.content.Asset
 import xyz.chunkstories.api.content.Content
-import xyz.chunkstories.api.entity.EntityDefinition
 import xyz.chunkstories.api.exceptions.net.UnknowPacketException
 import xyz.chunkstories.api.net.Packet
 import xyz.chunkstories.api.net.PacketDefinition
 import xyz.chunkstories.content.GameContentStore
 import xyz.chunkstories.content.extractProperties
-
-import java.io.BufferedReader
-import java.io.InputStreamReader
 import java.io.Reader
-import java.util.HashMap
+import java.util.*
 
 class PacketsStore(private val content: GameContentStore) : Content.PacketDefinitions {
     private val byNames = HashMap<String, PacketDefinitionImplementation>()
@@ -91,19 +86,8 @@ class PacketsStore(private val content: GameContentStore) : Content.PacketDefini
         return this.content
     }
 
-    override fun all(): Iterator<PacketDefinition> {
-        val i = byNames.values.iterator()
-        return object : Iterator<PacketDefinition> {
-
-            override fun hasNext(): Boolean {
-                return i.hasNext()
-            }
-
-            override fun next(): PacketDefinition {
-                return i.next()
-            }
-
-        }
+    override fun all(): Collection<PacketDefinition> {
+        return byNames.values
     }
 
     companion object {

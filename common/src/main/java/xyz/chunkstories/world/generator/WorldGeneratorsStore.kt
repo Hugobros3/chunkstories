@@ -72,8 +72,8 @@ class WorldGeneratorsStore(private val store: GameContentStore) : Content.WorldG
         return blank
     }
 
-    override fun all(): Iterator<WorldGeneratorDefinition> {
-        return generators.values.iterator()
+    override fun all(): Collection<WorldGeneratorDefinition> {
+        return generators.values
     }
 
     override fun parent(): Content {

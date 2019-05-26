@@ -73,8 +73,8 @@ class VoxelMaterialsStore(private val voxels: VoxelsStore) : Content.Voxels.Voxe
 
     }
 
-    override fun all(): Iterator<VoxelMaterial> {
-        return materials.values.iterator()
+    override fun all(): Collection<VoxelMaterial> {
+        return materials.values
     }
 
     override fun parent(): Content {

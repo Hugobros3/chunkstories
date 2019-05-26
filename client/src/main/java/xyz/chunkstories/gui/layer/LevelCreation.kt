@@ -116,14 +116,7 @@ class LevelCreation internal constructor(gui: Gui, parent: Layer) : Layer(gui, p
         } else {
             worldGeneratorValidtyLabel = "#00FF00'" + worldGenName.text + "' is a valid world generator !"
         }
-        val worldGeneratorsAvailableLabel = StringBuilder("Available world generators: ")
-        val worldGeneratorDefinitionIterator = gui.client.content.generators().all()
-        while (worldGeneratorDefinitionIterator.hasNext()) {
-            val wgt = worldGeneratorDefinitionIterator.next()
-            worldGeneratorsAvailableLabel.append(wgt.name)
-            if (worldGeneratorDefinitionIterator.hasNext())
-                worldGeneratorsAvailableLabel.append(", ")
-        }
+        val worldGeneratorsAvailableLabel = "Available world generators: "+gui.client.content.generators().all().map { it.name }
 
         drawer.drawString(textFont, paddedStartX, y, worldGeneratorValidtyLabel, -1, textColor)
 

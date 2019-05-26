@@ -102,8 +102,8 @@ class VoxelsStore(private val content: GameContentStore) : Content.Voxels {
         return voxelsByName[voxelName]
     }
 
-    override fun all(): Iterator<Voxel> {
-        return voxelsByName.values.iterator()
+    override fun all(): Collection<Voxel> {
+        return voxelsByName.values
     }
 
     override fun parent(): GameContentStore {

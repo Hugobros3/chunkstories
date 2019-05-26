@@ -67,8 +67,8 @@ class EntityDefinitionsStore(content: GameContentStore) : EntityDefinitions {
         return entityDefinitions[TraitName]
     }
 
-    override fun all(): Iterator<EntityDefinition> {
-        return this.entityDefinitions.values.iterator()
+    override fun all(): Collection<EntityDefinition> {
+        return this.entityDefinitions.values
     }
 
     override fun parent(): Content {

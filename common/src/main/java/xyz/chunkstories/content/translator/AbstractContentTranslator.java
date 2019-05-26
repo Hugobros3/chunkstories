@@ -62,7 +62,7 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 		if (overwrite)
 			voxelMappings = new HashMap<>();
 
-		content.voxels().all().forEachRemaining(voxel -> {
+		content.voxels().all().forEach(voxel -> {
 			if (overwrite || voxelMappings.get(voxel) == null) {
 				if (voxel.getName().equals("air"))
 					voxelMappings.put(voxel, 0); // Air gets ID 0, always.
@@ -76,7 +76,7 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 		if (overwrite)
 			entityMappings = new HashMap<>();
 
-		content.entities().all().forEachRemaining(entity -> {
+		content.entities().all().forEach(entity -> {
 			if (overwrite || entityMappings.get(entity) == null)
 				entityMappings.put(entity, findNextFreeId(1, entityMappings.values()));
 		});
@@ -86,7 +86,7 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 		if (overwrite)
 			itemMappings = new HashMap<>();
 
-		content.items().all().forEachRemaining(item -> {
+		content.items().all().forEach(item -> {
 			if (overwrite || itemMappings.get(item) == null)
 				itemMappings.put(item, findNextFreeId(1, itemMappings.values()));
 		});
@@ -96,7 +96,7 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 		if (overwrite)
 			packetMappings = new HashMap<>();
 
-		content.packets().all().forEachRemaining(def -> {
+		content.packets().all().forEach(def -> {
 			PacketDefinitionImplementation definition = (PacketDefinitionImplementation) def;
 
 			if (overwrite || packetMappings.get(definition) == null) {
@@ -109,7 +109,7 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 			}
 		});
 
-		content.packets().all().forEachRemaining(def -> {
+		content.packets().all().forEach(def -> {
 			PacketDefinitionImplementation definition = (PacketDefinitionImplementation) def;
 
 			if (overwrite || packetMappings.get(definition) == null) {
