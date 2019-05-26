@@ -103,14 +103,14 @@ class VulkanWorldRenderer(val backend: VulkanGraphicsBackend, world: WorldClient
                     name = "bloom_temp2"
 
                     format = TextureFormat.RGB_HDR
-                    size = viewportSize * 0.25
+                    size = viewportSize * 0.0625
                 }
 
                 renderBuffer {
                     name = "bloom2"
 
                     format = TextureFormat.RGB_HDR
-                    size = viewportSize * 0.25
+                    size = viewportSize * 0.0625
                 }
 
                 val shadowCascades = client.configuration.getIntValue(CommonGraphicsOptions.shadowCascades)
@@ -207,10 +207,12 @@ class VulkanWorldRenderer(val backend: VulkanGraphicsBackend, world: WorldClient
 
                         shaderResources.supplyImage("normalBuffer") {
                             source = renderBuffer("normalBuffer")
+                            scalingMode = ImageInput.ScalingMode.LINEAR
                         }
 
                         shaderResources.supplyImage("depthBuffer") {
                             source = renderBuffer("depthBuffer")
+                            scalingMode = ImageInput.ScalingMode.LINEAR
                         }
                     }
 
