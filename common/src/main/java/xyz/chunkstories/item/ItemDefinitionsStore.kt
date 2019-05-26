@@ -68,6 +68,15 @@ class ItemDefinitionsStore(gameContentStore: GameContentStore) : ItemsDefinition
         }
     }
 
+    internal fun addVoxelItems() {
+        // Include definitions from the voxels variants
+        for(voxel in parent().voxels().all()) {
+            for(variantDefinition in voxel.variants) {
+                itemDefinitions[variantDefinition.name] = variantDefinition
+            }
+        }
+    }
+
     override fun getItemDefinition(itemName: String)
             : ItemDefinition? {
         return if (itemDefinitions.containsKey(itemName)) itemDefinitions[itemName] else null

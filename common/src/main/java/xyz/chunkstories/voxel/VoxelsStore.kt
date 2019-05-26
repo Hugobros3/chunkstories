@@ -52,8 +52,13 @@ class VoxelsStore(private val content: GameContentStore) : Content.Voxels {
         this.materials.reload()
         this.textures.reload()
 
-        air = Voxel(xyz.chunkstories.api.voxel.VoxelDefinition(this, "air", kotlin.collections.mapOf("solid" to "false", "opaque" to "false")))
+        air = Voxel(VoxelDefinition(this, "air", mapOf(
+                "solid" to "false",
+                "opaque" to "false"
+        )))
         this.reloadVoxelTypes()
+
+        parent().items().addVoxelItems()
     }
 
     private fun reloadVoxelTypes() {
