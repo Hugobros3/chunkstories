@@ -49,168 +49,168 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
         val operationsPool = backend.logicalDevice.graphicsQueue.threadSafePools.get()
         val commandBuffer = operationsPool.startCommandBuffer()
 
-        info.noise = (info.noise + 1) % 256
-        //println(info.noise)
+        try {
+            info.noise = (info.noise + 1) % 256
+            //println(info.noise)
 
-        stackPush().use {
-            scratchByteBuffer.clear()
+            stackPush().use {
+                scratchByteBuffer.clear()
 
-            val positioni = position.toVec3i()
-            val chunkPositionX = (positioni.x + 16) / 32
-            val chunkPositionY = (positioni.y + 16) / 32
-            val chunkPositionZ = (positioni.z + 16) / 32
+                val positioni = position.toVec3i()
+                val chunkPositionX = (positioni.x + 16) / 32
+                val chunkPositionY = (positioni.y + 16) / 32
+                val chunkPositionZ = (positioni.z + 16) / 32
 
-            val chunkStartX = chunkPositionX - chunksSidesCount / 2
-            val chunkStartY = chunkPositionY - chunksSidesCount / 2
-            val chunkStartZ = chunkPositionZ - chunksSidesCount / 2
+                val chunkStartX = chunkPositionX - chunksSidesCount / 2
+                val chunkStartY = chunkPositionY - chunksSidesCount / 2
+                val chunkStartZ = chunkPositionZ - chunksSidesCount / 2
 
-            info.baseChunkPos.x = chunkStartX
-            info.baseChunkPos.y = chunkStartY
-            info.baseChunkPos.z = chunkStartZ
+                info.baseChunkPos.x = chunkStartX
+                info.baseChunkPos.y = chunkStartY
+                info.baseChunkPos.z = chunkStartZ
 
-            /*if (info.baseChunkPos == lastPos)
-                return
+                /*if (info.baseChunkPos == lastPos)
+                    return
 
-            lastPos.set(info.baseChunkPos)*/
+                lastPos.set(info.baseChunkPos)*/
 
-            info.size = size
+                info.size = size
 
-            val copies = VkBufferImageCopy.callocStack(chunksSidesCount * chunksSidesCount * chunksSidesCount)
-            var copiesCount = 0
-            for (x in 0 until chunksSidesCount)
-                for (y in 0 until chunksSidesCount)
-                    for (z in 0 until chunksSidesCount) {
-                        val inAtlasCoordinateX = (chunkStartX + x) and (chunksSidesCount-1)
-                        val inAtlasCoordinateY = (chunkStartY + y) and (chunksSidesCount-1)
-                        val inAtlasCoordinateZ = (chunkStartZ + z) and (chunksSidesCount-1)
+                val copies = VkBufferImageCopy.callocStack(chunksSidesCount * chunksSidesCount * chunksSidesCount)
+                var copiesCount = 0
+                for (x in 0 until chunksSidesCount)
+                    for (y in 0 until chunksSidesCount)
+                        for (z in 0 until chunksSidesCount) {
+                            val inAtlasCoordinateX = (chunkStartX + x) and (chunksSidesCount - 1)
+                            val inAtlasCoordinateY = (chunkStartY + y) and (chunksSidesCount - 1)
+                            val inAtlasCoordinateZ = (chunkStartZ + z) and (chunksSidesCount - 1)
 
-                        val cacheIndex = ((inAtlasCoordinateX) * chunksSidesCount + inAtlasCoordinateY ) * chunksSidesCount + inAtlasCoordinateZ
-                        val cacheEntry = chunksCache[cacheIndex]
-                        val chunk = world.getChunk(chunkStartX + x, chunkStartY + y, chunkStartZ + z)
+                            val cacheIndex = ((inAtlasCoordinateX) * chunksSidesCount + inAtlasCoordinateY) * chunksSidesCount + inAtlasCoordinateZ
+                            val cacheEntry = chunksCache[cacheIndex]
+                            val chunk = world.getChunk(chunkStartX + x, chunkStartY + y, chunkStartZ + z)
 
-                        if (chunk == null) {
-                            chunksCache[cacheIndex] = null
-                            continue
-                        }
-                        else if(chunk != cacheEntry) {
-                            chunksCache[cacheIndex] = null
-                        }
-                        else if(chunk == cacheEntry) {
-                            val oldRevision = revisionCache[cacheIndex]
-                            val newRevision = chunk.revision.get()
-
-                            //println("$newRevision")
-                            if(oldRevision < newRevision) {
-                                revisionCache[cacheIndex] = newRevision
-                            }
-                            else {
+                            if (chunk == null) {
+                                chunksCache[cacheIndex] = null
                                 continue
+                            } else if (chunk != cacheEntry) {
+                                chunksCache[cacheIndex] = null
+                            } else if (chunk == cacheEntry) {
+                                val oldRevision = revisionCache[cacheIndex]
+                                val newRevision = chunk.revision.get()
+
+                                //println("$newRevision")
+                                if (oldRevision < newRevision) {
+                                    revisionCache[cacheIndex] = newRevision
+                                } else {
+                                    continue
+                                }
                             }
+
+                            //println("Uploading $chunk")
+
+                            chunksCache[cacheIndex] = chunk
+
+                            copies[copiesCount++].apply {
+                                bufferOffset(scratchByteBuffer.position().toLong())
+
+                                // tightly packed
+                                bufferRowLength(0)
+                                bufferImageHeight(0)
+
+                                imageSubresource().apply {
+                                    aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
+                                    mipLevel(0)
+                                    baseArrayLayer(0)
+                                    layerCount(1)
+                                }
+
+                                imageOffset().apply {
+                                    x((chunk.chunkX % chunksSidesCount) * 32)
+                                    y((chunk.chunkY % chunksSidesCount) * 32)
+                                    z((chunk.chunkZ % chunksSidesCount) * 32)
+                                }
+
+                                imageExtent().apply {
+                                    width(32)
+                                    height(32)
+                                    depth(32)
+                                }
+                            }
+
+                            extractChunkInBuffer(scratchByteBuffer, chunk)
                         }
 
-                        //println("Uploading $chunk")
+                if (copiesCount == 0)
+                    return
 
-                        chunksCache[cacheIndex] = chunk
+                copies.position(0)
+                copies.limit(copiesCount)
 
-                        copies[copiesCount++].apply {
-                            bufferOffset(scratchByteBuffer.position().toLong())
+                scratchByteBuffer.flip()
 
-                            // tightly packed
-                            bufferRowLength(0)
-                            bufferImageHeight(0)
+                val preUpdateBarrier = VkImageMemoryBarrier.callocStack(1).apply {
+                    sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER)
 
-                            imageSubresource().apply {
-                                aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
-                                mipLevel(0)
-                                baseArrayLayer(0)
-                                layerCount(1)
-                            }
+                    oldLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+                    newLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
 
-                            imageOffset().apply {
-                                x((chunk.chunkX % chunksSidesCount) * 32)
-                                y((chunk.chunkY % chunksSidesCount) * 32)
-                                z((chunk.chunkZ % chunksSidesCount) * 32)
-                            }
+                    srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+                    dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
 
-                            imageExtent().apply {
-                                width(32)
-                                height(32)
-                                depth(32)
-                            }
-                        }
+                    image(texture.imageHandle)
 
-                        extractChunkInBuffer(scratchByteBuffer, chunk)
+                    subresourceRange().apply {
+                        aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
+                        baseMipLevel(0)
+                        levelCount(1)
+                        baseArrayLayer(0)
+                        layerCount(1)
                     }
 
-            if(copiesCount == 0)
-                return
-
-            copies.position(0)
-            copies.limit(copiesCount)
-
-            scratchByteBuffer.flip()
-
-            val preUpdateBarrier = VkImageMemoryBarrier.callocStack(1).apply {
-                sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER)
-
-                oldLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-                newLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-
-                srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
-                dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
-
-                image(texture.imageHandle)
-
-                subresourceRange().apply {
-                    aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
-                    baseMipLevel(0)
-                    levelCount(1)
-                    baseArrayLayer(0)
-                    layerCount(1)
+                    srcAccessMask(0)
+                    dstAccessMask(VK_ACCESS_TRANSFER_WRITE_BIT)
                 }
+                vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, null, null, preUpdateBarrier)
 
-                srcAccessMask(0)
-                dstAccessMask(VK_ACCESS_TRANSFER_WRITE_BIT)
-            }
-            vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, null, null, preUpdateBarrier)
+                val scratchVkBuffer = VulkanBuffer(backend, scratchByteBuffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT or VK_BUFFER_USAGE_TRANSFER_DST_BIT, MemoryUsagePattern.SEMI_STATIC)
+                vkCmdCopyBufferToImage(commandBuffer, scratchVkBuffer.handle, texture.imageHandle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, copies)
 
-            val scratchVkBuffer = VulkanBuffer(backend, scratchByteBuffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT or VK_BUFFER_USAGE_TRANSFER_DST_BIT, MemoryUsagePattern.SEMI_STATIC)
-            vkCmdCopyBufferToImage(commandBuffer, scratchVkBuffer.handle, texture.imageHandle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, copies)
+                val postUpdateBarrier = VkImageMemoryBarrier.callocStack(1).apply {
+                    sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER)
 
-            val postUpdateBarrier = VkImageMemoryBarrier.callocStack(1).apply {
-                sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER)
+                    oldLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+                    newLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
 
-                oldLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-                newLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+                    srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+                    dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
 
-                srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
-                dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+                    image(texture.imageHandle)
 
-                image(texture.imageHandle)
+                    subresourceRange().apply {
+                        aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
+                        baseMipLevel(0)
+                        levelCount(1)
+                        baseArrayLayer(0)
+                        layerCount(1)
+                    }
 
-                subresourceRange().apply {
-                    aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
-                    baseMipLevel(0)
-                    levelCount(1)
-                    baseArrayLayer(0)
-                    layerCount(1)
+                    srcAccessMask(VK_ACCESS_TRANSFER_WRITE_BIT)
+                    dstAccessMask(VK_ACCESS_SHADER_READ_BIT)
                 }
+                vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, null, null, postUpdateBarrier)
 
-                srcAccessMask(VK_ACCESS_TRANSFER_WRITE_BIT)
-                dstAccessMask(VK_ACCESS_SHADER_READ_BIT)
+                val fence = backend.createFence(false)
+                operationsPool.finishCommandBuffer(commandBuffer, backend.logicalDevice.graphicsQueue, fence)
+                backend.waitFence(fence)
+
+                vkDestroyFence(backend.logicalDevice.vkDevice, fence, null)
+
+                //vkFreeCommandBuffers(backend.logicalDevice.vkDevice, operationsPool.handle, commandBuffer)
+
+                scratchVkBuffer.cleanup()
             }
-            vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, null, null, postUpdateBarrier)
-
-            val fence = backend.createFence(false)
-            operationsPool.finishCommandBuffer(commandBuffer, backend.logicalDevice.graphicsQueue, fence)
-            backend.waitFence(fence)
-
-            vkDestroyFence(backend.logicalDevice.vkDevice, fence, null)
-
+        } finally {
             operationsPool.returnCommandBuffer(commandBuffer)
-            //vkFreeCommandBuffers(backend.logicalDevice.vkDevice, operationsPool.handle, commandBuffer)
-
-            scratchVkBuffer.cleanup()
         }
     }
 
@@ -238,7 +238,7 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
                             byteBuffer.put(0)
                             byteBuffer.put(0)
 
-                            if(voxel.name.startsWith("lava"))
+                            if (voxel.name.startsWith("lava"))
                                 println("shit" + voxel.emittedLightLevel)
                         } else {
                             val topTexture = voxel.getVoxelTexture(chunk.peek(x, y, z), VoxelSide.TOP)
