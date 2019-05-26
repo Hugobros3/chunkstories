@@ -130,6 +130,7 @@ class OpenglPass(val backend: OpenglGraphicsBackend, val renderTask: OpenglRende
         val viewportSize = (resolvedColorOutputs.getOrNull(0) ?: resolvedDepth!!).textureSize
         glViewport(0, 0, viewportSize.x, viewportSize.y)
         passInstance.shaderResources.supplyUniformBlock("viewportSize", ViewportSize().also { it.size.set(viewportSize) })
+        passInstance.renderTargetSize.set(viewportSize)
 
         // Apply clear operations
         for((i, colorOutput) in declaration.outputs.outputs.withIndex()) {

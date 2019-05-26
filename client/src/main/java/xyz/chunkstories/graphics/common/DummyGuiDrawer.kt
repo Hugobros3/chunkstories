@@ -55,6 +55,10 @@ open class DummyGuiDrawer(override val gui: Gui) : GuiDrawer {
         val white = Vector4f(1.0F)
     }
 
+    override fun withScissor(startX: Int, startY: Int, width: Int, height: Int, code: () -> Unit) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
     override fun setup(dslCode: SystemExecutionContext.() -> Unit) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
