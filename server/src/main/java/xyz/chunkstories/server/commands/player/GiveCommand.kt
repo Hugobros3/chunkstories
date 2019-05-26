@@ -6,17 +6,13 @@
 
 package xyz.chunkstories.server.commands.player
 
-import xyz.chunkstories.api.content.Content
 import xyz.chunkstories.api.entity.traits.serializable.TraitInventory
 import xyz.chunkstories.api.item.Item
-import xyz.chunkstories.api.item.ItemDefinition
 import xyz.chunkstories.api.item.ItemVoxel
-import xyz.chunkstories.api.item.inventory.ItemPile
 import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.plugin.commands.Command
 import xyz.chunkstories.api.plugin.commands.CommandEmitter
 import xyz.chunkstories.api.server.Server
-import xyz.chunkstories.api.voxel.Voxel
 import xyz.chunkstories.server.commands.ServerCommandBasic
 import java.lang.Integer.min
 
@@ -55,26 +51,6 @@ class GiveCommand(serverConsole: Server) : ServerCommandBasic(serverConsole) {
         var item: Item? = null
         if (type != null)
             item = type.newItem()
-        else {
-            var voxelName = itemName
-            var voxelMeta = 0
-            if (voxelName.contains(":")) {
-                voxelMeta = Integer.parseInt(voxelName.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[1])
-                voxelName = voxelName.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[0]
-            }
-
-            // Try to find a matching voxel
-            val voxel = gameContent.voxels().getVoxel(itemName)
-
-            if (voxel != null) {
-                // Spawn new itemPile in his inventory
-                val itemVoxel = gameContent.items().getItemDefinition("item_voxel")!!.newItem<Item>() as ItemVoxel
-                itemVoxel.voxel = voxel
-                itemVoxel.voxelMeta = voxelMeta
-
-                item = itemVoxel
-            }
-        }
 
         if (item == null) {
             emitter.sendMessage("#FF969BItem or voxel \"" + arguments[0] + " can't be found.")
