@@ -89,12 +89,17 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
             //oldSwapchain( VK_NULL_HANDLE )
         }
 
-        if (backend.logicalDevice.graphicsQueue == backend.logicalDevice.presentationQueue) {
+        if (backend.logicalDevice.graphicsQueue.family == backend.logicalDevice.presentationQueue.family) {
             vkSwapchainCreateInfoKHR.imageSharingMode(VK_SHARING_MODE_EXCLUSIVE)
         } else {
             vkSwapchainCreateInfoKHR.imageSharingMode(VK_SHARING_MODE_CONCURRENT)
-            val pIndices = stackMallocInt(2)
-            pIndices.put(intArrayOf(backend.logicalDevice.graphicsQueue.family.index, backend.logicalDevice.presentationQueue.family.index), 0, 2)
+
+
+            // using a set here avoids providing duplicates of the queues
+            val queuesSet = setOf(backend.logicalDevice.graphicsQueue.family.index, backend.logicalDevice.presentationQueue.family.index)
+
+            val pIndices = stackMallocInt(queuesSet.size)
+            pIndices.put(queuesSet.toIntArray())
             pIndices.flip()
             vkSwapchainCreateInfoKHR.pQueueFamilyIndices(pIndices)
         }
