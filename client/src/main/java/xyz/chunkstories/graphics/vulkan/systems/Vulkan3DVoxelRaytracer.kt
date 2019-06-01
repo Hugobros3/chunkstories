@@ -80,7 +80,7 @@ class Vulkan3DVoxelRaytracer(pass: VulkanPass, dslCode: Vulkan3DVoxelRaytracer.(
         val bindingContext = backend.descriptorMegapool.getBindingContext(pipeline)
         ctx.bindShaderResources(bindingContext)
 
-        volumetricTexture.updateArround(passInstance.taskInstance.camera.position.toVec3d())
+        volumetricTexture.updateArround(passInstance.taskInstance.camera.position)
 
         val viewportSize = ViewportSize()
         viewportSize.size.set(ctx.passInstance.renderTargetSize)

@@ -11,11 +11,13 @@ import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.vertexInputConfiguration
 import org.joml.Matrix4f
+import org.joml.Vector3d
 import org.joml.Vector3f
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
+import xyz.chunkstories.api.util.kotlin.toVec3f
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
 
@@ -119,10 +121,10 @@ class VulkanSpinningCubeDrawer(pass: VulkanPass, dslCode: VulkanSpinningCubeDraw
         VoxelSide.FRONT
 
         val cubePosition = Vector3f(0f)
-        val cameraPosition = Vector3f(0f, 0f, -5f)
+        val cameraPosition = Vector3d(0.0, 0.0, -5.0)
 
         val viewMatrix = Matrix4f()
-        viewMatrix.lookAt(cameraPosition, cubePosition, up)
+        viewMatrix.lookAt(cameraPosition.toVec3f(), cubePosition, up)
 
         val objectMatrix = Matrix4f()
         objectMatrix.rotate((System.currentTimeMillis() % 3600000) * 0.001f, 0f , 1f, 0f)

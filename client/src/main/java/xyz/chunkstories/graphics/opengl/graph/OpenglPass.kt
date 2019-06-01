@@ -1,6 +1,7 @@
 package xyz.chunkstories.graphics.opengl.graph
 
 import org.lwjgl.opengl.ARBDirectStateAccess.*
+import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL33.*
 
 import xyz.chunkstories.api.graphics.rendergraph.PassDeclaration
@@ -129,6 +130,7 @@ class OpenglPass(val backend: OpenglGraphicsBackend, val renderTask: OpenglRende
 
         val viewportSize = (resolvedColorOutputs.getOrNull(0) ?: resolvedDepth!!).textureSize
         glViewport(0, 0, viewportSize.x, viewportSize.y)
+        glScissor(0, 0, viewportSize.x, viewportSize.y)
         passInstance.shaderResources.supplyUniformBlock("viewportSize", ViewportSize().also { it.size.set(viewportSize) })
         passInstance.renderTargetSize.set(viewportSize)
 
@@ -148,10 +150,10 @@ class OpenglPass(val backend: OpenglGraphicsBackend, val renderTask: OpenglRende
         declaration.depthTestingConfiguration.let {
             if(it.enabled && it.clear) {
                 if(backend.openglSupport.dsaSupport) {
-                    glClearNamedFramebufferfv(fbo.glId, GL_DEPTH, 0, floatArrayOf(1f))
+                    glClearNamedFramebufferfv(fbo.glId, GL_DEPTH, 0, floatArrayOf(it.clearValue))
                 } else {
                     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo.glId)
-                    glClearBufferfv(GL_DEPTH, 0, floatArrayOf(1f))
+                    glClearBufferfv(GL_DEPTH, 0, floatArrayOf(it.clearValue))
                 }
             }
         }

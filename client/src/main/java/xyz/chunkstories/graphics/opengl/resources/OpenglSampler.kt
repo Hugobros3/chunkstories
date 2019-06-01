@@ -36,9 +36,25 @@ class OpenglSampler(val backend: OpenglGraphicsBackend, val scalingMode: ImageIn
             ImageInput.DepthCompareMode.DISABLED -> {
                 glSamplerParameteri(glId, GL_TEXTURE_COMPARE_MODE, GL_NONE)
             }
-            ImageInput.DepthCompareMode.SHADOWMAP -> {
+            ImageInput.DepthCompareMode.GREATER -> {
+                glSamplerParameteri(glId, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE)
+                glSamplerParameteri(glId, GL_TEXTURE_COMPARE_FUNC, GL_GREATER)
+            }
+            ImageInput.DepthCompareMode.GREATER_OR_EQUAL -> {
+                glSamplerParameteri(glId, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE)
+                glSamplerParameteri(glId, GL_TEXTURE_COMPARE_FUNC, GL_GEQUAL)
+            }
+            ImageInput.DepthCompareMode.EQUAL -> {
+                glSamplerParameteri(glId, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE)
+                glSamplerParameteri(glId, GL_TEXTURE_COMPARE_FUNC, GL_EQUAL)
+            }
+            ImageInput.DepthCompareMode.LESS_OR_EQUAL -> {
                 glSamplerParameteri(glId, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE)
                 glSamplerParameteri(glId, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL)
+            }
+            ImageInput.DepthCompareMode.LESS -> {
+                glSamplerParameteri(glId, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE)
+                glSamplerParameteri(glId, GL_TEXTURE_COMPARE_FUNC, GL_LESS)
             }
         }
 

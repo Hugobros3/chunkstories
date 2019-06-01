@@ -494,6 +494,8 @@ class VulkanWorldRenderer(val backend: VulkanGraphicsBackend, world: WorldClient
                         enabled = true
                         depthBuffer = taskInput("shadowBuffer")
                         clear = true
+                        //clearValue = 1f
+                        //mode = DepthTestingConfiguration.DepthTestMode.LESS
                     }
                 }
             }

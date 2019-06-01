@@ -42,16 +42,31 @@ VulkanSampler(val backend: VulkanGraphicsBackend,
             unnormalizedCoordinates(false)
 
             when (depthCompareMode) {
-                ImageInput.DepthCompareMode.SHADOWMAP -> {
-                    compareEnable(true)
-                    compareOp(VK_COMPARE_OP_LESS_OR_EQUAL)
-                    //compareOp(VK_COMPARE_OP_GREATER_OR_EQUAL)
-                    //magFilter(VK_FILTER_LINEAR)
-                    //minFilter(VK_FILTER_LINEAR)
-                }
                 ImageInput.DepthCompareMode.DISABLED -> {
                     compareEnable(false)
                     compareOp(VK_COMPARE_OP_ALWAYS)
+                }
+                //magFilter(VK_FILTER_LINEAR)
+                //minFilter(VK_FILTER_LINEAR)
+                ImageInput.DepthCompareMode.GREATER -> {
+                    compareEnable(true)
+                    compareOp(VK_COMPARE_OP_GREATER)
+                }
+                ImageInput.DepthCompareMode.GREATER_OR_EQUAL -> {
+                    compareEnable(true)
+                    compareOp(VK_COMPARE_OP_GREATER_OR_EQUAL)
+                }
+                ImageInput.DepthCompareMode.EQUAL -> {
+                    compareEnable(true)
+                    compareOp(VK_COMPARE_OP_EQUAL)
+                }
+                ImageInput.DepthCompareMode.LESS_OR_EQUAL -> {
+                    compareEnable(true)
+                    compareOp(VK_COMPARE_OP_LESS_OR_EQUAL)
+                }
+                ImageInput.DepthCompareMode.LESS -> {
+                    compareEnable(true)
+                    compareOp(VK_COMPARE_OP_LESS)
                 }
             }
 

@@ -32,7 +32,7 @@ fun doShadowMapping(ctx: SystemExecutionContext, world: World) {
     for(i in 0 until 4) {
         ctx.shaderResources.supplyImage("shadowBuffers", i, ImageInput().apply {
             source = ImageSource.AssetReference("/textures/logo.png")
-            depthCompareMode = ImageInput.DepthCompareMode.SHADOWMAP
+            depthCompareMode = ImageInput.DepthCompareMode.GREATER_OR_EQUAL
         })
     }
 
@@ -42,7 +42,7 @@ fun doShadowMapping(ctx: SystemExecutionContext, world: World) {
         val shadowMapDepthRange = 256f
         val shadowMapExtent = extentPerCascadeCount[i]
 
-        val shadowMapContentsMatrix = Matrix4f().ortho(-shadowMapExtent, shadowMapExtent, -shadowMapExtent, shadowMapExtent, -shadowMapDepthRange, shadowMapDepthRange, true)
+        val shadowMapContentsMatrix = Matrix4f().ortho(-shadowMapExtent, shadowMapExtent, -shadowMapExtent, shadowMapExtent, shadowMapDepthRange, -shadowMapDepthRange, true)
         val sunPosition = world.getConditions().sunPosition.toVec3f()
 
         val sunLookAt = Matrix4f().lookAt(sunPosition, Vector3f(0f), Vector3f(0f, 1f, 0f))
@@ -51,7 +51,7 @@ fun doShadowMapping(ctx: SystemExecutionContext, world: World) {
         shadowMatrix.mul(shadowMapContentsMatrix, shadowMatrix)
         shadowMatrix.mul(sunLookAt, shadowMatrix)
 
-        shadowMatrix.translate(Vector3f(mainCamera.position).negate())
+        shadowMatrix.translate(Vector3f(mainCamera.position.toVec3f()).negate())
 
         val sunCamera = Camera(viewMatrix = shadowMatrix, fov = 0f, position = mainCamera.position)
 
@@ -65,7 +65,7 @@ fun doShadowMapping(ctx: SystemExecutionContext, world: World) {
             ctx.shaderResources.supplyImage("shadowBuffers", i, ImageInput().apply {
                 source = renderBuffer("shadowBuffer$i")
                 scalingMode = ImageInput.ScalingMode.LINEAR
-                depthCompareMode = ImageInput.DepthCompareMode.SHADOWMAP
+                depthCompareMode = ImageInput.DepthCompareMode.GREATER_OR_EQUAL
             })
             //ctx.shaderResources.supplyImage("shadowBuffers", ImageSource.RenderBufferReference("shadowBuffer$i"), samplerShadow, i)
         }

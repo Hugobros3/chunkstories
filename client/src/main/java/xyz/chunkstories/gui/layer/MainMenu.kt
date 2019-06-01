@@ -16,9 +16,6 @@ import xyz.chunkstories.gui.layer.config.LogPolicyAsk
 import xyz.chunkstories.gui.layer.config.ModsSelection
 import xyz.chunkstories.gui.layer.config.OptionsScreen
 import xyz.chunkstories.gui.layer.ingame.DeathScreen
-import xyz.chunkstories.gui.layer.ingame.InventoryView
-import xyz.chunkstories.util.VersionInfo
-import org.joml.Vector4f
 import xyz.chunkstories.gui.printCopyrightNotice
 
 /** Gives quick access to the main features of the game  */

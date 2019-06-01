@@ -14,6 +14,7 @@ import xyz.chunkstories.api.entity.traits.serializable.TraitInventory
 import xyz.chunkstories.api.graphics.Window
 import xyz.chunkstories.api.item.inventory.Inventory
 import xyz.chunkstories.api.net.Packet
+import xyz.chunkstories.api.util.kotlin.toVec3f
 import xyz.chunkstories.api.world.WorldClientNetworkedRemote
 import xyz.chunkstories.api.world.WorldMaster
 import xyz.chunkstories.sound.ALSoundManager
@@ -78,7 +79,7 @@ class LocalPlayerImplementation(override val client: IngameClientImplementation,
         controlledEntity?.let { entity ->
             val camera = entity.traits[TraitControllable::class]?.camera
             camera?.let {
-                (client.soundManager as ALSoundManager).setListenerPosition(camera.position, camera.lookingAt, camera.up)
+                (client.soundManager as ALSoundManager).setListenerPosition(camera.position.toVec3f(), camera.lookingAt, camera.up)
             }
         }
     }

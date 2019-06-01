@@ -320,6 +320,7 @@ class OpenglGuiDrawer(pass: OpenglPass, dslCode: (DrawingSystem) -> Unit) : Open
                     //GL11.glScissor(startX * s, startY * s, width, height * s)
                     GL11.glScissor(scissor.x, scissor.y, scissor.z, scissor.w)
                 } else {
+                    GL11.glDisable(GL11.GL_SCISSOR_TEST)
                     GL11.glScissor(0, 0, ctx.passInstance.renderTargetSize.x, ctx.passInstance.renderTargetSize.y)
                 }
             }

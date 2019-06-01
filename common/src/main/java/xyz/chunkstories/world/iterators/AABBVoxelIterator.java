@@ -19,7 +19,7 @@ import xyz.chunkstories.api.world.cell.CellData;
 
 public class AABBVoxelIterator implements IterableIterator<CellData>, CellData {
 	private final World world;
-	private final Box Box;
+	private final Box box;
 
 	// private final Voxels voxels;
 
@@ -29,12 +29,12 @@ public class AABBVoxelIterator implements IterableIterator<CellData>, CellData {
 	private int minx, miny, minz;
 	private int maxx, maxy, maxz;
 
-	Voxel voxel;
-	int sunlight, blocklight, metadata;
+	private Voxel voxel;
+	private int sunlight, blocklight, metadata;
 
 	public AABBVoxelIterator(World world, Box Box) {
 		this.world = world;
-		this.Box = Box;
+		this.box = Box;
 
 		// this.voxels = world.getGameContext().getContent().voxels();
 
@@ -52,7 +52,7 @@ public class AABBVoxelIterator implements IterableIterator<CellData>, CellData {
 	}
 
 	public Box getBox() {
-		return Box;
+		return box;
 	}
 
 	@Override
@@ -61,7 +61,7 @@ public class AABBVoxelIterator implements IterableIterator<CellData>, CellData {
 		/*
 		 * if(i == maxx && j == maxy && k == maxz) return false; return true;
 		 */
-		// return k <= (int)Math.ceil(Box.zpos + Box.zw);
+		// return k <= (int)Math.ceil(box.zpos + box.zw);
 	}
 
 	@Override
@@ -112,12 +112,12 @@ public class AABBVoxelIterator implements IterableIterator<CellData>, CellData {
 		return k2;
 	}
 
-	@Override
+	@NotNull @Override
 	public World getWorld() {
 		return world;
 	}
 
-	@Override
+	@NotNull @Override
 	public Voxel getVoxel() {
 		return voxel;
 	}
@@ -137,7 +137,7 @@ public class AABBVoxelIterator implements IterableIterator<CellData>, CellData {
 		return blocklight;
 	}
 
-	@Override
+	@NotNull @Override
 	public CellData getNeightbor(int side_int) {
 		VoxelSide side = VoxelSide.values()[side_int];
 		return world.peekSafely(getX() + side.getDx(), getY() + side.getDy(), getZ() + side.getDz());
@@ -151,8 +151,8 @@ public class AABBVoxelIterator implements IterableIterator<CellData>, CellData {
 
 	@Nullable
 	@Override
-	public xyz.chunkstories.api.physics.Box[] getTranslatedCollisionBoxes() {
-		return new Box[0];
+	public Box[] getTranslatedCollisionBoxes() {
+		return voxel.getTranslatedCollisionBoxes(this);
 	}
 
 	@Override
