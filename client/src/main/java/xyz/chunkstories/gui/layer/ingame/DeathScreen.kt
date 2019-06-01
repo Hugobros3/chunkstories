@@ -57,13 +57,14 @@ class DeathScreen(gui: Gui, parent: Layer) : Layer(gui, parent) {
         color += HexTools.intToHex((Math.random() * 255).toInt())
         color += HexTools.intToHex((Math.random() * 255).toInt())
 
+        val titleFont = drawer.fonts.getFont("LiberationSans-Regular", 32f)
         val font = drawer.fonts.getFont("LiberationSans-Regular", 11f)
 
-        drawer.drawStringWithShadow(font, gui.viewportWidth / 2 - font.getWidth("YOU DIEDED") / 2, gui.viewportHeight / 2 + 48 * 3, "#FF0000YOU DIEDED", -1, Vector4f(1f))
-        drawer.drawStringWithShadow(font, gui.viewportWidth / 2 - font.getWidth("git --gud scrub") / 2, gui.viewportHeight / 2 + 36 * 3, color + "git --gud scrub", -1, Vector4f(1f))
+        drawer.drawStringWithShadow(titleFont, gui.viewportWidth / 2 - titleFont.getWidth("YOU DIEDED") / 2, gui.viewportHeight / 2 + 48, "#FF0000YOU DIEDED", -1, Vector4f(1f))
+        drawer.drawStringWithShadow(font, gui.viewportWidth / 2 - font.getWidth("git --gud scrub") / 2, gui.viewportHeight / 2, color + "git --gud scrub", -1, Vector4f(1f))
 
-        respawnButton.setPosition(gui.viewportWidth / 2 - respawnButton.width / 2, gui.viewportHeight / 2 + 48)
-        exitButton.setPosition(gui.viewportWidth / 2 - exitButton.width / 2, gui.viewportHeight / 2 - 24)
+        respawnButton.setPosition(gui.viewportWidth / 2 - respawnButton.width / 2, gui.viewportHeight / 2 - 64)
+        exitButton.setPosition(gui.viewportWidth / 2 - exitButton.width / 2, gui.viewportHeight / 2 - 64 - 24)
 
         respawnButton.render(drawer)
         exitButton.render(drawer)

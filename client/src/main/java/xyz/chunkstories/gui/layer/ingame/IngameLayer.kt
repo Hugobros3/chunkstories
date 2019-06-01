@@ -67,7 +67,7 @@ class IngameLayer(window: Gui, private val client: IngameClientImplementation) :
             inventoryBarDrawer = InventoryGridRenderer(traitInventory.inventory)
 
         // TODO MOVE MOVE MOVE
-        if (playerEntity != null && playerEntity.traits.tryWithBoolean(TraitHealth::class) { this.isDead } && gui.topLayer !is DeathScreen)
+        if ((playerEntity == null || playerEntity.traits[TraitHealth::class]?.isDead == true) && gui.topLayer !is DeathScreen)
             gui.topLayer = DeathScreen(gui, this)
 
         // Draw the GUI
