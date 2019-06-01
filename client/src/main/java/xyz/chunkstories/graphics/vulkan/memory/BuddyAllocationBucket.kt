@@ -134,6 +134,12 @@ class BuddyAllocationBucket(memoryManager: VulkanMemoryManager, memoryTypeIndex:
                 sizeToAllocate *= 2
             }
 
+            // ok this is hackish the simplest way to solve this problem for now
+            while(sizeToAllocate < requirements.alignment()) {
+                orderRequired++
+                sizeToAllocate *= 2
+            }
+
             //println("Allocating order $orderRequired ($sizeToAllocate) for allocation exactly sized ${requirements.size()} ${requirements.alignment()}")
             //println("pre alloc"+freeBuddies.toList().withIndex().map { (i, l) -> "$i: ${l.size}" })
 

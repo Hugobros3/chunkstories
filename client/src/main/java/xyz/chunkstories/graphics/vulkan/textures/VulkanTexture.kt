@@ -63,7 +63,8 @@ open class VulkanTexture(val backend: VulkanGraphicsBackend, final override val 
         val usagePattern =
                 when {
                     usageFlags and VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT != 0 || usageFlags and VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT != 0 -> MemoryUsagePattern.SEMI_STATIC
-                    else -> MemoryUsagePattern.STATIC
+                    else -> MemoryUsagePattern.SEMI_STATIC
+                    //else -> MemoryUsagePattern.STATIC
                 }
 
         val eligibleForDedicatedAllocation = ((usageFlags and VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT) != 0) || ((usageFlags and VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) != 0)
