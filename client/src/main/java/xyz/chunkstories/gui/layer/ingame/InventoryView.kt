@@ -126,18 +126,22 @@ class InventoryView(gui: Gui, parent: Layer, private val inventories: List<Inven
                     val x = c[0]
                     val y = c[1]
                     if (draggingPile == null) {
-                        if (mouseButton.name == "mouse.left") {
-                            draggingPile = inventories[i].getItemPileAt(x, y)
-                            draggingQuantity = if (draggingPile == null) 0 else draggingPile!!.amount
-                        } else if (mouseButton.name == "mouse.right") {
-                            draggingPile = inventories[i].getItemPileAt(x, y)
-                            draggingQuantity = if (draggingPile == null) 0 else 1
-                        } else if (mouseButton.name == "mouse.middle") {
-                            draggingPile = inventories[i].getItemPileAt(x, y)
-                            draggingQuantity = if (draggingPile == null)
-                                0
-                            else
-                                if (draggingPile!!.amount > 1) draggingPile!!.amount / 2 else 1
+                        when {
+                            mouseButton.name == "mouse.left" -> {
+                                draggingPile = inventories[i].getItemPileAt(x, y)
+                                draggingQuantity = if (draggingPile == null) 0 else draggingPile!!.amount
+                            }
+                            mouseButton.name == "mouse.right" -> {
+                                draggingPile = inventories[i].getItemPileAt(x, y)
+                                draggingQuantity = if (draggingPile == null) 0 else 1
+                            }
+                            mouseButton.name == "mouse.middle" -> {
+                                draggingPile = inventories[i].getItemPileAt(x, y)
+                                draggingQuantity = if (draggingPile == null)
+                                    0
+                                else
+                                    if (draggingPile!!.amount > 1) draggingPile!!.amount / 2 else 1
+                            }
                         }
                     } else if (mouseButton.name == "mouse.right") {
                         if (draggingPile == inventories[i].getItemPileAt(x, y)) {
@@ -203,11 +207,12 @@ class InventoryView(gui: Gui, parent: Layer, private val inventories: List<Inven
                 }
                 draggingPile = null
             } else if (world is WorldClientNetworkedRemote) {
+                // In MP scenario, move into /dev/null
                 val packetMove = PacketInventoryMoveItemPile(world, pile2drop, pile2drop.inventory, null, draggingPile!!.x, draggingPile!!.y, 0, 0, draggingQuantity)
                 world.remoteServer.pushPacket(packetMove)
 
                 draggingPile = null
-            }// In MP scenario, move into /dev/null
+            }
         }
 
         return true

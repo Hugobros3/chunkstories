@@ -3,11 +3,9 @@ package xyz.chunkstories.plugin
 import com.google.gson.Gson
 import org.hjson.JsonValue
 import xyz.chunkstories.api.GameContext
-import xyz.chunkstories.api.client.Client
 import xyz.chunkstories.api.exceptions.plugins.PluginLoadException
 import xyz.chunkstories.api.plugin.ChunkStoriesPlugin
 import xyz.chunkstories.api.plugin.PluginInformation
-import xyz.chunkstories.api.server.Server
 import java.io.File
 import java.util.jar.JarFile
 
@@ -67,6 +65,6 @@ fun PluginInformation.createInstance(gameContext: GameContext, classLoader: Clas
 } catch (e: SecurityException) {
     throw object : PluginLoadException() {
         override val message: String
-            get() =  "Suitable constructor for plugin type $pluginType not found in class :$entryPoint"
+            get() = "Suitable constructor for plugin type $pluginType not found in class :$entryPoint"
     }
 }

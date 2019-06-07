@@ -8,6 +8,7 @@ import xyz.chunkstories.api.item.inventory.Inventory
 import xyz.chunkstories.client.ClientImplementation
 import xyz.chunkstories.gui.layer.ingame.InventoryView
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.api.input.Input
 import xyz.chunkstories.input.lwjgl3.Lwjgl3MouseButton
 
 val logger = LoggerFactory.getLogger("client.gui")
@@ -58,6 +59,9 @@ class ClientGui(override val client: ClientImplementation) : Gui {
                 return object : Mouse.MouseButton by realMouse.mainButton {
                     override val isPressed: Boolean
                         get() = realMouseButton.isDown
+
+                    override val mouse: Mouse
+                        get() = this@ClientGui.mouse
                 }
             }
 
@@ -65,6 +69,15 @@ class ClientGui(override val client: ClientImplementation) : Gui {
             override val secondaryButton: Mouse.MouseButton = bypassIngameLie(realMouse.secondaryButton)
             override val middleButton: Mouse.MouseButton = bypassIngameLie(realMouse.middleButton)
         }
+    }
+
+    fun translateInputForGui(input: Input): Input {
+        when(input) {
+            client.inputsManager.mouse.mainButton -> return mouse.mainButton
+            client.inputsManager.mouse.secondaryButton -> return mouse.secondaryButton
+            client.inputsManager.mouse.middleButton -> return mouse.middleButton
+        }
+        return input
     }
 
     override fun hasFocus() = client.gameWindow.hasFocus()

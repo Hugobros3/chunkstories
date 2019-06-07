@@ -10,6 +10,7 @@ import org.lwjgl.vulkan.KHRSurface.vkGetPhysicalDeviceSurfaceCapabilitiesKHR
 import org.lwjgl.vulkan.KHRSwapchain.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.graphics.common.util.getAnimationTime
 import xyz.chunkstories.graphics.vulkan.resources.InflightFrameResource
 
 class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderPass, oldSwapChain: SwapChain?) {
@@ -248,7 +249,7 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
 
         stackPop()
 
-        val frame = VulkanFrame(frameNumber, swapchainImageIndex, swapChainImages[swapchainImageIndex], swapChainImageViews[swapchainImageIndex], swapChainFramebuffers[swapchainImageIndex], imageAvailableSemaphore, renderingFinishedSemaphore, fence, System.nanoTime())
+        val frame = VulkanFrame(frameNumber, getAnimationTime().toFloat(), swapchainImageIndex, swapChainImages[swapchainImageIndex], swapChainImageViews[swapchainImageIndex], swapChainFramebuffers[swapchainImageIndex], imageAvailableSemaphore, renderingFinishedSemaphore, fence, System.nanoTime())
         performanceCounter.whenFrameBegins()
         lastFrame = frame
 

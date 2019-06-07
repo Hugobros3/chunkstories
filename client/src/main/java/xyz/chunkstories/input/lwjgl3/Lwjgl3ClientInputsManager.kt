@@ -194,7 +194,7 @@ class Lwjgl3ClientInputsManager(val gameWindow: GLFWWindow) : CommonInputsManage
 
         // Try the GUI handling
         val layer = gameWindow.client.gui.topLayer
-        if (layer?.handleInput(input) == true)
+        if (layer?.handleInput(gameWindow.client.gui.translateInputForGui(input)) == true)
             return true
 
         if (ingameClient == null)

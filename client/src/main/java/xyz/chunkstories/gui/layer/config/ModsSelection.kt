@@ -39,7 +39,6 @@ class ModsSelection(window: Gui, parent: Layer) : Layer(window, parent) {
     private val modsContainer = ModsScrollableContainer(this)
 
     init {
-
         elements.add(modsContainer)
 
         elements.add(locateExtMod)

@@ -9,6 +9,7 @@ import xyz.chunkstories.graphics.vulkan.util.*
  * and what semaphore and fence should we signal when we're done
  */
 data class VulkanFrame constructor(override val frameNumber: Int,
+                                   override val animationTimer: Float,
                                    val swapchainImageIndex: Int,
                                    val swapchainImage: VkImage,
                                    val swapchainImageView: VkImageView,

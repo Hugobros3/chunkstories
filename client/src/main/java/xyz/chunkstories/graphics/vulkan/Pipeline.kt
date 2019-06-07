@@ -167,7 +167,15 @@ class Pipeline(val backend: VulkanGraphicsBackend, val program : VulkanShaderPro
                     dstAlphaBlendFactor(VK_BLEND_FACTOR_ZERO)
                     alphaBlendOp(VK_BLEND_OP_ADD)
                 }
-                PassOutput.BlendMode.ADD -> TODO()
+                PassOutput.BlendMode.ADD -> {
+                    blendEnable(true)
+                    srcColorBlendFactor(VK_BLEND_FACTOR_ONE)
+                    dstColorBlendFactor(VK_BLEND_FACTOR_ONE)
+                    colorBlendOp(VK_BLEND_OP_ADD)
+                    srcAlphaBlendFactor(VK_BLEND_FACTOR_ONE)
+                    dstAlphaBlendFactor(VK_BLEND_FACTOR_ZERO)
+                    alphaBlendOp(VK_BLEND_OP_ADD)
+                }
                 PassOutput.BlendMode.PREMULTIPLIED_ALPHA -> TODO()
             }
         } }

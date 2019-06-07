@@ -7,7 +7,7 @@ import xyz.chunkstories.api.graphics.representation.Representation
 import xyz.chunkstories.api.graphics.systems.dispatching.RepresentationsGobbler
 import xyz.chunkstories.graphics.GraphicsEngineImplementation
 
-class RepresentationsGathered(val frame: Frame,
+class RepresentationsGathered(override val frame: Frame,
                               val passInstances: Array<PassInstance>,
                               override val renderTaskInstances: Array<RenderTaskInstance>) : RepresentationsGobbler {
     val buckets = mutableMapOf<String, Bucket>()

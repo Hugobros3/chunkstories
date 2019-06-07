@@ -38,7 +38,7 @@ class PauseMenu internal constructor(gui: Gui, parent: Layer) : Layer(gui, paren
     override fun render(drawer: GuiDrawer) {
         parentLayer?.render(drawer)
 
-        val font = drawer!!.fonts.getFont("LiberationSans-Regular", 11f)
+        val font = drawer.fonts.getFont("LiberationSans-Regular", 11f)
         val pauseText = gui.localization().getLocalizedString("ingame.pause")
         drawer.drawStringWithShadow(font,
                 gui.viewportWidth / 2 - font.getWidth(pauseText) / 2,

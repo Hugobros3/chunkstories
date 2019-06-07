@@ -6,10 +6,7 @@ import xyz.chunkstories.api.graphics.TextureFormat
 import xyz.chunkstories.api.graphics.TextureTilingMode
 import xyz.chunkstories.api.graphics.rendergraph.*
 import xyz.chunkstories.api.graphics.structs.Camera
-import xyz.chunkstories.api.graphics.systems.dispatching.ChunksRenderer
-import xyz.chunkstories.api.graphics.systems.dispatching.LinesRenderer
-import xyz.chunkstories.api.graphics.systems.dispatching.ModelsRenderer
-import xyz.chunkstories.api.graphics.systems.dispatching.SpritesRenderer
+import xyz.chunkstories.api.graphics.systems.dispatching.*
 import xyz.chunkstories.api.graphics.systems.drawing.FullscreenQuadDrawer
 import xyz.chunkstories.api.gui.GuiDrawer
 import xyz.chunkstories.graphics.common.CommonGraphicsOptions
@@ -196,7 +193,7 @@ class VulkanWorldRenderer(val backend: VulkanGraphicsBackend, world: WorldClient
                 }
 
                 pass {
-                    name = "deferredShading"
+                    name = "deferredSun"
 
                     dependsOn("opaque")
 
@@ -221,6 +218,8 @@ class VulkanWorldRenderer(val backend: VulkanGraphicsBackend, world: WorldClient
                             system(Vulkan3DVoxelRaytracer::class)
                         } else {
                             system(FullscreenQuadDrawer::class) {
+                                shader = "deferredShading"
+
                                 setup {
                                     val camera = client.player.controlledEntity?.traits?.get(TraitControllable::class)?.camera
                                             ?: Camera()
@@ -236,8 +235,48 @@ class VulkanWorldRenderer(val backend: VulkanGraphicsBackend, world: WorldClient
 
                     outputs {
                         output {
-                            name = "shadedBuffer"
+                            name = "colorOut"
+                            target = renderBuffer("shadedBuffer")
                             blending = PassOutput.BlendMode.OVERWRITE
+                        }
+                    }
+                }
+
+                pass {
+                    name = "deferredLights"
+
+                    dependsOn("deferredSun")
+
+                    setup {
+                        shaderResources.supplyImage("colorBuffer") {
+                            source = renderBuffer("colorBuffer")
+                        }
+
+                        shaderResources.supplyImage("normalBuffer") {
+                            source = renderBuffer("normalBuffer")
+                            scalingMode = ImageInput.ScalingMode.LINEAR
+                        }
+
+                        shaderResources.supplyImage("depthBuffer") {
+                            source = renderBuffer("depthBuffer")
+                            scalingMode = ImageInput.ScalingMode.LINEAR
+                        }
+                    }
+
+                    draws {
+                        system(DefferedLightsRenderer::class) {
+                            setup {
+                                val camera = client.player.controlledEntity?.traits?.get(TraitControllable::class)?.camera ?: Camera()
+                                shaderResources.supplyUniformBlock("camera", camera)
+                            }
+                        }
+                    }
+
+                    outputs {
+                        output {
+                            name = "colorOut"
+                            target = renderBuffer("shadedBuffer")
+                            blending = PassOutput.BlendMode.ADD
                         }
                     }
                 }
@@ -245,7 +284,7 @@ class VulkanWorldRenderer(val backend: VulkanGraphicsBackend, world: WorldClient
                 pass {
                     name = "forward"
 
-                    dependsOn("deferredShading")
+                    dependsOn("deferredLights")
 
                     draws {
                         system(ChunksRenderer::class) {

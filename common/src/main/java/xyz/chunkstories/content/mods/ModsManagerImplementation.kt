@@ -23,6 +23,7 @@ import xyz.chunkstories.api.plugin.PluginInformation
 import xyz.chunkstories.plugin.loadPluginInfo
 
 import java.io.*
+import java.net.URLClassLoader
 import java.util.*
 
 class ModsManagerImplementation @Throws(NonExistentCoreContent::class)
@@ -212,6 +213,11 @@ class ModsManagerImplementation @Throws(NonExistentCoreContent::class)
             childClassLoader = loadModAssets(mod as ModImplementation, childClassLoader)
         }
 
+        // Add the plugin classes stuff
+        val pluginsFolder = File("./plugins/")
+        val plugins = pluginsFolder.listFiles().filter { it.isFile && it.name.endsWith(".jar") }
+        childClassLoader = URLClassLoader(plugins.map { it.toURL() }.toTypedArray(), childClassLoader)
+
         //Cache all the assets into immutable collections
         allEntriesCached = Collections.unmodifiableCollection(this.avaibleAssets.map { it.value as AssetHierarchy })
         allAssetsCached = Collections.unmodifiableCollection(allUniqueEntries.map { it.topInstance })
@@ -326,13 +332,26 @@ class ModsManagerImplementation @Throws(NonExistentCoreContent::class)
 
     override fun getAsset(assetName: String): Asset? {
         var assetName = assetName
-        var asset: ModsAssetHierarchy? = avaibleAssets[assetName]
 
-        if (asset == null && assetName.startsWith("./")) {
+        if (assetName.startsWith("./")) {
             logger.warn("Requesting asset using the old deprecated ./ prefix !")
             //Thread.dumpStack()
-            asset = avaibleAssets[assetName.substring(2)]
+            assetName = assetName.substring(2)
         }
+
+        if(assetName.startsWith("@")) {
+            val withoutPrefix = assetName.removePrefix("@")
+            val i = assetName.indexOf(':')
+            if(i < 0)
+                throw Exception("Malformed asset name: $assetName")
+
+            val modInternalName = withoutPrefix.subSequence(0, i - 1)
+            assetName = withoutPrefix.substring(i)
+
+            return mods[modInternalName]?.getAssetByName(assetName)
+        }
+
+        val asset: ModsAssetHierarchy? = avaibleAssets[assetName]
 
         return asset?.topInstance
 

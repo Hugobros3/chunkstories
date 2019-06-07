@@ -21,6 +21,7 @@ import xyz.chunkstories.client.glfw.GLFWWindow
 import xyz.chunkstories.graphics.GLFWBasedGraphicsBackend
 import xyz.chunkstories.graphics.GraphicsEngineImplementation
 import xyz.chunkstories.graphics.common.WorldRenderer
+import xyz.chunkstories.graphics.common.util.getAnimationTime
 import xyz.chunkstories.graphics.opengl.graph.OpenglPass
 import xyz.chunkstories.graphics.opengl.graph.OpenglRenderGraph
 import xyz.chunkstories.graphics.opengl.resources.OpenglSamplers
@@ -141,7 +142,7 @@ class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
             this.queuedRenderGraph = null
         }
 
-        val frame = OpenglFrame(frameNumber, System.currentTimeMillis())
+        val frame = OpenglFrame(frameNumber, getAnimationTime().toFloat(), System.currentTimeMillis())
         renderGraph.renderFrame(frame)
 
         glfwSwapBuffers(window.glfwWindowHandle)
