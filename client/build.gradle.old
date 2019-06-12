@@ -28,6 +28,8 @@ dependencies {
 }
 
 dependencies {
+	compile "guru.nidi:graphviz-java:0.8.0"
+
 	ext.spirvCrossVersion = "0.5.0-1.1.85"
 	compile "graphics.scenery:spirvcrossj:$spirvCrossVersion"
 
@@ -41,29 +43,24 @@ dependencies {
 	compile "org.lwjgl:lwjgl-vma:${rootProject.ext.lwjglVersion}"
 
 	//When running on our debug computer, it's safe to assume the OS that will run the game is the same than the one who'll compile it.
-	runtime "org.lwjgl:lwjgl-glfw:${rootProject.ext.lwjglVersion}:${rootProject.ext.lwjglNatives}"
+	/*runtime "org.lwjgl:lwjgl-glfw:${rootProject.ext.lwjglVersion}:${rootProject.ext.lwjglNatives}"
 	//runtime "org.lwjgl:lwjgl-jemalloc:${rootProject.ext.lwjglVersion}:${rootProject.ext.lwjglNatives}"
 	runtime "org.lwjgl:lwjgl-openal:${rootProject.ext.lwjglVersion}:${rootProject.ext.lwjglNatives}"
 	runtime "org.lwjgl:lwjgl-opengl:${rootProject.ext.lwjglVersion}:${rootProject.ext.lwjglNatives}"
 	runtime "org.lwjgl:lwjgl-stb:${rootProject.ext.lwjglVersion}:${rootProject.ext.lwjglNatives}"
 	runtime "org.lwjgl:lwjgl-tinyfd:${rootProject.ext.lwjglVersion}:${rootProject.ext.lwjglNatives}"
 	runtime "org.lwjgl:lwjgl-vma:${rootProject.ext.lwjglVersion}:${rootProject.ext.lwjglNatives}"
-	runtime "graphics.scenery:spirvcrossj:$spirvCrossVersion:$rootProject.ext.lwjglNatives"
-
-	compile "guru.nidi:graphviz-java:0.8.0"
-	compile group: 'guru.nidi', name: 'graphviz-java', version: '0.8.0'
+	runtime "graphics.scenery:spirvcrossj:$spirvCrossVersion:$rootProject.ext.lwjglNatives"*/
 
 	//When compiling a redistribuable jar, we need ALL natives in it!
 	rootProject.ext.natives.each {
-		//multiplatform ("org.lwjgl:lwjgl:${rootProject.ext.lwjglVersion}:" + it)
-		multiplatform "org.lwjgl:lwjgl-glfw:${rootProject.ext.lwjglVersion}:" + it
-		//multiplatform "org.lwjgl:lwjgl-jemalloc:${rootProject.ext.lwjglVersion}:" + it
-		multiplatform "org.lwjgl:lwjgl-openal:${rootProject.ext.lwjglVersion}:" + it
-		multiplatform "org.lwjgl:lwjgl-opengl:${rootProject.ext.lwjglVersion}:" + it
-		multiplatform "org.lwjgl:lwjgl-stb:${rootProject.ext.lwjglVersion}:" + it
-		multiplatform "org.lwjgl:lwjgl-tinyfd:${rootProject.ext.lwjglVersion}:" + it
-		multiplatform "org.lwjgl:lwjgl-vma:${rootProject.ext.lwjglVersion}:" + it
-		multiplatform "graphics.scenery:spirvcrossj:$spirvCrossVersion:$it"
+		runtime "org.lwjgl:lwjgl-glfw:${rootProject.ext.lwjglVersion}:$it"
+		runtime "org.lwjgl:lwjgl-openal:${rootProject.ext.lwjglVersion}:$it"
+		runtime "org.lwjgl:lwjgl-opengl:${rootProject.ext.lwjglVersion}:$it"
+		runtime "org.lwjgl:lwjgl-stb:${rootProject.ext.lwjglVersion}:$it"
+		runtime "org.lwjgl:lwjgl-tinyfd:${rootProject.ext.lwjglVersion}:$it"
+		runtime "org.lwjgl:lwjgl-vma:${rootProject.ext.lwjglVersion}:$it"
+		runtime "graphics.scenery:spirvcrossj:$spirvCrossVersion:$it"
 	}
 }
 
@@ -87,7 +84,7 @@ shadowJar {
 	baseName = 'chunkstories'
 	classifier = null
 	version = null
-	configurations = [project.configurations.multiplatform]
+	configurations = [project.configurations.runtime]
 }
 
 run { 

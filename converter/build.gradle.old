@@ -38,7 +38,7 @@ shadowJar {
 	baseName = 'converter'
 	classifier = null
 	version = null
-	configurations = [project.configurations.multiplatform]
+	configurations = [project.configurations.runtime]
 	
 	dependencies {
 		//exclude(dependency(group: 'xyz.chunkstories', name: 'core', version: contentRevisionBuiltAgainst, ext: 'jar'))

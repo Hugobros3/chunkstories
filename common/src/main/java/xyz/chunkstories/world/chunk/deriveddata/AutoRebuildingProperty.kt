@@ -93,4 +93,8 @@ abstract class AutoRebuildingProperty(val context: GameContext, initializeClean:
             lock.unlock()
         }
     }
+
+    override fun toString(): String {
+        return "AutoRebuildingProperty(pendingUpdates=$pendingUpdates)"
+    }
 }

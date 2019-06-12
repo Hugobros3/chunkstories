@@ -43,6 +43,6 @@ class ContentTests {
 
     @Test
     fun testContentLoadByItself() {
-        val testContext = TestGameContext(null!!)
+        val testContext = TestGameContext("")
     }
 }

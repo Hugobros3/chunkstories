@@ -1129,6 +1129,10 @@ class ChunkLightBaker(internal val chunk: CubicChunk) : AutoRebuildingProperty(c
         pokeRawFast(cell.x, cell.y, cell.z, data)
     }
 
+    override fun toString(): String {
+        return "ChunkLightBaker(pending updates=$pendingUpdates)"
+    }
+
     companion object {
         /* Ressources for actual computations */
         internal val sunlightMask = 0x000F0000

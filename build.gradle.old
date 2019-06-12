@@ -3,7 +3,7 @@
  *
  * Messy file, lots of plugins used. Applies a few of those to the subprojects
  */
-
+/*
 import org.gradle.internal.os.OperatingSystem
 import java.text.SimpleDateFormat
 
@@ -75,7 +75,6 @@ ext {
 	actualContentLocation = "core_content.zip" // Changed by the setupContentLocation task in common/ !!! Do not remove.
 }
 
-/** LWJGL Configuration */
 switch ( OperatingSystem.current() ) {
 	case OperatingSystem.WINDOWS:
 		project.ext.lwjglNatives = "natives-windows"
@@ -194,3 +193,4 @@ subprojects { subproject ->
 	}
 }
 
+*/
