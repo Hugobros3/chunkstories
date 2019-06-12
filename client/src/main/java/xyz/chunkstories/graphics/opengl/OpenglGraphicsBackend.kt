@@ -45,7 +45,7 @@ data class OpenglSupport(val dsaSupport: Boolean)
 
 class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window: GLFWWindow) : GLFWBasedGraphicsBackend(graphicsEngine, window), VoxelTexturesSupport {
     private val capabilities: GLCapabilities
-    private val requiredExtensions = setOf("GL_ARB_debug_output", "GL_ARB_texture_storage", "GL_ARB_draw_buffers_blend")
+    private val requiredExtensions = setOf(/* "GL_ARB_debug_output", */ "GL_ARB_texture_storage", "GL_ARB_draw_buffers_blend")
     val openglSupport: OpenglSupport
 
     var renderGraph: OpenglRenderGraph
@@ -200,7 +200,7 @@ class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
     }
 
     companion object {
-        var debugMode = true
+        var debugMode = false
         val logger = LoggerFactory.getLogger("client.gfx_gl")
     }
 }
