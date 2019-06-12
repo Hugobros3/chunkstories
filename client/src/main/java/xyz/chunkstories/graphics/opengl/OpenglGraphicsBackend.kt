@@ -45,7 +45,7 @@ data class OpenglSupport(val dsaSupport: Boolean)
 
 class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window: GLFWWindow) : GLFWBasedGraphicsBackend(graphicsEngine, window), VoxelTexturesSupport {
     private val capabilities: GLCapabilities
-    private val requiredExtensions = setOf("GL_ARB_debug_output", "GL_ARB_texture_storage", "GL_ARB_draw_buffers_blend")
+    private val requiredExtensions = setOf("GL_ARB_texture_storage", "GL_ARB_draw_buffers_blend")
     val openglSupport: OpenglSupport
 
     var renderGraph: OpenglRenderGraph
@@ -100,6 +100,10 @@ class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
 
         val renderer = glGetString(GL_RENDERER) ?: throw Exception("Can't identify device name (GL_RENDERER returned null)")
         logger.debug("OpenGL Renderer: $renderer")
+
+        if(!extensionsList.contains("GL_ARB_debug_output")) {
+            debugMode = false
+        }
 
         if(!extensionsList.containsAll(requiredExtensions)) {
             JOptionPane.showMessageDialog(null, """

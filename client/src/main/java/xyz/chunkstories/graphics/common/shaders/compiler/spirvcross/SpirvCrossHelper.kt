@@ -19,7 +19,7 @@ object SpirvCrossHelper {
         val nativeLib = when (OSHelper.os) {
             SupportedOS.WINDOWS -> "/spirvcrossj.dll"
             SupportedOS.LINUX -> "/libspirvcrossj.so"
-            SupportedOS.OSX -> TODO()
+            SupportedOS.OSX -> "/libspirvcrossj.jnilib"
         }
 
         val libRes = javaClass.getResource(nativeLib)
