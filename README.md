@@ -66,6 +66,15 @@ The local maven repository on your computer (.m2 folder) now contains copies of 
  * `./gradlew launcher:createExe` builds the launcher executables (.exe and .jar as well)
  * `./gradlew buildAll` builds all of the above
 
+##### Make it work with OS X
+
+In order to launch ChunkStories on OS X (tested only on 10.11), you need to follow steps above, and use following command line arguments:
+
+```sh
+# At least 2GB of RAM
+java -XstartOnFirstThread -Djava.awt.headless=true -Xmx2G -jar client/build/libs/chunkstories.jar --backend=OPENGL --core=../chunkstories-core/res/
+```
+
 ### Links
 
  * To learn how to play the game and register an account, please visit http://chunkstories.xyz
