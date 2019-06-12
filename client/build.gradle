@@ -63,7 +63,7 @@ dependencies {
 		multiplatform "org.lwjgl:lwjgl-stb:${rootProject.ext.lwjglVersion}:" + it
 		multiplatform "org.lwjgl:lwjgl-tinyfd:${rootProject.ext.lwjglVersion}:" + it
 		multiplatform "org.lwjgl:lwjgl-vma:${rootProject.ext.lwjglVersion}:" + it
-		multiplatform "graphics.scenery:spirvcrossj:$spirvCrossVersion:$rootProject.ext.lwjglNatives"
+		multiplatform "graphics.scenery:spirvcrossj:$spirvCrossVersion:$it"
 	}
 }
 
