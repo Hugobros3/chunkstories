@@ -58,8 +58,3 @@ task("versionTxt") {
         """.trimIndent())
     }
 }
-
-for(subproject in subprojects) {
-    subproject.apply {
-    }
-}

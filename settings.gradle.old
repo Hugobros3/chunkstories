@@ -1,7 +1,0 @@
-//(c) 2015-2017 XolioWare Interactive
-//http://chunkstories.xyz
-//http://xol.io
-
-rootProject.name = 'chunkstories'
-
-include 'common', 'client', 'server', 'converter', 'launcher'
