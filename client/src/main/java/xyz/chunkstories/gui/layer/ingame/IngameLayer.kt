@@ -20,11 +20,9 @@ import xyz.chunkstories.api.item.inventory.ItemPile
 import xyz.chunkstories.api.util.configuration.Configuration
 import xyz.chunkstories.client.InternalClientOptions
 import xyz.chunkstories.client.ingame.IngameClientImplementation
-import xyz.chunkstories.gui.InventoryGridRenderer
 import xyz.chunkstories.gui.debug.DebugInfoRendererHelper
 import xyz.chunkstories.gui.debug.FrametimesGraph
 import xyz.chunkstories.world.WorldClientCommon
-import xyz.chunkstories.world.WorldClientRemote
 
 /**
  * The main layer that hosts the gameplay: renders the world, inventory and most
@@ -35,7 +33,6 @@ class IngameLayer(window: Gui, private val client: IngameClientImplementation) :
     private val world: WorldClientCommon
 
     // Renderer & client interface components
-    private var inventoryBarDrawer: InventoryGridRenderer? = null
     private val debugInfoRendererHelper: DebugInfoRendererHelper
     val chatManager: ChatManager
 
@@ -59,13 +56,6 @@ class IngameLayer(window: Gui, private val client: IngameClientImplementation) :
     override fun render(drawer: GuiDrawer) {
         val playerEntity = player.controlledEntity
 
-        // Update the inventory previewer
-        val traitInventory = playerEntity?.run { traits[TraitInventory::class] }
-        if(traitInventory == null)
-            inventoryBarDrawer = null
-        else if(inventoryBarDrawer == null || inventoryBarDrawer?.inventory != traitInventory.inventory)
-            inventoryBarDrawer = InventoryGridRenderer(traitInventory.inventory)
-
         // TODO MOVE MOVE MOVE
         if ((playerEntity == null || playerEntity.traits[TraitHealth::class]?.isDead == true) && gui.topLayer !is DeathScreen)
             gui.topLayer = DeathScreen(gui, this)
@@ -76,7 +66,7 @@ class IngameLayer(window: Gui, private val client: IngameClientImplementation) :
             chatManager.drawChatWindow(drawer)
 
             // Draw inventory
-            inventoryBarDrawer?.drawPlayerInventorySummary(drawer, gui.viewportWidth / 2, 8)
+            // inventoryBarDrawer?.drawPlayerInventorySummary(drawer, gui.viewportWidth / 2, 8)
 
             // Draw debug info
             if (client.configuration.getBooleanValue(InternalClientOptions.showDebugInformation))

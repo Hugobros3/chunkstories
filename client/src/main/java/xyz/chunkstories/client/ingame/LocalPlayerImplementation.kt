@@ -136,17 +136,12 @@ class LocalPlayerImplementation(override val client: IngameClientImplementation,
     override fun openInventory(inventory: Inventory) {
         val entity = this.controlledEntity
         if (entity != null && inventory.isAccessibleTo(entity)) {
-            // Directly open it without further concern
-            // client.openInventories(inventory);
+            val playerInventory = entity.traits[TraitInventory::class.java]?.inventory
 
-            val traitInventory = entity.traits[TraitInventory::class.java]
-
-            if (traitInventory != null)
-                client.gui.openInventories(traitInventory.inventory, inventory)
+            if (playerInventory != null)
+                client.gui.openInventories(playerInventory, inventory)
             else
                 client.gui.openInventories(inventory)
         }
-        // else
-        // this.sendMessage("Notice: You don't have access to this inventory.");
     }
 }

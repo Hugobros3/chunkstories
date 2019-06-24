@@ -82,6 +82,57 @@ class MainMenu(gui: Gui, parent: Layer?) : Layer(gui, parent) {
             'r' -> gui.topLayer = MessageBox(gui, this, "Dummy error", "Oh noes")
             'l' -> gui.topLayer = LanguageSelectionScreen(gui, this, true)
             'o' -> gui.topLayer = LogPolicyAsk(gui, this)
+            /*'i' -> {
+                val dummyInventory = Inventory(10, 4, null, null)
+
+                fun makeItem(itemName: String): Item {
+                    val def = gui.client.content.items().getItemDefinition(itemName)!!
+                    val item = def.newItem<Item>()
+                    return item
+                }
+
+                fun addItem(itemName: String, a: Int) {
+                    val item = makeItem(itemName)
+                    dummyInventory.addItem(item, a)
+                }
+
+                addItem("iron_shovel", 1)
+                addItem("bread", 20)
+                addItem("wood_door", 2)
+                addItem("coal", 64)
+
+                val inventoryUILayer = InventoryManagementUI(gui, this)
+                val goldMaker = InventoryUI(inventoryUILayer, 8 + 20 + 20 + 8, 8 + 20 + 8)
+                goldMaker.apply {
+                    val inputSlot = InventorySlot.FakeSlot()
+                    val outputSlot = object : InventorySlot.SummoningSlot() {
+
+                        override val visibleContents: Pair<Item, Int>?
+                            get() {
+                                val input = inputSlot.visibleContents
+                                val output = if(input == null) null else Pair(makeItem("gold_bar"), input.second)
+                                return output
+                            }
+
+                        override fun commitTransfer(destinationInventory: Inventory, destX: Int, destY: Int, amount: Int) {
+                            repeat(amount) {
+                                val stealing = inputSlot.stealingFrom.removeAt(0)
+                                stealing.stolen--
+                                stealing.actualItemPile?.let { it.amount-- } ?: return
+                                destinationInventory.placeItemAt(destX, destY, makeItem("gold_bar"), 1)
+                            }
+                        }
+                    }
+
+                    slots.add(InventorySlotUI(inputSlot, 8, 8))
+                    slots.add(InventorySlotUI(outputSlot, 8 + 20, 8))
+                }
+
+                val (craftUi, slots) = dummyInventory.makeUIWithCraftingArea(inventoryUILayer, 3)
+                inventoryUILayer.subwindows.add(craftUi)
+                inventoryUILayer.subwindows.add(goldMaker)
+                gui.topLayer = inventoryUILayer
+            }*/
             'c' -> // Fabricated crash
                 throw RuntimeException("Epic crash")
         }

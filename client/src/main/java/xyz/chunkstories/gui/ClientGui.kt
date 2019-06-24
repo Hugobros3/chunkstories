@@ -4,9 +4,7 @@ import xyz.chunkstories.api.gui.Fonts
 import xyz.chunkstories.api.gui.Gui
 import xyz.chunkstories.api.gui.Layer
 import xyz.chunkstories.api.input.Mouse
-import xyz.chunkstories.api.item.inventory.Inventory
 import xyz.chunkstories.client.ClientImplementation
-import xyz.chunkstories.gui.layer.ingame.InventoryView
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.input.Input
 import xyz.chunkstories.input.lwjgl3.Lwjgl3MouseButton
@@ -56,7 +54,7 @@ class ClientGui(override val client: ClientImplementation) : Gui {
                 if(realMouseButton !is Lwjgl3MouseButton)
                     throw Exception("oh no my hacky code bit me in the arse")
 
-                return object : Mouse.MouseButton by realMouse.mainButton {
+                return object : Mouse.MouseButton by realMouseButton {
                     override val isPressed: Boolean
                         get() = realMouseButton.isDown
 
@@ -84,10 +82,10 @@ class ClientGui(override val client: ClientImplementation) : Gui {
 
     override fun localization() = client.content.localization()
 
-    override fun openInventories(vararg inventories: Inventory) {
+    /*override fun openInventories(vararg inventories: Inventory) {
         val ingameClient = client.ingame ?: return logger.warn("Asked to open an inventory but the client currently isn't ingame !")
 
         ingameClient.ingameGuiLayer.focus(false)
         ingameClient.gui.topLayer = InventoryView(ingameClient.gui, ingameClient.ingameGuiLayer, inventories.toList())
-    }
+    }*/
 }
