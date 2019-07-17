@@ -25,7 +25,7 @@ import xyz.chunkstories.world.WorldImplementation;
 public class IOTasks extends Thread implements TaskExecutor {
 	protected WorldImplementation world;
 
-	protected final Deque<IOTask> tasks = new ConcurrentLinkedDeque<>();
+	public final Deque<IOTask> tasks = new ConcurrentLinkedDeque<>();
 	private final Semaphore tasksCounter = new Semaphore(0);
 
 	private IOTask DIE = new IOTask() {

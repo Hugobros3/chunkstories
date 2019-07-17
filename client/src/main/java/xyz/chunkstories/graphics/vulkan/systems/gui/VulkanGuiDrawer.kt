@@ -26,6 +26,7 @@ import org.lwjgl.vulkan.VkCommandBuffer
 import org.lwjgl.vulkan.VkRect2D
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.graphics.Texture2D
+import xyz.chunkstories.api.graphics.TextureTilingMode
 import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
 import xyz.chunkstories.graphics.common.gui.InternalGuiDrawer
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
@@ -77,7 +78,7 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
 
     val program = backend.shaderFactory.createProgram("gui")
     val pipeline = Pipeline(backend, program, pass, vertexInputConfiguration, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
-    val sampler = VulkanSampler(backend)
+    val sampler = VulkanSampler(backend, tilingMode = TextureTilingMode.REPEAT)
     val vertexBuffers: InflightFrameResource<VulkanVertexBuffer>
 
     init {

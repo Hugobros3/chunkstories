@@ -13,6 +13,9 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 open class WorkerThreadPool(protected var threadsCount: Int) : TasksPool<Task>(), Tasks {
+    val pending: Collection<Task>
+        get() = super.tasksQueue
+
     protected lateinit var workers: Array<WorkerThread>
 
     // Virtual task the reference is used to signal threads to end.

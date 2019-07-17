@@ -215,7 +215,8 @@ class ModsManagerImplementation @Throws(NonExistentCoreContent::class)
 
         // Add the plugin classes stuff
         val pluginsFolder = File("./plugins/")
-        val plugins = pluginsFolder.listFiles().filter { it.isFile && it.name.endsWith(".jar") }
+        pluginsFolder.mkdirs()
+        val plugins = pluginsFolder.listFiles()?.filter { it.isFile && it.name.endsWith(".jar") } ?: emptyList()
         childClassLoader = URLClassLoader(plugins.map { it.toURL() }.toTypedArray(), childClassLoader)
 
         //Cache all the assets into immutable collections

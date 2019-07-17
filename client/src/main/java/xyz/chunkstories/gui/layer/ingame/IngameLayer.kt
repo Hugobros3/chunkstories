@@ -22,6 +22,7 @@ import xyz.chunkstories.client.InternalClientOptions
 import xyz.chunkstories.client.ingame.IngameClientImplementation
 import xyz.chunkstories.gui.debug.DebugInfoRendererHelper
 import xyz.chunkstories.gui.debug.FrametimesGraph
+import xyz.chunkstories.gui.layer.WorldLoadingUI
 import xyz.chunkstories.world.WorldClientCommon
 
 /**
@@ -57,7 +58,7 @@ class IngameLayer(window: Gui, private val client: IngameClientImplementation) :
         val playerEntity = player.controlledEntity
 
         // TODO MOVE MOVE MOVE
-        if ((playerEntity == null || playerEntity.traits[TraitHealth::class]?.isDead == true) && gui.topLayer !is DeathScreen)
+        if (gui.topLayer !is WorldLoadingUI && (playerEntity == null || playerEntity.traits[TraitHealth::class]?.isDead == true) && gui.topLayer !is DeathScreen)
             gui.topLayer = DeathScreen(gui, this)
 
         // Draw the GUI

@@ -41,7 +41,7 @@ class DeathScreen(gui: Gui, parent: Layer) : Layer(gui, parent) {
             gui.popTopLayer()
         }
 
-        this.exitButton.action = Runnable { gui.topLayer = MainMenu(gui, null) }
+        this.exitButton.action = Runnable { gui.client.ingame!!.exitToMainMenu() }
 
         elements.add(respawnButton)
         elements.add(exitButton)
