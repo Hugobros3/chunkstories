@@ -57,7 +57,7 @@ class ModsSelection(window: Gui, parent: Layer) : Layer(window, parent) {
                     modsEnabled.add((modItem.mod as ModImplementation).loadString)
                 }
             }
-            gui.client.content.modsManager().setEnabledMods(*modsEnabled.toTypedArray())
+            gui.client.content.modsManager.setEnabledMods(*modsEnabled.toTypedArray())
 
             (gui.client as ClientImplementation).reloadAssets()
             buildModsList()
@@ -68,12 +68,11 @@ class ModsSelection(window: Gui, parent: Layer) : Layer(window, parent) {
 
     private fun buildModsList() {
         modsContainer.elements.clear()
-        val currentlyEnabledMods = Arrays
-                .asList(*gui.client.content.modsManager().enabledModsString)
+        val currentlyEnabledMods = Arrays.asList(*gui.client.content.modsManager.enabledModsString)
 
         val uniqueMods = HashSet<String>()
         // First put in already loaded mods
-        for (mod in gui.client.content.modsManager().currentlyLoadedMods) {
+        for (mod in gui.client.content.modsManager.currentlyLoadedMods) {
             // Should use md5 hash instead ;)
             if (uniqueMods.add(mod.modInfo.name.toLowerCase()))
                 modsContainer.elements.add(modsContainer.ModItem(mod, true))

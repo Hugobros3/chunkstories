@@ -163,7 +163,7 @@ public abstract class PacketsEncoderDecoder implements PacketReceptionContext, P
 			else // Throw an error if sending a packet while not within a world
 				throw new UnknowPacketException(0xFF);
 		} else {
-			PacketDefinition def = world.getContent().packets().getPacketFromInstance(packet);
+			PacketDefinition def = world.getContent().getPackets().getPacketFromInstance(packet);
 			if (def == null)
 				logger.error("Could not find the definition of packet " + packet);
 			short id = (short) world.getContentTranslator().getIdForPacket(def);

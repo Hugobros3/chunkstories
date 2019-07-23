@@ -20,21 +20,15 @@ import xyz.chunkstories.content.GameContentStore
 import xyz.chunkstories.content.extractProperties
 import java.util.*
 
-class ItemDefinitionsStore(gameContentStore: GameContentStore) : ItemsDefinitions {
+class ItemDefinitionsStore(override val parent: GameContentStore) : ItemsDefinitions {
     var itemDefinitions: MutableMap<String, ItemDefinition> = HashMap()
 
-    private val content: Content
     private val modsManager: ModsManager
 
-    private val logger = LoggerFactory.getLogger("content.items")
-
-    override fun logger(): Logger {
-        return logger
-    }
+    override val logger = LoggerFactory.getLogger("content.items")
 
     init {
-        this.content = gameContentStore
-        this.modsManager = gameContentStore.modsManager()
+        this.modsManager = parent.modsManager
     }
 
     fun reload() {
@@ -43,10 +37,10 @@ class ItemDefinitionsStore(gameContentStore: GameContentStore) : ItemsDefinition
         val gson = Gson()
 
         fun readDefinitions(a: Asset) {
-            logger().debug("Reading items definitions in : $a")
+            logger.debug("Reading items definitions in : $a")
 
             val json = JsonValue.readHjson(a.reader()).toString()
-            val map = gson.fromJson(json, LinkedTreeMap::class.java)
+            val map: LinkedTreeMap<Any?, Any?> = gson.fromJson(json, LinkedTreeMap::class.java) as LinkedTreeMap<Any?, Any?>
 
             val materialsTreeMap = map["items"] as LinkedTreeMap<*, *>
 
@@ -59,18 +53,18 @@ class ItemDefinitionsStore(gameContentStore: GameContentStore) : ItemsDefinition
                 val itemDefinition = ItemDefinition(this, name, properties)
                 itemDefinitions.put(name, itemDefinition)
 
-                logger().debug("Loaded item definition $itemDefinition")
+                logger.debug("Loaded item definition $itemDefinition")
             }
         }
 
-        for (asset in content.modsManager().allAssets.filter { it.name.startsWith("items/") && it.name.endsWith(".hjson") }) {
+        for (asset in parent.modsManager.allAssets.filter { it.name.startsWith("items/") && it.name.endsWith(".hjson") }) {
             readDefinitions(asset)
         }
     }
 
     internal fun addVoxelItems() {
         // Include definitions from the voxels variants
-        for(voxel in parent().voxels().all()) {
+        for(voxel in parent.voxels.all) {
             for(variantDefinition in voxel.variants) {
                 itemDefinitions[variantDefinition.name] = variantDefinition
             }
@@ -82,11 +76,8 @@ class ItemDefinitionsStore(gameContentStore: GameContentStore) : ItemsDefinition
         return if (itemDefinitions.containsKey(itemName)) itemDefinitions[itemName] else null
     }
 
-    override fun all(): Collection<ItemDefinition> {
-        return itemDefinitions.values
-    }
-
-    override fun parent(): Content {
-        return content
-    }
+    override val all: Collection<ItemDefinition>
+        get() {
+            return itemDefinitions.values
+        }
 }

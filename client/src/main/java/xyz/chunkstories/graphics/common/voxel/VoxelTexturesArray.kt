@@ -2,6 +2,7 @@ package xyz.chunkstories.graphics.common.voxel
 
 import org.joml.Vector4f
 import org.joml.Vector4fc
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.content.Asset
 import xyz.chunkstories.api.content.Content
@@ -10,9 +11,9 @@ import xyz.chunkstories.voxel.ReloadableVoxelTextures
 import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 
-open class VoxelTexturesArray(val voxels: Content.Voxels) : ReloadableVoxelTextures {
+open class VoxelTexturesArray(override val parent: Content.Voxels) : ReloadableVoxelTextures {
 
-    val content = voxels.parent()
+    val content = parent.parent
 
     private val voxelTextures = mutableMapOf<String, VoxelTextureInArray>()
 
@@ -28,7 +29,7 @@ open class VoxelTexturesArray(val voxels: Content.Voxels) : ReloadableVoxelTextu
     override fun reload() {
         voxelTextures.clear()
 
-        for (entry in content.modsManager().allUniqueEntries) {
+        for (entry in content.modsManager.allUniqueEntries) {
             if (entry.name.startsWith("voxels/textures/") || entry.name.startsWith("voxels/blockmodels/")) {
                 var name = entry.name.removePrefix("voxels/textures/")
 
@@ -155,17 +156,17 @@ open class VoxelTexturesArray(val voxels: Content.Voxels) : ReloadableVoxelTextu
 
             analyzeAsset(asset)
 
-            normal = content.modsManager().getAsset(strippedAssetName + "_normal.png")
-                    ?: content.modsManager().getAsset(strippedAssetName + "_n.png")
-                            ?: content.modsManager().getAsset("voxels/textures/notex_normal.png")!!
+            normal = content.modsManager.getAsset(strippedAssetName + "_normal.png")
+                    ?: content.modsManager.getAsset(strippedAssetName + "_n.png")
+                            ?: content.modsManager.getAsset("voxels/textures/notex_normal.png")!!
 
-            roughness = content.modsManager().getAsset(strippedAssetName + "_roughness.png")
-                    ?: content.modsManager().getAsset(strippedAssetName + "_r.png")
-                            ?: content.modsManager().getAsset("voxels/textures/notex_roughness.png")!!
+            roughness = content.modsManager.getAsset(strippedAssetName + "_roughness.png")
+                    ?: content.modsManager.getAsset(strippedAssetName + "_r.png")
+                            ?: content.modsManager.getAsset("voxels/textures/notex_roughness.png")!!
 
-            metalness = content.modsManager().getAsset(strippedAssetName + "_metalness.png")
-                    ?: content.modsManager().getAsset(strippedAssetName + "_m.png")
-                            ?: content.modsManager().getAsset("voxels/textures/notex_metalness.png")!!
+            metalness = content.modsManager.getAsset(strippedAssetName + "_metalness.png")
+                    ?: content.modsManager.getAsset(strippedAssetName + "_m.png")
+                            ?: content.modsManager.getAsset("voxels/textures/notex_metalness.png")!!
         }
 
         private fun analyzeAsset(asset: Asset) {
@@ -207,11 +208,10 @@ open class VoxelTexturesArray(val voxels: Content.Voxels) : ReloadableVoxelTextu
         return voxelTextures[voxelTextureName] ?: defaultVoxelTexture
     }
 
-    override fun logger() = logger
-
-    override fun parent() = voxels
-
     companion object {
         val logger = LoggerFactory.getLogger("content.voxels.textures")
     }
+
+    override val logger: Logger
+        get() = Companion.logger
 }

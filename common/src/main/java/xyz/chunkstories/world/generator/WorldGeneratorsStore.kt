@@ -20,17 +20,11 @@ import org.slf4j.LoggerFactory
 import xyz.chunkstories.content.extractProperties
 import java.util.*
 
-class WorldGeneratorsStore(private val store: GameContentStore) : Content.WorldGenerators {
-    private val modsManager: ModsManager = store.modsManager()
-
+class WorldGeneratorsStore(override val parent: GameContentStore) : Content.WorldGenerators {
     var generators: MutableMap<String, WorldGeneratorDefinition> = HashMap()
 
     /** Vanilla blank (void) world generator  */
     internal var blank = WorldGeneratorDefinition(this, "blank", mapOf( "class" to BlankWorldGenerator::class.java.canonicalName))
-
-    override fun logger(): Logger {
-        return logger
-    }
 
     fun reload() {
         // Loads all generators
@@ -39,10 +33,10 @@ class WorldGeneratorsStore(private val store: GameContentStore) : Content.WorldG
         val gson = Gson()
 
         fun readDefinitions(a: Asset) {
-            logger().debug("Reading generators definitions in : $a")
+            logger.debug("Reading generators definitions in : $a")
 
             val json = JsonValue.readHjson(a.reader()).toString()
-            val map = gson.fromJson(json, LinkedTreeMap::class.java)
+            val map = gson.fromJson(json, LinkedTreeMap::class.java) as LinkedTreeMap<Any?, Any?>
 
             val treeMap = map["generators"] as LinkedTreeMap<*, *>
 
@@ -58,7 +52,7 @@ class WorldGeneratorsStore(private val store: GameContentStore) : Content.WorldG
             }
         }
 
-        for(asset in store.modsManager().allAssets.filter { it.name.startsWith("generators/")  && it.name.endsWith(".hjson") }) {
+        for(asset in parent.modsManager.allAssets.filter { it.name.startsWith("generators/")  && it.name.endsWith(".hjson") }) {
             readDefinitions(asset)
         }
     }
@@ -68,20 +62,20 @@ class WorldGeneratorsStore(private val store: GameContentStore) : Content.WorldG
         if (generator != null)
             return generator
 
-        logger().warn("Couldn't find generator \"$name\"; Providing BlankWorldGenerator instead.")
+        logger.warn("Couldn't find generator \"$name\"; Providing BlankWorldGenerator instead.")
         return blank
     }
 
-    override fun all(): Collection<WorldGeneratorDefinition> {
-        return generators.values
-    }
-
-    override fun parent(): Content {
-        return store
-    }
+    override val all: Collection<WorldGeneratorDefinition>
+        get() {
+            return generators.values
+        }
 
     companion object {
         private val logger = LoggerFactory.getLogger("content.generators")
     }
+
+    override val logger: Logger
+        get() = Companion.logger
 }
 

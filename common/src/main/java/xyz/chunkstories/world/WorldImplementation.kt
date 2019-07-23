@@ -192,7 +192,7 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
                 this.internalDataFile = null
             }
 
-            this.generator = gameContext.content.generators().getWorldGenerator(info.generatorName).createForWorld(this)
+            this.generator = gameContext.content.generators.getWorldGenerator(info.generatorName).createForWorld(this)
             this.collisionsManager = DefaultWorldCollisionsManager(this)
 
             // Start the world logic thread
@@ -239,7 +239,7 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
                 actualSpawnLocation = this.defaultSpawnLocation
 
             if (entity == null || entity.traits[TraitHealth::class.java]?.isDead == true)
-                entity = this.gameContext.content.entities().getEntityDefinition("player")!!
+                entity = this.gameContext.content.entities.getEntityDefinition("player")!!
                         .newEntity(this)
             //else
             //    entity.UUID = -1
@@ -377,10 +377,10 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
         z = sanitizeHorizontalCoordinate(z)
 
         val region = this.getRegionWorldCoordinates(x, y, z)
-                ?: return UnloadedWorldCell(x, y, z, this.gameContext.content.voxels().air(), 0, 0, 0)
+                ?: return UnloadedWorldCell(x, y, z, this.gameContext.content.voxels.air, 0, 0, 0)
 
         val chunk = region.getChunk(x / 32 % 8, y / 32 % 8, z / 32 % 8)
-                ?: return UnloadedWorldCell(x, y, z, this.gameContext.content.voxels().air(), 0, 0, 0)
+                ?: return UnloadedWorldCell(x, y, z, this.gameContext.content.voxels.air, 0, 0, 0)
 
         return chunk.peek(x, y, z)
     }
@@ -433,7 +433,7 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
 
         val chunk = this.getChunkWorldCoordinates(x, y, z)
         return if (chunk == null)
-            gameContext.content.voxels().air()
+            gameContext.content.voxels.air
         else
             chunk.peekSimple(x, y, z)
     }

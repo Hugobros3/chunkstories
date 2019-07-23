@@ -87,7 +87,7 @@ open class DefaultPluginManager(private val pluginExecutionContext: GameContext)
         }
 
         // Mods too can bundle plugins
-        for (pluginInformation in (this.pluginExecutionContext.content.modsManager() as ModsManagerImplementation).pluginsWithinEnabledMods) {
+        for (pluginInformation in (this.pluginExecutionContext.content.modsManager as ModsManagerImplementation).pluginsWithinEnabledMods) {
 
             // Checks type is appropriate
             if (pluginInformation.pluginType == PluginType.CLIENT_ONLY && pluginExecutionContext !is Client ||
@@ -103,7 +103,7 @@ open class DefaultPluginManager(private val pluginExecutionContext: GameContext)
 
     private fun enablePlugins(pluginsToInitialize: List<PluginInformation>) {
         logger().info(pluginsToInitialize.size.toString() + " plugins to initialize")
-        val finalClassLoader = (pluginExecutionContext.content.modsManager() as ModsManagerImplementation).finalClassLoader!!
+        val finalClassLoader = (pluginExecutionContext.content.modsManager as ModsManagerImplementation).finalClassLoader!!
 
         val order = LinkedBlockingDeque<PluginInformation>()
 

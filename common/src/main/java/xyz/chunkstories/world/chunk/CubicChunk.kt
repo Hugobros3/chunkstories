@@ -189,7 +189,7 @@ class CubicChunk(override val holder: ChunkHolderImplementation, override val ch
     }
 
     override fun peekSimple(x: Int, y: Int, z: Int): Voxel {
-        return world.contentTranslator.getVoxelForId(VoxelFormat.id(peekRaw(x, y, z))) ?: world.content.voxels().air()
+        return world.contentTranslator.getVoxelForId(VoxelFormat.id(peekRaw(x, y, z))) ?: world.content.voxels.air
     }
 
     override fun peekRaw(x: Int, y: Int, z: Int): Int {
@@ -366,8 +366,8 @@ class CubicChunk(override val holder: ChunkHolderImplementation, override val ch
                 if (user !is RemotePlayer)
                     continue
 
+                // Ignore clients that aren't playing
                 val clientEntity = user.controlledEntity ?: continue
-// Ignore clients that aren't playing
 
                 user.pushPacket(packet)
             }

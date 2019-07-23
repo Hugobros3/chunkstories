@@ -112,7 +112,7 @@ public class PacketDefinitionImplementation extends Definition implements Packet
 	private Class<? extends Packet> resolveClass(GameContentStore store, String className)
 			throws IllegalPacketDeclarationException {
 
-		Class<?> rawClass = store.modsManager().getClassByName(className);
+		Class<?> rawClass = store.getModsManager().getClassByName(className);
 		if (rawClass == null) {
 			return null;
 			// throw new IllegalPacketDeclarationException("Packet class " + this.getName()

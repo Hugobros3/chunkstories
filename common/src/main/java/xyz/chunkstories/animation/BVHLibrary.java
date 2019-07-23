@@ -21,7 +21,7 @@ public class BVHLibrary implements AnimationsLibrary {
 
 	private static final Logger logger = LoggerFactory.getLogger("content.animations");
 
-	public Logger logger() {
+	public Logger getLogger() {
 		return logger;
 	}
 
@@ -55,7 +55,7 @@ public class BVHLibrary implements AnimationsLibrary {
 	}
 
 	@Override
-	public Content parent() {
+	public Content getParent() {
 		return store;
 	}
 }

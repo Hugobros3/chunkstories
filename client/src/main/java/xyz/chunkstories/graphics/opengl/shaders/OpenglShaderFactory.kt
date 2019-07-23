@@ -16,7 +16,7 @@ class OpenglShaderFactory(val backend: OpenglGraphicsBackend, val client: Client
     @Suppress("UNNECESSARY_SAFE_CALL")
     override val classLoader: ClassLoader
         //Note: We NEED that ?. operator because we're calling into this before Client is done initializing
-        get() = (client?.content?.modsManager() as? ModsManagerImplementation)?.finalClassLoader ?: OpenglShaderFactory::class.java.classLoader
+        get() = (client?.content?.modsManager as? ModsManagerImplementation)?.finalClassLoader ?: OpenglShaderFactory::class.java.classLoader
 
     fun createProgram(basePath: String, shaderCompilationParameters: ShaderCompilationParameters = ShaderCompilationParameters()) = OpenglShaderProgram(backend, loadGLSLProgram(basePath, shaderCompilationParameters))
 }

@@ -20,13 +20,9 @@ import xyz.chunkstories.content.extractProperties
 import java.io.Reader
 import java.util.*
 
-class PacketsStore(private val content: GameContentStore) : Content.PacketDefinitions {
+class PacketsStore(override val parent: GameContentStore) : Content.PacketDefinitions {
     private val byNames = HashMap<String, PacketDefinitionImplementation>()
     private val byClasses = HashMap<Class<out Packet>, PacketDefinitionImplementation>()
-
-    override fun logger(): Logger {
-        return logger
-    }
 
     fun reload() {
         byNames.clear()
@@ -36,7 +32,7 @@ class PacketsStore(private val content: GameContentStore) : Content.PacketDefini
 
         fun readDefinitions(r: Reader) {
             val json = JsonValue.readHjson(r).toString()
-            val map = gson.fromJson(json, LinkedTreeMap::class.java)
+            val map = gson.fromJson(json, LinkedTreeMap::class.java) as LinkedTreeMap<Any?, Any?>
 
             val materialsTreeMap = map["packets"] as LinkedTreeMap<*, *>
 
@@ -46,14 +42,14 @@ class PacketsStore(private val content: GameContentStore) : Content.PacketDefini
 
                 properties["name"] = name
 
-                val packetDefinition = PacketDefinitionImplementation(content, name, properties)
+                val packetDefinition = PacketDefinitionImplementation(parent, name, properties)
                 byNames[name] = packetDefinition
 
                 packetDefinition.commonClass?.let { byClasses[it] = packetDefinition }
                 packetDefinition.serverClass?.let { byClasses[it] = packetDefinition }
                 packetDefinition.clientClass?.let { byClasses[it] = packetDefinition }
 
-                logger().debug("Loaded packet definition $packetDefinition")
+                logger.debug("Loaded packet definition $packetDefinition")
             }
         }
 
@@ -61,8 +57,8 @@ class PacketsStore(private val content: GameContentStore) : Content.PacketDefini
         readDefinitions(javaClass.getResourceAsStream("/packets/systemPackets.hjson").reader())
 
         // Load the rest
-        for (asset in content.modsManager().allAssets.filter { it.name.startsWith("packets/") && it.name.endsWith(".hjson") }) {
-            logger().debug("Reading packets definitions in : $asset")
+        for (asset in parent.modsManager.allAssets.filter { it.name.startsWith("packets/") && it.name.endsWith(".hjson") }) {
+            logger.debug("Reading packets definitions in : $asset")
             readDefinitions(asset.reader())
         }
     }
@@ -82,15 +78,15 @@ class PacketsStore(private val content: GameContentStore) : Content.PacketDefini
         throw UnknowPacketException(packet)
     }
 
-    override fun parent(): Content {
-        return this.content
-    }
-
-    override fun all(): Collection<PacketDefinition> {
-        return byNames.values
-    }
+    override val all: Collection<PacketDefinition>
+        get() {
+            return byNames.values
+        }
 
     companion object {
         private val logger = LoggerFactory.getLogger("content.packets")
     }
+
+    override val logger: Logger
+        get() = Companion.logger
 }

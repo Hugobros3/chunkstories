@@ -48,22 +48,22 @@ public class LoadedContentTranslator extends AbstractContentTranslator {
 
 				switch (defType) {
 				case "voxel":
-					Voxel voxel = content.voxels().getVoxel(defName);
+					Voxel voxel = content.getVoxels().getVoxel(defName);
 					failIfNull(voxel, "Missing voxel definition " + defName);
 					voxelMappings.put(voxel, id);
 					break;
 				case "entity":
-					EntityDefinition entityDef = content.entities().getEntityDefinition(defName);
+					EntityDefinition entityDef = content.getEntities().getEntityDefinition(defName);
 					failIfNull(entityDef, "Missing entity definition " + defName);
 					entityMappings.put(entityDef, id);
 					break;
 				case "item":
-					ItemDefinition itemDef = content.items().getItemDefinition(defName);
+					ItemDefinition itemDef = content.getItems().getItemDefinition(defName);
 					failIfNull(itemDef, "Missing item definition " + defName);
 					itemMappings.put(itemDef, id);
 					break;
 				case "packet":
-					PacketDefinition packetDef = content.packets().getPacketByName(defName);
+					PacketDefinition packetDef = content.getPackets().getPacketByName(defName);
 					failIfNull(packetDef, "Missing packet definition " + defName);
 					packetMappings.put(packetDef, id);
 					break;
@@ -98,7 +98,7 @@ public class LoadedContentTranslator extends AbstractContentTranslator {
 		this.assignItemIds(false);
 		this.assignPacketIds(false);
 
-		content.modsManager().getCurrentlyLoadedMods().forEach(m -> requiredMods.add(m.getModInfo().getInternalName()));
+		content.getModsManager().getCurrentlyLoadedMods().forEach(m -> requiredMods.add(m.getModInfo().getInternalName()));
 
 		buildArrays();
 	}

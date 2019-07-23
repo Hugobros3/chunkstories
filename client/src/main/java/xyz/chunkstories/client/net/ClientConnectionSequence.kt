@@ -211,7 +211,7 @@ class ClientConnectionSequence constructor(val client: ClientImplementation, val
 
             // Build the string to pass to the modsManager as to ask it to enable said mods
             val requiredMods = requiredMd5s.map { "md5:$it" }
-            client.content.modsManager().setEnabledMods(*requiredMods.toTypedArray())
+            client.content.modsManager.setEnabledMods(*requiredMods.toTypedArray())
 
             step("Reloading mods...")
             client.reloadAssets()

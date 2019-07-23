@@ -28,14 +28,14 @@ import xyz.chunkstories.world.generator.WorldGeneratorsStore
 import java.io.File
 
 class GameContentStore(override val context: GameContext, coreContentLocation: File, enabledModsLaunchArguments: String) : Content {
-    private val modsManager: ModsManager
+    override val modsManager: ModsManager
 
-    private val items: ItemDefinitionsStore
-    private val voxels: VoxelsStore
-    private val entities: EntityDefinitionsStore
-    private val packets: PacketsStore
-    private val particles: ParticlesTypesStore
-    private val generators: WorldGeneratorsStore
+    override val items: ItemDefinitionsStore
+    override val voxels: VoxelsStore
+    override val entities: EntityDefinitionsStore
+    override val packets: PacketsStore
+    override val particles: ParticlesTypesStore
+    override val generators: WorldGeneratorsStore
 
     override val animationsLibrary: BVHLibrary
     override val models: MeshStore
@@ -46,7 +46,7 @@ class GameContentStore(override val context: GameContext, coreContentLocation: F
         try {
             this.modsManager = ModsManagerImplementation(coreContentLocation, enabledModsLaunchArguments)
         } catch (e: NonExistentCoreContent) {
-            logger().error("Could not find core content at the location: " + coreContentLocation.absolutePath)
+            logger.error("Could not find core content at the location: " + coreContentLocation.absolutePath)
             throw RuntimeException("Could not find core content at the location: " + coreContentLocation.absolutePath)
         }
 
@@ -85,45 +85,16 @@ class GameContentStore(override val context: GameContext, coreContentLocation: F
         localizationManager.reload()
     }
 
-    override fun voxels(): VoxelsStore {
-        return voxels
-    }
-
-    override fun items(): ItemDefinitionsStore {
-        return items
-    }
-
-    override fun entities(): EntityDefinitionsStore {
-        return entities
-    }
-
-    override fun particles(): ParticlesTypesStore {
-        return particles
-    }
-
-    override fun packets(): PacketsStore {
-        return packets
-    }
-
-    override fun modsManager(): ModsManager {
-        return modsManager
-    }
-
     override fun getAsset(assetName: String): Asset? {
         return modsManager.getAsset(assetName)
-    }
-
-    override fun generators(): WorldGeneratorsStore {
-        return generators
     }
 
     override fun localization(): Content.LocalizationManager {
         return localizationManager
     }
 
-    override fun logger(): Logger {
-        return contentLogger
-    }
+    override val logger: Logger
+        get() = contentLogger
 
     companion object {
         private val contentLogger = LoggerFactory.getLogger("content")

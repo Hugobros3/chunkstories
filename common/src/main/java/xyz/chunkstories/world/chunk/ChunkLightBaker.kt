@@ -1101,7 +1101,7 @@ class ChunkLightBaker(internal val chunk: CubicChunk) : AutoRebuildingProperty(c
         cell.y = y
         cell.z = z
         val rawData = peekRawFast(x, y, z)
-        cell.voxel = world.contentTranslator.getVoxelForId(VoxelFormat.id(rawData)) ?: world.content.voxels().air()
+        cell.voxel = world.contentTranslator.getVoxelForId(VoxelFormat.id(rawData)) ?: world.content.voxels.air
         cell.sunlight = VoxelFormat.sunlight(rawData)
         cell.blocklight = VoxelFormat.blocklight(rawData)
         cell.metaData = VoxelFormat.meta(rawData)

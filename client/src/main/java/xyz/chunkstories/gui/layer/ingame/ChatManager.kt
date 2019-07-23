@@ -228,9 +228,9 @@ class ChatManager(private val ingameClient: IngameClient, private val ingameGuiL
                 cmdName == "mods" -> {
                     var list = ""
                     var i = 0
-                    for (mod in ingameClient.content.modsManager().currentlyLoadedMods) {
+                    for (mod in ingameClient.content.modsManager.currentlyLoadedMods) {
                         i++
-                        list += mod.modInfo.name + if (i == ingameClient.content.modsManager().currentlyLoadedMods.size) "" else ", "
+                        list += mod.modInfo.name + if (i == ingameClient.content.modsManager.currentlyLoadedMods.size) "" else ", "
                     }
 
                     if (ingameClient.world is WorldClientLocal)

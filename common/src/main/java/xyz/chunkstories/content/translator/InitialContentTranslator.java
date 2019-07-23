@@ -16,7 +16,7 @@ public class InitialContentTranslator extends AbstractContentTranslator {
 		super(content);
 
 		requiredMods = new HashSet<>();
-		content.modsManager().getCurrentlyLoadedMods().forEach(m -> requiredMods.add(m.getModInfo().getInternalName()));
+		content.getModsManager().getCurrentlyLoadedMods().forEach(m -> requiredMods.add(m.getModInfo().getInternalName()));
 
 		this.assignVoxelIds(true);
 		this.assignEntityIds(true);

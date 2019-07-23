@@ -32,7 +32,7 @@ class ParticlesTypesStore(override val parent: GameContentStore) : Content.Parti
             logger.debug("Reading particle definitions in : $a")
 
             val json = JsonValue.readHjson(a.reader()).toString()
-            val map = gson.fromJson(json, LinkedTreeMap::class.java)
+            val map = gson.fromJson(json, LinkedTreeMap::class.java) as LinkedTreeMap<Any?, Any?>
 
             val materialsTreeMap = map["particles"] as LinkedTreeMap<*, *>
 
@@ -46,7 +46,7 @@ class ParticlesTypesStore(override val parent: GameContentStore) : Content.Parti
                     val particleTypeDefinition = ParticleTypeDefinition(this, name, properties)
 
                     val className = particleTypeDefinition.resolveProperty("class") ?: throw Exception("no 'class' property set")
-                    val klass = parent.modsManager().getClassByName(className) ?: throw Exception("Class $className not found")
+                    val klass = parent.modsManager.getClassByName(className) ?: throw Exception("Class $className not found")
                     val constructor = klass.getConstructor(ParticleTypeDefinition::class.java)
                             ?: throw Exception("$className doesn't have the right constructor")
 
@@ -60,7 +60,7 @@ class ParticlesTypesStore(override val parent: GameContentStore) : Content.Parti
             }
         }
 
-        for (asset in parent.modsManager().allAssets.filter { it.name.startsWith("particles/") && it.name.endsWith(".hjson") }) {
+        for (asset in parent.modsManager.allAssets.filter { it.name.startsWith("particles/") && it.name.endsWith(".hjson") }) {
             readDefinitions(asset)
         }
     }

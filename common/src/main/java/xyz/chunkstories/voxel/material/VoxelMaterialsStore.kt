@@ -11,7 +11,6 @@ import com.google.gson.internal.LinkedTreeMap
 import xyz.chunkstories.api.content.Asset
 import xyz.chunkstories.api.content.Content
 import xyz.chunkstories.api.voxel.materials.VoxelMaterial
-import xyz.chunkstories.content.GameContentStore
 import xyz.chunkstories.voxel.VoxelsStore
 import org.hjson.JsonValue
 import org.slf4j.Logger
@@ -20,29 +19,21 @@ import xyz.chunkstories.content.extractProperties
 import java.util.*
 
 class VoxelMaterialsStore(private val voxels: VoxelsStore) : Content.Voxels.VoxelMaterials {
-    private val store: GameContentStore
+    override val parent = voxels.parent
 
     internal var materials: MutableMap<String, VoxelMaterial> = HashMap()
 
     override lateinit var defaultMaterial: VoxelMaterial
-
-    override fun logger(): Logger {
-        return logger
-    }
-
-    init {
-        this.store = voxels.parent()
-    }
 
     fun reload() {
         materials.clear()
         val gson = Gson()
 
         fun readDefinitions(a: Asset) {
-            logger().debug("Reading voxel material definitions in : $a")
+            logger.debug("Reading voxel material definitions in : $a")
 
             val json = JsonValue.readHjson(a.reader()).toString()
-            val map = gson.fromJson(json, LinkedTreeMap::class.java)
+            val map = gson.fromJson(json, LinkedTreeMap::class.java) as LinkedTreeMap<Any?, Any?>
 
             val materialsTreeMap = map["materials"] as LinkedTreeMap<*, *>
 
@@ -62,26 +53,22 @@ class VoxelMaterialsStore(private val voxels: VoxelsStore) : Content.Voxels.Voxe
             }
         }
 
-        for (asset in store.modsManager().allAssets.filter { it.name.startsWith("voxels/materials/") && it.name.endsWith(".hjson") }) {
+        for (asset in voxels.parent.modsManager.allAssets.filter { it.name.startsWith("voxels/materials/") && it.name.endsWith(".hjson") }) {
             readDefinitions(asset)
         }
     }
 
-    override fun getVoxelMaterial(name: String): VoxelMaterial? {
-        val material = materials[name]
-        return material
+    override fun getVoxelMaterial(materialName: String): VoxelMaterial? = materials[materialName]
 
-    }
-
-    override fun all(): Collection<VoxelMaterial> {
-        return materials.values
-    }
-
-    override fun parent(): Content {
-        return store
-    }
+    override val all: Collection<VoxelMaterial>
+        get() {
+            return materials.values
+        }
 
     companion object {
         private val logger = LoggerFactory.getLogger("content.materials")
     }
+
+    override val logger: Logger
+        get() = Companion.logger
 }

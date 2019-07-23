@@ -39,7 +39,7 @@ public class LocalizationManagerImplementation implements LocalizationManager {
 
 	public LocalizationManagerImplementation(GameContentStore store, String defaultTranslation) {
 		this.store = store;
-		this.modsManager = store.modsManager();
+		this.modsManager = store.getModsManager();
 
 		this.defaultTranslation = defaultTranslation;
 		// reload();
@@ -159,7 +159,7 @@ public class LocalizationManagerImplementation implements LocalizationManager {
 	}
 
 	@Override
-	public Logger logger() {
+	public Logger getLogger() {
 		return logger;
 	}
 }

@@ -60,11 +60,11 @@ class TaskConvertMcChunk(private val minecraftRegion: MinecraftRegion, private v
                                             minecraftCurrentChunkXinsideRegion, minecraftCuurrentChunkZinsideRegion, x, y, z)
                                 } else {
                                     val future = FutureCell(csWorld, chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z,
-                                            csWorld.content.voxels().air())
+                                            csWorld.content.voxels.air)
 
                                     // Directly set trivial blocks
                                     mapper.output(mcId, meta, future)
-                                    if (!future.voxel!!.isAir())
+                                    if (!future.voxel.isAir())
                                         csWorld.pokeSimpleSilently(future)
                                 }
                             }

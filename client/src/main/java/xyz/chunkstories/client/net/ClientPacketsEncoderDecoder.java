@@ -17,12 +17,11 @@ import xyz.chunkstories.world.WorldClientRemote;
 
 public class ClientPacketsEncoderDecoder extends PacketsEncoderDecoder implements ClientPacketsProcessor {
 
-	//private IngameClient client = null;
 	private final Client client;
 	private final ServerConnection serverConnection;
 
 	public ClientPacketsEncoderDecoder(Client client, ServerConnection serverConnection) {
-		super(client.getContent().packets(), serverConnection);
+		super(client.getContent().getPackets(), serverConnection);
 
 		this.client = client;
 		this.serverConnection = serverConnection;

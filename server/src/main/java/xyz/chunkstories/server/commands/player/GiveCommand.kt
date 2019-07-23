@@ -45,7 +45,7 @@ class GiveCommand(serverConsole: Server) : ServerCommandBasic(serverConsole) {
         val itemName = arguments[0]
 
         // Look for the item first
-        val type = gameContent.items().getItemDefinition(itemName)
+        val type = gameContent.items.getItemDefinition(itemName)
 
         // If the type was found we are simply trying to spawn an item
         var item: Item? = null

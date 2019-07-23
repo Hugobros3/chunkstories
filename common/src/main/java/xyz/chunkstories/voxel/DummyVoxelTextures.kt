@@ -2,6 +2,7 @@ package xyz.chunkstories.voxel
 
 import org.joml.Vector4f
 import org.joml.Vector4fc
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.content.Asset
 import xyz.chunkstories.api.content.Content
@@ -16,8 +17,8 @@ interface ReloadableVoxelTextures: Content.Voxels.VoxelTextures {
     fun reload()
 }
 
-class DummyVoxelTextures(val voxels: Content.Voxels) : ReloadableVoxelTextures {
-    val content = voxels.parent()
+class DummyVoxelTextures(override val parent: Content.Voxels) : ReloadableVoxelTextures {
+    val content = parent.parent
 
     private val voxelTextures = mutableMapOf<String, DummyVoxelTexture>()
 
@@ -27,7 +28,7 @@ class DummyVoxelTextures(val voxels: Content.Voxels) : ReloadableVoxelTextures {
 
     override fun reload() {
         voxelTextures.clear()
-        for (entry in content.modsManager().allUniqueEntries) {
+        for (entry in content.modsManager.allUniqueEntries) {
             if (entry.name.startsWith("voxels/textures/")) {
                 val name = entry.name.replace("voxels/textures/", "")
 
@@ -108,11 +109,10 @@ class DummyVoxelTextures(val voxels: Content.Voxels) : ReloadableVoxelTextures {
         return voxelTextures[voxelTextureName] ?: defaultVoxelTexture
     }
 
-    override fun logger() = logger
-
-    override fun parent() = voxels
-
     companion object {
         val logger = LoggerFactory.getLogger("content.voxels.textures")
     }
+
+    override val logger: Logger
+        get() = Companion.logger
 }

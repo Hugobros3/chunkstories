@@ -15,7 +15,7 @@ import xyz.chunkstories.voxel.components.CellComponentsHolder
 
 class ActualChunkVoxelContext(private val cubicChunk: CubicChunk, x: Int, y: Int, z: Int, data: Int) :
         Cell(x and 0x1F, y and 0x1F, z and 0x1F, cubicChunk.world.contentTranslator.getVoxelForId(VoxelFormat.id(data))
-                ?: cubicChunk.world.content.voxels().air()
+                ?: cubicChunk.world.content.voxels.air
                 , VoxelFormat.meta(data), VoxelFormat.blocklight(data), VoxelFormat.sunlight(data)), ChunkCell, FreshChunkCell {
     override var data: Int = 0
         internal set

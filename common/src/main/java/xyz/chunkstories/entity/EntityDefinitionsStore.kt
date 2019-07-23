@@ -19,18 +19,8 @@ import xyz.chunkstories.content.GameContentStore
 import xyz.chunkstories.content.extractProperties
 import java.util.*
 
-class EntityDefinitionsStore(content: GameContentStore) : EntityDefinitions {
-    private val content: Content
-
+class EntityDefinitionsStore(override val parent: GameContentStore) : EntityDefinitions {
     private val entityDefinitions = HashMap<String, EntityDefinition>()
-
-    override fun logger(): Logger {
-        return logger
-    }
-
-    init {
-        this.content = content
-    }
 
     fun reload() {
         entityDefinitions.clear()
@@ -38,10 +28,10 @@ class EntityDefinitionsStore(content: GameContentStore) : EntityDefinitions {
         val gson = Gson()
 
         fun readDefinitions(a: Asset) {
-            logger().debug("Reading entities definitions in : $a")
+            logger.debug("Reading entities definitions in : $a")
 
             val json = JsonValue.readHjson(a.reader()).toString()
-            val map = gson.fromJson(json, LinkedTreeMap::class.java)
+            val map = gson.fromJson(json, LinkedTreeMap::class.java) as LinkedTreeMap<Any?, Any?>
 
             val materialsTreeMap = map["entities"] as LinkedTreeMap<*, *>
 
@@ -54,11 +44,11 @@ class EntityDefinitionsStore(content: GameContentStore) : EntityDefinitions {
                 val entityDefinition = EntityDefinition(this, name, properties)
                 entityDefinitions.put(name, entityDefinition)
 
-                logger().debug("Loaded entity definition $entityDefinition")
+                logger.debug("Loaded entity definition $entityDefinition")
             }
         }
 
-        for (asset in content.modsManager().allAssets.filter { it.name.startsWith("entities/") && it.name.endsWith(".hjson") }) {
+        for (asset in parent.modsManager.allAssets.filter { it.name.startsWith("entities/") && it.name.endsWith(".hjson") }) {
             readDefinitions(asset)
         }
     }
@@ -67,15 +57,15 @@ class EntityDefinitionsStore(content: GameContentStore) : EntityDefinitions {
         return entityDefinitions[TraitName]
     }
 
-    override fun all(): Collection<EntityDefinition> {
-        return this.entityDefinitions.values
-    }
-
-    override fun parent(): Content {
-        return content
-    }
+    override val all: Collection<EntityDefinition>
+        get() {
+            return this.entityDefinitions.values
+        }
 
     companion object {
         private val logger = LoggerFactory.getLogger("content.entities")
     }
+
+    override val logger: Logger
+        get() = Companion.logger
 }

@@ -44,7 +44,7 @@ public class ServerModsProvider {
 
 		// Build the modstring
 		modsString = "";
-		for (Mod mod : server.getContent().modsManager().getCurrentlyLoadedMods()) {
+		for (Mod mod : server.getContent().getModsManager().getCurrentlyLoadedMods()) {
 			String hash = mod.getMD5Hash();
 			long size;
 

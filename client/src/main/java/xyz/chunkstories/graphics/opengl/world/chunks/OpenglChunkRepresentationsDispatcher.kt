@@ -131,7 +131,7 @@ class OpenglChunkRepresentationsDispatcher(backend: OpenglGraphicsBackend) : Ope
 
             val chunkInfoUboResource = chunkInfoII.associatedResource as GLSLUniformBlock
 
-            val voxelTexturesArray = client.content.voxels().textures() as OpenglVoxelTexturesArray
+            val voxelTexturesArray = client.content.voxels.textures as OpenglVoxelTexturesArray
             pipeline.bindTexture("albedoTextures", voxelTexturesArray.albedoOnionTexture)
             //glBindBufferRange(GL_UNIFORM_BUFFER, program.uboBindings[chunkInfoUboResource]!!, chunkInfoUBO.glId, 0L, ssboBufferSize.toLong())
 

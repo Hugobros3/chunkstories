@@ -108,7 +108,7 @@ class WorldLoadingUI(val world: WorldClientLocal, gui: Gui, parentLayer: Layer?)
 
         var entity = entity
         if (entity == null || entity.traits[TraitHealth::class.java]?.isDead == true)
-            entity = world.gameContext.content.entities().getEntityDefinition("player")!!
+            entity = world.gameContext.content.entities.getEntityDefinition("player")!!
                     .newEntity(world)
 
         var freeSpawnLocation = Location(spawnLocation)

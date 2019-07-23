@@ -106,7 +106,7 @@ abstract class TaskCreateChunkMesh(
                         }
                         texName = texName.removeSuffix(".png")
                         //val voxelTexture = chunk.world.content.voxels().textures().get(texName) as VoxelTexturesArray.VoxelTextureInArray
-                        val voxelTexture = chunk.world.content.voxels().textures().get(texName)
+                        val voxelTexture = chunk.world.content.voxels.textures.get(texName)
                         val textureId = voxelTextureId(voxelTexture)
                         val vertexIn = mesh.attributes.find { it.name == "vertexIn" }?.data!!
                         val normalIn = mesh.attributes.find { it.name == "normalIn" }?.data

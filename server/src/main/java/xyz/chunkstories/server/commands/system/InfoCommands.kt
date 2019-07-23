@@ -64,9 +64,9 @@ class InfoCommands(serverConsole: Server) : ServerCommandBasic(serverConsole) {
         } else if (cmd.name == "mods") {
             var list = ""
             var i = 0
-            for (csp in server.content.modsManager().currentlyLoadedMods) {
+            for (csp in server.content.modsManager.currentlyLoadedMods) {
                 i++
-                list += csp.modInfo.name + if (i == server.content.modsManager().currentlyLoadedMods.size) "" else ", "
+                list += csp.modInfo.name + if (i == server.content.modsManager.currentlyLoadedMods.size) "" else ", "
             }
             emitter.sendMessage("#FF0000$i active server mods : $list")
             return true

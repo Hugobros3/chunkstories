@@ -56,7 +56,7 @@ class SpawnEntityCommand(serverConsole: Server) : ServerCommandBasic(serverConso
         val entityType: EntityDefinition?
 
         val TraitName = arguments[0]
-        entityType = server.content.entities().getEntityDefinition(TraitName)
+        entityType = server.content.entities.getEntityDefinition(TraitName)
 
         if (entityType == null) {
             emitter.sendMessage("Entity type : " + arguments[0] + " not found in loaded content.")

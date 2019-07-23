@@ -157,7 +157,7 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
 
                 val ssboStuff = MemoryUtil.memAlloc(ssboDataTest.bufferSize.toInt())
                 var instance = 0
-                val voxelTexturesArray = client.content.voxels().textures() as VulkanVoxelTexturesArray
+                val voxelTexturesArray = client.content.voxels.textures as VulkanVoxelTexturesArray
                 bindingContext.bindTextureAndSampler("albedoTextures", voxelTexturesArray.albedoOnionTexture, sampler)
                 bindingContext.bindSSBO("chunkInfo", ssboDataTest)
 
@@ -217,7 +217,7 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
 
                 val ssboStuff = MemoryUtil.memAlloc(ssboDataTest.bufferSize.toInt())
                 var instance = 0
-                val voxelTexturesArray = client.content.voxels().textures() as VulkanVoxelTexturesArray
+                val voxelTexturesArray = client.content.voxels.textures as VulkanVoxelTexturesArray
                 bindingContext.bindTextureAndSampler("albedoTextures", voxelTexturesArray.albedoOnionTexture, sampler)
                 bindingContext.bindSSBO("chunkInfo", ssboDataTest)
 

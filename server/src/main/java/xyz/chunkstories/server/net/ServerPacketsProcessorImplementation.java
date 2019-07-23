@@ -38,7 +38,7 @@ public class ServerPacketsProcessorImplementation implements ServerPacketsProces
 	}
 
 	public ClientPacketsContext forConnection(ClientConnection connection) {
-		return new ClientPacketsContext(server.getContent().packets(), connection);
+		return new ClientPacketsContext(server.getContent().getPackets(), connection);
 	}
 
 	/** Processes the packets for a certain user connection */
@@ -93,7 +93,7 @@ public class ServerPacketsProcessorImplementation implements ServerPacketsProces
 		final ServerPlayer player;
 
 		public PlayerPacketsProcessor(ServerPlayer player) {
-			super(server.getContent().packets(), player.getPlayerConnection());
+			super(server.getContent().getPackets(), player.getPlayerConnection());
 			this.player = player;
 		}
 

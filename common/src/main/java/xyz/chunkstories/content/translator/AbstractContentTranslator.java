@@ -62,7 +62,7 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 		if (overwrite)
 			voxelMappings = new HashMap<>();
 
-		content.voxels().all().forEach(voxel -> {
+		content.getVoxels().getAll().forEach(voxel -> {
 			if (overwrite || voxelMappings.get(voxel) == null) {
 				if (voxel.getName().equals("air"))
 					voxelMappings.put(voxel, 0); // Air gets ID 0, always.
@@ -76,7 +76,7 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 		if (overwrite)
 			entityMappings = new HashMap<>();
 
-		content.entities().all().forEach(entity -> {
+		content.getEntities().getAll().forEach(entity -> {
 			if (overwrite || entityMappings.get(entity) == null)
 				entityMappings.put(entity, findNextFreeId(1, entityMappings.values()));
 		});
@@ -86,7 +86,7 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 		if (overwrite)
 			itemMappings = new HashMap<>();
 
-		content.items().all().forEach(item -> {
+		content.getItems().getAll().forEach(item -> {
 			if (overwrite || itemMappings.get(item) == null)
 				itemMappings.put(item, findNextFreeId(1, itemMappings.values()));
 		});
@@ -96,7 +96,7 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 		if (overwrite)
 			packetMappings = new HashMap<>();
 
-		content.packets().all().forEach(def -> {
+		content.getPackets().getAll().forEach(def -> {
 			PacketDefinitionImplementation definition = (PacketDefinitionImplementation) def;
 
 			if (overwrite || packetMappings.get(definition) == null) {
@@ -109,7 +109,7 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 			}
 		});
 
-		content.packets().all().forEach(def -> {
+		content.getPackets().getAll().forEach(def -> {
 			PacketDefinitionImplementation definition = (PacketDefinitionImplementation) def;
 
 			if (overwrite || packetMappings.get(definition) == null) {
@@ -161,7 +161,7 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 	 * missing mods.
 	 */
 	Set<String> hasRequiredMods(Content content) {
-		Collection<Mod> loadedMods = content.modsManager().getCurrentlyLoadedMods();
+		Collection<Mod> loadedMods = content.getModsManager().getCurrentlyLoadedMods();
 		Set<String> loadedModsAsString = new HashSet<>();
 		loadedMods.forEach(mod -> loadedModsAsString.add(mod.getModInfo().getInternalName()));
 
@@ -190,19 +190,19 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 
 		// Check every translatable definition has a match
 		for (Voxel voxel : voxelMappings.keySet())
-			if (content.voxels().getVoxel(voxel.getName()) == null)
+			if (content.getVoxels().getVoxel(voxel.getName()) == null)
 				return false;
 
 		for (EntityDefinition entity : entityMappings.keySet())
-			if (content.entities().getEntityDefinition(entity.getName()) == null)
+			if (content.getEntities().getEntityDefinition(entity.getName()) == null)
 				return false;
 
 		for (ItemDefinition item : itemMappings.keySet())
-			if (content.items().getItemDefinition(item.getName()) == null)
+			if (content.getItems().getItemDefinition(item.getName()) == null)
 				return false;
 
 		for (PacketDefinition packet : packetMappings.keySet())
-			if (content.packets().getPacketByName(packet.getName()) == null)
+			if (content.getPackets().getPacketByName(packet.getName()) == null)
 				return false;
 
 		return true;
@@ -226,7 +226,7 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 	@Override
 	public Voxel getVoxelForId(int id) {
 		if (id < 0 || id >= voxelsArray.length)
-			return content.voxels().air();
+			return content.getVoxels().getAir();
 		return voxelsArray[id];
 	}
 

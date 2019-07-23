@@ -19,7 +19,7 @@ abstract class CommonInputsManager : InputsManager {
     fun reload() {
         val inputs = mutableListOf<AbstractInput>()
 
-        for (asset in context.content.modsManager().getAllAssetsByExtension("inputs")) {
+        for (asset in context.content.modsManager.getAllAssetsByExtension("inputs")) {
             loadKeyBindsFile(asset, inputs)
         }
 
