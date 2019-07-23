@@ -9,21 +9,21 @@ import xyz.chunkstories.api.world.WorldMaster
 import xyz.chunkstories.client.ClientImplementation
 import xyz.chunkstories.entity.SerializedEntityFile
 import xyz.chunkstories.server.FileBasedUsersPrivileges
-import xyz.chunkstories.world.WorldClientLocal
-import xyz.chunkstories.world.WorldLoadingException
-import xyz.chunkstories.world.deserializeWorldInfo
-import xyz.chunkstories.world.serializeWorldInfo
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.plugin.DefaultPluginManager
+import xyz.chunkstories.world.*
 import java.io.File
+import java.util.*
+import java.util.function.BinaryOperator
+import kotlin.streams.toList
 
 fun ClientImplementation.enterExistingWorld(folder: File) {
     if (!folder.exists() || !folder.isDirectory)
         throw WorldLoadingException("The folder $folder doesn't exist !")
 
-    val worldInfoFile = File(folder.path + "/worldInfo.dat")
+    val worldInfoFile = File(folder.path + "/" + WorldImplementation.worldInfoFilename)
     if (!worldInfoFile.exists())
-        throw WorldLoadingException("The folder $folder doesn't contain a worldInfo.dat file !")
+        throw WorldLoadingException("The folder $folder doesn't contain a ${WorldImplementation.worldInfoFilename} file !")
 
     val worldInfo = deserializeWorldInfo(worldInfoFile)
     logger().debug("Entering world $worldInfo")
@@ -42,9 +42,20 @@ fun ClientImplementation.createAndEnterWorld(folder: File, worldInfo: WorldInfo)
 
     logger().debug("Creating new singleplayer world")
     folder.mkdirs()
-    val worldInfoFile = File(folder.path + "/worldInfo.dat")
+    val worldInfoFile = File(folder.path + "/" + WorldImplementation.worldInfoFilename)
     worldInfoFile.writeText(serializeWorldInfo(worldInfo, true))
-    logger().debug("Created directory & wrote worldInfo.dat ; now entering world")
+
+    val internalData = WorldInternalData()
+    val random = Random((worldInfo.seed + "_spawn").codePoints().toList().reduce(Int::xor).toLong())
+    val randomWeather = random.nextFloat()
+    internalData.weather = randomWeather
+    val spawnCoordinateX = random.nextInt(worldInfo.size.sizeInChunks * 32)
+    val spawnCoordinateZ = random.nextInt(worldInfo.size.sizeInChunks * 32)
+    internalData.spawnLocation.set(spawnCoordinateX + 0.5, 64.0, spawnCoordinateZ + 0.5)
+
+    val internalDataFile = File(folder.path + "/" + WorldImplementation.worldInternalDataFilename)
+    internalData.writeToDisk(internalDataFile)
+    logger().debug("Created new world '${worldInfo.name}' ; now entering world")
 
     enterExistingWorld(folder)
 }

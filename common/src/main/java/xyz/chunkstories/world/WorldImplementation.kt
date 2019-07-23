@@ -12,7 +12,6 @@ import org.joml.Vector3dc
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.GameContext
-import xyz.chunkstories.api.GameLogic
 import xyz.chunkstories.api.Location
 import xyz.chunkstories.api.content.Content
 import xyz.chunkstories.api.entity.Entity
@@ -24,6 +23,7 @@ import xyz.chunkstories.api.exceptions.world.ChunkNotLoadedException
 import xyz.chunkstories.api.exceptions.world.RegionNotLoadedException
 import xyz.chunkstories.api.exceptions.world.WorldException
 import xyz.chunkstories.api.input.Input
+import xyz.chunkstories.api.math.Math2
 import xyz.chunkstories.api.physics.Box
 import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.util.IterableIterator
@@ -46,6 +46,7 @@ import xyz.chunkstories.content.translator.InitialContentTranslator
 import xyz.chunkstories.content.translator.LoadedContentTranslator
 import xyz.chunkstories.entity.EntityWorldIterator
 import xyz.chunkstories.entity.SerializedEntityFile
+import xyz.chunkstories.util.alias
 import xyz.chunkstories.util.concurrency.CompoundFence
 import xyz.chunkstories.world.chunk.CubicChunk
 import xyz.chunkstories.world.heightmap.HeightmapsStorage
@@ -55,54 +56,49 @@ import xyz.chunkstories.world.logic.WorldLogicThread
 import xyz.chunkstories.world.storage.RegionImplementation
 import xyz.chunkstories.world.storage.RegionsStorage
 import java.io.File
-import java.io.FileReader
-import java.io.FileWriter
 import java.io.IOException
-import java.util.*
-import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.locks.ReadWriteLock
+import java.util.concurrent.locks.ReentrantLock
 import java.util.concurrent.locks.ReentrantReadWriteLock
+import kotlin.concurrent.withLock
 
 abstract class WorldImplementation @Throws(WorldLoadingException::class)
-constructor(override val gameContext: GameContext, info: WorldInfo, initialContentTranslator: AbstractContentTranslator?, folder: File?) : World {
-    //override val gameContext: GameContext
-
-    final override val worldInfo: WorldInfo
+constructor(override val gameContext: GameContext, final override val worldInfo: WorldInfo, initialContentTranslator: AbstractContentTranslator?, val folderFile: File?) : World {
     final override val contentTranslator: AbstractContentTranslator
-
-    val folderFile: File?
-
-    private val internalData = Properties()
-    private val internalDataFile: File?
 
     final override val generator: WorldGenerator
 
-    // The world age, also tick counter. Can count for billions of real-world
-    // time so we are not in trouble.
-    // Let's say that the game world runs at 60Ticks per second
-    final override var ticksElapsed: Long = 0
-
-    // Timecycle counter
-    final override var time: Long = 5000
-    final override var weather = 0.2f
-
-    // Who does the actual work
     abstract val ioHandler: IOTasks
-    private val worldThread: WorldLogicThread
+    final override val gameLogic: WorldLogicThread
 
-    //Data holding
+    //TODO rename & uniformize
     val regionsStorage: RegionsStorage
     final override val regionsSummariesHolder: HeightmapsStorage
 
-    // Temporary entity list
+    //TODO store the entities in a smarter way ?
     protected val entities: WorldEntitiesHolder
-
     var entitiesLock: ReadWriteLock = ReentrantReadWriteLock(true)
 
     final override val collisionsManager: WorldCollisionsManager
 
-    // Entity IDS counter
-    internal var entitiesUUIDGenerator = AtomicLong()
+    private val internalData: WorldInternalData =
+            if (this is WorldMaster) loadInternalDataFromDisk(File(folderPath + "/" + Companion.worldInternalDataFilename))
+            else WorldInternalData()
+
+    // The world age, also tick counter. Can count for billions of real-world
+    // time so we are not in trouble.
+    // Let's say that the game world runs at 60Ticks per second
+    final override var ticksElapsed: Long by alias(internalData::ticksCounter)
+
+    // Timecycle counter
+    final override var time: Long by alias(internalData::sunCycleTime)
+    final override var weather: Float by alias(internalData::weather)
+
+    override var defaultSpawnLocation: Location
+        get() = Location(this, internalData.spawnLocation)
+        set(value) {
+            internalData.spawnLocation.set(value)
+        }
 
     val folderPath: String
         get() = folderFile?.absolutePath ?: throw Exception("This is not a WorldMaster !")
@@ -112,24 +108,9 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
     override val maxHeight: Int
         get() = worldInfo.size.heightInChunks * 32
 
-    override val sizeInChunks: Int
-        get() = worldInfo.size.sizeInChunks
+    override val sizeInChunks: Int = worldInfo.size.sizeInChunks
 
-    override val worldSize: Double
-        get() = (worldInfo.size.sizeInChunks * 32).toDouble()
-
-    override var defaultSpawnLocation: Location
-        get() {
-            val dx = internalData.getProperty("defaultSpawnX")?.toDoubleOrNull() ?: worldSize * 0.5
-            val dy = internalData.getProperty("defaultSpawnY")?.toDoubleOrNull() ?: 100.0
-            val dz = internalData.getProperty("defaultSpawnZ")?.toDoubleOrNull() ?: worldSize * 0.5
-            return Location(this, dx, dy, dz)
-        }
-        set(location) {
-            internalData.setProperty("defaultSpawnX", "${location.x()}")
-            internalData.setProperty("defaultSpawnY", "${location.y()}")
-            internalData.setProperty("defaultSpawnZ", "${location.z()}")
-        }
+    override val worldSize: Double = (worldInfo.size.sizeInChunks * 32).toDouble()
 
     override val allLoadedChunks: Sequence<CubicChunk>
         get() = regionsStorage.regionsList.asSequence().flatMap { it.loadedChunks.asSequence() }
@@ -137,17 +118,11 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
     override val allLoadedRegions: Collection<Region>
         get() = regionsStorage.regionsList
 
-    final override val gameLogic: GameLogic
-        get() = worldThread
-
     final override val content: Content
         get() = gameContext.content
 
     init {
         try {
-            //this.gameContext = gameContext
-            this.worldInfo = info
-
             // Create holders for the world data
             this.regionsStorage = RegionsStorage(this)
             this.regionsSummariesHolder = HeightmapsStorage(this)
@@ -156,11 +131,9 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
             this.entities = WorldEntitiesHolder(this)
 
             if (this is WorldMaster) {
-                // Obtain the parent folder
-                this.folderFile = folder
 
                 // Check for an existing content translator
-                val contentTranslatorFile = File(folder!!.path + "/content_mappings.dat")
+                val contentTranslatorFile = File(folderFile!!.path + "/content_mappings.dat")
                 if (contentTranslatorFile.exists()) {
                     contentTranslator = LoadedContentTranslator.loadFromFile(gameContext.content,
                             contentTranslatorFile)
@@ -169,16 +142,7 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
                     contentTranslator = InitialContentTranslator(gameContext.content)
                 }
 
-                this.contentTranslator.save(File(this.folderPath!! + "/content_mappings.dat"))
-
-                internalDataFile = File(folder.path + "/internal.dat")
-                if (internalDataFile.exists())
-                    this.internalData.load(FileReader(internalDataFile))
-
-                this.entitiesUUIDGenerator.set(internalData.getProperty("entities-ids-counter", "0").toLong())
-                this.time = internalData.getProperty("worldTime")?.toLongOrNull() ?: 5000
-                this.ticksElapsed = internalData.getProperty("worldTimeInternal")?.toLongOrNull() ?: 0
-                this.weather = internalData.getProperty("overcastFactor")?.toFloatOrNull() ?: 0.2F
+                this.contentTranslator.save(File(this.folderPath + "/content_mappings.dat"))
             } else {
                 // Slave world initialization
                 if (initialContentTranslator == null) {
@@ -186,17 +150,13 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
                 } else {
                     this.contentTranslator = initialContentTranslator
                 }
-
-                // Null-out final fields meant for master worlds
-                this.folderFile = null
-                this.internalDataFile = null
             }
 
-            this.generator = gameContext.content.generators.getWorldGenerator(info.generatorName).createForWorld(this)
+            this.generator = gameContext.content.generators.getWorldGenerator(worldInfo.generatorName).createForWorld(this)
             this.collisionsManager = DefaultWorldCollisionsManager(this)
 
             // Start the world logic thread
-            this.worldThread = WorldLogicThread(this, UnthrustedUserContentSecurityManager())
+            this.gameLogic = WorldLogicThread(this, UnthrustedUserContentSecurityManager())
         } catch (e: IOException) {
             throw WorldLoadingException("Couldn't load world ", e)
         } catch (e: IncompatibleContentException) {
@@ -205,11 +165,11 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
     }
 
     fun startLogic() {
-        worldThread.start()
+        gameLogic.start()
     }
 
     fun stopLogic(): Fence {
-        return worldThread.stopLogicThread()
+        return gameLogic.stopLogicThread()
     }
 
     open fun spawnPlayer(player: Player) {
@@ -312,15 +272,7 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
             var entity: Entity
             while (iter.hasNext()) {
                 entity = iter.next()
-
-                // Check entity's region is loaded
-                // if (entity.TraitLocation.getChunk() != null)
                 entity.tick()
-
-                // Tries to snap the entity to the region if it ends up being loaded
-                // else
-                // ((EntityBase)entity).positionComponent.trySnappingToChunk();
-
             }
         } finally {
             entitiesLock.writeLock().unlock()
@@ -329,10 +281,18 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
         // Increase the ticks counter
         ticksElapsed++
 
-        // Time cycle
-        if (this is WorldMaster && internalData.getProperty("doTimeCycle")?.toBoolean() == true)
-            if (ticksElapsed % 60 == 0L)
-                time++
+        // Time cycle & weather change
+        if (this is WorldMaster) {
+            val frequency = internalData.dayNightCycleSpeed
+            if (frequency > 0 && ticksElapsed % frequency == 0L)
+                time ++
+
+            if(internalData.varyWeather) {
+                val diff = (Math.random() - 0.5f) * 0.0005 * Math.random()
+                val rslt = Math2.clamp(internalData.weather + diff, 0.0, 1.0)
+                internalData.weather = rslt
+            }
+        }
     }
 
     override fun getEntitiesInBox(center: Vector3dc, boxSize: Vector3dc): World.NearEntitiesIterator {
@@ -550,8 +510,11 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
         return ioOperationsFence
     }
 
+    val entityUUIDLock = ReentrantLock()
     fun nextEntityId(): Long {
-        return entitiesUUIDGenerator.getAndIncrement()
+        entityUUIDLock.withLock {
+            return internalData.nextEntityId++
+        }
     }
 
     override fun handleInteraction(entity: Entity, voxelLocation: Location?, input: Input): Boolean {
@@ -705,14 +668,13 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
 
     open fun destroy() {
         // Stop the game logic first
-        worldThread.stopLogicThread().traverse()
+        gameLogic.stopLogicThread().traverse()
 
         //this.regionsStorage!!.destroy()
         //this.regionsSummariesHolder.destroy()
 
         // Always, ALWAYS save this.
         if (this is WorldMaster) {
-            this.internalData.setProperty("entities-ids-counter", "" + entitiesUUIDGenerator.get())
             saveInternalData()
         }
 
@@ -721,14 +683,7 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
     }
 
     private fun saveInternalData() {
-        this.internalData.setProperty("entities-ids-counter", "" + entitiesUUIDGenerator.get())
-        this.internalData.setProperty("worldTime", "" + time)
-        this.internalData.setProperty("worldTimeInternal", "" + ticksElapsed)
-        this.internalData.setProperty("overcastFactor", "" + weather)
-
-        val writer = FileWriter(internalDataFile)
-        this.internalData.store(writer, "Autogenerated file, avoid modifying")
-        writer.close()
+        internalData.writeToDisk(File(this.folderPath + "/" + worldInternalDataFilename))
     }
 
     fun logger(): Logger {
@@ -736,7 +691,9 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
     }
 
     companion object {
-
         private val logger = LoggerFactory.getLogger("world")
+
+        val worldInfoFilename = "worldInfo.json"
+        val worldInternalDataFilename = "internalData.json"
     }
 }

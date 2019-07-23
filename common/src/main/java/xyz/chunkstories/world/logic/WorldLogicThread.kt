@@ -8,7 +8,6 @@ package xyz.chunkstories.world.logic
 
 import java.util.concurrent.atomic.AtomicBoolean
 
-import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 import xyz.chunkstories.Constants
@@ -23,7 +22,8 @@ import xyz.chunkstories.api.world.WorldMaster
 import xyz.chunkstories.util.concurrency.SimpleFence
 import xyz.chunkstories.util.concurrency.TrivialFence
 import xyz.chunkstories.world.WorldImplementation
-import xyz.chunkstories.world.storage.RegionImplementation
+import java.util.concurrent.ConcurrentLinkedDeque
+import java.util.concurrent.Semaphore
 
 /**
  * Sandboxed thread that runs all the game logic for one world
@@ -199,6 +199,33 @@ class WorldLogicThread(private val world: WorldImplementation, securityManager: 
         return waitForLogicFinish
     }
 
+    val logicThread: Thread = Thread.currentThread()
+
+    /** Some actions can only execute on the main thread */
+    private val actionsQueue = ConcurrentLinkedDeque<ScheduledAction>()
+
+    data class ScheduledAction(val action: () -> Unit) {
+        val semaphore = Semaphore(0)
+    }
+
+    /** Schedules some work to be executed on the main thread */
+    fun logicThread(function: () -> Unit) {
+        if (Thread.currentThread() == logicThread) {
+            function()
+        } else {
+            actionsQueue.addLast(ScheduledAction(function))
+        }
+    }
+
+    fun logicThreadBlocking(function: () -> Unit) {
+        if (Thread.currentThread() == logicThread) {
+            function()
+        } else {
+            val scheduled = ScheduledAction(function)
+            actionsQueue.addLast(scheduled)
+            scheduled.semaphore.acquireUninterruptibly()
+        }
+    }
     companion object {
 
         private val logger = LoggerFactory.getLogger("worldlogic")

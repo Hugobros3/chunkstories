@@ -7,8 +7,7 @@ import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanUniformBuffer
 import xyz.chunkstories.graphics.vulkan.shaders.DescriptorSlotLayout
 import org.lwjgl.system.MemoryStack.*
-import org.lwjgl.system.MemoryUtil.memAllocLong
-import org.lwjgl.system.MemoryUtil.memFree
+import org.lwjgl.system.MemoryUtil.*
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import xyz.chunkstories.graphics.common.Cleanable
@@ -80,16 +79,17 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
                 pSetLayouts(layouts)
             }
 
-            val pDescriptorSets = stackMallocLong(descriptorSetsCount)
+            val pDescriptorSets = memAllocLong(descriptorSetsCount)
             vkAllocateDescriptorSets(backend.logicalDevice.vkDevice, allocInfo, pDescriptorSets).ensureIs("Failed to allocate descriptor sets :( ", VK_SUCCESS)
 
             memFree(layouts)
 
             val instances = LongArray(allocationSize)
             pDescriptorSets.get(instances)
+            memFree(pDescriptorSets)
             available.addAll(instances.asList())
 
-            //println("Created $allocationSize new descriptors for layout $layout")
+            println("Created $allocationSize new descriptors for layout $layout")
 
             // Geometric growth for our descriptor sets pools
             allocatedTotal += allocationSize

@@ -19,6 +19,7 @@ import xyz.chunkstories.api.input.Mouse.MouseScroll
 import xyz.chunkstories.api.world.WorldInfo
 import xyz.chunkstories.client.ClientImplementation
 import xyz.chunkstories.client.ingame.enterExistingWorld
+import xyz.chunkstories.world.WorldImplementation
 import xyz.chunkstories.world.deserializeWorldInfo
 import java.io.File
 import java.sql.Timestamp
@@ -46,7 +47,7 @@ class WorldSelectionUI internal constructor(gui: Gui, parent: Layer) : Layer(gui
             worldsFolder.mkdirs()
 
         val list = worldsFolder.listFiles()?.mapNotNull { worldDirectory ->
-            val worldInfoFile = File(worldDirectory.absolutePath + "/worldInfo.dat")
+            val worldInfoFile = File(worldDirectory.absolutePath + "/" + WorldImplementation.worldInfoFilename)
 
             if (worldInfoFile.exists()) {
                 val worldInfo = deserializeWorldInfo(worldInfoFile)
@@ -105,9 +106,9 @@ class WorldSelectionUI internal constructor(gui: Gui, parent: Layer) : Layer(gui
         private val lastEdit: String
 
         init {
-            val worldInfoFile = File(directory.absolutePath + "/internal.dat")
-            lastEdit = if(worldInfoFile.exists()) {
-                "Last edit: "+SimpleDateFormat("yyyy-MM-dd HH:mm").format(Timestamp(worldInfoFile.lastModified()))
+            val internalDataFile = File(directory.absolutePath + "/" + WorldImplementation.worldInternalDataFilename)
+            lastEdit = if(internalDataFile.exists()) {
+                "Last edit: "+SimpleDateFormat("yyyy-MM-dd HH:mm").format(Timestamp(internalDataFile.lastModified()))
             } else {
                 "error"
             }

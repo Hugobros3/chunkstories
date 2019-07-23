@@ -28,21 +28,12 @@ class WorldLoadingUI(val world: WorldClientLocal, gui: Gui, parentLayer: Layer?)
     private lateinit var spawnLocation: Location
 
     init {
-        /*for (task in world.gameContext.tasks.pending) {
-            if (task is TaskGenerateWorldSlice) {
-                tasksToWaitOn += task
-            }
-        }
-
-        for (task in world.ioHandler.tasks) {
-            if (task is IOTaskLoadRegion)
-                tasksToWaitOn += task
-        }
-        count = tasksToWaitOn.size*/
-
         // preload 4x8x4 cube arround spawn location
         var spawnLocation = figureOutWherePlayerWillSpawn(world.localHost.player)
-        preloadArround((spawnLocation.x / 32).toInt(), (spawnLocation.y / 32).toInt(), (spawnLocation.z / 32).toInt())
+
+        world.gameLogic.logicThreadBlocking {
+            preloadArround((spawnLocation.x / 32).toInt(), (spawnLocation.y / 32).toInt(), (spawnLocation.z / 32).toInt())
+        }
 
         count = subs.size
         todo = count
@@ -57,7 +48,6 @@ class WorldLoadingUI(val world: WorldClientLocal, gui: Gui, parentLayer: Layer?)
                 for (z in (cz - 2)..(cz + 2)) {
                     val ch = world.acquireChunkHolder(this, x, y, z)
                     subs.add(ch)
-                    val chState = ch.state
                 }
             }
         }
@@ -80,27 +70,12 @@ class WorldLoadingUI(val world: WorldClientLocal, gui: Gui, parentLayer: Layer?)
 
         entity = playerSpawnEvent.entity
 
-        var actualSpawnLocation = playerSpawnEvent.spawnLocation
-        if (actualSpawnLocation == null)
-            actualSpawnLocation = world.defaultSpawnLocation
+        var expectedSpawnLocation = playerSpawnEvent.spawnLocation
+        if (expectedSpawnLocation == null)
+            expectedSpawnLocation = world.defaultSpawnLocation
 
-        spawnLocation = actualSpawnLocation
-        return actualSpawnLocation
-
-        //if (!playerSpawnEvent.isCancelled) {
-
-        /*if (entity == null || entity.traits[TraitHealth::class.java]?.isDead == true)
-            entity = world.gameContext.content.entities().getEntityDefinition("player")!!
-                    .newEntity(world)
-        //else
-        //    entity.UUID = -1
-
-        // Name your player !
-        entity.traits[TraitName::class.java]?.name = player.name
-        entity.traitLocation.set(actualSpawnLocation)
-        world.addEntity(entity)
-        player.controlledEntity = entity*/
-        //}
+        spawnLocation = expectedSpawnLocation
+        return expectedSpawnLocation
     }
 
     fun spawnPlayer() {
@@ -192,12 +167,15 @@ class WorldLoadingUI(val world: WorldClientLocal, gui: Gui, parentLayer: Layer?)
         //println(text)
 
         if (done == count) {
-            spawnPlayer()
-            gui.popTopLayer()
+            world.gameLogic.logicThreadBlocking {
+                spawnPlayer()
 
-            world.localHost.player.loadingAgent.updateUsedWorldBits()
-            for (ch in subs)
-                ch.unregisterUser(this)
+                world.localHost.player.loadingAgent.updateUsedWorldBits()
+                for (ch in subs)
+                    ch.unregisterUser(this)
+            }
+
+            gui.popTopLayer()
         }
     }
 }

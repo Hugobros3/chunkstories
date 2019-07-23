@@ -63,9 +63,9 @@ constructor(gameContext: GameContext, info: WorldInfo, folder: File, immediateIO
 
             logger().debug("Creating new world")
             folder.mkdirs()
-            val worldInfoFile = java.io.File(folder.path + "/worldInfo.dat")
+            val worldInfoFile = java.io.File(folder.path + "/" + WorldImplementation.worldInfoFilename)
             worldInfoFile.writeText(xyz.chunkstories.world.serializeWorldInfo(worldInfo, true))
-            logger().debug("Created directory & wrote worldInfo.dat ; now entering world")
+            logger().debug("Created directory & wrote ${WorldImplementation.worldInfoFilename} ; now entering world")
 
             return WorldTool(this, worldInfo, folder, false)
         }

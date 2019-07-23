@@ -29,6 +29,7 @@ import xyz.chunkstories.server.propagation.ServerModsProvider
 import xyz.chunkstories.task.WorkerThreadPool
 import xyz.chunkstories.util.LogbackSetupHelper
 import xyz.chunkstories.util.VersionInfo
+import xyz.chunkstories.world.WorldImplementation
 import xyz.chunkstories.world.WorldLoadingException
 import xyz.chunkstories.world.WorldServer
 import xyz.chunkstories.world.deserializeWorldInfo
@@ -143,9 +144,9 @@ class DedicatedServer internal constructor(coreContentLocation: File, modsString
             val worldPath = "./worlds/$worldName"
             val worldDir = File(worldPath)
             if (worldDir.exists()) {
-                val worldInfoFile = File(worldDir.path + "/worldInfo.dat")
+                val worldInfoFile = File(worldDir.path + "/" + WorldImplementation.worldInfoFilename)
                 if (!worldInfoFile.exists())
-                    throw WorldLoadingException("The folder $worldDir doesn't contain a worldInfo.dat file !")
+                    throw WorldLoadingException("The folder $worldDir doesn't contain a ${WorldImplementation.worldInfoFilename} file !")
 
                 val worldInfo = deserializeWorldInfo(worldInfoFile)
 

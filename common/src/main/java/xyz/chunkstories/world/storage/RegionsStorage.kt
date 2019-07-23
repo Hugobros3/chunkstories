@@ -16,11 +16,12 @@ import xyz.chunkstories.world.WorldImplementation
 import xyz.chunkstories.world.chunk.CubicChunk
 import xyz.chunkstories.world.generator.TaskGenerateWorldSlice
 import org.slf4j.LoggerFactory
+import java.util.concurrent.locks.ReentrantLock
 import java.util.concurrent.locks.ReentrantReadWriteLock
 
 class RegionsStorage(val world: WorldImplementation) {
 
-    private val regionsLock = ReentrantReadWriteLock()
+    private val regionsLock = ReentrantLock()
 
     private val regionsMap: MutableMap<Int, RegionImplementation> = mutableMapOf()
     var regionsList: List<RegionImplementation> = emptyList()
@@ -39,7 +40,7 @@ class RegionsStorage(val world: WorldImplementation) {
 
     fun getRegion(regionX: Int, regionY: Int, regionZ: Int): RegionImplementation? {
         try {
-            regionsLock.readLock().lock()
+            regionsLock.lock()
             val key = (regionX * sizeInRegions + regionZ) * heightInRegions + regionY
             val region = regionsMap[key]
 
@@ -48,7 +49,7 @@ class RegionsStorage(val world: WorldImplementation) {
 
             return region
         } finally {
-            regionsLock.readLock().unlock()
+            regionsLock.unlock()
         }
     }
 
@@ -71,7 +72,7 @@ class RegionsStorage(val world: WorldImplementation) {
 
         val key = (regionX * sizeInRegions + regionZ) * heightInRegions + regionY
         try {
-            this.regionsLock.writeLock().lock()
+            this.regionsLock.lock()
 
             // In the special case where the user is the task that generates the map itself, acquiring the map will send us in a loop.
             // To solve this, we simply take the heightmap field from the task.
@@ -117,7 +118,7 @@ class RegionsStorage(val world: WorldImplementation) {
 
             return region
         } finally {
-            this.regionsLock.writeLock().unlock()
+            this.regionsLock.unlock()
         }
     }
 
@@ -132,7 +133,7 @@ class RegionsStorage(val world: WorldImplementation) {
 
         val key = (regionX * sizeInRegions + regionZ) * heightInRegions + regionY
         try {
-            this.regionsLock.writeLock().lock()
+            this.regionsLock.lock()
 
             // Unlike the other entry point, this doesn't pose a risk of loop
             val heightmap = world.regionsSummariesHolder.acquireHeightmap(bootStrapper, regionX, regionZ)
@@ -173,7 +174,7 @@ class RegionsStorage(val world: WorldImplementation) {
 
             return region.getChunkHolder(chunkX, chunkY, chunkZ)
         } finally {
-            this.regionsLock.writeLock().unlock()
+            this.regionsLock.unlock()
         }
     }
 
@@ -181,12 +182,12 @@ class RegionsStorage(val world: WorldImplementation) {
      * Callback by the holder's unload() method to remove himself from this list.
      */
     internal fun removeRegion(region: RegionImplementation) {
-        this.regionsLock.writeLock().lock()
+        this.regionsLock.lock()
         //val key = (region.regionX * sizeInRegions + region.regionY) * heightInRegions + region.regionZ
         val key = (region.regionX * sizeInRegions + region.regionZ) * heightInRegions + region.regionY
         regionsMap.remove(key)
         regionsList = regionsMap.values.toList()
-        this.regionsLock.writeLock().unlock()
+        this.regionsLock.unlock()
     }
 
     companion object {
