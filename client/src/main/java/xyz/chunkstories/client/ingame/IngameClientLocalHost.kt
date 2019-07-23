@@ -32,6 +32,7 @@ fun ClientImplementation.enterExistingWorld(folder: File) {
     val localHostCtx = IngameClientLocalHost(this) {
         WorldClientLocal(it as IngameClientLocalHost, worldInfo, folder)
     }
+    localHostCtx.world.startLogic()
     this.ingame = localHostCtx
 }
 

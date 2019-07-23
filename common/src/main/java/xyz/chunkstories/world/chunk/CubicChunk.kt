@@ -414,6 +414,20 @@ class CubicChunk(override val holder: ChunkHolderImplementation, override val ch
         return voxelDataArray!!
     }
 
+    fun tick(tick: Long) {
+        val stride = 8
+        val offset = (tick % stride.toLong()).toInt()
+        for(i in 0 until 32 * 32 * 32 / stride) {
+            val j = i * stride + offset
+            val x = j / 1024
+            val y = (j / 32) % 32
+            val z = (j) % 32
+
+            val cell = peek(chunkX * 32 + x, chunkY * 32 + y, chunkZ * 32 + z)
+            cell.voxel.tick(cell)
+        }
+    }
+
     override fun toString(): String {
         return "[CubicChunk x:" + this.chunkX + " y:" + this.chunkY + " z:" + this.chunkZ + " air:" + isAirChunk + " light:" + this.lightBaker + "]"
     }

@@ -25,7 +25,7 @@ import java.sql.Timestamp
 import java.text.SimpleDateFormat
 
 /** GUI for choosing a level to play SP  */
-class LevelSelection internal constructor(gui: Gui, parent: Layer) : Layer(gui, parent) {
+class WorldSelectionUI internal constructor(gui: Gui, parent: Layer) : Layer(gui, parent) {
     private val backOption = LargeButtonWithIcon(this, "back")
     private val newWorldOption = LargeButtonWithIcon(this, "new")
 
@@ -36,7 +36,7 @@ class LevelSelection internal constructor(gui: Gui, parent: Layer) : Layer(gui, 
 
     init {
         this.backOption.action = Runnable { gui.popTopLayer() }
-        this.newWorldOption.action = Runnable { gui.topLayer = LevelCreation(gui, this@LevelSelection) }
+        this.newWorldOption.action = Runnable { gui.topLayer = WorldCreationUI(gui, this@WorldSelectionUI) }
 
         elements.add(backOption)
         elements.add(newWorldOption)
@@ -100,7 +100,7 @@ class LevelSelection internal constructor(gui: Gui, parent: Layer) : Layer(gui, 
     }
 
     inner class LocalWorldButton
-    internal constructor(x: Int, y: Int, private val directory: File, val info: WorldInfo) : Button(this@LevelSelection, x, y, "") {
+    internal constructor(x: Int, y: Int, private val directory: File, val info: WorldInfo) : Button(this@WorldSelectionUI, x, y, "") {
 
         private val lastEdit: String
 

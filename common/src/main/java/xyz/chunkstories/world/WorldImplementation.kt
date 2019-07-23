@@ -80,7 +80,7 @@ constructor(override val gameContext: GameContext, info: WorldInfo, initialConte
     // The world age, also tick counter. Can count for billions of real-world
     // time so we are not in trouble.
     // Let's say that the game world runs at 60Ticks per second
-    override var ticksElapsed: Long = 0
+    final override var ticksElapsed: Long = 0
 
     // Timecycle counter
     final override var time: Long = 5000

@@ -73,9 +73,6 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
         if (connectionProgressLayer != null) //TODO generalize to other loading hider overlays
             TODO() //connectionProgressLayer.parentLayer = ingameGuiLayer
         else*/
-
-        // Start only the logic after all that
-        internalWorld.startLogic()
     }
 
     override fun exitToMainMenu() {

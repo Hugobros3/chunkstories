@@ -40,6 +40,7 @@ class PacketInitializeRemoteWorld : PacketSendWorldInfo() {
             val ingame = IngameClientRemoteHost(client, processor.connection) {
                 WorldClientRemote(it as IngameClientRemoteHost, worldInfo, processor.contentTranslator as AbstractContentTranslator, processor.connection)
             }
+            ingame.world.startLogic()
             client.ingame = ingame
 
             sequence.worldSemaphore.release()

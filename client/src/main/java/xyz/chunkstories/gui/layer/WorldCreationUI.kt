@@ -24,7 +24,7 @@ import java.io.File
 /**
  * GUI for creating new levels
  */
-class LevelCreation internal constructor(gui: Gui, parent: Layer) : Layer(gui, parent) {
+class WorldCreationUI internal constructor(gui: Gui, parent: Layer) : Layer(gui, parent) {
     private val cancelOption = Button(this, 0, 0, 75, "Cancel")
     private val createOption = Button(this, 0, 0, 75, "Create")
 

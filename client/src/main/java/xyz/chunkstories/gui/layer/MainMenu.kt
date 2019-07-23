@@ -28,7 +28,7 @@ class MainMenu(gui: Gui, parent: Layer?) : Layer(gui, parent) {
 
     init {
 
-        this.largeSingleplayer.action = Runnable { this.gui.topLayer = LevelSelection(this.gui, this@MainMenu) }
+        this.largeSingleplayer.action = Runnable { this.gui.topLayer = WorldSelectionUI(this.gui, this@MainMenu) }
         this.largeOnline.action = Runnable { this.gui.topLayer = ServerSelection(this.gui, this@MainMenu, false) }
         this.largeMods.action = Runnable { this.gui.topLayer = ModsSelection(this.gui, this@MainMenu) }
         this.largeOptions.action = Runnable { this.gui.topLayer = OptionsScreen(this.gui, this@MainMenu) }
