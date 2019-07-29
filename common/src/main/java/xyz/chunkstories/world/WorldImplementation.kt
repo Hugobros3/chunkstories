@@ -91,7 +91,7 @@ constructor(override val gameContext: GameContext, final override val worldInfo:
     final override var ticksElapsed: Long by alias(internalData::ticksCounter)
 
     // Timecycle counter
-    final override var time: Long by alias(internalData::sunCycleTime)
+    final override var sunCycle: Int by alias(internalData::sunCycleTime)
     final override var weather: Float by alias(internalData::weather)
 
     override var defaultSpawnLocation: Location
@@ -283,11 +283,10 @@ constructor(override val gameContext: GameContext, final override val worldInfo:
 
         // Time cycle & weather change
         if (this is WorldMaster) {
-            val frequency = internalData.dayNightCycleSpeed
-            if (frequency > 0 && ticksElapsed % frequency == 0L)
-                time ++
+            val increment = internalData.dayNightCycleSpeed
+            sunCycle = (sunCycle + increment) % 24000
 
-            if(internalData.varyWeather) {
+            if (internalData.varyWeather) {
                 val diff = (Math.random() - 0.5f) * 0.0005 * Math.random()
                 val rslt = Math2.clamp(internalData.weather + diff, 0.0, 1.0)
                 internalData.weather = rslt

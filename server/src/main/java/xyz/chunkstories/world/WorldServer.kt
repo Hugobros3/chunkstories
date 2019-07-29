@@ -72,7 +72,7 @@ constructor(val server: DedicatedServer, worldInfo: WorldInfo, folder: File) : W
 
             // Update time & weather
             val packetTime = PacketTime(this)
-            packetTime.time = this.time
+            packetTime.time = this.sunCycle
             packetTime.overcastFactor = this.weather
             player.pushPacket(packetTime)
         }

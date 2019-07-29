@@ -10,8 +10,8 @@ data class WorldInternalData(
         var nextEntityId: Long = 0L,
         var ticksCounter: Long = 0L,
 
-        var sunCycleTime: Long = 2500L,
-        var dayNightCycleSpeed: Int = 6,
+        var sunCycleTime: Int = 6000,
+        var dayNightCycleSpeed: Int = 1,
 
         var weather: Float = 0.25f,
         var varyWeather: Boolean = true

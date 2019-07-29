@@ -139,7 +139,7 @@ class WorldSelectionUI internal constructor(gui: Gui, parent: Layer) : Layer(gui
             drawer.drawString(font, positionX+72, positionY+20, info.description, -1, Vector4f(0.25f, 0.25f, 0.25f, 1.0f))
 
             //size
-            val sizeTxt = "${info.size.sizeInChunks * 32}x${info.size.sizeInChunks * 32} blocks (${info.size.name.toLowerCase().capitalize()} size)"
+            val sizeTxt = "${info.size.sizeInChunks * 32}x${info.size.sizeInChunks * 32} blocks, ${info.generatorName} generator"
             val sizeSize = fontSmale.getWidth(sizeTxt)
             drawer.drawString(fontSmale, positionX + width - sizeSize - 4, positionY + 32 + 12, sizeTxt, width - 72, Vector4f(0.25f, 0.25f, 0.25f, 1.0f))
 

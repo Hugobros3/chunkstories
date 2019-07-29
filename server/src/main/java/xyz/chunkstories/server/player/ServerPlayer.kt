@@ -98,8 +98,9 @@ class ServerPlayer(val playerConnection: ClientConnection, override val name: St
         //TODO this should use revised UUIDs
         File("players/").mkdirs()
         this.playerMetadataFile = File("./players/" + name.toLowerCase() + ".metadata")
-
         this.playerMetadata = Properties()//OldStyleConfigFile("./players/" + playerName.toLowerCase() + ".cfg");
+        this.playerMetadata.load(playerMetadataFile.bufferedReader())
+
 
         this.serverInputsManager = ServerPlayerInputsManager(this)
 

@@ -36,13 +36,13 @@ class TimeCommand(serverConsole: Server) : ServerCommandBasic(serverConsole) {
         }
 
         when {
-            arguments.isEmpty() -> emitter.sendMessage("#82FFDBCurrent time is: ${playerEntity.location.world.time}")
+            arguments.isEmpty() -> emitter.sendMessage("#82FFDBCurrent time is: ${playerEntity.location.world.sunCycle}")
             arguments.size == 1 -> {
-                val newTime = java.lang.Long.parseLong(arguments[0])
-                playerEntity.location.world.time = newTime
+                val newTime = arguments[0].toInt()
+                playerEntity.location.world.sunCycle = newTime
                 emitter.sendMessage("#82FFDBSet time to  :$newTime")
             }
-            else -> emitter.sendMessage("#82FFDBSyntax : /time [0-10000]")
+            else -> emitter.sendMessage("#82FFDBSyntax : /time [0-24000]")
         }
         return true
     }
