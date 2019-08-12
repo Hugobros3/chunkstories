@@ -30,7 +30,7 @@ buildscript {
 }
 
 plugins {
-    id("org.ajoberstar.grgit") version "2.1.0"
+    id("org.ajoberstar.grgit") version "3.1.1"
     id("com.github.hierynomus.license") version "0.14.0"
 }
 
@@ -48,12 +48,14 @@ task("buildAll") {
     dependsOn(":launcher:createExe")
 }
 
+val git = Grgit.open(mapOf("currentDir" to project.rootDir))
+
 task("versionTxt") {
     doLast {
-        val file = File("$projectDir/version.txt")
+        val file = File("${project.rootDir}/version.txt")
         file.writeText("""
             version: $version
-            commit: ${Grgit.open().head().id}
+            commit: ${git.head().id}
 		    buildtime: ${Date()}
         """.trimIndent())
     }

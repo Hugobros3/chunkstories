@@ -6,7 +6,7 @@ plugins {
     `java-library` // Needed because client uses this and needs transitive deps
     kotlin("jvm") version ("1.3.10")
 
-    id("com.github.johnrengelman.shadow") version "4.0.1"
+    id("com.github.johnrengelman.shadow") version "5.1.0"
 }
 
 dependencies {
