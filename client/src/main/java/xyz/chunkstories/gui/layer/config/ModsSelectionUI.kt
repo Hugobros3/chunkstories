@@ -6,6 +6,8 @@
 
 package xyz.chunkstories.gui.layer.config
 
+import org.joml.Vector4f
+import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.content.mods.Mod
 import xyz.chunkstories.api.exceptions.content.mods.ModLoadFailureException
 import xyz.chunkstories.api.gui.Gui
@@ -22,14 +24,11 @@ import xyz.chunkstories.client.ClientImplementation
 import xyz.chunkstories.content.mods.ModFolder
 import xyz.chunkstories.content.mods.ModImplementation
 import xyz.chunkstories.content.mods.ModZip
-import xyz.chunkstories.gui.layer.config.ModsSelection.ModsScrollableContainer.ModItem
-import org.joml.Vector4f
-import org.slf4j.LoggerFactory
+import xyz.chunkstories.gui.layer.config.ModsSelectionUI.ModsScrollableContainer.ModItem
 import java.io.File
 import java.util.*
 
-class ModsSelection(window: Gui, parent: Layer) : Layer(window, parent) {
-
+class ModsSelectionUI(window: Gui, parent: Layer) : Layer(window, parent) {
     private val applyMods = LargeButtonWithIcon(this, "validate")
     private val backOption = LargeButtonWithIcon(this, "back")
 

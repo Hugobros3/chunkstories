@@ -22,7 +22,7 @@ import xyz.chunkstories.content.GameContentStore
 import xyz.chunkstories.graphics.GraphicsBackendsEnum
 import xyz.chunkstories.graphics.GraphicsEngineImplementation
 import xyz.chunkstories.gui.ClientGui
-import xyz.chunkstories.gui.layer.LoginPrompt
+import xyz.chunkstories.gui.layer.LoginUI
 import xyz.chunkstories.input.lwjgl3.Lwjgl3ClientInputsManager
 import xyz.chunkstories.sound.ALSoundManager
 import xyz.chunkstories.task.WorkerThreadPool
@@ -111,7 +111,7 @@ class ClientImplementation internal constructor(val arguments: Map<String, Strin
             content.localization().loadTranslation(lang)
 
         // Initlializes windows screen to main menu ( and ask for login )
-        gui.topLayer = LoginPrompt(gui, null)
+        gui.topLayer = LoginUI(gui, null)
 
         mainLoop()
         cleanup()

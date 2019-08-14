@@ -6,7 +6,6 @@
 
 package xyz.chunkstories.gui.layer.config
 
-import xyz.chunkstories.api.gui.Font
 import xyz.chunkstories.api.gui.Gui
 import xyz.chunkstories.api.gui.GuiDrawer
 import xyz.chunkstories.api.util.configuration.Configuration
@@ -17,7 +16,7 @@ import xyz.chunkstories.api.gui.elements.Button
 
 /** Asks the user if he wishes to have his logs uploaded to the game servers for debugging purposes  */
 //TODO anonymize those (strip C:\Users\... and such)
-class LogPolicyAsk(gui: Gui, parent: Layer) : Layer(gui, parent) {
+class LogPolicyUI(gui: Gui, parent: Layer) : Layer(gui, parent) {
 
     private val option = gui.client.configuration.get<Configuration.OptionString>(logPolicyConfigNode)
 
@@ -31,13 +30,13 @@ class LogPolicyAsk(gui: Gui, parent: Layer) : Layer(gui, parent) {
         this.acceptButton.action = Runnable {
             option!!.trySetting("send")
             gui.client.configuration.save()
-            this@LogPolicyAsk.gui.topLayer = parentLayer
+            this@LogPolicyUI.gui.topLayer = parentLayer
         }
 
         this.refuseButton.action = Runnable {
             option!!.trySetting("dont")
             gui.client.configuration.save()
-            this@LogPolicyAsk.gui.topLayer = parentLayer
+            this@LogPolicyUI.gui.topLayer = parentLayer
         }
 
         elements.add(acceptButton)

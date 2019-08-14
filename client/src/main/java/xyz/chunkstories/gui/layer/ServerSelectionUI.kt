@@ -16,7 +16,7 @@ import xyz.chunkstories.api.gui.elements.ScrollableContainer
 import xyz.chunkstories.api.input.Input
 import xyz.chunkstories.api.input.Mouse.MouseButton
 import xyz.chunkstories.api.util.configuration.Configuration
-import xyz.chunkstories.gui.layer.ServerSelection.ServerSelectionZone.ServerGuiItem
+import xyz.chunkstories.gui.layer.ServerSelectionUI.ServerSelectionZone.ServerGuiItem
 import xyz.chunkstories.net.http.SimpleWebRequest
 import org.joml.Vector4f
 import org.slf4j.LoggerFactory
@@ -29,7 +29,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.net.Socket
 
-class ServerSelection internal constructor(gui: Gui, parent: Layer, private val automaticLogin: Boolean) : Layer(gui, parent) {
+class ServerSelectionUI internal constructor(gui: Gui, parent: Layer, private val automaticLogin: Boolean) : Layer(gui, parent) {
     private val backOption = LargeButtonWithIcon(this, "back")
     private val serverAddress = InputText(this, 0, 0, 250)
     private val connectButton = Button(this, 0, 0, 0, "#{connection.connect}")

@@ -6,15 +6,14 @@
 
 package xyz.chunkstories.gui.layer.config
 
-import xyz.chunkstories.api.gui.Font
 import xyz.chunkstories.api.gui.Gui
 import xyz.chunkstories.api.gui.GuiDrawer
 import org.joml.Vector4f
 
 import xyz.chunkstories.api.gui.Layer
-import xyz.chunkstories.gui.layer.config.OptionsScreen.ConfigButtonKey
+import xyz.chunkstories.gui.layer.config.OptionsUI.ConfigButtonKey
 
-internal class KeyBindSelectionOverlay(gui: Gui, options: Layer, private val callback: ConfigButtonKey) : Layer(gui, options) {
+internal class KeyBindSelectionUI(gui: Gui, options: Layer, private val callback: ConfigButtonKey) : Layer(gui, options) {
     override fun render(drawer: GuiDrawer) {
         this.parentLayer?.render(drawer)
 

@@ -20,7 +20,7 @@ import org.joml.Vector4f
 /**
  * Childishly taunts you when you die and offers you the option to ragequit the game
  */
-class DeathScreen(gui: Gui, parent: Layer) : Layer(gui, parent) {
+class DeathScreenUI(gui: Gui, parent: Layer) : Layer(gui, parent) {
     private val respawnButton = Button(this, 0, 0, 160, "#{ingame.respawn}")
     private val exitButton = Button(this, 0, 0, 160, "#{ingame.exit}")
 
@@ -29,10 +29,10 @@ class DeathScreen(gui: Gui, parent: Layer) : Layer(gui, parent) {
 
     init {
         this.respawnButton.action = Runnable {
-            if (ingameClient?.world is WorldMaster)
+            if (ingameClient.world is WorldMaster)
                 (ingameClient.world as WorldMaster).spawnPlayer(ingameClient.player)
             else
-                (ingameClient?.world as WorldClientNetworkedRemote).remoteServer.pushPacket(PacketText("world/respawn"))
+                (ingameClient.world as WorldClientNetworkedRemote).remoteServer.pushPacket(PacketText("world/respawn"))
 
             gui.popTopLayer()
         }

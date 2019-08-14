@@ -29,7 +29,7 @@ import xyz.chunkstories.world.WorldClientCommon
  * The main layer that hosts the gameplay: renders the world, inventory and most
  * gui elements
  */
-class IngameLayer(window: Gui, private val client: IngameClientImplementation) : Layer(window, null) {
+class IngameUI(window: Gui, private val client: IngameClientImplementation) : Layer(window, null) {
     private val player: LocalPlayer
     private val world: WorldClientCommon
 
@@ -58,8 +58,8 @@ class IngameLayer(window: Gui, private val client: IngameClientImplementation) :
         val playerEntity = player.controlledEntity
 
         // TODO MOVE MOVE MOVE
-        if (gui.topLayer !is WorldLoadingUI && (playerEntity == null || playerEntity.traits[TraitHealth::class]?.isDead == true) && gui.topLayer !is DeathScreen)
-            gui.topLayer = DeathScreen(gui, this)
+        if (gui.topLayer !is WorldLoadingUI && (playerEntity == null || playerEntity.traits[TraitHealth::class]?.isDead == true) && gui.topLayer !is DeathScreenUI)
+            gui.topLayer = DeathScreenUI(gui, this)
 
         // Draw the GUI
         if (!guiHidden) {
@@ -90,7 +90,7 @@ class IngameLayer(window: Gui, private val client: IngameClientImplementation) :
         // Auto-switch to pause if it detects the game isn't in focus anymore
         if (!client.gameWindow.hasFocus() && !isCovered) {
             focus(false)
-            gui.topLayer = PauseMenu(gui, this)
+            gui.topLayer = PauseUI(gui, this)
         }
     }
 
@@ -107,7 +107,7 @@ class IngameLayer(window: Gui, private val client: IngameClientImplementation) :
         // Block inputs if chatting
         when {
             input.name == "chat" -> {
-                gui.topLayer = chatManager.ChatLayer(gui, this)
+                gui.topLayer = chatManager.ChatUI(gui, this)
                 focus(false)
                 guiHidden = false
                 return true
@@ -174,7 +174,7 @@ class IngameLayer(window: Gui, private val client: IngameClientImplementation) :
             input.name == "exit" -> {
                 focus(false)
                 guiHidden = false
-                gui.topLayer = PauseMenu(gui, this)
+                gui.topLayer = PauseUI(gui, this)
                 return true
             }
             input is MouseScroll -> if (playerEntity != null) {

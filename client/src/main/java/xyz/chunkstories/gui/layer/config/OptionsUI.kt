@@ -7,7 +7,6 @@
 package xyz.chunkstories.gui.layer.config
 
 import org.joml.Vector4f
-import org.lwjgl.glfw.GLFW.glfwGetKeyName
 import xyz.chunkstories.api.gui.Gui
 import xyz.chunkstories.api.gui.GuiDrawer
 import xyz.chunkstories.api.gui.Layer
@@ -22,7 +21,7 @@ import xyz.chunkstories.input.lwjgl3.GLFWKeyIndexHelper
 import xyz.chunkstories.input.lwjgl3.Lwjgl3MouseButton
 import java.util.*
 
-class OptionsScreen(gui: Gui, parent: Layer) : Layer(gui, parent) {
+class OptionsUI(gui: Gui, parent: Layer) : Layer(gui, parent) {
     private val exitButton = LargeButtonWithIcon(this, "back")
     private val configTabs = ArrayList<ConfigTab>()
 
@@ -35,7 +34,7 @@ class OptionsScreen(gui: Gui, parent: Layer) : Layer(gui, parent) {
         val configButtons: MutableList<ConfigButton> = ArrayList()
     }
 
-    internal abstract inner class ConfigButton(open val option: Option<*>, val tab: ConfigTab) : Button(this@OptionsScreen, 0, 0, option.name) {
+    internal abstract inner class ConfigButton(open val option: Option<*>, val tab: ConfigTab) : Button(this@OptionsUI, 0, 0, option.name) {
         init {
             this.height = 24
             this.width = 160
@@ -124,7 +123,7 @@ class OptionsScreen(gui: Gui, parent: Layer) : Layer(gui, parent) {
         }
 
         override fun handleClick(mouseButton: MouseButton): Boolean {
-            gui.topLayer = KeyBindSelectionOverlay(gui, this@OptionsScreen, this)
+            gui.topLayer = KeyBindSelectionUI(gui, this@OptionsUI, this)
             this.layer.gui.client.soundManager.playSoundEffect("sounds/gui/gui_click2.ogg")
             return true
         }

@@ -11,11 +11,11 @@ import xyz.chunkstories.api.gui.GuiDrawer
 import xyz.chunkstories.api.gui.Layer
 import xyz.chunkstories.api.gui.elements.LargeButton
 import xyz.chunkstories.api.gui.elements.LargeButtonWithIcon
-import xyz.chunkstories.gui.layer.config.LanguageSelectionScreen
-import xyz.chunkstories.gui.layer.config.LogPolicyAsk
-import xyz.chunkstories.gui.layer.config.ModsSelection
-import xyz.chunkstories.gui.layer.config.OptionsScreen
-import xyz.chunkstories.gui.layer.ingame.DeathScreen
+import xyz.chunkstories.gui.layer.config.LanguageSelectionUI
+import xyz.chunkstories.gui.layer.config.LogPolicyUI
+import xyz.chunkstories.gui.layer.config.ModsSelectionUI
+import xyz.chunkstories.gui.layer.config.OptionsUI
+import xyz.chunkstories.gui.layer.ingame.DeathScreenUI
 import xyz.chunkstories.gui.printCopyrightNotice
 
 /** Gives quick access to the main features of the game  */
@@ -29,9 +29,9 @@ class MainMenuUI(gui: Gui, parent: Layer?) : Layer(gui, parent) {
     init {
 
         this.largeSingleplayer.action = Runnable { this.gui.topLayer = WorldSelectionUI(this.gui, this@MainMenuUI) }
-        this.largeOnline.action = Runnable { this.gui.topLayer = ServerSelection(this.gui, this@MainMenuUI, false) }
-        this.largeMods.action = Runnable { this.gui.topLayer = ModsSelection(this.gui, this@MainMenuUI) }
-        this.largeOptions.action = Runnable { this.gui.topLayer = OptionsScreen(this.gui, this@MainMenuUI) }
+        this.largeOnline.action = Runnable { this.gui.topLayer = ServerSelectionUI(this.gui, this@MainMenuUI, false) }
+        this.largeMods.action = Runnable { this.gui.topLayer = ModsSelectionUI(this.gui, this@MainMenuUI) }
+        this.largeOptions.action = Runnable { this.gui.topLayer = OptionsUI(this.gui, this@MainMenuUI) }
 
         largeOnline.width = 104
         largeSingleplayer.width = 104
@@ -48,8 +48,8 @@ class MainMenuUI(gui: Gui, parent: Layer?) : Layer(gui, parent) {
     override fun render(drawer: GuiDrawer) {
         parentLayer?.render(drawer)
 
-        if (gui.topLayer === this && gui.client.configuration.getValue(LogPolicyAsk.logPolicyConfigNode) == "ask")
-            gui.topLayer = LogPolicyAsk(gui, this)
+        if (gui.topLayer === this && gui.client.configuration.getValue(LogPolicyUI.logPolicyConfigNode) == "ask")
+            gui.topLayer = LogPolicyUI(gui, this)
 
         val spacing = 4
         val buttonsAreaSize = largeSingleplayer.width * 2 + spacing
@@ -78,10 +78,10 @@ class MainMenuUI(gui: Gui, parent: Layer?) : Layer(gui, parent) {
 
     override fun handleTextInput(c: Char): Boolean {
         when (c) {
-            'd' -> gui.topLayer = DeathScreen(gui, this)
+            'd' -> gui.topLayer = DeathScreenUI(gui, this)
             'r' -> gui.topLayer = MessageBoxUI(gui, this, "Dummy error", "Oh noes")
-            'l' -> gui.topLayer = LanguageSelectionScreen(gui, this, true)
-            'o' -> gui.topLayer = LogPolicyAsk(gui, this)
+            'l' -> gui.topLayer = LanguageSelectionUI(gui, this, true)
+            'o' -> gui.topLayer = LogPolicyUI(gui, this)
             /*'i' -> {
                 val dummyInventory = Inventory(10, 4, null, null)
 

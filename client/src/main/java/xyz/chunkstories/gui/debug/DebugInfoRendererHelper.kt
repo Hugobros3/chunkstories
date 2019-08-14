@@ -9,12 +9,12 @@ import xyz.chunkstories.graphics.opengl.OpenglGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.swapchain.PerformanceCounter
 import xyz.chunkstories.gui.ClientGui
-import xyz.chunkstories.gui.layer.ingame.IngameLayer
+import xyz.chunkstories.gui.layer.ingame.IngameUI
 import xyz.chunkstories.util.VersionInfo
 import xyz.chunkstories.world.WorldImplementation
 
-class DebugInfoRendererHelper(ingameLayer: IngameLayer) {
-    val gui = ingameLayer.gui
+class DebugInfoRendererHelper(ingameUI: IngameUI) {
+    val gui = ingameUI.gui
 
     fun drawDebugInfo(guiDrawer: GuiDrawer) {
         //(guiDrawer.gui as ClientGui).guiScaleOverride = Math.max(1, (guiDrawer.gui as ClientGui).guiScale / 2)

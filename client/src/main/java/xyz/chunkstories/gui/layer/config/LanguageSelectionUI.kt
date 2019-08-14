@@ -25,7 +25,7 @@ import xyz.chunkstories.api.gui.elements.Button
 import xyz.chunkstories.api.input.Input
 import xyz.chunkstories.api.input.Mouse.MouseScroll
 
-class LanguageSelectionScreen(gui: Gui, parent: Layer, private val allowBackButton: Boolean) : Layer(gui, parent) {
+class LanguageSelectionUI(gui: Gui, parent: Layer, private val allowBackButton: Boolean) : Layer(gui, parent) {
     private val backOption = LargeButtonWithIcon(this, "back")
     private val languages = ArrayList<LanguageButton>()
 

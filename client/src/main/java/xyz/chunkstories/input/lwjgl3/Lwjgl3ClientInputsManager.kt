@@ -17,7 +17,7 @@ import xyz.chunkstories.api.input.Input
 import xyz.chunkstories.api.input.Mouse
 import xyz.chunkstories.api.input.Mouse.MouseButton
 import xyz.chunkstories.client.glfw.GLFWWindow
-import xyz.chunkstories.gui.layer.config.KeyBindSelectionOverlay
+import xyz.chunkstories.gui.layer.config.KeyBindSelectionUI
 import xyz.chunkstories.net.packets.PacketInput
 import xyz.chunkstories.world.WorldClientRemote
 import org.lwjgl.glfw.GLFW.*
@@ -51,8 +51,8 @@ class Lwjgl3ClientInputsManager(val gameWindow: GLFWWindow) : CommonInputsManage
 
         keyCallback = object : GLFWKeyCallback() {
             override fun invoke(window: Long, key: Int, scancode: Int, action: Int, mods: Int) {
-                if (gui.topLayer is KeyBindSelectionOverlay) {
-                    val kbs = gui.topLayer as KeyBindSelectionOverlay?
+                if (gui.topLayer is KeyBindSelectionUI) {
+                    val kbs = gui.topLayer as KeyBindSelectionUI?
                     kbs!!.setKeyTo(key)
                 }
 

@@ -3,12 +3,12 @@ package xyz.chunkstories.client.ingame
 import xyz.chunkstories.client.ClientImplementation
 import xyz.chunkstories.client.net.ClientConnectionSequence
 import xyz.chunkstories.client.net.ServerConnection
-import xyz.chunkstories.gui.layer.ingame.ConnectingScreen
+import xyz.chunkstories.gui.layer.ingame.ConnectingToServerUI
 import xyz.chunkstories.plugin.DefaultPluginManager
 import xyz.chunkstories.world.WorldClientRemote
 
 fun ClientImplementation.connectToRemoteWorld(serverAddress: String, port: Int) {
-    gui.topLayer = ConnectingScreen(gui, null, ClientConnectionSequence(this, serverAddress, port))
+    gui.topLayer = ConnectingToServerUI(gui, null, ClientConnectionSequence(this, serverAddress, port))
 }
 
 class IngameClientRemoteHost(client: ClientImplementation, val connection: ServerConnection, worldInitializer: (IngameClientImplementation) -> WorldClientRemote) : IngameClientImplementation(client, worldInitializer) {

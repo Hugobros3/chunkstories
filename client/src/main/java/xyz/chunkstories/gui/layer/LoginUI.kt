@@ -15,14 +15,14 @@ import xyz.chunkstories.client.ClientImplementation
 import xyz.chunkstories.client.identity.LocalClientIdentity
 import xyz.chunkstories.client.identity.LoggedInClientIdentity
 import xyz.chunkstories.client.identity.PasswordStorage
-import xyz.chunkstories.gui.layer.config.LanguageSelectionScreen
+import xyz.chunkstories.gui.layer.config.LanguageSelectionUI
 import xyz.chunkstories.net.http.RequestResultAction
 import xyz.chunkstories.net.http.SimplePostRequest
 import org.joml.Vector4f
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.gui.printCopyrightNotice
 
-class LoginPrompt(gui: Gui, parent: Layer?) : Layer(gui, parent) {
+class LoginUI(gui: Gui, parent: Layer?) : Layer(gui, parent) {
     private val usernameForm = InputText(this, 0, 0, 250)
     private val passwordForm = InputText(this, 0, 0, 250)
 
@@ -62,17 +62,12 @@ class LoginPrompt(gui: Gui, parent: Layer?) : Layer(gui, parent) {
     }
 
     override fun render(drawer: GuiDrawer) {
-        //parentLayer?.render(drawer)
-
         if (gui.client.configuration.getValue("client.game.language") == "undefined") {
-            gui.topLayer = LanguageSelectionScreen(gui, this, false)
+            gui.topLayer = LanguageSelectionUI(gui, this, false)
         }
 
-        //TODO draw logo
-        //ObjectRenderer.renderTexturedRect(gui.getViewportWidth() / 2, gui.getViewportHeight() / 2 + 90, 256, 256, "./textures/logo.png");
-
         usernameForm.setPosition(gui.viewportWidth / 2 - 125, gui.viewportHeight / 2 + 16)
-        usernameForm.render(drawer!!)
+        usernameForm.render(drawer)
         passwordForm.setPosition(usernameForm.positionX, usernameForm.positionY - usernameForm.height - (20 + 4))
         passwordForm.render(drawer)
 
@@ -182,8 +177,7 @@ class LoginPrompt(gui: Gui, parent: Layer?) : Layer(gui, parent) {
                 elem = this.elements[i]
             }
 
-            if (elem != null)
-                this.focusedElement = elem as FocusableGuiElement?
+            this.focusedElement = elem as FocusableGuiElement?
         }
 
         return super.handleInput(input)

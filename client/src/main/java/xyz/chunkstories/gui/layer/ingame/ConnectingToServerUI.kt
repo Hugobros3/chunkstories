@@ -16,7 +16,7 @@ import xyz.chunkstories.gui.layer.MainMenuUI
 import xyz.chunkstories.gui.layer.MessageBoxUI
 
 /** GUI overlay that tells you about the progress of connecting to a server  */
-class ConnectingScreen(gui: Gui, parent: Layer?, private val connectionSequence: ClientConnectionSequence) : Layer(gui, parent) {
+class ConnectingToServerUI(gui: Gui, parent: Layer?, private val connectionSequence: ClientConnectionSequence) : Layer(gui, parent) {
     internal var exitButton = Button(this, 0, 0, 160, "#{connection.cancel}")
 
     init {

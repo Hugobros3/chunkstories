@@ -7,30 +7,27 @@
 package xyz.chunkstories.gui.layer.ingame
 
 import java.util.ArrayList
-import java.util.Deque
 import java.util.concurrent.ConcurrentLinkedDeque
 
 import xyz.chunkstories.api.client.IngameClient
-import xyz.chunkstories.api.gui.Font
 import xyz.chunkstories.api.gui.Gui
 import xyz.chunkstories.api.gui.GuiDrawer
 import xyz.chunkstories.api.util.configuration.Configuration
 import xyz.chunkstories.client.InternalClientOptions
 import org.joml.Vector4f
+import org.slf4j.LoggerFactory
 
-import xyz.chunkstories.api.content.mods.Mod
 import xyz.chunkstories.api.gui.Layer
 import xyz.chunkstories.api.gui.elements.InputText
 import xyz.chunkstories.api.input.Input
 import xyz.chunkstories.api.input.Mouse.MouseScroll
-import xyz.chunkstories.api.plugin.ChunkStoriesPlugin
 import xyz.chunkstories.api.util.ColorsTools
 import xyz.chunkstories.client.glfw.GLFWWindow
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.world.WorldClientLocal
 import xyz.chunkstories.world.WorldClientRemote
 
-class ChatManager(private val ingameClient: IngameClient, private val ingameGuiLayer: IngameLayer) {
+class ChatManager(private val ingameClient: IngameClient, private val ingameGuiUI: IngameUI) {
     private val gui: Gui
 
     private val chatHistorySize = 150
@@ -44,7 +41,7 @@ class ChatManager(private val ingameClient: IngameClient, private val ingameGuiL
     private var scroll = 0
 
     init {
-        this.gui = ingameGuiLayer.gui
+        this.gui = ingameGuiUI.gui
     }
 
     private inner class ChatLine(text: String?) {
@@ -65,7 +62,7 @@ class ChatManager(private val ingameClient: IngameClient, private val ingameGuiL
         }
     }
 
-    inner class ChatLayer(gui: Gui, parent: Layer) : Layer(gui, parent) {
+    inner class ChatUI(gui: Gui, parent: Layer) : Layer(gui, parent) {
         internal var inputBox: InputText
 
         internal var delay: Long = 0
@@ -175,8 +172,8 @@ class ChatManager(private val ingameClient: IngameClient, private val ingameGuiL
             linesDrew += actualLines
             var textFade = (line.time + 10000L - System.currentTimeMillis()) / 1000f
 
-            if (textFade > 0f || gui.topLayer is ChatLayer) {
-                if (textFade > 1 || gui.topLayer is ChatLayer)
+            if (textFade > 0f || gui.topLayer is ChatUI) {
+                if (textFade > 1 || gui.topLayer is ChatUI)
                     textFade = 1f
 
                 drawer.drawStringWithShadow(font, 8, linesDrew * font.lineHeight + 64, localizedLine, chatWidth, Vector4f(1f, 1f, 1f, textFade))
@@ -266,11 +263,15 @@ class ChatManager(private val ingameClient: IngameClient, private val ingameGuiL
         else
             insert(ColorsTools.getUniqueColorPrefix(clientUserName) + clientUserName + "#FFFFFF > " + input)
 
-        println("$clientUserName > $input")
+        logger.info("$clientUserName > $input")
 
         if (sent.size == 0 || sent[0] != input) {
             sent.add(0, input)
             sentMessages++
         }
+    }
+
+    companion object {
+        val logger = LoggerFactory.getLogger("chat")
     }
 }

@@ -12,7 +12,7 @@ import xyz.chunkstories.graphics.vulkan.util.BuiltInRendergraphs
 import xyz.chunkstories.gui.layer.MainMenuUI
 import xyz.chunkstories.gui.layer.MessageBoxUI
 import xyz.chunkstories.gui.layer.WorldLoadingUI
-import xyz.chunkstories.gui.layer.ingame.IngameLayer
+import xyz.chunkstories.gui.layer.ingame.IngameUI
 import xyz.chunkstories.plugin.DefaultPluginManager
 import xyz.chunkstories.server.commands.installServerCommands
 import xyz.chunkstories.task.WorkerThreadPool
@@ -34,7 +34,7 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
 
     final override val player: LocalPlayerImplementation
 
-    val ingameGuiLayer: IngameLayer
+    val ingameGuiUI: IngameUI
 
     val worldRenderer: WorldRenderer
 
@@ -58,12 +58,12 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
 
         worldRenderer = client.gameWindow.graphicsEngine.backend.createWorldRenderer(internalWorld)
 
-        ingameGuiLayer = IngameLayer(gui, this)
+        ingameGuiUI = IngameUI(gui, this)
         // Spawn manually the player if we're in single player mode
         if (internalWorld is WorldClientLocal) {
-            gui.topLayer = WorldLoadingUI(internalWorld, gui, ingameGuiLayer)
+            gui.topLayer = WorldLoadingUI(internalWorld, gui, ingameGuiUI)
         } else {
-            gui.topLayer = ingameGuiLayer
+            gui.topLayer = ingameGuiUI
         }
         //     internalWorld.spawnPlayer(player)
 
@@ -102,7 +102,7 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
     override fun logger(): Logger = client.logger()
 
     override fun print(message: String) {
-        ingameGuiLayer.chatManager.insert(message)
+        ingameGuiUI.chatManager.insert(message)
         client.print(message)
     }
 }
