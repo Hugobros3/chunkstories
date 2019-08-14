@@ -98,12 +98,6 @@ class VulkanDefferedLightsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
 
     override fun createDrawerForPass(pass: VulkanPass, drawerInitCode: VulkanDispatchingSystem.Drawer<VkDefferedLightIR>.() -> Unit) = Drawer(pass, drawerInitCode)
 
-    /*override fun sort(representation: PointLight, drawers: Array<VulkanDispatchingSystem.Drawer<*>>, outputs: List<MutableList<Any>>) {
-        for ((index, drawer) in drawers.withIndex()) {
-            outputs[index].add(representation)
-        }
-    }*/
-
     override fun sort(representations: Sequence<PointLight>, drawers: List<VulkanDispatchingSystem.Drawer<VkDefferedLightIR>>, workForDrawers: MutableMap<VulkanDispatchingSystem.Drawer<VkDefferedLightIR>, VkDefferedLightIR>) {
         val lists = drawers.associateWith { mutableListOf<PointLight>() }
 

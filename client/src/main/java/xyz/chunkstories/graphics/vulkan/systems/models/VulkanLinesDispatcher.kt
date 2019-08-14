@@ -117,14 +117,20 @@ class VulkanLinesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingS
 
     override fun createDrawerForPass(pass: VulkanPass, drawerInitCode: VulkanDispatchingSystem.Drawer<VkLinesIR>.() -> Unit) = Drawer(pass, drawerInitCode)
 
-    /*override fun sort(representation: Line, drawers: Array<VulkanDispatchingSystem.Drawer<*>>, outputs: List<MutableList<Any>>) {
-        for ((index, drawer) in drawers.withIndex()) {
-            outputs[index].add(representation)
-        }
-    }*/
-
     override fun sort(representations: Sequence<Line>, drawers: List<VulkanDispatchingSystem.Drawer<VkLinesIR>>, workForDrawers: MutableMap<VulkanDispatchingSystem.Drawer<VkLinesIR>, VkLinesIR>) {
-        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val lists = drawers.associateWith { mutableListOf<Line>() }
+
+        for (representation in representations) {
+            for (drawer in drawers) {
+                lists[drawer]!!.add(representation)
+            }
+        }
+
+        for (entry in lists) {
+            if (entry.value.isNotEmpty()) {
+                workForDrawers[entry.key] = entry.value
+            }
+        }
     }
 
     override fun cleanup() {
