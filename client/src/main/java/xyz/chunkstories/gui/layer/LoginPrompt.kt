@@ -121,7 +121,7 @@ class LoginPrompt(gui: Gui, parent: Layer?) : Layer(gui, parent) {
             val client = gui.client as ClientImplementation
             client.user = LocalClientIdentity(client)
 
-            gui.topLayer = MainMenu(gui, parentLayer)
+            gui.topLayer = MainMenuUI(gui, parentLayer)
         } else {
             logging_in = true
 
@@ -148,7 +148,7 @@ class LoginPrompt(gui: Gui, parent: Layer?) : Layer(gui, parent) {
                         t.start()
                     }
 
-                    gui.topLayer = MainMenu(gui, parentLayer)
+                    gui.topLayer = MainMenuUI(gui, parentLayer)
                 } else if (result.startsWith("ko")) {
                     failed_login = true
                     val reason = result.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[1]

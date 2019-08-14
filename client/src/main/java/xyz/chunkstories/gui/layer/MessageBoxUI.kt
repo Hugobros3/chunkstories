@@ -13,7 +13,7 @@ import org.joml.Vector4f
 import xyz.chunkstories.api.gui.Layer
 import xyz.chunkstories.api.gui.elements.Button
 
-class MessageBox(gui: Gui, parent: Layer?, private val title: String, private val message: String) : Layer(gui, parent) {
+class MessageBoxUI(gui: Gui, parent: Layer?, private val title: String, private val message: String) : Layer(gui, parent) {
     private val okButton = Button(this, 0, 0, 150, "#{menu.ok}")
 
     init {

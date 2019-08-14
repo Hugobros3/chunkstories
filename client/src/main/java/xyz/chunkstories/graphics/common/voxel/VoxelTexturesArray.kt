@@ -29,34 +29,36 @@ open class VoxelTexturesArray(override val parent: Content.Voxels) : ReloadableV
     override fun reload() {
         voxelTextures.clear()
 
-        for (entry in content.modsManager.allUniqueEntries) {
-            if (entry.name.startsWith("voxels/textures/") || entry.name.startsWith("voxels/blockmodels/")) {
-                var name = entry.name.removePrefix("voxels/textures/")
+        for(prefix in listOf("voxels/blockmodels/", "voxels/textures/")) {
+            for (entry in content.modsManager.allUniqueEntries) {
+                if (entry.name.startsWith(prefix)) {
+                    var name = entry.name.removePrefix("voxels/textures/")
 
-                if (name.startsWith("voxels/blockmodels/")) {
-                    name = name.removePrefix("voxels/blockmodels/")
-                    val ios = name.indexOf('/')
-                    if (ios > 0)
-                        name = name.substring(ios + 1, name.length)
+                    if (name.startsWith("voxels/blockmodels/")) {
+                        name = name.removePrefix("voxels/blockmodels/")
+                        val ios = name.indexOf('/')
+                        if (ios > 0)
+                            name = name.substring(ios + 1, name.length)
 
-                }
-
-                val asset = entry.topInstance
-                // For now only PNG is supported TODO: .hdr and more ?
-                if (asset.name.endsWith(".png")) {
-                    val textureName = name.replace(".png", "")
-
-                    if (textureName.endsWith("_normal") || textureName.endsWith("_roughness") || textureName.endsWith("_metalness")
-                            || textureName.endsWith("_n") || textureName.endsWith("_r") || textureName.endsWith("_m")) {
-                        // Don't create entries for complementary textures!
-                        continue
                     }
 
-                    if (asset.name.contains("/_"))
-                        continue // ignore directories starting with _
+                    val asset = entry.topInstance
+                    // For now only PNG is supported TODO: .hdr and more ?
+                    if (asset.name.endsWith(".png")) {
+                        val textureName = name.replace(".png", "")
 
-                    val voxelTexture = VoxelTextureInArray(textureName, asset)
-                    voxelTextures[textureName] = voxelTexture
+                        if (textureName.endsWith("_normal") || textureName.endsWith("_roughness") || textureName.endsWith("_metalness")
+                                || textureName.endsWith("_n") || textureName.endsWith("_r") || textureName.endsWith("_m")) {
+                            // Don't create entries for complementary textures!
+                            continue
+                        }
+
+                        if (asset.name.contains("/_"))
+                            continue // ignore directories starting with _
+
+                        val voxelTexture = VoxelTextureInArray(textureName, asset)
+                        voxelTextures[textureName] = voxelTexture
+                    }
                 }
             }
         }

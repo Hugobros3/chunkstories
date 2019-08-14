@@ -20,6 +20,7 @@ import xyz.chunkstories.api.world.WorldInfo
 import xyz.chunkstories.client.ClientImplementation
 import xyz.chunkstories.client.ingame.enterExistingWorld
 import xyz.chunkstories.world.WorldImplementation
+import xyz.chunkstories.world.WorldLoadingException
 import xyz.chunkstories.world.deserializeWorldInfo
 import java.io.File
 import java.sql.Timestamp
@@ -53,7 +54,15 @@ class WorldSelectionUI internal constructor(gui: Gui, parent: Layer) : Layer(gui
                 val worldInfo = deserializeWorldInfo(worldInfoFile)
 
                 val worldButton = LocalWorldButton(0, 0, worldDirectory, worldInfo)
-                worldButton.action = Runnable { (gui.client as ClientImplementation).enterExistingWorld(worldDirectory) }
+                worldButton.action = Runnable {
+                    try {
+                        (gui.client as ClientImplementation).enterExistingWorld(worldDirectory)
+                    } catch(e: WorldLoadingException) {
+                        val cause = e.cause
+
+                        gui.topLayer = MessageBoxUI(gui, this, "Cannot load world", cause?.message ?: cause.toString())
+                    }
+                }
 
                 worldButton
             } else {

@@ -81,7 +81,7 @@ class ModsSelection(window: Gui, parent: Layer) : Layer(window, parent) {
         // Then look for mods in folder fashion
         for (f in File("." + "/mods/").listFiles()!!) {
             if (f.isDirectory) {
-                val txt = File(f.absolutePath + "/mod.txt")
+                val txt = File(f.absolutePath + "/modInfo.json")
                 if (txt.exists()) {
                     try {
                         val mod = ModFolder(f)

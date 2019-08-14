@@ -5,14 +5,12 @@ import xyz.chunkstories.api.client.Client
 import xyz.chunkstories.api.client.IngameClient
 import xyz.chunkstories.api.graphics.systems.dispatching.DecalsManager
 import xyz.chunkstories.api.particles.ParticlesManager
-import xyz.chunkstories.api.workers.Tasks
-import xyz.chunkstories.api.world.WorldMaster
 import xyz.chunkstories.client.ClientImplementation
 import xyz.chunkstories.client.commands.installClientCommands
 import xyz.chunkstories.graphics.common.WorldRenderer
 import xyz.chunkstories.graphics.vulkan.util.BuiltInRendergraphs
-import xyz.chunkstories.gui.layer.MainMenu
-import xyz.chunkstories.gui.layer.MessageBox
+import xyz.chunkstories.gui.layer.MainMenuUI
+import xyz.chunkstories.gui.layer.MessageBoxUI
 import xyz.chunkstories.gui.layer.WorldLoadingUI
 import xyz.chunkstories.gui.layer.ingame.IngameLayer
 import xyz.chunkstories.plugin.DefaultPluginManager
@@ -78,7 +76,7 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
     override fun exitToMainMenu() {
         exitCommon()
 
-        gui.topLayer = MainMenu(gui, null)
+        gui.topLayer = MainMenuUI(gui, null)
         soundManager.stopAnySound()
         client.ingame = null
     }
@@ -86,7 +84,7 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
     override fun exitToMainMenu(errorMessage: String) {
         exitCommon()
 
-        gui.topLayer = MessageBox(gui, MainMenu(gui, null), "Disconnected from server", errorMessage)
+        gui.topLayer = MessageBoxUI(gui, MainMenuUI(gui, null), "Disconnected from server", errorMessage)
         soundManager.stopAnySound()
         client.ingame = null
     }
