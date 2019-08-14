@@ -22,7 +22,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
 
     val commandPool = CommandPool(backend, backend.logicalDevice.graphicsQueue.family, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT or VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
 
-    val dispatchingSystems = mutableListOf<VulkanDispatchingSystem<*>>()
+    val dispatchingSystems = mutableListOf<VulkanDispatchingSystem<*,*>>()
 
     val blitHelper = SwapchainBlitHelper(backend)
 
@@ -52,40 +52,27 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
         val gathered = backend.graphicsEngine.gatherRepresentations(frame, passInstances, renderingContexts)
 
         // Fancy preparing of the representations to render
-        val jobs = passInstances.map {
-            mutableMapOf<VulkanDispatchingSystem.Drawer<*>, ArrayList<*>>()
+        val workForDrawersPerPassInstance: List<MutableMap<VulkanDispatchingSystem.Drawer<*>, *>> = passInstances.map {
+            mutableMapOf<VulkanDispatchingSystem.Drawer<*>, Any>()
         }
 
-        for ((index, pass) in passInstances.withIndex()) {
-            val pass = pass as VulkanFrameGraph.FrameGraphNode.VulkanPassInstance
+        for ((passInstanceIndex, passInstance) in passInstances.withIndex()) {
+            val pass = passInstance as VulkanFrameGraph.FrameGraphNode.VulkanPassInstance
 
             val renderContextIndex = renderingContexts.indexOf(pass.taskInstance)
             val ctxMask = 1 shl renderContextIndex
-            val jobsForPassInstance = jobs[index]
 
-            for ((key, contents) in gathered.buckets) {
-                val responsibleSystem = dispatchingSystems.find { it.representationName == key } ?: continue
+            val workForDrawers = workForDrawersPerPassInstance[passInstanceIndex]
+
+            for ((representationName, contents) in gathered.buckets) {
+                val responsibleSystem = dispatchingSystems.find { it.representationName == representationName } ?: continue
 
                 val drawers = pass.pass.dispatchingDrawers.filter {
                     it.system == responsibleSystem
                 }
-                val drawersArray = drawers.toTypedArray()
 
-                val allowedOutputs = drawers.map {
-                    jobsForPassInstance.getOrPut(it) {
-                        arrayListOf<Any>()
-                    }
-                }
-
-                for (i in 0 until contents.representations.size) {
-                    val item = contents.representations[i]
-                    val mask = contents.masks[i]
-
-                    if (mask and ctxMask == 0)
-                        continue
-
-                    (responsibleSystem as VulkanDispatchingSystem<Representation>).sort(item, drawersArray, allowedOutputs as List<MutableList<Any>>)
-                }
+                val filteredRepresentations = contents.representations.filterIndexed { index, _ -> contents.masks[index] and ctxMask != 0 }
+                (responsibleSystem as VulkanDispatchingSystem<Representation, *>).sort_(filteredRepresentations.asSequence(), drawers, workForDrawers)
             }
         }
 
@@ -119,7 +106,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
                     }*/
 
                     //println("ctx=${graphNode.context.name} ${pass.declaration.name} jobs[$passIndex]=${jobs[passIndex].mapValues { it.value.size }}")
-                    pass.render(frame, graphNode, globalStates, jobs[passIndex])
+                    pass.render(frame, graphNode, globalStates, workForDrawersPerPassInstance[passIndex])
 
                     passIndex++
                     /*/** Update the state of the buffers used in that pass */

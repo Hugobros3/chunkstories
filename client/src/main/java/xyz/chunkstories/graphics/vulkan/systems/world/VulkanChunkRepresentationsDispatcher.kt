@@ -18,6 +18,7 @@ import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
 import xyz.chunkstories.graphics.common.util.extractInterfaceBlock
 import xyz.chunkstories.graphics.common.util.getStd140AlignedSizeForStruct
+import xyz.chunkstories.graphics.common.world.ChunkRepresentation
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import xyz.chunkstories.graphics.vulkan.shaders.bindShaderResources
@@ -26,8 +27,9 @@ import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
 import xyz.chunkstories.graphics.vulkan.textures.voxels.VulkanVoxelTexturesArray
 
-class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingSystem<VulkanChunkRepresentation>(backend) {
+private typealias VkChunkIR = MutableList<VulkanChunkRepresentation.Section>
 
+class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingSystem<VulkanChunkRepresentation, VkChunkIR>(backend) {
     override val representationName: String = VulkanChunkRepresentation::class.java.canonicalName
 
     private val cubesVertexInput = VertexInputConfiguration {
@@ -109,11 +111,11 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
 
     val sampler = VulkanSampler(backend, tilingMode = TextureTilingMode.REPEAT)
 
-    inner class Drawer(pass: VulkanPass, initCode: Drawer.() -> Unit) : VulkanDispatchingSystem.Drawer<VulkanChunkRepresentation.Section>(pass), ChunksRenderer {
+    inner class Drawer(pass: VulkanPass, initCode: Drawer.() -> Unit) : VulkanDispatchingSystem.Drawer<VkChunkIR>(pass), ChunksRenderer {
         override lateinit var materialTag: String
         override lateinit var shader: String
 
-        override val system: VulkanDispatchingSystem<VulkanChunkRepresentation>
+        override val system: VulkanDispatchingSystem<VulkanChunkRepresentation, VkChunkIR>
             get() = this@VulkanChunkRepresentationsDispatcher
 
         init {
@@ -133,7 +135,7 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
         val maxChunksRendered = 4096
         val ssboBufferSize = (sizeAligned16 * maxChunksRendered).toLong()
 
-        override fun registerDrawingCommands(frame: VulkanFrame, ctx: SystemExecutionContext, commandBuffer: VkCommandBuffer, work: Sequence<VulkanChunkRepresentation.Section>) {
+        override fun registerDrawingCommands(frame: VulkanFrame, context: SystemExecutionContext, commandBuffer: VkCommandBuffer, work: VkChunkIR) {
             val client = backend.window.client.ingame ?: return
 
             val staticMeshes = work.mapNotNull { it.staticMesh }
@@ -144,7 +146,7 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
             fun drawCubes() {
                 val bindingContext = backend.descriptorMegapool.getBindingContext(cubesPipeline)
 
-                val camera = ctx.passInstance.taskInstance.camera
+                val camera = context.passInstance.taskInstance.camera
                 val world = client.world
 
                 bindingContext.bindUBO("camera", camera)
@@ -162,7 +164,7 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
                 bindingContext.bindSSBO("chunkInfo", ssboDataTest)
 
                 val viewportSize = ViewportSize()
-                viewportSize.size.set(ctx.passInstance.renderTargetSize)
+                viewportSize.size.set(context.passInstance.renderTargetSize)
                 //viewportSize.size.set(pass.declaration.outputs.outputs.getOrNull(0)?.let { passContext.resolvedOutputs.get(it)?.textureSize } ?: passContext.resolvedDepthBuffer!!.textureSize)
                 bindingContext.bindUBO("viewportSize", viewportSize)
 
@@ -201,7 +203,7 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
             fun drawStaticMeshes() {
                 val bindingContext = backend.descriptorMegapool.getBindingContext(meshesPipeline)
 
-                val camera = ctx.passInstance.taskInstance.camera
+                val camera = context.passInstance.taskInstance.camera
                 val world = client.world
 
                 bindingContext.bindUBO("camera", camera)
@@ -221,7 +223,7 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
                 bindingContext.bindTextureAndSampler("albedoTextures", voxelTexturesArray.albedoOnionTexture, sampler)
                 bindingContext.bindSSBO("chunkInfo", ssboDataTest)
 
-                ctx.bindShaderResources(bindingContext)
+                context.bindShaderResources(bindingContext)
 
                 bindingContext.preDraw(commandBuffer)
 
@@ -267,16 +269,36 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
         }
     }
 
-    override fun createDrawerForPass(pass: VulkanPass, drawerInitCode: VulkanDispatchingSystem.Drawer<*>.() -> Unit) =
+    override fun createDrawerForPass(pass: VulkanPass, drawerInitCode: VulkanDispatchingSystem.Drawer<VkChunkIR>.() -> Unit) =
             Drawer(pass, drawerInitCode)
 
-    override fun sort(representation: VulkanChunkRepresentation, drawers: Array<VulkanDispatchingSystem.Drawer<*>>, outputs: List<MutableList<Any>>) {
+    /*override fun sort(representation: VulkanChunkRepresentation, drawers: Array<VulkanDispatchingSystem.Drawer<*>>, outputs: List<MutableList<Any>>) {
         //TODO look at material/tag and decide where to send it
         for (section in representation.sections.values) {
             for ((index, drawer) in drawers.withIndex()) {
                 if ((drawer as Drawer).materialTag == section.materialTag) {
                     outputs[index].add(section)
                 }
+            }
+        }
+    }*/
+
+    override fun sort(representations: Sequence<VulkanChunkRepresentation>, drawers: List<VulkanDispatchingSystem.Drawer<VkChunkIR>>, workForDrawers: MutableMap<VulkanDispatchingSystem.Drawer<VkChunkIR>, VkChunkIR>) {
+        val lists = drawers.associateWith { mutableListOf<VulkanChunkRepresentation.Section>() }
+
+        for(representation in representations) {
+            for (section in representation.sections.values) {
+                for (drawer in drawers) {
+                    if ((drawer as Drawer).materialTag == section.materialTag) {
+                        lists[drawer]!!.add(section)
+                    }
+                }
+            }
+        }
+
+        for(entry in lists) {
+            if(entry.value.isNotEmpty()) {
+                workForDrawers[entry.key] = entry.value
             }
         }
     }

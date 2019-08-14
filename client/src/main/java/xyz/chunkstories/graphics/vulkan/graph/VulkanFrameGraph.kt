@@ -115,7 +115,7 @@ class VulkanFrameGraph(val frame: VulkanFrame, val renderGraph: VulkanRenderGrap
                         override val passInstance: PassInstance = this@addDependencies
                     }
 
-                    it.executePerFrameSetup(ctx)
+                    //it.executePerFrameSetup(ctx)
                     ctx
                 }
             }

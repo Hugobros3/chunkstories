@@ -22,13 +22,15 @@ import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.vertexInputConfiguration
 
-class VulkanLinesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingSystem<Line>(backend) {
+private typealias VkLinesIR = MutableList<Line>
+
+class VulkanLinesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingSystem<Line, VkLinesIR>(backend) {
 
     override val representationName: String
         get() = Line::class.java.canonicalName
 
-    inner class Drawer(pass: VulkanPass, drawerInitCode: VulkanDispatchingSystem.Drawer<*>.() -> Unit) : VulkanDispatchingSystem.Drawer<Line>(pass), LinesRenderer {
-        override val system: VulkanDispatchingSystem<*>
+    inner class Drawer(pass: VulkanPass, drawerInitCode: VulkanDispatchingSystem.Drawer<VkLinesIR>.() -> Unit) : VulkanDispatchingSystem.Drawer<VkLinesIR>(pass), LinesRenderer {
+        override val system: VulkanDispatchingSystem<*,*>
             get() = this@VulkanLinesDispatcher
 
         init {
@@ -59,7 +61,7 @@ class VulkanLinesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingS
         private val program = backend.shaderFactory.createProgram("colored", ShaderCompilationParameters(outputs = pass.declaration.outputs))
         private val pipeline = Pipeline(backend, program, pass, vertexInput, Primitive.LINES, FaceCullingMode.DISABLED)
 
-        override fun registerDrawingCommands(frame: VulkanFrame, context: SystemExecutionContext, commandBuffer: VkCommandBuffer, work: Sequence<Line>) {
+        override fun registerDrawingCommands(frame: VulkanFrame, context: SystemExecutionContext, commandBuffer: VkCommandBuffer, work: VkLinesIR) {
             val buffer = memAlloc(1024 * 1024) // 1Mb buffer
             var points = 0
             for(line in work) {
@@ -113,12 +115,16 @@ class VulkanLinesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingS
 
     }
 
-    override fun createDrawerForPass(pass: VulkanPass, drawerInitCode: VulkanDispatchingSystem.Drawer<*>.() -> Unit) = Drawer(pass, drawerInitCode)
+    override fun createDrawerForPass(pass: VulkanPass, drawerInitCode: VulkanDispatchingSystem.Drawer<VkLinesIR>.() -> Unit) = Drawer(pass, drawerInitCode)
 
-    override fun sort(representation: Line, drawers: Array<VulkanDispatchingSystem.Drawer<*>>, outputs: List<MutableList<Any>>) {
+    /*override fun sort(representation: Line, drawers: Array<VulkanDispatchingSystem.Drawer<*>>, outputs: List<MutableList<Any>>) {
         for ((index, drawer) in drawers.withIndex()) {
             outputs[index].add(representation)
         }
+    }*/
+
+    override fun sort(representations: Sequence<Line>, drawers: List<VulkanDispatchingSystem.Drawer<VkLinesIR>>, workForDrawers: MutableMap<VulkanDispatchingSystem.Drawer<VkLinesIR>, VkLinesIR>) {
+        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun cleanup() {

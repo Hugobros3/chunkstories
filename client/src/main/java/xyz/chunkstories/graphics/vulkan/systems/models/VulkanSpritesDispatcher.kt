@@ -30,7 +30,9 @@ import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
 import xyz.chunkstories.world.WorldClientCommon
 
-class VulkanSpritesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingSystem<Sprite>(backend) {
+private typealias VkSpriteIR = MutableList<Sprite>
+
+class VulkanSpritesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingSystem<Sprite, VkSpriteIR>(backend) {
 
     override val representationName: String = Sprite::class.java.canonicalName
 
@@ -51,11 +53,11 @@ class VulkanSpritesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchin
         }
     }
 
-    inner class Drawer(pass: VulkanPass, initCode: Drawer.() -> Unit) : VulkanDispatchingSystem.Drawer<Sprite>(pass), SpritesRenderer {
+    inner class Drawer(pass: VulkanPass, initCode: Drawer.() -> Unit) : VulkanDispatchingSystem.Drawer<VkSpriteIR>(pass), SpritesRenderer {
         override lateinit var materialTag: String
         override lateinit var shader: String
 
-        override val system: VulkanDispatchingSystem<Sprite>
+        override val system: VulkanDispatchingSystem<Sprite, VkSpriteIR>
             get() = this@VulkanSpritesDispatcher
 
         val program: VulkanShaderProgram
@@ -97,7 +99,7 @@ class VulkanSpritesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchin
 
         val ssboBufferSize = 1024 * 1024L
 
-        override fun registerDrawingCommands(frame: VulkanFrame, ctx: SystemExecutionContext, commandBuffer: VkCommandBuffer, work: Sequence<Sprite>) {
+        override fun registerDrawingCommands(frame: VulkanFrame, ctx: SystemExecutionContext, commandBuffer: VkCommandBuffer, work: VkSpriteIR) {
             MemoryStack.stackPush()
 
             val client = backend.window.client.ingame ?: return
@@ -159,10 +161,9 @@ class VulkanSpritesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchin
         }
     }
 
-    override fun createDrawerForPass(pass: VulkanPass, drawerInitCode: VulkanDispatchingSystem.Drawer<*>.() -> Unit) = Drawer(pass, drawerInitCode)
+    override fun createDrawerForPass(pass: VulkanPass, drawerInitCode: VulkanDispatchingSystem.Drawer<VkSpriteIR>.() -> Unit) = Drawer(pass, drawerInitCode)
 
-    override fun sort(instance: Sprite, drawers: Array<VulkanDispatchingSystem.Drawer<*>>, outputs: List<MutableList<Any>>) {
-
+    /*override fun sort(instance: Sprite, drawers: Array<VulkanDispatchingSystem.Drawer<*>>, outputs: List<MutableList<Any>>) {
         //val meshInstance = MeshInstance(mesh, instance.materials[i] ?: mesh.material, instance)
 
         for ((index, drawer) in drawers.withIndex()) {
@@ -171,6 +172,24 @@ class VulkanSpritesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchin
             }
         }
 
+    }*/
+
+    override fun sort(representations: Sequence<Sprite>, drawers: List<VulkanDispatchingSystem.Drawer<VkSpriteIR>>, workForDrawers: MutableMap<VulkanDispatchingSystem.Drawer<VkSpriteIR>, VkSpriteIR>) {
+        val lists = drawers.associateWith { mutableListOf<Sprite>() }
+
+        for(representation in representations) {
+            for ((index, drawer) in drawers.withIndex()) {
+                if ((drawer as VulkanSpritesDispatcher.Drawer).materialTag == representation.material.tag) {
+                    lists[drawer]!!.add(representation)
+                }
+            }
+        }
+
+        for(entry in lists) {
+            if(entry.value.isNotEmpty()) {
+                workForDrawers[entry.key] = entry.value
+            }
+        }
     }
 
     override fun cleanup() {

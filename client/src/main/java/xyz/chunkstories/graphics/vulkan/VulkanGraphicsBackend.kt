@@ -302,7 +302,7 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
         }
     }
 
-    fun <T: DispatchingSystem> getOrCreateDispatchingSystem(list: MutableList<VulkanDispatchingSystem<*>>, dispatchingSystemRegistration: RegisteredGraphicSystem<T>): VulkanDispatchingSystem<*> {
+    fun <T: DispatchingSystem> getOrCreateDispatchingSystem(list: MutableList<VulkanDispatchingSystem<*,*>>, dispatchingSystemRegistration: RegisteredGraphicSystem<T>): VulkanDispatchingSystem<*,*> {
         val implemClass =  when(dispatchingSystemRegistration.clazz) {
             ChunksRenderer::class.java -> VulkanChunkRepresentationsDispatcher::class
             ModelsRenderer::class.java -> VulkanModelsDispatcher::class

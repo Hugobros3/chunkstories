@@ -1,11 +1,9 @@
 package xyz.chunkstories.graphics.vulkan.systems.lighting
 
 import org.lwjgl.system.MemoryStack
-import org.lwjgl.system.MemoryUtil
 import org.lwjgl.vulkan.VK10
 import org.lwjgl.vulkan.VkCommandBuffer
 import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
-import xyz.chunkstories.api.graphics.representation.Line
 import xyz.chunkstories.api.graphics.representation.PointLight
 import xyz.chunkstories.api.graphics.systems.dispatching.DefferedLightsRenderer
 import xyz.chunkstories.graphics.common.FaceCullingMode
@@ -22,13 +20,15 @@ import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.vertexInputConfiguration
 
-class VulkanDefferedLightsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingSystem<PointLight>(backend) {
+private typealias VkDefferedLightIR = MutableList<PointLight>
+
+class VulkanDefferedLightsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingSystem<PointLight, VkDefferedLightIR>(backend) {
 
     override val representationName: String
         get() = PointLight::class.java.canonicalName
 
-    inner class Drawer(pass: VulkanPass, drawerInitCode: VulkanDispatchingSystem.Drawer<*>.() -> Unit) : VulkanDispatchingSystem.Drawer<PointLight>(pass), DefferedLightsRenderer {
-        override val system: VulkanDispatchingSystem<*>
+    inner class Drawer(pass: VulkanPass, drawerInitCode: VulkanDispatchingSystem.Drawer<VkDefferedLightIR>.() -> Unit) : VulkanDispatchingSystem.Drawer<VkDefferedLightIR>(pass), DefferedLightsRenderer {
+        override val system: VulkanDispatchingSystem<*, VkDefferedLightIR>
             get() = this@VulkanDefferedLightsDispatcher
 
         private val vertexBuffer: VulkanVertexBuffer
@@ -66,10 +66,10 @@ class VulkanDefferedLightsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
         private val program = backend.shaderFactory.createProgram("pointLight", ShaderCompilationParameters(outputs = pass.declaration.outputs))
         private val pipeline = Pipeline(backend, program, pass, vertexInputConfiguration, Primitive.TRIANGLES, FaceCullingMode.DISABLED)
 
-        override fun registerDrawingCommands(frame: VulkanFrame, context: SystemExecutionContext, commandBuffer: VkCommandBuffer, work: Sequence<PointLight>) {
+        override fun registerDrawingCommands(frame: VulkanFrame, context: SystemExecutionContext, commandBuffer: VkCommandBuffer, work: VkDefferedLightIR) {
             val bindingContexts = mutableListOf<DescriptorSetsMegapool.ShaderBindingContext>()
 
-            for(light in work) {
+            for (light in work) {
                 val bindingContext = backend.descriptorMegapool.getBindingContext(pipeline)
                 bindingContexts.add(bindingContext)
                 VK10.vkCmdBindPipeline(commandBuffer, VK10.VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
@@ -96,11 +96,27 @@ class VulkanDefferedLightsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
 
     }
 
-    override fun createDrawerForPass(pass: VulkanPass, drawerInitCode: VulkanDispatchingSystem.Drawer<*>.() -> Unit) = Drawer(pass, drawerInitCode)
+    override fun createDrawerForPass(pass: VulkanPass, drawerInitCode: VulkanDispatchingSystem.Drawer<VkDefferedLightIR>.() -> Unit) = Drawer(pass, drawerInitCode)
 
-    override fun sort(representation: PointLight, drawers: Array<VulkanDispatchingSystem.Drawer<*>>, outputs: List<MutableList<Any>>) {
+    /*override fun sort(representation: PointLight, drawers: Array<VulkanDispatchingSystem.Drawer<*>>, outputs: List<MutableList<Any>>) {
         for ((index, drawer) in drawers.withIndex()) {
             outputs[index].add(representation)
+        }
+    }*/
+
+    override fun sort(representations: Sequence<PointLight>, drawers: List<VulkanDispatchingSystem.Drawer<VkDefferedLightIR>>, workForDrawers: MutableMap<VulkanDispatchingSystem.Drawer<VkDefferedLightIR>, VkDefferedLightIR>) {
+        val lists = drawers.associateWith { mutableListOf<PointLight>() }
+
+        for (representation in representations) {
+            for (drawer in drawers) {
+                lists[drawer]!!.add(representation)
+            }
+        }
+
+        for (entry in lists) {
+            if (entry.value.isNotEmpty()) {
+                workForDrawers[entry.key] = entry.value
+            }
         }
     }
 

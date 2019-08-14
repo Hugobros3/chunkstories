@@ -48,7 +48,7 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
                     val dispatchingSystem = backend.getOrCreateDispatchingSystem(renderTask.renderGraph.dispatchingSystems, registeredSystem as RegisteredGraphicSystem<DispatchingSystem>)
                     val drawer = dispatchingSystem.createDrawerForPass(this, registeredSystem.dslCode as VulkanDispatchingSystem.Drawer<*>.() -> Unit)
 
-                    dispatchingSystem.drawersInstances.add(drawer)
+                    //dispatchingSystem.drawersInstances.add(drawer)
                     dispatchingDrawers.add(drawer)
                 } else {
                     throw Exception("What is this :$registeredSystem ?")
@@ -63,7 +63,7 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
     fun render(frame: VulkanFrame,
                passInstance: VulkanFrameGraph.FrameGraphNode.VulkanPassInstance,
                allBufferStates: MutableMap<VulkanRenderBuffer, UsageType>,
-               representationsGathered: MutableMap<VulkanDispatchingSystem.Drawer<*>, ArrayList<*>>
+               representationsGathered: MutableMap<VulkanDispatchingSystem.Drawer<*>, *>
     ) {
         declaration.setupLambdas.forEach { it.invoke(passInstance) }
 
@@ -314,7 +314,7 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
                     //val filter = 1 shl passInstanceIndex
                     //val filteredByIndex = relevantBucket.representations.asSequence().filterIndexed { i, r -> relevantBucket.visibility[i] and filter != 0 }
                     //drawer.registerDrawingCommands(frame, passInstance, this, filteredByIndex as Sequence<Nothing>)
-                    drawer.registerDrawingCommands(frame, passInstance.preparedDispatchingSystemsContexts[i], this, relevantBucket.toList().asSequence() as Sequence<Nothing>)
+                    drawer.registerDrawingCommands_(frame, passInstance.preparedDispatchingSystemsContexts[i], this, relevantBucket)
                 }
 
                 vkCmdEndRenderPass(this)
