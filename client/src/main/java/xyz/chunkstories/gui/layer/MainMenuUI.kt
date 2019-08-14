@@ -19,7 +19,7 @@ import xyz.chunkstories.gui.layer.ingame.DeathScreen
 import xyz.chunkstories.gui.printCopyrightNotice
 
 /** Gives quick access to the main features of the game  */
-class MainMenu(gui: Gui, parent: Layer?) : Layer(gui, parent) {
+class MainMenuUI(gui: Gui, parent: Layer?) : Layer(gui, parent) {
     internal var largeOnline = LargeButtonWithIcon(this, "online")
     internal var largeMods = LargeButtonWithIcon(this, "mods")
 
@@ -28,10 +28,10 @@ class MainMenu(gui: Gui, parent: Layer?) : Layer(gui, parent) {
 
     init {
 
-        this.largeSingleplayer.action = Runnable { this.gui.topLayer = WorldSelectionUI(this.gui, this@MainMenu) }
-        this.largeOnline.action = Runnable { this.gui.topLayer = ServerSelection(this.gui, this@MainMenu, false) }
-        this.largeMods.action = Runnable { this.gui.topLayer = ModsSelection(this.gui, this@MainMenu) }
-        this.largeOptions.action = Runnable { this.gui.topLayer = OptionsScreen(this.gui, this@MainMenu) }
+        this.largeSingleplayer.action = Runnable { this.gui.topLayer = WorldSelectionUI(this.gui, this@MainMenuUI) }
+        this.largeOnline.action = Runnable { this.gui.topLayer = ServerSelection(this.gui, this@MainMenuUI, false) }
+        this.largeMods.action = Runnable { this.gui.topLayer = ModsSelection(this.gui, this@MainMenuUI) }
+        this.largeOptions.action = Runnable { this.gui.topLayer = OptionsScreen(this.gui, this@MainMenuUI) }
 
         largeOnline.width = 104
         largeSingleplayer.width = 104
@@ -79,7 +79,7 @@ class MainMenu(gui: Gui, parent: Layer?) : Layer(gui, parent) {
     override fun handleTextInput(c: Char): Boolean {
         when (c) {
             'd' -> gui.topLayer = DeathScreen(gui, this)
-            'r' -> gui.topLayer = MessageBox(gui, this, "Dummy error", "Oh noes")
+            'r' -> gui.topLayer = MessageBoxUI(gui, this, "Dummy error", "Oh noes")
             'l' -> gui.topLayer = LanguageSelectionScreen(gui, this, true)
             'o' -> gui.topLayer = LogPolicyAsk(gui, this)
             /*'i' -> {

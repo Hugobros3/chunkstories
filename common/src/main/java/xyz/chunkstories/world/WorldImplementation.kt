@@ -282,7 +282,7 @@ constructor(override val gameContext: GameContext, final override val worldInfo:
         ticksElapsed++
 
         // Time cycle & weather change
-        if (this is WorldMaster) {
+        if (this is WorldMaster && ticksElapsed % 3L == 0L) {
             val increment = internalData.dayNightCycleSpeed
             sunCycle = (sunCycle + increment) % 24000
 
