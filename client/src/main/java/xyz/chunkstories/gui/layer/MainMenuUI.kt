@@ -20,14 +20,13 @@ import xyz.chunkstories.gui.printCopyrightNotice
 
 /** Gives quick access to the main features of the game  */
 class MainMenuUI(gui: Gui, parent: Layer?) : Layer(gui, parent) {
-    internal var largeOnline = LargeButtonWithIcon(this, "online")
-    internal var largeMods = LargeButtonWithIcon(this, "mods")
+    private val largeOnline = LargeButtonWithIcon(this, "online")
+    private val largeMods = LargeButtonWithIcon(this, "mods")
 
-    internal var largeSingleplayer = LargeButton(this, "singleplayer")
-    internal var largeOptions = LargeButton(this, "options")
+    private val largeSingleplayer = LargeButton(this, "singleplayer")
+    private val largeOptions = LargeButton(this, "options")
 
     init {
-
         this.largeSingleplayer.action = Runnable { this.gui.topLayer = WorldSelectionUI(this.gui, this@MainMenuUI) }
         this.largeOnline.action = Runnable { this.gui.topLayer = ServerSelectionUI(this.gui, this@MainMenuUI, false) }
         this.largeMods.action = Runnable { this.gui.topLayer = ModsSelectionUI(this.gui, this@MainMenuUI) }
@@ -60,7 +59,7 @@ class MainMenuUI(gui: Gui, parent: Layer?) : Layer(gui, parent) {
         val yBig = ySmall + largeSingleplayer.height + spacing
 
         largeOnline.setPosition(leftButtonX, yBig)
-        largeOnline.render(drawer!!)
+        largeOnline.render(drawer)
 
         largeSingleplayer.setPosition(leftButtonX, ySmall)
         largeSingleplayer.render(drawer)
