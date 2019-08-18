@@ -96,7 +96,7 @@ class DebugInfoRendererHelper(ingameUI: IngameUI) {
 
             val standingAt = playerEntity.location.toVec3i()
             val standingIn = world.peekSafely(playerEntity.location)
-            debugLine("Standing at $standingAt in ${standingIn.voxel} (solid=${standingIn.voxel?.solid}, box=${standingIn.voxel?.collisionBoxes?.getOrNull(0)})")
+            debugLine("Standing at $standingAt in ${standingIn.voxel} (solid=${standingIn.voxel.solid}, box=${standingIn.voxel.getCollisionBoxes(standingIn)?.getOrNull(0)})")
         } else {
             debugLine("No controlled entity")
         }

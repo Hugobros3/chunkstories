@@ -20,6 +20,22 @@ import xyz.chunkstories.api.physics.Box
 import xyz.chunkstories.api.world.WorldCollisionsManager
 import xyz.chunkstories.api.world.cell.CellData
 import xyz.chunkstories.world.iterators.EntityRayIterator
+import kotlin.math.*
+
+private val Box.xWidth: Double
+    get() = extents.x()
+private val Box.yHeight: Double
+    get() = extents.y()
+private val Box.zWidth: Double
+    get() = extents.z()
+
+private val Box.xPosition: Double
+    get() = min.x()
+private val Box.yPosition: Double
+    get() = min.y()
+private val Box.zPosition: Double
+    get() = min.z()
+
 
 /** Responsible for handling the 'pixel-perfect' AABB collisions  */
 class DefaultWorldCollisionsManager(private val world: WorldImplementation) : WorldCollisionsManager {
@@ -47,9 +63,9 @@ class DefaultWorldCollisionsManager(private val world: WorldImplementation) : Wo
         var x: Int
         var y: Int
         var z: Int
-        x = Math.floor(initialPosition.x()).toInt()
-        y = Math.floor(initialPosition.y()).toInt()
-        z = Math.floor(initialPosition.z()).toInt()
+        x = floor(initialPosition.x()).toInt()
+        y = floor(initialPosition.y()).toInt()
+        z = floor(initialPosition.z()).toInt()
 
         // DDA algorithm
 
@@ -74,7 +90,7 @@ class DefaultWorldCollisionsManager(private val world: WorldImplementation) : Wo
             val deltaX = rayDirection[0] / rayDirection[i]
             val deltaY = rayDirection[1] / rayDirection[i]
             val deltaZ = rayDirection[2] / rayDirection[i]
-            deltaDist[i] = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ)
+            deltaDist[i] = sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ)
             if (rayDirection[i] < 0f) {
                 step[i] = -1
                 next[i] = (rayOrigin[i] - voxelCoords[i]) * deltaDist[i]
@@ -144,7 +160,7 @@ class DefaultWorldCollisionsManager(private val world: WorldImplementation) : Wo
         if (blocksCollision != null)
             blocksLimit = blocksCollision.distance(initialPosition)
 
-        return raytraceEntitiesIgnoringVoxels(initialPosition, direction, Math.min(blocksLimit, limit))
+        return raytraceEntitiesIgnoringVoxels(initialPosition, direction, min(blocksLimit, limit))
     }
 
     override fun raytraceEntitiesIgnoringVoxels(initialPosition: Vector3dc, direction: Vector3dc,
@@ -193,10 +209,10 @@ class DefaultWorldCollisionsManager(private val world: WorldImplementation) : Wo
         val direction = Vector3d(delta)
         direction.normalize()
 
-        val e_coli = entity.traits[TraitCollidable::class.java] ?: return Vector3d(delta)
+        val traitCollisions = entity.traits[TraitCollidable::class.java] ?: return Vector3d(delta)
 
         // Iterate over every box
-        for (eCB in 0 until e_coli.collisionBoxes.size) {
+        for (eCB in 0 until traitCollisions.collisionBoxes.size) {
             // Make a normalized double vector and keep the original length
             var vec = Vector3d(delta)
             val distanceToTravel = Vector3d(delta)
@@ -206,18 +222,18 @@ class DefaultWorldCollisionsManager(private val world: WorldImplementation) : Wo
 
             // Do it block per block, face per face
             var distanceTraveled = 0.0
-            var checkerX = e_coli.collisionBoxes[eCB].translate(pos.x(), pos.y(), pos.z())
-            var checkerY = e_coli.collisionBoxes[eCB].translate(pos.x(), pos.y(), pos.z())
-            var checkerZ = e_coli.collisionBoxes[eCB].translate(pos.x(), pos.y(), pos.z())
+            var checkerX = traitCollisions.collisionBoxes[eCB].translate(pos.x(), pos.y(), pos.z())
+            var checkerY = traitCollisions.collisionBoxes[eCB].translate(pos.x(), pos.y(), pos.z())
+            var checkerZ = traitCollisions.collisionBoxes[eCB].translate(pos.x(), pos.y(), pos.z())
 
             var stepDistanceX: Double
             var stepDistanceY: Double
             var stepDistanceZ: Double
 
-            val entitiesCenter = Vector3d(pos.x() - e_coli.collisionBoxes[eCB].xWidth,
-                    pos.y() - e_coli.collisionBoxes[eCB].yHeight - 2.0, pos.z() - e_coli.collisionBoxes[eCB].zWidth)
-            val entitiesRadius = Vector3d(e_coli.collisionBoxes[eCB].xWidth * 5,
-                    e_coli.collisionBoxes[eCB].yHeight * 5, e_coli.collisionBoxes[eCB].zWidth * 5)
+            val entitiesCenter = Vector3d(pos.x() - traitCollisions.collisionBoxes[eCB].xWidth,
+                    pos.y() - traitCollisions.collisionBoxes[eCB].yHeight - 2.0, pos.z() - traitCollisions.collisionBoxes[eCB].zWidth)
+            val entitiesRadius = Vector3d(traitCollisions.collisionBoxes[eCB].xWidth * 5,
+                    traitCollisions.collisionBoxes[eCB].yHeight * 5, traitCollisions.collisionBoxes[eCB].zWidth * 5)
 
             while (distanceTraveled < len) {
                 if (len - distanceTraveled > 0.25) {
@@ -237,11 +253,10 @@ class DefaultWorldCollisionsManager(private val world: WorldImplementation) : Wo
 
                 if (delta.z() != 0.0) {
                     boxes.clear()
-                    checkerZ = e_coli.collisionBoxes[eCB].translate(pos.x(), pos.y(), pos.z() + stepDistanceZ)
-                    for (i in Math.floor(pos.x()).toInt() - 1 until Math.ceil(pos.x() + checkerX.xWidth).toInt()) {
-                        for (j in Math.floor(pos.y()).toInt() - 1 until Math.ceil(pos.y() + checkerX.yHeight).toInt()) {
-                            for (k in Math.floor(pos.z()).toInt() - 1 until Math
-                                    .ceil(pos.z() + checkerX.zWidth).toInt()) {
+                    checkerZ = traitCollisions.collisionBoxes[eCB].translate(pos.x(), pos.y(), pos.z() + stepDistanceZ)
+                    for (i in floor(pos.x()).toInt() - 1 until ceil(pos.x() + checkerX.xWidth).toInt()) {
+                        for (j in floor(pos.y()).toInt() - 1 until ceil(pos.y() + checkerX.yHeight).toInt()) {
+                            for (k in floor(pos.z()).toInt() - 1 until ceil(pos.z() + checkerX.zWidth).toInt()) {
                                 cell = world.peekSafely(i, j, k)
                                 if (cell.voxel.solid)
                                     addAllSafe(boxes, cell.translatedCollisionBoxes)
@@ -259,14 +274,14 @@ class DefaultWorldCollisionsManager(private val world: WorldImplementation) : Wo
                         if (checkerZ.collidesWith(box)) {
                             stepDistanceZ = 0.0
                             if (delta.z() < 0) {
-                                val south = Math.min(box.zPosition + box.zWidth + checkerZ.zWidth - pos.z(), 0.0)
+                                val south = min(box.zPosition + box.zWidth + checkerZ.zWidth - pos.z(), 0.0)
                                 stepDistanceZ = south
                             } else {
-                                val north = Math.max(box.zPosition - (pos.z() + checkerZ.zWidth), 0.0)
+                                val north = max(box.zPosition - (pos.z() + checkerZ.zWidth), 0.0)
                                 stepDistanceZ = north
                             }
                             vec.z = 0.0
-                            checkerZ = e_coli.collisionBoxes[eCB].translate(pos.x(), pos.y(),
+                            checkerZ = traitCollisions.collisionBoxes[eCB].translate(pos.x(), pos.y(),
                                     pos.z() + stepDistanceZ)
                         }
                     }
@@ -277,11 +292,10 @@ class DefaultWorldCollisionsManager(private val world: WorldImplementation) : Wo
 
                 if (delta.x() != 0.0) {
                     boxes.clear()
-                    checkerX = e_coli.collisionBoxes[eCB].translate(pos.x() + stepDistanceX, pos.y(), pos.z())
-                    for (i in Math.floor(pos.x()).toInt() - 1 until Math.ceil(pos.x() + checkerY.xWidth).toInt()) {
-                        for (j in Math.floor(pos.y()).toInt() - 1 until Math.ceil(pos.y() + checkerY.yHeight).toInt()) {
-                            for (k in Math.floor(pos.z()).toInt() - 1 until Math
-                                    .ceil(pos.z() + checkerY.zWidth).toInt()) {
+                    checkerX = traitCollisions.collisionBoxes[eCB].translate(pos.x() + stepDistanceX, pos.y(), pos.z())
+                    for (i in floor(pos.x()).toInt() - 1 until ceil(pos.x() + checkerY.xWidth).toInt()) {
+                        for (j in floor(pos.y()).toInt() - 1 until ceil(pos.y() + checkerY.yHeight).toInt()) {
+                            for (k in floor(pos.z()).toInt() - 1 until ceil(pos.z() + checkerY.zWidth).toInt()) {
                                 cell = world.peekSafely(i, j, k)
                                 if (cell.voxel.solid)
                                     addAllSafe(boxes, cell.translatedCollisionBoxes)
@@ -300,16 +314,16 @@ class DefaultWorldCollisionsManager(private val world: WorldImplementation) : Wo
                         if (checkerX.collidesWith(box)) {
                             stepDistanceX = 0.0
                             if (delta.x() < 0) {
-                                val left = Math.min(box.xPosition + box.xWidth + checkerX.xWidth - pos.x(), 0.0)
+                                val left = min(box.xPosition + box.xWidth + checkerX.xWidth - pos.x(), 0.0)
                                 // System.out.println("left:"+left);
                                 stepDistanceX = left
                             } else {
-                                val right = Math.max(box.xPosition - (pos.x() + checkerX.xWidth), 0.0)
+                                val right = max(box.xPosition - (pos.x() + checkerX.xWidth), 0.0)
                                 // System.out.println("right"+right);
                                 stepDistanceX = right
                             }
                             vec.x = 0.0
-                            checkerX = e_coli.collisionBoxes[eCB].translate(pos.x() + stepDistanceX, pos.y(),
+                            checkerX = traitCollisions.collisionBoxes[eCB].translate(pos.x() + stepDistanceX, pos.y(),
                                     pos.z())
                         }
 
@@ -321,12 +335,11 @@ class DefaultWorldCollisionsManager(private val world: WorldImplementation) : Wo
 
                 if (delta.y() != 0.0) {
                     boxes.clear()
-                    checkerY = e_coli.collisionBoxes[eCB].translate(pos.x(), pos.y() + stepDistanceY, pos.z())
-                    for (i in Math.floor(pos.x()).toInt() - 1 until Math.ceil(pos.x() + checkerZ.xWidth).toInt()) {
-                        for (j in Math.floor(pos.y()).toInt() - 1 until Math.ceil(pos.y() + checkerZ.yHeight
+                    checkerY = traitCollisions.collisionBoxes[eCB].translate(pos.x(), pos.y() + stepDistanceY, pos.z())
+                    for (i in floor(pos.x()).toInt() - 1 until ceil(pos.x() + checkerZ.xWidth).toInt()) {
+                        for (j in floor(pos.y()).toInt() - 1 until ceil(pos.y() + checkerZ.yHeight
                                 + 1.0).toInt()) {
-                            for (k in Math.floor(pos.z()).toInt() - 1 until Math
-                                    .ceil(pos.z() + checkerZ.zWidth).toInt()) {
+                            for (k in floor(pos.z()).toInt() - 1 until ceil(pos.z() + checkerZ.zWidth).toInt()) {
                                 cell = world.peekSafely(i, j, k)
                                 if (cell.voxel.solid)
                                     addAllSafe(boxes, cell.translatedCollisionBoxes)
@@ -344,16 +357,16 @@ class DefaultWorldCollisionsManager(private val world: WorldImplementation) : Wo
                         if (checkerY.collidesWith(box)) {
                             stepDistanceY = 0.0
                             if (delta.y() < 0) {
-                                val top = Math.min(box.yPosition + box.yHeight - pos.y(), 0.0)
+                                val top = min(box.yPosition + box.yHeight - pos.y(), 0.0)
                                 // System.out.println(top);
                                 stepDistanceY = top
                             } else {
-                                val bot = Math.max(box.yPosition - (pos.y() + checkerY.yHeight), 0.0)
+                                val bot = max(box.yPosition - (pos.y() + checkerY.yHeight), 0.0)
                                 // System.out.println(bot);
                                 stepDistanceY = bot
                             }
                             vec.y = 0.0
-                            checkerY = e_coli.collisionBoxes[eCB].translate(pos.x(), pos.y() + stepDistanceY,
+                            checkerY = traitCollisions.collisionBoxes[eCB].translate(pos.x(), pos.y() + stepDistanceY,
                                     pos.z())
                         }
 
@@ -364,13 +377,13 @@ class DefaultWorldCollisionsManager(private val world: WorldImplementation) : Wo
                 }
             }
 
-            if (Math.abs(distanceToTravel.x()) > Math.abs(maxDistanceToTravel.x()))
+            if (abs(distanceToTravel.x()) > abs(maxDistanceToTravel.x()))
                 maxDistanceToTravel.x = distanceToTravel.x()
 
-            if (Math.abs(distanceToTravel.y()) > Math.abs(maxDistanceToTravel.y()))
+            if (abs(distanceToTravel.y()) > abs(maxDistanceToTravel.y()))
                 maxDistanceToTravel.y = distanceToTravel.y()
 
-            if (Math.abs(distanceToTravel.z()) > Math.abs(maxDistanceToTravel.z()))
+            if (abs(distanceToTravel.z()) > abs(maxDistanceToTravel.z()))
                 maxDistanceToTravel.z = distanceToTravel.z()
         }
         return maxDistanceToTravel

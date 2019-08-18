@@ -25,31 +25,31 @@ abstract class ChunkRepresentationsProvider<R : ChunkRepresentation>(
 
         val frame = mainContext.frame
 
-        fun getVisibility(boxCenter: Vector3fc, boxSize: Vector3fc): Int {
+        fun getVisibility(min: Vector3fc, max: Vector3fc): Int {
             var mask = 0
             for ((index, camera) in cameras.withIndex()) {
-                if (camera.frustrum.isBoxInFrustrum(boxCenter, boxSize))
+                if (camera.frustrum.isBoxInFrustrum(min, max))
                     mask = mask or (1 shl index)
             }
             return mask
         }
 
-        fun refineVisibility(boxCenter: Vector3fc, boxSize: Vector3fc, previousMask: Int): Int {
+        fun refineVisibility(min: Vector3fc, max: Vector3fc, previousMask: Int): Int {
             var mask = 0
             for ((index, camera) in cameras.withIndex()) {
                 val submask = (1 shl index)
                 if (previousMask and submask == 0)
                     continue
 
-                if (camera.frustrum.isBoxInFrustrum(boxCenter, boxSize))
+                if (camera.frustrum.isBoxInFrustrum(min, max))
                     mask = mask or submask
             }
             return mask
         }
 
-        val boxCenter = Vector3f(0f)
-        val boxSize = Vector3f(32f, 32f, 32f)
-        val boxSize2 = Vector3f(256f, 256f, 256f)
+        val min = Vector3f(0f)
+        //val boxSize = Vector3f(32f, 32f, 32f)
+        val max = Vector3f(256f, 256f, 256f)
 
         val visibleRegions = arrayOfNulls<RegionImplementation>(1024)
         val regionVisibility = IntArray(1024)
@@ -57,13 +57,17 @@ abstract class ChunkRepresentationsProvider<R : ChunkRepresentation>(
 
         var rc = 0
         for (region in world.allLoadedRegions) {
-            boxCenter.x = region.regionX * 256.0f + 128.0f
-            boxCenter.y = region.regionY * 256.0f + 128.0f
-            boxCenter.z = region.regionZ * 256.0f + 128.0f
+            min.x = region.regionX * 256.0f + 0.0f
+            min.y = region.regionY * 256.0f + 0.0f
+            min.z = region.regionZ * 256.0f + 0.0f
+
+            max.x = region.regionX * 256.0f + 256.0f
+            max.y = region.regionY * 256.0f + 256.0f
+            max.z = region.regionZ * 256.0f + 256.0f
 
             rc++
 
-            val regionVisMask = getVisibility(boxCenter, boxSize2)
+            val regionVisMask = getVisibility(min, max)
             if (regionVisMask != 0) {
                 regionVisibility[visibleRegionsCount] = regionVisMask
                 visibleRegions[visibleRegionsCount++] = region as RegionImplementation
@@ -116,14 +120,18 @@ abstract class ChunkRepresentationsProvider<R : ChunkRepresentation>(
 
             visibleRegionChunksCount = 0
             for (chunk in region.loadedChunks) {
-                boxCenter.x = chunk.chunkX * 32.0f + 16.0f
-                boxCenter.y = chunk.chunkY * 32.0f + 16.0f
-                boxCenter.z = chunk.chunkZ * 32.0f + 16.0f
+                min.x = chunk.chunkX * 32.0f + 0.0f
+                min.y = chunk.chunkY * 32.0f + 0.0f
+                min.z = chunk.chunkZ * 32.0f + 0.0f
+
+                max.x = chunk.chunkX * 32.0f + 32.0f
+                max.y = chunk.chunkY * 32.0f + 32.0f
+                max.z = chunk.chunkZ * 32.0f + 32.0f
 
                 if (!chunk.isAirChunk) {
                     if (chunk.chunkX in visibilityRangeX && chunk.chunkY in visibilityRangeY && chunk.chunkZ in visibilityRangeZ) {
 
-                        val chunkVisibility = refineVisibility(boxCenter, boxSize, regionVis)
+                        val chunkVisibility = refineVisibility(min, max, regionVis)
                         if (chunkVisibility != 0) {
                             chunksVisibilityMask[visibleRegionChunksCount] = chunkVisibility
                             visibleRegionChunks[visibleRegionChunksCount++] = chunk
