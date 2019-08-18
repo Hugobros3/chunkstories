@@ -33,7 +33,7 @@ class ServerPlayerLoadingAgent (val player: ServerPlayer, val world: World) {
                 null -> throw Exception("PacketWorldUser type can't be null")
 
                 PacketWorldUser.Type.REGISTER_CHUNK -> {
-                    val chunkHolder = world.acquireChunkHolder(player, packet.x, packet.y, packet.z)!!
+                    val chunkHolder = world.chunksManager.acquireChunkHolder(player, packet.x, packet.y, packet.z)!!
                     chunkHolder.registerUser(player)
                     chunks.add(chunkHolder)
                 }

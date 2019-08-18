@@ -60,7 +60,7 @@ public class IOTasksMultiplayerClient extends IOTasks {
 
 		@Override
 		public boolean task(TaskExecutor taskExecutor) {
-			HeightmapImplementation heightmap = world.getRegionsSummariesHolder().getHeightmapWorldCoordinates(packet.rx * 256, packet.rz * 256);
+			HeightmapImplementation heightmap = world.getHeightmapsManager().getHeightmapWorldCoordinates(packet.rx * 256, packet.rz * 256);
 			if (heightmap == null) {
 				logger().error("Summary data arrived for " + packet.rx + ": " + packet.rz
 						+ "but there was no region summary waiting for it ?");
@@ -105,7 +105,7 @@ public class IOTasksMultiplayerClient extends IOTasks {
 			this.requestHeightmapProcess((PacketHeightmap) packet);
 			// Chunk data
 		} else if (packet instanceof PacketChunkCompressedData) {
-			RegionImplementation region = world.getRegionChunkCoordinates(((PacketChunkCompressedData) packet).x,
+			RegionImplementation region = world.getRegionsManager().getRegionChunkCoordinates(((PacketChunkCompressedData) packet).x,
 					((PacketChunkCompressedData) packet).y, ((PacketChunkCompressedData) packet).z);
 
 			// This *can* happen, ie if the player flies too fast and by the time he receives the chunk data the region has already been gc'ed

@@ -18,7 +18,7 @@ import xyz.chunkstories.api.entity.Entity
 import xyz.chunkstories.api.entity.traits.TraitCollidable
 import xyz.chunkstories.api.physics.Box
 import xyz.chunkstories.api.world.WorldCollisionsManager
-import xyz.chunkstories.api.world.cell.CellData
+import xyz.chunkstories.api.world.cell.Cell
 import xyz.chunkstories.world.iterators.EntityRayIterator
 import kotlin.math.*
 
@@ -59,7 +59,7 @@ class DefaultWorldCollisionsManager(private val world: WorldImplementation) : Wo
         val direction = Vector3d()
         directionIn.normalize(direction)
 
-        var cell: CellData
+        var cell: Cell
         var x: Int
         var y: Int
         var z: Int
@@ -116,7 +116,7 @@ class DefaultWorldCollisionsManager(private val world: WorldImplementation) : Wo
             x = voxelCoords[0]
             y = voxelCoords[1]
             z = voxelCoords[2]
-            cell = world.peekSafely(x, y, z)
+            cell = world.peek(x, y, z)
             val voxel = cell.voxel
 
             if (voxel.solid || (selectable && voxel.definition["liquid"] != "true")) {
@@ -197,7 +197,7 @@ class DefaultWorldCollisionsManager(private val world: WorldImplementation) : Wo
     }
 
     fun runEntityAgainst(entity: Entity, from: Vector3dc, delta: Vector3dc, collideWithEntities: Boolean): Vector3d {
-        var cell: CellData
+        var cell: Cell
         val boxes = ArrayList<Box>()
 
         // Extract the current position
@@ -257,7 +257,7 @@ class DefaultWorldCollisionsManager(private val world: WorldImplementation) : Wo
                     for (i in floor(pos.x()).toInt() - 1 until ceil(pos.x() + checkerX.xWidth).toInt()) {
                         for (j in floor(pos.y()).toInt() - 1 until ceil(pos.y() + checkerX.yHeight).toInt()) {
                             for (k in floor(pos.z()).toInt() - 1 until ceil(pos.z() + checkerX.zWidth).toInt()) {
-                                cell = world.peekSafely(i, j, k)
+                                cell = world.peek(i, j, k)
                                 if (cell.voxel.solid)
                                     addAllSafe(boxes, cell.translatedCollisionBoxes)
                             }
@@ -265,7 +265,7 @@ class DefaultWorldCollisionsManager(private val world: WorldImplementation) : Wo
                     }
 
                     if (collideWithEntities)
-                        world.getEntitiesInBox(entitiesCenter, entitiesRadius).forEach { e ->
+                        world.getEntitiesInBox(Box.fromExtentsCentered(entitiesRadius).translate(entitiesCenter)).forEach { e ->
                             if (e !== entity)
                                 addAllSafeAndTranslate(boxes, e, e.location)
                         }
@@ -296,7 +296,7 @@ class DefaultWorldCollisionsManager(private val world: WorldImplementation) : Wo
                     for (i in floor(pos.x()).toInt() - 1 until ceil(pos.x() + checkerY.xWidth).toInt()) {
                         for (j in floor(pos.y()).toInt() - 1 until ceil(pos.y() + checkerY.yHeight).toInt()) {
                             for (k in floor(pos.z()).toInt() - 1 until ceil(pos.z() + checkerY.zWidth).toInt()) {
-                                cell = world.peekSafely(i, j, k)
+                                cell = world.peek(i, j, k)
                                 if (cell.voxel.solid)
                                     addAllSafe(boxes, cell.translatedCollisionBoxes)
                             }
@@ -304,7 +304,7 @@ class DefaultWorldCollisionsManager(private val world: WorldImplementation) : Wo
                     }
 
                     if (collideWithEntities)
-                        world.getEntitiesInBox(entitiesCenter, entitiesRadius).forEach { e ->
+                        world.getEntitiesInBox(Box.fromExtentsCentered(entitiesRadius).translate(entitiesCenter)).forEach { e ->
                             if (e !== entity) {
                                 addAllSafeAndTranslate(boxes, e, e.location)
                             }
@@ -340,7 +340,7 @@ class DefaultWorldCollisionsManager(private val world: WorldImplementation) : Wo
                         for (j in floor(pos.y()).toInt() - 1 until ceil(pos.y() + checkerZ.yHeight
                                 + 1.0).toInt()) {
                             for (k in floor(pos.z()).toInt() - 1 until ceil(pos.z() + checkerZ.zWidth).toInt()) {
-                                cell = world.peekSafely(i, j, k)
+                                cell = world.peek(i, j, k)
                                 if (cell.voxel.solid)
                                     addAllSafe(boxes, cell.translatedCollisionBoxes)
                             }
@@ -348,7 +348,7 @@ class DefaultWorldCollisionsManager(private val world: WorldImplementation) : Wo
                     }
 
                     if (collideWithEntities)
-                        world.getEntitiesInBox(entitiesCenter, entitiesRadius).forEach { e ->
+                        world.getEntitiesInBox(Box.fromExtentsCentered(entitiesRadius).translate(entitiesCenter)).forEach { e ->
                             if (e !== entity)
                                 addAllSafeAndTranslate(boxes, e, e.location)
                         }
@@ -407,7 +407,7 @@ class DefaultWorldCollisionsManager(private val world: WorldImplementation) : Wo
     }
 
     override fun isPointSolid(point: Vector3dc): Boolean {
-        val peek = world.peekSafely(point)
+        val peek = world.peek(point)
 
         if (peek.voxel!!.solid) {
             // Fast check if the voxel is just a solid block

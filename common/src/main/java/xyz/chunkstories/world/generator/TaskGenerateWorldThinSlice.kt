@@ -36,7 +36,7 @@ class TaskGenerateWorldThinSlice internal constructor(private val world: World, 
 
         holders = arrayOfNulls(maxGenerationHeightInChunks)
         for (chunkY in 0 until maxGenerationHeightInChunks) {
-            holders[chunkY] = world.acquireChunkHolder(this, chunkX, chunkY, chunkZ) as ChunkHolderImplementation
+            holders[chunkY] = world.chunksManager.acquireChunkHolder(this, chunkX, chunkY, chunkZ) as ChunkHolderImplementation
         }
     }
 

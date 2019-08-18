@@ -1,7 +1,7 @@
 package xyz.chunkstories.world.chunk;
 
 import xyz.chunkstories.api.voxel.components.VoxelComponent;
-import xyz.chunkstories.api.world.cell.CellData;
+import xyz.chunkstories.api.world.cell.Cell;
 import xyz.chunkstories.api.world.cell.FutureCell;
 import xyz.chunkstories.api.world.chunk.Chunk;
 import xyz.chunkstories.api.world.chunk.FreshChunkCell;
@@ -11,7 +11,7 @@ class FreshFutureCell extends FutureCell implements FreshChunkCell {
 
     private CubicChunk cubicChunk;
 
-    public FreshFutureCell(CubicChunk cubicChunk, CellData ogContext) {
+    public FreshFutureCell(CubicChunk cubicChunk, Cell ogContext) {
         super(ogContext);
         this.cubicChunk = cubicChunk;
     }

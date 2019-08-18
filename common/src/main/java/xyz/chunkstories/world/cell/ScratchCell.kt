@@ -9,10 +9,10 @@ package xyz.chunkstories.world.cell
 import xyz.chunkstories.api.voxel.Voxel
 import xyz.chunkstories.api.voxel.VoxelSide
 import xyz.chunkstories.api.world.World
-import xyz.chunkstories.api.world.cell.CellData
+import xyz.chunkstories.api.world.cell.Cell
 
 /** Used to recycle results of a peek command  */
-class ScratchCell(override val world: World) : CellData {
+class ScratchCell(override val world: World) : Cell {
     // Fields set to public so we can access them
     override var x: Int = 0
     override var y: Int = 0
@@ -22,8 +22,8 @@ class ScratchCell(override val world: World) : CellData {
     override var blocklight: Int = 0
     override var metaData: Int = 0
 
-    override fun getNeightbor(side_int: Int): CellData {
-        val side = VoxelSide.values()[side_int]
-        return world.peekSafely(x + side.dx, y + side.dy, z + side.dz)
+    override fun getNeightbor(side: Int): Cell {
+        val side = VoxelSide.values()[side]
+        return world.peek(x + side.dx, y + side.dy, z + side.dz)
     }
 }

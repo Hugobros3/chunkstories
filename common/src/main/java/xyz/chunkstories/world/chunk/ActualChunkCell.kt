@@ -6,15 +6,15 @@ import xyz.chunkstories.api.voxel.VoxelFormat
 import xyz.chunkstories.api.voxel.VoxelSide
 import xyz.chunkstories.api.voxel.components.VoxelComponent
 import xyz.chunkstories.api.world.World
+import xyz.chunkstories.api.world.cell.AbstractCell
 import xyz.chunkstories.api.world.cell.Cell
-import xyz.chunkstories.api.world.cell.CellData
 import xyz.chunkstories.api.world.chunk.Chunk
 import xyz.chunkstories.api.world.chunk.ChunkCell
 import xyz.chunkstories.api.world.chunk.FreshChunkCell
 import xyz.chunkstories.voxel.components.CellComponentsHolder
 
-class ActualChunkVoxelContext(private val cubicChunk: CubicChunk, x: Int, y: Int, z: Int, data: Int) :
-        Cell(x and 0x1F, y and 0x1F, z and 0x1F, cubicChunk.world.contentTranslator.getVoxelForId(VoxelFormat.id(data))
+class ActualChunkCell(private val cubicChunk: CubicChunk, x: Int, y: Int, z: Int, data: Int) :
+        AbstractCell(x and 0x1F, y and 0x1F, z and 0x1F, cubicChunk.world.contentTranslator.getVoxelForId(VoxelFormat.id(data))
                 ?: cubicChunk.world.content.voxels.air
                 , VoxelFormat.meta(data), VoxelFormat.blocklight(data), VoxelFormat.sunlight(data)), ChunkCell, FreshChunkCell {
     override var data: Int = 0
@@ -95,7 +95,7 @@ class ActualChunkVoxelContext(private val cubicChunk: CubicChunk, x: Int, y: Int
         throw RuntimeException("Pick a valid side")
     }
 
-    override fun getNeightbor(side_int: Int): CellData {
+    override fun getNeightbor(side_int: Int): Cell {
         val side = VoxelSide.values()[side_int]
 
         // Fast path for in-chunk neigtbor
@@ -103,7 +103,7 @@ class ActualChunkVoxelContext(private val cubicChunk: CubicChunk, x: Int, y: Int
                 || side == VoxelSide.BOTTOM && y > 0 || side == VoxelSide.TOP && y < 31
                 || side == VoxelSide.BACK && z > 0 || side == VoxelSide.FRONT && z < 31) {
             cubicChunk.peek(x + side.dx, y + side.dy, z + side.dz)
-        } else cubicChunk.world.peekSafely(x + side.dx, y + side.dy, z + side.dz)
+        } else cubicChunk.world.peek(x + side.dx, y + side.dy, z + side.dz)
 
     }
 

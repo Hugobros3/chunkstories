@@ -16,7 +16,6 @@ import xyz.chunkstories.api.voxel.VoxelSide
 import xyz.chunkstories.api.workers.TaskExecutor
 import xyz.chunkstories.api.world.chunk.ChunkLightUpdater
 import xyz.chunkstories.api.world.heightmap.Heightmap
-import xyz.chunkstories.world.WorldTool
 import xyz.chunkstories.world.cell.ScratchCell
 import xyz.chunkstories.world.chunk.deriveddata.AutoRebuildingProperty
 
@@ -49,7 +48,7 @@ class ChunkLightBaker(internal val chunk: CubicChunk) : AutoRebuildingProperty(c
             var sunLightAfter = VoxelFormat.sunlight(data)
             val blockLightAfter = VoxelFormat.blocklight(data)
 
-            val csh = world.regionsSummariesHolder.getHeightAtWorldCoordinates(bx + chunkX * 32, bz + chunkZ * 32)
+            val csh = world.heightmapsManager.getHeightAtWorldCoordinates(bx + chunkX * 32, bz + chunkZ * 32)
             val block_height = by + chunkY * 32
 
             // If the block is at or above (never) the topmost tile it's sunlit
@@ -107,12 +106,12 @@ class ChunkLightBaker(internal val chunk: CubicChunk) : AutoRebuildingProperty(c
 
         init {
             // Checks if the adjacent chunks are done loading
-            topChunk = world.getChunk(chunkX, chunkY + 1, chunkZ)
-            bottomChunk = world.getChunk(chunkX, chunkY - 1, chunkZ)
-            frontChunk = world.getChunk(chunkX, chunkY, chunkZ + 1)
-            backChunk = world.getChunk(chunkX, chunkY, chunkZ - 1)
-            leftChunk = world.getChunk(chunkX - 1, chunkY, chunkZ)
-            rightChunk = world.getChunk(chunkX + 1, chunkY, chunkZ)
+            topChunk = world.chunksManager.getChunk(chunkX, chunkY + 1, chunkZ)
+            bottomChunk = world.chunksManager.getChunk(chunkX, chunkY - 1, chunkZ)
+            frontChunk = world.chunksManager.getChunk(chunkX, chunkY, chunkZ + 1)
+            backChunk = world.chunksManager.getChunk(chunkX, chunkY, chunkZ - 1)
+            leftChunk = world.chunksManager.getChunk(chunkX - 1, chunkY, chunkZ)
+            rightChunk = world.chunksManager.getChunk(chunkX + 1, chunkY, chunkZ)
         }
 
         override fun update(taskExecutor: TaskExecutor): Boolean {
@@ -479,7 +478,7 @@ class ChunkLightBaker(internal val chunk: CubicChunk) : AutoRebuildingProperty(c
                     var y = 31
                     var hitGroundYet = false
 
-                    val csh = world.regionsSummariesHolder.getHeightAtWorldCoordinates(chunkX * 32 + x, chunkZ * 32 + z)
+                    val csh = world.heightmapsManager.getHeightAtWorldCoordinates(chunkX * 32 + x, chunkZ * 32 + z)
                     while (y >= 0) {
                         peek(x, y, z, cell)
                         val ll = cell.voxel.getEmittedLightLevel(cell)
@@ -1116,7 +1115,7 @@ class ChunkLightBaker(internal val chunk: CubicChunk) : AutoRebuildingProperty(c
             val oldData = world.peekRaw(x + chunkX * 32, y + chunkY * 32, z + chunkZ * 32)
             world.pokeRawSilently(x + chunkX * 32, y + chunkY * 32, z + chunkZ * 32, data)
 
-            val chunk = world.getChunkWorldCoordinates(x + chunkX * 32, y + chunkY * 32, z + chunkZ * 32)
+            val chunk = world.chunksManager.getChunkWorldCoordinates(x + chunkX * 32, y + chunkY * 32, z + chunkZ * 32)
             if (chunk != null && oldData != data)
                 chunk.lightBaker.requestUpdate()
 

@@ -45,7 +45,7 @@ class TaskGenerateWorldSlice(private val world: WorldImplementation, val heightm
             val heightInRegions = world.worldInfo.size.heightInChunks / 8
             this.regions = arrayOfNulls(heightInRegions)
             for (ry in 0 until heightInRegions) {
-                regions[ry] = world.acquireRegion(this, heightmap.regionX, ry, heightmap.regionZ)
+                regions[ry] = world.regionsManager.acquireRegion(this, heightmap.regionX, ry, heightmap.regionZ)
             }
             initialized = true
         }

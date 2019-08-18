@@ -106,7 +106,7 @@ class WorldLogicThread(private val world: WorldImplementation, securityManager: 
             if (world.ticksElapsed % 60 == 0L) {
                 // Compresses pending chunk summaries
                 if (world is WorldMaster) {
-                    for (region in world.regionsStorage.regionsList) {
+                    for (region in world.regionsManager.regionsList) {
                         region.compressChangedChunks()
                     }
                 }
@@ -116,7 +116,7 @@ class WorldLogicThread(private val world: WorldImplementation, securityManager: 
             if(world is WorldMaster) {
                 val players = world.players
                 if (world.ticksElapsed % physicsRate == 0L) {
-                    for (chunk in world.allLoadedChunks) {
+                    for (chunk in world.chunksManager.allLoadedChunks) {
                         var minDistance = Double.MAX_VALUE
                         val chunkLocation = Location(world, chunk.chunkX * 32.0 + 16.0, chunk.chunkY * 32.0 + 16.0, chunk.chunkZ * 32.0 + 16.0)
                         for(player in players) {

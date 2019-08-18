@@ -17,7 +17,6 @@ import xyz.chunkstories.api.world.World
 import xyz.chunkstories.api.world.WorldMaster
 import xyz.chunkstories.api.world.WorldUser
 import xyz.chunkstories.api.world.cell.Cell
-import xyz.chunkstories.api.world.cell.CellData
 import xyz.chunkstories.api.world.cell.FutureCell
 import xyz.chunkstories.api.world.heightmap.Heightmap
 import xyz.chunkstories.net.packets.PacketHeightmap
@@ -26,6 +25,7 @@ import xyz.chunkstories.world.WorldImplementation
 import xyz.chunkstories.world.WorldTool
 import xyz.chunkstories.world.generator.TaskGenerateWorldSlice
 import net.jpountz.lz4.LZ4Factory
+import xyz.chunkstories.api.world.cell.AbstractCell
 import java.io.File
 import java.util.*
 import java.util.concurrent.Semaphore
@@ -329,11 +329,11 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
                 var liquid = false
                 do {
                     height--
-                    loaded = world.isChunkLoaded(worldX / 32, height / 32, worldZ / 32)
+                    loaded = world.chunksManager.isChunkLoaded(worldX / 32, height / 32, worldZ / 32)
 
-                    val celli = world.peekSafely(worldX, height, worldZ)
-                    solid = celli.voxel!!.solid
-                    liquid = celli.voxel!!.name.endsWith("water")
+                    val celli = world.peek(worldX, height, worldZ)
+                    solid = celli.voxel.solid
+                    liquid = celli.voxel.name.endsWith("water")
 
                     raw_data = world.peekRaw(worldX, height, worldZ)
                 } while (height >= 0 && loaded && !solid && !liquid)
@@ -346,7 +346,7 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
         }
     }
 
-    override fun setTopCell(cell: CellData) {
+    override fun setTopCell(cell: Cell) {
         if (state !is Heightmap.State.Available && state !is Heightmap.State.Generating)
             return
 
@@ -383,19 +383,19 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
         return voxelData[index(x, z)]
     }
 
-    override fun getTopCell(x: Int, z: Int): CellData {
+    override fun getTopCell(x: Int, z: Int): Cell {
         val raw_data = getRawVoxelData(x, z)
         return SummaryCell(x, getHeight(x, z), z,
                 world.contentTranslator.getVoxelForId(VoxelFormat.id(raw_data))!!, VoxelFormat.sunlight(raw_data),
                 VoxelFormat.blocklight(raw_data), VoxelFormat.meta(raw_data))
     }
 
-    internal inner class SummaryCell(x: Int, y: Int, z: Int, voxel: Voxel, meta: Int, blocklight: Int, sunlight: Int) : Cell(x, y, z, voxel, meta, blocklight, sunlight) {
+    internal inner class SummaryCell(x: Int, y: Int, z: Int, voxel: Voxel, meta: Int, blocklight: Int, sunlight: Int) : AbstractCell(x, y, z, voxel, meta, blocklight, sunlight) {
 
         override val world: World
             get() = this@HeightmapImplementation.world
 
-        override fun getNeightbor(side_int: Int): CellData {
+        override fun getNeightbor(side_int: Int): Cell {
             val side = VoxelSide.values()[side_int]
             return getTopCell(x + side.dx, z + side.dz)
         }

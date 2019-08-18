@@ -74,7 +74,7 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
                             continue
                         }
 
-                        val holder = world.acquireChunkHolder(player, chunkX, chunkY, chunkZ)!!
+                        val holder = world.chunksManager.acquireChunkHolder(player, chunkX, chunkY, chunkZ)!!
 
                         if (holder.region.state is Region.State.Zombie)
                             throw Exception("WOW THIS IS NOT COOL :(((")
@@ -187,7 +187,7 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
             lock.lock()
             // The server refused to register us to this chunk. We gracefully accept.
             if (packet.type == Type.UNREGISTER_CHUNK) {
-                val holder = world.getRegionChunkCoordinates(packet.x, packet.y, packet.z)!!
+                val holder = world.regionsManager.getRegionChunkCoordinates(packet.x, packet.y, packet.z)!!
                         .getChunkHolder(packet.x, packet.y, packet.z) ?: return
 
                 // Apparently we already figured we didn't need this anyway
@@ -210,7 +210,7 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
 
                 // This is the same but for region summaries
             } else if (packet.type == Type.UNREGISTER_SUMMARY) {
-                val regionSummary = world.regionsSummariesHolder.getHeightmap(packet.x, packet.z) ?: return
+                val regionSummary = world.heightmapsManager.getHeightmap(packet.x, packet.z) ?: return
 
                 acquiredHeightmaps.remove(regionSummary)
                 regionSummary.unregisterUser(player)
@@ -246,7 +246,7 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
 
         logger.debug("Additional wait for heightmaps that were transitively loaded")
 
-        for(heightmap in (world as WorldImplementation).regionsSummariesHolder.all()) {
+        for(heightmap in (world as WorldImplementation).heightmapsManager.all()) {
             (heightmap as HeightmapImplementation).waitUntilStateIs(Heightmap.State.Zombie::class.java).traverse()
         }
 

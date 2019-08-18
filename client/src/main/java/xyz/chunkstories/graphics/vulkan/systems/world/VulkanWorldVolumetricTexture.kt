@@ -87,7 +87,7 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
 
                             val cacheIndex = ((inAtlasCoordinateX) * chunksSidesCount + inAtlasCoordinateY) * chunksSidesCount + inAtlasCoordinateZ
                             val cacheEntry = chunksCache[cacheIndex]
-                            val chunk = world.getChunk(chunkStartX + x, chunkStartY + y, chunkStartZ + z)
+                            val chunk = world.chunksManager.getChunk(chunkStartX + x, chunkStartY + y, chunkStartZ + z)
 
                             if (chunk == null) {
                                 chunksCache[cacheIndex] = null

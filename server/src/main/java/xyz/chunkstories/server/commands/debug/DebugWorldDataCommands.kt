@@ -10,11 +10,9 @@ import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.plugin.commands.Command
 import xyz.chunkstories.api.plugin.commands.CommandEmitter
 import xyz.chunkstories.api.server.Server
-import xyz.chunkstories.api.world.chunk.Chunk
 import xyz.chunkstories.api.world.heightmap.Heightmap
 import xyz.chunkstories.server.commands.ServerCommandBasic
 import xyz.chunkstories.world.WorldImplementation
-import xyz.chunkstories.world.heightmap.HeightmapImplementation
 
 class DebugWorldDataCommands(serverConsole: Server) : ServerCommandBasic(serverConsole) {
 
@@ -48,11 +46,11 @@ class DebugWorldDataCommands(serverConsole: Server) : ServerCommandBasic(serverC
             if (arguments.size == 2) {
                 val x = Integer.parseInt(arguments[0])
                 val z = Integer.parseInt(arguments[1])
-                sum = server.world.regionsSummariesHolder.getHeightmap(x, z)
+                sum = server.world.heightmapsManager.getHeightmap(x, z)
             } else {
                 val player = emitter as Player
                 val playerEntity = player.controlledEntity ?: throw Exception("Not currently controlling an entity !")
-                sum = playerEntity.world.regionsSummariesHolder.getHeightmapLocation(playerEntity.location)
+                sum = playerEntity.world.heightmapsManager.getHeightmapLocation(playerEntity.location)
             }
 
             emitter.sendMessage("#00FFD0" + sum!!)
@@ -65,7 +63,7 @@ class DebugWorldDataCommands(serverConsole: Server) : ServerCommandBasic(serverC
 
     private fun dumpLoadedHeightmap(world: WorldImplementation, emitter: CommandEmitter) {
         emitter.sendMessage("#00FFD0" + "Dumping all region summaries...")
-        for (sum in world.regionsSummariesHolder.all()) {
+        for (sum in world.heightmapsManager.all()) {
             emitter.sendMessage("#00FFD0$sum")
         }
     }

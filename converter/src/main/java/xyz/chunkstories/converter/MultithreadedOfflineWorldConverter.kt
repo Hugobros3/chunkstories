@@ -128,7 +128,7 @@ constructor(verboseMode: Boolean, mcFolder: File, csFolder: File, mcWorldName: S
                                 .floor(minecraftChunksImported.toDouble() / minecraftChunksToImport.toDouble() * 100)
 
                         if (completion >= 100.0 || System.currentTimeMillis() - lastPercentageShow > 5000) {
-                            verbose("$completion% ... (${csWorld.regionsStorage.countChunks()} chunks loaded ) using ${Runtime.getRuntime().freeMemory() / 1024 / 1024}/${Runtime.getRuntime().maxMemory() / 1024 / 1024}Mb ")
+                            verbose("$completion% ... (${csWorld.regionsManager.countChunks()} chunks loaded ) using ${Runtime.getRuntime().freeMemory() / 1024 / 1024}/${Runtime.getRuntime().maxMemory() / 1024 / 1024}Mb ")
                             lastPercentageShow = System.currentTimeMillis()
                         }
                     }
@@ -239,7 +239,7 @@ constructor(verboseMode: Boolean, mcFolder: File, csFolder: File, mcWorldName: S
                 for (i in -1..1) {
                     for (j in -1..1) {
                         for (chunkY in 0..maxHeightPossible / 32) {
-                            val chunkHolder = csWorld.acquireChunkHolder(worldUser, chunkX + i, chunkY, chunkZ + j) as ChunkHolderImplementation
+                            val chunkHolder = csWorld.chunksManager.acquireChunkHolder(worldUser, chunkX + i, chunkY, chunkZ + j) as ChunkHolderImplementation
                             /*when(val state = chunkHolder.state) {
                                 is ChunkHolder.State.Loading -> compoundFence.add(state.fence)
                                 !is ChunkHolder.State.Available -> throw Exception("ChunkHolder state isn't available or loading, unexpected behavior met")
@@ -260,7 +260,7 @@ constructor(verboseMode: Boolean, mcFolder: File, csFolder: File, mcWorldName: S
 
                 // Spreads lightning, from top to botton
                 for (chunkY in maxHeightPossible / 32 downTo 0) {
-                    val chunk = csWorld.getChunk(chunkX, chunkY, chunkZ)
+                    val chunk = csWorld.chunksManager.getChunk(chunkX, chunkY, chunkZ)
                     val fence = chunk!!.lightBaker.requestUpdateAndGetFence()
                     waveFence.add(fence)
                 }

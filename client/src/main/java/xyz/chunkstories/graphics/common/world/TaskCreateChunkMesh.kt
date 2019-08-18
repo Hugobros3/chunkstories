@@ -58,7 +58,7 @@ abstract class TaskCreateChunkMesh(
             return true
 
         val neighborsPresent = neighborsIndexes.count { (x, y, z) ->
-            val neighbor = chunk.world.getChunk(chunk.chunkX + x, chunk.chunkY + y, chunk.chunkZ + z)
+            val neighbor = chunk.world.chunksManager.getChunk(chunk.chunkX + x, chunk.chunkY + y, chunk.chunkZ + z)
             (neighbor != null || (chunk.chunkY + y < 0) || (chunk.chunkY + y >= chunk.world.worldInfo.size.heightInChunks))
         }
         if (neighborsPresent < neighborsIndexes.size)

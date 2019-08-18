@@ -44,7 +44,10 @@ class WorldEntitiesHolder(internal val world: World) : Iterable<Entity> {
         return backing[uuid]
     }
 
-    fun getEntitiesInBox(min: Vector3dc, max: Vector3dc): NearEntitiesIterator {
+    internal fun getEntitiesInBox(box: Box): NearEntitiesIterator {
+        val min = box.min
+        val max = box.max
+
         val minVoxelX = min.x().toInt()
         val minVoxelY = min.y().toInt()
         val minVoxelZ = min.z().toInt()
@@ -76,7 +79,7 @@ class WorldEntitiesHolder(internal val world: World) : Iterable<Entity> {
 
         // Fast path #1: it's all in one chunk!
         if (csx == cex && csy == cey && csz == cez) {
-            val chunk = world.getChunk(csx, csy, csz)
+            val chunk = world.chunksManager.getChunk(csx, csy, csz)
             return if (chunk != null)
                 DistanceCheckedIterator(chunk.entitiesWithinChunk.iterator(), box)
             else
@@ -117,7 +120,7 @@ class WorldEntitiesHolder(internal val world: World) : Iterable<Entity> {
                     for (cz in csz..cez) {
                         // System.out.println(center.x() / 32+":"+center.y() / 32+":"+center.z() / 32);
                         // System.out.println(cx+":"+cy+":"+cz);
-                        val chunk = world.getChunk(cx, cy, cz)
+                        val chunk = world.chunksManager.getChunk(cx, cy, cz)
                         if (chunk != null)
                             iterators.add(chunk.entitiesWithinChunk.iterator())
                     }
@@ -205,7 +208,7 @@ class WorldEntitiesHolder(internal val world: World) : Iterable<Entity> {
             var region_y = region_start_y
             var region_z = region_start_z
 
-            var currentRegion = world.getRegion(region_x, region_y, region_z)
+            var currentRegion = world.regionsManager.getRegion(region_x, region_y, region_z)
             var currentRegionIterator: Iterator<Entity>? = if (currentRegion == null)
                 null
             else
@@ -297,7 +300,7 @@ class WorldEntitiesHolder(internal val world: World) : Iterable<Entity> {
                     if (region_z > region_end_z)
                         return false
 
-                    currentRegion = world.getRegion(region_x, region_y, region_z)
+                    currentRegion = world.regionsManager.getRegion(region_x, region_y, region_z)
                 }
             }
 

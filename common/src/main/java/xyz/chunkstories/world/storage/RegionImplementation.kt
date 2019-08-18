@@ -272,7 +272,7 @@ class RegionImplementation(override val world: WorldImplementation, override val
                 heightmap.unregisterUser(this)
 
                 transitionState(Region.State.Zombie)
-                world.regionsStorage.removeRegion(this)
+                world.regionsManager.removeRegion(this)
             }
         }
     }

@@ -6,20 +6,19 @@
 
 package xyz.chunkstories.world.storage
 
-import xyz.chunkstories.api.util.concurrency.Fence
 import xyz.chunkstories.api.world.WorldUser
 import xyz.chunkstories.api.world.chunk.ChunkHolder
 import xyz.chunkstories.api.world.region.Region
-import xyz.chunkstories.util.concurrency.CompoundFence
 import xyz.chunkstories.util.concurrency.TrivialFence
 import xyz.chunkstories.world.WorldImplementation
 import xyz.chunkstories.world.chunk.CubicChunk
 import xyz.chunkstories.world.generator.TaskGenerateWorldSlice
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.api.Location
+import xyz.chunkstories.api.world.region.WorldRegionsManager
 import java.util.concurrent.locks.ReentrantLock
-import java.util.concurrent.locks.ReentrantReadWriteLock
 
-class RegionsStorage(val world: WorldImplementation) {
+class RegionsStorage(override val world: WorldImplementation) : WorldRegionsManager{
 
     private val regionsLock = ReentrantLock()
 
@@ -34,11 +33,11 @@ class RegionsStorage(val world: WorldImplementation) {
      * vertically encompassed by it. To solve this loop, we first acquire the heightmap data and pass it to the region constructor, using this dummy user.*/
     val bootStrapper = object : WorldUser {}
 
-    fun getRegionChunkCoordinates(chunkX: Int, chunkY: Int, chunkZ: Int): RegionImplementation? {
+    override fun getRegionChunkCoordinates(chunkX: Int, chunkY: Int, chunkZ: Int): RegionImplementation? {
         return getRegion(chunkX / 8, chunkY / 8, chunkZ / 8)
     }
 
-    fun getRegion(regionX: Int, regionY: Int, regionZ: Int): RegionImplementation? {
+    override fun getRegion(regionX: Int, regionY: Int, regionZ: Int): RegionImplementation? {
         try {
             regionsLock.lock()
             val key = (regionX * sizeInRegions + regionZ) * heightInRegions + regionY
@@ -66,7 +65,7 @@ class RegionsStorage(val world: WorldImplementation) {
 
     fun countChunks(): Int = regionsList.size
 
-    fun acquireRegion(user: WorldUser, regionX: Int, regionY: Int, regionZ: Int): RegionImplementation {
+    override fun acquireRegion(user: WorldUser, regionX: Int, regionY: Int, regionZ: Int): RegionImplementation {
         if (regionY < 0 || regionY > world.maxHeight / 256)
             throw Exception("Out of bounds: RegionY = $regionY is out of world bounds.")
 
@@ -79,7 +78,7 @@ class RegionsStorage(val world: WorldImplementation) {
             val heightmap = if (user is TaskGenerateWorldSlice)
                 user.heightmap
             else
-                world.regionsSummariesHolder.acquireHeightmap(bootStrapper, regionX, regionZ)
+                world.heightmapsManager.acquireHeightmap(bootStrapper, regionX, regionZ)
 
             var region: RegionImplementation? = regionsMap[key]
             var fresh = false
@@ -136,7 +135,7 @@ class RegionsStorage(val world: WorldImplementation) {
             this.regionsLock.lock()
 
             // Unlike the other entry point, this doesn't pose a risk of loop
-            val heightmap = world.regionsSummariesHolder.acquireHeightmap(bootStrapper, regionX, regionZ)
+            val heightmap = world.heightmapsManager.acquireHeightmap(bootStrapper, regionX, regionZ)
 
             val ogRegion = regionsMap[key]
             var region: RegionImplementation? = ogRegion
@@ -178,6 +177,42 @@ class RegionsStorage(val world: WorldImplementation) {
         }
     }
 
+    override fun acquireRegionChunkCoordinates(user: WorldUser, chunkX: Int, chunkY: Int, chunkZ: Int): RegionImplementation? {
+        return acquireRegion(user, chunkX / 8, chunkY / 8, chunkZ / 8)
+    }
+
+    override fun acquireRegionWorldCoordinates(user: WorldUser, worldX: Int, worldY: Int, worldZ: Int): RegionImplementation? {
+        var worldX = worldX
+        var worldY = worldY
+        var worldZ = worldZ
+        worldX = world.sanitizeHorizontalCoordinate(worldX)
+        worldY = world.sanitizeVerticalCoordinate(worldY)
+        worldZ = world.sanitizeHorizontalCoordinate(worldZ)
+
+        return acquireRegion(user, worldX / 256, worldY / 256, worldZ / 256)
+    }
+
+    override fun acquireRegionLocation(user: WorldUser, location: Location): RegionImplementation? {
+        return acquireRegionWorldCoordinates(user, location.x().toInt(), location.y().toInt(),
+                location.z().toInt())
+    }
+
+    override fun getRegionLocation(location: Location): RegionImplementation? {
+        return getRegionWorldCoordinates(location.x().toInt(), location.y().toInt(),
+                location.z().toInt())
+    }
+
+    override fun getRegionWorldCoordinates(worldX: Int, worldY: Int, worldZ: Int): RegionImplementation? {
+        var worldX = worldX
+        var worldY = worldY
+        var worldZ = worldZ
+        worldX = world.sanitizeHorizontalCoordinate(worldX)
+        worldY = world.sanitizeVerticalCoordinate(worldY)
+        worldZ = world.sanitizeHorizontalCoordinate(worldZ)
+
+        return getRegion(worldX / 256, worldY / 256, worldZ / 256)
+    }
+
     /**
      * Callback by the holder's unload() method to remove himself from this list.
      */
@@ -193,4 +228,7 @@ class RegionsStorage(val world: WorldImplementation) {
     companion object {
         val logger = LoggerFactory.getLogger("world.storage")
     }
+
+    override val allLoadedRegions: Sequence<Region>
+        get() = regionsList.asSequence()
 }

@@ -18,6 +18,7 @@ import xyz.chunkstories.api.item.inventory.Inventory
 import xyz.chunkstories.api.math.LoopingMathHelper
 import xyz.chunkstories.api.net.Packet
 import xyz.chunkstories.api.net.packets.PacketOpenInventory
+import xyz.chunkstories.api.physics.Box
 import xyz.chunkstories.api.server.RemotePlayer
 import xyz.chunkstories.api.server.Server
 import xyz.chunkstories.api.util.ColorsTools
@@ -149,8 +150,7 @@ class ServerPlayer(val playerConnection: ClientConnection, override val name: St
         if (!subscribedEntities.contains(controlledEntity))
             subscribe(controlledEntity)
 
-        val inRangeEntitiesIterator = controlledEntity.world.getEntitiesInBox(controlledTraitLocation,
-                Vector3d(ENTITY_VISIBILITY_SIZE, ENTITY_VISIBILITY_SIZE, ENTITY_VISIBILITY_SIZE))
+        val inRangeEntitiesIterator = controlledEntity.world.getEntitiesInBox(Box.Companion.fromExtentsCentered(Vector3d(ENTITY_VISIBILITY_SIZE)).translate(controlledTraitLocation))
         while (inRangeEntitiesIterator.hasNext()) {
             val e = inRangeEntitiesIterator.next()
 

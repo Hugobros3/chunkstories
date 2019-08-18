@@ -180,11 +180,11 @@ class CubicChunk(override val holder: ChunkHolderImplementation, override val ch
         return a and 0x1F
     }
 
-    override fun peek(x: Int, y: Int, z: Int): ActualChunkVoxelContext {
-        return ActualChunkVoxelContext(this, x, y, z, peekRaw(x, y, z))
+    override fun peek(x: Int, y: Int, z: Int): ActualChunkCell {
+        return ActualChunkCell(this, x, y, z, peekRaw(x, y, z))
     }
 
-    override fun peek(location: Vector3dc): ActualChunkVoxelContext {
+    override fun peek(location: Vector3dc): ActualChunkCell {
         return peek(location.x().toInt(), location.y().toInt(), location.z().toInt())
     }
 
@@ -242,7 +242,7 @@ class CubicChunk(override val holder: ChunkHolderImplementation, override val ch
      */
     private fun pokeInternal(worldX: Int, worldY: Int, worldZ: Int, newVoxel: Voxel?,
                              sunlight: Int, blocklight: Int, metadata: Int, raw_data: Int, use_raw_data: Boolean,
-                             update: Boolean, return_context: Boolean, cause: WorldModificationCause?): ActualChunkVoxelContext? {
+                             update: Boolean, return_context: Boolean, cause: WorldModificationCause?): ActualChunkCell? {
         var newVoxel = newVoxel
         var raw_data = raw_data
         val x = sanitizeCoordinate(worldX)
@@ -323,7 +323,7 @@ class CubicChunk(override val holder: ChunkHolderImplementation, override val ch
 
         // Update related summary
         if (update)
-            world.regionsSummariesHolder.updateOnBlockPlaced(x, y, z, future)
+            world.heightmapsManager.updateOnBlockPlaced(x, y, z, future)
 
         // Mark the nearby chunks to be re-rendered
         if (update) {
@@ -352,7 +352,7 @@ class CubicChunk(override val holder: ChunkHolderImplementation, override val ch
             for (ix in sx..ex)
                 for (iy in sy..ey)
                     for (iz in sz..ez) {
-                        val chunk = world.getChunk(ix, iy, iz)
+                        val chunk = world.chunksManager.getChunk(ix, iy, iz)
                         chunk?.mesh?.requestUpdate()
                     }
         }
@@ -360,7 +360,7 @@ class CubicChunk(override val holder: ChunkHolderImplementation, override val ch
         // If this is a 'master' world, notify remote users of the change !
         if (update && world is WorldMaster && world !is WorldTool) {
             val packet = PacketVoxelUpdate(
-                    ActualChunkVoxelContext(this, chunkX * 32 + x, chunkY * 32 + y, chunkZ * 32 + z, raw_data))
+                    ActualChunkCell(this, chunkX * 32 + x, chunkY * 32 + y, chunkZ * 32 + z, raw_data))
 
             for (user in this.holder.users) {
                 if (user !is RemotePlayer)
@@ -374,7 +374,7 @@ class CubicChunk(override val holder: ChunkHolderImplementation, override val ch
         }
 
         return if (return_context)
-            ActualChunkVoxelContext(this, chunkX * 32 + x, chunkY * 32 + y, chunkZ * 32 + z, raw_data)
+            ActualChunkCell(this, chunkX * 32 + x, chunkY * 32 + y, chunkZ * 32 + z, raw_data)
         else
             null
     }

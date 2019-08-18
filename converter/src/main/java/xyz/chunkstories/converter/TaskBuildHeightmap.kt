@@ -23,7 +23,7 @@ class TaskBuildHeightmap(private val regionX: Int, private val regionZ: Int, pri
         // We wait on a bunch of stuff to load everytime
         val compoundFence = CompoundFence()
 
-        val heightmap = csWorld.regionsSummariesHolder.acquireHeightmap(thread, regionX, regionZ)
+        val heightmap = csWorld.heightmapsManager.acquireHeightmap(thread, regionX, regionZ)
         compoundFence.add(heightmap.waitUntilStateIs(Heightmap.State.Available::class.java))
 
         val heightInChunks = OfflineWorldConverter.mcWorldHeight / 32
@@ -33,7 +33,7 @@ class TaskBuildHeightmap(private val regionX: Int, private val regionZ: Int, pri
         for (innerCX in 0..7)
             for (innerCZ in 0..7)
                 for (chunkY in 0 until heightInChunks) {
-                    val holder = csWorld.acquireChunkHolder(thread, regionX * 8 + innerCX, chunkY, regionZ * 8 + innerCZ) as ChunkHolderImplementation
+                    val holder = csWorld.chunksManager.acquireChunkHolder(thread, regionX * 8 + innerCX, chunkY, regionZ * 8 + innerCZ) as ChunkHolderImplementation
                     holders[(innerCX * 8 + chunkY) * heightInChunks + innerCZ] = holder
                     compoundFence.add(holder.waitUntilStateIs(ChunkHolder.State.Available::class.java))
 

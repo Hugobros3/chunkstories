@@ -13,7 +13,7 @@ import xyz.chunkstories.api.voxel.Voxel
 import xyz.chunkstories.api.voxel.VoxelFormat
 import xyz.chunkstories.api.voxel.VoxelSide
 import xyz.chunkstories.api.world.World
-import xyz.chunkstories.api.world.cell.CellData
+import xyz.chunkstories.api.world.cell.Cell
 
 private val Box.xWidth: Double
     get() = extents.x()
@@ -29,7 +29,7 @@ private val Box.yPosition: Double
 private val Box.zPosition: Double
     get() = min.z()
 
-class AABBVoxelIterator(override val world: World, val box: Box) : IterableIterator<CellData>, CellData {
+class BlocksInBoundingBoxIterator(override val world: World, val box: Box) : IterableIterator<Cell>, Cell {
 
     // private final Voxels voxels;
 
@@ -63,7 +63,7 @@ class AABBVoxelIterator(override val world: World, val box: Box) : IterableItera
         get() = Location(world, x.toDouble(), y.toDouble(), z.toDouble())
 
     override val translatedCollisionBoxes: Array<Box>?
-        get() = voxel!!.getTranslatedCollisionBoxes(this)
+        get() = voxel.getTranslatedCollisionBoxes(this)
 
     init {
 
@@ -90,7 +90,7 @@ class AABBVoxelIterator(override val world: World, val box: Box) : IterableItera
         // return k <= (int)Math.ceil(box.zpos + box.zw);
     }
 
-    override fun next(): CellData {
+    override fun next(): Cell {
 
         x = i
         y = j
@@ -122,9 +122,9 @@ class AABBVoxelIterator(override val world: World, val box: Box) : IterableItera
         return this
     }
 
-    override fun getNeightbor(side_int: Int): CellData {
+    override fun getNeightbor(side_int: Int): Cell {
         val side = VoxelSide.values()[side_int]
-        return world.peekSafely(x + side.dx, y + side.dy, z + side.dz)
+        return world.peek(x + side.dx, y + side.dy, z + side.dz)
     }
 
     override fun getNeightborMetadata(i: Int): Int {

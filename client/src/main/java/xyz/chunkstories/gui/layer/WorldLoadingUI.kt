@@ -46,7 +46,7 @@ class WorldLoadingUI(val world: WorldClientLocal, gui: Gui, parentLayer: Layer?)
                     continue
 
                 for (z in (cz - 2)..(cz + 2)) {
-                    val ch = world.acquireChunkHolder(this, x, y, z)
+                    val ch = world.chunksManager.acquireChunkHolder(this, x, y, z)
                     subs.add(ch)
                 }
             }

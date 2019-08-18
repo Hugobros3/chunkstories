@@ -56,7 +56,7 @@ abstract class ChunkRepresentationsProvider<R : ChunkRepresentation>(
         var visibleRegionsCount = 0
 
         var rc = 0
-        for (region in world.allLoadedRegions) {
+        for (region in world.regionsManager.allLoadedRegions) {
             min.x = region.regionX * 256.0f + 0.0f
             min.y = region.regionY * 256.0f + 0.0f
             min.z = region.regionZ * 256.0f + 0.0f

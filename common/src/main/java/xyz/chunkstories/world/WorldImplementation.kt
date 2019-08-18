@@ -22,7 +22,6 @@ import xyz.chunkstories.api.events.voxel.WorldModificationCause
 import xyz.chunkstories.api.exceptions.world.ChunkNotLoadedException
 import xyz.chunkstories.api.exceptions.world.RegionNotLoadedException
 import xyz.chunkstories.api.exceptions.world.WorldException
-import xyz.chunkstories.api.input.Input
 import xyz.chunkstories.api.math.Math2
 import xyz.chunkstories.api.physics.Box
 import xyz.chunkstories.api.player.Player
@@ -31,14 +30,12 @@ import xyz.chunkstories.api.util.concurrency.Fence
 import xyz.chunkstories.api.voxel.Voxel
 import xyz.chunkstories.api.voxel.VoxelSide
 import xyz.chunkstories.api.world.*
+import xyz.chunkstories.api.world.cell.AbstractCell
 import xyz.chunkstories.api.world.cell.Cell
-import xyz.chunkstories.api.world.cell.CellData
 import xyz.chunkstories.api.world.cell.FutureCell
 import xyz.chunkstories.api.world.chunk.ChunkCell
-import xyz.chunkstories.api.world.chunk.ChunkHolder
 import xyz.chunkstories.api.world.generator.WorldGenerator
 import xyz.chunkstories.api.world.heightmap.Heightmap
-import xyz.chunkstories.api.world.region.Region
 import xyz.chunkstories.content.sandbox.UnthrustedUserContentSecurityManager
 import xyz.chunkstories.content.translator.AbstractContentTranslator
 import xyz.chunkstories.content.translator.IncompatibleContentException
@@ -48,12 +45,11 @@ import xyz.chunkstories.entity.EntityWorldIterator
 import xyz.chunkstories.entity.SerializedEntityFile
 import xyz.chunkstories.util.alias
 import xyz.chunkstories.util.concurrency.CompoundFence
-import xyz.chunkstories.world.chunk.CubicChunk
+import xyz.chunkstories.world.chunk.ChunksStorage
 import xyz.chunkstories.world.heightmap.HeightmapsStorage
 import xyz.chunkstories.world.io.IOTasks
-import xyz.chunkstories.world.iterators.AABBVoxelIterator
+import xyz.chunkstories.world.iterators.BlocksInBoundingBoxIterator
 import xyz.chunkstories.world.logic.WorldLogicThread
-import xyz.chunkstories.world.storage.RegionImplementation
 import xyz.chunkstories.world.storage.RegionsStorage
 import java.io.File
 import java.io.IOException
@@ -71,9 +67,15 @@ constructor(override val gameContext: GameContext, final override val worldInfo:
     abstract val ioHandler: IOTasks
     final override val gameLogic: WorldLogicThread
 
-    //TODO rename & uniformize
-    val regionsStorage: RegionsStorage
-    final override val regionsSummariesHolder: HeightmapsStorage
+    //TODO delete
+    override val maxHeight: Int
+        get() = worldInfo.size.heightInChunks * 32
+    override val sizeInChunks: Int = worldInfo.size.sizeInChunks
+    override val worldSize: Double = (worldInfo.size.sizeInChunks * 32).toDouble()
+
+    final override val chunksManager: ChunksStorage
+    final override val regionsManager: RegionsStorage
+    final override val heightmapsManager: HeightmapsStorage
 
     //TODO store the entities in a smarter way ?
     protected val entities: WorldEntitiesHolder
@@ -105,18 +107,12 @@ constructor(override val gameContext: GameContext, final override val worldInfo:
 
     override val allLoadedEntities: IterableIterator<Entity>
         get() = EntityWorldIterator(entities.iterator())
-    override val maxHeight: Int
-        get() = worldInfo.size.heightInChunks * 32
 
-    override val sizeInChunks: Int = worldInfo.size.sizeInChunks
-
-    override val worldSize: Double = (worldInfo.size.sizeInChunks * 32).toDouble()
-
-    override val allLoadedChunks: Sequence<CubicChunk>
-        get() = regionsStorage.regionsList.asSequence().flatMap { it.loadedChunks.asSequence() }
+    /*override val allLoadedChunks: Sequence<CubicChunk>
+        get() = regionsManager.regionsList.asSequence().flatMap { it.loadedChunks.asSequence() }
 
     override val allLoadedRegions: Collection<Region>
-        get() = regionsStorage.regionsList
+        get() = regionsManager.regionsList*/
 
     final override val content: Content
         get() = gameContext.content
@@ -124,8 +120,9 @@ constructor(override val gameContext: GameContext, final override val worldInfo:
     init {
         try {
             // Create holders for the world data
-            this.regionsStorage = RegionsStorage(this)
-            this.regionsSummariesHolder = HeightmapsStorage(this)
+            this.chunksManager = ChunksStorage(this)
+            this.regionsManager = RegionsStorage(this)
+            this.heightmapsManager = HeightmapsStorage(this)
 
             // And for the citizens
             this.entities = WorldEntitiesHolder(this)
@@ -294,8 +291,8 @@ constructor(override val gameContext: GameContext, final override val worldInfo:
         }
     }
 
-    override fun getEntitiesInBox(center: Vector3dc, boxSize: Vector3dc): World.NearEntitiesIterator {
-        return entities.getEntitiesInBox(center, boxSize)
+    override fun getEntitiesInBox(box: Box): World.NearEntitiesIterator {
+        return entities.getEntitiesInBox(box)
     }
 
     override fun getEntityByUUID(entityID: Long): Entity? {
@@ -303,13 +300,13 @@ constructor(override val gameContext: GameContext, final override val worldInfo:
     }
 
     @Throws(WorldException::class)
-    override fun peek(location: Vector3dc): ChunkCell {
-        return peek(location.x().toInt(), location.y().toInt(), location.z().toInt())
+    override fun tryPeek(location: Vector3dc): ChunkCell {
+        return tryPeek(location.x().toInt(), location.y().toInt(), location.z().toInt())
     }
 
     /** Fancy getter method that throws exceptions when the world isn't loaded  */
     @Throws(WorldException::class)
-    override fun peek(x: Int, y: Int, z: Int): ChunkCell {
+    override fun tryPeek(x: Int, y: Int, z: Int): ChunkCell {
         var x = x
         var y = y
         var z = z
@@ -317,7 +314,7 @@ constructor(override val gameContext: GameContext, final override val worldInfo:
         y = sanitizeVerticalCoordinate(y)
         z = sanitizeHorizontalCoordinate(z)
 
-        val region = this.getRegionWorldCoordinates(x, y, z)
+        val region = regionsManager.getRegionWorldCoordinates(x, y, z)
                 ?: throw RegionNotLoadedException(this, x / 256, y / 256, z / 256)
 
         val chunk = region.getChunk(x / 32 % 8, y / 32 % 8, z / 32 % 8)
@@ -326,7 +323,7 @@ constructor(override val gameContext: GameContext, final override val worldInfo:
         return chunk.peek(x, y, z)
     }
 
-    override fun peekSafely(x: Int, y: Int, z: Int): WorldCell {
+    override fun peek(x: Int, y: Int, z: Int): WorldCell {
         var x = x
         var y = y
         var z = z
@@ -335,7 +332,7 @@ constructor(override val gameContext: GameContext, final override val worldInfo:
         y = sanitizeVerticalCoordinate(y)
         z = sanitizeHorizontalCoordinate(z)
 
-        val region = this.getRegionWorldCoordinates(x, y, z)
+        val region = regionsManager.getRegionWorldCoordinates(x, y, z)
                 ?: return UnloadedWorldCell(x, y, z, this.gameContext.content.voxels.air, 0, 0, 0)
 
         val chunk = region.getChunk(x / 32 % 8, y / 32 % 8, z / 32 % 8)
@@ -345,20 +342,20 @@ constructor(override val gameContext: GameContext, final override val worldInfo:
     }
 
     /** Safety: provide an alternative 'fake' getCell if the proper one isn't loaded  */
-    internal inner class UnloadedWorldCell(x: Int, y: Int, z: Int, voxel: Voxel, meta: Int, blocklight: Int, sunlight: Int) : Cell(x, y, z, voxel, meta, blocklight, sunlight), WorldCell {
+    internal inner class UnloadedWorldCell(x: Int, y: Int, z: Int, voxel: Voxel, meta: Int, blocklight: Int, sunlight: Int) : AbstractCell(x, y, z, voxel, meta, blocklight, sunlight), WorldCell {
         override val world: World
             get() = this@WorldImplementation
 
         init {
 
-            val groundHeight = regionsSummariesHolder.getHeightAtWorldCoordinates(x, z)
+            val groundHeight = heightmapsManager.getHeightAtWorldCoordinates(x, z)
             if (groundHeight < y && groundHeight != Heightmap.NO_DATA)
                 this.sunlight = 15
         }
 
-        override fun getNeightbor(side_int: Int): CellData {
+        override fun getNeightbor(side_int: Int): Cell {
             val side = VoxelSide.values()[side_int]
-            return peekSafely(x + side.dx, y + side.dy, z + side.dz)
+            return peek(x + side.dx, y + side.dy, z + side.dz)
         }
 
         /*override fun setVoxel(voxel: Voxel) {
@@ -378,8 +375,8 @@ constructor(override val gameContext: GameContext, final override val worldInfo:
         }*/
     }
 
-    override fun peekSafely(location: Vector3dc): WorldCell {
-        return peekSafely(location.x().toInt(), location.y().toInt(), location.z().toInt())
+    override fun peek(location: Vector3dc): WorldCell {
+        return peek(location.x().toInt(), location.y().toInt(), location.z().toInt())
     }
 
     override fun peekSimple(x: Int, y: Int, z: Int): Voxel {
@@ -390,7 +387,7 @@ constructor(override val gameContext: GameContext, final override val worldInfo:
         y = sanitizeVerticalCoordinate(y)
         z = sanitizeHorizontalCoordinate(z)
 
-        val chunk = this.getChunkWorldCoordinates(x, y, z)
+        val chunk = chunksManager.getChunkWorldCoordinates(x, y, z)
         return if (chunk == null)
             gameContext.content.voxels.air
         else
@@ -405,7 +402,7 @@ constructor(override val gameContext: GameContext, final override val worldInfo:
         y = sanitizeVerticalCoordinate(y)
         z = sanitizeHorizontalCoordinate(z)
 
-        val chunk = this.getChunkWorldCoordinates(x, y, z)
+        val chunk = chunksManager.getChunkWorldCoordinates(x, y, z)
         return chunk?.peekRaw(x, y, z) ?: 0x00000000
     }
 
@@ -419,7 +416,7 @@ constructor(override val gameContext: GameContext, final override val worldInfo:
         y = sanitizeVerticalCoordinate(y)
         z = sanitizeHorizontalCoordinate(z)
 
-        val region = this.getRegionWorldCoordinates(x, y, z)
+        val region = regionsManager.getRegionWorldCoordinates(x, y, z)
                 ?: throw RegionNotLoadedException(this, x / 256, y / 256, z / 256)
 
         val chunk = region.getChunk(x / 32 % 8, y / 32 % 8, z / 32 % 8)
@@ -442,7 +439,7 @@ constructor(override val gameContext: GameContext, final override val worldInfo:
         y = sanitizeVerticalCoordinate(y)
         z = sanitizeHorizontalCoordinate(z)
 
-        val chunk = this.getChunkWorldCoordinates(x, y, z)
+        val chunk = chunksManager.getChunkWorldCoordinates(x, y, z)
         chunk?.pokeSimple(x, y, z, voxel, sunlight, blocklight, metadata)
     }
 
@@ -459,7 +456,7 @@ constructor(override val gameContext: GameContext, final override val worldInfo:
         y = sanitizeVerticalCoordinate(y)
         z = sanitizeHorizontalCoordinate(z)
 
-        val chunk = this.getChunkWorldCoordinates(x, y, z)
+        val chunk = chunksManager.getChunkWorldCoordinates(x, y, z)
         chunk?.pokeSimpleSilently(x, y, z, voxel, sunlight, blocklight, metadata)
     }
 
@@ -476,7 +473,7 @@ constructor(override val gameContext: GameContext, final override val worldInfo:
         y = sanitizeVerticalCoordinate(y)
         z = sanitizeHorizontalCoordinate(z)
 
-        val chunk = this.getChunkWorldCoordinates(x, y, z)
+        val chunk = chunksManager.getChunkWorldCoordinates(x, y, z)
         chunk?.pokeRaw(x, y, z, raw_data)
     }
 
@@ -488,12 +485,12 @@ constructor(override val gameContext: GameContext, final override val worldInfo:
         y = sanitizeVerticalCoordinate(y)
         z = sanitizeHorizontalCoordinate(z)
 
-        val chunk = this.getChunkWorldCoordinates(x, y, z)
+        val chunk = chunksManager.getChunkWorldCoordinates(x, y, z)
         chunk?.pokeRawSilently(x, y, z, raw_data)
     }
 
-    override fun getVoxelsWithin(boundingBox: Box): IterableIterator<CellData> {
-        return AABBVoxelIterator(this, boundingBox)
+    override fun getVoxelsWithin(boundingBox: Box): IterableIterator<Cell> {
+        return BlocksInBoundingBoxIterator(this, boundingBox)
     }
 
     /** Requests a full serialization of the world  */
@@ -501,7 +498,7 @@ constructor(override val gameContext: GameContext, final override val worldInfo:
         val ioOperationsFence = CompoundFence()
 
         logger.info("Saving all parts of world " + worldInfo.name)
-        ioOperationsFence.add(regionsStorage.saveAll())
+        ioOperationsFence.add(regionsManager.saveAll())
         //ioOperationsFence.add(regionsSummariesHolder.saveAllLoadedSummaries())
 
         saveInternalData()
@@ -516,22 +513,8 @@ constructor(override val gameContext: GameContext, final override val worldInfo:
         }
     }
 
-    override fun handleInteraction(entity: Entity, voxelLocation: Location?, input: Input): Boolean {
-        if (voxelLocation == null)
-            return false
-
-        val peek: CellData
-        try {
-            peek = this.peek(voxelLocation)
-        } catch (e: WorldException) {
-            // Will not accept interacting with unloaded blocks
-            return false
-        }
-
-        return peek.voxel.handleInteraction(entity, peek, input)
-    }
-
-    private fun sanitizeHorizontalCoordinate(coordinate: Int): Int {
+    //TODO move to worldsize
+    internal fun sanitizeHorizontalCoordinate(coordinate: Int): Int {
         var coordinate = coordinate
         coordinate %= (sizeInChunks * 32)
         if (coordinate < 0)
@@ -539,7 +522,8 @@ constructor(override val gameContext: GameContext, final override val worldInfo:
         return coordinate
     }
 
-    private fun sanitizeVerticalCoordinate(coordinate: Int): Int {
+    //TODO move to worldsize
+    internal fun sanitizeVerticalCoordinate(coordinate: Int): Int {
         var coordinate = coordinate
         if (coordinate < 0)
             coordinate = 0
@@ -548,122 +532,6 @@ constructor(override val gameContext: GameContext, final override val worldInfo:
         return coordinate
     }
 
-    override fun acquireChunkHolderLocation(user: WorldUser, location: Location): ChunkHolder {
-        return acquireChunkHolder(user, location.x().toInt(), location.y().toInt(),
-                location.z().toInt())
-    }
-
-    override fun acquireChunkHolder(user: WorldUser, chunkX: Int, chunkY: Int, chunkZ: Int): ChunkHolder {
-        var chunkX = chunkX
-        var chunkZ = chunkZ
-        // Sanitation of input data
-        chunkX %= sizeInChunks
-        chunkZ %= sizeInChunks
-        if (chunkX < 0)
-            chunkX += sizeInChunks
-        if (chunkZ < 0)
-            chunkZ += sizeInChunks
-        return this.regionsStorage.acquireChunkHolder(user, chunkX, chunkY, chunkZ)
-    }
-
-    override fun acquireChunkHolderWorldCoordinates(user: WorldUser, worldX: Int, worldY: Int, worldZ: Int): ChunkHolder {
-        var worldX = worldX
-        var worldY = worldY
-        var worldZ = worldZ
-        worldX = sanitizeHorizontalCoordinate(worldX)
-        worldY = sanitizeVerticalCoordinate(worldY)
-        worldZ = sanitizeHorizontalCoordinate(worldZ)
-
-        return this.regionsStorage.acquireChunkHolder(user, worldX / 32, worldY / 32, worldZ / 32)
-    }
-
-    override fun isChunkLoaded(chunkX: Int, chunkY: Int, chunkZ: Int): Boolean {
-        var chunkX = chunkX
-        var chunkZ = chunkZ
-        // Sanitation of input data
-        chunkX %= sizeInChunks
-        chunkZ %= sizeInChunks
-        if (chunkX < 0)
-            chunkX += sizeInChunks
-        if (chunkZ < 0)
-            chunkZ += sizeInChunks
-        // Out of bounds checks
-        if (chunkY < 0)
-            return false
-        return if (chunkY >= worldInfo.size.heightInChunks) false else this.regionsStorage!!.getChunk(chunkX, chunkY, chunkZ) != null
-        // If it doesn't return null then it exists
-    }
-
-    override fun getChunkWorldCoordinates(location: Location): CubicChunk? {
-        return getChunkWorldCoordinates(location.x().toInt(), location.y().toInt(),
-                location.z().toInt())
-    }
-
-    override fun getChunkWorldCoordinates(worldX: Int, worldY: Int, worldZ: Int): CubicChunk? {
-        return getChunk(worldX / 32, worldY / 32, worldZ / 32)
-    }
-
-    override fun getChunk(chunkX: Int, chunkY: Int, chunkZ: Int): CubicChunk? {
-        var chunkX = chunkX
-        var chunkZ = chunkZ
-        chunkX %= sizeInChunks
-        chunkZ %= sizeInChunks
-        if (chunkX < 0)
-            chunkX += sizeInChunks
-        if (chunkZ < 0)
-            chunkZ += sizeInChunks
-        if (chunkY < 0)
-            return null
-        return if (chunkY >= worldInfo.size.heightInChunks) null else regionsStorage!!.getChunk(chunkX, chunkY, chunkZ)
-    }
-
-    override fun acquireRegion(user: WorldUser, regionX: Int, regionY: Int, regionZ: Int): RegionImplementation? {
-        return this.regionsStorage.acquireRegion(user, regionX, regionY, regionZ)
-    }
-
-    override fun acquireRegionChunkCoordinates(user: WorldUser, chunkX: Int, chunkY: Int, chunkZ: Int): RegionImplementation? {
-        return acquireRegion(user, chunkX / 8, chunkY / 8, chunkZ / 8)
-    }
-
-    override fun acquireRegionWorldCoordinates(user: WorldUser, worldX: Int, worldY: Int, worldZ: Int): RegionImplementation? {
-        var worldX = worldX
-        var worldY = worldY
-        var worldZ = worldZ
-        worldX = sanitizeHorizontalCoordinate(worldX)
-        worldY = sanitizeVerticalCoordinate(worldY)
-        worldZ = sanitizeHorizontalCoordinate(worldZ)
-
-        return acquireRegion(user, worldX / 256, worldY / 256, worldZ / 256)
-    }
-
-    override fun acquireRegionLocation(user: WorldUser, location: Location): RegionImplementation? {
-        return acquireRegionWorldCoordinates(user, location.x().toInt(), location.y().toInt(),
-                location.z().toInt())
-    }
-
-    override fun getRegionLocation(location: Location): RegionImplementation? {
-        return getRegionWorldCoordinates(location.x().toInt(), location.y().toInt(),
-                location.z().toInt())
-    }
-
-    override fun getRegionWorldCoordinates(worldX: Int, worldY: Int, worldZ: Int): RegionImplementation? {
-        var worldX = worldX
-        var worldY = worldY
-        var worldZ = worldZ
-        worldX = sanitizeHorizontalCoordinate(worldX)
-        worldY = sanitizeVerticalCoordinate(worldY)
-        worldZ = sanitizeHorizontalCoordinate(worldZ)
-
-        return getRegion(worldX / 256, worldY / 256, worldZ / 256)
-    }
-
-    override fun getRegionChunkCoordinates(chunkX: Int, chunkY: Int, chunkZ: Int): RegionImplementation? {
-        return getRegion(chunkX / 8, chunkY / 8, chunkZ / 8)
-    }
-
-    override fun getRegion(regionX: Int, regionY: Int, regionZ: Int): RegionImplementation? {
-        return regionsStorage!!.getRegion(regionX, regionY, regionZ)
-    }
 
     open fun destroy() {
         // Stop the game logic first

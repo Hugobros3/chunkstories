@@ -1,6 +1,6 @@
 package xyz.chunkstories.gui.debug
 
-import xyz.chunkstories.api.entity.traits.TraitVoxelSelection
+import xyz.chunkstories.api.entity.traits.TraitSight
 import xyz.chunkstories.api.entity.traits.serializable.TraitRotation
 import xyz.chunkstories.api.gui.GuiDrawer
 import xyz.chunkstories.api.util.kotlin.toVec3i
@@ -64,7 +64,7 @@ class DebugInfoRendererHelper(ingameUI: IngameUI) {
 
         var chunksCount = 0
         var regionsCount = 0
-        for(region in world.allLoadedRegions) {
+        for(region in world.regionsManager.allLoadedRegions) {
             regionsCount++
             chunksCount += region.loadedChunks.size
         }
@@ -74,7 +74,7 @@ class DebugInfoRendererHelper(ingameUI: IngameUI) {
 
         val playerEntity = client.player.controlledEntity
         if(playerEntity != null ) {
-            val region = world.getRegionLocation(playerEntity.location)
+            val region = world.regionsManager.getRegionLocation(playerEntity.location)
             val heightmap = region?.heightmap
             val holder = region?.let {
                 val cx = playerEntity.location.x.toInt() / 32
@@ -91,11 +91,11 @@ class DebugInfoRendererHelper(ingameUI: IngameUI) {
 
             debugLine("Controlled entity id ${playerEntity.UUID} position ${playerEntity.location} type ${playerEntity.definition.name}")
 
-            val lookingAt = playerEntity.traits[TraitVoxelSelection::class]?.getBlockLookingAt(false, false)
+            val lookingAt = playerEntity.traits[TraitSight::class]?.getLookingAt(10.0)
             debugLine("Looking at $lookingAt in direction ${playerEntity.traits[TraitRotation::class]?.directionLookingAt}")
 
             val standingAt = playerEntity.location.toVec3i()
-            val standingIn = world.peekSafely(playerEntity.location)
+            val standingIn = world.peek(playerEntity.location)
             debugLine("Standing at $standingAt in ${standingIn.voxel} (solid=${standingIn.voxel.solid}, box=${standingIn.voxel.getCollisionBoxes(standingIn)?.getOrNull(0)})")
         } else {
             debugLine("No controlled entity")

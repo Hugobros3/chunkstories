@@ -8,15 +8,15 @@ package xyz.chunkstories.world.heightmap
 
 import xyz.chunkstories.api.Location
 import xyz.chunkstories.api.world.WorldUser
-import xyz.chunkstories.api.world.cell.CellData
+import xyz.chunkstories.api.world.cell.Cell
 import xyz.chunkstories.api.world.cell.FutureCell
 import xyz.chunkstories.api.world.heightmap.Heightmap
-import xyz.chunkstories.api.world.heightmap.WorldHeightmaps
+import xyz.chunkstories.api.world.heightmap.WorldHeightmapsManager
 import xyz.chunkstories.world.WorldImplementation
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.ReentrantReadWriteLock
 
-class HeightmapsStorage(override val world: WorldImplementation) : WorldHeightmaps {
+class HeightmapsStorage(override val world: WorldImplementation) : WorldHeightmapsManager {
     private val worldSize: Int = world.sizeInChunks * 32
     private val worldSizeInChunks: Int = world.sizeInChunks
     private val worldSizeInRegions: Int = world.sizeInChunks / 8
@@ -188,7 +188,7 @@ class HeightmapsStorage(override val world: WorldImplementation) : WorldHeightma
         return cs.getRawVoxelData(x % 256, z % 256)
     }
 
-    override fun getTopCellAtWorldCoordinates(x: Int, z: Int): CellData {
+    override fun getTopCellAtWorldCoordinates(x: Int, z: Int): Cell {
         var x = x
         var z = z
         x %= worldSize
