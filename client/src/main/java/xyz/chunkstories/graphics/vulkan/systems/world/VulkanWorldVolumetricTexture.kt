@@ -245,7 +245,7 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
                             color.set(topTexture.color)
 
                             if (topTexture.name.equals("grass_top")) {
-                                color.set(0.2f, 1.0f, 0.5f, 0.5f)
+                                color.set(0.4f, 0.8f, 0.4f, 1.0f)
                             }
 
                             byteBuffer.put((color.x() * 255).toInt().toByte())

@@ -5,6 +5,7 @@ import org.joml.Vector3fc
 import xyz.chunkstories.api.graphics.rendergraph.Frame
 import xyz.chunkstories.api.graphics.systems.dispatching.RepresentationsGobbler
 import xyz.chunkstories.api.graphics.systems.dispatching.RepresentationsProvider
+import xyz.chunkstories.api.physics.Box
 import xyz.chunkstories.api.util.kotlin.toVec3i
 import xyz.chunkstories.client.InternalClientOptions
 import xyz.chunkstories.world.WorldClientCommon
@@ -25,31 +26,31 @@ abstract class ChunkRepresentationsProvider<R : ChunkRepresentation>(
 
         val frame = mainContext.frame
 
-        fun getVisibility(min: Vector3fc, max: Vector3fc): Int {
+        fun getVisibility(box: Box): Int {
             var mask = 0
             for ((index, camera) in cameras.withIndex()) {
-                if (camera.frustrum.isBoxInFrustrum(min, max))
+                if (camera.frustrum.isBoxInFrustrum(box))
                     mask = mask or (1 shl index)
             }
             return mask
         }
 
-        fun refineVisibility(min: Vector3fc, max: Vector3fc, previousMask: Int): Int {
+        fun refineVisibility(box: Box, previousMask: Int): Int {
             var mask = 0
             for ((index, camera) in cameras.withIndex()) {
                 val submask = (1 shl index)
                 if (previousMask and submask == 0)
                     continue
 
-                if (camera.frustrum.isBoxInFrustrum(min, max))
+                if (camera.frustrum.isBoxInFrustrum(box))
                     mask = mask or submask
             }
             return mask
         }
 
-        val min = Vector3f(0f)
+        //val min = Vector3f(0f)
         //val boxSize = Vector3f(32f, 32f, 32f)
-        val max = Vector3f(256f, 256f, 256f)
+        //val max = Vector3f(256f, 256f, 256f)
 
         val visibleRegions = arrayOfNulls<RegionImplementation>(1024)
         val regionVisibility = IntArray(1024)
@@ -57,17 +58,17 @@ abstract class ChunkRepresentationsProvider<R : ChunkRepresentation>(
 
         var rc = 0
         for (region in world.regionsManager.allLoadedRegions) {
-            min.x = region.regionX * 256.0f + 0.0f
+            /*min.x = region.regionX * 256.0f + 0.0f
             min.y = region.regionY * 256.0f + 0.0f
             min.z = region.regionZ * 256.0f + 0.0f
 
             max.x = region.regionX * 256.0f + 256.0f
             max.y = region.regionY * 256.0f + 256.0f
-            max.z = region.regionZ * 256.0f + 256.0f
+            max.z = region.regionZ * 256.0f + 256.0f*/
 
             rc++
 
-            val regionVisMask = getVisibility(min, max)
+            val regionVisMask = getVisibility(Box.fromExtents(256.0, 256.0, 256.0).translate(region.regionX * 256.0, region.regionY * 256.0, region.regionZ * 256.0))
             if (regionVisMask != 0) {
                 regionVisibility[visibleRegionsCount] = regionVisMask
                 visibleRegions[visibleRegionsCount++] = region as RegionImplementation
@@ -120,18 +121,18 @@ abstract class ChunkRepresentationsProvider<R : ChunkRepresentation>(
 
             visibleRegionChunksCount = 0
             for (chunk in region.loadedChunks) {
-                min.x = chunk.chunkX * 32.0f + 0.0f
+                /*min.x = chunk.chunkX * 32.0f + 0.0f
                 min.y = chunk.chunkY * 32.0f + 0.0f
                 min.z = chunk.chunkZ * 32.0f + 0.0f
 
                 max.x = chunk.chunkX * 32.0f + 32.0f
                 max.y = chunk.chunkY * 32.0f + 32.0f
-                max.z = chunk.chunkZ * 32.0f + 32.0f
+                max.z = chunk.chunkZ * 32.0f + 32.0f*/
 
                 if (!chunk.isAirChunk) {
                     if (chunk.chunkX in visibilityRangeX && chunk.chunkY in visibilityRangeY && chunk.chunkZ in visibilityRangeZ) {
 
-                        val chunkVisibility = refineVisibility(min, max, regionVis)
+                        val chunkVisibility = refineVisibility(Box.fromExtents(32.0, 32.0, 32.0).translate(chunk.chunkX * 32.0, chunk.chunkY * 32.0, chunk.chunkZ * 32.0), regionVis)
                         if (chunkVisibility != 0) {
                             chunksVisibilityMask[visibleRegionChunksCount] = chunkVisibility
                             visibleRegionChunks[visibleRegionChunksCount++] = chunk

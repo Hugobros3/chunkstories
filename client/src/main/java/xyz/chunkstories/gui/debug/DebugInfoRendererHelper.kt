@@ -94,9 +94,9 @@ class DebugInfoRendererHelper(ingameUI: IngameUI) {
             val lookingAt = playerEntity.traits[TraitSight::class]?.getLookingAt(10.0)
             debugLine("Looking at $lookingAt in direction ${playerEntity.traits[TraitRotation::class]?.directionLookingAt}")
 
-            val standingAt = playerEntity.location.toVec3i()
+            val standingAt = playerEntity.location
             val standingIn = world.peek(playerEntity.location)
-            debugLine("Standing at $standingAt in ${standingIn.voxel} (solid=${standingIn.voxel.solid}, box=${standingIn.voxel.getCollisionBoxes(standingIn)?.getOrNull(0)})")
+            debugLine("Standing at ${standingAt.x()} ${standingAt.y()} ${standingAt.z} in ${standingIn.voxel} (solid=${standingIn.voxel.solid}, box=${standingIn.voxel.getCollisionBoxes(standingIn)?.getOrNull(0)})")
         } else {
             debugLine("No controlled entity")
         }

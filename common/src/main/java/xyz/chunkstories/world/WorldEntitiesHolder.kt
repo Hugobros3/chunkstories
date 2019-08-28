@@ -74,8 +74,7 @@ class WorldEntitiesHolder(internal val world: World) : Iterable<Entity> {
         val cey = box_end_y shr 5
         val cez = box_end_z shr 5
 
-        val box = Box.fromExtents(box_start_x.toDouble(), box_start_y.toDouble(), box_start_z.toDouble(), (box_end_x - box_start_x).toDouble(),
-                (box_end_y - box_start_y).toDouble(), (box_end_z - box_start_z).toDouble())
+        //val box = Box.fromExtents(box_start_x.toDouble(), box_start_y.toDouble(), box_start_z.toDouble(), (box_end_x - box_start_x).toDouble(), (box_end_y - box_start_y).toDouble(), (box_end_z - box_start_z).toDouble())
 
         // Fast path #1: it's all in one chunk!
         if (csx == cex && csy == cey && csz == cez) {
@@ -137,7 +136,6 @@ class WorldEntitiesHolder(internal val world: World) : Iterable<Entity> {
         var distance: Double = 0.toDouble()
 
         init {
-
             produce()
         }
 
@@ -149,7 +147,7 @@ class WorldEntitiesHolder(internal val world: World) : Iterable<Entity> {
         private fun produce() {
             while (next == null && i.hasNext()) {
                 val candidate = i.next()
-                if (box.isPointInside(candidate.location)) {
+                if (box.collidesWith(candidate.getTranslatedBoundingBox())) {
                     next = candidate
                     distance = candidate.location.distance(box.center)
                 }
