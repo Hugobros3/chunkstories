@@ -385,7 +385,7 @@ class DefaultWorldCollisionsManager(private val world: WorldImplementation) : Wo
                 return true
 
             // Else iterate over each box that make up that block
-            val boxes = peek.voxel!!.getTranslatedCollisionBoxes(peek)
+            val boxes = peek.voxel.getTranslatedCollisionBoxes(peek)
             if (boxes != null)
                 for (box in boxes)
                     if (box.isPointInside(point))
