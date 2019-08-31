@@ -181,7 +181,7 @@ class OptionsUI(gui: Gui, parent: Layer) : Layer(gui, parent) {
             drawer.drawBoxWithCorners(positionX, positionY, width, height, 8, texture)
 
             val virtualMouse = gui.mouse
-            if (this.isMouseOver && (virtualMouse.mainButton as Lwjgl3MouseButton).isDown) {
+            if (this.isMouseOver && (virtualMouse.mainButton as MouseButton).isPressed) {
                 drag()
             }
 
