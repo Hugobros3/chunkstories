@@ -16,6 +16,7 @@ import xyz.chunkstories.api.content.mods.ModsManager
 import xyz.chunkstories.api.exceptions.content.mods.NotAllModsLoadedException
 import xyz.chunkstories.content.mods.ModsManagerImplementation
 import xyz.chunkstories.content.mods.ModsManagerImplementation.NonExistentCoreContent
+import xyz.chunkstories.crafting.RecipesStore
 import xyz.chunkstories.entity.EntityDefinitionsStore
 import xyz.chunkstories.item.ItemDefinitionsStore
 import xyz.chunkstories.localization.LocalizationManagerImplementation
@@ -32,6 +33,7 @@ class GameContentStore(override val context: GameContext, coreContentLocation: F
 
     override val items: ItemDefinitionsStore
     override val voxels: VoxelsStore
+    override val recipes: RecipesStore
     override val entities: EntityDefinitionsStore
     override val packets: PacketsStore
     override val particles: ParticlesTypesStore
@@ -52,6 +54,7 @@ class GameContentStore(override val context: GameContext, coreContentLocation: F
 
         items = ItemDefinitionsStore(this)
         voxels = VoxelsStore(this)
+        recipes = RecipesStore(this)
         entities = EntityDefinitionsStore(this)
         packets = PacketsStore(this)
         particles = ParticlesTypesStore(this)
@@ -73,6 +76,7 @@ class GameContentStore(override val context: GameContext, coreContentLocation: F
 
         items.reload()
         voxels.reload()
+        recipes.reloadAll()
         entities.reload()
         packets.reload()
         particles.reload()
