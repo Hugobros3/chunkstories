@@ -36,8 +36,12 @@ class RecipesStore(val store: GameContentStore) : Content.Recipes {
 
             for (recipe in map["recipes"] as ArrayList<LinkedTreeMap<Any?, Any?>>) {
                 try {
-                    val result = recipe["result"] as? String ?: throw Exception("No result!")
-                    val resolvedResult = store.items.getItemDefinition(result)!!
+                    val result = recipe["result"]// as? String ?: throw Exception("No result!")
+                    val resolvedResult = when(result) {
+                        is String -> Pair(store.items.getItemDefinition(result)!!, 1)
+                        is ArrayList<*> -> Pair(store.items.getItemDefinition(result[0] as String)!!, (result.getOrNull(1)?.toString())?.toDouble()?.toInt() ?: 1)
+                        else -> throw Exception("What to do with $result")
+                    }
 
                     val pattern = recipe["pattern"] as? String
                     if (pattern != null) {
