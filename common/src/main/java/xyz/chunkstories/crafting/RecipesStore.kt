@@ -6,10 +6,12 @@ import org.hjson.JsonValue
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.content.Asset
 import xyz.chunkstories.api.content.Content
+import xyz.chunkstories.api.content.json.*
 import xyz.chunkstories.api.crafting.PatternedRecipe
 import xyz.chunkstories.api.crafting.Recipe
 import xyz.chunkstories.api.gui.inventory.InventorySlot
 import xyz.chunkstories.content.GameContentStore
+import xyz.chunkstories.content.eat
 
 class RecipesStore(val store: GameContentStore) : Content.Recipes {
 
@@ -25,41 +27,45 @@ class RecipesStore(val store: GameContentStore) : Content.Recipes {
         return null
     }
 
-    override fun reloadAll() {
+    override fun reload() {
         all.clear()
 
         fun loadRecipes(asset: Asset) {
-            val gson = Gson()
-            val json = JsonValue.readHjson(asset.reader()).toString()
-            val map: LinkedTreeMap<Any?, Any?> = gson.fromJson(json, LinkedTreeMap::class.java) as LinkedTreeMap<Any?, Any?>
+            logger.debug("Reading recipes in :$asset")
 
+            //val gson = Gson()
+            val json = JsonValue.readHjson(asset.reader()).eat().asDict ?: throw Exception("This json isn't a dict")
+            val array = json["recipes"].asArray ?: throw Exception("This json doesn't contain an 'recipes' array")
 
-            for (recipe in map["recipes"] as ArrayList<LinkedTreeMap<Any?, Any?>>) {
+            for (recipeJson in array.elements) {
+                if(recipeJson !is Json.Dict)
+                    throw Exception("Recipes should be dicts! ($recipeJson)")
+
                 try {
-                    val result = recipe["result"]// as? String ?: throw Exception("No result!")
+                    val result = recipeJson["result"]// as? String ?: throw Exception("No result!")
                     val resolvedResult = when(result) {
-                        is String -> Pair(store.items.getItemDefinition(result)!!, 1)
-                        is ArrayList<*> -> Pair(store.items.getItemDefinition(result[0] as String)!!, (result.getOrNull(1)?.toString())?.toDouble()?.toInt() ?: 1)
+                        is Json.Value.Text -> Pair(store.items.getItemDefinition(result.text)!!, 1)
+                        is Json.Array -> Pair(store.items.getItemDefinition(result.elements[0].asString!!)!!, result.elements.getOrNull(1).asInt ?: 1)
                         else -> throw Exception("What to do with $result")
                     }
 
-                    val pattern = recipe["pattern"] as? String
+                    val pattern = recipeJson["pattern"].asString
                     if (pattern != null) {
-                        val ingredients = recipe["ingredients"] as? LinkedTreeMap<String, String> ?: throw Exception("No ingredients!")
-                        val ingredientsMap = ingredients.entries.map { Pair(it.key!!, store.items.getItemDefinition(it.value)) }.toMap()
+                        val ingredients = recipeJson["ingredients"].asDict ?: throw Exception("No ingredients!")
+                        val ingredientsMap = ingredients.elements.entries.map { Pair(it.key, store.items.getItemDefinition(it.value.asString!!)) }.toMap()
 
                         val patternLines = pattern.lines()
                         val patternHeight = patternLines.size
                         val patternWidth = patternLines.map { it.length }.max()!!
                         val resolvedPattern = Array(patternHeight) { y ->
                             Array(patternWidth) { x -> patternLines[y].toCharArray().getOrNull(x)?.let { ingredientsMap[it.toString()] } }
-                        }//pattern.lines().map { it.map { ingredientsMap[it.toString()] }.toTypedArray() }.toTypedArray()
+                        }
                         val recipe = PatternedRecipe(resolvedPattern, resolvedResult)
                         all += recipe
                         logger.info("Successfully loaded recipe $recipe")
                     }
                 } catch (e: Exception) {
-                    Recipe.logger.error("Failed to load recipe $recipe")
+                    Recipe.logger.error("Failed to load recipe $recipeJson $e")
                 }
             }
         }

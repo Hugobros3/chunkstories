@@ -7,19 +7,15 @@
 package xyz.chunkstories.item
 
 import com.google.gson.Gson
-import com.google.gson.internal.LinkedTreeMap
 import org.hjson.JsonValue
-import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.content.Asset
-import xyz.chunkstories.api.content.Content
 import xyz.chunkstories.api.content.Content.ItemsDefinitions
 import xyz.chunkstories.api.content.json.asDict
 import xyz.chunkstories.api.content.mods.ModsManager
 import xyz.chunkstories.api.item.ItemDefinition
 import xyz.chunkstories.content.GameContentStore
 import xyz.chunkstories.content.eat
-import xyz.chunkstories.content.extractProperties
 import java.util.*
 
 class ItemDefinitionsStore(override val parent: GameContentStore) : ItemsDefinitions {
@@ -38,10 +34,10 @@ class ItemDefinitionsStore(override val parent: GameContentStore) : ItemsDefinit
 
         val gson = Gson()
 
-        fun readDefinitions(a: Asset) {
-            logger.debug("Reading items definitions in : $a")
+        fun readDefinitions(asset: Asset) {
+            logger.debug("Reading items definitions in :$asset")
 
-            val json = JsonValue.readHjson(a.reader()).eat().asDict ?: throw Exception("This json isn't a dict")
+            val json = JsonValue.readHjson(asset.reader()).eat().asDict ?: throw Exception("This json isn't a dict")
             val dict = json["items"].asDict ?: throw Exception("This json doesn't contain an 'items' dict")
 
             for (element in dict.elements) {

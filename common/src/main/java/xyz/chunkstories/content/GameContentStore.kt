@@ -20,6 +20,7 @@ import xyz.chunkstories.crafting.RecipesStore
 import xyz.chunkstories.entity.EntityDefinitionsStore
 import xyz.chunkstories.item.ItemDefinitionsStore
 import xyz.chunkstories.localization.LocalizationManagerImplementation
+import xyz.chunkstories.loot.LootTablesStore
 import xyz.chunkstories.mesh.MeshStore
 import xyz.chunkstories.net.PacketsStore
 import xyz.chunkstories.particle.ParticlesTypesStore
@@ -31,6 +32,7 @@ import java.io.File
 class GameContentStore(override val context: GameContext, coreContentLocation: File, enabledModsLaunchArguments: String) : Content {
     override val modsManager: ModsManager
 
+    override val lootTables: LootTablesStore
     override val items: ItemDefinitionsStore
     override val voxels: VoxelsStore
     override val recipes: RecipesStore
@@ -52,6 +54,7 @@ class GameContentStore(override val context: GameContext, coreContentLocation: F
             throw RuntimeException("Could not find core content at the location: " + coreContentLocation.absolutePath)
         }
 
+        lootTables = LootTablesStore(this)
         items = ItemDefinitionsStore(this)
         voxels = VoxelsStore(this)
         recipes = RecipesStore(this)
@@ -74,9 +77,10 @@ class GameContentStore(override val context: GameContext, coreContentLocation: F
             e.printStackTrace()
         }
 
+        lootTables.reload()
         items.reload()
         voxels.reload()
-        recipes.reloadAll()
+        recipes.reload()
         entities.reload()
         packets.reload()
         particles.reload()
