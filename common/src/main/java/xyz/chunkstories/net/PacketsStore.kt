@@ -12,10 +12,12 @@ import org.hjson.JsonValue
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.content.Content
+import xyz.chunkstories.api.content.json.asDict
 import xyz.chunkstories.api.exceptions.net.UnknowPacketException
 import xyz.chunkstories.api.net.Packet
 import xyz.chunkstories.api.net.PacketDefinition
 import xyz.chunkstories.content.GameContentStore
+import xyz.chunkstories.content.eat
 import xyz.chunkstories.content.extractProperties
 import java.io.Reader
 import java.util.*
@@ -31,16 +33,12 @@ class PacketsStore(override val parent: GameContentStore) : Content.PacketDefini
         val gson = Gson()
 
         fun readDefinitions(r: Reader) {
-            val json = JsonValue.readHjson(r).toString()
-            val map = gson.fromJson(json, LinkedTreeMap::class.java) as LinkedTreeMap<Any?, Any?>
+            val json = JsonValue.readHjson(r).eat().asDict ?: throw Exception("This json isn't a dict")
+            val dict = json["packets"].asDict ?: throw Exception("This json doesn't contain an 'packets' dict")
 
-            val materialsTreeMap = map["packets"] as LinkedTreeMap<*, *>
-
-            for (definition in materialsTreeMap.entries) {
-                val name = definition.key as String
-                val properties = (definition.value as LinkedTreeMap<String, *>).extractProperties()
-
-                properties["name"] = name
+            for (element in dict.elements) {
+                val name = element.key
+                val properties = element.value.asDict ?: throw Exception("Definitions have to be dicts")
 
                 val packetDefinition = PacketDefinitionImplementation(parent, name, properties)
                 byNames[name] = packetDefinition

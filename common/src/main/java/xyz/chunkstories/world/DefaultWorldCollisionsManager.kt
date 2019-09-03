@@ -99,7 +99,7 @@ class DefaultWorldCollisionsManager(private val world: WorldImplementation) : Wo
             cell = world.peek(x, y, z)
             val voxel = cell.voxel
 
-            if (voxel.solid || (selectable && voxel.definition["liquid"] != "true")) {
+            if (voxel.solid || (selectable && voxel.liquid)) {
                 if (voxel.isAir())
                     continue
 

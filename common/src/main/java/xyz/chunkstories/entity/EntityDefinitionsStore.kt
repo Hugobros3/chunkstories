@@ -7,16 +7,15 @@
 package xyz.chunkstories.entity
 
 import com.google.gson.Gson
-import com.google.gson.internal.LinkedTreeMap
 import org.hjson.JsonValue
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.content.Asset
-import xyz.chunkstories.api.content.Content
 import xyz.chunkstories.api.content.Content.EntityDefinitions
+import xyz.chunkstories.api.content.json.asDict
 import xyz.chunkstories.api.entity.EntityDefinition
 import xyz.chunkstories.content.GameContentStore
-import xyz.chunkstories.content.extractProperties
+import xyz.chunkstories.content.eat
 import java.util.*
 
 class EntityDefinitionsStore(override val parent: GameContentStore) : EntityDefinitions {
@@ -30,19 +29,15 @@ class EntityDefinitionsStore(override val parent: GameContentStore) : EntityDefi
         fun readDefinitions(a: Asset) {
             logger.debug("Reading entities definitions in : $a")
 
-            val json = JsonValue.readHjson(a.reader()).toString()
-            val map = gson.fromJson(json, LinkedTreeMap::class.java) as LinkedTreeMap<Any?, Any?>
+            val json = JsonValue.readHjson(a.reader()).eat().asDict ?: throw Exception("This json isn't a dict")
+            val dict = json["entities"].asDict ?: throw Exception("This json doesn't contain an 'entities' dict")
 
-            val materialsTreeMap = map["entities"] as LinkedTreeMap<*, *>
-
-            for (definition in materialsTreeMap.entries) {
-                val name = definition.key as String
-                val properties = (definition.value as LinkedTreeMap<String, *>).extractProperties()
-
-                properties["name"] = name
+            for (element in dict.elements) {
+                val name = element.key
+                val properties = element.value.asDict ?: throw Exception("Definitions have to be dicts")
 
                 val entityDefinition = EntityDefinition(this, name, properties)
-                entityDefinitions.put(name, entityDefinition)
+                entityDefinitions[name] = entityDefinition
 
                 logger.debug("Loaded entity definition $entityDefinition")
             }

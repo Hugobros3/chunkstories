@@ -14,9 +14,12 @@ import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.client.Client
 import xyz.chunkstories.api.content.Asset
 import xyz.chunkstories.api.content.Content
+import xyz.chunkstories.api.content.json.Json
+import xyz.chunkstories.api.content.json.asDict
 import xyz.chunkstories.api.voxel.Voxel
 import xyz.chunkstories.api.voxel.VoxelDefinition
 import xyz.chunkstories.content.GameContentStore
+import xyz.chunkstories.content.eat
 import xyz.chunkstories.content.extractProperties
 import xyz.chunkstories.voxel.material.VoxelMaterialsStore
 import java.util.*
@@ -44,10 +47,10 @@ class VoxelsStore(override val parent: GameContentStore) : Content.Voxels {
         this.materials.reload()
         this.textures.reload()
 
-        air = Voxel(VoxelDefinition(this, "air", mapOf(
-                "solid" to "false",
-                "opaque" to "false"
-        )))
+        air = Voxel(VoxelDefinition(this, "air", Json.Dict(mapOf(
+                "solid" to Json.Value.Bool(false),
+                "opaque" to Json.Value.Bool(false)
+        ))))
         this.reloadVoxelTypes()
 
         parent.items.addVoxelItems()
@@ -60,29 +63,25 @@ class VoxelsStore(override val parent: GameContentStore) : Content.Voxels {
         fun readDefinitions(a: Asset) {
             logger.debug("Reading blocks definitions in : $a")
 
-            val json = JsonValue.readHjson(a.reader()).toString()
-            val map = gson.fromJson(json, LinkedTreeMap::class.java) as LinkedTreeMap<Any?, Any?>
+            val json = JsonValue.readHjson(a.reader()).eat().asDict ?: throw Exception("This json isn't a dict")
+            val dict = json["blocks"].asDict ?: throw Exception("This json doesn't contain an 'blocks' dict")
 
-            val blocksTreeMap = map["blocks"] as LinkedTreeMap<*, *>
-
-            for (definition in blocksTreeMap.entries) {
-                val name = definition.key as String
-                val properties = (definition.value as LinkedTreeMap<String, *>).extractProperties()
-
-                properties["name"] = name
+            for (element in dict.elements) {
+                val name = element.key
+                val properties = element.value.asDict ?: throw Exception("Definitions have to be dicts")
 
                 val voxelDefinition = VoxelDefinition(this, name, properties)
-                val voxel: Voxel = voxelDefinition.create()
+                val voxel: Voxel = voxelDefinition.voxel
                 voxelsByName[name] = voxel
 
                 logger.debug("Loaded $voxelDefinition from $a, created $voxel")
             }
         }
 
-        air = Voxel(VoxelDefinition(this, "air", mapOf(
-                "solid" to "false",
-                "opaque" to "false"
-        )))
+        air = Voxel(VoxelDefinition(this, "air", Json.Dict(mapOf(
+                "solid" to Json.Value.Bool(false),
+                "opaque" to Json.Value.Bool(false)
+        ))))
         voxelsByName["air"] = air
 
         for (asset in parent.modsManager.allAssets.filter { it.name.startsWith("voxels/") && !it.name.startsWith("voxels/materials/") && it.name.endsWith(".hjson") }) {

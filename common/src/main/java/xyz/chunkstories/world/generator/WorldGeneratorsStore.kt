@@ -10,13 +10,15 @@ import com.google.gson.Gson
 import com.google.gson.internal.LinkedTreeMap
 import xyz.chunkstories.api.content.Asset
 import xyz.chunkstories.api.content.Content
-import xyz.chunkstories.api.content.mods.ModsManager
 import xyz.chunkstories.api.world.generator.BlankWorldGenerator
 import xyz.chunkstories.api.world.generator.WorldGeneratorDefinition
 import xyz.chunkstories.content.GameContentStore
 import org.hjson.JsonValue
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.api.content.json.Json
+import xyz.chunkstories.api.content.json.asDict
+import xyz.chunkstories.content.eat
 import xyz.chunkstories.content.extractProperties
 import java.util.*
 
@@ -24,7 +26,7 @@ class WorldGeneratorsStore(override val parent: GameContentStore) : Content.Worl
     var generators: MutableMap<String, WorldGeneratorDefinition> = HashMap()
 
     /** Vanilla blank (void) world generator  */
-    internal var blank = WorldGeneratorDefinition(this, "blank", mapOf( "class" to BlankWorldGenerator::class.java.canonicalName))
+    internal var blank = WorldGeneratorDefinition(this, "blank", Json.Dict(mapOf( "class" to Json.Value.Text(BlankWorldGenerator::class.java.canonicalName))))
 
     fun reload() {
         // Loads all generators
@@ -35,19 +37,15 @@ class WorldGeneratorsStore(override val parent: GameContentStore) : Content.Worl
         fun readDefinitions(a: Asset) {
             logger.debug("Reading generators definitions in : $a")
 
-            val json = JsonValue.readHjson(a.reader()).toString()
-            val map = gson.fromJson(json, LinkedTreeMap::class.java) as LinkedTreeMap<Any?, Any?>
+            val json = JsonValue.readHjson(a.reader()).eat().asDict ?: throw Exception("This json isn't a dict")
+            val dict = json["generators"].asDict ?: throw Exception("This json doesn't contain an 'generators' dict")
 
-            val treeMap = map["generators"] as LinkedTreeMap<*, *>
-
-            for (definition in treeMap.entries) {
-                val name = definition.key as String
-                val properties = (definition.value as LinkedTreeMap<String, *>).extractProperties()
-
-                properties["name"] = name
+            for (element in dict.elements) {
+                val name = element.key
+                val properties = element.value.asDict ?: throw Exception("Definitions have to be dicts")
 
                 val generatorDefinition = WorldGeneratorDefinition(this, name, properties)
-                generators.put(name, generatorDefinition)
+                generators[name] = generatorDefinition
                 logger.debug("Loaded $generatorDefinition from $a")
             }
         }

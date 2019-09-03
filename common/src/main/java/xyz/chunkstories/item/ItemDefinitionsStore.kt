@@ -14,9 +14,11 @@ import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.content.Asset
 import xyz.chunkstories.api.content.Content
 import xyz.chunkstories.api.content.Content.ItemsDefinitions
+import xyz.chunkstories.api.content.json.asDict
 import xyz.chunkstories.api.content.mods.ModsManager
 import xyz.chunkstories.api.item.ItemDefinition
 import xyz.chunkstories.content.GameContentStore
+import xyz.chunkstories.content.eat
 import xyz.chunkstories.content.extractProperties
 import java.util.*
 
@@ -39,16 +41,12 @@ class ItemDefinitionsStore(override val parent: GameContentStore) : ItemsDefinit
         fun readDefinitions(a: Asset) {
             logger.debug("Reading items definitions in : $a")
 
-            val json = JsonValue.readHjson(a.reader()).toString()
-            val map: LinkedTreeMap<Any?, Any?> = gson.fromJson(json, LinkedTreeMap::class.java) as LinkedTreeMap<Any?, Any?>
+            val json = JsonValue.readHjson(a.reader()).eat().asDict ?: throw Exception("This json isn't a dict")
+            val dict = json["items"].asDict ?: throw Exception("This json doesn't contain an 'items' dict")
 
-            val materialsTreeMap = map["items"] as LinkedTreeMap<*, *>
-
-            for (definition in materialsTreeMap.entries) {
-                val name = definition.key as String
-                val properties = (definition.value as LinkedTreeMap<String, *>).extractProperties()
-
-                properties["name"] = name
+            for (element in dict.elements) {
+                val name = element.key
+                val properties = element.value.asDict ?: throw Exception("Definitions have to be dicts")
 
                 val itemDefinition = ItemDefinition(this, name, properties)
                 itemDefinitions.put(name, itemDefinition)

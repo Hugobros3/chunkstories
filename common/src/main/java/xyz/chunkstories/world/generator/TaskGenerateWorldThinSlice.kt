@@ -6,6 +6,7 @@
 
 package xyz.chunkstories.world.generator
 
+import xyz.chunkstories.api.content.json.asInt
 import xyz.chunkstories.api.voxel.VoxelFormat
 import xyz.chunkstories.api.workers.Task
 import xyz.chunkstories.api.workers.TaskExecutor
@@ -31,7 +32,7 @@ class TaskGenerateWorldThinSlice internal constructor(private val world: World, 
     init {
 
         generator = world.generator
-        maxGenerationHeight = (generator.definition.resolveProperty("maxGenerationHeight"))?.toDoubleOrNull()?.toInt() ?: 1024
+        maxGenerationHeight = generator.definition["maxGenerationHeight"].asInt ?: 1024
         maxGenerationHeightInChunks = Math.ceil(maxGenerationHeight / 32.0).toInt()
 
         holders = arrayOfNulls(maxGenerationHeightInChunks)
