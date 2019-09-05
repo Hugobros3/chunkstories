@@ -15,7 +15,6 @@ import xyz.chunkstories.api.physics.Box
 import xyz.chunkstories.api.physics.overlaps
 import xyz.chunkstories.api.world.WorldCollisionsManager
 import xyz.chunkstories.api.world.cell.Cell
-import xyz.chunkstories.world.iterators.EntityRayIterator
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.math.*
@@ -24,129 +23,6 @@ import kotlin.math.*
 class DefaultWorldCollisionsManager(private val world: WorldImplementation) : WorldCollisionsManager {
 
     internal val lock = ReentrantLock()
-
-    override fun raytraceSolid(initialPosition: Vector3dc, direction: Vector3dc, limit: Double): Location? {
-        return raytraceSolid(initialPosition, direction, limit, false, false)
-    }
-
-    override fun raytraceSolidOuter(initialPosition: Vector3dc, direction: Vector3dc, limit: Double): Location? {
-        return raytraceSolid(initialPosition, direction, limit, true, false)
-    }
-
-    override fun raytraceSelectable(initialPosition: Location, direction: Vector3dc, limit: Double): Location? {
-        return raytraceSolid(initialPosition, direction, limit, false, true)
-    }
-
-    private fun raytraceSolid(initialPosition: Vector3dc, directionIn: Vector3dc, limit: Double, outer: Boolean,
-                              selectable: Boolean): Location? {
-        val direction = Vector3d()
-        directionIn.normalize(direction)
-
-        var cell: Cell
-        var x = floor(initialPosition.x()).toInt()
-        var y = floor(initialPosition.y()).toInt()
-        var z = floor(initialPosition.z()).toInt()
-
-        // DDA algorithm
-
-        // It requires double arrays because it works using loops over each dimension
-        val rayOrigin = DoubleArray(3)
-        val rayDirection = DoubleArray(3)
-        rayOrigin[0] = initialPosition.x()
-        rayOrigin[1] = initialPosition.y()
-        rayOrigin[2] = initialPosition.z()
-        rayDirection[0] = direction.x()
-        rayDirection[1] = direction.y()
-        rayDirection[2] = direction.z()
-        val voxelCoords = intArrayOf(x, y, z)
-        val voxelDelta = intArrayOf(0, 0, 0)
-        val deltaDist = DoubleArray(3)
-        val next = DoubleArray(3)
-        val step = IntArray(3)
-
-        var side : Int
-        // Prepare distances
-        for (i in 0..2) {
-            val deltaX = rayDirection[0] / rayDirection[i]
-            val deltaY = rayDirection[1] / rayDirection[i]
-            val deltaZ = rayDirection[2] / rayDirection[i]
-            deltaDist[i] = sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ)
-            if (rayDirection[i] < 0f) {
-                step[i] = -1
-                next[i] = (rayOrigin[i] - voxelCoords[i]) * deltaDist[i]
-            } else {
-                step[i] = 1
-                next[i] = (voxelCoords[i] + 1f - rayOrigin[i]) * deltaDist[i]
-            }
-        }
-
-        do {
-
-            // DDA steps
-            side = 0
-            for (i in 1..2) {
-                if (next[side] > next[i]) {
-                    side = i
-                }
-            }
-            next[side] += deltaDist[side]
-            voxelCoords[side] += step[side]
-            voxelDelta[side] += step[side]
-
-            x = voxelCoords[0]
-            y = voxelCoords[1]
-            z = voxelCoords[2]
-            cell = world.peek(x, y, z)
-            val voxel = cell.voxel
-
-            if (voxel.solid || (selectable && voxel.liquid)) {
-                if (voxel.isAir())
-                    continue
-
-                var collides = false
-                for (box in cell.translatedCollisionBoxes ?: emptyArray()) {
-                    // System.out.println(box);
-                    val collisionPoint = box.lineIntersection(initialPosition, direction)
-                    if (collisionPoint != null) {
-                        collides = true
-                        // System.out.println("collides @ "+collisionPoint);
-                    }
-                }
-                if (collides) {
-                    if (!outer)
-                        return Location(world, x.toDouble(), y.toDouble(), z.toDouble())
-                    else {
-                        // Back off a bit
-                        when (side) {
-                            0 -> x -= step[side]
-                            1 -> y -= step[side]
-                            2 -> z -= step[side]
-                        }
-                        return Location(world, x.toDouble(), y.toDouble(), z.toDouble())
-                    }
-                }
-            }
-
-            // distance += deltaDist[side];
-
-        } while (voxelDelta[0] * voxelDelta[0] + voxelDelta[1] * voxelDelta[1] + voxelDelta[2] * voxelDelta[2] < limit * limit)
-        return null
-    }
-
-    override fun rayTraceEntities(initialPosition: Vector3dc, direction: Vector3dc, limit: Double): Iterator<Entity> {
-        var blocksLimit = limit
-
-        val blocksCollision = this.raytraceSolid(initialPosition, direction, limit)
-        if (blocksCollision != null)
-            blocksLimit = blocksCollision.distance(initialPosition)
-
-        return raytraceEntitiesIgnoringVoxels(initialPosition, direction, min(blocksLimit, limit))
-    }
-
-    override fun raytraceEntitiesIgnoringVoxels(initialPosition: Vector3dc, direction: Vector3dc,
-                                                limit: Double): Iterator<Entity> {
-        return EntityRayIterator(world, initialPosition, direction, limit)
-    }
 
     /**
      * Does a complicated check to see how far the entity can go using the delta
@@ -191,7 +67,7 @@ class DefaultWorldCollisionsManager(private val world: WorldImplementation) : Wo
         val traitCollisions = entity.traits[TraitCollidable::class.java] ?: return Vector3d(delta)
 
         // Iterate over every box
-        for (collisionBoxIndex in 0 until traitCollisions.collisionBoxes.size) {
+        for (collisionBoxIndex in traitCollisions.collisionBoxes.indices) {
             // Make a normalized double vector and keep the original length
             var vec = Vector3d(delta)
             val distanceToTravel = Vector3d(delta)

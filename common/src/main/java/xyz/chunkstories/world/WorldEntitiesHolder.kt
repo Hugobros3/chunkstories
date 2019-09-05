@@ -326,20 +326,20 @@ class WorldEntitiesHolder(internal val world: World) : Iterable<Entity> {
     }
 
     private fun sanitizeHorizontalCoordinate(coordinate: Int): Int {
-        var coordinate = coordinate
-        coordinate = coordinate % (world.sizeInChunks * 32)
-        if (coordinate < 0)
-            coordinate += world.sizeInChunks * 32
-        return coordinate
+        var sanitizedCoordinate = coordinate
+        sanitizedCoordinate %= (world.sizeInChunks * 32)
+        if (sanitizedCoordinate < 0)
+            sanitizedCoordinate += world.sizeInChunks * 32
+        return sanitizedCoordinate
     }
 
     private fun sanitizeVerticalCoordinate(coordinate: Int): Int {
-        var coordinate = coordinate
-        if (coordinate < 0)
-            coordinate = 0
-        if (coordinate >= world.worldInfo.size.heightInChunks * 32)
-            coordinate = world.worldInfo.size.heightInChunks * 32 - 1
-        return coordinate
+        var sanitizedCoordinate = coordinate
+        if (sanitizedCoordinate < 0)
+            sanitizedCoordinate = 0
+        if (sanitizedCoordinate >= world.worldInfo.size.heightInChunks * 32)
+            sanitizedCoordinate = world.worldInfo.size.heightInChunks * 32 - 1
+        return sanitizedCoordinate
     }
 
     override fun iterator(): Iterator<Entity> {
