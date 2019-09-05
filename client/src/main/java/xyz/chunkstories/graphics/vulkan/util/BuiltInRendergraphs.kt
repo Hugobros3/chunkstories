@@ -4,10 +4,10 @@ import org.joml.Matrix4f
 import org.joml.Vector3d
 import org.joml.Vector3f
 import xyz.chunkstories.api.client.Client
+import xyz.chunkstories.api.graphics.TextureFormat
 import xyz.chunkstories.api.graphics.TextureFormat.*
+import xyz.chunkstories.api.graphics.rendergraph.*
 import xyz.chunkstories.api.graphics.rendergraph.PassOutput.BlendMode.MIX
-import xyz.chunkstories.api.graphics.rendergraph.RenderGraphDeclarationScript
-import xyz.chunkstories.api.graphics.rendergraph.asset
 import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.api.graphics.structs.makeCamera
 import xyz.chunkstories.api.graphics.systems.drawing.FullscreenQuadDrawer
@@ -36,6 +36,13 @@ BuiltInRendergraphs {
 
                     format = RGBA_8
                     size = viewportSize
+                }
+
+                renderBuffer {
+                    name = "blur_temp"
+
+                    format = TextureFormat.RGB_HDR
+                    size = viewportSize * 0.5
                 }
             }
 
@@ -97,9 +104,64 @@ BuiltInRendergraphs {
                 }
 
                 pass {
+                    name = "bloom_blurH"
+
+                    dependsOn("menuBackground")
+
+                    draws {
+                        system(FullscreenQuadDrawer::class) {
+                            shader = "blur_horizontal"
+                        }
+                    }
+
+                    setup {
+                        shaderResources.supplyImage("inputTexture") {
+                            source = renderBuffer("guiColorBuffer")
+                            scalingMode = ImageInput.ScalingMode.LINEAR
+                        }
+                    }
+
+                    outputs {
+                        output {
+                            name = "fragColor"
+                            target = renderBuffer("blur_temp")
+                            blending = PassOutput.BlendMode.OVERWRITE
+                        }
+                    }
+                }
+
+                pass {
+                    name = "bloom_blurV"
+
+                    dependsOn("bloom_blurH")
+
+                    draws {
+                        system(FullscreenQuadDrawer::class) {
+                            shader = "blur_vertical"
+                        }
+                    }
+
+                    setup {
+                        shaderResources.supplyImage("inputTexture") {
+                            source = renderBuffer("blur_temp")
+                            scalingMode = ImageInput.ScalingMode.LINEAR
+                        }
+                    }
+
+                    outputs {
+                        output {
+                            name = "fragColor"
+                            target = renderBuffer("guiColorBuffer")
+                            blending = PassOutput.BlendMode.OVERWRITE
+                        }
+                    }
+                }
+
+                pass {
                     name = "gui"
 
                     dependsOn("menuBackground")
+                    dependsOn("bloom_blurV")
 
                     draws {
                         system(GuiDrawer::class)

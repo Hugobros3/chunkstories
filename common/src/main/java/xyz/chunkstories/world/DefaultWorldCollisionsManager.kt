@@ -234,7 +234,7 @@ class DefaultWorldCollisionsManager(private val world: WorldImplementation) : Wo
     }
 
     private inline fun addAllSafeAndTranslate(list: ArrayList<Box>, e: Entity, location: Location) {
-        e.traits[TraitCollidable::class.java]?.apply {
+        e.traits[TraitCollidable::class]?.apply {
             if (!collidesWithEntities)
                 return@apply
 

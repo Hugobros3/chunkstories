@@ -6,6 +6,7 @@
 
 package xyz.chunkstories.gui.layer
 
+import org.joml.Vector4f
 import xyz.chunkstories.api.gui.Gui
 import xyz.chunkstories.api.gui.GuiDrawer
 import xyz.chunkstories.api.gui.Layer
@@ -49,6 +50,10 @@ class MainMenuUI(gui: Gui, parent: Layer?) : Layer(gui, parent) {
 
         if (gui.topLayer === this && gui.client.configuration.getValue(LogPolicyUI.logPolicyConfigNode) == "ask")
             gui.topLayer = LogPolicyUI(gui, this)
+
+        drawer.drawBox(drawer.gui.viewportWidth / 2 - 256,drawer.gui.viewportHeight * 3 / 4 - 256,512,512, "textures/logo.png")
+        val yellowFont = drawer.fonts.getFont("LiberationSans-Regular", 16f)
+        drawer.drawStringWithShadow(yellowFont, drawer.gui.viewportWidth / 2, drawer.gui.viewportHeight * 3 / 4 - 54, "Now with actual gameplay !", -1, Vector4f(1.0f, 1.0f, 0.0f, 1.0f))
 
         val spacing = 4
         val buttonsAreaSize = largeSingleplayer.width * 2 + spacing

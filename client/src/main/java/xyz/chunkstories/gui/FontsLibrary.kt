@@ -17,7 +17,7 @@ class FontsLibrary(val content: Content) : Fonts {
 
     override fun defaultFont(): Font = defaultFont
 
-    override fun defaultFont(sizeMultiplier: Int): Font = getFont("fonts/LiberationSans-Regular.ttf", 12F * sizeMultiplier)
+    override fun defaultFont(sizeMultiplier: Int): Font = getFont("LiberationSans-Regular", 12F * sizeMultiplier)
 
     override fun getFont(fontName: String, sizeInPX: Float): Font =
         fonts.getOrPut(Pair(fontName, sizeInPX)) {
