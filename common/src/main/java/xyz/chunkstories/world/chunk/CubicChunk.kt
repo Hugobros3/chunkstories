@@ -289,7 +289,7 @@ class CubicChunk(override val holder: ChunkHolderImplementation, override val ch
                 formerVoxel.onModification(cell_pre, future, cause)
             } else {
                 formerVoxel.onRemove(cell_pre, cause)
-                newVoxel.onPlace(future, cause)
+                //newVoxel.onPlace(future, cause)
 
                 raw_data = VoxelFormat.format(world.contentTranslator.getIdForVoxel(future.voxel), future.metaData, future.sunlight, future.blocklight)
             }
