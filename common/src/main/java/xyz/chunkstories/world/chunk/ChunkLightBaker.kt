@@ -22,7 +22,7 @@ import xyz.chunkstories.world.chunk.deriveddata.AutoRebuildingProperty
 //TODO use custom propagation for ALL propagation functions & cleanup this whole darn mess
 /** Responsible for propagating voxel volumetric light  */
 class ChunkLightBaker(internal val chunk: CubicChunk) : AutoRebuildingProperty(chunk.world.gameContext, true), ChunkLightUpdater {
-    internal val world = chunk.world!!
+    internal val world = chunk.world
     internal val chunkX: Int = chunk.chunkX
     internal val chunkY: Int = chunk.chunkY
     internal val chunkZ: Int = chunk.chunkZ
@@ -1116,8 +1116,10 @@ class ChunkLightBaker(internal val chunk: CubicChunk) : AutoRebuildingProperty(c
             world.pokeRawSilently(x + chunkX * 32, y + chunkY * 32, z + chunkZ * 32, data)
 
             val chunk = world.chunksManager.getChunkWorldCoordinates(x + chunkX * 32, y + chunkY * 32, z + chunkZ * 32)
-            if (chunk != null && oldData != data)
+            if (chunk != null && oldData != data) {
                 chunk.lightBaker.requestUpdate()
+                chunk.mesh.requestUpdate()
+            }
 
             return
         }
