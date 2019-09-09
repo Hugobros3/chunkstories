@@ -18,7 +18,7 @@ import xyz.chunkstories.api.world.WorldMaster
 import xyz.chunkstories.api.world.chunk.*
 import xyz.chunkstories.api.world.heightmap.Heightmap
 import xyz.chunkstories.api.world.region.Region
-import xyz.chunkstories.entity.EntitySerializer
+import xyz.chunkstories.entity.EntitySerializerOld
 import xyz.chunkstories.util.concurrency.SimpleLock
 import xyz.chunkstories.voxel.components.CellComponentsHolder
 import xyz.chunkstories.world.WorldImplementation
@@ -151,7 +151,7 @@ class CubicChunk(override val holder: ChunkHolderImplementation, override val ch
                     // Read entities until we hit -1
                     var entity: Entity? = null
                     do {
-                        entity = EntitySerializer.readEntityFromStream(dis, holder.region.handler, world)
+                        entity = EntitySerializerOld.readEntityFromStream(dis, holder.region.handler, world)
                         if (entity != null) {
                             this.addEntity(entity)
                             world.addEntity(entity)

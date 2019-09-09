@@ -34,7 +34,7 @@ plugins {
     id("com.github.hierynomus.license") version "0.14.0"
 }
 
-val apiRevisionBuiltAgainst by extra { "202" }
+val apiRevisionBuiltAgainst by extra { "203" }
 var actualContentLocation = "core_content.zip"
 
 val lwjglVersion by extra { "3.2.2-SNAPSHOT" }

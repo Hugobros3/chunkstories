@@ -13,7 +13,7 @@ import xyz.chunkstories.api.util.concurrency.Fence
 import xyz.chunkstories.api.world.WorldUser
 import xyz.chunkstories.api.world.chunk.ChunkHolder
 import xyz.chunkstories.api.world.region.Region
-import xyz.chunkstories.entity.EntitySerializer
+import xyz.chunkstories.entity.EntitySerializerOld
 import xyz.chunkstories.net.packets.PacketChunkCompressedData
 import xyz.chunkstories.util.concurrency.TrivialFence
 import xyz.chunkstories.world.WorldTool
@@ -30,7 +30,6 @@ import java.io.IOException
 import java.util.*
 import java.util.concurrent.Semaphore
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.concurrent.withLock
 
 class ChunkHolderImplementation(override val region: RegionImplementation, override val chunkX: Int, override val chunkY: Int, override val chunkZ: Int) : ChunkHolder {
     private val uuid: Int
@@ -166,13 +165,12 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
         baos.reset()
 
         for (entity in chunk.localEntities) {
-
             // Don't save controllable entities
-            if (!entity.traitLocation.wasRemoved() && !entity.traits.has(TraitDontSave::class.java)) {
-                EntitySerializer.writeEntityToStream(daos, region.handler, entity)
+            if (!entity.traitLocation.wasRemoved() && entity.traits[TraitDontSave::class] == null) {
+                EntitySerializerOld.writeEntityToStream(daos, region.handler, entity)
             }
         }
-        EntitySerializer.writeEntityToStream(daos, region.handler, null)
+        EntitySerializerOld.writeEntityToStream(daos, region.handler, null)
 
         val entityData = baos.toByteArray()
 

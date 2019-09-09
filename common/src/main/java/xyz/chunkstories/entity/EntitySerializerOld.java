@@ -24,7 +24,7 @@ import java.io.IOException;
  */
 
 //TODO write component data length and use it to avoid getting fucked when components change
-public class EntitySerializer {
+public class EntitySerializerOld {
     public static void writeEntityToStream(DataOutputStream dos, OfflineSerializedData destination, Entity entity) {
         try {
             //If there is no entity, we write zero. Used by the file format to know when the entities section end
