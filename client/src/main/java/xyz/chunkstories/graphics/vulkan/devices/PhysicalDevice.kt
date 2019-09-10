@@ -10,10 +10,12 @@ import org.lwjgl.vulkan.KHRGetPhysicalDeviceProperties2.VK_STRUCTURE_TYPE_PHYSIC
 import org.lwjgl.vulkan.KHRGetPhysicalDeviceProperties2.vkGetPhysicalDeviceFeatures2KHR
 import org.lwjgl.vulkan.KHRSurface.*
 import org.lwjgl.vulkan.VK10.*
-import org.lwjgl.vulkan.VK11.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2
-import org.lwjgl.vulkan.VK11.vkGetPhysicalDeviceFeatures2
+import org.lwjgl.vulkan.KHRGetPhysicalDeviceProperties2.vkGetPhysicalDeviceFeatures2KHR
+import org.lwjgl.vulkan.KHRGetPhysicalDeviceProperties2.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2_KHR
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.client.InternalClientOptions
+import xyz.chunkstories.util.OSHelper
+import xyz.chunkstories.util.SupportedOS
 import java.nio.IntBuffer
 
 class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vkPhysicalDevice: VkPhysicalDevice) {
@@ -56,14 +58,14 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
         logger.debug("Available Vulkan extensions: $availableExtensions")
 
         // Query device features
-        val vkPhysicalDeviceFeatures2 = VkPhysicalDeviceFeatures2.callocStack().sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2)
+        val vkPhysicalDeviceFeatures2 = VkPhysicalDeviceFeatures2.callocStack().sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2_KHR)
 
         var deviceIndexingFeatures: VkPhysicalDeviceDescriptorIndexingFeaturesEXT? = null
         if(availableExtensions.contains("VK_EXT_descriptor_indexing")) {
             deviceIndexingFeatures = VkPhysicalDeviceDescriptorIndexingFeaturesEXT.callocStack().sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT)
             vkPhysicalDeviceFeatures2.pNext(deviceIndexingFeatures.address())
         }
-        vkGetPhysicalDeviceFeatures2(vkPhysicalDevice, vkPhysicalDeviceFeatures2)
+        vkGetPhysicalDeviceFeatures2KHR(vkPhysicalDevice, vkPhysicalDeviceFeatures2)
 
         canDoNonUniformSamplerIndexing =
                 deviceIndexingFeatures != null &&
@@ -111,7 +113,8 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
         // Look for diverging descriptor access capability
 
         // Decide if suitable or not based on all that
-        suitable = vkPhysicalDeviceFeatures2.features().geometryShader() && availableExtensions.containsAll(backend.requiredDeviceExtensions) && swapchainDetails.suitable
+        val bypassGS = OSHelper.os == SupportedOS.OSX
+        suitable = (bypassGS || vkPhysicalDeviceFeatures2.features().geometryShader()) && availableExtensions.containsAll(backend.requiredDeviceExtensions) && swapchainDetails.suitable
         fitnessScore = 1 + deviceType.fitnessScoreBonus
 
         MemoryStack.stackPop()
