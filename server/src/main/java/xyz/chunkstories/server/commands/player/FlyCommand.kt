@@ -35,10 +35,10 @@ class FlyCommand(serverConsole: Server) : ServerCommandBasic(serverConsole) {
         val entity = emitter.controlledEntity
 
         entity?.traits?.get(TraitFlyingMode::class)?.let { fm ->
-            var state = fm.get()
+            var state = fm.isAllowed
             state = !state
             emitter.sendMessage("Flying mode set to: $state")
-            fm.set(state)
+            fm.isAllowed = state
 
             return true
         }

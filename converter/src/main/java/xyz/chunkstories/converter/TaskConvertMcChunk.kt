@@ -14,7 +14,7 @@ import xyz.chunkstories.api.world.cell.FutureCell
 import xyz.chunkstories.api.world.chunk.ChunkHolder
 import xyz.chunkstories.converter.ConverterWorkers.ConverterWorkerThread
 import xyz.chunkstories.util.concurrency.CompoundFence
-import xyz.chunkstories.world.storage.ChunkHolderImplementation
+import xyz.chunkstories.world.chunk.ChunkHolderImplementation
 import io.xol.enklume.MinecraftChunk
 import io.xol.enklume.MinecraftRegion
 

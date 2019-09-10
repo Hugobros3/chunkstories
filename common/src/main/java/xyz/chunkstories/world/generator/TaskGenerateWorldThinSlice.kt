@@ -19,7 +19,7 @@ import xyz.chunkstories.api.world.generator.WorldGenerator
 import xyz.chunkstories.api.world.heightmap.Heightmap
 import xyz.chunkstories.world.chunk.ChunkLightBaker
 import xyz.chunkstories.world.chunk.ChunkImplementation
-import xyz.chunkstories.world.storage.ChunkHolderImplementation
+import xyz.chunkstories.world.chunk.ChunkHolderImplementation
 
 class TaskGenerateWorldThinSlice internal constructor(private val world: World, private val chunkX: Int, private val chunkZ: Int, private val heightmap: Heightmap) : Task(), WorldUser {
 

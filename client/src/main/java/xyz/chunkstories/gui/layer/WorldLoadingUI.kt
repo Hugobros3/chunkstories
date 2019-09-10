@@ -14,8 +14,9 @@ import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.world.WorldMaster
 import xyz.chunkstories.api.world.WorldUser
 import xyz.chunkstories.api.world.chunk.ChunkHolder
-import xyz.chunkstories.entity.SerializedEntityFile
+import xyz.chunkstories.entity.EntityFileSerialization
 import xyz.chunkstories.world.WorldClientLocal
+import java.io.File
 
 class WorldLoadingUI(val world: WorldClientLocal, gui: Gui, parentLayer: Layer?) : Layer(gui, parentLayer), WorldUser {
 
@@ -54,11 +55,8 @@ class WorldLoadingUI(val world: WorldClientLocal, gui: Gui, parentLayer: Layer?)
     }
 
     fun figureOutWherePlayerWillSpawn(player: Player): Location {
-        var savedEntity: Entity? = null
-
-        val playerEntityFile = SerializedEntityFile(world.folderPath + "/players/" + player.name.toLowerCase() + ".csf")
-        if (playerEntityFile.exists())
-            savedEntity = playerEntityFile.read(world)
+        val playerEntityFile = File(world.folderPath + "/players/" + player.name.toLowerCase() + ".json")
+        val savedEntity: Entity? = EntityFileSerialization.readEntityFromDisk(playerEntityFile, world)
 
         var previousLocation: Location? = null
         if (savedEntity != null)

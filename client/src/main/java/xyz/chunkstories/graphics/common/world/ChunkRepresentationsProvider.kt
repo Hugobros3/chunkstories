@@ -8,7 +8,7 @@ import xyz.chunkstories.api.util.kotlin.toVec3i
 import xyz.chunkstories.client.InternalClientOptions
 import xyz.chunkstories.world.WorldClientCommon
 import xyz.chunkstories.world.chunk.ChunkImplementation
-import xyz.chunkstories.world.storage.RegionImplementation
+import xyz.chunkstories.world.region.RegionImplementation
 
 abstract class ChunkRepresentationsProvider<R : ChunkRepresentation>(
         val world: WorldClientCommon,

@@ -34,10 +34,10 @@ class CreativeCommand(serverConsole: Server) : ServerCommandBasic(serverConsole)
 
         val entity = emitter.controlledEntity
         entity?.traits?.get(TraitCreativeMode::class.java)?.let { fm ->
-            var state = fm.get()
+            var state = fm.enabled
             state = !state
             emitter.sendMessage("Creative mode set to: $state")
-            fm.set(state)
+            fm.enabled = state
 
             return false
         }

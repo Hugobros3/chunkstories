@@ -22,8 +22,8 @@ import xyz.chunkstories.client.InternalClientOptions
 import xyz.chunkstories.util.concurrency.CompoundFence
 import xyz.chunkstories.world.WorldClientRemote
 import xyz.chunkstories.world.heightmap.HeightmapImplementation
-import xyz.chunkstories.world.storage.ChunkHolderImplementation
-import xyz.chunkstories.world.storage.RegionImplementation
+import xyz.chunkstories.world.chunk.ChunkHolderImplementation
+import xyz.chunkstories.world.region.RegionImplementation
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.world.WorldImplementation
 import java.util.*

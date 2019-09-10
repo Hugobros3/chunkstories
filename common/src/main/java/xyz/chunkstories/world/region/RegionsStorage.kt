@@ -4,7 +4,7 @@
 // Website: http://chunkstories.xyz
 //
 
-package xyz.chunkstories.world.storage
+package xyz.chunkstories.world.region
 
 import xyz.chunkstories.api.world.WorldUser
 import xyz.chunkstories.api.world.chunk.ChunkHolder

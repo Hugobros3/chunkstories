@@ -42,7 +42,7 @@ import xyz.chunkstories.content.translator.IncompatibleContentException
 import xyz.chunkstories.content.translator.InitialContentTranslator
 import xyz.chunkstories.content.translator.LoadedContentTranslator
 import xyz.chunkstories.entity.EntityWorldIterator
-import xyz.chunkstories.entity.SerializedEntityFile
+import xyz.chunkstories.entity.EntityFileSerialization
 import xyz.chunkstories.util.alias
 import xyz.chunkstories.util.concurrency.CompoundFence
 import xyz.chunkstories.world.chunk.ChunksStorage
@@ -50,7 +50,7 @@ import xyz.chunkstories.world.heightmap.HeightmapsStorage
 import xyz.chunkstories.world.io.IOTasks
 import xyz.chunkstories.world.iterators.BlocksInBoundingBoxIterator
 import xyz.chunkstories.world.logic.WorldLogicThread
-import xyz.chunkstories.world.storage.RegionsStorage
+import xyz.chunkstories.world.region.RegionsStorage
 import java.io.File
 import java.io.IOException
 import java.util.concurrent.locks.ReadWriteLock
@@ -173,12 +173,8 @@ constructor(override val gameContext: GameContext, final override val worldInfo:
         if (this !is WorldMaster)
             throw UnsupportedOperationException("Only Master Worlds can do this")
 
-        var savedEntity: Entity? = null
-
-        val playerEntityFile = SerializedEntityFile(
-                this.folderPath + "/players/" + player.name.toLowerCase() + ".csf")
-        if (playerEntityFile.exists())
-            savedEntity = playerEntityFile.read(this)
+        val playerEntityFile = File(this.folderPath + "/players/" + player.name.toLowerCase() + ".json")
+        val savedEntity: Entity? = EntityFileSerialization.readEntityFromDisk(playerEntityFile, this)
 
         var previousLocation: Location? = null
         if (savedEntity != null)

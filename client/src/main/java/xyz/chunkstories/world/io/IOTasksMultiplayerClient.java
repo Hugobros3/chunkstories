@@ -19,11 +19,11 @@ import xyz.chunkstories.client.net.ServerConnection;
 import xyz.chunkstories.net.packets.PacketChunkCompressedData;
 import xyz.chunkstories.net.packets.PacketHeightmap;
 import xyz.chunkstories.world.WorldClientRemote;
-import xyz.chunkstories.world.chunk.CompressedData;
+import xyz.chunkstories.world.chunk.ChunkCompressedData;
 import xyz.chunkstories.world.chunk.ChunkImplementation;
 import xyz.chunkstories.world.heightmap.HeightmapImplementation;
-import xyz.chunkstories.world.storage.ChunkHolderImplementation;
-import xyz.chunkstories.world.storage.RegionImplementation;
+import xyz.chunkstories.world.chunk.ChunkHolderImplementation;
+import xyz.chunkstories.world.region.RegionImplementation;
 
 public class IOTasksMultiplayerClient extends IOTasks {
 	IngameClientImplementation client;
@@ -105,15 +105,16 @@ public class IOTasksMultiplayerClient extends IOTasks {
 			this.requestHeightmapProcess((PacketHeightmap) packet);
 			// Chunk data
 		} else if (packet instanceof PacketChunkCompressedData) {
-			RegionImplementation region = world.getRegionsManager().getRegionChunkCoordinates(((PacketChunkCompressedData) packet).x,
-					((PacketChunkCompressedData) packet).y, ((PacketChunkCompressedData) packet).z);
+			RegionImplementation region = world.getRegionsManager().getRegionChunkCoordinates(((PacketChunkCompressedData) packet).getX(),
+					((PacketChunkCompressedData) packet).getY(), ((PacketChunkCompressedData) packet).getZ());
 
 			// This *can* happen, ie if the player flies too fast and by the time he receives the chunk data the region has already been gc'ed
 			if (region == null)
 				return;
 
-			CompressedData compressedData = ((PacketChunkCompressedData) packet).data;
-			ChunkHolderImplementation chunkHolder = region.getChunkHolder(((PacketChunkCompressedData) packet).x, ((PacketChunkCompressedData) packet).y, ((PacketChunkCompressedData) packet).z);
+			ChunkCompressedData compressedData = ((PacketChunkCompressedData) packet).getData();
+			ChunkHolderImplementation chunkHolder = region.getChunkHolder(((PacketChunkCompressedData) packet).getX(),
+					((PacketChunkCompressedData) packet).getY(), ((PacketChunkCompressedData) packet).getZ());
 			ChunkImplementation chunk = new ChunkImplementation(chunkHolder, chunkHolder.getChunkX(), chunkHolder.getChunkY(), chunkHolder.getChunkZ(), compressedData);
 			chunkHolder.eventLoadFinishes(chunk);
 		}

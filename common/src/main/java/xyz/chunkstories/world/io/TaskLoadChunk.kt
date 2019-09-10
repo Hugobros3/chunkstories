@@ -7,7 +7,7 @@
 package xyz.chunkstories.world.io
 
 import xyz.chunkstories.api.workers.TaskExecutor
-import xyz.chunkstories.world.storage.ChunkHolderImplementation
+import xyz.chunkstories.world.chunk.ChunkHolderImplementation
 import xyz.chunkstories.world.chunk.ChunkImplementation
 
 class TaskLoadChunk(internal var chunkSlot: ChunkHolderImplementation) : IOTask() {
