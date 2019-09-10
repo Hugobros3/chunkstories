@@ -4,31 +4,22 @@
 // Website: http://chunkstories.xyz
 //
 
-package xyz.chunkstories.world.storage
-
-import java.io.DataInputStream
-import java.io.FileInputStream
-import java.io.FileNotFoundException
-import java.io.IOException
+package xyz.chunkstories.world.region
 
 import org.slf4j.LoggerFactory
 
 import xyz.chunkstories.api.workers.TaskExecutor
 import xyz.chunkstories.world.io.IOTask
+import xyz.chunkstories.world.region.format.RegionFileSerialization
 
 class IOTaskLoadRegion(private val region: RegionImplementation) : IOTask() {
 
     public override fun task(taskExecutor: TaskExecutor): Boolean {
-        if (region.file!!.exists()) {
+        if (region.file.exists()) {
             try {
-                val fist = FileInputStream(region.handler!!.file)
-                val inputStream = DataInputStream(fist)
-
-                region.handler.load(inputStream)
-            } catch (e: FileNotFoundException) {
-                e.printStackTrace()
-            } catch (e: IOException) {
-                logger.warn("Error loading file " + region.handler!!.file)
+                RegionFileSerialization.loadRegion(region.file, region)
+            } catch (e: Exception) {
+                logger.error("Error reading region $region to ${region.file}: $e")
                 e.printStackTrace()
             }
         }

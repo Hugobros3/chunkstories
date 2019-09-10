@@ -23,7 +23,7 @@ import xyz.chunkstories.graphics.vulkan.textures.VulkanTexture3D
 import xyz.chunkstories.graphics.vulkan.util.createFence
 import xyz.chunkstories.graphics.vulkan.util.waitFence
 import xyz.chunkstories.world.WorldClientCommon
-import xyz.chunkstories.world.chunk.CubicChunk
+import xyz.chunkstories.world.chunk.ChunkImplementation
 import java.nio.ByteBuffer
 
 class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world: WorldClientCommon) : Cleanable {
@@ -214,7 +214,7 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
         }
     }
 
-    private fun extractChunkInBuffer(byteBuffer: ByteBuffer, chunk: CubicChunk) {
+    private fun extractChunkInBuffer(byteBuffer: ByteBuffer, chunk: ChunkImplementation) {
         val voxelData = chunk.voxelDataArray
 
         if (voxelData == null) {

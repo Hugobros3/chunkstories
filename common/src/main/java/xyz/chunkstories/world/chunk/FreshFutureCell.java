@@ -9,21 +9,21 @@ import xyz.chunkstories.voxel.components.CellComponentsHolder;
 
 class FreshFutureCell extends FutureCell implements FreshChunkCell {
 
-    private CubicChunk cubicChunk;
+    private ChunkImplementation chunk;
 
-    public FreshFutureCell(CubicChunk cubicChunk, Cell ogContext) {
+    public FreshFutureCell(ChunkImplementation chunk, Cell ogContext) {
         super(ogContext);
-        this.cubicChunk = cubicChunk;
+        this.chunk = chunk;
     }
 
     @Override
     public Chunk getChunk() {
-        return cubicChunk;
+        return chunk;
     }
 
     @Override
     public CellComponentsHolder getComponents() {
-        return cubicChunk.getComponentsAt(getX(), getY(), getZ());
+        return chunk.getComponentsAt(getX(), getY(), getZ());
     }
 
     @Override

@@ -163,7 +163,7 @@ class IngameUI(window: Gui, private val client: IngameClientImplementation) : La
                             if (p != null)
                                 slot = p.x
 
-                            setSelectedSlot(slot)
+                            selectedSlot = slot
                             true
                         }
                     }
@@ -182,7 +182,7 @@ class IngameUI(window: Gui, private val client: IngameClientImplementation) : La
 
                 playerEntity.traits[TraitSelectedItem::class]?.let { esi ->
                     var selected: ItemPile?
-                    var selectedInventorySlot = esi.getSelectedSlot()
+                    var selectedInventorySlot = esi.selectedSlot
 
                     val originalSlot = selectedInventorySlot
                     if (input.amount() < 0) {
@@ -203,7 +203,7 @@ class IngameUI(window: Gui, private val client: IngameClientImplementation) : La
 
                     // Switch slot
                     if (originalSlot != selectedInventorySlot)
-                        esi.setSelectedSlot(selectedInventorySlot)
+                        esi.selectedSlot = selectedInventorySlot
                 }
 
                 return true

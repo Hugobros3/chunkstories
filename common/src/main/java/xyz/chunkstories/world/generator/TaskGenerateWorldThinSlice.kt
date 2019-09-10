@@ -18,8 +18,8 @@ import xyz.chunkstories.api.world.chunk.FreshChunkCell
 import xyz.chunkstories.api.world.generator.WorldGenerator
 import xyz.chunkstories.api.world.heightmap.Heightmap
 import xyz.chunkstories.world.chunk.ChunkLightBaker
-import xyz.chunkstories.world.chunk.CubicChunk
-import xyz.chunkstories.world.storage.ChunkHolderImplementation
+import xyz.chunkstories.world.chunk.ChunkImplementation
+import xyz.chunkstories.world.chunk.ChunkHolderImplementation
 
 class TaskGenerateWorldThinSlice internal constructor(private val world: World, private val chunkX: Int, private val chunkZ: Int, private val heightmap: Heightmap) : Task(), WorldUser {
 
@@ -50,13 +50,13 @@ class TaskGenerateWorldThinSlice internal constructor(private val world: World, 
         // Doing the lord's work
         val chunks = arrayOfNulls<Chunk>(holders.size)
         for (chunkY in 0 until maxGenerationHeightInChunks) {
-            chunks[chunkY] = CubicChunk(holders[chunkY]!!, chunkX, chunkY, chunkZ, null)
+            chunks[chunkY] = ChunkImplementation(holders[chunkY]!!, chunkX, chunkY, chunkZ, null)
         }
 
         generator.generateWorldSlice(chunks)
 
         for (chunkY in 0 until maxGenerationHeightInChunks) {
-            holders[chunkY]!!.eventGenerationFinishes(chunks[chunkY] as CubicChunk)
+            holders[chunkY]!!.eventGenerationFinishes(chunks[chunkY] as ChunkImplementation)
         }
 
         // Build the heightmap from that

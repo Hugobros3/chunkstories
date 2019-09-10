@@ -4,14 +4,14 @@
 // Website: http://chunkstories.xyz
 //
 
-package xyz.chunkstories.world.storage
+package xyz.chunkstories.world.region
 
 import xyz.chunkstories.api.world.WorldUser
 import xyz.chunkstories.api.world.chunk.ChunkHolder
 import xyz.chunkstories.api.world.region.Region
 import xyz.chunkstories.util.concurrency.TrivialFence
 import xyz.chunkstories.world.WorldImplementation
-import xyz.chunkstories.world.chunk.CubicChunk
+import xyz.chunkstories.world.chunk.ChunkImplementation
 import xyz.chunkstories.world.generator.TaskGenerateWorldSlice
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.Location
@@ -52,7 +52,7 @@ class RegionsStorage(override val world: WorldImplementation) : WorldRegionsMana
         }
     }
 
-    fun getChunk(chunkX: Int, chunkY: Int, chunkZ: Int): CubicChunk? {
+    fun getChunk(chunkX: Int, chunkY: Int, chunkZ: Int): ChunkImplementation? {
         val holder = getRegionChunkCoordinates(chunkX, chunkY, chunkZ)
         return holder?.getChunk(chunkX, chunkY, chunkZ)
     }

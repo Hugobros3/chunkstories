@@ -7,14 +7,13 @@ import xyz.chunkstories.api.server.Server
 import xyz.chunkstories.api.world.WorldInfo
 import xyz.chunkstories.api.world.WorldMaster
 import xyz.chunkstories.client.ClientImplementation
-import xyz.chunkstories.entity.SerializedEntityFile
+import xyz.chunkstories.entity.EntityFileSerialization
 import xyz.chunkstories.server.FileBasedUsersPrivileges
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.plugin.DefaultPluginManager
 import xyz.chunkstories.world.*
 import java.io.File
 import java.util.*
-import java.util.function.BinaryOperator
 import kotlin.streams.toList
 
 fun ClientImplementation.enterExistingWorld(folder: File) {
@@ -121,9 +120,8 @@ class IngameClientLocalHost(client: ClientImplementation, worldInitializer: (Ing
 
         val playerEntity = this.controlledEntity
         if (playerEntity != null) {
-            val playerEntityFile = SerializedEntityFile(
-                    world.folderPath + "/players/" + this.name.toLowerCase() + ".csf")
-            playerEntityFile.write(playerEntity)
+            val playerEntityFile = File(world.folderPath + "/players/" + this.name.toLowerCase() + ".json")
+            EntityFileSerialization.writeEntityToDisk(playerEntityFile, playerEntity)
         }
     }
 

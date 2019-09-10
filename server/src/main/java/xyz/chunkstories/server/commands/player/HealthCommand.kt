@@ -42,7 +42,7 @@ class HealthCommand(serverConsole: Server) : ServerCommandBasic(serverConsole) {
         val entity = emitter.controlledEntity
 
         entity?.traits?.get(TraitHealth::class)?.let { fm ->
-            fm.setHealth(health)
+            fm.health = health
             emitter.sendMessage("Health set to: " + health + "/" + fm.maxHealth)
 
             return true

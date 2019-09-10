@@ -13,7 +13,7 @@ import xyz.chunkstories.api.world.heightmap.Heightmap
 import xyz.chunkstories.converter.ConverterWorkers.ConverterWorkerThread
 import xyz.chunkstories.util.concurrency.CompoundFence
 import xyz.chunkstories.world.WorldTool
-import xyz.chunkstories.world.storage.ChunkHolderImplementation
+import xyz.chunkstories.world.chunk.ChunkHolderImplementation
 
 class TaskBuildHeightmap(private val regionX: Int, private val regionZ: Int, private val csWorld: WorldTool) : Task() {
 

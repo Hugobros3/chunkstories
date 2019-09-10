@@ -4,8 +4,10 @@
 // Website: http://chunkstories.xyz
 //
 
-package xyz.chunkstories.world.storage
+package xyz.chunkstories.world.region
 
+import org.slf4j.LoggerFactory
+import xyz.chunkstories.api.content.json.Json
 import xyz.chunkstories.api.entity.Entity
 import xyz.chunkstories.api.util.concurrency.Fence
 import xyz.chunkstories.api.world.WorldMaster
@@ -15,10 +17,9 @@ import xyz.chunkstories.api.world.region.Region
 import xyz.chunkstories.util.concurrency.TrivialFence
 import xyz.chunkstories.world.WorldImplementation
 import xyz.chunkstories.world.WorldTool
-import xyz.chunkstories.world.chunk.CubicChunk
-import xyz.chunkstories.world.region.format.CSFRegionFile
-import org.slf4j.LoggerFactory
-import xyz.chunkstories.world.chunk.CompressedData
+import xyz.chunkstories.world.chunk.ChunkHolderImplementation
+import xyz.chunkstories.world.chunk.ChunkImplementation
+import xyz.chunkstories.world.chunk.ChunkCompressedData
 import java.io.File
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -26,8 +27,9 @@ import java.util.concurrent.Semaphore
 import java.util.concurrent.locks.ReentrantLock
 
 class RegionImplementation(override val world: WorldImplementation, override val heightmap: Heightmap, override val regionX: Int, override val regionY: Int, override val regionZ: Int) : Region, WorldUser {
-    val file: File?
-    val handler: CSFRegionFile?
+    val file: File
+        get() = File(world.folderPath + "/regions/" + regionX + "." + regionY + "." + regionZ + ".csf")
+    //val handler: CSFRegionFile?
 
     val stateLock = ReentrantLock()
     //val stateCondition = stateLock.newCondition()
@@ -58,8 +60,8 @@ class RegionImplementation(override val world: WorldImplementation, override val
 
     private val chunkHolders: Array<ChunkHolderImplementation>
 
-    internal var loadedChunksSet = ConcurrentHashMap.newKeySet<CubicChunk>()
-    override val loadedChunks: Collection<CubicChunk>
+    internal var loadedChunksSet = ConcurrentHashMap.newKeySet<ChunkImplementation>()
+    override val loadedChunks: Collection<ChunkImplementation>
         get() = loadedChunksSet
 
     override val entitiesWithinRegion: Sequence<Entity>
@@ -82,30 +84,33 @@ class RegionImplementation(override val world: WorldImplementation, override val
 
         // Only the WorldMaster has a concept of files
         if (world is WorldMaster) {
-            file = File(world.folderPath + "/regions/" + regionX + "." + regionY + "." + regionZ + ".csf")
-            handler = CSFRegionFile.determineVersionAndCreate(this)
+            //file = File(world.folderPath + "/regions/" + regionX + "." + regionY + "." + regionZ + ".csf")
+            //handler = CSFRegionFile.determineVersionAndCreate(this)
 
-            if (file.exists()) {
-                val task = IOTaskLoadRegion(this)
-                transitionState(Region.State.Loading(task))
-                world.ioHandler.scheduleTask(task)
-            } else if( (world !is WorldTool || world.isGenerationEnabled)){
-                //TODO get world generation task reference from heightmap
-                transitionState(Region.State.Generating(TrivialFence()))
-                chunkHolders.forEach { it.eventRegionIsReady() }
-            } else {
-                transitionState(Region.State.Available())
-                chunkHolders.forEach {
-                    it.compressedData = CompressedData(null, null, null)
-                    it.eventRegionIsReady()
+            when {
+                file.exists() -> {
+                    val task = IOTaskLoadRegion(this)
+                    transitionState(Region.State.Loading(task))
+                    world.ioHandler.scheduleTask(task)
+                }
+                world is WorldTool && !world.isGenerationEnabled -> {
+                    // Just fill out with dummy data (air)
+                    transitionState(Region.State.Available())
+                    chunkHolders.forEach {
+                        it.compressedData = ChunkCompressedData.Air(Json.Array(emptyList()))
+                        it.eventRegionIsReady()
+                    }
+                }
+                else -> {
+                    //TODO get world generation task reference from heightmap
+                    transitionState(Region.State.Generating(TrivialFence()))
+                    chunkHolders.forEach { it.eventRegionIsReady() }
                 }
             }
 
         } else {
             // Remote-world regions don't wait for anything to load in
             //TODO no
-            file = null
-            handler = null
             transitionState(Region.State.Available())
             chunkHolders.forEach { it.eventRegionIsReady() }
         }
@@ -172,7 +177,7 @@ class RegionImplementation(override val world: WorldImplementation, override val
     }
 
     fun eventGeneratingFinishes() {
-        if(world !is WorldMaster)
+        if (world !is WorldMaster)
             throw Exception("This event only makes sense in a Master world.")
 
         try {
@@ -189,7 +194,7 @@ class RegionImplementation(override val world: WorldImplementation, override val
     }
 
     fun eventSavingFinishes() {
-        if(world !is WorldMaster)
+        if (world !is WorldMaster)
             throw Exception("This event only makes sense in a Master world.")
 
         try {
@@ -222,7 +227,7 @@ class RegionImplementation(override val world: WorldImplementation, override val
 
             when (state) {
                 is Region.State.Generating -> {
-                    if(world !is WorldMaster)
+                    if (world !is WorldMaster)
                         throw Exception("How did we get to here ?")
                 }
                 is Region.State.Loading -> {
@@ -233,7 +238,7 @@ class RegionImplementation(override val world: WorldImplementation, override val
                 is Region.State.Saving -> {
                 }
                 is Region.State.Available -> {
-                    if(world is WorldMaster)
+                    if (world is WorldMaster)
                         transitionSaving()
                     else
                         transitionZombie()
@@ -277,7 +282,7 @@ class RegionImplementation(override val world: WorldImplementation, override val
         }
     }
 
-    override fun getChunk(chunkX: Int, chunkY: Int, chunkZ: Int): CubicChunk? {
+    override fun getChunk(chunkX: Int, chunkY: Int, chunkZ: Int): ChunkImplementation? {
         return chunkHolders[(chunkX and 7) * 64 + (chunkY and 7) * 8 + (chunkZ and 7)].chunk
     }
 
@@ -316,7 +321,7 @@ class RegionImplementation(override val world: WorldImplementation, override val
                 if (state.javaClass == stateClass)
                     break
 
-                if(state is Region.State.Zombie)
+                if (state is Region.State.Zombie)
                     throw Exception("Stuck exception: Waiting on a Zombie heightmap to do anything is fruitless !")
 
                 peopleWaiting++

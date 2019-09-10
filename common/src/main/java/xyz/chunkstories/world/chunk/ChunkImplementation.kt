@@ -7,7 +7,11 @@
 package xyz.chunkstories.world.chunk
 
 import org.joml.Vector3dc
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import xyz.chunkstories.api.content.json.*
 import xyz.chunkstories.api.entity.Entity
+import xyz.chunkstories.api.entity.EntitySerialization
 import xyz.chunkstories.api.events.voxel.WorldModificationCause
 import xyz.chunkstories.api.exceptions.world.WorldException
 import xyz.chunkstories.api.net.packets.PacketVoxelUpdate
@@ -18,18 +22,13 @@ import xyz.chunkstories.api.world.WorldMaster
 import xyz.chunkstories.api.world.chunk.*
 import xyz.chunkstories.api.world.heightmap.Heightmap
 import xyz.chunkstories.api.world.region.Region
-import xyz.chunkstories.entity.EntitySerializer
 import xyz.chunkstories.util.concurrency.SimpleLock
 import xyz.chunkstories.voxel.components.CellComponentsHolder
 import xyz.chunkstories.world.WorldImplementation
 import xyz.chunkstories.world.WorldTool
 import xyz.chunkstories.world.chunk.deriveddata.AutoRebuildingProperty
 import xyz.chunkstories.world.chunk.deriveddata.ChunkOcclusionProperty
-import xyz.chunkstories.world.storage.ChunkHolderImplementation
-import xyz.chunkstories.world.storage.RegionImplementation
-import java.io.ByteArrayInputStream
-import java.io.DataInputStream
-import java.io.IOException
+import xyz.chunkstories.world.region.RegionImplementation
 import java.util.HashMap
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Semaphore
@@ -40,7 +39,7 @@ import java.util.concurrent.atomic.AtomicLong
  * Essential class that holds actual chunk voxel data, entities and voxel
  * component !
  */
-class CubicChunk(override val holder: ChunkHolderImplementation, override val chunkX: Int, override val chunkY: Int, override val chunkZ: Int, compressedData: CompressedData?) : Chunk {
+class ChunkImplementation(override val holder: ChunkHolderImplementation, override val chunkX: Int, override val chunkY: Int, override val chunkZ: Int, compressedData: ChunkCompressedData?) : Chunk {
     override val world: WorldImplementation
     protected val holdingRegion: RegionImplementation
     protected val uuid: Int
@@ -79,7 +78,7 @@ class CubicChunk(override val holder: ChunkHolderImplementation, override val ch
         get() = localEntities
 
     init {
-        var compressedData = compressedData
+        //var compressedData = compressedData
         chunksCounter.incrementAndGet()
 
         this.holdingRegion = holder.region
@@ -92,88 +91,50 @@ class CubicChunk(override val holder: ChunkHolderImplementation, override val ch
         lightBaker = ChunkLightBaker(this)
 
         if (compressedData != null) {
-            try {
-                this.voxelDataArray = compressedData.voxelData
+            if(compressedData is ChunkCompressedData.NonAir) {
+                this.voxelDataArray = compressedData.extractVoxelData()
 
-                if (compressedData.voxelComponentsCompressedData != null) {
-                    val bais = ByteArrayInputStream(compressedData.voxelComponentsCompressedData)
-                    val dis = DataInputStream(bais)
+                val extendedData = compressedData.extractVoxelExtendedData()
+                for (cellWithExtendedData in extendedData.elements) {
+                    val index = (cellWithExtendedData as? Json.Dict ?: continue)["index"].asInt!!
 
-                    val smallArray = ByteArray(4096)
-                    val bias = ByteArrayInputStream(smallArray)
-                    val dias = DataInputStream(bias)
+                    val components = CellComponentsHolder(this, index)
+                    allCellComponents[index] = components
 
-                    var keepGoing = dis.readByte()
-                    while (keepGoing.toInt() != 0x00) {
-                        val index = dis.readInt()
-                        val components = CellComponentsHolder(this, index)
-                        allCellComponents[index] = components
+                    // Call the block's onPlace method as to make it spawn the necessary components
+                    val peek = peek(components.x, components.y, components.z)
+                    val future = FreshFutureCell(this, peek)
+                    peek.voxel.whenPlaced(future)
 
-                        // Call the block's onPlace method as to make it spawn the necessary components
-                        val peek = peek(components.x, components.y, components.z)
-                        // System.out.println("peek"+peek);
-                        val future = FreshFutureCell(this, peek)
-                        // System.out.println("future"+future);
+                    val savedComponents = cellWithExtendedData["components"].asArray!!
+                    for (savedComponent in savedComponents.elements) {
+                        val dict = savedComponent.asDict ?: continue
+                        val name = dict["name"].asString!!
+                        val data = dict["data"]!!
 
-                        peek.voxel.whenPlaced(future)
-                        // System.out.println("future comps"+future.components().getX() + ":" +
-                        // future.components().getY() + ": " + future.components().getZ());
-
-                        var componentName = dis.readUTF()
-                        while (componentName != "\n") {
-                            // System.out.println("componentName: "+componentName);
-
-                            // Read however many bytes this component wrote
-                            val bytes = dis.readShort().toInt()
-                            dis.readFully(smallArray, 0, bytes)
-
-                            val component = components.getVoxelComponent(componentName)
-                            if (component == null) {
-                                println("Error, a component named " + componentName
-                                        + " was saved, but it was not recreated by the voxel whenPlaced() method.")
-                            } else {
-                                // Hope for the best
-                                // System.out.println("called pull on "+component.getClass());
-                                component.pull(holder.region.handler!!, dias)
-                            }
-
-                            dias.reset()
-                            componentName = dis.readUTF()
+                        val component = components.getVoxelComponent(name)
+                        if (component == null) {
+                            logger.warn("Component named $name was saved, but was not recreated by the voxel whenPlaced() method.")
+                            continue
                         }
-                        keepGoing = dis.readByte()
+                        component.deserialize(data)
                     }
                 }
-
-                if (compressedData.entitiesCompressedData != null) {
-                    val bais = ByteArrayInputStream(compressedData.entitiesCompressedData)
-                    val dis = DataInputStream(bais)
-
-                    // Read entities until we hit -1
-                    var entity: Entity? = null
-                    do {
-                        entity = EntitySerializer.readEntityFromStream(dis, holder.region.handler, world)
-                        if (entity != null) {
-                            this.addEntity(entity)
-                            world.addEntity(entity)
-                        }
-                    } while (entity != null)
-                }
-            } catch (e: UnloadableChunkDataException) {
-
-                println(e.message)
-                e.printStackTrace()
-            } catch (e: IOException) {
-                println(e.message)
-                e.printStackTrace()
             }
 
+            val savedEntities = compressedData.extractEntities()
+            for(savedEntity in savedEntities.elements) {
+                val entity = EntitySerialization.deserializeEntity(world, savedEntity)
+                this.addEntity(entity)
+                world.addEntity(entity)
+            }
         }
 
         mesh = DummyChunkRenderingData
 
         // Send chunk to whoever already subscribed
-        if (compressedData == null)
-            compressedData = CompressedData(null, null, null)
+        //if (compressedData == null)
+        //    compressedData = CompressedData(null, null, null)
     }
 
     private fun sanitizeCoordinate(a: Int): Int {
@@ -464,5 +425,6 @@ class CubicChunk(override val holder: ChunkHolderImplementation, override val ch
 
     companion object {
         val chunksCounter = AtomicInteger(0)
+        val logger: Logger = LoggerFactory.getLogger("chunk")
     }
 }

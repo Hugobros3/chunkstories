@@ -11,12 +11,9 @@ import java.util.HashSet
 import com.carrotsearch.hppc.IntArrayDeque
 import com.carrotsearch.hppc.IntDeque
 
-import xyz.chunkstories.api.workers.Task
-import xyz.chunkstories.api.workers.TaskExecutor
-
 class TaskComputeChunkOcclusion {
 
-    internal val chunk: CubicChunk? = null
+    internal val chunk: ChunkImplementation? = null
 
     private fun computeOcclusionTable(): Array<BooleanArray> {
         val occlusionSides = Array(6) { BooleanArray(6) }

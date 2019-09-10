@@ -14,7 +14,7 @@ import xyz.chunkstories.api.world.heightmap.Heightmap
 import xyz.chunkstories.util.concurrency.CompoundFence
 import xyz.chunkstories.world.WorldImplementation
 import xyz.chunkstories.world.WorldTool
-import xyz.chunkstories.world.storage.ChunkHolderImplementation
+import xyz.chunkstories.world.chunk.ChunkHolderImplementation
 import io.xol.enklume.MinecraftWorld
 import io.xol.enklume.nbt.NBTInt
 import java.io.File

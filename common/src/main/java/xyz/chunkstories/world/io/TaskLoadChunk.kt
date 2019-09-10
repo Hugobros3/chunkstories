@@ -6,17 +6,15 @@
 
 package xyz.chunkstories.world.io
 
-import xyz.chunkstories.api.workers.Task
 import xyz.chunkstories.api.workers.TaskExecutor
-import xyz.chunkstories.world.storage.ChunkHolderImplementation
-import xyz.chunkstories.world.chunk.CompressedData
-import xyz.chunkstories.world.chunk.CubicChunk
+import xyz.chunkstories.world.chunk.ChunkHolderImplementation
+import xyz.chunkstories.world.chunk.ChunkImplementation
 
 class TaskLoadChunk(internal var chunkSlot: ChunkHolderImplementation) : IOTask() {
 
     public override fun task(taskExecutor: TaskExecutor): Boolean {
         val compressedData = chunkSlot.compressedData
-        val chunk = CubicChunk(chunkSlot, chunkSlot.chunkX, chunkSlot.chunkY, chunkSlot.chunkZ, compressedData)
+        val chunk = ChunkImplementation(chunkSlot, chunkSlot.chunkX, chunkSlot.chunkY, chunkSlot.chunkZ, compressedData)
         chunkSlot.eventLoadFinishes(chunk)
         return true
     }

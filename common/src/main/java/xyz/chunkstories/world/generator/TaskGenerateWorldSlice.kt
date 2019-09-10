@@ -12,7 +12,7 @@ import xyz.chunkstories.api.world.WorldUser
 import xyz.chunkstories.api.world.heightmap.Heightmap
 import xyz.chunkstories.world.WorldImplementation
 import xyz.chunkstories.world.heightmap.HeightmapImplementation
-import xyz.chunkstories.world.storage.RegionImplementation
+import xyz.chunkstories.world.region.RegionImplementation
 
 /**
  * Generates a world 'slice' (the voxel getCell data represented by a heightmap) using smaller tasks

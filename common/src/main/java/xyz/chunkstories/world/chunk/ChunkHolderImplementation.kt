@@ -4,33 +4,25 @@
 // Website: http://chunkstories.xyz
 //
 
-package xyz.chunkstories.world.storage
+package xyz.chunkstories.world.chunk
 
-import xyz.chunkstories.api.entity.traits.TraitDontSave
 import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
 import xyz.chunkstories.api.server.RemotePlayer
 import xyz.chunkstories.api.util.concurrency.Fence
 import xyz.chunkstories.api.world.WorldUser
 import xyz.chunkstories.api.world.chunk.ChunkHolder
 import xyz.chunkstories.api.world.region.Region
-import xyz.chunkstories.entity.EntitySerializer
 import xyz.chunkstories.net.packets.PacketChunkCompressedData
 import xyz.chunkstories.util.concurrency.TrivialFence
 import xyz.chunkstories.world.WorldTool
-import xyz.chunkstories.world.chunk.CompressedData
-import xyz.chunkstories.world.chunk.CubicChunk
 import xyz.chunkstories.world.io.TaskLoadChunk
 import net.jpountz.lz4.LZ4Factory
-import org.lwjgl.system.MemoryUtil
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.world.WorldClientNetworkedRemote
-import java.io.ByteArrayOutputStream
-import java.io.DataOutputStream
-import java.io.IOException
+import xyz.chunkstories.world.region.RegionImplementation
 import java.util.*
 import java.util.concurrent.Semaphore
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.concurrent.withLock
 
 class ChunkHolderImplementation(override val region: RegionImplementation, override val chunkX: Int, override val chunkY: Int, override val chunkZ: Int) : ChunkHolder {
     private val uuid: Int
@@ -57,12 +49,12 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
     private val usersWaitingForIntialData = HashSet<RemotePlayer>()
 
     /** Used by IO operations only  */
-    var compressedData: CompressedData? = null
+    var compressedData: ChunkCompressedData? = null
 
     //var loadChunkTask: IOTask? = null
 
-    override val chunk: CubicChunk?
-        get() = (state as? ChunkHolder.State.Available)?.chunk as? CubicChunk
+    override val chunk: ChunkImplementation?
+        get() = (state as? ChunkHolder.State.Available)?.chunk as? ChunkImplementation
 
     init {
         uuid = chunkX shl region.world.worldInfo.size.bitlengthOfVerticalChunksCoordinates or chunkY shl region.world.worldInfo.size.bitlengthOfHorizontalChunksCoordinates or chunkZ
@@ -72,14 +64,14 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
         val chunk = this.chunk ?: return
 
         chunk.entitiesLock.lock()
-        val compressedData = compressChunkData(chunk)
+        val compressedData = ChunkCompressedData.compressChunkData(chunk)//compressChunkData(chunk)
         chunk.entitiesLock.unlock()
 
         this.compressedData = compressedData
     }
 
-    /** This method is called assumming the chunk is well-locked  */
-    private fun compressChunkData(chunk: CubicChunk): CompressedData {
+    /*/** This method is called assumming the chunk is well-locked  */
+    private fun compressChunkData(chunk: ChunkImplementation): CompressedData {
         val changesTakenIntoAccount = chunk.compressionUncommitedModifications.get()
 
         // Stage 1: Compress the actual voxel data
@@ -166,13 +158,12 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
         baos.reset()
 
         for (entity in chunk.localEntities) {
-
             // Don't save controllable entities
-            if (!entity.traitLocation.wasRemoved() && !entity.traits.has(TraitDontSave::class.java)) {
-                EntitySerializer.writeEntityToStream(daos, region.handler, entity)
+            if (!entity.traitLocation.wasRemoved() && entity.traits[TraitDontSave::class] == null) {
+                EntitySerializerOld.writeEntityToStream(daos, region.handler, entity)
             }
         }
-        EntitySerializer.writeEntityToStream(daos, region.handler, null)
+        EntitySerializerOld.writeEntityToStream(daos, region.handler, null)
 
         val entityData = baos.toByteArray()
 
@@ -181,7 +172,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
         chunk.compressionUncommitedModifications.addAndGet(-changesTakenIntoAccount)
 
         return CompressedData(voxelCompressedData, voxelComponentsData, entityData)
-    }
+    }*/
 
     override fun registerUser(user: WorldUser): Boolean {
         try {
@@ -207,7 +198,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
 
                 if(user is RemotePlayer) {
                     if(this.state is ChunkHolder.State.Available) {
-                        user.pushPacket(PacketChunkCompressedData(chunk, compressedData))
+                        user.pushPacket(PacketChunkCompressedData(chunk!!, compressedData!!))
                     } else {
                         usersWaitingForIntialData.add(user)
                     }
@@ -324,7 +315,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
         }
     }
 
-    fun eventLoadFinishes(chunk: CubicChunk) {
+    fun eventLoadFinishes(chunk: ChunkImplementation) {
         val playersToSendDataTo: List<RemotePlayer>?
 
         try {
@@ -349,14 +340,14 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
 
         if (playersToSendDataTo != null)
             for (user in playersToSendDataTo)
-                user.pushPacket(PacketChunkCompressedData(chunk, compressedData))
+                user.pushPacket(PacketChunkCompressedData(chunk, compressedData!!))
     }
 
-    fun eventGenerationFinishes(chunk: CubicChunk) {
+    fun eventGenerationFinishes(chunk: ChunkImplementation) {
         val playersToSendDataTo: List<RemotePlayer>?
 
         // Get the compressed data done first, to avoid keeping the lock for longer than necessary
-        val compressedData = compressChunkData(chunk)
+        // val compressedData = compressChunkData(chunk)
 
         try {
             region.stateLock.lock()
@@ -366,7 +357,8 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
                 return
             }
 
-            this.compressedData = compressedData
+            compressChunkData()
+            //this.compressedData = c
 
             if (users.isNotEmpty()) {
                 transitionAvailable(chunk)
@@ -382,7 +374,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
 
         if (playersToSendDataTo != null)
             for (user in playersToSendDataTo)
-                user.pushPacket(PacketChunkCompressedData(chunk, compressedData))
+                user.pushPacket(PacketChunkCompressedData(chunk, compressedData!!))
     }
 
     private fun transitionLoading() {
@@ -412,7 +404,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
             transitionState(ChunkHolder.State.Generating(TrivialFence()))
 
             if (region.world is WorldTool && !region.world.isGenerationEnabled)
-                eventGenerationFinishes(CubicChunk(this, chunkX, chunkY, chunkZ, null))
+                eventGenerationFinishes(ChunkImplementation(this, chunkX, chunkY, chunkZ, null))
         } finally {
             region.stateLock.unlock()
         }
@@ -431,7 +423,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
         }
     }
 
-    private fun transitionAvailable(chunk: CubicChunk) {
+    private fun transitionAvailable(chunk: ChunkImplementation) {
         try {
             region.stateLock.lock()
             region.loadedChunksSet.add(chunk)
@@ -446,7 +438,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
             region.stateLock.lock()
             when (state) {
                 is ChunkHolder.State.Available, is ChunkHolder.State.Generating -> {
-                    val chunk = (state as ChunkHolder.State.Available).chunk as CubicChunk
+                    val chunk = (state as ChunkHolder.State.Available).chunk as ChunkImplementation
 
                     // Unlist it immediately
                     region.loadedChunksSet.remove(chunk)
@@ -464,11 +456,12 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
                     chunk.entitiesLock.lock()
 
                     // Compress chunk one last time before it has to go
-                    compressedData = compressChunkData(chunk)
+                    compressChunkData()
+                    //compressedData = compressChunkData(chunk)
 
                     // destroy it (returns any internal data using up ressources)
                     chunk.destroy()
-                    CubicChunk.chunksCounter.decrementAndGet()
+                    ChunkImplementation.chunksCounter.decrementAndGet()
 
                     // unlock it (whoever messes with it now, his problem)
                     chunk.entitiesLock.unlock()

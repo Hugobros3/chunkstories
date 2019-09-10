@@ -2,11 +2,11 @@ package xyz.chunkstories.graphics.opengl.world.chunks
 
 import xyz.chunkstories.api.world.chunk.ChunkMesh
 import xyz.chunkstories.graphics.opengl.OpenglGraphicsBackend
-import xyz.chunkstories.world.chunk.CubicChunk
+import xyz.chunkstories.world.chunk.ChunkImplementation
 import xyz.chunkstories.world.chunk.deriveddata.AutoRebuildingProperty
 import kotlin.concurrent.withLock
 
-class OpenglChunkMeshProperty(val backend: OpenglGraphicsBackend, val chunk: CubicChunk) : AutoRebuildingProperty(chunk.world.gameContext, true), ChunkMesh {
+class OpenglChunkMeshProperty(val backend: OpenglGraphicsBackend, val chunk: ChunkImplementation) : AutoRebuildingProperty(chunk.world.gameContext, true), ChunkMesh {
     //val actualProperty = RefCountedProperty<VulkanChunkRepresentation>()
     var currentRepresentation: OpenglChunkRepresentation? = null
 

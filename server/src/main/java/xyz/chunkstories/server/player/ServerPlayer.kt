@@ -23,7 +23,7 @@ import xyz.chunkstories.api.server.RemotePlayer
 import xyz.chunkstories.api.server.Server
 import xyz.chunkstories.api.util.ColorsTools
 import xyz.chunkstories.api.world.WorldMaster
-import xyz.chunkstories.entity.SerializedEntityFile
+import xyz.chunkstories.entity.EntityFileSerialization
 import xyz.chunkstories.server.net.ClientConnection
 import xyz.chunkstories.server.propagation.VirtualServerDecalsManager.ServerPlayerVirtualDecalsManager
 import xyz.chunkstories.server.propagation.VirtualServerParticlesManager.ServerPlayerVirtualParticlesManager
@@ -124,8 +124,9 @@ class ServerPlayer(val playerConnection: ClientConnection, override val name: St
         val entity = this.controlledEntity
         if (entity != null && inventory.isAccessibleTo(entity)) {
             if (inventory.owner is Entity) {
-                val trait = (inventory.owner as Entity).traits.all().find { it is TraitInventory && it.inventory == inventory }!! as TraitInventory
-                trait.pushComponent(this)
+                //TODO have open/close mechanics for inventories
+                //val trait = (inventory.owner as Entity).traits.all().find { it is TraitInventory && it.inventory == inventory }!! as TraitInventory
+                //trait.pushComponent(this)
             }
 
             // this.sendMessage("Sending you the open inventory request.");
@@ -194,23 +195,13 @@ class ServerPlayer(val playerConnection: ClientConnection, override val name: St
     override fun subscribe(entity: Entity): Boolean {
         if (subscribedEntities.add(entity)) {
             entity.subscribers.register(this)
-
-            // Only the server should ever push all components to a client
-            entity.traits.all().forEach { c ->
-                if (c is TraitSerializable)
-                    c.pushComponent(this)
-            }
             return true
         }
         return false
     }
 
     override fun unsubscribe(entity: Entity): Boolean {
-        // Thread.dumpStack();
-        // System.out.println("sub4sub");
-        if (entity.subscribers.unregister(this))
-        // TODO REMOVE ENTITY EXISTENCE COMPONENT IT'S STUPID AND WRONG
-        {
+        if (entity.subscribers.unregister(this)) {
             subscribedEntities.remove(entity)
             return true
         }
@@ -230,10 +221,6 @@ class ServerPlayer(val playerConnection: ClientConnection, override val name: St
             entity.subscribers.unregister(this)
             iterator.remove()
         }
-    }
-
-    fun isSubscribedTo(entity: Entity): Boolean {
-        return subscribedEntities.contains(entity)
     }
 
     override fun sendMessage(message: String) {
@@ -273,10 +260,9 @@ class ServerPlayer(val playerConnection: ClientConnection, override val name: St
             playerMetadata.setProperty("posZ", controlledTraitLocation.z().toString())
             playerMetadata.setProperty("world", world.worldInfo.internalName)
 
-            // Serializes the whole player entity !!!
-            val playerEntityFile = SerializedEntityFile(
-                    world.folderPath + "/players/" + this.name.toLowerCase() + ".csf")
-            playerEntityFile.write(controlledEntity)
+            // Serialize the entity the player was controlling
+            val playerEntityFile = File(world.folderPath + "/players/" + this.name.toLowerCase() + ".json")
+            EntityFileSerialization.writeEntityToDisk(playerEntityFile, controlledEntity!!)
         }
 
         // Telemetry (zomg so EVIL)
