@@ -15,7 +15,7 @@ import xyz.chunkstories.api.world.region.Region
 import xyz.chunkstories.util.concurrency.TrivialFence
 import xyz.chunkstories.world.WorldImplementation
 import xyz.chunkstories.world.WorldTool
-import xyz.chunkstories.world.chunk.CubicChunk
+import xyz.chunkstories.world.chunk.ChunkImplementation
 import xyz.chunkstories.world.region.format.CSFRegionFile
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.world.chunk.CompressedData
@@ -58,8 +58,8 @@ class RegionImplementation(override val world: WorldImplementation, override val
 
     private val chunkHolders: Array<ChunkHolderImplementation>
 
-    internal var loadedChunksSet = ConcurrentHashMap.newKeySet<CubicChunk>()
-    override val loadedChunks: Collection<CubicChunk>
+    internal var loadedChunksSet = ConcurrentHashMap.newKeySet<ChunkImplementation>()
+    override val loadedChunks: Collection<ChunkImplementation>
         get() = loadedChunksSet
 
     override val entitiesWithinRegion: Sequence<Entity>
@@ -277,7 +277,7 @@ class RegionImplementation(override val world: WorldImplementation, override val
         }
     }
 
-    override fun getChunk(chunkX: Int, chunkY: Int, chunkZ: Int): CubicChunk? {
+    override fun getChunk(chunkX: Int, chunkY: Int, chunkZ: Int): ChunkImplementation? {
         return chunkHolders[(chunkX and 7) * 64 + (chunkY and 7) * 8 + (chunkZ and 7)].chunk
     }
 

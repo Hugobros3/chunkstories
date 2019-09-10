@@ -3,9 +3,9 @@ package xyz.chunkstories.graphics.opengl.world.chunks
 import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.common.world.ChunkRepresentation
 import xyz.chunkstories.graphics.opengl.buffers.OpenglVertexBuffer
-import xyz.chunkstories.world.chunk.CubicChunk
+import xyz.chunkstories.world.chunk.ChunkImplementation
 
-class OpenglChunkRepresentation(override val chunk: CubicChunk, val sections: Map<String, Section>
+class OpenglChunkRepresentation(override val chunk: ChunkImplementation, val sections: Map<String, Section>
 ) : ChunkRepresentation, Cleanable {
 
     class Section(val materialTag: String, val cubes: CubesInstances?, val staticMesh: StaticMesh?) {

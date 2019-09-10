@@ -17,13 +17,13 @@ import xyz.chunkstories.api.world.chunk.ChunkHolder
 import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.common.UnitCube
 import xyz.chunkstories.world.cell.ScratchCell
-import xyz.chunkstories.world.chunk.CubicChunk
+import xyz.chunkstories.world.chunk.ChunkImplementation
 import xyz.chunkstories.world.chunk.deriveddata.AutoRebuildingProperty
 import java.nio.ByteBuffer
 import java.util.*
 
 abstract class TaskCreateChunkMesh(
-        val chunk: CubicChunk, attachedProperty: AutoRebuildingProperty, updates: Int,
+        val chunk: ChunkImplementation, attachedProperty: AutoRebuildingProperty, updates: Int,
         val voxelTextureId: (VoxelTexture) -> Int,
         val done: (Map<String, ScratchBuffer>) -> Unit
 

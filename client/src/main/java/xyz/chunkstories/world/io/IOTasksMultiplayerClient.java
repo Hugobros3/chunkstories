@@ -20,7 +20,7 @@ import xyz.chunkstories.net.packets.PacketChunkCompressedData;
 import xyz.chunkstories.net.packets.PacketHeightmap;
 import xyz.chunkstories.world.WorldClientRemote;
 import xyz.chunkstories.world.chunk.CompressedData;
-import xyz.chunkstories.world.chunk.CubicChunk;
+import xyz.chunkstories.world.chunk.ChunkImplementation;
 import xyz.chunkstories.world.heightmap.HeightmapImplementation;
 import xyz.chunkstories.world.storage.ChunkHolderImplementation;
 import xyz.chunkstories.world.storage.RegionImplementation;
@@ -114,7 +114,7 @@ public class IOTasksMultiplayerClient extends IOTasks {
 
 			CompressedData compressedData = ((PacketChunkCompressedData) packet).data;
 			ChunkHolderImplementation chunkHolder = region.getChunkHolder(((PacketChunkCompressedData) packet).x, ((PacketChunkCompressedData) packet).y, ((PacketChunkCompressedData) packet).z);
-			CubicChunk chunk = new CubicChunk(chunkHolder, chunkHolder.getChunkX(), chunkHolder.getChunkY(), chunkHolder.getChunkZ(), compressedData);
+			ChunkImplementation chunk = new ChunkImplementation(chunkHolder, chunkHolder.getChunkX(), chunkHolder.getChunkY(), chunkHolder.getChunkZ(), compressedData);
 			chunkHolder.eventLoadFinishes(chunk);
 		}
 

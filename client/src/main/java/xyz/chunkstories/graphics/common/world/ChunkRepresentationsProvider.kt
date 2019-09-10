@@ -1,7 +1,5 @@
 package xyz.chunkstories.graphics.common.world
 
-import org.joml.Vector3f
-import org.joml.Vector3fc
 import xyz.chunkstories.api.graphics.rendergraph.Frame
 import xyz.chunkstories.api.graphics.systems.dispatching.RepresentationsGobbler
 import xyz.chunkstories.api.graphics.systems.dispatching.RepresentationsProvider
@@ -9,12 +7,12 @@ import xyz.chunkstories.api.physics.Box
 import xyz.chunkstories.api.util.kotlin.toVec3i
 import xyz.chunkstories.client.InternalClientOptions
 import xyz.chunkstories.world.WorldClientCommon
-import xyz.chunkstories.world.chunk.CubicChunk
+import xyz.chunkstories.world.chunk.ChunkImplementation
 import xyz.chunkstories.world.storage.RegionImplementation
 
 abstract class ChunkRepresentationsProvider<R : ChunkRepresentation>(
         val world: WorldClientCommon,
-        val getRepresentation: (Frame, CubicChunk) -> R?,
+        val getRepresentation: (Frame, ChunkImplementation) -> R?,
         val postGather: (Frame, List<R>) -> Unit
 ) : RepresentationsProvider {
     final override fun gatherRepresentations(representationsGobbler: RepresentationsGobbler) {
@@ -91,7 +89,7 @@ abstract class ChunkRepresentationsProvider<R : ChunkRepresentation>(
             (distSquared(a!!) - distSquared(b!!)).toInt()
         }*/
 
-        val visibleRegionChunks = arrayOfNulls<CubicChunk>(8 * 8 * 8)
+        val visibleRegionChunks = arrayOfNulls<ChunkImplementation>(8 * 8 * 8)
         val chunksVisibilityMask = IntArray(8 * 8 * 8)
         var visibleRegionChunksCount: Int
 
@@ -163,9 +161,9 @@ abstract class ChunkRepresentationsProvider<R : ChunkRepresentation>(
         postGather(frame, usedData)
     }
 
-    private inline fun gather4region(visibleRegionChunksCount: Int, frame: Frame, visibleRegionChunks: Array<CubicChunk?>,
+    private inline fun gather4region(visibleRegionChunksCount: Int, frame: Frame, visibleRegionChunks: Array<ChunkImplementation?>,
                                      usedData: MutableList<R>, representationsGobbler: RepresentationsGobbler, chunksVisibilityMask: IntArray,
-                                     getRepresentation: (Frame, CubicChunk) -> R?) {
+                                     getRepresentation: (Frame, ChunkImplementation) -> R?) {
         for (j in 0 until visibleRegionChunksCount) {
             //val r = obtainAndSendRepresentation(visibleRegionChunks[j]!!, chunksVisibilityMask[j])
             val r = getRepresentation(frame, visibleRegionChunks[j]!!)

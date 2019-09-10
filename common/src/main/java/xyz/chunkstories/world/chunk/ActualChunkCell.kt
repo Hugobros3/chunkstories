@@ -13,7 +13,7 @@ import xyz.chunkstories.api.world.chunk.ChunkCell
 import xyz.chunkstories.api.world.chunk.FreshChunkCell
 import xyz.chunkstories.voxel.components.CellComponentsHolder
 
-class ActualChunkCell(private val cubicChunk: CubicChunk, x: Int, y: Int, z: Int, data: Int) :
+class ActualChunkCell(private val cubicChunk: ChunkImplementation, x: Int, y: Int, z: Int, data: Int) :
         AbstractCell(x and 0x1F, y and 0x1F, z and 0x1F, cubicChunk.world.contentTranslator.getVoxelForId(VoxelFormat.id(data))
                 ?: cubicChunk.world.content.voxels.air
                 , VoxelFormat.meta(data), VoxelFormat.blocklight(data), VoxelFormat.sunlight(data)), ChunkCell, FreshChunkCell {

@@ -7,6 +7,8 @@
 package xyz.chunkstories.world.chunk
 
 import org.joml.Vector3dc
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.entity.Entity
 import xyz.chunkstories.api.events.voxel.WorldModificationCause
 import xyz.chunkstories.api.exceptions.world.WorldException
@@ -40,7 +42,7 @@ import java.util.concurrent.atomic.AtomicLong
  * Essential class that holds actual chunk voxel data, entities and voxel
  * component !
  */
-class CubicChunk(override val holder: ChunkHolderImplementation, override val chunkX: Int, override val chunkY: Int, override val chunkZ: Int, compressedData: CompressedData?) : Chunk {
+class ChunkImplementation(override val holder: ChunkHolderImplementation, override val chunkX: Int, override val chunkY: Int, override val chunkZ: Int, compressedData: CompressedData?) : Chunk {
     override val world: WorldImplementation
     protected val holdingRegion: RegionImplementation
     protected val uuid: Int
@@ -79,7 +81,7 @@ class CubicChunk(override val holder: ChunkHolderImplementation, override val ch
         get() = localEntities
 
     init {
-        var compressedData = compressedData
+        //var compressedData = compressedData
         chunksCounter.incrementAndGet()
 
         this.holdingRegion = holder.region
@@ -111,9 +113,7 @@ class CubicChunk(override val holder: ChunkHolderImplementation, override val ch
 
                         // Call the block's onPlace method as to make it spawn the necessary components
                         val peek = peek(components.x, components.y, components.z)
-                        // System.out.println("peek"+peek);
                         val future = FreshFutureCell(this, peek)
-                        // System.out.println("future"+future);
 
                         peek.voxel.whenPlaced(future)
                         // System.out.println("future comps"+future.components().getX() + ":" +
@@ -129,8 +129,7 @@ class CubicChunk(override val holder: ChunkHolderImplementation, override val ch
 
                             val component = components.getVoxelComponent(componentName)
                             if (component == null) {
-                                println("Error, a component named " + componentName
-                                        + " was saved, but it was not recreated by the voxel whenPlaced() method.")
+                                logger.error("Error, a component named " + componentName + " was saved, but it was not recreated by the voxel whenPlaced() method.")
                             } else {
                                 // Hope for the best
                                 // System.out.println("called pull on "+component.getClass());
@@ -172,8 +171,8 @@ class CubicChunk(override val holder: ChunkHolderImplementation, override val ch
         mesh = DummyChunkRenderingData
 
         // Send chunk to whoever already subscribed
-        if (compressedData == null)
-            compressedData = CompressedData(null, null, null)
+        //if (compressedData == null)
+        //    compressedData = CompressedData(null, null, null)
     }
 
     private fun sanitizeCoordinate(a: Int): Int {
@@ -464,5 +463,6 @@ class CubicChunk(override val holder: ChunkHolderImplementation, override val ch
 
     companion object {
         val chunksCounter = AtomicInteger(0)
+        val logger: Logger = LoggerFactory.getLogger("chunk")
     }
 }

@@ -11,11 +11,11 @@ import xyz.chunkstories.api.world.World
 import xyz.chunkstories.api.world.WorldUser
 import xyz.chunkstories.api.world.cell.CellComponents
 import xyz.chunkstories.api.world.chunk.ChunkCell
-import xyz.chunkstories.world.chunk.CubicChunk
+import xyz.chunkstories.world.chunk.ChunkImplementation
 import java.util.*
 import kotlin.collections.Map.Entry
 
-class CellComponentsHolder(override val chunk: CubicChunk, val index: Int) : CellComponents {
+class CellComponentsHolder(override val chunk: ChunkImplementation, val index: Int) : CellComponents {
 
     internal var map: MutableMap<String, VoxelComponent> = HashMap()
 

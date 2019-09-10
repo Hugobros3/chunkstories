@@ -17,14 +17,14 @@ import xyz.chunkstories.api.net.PacketSendingContext;
 import xyz.chunkstories.api.net.PacketWorldStreaming;
 import xyz.chunkstories.api.world.World;
 import xyz.chunkstories.world.chunk.CompressedData;
-import xyz.chunkstories.world.chunk.CubicChunk;
+import xyz.chunkstories.world.chunk.ChunkImplementation;
 
 public class PacketChunkCompressedData extends PacketWorldStreaming {
 	public PacketChunkCompressedData(World world) {
 		super(world);
 	}
 
-	public PacketChunkCompressedData(CubicChunk c, CompressedData data) {
+	public PacketChunkCompressedData(ChunkImplementation c, CompressedData data) {
 		super(c.getWorld());
 
 		this.x = c.getChunkX();

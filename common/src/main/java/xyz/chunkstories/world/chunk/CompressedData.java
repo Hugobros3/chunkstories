@@ -51,7 +51,7 @@ public class CompressedData {
 
 			MemoryUtil.memFree(f4st);
 
-			int data[] = new int[32 * 32 * 32];
+			int[] data = new int[32 * 32 * 32];
 			t3mp.asIntBuffer().get(data);
 
 			MemoryUtil.memFree(t3mp);

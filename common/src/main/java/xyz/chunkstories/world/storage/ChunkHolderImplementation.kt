@@ -18,7 +18,7 @@ import xyz.chunkstories.net.packets.PacketChunkCompressedData
 import xyz.chunkstories.util.concurrency.TrivialFence
 import xyz.chunkstories.world.WorldTool
 import xyz.chunkstories.world.chunk.CompressedData
-import xyz.chunkstories.world.chunk.CubicChunk
+import xyz.chunkstories.world.chunk.ChunkImplementation
 import xyz.chunkstories.world.io.TaskLoadChunk
 import net.jpountz.lz4.LZ4Factory
 import org.lwjgl.system.MemoryUtil
@@ -60,8 +60,8 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
 
     //var loadChunkTask: IOTask? = null
 
-    override val chunk: CubicChunk?
-        get() = (state as? ChunkHolder.State.Available)?.chunk as? CubicChunk
+    override val chunk: ChunkImplementation?
+        get() = (state as? ChunkHolder.State.Available)?.chunk as? ChunkImplementation
 
     init {
         uuid = chunkX shl region.world.worldInfo.size.bitlengthOfVerticalChunksCoordinates or chunkY shl region.world.worldInfo.size.bitlengthOfHorizontalChunksCoordinates or chunkZ
@@ -78,7 +78,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
     }
 
     /** This method is called assumming the chunk is well-locked  */
-    private fun compressChunkData(chunk: CubicChunk): CompressedData {
+    private fun compressChunkData(chunk: ChunkImplementation): CompressedData {
         val changesTakenIntoAccount = chunk.compressionUncommitedModifications.get()
 
         // Stage 1: Compress the actual voxel data
@@ -322,7 +322,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
         }
     }
 
-    fun eventLoadFinishes(chunk: CubicChunk) {
+    fun eventLoadFinishes(chunk: ChunkImplementation) {
         val playersToSendDataTo: List<RemotePlayer>?
 
         try {
@@ -350,7 +350,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
                 user.pushPacket(PacketChunkCompressedData(chunk, compressedData))
     }
 
-    fun eventGenerationFinishes(chunk: CubicChunk) {
+    fun eventGenerationFinishes(chunk: ChunkImplementation) {
         val playersToSendDataTo: List<RemotePlayer>?
 
         // Get the compressed data done first, to avoid keeping the lock for longer than necessary
@@ -410,7 +410,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
             transitionState(ChunkHolder.State.Generating(TrivialFence()))
 
             if (region.world is WorldTool && !region.world.isGenerationEnabled)
-                eventGenerationFinishes(CubicChunk(this, chunkX, chunkY, chunkZ, null))
+                eventGenerationFinishes(ChunkImplementation(this, chunkX, chunkY, chunkZ, null))
         } finally {
             region.stateLock.unlock()
         }
@@ -429,7 +429,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
         }
     }
 
-    private fun transitionAvailable(chunk: CubicChunk) {
+    private fun transitionAvailable(chunk: ChunkImplementation) {
         try {
             region.stateLock.lock()
             region.loadedChunksSet.add(chunk)
@@ -444,7 +444,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
             region.stateLock.lock()
             when (state) {
                 is ChunkHolder.State.Available, is ChunkHolder.State.Generating -> {
-                    val chunk = (state as ChunkHolder.State.Available).chunk as CubicChunk
+                    val chunk = (state as ChunkHolder.State.Available).chunk as ChunkImplementation
 
                     // Unlist it immediately
                     region.loadedChunksSet.remove(chunk)
@@ -466,7 +466,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
 
                     // destroy it (returns any internal data using up ressources)
                     chunk.destroy()
-                    CubicChunk.chunksCounter.decrementAndGet()
+                    ChunkImplementation.chunksCounter.decrementAndGet()
 
                     // unlock it (whoever messes with it now, his problem)
                     chunk.entitiesLock.unlock()

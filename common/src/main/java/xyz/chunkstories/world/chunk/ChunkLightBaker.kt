@@ -21,7 +21,7 @@ import xyz.chunkstories.world.chunk.deriveddata.AutoRebuildingProperty
 
 //TODO use custom propagation for ALL propagation functions & cleanup this whole darn mess
 /** Responsible for propagating voxel volumetric light  */
-class ChunkLightBaker(internal val chunk: CubicChunk) : AutoRebuildingProperty(chunk.world.gameContext, true), ChunkLightUpdater {
+class ChunkLightBaker(internal val chunk: ChunkImplementation) : AutoRebuildingProperty(chunk.world.gameContext, true), ChunkLightUpdater {
     internal val world = chunk.world
     internal val chunkX: Int = chunk.chunkX
     internal val chunkY: Int = chunk.chunkY
@@ -97,12 +97,12 @@ class ChunkLightBaker(internal val chunk: CubicChunk) : AutoRebuildingProperty(c
     }
 
     inner class TaskLightChunk(baker: ChunkLightBaker, private val updatesToCommit: Int, private val considerAdjacentChunks: Boolean) : AutoRebuildingProperty.UpdateTask(baker, updatesToCommit) {
-        private val leftChunk: CubicChunk?
-        private val rightChunk: CubicChunk?
-        private val topChunk: CubicChunk?
-        private val bottomChunk: CubicChunk?
-        private val frontChunk: CubicChunk?
-        private val backChunk: CubicChunk?
+        private val leftChunk: ChunkImplementation?
+        private val rightChunk: ChunkImplementation?
+        private val topChunk: ChunkImplementation?
+        private val bottomChunk: ChunkImplementation?
+        private val frontChunk: ChunkImplementation?
+        private val backChunk: ChunkImplementation?
 
         init {
             // Checks if the adjacent chunks are done loading

@@ -1,13 +1,12 @@
 package xyz.chunkstories.graphics.vulkan.systems.world
 
-import xyz.chunkstories.api.graphics.representation.Representation
 import xyz.chunkstories.graphics.common.world.ChunkRepresentation
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
 import xyz.chunkstories.graphics.vulkan.resources.RefCountedProperty
 import xyz.chunkstories.graphics.vulkan.resources.RefCountedRecyclable
-import xyz.chunkstories.world.chunk.CubicChunk
+import xyz.chunkstories.world.chunk.ChunkImplementation
 
-class VulkanChunkRepresentation(override val chunk: CubicChunk, val sections: Map<String, Section>, property: RefCountedProperty<*>
+class VulkanChunkRepresentation(override val chunk: ChunkImplementation, val sections: Map<String, Section>, property: RefCountedProperty<*>
 ) : RefCountedRecyclable(property), ChunkRepresentation {
 
     class Section(val materialTag: String, val cubes: CubesInstances?, val staticMesh: StaticMesh?) {

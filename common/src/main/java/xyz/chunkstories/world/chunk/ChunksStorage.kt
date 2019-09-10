@@ -54,16 +54,16 @@ class ChunksStorage(override val world: WorldImplementation) : WorldChunksManage
         // If it doesn't return null then it exists
     }
 
-    override fun getChunkWorldCoordinates(location: Location): CubicChunk? {
+    override fun getChunkWorldCoordinates(location: Location): ChunkImplementation? {
         return getChunkWorldCoordinates(location.x().toInt(), location.y().toInt(),
                 location.z().toInt())
     }
 
-    override fun getChunkWorldCoordinates(worldX: Int, worldY: Int, worldZ: Int): CubicChunk? {
+    override fun getChunkWorldCoordinates(worldX: Int, worldY: Int, worldZ: Int): ChunkImplementation? {
         return getChunk(worldX / 32, worldY / 32, worldZ / 32)
     }
 
-    override fun getChunk(chunkX: Int, chunkY: Int, chunkZ: Int): CubicChunk? {
+    override fun getChunk(chunkX: Int, chunkY: Int, chunkZ: Int): ChunkImplementation? {
         var chunkX = chunkX
         var chunkZ = chunkZ
         chunkX %= sizeInChunks
@@ -77,6 +77,6 @@ class ChunksStorage(override val world: WorldImplementation) : WorldChunksManage
         return if (chunkY >= world.worldInfo.size.heightInChunks) null else world.regionsManager.getChunk(chunkX, chunkY, chunkZ)
     }
 
-    override val allLoadedChunks: Sequence<CubicChunk>
+    override val allLoadedChunks: Sequence<ChunkImplementation>
         get() = world.regionsManager.regionsList.asSequence().flatMap { it.loadedChunks.asSequence() }
 }
