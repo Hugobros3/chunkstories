@@ -173,7 +173,7 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
             pApplicationName(MemoryStack.stackUTF8("Chunk Stories"))
             pEngineName(MemoryStack.stackUTF8("Chunk Stories Vulkan Backend"))
 
-            apiVersion(VK_MAKE_VERSION(1, 1, 70))
+            apiVersion(VK_MAKE_VERSION(1, 0, 70))
         }
 
         val additionalInstanceExtensions = mutableSetOf(EXTDebugReport.VK_EXT_DEBUG_REPORT_EXTENSION_NAME)
