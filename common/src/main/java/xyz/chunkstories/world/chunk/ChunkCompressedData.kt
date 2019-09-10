@@ -10,6 +10,9 @@ import xyz.chunkstories.api.entity.EntitySerialization
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.nio.ByteBuffer
+import net.jpountz.lz4.LZ4Exception
+import xyz.chunkstories.api.entity.traits.TraitDontSave
+
 
 sealed class ChunkCompressedData(internal val entities: Json.Array ) {
 
@@ -17,12 +20,27 @@ sealed class ChunkCompressedData(internal val entities: Json.Array ) {
 
     class NonAir constructor(internal val voxelData: ByteArray, internal val voxelExtendedData: Json.Array, entities: Json.Array) : ChunkCompressedData(entities) {
         fun extractVoxelData() : IntArray {
-            val byteArray = lz4.get().fastDecompressor().decompress(voxelData, 32 * 32 * 32)
+            val f4st = MemoryUtil.memAlloc(voxelData.size)
+            f4st.put(voxelData)
+            f4st.flip()
 
-            val intBuf = ByteBuffer.wrap(byteArray)/*.order(ByteOrder.BIG_ENDIAN)*/.asIntBuffer()
-            val array = IntArray(intBuf.remaining())
-            intBuf.get(array)
-            return array
+            val t3mp = MemoryUtil.memAlloc(32 * 32 * 32 * 4)
+            try {
+                lz4.get().fastDecompressor().decompress(f4st, t3mp)
+
+                t3mp.flip()
+
+                MemoryUtil.memFree(f4st)
+
+                val data = IntArray(32 * 32 * 32)
+                t3mp.asIntBuffer().get(data)
+
+                MemoryUtil.memFree(t3mp)
+
+                return data
+            } catch (e: LZ4Exception) {
+                throw UnloadableChunkDataException("LZ4 decompression failed.")
+            }
         }
 
         fun extractVoxelExtendedData() : Json.Array {
@@ -60,7 +78,7 @@ sealed class ChunkCompressedData(internal val entities: Json.Array ) {
         }
 
         fun compressChunkData(chunk: ChunkImplementation): ChunkCompressedData {
-            val compressedEntityData = Json.Array(chunk.entitiesWithinChunk.map { EntitySerialization.serializeEntity(it) })
+            val compressedEntityData = Json.Array(chunk.entitiesWithinChunk.filter { it.traits[TraitDontSave::class] == null }.map { EntitySerialization.serializeEntity(it) })
 
             val compressedVoxelData = chunk.voxelDataArray?.let{ compressVoxelData(it) } ?: return Air(compressedEntityData)
 
