@@ -87,7 +87,9 @@ constructor(server: Server, clientsManager: ClientsManager, internal val socket:
         } else if (definition.genre == PacketGenre.WORLD) {
             // Queue packets for a specific world
             if (player != null) {
-                val world = player!!.controlledEntity!!.world as WorldServer
+                val world = player!!.controlledEntity?.world as? WorldServer
+                if(world == null)
+                    return
                 world.queueDatagram(datagram, player!!)
             }
         } else if (definition.genre == PacketGenre.WORLD_STREAMING) {

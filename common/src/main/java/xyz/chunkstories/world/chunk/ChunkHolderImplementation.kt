@@ -357,14 +357,13 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
                 return
             }
 
-            compressChunkData()
-            //this.compressedData = c
-
             if (users.isNotEmpty()) {
                 transitionAvailable(chunk)
+                compressChunkData()
                 playersToSendDataTo = if (usersWaitingForIntialData.isNotEmpty()) usersWaitingForIntialData.toList() else null
                 usersWaitingForIntialData.clear()
             } else {
+                //TODO note this discards the generated chunk!t
                 transitionUnloaded()
                 playersToSendDataTo = null
             }

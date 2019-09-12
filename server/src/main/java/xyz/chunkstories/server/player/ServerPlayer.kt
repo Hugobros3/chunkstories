@@ -11,8 +11,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.entity.Entity
 import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
-import xyz.chunkstories.api.entity.traits.serializable.TraitInventory
-import xyz.chunkstories.api.entity.traits.serializable.TraitSerializable
 import xyz.chunkstories.api.input.InputsManager
 import xyz.chunkstories.api.item.inventory.Inventory
 import xyz.chunkstories.api.math.LoopingMathHelper
@@ -95,13 +93,11 @@ class ServerPlayer(val playerConnection: ClientConnection, override val name: St
     lateinit var loadingAgent: ServerPlayerLoadingAgent private set
 
     init {
-
         //TODO this should use revised UUIDs
         File("players/").mkdirs()
         this.playerMetadataFile = File("./players/" + name.toLowerCase() + ".metadata")
-        this.playerMetadata = Properties()//OldStyleConfigFile("./players/" + playerName.toLowerCase() + ".cfg");
+        this.playerMetadata = Properties()
         this.playerMetadata.load(playerMetadataFile.bufferedReader())
-
 
         this.serverInputsManager = ServerPlayerInputsManager(this)
 

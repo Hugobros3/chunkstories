@@ -80,3 +80,6 @@ out/
 *.iml
 *.ipr
 *.iws
+
+#test server
+test-server

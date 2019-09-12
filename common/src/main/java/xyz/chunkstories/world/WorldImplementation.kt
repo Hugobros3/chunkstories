@@ -194,14 +194,14 @@ constructor(override val gameContext: GameContext, final override val worldInfo:
             if (entity == null || entity.traits[TraitHealth::class.java]?.isDead == true)
                 entity = this.gameContext.content.entities.getEntityDefinition("player")!!
                         .newEntity(this)
-            //else
-            //    entity.UUID = -1
 
             // Name your player !
             entity.traits[TraitName::class.java]?.name = player.name
             entity.traitLocation.set(actualSpawnLocation)
             addEntity(entity)
             player.controlledEntity = entity
+
+            playerEntityFile.delete()
         }
     }
 

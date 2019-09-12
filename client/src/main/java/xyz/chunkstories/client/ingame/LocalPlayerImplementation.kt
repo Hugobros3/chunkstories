@@ -25,8 +25,6 @@ class LocalPlayerImplementation(override val client: IngameClientImplementation,
         get() = name
     override val inputsManager: ClientInputsManager
         get() = client.inputsManager
-    val isConnected: Boolean
-        get() = true
     override val subscribedToList: Collection<Entity>
         get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
     override val uuid: Long
@@ -104,11 +102,6 @@ class LocalPlayerImplementation(override val client: IngameClientImplementation,
 
     }
 
-    fun isSubscribedTo(entity: Entity): Boolean {
-        // TODO Auto-generated method stub
-        return false
-    }
-
     override fun hasFocus(): Boolean {
         return client.gui.hasFocus() && inputsManager.mouse.isGrabbed
     }
@@ -118,10 +111,6 @@ class LocalPlayerImplementation(override val client: IngameClientImplementation,
 
     override fun sendMessage(msg: String) {
         client.print(msg)
-    }
-
-    fun hasSpawned(): Boolean {
-        return controlledEntity != null
     }
 
     override fun hasPermission(permissionNode: String): Boolean {
