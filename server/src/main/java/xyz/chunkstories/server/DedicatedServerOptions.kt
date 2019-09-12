@@ -8,6 +8,8 @@ object DedicatedServerOptions {
     lateinit var maxUsers: String private set
 
     lateinit var worldName: String private set
+    lateinit var worldSize: String private set
+    lateinit var worldGenerator: String private set
 
     lateinit var workerThreads: String private set
 
@@ -38,6 +40,12 @@ object DedicatedServerOptions {
             section("world") {
                 worldName = option("name") {
                     default = "world"
+                }
+                worldGenerator = option("generator") {
+                    default = "horizon"
+                }
+                worldSize = option("size") {
+                    default = "medium"
                 }
             }
 

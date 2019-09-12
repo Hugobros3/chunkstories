@@ -6,6 +6,7 @@
 
 package xyz.chunkstories.server.player
 
+import com.google.gson.Gson
 import org.joml.Vector3d
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -28,15 +29,23 @@ import xyz.chunkstories.server.propagation.VirtualServerParticlesManager.ServerP
 import xyz.chunkstories.sound.VirtualSoundManager.ServerPlayerVirtualSoundManager
 import xyz.chunkstories.world.WorldServer
 import java.io.File
-import java.io.FileWriter
-import java.io.IOException
-import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+
+data class PlayerMetadata(
+        var timePlayed: Long = 0,
+        var lastLogin: Long = System.currentTimeMillis(),
+        var firstLogin: Long = System.currentTimeMillis(),
+        var worldName: String? = null,
+        var lastPositionX: Double = 0.0,
+        var lastPositionY: Double = 0.0,
+        var lastPositionZ: Double = 0.0
+)
 
 class ServerPlayer(val playerConnection: ClientConnection, override val name: String) : RemotePlayer {
     private val server = playerConnection.context
 
-    private val playerMetadata: Properties
+    private val loginTime = System.currentTimeMillis()
+    private var playerMetadata = PlayerMetadata()
     private val playerMetadataFile: File
 
     override val displayName: String
@@ -95,16 +104,10 @@ class ServerPlayer(val playerConnection: ClientConnection, override val name: St
     init {
         //TODO this should use revised UUIDs
         File("players/").mkdirs()
-        this.playerMetadataFile = File("./players/" + name.toLowerCase() + ".metadata")
-        this.playerMetadata = Properties()
-        this.playerMetadata.load(playerMetadataFile.bufferedReader())
+
+        this.playerMetadataFile = File("./players/" + name.toLowerCase() + ".json")
 
         this.serverInputsManager = ServerPlayerInputsManager(this)
-
-        // Sets dates
-        this.playerMetadata.setProperty("lastlogin", "" + System.currentTimeMillis())
-        if (this.playerMetadata.getProperty("firstlogin", "nope") == "nope")
-            this.playerMetadata.setProperty("firstlogin", "" + System.currentTimeMillis())
     }
 
     /** Asks the server's permission manager if the player is ok to do that  */
@@ -241,9 +244,6 @@ class ServerPlayer(val playerConnection: ClientConnection, override val name: St
 
     /** Serializes the stuff describing this player  */
     fun save() {
-        val lastTime = playerMetadata.getProperty("timeplayed")?.toLong() ?: 0L
-        val lastLogin = playerMetadata.getProperty("lastlogin").toLong()
-
         if (controlledEntity != null) {
             // Useless, kept for admin easyness, scripts, whatnot
             val controlledTraitLocation = controlledEntity!!.location
@@ -251,10 +251,10 @@ class ServerPlayer(val playerConnection: ClientConnection, override val name: St
             // Safely assumes as a SERVER the world will be master ;)
             val world = controlledTraitLocation.world as WorldMaster
 
-            playerMetadata.setProperty("posX", controlledTraitLocation.x().toString())
-            playerMetadata.setProperty("posY", controlledTraitLocation.y().toString())
-            playerMetadata.setProperty("posZ", controlledTraitLocation.z().toString())
-            playerMetadata.setProperty("world", world.worldInfo.internalName)
+            playerMetadata.lastPositionX = controlledTraitLocation.x()
+            playerMetadata.lastPositionY = controlledTraitLocation.y()
+            playerMetadata.lastPositionZ = controlledTraitLocation.z()
+            playerMetadata.worldName = world.worldInfo.internalName
 
             // Serialize the entity the player was controlling
             val playerEntityFile = File(world.folderPath + "/players/" + this.name.toLowerCase() + ".json")
@@ -262,14 +262,12 @@ class ServerPlayer(val playerConnection: ClientConnection, override val name: St
         }
 
         // Telemetry (zomg so EVIL)
-        playerMetadata.setProperty("timeplayed", "" + (lastTime + (System.currentTimeMillis() - lastLogin)))
-        try {
-            playerMetadata.store(FileWriter(playerMetadataFile), "Metadata file for player$name")
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
+        val now = System.currentTimeMillis()
+        playerMetadata.timePlayed += now - loginTime
+        playerMetadata.lastLogin = now
 
-        logger.info("Player profile $name saved.")
+        playerMetadataFile.writeText(Gson().toJson(playerMetadata))
+        logger.info("Player profile $name saved in $playerMetadataFile")
     }
 
     override fun toString(): String {

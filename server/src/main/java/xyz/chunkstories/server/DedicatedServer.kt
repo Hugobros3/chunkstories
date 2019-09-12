@@ -18,6 +18,8 @@ import xyz.chunkstories.api.server.Server
 import xyz.chunkstories.api.util.ColorsTools
 import xyz.chunkstories.api.util.configuration.Configuration
 import xyz.chunkstories.api.workers.Tasks
+import xyz.chunkstories.api.world.WorldInfo
+import xyz.chunkstories.api.world.WorldSize
 import xyz.chunkstories.content.GameContentStore
 import xyz.chunkstories.plugin.DefaultPluginManager
 import xyz.chunkstories.server.commands.DedicatedServerConsole
@@ -29,10 +31,7 @@ import xyz.chunkstories.server.propagation.ServerModsProvider
 import xyz.chunkstories.task.WorkerThreadPool
 import xyz.chunkstories.util.LogbackSetupHelper
 import xyz.chunkstories.util.VersionInfo
-import xyz.chunkstories.world.WorldImplementation
-import xyz.chunkstories.world.WorldLoadingException
-import xyz.chunkstories.world.WorldServer
-import xyz.chunkstories.world.deserializeWorldInfo
+import xyz.chunkstories.world.*
 import java.io.BufferedReader
 import java.io.File
 import java.io.IOException
@@ -143,6 +142,20 @@ class DedicatedServer internal constructor(coreContentLocation: File, modsString
             val worldName = serverConfig.getValue(DedicatedServerOptions.worldName)
             val worldPath = "./worlds/$worldName"
             val worldDir = File(worldPath)
+            if (!worldDir.exists()) {
+                val internalName = worldName.replace("[^\\w\\s]".toRegex(), "_")
+                val size = serverConfig.getValue(DedicatedServerOptions.worldSize).let { WorldSize.getWorldSize(it.toUpperCase()) } ?: WorldSize.MEDIUM
+                val worldInfo = WorldInfo(
+                        internalName = internalName,
+                        name = worldName,
+                        description = "Automatically generated server map",
+                        seed = Random().nextLong().toString(),
+                        size = size,
+                        generatorName = serverConfig.getValue(DedicatedServerOptions.worldGenerator)
+                )
+                createWorld(worldDir, worldInfo)
+            }
+
             if (worldDir.exists()) {
                 val worldInfoFile = File(worldDir.path + "/" + WorldImplementation.worldInfoFilename)
                 if (!worldInfoFile.exists())

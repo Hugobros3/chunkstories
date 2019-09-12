@@ -40,20 +40,7 @@ fun ClientImplementation.createAndEnterWorld(folder: File, worldInfo: WorldInfo)
         throw Exception("The folder $folder already exists !")
 
     logger().debug("Creating new singleplayer world")
-    folder.mkdirs()
-    val worldInfoFile = File(folder.path + "/" + WorldImplementation.worldInfoFilename)
-    worldInfoFile.writeText(serializeWorldInfo(worldInfo, true))
-
-    val internalData = WorldInternalData()
-    val random = Random((worldInfo.seed + "_spawn").codePoints().toList().reduce(Int::xor).toLong())
-    val randomWeather = random.nextFloat()
-    internalData.weather = randomWeather
-    val spawnCoordinateX = random.nextInt(worldInfo.size.sizeInChunks * 32)
-    val spawnCoordinateZ = random.nextInt(worldInfo.size.sizeInChunks * 32)
-    internalData.spawnLocation.set(spawnCoordinateX + 0.5, 64.0, spawnCoordinateZ + 0.5)
-
-    val internalDataFile = File(folder.path + "/" + WorldImplementation.worldInternalDataFilename)
-    internalData.writeToDisk(internalDataFile)
+    createWorld(folder, worldInfo)
     logger().debug("Created new world '${worldInfo.name}' ; now entering world")
 
     enterExistingWorld(folder)
