@@ -161,6 +161,7 @@ class RegionImplementation(override val world: WorldImplementation, override val
 
     internal fun eventLoadingFinishes() {
         try {
+            world.entitiesLock.writeLock().lock()
             stateLock.lock()
             if (state !is Region.State.Loading)
                 throw Exception("Illegal state transition: When accepting loaded data, region was in state $state")
@@ -174,6 +175,7 @@ class RegionImplementation(override val world: WorldImplementation, override val
             }
         } finally {
             stateLock.unlock()
+            world.entitiesLock.writeLock().unlock()
         }
     }
 

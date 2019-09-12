@@ -214,6 +214,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
 
     override fun unregisterUser(user: WorldUser): Boolean {
         try {
+            region.world.entitiesLock.writeLock().lock()
             region.stateLock.lock()
 
             /*if(state !is ChunkHolder.State.Available) {
@@ -238,11 +239,13 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
             return false
         } finally {
             region.stateLock.unlock()
+            region.world.entitiesLock.writeLock().unlock()
         }
     }
 
     fun eventUsersEmpty() {
         try {
+            region.world.entitiesLock.writeLock().lock()
             region.stateLock.lock()
 
             when (state) {
@@ -263,11 +266,13 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
             }
         } finally {
             region.stateLock.unlock()
+            region.world.entitiesLock.writeLock().unlock()
         }
     }
 
     fun eventUsersNotEmpty() {
         try {
+            region.world.entitiesLock.writeLock().lock()
             region.stateLock.lock()
 
             when (state) {
@@ -290,11 +295,13 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
             }
         } finally {
             region.stateLock.unlock()
+            region.world.entitiesLock.writeLock().unlock()
         }
     }
 
     fun eventRegionIsReady() {
         try {
+            region.world.entitiesLock.writeLock().lock()
             region.stateLock.lock()
             if (state != ChunkHolder.State.WaitForRegionInitialLoad)
                 throw Exception("Illegal state change")
@@ -312,6 +319,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
 
         } finally {
             region.stateLock.unlock()
+            region.world.entitiesLock.writeLock().unlock()
         }
     }
 
@@ -319,6 +327,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
         val playersToSendDataTo: List<RemotePlayer>?
 
         try {
+            region.world.entitiesLock.writeLock().lock()
             region.stateLock.lock()
 
             if (state !is ChunkHolder.State.Loading) {
@@ -336,6 +345,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
             }
         } finally {
             region.stateLock.unlock()
+            region.world.entitiesLock.writeLock().unlock()
         }
 
         if (playersToSendDataTo != null)
@@ -350,6 +360,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
         // val compressedData = compressChunkData(chunk)
 
         try {
+            region.world.entitiesLock.writeLock().lock()
             region.stateLock.lock()
 
             if (state !is ChunkHolder.State.Generating) {
@@ -369,6 +380,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
             }
         } finally {
             region.stateLock.unlock()
+            region.world.entitiesLock.writeLock().unlock()
         }
 
         if (playersToSendDataTo != null)
@@ -395,6 +407,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
 
     private fun transitionGenerating() {
         try {
+            region.world.entitiesLock.writeLock().lock()
             region.stateLock.lock()
 
             if (state !is ChunkHolder.State.WaitForRegionInitialLoad && state !is ChunkHolder.State.Unloaded)
@@ -406,6 +419,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
                 eventGenerationFinishes(ChunkImplementation(this, chunkX, chunkY, chunkZ, null))
         } finally {
             region.stateLock.unlock()
+            region.world.entitiesLock.writeLock().unlock()
         }
     }
 

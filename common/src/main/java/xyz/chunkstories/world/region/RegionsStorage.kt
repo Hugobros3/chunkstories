@@ -71,6 +71,7 @@ class RegionsStorage(override val world: WorldImplementation) : WorldRegionsMana
 
         val key = (regionX * sizeInRegions + regionZ) * heightInRegions + regionY
         try {
+            world.entitiesLock.writeLock().lock()
             this.regionsLock.lock()
 
             // In the special case where the user is the task that generates the map itself, acquiring the map will send us in a loop.
@@ -118,6 +119,7 @@ class RegionsStorage(override val world: WorldImplementation) : WorldRegionsMana
             return region
         } finally {
             this.regionsLock.unlock()
+            world.entitiesLock.writeLock().unlock()
         }
     }
 
@@ -132,6 +134,7 @@ class RegionsStorage(override val world: WorldImplementation) : WorldRegionsMana
 
         val key = (regionX * sizeInRegions + regionZ) * heightInRegions + regionY
         try {
+            world.entitiesLock.writeLock().lock()
             this.regionsLock.lock()
 
             // Unlike the other entry point, this doesn't pose a risk of loop
@@ -174,6 +177,7 @@ class RegionsStorage(override val world: WorldImplementation) : WorldRegionsMana
             return region.getChunkHolder(chunkX, chunkY, chunkZ)
         } finally {
             this.regionsLock.unlock()
+            world.entitiesLock.writeLock().unlock()
         }
     }
 
