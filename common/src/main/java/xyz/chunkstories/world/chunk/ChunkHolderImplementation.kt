@@ -434,6 +434,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
 
     private fun transitionUnloaded() {
         try {
+            region.world.entitiesLock.writeLock().lock()
             region.stateLock.lock()
             when (state) {
                 is ChunkHolder.State.Available, is ChunkHolder.State.Generating -> {
@@ -443,13 +444,11 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
                     region.loadedChunksSet.remove(chunk)
 
                     // Remove the entities from this chunk from the world
-                    region.world.entitiesLock.writeLock().lock()
                     for (entity in chunk.localEntities) {
                         // If there is no controller
                         if (entity.traits[TraitControllable::class]?.controller == null)
                             region.world.removeEntityFromList(entity)
                     }
-                    region.world.entitiesLock.writeLock().unlock()
 
                     // Lock it down
                     chunk.entitiesLock.lock()
@@ -470,6 +469,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
             transitionState(ChunkHolder.State.Unloaded)
         } finally {
             region.stateLock.unlock()
+            region.world.entitiesLock.writeLock().unlock()
         }
     }
 

@@ -121,7 +121,7 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
         this.registerUser(firstUser)
     }
 
-    override fun registerUser(user: WorldUser): Boolean {
+    internal fun registerUser(user: WorldUser): Boolean {
         try {
             stateLock.lock()
             val wasEmpty = usersSet.isEmpty()

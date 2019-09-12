@@ -20,13 +20,14 @@ import xyz.chunkstories.world.WorldTool
 import xyz.chunkstories.world.chunk.ChunkHolderImplementation
 import xyz.chunkstories.world.chunk.ChunkImplementation
 import xyz.chunkstories.world.chunk.ChunkCompressedData
+import xyz.chunkstories.world.heightmap.HeightmapImplementation
 import java.io.File
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Semaphore
 import java.util.concurrent.locks.ReentrantLock
 
-class RegionImplementation(override val world: WorldImplementation, override val heightmap: Heightmap, override val regionX: Int, override val regionY: Int, override val regionZ: Int) : Region, WorldUser {
+class RegionImplementation(override val world: WorldImplementation, override val heightmap: HeightmapImplementation, override val regionX: Int, override val regionY: Int, override val regionZ: Int) : Region, WorldUser {
     val file: File
         get() = File(world.folderPath + "/regions/" + regionX + "." + regionY + "." + regionZ + ".csf")
     //val handler: CSFRegionFile?
@@ -116,7 +117,7 @@ class RegionImplementation(override val world: WorldImplementation, override val
         }
     }
 
-    override fun registerUser(user: WorldUser): Boolean {
+    internal fun registerUser(user: WorldUser): Boolean {
         try {
             stateLock.lock()
 
