@@ -8,6 +8,7 @@
 
 package xyz.chunkstories.world
 
+import com.googlecode.concurentlocks.ReentrantReadWriteUpdateLock
 import org.joml.Vector3dc
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -79,7 +80,8 @@ constructor(override val gameContext: GameContext, final override val worldInfo:
 
     //TODO store the entities in a smarter way ?
     protected val entities: WorldEntitiesHolder
-    var entitiesLock: ReadWriteLock = ReentrantReadWriteLock(true)
+    //TODO go through the code & change write locks into update locks where possible
+    var entitiesLock: ReadWriteLock = ReentrantReadWriteUpdateLock()
 
     final override val collisionsManager: WorldCollisionsManager
 

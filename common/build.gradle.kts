@@ -46,6 +46,9 @@ dependencies {
     // Wait we don't actually use netty for now
     // implementation("io.netty:netty-all:4.1.18.Final")
 
+    // Fancy concurrency
+    api("com.googlecode.concurrent-locks:concurrent-locks:1.0.0")
+
     // Logging
     implementation("ch.qos.logback:logback-core:1.0.13")
     implementation("ch.qos.logback:logback-classic:1.0.13")
