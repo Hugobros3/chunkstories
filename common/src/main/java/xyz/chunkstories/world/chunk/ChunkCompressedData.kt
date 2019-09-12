@@ -125,4 +125,11 @@ sealed class ChunkCompressedData(internal val entities: Json.Array ) {
 
         dos.writeUTF(this.entities.stringSerialize())
     }
+
+    /** Networking sends entities in a different way */
+    fun stripEntities(): ChunkCompressedData =
+        when(this) {
+            is Air -> Air(Json.Array(emptyList()))
+            is NonAir -> NonAir(voxelData, voxelExtendedData, Json.Array(emptyList()))
+        }
 }

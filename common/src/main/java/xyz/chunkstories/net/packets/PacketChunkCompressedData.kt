@@ -35,7 +35,7 @@ class PacketChunkCompressedData : PacketWorldStreaming {
         this.y = chunk.chunkY
         this.z = chunk.chunkZ
 
-        this.data = data
+        this.data = data.stripEntities()
     }
 
     @Throws(IOException::class)
