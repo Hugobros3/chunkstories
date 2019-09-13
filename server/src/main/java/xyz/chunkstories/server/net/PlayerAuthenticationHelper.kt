@@ -49,7 +49,7 @@ internal class PlayerAuthenticationHelper(private val connection: ClientConnecti
         if (loginRequest.startsWith("confirm")) {
             if (name == "undefined")
                 return true
-            if (connection.clientsManager.getServer().userPrivileges.isUserBanned(name!!)) {
+            if (connection.clientsManager.getServer().userPrivileges.bannedUsers.contains(name)) {
                 connection.disconnect("Banned username - " + name!!)
                 return true
             }

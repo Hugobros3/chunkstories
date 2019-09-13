@@ -98,19 +98,6 @@ public abstract class ClientsManager {
 
 	public Set<Player> getPlayers() {
 		return new LinkedHashSet(players.values());
-		/*return new IterableIterator<Player>() {
-			Iterator<ServerPlayer> authClients = players.values().iterator();
-
-			@Override
-			public boolean hasNext() {
-				return authClients.hasNext();
-			}
-
-			@Override
-			public ServerPlayer next() {
-				return authClients.next();
-			}
-		};*/
 	}
 
 	public void sendServerInfo(ClientConnection clientConnection) {

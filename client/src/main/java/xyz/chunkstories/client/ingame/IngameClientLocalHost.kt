@@ -52,7 +52,6 @@ class IngameClientLocalHost(client: ClientImplementation, worldInitializer: (Ing
     override val pluginManager: DefaultPluginManager
             get() = super.internalPluginManager
 
-    override val userPrivileges = FileBasedUsersPrivileges()
     override var permissionsManager: PermissionsManager = object: PermissionsManager {
         override fun hasPermission(player: Player, permissionNode: String): Boolean {
             //TODO have an actual permissions system

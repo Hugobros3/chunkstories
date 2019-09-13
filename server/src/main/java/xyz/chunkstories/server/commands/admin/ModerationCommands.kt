@@ -6,11 +6,11 @@
 
 package xyz.chunkstories.server.commands.admin
 
-import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.plugin.commands.Command
 import xyz.chunkstories.api.plugin.commands.CommandEmitter
 import xyz.chunkstories.api.server.RemotePlayer
 import xyz.chunkstories.api.server.Server
+import xyz.chunkstories.server.DedicatedServer
 import xyz.chunkstories.server.commands.ServerCommandBasic
 
 class ModerationCommands(serverConsole: Server) : ServerCommandBasic(serverConsole) {
@@ -24,31 +24,64 @@ class ModerationCommands(serverConsole: Server) : ServerCommandBasic(serverConso
     }
 
     override fun handleCommand(emitter: CommandEmitter, command: Command, arguments: Array<String>): Boolean {
-        if (command.name == "kick" && emitter.hasPermission("server.admin.kick")) {
-            if (arguments.size >= 1) {
-                val clientByName = server.getPlayerByName(arguments[0])
-                var kickReason = "Please refrain from further portrayal of such imbecile attitudes"
-                // Recreate the argument
-                if (arguments.size >= 2) {
-                    kickReason = ""
-                    for (i in 1 until arguments.size)
-                        kickReason += arguments[i] + if (i < arguments.size - 1) " " else ""
-                }
+        when {
+            command.name == "kick" && emitter.hasPermission("server.admin.kick") ->
+                if (arguments.isNotEmpty()) {
+                    val clientName = arguments[0]
+                    val targetPlayer = server.getPlayerByName(clientName) ?: run {
+                        emitter.sendMessage("User '$clientName' not found.")
+                        return true
+                    }
+                    var kickReason = "Please refrain from further portrayal of such imbecile attitudes"
 
-                if (clientByName != null) {
-                    (clientByName as? RemotePlayer)?.disconnect("Kicked from server. \n$kickReason")
-                    emitter.sendMessage("Kicked $clientByName for $kickReason")
+                    // Recreate the argument
+                    if (arguments.size >= 2) {
+                        kickReason = ""
+                        for (i in 1 until arguments.size)
+                            kickReason += arguments[i] + if (i < arguments.size - 1) " " else ""
+                    }
+
+                    (targetPlayer as? RemotePlayer)?.disconnect("Kicked from server. \n$kickReason")
+                    emitter.sendMessage("Kicked $targetPlayer for $kickReason")
+
                 } else {
-                    emitter.sendMessage("User '$clientByName' not found.")
+                    emitter.sendMessage("Syntax: /kick <playerName> [reason]")
                 }
-                return true
-            } else {
-                emitter.sendMessage("Syntax: /kick <playerName> [reason]")
-                return true
-            }
+            command.name == "ban" && emitter.hasPermission("server.admin.ban") ->
+                if (arguments.isNotEmpty()) {
+                    val clientName = arguments[0]
+                    val targetPlayer = server.getPlayerByName(clientName)
+
+                    (targetPlayer as? RemotePlayer)?.disconnect("Banned.")
+                    emitter.sendMessage("Banning $targetPlayer")
+                    (server as DedicatedServer).userPrivileges.bannedUsers.add(clientName)
+                }
+            command.name == "unban" && emitter.hasPermission("server.admin.ban") ->
+                if (arguments.isNotEmpty()) {
+                    val clientName = arguments[0]
+                    val targetPlayer = server.getPlayerByName(clientName)
+
+                    (targetPlayer as? RemotePlayer)?.disconnect("Banned.")
+                    emitter.sendMessage("Unbanning $targetPlayer")
+                    (server as DedicatedServer).userPrivileges.bannedUsers.remove(clientName)
+                }
+            command.name == "banip" && emitter.hasPermission("server.admin.ban") ->
+                if (arguments.isNotEmpty()) {
+                    val ip = arguments[0]
+
+                    emitter.sendMessage("Banning IP: $ip")
+                    (server as DedicatedServer).userPrivileges.bannedIps.add(ip)
+                }
+            command.name == "unbanip" && emitter.hasPermission("server.admin.ban") ->
+                if (arguments.isNotEmpty()) {
+                    val ip = arguments[0]
+
+                    emitter.sendMessage("Unbanning IP: $ip")
+                    (server as DedicatedServer).userPrivileges.bannedIps.remove(ip)
+                }
+            else -> return false
         }
-        // TODO ban/unban commands
-        return false
+        return true
     }
 
 }

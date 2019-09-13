@@ -52,7 +52,7 @@ public class VanillaClientsManager extends ClientsManager {
 								childrenSocket);
 
 						// Check for banned ip
-						if (server.getUserPrivileges().isIpBanned(clientConnection.getRemoteAddress()))
+						if (server.getUserPrivileges().getBannedIps().contains(clientConnection.getRemoteAddress()))
 							clientConnection.disconnect("Banned IP address - " + clientConnection.getRemoteAddress());
 						// Check if too many connected users
 						else if (clients.size() > maxClients)
@@ -118,8 +118,4 @@ public class VanillaClientsManager extends ClientsManager {
 		return false;
 	}
 
-	public void removeDeadConnection(ClientConnection serverClient) {
-		if (clients.contains(serverClient))
-			clients.remove(serverClient);
-	}
 }

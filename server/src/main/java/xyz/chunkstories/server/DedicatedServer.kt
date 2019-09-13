@@ -62,7 +62,7 @@ class DedicatedServer internal constructor(coreContentLocation: File, modsString
 
     val handler: ClientsManager
 
-    override val userPrivileges = FileBasedUsersPrivileges()
+    val userPrivileges = FileBasedUsersPrivileges()
 
     // Sleeper thread to keep servers list updated
     private val announcer: ServerAnnouncerThread
@@ -175,7 +175,7 @@ class DedicatedServer internal constructor(coreContentLocation: File, modsString
             announcer.start()
 
             permissionsManager = object : PermissionsManager {
-                override fun hasPermission(player: Player, permissionNode: String) = userPrivileges.isUserAdmin(player.name)
+                override fun hasPermission(player: Player, permissionNode: String) = userPrivileges.admins.contains(player.name)
             }
 
             // Load plugins
@@ -194,8 +194,7 @@ class DedicatedServer internal constructor(coreContentLocation: File, modsString
     }
 
     //TODO move to another class
-    override// Just a command prompt, the actual server threads run in the background !
-    fun run() {
+    override fun run() {
         val br = BufferedReader(InputStreamReader(System.`in`))
         print("> ")
         while (running.get()) {
