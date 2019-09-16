@@ -20,52 +20,47 @@ import xyz.chunkstories.api.world.heightmap.Heightmap
 import xyz.chunkstories.world.chunk.ChunkLightBaker
 import xyz.chunkstories.world.chunk.ChunkImplementation
 import xyz.chunkstories.world.chunk.ChunkHolderImplementation
+import kotlin.math.ceil
 
 class TaskGenerateWorldThinSlice internal constructor(private val world: World, private val chunkX: Int, private val chunkZ: Int, private val heightmap: Heightmap) : Task(), WorldUser {
 
-    private val holders: Array<ChunkHolderImplementation?>
+    private val holders: Array<ChunkHolderImplementation>
 
     private val maxGenerationHeight: Int
     private val maxGenerationHeightInChunks: Int
-    private val generator: WorldGenerator
+    private val generator: WorldGenerator = world.generator
 
     init {
 
-        generator = world.generator
         maxGenerationHeight = generator.definition["maxGenerationHeight"].asInt ?: 1024
-        maxGenerationHeightInChunks = Math.ceil(maxGenerationHeight / 32.0).toInt()
+        maxGenerationHeightInChunks = ceil(maxGenerationHeight / 32.0).toInt()
 
-        holders = arrayOfNulls(maxGenerationHeightInChunks)
-        for (chunkY in 0 until maxGenerationHeightInChunks) {
-            holders[chunkY] = world.chunksManager.acquireChunkHolder(this, chunkX, chunkY, chunkZ) as ChunkHolderImplementation
+        holders = Array(maxGenerationHeightInChunks) {
+            chunkY -> world.chunksManager.acquireChunkHolder(this, chunkX, chunkY, chunkZ) as ChunkHolderImplementation
         }
     }
 
     override fun task(taskExecutor: TaskExecutor): Boolean {
         for (chunkY in 0 until maxGenerationHeightInChunks) {
-            if (holders[chunkY]!!.state !is ChunkHolder.State.Generating)
+            if (holders[chunkY].state !is ChunkHolder.State.Generating)
                 throw Exception("Trying to generate a chunk that is already generated!")
         }
 
         // Doing the lord's work
-        val chunks = arrayOfNulls<Chunk>(holders.size)
-        for (chunkY in 0 until maxGenerationHeightInChunks) {
-            chunks[chunkY] = ChunkImplementation(holders[chunkY]!!, chunkX, chunkY, chunkZ, null)
+        val chunks = Array<Chunk>(maxGenerationHeightInChunks) { chunkY ->
+            ChunkImplementation(holders[chunkY], chunkX, chunkY, chunkZ, null)
         }
 
         generator.generateWorldSlice(chunks)
 
         for (chunkY in 0 until maxGenerationHeightInChunks) {
-            holders[chunkY]!!.eventGenerationFinishes(chunks[chunkY] as ChunkImplementation)
+            holders[chunkY].eventGenerationFinishes(chunks[chunkY] as ChunkImplementation)
         }
 
         // Build the heightmap from that
         for(cy in (maxGenerationHeightInChunks - 1) downTo 0) {
-            val chunk = holders[cy]!!.chunk!!
-            val data = chunk.voxelDataArray
-
-            if(data == null)
-                continue
+            val chunk = holders[cy].chunk!!
+            val data = chunk.voxelDataArray ?: continue
 
             for (x in 0..31)
                 for (z in 0..31) {
@@ -75,7 +70,7 @@ class TaskGenerateWorldThinSlice internal constructor(private val world: World, 
                         val rawData = data[x * 32 * 32 + i * 32 + z]
                         if(rawData != 0 && VoxelFormat.id(rawData) != 0) {
                             val cell: FreshChunkCell = chunk.peek(x, y, z)
-                            if (cell.voxel!!.solid || cell.voxel!!.name == "water") {
+                            if (cell.voxel.solid || cell.voxel.liquid) {
                                 heightmap.setTopCell(cell)
                                 break
                             }
@@ -83,22 +78,6 @@ class TaskGenerateWorldThinSlice internal constructor(private val world: World, 
                     }
                 }
         }
-
-        /*for (x in 0..31)
-            for (z in 0..31) {
-                var y = maxGenerationHeight - 1
-                while (y >= 0) {
-                    val rawData = holders[y / 32]!!.chunk!!.peekRaw(x, y, z)
-                    if(rawData != 0 && VoxelFormat.id(rawData) != 0) {
-                        val cell: Chunk.FreshChunkCell = holders[y / 32]!!.chunk!!.peek(x, y, z)
-                        if (cell.voxel!!.solid || cell.voxel!!.name == "water") {
-                            heightmap.setTopCell(cell)
-                            break
-                        }
-                    }
-                    y--
-                }
-            }*/
 
         // Let there be light
         for (chunkY in 0 until maxGenerationHeightInChunks) {

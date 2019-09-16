@@ -166,9 +166,8 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser {
 		content = new GameContentStore(this, coreContentLocation, "");
 		content.reload();
 
-		verbose("Loading converter_mapping.txt");
-		File file = new File("converter_mapping.txt");
-		mappers = new MinecraftBlocksTranslator(this, file);
+		verbose("Loading converter mappings");
+		mappers = new MinecraftBlocksTranslator(this, content.getAsset("converter_mapping.txt"));
 		verbose("Done, took " + (System.nanoTime() - System.nanoTime()) / 1000 + " �s");
 
 		// Loads the Minecraft World

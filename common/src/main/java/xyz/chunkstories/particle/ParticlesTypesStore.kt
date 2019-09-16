@@ -68,40 +68,6 @@ class ParticlesTypesStore(override val parent: GameContentStore) : Content.Parti
         if (f == null)
             return
         throw UnsupportedOperationException("TODO")
-        /*try (BufferedReader reader = new BufferedReader(f.reader());) {
-			String line = "";
-			while ((line = reader.readLine()) != null) {
-				if (line.startsWith("#")) {
-					// It's a comment, ignore.
-				} else {
-					if (line.startsWith("end")) {
-						logger().warn("Syntax error in file : " + f + " : ");
-						continue;
-					}
-					String splitted[] = line.split(" ");
-					if (splitted.length == 2 && splitted[0].startsWith("particle")) {
-						// int id = Integer.parseInt(splitted[2]);
-						String particleName = splitted[1];
-
-						try {
-							ParticleTypeDefinitionImplementation type = new ParticleTypeDefinitionImplementation(this,
-									particleName, reader);
-							ParticleTypeHandler handler = type.handler();
-
-							particleTypesByName.put(particleName, handler);
-							// particleTypesById.put(id, handler);
-
-						} catch (IllegalParticleDeclarationException e) {
-							this.store.getContext().logger()
-									.error("Could not load particle type " + particleName + " : \n" + e.getMessage());
-							e.printStackTrace();
-						}
-					}
-				}
-			}
-		} catch (IOException e) {
-			logger().warn(e.getMessage());
-		}*/
     }
 
     override fun <T : ParticleType.Particle> getParticleType(string: String): ParticleType<T>? {
