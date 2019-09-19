@@ -18,8 +18,9 @@ import xyz.chunkstories.graphics.vulkan.textures.MagicTexturing.Companion.magicT
 import xyz.chunkstories.graphics.vulkan.textures.MagicTexturing.Companion.magicTexturesUpperBound
 import xyz.chunkstories.graphics.vulkan.util.VkDescriptorSetLayout
 import xyz.chunkstories.graphics.vulkan.util.ensureIs
+import java.io.File
 
-data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsBackend, val glslProgram: GLSLProgram) : Cleanable {
+data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsBackend, val basePath: String, val glslProgram: GLSLProgram) : Cleanable {
     val spirvCode = SpirvCrossHelper.generateSpirV(glslProgram)
     val modules: Map<ShaderStage, ShaderModule>
 
@@ -27,6 +28,16 @@ data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsB
 
     init {
         MemoryStack.stackPush()
+
+        if(backend.enableValidation) {
+            for((stage, txt) in glslProgram.sourceCode) {
+                val dumpFile = File("cache/debug/shaders/${basePath}_$stage.glsl")
+                dumpFile.parentFile.mkdirs()
+                dumpFile.delete()
+
+                dumpFile.writeText(txt)
+            }
+        }
 
         modules = spirvCode.stages.mapValues { ShaderModule(backend, it.value) }
 

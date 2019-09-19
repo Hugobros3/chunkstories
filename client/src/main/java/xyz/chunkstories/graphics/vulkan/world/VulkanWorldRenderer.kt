@@ -9,6 +9,7 @@ import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.api.graphics.systems.dispatching.*
 import xyz.chunkstories.api.graphics.systems.drawing.FullscreenQuadDrawer
 import xyz.chunkstories.api.gui.GuiDrawer
+import xyz.chunkstories.api.math.random.PrecomputedSimplexSeed
 import xyz.chunkstories.graphics.common.CommonGraphicsOptions
 import xyz.chunkstories.graphics.common.WorldRenderer
 import xyz.chunkstories.graphics.common.getConditions
@@ -41,6 +42,8 @@ class VulkanWorldRenderer(val backend: VulkanGraphicsBackend, world: WorldClient
     }
 
     fun createInstructions(): RenderGraphDeclarationScript = {
+        val precomputedSimplesSeed = PrecomputedSimplexSeed(world.worldInfo.seed)
+
         renderTask {
             name = "main"
 
@@ -167,6 +170,10 @@ class VulkanWorldRenderer(val backend: VulkanGraphicsBackend, world: WorldClient
                             shader = "sprites"
                             materialTag = "opaque"
                         }
+                    }
+
+                    setup {
+                        shaderResources.supplyUniformBlock("simplexSeed", precomputedSimplesSeed)
                     }
 
                     outputs {

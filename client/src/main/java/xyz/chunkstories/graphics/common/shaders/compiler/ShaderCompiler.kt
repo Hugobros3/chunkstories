@@ -98,6 +98,8 @@ abstract class ShaderCompiler(val dialect: GLSLDialect) {
                 tries++
                 logger.error("Shader compilation failed! Retrying in 10s to allow dev to iterate ...")
                 logger.error(e.message)
+                if(e.message == "null")
+                    e.printStackTrace()
                 Thread.sleep(10_000)
             }
         }

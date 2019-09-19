@@ -8,6 +8,8 @@ import kotlin.reflect.KProperty
 import kotlin.reflect.full.isSubclassOf
 
 sealed class GLSLType(val glslToken: String, val alignment: Int, val size: Int) {
+    val inArraySize = align(size, 16)
+
     sealed class BaseType(glslToken: String, val classes: KClass<*>, alignment: Int, size: Int, val dontMapFromGLSL: Boolean) : GLSLType(glslToken, alignment, size) {
         /** Integer map easily */
         object GlslInt : BaseType("int", Int::class, 4, 4, false)
@@ -24,7 +26,7 @@ sealed class GLSLType(val glslToken: String, val alignment: Int, val size: Int) 
         object GlslUVec4 : BaseType("uvec4", Vector4ic::class, 16, 16, false)
 
         /** Java longs map to GLSL ints */
-        object GlslLong : BaseType("int", Long::class, 4, 4, true)
+        object GlslLong : BaseType("int", Long::class, 8, 4, true)
 
         object GlslFloat : BaseType("float", Float::class, 4, 4, false)
         object GlslVec2 : BaseType("vec2", Vector2fc::class, 8, 8, false)
@@ -51,7 +53,7 @@ sealed class GLSLType(val glslToken: String, val alignment: Int, val size: Int) 
     }
 
     class Array(val baseType: GLSLType, val elements: Int) :
-            GLSLType("${baseType.glslToken}[${if (elements > 0) "$elements" else ""}]", 16, elements * baseType.size)
+            GLSLType("${baseType.glslToken}[${if (elements > 0) "$elements" else ""}]", 16, elements * baseType.inArraySize)
 
     class JvmStruct(glslToken: String, val kClass: KClass<InterfaceBlock>, val fields: List<JvmStructField>, alignment: Int, size: Int) : GLSLType(glslToken, alignment, size) {
         override fun toString(): String {
@@ -67,3 +69,11 @@ sealed class GLSLType(val glslToken: String, val alignment: Int, val size: Int) 
 }
 
 data class JvmStructField(val name: String, val offset: Int, val type: GLSLType, val property: KProperty<*>)
+
+fun align(size: Int, alignment: Int): Int {
+    val d = size / alignment
+    if(d * alignment == size)
+        return size
+    else
+        return (d+1) * alignment
+}

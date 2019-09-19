@@ -36,10 +36,10 @@ fun ShaderCompiler.createGLSLStructFromJVMClass(klass: KClass<InterfaceBlock>, b
 
     // Create a dummy instance by either calling the default constructor, if available,
     // alternatively with all optional parameters left to their defaults.
-    val sampleInstance = klass.constructors.find { it.parameters.isEmpty() }?.call() ?: let {
+    val sampleInstance = try {klass.constructors.find { it.parameters.isEmpty() }?.call() ?: let {
         klass.constructors.find { it.parameters.filter { !it.isOptional }.isEmpty() }?.callBy(emptyMap())
                 ?: throw Exception("Any structure implementing InterfaceBlock MUST have a default constructor")
-    }
+    } } catch(e: Exception) { throw Exception("Failed to instantiate sample InterfaceBlock", e) }
 
     for (property in legitClass.memberProperties) {
         if (property.annotations.find { it is IgnoreGLSL } != null) {

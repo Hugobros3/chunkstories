@@ -20,5 +20,5 @@ class VulkanShaderFactory(val backend: VulkanGraphicsBackend, val client: Client
         //Note: We NEED that ?. operator because we're calling into this before Client is done initializing
         get() = (client?.content?.modsManager as? ModsManagerImplementation)?.finalClassLoader ?: VulkanShaderFactory::class.java.classLoader
 
-    fun createProgram(basePath: String, shaderCompilationParameters: ShaderCompilationParameters = ShaderCompilationParameters()) = VulkanShaderProgram(backend, loadGLSLProgram(basePath, shaderCompilationParameters))
+    fun createProgram(basePath: String, shaderCompilationParameters: ShaderCompilationParameters = ShaderCompilationParameters()) = VulkanShaderProgram(backend, basePath, loadGLSLProgram(basePath, shaderCompilationParameters))
 }

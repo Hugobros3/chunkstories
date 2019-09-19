@@ -11,6 +11,7 @@ import xyz.chunkstories.api.graphics.systems.dispatching.ChunksRenderer
 import xyz.chunkstories.api.graphics.systems.dispatching.ModelsRenderer
 import xyz.chunkstories.api.graphics.systems.drawing.FullscreenQuadDrawer
 import xyz.chunkstories.api.gui.GuiDrawer
+import xyz.chunkstories.api.math.random.PrecomputedSimplexSeed
 import xyz.chunkstories.graphics.common.CommonGraphicsOptions
 import xyz.chunkstories.graphics.common.WorldRenderer
 import xyz.chunkstories.graphics.common.getConditions
@@ -38,6 +39,7 @@ class OpenglWorldRenderer(val backend: OpenglGraphicsBackend, world: WorldClient
     }
 
     fun createInstructions(client: IngameClient): RenderGraphDeclarationScript = {
+        val precomputedSimplesSeed = PrecomputedSimplexSeed(world.worldInfo.seed)
         renderTask {
             name = "main"
 
@@ -163,6 +165,10 @@ class OpenglWorldRenderer(val backend: OpenglGraphicsBackend, world: WorldClient
                             shader = "sprites"
                             materialTag = "opaque"
                         }*/
+                    }
+
+                    setup {
+                        shaderResources.supplyUniformBlock("simplexSeed", precomputedSimplesSeed)
                     }
 
                     outputs {

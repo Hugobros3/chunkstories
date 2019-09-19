@@ -27,17 +27,41 @@ private fun extractInterfaceBlockField(target: ByteBuffer, instance: InterfaceBl
     when (field.type) {
         is GLSLType.BaseType -> extractBaseTypeRawData(field.type, data, target)
         is GLSLType.Array -> {
-            val array = data as? Array<*> ?: throw Exception("Not an array !")
             val basePosition = target.position()
+            when {
+                data is IntArray -> {
+                    for ((i, element) in data.withIndex()) {
+                        val baseType = field.type.baseType
+
+                        target.position(basePosition + i * baseType.inArraySize)
+
+                        /*val baseTypeAlignment = baseType.alignment
+                        if(target.position() % baseTypeAlignment != 0) {
+                            target.position((target.position() / baseTypeAlignment) * baseTypeAlignment + baseTypeAlignment)
+                        }*/
+
+                        when(baseType) {
+                            is GLSLType.BaseType -> {
+                                extractBaseTypeRawData(baseType, element, target)
+                            }
+                            else -> TODO()
+                        }
+                    }
+
+                    return
+                }
+            }
+
+            val array = data as? Array<*> ?: throw Exception("Not an array !")
             for ((i, element) in array.withIndex()) {
                 val baseType = field.type.baseType
 
-                target.position(basePosition + i * baseType.size)
+                target.position(basePosition + i * baseType.inArraySize)
 
-                val baseTypeAlignment = baseType.alignment
+                /*val baseTypeAlignment = baseType.alignment
                 if(target.position() % baseTypeAlignment != 0) {
                     target.position((target.position() / baseTypeAlignment) * baseTypeAlignment + baseTypeAlignment)
-                }
+                }*/
 
                 when(baseType) {
                     is GLSLType.BaseType -> {
