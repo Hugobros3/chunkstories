@@ -26,6 +26,7 @@ import xyz.chunkstories.net.packets.PacketSendWorldInfo
 import xyz.chunkstories.server.net.ServerPacketsProcessorImplementation.ClientPacketsContext
 import xyz.chunkstories.server.player.ServerPlayer
 import xyz.chunkstories.world.WorldServer
+import xyz.chunkstories.world.spawnPlayer
 
 abstract class ClientConnection(val context: Server, internal val clientsManager: ClientsManager, remoteAddress: String, port: Int) : Connection(remoteAddress, port), Interlocutor {
     internal val logger: Logger

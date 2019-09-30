@@ -16,6 +16,7 @@ import xyz.chunkstories.api.GameContext
 import xyz.chunkstories.api.Location
 import xyz.chunkstories.api.content.Content
 import xyz.chunkstories.api.entity.Entity
+import xyz.chunkstories.api.entity.EntitySerialization
 import xyz.chunkstories.api.entity.traits.serializable.TraitHealth
 import xyz.chunkstories.api.entity.traits.serializable.TraitName
 import xyz.chunkstories.api.events.player.PlayerSpawnEvent
@@ -42,8 +43,8 @@ import xyz.chunkstories.content.translator.AbstractContentTranslator
 import xyz.chunkstories.content.translator.IncompatibleContentException
 import xyz.chunkstories.content.translator.InitialContentTranslator
 import xyz.chunkstories.content.translator.LoadedContentTranslator
-import xyz.chunkstories.entity.EntityWorldIterator
 import xyz.chunkstories.entity.EntityFileSerialization
+import xyz.chunkstories.entity.EntityWorldIterator
 import xyz.chunkstories.util.alias
 import xyz.chunkstories.util.concurrency.CompoundFence
 import xyz.chunkstories.world.chunk.ChunksStorage
@@ -56,7 +57,6 @@ import java.io.File
 import java.io.IOException
 import java.util.concurrent.locks.ReadWriteLock
 import java.util.concurrent.locks.ReentrantLock
-import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.withLock
 
 abstract class WorldImplementation @Throws(WorldLoadingException::class)
@@ -86,8 +86,10 @@ constructor(override val gameContext: GameContext, final override val worldInfo:
     final override val collisionsManager: WorldCollisionsManager
 
     private val internalData: WorldInternalData =
-            if (this is WorldMaster) loadInternalDataFromDisk(File(folderPath + "/" + Companion.worldInternalDataFilename))
+            if (this is WorldMaster) loadInternalDataFromDisk(File("$folderPath/$worldInternalDataFilename"))
             else WorldInternalData()
+
+    val playersMetadata = WorldPlayersMetadata(this)
 
     // The world age, also tick counter. Can count for billions of real-world
     // time so we are not in trouble.
@@ -110,11 +112,6 @@ constructor(override val gameContext: GameContext, final override val worldInfo:
     override val allLoadedEntities: IterableIterator<Entity>
         get() = EntityWorldIterator(entities.iterator())
 
-    /*override val allLoadedChunks: Sequence<CubicChunk>
-        get() = regionsManager.regionsList.asSequence().flatMap { it.loadedChunks.asSequence() }
-
-    override val allLoadedRegions: Collection<Region>
-        get() = regionsManager.regionsList*/
 
     final override val content: Content
         get() = gameContext.content
@@ -169,42 +166,6 @@ constructor(override val gameContext: GameContext, final override val worldInfo:
 
     fun stopLogic(): Fence {
         return gameLogic.stopLogicThread()
-    }
-
-    open fun spawnPlayer(player: Player) {
-        if (this !is WorldMaster)
-            throw UnsupportedOperationException("Only Master Worlds can do this")
-
-        val playerEntityFile = File(this.folderPath + "/players/" + player.name.toLowerCase() + ".json")
-        val savedEntity: Entity? = EntityFileSerialization.readEntityFromDisk(playerEntityFile, this)
-
-        var previousLocation: Location? = null
-        if (savedEntity != null)
-            previousLocation = savedEntity.location
-
-        val playerSpawnEvent = PlayerSpawnEvent(player, this as WorldMaster, savedEntity,
-                previousLocation)
-        gameContext.pluginManager.fireEvent(playerSpawnEvent)
-
-        if (!playerSpawnEvent.isCancelled) {
-            var entity = playerSpawnEvent.entity
-
-            var actualSpawnLocation = playerSpawnEvent.spawnLocation
-            if (actualSpawnLocation == null)
-                actualSpawnLocation = this.defaultSpawnLocation
-
-            if (entity == null || entity.traits[TraitHealth::class.java]?.isDead == true)
-                entity = this.gameContext.content.entities.getEntityDefinition("player")!!
-                        .newEntity(this)
-
-            // Name your player !
-            entity.traits[TraitName::class.java]?.name = player.name
-            entity.traitLocation.set(actualSpawnLocation)
-            addEntity(entity)
-            player.controlledEntity = entity
-
-            playerEntityFile.delete()
-        }
     }
 
     override fun addEntity(entity: Entity) {
@@ -355,22 +316,6 @@ constructor(override val gameContext: GameContext, final override val worldInfo:
             val side = VoxelSide.values()[side_int]
             return peek(x + side.dx, y + side.dy, z + side.dz)
         }
-
-        /*override fun setVoxel(voxel: Voxel) {
-            logger.warn("Trying to edit a UnloadedWorldCell." + this)
-        }
-
-        override fun setMetaData(metadata: Int) {
-            logger.warn("Trying to edit a UnloadedWorldCell." + this)
-        }
-
-        override fun setSunlight(sunlight: Int) {
-            logger.warn("Trying to edit a UnloadedWorldCell." + this)
-        }
-
-        override fun setBlocklight(blocklight: Int) {
-            logger.warn("Trying to edit a UnloadedWorldCell." + this)
-        }*/
     }
 
     override fun peek(location: Vector3dc): WorldCell {

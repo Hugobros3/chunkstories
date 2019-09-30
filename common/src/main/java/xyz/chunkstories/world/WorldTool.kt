@@ -113,10 +113,6 @@ constructor(gameContext: GameContext, info: WorldInfo, folder: File, immediateIO
         }
     }
 
-    override fun spawnPlayer(player: Player) {
-        throw UnsupportedOperationException("spawnPlayer")
-    }
-
     override fun getPlayerByName(playerName: String): Player? {
         throw UnsupportedOperationException("getPlayers")
     }

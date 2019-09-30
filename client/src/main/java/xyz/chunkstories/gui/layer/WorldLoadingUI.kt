@@ -3,6 +3,7 @@ package xyz.chunkstories.gui.layer
 import org.joml.Vector4f
 import xyz.chunkstories.api.Location
 import xyz.chunkstories.api.entity.Entity
+import xyz.chunkstories.api.entity.EntitySerialization
 import xyz.chunkstories.api.entity.traits.TraitCollidable
 import xyz.chunkstories.api.entity.traits.serializable.TraitHealth
 import xyz.chunkstories.api.entity.traits.serializable.TraitName
@@ -16,6 +17,8 @@ import xyz.chunkstories.api.world.WorldUser
 import xyz.chunkstories.api.world.chunk.ChunkHolder
 import xyz.chunkstories.entity.EntityFileSerialization
 import xyz.chunkstories.world.WorldClientLocal
+import xyz.chunkstories.world.figureOutWherePlayerWillSpawn
+import xyz.chunkstories.world.spawnPlayer
 import java.io.File
 
 class WorldLoadingUI(val world: WorldClientLocal, gui: Gui, parentLayer: Layer?) : Layer(gui, parentLayer), WorldUser {
@@ -29,8 +32,8 @@ class WorldLoadingUI(val world: WorldClientLocal, gui: Gui, parentLayer: Layer?)
     private lateinit var spawnLocation: Location
 
     init {
-        // preload 4x8x4 cube arround spawn location
-        var spawnLocation = figureOutWherePlayerWillSpawn(world.localHost.player)
+        // preloa arround spawn location
+        val spawnLocation = world.figureOutWherePlayerWillSpawn(world.localHost.player)
 
         world.gameLogic.logicThreadBlocking {
             preloadArround((spawnLocation.x / 32).toInt(), (spawnLocation.y / 32).toInt(), (spawnLocation.z / 32).toInt())
@@ -52,63 +55,6 @@ class WorldLoadingUI(val world: WorldClientLocal, gui: Gui, parentLayer: Layer?)
                 }
             }
         }
-    }
-
-    fun figureOutWherePlayerWillSpawn(player: Player): Location {
-        val playerEntityFile = File(world.folderPath + "/players/" + player.name.toLowerCase() + ".json")
-        val savedEntity: Entity? = EntityFileSerialization.readEntityFromDisk(playerEntityFile, world)
-
-        var previousLocation: Location? = null
-        if (savedEntity != null)
-            previousLocation = savedEntity.location
-
-        val playerSpawnEvent = PlayerSpawnEvent(player, world as WorldMaster, savedEntity,
-                previousLocation)
-        world.gameContext.pluginManager.fireEvent(playerSpawnEvent)
-
-        entity = playerSpawnEvent.entity
-
-        var expectedSpawnLocation = playerSpawnEvent.spawnLocation
-        if (expectedSpawnLocation == null)
-            expectedSpawnLocation = world.defaultSpawnLocation
-
-        spawnLocation = expectedSpawnLocation
-        return expectedSpawnLocation
-    }
-
-    fun spawnPlayer() {
-        val player = world.localHost.player
-
-        var entity = entity
-        if (entity == null || entity.traits[TraitHealth::class.java]?.isDead == true)
-            entity = world.gameContext.content.entities.getEntityDefinition("player")!!
-                    .newEntity(world)
-
-        var freeSpawnLocation = Location(spawnLocation)
-
-        val collidable = entity.traits[TraitCollidable::class]
-
-        if (collidable != null) {
-            while (true) {
-                var collision = false
-                for (box in collidable.collisionBoxes) {
-                    box.translate(freeSpawnLocation)
-                    if (box.collidesWith(world))
-                        collision = true
-                }
-
-                if (!collision)
-                    break
-
-                freeSpawnLocation = Location(freeSpawnLocation)
-                freeSpawnLocation.y += 1
-            }
-        }
-
-        entity.traits[TraitName::class.java]?.name = player.name
-        entity.traitLocation.set(freeSpawnLocation)
-        world.addEntity(entity)
-        player.controlledEntity = entity
     }
 
     val jokes = listOf(
@@ -166,7 +112,7 @@ class WorldLoadingUI(val world: WorldClientLocal, gui: Gui, parentLayer: Layer?)
 
         if (done == count) {
             world.gameLogic.logicThreadBlocking {
-                spawnPlayer()
+                world.spawnPlayer(world.localHost.player)
 
                 world.localHost.player.loadingAgent.updateUsedWorldBits()
                 for (ch in subs)

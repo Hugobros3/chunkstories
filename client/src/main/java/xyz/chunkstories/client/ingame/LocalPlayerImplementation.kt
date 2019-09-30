@@ -6,9 +6,11 @@
 
 package xyz.chunkstories.client.ingame
 
+import xyz.chunkstories.PlayerCommon
 import xyz.chunkstories.api.client.ClientInputsManager
 import xyz.chunkstories.api.client.LocalPlayer
 import xyz.chunkstories.api.entity.Entity
+import xyz.chunkstories.api.entity.EntitySerialization
 import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
 import xyz.chunkstories.api.entity.traits.serializable.TraitInventory
 import xyz.chunkstories.api.graphics.Window
@@ -20,7 +22,10 @@ import xyz.chunkstories.api.world.WorldMaster
 import xyz.chunkstories.sound.ALSoundManager
 import xyz.chunkstories.world.WorldClientCommon
 
-class LocalPlayerImplementation(override val client: IngameClientImplementation, internal val world: WorldClientCommon) : LocalPlayer {
+class LocalPlayerImplementation(override val client: IngameClientImplementation, internal val world: WorldClientCommon) : PlayerCommon(client.user.name), LocalPlayer {
+
+    val loadingAgent: LocalClientLoadingAgent = LocalClientLoadingAgent(client, this, world)
+
     override val displayName: String
         get() = name
     override val inputsManager: ClientInputsManager
@@ -69,7 +74,9 @@ class LocalPlayerImplementation(override val client: IngameClientImplementation,
             return
         }
 
-    val loadingAgent: LocalClientLoadingAgent = LocalClientLoadingAgent(client, this, world)
+    init {
+        eventEntersWorld(world)
+    }
 
     fun update() {
         loadingAgent.updateUsedWorldBits()
@@ -106,9 +113,6 @@ class LocalPlayerImplementation(override val client: IngameClientImplementation,
         return client.gui.hasFocus() && inputsManager.mouse.isGrabbed
     }
 
-    override val name: String
-        get() = client.user.name
-
     override fun sendMessage(msg: String) {
         client.print(msg)
     }
@@ -132,5 +136,18 @@ class LocalPlayerImplementation(override val client: IngameClientImplementation,
             else
                 client.gui.openInventories(inventory)
         }
+    }
+
+    fun destroy() {
+        val playerWorldMetadata = world.playersMetadata[this]!!
+        val controlledEntity1 = controlledEntity
+        if (controlledEntity1 != null) {
+            playerWorldMetadata.savedEntity = EntitySerialization.serializeEntity(controlledEntity1)
+            this.controlledEntity = null
+            //val playerEntityFile = File(world.folderPath + "/players/" + this.name.toLowerCase() + ".json")
+            //EntityFileSerialization.writeEntityToDisk(playerEntityFile, playerEntity)
+        }
+        eventLeavesWorld(world)
+        loadingAgent.unloadEverything(true)
     }
 }

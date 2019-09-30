@@ -65,9 +65,7 @@ class IngameClientLocalHost(client: ClientImplementation, worldInitializer: (Ing
             // Stop the world clock so hopefully as to freeze it's state
             internalWorld.stopLogic().traverse()
 
-            player.save()
-
-            player.loadingAgent.unloadEverything(true)
+            player.destroy()
             // Save everything the world contains
             //internalWorld.saveEverything().traverse()
         }
@@ -99,17 +97,6 @@ class IngameClientLocalHost(client: ClientImplementation, worldInitializer: (Ing
     override val connectedPlayersCount: Int = 1
     override val publicIp: String = "127.0.0.1"
     override val uptime: Long = -1L
-
-    private fun LocalPlayerImplementation.save() {
-        val playerDisconnectionEvent = PlayerLogoutEvent(this)
-        this.client.pluginManager.fireEvent(playerDisconnectionEvent)
-
-        val playerEntity = this.controlledEntity
-        if (playerEntity != null) {
-            val playerEntityFile = File(world.folderPath + "/players/" + this.name.toLowerCase() + ".json")
-            EntityFileSerialization.writeEntityToDisk(playerEntityFile, playerEntity)
-        }
-    }
 
     companion object {
         val logger = LoggerFactory.getLogger("client.world")

@@ -16,6 +16,8 @@ import xyz.chunkstories.api.net.packets.PacketText
 import xyz.chunkstories.api.world.WorldClientNetworkedRemote
 import xyz.chunkstories.api.world.WorldMaster
 import org.joml.Vector4f
+import xyz.chunkstories.world.WorldImplementation
+import xyz.chunkstories.world.spawnPlayer
 
 /**
  * Childishly taunts you when you die and offers you the option to ragequit the game
@@ -30,7 +32,7 @@ class DeathScreenUI(gui: Gui, parent: Layer) : Layer(gui, parent) {
     init {
         this.respawnButton.action = Runnable {
             if (ingameClient.world is WorldMaster)
-                (ingameClient.world as WorldMaster).spawnPlayer(ingameClient.player)
+                (ingameClient.world as WorldImplementation).spawnPlayer(ingameClient.player)
             else
                 (ingameClient.world as WorldClientNetworkedRemote).remoteServer.pushPacket(PacketText("world/respawn"))
 

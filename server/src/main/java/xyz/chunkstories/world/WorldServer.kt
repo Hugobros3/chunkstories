@@ -64,11 +64,8 @@ constructor(val server: DedicatedServer, worldInfo: WorldInfo, folder: File) : W
             if(player !is ServerPlayer)
                 continue
 
-            if(!player.hasSpawned())
-                continue
-
             // Update whatever he sees
-            (player as? ServerPlayer)?.updateTrackedEntities()
+            player.updateTrackedEntities()
 
             // Update time & weather
             val packetTime = PacketTime(this)
