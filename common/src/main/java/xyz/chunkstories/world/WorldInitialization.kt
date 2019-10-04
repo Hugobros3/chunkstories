@@ -23,10 +23,9 @@ fun createWorld(folder: File, worldInfo: WorldInfo) {
     val random = Random(processedSeed)
     val randomWeather = random.nextFloat()
     internalData.weather = randomWeather * randomWeather // bias towards sunny
-    println("WEATHER GENERATE: $randomWeather $processedSeed ${worldInfo.seed}")
     val spawnCoordinateX = random.nextInt(worldInfo.size.sizeInChunks * 32)
     val spawnCoordinateZ = random.nextInt(worldInfo.size.sizeInChunks * 32)
-    internalData.spawnLocation.set(spawnCoordinateX + 0.5, 64.0, spawnCoordinateZ + 0.5)
+    internalData.spawnLocation.set(spawnCoordinateX + 0.5, 0.0, spawnCoordinateZ + 0.5)
 
     val internalDataFile = File(folder.path + "/" + WorldImplementation.worldInternalDataFilename)
     internalData.writeToDisk(internalDataFile)
