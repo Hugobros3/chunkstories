@@ -11,14 +11,13 @@ import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
 import xyz.chunkstories.graphics.common.getConditions
 import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompilationParameters
-import xyz.chunkstories.graphics.common.world.ChunkRenderInfo
 import xyz.chunkstories.graphics.vulkan.Pipeline
 import xyz.chunkstories.graphics.vulkan.VertexInputConfiguration
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
 import xyz.chunkstories.graphics.common.util.extractInterfaceBlock
 import xyz.chunkstories.graphics.common.util.getStd140AlignedSizeForStruct
-import xyz.chunkstories.graphics.common.world.ChunkRepresentation
+import xyz.chunkstories.graphics.common.world.*
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import xyz.chunkstories.graphics.vulkan.shaders.bindShaderResources
@@ -203,8 +202,10 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
             fun drawStaticMeshes() {
                 val bindingContext = backend.descriptorMegapool.getBindingContext(meshesPipeline)
 
-                val camera = context.passInstance.taskInstance.camera
                 val world = client.world
+                val camera = context.passInstance.taskInstance.camera
+                val cameraSectionX = section(camera.position.x(), world)
+                val cameraSectionZ = section(camera.position.z(), world)
 
                 bindingContext.bindUBO("camera", camera)
                 bindingContext.bindUBO("world", world.getConditions())
@@ -232,9 +233,18 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
                     vkCmdBindVertexBuffers(commandBuffer, 0, MemoryStack.stackLongs(staticMesh.buffer.handle), MemoryStack.stackLongs(0))
 
                     val chunkRenderInfo = ChunkRenderInfo().apply {
-                        chunkX = chunkRepresentation.chunk.chunkX
+                        var cx = chunkRepresentation.chunk.chunkX
+                        var cz = chunkRepresentation.chunk.chunkZ
+
+                        val cxSection = sectionChunk(cx, world)
+                        val czSection = sectionChunk(cz, world)
+
+                        cx += shouldWrap(cameraSectionX, cxSection) * world.sizeInChunks
+                        cz += shouldWrap(cameraSectionZ, czSection) * world.sizeInChunks
+
+                        chunkX = cx
                         chunkY = chunkRepresentation.chunk.chunkY
-                        chunkZ = chunkRepresentation.chunk.chunkZ
+                        chunkZ = cz
                     }
 
                     extractInterfaceBlock(ssboStuff, instance * sizeAligned16, chunkRenderInfo, chunkInfoStruct)
