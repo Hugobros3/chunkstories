@@ -26,7 +26,7 @@ class VulkanFrameGraph(val frame: VulkanFrame, val renderGraph: VulkanRenderGrap
 
         class VulkanPassInstance(graph: VulkanFrameGraph, override val taskInstance: VulkanRenderTaskInstance, val pass: VulkanPass) : FrameGraphNode(graph), PassInstance {
             override val declaration: PassDeclaration = pass.declaration
-            override val shaderResources = ShaderResources(null)
+            override val shaderResources = ShaderResources(taskInstance.shaderRessources)
             override var renderTargetSize: Vector2i = Vector2i(0) // late-defined
 
             lateinit var preparedDrawingSystemsContexts: List<SystemExecutionContext>
@@ -69,6 +69,8 @@ class VulkanFrameGraph(val frame: VulkanFrame, val renderGraph: VulkanRenderGrap
             override val artifacts = mutableMapOf<String, Any>()
             override val parameters: MutableMap<String, Any> = parameters.toMutableMap()
 
+            val shaderRessources = ShaderResources(null)
+
             val callbacks = mutableListOf<(RenderTaskInstance) -> Unit>()
 
             //TODO unused ?
@@ -76,6 +78,7 @@ class VulkanFrameGraph(val frame: VulkanFrame, val renderGraph: VulkanRenderGrap
 
             init {
                 this.parameters["camera"] = camera // Implicitly part of the parameters //TODO should we
+                shaderRessources.supplyUniformBlock("camera", camera)
             }
         }
     }

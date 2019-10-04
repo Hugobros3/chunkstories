@@ -23,10 +23,8 @@ class OpenglFrameGraph(val frame: OpenglFrame, val renderGraph: OpenglRenderGrap
             get() = frameGraph.renderGraph
 
         class OpenglPassInstance(graph: OpenglFrameGraph, override val taskInstance: OpenglRenderTaskInstance, val pass: OpenglPass) : FrameGraphNode(graph), PassInstance {
-
-
             override val declaration: PassDeclaration = pass.declaration
-            override val shaderResources = ShaderResources(null)
+            override val shaderResources = ShaderResources(taskInstance.shaderRessources)
             override var renderTargetSize: Vector2i = Vector2i(0) // late-defined
 
             lateinit var preparedDrawingSystemsContexts: List<SystemExecutionContext>
@@ -60,12 +58,15 @@ class OpenglFrameGraph(val frame: OpenglFrame, val renderGraph: OpenglRenderGrap
             override val artifacts = mutableMapOf<String, Any>()
             override val parameters: MutableMap<String, Any> = parameters.toMutableMap()
 
+            val shaderRessources = ShaderResources(null)
+
             val callbacks = mutableListOf<(RenderTaskInstance) -> Unit>()
 
             lateinit var rootPassInstance: OpenglPassInstance
 
             init {
                 this.parameters["camera"] = camera // Implicitly part of the parameters //TODO should we
+                shaderRessources.supplyUniformBlock("camera", camera)
             }
         }
     }

@@ -17,7 +17,6 @@ abstract class ChunkRepresentationsProvider<R : ChunkRepresentation>(
 ) : RepresentationsProvider {
     final override fun gatherRepresentations(representationsGobbler: RepresentationsGobbler) {
         val contexts = representationsGobbler.renderTaskInstances
-        val worldSize = world.worldSize
         val cameras = contexts.map { it.camera }.toTypedArray()
 
         val camerasSections = cameras.map {
@@ -63,20 +62,6 @@ abstract class ChunkRepresentationsProvider<R : ChunkRepresentation>(
         val chunksVisibilityMask = IntArray(8 * 8 * 8)
         var visibleRegionChunksCount: Int
 
-        val camPos = mainCamera.position
-
-        val camChunk = camPos.toVec3i()
-        camChunk.x /= 32
-        camChunk.y /= 32
-        camChunk.z /= 32
-
-        val drawDistance = world.client.configuration.getIntValue(InternalClientOptions.viewDistance) / 32
-        val drawDistanceH = 6
-
-        val visibilityRangeX = (camChunk.x - drawDistance)..(camChunk.x + drawDistance)
-        val visibilityRangeY = (camChunk.y - drawDistanceH)..(camChunk.y + drawDistanceH)
-        val visibilityRangeZ = (camChunk.z - drawDistance)..(camChunk.z + drawDistance)
-
         val usedData = mutableListOf<R>()
 
         for (i in 0 until visibleRegionsCount) {
@@ -87,31 +72,29 @@ abstract class ChunkRepresentationsProvider<R : ChunkRepresentation>(
             for (chunk in region.loadedChunks) {
                 if (!chunk.isAirChunk) {
 
-                    //if (cx in visibilityRangeX && chunk.chunkY in visibilityRangeY && cz in visibilityRangeZ) {
-                        var mask = 0
-                        for ((index, camera) in cameras.withIndex()) {
-                            val submask = (1 shl index)
-                            if (regionVis and submask == 0)
-                                continue
+                    var mask = 0
+                    for ((index, camera) in cameras.withIndex()) {
+                        val submask = (1 shl index)
+                        if (regionVis and submask == 0)
+                            continue
 
-                            var cx = chunk.chunkX
-                            var cz = chunk.chunkZ
+                        var cx = chunk.chunkX
+                        var cz = chunk.chunkZ
 
-                            val cxSection = sectionChunk(cx, world)
-                            val czSection = sectionChunk(cz, world)
+                        val cxSection = sectionChunk(cx, world)
+                        val czSection = sectionChunk(cz, world)
 
-                            cx += shouldWrap(camerasSections[index].first, cxSection) * world.sizeInChunks
-                            cz += shouldWrap(camerasSections[index].second, czSection) * world.sizeInChunks
+                        cx += shouldWrap(camerasSections[index].first, cxSection) * world.sizeInChunks
+                        cz += shouldWrap(camerasSections[index].second, czSection) * world.sizeInChunks
 
-                            if (camera.frustrum.isBoxInFrustrum(Box.fromExtents(32.0, 32.0, 32.0).translate(cx * 32.0, chunk.chunkY * 32.0, cz * 32.0)))
-                                mask = mask or submask
-                        }
-                        val chunkVisibility = mask
-                        if (chunkVisibility != 0) {
-                            chunksVisibilityMask[visibleRegionChunksCount] = chunkVisibility
-                            visibleRegionChunks[visibleRegionChunksCount++] = chunk
-                        }
-                    //}
+                        if (camera.frustrum.isBoxInFrustrum(Box.fromExtents(32.0, 32.0, 32.0).translate(cx * 32.0, chunk.chunkY * 32.0, cz * 32.0)))
+                            mask = mask or submask
+                    }
+                    val chunkVisibility = mask
+                    if (chunkVisibility != 0) {
+                        chunksVisibilityMask[visibleRegionChunksCount] = chunkVisibility
+                        visibleRegionChunks[visibleRegionChunksCount++] = chunk
+                    }
                 }
             }
 

@@ -113,10 +113,8 @@ abstract class WorldRenderer(val world: WorldClientCommon) : Cleanable {
                         system(FullscreenQuadDrawer::class) {
                             setup {
                                 val entity = client.player.controlledEntity
-                                val camera = entity?.traits?.get(TraitControllable::class)?.camera ?: Camera()
                                 val world = client.world
 
-                                shaderResources.supplyUniformBlock("camera", camera)
                                 shaderResources.supplyUniformBlock("world", world.getConditions())
                             }
                         }
@@ -209,10 +207,6 @@ abstract class WorldRenderer(val world: WorldClientCommon) : Cleanable {
                                 shader = "deferredShading"
 
                                 setup {
-                                    val camera = client.player.controlledEntity?.traits?.get(TraitControllable::class)?.camera
-                                            ?: Camera()
-
-                                    shaderResources.supplyUniformBlock("camera", camera)
                                     shaderResources.supplyUniformBlock("world", world.getConditions())
 
                                     doShadowMapping(this, world)
@@ -295,8 +289,6 @@ abstract class WorldRenderer(val world: WorldClientCommon) : Cleanable {
 
                         system(LinesRenderer::class) {
                             setup {
-                                val camera = client.player.controlledEntity?.traits?.get(TraitControllable::class)?.camera ?: Camera()
-                                shaderResources.supplyUniformBlock("camera", camera)
                             }
                         }
 
@@ -526,8 +518,6 @@ abstract class WorldRenderer(val world: WorldClientCommon) : Cleanable {
                         enabled = true
                         depthBuffer = taskInput("shadowBuffer")
                         clear = true
-                        //clearValue = 1f
-                        //mode = DepthTestingConfiguration.DepthTestMode.LESS
                     }
                 }
             }
