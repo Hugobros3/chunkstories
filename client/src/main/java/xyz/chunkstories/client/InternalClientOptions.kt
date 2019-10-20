@@ -15,6 +15,8 @@ object InternalClientOptions {
     lateinit var syncMode: String private set
 
     lateinit var workerThreads: String private set
+    // did you mean dedicated wam ?
+    lateinit var dedicatedRam: String private set
 
     lateinit var lastServer: String private set
 
@@ -61,6 +63,12 @@ object InternalClientOptions {
             section("performance") {
                 workerThreads = optionInt("workerThreads") {
                     default = -1
+                }
+
+                dedicatedRam = optionMultipleChoicesInt("dedicatedRam") {
+                    default = 2048
+                    //TODO list sensible choices based on detected machine specs
+                    possibleChoices = listOf(512, 1024, 2048, 4096, 6144, 8192, 12288, 16384, 24576, 32768)
                 }
             }
 

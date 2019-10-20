@@ -10,8 +10,6 @@ public class VersionInfo {
 	public static String version = autoVersion();
 	public static int networkProtocolVersion = 37;
 
-	public static short csfFormatVersion = 0x2d;
-
 	private static String autoVersion() {
 
 		// If compiled jar, it has this

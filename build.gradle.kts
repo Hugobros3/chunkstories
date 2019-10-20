@@ -2,7 +2,8 @@ import org.ajoberstar.grgit.Grgit
 import java.util.Date
 
 group = "xyz.chunkstories"
-version = "Alpha1.1"
+version = "0.1.1"
+val verboseVersion = "Alpha 1.1"
 description = "A voxel game engine"
 
 subprojects {
@@ -52,11 +53,14 @@ val git = Grgit.open(mapOf("currentDir" to project.rootDir))
 
 task("versionTxt") {
     doLast {
-        val file = File("${project.rootDir}/version.txt")
+        val file = File("${project.rootDir}/version.json")
         file.writeText("""
-            version: $version
-            commit: ${git.head().id}
-		    buildtime: ${Date()}
+            {
+                version: "$version",
+                verboseVersion: "$verboseVersion",
+                commit: "${git.head().id}",
+		        buildtime: "${Date()}"
+            }
         """.trimIndent())
     }
 }

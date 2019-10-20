@@ -12,15 +12,13 @@ import java.io.InputStreamReader
 
 object CPUModelDetection {
     fun detectModel(): String {
-        var command = ""
-
         var cpuName = ""
         var cpuFreq = "unknown"
 
-        when(OSHelper.os) {
-            SupportedOS.LINUX -> command = "cat /proc/cpuinfo"
-            SupportedOS.WINDOWS -> command = "cmd /C WMIC CPU Get /Format:List <NUL"
-            else -> return "Mac, not implemented, workarround"
+        val command = when(OSHelper.os) {
+            SupportedOS.LINUX -> "cat /proc/cpuinfo"
+            SupportedOS.WINDOWS -> "cmd /C WMIC CPU Get /Format:List <NUL"
+            else -> "Mac not implemented" //TODO implement Mac CPU detection
         }
 
         var process: Process? = null

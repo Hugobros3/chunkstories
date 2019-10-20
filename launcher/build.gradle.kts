@@ -18,15 +18,14 @@ plugins {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-
-    testImplementation("junit:junit:4.12")
+    implementation("com.google.code.gson:gson:2.8.5")
 }
 
 application {
-    mainClassName = "xyz.chunkstories.updater.ChunkStoriesLauncher"
+    mainClassName = "xyz.chunkstories.launcher.LauncherKt"
 }
 
-description = "Game launcher & updater"
+description = "Game launcher"
 version = "1.2.1"
 
 val jar: Jar by tasks
@@ -50,4 +49,5 @@ launch4j {
     mainClassName = project.application.mainClassName
     jar = "../libs/launcher.jar"
     icon = "${projectDir}/favicon.ico"
+    maxHeapSize = 64
 }

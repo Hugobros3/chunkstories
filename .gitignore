@@ -30,6 +30,7 @@ bin/
 *.class
 scripts/
 version.txt
+version.json
 *.spv
 
 # Random utility/built jars no one cares about
