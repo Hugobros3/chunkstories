@@ -34,7 +34,7 @@ abstract class ClientConnection(val context: Server, internal val clientsManager
     private val loginHelper: PlayerAuthenticationHelper
 
     abstract override var encoderDecoder: ClientPacketsContext protected set
-    protected var player: ServerPlayer? = null
+    var player: ServerPlayer? = null
 
     init {
         // This way we can tell the logs from one use to the next
@@ -48,7 +48,6 @@ abstract class ClientConnection(val context: Server, internal val clientsManager
     }
 
     override fun handleSystemRequest(message: String): Boolean {
-        var message = message
         if (message.startsWith("info")) {
             this.clientsManager.sendServerInfo(this)
             return true
@@ -57,7 +56,7 @@ abstract class ClientConnection(val context: Server, internal val clientsManager
             return loginHelper.handleLogin(message.substring(6, message.length))
 
         } else if (message == "mods") {
-            sendTextMessage("info/mods:" + clientsManager.getServer().modsProvider.modsString)
+            sendTextMessage("info/mods:" + clientsManager.server.modsProvider.modsString)
             this.flush()
             return true
 
@@ -84,7 +83,7 @@ abstract class ClientConnection(val context: Server, internal val clientsManager
             logger.info("$this asked to be sent mod $md5")
 
             // Give him what he asked for.
-            val found = clientsManager.getServer().modsProvider.obtainModRedistribuable(md5)
+            val found = clientsManager.server.modsProvider.obtainModRedistribuable(md5)
             if (found == null) {
                 logger.info("No such mod found.")
             } else {
@@ -98,8 +97,8 @@ abstract class ClientConnection(val context: Server, internal val clientsManager
         } else if (message.startsWith("world/")) {
             // TODO this bit will obviously need to be rewritten when I get arround to doing
             // multiworld support
-            val world = clientsManager.getServer().world
-            message = message.substring(6, message.length)
+            val world = clientsManager.server.world
+            val message = message.substring(6, message.length)
 
             if (message == "enter") {
                 player.whenEnteringWorld(world)
@@ -142,12 +141,12 @@ abstract class ClientConnection(val context: Server, internal val clientsManager
                     args = chatMessage.substring(chatMessage.indexOf(" ") + 1, chatMessage.length).split(" ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
                 }
 
-                clientsManager.getServer().console.dispatchCommand(player, cmdName, args)
+                clientsManager.server.console.dispatchCommand(player, cmdName, args)
                 return true
                 // The rest is just normal chat
             } else if (chatMessage.length > 0) {
                 val event = PlayerChatEvent(player, chatMessage)
-                clientsManager.getServer().pluginManager.fireEvent(event)
+                clientsManager.server.pluginManager.fireEvent(event)
 
                 if (!event.isCancelled)
                     context.broadcastMessage(event.formattedMessage)
@@ -186,8 +185,8 @@ abstract class ClientConnection(val context: Server, internal val clientsManager
 
         if (player != null) {
             val playerDisconnectionEvent = PlayerLogoutEvent(player!!)
-            clientsManager.getServer().pluginManager.fireEvent(playerDisconnectionEvent)
-            clientsManager.getServer().broadcastMessage(playerDisconnectionEvent.logoutMessage!!)
+            clientsManager.server.pluginManager.fireEvent(playerDisconnectionEvent)
+            clientsManager.server.broadcastMessage(playerDisconnectionEvent.logoutMessage!!)
 
             player!!.destroy()
         }

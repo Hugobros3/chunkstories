@@ -46,7 +46,7 @@ class GraphicsEngineImplementation(val client: ClientImplementation) : GraphicsE
         // TODO check for MacOS first.
         // System.setProperty("java.awt.headless", "true")
 
-        window = GLFWWindow(client, this, selectedGraphicsBackend, "Chunk Stories " + VersionInfo.version)
+        window = GLFWWindow(client, this, selectedGraphicsBackend, "Chunk Stories " + VersionInfo.versionJson.verboseVersion)
 
         //TODO modify those to take the GraphicsEngine as param
         backend = selectedGraphicsBackend.init(this, window)

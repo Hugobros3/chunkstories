@@ -49,7 +49,7 @@ internal class PlayerAuthenticationHelper(private val connection: ClientConnecti
         if (loginRequest.startsWith("confirm")) {
             if (name == "undefined")
                 return true
-            if (connection.clientsManager.getServer().userPrivileges.bannedUsers.contains(name)) {
+            if (connection.clientsManager.server.userPrivileges.bannedUsers.contains(name)) {
                 connection.disconnect("Banned username - " + name!!)
                 return true
             }
@@ -57,11 +57,11 @@ internal class PlayerAuthenticationHelper(private val connection: ClientConnecti
                 connection.disconnect("No valid token supplied")
                 return true
             }
-            if (connection.clientsManager.getServer().serverConfig.getBooleanValue(DedicatedServerOptions.checkClientVersion)) {
+            if (connection.clientsManager.server.serverConfig.getBooleanValue(DedicatedServerOptions.checkClientVersion)) {
                 if (Integer.parseInt(version!!) != VersionInfo.networkProtocolVersion)
                     connection.disconnect("Wrong protocol version ! " + version + " != " + VersionInfo.networkProtocolVersion + " \n Update your game !")
             }
-            if (!connection.clientsManager.getServer().serverConfig.getBooleanValue(DedicatedServerOptions.checkClientAuthentication)) {
+            if (!connection.clientsManager.server.serverConfig.getBooleanValue(DedicatedServerOptions.checkClientAuthentication)) {
                 connection.logger.warn("Offline-mode is on, letting " + this.name + " connecting without verification")
                 afterLoginValidation()
                 return true
@@ -87,7 +87,7 @@ internal class PlayerAuthenticationHelper(private val connection: ClientConnecti
      */
     private fun afterLoginValidation() {
         // Disallow users from logging in from two places
-        val yourEvilDouble = connection.clientsManager.getPlayerByName(name)
+        val yourEvilDouble = connection.clientsManager.getPlayerByName(name!!)
         if (yourEvilDouble != null) {
             connection.disconnect("You are already logged in. ($yourEvilDouble). ")
             return
@@ -98,14 +98,14 @@ internal class PlayerAuthenticationHelper(private val connection: ClientConnecti
 
         // Fire the login event
         val playerConnectionEvent = PlayerLoginEvent(player)
-        connection.clientsManager.getServer().pluginManager.fireEvent(playerConnectionEvent)
+        connection.clientsManager.server.pluginManager.fireEvent(playerConnectionEvent)
         if (playerConnectionEvent.isCancelled) {
             connection.disconnect(playerConnectionEvent.refusedConnectionMessage)
             return
         }
 
         // Announce player login
-        connection.clientsManager.getServer().broadcastMessage(playerConnectionEvent.connectionMessage!!)
+        connection.clientsManager.server.broadcastMessage(playerConnectionEvent.connectionMessage!!)
 
         // Aknowledge the login
         loggedIn = true

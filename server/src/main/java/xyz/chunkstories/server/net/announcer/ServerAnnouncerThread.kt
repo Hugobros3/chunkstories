@@ -59,7 +59,7 @@ class ServerAnnouncerThread(private val server: DedicatedServer) : Thread() {
                     val serverDescription = server.serverConfig.getValue(DedicatedServerOptions.serverDescription)
 
                     val postData = ("srvname=$serverName&desc=$serverDescription&ip=$externalIp&iip=$internalIp&mu=" + server.handler
-                            .maxClients + "&u=" + server.handler.playersNumber + "&n=0&w=default&p=1&v=" + VersionInfo.version
+                            .maxClients + "&u=" + server.handler.playersNumber + "&n=0&w=default&p=1&v=" + VersionInfo.versionJson.version
                             + "&lolcode=" + lolcode)
 
                     SimplePostRequest("https://chunkstories.xyz/api/serverAnnounce.php", postData)

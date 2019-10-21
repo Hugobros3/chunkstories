@@ -34,7 +34,7 @@ class DebugInfoRendererHelper(ingameUI: IngameUI) {
         val world = client.world as WorldImplementation
         val graphicsBackend = window.graphicsEngine.backend
 
-        debugLine("Chunk Stories ${VersionInfo.version} running on the ${graphicsBackend.javaClass.simpleName}")
+        debugLine("Chunk Stories ${VersionInfo.versionJson.verboseVersion} running on the ${graphicsBackend.javaClass.simpleName}")
 
         fun PerformanceCounter.print() {
             debugLine("#FF0000Rendering: ${lastFrametimeNs/1000000}ms fps: ${avgFps.toInt()} (min ${minFps.toInt()}, max ${maxFps.toInt()}) #00FFFFSimulation performance : ${world.gameLogic.simulationFps}")

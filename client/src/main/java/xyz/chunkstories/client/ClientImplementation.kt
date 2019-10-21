@@ -191,7 +191,7 @@ class ClientImplementation internal constructor(val arguments: Map<String, Strin
 
         private fun printHelp() {
             println("""
-                Chunk Stories Client version: ${VersionInfo.version}
+                Chunk Stories Client version: ${VersionInfo.versionJson.verboseVersion}
 
                 Available commandline options:
                 --core=... Specifies the folder/file to use as the base content

@@ -56,10 +56,10 @@ task("versionTxt") {
         val file = File("${project.rootDir}/version.json")
         file.writeText("""
             {
-                version: "$version",
-                verboseVersion: "$verboseVersion",
-                commit: "${git.head().id}",
-		        buildtime: "${Date()}"
+                "version": "$version",
+                "verboseVersion": "$verboseVersion",
+                "commit": "${git.head().id}",
+		        "buildtime": "${Date()}"
             }
         """.trimIndent())
     }

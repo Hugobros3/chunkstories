@@ -48,17 +48,17 @@ public class VanillaClientsManager extends ClientsManager {
 
 					ClientConnection clientConnection;
 					try {
-						clientConnection = new TCPClientConnection(server, VanillaClientsManager.this,
+						clientConnection = new TCPClientConnection(getServer(), VanillaClientsManager.this,
 								childrenSocket);
 
 						// Check for banned ip
-						if (server.getUserPrivileges().getBannedIps().contains(clientConnection.getRemoteAddress()))
+						if (getServer().getUserPrivileges().getBannedIps().contains(clientConnection.getRemoteAddress()))
 							clientConnection.disconnect("Banned IP address - " + clientConnection.getRemoteAddress());
 						// Check if too many connected users
-						else if (clients.size() > maxClients)
+						else if (getClients().size() > getMaxClients())
 							clientConnection.disconnect("Server is full");
 						else
-							clients.add(clientConnection);
+							getClients().add(clientConnection);
 					}
 					// Discard failures
 					catch (IOException e) {
@@ -68,7 +68,7 @@ public class VanillaClientsManager extends ClientsManager {
 					if (!closeOnce.get())
 						e.printStackTrace();
 				} catch (IOException e) {
-					server.logger().error("An unexpected error happened during network stuff. More info below.");
+					getServer().logger().error("An unexpected error happened during network stuff. More info below.");
 					e.printStackTrace();
 				}
 			}
@@ -85,8 +85,8 @@ public class VanillaClientsManager extends ClientsManager {
 			return false;
 
 		try {
-			ServerSocket serverSocket = new ServerSocket(server.getServerConfig().getIntValue(DedicatedServerOptions.INSTANCE.getNetworkPort()));
-			server.logger().info(
+			ServerSocket serverSocket = new ServerSocket(getServer().getServerConfig().getIntValue(DedicatedServerOptions.INSTANCE.getNetworkPort()));
+			getServer().logger().info(
 					"Started server on port " + serverSocket.getLocalPort() + ", ip=" + serverSocket.getInetAddress());
 
 			socketThread = new SocketThread(serverSocket);
@@ -94,7 +94,7 @@ public class VanillaClientsManager extends ClientsManager {
 
 			return true;
 		} catch (IOException e) {
-			server.logger().error(
+			getServer().logger().error(
 					"Can't open server socket. Double check that there is no other instance already running or an application using server port.");
 			System.exit(-1);
 		}
@@ -111,7 +111,7 @@ public class VanillaClientsManager extends ClientsManager {
 					return true;
 				}
 			} catch (IOException e) {
-				server.logger().error("An unexpected error happened during network stuff. More info below.");
+				getServer().logger().error("An unexpected error happened during network stuff. More info below.");
 				e.printStackTrace();
 			}
 		}

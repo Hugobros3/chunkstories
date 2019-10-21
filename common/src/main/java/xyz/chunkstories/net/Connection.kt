@@ -35,7 +35,7 @@ abstract class Connection(val remoteAddress: String, val port: Int) {
     @Throws(IOException::class, PacketProcessingException::class, IllegalPacketException::class)
     abstract fun handleDatagram(datagram: LogicalPacketDatagram)
 
-    abstract fun handleSystemRequest(msg: String): Boolean
+    abstract fun handleSystemRequest(message: String): Boolean
 
     open fun sendTextMessage(string: String) {
         val packet = PacketText()

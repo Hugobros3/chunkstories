@@ -7,7 +7,7 @@ import xyz.chunkstories.util.VersionInfo
 fun printCopyrightNotice(drawer: GuiDrawer) {
     // Notices
     val noticeColor = Vector4f(1f)
-    val version = "Chunk Stories Client " + VersionInfo.version
+    val version = "Chunk Stories Client " + VersionInfo.versionJson.verboseVersion
     drawer.fonts.defaultFont().getWidth(version)
     drawer.drawStringWithShadow(drawer.fonts.defaultFont(), 4, 0, version, -1, noticeColor)
 

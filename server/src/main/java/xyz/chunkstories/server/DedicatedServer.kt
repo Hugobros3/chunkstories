@@ -114,7 +114,7 @@ class DedicatedServer internal constructor(coreContentLocation: File, modsString
             val loggingFilename = "./serverlogs/$time.log"
             LogbackSetupHelper(loggingFilename)
 
-            logger.info("Starting Chunkstories server " + VersionInfo.version + " network protocol version "
+            logger.info("Starting Chunkstories server " + VersionInfo.versionJson.verboseVersion + " network protocol version "
                     + VersionInfo.networkProtocolVersion)
 
             // Loads the mods/build filesystem
@@ -259,7 +259,7 @@ class DedicatedServer internal constructor(coreContentLocation: File, modsString
         val freeRam = Runtime.getRuntime().freeMemory() / (1024 * 1024)
         val usedRam = maxRam - freeRam
 
-        txt += "ChunkStories server " + VersionInfo.version
+        txt += "ChunkStories server " + VersionInfo.versionJson.verboseVersion
         txt += " | fps:" + world.gameLogic.simulationFps
         txt += " | ent:$ec"
         txt += " | players:" + this.handler.playersNumber + "/" + this.handler.maxClients
@@ -312,7 +312,7 @@ class DedicatedServer internal constructor(coreContentLocation: File, modsString
     }
 
     override fun toString(): String {
-        return "[ChunkStories Server " + VersionInfo.version + "]"
+        return "[ChunkStories Server " + VersionInfo.versionJson.verboseVersion + "]"
     }
 
     override fun getPlayerByName(playerName: String): Player? = handler.getPlayerByName(playerName)
@@ -349,7 +349,7 @@ class DedicatedServer internal constructor(coreContentLocation: File, modsString
                     val coreContentLocationPath = s.replace("--core=", "")
                     coreContentLocation = File(coreContentLocationPath)
                 } else {
-                    var helpText = "Chunk Stories server " + VersionInfo.version + "\n"
+                    var helpText = "Chunk Stories server " + VersionInfo.versionJson.verboseVersion + "\n"
 
                     if (s == "-h" || s == "--help")
                         helpText += "Command line help: \n"
