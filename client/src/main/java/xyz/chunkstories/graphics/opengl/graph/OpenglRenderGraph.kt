@@ -55,8 +55,8 @@ class OpenglRenderGraph(val backend: OpenglGraphicsBackend, val dslCode: RenderG
             val ctxMask = 1 shl renderContextIndex
             val jobsForPassInstance = jobs[index]
 
-            for ((key, contents) in gathered.buckets) {
-                val responsibleSystem = dispatchingSystems.find { it.representationName == key } ?: continue
+            for (bucket in gathered.buckets.values) {
+                val responsibleSystem = dispatchingSystems.find { it.representationName == bucket.representationName } ?: continue
 
                 val drawers = pass.pass.dispatchingDrawers.filter {
                     it.system == responsibleSystem
@@ -69,9 +69,9 @@ class OpenglRenderGraph(val backend: OpenglGraphicsBackend, val dslCode: RenderG
                     }
                 }
 
-                for (i in 0 until contents.representations.size) {
-                    val item = contents.representations[i]
-                    val mask = contents.masks[i]
+                for (i in 0 until bucket.representations.size) {
+                    val item = bucket.representations[i]
+                    val mask = bucket.masks[i]
 
                     if (mask and ctxMask == 0)
                         continue

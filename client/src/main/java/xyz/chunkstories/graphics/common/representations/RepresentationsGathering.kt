@@ -10,10 +10,10 @@ import xyz.chunkstories.graphics.GraphicsEngineImplementation
 class RepresentationsGathered(override val frame: Frame,
                               val passInstances: Array<PassInstance>,
                               override val renderTaskInstances: Array<RenderTaskInstance>) : RepresentationsGobbler {
-    val buckets = mutableMapOf<String, Bucket>()
 
-    inner class Bucket(val name: String) {
+    val buckets = mutableMapOf<Class<Any?>, Bucket>()
 
+    inner class Bucket(val representationName: String) {
         val representations = arrayListOf<Representation>()
         val masks = arrayListOf<Int>()
 
@@ -23,11 +23,14 @@ class RepresentationsGathered(override val frame: Frame,
         }
     }
 
-    override fun <T : Representation> acceptRepresentation(representation: T, camerasMask: Int) {
-        val representationClassName = representation.javaClass.canonicalName ?: throw Exception("No support for anonymous Representation types !")
-        val bucket = buckets.getOrPut(representationClassName) { Bucket(representationClassName) }
+    override fun <T : Representation> acceptRepresentation(representation: T, mask: Int) {
+        val rclass = representation.javaClass
+        val bucket = buckets.getOrPut(rclass as Class<Any?>) {
+            val representationClassName = rclass.canonicalName ?: throw Exception("No support for anonymous Representation types !")
+            Bucket(representationClassName)
+        }
 
-        bucket.acceptRepresentation(representation, camerasMask)
+        bucket.acceptRepresentation(representation, mask)
     }
 }
 

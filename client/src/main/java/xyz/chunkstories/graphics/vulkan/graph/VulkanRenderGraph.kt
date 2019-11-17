@@ -64,14 +64,14 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
 
             val workForDrawers = workForDrawersPerPassInstance[passInstanceIndex]
 
-            for ((representationName, contents) in gathered.buckets) {
-                val responsibleSystem = dispatchingSystems.find { it.representationName == representationName } ?: continue
+            for (bucket in gathered.buckets.values) {
+                val responsibleSystem = dispatchingSystems.find { it.representationName == bucket.representationName } ?: continue
 
                 val drawers = pass.pass.dispatchingDrawers.filter {
                     it.system == responsibleSystem
                 }
 
-                val filteredRepresentations = contents.representations.filterIndexed { index, _ -> contents.masks[index] and ctxMask != 0 }
+                val filteredRepresentations = bucket.representations.filterIndexed { index, _ -> bucket.masks[index] and ctxMask != 0 }
                 (responsibleSystem as VulkanDispatchingSystem<Representation, *>).sort_(filteredRepresentations.asSequence(), drawers, workForDrawers)
             }
         }
