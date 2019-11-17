@@ -168,18 +168,13 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
 
         private val ssboBufferSize = 1024 * 1024L
 
-        override fun registerDrawingCommands(frame: VulkanFrame, ctx: SystemExecutionContext, commandBuffer: VkCommandBuffer, work: VkModelsIR) {
+        override fun registerDrawingCommands(frame: VulkanFrame, context: SystemExecutionContext, commandBuffer: VkCommandBuffer, work: VkModelsIR) {
             MemoryStack.stackPush()
 
+            val modelPositionsBuffer = MemoryUtil.memAlloc(ssboBufferSize.toInt())
+            val animationDataBuffer = MemoryUtil.memAlloc(ssboBufferSize.toInt())
+
             val client = backend.window.client.ingame ?: return
-
-            /*val buckets = mutableMapOf<SpecializedPipelineKey, ArrayList<MeshInstance>>()
-            for (meshInstance in work) {
-                val key = getSpecializedPipelineKeyForMeshAndShader(meshInstance.mesh, shader, supportsAnimations, meshInstance.modelInstance.animator != null) //TODO cache keys per meshes
-                val bucket = buckets.getOrPut(key) { arrayListOf() }
-
-                bucket.add(meshInstance)
-            }*/
 
             val realWorldTimeTruncated = (System.nanoTime() % 1000_000_000_000)
             val realWorldTimeMs = realWorldTimeTruncated / 1000_000
@@ -199,7 +194,7 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
                     val bindingContext = backend.descriptorMegapool.getBindingContext(pipeline)
                     bindingContexts += bindingContext
 
-                    val camera = ctx.passInstance.taskInstance.camera
+                    val camera = context.passInstance.taskInstance.camera
                     val world = client.world
 
                     bindingContext.bindUBO("camera", camera)
@@ -212,22 +207,20 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
 
                     // TODO pool those allocations
                     val modelPositionsGpuBuffer = VulkanBuffer(backend, ssboBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, MemoryUsagePattern.DYNAMIC)
-                    val modelPositionsBuffer = MemoryUtil.memAlloc(modelPositionsGpuBuffer.bufferSize.toInt())
+                    //val modelPositionsBuffer = MemoryUtil.memAlloc(modelPositionsGpuBuffer.bufferSize.toInt())
+                    modelPositionsBuffer.clear()
 
                     val modelPositionsInstancedInput = specializedPipeline.program.glslProgram.instancedInputs.find { it.name == "modelPosition" }!!
                     val modelPositionsPaddedSize = getStd140AlignedSizeForStruct(modelPositionsInstancedInput.struct)
 
 
                     val animationDataGpuBuffer = if(animated) VulkanBuffer(backend, ssboBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, MemoryUsagePattern.DYNAMIC) else null
-                    val animationDataBuffer = if(animated) MemoryUtil.memAlloc(animationDataGpuBuffer!!.bufferSize.toInt()) else null
+                    //val animationDataBuffer = if(animated) MemoryUtil.memAlloc(animationDataGpuBuffer!!.bufferSize.toInt()) else null
+                    animationDataBuffer.clear()
 
                     val animationDataInstancedInput = if(animated) specializedPipeline.program.glslProgram.instancedInputs.find { it.name == "animationData" } else null
                     val animationDataPaddedSize = if(animationDataInstancedInput != null) getStd140AlignedSizeForStruct(animationDataInstancedInput.struct) else 0
 
-                    //val model: Model = entries.elementAt(0).value.
-                    //val modelOnGpu = getGpuModelData(model)
-                    //val meshIndex = model.meshes.indexOf(mesh)
-                    //val meshOnGpu = modelOnGpu.meshesData[meshIndex]
 
                     // Get and bind mesh vertex data
                     val meshOnGpu = getGpuMeshData(mesh)
@@ -258,7 +251,7 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
                                 for ((boneName, i) in mesh.boneIds!!) {
                                     bonez.bones[i].set(animator.getBoneHierarchyTransformationMatrixWithOffset(boneName, animationTime))
                                 }
-                                extractInterfaceBlock(animationDataBuffer!!, instance * animationDataPaddedSize, bonez, animationDataInstancedInput!!.struct)
+                                extractInterfaceBlock(animationDataBuffer, instance * animationDataPaddedSize, bonez, animationDataInstancedInput!!.struct)
                             }
 
                             instance++
@@ -282,15 +275,13 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
                     modelPositionsBuffer.flip()
                     modelPositionsGpuBuffer.upload(modelPositionsBuffer)
 
-                    MemoryUtil.memFree(modelPositionsBuffer)
                     frame.recyclingTasks.add { modelPositionsGpuBuffer.cleanup() }
 
                     if(animated) {
-                        animationDataBuffer!!.position(instance * animationDataPaddedSize)
+                        animationDataBuffer.position(instance * animationDataPaddedSize)
                         animationDataBuffer.flip()
                         animationDataGpuBuffer!!.upload(animationDataBuffer)
 
-                        MemoryUtil.memFree(animationDataBuffer)
                         frame.recyclingTasks.add { animationDataGpuBuffer.cleanup() }
                     }
                 }
@@ -303,6 +294,8 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
                 bindingContexts.forEach { it.recycle() }
             }
 
+            MemoryUtil.memFree(modelPositionsBuffer)
+            MemoryUtil.memFree(animationDataBuffer)
             MemoryStack.stackPop()
         }
 

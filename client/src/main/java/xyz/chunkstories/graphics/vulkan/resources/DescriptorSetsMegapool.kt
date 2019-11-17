@@ -156,9 +156,18 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
 
             //TODO UBO MEGAPOOL
             val buffer = VulkanUniformBuffer(backend, uboBindPoint.struct)
+            tempBuffers.add(buffer)
+
             buffer.upload(interfaceBlock)
             backend.updateDescriptorSet(set, uboBindPoint.binding, buffer)
-            tempBuffers.add(buffer)
+        }
+
+        fun bindUBO(instanceName: String, buffer: VulkanUniformBuffer) {
+            val uboBindPoint = pipeline.program.glslProgram.resources.filterIsInstance<GLSLUniformBlock>().find { it.name == instanceName }
+                    ?: throw Exception("Can't find a program resource matching that name in this context")
+
+            val set = getSet(uboBindPoint.descriptorSetSlot)
+            backend.updateDescriptorSet(set, uboBindPoint.binding, buffer)
         }
 
         fun bindSSBO(name: String, buffer: VulkanBuffer, offset: Long = 0) {
