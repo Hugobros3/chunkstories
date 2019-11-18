@@ -2,8 +2,6 @@ package xyz.chunkstories.graphics.vulkan.systems.gui
 
 import org.joml.Vector4f
 import xyz.chunkstories.api.gui.Font
-import xyz.chunkstories.api.gui.Gui
-import xyz.chunkstories.graphics.common.DummyGuiDrawer
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
 import xyz.chunkstories.graphics.vulkan.Pipeline
@@ -90,6 +88,7 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
 
     //TODO this is hacky af, fix this plz
     lateinit var commandBuffer: VkCommandBuffer
+    lateinit var ctx: SystemExecutionContext
 
     /** Accumulation for GUI contents */
     val stagingByteBuffer = MemoryUtil.memAlloc(guiBufferSize)
@@ -109,239 +108,243 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
         sameTextureCount = 0
     }
 
-    override fun registerDrawingCommands(frame: VulkanFrame, ctx: SystemExecutionContext, commandBuffer: VkCommandBuffer) {
-        val drawer: InternalGuiDrawer = object : InternalGuiDrawer(gui) {
-            var sx: Float = 1.0F / gui.viewportWidth.toFloat()
-            var sy: Float = 1.0F / gui.viewportHeight.toFloat()
+    val internalDrawer: InternalGuiDrawer = object : InternalGuiDrawer(gui) {
+        var scaleX: Float = 1.0F / gui.viewportWidth.toFloat()
+        var scaleY: Float = 1.0F / gui.viewportHeight.toFloat()
 
-            val white = Vector4f(1.0f)
+        val white = Vector4f(1.0f)
 
-            init {
-                this@VulkanGuiDrawer.gui.guiScaleUpdateHook = {
-                    sx = 1.0F / gui.viewportWidth.toFloat()
-                    sy = 1.0F / gui.viewportHeight.toFloat()
-                }
-            }
-
-            inline fun vertex(a: Int, b: Int) {
-                stagingByteBuffer.putFloat(-1.0F + 2.0F * (a * sx))
-                stagingByteBuffer.putFloat(1.0F - 2.0F * (b * sy))
-            }
-
-            inline fun vertex(a: Float, b: Float) {
-                stagingByteBuffer.putFloat(-1.0F + 2.0F * (a * sx))
-                stagingByteBuffer.putFloat(1.0F - 2.0F * (b * sy))
-            }
-
-            inline fun texCoord(a: Float, b: Float) {
-                stagingByteBuffer.putFloat(a)
-                stagingByteBuffer.putFloat(b)
-            }
-
-            inline fun color(color: Vector4fc) {
-                stagingByteBuffer.putFloat(color.x())
-                stagingByteBuffer.putFloat(color.y())
-                stagingByteBuffer.putFloat(color.z())
-                stagingByteBuffer.putFloat(color.w())
-            }
-
-            override fun drawBox(startX: Int, startY: Int, width: Int, height: Int, textureStartX: Float, textureStartY: Float, textureEndX: Float, textureEndY: Float, texture: String?, color: Vector4fc?) {
-                val color = color ?: white
-
-                val vulkanTexture = if (texture != null) backend.textures.getOrLoadTexture2D(texture) else backend.textures.getOrLoadTexture2D("textures/white.png")
-
-                if (previousTexture != vulkanTexture) {
-                    afterTextureSwitch()
-
-                    val bindingCtx = backend.descriptorMegapool.getBindingContext(pipeline)
-                    bindingCtx.bindTextureAndSampler("currentTexture", vulkanTexture, sampler)
-                    bindingCtx.preDraw(commandBuffer)
-                    recyclingBind.add(bindingCtx)
-                }
-
-                previousTexture = vulkanTexture
-
-                vertex((startX), startY)
-                texCoord(textureStartX, textureStartY)
-                color(color)
-
-                vertex((startX), (startY + height))
-                texCoord(textureStartX, textureEndY)
-                color(color)
-
-                vertex((startX + width), (startY + height))
-                texCoord(textureEndX, textureEndY)
-                color(color)
-
-                vertex((startX), startY)
-                texCoord(textureStartX, textureStartY)
-                color(color)
-
-                vertex((startX + width), (startY + height))
-                texCoord(textureEndX, textureEndY)
-                color(color)
-
-                vertex((startX + width), (startY))
-                texCoord(textureEndX, textureStartY)
-                color(color)
-
-                sameTextureCount++
-            }
-
-            override fun drawQuad(startX: Float, startY: Float, width: Float, height: Float, textureStartX: Float, textureStartY: Float, textureEndX: Float, textureEndY: Float, texture: Texture2D, color: Vector4fc?) {
-                val color = color ?: white
-                val translatedId = 0
-
-                val vulkanTexture = texture as VulkanTexture2D
-
-                if (previousTexture != vulkanTexture) {
-                    afterTextureSwitch()
-
-                    val bindingCtx = backend.descriptorMegapool.getBindingContext(pipeline)
-                    bindingCtx.bindTextureAndSampler("currentTexture", vulkanTexture, sampler)
-                    bindingCtx.preDraw(commandBuffer)
-                    recyclingBind.add(bindingCtx)
-                }
-
-                previousTexture = vulkanTexture
-
-                vertex((startX), startY)
-                texCoord(textureStartX, textureStartY)
-                color(color)
-
-                vertex((startX), (startY + height))
-                texCoord(textureStartX, textureEndY)
-                color(color)
-
-                vertex((startX + width), (startY + height))
-                texCoord(textureEndX, textureEndY)
-                color(color)
-
-                vertex((startX), startY)
-                texCoord(textureStartX, textureStartY)
-                color(color)
-
-                vertex((startX + width), (startY + height))
-                texCoord(textureEndX, textureEndY)
-                color(color)
-
-                vertex((startX + width), (startY))
-                texCoord(textureEndX, textureStartY)
-                color(color)
-
-                sameTextureCount++
-            }
-
-            override fun drawBoxWithCorners(posx: Int, posy: Int, width: Int, height: Int, cornerSizeDivider: Int, texture: String) {
-                //val texture = "textures/gui/alignmentCheck.png"
-
-                val cornerSizeDivider = 4
-
-                val tileSize = 32
-                val cornerSize = tileSize / cornerSizeDivider
-                val tileInternalSize = tileSize - cornerSize * 2
-
-                val insideWidth = width - cornerSize * 2
-                val insideHeight = height - cornerSize * 2
-
-                val firstCornerUV = 1.0F / cornerSizeDivider
-                val lastCornerUV = 1.0F - firstCornerUV
-
-                var acc: Int
-
-                // Bottom-right
-                drawBox(posx, posy, cornerSize, cornerSize, 0f, 1f, firstCornerUV, lastCornerUV, texture, null)
-                drawBox(posx, posy + height - cornerSize, cornerSize, cornerSize, 0f, firstCornerUV, firstCornerUV, 0f, texture, null)
-
-                drawBox(posx + width - cornerSize, posy, cornerSize, cornerSize, lastCornerUV, 1f, 1f, lastCornerUV, texture, null)
-                drawBox(posx + width - cornerSize, posy + height - cornerSize, cornerSize, cornerSize, lastCornerUV, firstCornerUV, 1f, 0f, texture, null)
-
-                // vertical sides
-                acc = insideHeight
-                while (acc > 0) {
-                    val wat = Math.min(acc, tileInternalSize)
-                    val cutUV = firstCornerUV + (lastCornerUV - firstCornerUV) * wat.toFloat() / tileInternalSize
-                    drawBox(posx, posy + cornerSize + insideHeight - acc, cornerSize, wat, 0f, cutUV, firstCornerUV, firstCornerUV, texture, null)
-                    acc -= wat
-                }
-                //drawBox(posx, posy + cornerSize, cornerSize, insideHeight, 0f, lastCornerUV, firstCornerUV, firstCornerUV, texture, null)
-                acc = insideHeight
-                while (acc > 0) {
-                    val wat = Math.min(acc, tileInternalSize)
-                    val cutUV = firstCornerUV + (lastCornerUV - firstCornerUV) * wat.toFloat() / tileInternalSize
-                    //drawBox(posx, posy + cornerSize + insideHeight - acc, cornerSize, wat, 0f, cutUV, firstCornerUV, firstCornerUV, texture, null)
-                    drawBox(posx + width - cornerSize, posy + cornerSize + insideHeight - acc, cornerSize, wat, lastCornerUV, cutUV, 1f, firstCornerUV, texture, null)
-                    acc -= wat
-                }
-                //drawBox(posx + width - cornerSize, posy + cornerSize, cornerSize, insideHeight, lastCornerUV, lastCornerUV, 1f, firstCornerUV, texture, null)
-
-                // horizontal sides
-                acc = insideWidth
-                while (acc > 0) {
-                    val wat = Math.min(acc, tileInternalSize)
-                    val cutUV = firstCornerUV + (lastCornerUV - firstCornerUV) * wat.toFloat() / tileInternalSize
-                    drawBox(posx + cornerSize + insideWidth - acc, posy + height - cornerSize, wat, cornerSize, firstCornerUV, firstCornerUV, cutUV, 0f, texture, null)
-                    acc -= wat
-                }
-                //drawBox(posx + cornerSize, posy + height - cornerSize, insideWidth, cornerSize, firstCornerUV, firstCornerUV, lastCornerUV, 0f, texture, null)
-                acc = insideWidth
-                while (acc > 0) {
-                    val wat = Math.min(acc, tileInternalSize)
-                    val cutUV = firstCornerUV + (lastCornerUV - firstCornerUV) * wat.toFloat() / tileInternalSize
-                    drawBox(posx + cornerSize + insideWidth - acc, posy, wat, cornerSize, firstCornerUV, 1f, cutUV, lastCornerUV, texture, null)
-                    acc -= wat
-                }
-                //drawBox(posx + cornerSize, posy, insideWidth, cornerSize, firstCornerUV, 1f, lastCornerUV, lastCornerUV, texture, null)
-
-                // inside box
-                acc = insideWidth
-                while (acc > 0) {
-                    val wat = Math.min(acc, tileInternalSize)
-                    val cutUV = firstCornerUV + (lastCornerUV - firstCornerUV) * wat.toFloat() / tileInternalSize
-                    //drawBox(posx + cornerSize + insideWidth - acc, posy, wat, cornerSize, firstCornerUV, 1f, cutUV, lastCornerUV, texture, null)
-
-                    var acc2 = insideHeight
-                    while (acc2 > 0) {
-                        val wat2 = Math.min(acc2, tileInternalSize)
-                        val cutUV2 = firstCornerUV + (lastCornerUV - firstCornerUV) * wat2.toFloat() / tileInternalSize
-                        drawBox(posx + cornerSize + insideWidth - acc, posy + cornerSize + insideHeight - acc2, wat, wat2, firstCornerUV, cutUV2, cutUV, firstCornerUV, texture, null)
-                        acc2 -= wat2
-                    }
-
-                    acc -= wat
-                }
-                //drawBox(posx + cornerSize, posy + cornerSize, insideWidth, insideHeight, firstCornerUV, lastCornerUV, lastCornerUV, firstCornerUV, texture, null)
-            }
-
-            override fun drawString(font: Font, xPosition: Int, yPosition: Int, text: String, cutoffLength: Int, color: Vector4fc) {
-                fontRenderer.drawString(this, font, xPosition.toFloat(), yPosition.toFloat(), text, cutoffLength.toFloat(), color)
-            }
-
-            override fun withScissor(startX: Int, startY: Int, width: Int, height: Int, code: () -> Unit) {
-                stackPush().use {
-                    val scissor = VkRect2D.callocStack(1).apply {
-                        val s = this@VulkanGuiDrawer.gui.guiScale
-
-                        offset().set(startX * s, ctx.passInstance.renderTargetSize.y - (height * s + startY * s))
-                        extent().set(width * s, height * s)
-                    }
-
-                    val defaultScissor = VkRect2D.callocStack(1).apply {
-                        offset().set(0, 0)
-                        extent().set(ctx.passInstance.renderTargetSize.x, ctx.passInstance.renderTargetSize.y)
-                    }
-
-                    vkCmdSetScissor(commandBuffer, 0, scissor)
-                    afterTextureSwitch()
-                    code()
-                    afterTextureSwitch()
-                    vkCmdSetScissor(commandBuffer, 0, defaultScissor)
-                }
+        init {
+            this@VulkanGuiDrawer.gui.guiScaleUpdateHook = {
+                scaleX = 1.0F / gui.viewportWidth.toFloat()
+                scaleY = 1.0F / gui.viewportHeight.toFloat()
             }
         }
 
+        fun vertex(a: Int, b: Int) {
+            stagingByteBuffer.putFloat(-1.0F + 2.0F * (a * scaleX))
+            stagingByteBuffer.putFloat(1.0F - 2.0F * (b * scaleY))
+        }
+
+        fun vertex(a: Float, b: Float) {
+            stagingByteBuffer.putFloat(-1.0F + 2.0F * (a * scaleX))
+            stagingByteBuffer.putFloat(1.0F - 2.0F * (b * scaleY))
+        }
+
+        fun texCoord(a: Float, b: Float) {
+            stagingByteBuffer.putFloat(a)
+            stagingByteBuffer.putFloat(b)
+        }
+
+        fun color(color: Vector4fc) {
+            stagingByteBuffer.putFloat(color.x())
+            stagingByteBuffer.putFloat(color.y())
+            stagingByteBuffer.putFloat(color.z())
+            stagingByteBuffer.putFloat(color.w())
+        }
+
+        override fun drawBox(startX: Int, startY: Int, width: Int, height: Int, textureStartX: Float, textureStartY: Float, textureEndX: Float, textureEndY: Float, texture: String?, color: Vector4fc?) {
+            val color = color ?: white
+
+            val vulkanTexture = if (texture != null) backend.textures.getOrLoadTexture2D(texture) else backend.textures.getOrLoadTexture2D("textures/white.png")
+
+            if (previousTexture != vulkanTexture) {
+                afterTextureSwitch()
+
+                val bindingCtx = backend.descriptorMegapool.getBindingContext(pipeline)
+                bindingCtx.bindTextureAndSampler("currentTexture", vulkanTexture, sampler)
+                bindingCtx.preDraw(commandBuffer)
+                recyclingBind.add(bindingCtx)
+            }
+
+            previousTexture = vulkanTexture
+
+            vertex((startX), startY)
+            texCoord(textureStartX, textureStartY)
+            color(color)
+
+            vertex((startX), (startY + height))
+            texCoord(textureStartX, textureEndY)
+            color(color)
+
+            vertex((startX + width), (startY + height))
+            texCoord(textureEndX, textureEndY)
+            color(color)
+
+            vertex((startX), startY)
+            texCoord(textureStartX, textureStartY)
+            color(color)
+
+            vertex((startX + width), (startY + height))
+            texCoord(textureEndX, textureEndY)
+            color(color)
+
+            vertex((startX + width), (startY))
+            texCoord(textureEndX, textureStartY)
+            color(color)
+
+            sameTextureCount++
+        }
+
+        override fun drawQuad(startX: Float, startY: Float, width: Float, height: Float, textureStartX: Float, textureStartY: Float, textureEndX: Float, textureEndY: Float, texture: Texture2D, color: Vector4fc?) {
+            val color = color ?: white
+            val translatedId = 0
+
+            val vulkanTexture = texture as VulkanTexture2D
+
+            if (previousTexture != vulkanTexture) {
+                afterTextureSwitch()
+
+                val bindingCtx = backend.descriptorMegapool.getBindingContext(pipeline)
+                bindingCtx.bindTextureAndSampler("currentTexture", vulkanTexture, sampler)
+                bindingCtx.preDraw(commandBuffer)
+                recyclingBind.add(bindingCtx)
+            }
+
+            previousTexture = vulkanTexture
+
+            vertex((startX), startY)
+            texCoord(textureStartX, textureStartY)
+            color(color)
+
+            vertex((startX), (startY + height))
+            texCoord(textureStartX, textureEndY)
+            color(color)
+
+            vertex((startX + width), (startY + height))
+            texCoord(textureEndX, textureEndY)
+            color(color)
+
+            vertex((startX), startY)
+            texCoord(textureStartX, textureStartY)
+            color(color)
+
+            vertex((startX + width), (startY + height))
+            texCoord(textureEndX, textureEndY)
+            color(color)
+
+            vertex((startX + width), (startY))
+            texCoord(textureEndX, textureStartY)
+            color(color)
+
+            sameTextureCount++
+        }
+
+        override fun drawBoxWithCorners(posx: Int, posy: Int, width: Int, height: Int, cornerSizeDivider: Int, texture: String) {
+            //val texture = "textures/gui/alignmentCheck.png"
+
+            val cornerSizeDivider = 4
+
+            val tileSize = 32
+            val cornerSize = tileSize / cornerSizeDivider
+            val tileInternalSize = tileSize - cornerSize * 2
+
+            val insideWidth = width - cornerSize * 2
+            val insideHeight = height - cornerSize * 2
+
+            val firstCornerUV = 1.0F / cornerSizeDivider
+            val lastCornerUV = 1.0F - firstCornerUV
+
+            var acc: Int
+
+            // Bottom-right
+            drawBox(posx, posy, cornerSize, cornerSize, 0f, 1f, firstCornerUV, lastCornerUV, texture, null)
+            drawBox(posx, posy + height - cornerSize, cornerSize, cornerSize, 0f, firstCornerUV, firstCornerUV, 0f, texture, null)
+
+            drawBox(posx + width - cornerSize, posy, cornerSize, cornerSize, lastCornerUV, 1f, 1f, lastCornerUV, texture, null)
+            drawBox(posx + width - cornerSize, posy + height - cornerSize, cornerSize, cornerSize, lastCornerUV, firstCornerUV, 1f, 0f, texture, null)
+
+            // vertical sides
+            acc = insideHeight
+            while (acc > 0) {
+                val wat = Math.min(acc, tileInternalSize)
+                val cutUV = firstCornerUV + (lastCornerUV - firstCornerUV) * wat.toFloat() / tileInternalSize
+                drawBox(posx, posy + cornerSize + insideHeight - acc, cornerSize, wat, 0f, cutUV, firstCornerUV, firstCornerUV, texture, null)
+                acc -= wat
+            }
+            //drawBox(posx, posy + cornerSize, cornerSize, insideHeight, 0f, lastCornerUV, firstCornerUV, firstCornerUV, texture, null)
+            acc = insideHeight
+            while (acc > 0) {
+                val wat = Math.min(acc, tileInternalSize)
+                val cutUV = firstCornerUV + (lastCornerUV - firstCornerUV) * wat.toFloat() / tileInternalSize
+                //drawBox(posx, posy + cornerSize + insideHeight - acc, cornerSize, wat, 0f, cutUV, firstCornerUV, firstCornerUV, texture, null)
+                drawBox(posx + width - cornerSize, posy + cornerSize + insideHeight - acc, cornerSize, wat, lastCornerUV, cutUV, 1f, firstCornerUV, texture, null)
+                acc -= wat
+            }
+            //drawBox(posx + width - cornerSize, posy + cornerSize, cornerSize, insideHeight, lastCornerUV, lastCornerUV, 1f, firstCornerUV, texture, null)
+
+            // horizontal sides
+            acc = insideWidth
+            while (acc > 0) {
+                val wat = Math.min(acc, tileInternalSize)
+                val cutUV = firstCornerUV + (lastCornerUV - firstCornerUV) * wat.toFloat() / tileInternalSize
+                drawBox(posx + cornerSize + insideWidth - acc, posy + height - cornerSize, wat, cornerSize, firstCornerUV, firstCornerUV, cutUV, 0f, texture, null)
+                acc -= wat
+            }
+            //drawBox(posx + cornerSize, posy + height - cornerSize, insideWidth, cornerSize, firstCornerUV, firstCornerUV, lastCornerUV, 0f, texture, null)
+            acc = insideWidth
+            while (acc > 0) {
+                val wat = Math.min(acc, tileInternalSize)
+                val cutUV = firstCornerUV + (lastCornerUV - firstCornerUV) * wat.toFloat() / tileInternalSize
+                drawBox(posx + cornerSize + insideWidth - acc, posy, wat, cornerSize, firstCornerUV, 1f, cutUV, lastCornerUV, texture, null)
+                acc -= wat
+            }
+            //drawBox(posx + cornerSize, posy, insideWidth, cornerSize, firstCornerUV, 1f, lastCornerUV, lastCornerUV, texture, null)
+
+            // inside box
+            acc = insideWidth
+            while (acc > 0) {
+                val wat = Math.min(acc, tileInternalSize)
+                val cutUV = firstCornerUV + (lastCornerUV - firstCornerUV) * wat.toFloat() / tileInternalSize
+                //drawBox(posx + cornerSize + insideWidth - acc, posy, wat, cornerSize, firstCornerUV, 1f, cutUV, lastCornerUV, texture, null)
+
+                var acc2 = insideHeight
+                while (acc2 > 0) {
+                    val wat2 = Math.min(acc2, tileInternalSize)
+                    val cutUV2 = firstCornerUV + (lastCornerUV - firstCornerUV) * wat2.toFloat() / tileInternalSize
+                    drawBox(posx + cornerSize + insideWidth - acc, posy + cornerSize + insideHeight - acc2, wat, wat2, firstCornerUV, cutUV2, cutUV, firstCornerUV, texture, null)
+                    acc2 -= wat2
+                }
+
+                acc -= wat
+            }
+            //drawBox(posx + cornerSize, posy + cornerSize, insideWidth, insideHeight, firstCornerUV, lastCornerUV, lastCornerUV, firstCornerUV, texture, null)
+        }
+
+        override fun drawString(font: Font, xPosition: Int, yPosition: Int, text: String, cutoffLength: Int, color: Vector4fc) {
+            fontRenderer.drawString(this, font, xPosition.toFloat(), yPosition.toFloat(), text, cutoffLength.toFloat(), color)
+        }
+
+        override fun withScissor(startX: Int, startY: Int, width: Int, height: Int, code: () -> Unit) {
+            stackPush().use {
+                val scissor = VkRect2D.callocStack(1).apply {
+                    val s = this@VulkanGuiDrawer.gui.guiScale
+
+                    offset().set(startX * s, ctx.passInstance.renderTargetSize.y - (height * s + startY * s))
+                    extent().set(width * s, height * s)
+                }
+
+                val defaultScissor = VkRect2D.callocStack(1).apply {
+                    offset().set(0, 0)
+                    extent().set(ctx.passInstance.renderTargetSize.x, ctx.passInstance.renderTargetSize.y)
+                }
+
+                vkCmdSetScissor(commandBuffer, 0, scissor)
+                afterTextureSwitch()
+                code()
+                afterTextureSwitch()
+                vkCmdSetScissor(commandBuffer, 0, defaultScissor)
+            }
+        }
+    }
+
+    override fun registerDrawingCommands(frame: VulkanFrame, ctx: SystemExecutionContext, commandBuffer: VkCommandBuffer) {
+        // Update local variables
+        this.commandBuffer = commandBuffer
+        this.ctx = ctx
 
         stackPush().use {
+
             vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
             vkCmdBindVertexBuffers(commandBuffer, 0, MemoryStack.stackLongs(vertexBuffers[frame].handle), MemoryStack.stackLongs(0))
 
@@ -355,10 +358,8 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
             sameTextureCount = 0
             previousTexture = null
 
-            this.commandBuffer = commandBuffer
-
             gui.updateGuiScale()
-            gui.topLayer?.render(drawer)
+            gui.topLayer?.render(internalDrawer)
             afterTextureSwitch()
 
             // Upload the vertex buffer contents

@@ -1,7 +1,7 @@
 plugins {
     java
     `java-library`
-    kotlin("jvm") version ("1.3.10")
+    kotlin("jvm") version ("1.3.50")
 }
 
 dependencies {
