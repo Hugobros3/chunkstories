@@ -8,7 +8,7 @@ package xyz.chunkstories.content
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import xyz.chunkstories.animation.BVHLibrary
+import xyz.chunkstories.animation.AnimationsStore
 import xyz.chunkstories.api.GameContext
 import xyz.chunkstories.api.content.Asset
 import xyz.chunkstories.api.content.Content
@@ -41,7 +41,7 @@ class GameContentStore(override val context: GameContext, coreContentLocation: F
     override val particles: ParticlesTypesStore
     override val generators: WorldGeneratorsStore
 
-    override val animationsLibrary: BVHLibrary
+    override val animationsLibrary: AnimationsStore
     override val models: MeshStore
 
     private val localizationManager: LocalizationManagerImplementation
@@ -63,7 +63,7 @@ class GameContentStore(override val context: GameContext, coreContentLocation: F
         particles = ParticlesTypesStore(this)
         generators = WorldGeneratorsStore(this)
 
-        animationsLibrary = BVHLibrary(this)
+        animationsLibrary = AnimationsStore(this)
 
         models = MeshStore(this)
 
