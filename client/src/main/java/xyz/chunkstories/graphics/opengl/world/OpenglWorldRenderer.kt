@@ -3,11 +3,11 @@ package xyz.chunkstories.graphics.opengl.world
 import xyz.chunkstories.graphics.common.WorldRenderer
 import xyz.chunkstories.graphics.common.world.EntitiesRepresentationsProvider
 import xyz.chunkstories.graphics.opengl.OpenglGraphicsBackend
-import xyz.chunkstories.graphics.opengl.world.chunks.OpenglChunksRepresentationsProvider
+import xyz.chunkstories.graphics.opengl.world.chunks.OpenglChunkRepresentationsProvider
 import xyz.chunkstories.world.WorldClientCommon
 
 class OpenglWorldRenderer(override val backend: OpenglGraphicsBackend, world: WorldClientCommon) : WorldRenderer(world) {
-    val chunksRepresentationsProvider = OpenglChunksRepresentationsProvider(backend, world)
+    val chunksRepresentationsProvider = OpenglChunkRepresentationsProvider(backend, world)
     val entitiesProvider = EntitiesRepresentationsProvider(world)
 
     init {

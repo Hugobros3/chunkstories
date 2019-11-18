@@ -5,7 +5,7 @@ import xyz.chunkstories.graphics.opengl.OpenglGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
 import xyz.chunkstories.world.WorldClientCommon
 
-class OpenglChunksRepresentationsProvider(backend: OpenglGraphicsBackend, world: WorldClientCommon) :
+class OpenglChunkRepresentationsProvider(backend: OpenglGraphicsBackend, world: WorldClientCommon) :
         ChunkRepresentationsProvider<OpenglChunkRepresentation>(world, { _, chunk ->
             if (chunk.mesh is OpenglChunkMeshProperty) {
                 val block = (chunk.mesh as OpenglChunkMeshProperty).getAndAcquire()

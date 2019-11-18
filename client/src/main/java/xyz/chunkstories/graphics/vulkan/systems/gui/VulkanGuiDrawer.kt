@@ -1,5 +1,6 @@
 package xyz.chunkstories.graphics.vulkan.systems.gui
 
+import org.joml.Vector4f
 import xyz.chunkstories.api.gui.Font
 import xyz.chunkstories.api.gui.Gui
 import xyz.chunkstories.graphics.common.DummyGuiDrawer
@@ -94,7 +95,7 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
     val stagingByteBuffer = MemoryUtil.memAlloc(guiBufferSize)
     var recyclingBind = mutableListOf<DescriptorSetsMegapool.ShaderBindingContext>()
 
-    var previousTexture: Texture2D? = null
+    var previousTexture: VulkanTexture2D? = null
     var sameTextureCount = 0
     var previousOffset = 0
 
@@ -110,35 +111,43 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
 
     override fun registerDrawingCommands(frame: VulkanFrame, ctx: SystemExecutionContext, commandBuffer: VkCommandBuffer) {
         val drawer: InternalGuiDrawer = object : InternalGuiDrawer(gui) {
+            var sx: Float = 1.0F / gui.viewportWidth.toFloat()
+            var sy: Float = 1.0F / gui.viewportHeight.toFloat()
 
-            val sx: Float
-                get() = 1.0F / gui.viewportWidth.toFloat()
-            val sy: Float
-                get() = 1.0F / gui.viewportHeight.toFloat()
+            val white = Vector4f(1.0f)
 
-            fun vertex(a: Int, b: Int) {
+            init {
+                this@VulkanGuiDrawer.gui.guiScaleUpdateHook = {
+                    sx = 1.0F / gui.viewportWidth.toFloat()
+                    sy = 1.0F / gui.viewportHeight.toFloat()
+                }
+            }
+
+            inline fun vertex(a: Int, b: Int) {
                 stagingByteBuffer.putFloat(-1.0F + 2.0F * (a * sx))
                 stagingByteBuffer.putFloat(1.0F - 2.0F * (b * sy))
             }
 
-            fun vertex(a: Float, b: Float) {
+            inline fun vertex(a: Float, b: Float) {
                 stagingByteBuffer.putFloat(-1.0F + 2.0F * (a * sx))
                 stagingByteBuffer.putFloat(1.0F - 2.0F * (b * sy))
             }
 
-            fun texCoord(a: Float, b: Float) {
+            inline fun texCoord(a: Float, b: Float) {
                 stagingByteBuffer.putFloat(a)
                 stagingByteBuffer.putFloat(b)
             }
 
-            fun color(color: Vector4fc?) {
-                stagingByteBuffer.putFloat(color?.x() ?: 1.0F)
-                stagingByteBuffer.putFloat(color?.y() ?: 1.0F)
-                stagingByteBuffer.putFloat(color?.z() ?: 1.0F)
-                stagingByteBuffer.putFloat(color?.w() ?: 1.0F)
+            inline fun color(color: Vector4fc) {
+                stagingByteBuffer.putFloat(color.x())
+                stagingByteBuffer.putFloat(color.y())
+                stagingByteBuffer.putFloat(color.z())
+                stagingByteBuffer.putFloat(color.w())
             }
 
             override fun drawBox(startX: Int, startY: Int, width: Int, height: Int, textureStartX: Float, textureStartY: Float, textureEndX: Float, textureEndY: Float, texture: String?, color: Vector4fc?) {
+                val color = color ?: white
+
                 val vulkanTexture = if (texture != null) backend.textures.getOrLoadTexture2D(texture) else backend.textures.getOrLoadTexture2D("textures/white.png")
 
                 if (previousTexture != vulkanTexture) {
@@ -180,6 +189,7 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
             }
 
             override fun drawQuad(startX: Float, startY: Float, width: Float, height: Float, textureStartX: Float, textureStartY: Float, textureEndX: Float, textureEndY: Float, texture: Texture2D, color: Vector4fc?) {
+                val color = color ?: white
                 val translatedId = 0
 
                 val vulkanTexture = texture as VulkanTexture2D
@@ -347,6 +357,7 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
 
             this.commandBuffer = commandBuffer
 
+            gui.updateGuiScale()
             gui.topLayer?.render(drawer)
             afterTextureSwitch()
 

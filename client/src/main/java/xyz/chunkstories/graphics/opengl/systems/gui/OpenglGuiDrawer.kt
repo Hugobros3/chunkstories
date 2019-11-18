@@ -28,7 +28,7 @@ class OpenglGuiDrawer(pass: OpenglPass, dslCode: (DrawingSystem) -> Unit) : Open
     val backend: OpenglGraphicsBackend
         get() = pass.backend
 
-    val gui: Gui
+    val gui: ClientGui
         get() = backend.window.client.gui
 
     val vertexInputConfiguration = vertexInputConfiguration {
@@ -303,6 +303,7 @@ class OpenglGuiDrawer(pass: OpenglPass, dslCode: (DrawingSystem) -> Unit) : Open
         sameTextureCount = 0
         currentTexture = null
 
+        gui.updateGuiScale()
         gui.topLayer?.render(drawer)
         atTextureSwap()
 

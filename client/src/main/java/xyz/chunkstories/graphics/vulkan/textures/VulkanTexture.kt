@@ -261,6 +261,24 @@ open class VulkanTexture(val backend: VulkanGraphicsBackend, final override val 
         }
     }
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as VulkanTexture
+
+        if (imageHandle != other.imageHandle) return false
+        if (imageView != other.imageView) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = imageHandle.hashCode()
+        result = 31 * result + imageView.hashCode()
+        return result
+    }
+
     companion object {
         val logger = LoggerFactory.getLogger("client.vulkan")
     }

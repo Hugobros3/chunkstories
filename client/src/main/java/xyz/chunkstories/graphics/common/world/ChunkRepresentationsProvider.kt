@@ -1,11 +1,12 @@
 package xyz.chunkstories.graphics.common.world
 
+import org.joml.Vector3d
+import org.joml.Vector3dc
 import xyz.chunkstories.api.graphics.rendergraph.Frame
 import xyz.chunkstories.api.graphics.systems.dispatching.RepresentationsGobbler
 import xyz.chunkstories.api.graphics.systems.dispatching.RepresentationsProvider
 import xyz.chunkstories.api.physics.Box
-import xyz.chunkstories.api.util.kotlin.toVec3i
-import xyz.chunkstories.client.InternalClientOptions
+import xyz.chunkstories.api.physics.Frustrum
 import xyz.chunkstories.world.WorldClientCommon
 import xyz.chunkstories.world.chunk.ChunkImplementation
 import xyz.chunkstories.world.region.RegionImplementation
@@ -47,7 +48,7 @@ abstract class ChunkRepresentationsProvider<R : ChunkRepresentation>(
                 rx += shouldWrap(camerasSections[index].first, rxSection) * world.sizeInChunks / 8
                 rz += shouldWrap(camerasSections[index].second, rzSection) * world.sizeInChunks / 8
 
-                if (camera.frustrum.isBoxInFrustrum(Box.fromExtents(256.0, 256.0, 256.0).translate(rx * 256.0, region.regionY * 256.0, rz * 256.0)))
+                if (camera.frustrum.isBoxInFrustrumFAST(Box.fromExtents(256.0, 256.0, 256.0).translate(rx * 256.0, region.regionY * 256.0, rz * 256.0)))
                     mask = mask or (1 shl index)
             }
 
@@ -87,7 +88,7 @@ abstract class ChunkRepresentationsProvider<R : ChunkRepresentation>(
                         cx += shouldWrap(camerasSections[index].first, cxSection) * world.sizeInChunks
                         cz += shouldWrap(camerasSections[index].second, czSection) * world.sizeInChunks
 
-                        if (camera.frustrum.isBoxInFrustrum(Box.fromExtents(32.0, 32.0, 32.0).translate(cx * 32.0, chunk.chunkY * 32.0, cz * 32.0)))
+                        if (camera.frustrum.isBoxInFrustrumFAST(Box.fromExtents(32.0, 32.0, 32.0).translate(cx * 32.0, chunk.chunkY * 32.0, cz * 32.0)))
                             mask = mask or submask
                     }
                     val chunkVisibility = mask
@@ -115,6 +116,112 @@ abstract class ChunkRepresentationsProvider<R : ChunkRepresentation>(
                 representationsGobbler.acceptRepresentation(r, chunksVisibilityMask[j])
             }
         }
+    }
+
+    private inline fun Frustrum.isBoxInFrustrumFAST(box: Box): Boolean {
+        //return this.isBoxInFrustrum(box)
+        return this.isBoxInFrustrumFAST(box.min, box.max)
+    }
+
+    private fun Frustrum.isBoxInFrustrumFAST(min: Vector3dc, max: Vector3dc): Boolean {
+        val v0 = Vector3d(
+                // i=0 j=0 k=0
+                min.x(),
+                min.y(),
+                min.z()
+        )
+
+        val v1 = Vector3d(
+                // i=0 j=0 k=1
+                min.x(),
+                min.y(),
+                max.z()
+        )
+
+        val v2 = Vector3d(
+                // i=0 j=1 k=0
+                min.x(),
+                max.x(),
+                min.z()
+        )
+
+        val v3 = Vector3d(
+                // i=0 j=1 k=1
+                min.x(),
+                max.y(),
+                max.z()
+        )
+
+        val v4 = Vector3d(
+                // i=1 j=0 k=0
+                max.x(),
+                min.y(),
+                min.z()
+        )
+        val v5 = Vector3d(
+                // i=1 j=0 k=1
+                max.x(),
+                min.y(),
+                max.z()
+        )
+        val v6 = Vector3d(
+                // i=1 j=1 k=0
+                max.x(),
+                max.y(),
+                min.z()
+        )
+        val v7 = Vector3d(
+                // i=1 j=1 k=1
+                max.x(),
+                max.y(),
+                max.z()
+        )
+
+        for (i in 4 downTo 0) {
+            var inside = 0
+            /*for (c in 0..7) {
+                val corner = when (c) {
+                    0 -> v0
+                    1 -> v1
+                    2 -> v2
+                    3 -> v3
+                    4 -> v4
+                    5 -> v5
+                    6 -> v6
+                    else -> v7
+                }
+                val wtf = cameraPlanes[i].distance(corner)
+
+                //if (wtf.isNaN() || wtf.isInfinite()) {
+                //    println("wow $i ${wtf.isInfinite()} ${wtf.isNaN()} $min $max")
+                //    println("${cameraPlanes[i]}")
+                //}
+                if (!(cameraPlanes[i].distance(corner) < 0)) {
+                    inside++
+                }
+            }*/
+            if(cameraPlanes[i].distance(v0) >= 0)
+                inside++
+            if(cameraPlanes[i].distance(v1) >= 0)
+                inside++
+            if(cameraPlanes[i].distance(v2) >= 0)
+                inside++
+            if(cameraPlanes[i].distance(v3) >= 0)
+                inside++
+            if(cameraPlanes[i].distance(v4) >= 0)
+                inside++
+            if(cameraPlanes[i].distance(v5) >= 0)
+                inside++
+            if(cameraPlanes[i].distance(v6) >= 0)
+                inside++
+            if(cameraPlanes[i].distance(v7) >= 0)
+                inside++
+
+            if (inside == 0) {
+                return false
+            }
+        }
+        return true
     }
 
 }
