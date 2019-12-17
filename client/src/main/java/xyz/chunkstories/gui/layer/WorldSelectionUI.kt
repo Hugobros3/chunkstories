@@ -8,17 +8,18 @@ package xyz.chunkstories.gui.layer
 
 import org.joml.Vector4f
 import org.slf4j.LoggerFactory
-import xyz.chunkstories.api.gui.Gui
-import xyz.chunkstories.api.gui.GuiDrawer
-import xyz.chunkstories.api.gui.Layer
+import xyz.chunkstories.api.gui.*
 import xyz.chunkstories.api.gui.elements.Button
 import xyz.chunkstories.api.gui.elements.LargeButtonWithIcon
 import xyz.chunkstories.api.gui.elements.Scroller
 import xyz.chunkstories.api.input.Input
+import xyz.chunkstories.api.input.Mouse
 import xyz.chunkstories.api.input.Mouse.MouseScroll
 import xyz.chunkstories.api.world.WorldInfo
 import xyz.chunkstories.client.ClientImplementation
 import xyz.chunkstories.client.ingame.enterExistingWorld
+import xyz.chunkstories.gui.ConfirmUI
+import xyz.chunkstories.util.FoldersUtils
 import xyz.chunkstories.world.WorldImplementation
 import xyz.chunkstories.world.WorldLoadingException
 import xyz.chunkstories.world.deserializeWorldInfo
@@ -34,7 +35,7 @@ class WorldSelectionUI internal constructor(gui: Gui, parent: Layer) : Layer(gui
     //private val worldsButtons = ArrayList<LocalWorldButton>()
 
     //private var scroll = 0
-    val scroller: Scroller<LocalWorldButton>
+    val scroller: Scroller<LocalWorldUIPanel>
 
     init {
         this.backOption.action = Runnable { gui.popTopLayer() }
@@ -42,6 +43,15 @@ class WorldSelectionUI internal constructor(gui: Gui, parent: Layer) : Layer(gui
 
         elements.add(backOption)
         elements.add(newWorldOption)
+
+        scroller = Scroller(this, 0, 0, emptyList())
+        elements.add(scroller)
+
+        loadWorlds()
+    }
+
+    fun loadWorlds() {
+        scroller.elements.clear()
 
         val worldsFolder = File("." + "/worlds")
         if (!worldsFolder.exists())
@@ -53,34 +63,21 @@ class WorldSelectionUI internal constructor(gui: Gui, parent: Layer) : Layer(gui
             if (worldInfoFile.exists()) {
                 val worldInfo = deserializeWorldInfo(worldInfoFile)
 
-                val worldButton = LocalWorldButton(0, 0, worldDirectory, worldInfo)
-                worldButton.action = Runnable {
-                    try {
-                        (gui.client as ClientImplementation).enterExistingWorld(worldDirectory)
-                    } catch(e: WorldLoadingException) {
-                        val cause = e.cause
-
-                        gui.topLayer = MessageBoxUI(gui, this, "Cannot load world", cause?.message ?: cause.toString())
-                    }
-                }
-
-                worldButton
+                LocalWorldUIPanel(0, 0, worldDirectory, worldInfo)
             } else {
                 null
             }
         } ?: emptyList()
 
-        scroller = Scroller(this, 0, 0, list)
-        elements.add(scroller)
+        scroller.elements.addAll(list)
     }
 
     override fun render(drawer: GuiDrawer) {
-
         var posY = gui.viewportHeight
         posY -= 24 + 4
 
         val titleFont = drawer.fonts.getFont("LiberationSans-Regular", 18f)
-        drawer.drawStringWithShadow(titleFont, 8, posY, "Select a level...", -1, Vector4f(1f))
+        drawer.drawStringWithShadow(titleFont, 8, posY, "#{menu.singleplayerworldselect}", -1, Vector4f(1f))
 
         posY -= 4
 
@@ -109,51 +106,111 @@ class WorldSelectionUI internal constructor(gui: Gui, parent: Layer) : Layer(gui
         return super.handleInput(input)
     }
 
-    inner class LocalWorldButton
-    internal constructor(x: Int, y: Int, private val directory: File, val info: WorldInfo) : Button(this@WorldSelectionUI, x, y, "") {
+    inner class LocalWorldUIPanel
+    internal constructor(x: Int, y: Int, private val directory: File, val worldInfo: WorldInfo) : GuiElement(this@WorldSelectionUI, 0, 0), ClickableGuiElement {
+
+        val buttons = mutableListOf<Button>()
+
+        val playButton = Button(layer, 0, 0, 0, "#{menu.play}")
+        val renameButton = Button(layer, 0, 0, 0, "#{menu.rename}")
+        val deleteButton = Button(layer, 0, 0, 0, "#{menu.delete}")
+
+        init {
+            playButton.action = Runnable {
+                try {
+                    (gui.client as ClientImplementation).enterExistingWorld(directory)
+                } catch (e: WorldLoadingException) {
+                    val cause = e.cause
+
+                    gui.topLayer = MessageBoxUI(gui, layer, "Cannot load world", cause?.message ?: cause.toString())
+                }
+            }
+
+            deleteButton.action = Runnable {
+                gui.topLayer = ConfirmUI(gui, layer, "Do you reall want to delete '${worldInfo.name} ?'", "It will be gone forever! I heard somewhere that's a long time!") { confirmed ->
+                    if (confirmed) {
+                        FoldersUtils.deleteFolder(directory)
+                        this@WorldSelectionUI.loadWorlds()
+                    }
+                }
+            }
+
+            renameButton.action = Runnable {
+                gui.topLayer = WorldRenameUI(gui, layer, worldInfo, directory) {
+                    this@WorldSelectionUI.loadWorlds()
+                }
+            }
+
+            buttons.add(playButton)
+            buttons.add(renameButton)
+            buttons.add(deleteButton)
+        }
 
         private val lastEdit: String
 
         init {
             val internalDataFile = File(directory.absolutePath + "/" + WorldImplementation.worldInternalDataFilename)
-            lastEdit = if(internalDataFile.exists()) {
-                "Last edit: "+SimpleDateFormat("yyyy-MM-dd HH:mm").format(Timestamp(internalDataFile.lastModified()))
+            lastEdit = if (internalDataFile.exists()) {
+                "Last edit: " + SimpleDateFormat("yyyy-MM-dd HH:mm").format(Timestamp(internalDataFile.lastModified()))
             } else {
                 "error"
             }
         }
 
         override fun render(drawer: GuiDrawer) {
-            val texture = if (isFocused || isMouseOver)
-                "textures/gui/scalableButtonOver.png"
-            else
-                "textures/gui/scalableButton.png"
-
             this.height = 64
-
-            drawer.drawBoxWithCorners(positionX, positionY, width, height, 8, texture)
-
-            //TODO redo
-            //ObjectRenderer.renderTexturedRect(xPosition + 32 + 4, yPosition + 32 + 4, 64, 64, GameDirectory.getGameFolderPath() + "/worlds/" + info.getInternalName() + "/worldInfo.png");
-            drawer.drawBox(positionX, positionY, 64, 64, "textures/gui/icon.png", null)
 
             val font = drawer.fonts.getFont("LiberationSans-Regular", 12f)
             val fontBigue = drawer.fonts.getFont("LiberationSans-Regular", 16f)
             val fontSmale = drawer.fonts.getFont("LiberationSans-Regular", 10f)
 
+            val texture = if (isMouseOver)
+                "textures/gui/scalableButtonOver.png"
+            else
+                "textures/gui/scalableButton.png"
+
+            drawer.drawBoxWithCorners(positionX, positionY, width, height, 8, texture)
+
+            //TODO Re-implement world icons
+            //ObjectRenderer.renderTexturedRect(xPosition + 32 + 4, yPosition + 32 + 4, 64, 64, GameDirectory.getGameFolderPath() + "/worlds/" + info.getInternalName() + "/worldInfo.png");
+            drawer.drawBox(positionX, positionY, 64, 64, "textures/gui/icon.png", null)
+
             //title
-            drawer.drawString(fontBigue, positionX + 72, positionY + 32 + 4, info.name, width - 72, Vector4f(0.25f, 0.25f, 0.25f, 1.0f))
+            drawer.drawString(fontBigue, positionX + 72, positionY + 32 + 4, worldInfo.name, width - 72, Vector4f(0.25f, 0.25f, 0.25f, 1.0f))
 
             //desc
-            drawer.drawString(font, positionX+72, positionY+20, info.description, -1, Vector4f(0.25f, 0.25f, 0.25f, 1.0f))
+            drawer.drawString(font, positionX + 72, positionY + 20, worldInfo.description, -1, Vector4f(0.25f, 0.25f, 0.25f, 1.0f))
 
             //size
-            val sizeTxt = "${info.size.sizeInChunks * 32}x${info.size.sizeInChunks * 32} blocks, ${info.generatorName} generator"
+            val sizeTxt = "${worldInfo.size.sizeInChunks * 32}x${worldInfo.size.sizeInChunks * 32} blocks, ${worldInfo.generatorName} generator"
             val sizeSize = fontSmale.getWidth(sizeTxt)
             drawer.drawString(fontSmale, positionX + width - sizeSize - 4, positionY + 32 + 12, sizeTxt, width - 72, Vector4f(0.25f, 0.25f, 0.25f, 1.0f))
 
+            // last edit
             val lastEditSize = fontSmale.getWidth(lastEdit)
             drawer.drawString(fontSmale, positionX + width - lastEditSize - 4, positionY + 32 + 0, lastEdit, width - 72, Vector4f(0.25f, 0.25f, 0.25f, 1.0f))
+
+            var alignButtonsX = positionX + width
+            alignButtonsX -= 8 + deleteButton.width
+            deleteButton.positionX = alignButtonsX
+            deleteButton.positionY = positionY + 8
+            deleteButton.render(drawer)
+
+            alignButtonsX -= 8 + renameButton.width
+            renameButton.positionX = alignButtonsX
+            renameButton.positionY = positionY + 8
+            renameButton.render(drawer)
+
+            alignButtonsX -= 8 + playButton.width
+            playButton.positionX = alignButtonsX
+            playButton.positionY = positionY + 8
+            playButton.render(drawer)
+        }
+
+        override fun handleClick(mouseButton: Mouse.MouseButton): Boolean {
+            //TODO doubleclick to enter?
+            //this.layer.gui.client.soundManager.playSoundEffect("sounds/gui/gui_click2.ogg")
+            return buttons.find { it.isMouseOver }?.handleClick(mouseButton) ?: false
         }
     }
 
