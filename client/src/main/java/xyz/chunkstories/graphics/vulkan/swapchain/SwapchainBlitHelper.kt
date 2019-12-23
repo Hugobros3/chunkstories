@@ -36,6 +36,7 @@ class SwapchainBlitHelper(val backend: VulkanGraphicsBackend) : Cleanable {
     }
 
     override fun cleanup() {
+        commandBuffers.cleanup() // not really useful (since vk autofrees the cmdbufs when you free the pool) but it keeps bugging me when reviewing code
         commandPool.cleanup()
     }
 

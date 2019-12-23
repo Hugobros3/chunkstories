@@ -33,6 +33,7 @@ import xyz.chunkstories.api.content.Content
 import xyz.chunkstories.api.graphics.systems.RegisteredGraphicSystem
 import xyz.chunkstories.api.graphics.systems.dispatching.*
 import xyz.chunkstories.api.graphics.systems.drawing.DrawingSystem
+import xyz.chunkstories.api.graphics.systems.drawing.FarTerrainDrawer
 import xyz.chunkstories.graphics.GraphicsEngineImplementation
 import xyz.chunkstories.graphics.vulkan.systems.debug.VulkanSpinningCubeDrawer
 import xyz.chunkstories.graphics.vulkan.systems.lighting.VulkanDefferedLightsDispatcher
@@ -40,6 +41,7 @@ import xyz.chunkstories.graphics.vulkan.systems.models.VulkanLinesDispatcher
 import xyz.chunkstories.graphics.vulkan.systems.models.VulkanModelsDispatcher
 import xyz.chunkstories.graphics.vulkan.systems.models.VulkanSpritesDispatcher
 import xyz.chunkstories.graphics.vulkan.systems.world.VulkanChunkRepresentationsDispatcher
+import xyz.chunkstories.graphics.vulkan.systems.world.farterrain.VulkanFarTerrainRenderer
 import xyz.chunkstories.graphics.vulkan.textures.voxels.VulkanVoxelTexturesArray
 import xyz.chunkstories.graphics.vulkan.world.VulkanWorldRenderer
 import xyz.chunkstories.voxel.VoxelTexturesSupport
@@ -287,12 +289,14 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
         return bestPhysicalDevice ?: throw Exception("Could not find suitable physical device !")
     }
 
+    // TODO move to dedicated class
     fun <T : DrawingSystem> createDrawingSystem(pass: VulkanPass, registration: RegisteredGraphicSystem<T>): VulkanDrawingSystem {
         val dslCode = registration.dslCode as DrawingSystem.() -> Unit
 
         return when (registration.clazz) {
             GuiDrawer::class.java -> VulkanGuiDrawer(pass, window.client.gui)
             FullscreenQuadDrawer::class.java -> VulkanFullscreenQuadDrawer(pass, dslCode)
+            FarTerrainDrawer::class.java -> VulkanFarTerrainRenderer(pass, dslCode)
 
             Vulkan3DVoxelRaytracer::class.java -> Vulkan3DVoxelRaytracer(pass, dslCode)
             VulkanSpinningCubeDrawer::class.java -> VulkanSpinningCubeDrawer(pass, dslCode)
@@ -302,6 +306,7 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
         }
     }
 
+    // TODO move to dedicated class
     fun <T: DispatchingSystem> getOrCreateDispatchingSystem(list: MutableList<VulkanDispatchingSystem<*,*>>, dispatchingSystemRegistration: RegisteredGraphicSystem<T>): VulkanDispatchingSystem<*,*> {
         val implemClass =  when(dispatchingSystemRegistration.clazz) {
             ChunksRenderer::class.java -> VulkanChunkRepresentationsDispatcher::class
@@ -331,6 +336,7 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
         return new
     }
 
+    // yes this engine is a little tailor-made, what gives
     override fun createVoxelTextures(voxels: Content.Voxels) = VulkanVoxelTexturesArray(this, voxels)
 
     override fun createWorldRenderer(world: WorldClientCommon) = VulkanWorldRenderer(this, world)

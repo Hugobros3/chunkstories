@@ -34,7 +34,13 @@ class Pipeline(val backend: VulkanGraphicsBackend, val program : VulkanShaderPro
     val pipelineLayout: VkPipelineLayout
     val handle: VkPipeline
 
-    constructor(backend: VulkanGraphicsBackend, program: VulkanShaderProgram, pass: VulkanPass, vertexInputConfiguration: VertexInputConfiguration, primitiveType: Primitive, faceCullingMode: FaceCullingMode) :
+    //TODO move to an utility function
+    constructor(backend: VulkanGraphicsBackend,
+                program: VulkanShaderProgram,
+                pass: VulkanPass,
+                vertexInputConfiguration: VertexInputConfiguration,
+                primitiveType: Primitive,
+                faceCullingMode: FaceCullingMode) :
             this(backend, program, pass.canonicalRenderPass, pass.declaration.outputs, pass.declaration.depthTestingConfiguration, vertexInputConfiguration, primitiveType, faceCullingMode)
 
     init {

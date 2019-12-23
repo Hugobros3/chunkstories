@@ -8,6 +8,7 @@ import xyz.chunkstories.api.graphics.TextureTilingMode
 import xyz.chunkstories.api.graphics.rendergraph.*
 import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.api.graphics.systems.dispatching.*
+import xyz.chunkstories.api.graphics.systems.drawing.FarTerrainDrawer
 import xyz.chunkstories.api.graphics.systems.drawing.FullscreenQuadDrawer
 import xyz.chunkstories.api.gui.GuiDrawer
 import xyz.chunkstories.api.math.random.PrecomputedSimplexSeed
@@ -148,6 +149,9 @@ abstract class WorldRenderer(val world: WorldClientCommon) : Cleanable {
                             system(SpritesRenderer::class) {
                                 shader = "sprites"
                                 materialTag = "opaque"
+                            }
+                            system(FarTerrainDrawer::class) {
+
                             }
                     }
 
