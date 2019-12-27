@@ -63,7 +63,7 @@ class VulkanDebugDrawer(pass: VulkanPass, dslCode: VulkanDebugDrawer.() -> Unit,
         val camera = entity?.traits?.get(TraitControllable::class)?.camera ?: Camera()
 
         val bindingContext = backend.descriptorMegapool.getBindingContext(pipeline)
-        bindingContext.bindUBO("camera", camera)
+        bindingContext.bindStructuredUBO("camera", camera)
 
         var linesCount = 0
         val buffer = memAlloc(debugBufferSize)

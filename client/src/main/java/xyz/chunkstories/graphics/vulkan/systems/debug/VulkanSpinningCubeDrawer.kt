@@ -137,7 +137,7 @@ class VulkanSpinningCubeDrawer(pass: VulkanPass, dslCode: VulkanSpinningCubeDraw
 
         val bindingContext = backend.descriptorMegapool.getBindingContext(pipeline)
 
-        bindingContext.bindUBO("camera", camera)
+        bindingContext.bindStructuredUBO("camera", camera)
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
 
         bindingContext.preDraw(commandBuffer)

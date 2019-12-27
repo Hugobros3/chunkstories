@@ -11,17 +11,14 @@ import xyz.chunkstories.graphics.common.shaders.MaterialImage
 import xyz.chunkstories.graphics.common.shaders.compiler.postprocessing.addVirtualTexturingHeader
 import xyz.chunkstories.graphics.common.shaders.compiler.postprocessing.annotateForNonUniformAccess
 import xyz.chunkstories.graphics.common.shaders.compiler.preprocessing.*
-import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.addDecorations
-import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.buildIntermediaryStructure
-import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.createShaderResources
-import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.toIntermediateGLSL
-import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.SpirvCrossHelper
+import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.*
 import kotlin.reflect.KClass
 
 abstract class ShaderCompiler(val dialect: GLSLDialect) {
-
     abstract val classLoader: ClassLoader
     abstract val content: Content?
+
+    abstract val newResourceLocationAssigner: () -> ResourceLocationAssigner
 
     /** We keep track of all the JVM classes we encounter so we don't have to do the mapping into GLSL structs every time */
     val jvmGlslMappings = mutableMapOf<KClass<InterfaceBlock>, GLSLType.JvmStruct>()

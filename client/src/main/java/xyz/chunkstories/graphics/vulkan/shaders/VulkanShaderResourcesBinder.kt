@@ -83,8 +83,8 @@ private fun ShaderResources.bindTo(target: DescriptorSetsMegapool.ShaderBindingC
     }
 
     for((name, contents) in ubos) {
-        program.resources.find { it is GLSLUniformBlock && (name == null || it.name == name) && it.struct.kClass.java.isAssignableFrom(contents.javaClass) }?.apply {
-            target.bindUBO(name!!, contents)
+        program.resources.find { it is GLSLUniformBlock && (name == null || it.instanceName == name) && it.struct.kClass.java.isAssignableFrom(contents.javaClass) }?.apply {
+            target.bindStructuredUBO(name!!, contents)
         }// ?: println("no ubo found for $name $contents")
     }
 }

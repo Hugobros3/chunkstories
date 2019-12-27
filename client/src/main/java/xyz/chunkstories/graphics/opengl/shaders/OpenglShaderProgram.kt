@@ -50,7 +50,7 @@ class OpenglShaderProgram(val backend: OpenglGraphicsBackend, val glslProgram: G
         }
 
         uboIndexes = glslProgram.resources.filterIsInstance<GLSLUniformBlock>().map {
-            Pair(it, glGetUniformBlockIndex(programId, it.rawName))
+            Pair(it, glGetUniformBlockIndex(programId, it.name))
         }.toMap()
 
         var uboBindingslot = 0

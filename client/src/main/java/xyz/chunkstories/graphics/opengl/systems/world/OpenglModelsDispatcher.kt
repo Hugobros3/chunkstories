@@ -20,7 +20,7 @@ import xyz.chunkstories.graphics.opengl.buffers.OpenglVertexBuffer
 import xyz.chunkstories.graphics.opengl.graph.OpenglPass
 import xyz.chunkstories.graphics.opengl.shaders.OpenglShaderProgram
 import xyz.chunkstories.graphics.opengl.shaders.bindTexture
-import xyz.chunkstories.graphics.opengl.shaders.bindUBO
+import xyz.chunkstories.graphics.opengl.shaders.bindStructuredUBO
 import xyz.chunkstories.graphics.opengl.systems.OpenglDispatchingSystem
 import xyz.chunkstories.world.WorldClientCommon
 
@@ -159,8 +159,8 @@ class OpenglModelsDispatcher(backend: OpenglGraphicsBackend) : OpenglDispatching
                 val world = client.world as WorldClientCommon
 
                 pipeline.bind()
-                pipeline.bindUBO("camera", camera)
-                pipeline.bindUBO("world", world.getConditions())
+                pipeline.bindStructuredUBO("camera", camera)
+                pipeline.bindStructuredUBO("world", world.getConditions())
 
                 var instance = 0
                 for ((mesh, material, modelInstance) in meshInstances) {
@@ -187,10 +187,10 @@ class OpenglModelsDispatcher(backend: OpenglGraphicsBackend) : OpenglDispatching
                             bonez.bones[i].set(animator.getBoneHierarchyTransformationMatrixWithOffset(boneName, animationTime))
                         }
 
-                        pipeline.bindUBO("animationData", bonez)
+                        pipeline.bindStructuredUBO("animationData", bonez)
                     }
 
-                    pipeline.bindUBO("modelPosition", modelInstance.position)
+                    pipeline.bindStructuredUBO("modelPosition", modelInstance.position)
                     glDrawArrays(GL_TRIANGLES, 0, mesh.vertices)
 
                     instance++

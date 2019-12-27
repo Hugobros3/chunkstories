@@ -12,9 +12,10 @@ import xyz.chunkstories.graphics.common.util.getStd140AlignedSizeForStruct
 import xyz.chunkstories.graphics.common.world.ChunkRenderInfo
 import xyz.chunkstories.graphics.opengl.*
 import xyz.chunkstories.graphics.opengl.graph.OpenglPass
+import xyz.chunkstories.graphics.opengl.shaders.bindInstancedInput
 import xyz.chunkstories.graphics.opengl.shaders.bindShaderResources
 import xyz.chunkstories.graphics.opengl.shaders.bindTexture
-import xyz.chunkstories.graphics.opengl.shaders.bindUBO
+import xyz.chunkstories.graphics.opengl.shaders.bindStructuredUBO
 import xyz.chunkstories.graphics.opengl.systems.OpenglDispatchingSystem
 import xyz.chunkstories.graphics.opengl.voxels.OpenglVoxelTexturesArray
 
@@ -108,8 +109,8 @@ class OpenglChunkRepresentationsDispatcher(backend: OpenglGraphicsBackend) : Ope
             val camera = context.passInstance.taskInstance.camera
             val world = client.world
 
-            pipeline.bindUBO("camera", camera)
-            pipeline.bindUBO("world", world.getConditions())
+            pipeline.bindStructuredUBO("camera", camera)
+            pipeline.bindStructuredUBO("world", world.getConditions())
             context.bindShaderResources(pipeline)
 
             // prepare uniform buffer
@@ -144,7 +145,7 @@ class OpenglChunkRepresentationsDispatcher(backend: OpenglGraphicsBackend) : Ope
                     chunkY = chunkRepresentation.chunk.chunkY
                     chunkZ = chunkRepresentation.chunk.chunkZ
                 }
-                pipeline.bindUBO(chunkInfoUboResource.rawName, chunkRenderInfo)
+                pipeline.bindInstancedInput(chunkInfoII, chunkRenderInfo)
                 pipeline.bindVertexBuffer(0, staticMesh.buffer)
                 glDrawArrays(GL_TRIANGLES, 0, staticMesh.count)
                 //println("wow"+staticMesh.count)

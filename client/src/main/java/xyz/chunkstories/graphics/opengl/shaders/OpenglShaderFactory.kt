@@ -6,6 +6,7 @@ import xyz.chunkstories.content.mods.ModsManagerImplementation
 import xyz.chunkstories.graphics.common.shaders.GLSLDialect
 import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompilationParameters
 import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompiler
+import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.ResourceLocationAssigner
 import xyz.chunkstories.graphics.opengl.OpenglGraphicsBackend
 
 class OpenglShaderFactory(val backend: OpenglGraphicsBackend, val client: Client) : ShaderCompiler(GLSLDialect.OPENGL) {
@@ -17,6 +18,10 @@ class OpenglShaderFactory(val backend: OpenglGraphicsBackend, val client: Client
     override val classLoader: ClassLoader
         //Note: We NEED that ?. operator because we're calling into this before Client is done initializing
         get() = (client?.content?.modsManager as? ModsManagerImplementation)?.finalClassLoader ?: OpenglShaderFactory::class.java.classLoader
+
+    override val newResourceLocationAssigner: () -> ResourceLocationAssigner = {
+        OpenglResourceLocationAssigner()
+    }
 
     fun createProgram(basePath: String, shaderCompilationParameters: ShaderCompilationParameters = ShaderCompilationParameters()) = OpenglShaderProgram(backend, loadGLSLProgram(basePath, shaderCompilationParameters))
 }

@@ -145,37 +145,54 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
             return set
         }
 
-        fun bindUBO(instanceName: String, interfaceBlock: InterfaceBlock) {
+        fun bindStructuredUBO(instanceName: String, interfaceBlock: InterfaceBlock) {
             //TODO path w/ name instead of IB class
             val uboBindPoint = pipeline.program.glslProgram.resources.filterIsInstance<GLSLUniformBlock>().find {
                 it.struct.kClass == interfaceBlock.javaClass.kotlin //TODO ::class ?
-                && it.name == instanceName
+                && it.instanceName == instanceName
             } ?: throw Exception("I can't find a program resource matching that interface block :s")
 
-            val set = getSet(uboBindPoint.descriptorSetSlot)
+            val set = getSet(uboBindPoint.locator.descriptorSetSlot)
 
             //TODO UBO MEGAPOOL
             val buffer = VulkanUniformBuffer(backend, uboBindPoint.struct)
             tempBuffers.add(buffer)
 
             buffer.upload(interfaceBlock)
-            backend.updateDescriptorSet(set, uboBindPoint.binding, buffer)
+            backend.updateDescriptorSet(set, uboBindPoint.locator.binding, buffer)
         }
 
-        fun bindUBO(instanceName: String, buffer: VulkanUniformBuffer) {
-            val uboBindPoint = pipeline.program.glslProgram.resources.filterIsInstance<GLSLUniformBlock>().find { it.name == instanceName }
+        fun bindRawUBO(rawName: String, buffer: VulkanUniformBuffer) {
+            val uboBindPoint = pipeline.program.glslProgram.resources.filterIsInstance<GLSLUniformBlock>().find { it.name == rawName }
                     ?: throw Exception("Can't find a program resource matching that name in this context")
 
-            val set = getSet(uboBindPoint.descriptorSetSlot)
-            backend.updateDescriptorSet(set, uboBindPoint.binding, buffer)
+            val set = getSet(uboBindPoint.locator.descriptorSetSlot)
+            backend.updateDescriptorSet(set, uboBindPoint.locator.binding, buffer)
+        }
+
+        fun bindInstancedInput(name: String, buffer: VulkanBuffer, offset: Long = 0) {
+            val ressource = pipeline.program.glslProgram.instancedInputs.find { it.name == name }!!
+            bindInstancedInput(ressource, buffer, offset)
+        }
+
+        fun bindInstancedInput(instancedInput: GLSLInstancedInput, buffer: VulkanBuffer, offset: Long = 0) {
+            val realResource = instancedInput.associatedResource
+            when(realResource) {
+                is GLSLShaderStorage -> {
+                    bindSSBO(realResource, buffer, offset)
+                }
+                else -> throw Exception("Associated ressource to an instanced input is not a SSBO yet we are in Vulkan mode!")
+            }
         }
 
         fun bindSSBO(name: String, buffer: VulkanBuffer, offset: Long = 0) {
             val ssboBindPoint = pipeline.program.glslProgram.instancedInputs.find { it.name == name }!!.associatedResource as GLSLShaderStorage
+            bindSSBO(ssboBindPoint, buffer, offset)
+        }
 
-            val set = getSet(ssboBindPoint.descriptorSetSlot)
-
-            backend.updateDescriptorSet(set, ssboBindPoint.binding, buffer, offset)
+        fun bindSSBO(ssbo: GLSLShaderStorage, buffer: VulkanBuffer, offset: Long = 0) {
+            val set = getSet(ssbo.locator.descriptorSetSlot)
+            backend.updateDescriptorSet(set, ssbo.locator.binding, buffer, offset)
         }
 
         fun bindTextureAndSampler(name: String, texture: VulkanTexture2D, sampler: VulkanSampler, index: Int = 0) {
@@ -183,8 +200,8 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
                 it.name == name
             } ?: return // ?: throw Exception("I can't find a program sampler2D resource matching that name '$name'")
 
-            val set = getSet(resource.descriptorSetSlot)
-            backend.updateDescriptorSet(set, resource.binding, texture, sampler, index)
+            val set = getSet(resource.locator.descriptorSetSlot)
+            backend.updateDescriptorSet(set, resource.locator.binding, texture, sampler, index)
         }
 
         fun bindTextureAndSampler(name: String, texture: VulkanOnionTexture2D, sampler: VulkanSampler, index: Int = 0) {
@@ -192,8 +209,8 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
                 it.name == name
             } ?: return // ?: throw Exception("I can't find a program sampler2DArray resource matching that name '$name'")
 
-            val set = getSet(resource.descriptorSetSlot)
-            backend.updateDescriptorSet(set, resource.binding, texture, sampler, index)
+            val set = getSet(resource.locator.descriptorSetSlot)
+            backend.updateDescriptorSet(set, resource.locator.binding, texture, sampler, index)
         }
 
         fun bindTextureAndSampler(name: String, texture: VulkanTexture3D, sampler: VulkanSampler, index: Int = 0) {
@@ -201,8 +218,8 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
                 it.name == name
             } ?: return // ?: throw Exception("I can't find a program sampler3D resource matching that name '$name'")
 
-            val set = getSet(resource.descriptorSetSlot)
-            backend.updateDescriptorSet(set, resource.binding, texture, sampler, index)
+            val set = getSet(resource.locator.descriptorSetSlot)
+            backend.updateDescriptorSet(set, resource.locator.binding, texture, sampler, index)
         }
 
         fun bindTextureAndSampler(name: String, texture: VulkanTextureCubemap, sampler: VulkanSampler, index: Int = 0) {
@@ -210,8 +227,8 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
                 it.name == name
             } ?: return // ?: throw Exception("I can't find a program sampler3D resource matching that name '$name'")
 
-            val set = getSet(resource.descriptorSetSlot)
-            backend.updateDescriptorSet(set, resource.binding, texture, sampler, index)
+            val set = getSet(resource.locator.descriptorSetSlot)
+            backend.updateDescriptorSet(set, resource.locator.binding, texture, sampler, index)
         }
 
         fun preDraw(commandBuffer: VkCommandBuffer) {
