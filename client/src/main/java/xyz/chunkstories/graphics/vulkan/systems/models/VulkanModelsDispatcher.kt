@@ -197,8 +197,8 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
                     val camera = context.passInstance.taskInstance.camera
                     val world = client.world
 
-                    bindingContext.bindUBO("camera", camera)
-                    bindingContext.bindUBO("world", world.getConditions())
+                    bindingContext.bindStructuredUBO("camera", camera)
+                    bindingContext.bindStructuredUBO("world", world.getConditions())
 
                     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
                     bindingContext.preDraw(commandBuffer)
@@ -242,7 +242,7 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
                             //println(pipeline.program.glslProgram)
                         }
 
-                        for( modelInstance in meshMaterialInstances.instances) {
+                        for(modelInstance in meshMaterialInstances.instances) {
                             extractInterfaceBlock(modelPositionsBuffer, instance * modelPositionsPaddedSize, modelInstance.position, modelPositionsInstancedInput.struct)
 
                             if(animated) {
@@ -258,9 +258,9 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
                             materialInstancesCount++
                         }
 
-                        perMaterialBindingContext.bindSSBO("modelPosition", modelPositionsGpuBuffer)
+                        perMaterialBindingContext.bindInstancedInput("modelPosition", modelPositionsGpuBuffer)
                         if(animated) {
-                            perMaterialBindingContext.bindSSBO("animationData", animationDataGpuBuffer!!)
+                            perMaterialBindingContext.bindInstancedInput("animationData", animationDataGpuBuffer!!)
                         }
                         perMaterialBindingContext.preDraw(commandBuffer)
 

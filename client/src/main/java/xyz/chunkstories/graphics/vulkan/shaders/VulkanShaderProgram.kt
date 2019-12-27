@@ -78,7 +78,7 @@ data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsB
 
     private fun getDescriptorCountByType(slot: Int): Map<Int, Int> {
         return glslProgram.resources
-                .filter { it.descriptorSetSlot == slot } // Filter only those who match this descriptor set slot
+                .filter { it.locator.descriptorSetSlot == slot } // Filter only those who match this descriptor set slot
                 .mapNotNull { resource ->
 
                     val descriptorType = resource.vkDescriptorType
@@ -93,11 +93,11 @@ data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsB
     private fun createLayoutForSlot(slot: Int): VkDescriptorSetLayout {
         // We want a list of all the bindings the layout for the set #i, we'll start by taking all the shader resources ...
         val bindingsMap = glslProgram.resources
-                .filter { it.descriptorSetSlot == slot } // Filter only those who match this descriptor set slot
+                .filter { it.locator.descriptorSetSlot == slot } // Filter only those who match this descriptor set slot
                 .associateWith { resource ->
                     // And depending on their type we'll make them correspond to the relevant Vulkan objects
                     VkDescriptorSetLayoutBinding.callocStack().apply {
-                        binding(resource.binding)
+                        binding(resource.locator.binding)
 
                         val descriptorType = resource.vkDescriptorType
                         val descriptorsNeeded = resource.vkDescriptorCount

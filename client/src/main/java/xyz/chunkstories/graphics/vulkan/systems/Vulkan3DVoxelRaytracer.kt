@@ -6,7 +6,6 @@ import org.lwjgl.vulkan.VkCommandBuffer
 import xyz.chunkstories.api.client.IngameClient
 import xyz.chunkstories.api.graphics.TextureTilingMode
 import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
-import xyz.chunkstories.api.util.kotlin.toVec3d
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
 import xyz.chunkstories.graphics.vulkan.Pipeline
@@ -86,12 +85,12 @@ class Vulkan3DVoxelRaytracer(pass: VulkanPass, dslCode: Vulkan3DVoxelRaytracer.(
         viewportSize.size.set(ctx.passInstance.renderTargetSize)
         //viewportSize.size.set(passInstance.resolvedOutputs[pass.declaration.outputs.outputs[0]]!!.textureSize)
 
-        bindingContext.bindUBO("viewportSize", viewportSize)
+        bindingContext.bindStructuredUBO("viewportSize", viewportSize)
         //println(ctx.passInstance.renderTargetSize)
 
-        bindingContext.bindUBO("camera", passInstance.taskInstance.camera)
-        bindingContext.bindUBO("voxelDataInfo", volumetricTexture.info)
-        bindingContext.bindUBO("world", volumetricTexture.world.getConditions())
+        bindingContext.bindStructuredUBO("camera", passInstance.taskInstance.camera)
+        bindingContext.bindStructuredUBO("voxelDataInfo", volumetricTexture.info)
+        bindingContext.bindStructuredUBO("world", volumetricTexture.world.getConditions())
         bindingContext.bindTextureAndSampler("voxelData", volumetricTexture.texture, sampler)
 
         bindingContext.bindTextureAndSampler("blueNoise", backend.textures.getOrLoadTexture2D("textures/noise/blue1024.png"), sampler)

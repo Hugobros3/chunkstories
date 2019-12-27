@@ -139,6 +139,7 @@ fun ShaderCompiler.inlinePerInstanceData(shaderCode: String, structs: List<GLSLT
                 #define $instanceData ${instanceData}_buffer.data[gl_InstanceIndex]
                 """.trim()*/
 
+                // Important: instanced buffers are flattened to a single instance in GL for now!
                 """layout(std140) uniform instancedbuffer_${structName}_$instanceData {
                 ${this.innerGLSLCode()}
                 } ${instanceData};

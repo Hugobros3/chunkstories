@@ -148,8 +148,8 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
                 val camera = context.passInstance.taskInstance.camera
                 val world = client.world
 
-                bindingContext.bindUBO("camera", camera)
-                bindingContext.bindUBO("world", world.getConditions())
+                bindingContext.bindStructuredUBO("camera", camera)
+                bindingContext.bindStructuredUBO("world", world.getConditions())
 
                 vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, cubesPipeline.handle)
 
@@ -160,12 +160,12 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
                 var instance = 0
                 val voxelTexturesArray = client.content.voxels.textures as VulkanVoxelTexturesArray
                 bindingContext.bindTextureAndSampler("albedoTextures", voxelTexturesArray.albedoOnionTexture, sampler)
-                bindingContext.bindSSBO("chunkInfo", ssboDataTest)
+                bindingContext.bindInstancedInput("chunkInfo", ssboDataTest)
 
                 val viewportSize = ViewportSize()
                 viewportSize.size.set(context.passInstance.renderTargetSize)
                 //viewportSize.size.set(pass.declaration.outputs.outputs.getOrNull(0)?.let { passContext.resolvedOutputs.get(it)?.textureSize } ?: passContext.resolvedDepthBuffer!!.textureSize)
-                bindingContext.bindUBO("viewportSize", viewportSize)
+                bindingContext.bindStructuredUBO("viewportSize", viewportSize)
 
                 bindingContext.preDraw(commandBuffer)
 
@@ -207,8 +207,8 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
                 val cameraSectionX = section(camera.position.x(), world)
                 val cameraSectionZ = section(camera.position.z(), world)
 
-                bindingContext.bindUBO("camera", camera)
-                bindingContext.bindUBO("world", world.getConditions())
+                bindingContext.bindStructuredUBO("camera", camera)
+                bindingContext.bindStructuredUBO("world", world.getConditions())
 
                 vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshesPipeline.handle)
 
@@ -222,7 +222,7 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
                 var instance = 0
                 val voxelTexturesArray = client.content.voxels.textures as VulkanVoxelTexturesArray
                 bindingContext.bindTextureAndSampler("albedoTextures", voxelTexturesArray.albedoOnionTexture, sampler)
-                bindingContext.bindSSBO("chunkInfo", ssboDataTest)
+                bindingContext.bindInstancedInput("chunkInfo", ssboDataTest)
 
                 context.bindShaderResources(bindingContext)
 

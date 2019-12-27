@@ -99,18 +99,18 @@ class VulkanSpritesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchin
 
         val ssboBufferSize = 1024 * 1024L
 
-        override fun registerDrawingCommands(frame: VulkanFrame, ctx: SystemExecutionContext, commandBuffer: VkCommandBuffer, work: VkSpriteIR) {
+        override fun registerDrawingCommands(frame: VulkanFrame, context: SystemExecutionContext, commandBuffer: VkCommandBuffer, work: VkSpriteIR) {
             MemoryStack.stackPush()
 
             val client = backend.window.client.ingame ?: return
 
             val bindingContexts = mutableListOf<DescriptorSetsMegapool.ShaderBindingContext>()
 
-            val instancesSSBO = VulkanBuffer(backend, ssboBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, MemoryUsagePattern.DYNAMIC)
-            val instancesBuffer = MemoryUtil.memAlloc(instancesSSBO.bufferSize.toInt())
+            val instancesGpuBuffer = VulkanBuffer(backend, ssboBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, MemoryUsagePattern.DYNAMIC)
+            val instancesBuffer = MemoryUtil.memAlloc(instancesGpuBuffer.bufferSize.toInt())
             var instance = 0
 
-            val camera = ctx.passInstance.taskInstance.camera
+            val camera = context.passInstance.taskInstance.camera
             val world = client.world as WorldClientCommon
 
             vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
@@ -130,10 +130,10 @@ class VulkanSpritesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchin
                     //println(pipeline.program.glslProgram)
                 }
 
-                bindingContext.bindUBO("camera", camera)
-                bindingContext.bindUBO("world", world.getConditions())
+                bindingContext.bindStructuredUBO("camera", camera)
+                bindingContext.bindStructuredUBO("world", world.getConditions())
 
-                bindingContext.bindSSBO("sprite", instancesSSBO)
+                bindingContext.bindInstancedInput(spriteII, instancesGpuBuffer)
 
                 bindingContext.preDraw(commandBuffer)
                 vkCmdDraw(commandBuffer, 3 * 2, 1, 0, instance++)
@@ -142,13 +142,13 @@ class VulkanSpritesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchin
             instancesBuffer.position(instance * instanceDataPaddedSize)
             instancesBuffer.flip()
 
-            instancesSSBO.upload(instancesBuffer)
+            instancesGpuBuffer.upload(instancesBuffer)
 
             memFree(instancesBuffer)
 
             frame.recyclingTasks.add {
                 bindingContexts.forEach { it.recycle() }
-                instancesSSBO.cleanup()
+                instancesGpuBuffer.cleanup()
             }
 
             MemoryStack.stackPop()

@@ -7,6 +7,8 @@ import xyz.chunkstories.graphics.common.shaders.GLSLDialect
 import xyz.chunkstories.graphics.common.shaders.GLSLProgram
 import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompilationParameters
 import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompiler
+import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.ResourceLocationAssigner
+import xyz.chunkstories.graphics.opengl.shaders.OpenglResourceLocationAssigner
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 
 class VulkanShaderFactory(val backend: VulkanGraphicsBackend, val client: Client) : ShaderCompiler(GLSLDialect.VULKAN) {
@@ -19,6 +21,10 @@ class VulkanShaderFactory(val backend: VulkanGraphicsBackend, val client: Client
     override val classLoader: ClassLoader
         //Note: We NEED that ?. operator because we're calling into this before Client is done initializing
         get() = (client?.content?.modsManager as? ModsManagerImplementation)?.finalClassLoader ?: VulkanShaderFactory::class.java.classLoader
+
+    override val newResourceLocationAssigner: () -> ResourceLocationAssigner = {
+        VulkanResourceLocationAssigner()
+    }
 
     fun createProgram(basePath: String, shaderCompilationParameters: ShaderCompilationParameters = ShaderCompilationParameters()) = VulkanShaderProgram(backend, basePath, loadGLSLProgram(basePath, shaderCompilationParameters))
 }
