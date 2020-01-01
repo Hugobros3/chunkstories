@@ -150,9 +150,9 @@ abstract class WorldRenderer(val world: WorldClientCommon) : Cleanable {
                                 shader = "sprites"
                                 materialTag = "opaque"
                             }
-                            /*system(FarTerrainDrawer::class) {
+                            system(FarTerrainDrawer::class) {
 
-                            }*/
+                            }
                     }
 
                     setup {

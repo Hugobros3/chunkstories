@@ -25,7 +25,8 @@ class VulkanResourceLocationAssigner: ResourceLocationAssigner {
             val set = UniformUpdateFrequency.ONCE_PER_BATCH.toSet()
             ResourceLocator(set, nextFreeBinding[set]++)
         } else {
-            TODO()
+            val set = UniformUpdateFrequency.ONCE_PER_BATCH.toSet()
+            ResourceLocator(set, nextFreeBinding[set]++)
         }
     }
 

@@ -1,5 +1,6 @@
 package xyz.chunkstories.graphics.vulkan.systems.world.farterrain
 
+import org.joml.Vector2i
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil
 import org.lwjgl.system.MemoryUtil.memAlloc
@@ -13,6 +14,7 @@ import xyz.chunkstories.api.graphics.systems.drawing.FarTerrainDrawer
 import xyz.chunkstories.api.graphics.systems.drawing.FullscreenQuadDrawer
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
+import xyz.chunkstories.graphics.common.world.FarTerrainCellHelper
 import xyz.chunkstories.graphics.vulkan.Pipeline
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
@@ -43,6 +45,8 @@ class VulkanFarTerrainRenderer(pass: VulkanPass, dslCode: VulkanFarTerrainRender
     private val program: VulkanShaderProgram
     private val pipeline: Pipeline
 
+    private val helper = FarTerrainCellHelper(client.world)
+
     init {
         dslCode()
 
@@ -57,19 +61,36 @@ class VulkanFarTerrainRenderer(pass: VulkanPass, dslCode: VulkanFarTerrainRender
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
         ctx.bindShaderResources(bindingContext)
 
-        uploadBuffer.clear()
-        uploadBuffer.putFloat(0.0f)
-        uploadBuffer.putFloat(0.0f)
-        uploadBuffer.putFloat(100.0f)
-        uploadBuffer.putInt(16)
-
         val vkBuffer = vkBuffers[frame]
+        bindingContext.bindSSBO("elementsBuffer", vkBuffer)
+        bindingContext.preDraw(commandBuffer)
+
+        client.player.controlledEntity?.location?.let { Vector2i(it.x.toInt(), it.z.toInt()) }?.let { helper.update(it) }
+
+        uploadBuffer.clear()
+        val cells = helper.drawGrid(5)
+        var i = 0
+        while(!cells.isEmpty && i < maxPatches) {
+            val size = cells.removeLast()
+            val rsize = helper.sizes[size]
+            val oz = cells.removeLast()
+            val ox = cells.removeLast()
+
+            val patchSize = 2
+            uploadBuffer.putFloat(ox * 1.0f)
+            uploadBuffer.putFloat(oz * 1.0f)
+            uploadBuffer.putFloat(rsize * 1.0f / patchSize)
+            uploadBuffer.putInt(patchSize)
+            //println("$ox $oz $rsize")
+            vkCmdDraw(commandBuffer, 2 * 3 * patchSize * patchSize, 1, 0, i++)
+        }
+        //println(i)
+        /*val patchSize = 32*/
+        uploadBuffer.flip()
+
         vkBuffer.upload(uploadBuffer)
 
-        bindingContext.bindSSBO("elementsBuffer", vkBuffer)
-        //vkCmdBindVertexBuffers(commandBuffer, 0, MemoryStack.stackLongs(vertexBuffer.handle), MemoryStack.stackLongs(0))
-        bindingContext.preDraw(commandBuffer)
-        vkCmdDraw(commandBuffer, 3 * 16 * 16, 1, 0, 0)
+        //vkCmdDraw(commandBuffer, 2 * 3 * patchSize * patchSize, 1, 0, 0)
 
         frame.recyclingTasks.add {
             bindingContext.recycle()

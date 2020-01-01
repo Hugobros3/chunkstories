@@ -129,11 +129,11 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
 
             if (set == null) {
                 set = subpool.acquireDescriptorSet()
-                sets.put(slot, set)
+                sets[slot] = set
             } else if (dirty.remove(slot)) {
                 val oldset = set
                 set = subpool.acquireDescriptorSet()
-                sets.put(slot, set)
+                sets[slot] = set
 
                 //TODO don't do this idk
                 TODO("kill")
@@ -186,8 +186,10 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
         }
 
         fun bindSSBO(name: String, buffer: VulkanBuffer, offset: Long = 0) {
-            val ssboBindPoint = pipeline.program.glslProgram.instancedInputs.find { it.name == name }!!.associatedResource as GLSLShaderStorage
-            bindSSBO(ssboBindPoint, buffer, offset)
+            val ssbo =  pipeline.program.glslProgram.resources.filterIsInstance<GLSLShaderStorage>().find {
+                it.name == name
+            } ?: return // ?: throw Exception("I can't find a program sampler2D resource matching that name '$name'")
+            bindSSBO(ssbo, buffer, offset)
         }
 
         fun bindSSBO(ssbo: GLSLShaderStorage, buffer: VulkanBuffer, offset: Long = 0) {
