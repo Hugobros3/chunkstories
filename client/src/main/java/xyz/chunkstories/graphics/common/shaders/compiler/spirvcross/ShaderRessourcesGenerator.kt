@@ -212,6 +212,9 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
             } else {
                 // Maybe this is just a normal SSBO !
                 //TODO Implement this logic
+                val locator = assigner.assignSSBO(name = storageBufferName, instanced = false)
+                val ssboRessource = GLSLShaderStorage(storageBufferName, locator)
+                resources.add(ssboRessource)
             }
         }
     }

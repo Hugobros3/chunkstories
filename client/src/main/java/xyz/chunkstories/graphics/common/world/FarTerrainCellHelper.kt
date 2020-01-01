@@ -13,6 +13,8 @@ class FarTerrainCellHelper(val world: World) : Cleanable {
     val maxDistanceToRender = min(4096, world.worldInfo.size.sizeInChunks * 32)
     var currentSnappedCameraPos = Vector2i(-1000)
 
+    val sizes = intArrayOf(1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768)
+
     lateinit var currentGrid: IntArrayDeque
 
     init {
@@ -27,27 +29,27 @@ class FarTerrainCellHelper(val world: World) : Cleanable {
 
             currentGrid = drawGrid(5)
         }
+
     }
 
-    val sizes = intArrayOf(1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768)
-
     fun drawGrid(maxSubdivisions: Int): IntArrayDeque {
-        val minLevel = 5
+        val initLevel = 12
+        val maxDistanceToRender = sizes[initLevel]
 
         val centerX = currentSnappedCameraPos.x
         val centerZ = currentSnappedCameraPos.y
-        val bottomCornerX = centerX - maxDistanceToRender / 2
-        val bottomCornerZ = centerZ - maxDistanceToRender / 2
+        val bottomCornerX = centerX - (maxDistanceToRender / 2)
+        val bottomCornerZ = centerZ - (maxDistanceToRender / 2)
 
-        val cam = Vector2f(centerX + 16f, centerZ + 16f)
+        val cam = Vector2f(centerX + 0.0f, centerZ + 0.0f)
 
         var stack = IntArrayDeque()
         var out = IntArrayDeque()
 
-        stack.addLast(bottomCornerX, bottomCornerZ, 12)
+        stack.addLast(bottomCornerX, bottomCornerZ, initLevel)
 
-        val depth = 2
-        for (d in 0..depth) {
+        val maxDepth = 7
+        for (depth in 0..maxDepth) {
             out.clear()
             while (!stack.isEmpty) {
                 val size = stack.removeLast()
@@ -62,27 +64,36 @@ class FarTerrainCellHelper(val world: World) : Cleanable {
                 val cz = oz + smallerSize
 
                 val d = Vector2f(cx + 0f, cz + 0f).distance(cam)
-                val id = 1.0f / d
+                //val id = 1.0f / d
+                val ds = d * d
 
-                val target = 5.0
-                val subdivide = (rsize < target * id)
+                val target = 0.0005 * ds
+                val subdivide = depth < 3 || (rsize > target)
+
+                if(depth == 3) {
+                    val grm = subdivide
+                }
 
                 if (subdivide) {
-                    out.addLast(bottomCornerX + 0)
-                    out.addLast(bottomCornerZ + 0)
+                    out.addLast(ox + 0)
+                    out.addLast(oz + 0)
                     out.addLast(smaller)
 
-                    out.addLast(bottomCornerX + smallerSize)
-                    out.addLast(bottomCornerZ + 0)
+                    out.addLast(ox + smallerSize)
+                    out.addLast(oz + 0)
                     out.addLast(smaller)
 
-                    out.addLast(bottomCornerX + 0)
-                    out.addLast(bottomCornerZ + smallerSize)
+                    out.addLast(ox + 0)
+                    out.addLast(oz + smallerSize)
                     out.addLast(smaller)
 
-                    out.addLast(bottomCornerX + smallerSize)
-                    out.addLast(bottomCornerZ + smallerSize)
+                    out.addLast(ox + smallerSize)
+                    out.addLast(oz + smallerSize)
                     out.addLast(smaller)
+                } else {
+                    out.addLast(ox + 0)
+                    out.addLast(oz + 0)
+                    out.addLast(size)
                 }
             }
 
