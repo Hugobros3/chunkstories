@@ -13,8 +13,10 @@ import xyz.chunkstories.Constants
 import xyz.chunkstories.api.GameContext
 import xyz.chunkstories.api.client.Client
 import xyz.chunkstories.api.client.ClientIdentity
+import xyz.chunkstories.api.client.ClientSoundManager
 import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
 import xyz.chunkstories.api.plugin.PluginManager
+import xyz.chunkstories.api.sound.SoundManager
 import xyz.chunkstories.api.util.configuration.Configuration
 import xyz.chunkstories.client.glfw.GLFWWindow
 import xyz.chunkstories.client.ingame.IngameClientImplementation
@@ -25,6 +27,7 @@ import xyz.chunkstories.gui.ClientGui
 import xyz.chunkstories.gui.layer.LoginUI
 import xyz.chunkstories.input.lwjgl3.Lwjgl3ClientInputsManager
 import xyz.chunkstories.sound.ALSoundManager
+import xyz.chunkstories.sound.NullSoundManager
 import xyz.chunkstories.task.WorkerThreadPool
 import xyz.chunkstories.util.LogbackSetupHelper
 import xyz.chunkstories.util.VersionInfo
@@ -49,7 +52,7 @@ class ClientImplementation internal constructor(val arguments: Map<String, Strin
     override val gameWindow: GLFWWindow
         get() = graphics.window
 
-    override val soundManager: ALSoundManager
+    override val soundManager: ClientSoundManager
 
     override val gui = ClientGui(this)
 
@@ -76,7 +79,13 @@ class ClientImplementation internal constructor(val arguments: Map<String, Strin
         val loggingFilename = "./logs/$time.log"
         LogbackSetupHelper(loggingFilename)
 
-        soundManager = ALSoundManager(this)
+        soundManager = try {
+            ALSoundManager(this)
+        } catch(e: Exception) {
+            e.printStackTrace()
+            ALSoundManager.logger.error("Failed to start sound system, defaulting to null implementation")
+            NullSoundManager()
+        }
 
         graphics = GraphicsEngineImplementation(this)
         inputsManager = Lwjgl3ClientInputsManager(gameWindow)
@@ -127,7 +136,7 @@ class ClientImplementation internal constructor(val arguments: Map<String, Strin
             GLFW.glfwPollEvents()
             inputsManager.updateInputs()
 
-            soundManager.updateAllSoundSources()
+            (soundManager as? ALSoundManager)?.updateAllSoundSources()
 
             ingame?.player?.controlledEntity?.let { it.traits[TraitControllable::class]?.onEachFrame() }
 

@@ -42,60 +42,56 @@ class ALSoundManager(private val client: ClientImplementation) : ClientSoundMana
     private var context: Long = 0
 
     init {
-        try {
-            device = alcOpenDevice(null as ByteBuffer?)
-            if (device == MemoryUtil.NULL) {
-                throw IllegalStateException("Failed to open the default device.")
-            }
-
-            val deviceCaps = ALC.createCapabilities(device)
-
-            logger.info("OpenALC10: " + deviceCaps.OpenALC10)
-            logger.info("OpenALC11: " + deviceCaps.OpenALC11)
-            logger.info("caps.ALC_EXT_EFX = " + deviceCaps.ALC_EXT_EFX)
-
-            if (deviceCaps.OpenALC11) {
-                val devices = ALUtil.getStringList(MemoryUtil.NULL, ALC_ALL_DEVICES_SPECIFIER)
-                if (devices!!.size == 0) {
-                    // checkALCError(MemoryUtil.NULL);
-                } else {
-                    for (i in devices.indices) {
-                        logger.debug(i.toString() + ": " + devices[i])
-                    }
-                }
-            }
-
-            val defaultDeviceSpecifier = alcGetString(MemoryUtil.NULL, ALC_DEFAULT_DEVICE_SPECIFIER)
-            logger.info("Default device: " + defaultDeviceSpecifier!!)
-
-            context = alcCreateContext(device, null as IntBuffer?)
-            alcMakeContextCurrent(context)
-
-            AL.createCapabilities(deviceCaps)
-
-            alDistanceModel(AL_LINEAR_DISTANCE_CLAMPED)
-            val alVersion = alGetString(AL_VERSION)
-            val alExtensions = alGetString(AL_EXTENSIONS)
-
-            logger.info("OpenAL context successfully created, version = " + alVersion!!)
-            logger.info("OpenAL Extensions avaible : " + alExtensions!!)
-
-            Runtime.getRuntime().addShutdownHook(object : Thread() {
-                override fun run() {
-                    cleanup()
-                }
-            })
-        } catch (e: Exception) {
-            logger.error("Failed to start sound system !")
-            e.printStackTrace()
+        device = alcOpenDevice(null as ByteBuffer?)
+        if (device == MemoryUtil.NULL) {
+            throw IllegalStateException("Failed to open the default device.")
         }
+
+        val deviceCaps = ALC.createCapabilities(device)
+
+        logger.info("OpenALC10: " + deviceCaps.OpenALC10)
+        logger.info("OpenALC11: " + deviceCaps.OpenALC11)
+        logger.info("caps.ALC_EXT_EFX = " + deviceCaps.ALC_EXT_EFX)
+
+        if (deviceCaps.OpenALC11) {
+            val devices = ALUtil.getStringList(MemoryUtil.NULL, ALC_ALL_DEVICES_SPECIFIER)
+            if (devices!!.size == 0) {
+                // checkALCError(MemoryUtil.NULL);
+            } else {
+                for (i in devices.indices) {
+                    logger.debug(i.toString() + ": " + devices[i])
+                }
+            }
+        }
+
+        val defaultDeviceSpecifier = alcGetString(MemoryUtil.NULL, ALC_DEFAULT_DEVICE_SPECIFIER)
+        logger.info("Default device: " + defaultDeviceSpecifier!!)
+
+        context = alcCreateContext(device, null as IntBuffer?)
+        alcMakeContextCurrent(context)
+
+        AL.createCapabilities(deviceCaps)
+
+        alDistanceModel(AL_LINEAR_DISTANCE_CLAMPED)
+        val alVersion = alGetString(AL_VERSION)
+        val alExtensions = alGetString(AL_EXTENSIONS)
+
+        logger.info("OpenAL context successfully created, version = " + alVersion!!)
+        logger.info("OpenAL Extensions avaible : " + alExtensions!!)
+
+        Runtime.getRuntime().addShutdownHook(object : Thread() {
+            override fun run() {
+                cleanup()
+            }
+        })
     }
 
     override fun playSoundEffect(soundEffect: String, mode: Mode, position: Vector3dc?, pitch: Float, gain: Float, attenuationStart: Float, attenuationEnd: Float): SoundSource {
         try {
-            val soundSource = when(mode) {
+            val soundSource = when (mode) {
                 Mode.STREAMED -> {
-                    val streamingData = library.obtainBufferedSample(soundEffect) ?: throw SoundEffectNotFoundException()
+                    val streamingData = library.obtainBufferedSample(soundEffect)
+                            ?: throw SoundEffectNotFoundException()
                     ALBufferedSoundSource(streamingData, position, pitch, gain, attenuationStart, attenuationEnd)
                 }
                 else -> {
@@ -115,9 +111,10 @@ class ALSoundManager(private val client: ClientImplementation) : ClientSoundMana
 
     override fun replicateServerSoundSource(soundEffect: String, mode: Mode, position: Vector3dc, pitch: Float, gain: Float, attenuationStart: Float, attenuationEnd: Float, UUID: Long): SoundSource {
         try {
-            val soundSource = when(mode) {
+            val soundSource = when (mode) {
                 Mode.STREAMED -> {
-                    val streamingData = library.obtainBufferedSample(soundEffect) ?: throw SoundEffectNotFoundException()
+                    val streamingData = library.obtainBufferedSample(soundEffect)
+                            ?: throw SoundEffectNotFoundException()
                     ALBufferedSoundSource(streamingData, position, pitch, gain, attenuationStart, attenuationEnd)
                 }
                 else -> {
@@ -147,7 +144,7 @@ class ALSoundManager(private val client: ClientImplementation) : ClientSoundMana
     }
 
     fun updateAllSoundSources() {
-        val result= alGetError()
+        val result = alGetError()
         if (result != AL_NO_ERROR)
             logger.error("Error while iterating:" + SoundDataOggSample.getALErrorString(result))
 
