@@ -56,7 +56,7 @@ open class VulkanBuffer(val backend: VulkanGraphicsBackend, val bufferSize: Long
     }
 
     /** Memory-maps the buffer and updates it */
-    fun upload(dataToUpload: ByteBuffer) {
+    fun upload(dataToUpload: ByteBuffer, dstOffset: Long = 0, size: Long = bufferSize) {
         if(dataToUpload.remaining() > bufferSize)
             throw Exception("This buffer does not have enough capacity (${dataToUpload.remaining()} > $bufferSize)")
 
@@ -68,7 +68,14 @@ open class VulkanBuffer(val backend: VulkanGraphicsBackend, val bufferSize: Long
                 vkMapMemory(backend.logicalDevice.vkDevice, allocation.deviceMemory, allocation.offset, bufferSize, 0, ppData)
 
                 val mappedMemory = ppData.getByteBuffer(bufferSize.toInt())
-                mappedMemory.put(dataToUpload)
+
+                // Limit amount of data to copy
+                val readOnly = dataToUpload.asReadOnlyBuffer()
+                readOnly.limit(readOnly.position() + size.toInt())
+
+                // Copy starts at a certain offset
+                mappedMemory.position(mappedMemory.position() + dstOffset.toInt())
+                mappedMemory.put(readOnly)
 
                 vkUnmapMemory(backend.logicalDevice.vkDevice, allocation.deviceMemory)
             }
@@ -81,13 +88,13 @@ open class VulkanBuffer(val backend: VulkanGraphicsBackend, val bufferSize: Long
 
             val commandBuffer = operationsPool.startCommandBuffer()
             val region = VkBufferCopy.callocStack(1).apply {
-                size(bufferSize)
-                dstOffset(0)
+                size(size)
+                dstOffset(dstOffset)
                 srcOffset(0)
             }
             vkCmdCopyBuffer(commandBuffer, stagingBuffer.handle, handle, region)
 
-            operationsPool.finishCommandBuffer(commandBuffer, backend.logicalDevice.transferQueue, fence)
+            operationsPool.finishAndSubmitCmdBuffer(commandBuffer, backend.logicalDevice.transferQueue, fence)
 
             backend.waitFence(fence)
 

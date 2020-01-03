@@ -76,16 +76,6 @@ class CommandPool(val backend: VulkanGraphicsBackend, queueFamily: PhysicalDevic
 
     fun startCommandBuffer() : VkCommandBuffer {
         stackPush()
-
-        /*val allocInfo = VkCommandBufferAllocateInfo.callocStack().sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO).apply {
-            level(VK_COMMAND_BUFFER_LEVEL_PRIMARY)
-            commandPool(handle)
-            commandBufferCount(1)
-        }
-
-        val pCommandBuffer = stackMallocPointer(1)
-        vkAllocateCommandBuffers(backend.logicalDevice.vkDevice, allocInfo, pCommandBuffer).ensureIs("Failed to allocate CB !", VK_SUCCESS)
-        val commandBuffer: VkCommandBuffer = VkCommandBuffer(pCommandBuffer.get(0), backend.logicalDevice.vkDevice)*/
         val commandBuffer = loanCommandBuffer()
 
         val beginInfo = VkCommandBufferBeginInfo.callocStack().sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO).apply {
@@ -98,9 +88,12 @@ class CommandPool(val backend: VulkanGraphicsBackend, queueFamily: PhysicalDevic
         return commandBuffer
     }
 
-    fun finishCommandBuffer(commandBuffer: VkCommandBuffer, queue: LogicalDevice.Queue, fence : VkFence) {
+    fun finishAndSubmitCmdBuffer(commandBuffer: VkCommandBuffer, queue: LogicalDevice.Queue, fence : VkFence) {
         vkEndCommandBuffer(commandBuffer)
+        submitCmdBuffer(commandBuffer, queue, fence)
+    }
 
+    fun submitCmdBuffer(commandBuffer: VkCommandBuffer, queue: LogicalDevice.Queue, fence : VkFence) {
         stackPush()
 
         val submitInfo = VkSubmitInfo.callocStack(1).sType(VK_STRUCTURE_TYPE_SUBMIT_INFO).apply {

@@ -164,7 +164,7 @@ open class VulkanTexture(val backend: VulkanGraphicsBackend, final override val 
         transitionLayout(commandBuffer, oldLayout, newLayout)
 
         val fence = backend.createFence(false)
-        operationsPool.finishCommandBuffer(commandBuffer, backend.logicalDevice.graphicsQueue, fence)
+        operationsPool.finishAndSubmitCmdBuffer(commandBuffer, backend.logicalDevice.graphicsQueue, fence)
 
         backend.waitFence(fence)
 

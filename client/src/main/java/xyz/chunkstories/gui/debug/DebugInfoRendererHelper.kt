@@ -96,7 +96,8 @@ class DebugInfoRendererHelper(ingameUI: IngameUI) {
 
             val standingAt = playerEntity.location
             val standingIn = world.peek(playerEntity.location)
-            debugLine("Standing at ${standingAt.x()} ${standingAt.y()} ${standingAt.z} in ${standingIn.voxel} (solid=${standingIn.voxel.solid}, box=${standingIn.voxel.getCollisionBoxes(standingIn)?.getOrNull(0)})")
+            val height = world.heightmapsManager.getHeightAtWorldCoordinates(standingIn.x, standingIn.z)
+            debugLine("Standing at ${standingAt.x()} ${standingAt.y()} ${standingAt.z} in ${standingIn.voxel} metadata=${standingIn.metaData} bl=${standingIn.blocklight} sl=${standingIn.sunlight} heightmap=$height")
         } else {
             debugLine("No controlled entity")
         }
