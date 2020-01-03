@@ -23,12 +23,12 @@ class VulkanTextures(val backend: VulkanGraphicsBackend) : GraphicsEngine.Textur
     val loadedTextures2D = mutableMapOf<String, VulkanTexture2D>()
     val loadedCubemaps = mutableMapOf<String, VulkanTextureCubemap>()
 
-    val magicTexturing: MagicTexturing?
+    val magicTexturing: GlobalTextures?
 
     init {
         commandPool = CommandPool(backend, backend.logicalDevice.graphicsQueue.family, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT or VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
-        if (backend.logicalDevice.enableMagicTexturing)
-            magicTexturing = MagicTexturing(backend)
+        if (backend.logicalDevice.useGlobalTexturing)
+            magicTexturing = GlobalTextures(backend)
         else
             magicTexturing = null
     }

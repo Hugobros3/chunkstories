@@ -212,7 +212,7 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
 
                 vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshesPipeline.handle)
 
-                if (backend.logicalDevice.enableMagicTexturing)
+                if (backend.logicalDevice.useGlobalTexturing)
                     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshesPipeline.pipelineLayout, 0, MemoryStack.stackLongs(backend.textures.magicTexturing!!.theSet), null)
 
                 //TODO pool those

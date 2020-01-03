@@ -4,17 +4,21 @@ import xyz.chunkstories.api.graphics.structs.UniformUpdateFrequency
 import xyz.chunkstories.graphics.common.shaders.*
 import xyz.chunkstories.graphics.common.shaders.compiler.preprocessing.updateFrequency
 import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.ResourceLocationAssigner
-import xyz.chunkstories.graphics.vulkan.textures.MagicTexturing
+import xyz.chunkstories.graphics.vulkan.devices.LogicalDevice
+import xyz.chunkstories.graphics.vulkan.textures.GlobalTextures
 
-class VulkanResourceLocationAssigner: ResourceLocationAssigner {
-    val maxSets = 8
+class VulkanResourceLocationAssigner(logicalDevice: LogicalDevice) : ResourceLocationAssigner {
+    val maxSets = logicalDevice.physicalDevice.maxBoundSets
     val nextFreeBinding = IntArray(maxSets)
 
-    private fun UniformUpdateFrequency.toSet() = when(this) {
+    private fun UniformUpdateFrequency.toSet() = if(maxSets >= 8) when(this) {
         UniformUpdateFrequency.ONCE_PER_BATCH -> 5
         UniformUpdateFrequency.ONCE_PER_SYSTEM -> 4
         UniformUpdateFrequency.ONCE_PER_RENDER_TASK -> 3
         UniformUpdateFrequency.ONCE_PER_FRAME -> 2
+    } else {
+        // swiftshader compatibility
+        2
     }
 
     private val MAGIC_TEXTURING_SET = 0
@@ -42,7 +46,7 @@ class VulkanResourceLocationAssigner: ResourceLocationAssigner {
 
     override fun assignSeperateImage(separateImageName: String, materialBoundResources: MutableSet<String>): ResourceLocator {
         val set = when (separateImageName) {
-            in MagicTexturing.magicTexturesNames -> MAGIC_TEXTURING_SET
+            in GlobalTextures.magicTexturesNames -> MAGIC_TEXTURING_SET
             in materialBoundResources -> UniformUpdateFrequency.ONCE_PER_BATCH.toSet()
             else -> GENERAL_TEXTURES_SET
         }
@@ -51,7 +55,7 @@ class VulkanResourceLocationAssigner: ResourceLocationAssigner {
 
     override fun assignSampledImage(sampledImageName: String, materialBoundResources: MutableSet<String>): ResourceLocator {
         val set = when (sampledImageName) {
-            in MagicTexturing.magicTexturesNames -> MAGIC_TEXTURING_SET
+            in GlobalTextures.magicTexturesNames -> MAGIC_TEXTURING_SET
             in materialBoundResources -> UniformUpdateFrequency.ONCE_PER_BATCH.toSet()
             else -> GENERAL_TEXTURES_SET
         }

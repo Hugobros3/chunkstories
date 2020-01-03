@@ -9,7 +9,11 @@ import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.vulkan.util.*
 
-class MagicTexturing(val backend: VulkanGraphicsBackend) : Cleanable {
+/**
+ * Class for handling set 0 as a mega-bind (or bindless) point for all the textures loaded in-engine.
+ * Makes good use of EXT_Descriptor_Indexing
+ */
+class GlobalTextures(val backend: VulkanGraphicsBackend) : Cleanable {
 
     private val setLayout : VkDescriptorSetLayout
     val sampler = VulkanSampler(backend)
