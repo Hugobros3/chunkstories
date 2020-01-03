@@ -51,7 +51,8 @@ import java.awt.image.BufferedImage
 class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window: GLFWWindow) : GLFWBasedGraphicsBackend(graphicsEngine, window), VoxelTexturesSupport {
     internal val enableValidation = window.client.arguments["enableValidation"] == "true"
 
-    val requiredDeviceExtensions = listOf(VK_KHR_SWAPCHAIN_EXTENSION_NAME, "VK_KHR_get_memory_requirements2", "VK_KHR_get_physical_device_properties2", "VK_KHR_dedicated_allocation")
+    val requiredInstanceExtensions = listOf(VK_EXT_DEBUG_REPORT_EXTENSION_NAME, "VK_KHR_get_physical_device_properties2")
+    val requiredDeviceExtensions = listOf(VK_KHR_SWAPCHAIN_EXTENSION_NAME, "VK_KHR_get_memory_requirements2", "VK_KHR_dedicated_allocation")
 
     internal var instance: VkInstance
     private val debugCallback: Long
@@ -179,9 +180,7 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
             apiVersion(VK_MAKE_VERSION(1, 1, 70))
         }
 
-        val additionalInstanceExtensions = mutableSetOf(EXTDebugReport.VK_EXT_DEBUG_REPORT_EXTENSION_NAME)
-        //if(enableDivergingUniformSamplerIndexing)
-            additionalInstanceExtensions += "VK_KHR_get_physical_device_properties2"
+        val additionalInstanceExtensions = requiredInstanceExtensions.toMutableList()
 
         val pRequestedInstanceExtensions = MemoryStack.stackMallocPointer(requiredExtensions.remaining() + additionalInstanceExtensions.size)
         pRequestedInstanceExtensions.put(requiredExtensions)
