@@ -21,7 +21,7 @@ class VulkanTexture3D(backend: VulkanGraphicsBackend, format: TextureFormat, val
         copyBufferToImage(commandBuffer, buffer)
 
         val fence = backend.createFence(false)
-        operationsPool.finishCommandBuffer(commandBuffer, backend.logicalDevice.graphicsQueue, fence)
+        operationsPool.finishAndSubmitCmdBuffer(commandBuffer, backend.logicalDevice.graphicsQueue, fence)
 
         backend.waitFence(fence)
 

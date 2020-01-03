@@ -1,17 +1,15 @@
 package xyz.chunkstories.graphics.vulkan.systems.world.farterrain
 
 import org.joml.Vector2i
-import org.lwjgl.system.MemoryStack
-import org.lwjgl.system.MemoryUtil
 import org.lwjgl.system.MemoryUtil.memAlloc
 import org.lwjgl.system.MemoryUtil.memFree
-import org.lwjgl.vulkan.VK10
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 import xyz.chunkstories.api.client.IngameClient
+import xyz.chunkstories.api.graphics.TextureTilingMode
+import xyz.chunkstories.api.graphics.rendergraph.ImageInput
 import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
 import xyz.chunkstories.api.graphics.systems.drawing.FarTerrainDrawer
-import xyz.chunkstories.api.graphics.systems.drawing.FullscreenQuadDrawer
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
 import xyz.chunkstories.graphics.common.world.FarTerrainCellHelper
@@ -25,9 +23,9 @@ import xyz.chunkstories.graphics.vulkan.shaders.VulkanShaderProgram
 import xyz.chunkstories.graphics.vulkan.shaders.bindShaderResources
 import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
-import xyz.chunkstories.graphics.vulkan.util.VkBuffer
+import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
 import xyz.chunkstories.graphics.vulkan.vertexInputConfiguration
-import java.nio.ByteBuffer
+import xyz.chunkstories.world.WorldClientCommon
 
 class VulkanFarTerrainRenderer(pass: VulkanPass, dslCode: VulkanFarTerrainRenderer.() -> Unit) : FarTerrainDrawer, VulkanDrawingSystem(pass) {
     val backend: VulkanGraphicsBackend
@@ -47,6 +45,9 @@ class VulkanFarTerrainRenderer(pass: VulkanPass, dslCode: VulkanFarTerrainRender
 
     private val helper = FarTerrainCellHelper(client.world)
 
+    private val textureManager = FarTerrainTextureManager(backend, 0, 0, 4096 / 256)
+    val sampler = VulkanSampler(backend, tilingMode = TextureTilingMode.CLAMP_TO_EDGE, scalingMode = ImageInput.ScalingMode.NEAREST)
+
     init {
         dslCode()
 
@@ -62,10 +63,19 @@ class VulkanFarTerrainRenderer(pass: VulkanPass, dslCode: VulkanFarTerrainRender
         ctx.bindShaderResources(bindingContext)
 
         val vkBuffer = vkBuffers[frame]
+        bindingContext.bindTextureAndSampler("heightTexture", textureManager.heightTexture, sampler, 0)
         bindingContext.bindSSBO("elementsBuffer", vkBuffer)
         bindingContext.preDraw(commandBuffer)
 
-        client.player.controlledEntity?.location?.let { Vector2i(it.x.toInt(), it.z.toInt()) }?.let { helper.update(it) }
+        val playerEntity = client.player.controlledEntity
+        if(playerEntity != null) {
+            val horizontalCoords = playerEntity.location.let { Vector2i(it.x.toInt(), it.z.toInt()) }
+
+            if(helper.update(horizontalCoords)) {
+                textureManager.requestUpdate(helper.currentSnappedCameraPos.x / 256, helper.currentSnappedCameraPos.y / 256, client.world as WorldClientCommon)
+            }
+        }
+        //?.let {  }?.let { helper.update(it) }
 
         uploadBuffer.clear()
         val cells = helper.drawGrid(5)
@@ -76,7 +86,7 @@ class VulkanFarTerrainRenderer(pass: VulkanPass, dslCode: VulkanFarTerrainRender
             val oz = cells.removeLast()
             val ox = cells.removeLast()
 
-            val patchSize = 2
+            val patchSize = 32
             uploadBuffer.putFloat(ox * 1.0f)
             uploadBuffer.putFloat(oz * 1.0f)
             uploadBuffer.putFloat(rsize * 1.0f / patchSize)
@@ -100,6 +110,8 @@ class VulkanFarTerrainRenderer(pass: VulkanPass, dslCode: VulkanFarTerrainRender
     override fun cleanup() {
         pipeline.cleanup()
         program.cleanup()
+
+        sampler.cleanup()
 
         memFree(uploadBuffer)
     }

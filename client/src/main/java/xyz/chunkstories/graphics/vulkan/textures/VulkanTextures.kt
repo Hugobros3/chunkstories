@@ -133,10 +133,10 @@ val TextureFormat.vulkanFormat: VulkanFormat
         TextureFormat.RED_8 -> TODO()
         TextureFormat.DEPTH_24 -> TODO()
         TextureFormat.RED_32F -> TODO()
-        TextureFormat.RED_16I -> TODO()
+        TextureFormat.RED_16I -> VulkanFormat.VK_FORMAT_R16_SINT
         TextureFormat.RED_16F -> TODO()
         TextureFormat.RGBA_3x10_2 -> TODO()
-        TextureFormat.RGBA_16F -> TODO()
+        TextureFormat.RGBA_16F -> VulkanFormat.VK_FORMAT_R16_SFLOAT
         TextureFormat.RGBA_32F -> TODO()
         TextureFormat.RED_8UI -> TODO()
         else -> throw Exception("Unmapped texture format $this")

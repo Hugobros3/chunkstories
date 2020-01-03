@@ -100,15 +100,15 @@ class HeightmapsStorage(override val world: WorldImplementation) : WorldHeightma
         return acquireHeightmap(worldUser, location.x().toInt(), location.z().toInt())
     }
 
-    override fun getHeightmap(regionX: Int, regionZ: Int): Heightmap? {
+    override fun getHeightmap(regionX: Int, regionZ: Int): HeightmapImplementation? {
         return getHeightmapWorldCoordinates(regionX * 256, regionZ * 256)
     }
 
-    override fun getHeightmapChunkCoordinates(chunkX: Int, chunkZ: Int): Heightmap? {
+    override fun getHeightmapChunkCoordinates(chunkX: Int, chunkZ: Int): HeightmapImplementation? {
         return getHeightmapWorldCoordinates(chunkX * 32, chunkZ * 32)
     }
 
-    override fun getHeightmapLocation(location: Location): Heightmap? {
+    override fun getHeightmapLocation(location: Location): HeightmapImplementation? {
         return getHeightmapWorldCoordinates(location.x().toInt(), location.z().toInt())
     }
 

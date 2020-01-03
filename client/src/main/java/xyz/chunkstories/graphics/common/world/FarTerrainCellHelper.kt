@@ -19,17 +19,20 @@ class FarTerrainCellHelper(val world: World) : Cleanable {
 
     init {
         update(Vector2i(0, 0))
+        currentSnappedCameraPos = Vector2i(-1000)
     }
 
-    fun update(cameraPosition: Vector2i) {
+    fun update(cameraPosition: Vector2i): Boolean {
         val snappedCameraPos = Vector2i((cameraPosition.x / 32) * 32, (cameraPosition.y / 32) * 32)
 
         if (snappedCameraPos != currentSnappedCameraPos) {
             currentSnappedCameraPos = snappedCameraPos
 
             currentGrid = drawGrid(5)
+            return true
         }
 
+        return false
     }
 
     fun drawGrid(maxSubdivisions: Int): IntArrayDeque {

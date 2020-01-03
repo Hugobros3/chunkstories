@@ -200,7 +200,7 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
                 vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, null, null, postUpdateBarrier)
 
                 val fence = backend.createFence(false)
-                operationsPool.finishCommandBuffer(commandBuffer, backend.logicalDevice.graphicsQueue, fence)
+                operationsPool.finishAndSubmitCmdBuffer(commandBuffer, backend.logicalDevice.graphicsQueue, fence)
                 backend.waitFence(fence)
 
                 vkDestroyFence(backend.logicalDevice.vkDevice, fence, null)
