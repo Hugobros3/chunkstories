@@ -1,7 +1,5 @@
 package xyz.chunkstories.graphics.vulkan.devices
 
-import xyz.chunkstories.graphics.vulkan.*
-import xyz.chunkstories.graphics.vulkan.util.*
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryStack.stackMallocInt
 import org.lwjgl.vulkan.*
@@ -10,10 +8,10 @@ import org.lwjgl.vulkan.KHRGetPhysicalDeviceProperties2.VK_STRUCTURE_TYPE_PHYSIC
 import org.lwjgl.vulkan.KHRGetPhysicalDeviceProperties2.vkGetPhysicalDeviceFeatures2KHR
 import org.lwjgl.vulkan.KHRSurface.*
 import org.lwjgl.vulkan.VK10.*
-import org.lwjgl.vulkan.VK11.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2
-import org.lwjgl.vulkan.VK11.vkGetPhysicalDeviceFeatures2
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.client.InternalClientOptions
+import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
+import xyz.chunkstories.graphics.vulkan.util.*
 import java.nio.IntBuffer
 
 class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vkPhysicalDevice: VkPhysicalDevice) {
@@ -21,13 +19,18 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
     val deviceType: PhysicalDeviceType
     val deviceId: Int
 
+    val maxBoundSets: Int
+
+    /** I don't think I really care about GS tbh */
+    val canDoGS: Boolean
+
     internal val suitable: Boolean
     internal var fitnessScore: Int
 
     val queueFamilies: List<QueueFamily>
 
     val availableExtensions: List<String>
-    val canDoNonUniformSamplerIndexing: Boolean
+    val texturesArrayIndexingSupportTier: TexturesArrayIndexingSupportTier
 
     internal val swapchainDetails: SwapChainSupportDetails
 
@@ -42,6 +45,9 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
         deviceType = vkPhysicalDeviceProperties.deviceType().physicalDeviceType()
         deviceId = vkPhysicalDeviceProperties.deviceID()
 
+        // Query device limits
+        maxBoundSets = vkPhysicalDeviceProperties.limits().maxBoundDescriptorSets()
+
         // Query device extensions
         val pExtensionsCount = stackMallocInt(1)
         vkEnumerateDeviceExtensionProperties(vkPhysicalDevice, null as? CharSequence, pExtensionsCount, null).ensureIs("Failed to obtain extensions count", VK_SUCCESS)
@@ -53,31 +59,42 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
             availableExtensions += extension.extensionNameString()
         }
 
-        logger.debug("Available Vulkan extensions: $availableExtensions")
+        logger.debug("Available Vulkan extensions on $deviceName: $availableExtensions")
 
         // Query device features
-        val vkPhysicalDeviceFeatures2 = VkPhysicalDeviceFeatures2.callocStack().sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2)
-
-        var deviceIndexingFeatures: VkPhysicalDeviceDescriptorIndexingFeaturesEXT? = null
-        if(availableExtensions.contains("VK_EXT_descriptor_indexing")) {
-            deviceIndexingFeatures = VkPhysicalDeviceDescriptorIndexingFeaturesEXT.callocStack().sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT)
-            vkPhysicalDeviceFeatures2.pNext(deviceIndexingFeatures.address())
+        val vkPhysicalDeviceFeatures2 = VkPhysicalDeviceFeatures2.callocStack().sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2_KHR)
+        var descriptorIndexingFeatures: VkPhysicalDeviceDescriptorIndexingFeaturesEXT? = null
+        if (availableExtensions.contains("VK_EXT_descriptor_indexing")) {
+            descriptorIndexingFeatures = VkPhysicalDeviceDescriptorIndexingFeaturesEXT.callocStack().sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT)
+            vkPhysicalDeviceFeatures2.pNext(descriptorIndexingFeatures.address())
         }
-        vkGetPhysicalDeviceFeatures2(vkPhysicalDevice, vkPhysicalDeviceFeatures2)
+        vkGetPhysicalDeviceFeatures2KHR(vkPhysicalDevice, vkPhysicalDeviceFeatures2)
 
-        canDoNonUniformSamplerIndexing =
-                deviceIndexingFeatures != null &&
-                deviceIndexingFeatures.shaderSampledImageArrayNonUniformIndexing() &&
-                deviceIndexingFeatures.descriptorBindingVariableDescriptorCount() &&
-                deviceIndexingFeatures.descriptorBindingSampledImageUpdateAfterBind() &&
-                deviceIndexingFeatures.descriptorBindingPartiallyBound() &&
-                deviceIndexingFeatures.runtimeDescriptorArray()
+        canDoGS = vkPhysicalDeviceFeatures2.features().geometryShader()
+
+        texturesArrayIndexingSupportTier = when {
+            // No shaderSampledImageArrayDynamicIndexing !? This is ancient crap, how did this even get a vk driver ?
+            // Well, swiftshader doesn't emulate this yet ...
+            !vkPhysicalDeviceFeatures2.features().shaderSampledImageArrayDynamicIndexing() -> TexturesArrayIndexingSupportTier.TIER_0
+
+            // Best-case scenario: we have a capable descriptor indexing implementation !
+            vkPhysicalDeviceFeatures2.features().shaderSampledImageArrayDynamicIndexing() &&
+                    descriptorIndexingFeatures != null &&
+                    descriptorIndexingFeatures.shaderSampledImageArrayNonUniformIndexing() &&
+                    descriptorIndexingFeatures.descriptorBindingVariableDescriptorCount() &&
+                    descriptorIndexingFeatures.descriptorBindingSampledImageUpdateAfterBind() &&
+                    descriptorIndexingFeatures.descriptorBindingPartiallyBound() &&
+                    descriptorIndexingFeatures.runtimeDescriptorArray() -> TexturesArrayIndexingSupportTier.TIER_2
+
+            // Anything else is considered tier 1
+            else -> TexturesArrayIndexingSupportTier.TIER_1
+        }
 
         // Query queue families properties
         val pQueueFamilyCount = MemoryStack.stackMallocInt(1)
-        VK10.vkGetPhysicalDeviceQueueFamilyProperties(vkPhysicalDevice, pQueueFamilyCount, null)
+        vkGetPhysicalDeviceQueueFamilyProperties(vkPhysicalDevice, pQueueFamilyCount, null)
         val queueFamiliesProperties = VkQueueFamilyProperties.callocStack(pQueueFamilyCount.get(0))
-        VK10.vkGetPhysicalDeviceQueueFamilyProperties(vkPhysicalDevice, pQueueFamilyCount, queueFamiliesProperties)
+        vkGetPhysicalDeviceQueueFamilyProperties(vkPhysicalDevice, pQueueFamilyCount, queueFamiliesProperties)
 
         queueFamilies = mutableListOf()
         for ((index, queueFamilyProperties) in queueFamiliesProperties.withIndex()) {
@@ -111,7 +128,7 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
         // Look for diverging descriptor access capability
 
         // Decide if suitable or not based on all that
-        suitable = vkPhysicalDeviceFeatures2.features().geometryShader() && availableExtensions.containsAll(backend.requiredDeviceExtensions) && swapchainDetails.suitable
+        suitable = availableExtensions.containsAll(backend.requiredDeviceExtensions) && swapchainDetails.suitable
         fitnessScore = 1 + deviceType.fitnessScoreBonus
 
         MemoryStack.stackPop()
@@ -128,7 +145,7 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
         val availablePresentationModes: List<PresentationMode>
         val imageCount: IntRange
 
-        val transformToUse : Int
+        val transformToUse: Int
         val formatToUse: VulkanFormat
             get() {
                 if (availableFormats == listOf(VulkanFormat.VK_FORMAT_UNDEFINED))
@@ -179,14 +196,12 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
             if (swapExtentToUse.width() == Int.MAX_VALUE)
                 throw Exception("Not willing to deal with this nonsense right now")
 
-            imageCount = if(capabilities.maxImageCount() != 0) capabilities.minImageCount()..capabilities.maxImageCount() else capabilities.minImageCount()..Int.MAX_VALUE
+            imageCount = if (capabilities.maxImageCount() != 0) capabilities.minImageCount()..capabilities.maxImageCount() else capabilities.minImageCount()..Int.MAX_VALUE
 
             transformToUse = capabilities.currentTransform()
 
             suitable = surfaceFormats.capacity() > 0 && availablePresentationModes.isNotEmpty()
         }
-
-
     }
 
     override fun toString(): String {
@@ -196,4 +211,12 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
     companion object {
         val logger = LoggerFactory.getLogger("client.vulkan")
     }
+}
+
+/** The capability of texture array indexing support.
+ * See http://chunkstories.xyz/blog/a-note-on-descriptor-indexing/ */
+enum class TexturesArrayIndexingSupportTier {
+    TIER_0,
+    TIER_1,
+    TIER_2
 }

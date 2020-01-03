@@ -22,7 +22,7 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
     internal val handle: Long
     internal val vkDevice: VkDevice
 
-    val enableMagicTexturing: Boolean
+    val useGlobalTexturing: Boolean
 
     data class QueueRequest(val family: PhysicalDevice.QueueFamily, val target: (queue: Queue) -> Unit)
 
@@ -40,14 +40,14 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
                 sortedBy { if(it == graphicsQueueFamily) 10 else 0 }.getOrNull(0)
                 ?: throw Exception("Couldn't find an acceptable transfer queue family in $physicalDevice")
 
-        val requests = listOf<QueueRequest>(
+        val queuesWishlist = listOf(
                 QueueRequest(graphicsQueueFamily) { graphicsQueue = it },
                 QueueRequest(presentationQueueFamily) { presentationQueue = it },
                 QueueRequest(transferQueueFamily) { transferQueue = it }
         )
-        logger.debug("Queues we would like to have: $requests")
+        logger.debug("Queues we would like to have: $queuesWishlist")
 
-        val mappedRequests = requests.groupBy { it.family }
+        val mappedRequests = queuesWishlist.groupBy { it.family }
         logger.debug("Queues of the same family merged together: $mappedRequests")
 
         val vkDeviceQueuesCreateInfo = VkDeviceQueueCreateInfo.callocStack(mappedRequests.size)
@@ -58,7 +58,7 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
             if(queues2create < queues.size)
                 logger.info("Max queueCount() of the queue family $family is under the requested amount of queues for that type (${queues.size}), queue aliasing will occur")
 
-            vkDeviceQueuesCreateInfo.get(i++).sType(VK10.VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO).apply {
+            vkDeviceQueuesCreateInfo.get(i++).sType(VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO).apply {
                 queueFamilyIndex(family.index)
                 val floatBuffer = stackMallocFloat(1)
                 floatBuffer.put(0, 1.0f)
@@ -90,9 +90,9 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
         var requestedExtensions = backend.requiredDeviceExtensions.toSet()
         //requestedExtensions += "VK_KHR_get_memory_requirements2"
 
-        enableMagicTexturing = backend.physicalDevice.canDoNonUniformSamplerIndexing
+        useGlobalTexturing = backend.physicalDevice.texturesArrayIndexingSupportTier == TexturesArrayIndexingSupportTier.TIER_2
 
-        if (enableMagicTexturing)
+        if (useGlobalTexturing)
             requestedExtensions = setOf("VK_EXT_descriptor_indexing", "VK_KHR_maintenance3").union(requestedExtensions)
 
         val pRequiredExtensions = stackMallocPointer(requestedExtensions.size)
@@ -105,7 +105,7 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
             ppEnabledLayerNames(requestedLayers)
         }
 
-        if(enableMagicTexturing) {
+        if(useGlobalTexturing) {
             val descriptorIndexingExtCreateInfo = VkPhysicalDeviceDescriptorIndexingFeaturesEXT.callocStack().sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT).apply {
                 shaderSampledImageArrayNonUniformIndexing(true)
                 descriptorBindingVariableDescriptorCount(true)
@@ -116,8 +116,6 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
             vkDeviceCreateInfo.pNext(descriptorIndexingExtCreateInfo.address())
             logger.info("Enabling diverging uniform sampler indexing !")
         }
-        //else
-        //throw Exception("You need VK_ext_descriptor_indexing support !")
 
         val pDevice = stackMallocPointer(1)
         vkCreateDevice(physicalDevice.vkPhysicalDevice, vkDeviceCreateInfo, null, pDevice).ensureIs("Failed to create device from $physicalDevice", VK10.VK_SUCCESS)

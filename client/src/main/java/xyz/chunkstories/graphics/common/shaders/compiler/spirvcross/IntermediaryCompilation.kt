@@ -2,12 +2,9 @@ package xyz.chunkstories.graphics.common.shaders.compiler.spirvcross
 
 import graphics.scenery.spirvcrossj.*
 import xyz.chunkstories.api.graphics.shader.ShaderStage
-import xyz.chunkstories.api.graphics.structs.UniformUpdateFrequency
 import xyz.chunkstories.graphics.common.shaders.*
 import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompiler
-import xyz.chunkstories.graphics.common.shaders.compiler.preprocessing.updateFrequency
 import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.SpirvCrossHelper.spirvStageInt
-import xyz.chunkstories.graphics.vulkan.textures.MagicTexturing.Companion.magicTexturesNames
 
 fun ShaderCompiler.buildIntermediaryStructure(stages: Map<ShaderStage, String>, dumpCodeOnError: Boolean): IntermediaryCompilationResults {
     libspirvcrossj.initializeProcess()

@@ -14,8 +14,8 @@ import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.common.shaders.*
 import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.SpirvCrossHelper
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
-import xyz.chunkstories.graphics.vulkan.textures.MagicTexturing.Companion.magicTexturesNames
-import xyz.chunkstories.graphics.vulkan.textures.MagicTexturing.Companion.magicTexturesUpperBound
+import xyz.chunkstories.graphics.vulkan.textures.GlobalTextures.Companion.magicTexturesNames
+import xyz.chunkstories.graphics.vulkan.textures.GlobalTextures.Companion.magicTexturesUpperBound
 import xyz.chunkstories.graphics.vulkan.util.VkDescriptorSetLayout
 import xyz.chunkstories.graphics.vulkan.util.ensureIs
 import java.io.File
@@ -128,7 +128,7 @@ data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsB
                 flags(VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT_EXT)
         }
 
-        if (slot == 0 && backend.logicalDevice.enableMagicTexturing) {
+        if (slot == 0 && backend.logicalDevice.useGlobalTexturing) {
             val bindingFlags = stackCallocInt(bindingsMap.size)
             for ((resource, _) in bindingsMap) {
                 bindingFlags.put(when (resource) {

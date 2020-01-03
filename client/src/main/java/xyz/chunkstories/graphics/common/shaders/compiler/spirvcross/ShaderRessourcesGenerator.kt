@@ -1,9 +1,8 @@
 package xyz.chunkstories.graphics.common.shaders.compiler.spirvcross
 
-import xyz.chunkstories.api.graphics.structs.UniformUpdateFrequency
 import xyz.chunkstories.graphics.common.shaders.*
 import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompiler
-import xyz.chunkstories.graphics.vulkan.textures.MagicTexturing
+import xyz.chunkstories.graphics.vulkan.textures.GlobalTextures
 
 fun ShaderCompiler.createShaderResources(intermediarCompilationResults: IntermediaryCompilationResults, materialBoundResources: MutableSet<String>): Pair<List<GLSLInstancedInput>, List<GLSLResource>> {
     val resources = mutableListOf<GLSLResource>()
@@ -94,7 +93,7 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
 
             val separateImageName = separateImage.name
             val arraySize =
-                    if (separateImageName in MagicTexturing.magicTexturesNames)
+                    if (separateImageName in GlobalTextures.magicTexturesNames)
                         0
                     else
                         Array(type.array.size().toInt()) { type.array[it].toInt() }.toList().getOrNull(0) ?: 1
