@@ -119,7 +119,8 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
 
             // We load the region summaries we fancy
             val summaryDistance = 32//(int) (world.getClient().getConfiguration().getIntOption("client.rendering.viewDistance") / 24);
-            /*for (chunkX in cameraChunkX - summaryDistance until cameraChunkX + summaryDistance)
+
+            for (chunkX in cameraChunkX - summaryDistance until cameraChunkX + summaryDistance)
                 for (chunkZ in cameraChunkZ - summaryDistance until cameraChunkZ + summaryDistance) {
                     if (chunkX % 8 == 0 && chunkZ % 8 == 0) {
                         var regionX = (chunkX / 8) % sizeInRegions
@@ -138,7 +139,7 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
                         if (!acquiredHeightmapsMask.contains(key)) {
                             acquiredHeightmapsMask.add(key)
 
-                            val regionSummary = world.regionsSummariesHolder.acquireHeightmap(player, regionX, regionZ)
+                            val regionSummary = world.heightmapsManager.acquireHeightmap(player, regionX, regionZ)
                             acquiredHeightmaps.add(regionSummary)
                             if (world is WorldClientRemote) {
 
@@ -146,7 +147,7 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
                             }
                         }
                     }
-                }*/
+                }
 
             val cameraRegionX = cameraChunkX / 8
             val cameraRegionZ = cameraChunkZ / 8

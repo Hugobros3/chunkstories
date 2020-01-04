@@ -24,8 +24,8 @@ fun doShadowMapping(ctx: SystemExecutionContext, world: World) {
         0 -> floatArrayOf()
         1 -> floatArrayOf(64f)
         2 -> floatArrayOf(128f, 32f)
-        3 -> floatArrayOf(140f, 64f, 24f)
-        4 -> floatArrayOf(384f, 128f, 48f, 16f)
+        3 -> floatArrayOf(384f, 96f, 24f)
+        4 -> floatArrayOf(768f, 256f, 64f, 16f)
         else -> throw Exception()
     }
 

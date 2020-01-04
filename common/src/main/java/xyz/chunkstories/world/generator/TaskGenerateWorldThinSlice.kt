@@ -64,6 +64,10 @@ class TaskGenerateWorldThinSlice internal constructor(private val world: World, 
 
             for (x in 0..31)
                 for (z in 0..31) {
+                    val currentHeight = heightmap.getHeight(chunkX * 32 + x, chunkZ * 32 + z)
+                    if(currentHeight >= cy * 32)
+                        continue
+
                     for(i in 31 downTo 0) {
                         val y = cy * 32 + i
 
