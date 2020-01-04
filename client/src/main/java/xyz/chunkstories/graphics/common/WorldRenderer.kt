@@ -512,6 +512,11 @@ abstract class WorldRenderer(val world: WorldClientCommon) : Cleanable {
                             materialTag = "opaque"
                             supportsAnimations = true
                         }
+                        if(backend is VulkanGraphicsBackend) {
+                            system(FarTerrainDrawer::class) {
+
+                            }
+                        }
                     }
 
                     outputs {

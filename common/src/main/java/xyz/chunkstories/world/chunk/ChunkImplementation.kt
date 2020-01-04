@@ -284,7 +284,7 @@ class ChunkImplementation(override val holder: ChunkHolderImplementation, overri
 
         // Update related summary
         if (update)
-            world.heightmapsManager.updateOnBlockPlaced(x, y, z, future)
+            world.heightmapsManager.updateOnBlockPlaced(worldX, worldY, worldZ, future)
 
         // Mark the nearby chunks to be re-rendered
         if (update) {

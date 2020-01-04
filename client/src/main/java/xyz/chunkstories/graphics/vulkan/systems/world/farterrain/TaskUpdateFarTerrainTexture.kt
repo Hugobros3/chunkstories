@@ -4,7 +4,6 @@ import org.lwjgl.system.MemoryStack.stackPop
 import org.lwjgl.system.MemoryStack.stackPush
 import org.lwjgl.system.MemoryUtil.memAlloc
 import org.lwjgl.system.MemoryUtil.memFree
-import org.lwjgl.vulkan.VK10
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkBufferImageCopy
 import org.lwjgl.vulkan.VkCommandBuffer
@@ -86,9 +85,9 @@ data class FarTerrainTextureManager(val backend: VulkanGraphicsBackend, var base
 
                         if (oldRepresentingX != rx || oldRepresentingZ != rz) {
                             val req = HeightmapTemp(inArrayX * 256, inArrayZ * 256, heightmap)
-                             req.buffer = memAlloc(256 * 256 * 2)
-                            for (x in 0 until 256) {
-                                for (z in 0 until 256) {
+                            req.buffer = memAlloc(256 * 256 * 2)
+                            for (z in 0 until 256) {
+                                for (x in 0 until 256) {
                                     req.buffer.putShort(heightmap.getHeight(x, z).toShort())
                                     //req.buffer.putShort((256 * Math.random()).toShort())
                                 }
@@ -105,7 +104,7 @@ data class FarTerrainTextureManager(val backend: VulkanGraphicsBackend, var base
                 }
             }
 
-            if(reqs.size > 0) {
+            if (reqs.size > 0) {
                 // start building cmdbuffer
                 val operationsPool = backend.logicalDevice.graphicsQueue.threadSafePools.get()
                 val commandBuffer = operationsPool.startCommandBuffer()

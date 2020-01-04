@@ -314,7 +314,7 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
         val h = getHeight(worldX, worldZ)
 
         // If we place something solid over the last solid thing
-        if (cell.voxel!!.solid || cell.voxel!!.name.endsWith("water")) {
+        if (cell.voxel.solid || cell.voxel.name.endsWith("water")) {
             if (height >= h || h == Heightmap.NO_DATA) {
                 heightData[index(worldX, worldZ)] = height
                 voxelData[index(worldX, worldZ)] = cell.data
