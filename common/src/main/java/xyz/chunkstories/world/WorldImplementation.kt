@@ -16,17 +16,12 @@ import xyz.chunkstories.api.GameContext
 import xyz.chunkstories.api.Location
 import xyz.chunkstories.api.content.Content
 import xyz.chunkstories.api.entity.Entity
-import xyz.chunkstories.api.entity.EntitySerialization
-import xyz.chunkstories.api.entity.traits.serializable.TraitHealth
-import xyz.chunkstories.api.entity.traits.serializable.TraitName
-import xyz.chunkstories.api.events.player.PlayerSpawnEvent
 import xyz.chunkstories.api.events.voxel.WorldModificationCause
 import xyz.chunkstories.api.exceptions.world.ChunkNotLoadedException
 import xyz.chunkstories.api.exceptions.world.RegionNotLoadedException
 import xyz.chunkstories.api.exceptions.world.WorldException
 import xyz.chunkstories.api.math.Math2
 import xyz.chunkstories.api.physics.Box
-import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.util.IterableIterator
 import xyz.chunkstories.api.util.concurrency.Fence
 import xyz.chunkstories.api.voxel.Voxel
@@ -43,7 +38,6 @@ import xyz.chunkstories.content.translator.AbstractContentTranslator
 import xyz.chunkstories.content.translator.IncompatibleContentException
 import xyz.chunkstories.content.translator.InitialContentTranslator
 import xyz.chunkstories.content.translator.LoadedContentTranslator
-import xyz.chunkstories.entity.EntityFileSerialization
 import xyz.chunkstories.entity.EntityWorldIterator
 import xyz.chunkstories.util.alias
 import xyz.chunkstories.util.concurrency.CompoundFence
@@ -178,11 +172,14 @@ constructor(override val gameContext: GameContext, final override val worldInfo:
             entity.UUID = nextUUID
         }
 
-        val check = this.getEntityByUUID(entity.UUID)
-        if (check != null)
-            throw java.lang.Exception("Added an entity twice " + check + " conflits with " + entity + " UUID: " + entity.UUID)
-
+        val existingEntity = this.getEntityByUUID(entity.UUID)
+        if (existingEntity != null) {
+            logger.warn("Tried to add an entity twice (duplicated UUID ${entity.UUID}), new entity $entity conflits with $existingEntity")
+            //throw java.lang.Exception("Added an entity twice " + check + " conflits with " + entity + " UUID: " + entity.UUID)
+            return
+        }
         // Add it to the world
+
         entity.traitLocation.onSpawn()
 
         this.entities.insertEntity(entity)
