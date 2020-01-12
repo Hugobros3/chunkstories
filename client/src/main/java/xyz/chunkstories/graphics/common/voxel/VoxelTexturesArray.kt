@@ -29,7 +29,7 @@ open class VoxelTexturesArray(override val parent: Content.Voxels) : ReloadableV
     override fun reload() {
         voxelTextures.clear()
 
-        for(prefix in listOf("voxels/blockmodels/", "voxels/textures/")) {
+        for (prefix in listOf("voxels/blockmodels/", "voxels/textures/")) {
             for (entry in content.modsManager.allUniqueEntries) {
                 if (entry.name.startsWith(prefix)) {
                     var name = entry.name.removePrefix("voxels/textures/")
@@ -180,7 +180,7 @@ open class VoxelTexturesArray(override val parent: Content.Voxels) : ReloadableV
             var greenAcc = 0f
             var blueAcc = 0f
             var alphaAcc = 0f
-            for (x in 0 until image.width)
+            for (x in 0 until image.width) {
                 for (y in 0 until image.height) {
                     val rgb = image.getRGB(x, y)
 
@@ -197,9 +197,11 @@ open class VoxelTexturesArray(override val parent: Content.Voxels) : ReloadableV
                         alphaAcc += alpha
                     }
                 }
+            }
 
+            val lol = 1.0f / (image.width * image.height)
             color = if (alphaAcc > 0) {
-                Vector4f(redAcc / alphaAcc, greenAcc / alphaAcc, blueAcc / alphaAcc, 1f)
+                Vector4f(redAcc * lol, greenAcc * lol, blueAcc * lol, alphaAcc * lol)
             } else {
                 Vector4f(0f)
             }
