@@ -10,6 +10,8 @@ import xyz.chunkstories.graphics.vulkan.util.VkPipelineLayout
 import xyz.chunkstories.graphics.vulkan.util.ensureIs
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
+import org.lwjgl.vulkan.AMDRasterizationOrder.VK_RASTERIZATION_ORDER_RELAXED_AMD
+import org.lwjgl.vulkan.AMDRasterizationOrder.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_RASTERIZATION_ORDER_AMD
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.graphics.rendergraph.DepthTestingConfiguration
