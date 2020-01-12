@@ -64,6 +64,7 @@ class VulkanFarTerrainRenderer(pass: VulkanPass, dslCode: VulkanFarTerrainRender
 
         val vkBuffer = vkBuffers[frame]
         bindingContext.bindTextureAndSampler("heightTexture", textureManager.heightTexture, sampler, 0)
+        bindingContext.bindTextureAndSampler("terrainColor", textureManager.terrainColor, sampler, 0)
         bindingContext.bindSSBO("elementsBuffer", vkBuffer)
         bindingContext.preDraw(commandBuffer)
 
@@ -86,10 +87,10 @@ class VulkanFarTerrainRenderer(pass: VulkanPass, dslCode: VulkanFarTerrainRender
             val oz = cells.removeLast()
             val ox = cells.removeLast()
 
-            val patchSize = 32
-            uploadBuffer.putFloat(ox * 1.0f)
-            uploadBuffer.putFloat(oz * 1.0f)
-            uploadBuffer.putFloat(rsize * 1.0f / patchSize)
+            val patchSize = 34
+            uploadBuffer.putFloat(ox * 1.0f - (1f / 32f))
+            uploadBuffer.putFloat(oz * 1.0f - (1f / 32f))
+            uploadBuffer.putFloat(rsize * 1.0f / 32.0f)
             uploadBuffer.putInt(patchSize)
             //println("$ox $oz $rsize")
             vkCmdDraw(commandBuffer, 2 * 3 * patchSize * patchSize, 1, 0, i++)
