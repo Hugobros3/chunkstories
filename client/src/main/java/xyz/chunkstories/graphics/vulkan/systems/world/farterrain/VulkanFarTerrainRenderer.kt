@@ -24,6 +24,7 @@ import xyz.chunkstories.graphics.vulkan.shaders.bindShaderResources
 import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
 import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
+import xyz.chunkstories.graphics.vulkan.util.VkBuffer
 import xyz.chunkstories.graphics.vulkan.vertexInputConfiguration
 import xyz.chunkstories.world.WorldClientCommon
 
@@ -48,6 +49,8 @@ class VulkanFarTerrainRenderer(pass: VulkanPass, dslCode: VulkanFarTerrainRender
     private val textureManager = FarTerrainTextureManager(backend, 0, 0, 4096 / 256)
     val sampler = VulkanSampler(backend, tilingMode = TextureTilingMode.CLAMP_TO_EDGE, scalingMode = ImageInput.ScalingMode.NEAREST)
 
+    val indexesBuffer: VulkanBuffer
+
     init {
         dslCode()
 
@@ -55,6 +58,11 @@ class VulkanFarTerrainRenderer(pass: VulkanPass, dslCode: VulkanFarTerrainRender
 
         program = backend.shaderFactory.createProgram(shaderName)
         pipeline = Pipeline(backend, program, pass, vertexInputConfiguration { /** nothing hahahaha */ }, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
+
+        val bb = memAlloc(16 * 1024 * 1024 * 2)
+        bb.limit(bb.capacity())
+        bb.position(0)
+        indexesBuffer = VulkanBuffer(backend, bb, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, MemoryUsagePattern.STATIC)
     }
 
     override fun registerDrawingCommands(frame: VulkanFrame, ctx: SystemExecutionContext, commandBuffer: VkCommandBuffer) {
@@ -81,20 +89,24 @@ class VulkanFarTerrainRenderer(pass: VulkanPass, dslCode: VulkanFarTerrainRender
         uploadBuffer.clear()
         val cells = helper.drawGrid(5)
         var i = 0
+        val patchSize = 34
         while(!cells.isEmpty && i < maxPatches) {
             val size = cells.removeLast()
             val rsize = helper.sizes[size]
             val oz = cells.removeLast()
             val ox = cells.removeLast()
 
-            val patchSize = 34
             uploadBuffer.putFloat(ox * 1.0f - (1f / 32f))
             uploadBuffer.putFloat(oz * 1.0f - (1f / 32f))
             uploadBuffer.putFloat(rsize * 1.0f / 32.0f)
             uploadBuffer.putInt(patchSize)
             //println("$ox $oz $rsize")
-            vkCmdDraw(commandBuffer, 2 * 3 * patchSize * patchSize, 1, 0, i++)
+            //vkCmdDraw(commandBuffer, 2 * 3 * patchSize * patchSize, 1, 0, i)
+            i++
         }
+        vkCmdDraw(commandBuffer, 2 * 3 * patchSize * patchSize, i, 0, 0)
+        //vkCmdBindIndexBuffer(commandBuffer, indexesBuffer.handle, 0, VK_INDEX_TYPE_UINT16)
+        //vkCmdDrawIndexed(commandBuffer, 2 * 3 * patchSize * patchSize * i, 1, 0, 0, 0)
         //println(i)
         /*val patchSize = 32*/
         uploadBuffer.flip()

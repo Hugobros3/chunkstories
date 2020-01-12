@@ -22,11 +22,9 @@ import org.lwjgl.PointerBuffer
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWVulkan.glfwGetRequiredInstanceExtensions
 import org.lwjgl.glfw.GLFWVulkan.glfwVulkanSupported
-import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.EXTDebugReport.*
-import org.lwjgl.vulkan.KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.content.Content
@@ -50,9 +48,6 @@ import java.awt.image.BufferedImage
 
 class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window: GLFWWindow) : GLFWBasedGraphicsBackend(graphicsEngine, window), VoxelTexturesSupport {
     internal val enableValidation = window.client.arguments["enableValidation"] == "true"
-
-    val requiredInstanceExtensions = listOf(VK_EXT_DEBUG_REPORT_EXTENSION_NAME, "VK_KHR_get_physical_device_properties2")
-    val requiredDeviceExtensions = listOf(VK_KHR_SWAPCHAIN_EXTENSION_NAME, "VK_KHR_get_memory_requirements2", "VK_KHR_dedicated_allocation")
 
     internal var instance: VkInstance
     private val debugCallback: Long
@@ -87,9 +82,9 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
 
         window.client.configuration.addOptions(VulkanBackendOptions.create(this))
 
-        val requiredExtensions = glfwGetRequiredInstanceExtensions() ?: throw Exception("Vulkan is not supported for windowed rendering on this machine.")
+        val glfwRequiredExtensions = glfwGetRequiredInstanceExtensions() ?: throw Exception("Vulkan is not supported for windowed rendering on this machine.")
 
-        instance = createVkInstance(requiredExtensions)
+        instance = createVkInstance(glfwRequiredExtensions)
         debugCallback = setupDebug(instance)
         surface = WindowSurface(instance, window)
 
@@ -174,15 +169,15 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
     /** Creates a Vulkan instance */
     private fun createVkInstance(requiredExtensions: PointerBuffer): VkInstance = stackPush().use {
         val appInfoStruct = VkApplicationInfo.callocStack().sType(VK_STRUCTURE_TYPE_APPLICATION_INFO).apply {
-            pApplicationName(MemoryStack.stackUTF8("Chunk Stories"))
-            pEngineName(MemoryStack.stackUTF8("Chunk Stories Vulkan Backend"))
+            pApplicationName(stackUTF8("Chunk Stories"))
+            pEngineName(stackUTF8("Chunk Stories Vulkan Backend"))
 
             apiVersion(VK_MAKE_VERSION(1, 1, 70))
         }
 
         val additionalInstanceExtensions = requiredInstanceExtensions.toMutableList()
 
-        val pRequestedInstanceExtensions = MemoryStack.stackMallocPointer(requiredExtensions.remaining() + additionalInstanceExtensions.size)
+        val pRequestedInstanceExtensions = stackMallocPointer(requiredExtensions.remaining() + additionalInstanceExtensions.size)
         pRequestedInstanceExtensions.put(requiredExtensions)
         additionalInstanceExtensions.forEach { extensionName -> pRequestedInstanceExtensions.put(stackUTF8(extensionName)) }
         pRequestedInstanceExtensions.flip()
@@ -190,8 +185,8 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
         var pRequestedLayers: PointerBuffer? = null
         if (enableValidation) {
             logger.info("Validation layer enabled")
-            pRequestedLayers = MemoryStack.stackCallocPointer(1)
-            pRequestedLayers.put(MemoryStack.stackUTF8("VK_LAYER_LUNARG_standard_validation"))
+            pRequestedLayers = stackCallocPointer(1)
+            pRequestedLayers.put(stackUTF8("VK_LAYER_LUNARG_standard_validation"))
             pRequestedLayers.flip()
         }
 
@@ -201,7 +196,7 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
             ppEnabledLayerNames(pRequestedLayers)
         }
 
-        val pInstance = MemoryStack.stackMallocPointer(1)
+        val pInstance = stackMallocPointer(1)
         vkCreateInstance(createInfoStruct, null, pInstance).let {
             val exceptionMessage = when(it) {
                 VK_SUCCESS -> return@let
@@ -227,7 +222,7 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
     private fun setupDebug(vkInstance: VkInstance): Long {
         val jvmCallback = object : VkDebugReportCallbackEXT() {
             override fun invoke(flags: Int, objectType: Int, `object`: Long, location: Long, messageCode: Int, pLayerPrefix: Long, pMessage: Long, pUserData: Long): Int {
-                logger.error(VkDebugReportCallbackEXT.getString(pMessage))
+                logger.error(getString(pMessage))
                 Thread.dumpStack()
                 cookie = false
                 return 0
@@ -240,7 +235,7 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
                 flags(VK_DEBUG_REPORT_ERROR_BIT_EXT or VK_DEBUG_REPORT_WARNING_BIT_EXT)
             }
 
-            val pCallback = MemoryStack.stackMallocLong(1)
+            val pCallback = stackMallocLong(1)
             vkCreateDebugReportCallbackEXT(vkInstance, dbgSetupStruct, null, pCallback).ensureIs("Failed to create debug callback !", VK_SUCCESS)
             logger.info("Successfully registered debug callback")
             return pCallback.get(0)

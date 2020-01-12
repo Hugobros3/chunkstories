@@ -11,6 +11,8 @@ import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.client.InternalClientOptions
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
+import xyz.chunkstories.graphics.vulkan.descriptorIndexingExtensions
+import xyz.chunkstories.graphics.vulkan.requiredDeviceExtensions
 import xyz.chunkstories.graphics.vulkan.util.*
 import java.nio.IntBuffer
 
@@ -23,6 +25,7 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
 
     /** I don't think I really care about GS tbh */
     val canDoGS: Boolean
+    val canDoOutOfOrderRasterization: Boolean
 
     internal val suitable: Boolean
     internal var fitnessScore: Int
@@ -64,14 +67,14 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
         // Query device features
         val vkPhysicalDeviceFeatures2 = VkPhysicalDeviceFeatures2.callocStack().sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2_KHR)
         var descriptorIndexingFeatures: VkPhysicalDeviceDescriptorIndexingFeaturesEXT? = null
-        if (availableExtensions.contains("VK_EXT_descriptor_indexing")) {
+        if (availableExtensions.containsAll(descriptorIndexingExtensions)) {
             descriptorIndexingFeatures = VkPhysicalDeviceDescriptorIndexingFeaturesEXT.callocStack().sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT)
             vkPhysicalDeviceFeatures2.pNext(descriptorIndexingFeatures.address())
         }
         vkGetPhysicalDeviceFeatures2KHR(vkPhysicalDevice, vkPhysicalDeviceFeatures2)
 
         canDoGS = vkPhysicalDeviceFeatures2.features().geometryShader()
-
+        canDoOutOfOrderRasterization = availableExtensions.contains(AMDRasterizationOrder.VK_AMD_RASTERIZATION_ORDER_EXTENSION_NAME)
         texturesArrayIndexingSupportTier = when {
             // No shaderSampledImageArrayDynamicIndexing !? This is ancient crap, how did this even get a vk driver ?
             // Well, swiftshader doesn't emulate this yet ...
@@ -125,10 +128,8 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
 
         swapchainDetails = SwapChainSupportDetails(pSurfaceCapabilities, pSurfaceFormats, pPresentModes)
 
-        // Look for diverging descriptor access capability
-
         // Decide if suitable or not based on all that
-        suitable = availableExtensions.containsAll(backend.requiredDeviceExtensions) && swapchainDetails.suitable
+        suitable = availableExtensions.containsAll(requiredDeviceExtensions) && swapchainDetails.suitable
         fitnessScore = 1 + deviceType.fitnessScoreBonus
 
         MemoryStack.stackPop()

@@ -1,15 +1,17 @@
 package xyz.chunkstories.graphics.vulkan.devices
 
-import xyz.chunkstories.graphics.vulkan.CommandPool
-import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
-import xyz.chunkstories.graphics.common.Cleanable
-import xyz.chunkstories.graphics.vulkan.util.ensureIs
 import org.lwjgl.PointerBuffer
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.EXTDescriptorIndexing.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.graphics.common.Cleanable
+import xyz.chunkstories.graphics.vulkan.CommandPool
+import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
+import xyz.chunkstories.graphics.vulkan.preferredDeviceExtensions
+import xyz.chunkstories.graphics.vulkan.requiredDeviceExtensions
+import xyz.chunkstories.graphics.vulkan.util.ensureIs
 import java.util.concurrent.Semaphore
 
 class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: PhysicalDevice) {
@@ -37,7 +39,7 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
 
         val transferQueueFamily = physicalDevice.queueFamilies.filter { it.canTransfer }.
                 // we sort the list and give the existing graphics queue a weight, so we avoid selecting it if we have other options
-                sortedBy { if(it == graphicsQueueFamily) 10 else 0 }.getOrNull(0)
+                sortedBy { if (it == graphicsQueueFamily) 10 else 0 }.getOrNull(0)
                 ?: throw Exception("Couldn't find an acceptable transfer queue family in $physicalDevice")
 
         val queuesWishlist = listOf(
@@ -55,7 +57,7 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
 
         val actualRequestedQueueCounts = mappedRequests.map { (family, queues) ->
             val queues2create = Math.min(queues.size, family.maxInstances)
-            if(queues2create < queues.size)
+            if (queues2create < queues.size)
                 logger.info("Max queueCount() of the queue family $family is under the requested amount of queues for that type (${queues.size}), queue aliasing will occur")
 
             vkDeviceQueuesCreateInfo.get(i++).sType(VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO).apply {
@@ -87,13 +89,10 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
             requestedLayers.flip()
         }
 
-        var requestedExtensions = backend.requiredDeviceExtensions.toSet()
-        //requestedExtensions += "VK_KHR_get_memory_requirements2"
+        val presentPreferredExtensions = physicalDevice.availableExtensions.intersect(preferredDeviceExtensions)
+        val requestedExtensions = requiredDeviceExtensions.union(presentPreferredExtensions)
 
         useGlobalTexturing = backend.physicalDevice.texturesArrayIndexingSupportTier == TexturesArrayIndexingSupportTier.TIER_2
-
-        if (useGlobalTexturing)
-            requestedExtensions = setOf("VK_EXT_descriptor_indexing", "VK_KHR_maintenance3").union(requestedExtensions)
 
         val pRequiredExtensions = stackMallocPointer(requestedExtensions.size)
         requestedExtensions.forEachIndexed { i, e -> pRequiredExtensions.put(i, stackUTF8(e)) }
@@ -105,7 +104,7 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
             ppEnabledLayerNames(requestedLayers)
         }
 
-        if(useGlobalTexturing) {
+        if (useGlobalTexturing) {
             val descriptorIndexingExtCreateInfo = VkPhysicalDeviceDescriptorIndexingFeaturesEXT.callocStack().sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT).apply {
                 shaderSampledImageArrayNonUniformIndexing(true)
                 descriptorBindingVariableDescriptorCount(true)
@@ -131,7 +130,7 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
             var queue: Queue? = null
 
             for (queueRequest in queues) {
-                if(i < actualRequestedQueueCounts[family]!!) {
+                if (i < actualRequestedQueueCounts[family]!!) {
                     vkGetDeviceQueue(vkDevice, family.index, i++, pQueue)
                     queue = Queue(VkQueue(pQueue.get(0), vkDevice), family)
                     allQueues += queue
