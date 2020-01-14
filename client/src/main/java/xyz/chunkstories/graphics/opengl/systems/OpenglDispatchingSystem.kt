@@ -18,15 +18,6 @@ abstract class OpenglDispatchingSystem<R: Representation>(val backend: OpenglGra
             get() = system.representationName
 
         abstract fun executeDrawingCommands(frame: OpenglFrame, context: SystemExecutionContext, work: Sequence<T>)
-
-        val setupLambdas = mutableListOf<SystemExecutionContext.() -> Unit>()
-        fun setup(dslCode: SystemExecutionContext.() -> Unit) {
-            setupLambdas.add(dslCode)
-        }
-
-        fun executePerFrameSetup(ctx: SystemExecutionContext) {
-            setupLambdas.forEach { it.invoke(ctx) }
-        }
     }
 
     abstract fun createDrawerForPass(pass: OpenglPass, drawerInitCode: Drawer<*>.() -> Unit): Drawer<*>

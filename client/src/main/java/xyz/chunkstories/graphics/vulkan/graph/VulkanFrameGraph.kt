@@ -26,7 +26,7 @@ class VulkanFrameGraph(val frame: VulkanFrame, val renderGraph: VulkanRenderGrap
 
         class VulkanPassInstance(graph: VulkanFrameGraph, override val taskInstance: VulkanRenderTaskInstance, val pass: VulkanPass) : FrameGraphNode(graph), PassInstance {
             override val declaration: PassDeclaration = pass.declaration
-            override val shaderResources = ShaderResources(taskInstance.shaderRessources)
+            override val shaderResources = ShaderResources(taskInstance.shaderResources)
             override var renderTargetSize: Vector2i = Vector2i(0) // late-defined
 
             lateinit var preparedDrawingSystemsContexts: List<SystemExecutionContext>
@@ -69,7 +69,7 @@ class VulkanFrameGraph(val frame: VulkanFrame, val renderGraph: VulkanRenderGrap
             override val artifacts = mutableMapOf<String, Any>()
             override val parameters: MutableMap<String, Any> = parameters.toMutableMap()
 
-            val shaderRessources = ShaderResources(null)
+            override val shaderResources: ShaderResources = ShaderResources(requester?.shaderResources ?: frame.shaderResources)
 
             val callbacks = mutableListOf<(RenderTaskInstance) -> Unit>()
 
@@ -77,8 +77,8 @@ class VulkanFrameGraph(val frame: VulkanFrame, val renderGraph: VulkanRenderGrap
             lateinit var rootPassInstance: VulkanPassInstance
 
             init {
-                this.parameters["camera"] = camera // Implicitly part of the parameters //TODO should we
-                shaderRessources.supplyUniformBlock("camera", camera)
+                this.parameters["camera"] = camera // Implicitly part of the parameters
+                shaderResources.supplyUniformBlock("camera", camera)
             }
         }
     }
@@ -108,7 +108,7 @@ class VulkanFrameGraph(val frame: VulkanFrame, val renderGraph: VulkanRenderGrap
                         override val passInstance: PassInstance = this@addDependencies
                     }
 
-                    it.executePerFrameSetup(ctx)
+                    //it.executePerFrameSetup(ctx)
                     ctx
                 }
 

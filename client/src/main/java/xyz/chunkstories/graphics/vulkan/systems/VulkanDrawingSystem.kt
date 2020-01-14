@@ -12,13 +12,4 @@ abstract class VulkanDrawingSystem(val pass: VulkanPass) : DrawingSystem, Cleana
 
     /** Registers drawing commands (pipeline bind, vertex buffer binds, draw calls etc */
     abstract fun registerDrawingCommands(frame : VulkanFrame, ctx: SystemExecutionContext, commandBuffer: VkCommandBuffer)
-
-    val setupLambdas = mutableListOf<SystemExecutionContext.() -> Unit>()
-    override fun setup(dslCode: SystemExecutionContext.() -> Unit) {
-        setupLambdas.add(dslCode)
-    }
-
-    fun executePerFrameSetup(ctx: SystemExecutionContext) {
-        setupLambdas.forEach { it.invoke(ctx) }
-    }
 }

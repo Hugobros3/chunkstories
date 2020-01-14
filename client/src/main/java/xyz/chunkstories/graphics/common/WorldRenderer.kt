@@ -22,8 +22,15 @@ import xyz.chunkstories.world.WorldClientCommon
 abstract class WorldRenderer(val world: WorldClientCommon) : Cleanable {
     abstract val backend: GLFWBasedGraphicsBackend
 
-    fun createInstructions(client: IngameClient): RenderGraphDeclarationScript = {
+    fun createInstructions(client: IngameClient) = renderGraph {
         val precomputedSimplesSeed = PrecomputedSimplexSeed(world.worldInfo.seed)
+
+        setup {
+            val entity = client.player.controlledEntity
+            val world = client.world
+
+            shaderResources.supplyUniformBlock("world", world.getConditions())
+        }
 
         renderTask {
             name = "main"
@@ -112,12 +119,6 @@ abstract class WorldRenderer(val world: WorldClientCommon) : Cleanable {
 
                     draws {
                         system(FullscreenQuadDrawer::class) {
-                            setup {
-                                val entity = client.player.controlledEntity
-                                val world = client.world
-
-                                shaderResources.supplyUniformBlock("world", world.getConditions())
-                            }
                         }
                     }
 
@@ -150,9 +151,9 @@ abstract class WorldRenderer(val world: WorldClientCommon) : Cleanable {
                                 shader = "sprites"
                                 materialTag = "opaque"
                             }
-                            system(FarTerrainDrawer::class) {
+                        system(FarTerrainDrawer::class) {
 
-                            }
+                        }
                     }
 
                     setup {
@@ -203,18 +204,17 @@ abstract class WorldRenderer(val world: WorldClientCommon) : Cleanable {
                         }
                     }
 
+                    setup {
+                        // Schedules the shadow pass(es) and makes their output available to this draw
+                        doShadowMapping(this, world)
+                    }
+
                     draws {
                         if (backend is VulkanGraphicsBackend && client.configuration.getBooleanValue(VulkanBackendOptions.raytracedGI)) {
                             system(Vulkan3DVoxelRaytracer::class)
                         } else {
                             system(FullscreenQuadDrawer::class) {
                                 shader = "deferredShading"
-
-                                setup {
-                                    shaderResources.supplyUniformBlock("world", world.getConditions())
-
-                                    doShadowMapping(this, world)
-                                }
                             }
                         }
                     }
@@ -250,12 +250,7 @@ abstract class WorldRenderer(val world: WorldClientCommon) : Cleanable {
                     }
 
                     draws {
-                        system(DefferedLightsRenderer::class) {
-                            setup {
-                                val camera = client.player.controlledEntity?.traits?.get(TraitControllable::class)?.camera ?: Camera()
-                                shaderResources.supplyUniformBlock("camera", camera)
-                            }
-                        }
+                        system(DefferedLightsRenderer::class) {}
                     }
 
                     outputs {
@@ -291,10 +286,7 @@ abstract class WorldRenderer(val world: WorldClientCommon) : Cleanable {
                             }
                         }
 
-                        system(LinesRenderer::class) {
-                            setup {
-                            }
-                        }
+                        system(LinesRenderer::class) {}
 
                         system(ModelsRenderer::class) {
                             materialTag = "forward"
@@ -512,7 +504,7 @@ abstract class WorldRenderer(val world: WorldClientCommon) : Cleanable {
                             materialTag = "opaque"
                             supportsAnimations = true
                         }
-                        if(backend is VulkanGraphicsBackend) {
+                        if (backend is VulkanGraphicsBackend) {
                             system(FarTerrainDrawer::class) {
 
                             }
