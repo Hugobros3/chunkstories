@@ -73,10 +73,8 @@ class OpenglPass(val backend: OpenglGraphicsBackend, val renderTask: OpenglRende
     }
 
     fun render(frame: OpenglFrame,
-               passInstance: OpenglFrameGraph.FrameGraphNode.OpenglPassInstance,
+               passInstance: OpenglPassInstance,
                representationsGathered: MutableMap<OpenglDispatchingSystem.Drawer<*>, ArrayList<*>>) : Int {
-
-        declaration.setupLambdas.forEach { it.invoke(passInstance) }
 
         fun resolveRenderTarget(renderTarget: RenderTarget) : OpenglRenderBuffer = when(renderTarget) {
             RenderTarget.BackBuffer -> TODO()
@@ -160,12 +158,12 @@ class OpenglPass(val backend: OpenglGraphicsBackend, val renderTask: OpenglRende
 
         // Draw systems
         for ((i, drawingSystem) in drawingSystems.withIndex()) {
-            drawingSystem.executeDrawingCommands(frame, passInstance.preparedDrawingSystemsContexts[i])
+            drawingSystem.executeDrawingCommands(passInstance)
         }
 
         for ((i, drawer) in dispatchingDrawers.withIndex()) {
             val relevantBucket = representationsGathered[drawer] ?: continue
-             drawer.executeDrawingCommands(frame, passInstance.preparedDispatchingSystemsContexts[i], relevantBucket.toList().asSequence() as Sequence<Nothing>)
+             drawer.executeDrawingCommands(passInstance, relevantBucket.toList().asSequence() as Sequence<Nothing>)
         }
 
         return fbo.glId

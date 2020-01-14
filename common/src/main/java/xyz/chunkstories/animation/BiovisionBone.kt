@@ -18,9 +18,6 @@ class BiovisionBone(override val name: String, val channels: Int, private val an
     lateinit var animation: BiovisionAnimation
     override var parent: BiovisionBone? = null
 
-    override val offsetMatrix: Matrix4fc
-        get() = throw UnsupportedOperationException()
-
     /**
      * Returns a Matrix4f describing how to end up at the bone transformation at the
      * given frame.

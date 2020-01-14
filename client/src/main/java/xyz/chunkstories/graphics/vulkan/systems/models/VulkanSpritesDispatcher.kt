@@ -6,29 +6,26 @@ import org.lwjgl.system.MemoryUtil
 import org.lwjgl.system.MemoryUtil.memFree
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
-import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
 import xyz.chunkstories.api.graphics.representation.Sprite
 import xyz.chunkstories.api.graphics.systems.dispatching.SpritesRenderer
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
-import xyz.chunkstories.graphics.common.getConditions
 import xyz.chunkstories.graphics.common.shaders.GLSLInstancedInput
 import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompilationParameters
+import xyz.chunkstories.graphics.common.util.extractInterfaceBlock
+import xyz.chunkstories.graphics.common.util.getStd140AlignedSizeForStruct
 import xyz.chunkstories.graphics.vulkan.Pipeline
 import xyz.chunkstories.graphics.vulkan.VertexInputConfiguration
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
-import xyz.chunkstories.graphics.common.util.extractInterfaceBlock
-import xyz.chunkstories.graphics.common.util.getStd140AlignedSizeForStruct
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
+import xyz.chunkstories.graphics.vulkan.graph.VulkanPassInstance
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import xyz.chunkstories.graphics.vulkan.resources.DescriptorSetsMegapool
 import xyz.chunkstories.graphics.vulkan.shaders.VulkanShaderProgram
-import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
-import xyz.chunkstories.world.WorldClientCommon
 
 private typealias VkSpriteIR = MutableList<Sprite>
 
@@ -99,7 +96,7 @@ class VulkanSpritesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchin
 
         val ssboBufferSize = 1024 * 1024L
 
-        override fun registerDrawingCommands(frame: VulkanFrame, context: SystemExecutionContext, commandBuffer: VkCommandBuffer, work: VkSpriteIR) {
+        override fun registerDrawingCommands(context: VulkanPassInstance, commandBuffer: VkCommandBuffer, work: VkSpriteIR) {
             MemoryStack.stackPush()
 
             val client = backend.window.client.ingame ?: return
@@ -110,14 +107,11 @@ class VulkanSpritesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchin
             val instancesBuffer = MemoryUtil.memAlloc(instancesGpuBuffer.bufferSize.toInt())
             var instance = 0
 
-            val camera = context.passInstance.taskInstance.camera
-            val world = client.world as WorldClientCommon
-
             vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
             vkCmdBindVertexBuffers(commandBuffer, 0, stackLongs(vertexBuffer.handle), stackLongs(0))
 
             for (sprite in work) {
-                val bindingContext = backend.descriptorMegapool.getBindingContext(pipeline)
+                val bindingContext = context.getBindingContext(pipeline)
                 bindingContexts.add(bindingContext)
 
                 extractInterfaceBlock(instancesBuffer, instance * instanceDataPaddedSize, sprite, spriteII.struct)
@@ -129,9 +123,6 @@ class VulkanSpritesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchin
                     bindingContext.bindTextureAndSampler(materialImageSlot.name, backend.textures.getOrLoadTexture2D(textureName), sampler)
                     //println(pipeline.program.glslProgram)
                 }
-
-                bindingContext.bindStructuredUBO("camera", camera)
-                bindingContext.bindStructuredUBO("world", world.getConditions())
 
                 bindingContext.bindInstancedInput(spriteII, instancesGpuBuffer)
 
@@ -146,7 +137,7 @@ class VulkanSpritesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchin
 
             memFree(instancesBuffer)
 
-            frame.recyclingTasks.add {
+            context.frame.recyclingTasks.add {
                 bindingContexts.forEach { it.recycle() }
                 instancesGpuBuffer.cleanup()
             }
@@ -177,7 +168,7 @@ class VulkanSpritesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchin
     override fun sort(representations: Sequence<Sprite>, drawers: List<VulkanDispatchingSystem.Drawer<VkSpriteIR>>, workForDrawers: MutableMap<VulkanDispatchingSystem.Drawer<VkSpriteIR>, VkSpriteIR>) {
         val lists = drawers.associateWith { mutableListOf<Sprite>() }
 
-        for(representation in representations) {
+        for (representation in representations) {
             for ((index, drawer) in drawers.withIndex()) {
                 if ((drawer as VulkanSpritesDispatcher.Drawer).materialTag == representation.material.tag) {
                     lists[drawer]!!.add(representation)
@@ -185,8 +176,8 @@ class VulkanSpritesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchin
             }
         }
 
-        for(entry in lists) {
-            if(entry.value.isNotEmpty()) {
+        for (entry in lists) {
+            if (entry.value.isNotEmpty()) {
                 workForDrawers[entry.key] = entry.value
             }
         }

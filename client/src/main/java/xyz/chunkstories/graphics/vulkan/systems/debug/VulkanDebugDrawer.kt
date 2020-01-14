@@ -12,7 +12,6 @@ import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.vulkan.resources.InflightFrameResource
-import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
 import xyz.chunkstories.graphics.vulkan.vertexInputConfiguration
 import org.joml.Vector3d
@@ -21,7 +20,7 @@ import org.lwjgl.system.MemoryUtil.memAlloc
 import org.lwjgl.system.MemoryUtil.memFree
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
-import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
+import xyz.chunkstories.graphics.vulkan.graph.VulkanPassInstance
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 
 class VulkanDebugDrawer(pass: VulkanPass, dslCode: VulkanDebugDrawer.() -> Unit, val client: IngameClient) : VulkanDrawingSystem(pass) {
@@ -58,12 +57,10 @@ class VulkanDebugDrawer(pass: VulkanPass, dslCode: VulkanDebugDrawer.() -> Unit,
         }
     }
 
-    override fun registerDrawingCommands(frame: VulkanFrame, ctx: SystemExecutionContext, commandBuffer: VkCommandBuffer) {
+    override fun registerDrawingCommands(context: VulkanPassInstance, commandBuffer: VkCommandBuffer) {
         val entity = client.player.controlledEntity
-        val camera = entity?.traits?.get(TraitControllable::class)?.camera ?: Camera()
 
-        val bindingContext = backend.descriptorMegapool.getBindingContext(pipeline)
-        bindingContext.bindStructuredUBO("camera", camera)
+        val bindingContext = context.getBindingContext(pipeline)
 
         var linesCount = 0
         val buffer = memAlloc(debugBufferSize)
@@ -145,7 +142,7 @@ class VulkanDebugDrawer(pass: VulkanPass, dslCode: VulkanDebugDrawer.() -> Unit,
         }
 
         buffer.flip()
-        vertexBuffers[frame].upload(buffer)
+        vertexBuffers[context.frame].upload(buffer)
 
         memFree(buffer)
 
@@ -153,11 +150,11 @@ class VulkanDebugDrawer(pass: VulkanPass, dslCode: VulkanDebugDrawer.() -> Unit,
             //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 1, descriptorPool.setsForFrame(frame), null as? IntArray)
             vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
             bindingContext.commitAndBind(commandBuffer)
-            vkCmdBindVertexBuffers(commandBuffer, 0, stackLongs(vertexBuffers[frame].handle), stackLongs(0))
+            vkCmdBindVertexBuffers(commandBuffer, 0, stackLongs(vertexBuffers[context.frame].handle), stackLongs(0))
             vkCmdDraw(commandBuffer, 2 * linesCount, 1, 0, 0)
         }
 
-        frame.recyclingTasks.add {
+        context.frame.recyclingTasks.add {
             bindingContext.recycle()
         }
     }

@@ -1,21 +1,6 @@
 package xyz.chunkstories.graphics.vulkan.systems.gui
 
 import org.joml.Vector4f
-import xyz.chunkstories.api.gui.Font
-import xyz.chunkstories.graphics.common.FaceCullingMode
-import xyz.chunkstories.graphics.common.Primitive
-import xyz.chunkstories.graphics.vulkan.Pipeline
-import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
-import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
-import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
-import xyz.chunkstories.graphics.vulkan.resources.InflightFrameResource
-import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
-import xyz.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
-//import xyz.chunkstories.graphics.vulkan.textures.VirtualTexturing
-import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
-import xyz.chunkstories.graphics.vulkan.textures.VulkanTexture2D
-import xyz.chunkstories.graphics.vulkan.vertexInputConfiguration
-import xyz.chunkstories.gui.ClientGui
 import org.joml.Vector4fc
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryStack.stackPush
@@ -26,10 +11,23 @@ import org.lwjgl.vulkan.VkRect2D
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.graphics.Texture2D
 import xyz.chunkstories.api.graphics.TextureTilingMode
-import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
+import xyz.chunkstories.api.gui.Font
+import xyz.chunkstories.graphics.common.FaceCullingMode
+import xyz.chunkstories.graphics.common.Primitive
 import xyz.chunkstories.graphics.common.gui.InternalGuiDrawer
+import xyz.chunkstories.graphics.vulkan.Pipeline
+import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
+import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
+import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
+import xyz.chunkstories.graphics.vulkan.graph.VulkanPassInstance
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import xyz.chunkstories.graphics.vulkan.resources.DescriptorSetsMegapool
+import xyz.chunkstories.graphics.vulkan.resources.InflightFrameResource
+import xyz.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
+import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
+import xyz.chunkstories.graphics.vulkan.textures.VulkanTexture2D
+import xyz.chunkstories.graphics.vulkan.vertexInputConfiguration
+import xyz.chunkstories.gui.ClientGui
 
 internal const val guiBufferSize = 2 * 1024 * 1024
 
@@ -88,7 +86,7 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
 
     //TODO this is hacky af, fix this plz
     lateinit var commandBuffer: VkCommandBuffer
-    lateinit var ctx: SystemExecutionContext
+    lateinit var localContext: VulkanPassInstance
 
     /** Accumulation for GUI contents */
     val stagingByteBuffer = MemoryUtil.memAlloc(guiBufferSize)
@@ -151,7 +149,7 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
             if (previousTexture != vulkanTexture) {
                 afterTextureSwitch()
 
-                val bindingCtx = backend.descriptorMegapool.getBindingContext(pipeline)
+                val bindingCtx = localContext.getBindingContext(pipeline)
                 bindingCtx.bindTextureAndSampler("currentTexture", vulkanTexture, sampler)
                 bindingCtx.commitAndBind(commandBuffer)
                 recyclingBind.add(bindingCtx)
@@ -195,7 +193,7 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
             if (previousTexture != vulkanTexture) {
                 afterTextureSwitch()
 
-                val bindingCtx = backend.descriptorMegapool.getBindingContext(pipeline)
+                val bindingCtx = localContext.getBindingContext(pipeline)
                 bindingCtx.bindTextureAndSampler("currentTexture", vulkanTexture, sampler)
                 bindingCtx.commitAndBind(commandBuffer)
                 recyclingBind.add(bindingCtx)
@@ -320,13 +318,13 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
                 val scissor = VkRect2D.callocStack(1).apply {
                     val s = this@VulkanGuiDrawer.gui.guiScale
 
-                    offset().set(startX * s, ctx.passInstance.renderTargetSize.y - (height * s + startY * s))
+                    offset().set(startX * s, localContext.renderTargetSize.y - (height * s + startY * s))
                     extent().set(width * s, height * s)
                 }
 
                 val defaultScissor = VkRect2D.callocStack(1).apply {
                     offset().set(0, 0)
-                    extent().set(ctx.passInstance.renderTargetSize.x, ctx.passInstance.renderTargetSize.y)
+                    extent().set(localContext.renderTargetSize.x, localContext.renderTargetSize.y)
                 }
 
                 vkCmdSetScissor(commandBuffer, 0, scissor)
@@ -338,17 +336,17 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
         }
     }
 
-    override fun registerDrawingCommands(frame: VulkanFrame, ctx: SystemExecutionContext, commandBuffer: VkCommandBuffer) {
+    override fun registerDrawingCommands(context: VulkanPassInstance, commandBuffer: VkCommandBuffer) {
         // Update local variables
         this.commandBuffer = commandBuffer
-        this.ctx = ctx
+        this.localContext = context
 
         stackPush().use {
 
             vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
-            vkCmdBindVertexBuffers(commandBuffer, 0, MemoryStack.stackLongs(vertexBuffers[frame].handle), MemoryStack.stackLongs(0))
+            vkCmdBindVertexBuffers(commandBuffer, 0, MemoryStack.stackLongs(vertexBuffers[context.frame].handle), MemoryStack.stackLongs(0))
 
-            val bindingCtx = backend.descriptorMegapool.getBindingContext(pipeline)
+            val bindingCtx = context.getBindingContext(pipeline)
             bindingCtx.bindTextureAndSampler("currentTexture", backend.textures.getOrLoadTexture2D("textures/white.png"), sampler)
             bindingCtx.commitAndBind(commandBuffer)
             recyclingBind.add(bindingCtx)
@@ -363,14 +361,14 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
             afterTextureSwitch()
 
             // Upload the vertex buffer contents
-            vertexBuffers[frame].apply {
+            vertexBuffers[context.frame].apply {
                 stagingByteBuffer.flip()
                 this.upload(stagingByteBuffer)
             }
 
             val bindingCtxes = recyclingBind.toList()
             recyclingBind.clear()
-            frame.recyclingTasks.add {
+            context.frame.recyclingTasks.add {
                 bindingCtxes.forEach { it.recycle() }
             }
         }

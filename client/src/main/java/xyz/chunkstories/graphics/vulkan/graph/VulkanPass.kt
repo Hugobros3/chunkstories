@@ -61,11 +61,11 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
     }
 
     fun render(frame: VulkanFrame,
-               passInstance: VulkanFrameGraph.FrameGraphNode.VulkanPassInstance,
+               passInstance: VulkanPassInstance,
                allBufferStates: MutableMap<VulkanRenderBuffer, UsageType>,
                representationsGathered: MutableMap<VulkanDispatchingSystem.Drawer<*>, *>
     ) {
-        declaration.setupLambdas.forEach { it.invoke(passInstance) }
+        //declaration.setupLambdas.forEach { it.invoke(passInstance) }
 
         val outputs = declaration.outputs.outputs
         val depth = declaration.depthTestingConfiguration
@@ -129,21 +129,21 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
                                 ?: throw Exception("No renderbuffer named ${source.renderBufferName}"))
                     }
                     is ImageSource.TaskOutput -> {
-                        val referencedTaskInstance = source.context as VulkanFrameGraph.FrameGraphNode.VulkanRenderTaskInstance
+                        val referencedTaskInstance = source.context as VulkanRenderTaskInstance
 
                         //TODO we only handle direct deps for now
                         val rootPass = referencedTaskInstance.renderTask.rootPass
-                        val passInstance = referencedTaskInstance.dependencies.find { it is PassInstance && it.declaration == rootPass.declaration } as VulkanFrameGraph.FrameGraphNode.VulkanPassInstance
+                        val passInstance = referencedTaskInstance.dependencies.find { it is PassInstance && it.declaration == rootPass.declaration } as VulkanPassInstance
 
                         val outputInstance = passInstance.resolvedOutputs[source.output]!!
                         resolvedInputBuffers.add(outputInstance)
                     }
                     is ImageSource.TaskOutputDepth -> {
-                        val referencedTaskInstance = source.context as VulkanFrameGraph.FrameGraphNode.VulkanRenderTaskInstance
+                        val referencedTaskInstance = source.context as VulkanRenderTaskInstance
 
                         //TODO we only handle direct deps for now
                         val rootPass = referencedTaskInstance.renderTask.rootPass
-                        val passInstance = referencedTaskInstance.dependencies.find { it is PassInstance && it.declaration == rootPass.declaration } as VulkanFrameGraph.FrameGraphNode.VulkanPassInstance
+                        val passInstance = referencedTaskInstance.dependencies.find { it is PassInstance && it.declaration == rootPass.declaration } as VulkanPassInstance
 
                         val outputInstance = passInstance.resolvedDepthBuffer!!
                         resolvedInputBuffers.add(outputInstance)
@@ -152,12 +152,6 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
             }
         }
         lookForRenderBufferImages(passInstance.shaderResources.images)
-        for(subsystem in passInstance.preparedDispatchingSystemsContexts) {
-            lookForRenderBufferImages(subsystem.shaderResources.images)
-        }
-        for(subsystem in passInstance.preparedDrawingSystemsContexts) {
-            lookForRenderBufferImages(subsystem.shaderResources.images)
-        }
 
         val attachementsPreviousState = resolvedDepthAndColorBuffers.map {
             allBufferStates[it] ?: UsageType.NONE
@@ -304,17 +298,13 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
                 vkCmdBeginRenderPass(this, renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE)
 
                 // Transition image layouts now !
-                for ((i, drawingSystem) in drawingSystems.withIndex()) {
-                    drawingSystem.registerDrawingCommands(frame, passInstance.preparedDrawingSystemsContexts[i], this)
+                for (drawingSystem in drawingSystems) {
+                    drawingSystem.registerDrawingCommands(passInstance, this)
                 }
 
-                for ((i, drawer) in dispatchingDrawers.withIndex()) {
+                for (drawer in dispatchingDrawers) {
                     val relevantBucket = representationsGathered[drawer] ?: continue
-
-                    //val filter = 1 shl passInstanceIndex
-                    //val filteredByIndex = relevantBucket.representations.asSequence().filterIndexed { i, r -> relevantBucket.visibility[i] and filter != 0 }
-                    //drawer.registerDrawingCommands(frame, passInstance, this, filteredByIndex as Sequence<Nothing>)
-                    drawer.registerDrawingCommands_(frame, passInstance.preparedDispatchingSystemsContexts[i], this, relevantBucket)
+                    drawer.registerDrawingCommands_(passInstance, this, relevantBucket)
                 }
 
                 vkCmdEndRenderPass(this)

@@ -2,7 +2,7 @@ package xyz.chunkstories.graphics
 
 import org.lwjgl.glfw.GLFW
 import xyz.chunkstories.api.graphics.GraphicsEngine
-import xyz.chunkstories.api.graphics.rendergraph.RenderGraphDeclarationScript
+import xyz.chunkstories.api.graphics.rendergraph.RenderGraphDeclaration
 import xyz.chunkstories.client.ClientImplementation
 import xyz.chunkstories.client.glfw.GLFWWindow
 import xyz.chunkstories.graphics.common.Cleanable
@@ -58,7 +58,7 @@ class GraphicsEngineImplementation(val client: ClientImplementation) : GraphicsE
         frameNumber++
     }
 
-    override fun loadRenderGraph(declaration: RenderGraphDeclarationScript) {
+    override fun loadRenderGraph(declaration: RenderGraphDeclaration.() -> Unit) {
         backend.queuedRenderGraph = declaration
     }
 

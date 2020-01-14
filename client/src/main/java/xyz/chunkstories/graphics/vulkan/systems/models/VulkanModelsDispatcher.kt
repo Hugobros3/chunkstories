@@ -7,13 +7,11 @@ import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 import xyz.chunkstories.api.graphics.Mesh
 import xyz.chunkstories.api.graphics.MeshMaterial
-import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
 import xyz.chunkstories.api.graphics.representation.ModelInstance
 import xyz.chunkstories.api.graphics.systems.dispatching.ModelsRenderer
 import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
-import xyz.chunkstories.graphics.common.getConditions
 import xyz.chunkstories.graphics.common.shaders.compiler.AvailableVertexInput
 import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompilationParameters
 import xyz.chunkstories.graphics.common.structs.SkeletalAnimationData
@@ -25,10 +23,10 @@ import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
+import xyz.chunkstories.graphics.vulkan.graph.VulkanPassInstance
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import xyz.chunkstories.graphics.vulkan.resources.DescriptorSetsMegapool
 import xyz.chunkstories.graphics.vulkan.shaders.VulkanShaderProgram
-import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
 import xyz.chunkstories.graphics.vulkan.util.getVulkanFormat
@@ -38,38 +36,9 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
     override val representationName: String = ModelInstance::class.java.canonicalName
     val sampler = VulkanSampler(backend)
 
-    /*val gpuUploadedModels = mutableMapOf<Model, GpuModelData>()
-
-    inner class GpuModelData(val model: Model) : Cleanable {
-        val meshesData = model.meshes.map { GpuMeshesData(it) }
-
-        inner class GpuMeshesData(val mesh: Mesh) {
-            val attributesVertexBuffers = mesh.attributes.map {
-                val data = it.data
-                val vb = VulkanVertexBuffer(backend, data.capacity().toLong(), MemoryUsagePattern.SEMI_STATIC)
-
-                data.position(0)
-                data.limit(data.capacity())
-                vb.upload(it.data)
-                vb
-            }
-        }
-
-        override fun cleanup() {
-            meshesData.forEach {
-                it.attributesVertexBuffers.forEach {
-                    it.cleanup()
-                }
-            }
-        }
-    }
-
-    fun getGpuModelData(model: Model) =
-            gpuUploadedModels.getOrPut(model) { GpuModelData(model) }*/
-
     val gpuUploadedMeshes = ConcurrentHashMap<Mesh, GpuMeshData>()
 
-    inner class GpuMeshData(val mesh: Mesh): Cleanable {
+    inner class GpuMeshData(val mesh: Mesh) : Cleanable {
         val attributesVertexBuffers = mesh.attributes.map {
             val data = it.data
             val vb = VulkanVertexBuffer(backend, data.capacity().toLong(), MemoryUsagePattern.SEMI_STATIC)
@@ -168,7 +137,7 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
 
         private val ssboBufferSize = 1024 * 1024L
 
-        override fun registerDrawingCommands(frame: VulkanFrame, context: SystemExecutionContext, commandBuffer: VkCommandBuffer, work: VkModelsIR) {
+        override fun registerDrawingCommands(context: VulkanPassInstance, commandBuffer: VkCommandBuffer, work: VkModelsIR) {
             MemoryStack.stackPush()
 
             val modelPositionsBuffer = MemoryUtil.memAlloc(ssboBufferSize.toInt())
@@ -182,23 +151,17 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
 
             val bindingContexts = mutableListOf<DescriptorSetsMegapool.ShaderBindingContext>()
 
-            for((mesh, nonAnimatedInstances, animatedInstances) in work) {
+            for ((mesh, nonAnimatedInstances, animatedInstances) in work) {
                 fun handle(entries: Collection<Map.Entry<MeshMaterial, MeshMaterialInstances>>, animated: Boolean) {
-                    if(entries.isEmpty())
+                    if (entries.isEmpty())
                         return
 
                     // Obtain a specialized pipeline that works for this mesh and animation state
                     val specializedPipelineKey = getSpecializedPipelineKeyForMeshAndShader(mesh, shader, supportsAnimations, animated)
                     val specializedPipeline = specializedPipelines.getOrPut(specializedPipelineKey) { SpecializedPipeline(specializedPipelineKey) }
                     val pipeline = specializedPipeline.pipeline
-                    val bindingContext = backend.descriptorMegapool.getBindingContext(pipeline)
+                    val bindingContext = context.getBindingContext(pipeline)
                     bindingContexts += bindingContext
-
-                    val camera = context.passInstance.taskInstance.camera
-                    val world = client.world
-
-                    bindingContext.bindStructuredUBO("camera", camera)
-                    bindingContext.bindStructuredUBO("world", world.getConditions())
 
                     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
                     bindingContext.commitAndBind(commandBuffer)
@@ -214,12 +177,12 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
                     val modelPositionsPaddedSize = getStd140AlignedSizeForStruct(modelPositionsInstancedInput.struct)
 
 
-                    val animationDataGpuBuffer = if(animated) VulkanBuffer(backend, ssboBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, MemoryUsagePattern.DYNAMIC) else null
+                    val animationDataGpuBuffer = if (animated) VulkanBuffer(backend, ssboBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, MemoryUsagePattern.DYNAMIC) else null
                     //val animationDataBuffer = if(animated) MemoryUtil.memAlloc(animationDataGpuBuffer!!.bufferSize.toInt()) else null
                     animationDataBuffer.clear()
 
-                    val animationDataInstancedInput = if(animated) specializedPipeline.program.glslProgram.instancedInputs.find { it.name == "animationData" } else null
-                    val animationDataPaddedSize = if(animationDataInstancedInput != null) getStd140AlignedSizeForStruct(animationDataInstancedInput.struct) else 0
+                    val animationDataInstancedInput = if (animated) specializedPipeline.program.glslProgram.instancedInputs.find { it.name == "animationData" } else null
+                    val animationDataPaddedSize = if (animationDataInstancedInput != null) getStd140AlignedSizeForStruct(animationDataInstancedInput.struct) else 0
 
 
                     // Get and bind mesh vertex data
@@ -230,7 +193,7 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
                     }
 
                     for ((material, meshMaterialInstances) in entries) {
-                        val perMaterialBindingContext = backend.descriptorMegapool.getBindingContext(pipeline)
+                        val perMaterialBindingContext = context.getBindingContext(pipeline)
                         bindingContexts += perMaterialBindingContext
 
                         val firstInstance = instance
@@ -242,10 +205,10 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
                             //println(pipeline.program.glslProgram)
                         }
 
-                        for(modelInstance in meshMaterialInstances.instances) {
+                        for (modelInstance in meshMaterialInstances.instances) {
                             extractInterfaceBlock(modelPositionsBuffer, instance * modelPositionsPaddedSize, modelInstance.position, modelPositionsInstancedInput.struct)
 
-                            if(animated) {
+                            if (animated) {
                                 val bonez = SkeletalAnimationData()
                                 val animator = modelInstance.animator!!
                                 for ((boneName, i) in mesh.boneIds!!) {
@@ -259,7 +222,7 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
                         }
 
                         perMaterialBindingContext.bindInstancedInput("modelPosition", modelPositionsGpuBuffer)
-                        if(animated) {
+                        if (animated) {
                             perMaterialBindingContext.bindInstancedInput("animationData", animationDataGpuBuffer!!)
                         }
                         perMaterialBindingContext.commitAndBind(commandBuffer)
@@ -267,22 +230,22 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
 
                         vkCmdDraw(commandBuffer, mesh.vertices, materialInstancesCount, 0, firstInstance)
 
-                        frame.stats.totalVerticesDrawn += mesh.vertices
-                        frame.stats.totalDrawcalls++
+                        context.frame.stats.totalVerticesDrawn += mesh.vertices
+                        context.frame.stats.totalDrawcalls++
                     }
 
                     modelPositionsBuffer.position(instance * modelPositionsPaddedSize)
                     modelPositionsBuffer.flip()
                     modelPositionsGpuBuffer.upload(modelPositionsBuffer)
 
-                    frame.recyclingTasks.add { modelPositionsGpuBuffer.cleanup() }
+                    context.frame.recyclingTasks.add { modelPositionsGpuBuffer.cleanup() }
 
-                    if(animated) {
+                    if (animated) {
                         animationDataBuffer.position(instance * animationDataPaddedSize)
                         animationDataBuffer.flip()
                         animationDataGpuBuffer!!.upload(animationDataBuffer)
 
-                        frame.recyclingTasks.add { animationDataGpuBuffer.cleanup() }
+                        context.frame.recyclingTasks.add { animationDataGpuBuffer.cleanup() }
                     }
                 }
 
@@ -290,7 +253,7 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
                 handle(animatedInstances.entries, true)
             }
 
-            frame.recyclingTasks.add {
+            context.frame.recyclingTasks.add {
                 bindingContexts.forEach { it.recycle() }
             }
 
@@ -342,13 +305,13 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
         for ((mesh, meshInstances) in internalRepresentations) {
             for (drawer in drawers) {
                 val filteredMeshInstances = MeshInstances(mesh, mutableMapOf(), mutableMapOf())
-                for((material, materialGroupedInstances) in meshInstances.instances) {
-                    if(material.tag == (drawer as VulkanModelsDispatcher.Drawer).materialTag)
+                for ((material, materialGroupedInstances) in meshInstances.instances) {
+                    if (material.tag == (drawer as VulkanModelsDispatcher.Drawer).materialTag)
                         filteredMeshInstances.instances.put(material, materialGroupedInstances)
                 }
 
-                for((material, materialGroupedInstances) in meshInstances.animated) {
-                    if(material.tag == (drawer as VulkanModelsDispatcher.Drawer).materialTag)
+                for ((material, materialGroupedInstances) in meshInstances.animated) {
+                    if (material.tag == (drawer as VulkanModelsDispatcher.Drawer).materialTag)
                         filteredMeshInstances.animated.put(material, materialGroupedInstances)
                 }
 

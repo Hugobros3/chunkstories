@@ -109,7 +109,7 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
         }
     }
 
-    fun getBindingContext(pipeline: Pipeline) = ShaderBindingContext(pipeline)
+    fun getBindingContext_(pipeline: Pipeline) = ShaderBindingContext(pipeline)
 
     /** Thread UNSAFE semi-immediate mode emulation of the conventional binding model */
     inner class ShaderBindingContext internal constructor(val pipeline: Pipeline) {

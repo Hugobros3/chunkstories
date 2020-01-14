@@ -8,7 +8,6 @@ import org.lwjgl.vulkan.VkCommandBuffer
 import xyz.chunkstories.api.client.IngameClient
 import xyz.chunkstories.api.graphics.TextureTilingMode
 import xyz.chunkstories.api.graphics.rendergraph.ImageInput
-import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
 import xyz.chunkstories.api.graphics.systems.drawing.FarTerrainDrawer
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
@@ -17,14 +16,13 @@ import xyz.chunkstories.graphics.vulkan.Pipeline
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
+import xyz.chunkstories.graphics.vulkan.graph.VulkanPassInstance
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import xyz.chunkstories.graphics.vulkan.resources.InflightFrameResource
 import xyz.chunkstories.graphics.vulkan.shaders.VulkanShaderProgram
-import xyz.chunkstories.graphics.vulkan.shaders.bindShaderResources
 import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
 import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
-import xyz.chunkstories.graphics.vulkan.util.VkBuffer
 import xyz.chunkstories.graphics.vulkan.vertexInputConfiguration
 import xyz.chunkstories.world.WorldClientCommon
 
@@ -65,12 +63,11 @@ class VulkanFarTerrainRenderer(pass: VulkanPass, dslCode: VulkanFarTerrainRender
         indexesBuffer = VulkanBuffer(backend, bb, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, MemoryUsagePattern.STATIC)
     }
 
-    override fun registerDrawingCommands(frame: VulkanFrame, ctx: SystemExecutionContext, commandBuffer: VkCommandBuffer) {
-        val bindingContext = backend.descriptorMegapool.getBindingContext(pipeline)
+    override fun registerDrawingCommands(context: VulkanPassInstance, commandBuffer: VkCommandBuffer) {
+        val bindingContext = context.getBindingContext(pipeline)
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
-        ctx.bindShaderResources(bindingContext)
 
-        val vkBuffer = vkBuffers[frame]
+        val vkBuffer = vkBuffers[context.frame]
         bindingContext.bindTextureAndSampler("heightTexture", textureManager.heightTexture, sampler, 0)
         bindingContext.bindTextureAndSampler("terrainColor", textureManager.terrainColor, sampler, 0)
         bindingContext.bindSSBO("elementsBuffer", vkBuffer)
@@ -115,7 +112,7 @@ class VulkanFarTerrainRenderer(pass: VulkanPass, dslCode: VulkanFarTerrainRender
 
         //vkCmdDraw(commandBuffer, 2 * 3 * patchSize * patchSize, 1, 0, 0)
 
-        frame.recyclingTasks.add {
+        context.frame.recyclingTasks.add {
             bindingContext.recycle()
         }
     }

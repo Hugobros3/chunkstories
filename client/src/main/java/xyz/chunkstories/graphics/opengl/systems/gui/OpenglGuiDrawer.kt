@@ -7,9 +7,7 @@ import org.lwjgl.system.MemoryUtil
 import org.lwjgl.system.MemoryUtil.memFree
 import xyz.chunkstories.api.graphics.Texture2D
 import xyz.chunkstories.api.graphics.VertexFormat
-import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
 import xyz.chunkstories.api.gui.Font
-import xyz.chunkstories.api.gui.Gui
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.opengl.*
 import xyz.chunkstories.graphics.opengl.graph.OpenglPass
@@ -20,6 +18,7 @@ import org.lwjgl.opengl.GL30.*
 import xyz.chunkstories.api.graphics.systems.drawing.DrawingSystem
 import xyz.chunkstories.graphics.common.gui.InternalGuiDrawer
 import xyz.chunkstories.graphics.opengl.buffers.OpenglVertexBuffer
+import xyz.chunkstories.graphics.opengl.graph.OpenglPassInstance
 import xyz.chunkstories.graphics.opengl.shaders.bindTexture
 import xyz.chunkstories.gui.ClientGui
 
@@ -94,7 +93,7 @@ class OpenglGuiDrawer(pass: OpenglPass, dslCode: (DrawingSystem) -> Unit) : Open
         sameTextureCount = 0
     }
 
-    override fun executeDrawingCommands(frame: OpenglFrame, ctx: SystemExecutionContext) {
+    override fun executeDrawingCommands(context: OpenglPassInstance) {
         val drawer = object : InternalGuiDrawer(gui) {
             val sx: Float
                 get() = 1.0F / gui.viewportWidth.toFloat()
@@ -287,7 +286,7 @@ class OpenglGuiDrawer(pass: OpenglPass, dslCode: (DrawingSystem) -> Unit) : Open
 
                 GL11.glEnable(GL11.GL_SCISSOR_TEST)
                 //GL11.glScissor(startX * s, startY * s, width, height * s)
-                scissor = Vector4i(startX * s, ctx.passInstance.renderTargetSize.y - height * s - startY * s, width * s, height * s)
+                scissor = Vector4i(startX * s, context.renderTargetSize.y - height * s - startY * s, width * s, height * s)
                 atTextureSwap()
                 code()
                 atTextureSwap()
@@ -322,7 +321,7 @@ class OpenglGuiDrawer(pass: OpenglPass, dslCode: (DrawingSystem) -> Unit) : Open
                     GL11.glScissor(scissor.x, scissor.y, scissor.z, scissor.w)
                 } else {
                     GL11.glDisable(GL11.GL_SCISSOR_TEST)
-                    GL11.glScissor(0, 0, ctx.passInstance.renderTargetSize.x, ctx.passInstance.renderTargetSize.y)
+                    GL11.glScissor(0, 0, context.renderTargetSize.x, context.renderTargetSize.y)
                 }
             }
 

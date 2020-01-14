@@ -4,7 +4,6 @@ import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 import xyz.chunkstories.api.client.IngameClient
-import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
 import xyz.chunkstories.api.graphics.systems.drawing.FullscreenQuadDrawer
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
@@ -12,8 +11,8 @@ import xyz.chunkstories.graphics.vulkan.Pipeline
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
+import xyz.chunkstories.graphics.vulkan.graph.VulkanPassInstance
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
-import xyz.chunkstories.graphics.vulkan.shaders.bindShaderResources
 import xyz.chunkstories.graphics.vulkan.shaders.VulkanShaderProgram
 import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.vertexInputConfiguration
@@ -64,16 +63,15 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass, dslCode: FullscreenQuadDrawer
         }
     }
 
-    override fun registerDrawingCommands(frame: VulkanFrame, ctx: SystemExecutionContext, commandBuffer: VkCommandBuffer) {
-        val bindingContext = backend.descriptorMegapool.getBindingContext(pipeline)
+    override fun registerDrawingCommands(context: VulkanPassInstance, commandBuffer: VkCommandBuffer) {
+        val bindingContext = context.getBindingContext(pipeline)
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
-        ctx.bindShaderResources(bindingContext)
 
         vkCmdBindVertexBuffers(commandBuffer, 0, stackLongs(vertexBuffer.handle), stackLongs(0))
         bindingContext.commitAndBind(commandBuffer)
         vkCmdDraw(commandBuffer, 3 * 1, 1, 0, 0)
 
-        frame.recyclingTasks.add {
+        context.frame.recyclingTasks.add {
             bindingContext.recycle()
         }
     }

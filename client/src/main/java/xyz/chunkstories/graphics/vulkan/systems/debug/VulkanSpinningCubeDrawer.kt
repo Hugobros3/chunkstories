@@ -8,7 +8,6 @@ import xyz.chunkstories.graphics.vulkan.Pipeline
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
-import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.vertexInputConfiguration
 import org.joml.Matrix4f
 import org.joml.Vector3d
@@ -16,8 +15,8 @@ import org.joml.Vector3f
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
-import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
 import xyz.chunkstories.api.util.kotlin.toVec3f
+import xyz.chunkstories.graphics.vulkan.graph.VulkanPassInstance
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
 
@@ -111,14 +110,12 @@ class VulkanSpinningCubeDrawer(pass: VulkanPass, dslCode: VulkanSpinningCubeDraw
         }
     }
 
-    override fun registerDrawingCommands(frame: VulkanFrame, ctx: SystemExecutionContext, commandBuffer: VkCommandBuffer) {
+    override fun registerDrawingCommands(context: VulkanPassInstance, commandBuffer: VkCommandBuffer) {
         val fov = (90.0 / 360.0 * (Math.PI * 2)).toFloat()
         val aspect = backend.window.width.toFloat() / backend.window.height
         val projectionMatrix = Matrix4f().perspective(fov, aspect, 0.1f, 1000f, true)
 
         val up = Vector3f(0.0f, 1.0f, 0.0f)
-
-        VoxelSide.FRONT
 
         val cubePosition = Vector3f(0f)
         val cameraPosition = Vector3d(0.0, 0.0, -5.0)
@@ -135,7 +132,7 @@ class VulkanSpinningCubeDrawer(pass: VulkanPass, dslCode: VulkanSpinningCubeDraw
 
         val camera = Camera(cameraPosition, cubePosition, up, fov, modelViewMatrix, projectionMatrix)
 
-        val bindingContext = backend.descriptorMegapool.getBindingContext(pipeline)
+        val bindingContext = context.getBindingContext(pipeline)
 
         bindingContext.bindStructuredUBO("camera", camera)
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
@@ -144,7 +141,7 @@ class VulkanSpinningCubeDrawer(pass: VulkanPass, dslCode: VulkanSpinningCubeDraw
         vkCmdBindVertexBuffers(commandBuffer, 0, stackLongs(vertexBuffer.handle), stackLongs(0))
         vkCmdDraw(commandBuffer, 3 * 2 * 6, 1, 0, 0)
 
-        frame.recyclingTasks.add {
+        context.frame.recyclingTasks.add {
             bindingContext.recycle()
         }
      }
