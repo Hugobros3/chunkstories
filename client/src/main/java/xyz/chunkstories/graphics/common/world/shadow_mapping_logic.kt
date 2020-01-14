@@ -11,12 +11,10 @@ import xyz.chunkstories.graphics.common.CommonGraphicsOptions
 import xyz.chunkstories.graphics.common.getConditions
 import xyz.chunkstories.graphics.common.structs.ShadowMappingInfo
 
-fun doShadowMapping(ctx: SystemExecutionContext, world: World) {
-    //TODO hacky
-    //val client = (ctx.passInstance as VulkanFrameGraph.FrameGraphNode.VulkanPassInstance).pass.backend.graphicsEngine.client
+fun doShadowMapping(ctx: PassInstance, world: World) {
     val client = (world as WorldClient).client
 
-    val mainCamera = ctx.passInstance.taskInstance.camera
+    val mainCamera = ctx.taskInstance.camera
 
     val shadowCascades = client.configuration.getIntValue(CommonGraphicsOptions.shadowCascades)
 
@@ -57,7 +55,7 @@ fun doShadowMapping(ctx: SystemExecutionContext, world: World) {
 
         shadowInfo.cameras[i] = sunCamera
 
-        ctx.passInstance.dispatchRenderTask("shadowmapCascade$i", sunCamera, "sunShadow", mapOf("shadowBuffer" to RenderTarget.RenderBufferReference("shadowBuffer$i"))) {
+        ctx.dispatchRenderTask("shadowmapCascade$i", sunCamera, "sunShadow", mapOf("shadowBuffer" to RenderTarget.RenderBufferReference("shadowBuffer$i"))) {
             //val node = it as VulkanFrameGraph.FrameGraphNode.VulkanRenderTaskInstance
             //println("RESOLVED DB: ${node.rootPassInstance.resolvedDepthBuffer}")
             //passContext.markRenderBufferAsInput(node.rootPassInstance.resolvedDepthBuffer)

@@ -26,16 +26,6 @@ abstract class VulkanDispatchingSystem<R : Representation, I>(val backend: Vulka
         fun registerDrawingCommands_(frame: VulkanFrame, context: SystemExecutionContext, commandBuffer: VkCommandBuffer, work: Any) {
             registerDrawingCommands(frame, context, commandBuffer, work as T)
         }
-
-        /*val setupLambdas = mutableListOf<SystemExecutionContext.() -> Unit>()
-        //TODO useless ?
-        fun setup(dslCode: SystemExecutionContext.() -> Unit) {
-            setupLambdas.add(dslCode)
-        }
-
-        fun executePerFrameSetup(ctx: SystemExecutionContext) {
-            setupLambdas.forEach { it.invoke(ctx) }
-        }*/
     }
 
     abstract fun createDrawerForPass(pass: VulkanPass, drawerInitCode: Drawer<I>.() -> Unit): Drawer<I>
