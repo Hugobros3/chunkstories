@@ -1,7 +1,8 @@
 package xyz.chunkstories.graphics.vulkan.systems.world
 
-import org.lwjgl.system.MemoryStack
-import org.lwjgl.system.MemoryUtil
+import org.lwjgl.system.MemoryStack.*
+import org.lwjgl.system.MemoryUtil.memAlloc
+import org.lwjgl.system.MemoryUtil.memFree
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 import xyz.chunkstories.api.graphics.TextureTilingMode
@@ -140,7 +141,7 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
             val staticMeshes = work.mapNotNull { it.staticMesh }
             val cubes = work.mapNotNull { it.cubes }
 
-            MemoryStack.stackPush()
+            stackPush()
 
             fun drawCubes() {
                 val bindingContext = backend.descriptorMegapool.getBindingContext(cubesPipeline)
@@ -154,24 +155,24 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
                 vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, cubesPipeline.handle)
 
                 //TODO pool those
-                val ssboDataTest = VulkanBuffer(backend, ssboBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, MemoryUsagePattern.DYNAMIC)
+                val chunkInformationsStorageBuffer = VulkanBuffer(backend, ssboBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, MemoryUsagePattern.DYNAMIC)
 
-                val ssboStuff = MemoryUtil.memAlloc(ssboDataTest.bufferSize.toInt())
+                val chunkInformations = memAlloc(chunkInformationsStorageBuffer.bufferSize.toInt())
                 var instance = 0
                 val voxelTexturesArray = client.content.voxels.textures as VulkanVoxelTexturesArray
                 bindingContext.bindTextureAndSampler("albedoTextures", voxelTexturesArray.albedoOnionTexture, sampler)
-                bindingContext.bindInstancedInput("chunkInfo", ssboDataTest)
+                bindingContext.bindInstancedInput("chunkInfo", chunkInformationsStorageBuffer)
 
                 val viewportSize = ViewportSize()
                 viewportSize.size.set(context.passInstance.renderTargetSize)
                 //viewportSize.size.set(pass.declaration.outputs.outputs.getOrNull(0)?.let { passContext.resolvedOutputs.get(it)?.textureSize } ?: passContext.resolvedDepthBuffer!!.textureSize)
                 bindingContext.bindStructuredUBO("viewportSize", viewportSize)
 
-                bindingContext.preDraw(commandBuffer)
+                bindingContext.commitAndBind(commandBuffer)
 
                 for (staticMesh in cubes) {
                     val chunkRepresentation = staticMesh.parent
-                    vkCmdBindVertexBuffers(commandBuffer, 0, MemoryStack.stackLongs(staticMesh.buffer.handle), MemoryStack.stackLongs(0))
+                    vkCmdBindVertexBuffers(commandBuffer, 0, stackLongs(staticMesh.buffer.handle), stackLongs(0))
 
                     val chunkRenderInfo = ChunkRenderInfo().apply {
                         chunkX = chunkRepresentation.chunk.chunkX
@@ -179,7 +180,7 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
                         chunkZ = chunkRepresentation.chunk.chunkZ
                     }
 
-                    extractInterfaceBlock(ssboStuff, instance * sizeAligned16, chunkRenderInfo, chunkInfoStruct)
+                    extractInterfaceBlock(chunkInformations, instance * sizeAligned16, chunkRenderInfo, chunkInfoStruct)
 
                     vkCmdDraw(commandBuffer, staticMesh.count, 1, 0, instance++)
 
@@ -187,14 +188,14 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
                     frame.stats.totalDrawcalls++
                 }
 
-                ssboStuff.position(instance * sizeAligned16)
-                ssboStuff.flip()
-                ssboDataTest.upload(ssboStuff)
-                MemoryUtil.memFree(ssboStuff)
+                chunkInformations.position(instance * sizeAligned16)
+                chunkInformations.flip()
+                chunkInformationsStorageBuffer.upload(chunkInformations)
+                memFree(chunkInformations)
 
                 frame.recyclingTasks.add {
                     bindingContext.recycle()
-                    ssboDataTest.cleanup()//TODO recycle don't destroy!
+                    chunkInformationsStorageBuffer.cleanup()//TODO recycle don't destroy!
                 }
             }
             drawCubes()
@@ -212,25 +213,23 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
 
                 vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshesPipeline.handle)
 
-                if (backend.logicalDevice.useGlobalTexturing)
-                    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshesPipeline.pipelineLayout, 0, MemoryStack.stackLongs(backend.textures.magicTexturing!!.theSet), null)
+                //TODO not here
+                //if (backend.logicalDevice.useGlobalTexturing)
+                //    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshesPipeline.pipelineLayout, 0, MemoryStack.stackLongs(backend.textures.magicTexturing!!.theSet), null)
 
                 //TODO pool those
-                val ssboDataTest = VulkanBuffer(backend, ssboBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, MemoryUsagePattern.DYNAMIC)
-
-                val ssboStuff = MemoryUtil.memAlloc(ssboDataTest.bufferSize.toInt())
-                var instance = 0
+                val chunkInformationsStorageBuffer = VulkanBuffer(backend, ssboBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, MemoryUsagePattern.DYNAMIC)
+                val chunkInformations = memAlloc(chunkInformationsStorageBuffer.bufferSize.toInt())
                 val voxelTexturesArray = client.content.voxels.textures as VulkanVoxelTexturesArray
                 bindingContext.bindTextureAndSampler("albedoTextures", voxelTexturesArray.albedoOnionTexture, sampler)
-                bindingContext.bindInstancedInput("chunkInfo", ssboDataTest)
-
+                bindingContext.bindInstancedInput("chunkInfo", chunkInformationsStorageBuffer)
                 context.bindShaderResources(bindingContext)
+                bindingContext.commitAndBind(commandBuffer)
 
-                bindingContext.preDraw(commandBuffer)
-
+                var instancesCounter = 0
                 for (staticMesh in staticMeshes) {
                     val chunkRepresentation = staticMesh.parent
-                    vkCmdBindVertexBuffers(commandBuffer, 0, MemoryStack.stackLongs(staticMesh.buffer.handle), MemoryStack.stackLongs(0))
+                    vkCmdBindVertexBuffers(commandBuffer, 0, stackLongs(staticMesh.buffer.handle), stackLongs(0))
 
                     val chunkRenderInfo = ChunkRenderInfo().apply {
                         var cx = chunkRepresentation.chunk.chunkX
@@ -247,27 +246,27 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
                         chunkZ = cz
                     }
 
-                    extractInterfaceBlock(ssboStuff, instance * sizeAligned16, chunkRenderInfo, chunkInfoStruct)
+                    extractInterfaceBlock(chunkInformations, instancesCounter * sizeAligned16, chunkRenderInfo, chunkInfoStruct)
 
-                    vkCmdDraw(commandBuffer, staticMesh.count, 1, 0, instance++)
+                    vkCmdDraw(commandBuffer, staticMesh.count, 1, 0, instancesCounter++)
 
                     frame.stats.totalVerticesDrawn += staticMesh.count
                     frame.stats.totalDrawcalls++
                 }
 
-                ssboStuff.position(instance * sizeAligned16)
-                ssboStuff.flip()
-                ssboDataTest.upload(ssboStuff)
-                MemoryUtil.memFree(ssboStuff)
+                chunkInformations.position(instancesCounter * sizeAligned16)
+                chunkInformations.flip()
+                chunkInformationsStorageBuffer.upload(chunkInformations)
+                memFree(chunkInformations)
 
                 frame.recyclingTasks.add {
                     bindingContext.recycle()
-                    ssboDataTest.cleanup()//TODO recycle don't destroy!
+                    chunkInformationsStorageBuffer.cleanup()//TODO recycle don't destroy!
                 }
             }
             drawStaticMeshes()
 
-            MemoryStack.stackPop()
+            stackPop()
         }
 
         override fun cleanup() {
@@ -281,17 +280,6 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
 
     override fun createDrawerForPass(pass: VulkanPass, drawerInitCode: VulkanDispatchingSystem.Drawer<VkChunkIR>.() -> Unit) =
             Drawer(pass, drawerInitCode)
-
-    /*override fun sort(representation: VulkanChunkRepresentation, drawers: Array<VulkanDispatchingSystem.Drawer<*>>, outputs: List<MutableList<Any>>) {
-        //TODO look at material/tag and decide where to send it
-        for (section in representation.sections.values) {
-            for ((index, drawer) in drawers.withIndex()) {
-                if ((drawer as Drawer).materialTag == section.materialTag) {
-                    outputs[index].add(section)
-                }
-            }
-        }
-    }*/
 
     override fun sort(representations: Sequence<VulkanChunkRepresentation>, drawers: List<VulkanDispatchingSystem.Drawer<VkChunkIR>>, workForDrawers: MutableMap<VulkanDispatchingSystem.Drawer<VkChunkIR>, VkChunkIR>) {
         val lists = drawers.associateWith { mutableListOf<VulkanChunkRepresentation.Section>() }

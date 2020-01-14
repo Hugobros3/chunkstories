@@ -153,7 +153,7 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
 
                 val bindingCtx = backend.descriptorMegapool.getBindingContext(pipeline)
                 bindingCtx.bindTextureAndSampler("currentTexture", vulkanTexture, sampler)
-                bindingCtx.preDraw(commandBuffer)
+                bindingCtx.commitAndBind(commandBuffer)
                 recyclingBind.add(bindingCtx)
             }
 
@@ -197,7 +197,7 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
 
                 val bindingCtx = backend.descriptorMegapool.getBindingContext(pipeline)
                 bindingCtx.bindTextureAndSampler("currentTexture", vulkanTexture, sampler)
-                bindingCtx.preDraw(commandBuffer)
+                bindingCtx.commitAndBind(commandBuffer)
                 recyclingBind.add(bindingCtx)
             }
 
@@ -350,7 +350,7 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
 
             val bindingCtx = backend.descriptorMegapool.getBindingContext(pipeline)
             bindingCtx.bindTextureAndSampler("currentTexture", backend.textures.getOrLoadTexture2D("textures/white.png"), sampler)
-            bindingCtx.preDraw(commandBuffer)
+            bindingCtx.commitAndBind(commandBuffer)
             recyclingBind.add(bindingCtx)
 
             stagingByteBuffer.clear()

@@ -28,7 +28,7 @@ class GlobalTextures(val backend: VulkanGraphicsBackend) : Cleanable {
         pool = createPool()
         theSet = createSet()
 
-        backend.updateDescriptorSet(theSet, 0, sampler)
+        backend.writeSamplerDescriptor(theSet, 0, sampler)
     }
 
     private fun createSetLayout() : VkDescriptorSetLayout {
@@ -138,14 +138,14 @@ class GlobalTextures(val backend: VulkanGraphicsBackend) : Cleanable {
     fun assignId(vulkanTexture2D: VulkanTexture2D) : Int {
         val id = mappings.size
         mappings[vulkanTexture2D] = id
-        backend.updateDescriptorSet(theSet, 1, vulkanTexture2D, id)
+        backend.writeSampledImageDescriptor(theSet, 1, vulkanTexture2D, id)
 
         //Thread.dumpStack()
         //println("$vulkanTexture2D")
 
         if(!prepared) {
             for(i in 0 until 2048) {
-                backend.updateDescriptorSet(theSet, 1, vulkanTexture2D, i)
+                backend.writeSampledImageDescriptor(theSet, 1, vulkanTexture2D, i)
             }
             prepared = true
         }

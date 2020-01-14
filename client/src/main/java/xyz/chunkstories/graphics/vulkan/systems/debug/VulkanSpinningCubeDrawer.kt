@@ -140,7 +140,7 @@ class VulkanSpinningCubeDrawer(pass: VulkanPass, dslCode: VulkanSpinningCubeDraw
         bindingContext.bindStructuredUBO("camera", camera)
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
 
-        bindingContext.preDraw(commandBuffer)
+        bindingContext.commitAndBind(commandBuffer)
         vkCmdBindVertexBuffers(commandBuffer, 0, stackLongs(vertexBuffer.handle), stackLongs(0))
         vkCmdDraw(commandBuffer, 3 * 2 * 6, 1, 0, 0)
 

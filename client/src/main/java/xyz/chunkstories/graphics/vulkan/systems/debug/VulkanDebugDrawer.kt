@@ -152,7 +152,7 @@ class VulkanDebugDrawer(pass: VulkanPass, dslCode: VulkanDebugDrawer.() -> Unit,
         if(linesCount > 0) {
             //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 1, descriptorPool.setsForFrame(frame), null as? IntArray)
             vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
-            bindingContext.preDraw(commandBuffer)
+            bindingContext.commitAndBind(commandBuffer)
             vkCmdBindVertexBuffers(commandBuffer, 0, stackLongs(vertexBuffers[frame].handle), stackLongs(0))
             vkCmdDraw(commandBuffer, 2 * linesCount, 1, 0, 0)
         }

@@ -98,7 +98,7 @@ class VulkanLinesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingS
             context.bindShaderResources(bindingContext)
 
             vkCmdBindVertexBuffers(commandBuffer, 0, MemoryStack.stackLongs(vkBuffer.handle), MemoryStack.stackLongs(0))
-            bindingContext.preDraw(commandBuffer)
+            bindingContext.commitAndBind(commandBuffer)
             //print(points)
             vkCmdDraw(commandBuffer, points, 1, 0, 0)
 

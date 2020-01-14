@@ -16,10 +16,6 @@ fun SystemExecutionContext.bindShaderResources(target: DescriptorSetsMegapool.Sh
     shaderResources.bindTo(target, passInstance)
 }
 
-fun PassInstance.bindShaderResources(source: ShaderResources, target: DescriptorSetsMegapool.ShaderBindingContext) {
-    source.bindTo(target, this)
-}
-
 /** Adapts the API-style ShaderResources provider to the Vulkan-style descriptor set instance */
 private fun ShaderResources.bindTo(target: DescriptorSetsMegapool.ShaderBindingContext, passInstance: PassInstance) {
     parent?.bindTo(target, passInstance)
