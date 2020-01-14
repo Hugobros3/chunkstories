@@ -1,12 +1,13 @@
 package xyz.chunkstories.graphics.vulkan.systems
 
 import org.lwjgl.vulkan.VkCommandBuffer
-import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
 import xyz.chunkstories.api.graphics.representation.Representation
 import xyz.chunkstories.api.graphics.systems.dispatching.DispatchingSystem
 import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
+import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
+import xyz.chunkstories.graphics.vulkan.graph.VulkanPassInstance
 import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 
 abstract class VulkanDispatchingSystem<R : Representation, I>(val backend: VulkanGraphicsBackend) : Cleanable {
@@ -21,10 +22,10 @@ abstract class VulkanDispatchingSystem<R : Representation, I>(val backend: Vulka
         override val representationName: String
             get() = system.representationName
 
-        protected abstract fun registerDrawingCommands(frame: VulkanFrame, context: SystemExecutionContext, commandBuffer: VkCommandBuffer, work: T)
+        protected abstract fun registerDrawingCommands(context: VulkanPassInstance, commandBuffer: VkCommandBuffer, work: T)
 
-        fun registerDrawingCommands_(frame: VulkanFrame, context: SystemExecutionContext, commandBuffer: VkCommandBuffer, work: Any) {
-            registerDrawingCommands(frame, context, commandBuffer, work as T)
+        fun registerDrawingCommands_(context: VulkanPassInstance, commandBuffer: VkCommandBuffer, work: Any) {
+            registerDrawingCommands(context, commandBuffer, work as T)
         }
     }
 

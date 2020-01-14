@@ -6,7 +6,6 @@ import org.lwjgl.system.MemoryUtil.memFree
 import org.lwjgl.vulkan.VK10
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
-import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
 import xyz.chunkstories.api.graphics.representation.Line
 import xyz.chunkstories.api.graphics.systems.dispatching.LinesRenderer
 import xyz.chunkstories.graphics.common.FaceCullingMode
@@ -16,9 +15,8 @@ import xyz.chunkstories.graphics.vulkan.Pipeline
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
+import xyz.chunkstories.graphics.vulkan.graph.VulkanPassInstance
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
-import xyz.chunkstories.graphics.vulkan.shaders.bindShaderResources
-import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.vertexInputConfiguration
 
@@ -30,7 +28,7 @@ class VulkanLinesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingS
         get() = Line::class.java.canonicalName
 
     inner class Drawer(pass: VulkanPass, drawerInitCode: VulkanDispatchingSystem.Drawer<VkLinesIR>.() -> Unit) : VulkanDispatchingSystem.Drawer<VkLinesIR>(pass), LinesRenderer {
-        override val system: VulkanDispatchingSystem<*,*>
+        override val system: VulkanDispatchingSystem<*, *>
             get() = this@VulkanLinesDispatcher
 
         init {
@@ -61,10 +59,10 @@ class VulkanLinesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingS
         private val program = backend.shaderFactory.createProgram("colored", ShaderCompilationParameters(outputs = pass.declaration.outputs))
         private val pipeline = Pipeline(backend, program, pass, vertexInput, Primitive.LINES, FaceCullingMode.DISABLED)
 
-        override fun registerDrawingCommands(frame: VulkanFrame, context: SystemExecutionContext, commandBuffer: VkCommandBuffer, work: VkLinesIR) {
+        override fun registerDrawingCommands(context: VulkanPassInstance, commandBuffer: VkCommandBuffer, work: VkLinesIR) {
             val buffer = memAlloc(1024 * 1024) // 1Mb buffer
             var points = 0
-            for(line in work) {
+            for (line in work) {
                 buffer.putFloat(line.start.x.toFloat())
                 buffer.putFloat(line.start.y.toFloat())
                 buffer.putFloat(line.start.z.toFloat())
@@ -90,19 +88,18 @@ class VulkanLinesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingS
             vkBuffer.upload(buffer)
             memFree(buffer)
 
-            if(points == 0)
+            if (points == 0)
                 return
 
-            val bindingContext = backend.descriptorMegapool.getBindingContext(pipeline)
+            val bindingContext = context.getBindingContext(pipeline)
             vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
-            context.bindShaderResources(bindingContext)
 
             vkCmdBindVertexBuffers(commandBuffer, 0, MemoryStack.stackLongs(vkBuffer.handle), MemoryStack.stackLongs(0))
             bindingContext.commitAndBind(commandBuffer)
             //print(points)
             vkCmdDraw(commandBuffer, points, 1, 0, 0)
 
-            frame.recyclingTasks.add {
+            context.frame.recyclingTasks.add {
                 vkBuffer.cleanup()
                 bindingContext.recycle()
             }

@@ -6,7 +6,6 @@ import org.lwjgl.opengl.ARBDirectStateAccess.*
 import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
 import xyz.chunkstories.api.graphics.rendergraph.PassInstance
 import xyz.chunkstories.api.graphics.rendergraph.RenderGraphDeclaration
-import xyz.chunkstories.api.graphics.rendergraph.RenderGraphDeclarationScript
 import xyz.chunkstories.api.graphics.rendergraph.RenderTaskInstance
 import xyz.chunkstories.api.graphics.representation.Representation
 import xyz.chunkstories.api.graphics.structs.Camera
@@ -16,20 +15,20 @@ import xyz.chunkstories.graphics.opengl.OpenglFrame
 import xyz.chunkstories.graphics.opengl.OpenglGraphicsBackend
 import xyz.chunkstories.graphics.opengl.systems.OpenglDispatchingSystem
 
-class OpenglRenderGraph(val backend: OpenglGraphicsBackend, val dslCode: RenderGraphDeclarationScript): Cleanable {
+class OpenglRenderGraph(val backend: OpenglGraphicsBackend, val dslCode: RenderGraphDeclaration.() -> Unit): Cleanable {
+    val declaration = RenderGraphDeclaration().also(dslCode)
+
     val tasks: Map<String, OpenglRenderTask>
     val dispatchingSystems = mutableListOf<OpenglDispatchingSystem<*>>()
 
     init {
-        tasks = RenderGraphDeclaration().also(dslCode).renderTasks.values.map {
+        tasks = declaration.renderTasks.values.map {
             val openglRenderTask = OpenglRenderTask(backend, this, it)
             Pair(it.name, openglRenderTask)
         }.toMap()
     }
 
     fun renderFrame(frame: OpenglFrame) {
-        // Gather the base information we need to start rendering
-        //TODO make that configurable
         val mainCamera = backend.window.client.ingame?.player?.controlledEntity?.traits?.get(TraitControllable::class)?.camera ?: Camera()
         val mainTaskName = "main"
         val mainTask = tasks[mainTaskName]!!
@@ -48,17 +47,17 @@ class OpenglRenderGraph(val backend: OpenglGraphicsBackend, val dslCode: RenderG
             mutableMapOf<OpenglDispatchingSystem.Drawer<*>, ArrayList<*>>()
         }
 
-        for ((index, pass) in passInstances.withIndex()) {
-            val pass = pass as OpenglFrameGraph.FrameGraphNode.OpenglPassInstance
+        for ((index, passInstance) in passInstances.withIndex()) {
+            val openglPassInstance = passInstance as OpenglPassInstance
 
-            val renderContextIndex = renderingContexts.indexOf(pass.taskInstance)
+            val renderContextIndex = renderingContexts.indexOf(openglPassInstance.taskInstance)
             val ctxMask = 1 shl renderContextIndex
             val jobsForPassInstance = jobs[index]
 
             for (bucket in gathered.buckets.values) {
                 val responsibleSystem = dispatchingSystems.find { it.representationName == bucket.representationName } ?: continue
 
-                val drawers = pass.pass.dispatchingDrawers.filter {
+                val drawers = openglPassInstance.pass.dispatchingDrawers.filter {
                     it.system == responsibleSystem
                 }
                 val drawersArray = drawers.toTypedArray()
@@ -88,7 +87,7 @@ class OpenglRenderGraph(val backend: OpenglGraphicsBackend, val dslCode: RenderG
             val graphNode = sequencedGraph[graphNodeIndex]
 
             when (graphNode) {
-                is OpenglFrameGraph.FrameGraphNode.OpenglPassInstance -> {
+                is OpenglPassInstance -> {
                     val pass = graphNode.pass
                     val fboUsed = pass.render(frame, graphNode, jobs[passIndex])
 
@@ -97,7 +96,7 @@ class OpenglRenderGraph(val backend: OpenglGraphicsBackend, val dslCode: RenderG
 
                     passIndex++
                 }
-                is OpenglFrameGraph.FrameGraphNode.OpenglRenderTaskInstance -> {
+                is OpenglRenderTaskInstance -> {
                     graphNode.callbacks.forEach { it.invoke(graphNode) }
                 }
             }

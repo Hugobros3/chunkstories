@@ -5,20 +5,20 @@ import org.lwjgl.system.MemoryStack.stackPop
 import org.lwjgl.system.MemoryStack.stackPush
 import xyz.chunkstories.api.graphics.Mesh
 import xyz.chunkstories.api.graphics.MeshMaterial
-import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
 import xyz.chunkstories.api.graphics.representation.Model
 import xyz.chunkstories.api.graphics.representation.ModelInstance
 import xyz.chunkstories.api.graphics.systems.dispatching.ModelsRenderer
 import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.common.FaceCullingMode
-import xyz.chunkstories.graphics.common.getConditions
 import xyz.chunkstories.graphics.common.shaders.compiler.AvailableVertexInput
 import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompilationParameters
 import xyz.chunkstories.graphics.common.structs.SkeletalAnimationData
 import xyz.chunkstories.graphics.opengl.*
 import xyz.chunkstories.graphics.opengl.buffers.OpenglVertexBuffer
 import xyz.chunkstories.graphics.opengl.graph.OpenglPass
+import xyz.chunkstories.graphics.opengl.graph.OpenglPassInstance
 import xyz.chunkstories.graphics.opengl.shaders.OpenglShaderProgram
+import xyz.chunkstories.graphics.opengl.shaders.bindShaderResources
 import xyz.chunkstories.graphics.opengl.shaders.bindTexture
 import xyz.chunkstories.graphics.opengl.shaders.bindStructuredUBO
 import xyz.chunkstories.graphics.opengl.systems.OpenglDispatchingSystem
@@ -133,7 +133,7 @@ class OpenglModelsDispatcher(backend: OpenglGraphicsBackend) : OpenglDispatching
 
         val specializedPipelines = mutableMapOf<SpecializedPipelineKey, SpecializedPipeline>()
 
-        override fun executeDrawingCommands(frame: OpenglFrame, ctx: SystemExecutionContext, work: Sequence<MeshInstance>) {
+        override fun executeDrawingCommands(context: OpenglPassInstance, work: Sequence<MeshInstance>) {
             stackPush()
 
             val client = backend.window.client.ingame ?: return
@@ -155,12 +155,11 @@ class OpenglModelsDispatcher(backend: OpenglGraphicsBackend) : OpenglDispatching
 
                 val pipeline = specializedPipeline.pipeline
 
-                val camera = ctx.passInstance.taskInstance.camera
+                val camera = context.taskInstance.camera
                 val world = client.world as WorldClientCommon
 
                 pipeline.bind()
-                pipeline.bindStructuredUBO("camera", camera)
-                pipeline.bindStructuredUBO("world", world.getConditions())
+                context.bindShaderResources(pipeline)
 
                 var instance = 0
                 for ((mesh, material, modelInstance) in meshInstances) {
@@ -195,8 +194,8 @@ class OpenglModelsDispatcher(backend: OpenglGraphicsBackend) : OpenglDispatching
 
                     instance++
 
-                    frame.stats.totalVerticesDrawn += mesh.vertices
-                    frame.stats.totalDrawcalls++
+                    context.frame.stats.totalVerticesDrawn += mesh.vertices
+                    context.frame.stats.totalDrawcalls++
                 }
             }
 

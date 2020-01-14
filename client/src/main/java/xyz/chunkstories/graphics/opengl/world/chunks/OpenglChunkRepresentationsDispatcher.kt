@@ -2,7 +2,6 @@ package xyz.chunkstories.graphics.opengl.world.chunks
 
 import org.lwjgl.opengl.GL32.*
 import xyz.chunkstories.api.graphics.VertexFormat
-import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
 import xyz.chunkstories.api.graphics.systems.dispatching.ChunksRenderer
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.getConditions
@@ -12,6 +11,7 @@ import xyz.chunkstories.graphics.common.util.getStd140AlignedSizeForStruct
 import xyz.chunkstories.graphics.common.world.ChunkRenderInfo
 import xyz.chunkstories.graphics.opengl.*
 import xyz.chunkstories.graphics.opengl.graph.OpenglPass
+import xyz.chunkstories.graphics.opengl.graph.OpenglPassInstance
 import xyz.chunkstories.graphics.opengl.shaders.bindInstancedInput
 import xyz.chunkstories.graphics.opengl.shaders.bindShaderResources
 import xyz.chunkstories.graphics.opengl.shaders.bindTexture
@@ -99,18 +99,16 @@ class OpenglChunkRepresentationsDispatcher(backend: OpenglGraphicsBackend) : Ope
         val maxChunksRendered = 2048
         val ssboBufferSize = (sizeAligned16 * maxChunksRendered)
 
-        override fun executeDrawingCommands(frame: OpenglFrame, context: SystemExecutionContext, work: Sequence<OpenglChunkRepresentation.Section>) {
+        override fun executeDrawingCommands(context: OpenglPassInstance, work: Sequence<OpenglChunkRepresentation.Section>) {
             val client = backend.window.client.ingame ?: return
 
             val staticMeshes = work.mapNotNull { it.staticMesh }
 
             pipeline.bind()
 
-            val camera = context.passInstance.taskInstance.camera
+            val camera = context.taskInstance.camera
             val world = client.world
 
-            pipeline.bindStructuredUBO("camera", camera)
-            pipeline.bindStructuredUBO("world", world.getConditions())
             context.bindShaderResources(pipeline)
 
             // prepare uniform buffer

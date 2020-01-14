@@ -2,23 +2,20 @@ package xyz.chunkstories.graphics.vulkan.shaders
 
 import xyz.chunkstories.api.graphics.rendergraph.ImageSource
 import xyz.chunkstories.api.graphics.rendergraph.PassInstance
-import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
 import xyz.chunkstories.api.graphics.shader.ShaderResources
 import xyz.chunkstories.graphics.common.shaders.GLSLUniformBlock
 import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampledImage
 import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampledImage2D
 import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampledImageCubemap
 import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
+import xyz.chunkstories.graphics.vulkan.graph.VulkanPassInstance
+import xyz.chunkstories.graphics.vulkan.graph.VulkanRenderTaskInstance
 import xyz.chunkstories.graphics.vulkan.resources.DescriptorSetsMegapool
 import xyz.chunkstories.graphics.vulkan.textures.VulkanTexture2D
 
-fun SystemExecutionContext.bindShaderResources(target: DescriptorSetsMegapool.ShaderBindingContext) {
-    shaderResources.bindTo(target, passInstance)
-}
-
 /** Adapts the API-style ShaderResources provider to the Vulkan-style descriptor set instance */
-private fun ShaderResources.bindTo(target: DescriptorSetsMegapool.ShaderBindingContext, passInstance: PassInstance) {
-    parent?.bindTo(target, passInstance)
+fun ShaderResources.extractInto(target: DescriptorSetsMegapool.ShaderBindingContext, passInstance: PassInstance) {
+    parent?.extractInto(target, passInstance)
 
     val backend = target.pipeline.backend
 
@@ -36,26 +33,26 @@ private fun ShaderResources.bindTo(target: DescriptorSetsMegapool.ShaderBindingC
                             backend.textures.getOrLoadTexture2D(source.assetName)
                         }
                         is ImageSource.RenderBufferReference -> {
-                            val vrti = passInstance.taskInstance as VulkanFrameGraph.FrameGraphNode.VulkanRenderTaskInstance
+                            val vrti = passInstance.taskInstance as VulkanRenderTaskInstance
                             vrti.renderTask.buffers[source.renderBufferName]!!.texture
                         }
                         is ImageSource.TextureReference -> source.texture as VulkanTexture2D
                         is ImageSource.TaskOutput -> {
-                            val referencedTaskInstance = source.context as VulkanFrameGraph.FrameGraphNode.VulkanRenderTaskInstance
+                            val referencedTaskInstance = source.context as VulkanRenderTaskInstance
 
                             //TODO we only handle direct deps for now
                             val rootPass = referencedTaskInstance.renderTask.rootPass
-                            val resolvedPassInstance = referencedTaskInstance.dependencies.find { it is PassInstance && it.declaration == rootPass.declaration } as VulkanFrameGraph.FrameGraphNode.VulkanPassInstance
+                            val resolvedPassInstance = referencedTaskInstance.dependencies.find { it is PassInstance && it.declaration == rootPass.declaration } as VulkanPassInstance
 
                             val resolvedRenderBuffer = resolvedPassInstance.resolvedOutputs[source.output]!!
                             resolvedRenderBuffer.texture
                         }
                         is ImageSource.TaskOutputDepth -> {
-                            val referencedTaskInstance = source.context as VulkanFrameGraph.FrameGraphNode.VulkanRenderTaskInstance
+                            val referencedTaskInstance = source.context as VulkanRenderTaskInstance
 
                             //TODO we only handle direct deps for now
                             val rootPass = referencedTaskInstance.renderTask.rootPass
-                            val resolvedPassInstance = referencedTaskInstance.dependencies.find { it is PassInstance && it.declaration == rootPass.declaration } as VulkanFrameGraph.FrameGraphNode.VulkanPassInstance
+                            val resolvedPassInstance = referencedTaskInstance.dependencies.find { it is PassInstance && it.declaration == rootPass.declaration } as VulkanPassInstance
 
                             val resolvedRenderBuffer = resolvedPassInstance.resolvedDepthBuffer!!
                             resolvedRenderBuffer.texture
@@ -67,7 +64,7 @@ private fun ShaderResources.bindTo(target: DescriptorSetsMegapool.ShaderBindingC
                 is GLSLUniformSampledImageCubemap -> {
                     val cubemap = when(val source = imageInput.source) {
                         is ImageSource.AssetReference -> {
-                            (passInstance as VulkanFrameGraph.FrameGraphNode.VulkanPassInstance).pass.backend.textures.getOrLoadCubemap(source.assetName)
+                            (passInstance as VulkanPassInstance).pass.backend.textures.getOrLoadCubemap(source.assetName)
                         }
                         else -> throw Exception("Unhandled image source type ${source::class} for ${this::class}")
                     }

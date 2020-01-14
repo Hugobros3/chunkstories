@@ -6,11 +6,9 @@ import org.lwjgl.system.MemoryUtil.memFree
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 import xyz.chunkstories.api.graphics.TextureTilingMode
-import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
 import xyz.chunkstories.api.graphics.systems.dispatching.ChunksRenderer
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
-import xyz.chunkstories.graphics.common.getConditions
 import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompilationParameters
 import xyz.chunkstories.graphics.vulkan.Pipeline
 import xyz.chunkstories.graphics.vulkan.VertexInputConfiguration
@@ -20,8 +18,8 @@ import xyz.chunkstories.graphics.common.util.extractInterfaceBlock
 import xyz.chunkstories.graphics.common.util.getStd140AlignedSizeForStruct
 import xyz.chunkstories.graphics.common.world.*
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
+import xyz.chunkstories.graphics.vulkan.graph.VulkanPassInstance
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
-import xyz.chunkstories.graphics.vulkan.shaders.bindShaderResources
 import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
@@ -135,7 +133,7 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
         val maxChunksRendered = 4096
         val ssboBufferSize = (sizeAligned16 * maxChunksRendered).toLong()
 
-        override fun registerDrawingCommands(frame: VulkanFrame, context: SystemExecutionContext, commandBuffer: VkCommandBuffer, work: VkChunkIR) {
+        override fun registerDrawingCommands(context: VulkanPassInstance, commandBuffer: VkCommandBuffer, work: VkChunkIR) {
             val client = backend.window.client.ingame ?: return
 
             val staticMeshes = work.mapNotNull { it.staticMesh }
@@ -144,13 +142,7 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
             stackPush()
 
             fun drawCubes() {
-                val bindingContext = backend.descriptorMegapool.getBindingContext(cubesPipeline)
-
-                val camera = context.passInstance.taskInstance.camera
-                val world = client.world
-
-                bindingContext.bindStructuredUBO("camera", camera)
-                bindingContext.bindStructuredUBO("world", world.getConditions())
+                val bindingContext = context.getBindingContext(cubesPipeline)
 
                 vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, cubesPipeline.handle)
 
@@ -162,11 +154,6 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
                 val voxelTexturesArray = client.content.voxels.textures as VulkanVoxelTexturesArray
                 bindingContext.bindTextureAndSampler("albedoTextures", voxelTexturesArray.albedoOnionTexture, sampler)
                 bindingContext.bindInstancedInput("chunkInfo", chunkInformationsStorageBuffer)
-
-                val viewportSize = ViewportSize()
-                viewportSize.size.set(context.passInstance.renderTargetSize)
-                //viewportSize.size.set(pass.declaration.outputs.outputs.getOrNull(0)?.let { passContext.resolvedOutputs.get(it)?.textureSize } ?: passContext.resolvedDepthBuffer!!.textureSize)
-                bindingContext.bindStructuredUBO("viewportSize", viewportSize)
 
                 bindingContext.commitAndBind(commandBuffer)
 
@@ -184,8 +171,8 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
 
                     vkCmdDraw(commandBuffer, staticMesh.count, 1, 0, instance++)
 
-                    frame.stats.totalVerticesDrawn += staticMesh.count
-                    frame.stats.totalDrawcalls++
+                    context.frame.stats.totalVerticesDrawn += staticMesh.count
+                    context.frame.stats.totalDrawcalls++
                 }
 
                 chunkInformations.position(instance * sizeAligned16)
@@ -193,7 +180,7 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
                 chunkInformationsStorageBuffer.upload(chunkInformations)
                 memFree(chunkInformations)
 
-                frame.recyclingTasks.add {
+                context.frame.recyclingTasks.add {
                     bindingContext.recycle()
                     chunkInformationsStorageBuffer.cleanup()//TODO recycle don't destroy!
                 }
@@ -201,15 +188,12 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
             drawCubes()
 
             fun drawStaticMeshes() {
-                val bindingContext = backend.descriptorMegapool.getBindingContext(meshesPipeline)
+                val bindingContext = context.getBindingContext(meshesPipeline)
 
                 val world = client.world
-                val camera = context.passInstance.taskInstance.camera
+                val camera = context.taskInstance.camera
                 val cameraSectionX = section(camera.position.x(), world)
                 val cameraSectionZ = section(camera.position.z(), world)
-
-                bindingContext.bindStructuredUBO("camera", camera)
-                bindingContext.bindStructuredUBO("world", world.getConditions())
 
                 vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshesPipeline.handle)
 
@@ -223,7 +207,7 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
                 val voxelTexturesArray = client.content.voxels.textures as VulkanVoxelTexturesArray
                 bindingContext.bindTextureAndSampler("albedoTextures", voxelTexturesArray.albedoOnionTexture, sampler)
                 bindingContext.bindInstancedInput("chunkInfo", chunkInformationsStorageBuffer)
-                context.bindShaderResources(bindingContext)
+                //context.bindShaderResources(bindingContext)
                 bindingContext.commitAndBind(commandBuffer)
 
                 var instancesCounter = 0
@@ -250,8 +234,8 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
 
                     vkCmdDraw(commandBuffer, staticMesh.count, 1, 0, instancesCounter++)
 
-                    frame.stats.totalVerticesDrawn += staticMesh.count
-                    frame.stats.totalDrawcalls++
+                    context.frame.stats.totalVerticesDrawn += staticMesh.count
+                    context.frame.stats.totalDrawcalls++
                 }
 
                 chunkInformations.position(instancesCounter * sizeAligned16)
@@ -259,7 +243,7 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
                 chunkInformationsStorageBuffer.upload(chunkInformations)
                 memFree(chunkInformations)
 
-                frame.recyclingTasks.add {
+                context.frame.recyclingTasks.add {
                     bindingContext.recycle()
                     chunkInformationsStorageBuffer.cleanup()//TODO recycle don't destroy!
                 }

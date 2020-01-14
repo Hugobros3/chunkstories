@@ -1,17 +1,16 @@
 package xyz.chunkstories.graphics.opengl.systems
 
-import org.lwjgl.opengl.GL20
 import org.lwjgl.opengl.GL30.*
 import org.lwjgl.system.MemoryStack.stackMalloc
 import org.lwjgl.system.MemoryStack.stackPush
 import xyz.chunkstories.api.graphics.VertexFormat
-import xyz.chunkstories.api.graphics.rendergraph.SystemExecutionContext
 import xyz.chunkstories.api.graphics.systems.drawing.DrawingSystem
 import xyz.chunkstories.api.graphics.systems.drawing.FullscreenQuadDrawer
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.opengl.*
 import xyz.chunkstories.graphics.opengl.buffers.OpenglVertexBuffer
 import xyz.chunkstories.graphics.opengl.graph.OpenglPass
+import xyz.chunkstories.graphics.opengl.graph.OpenglPassInstance
 import xyz.chunkstories.graphics.opengl.shaders.OpenglShaderProgram
 import xyz.chunkstories.graphics.opengl.shaders.bindShaderResources
 
@@ -59,10 +58,10 @@ class OpenglFullscreenQuadDrawer(pass: OpenglPass, dslCode: DrawingSystem.() -> 
         }
     }
 
-    override fun executeDrawingCommands(frame: OpenglFrame, ctx: SystemExecutionContext) {
+    override fun executeDrawingCommands(context: OpenglPassInstance) {
         pipeline.bind()
         pipeline.bindVertexBuffer(0, vertexBuffer)
-        ctx.bindShaderResources(pipeline)
+        context.bindShaderResources(pipeline)
 
         //GL20.glValidateProgram(pipeline.program.programId)
         //println(GL20.glGetProgramInfoLog(pipeline.program.programId))
