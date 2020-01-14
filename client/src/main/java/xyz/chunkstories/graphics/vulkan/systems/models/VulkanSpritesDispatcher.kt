@@ -135,7 +135,7 @@ class VulkanSpritesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchin
 
                 bindingContext.bindInstancedInput(spriteII, instancesGpuBuffer)
 
-                bindingContext.preDraw(commandBuffer)
+                bindingContext.commitAndBind(commandBuffer)
                 vkCmdDraw(commandBuffer, 3 * 2, 1, 0, instance++)
             }
 

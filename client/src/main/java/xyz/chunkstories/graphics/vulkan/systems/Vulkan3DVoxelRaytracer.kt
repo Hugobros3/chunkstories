@@ -95,7 +95,7 @@ class Vulkan3DVoxelRaytracer(pass: VulkanPass, dslCode: Vulkan3DVoxelRaytracer.(
 
         bindingContext.bindTextureAndSampler("blueNoise", backend.textures.getOrLoadTexture2D("textures/noise/blue1024.png"), sampler)
 
-        bindingContext.preDraw(commandBuffer)
+        bindingContext.commitAndBind(commandBuffer)
 
         vkCmdBindVertexBuffers(commandBuffer, 0, MemoryStack.stackLongs(vertexBuffer.handle), MemoryStack.stackLongs(0))
         vkCmdDraw(commandBuffer, 3 * 1, 1, 0, 0)

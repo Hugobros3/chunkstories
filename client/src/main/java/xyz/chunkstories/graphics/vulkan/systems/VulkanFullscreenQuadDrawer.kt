@@ -70,7 +70,7 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass, dslCode: FullscreenQuadDrawer
         ctx.bindShaderResources(bindingContext)
 
         vkCmdBindVertexBuffers(commandBuffer, 0, stackLongs(vertexBuffer.handle), stackLongs(0))
-        bindingContext.preDraw(commandBuffer)
+        bindingContext.commitAndBind(commandBuffer)
         vkCmdDraw(commandBuffer, 3 * 1, 1, 0, 0)
 
         frame.recyclingTasks.add {

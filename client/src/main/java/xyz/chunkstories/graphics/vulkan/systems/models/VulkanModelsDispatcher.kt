@@ -201,7 +201,7 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
                     bindingContext.bindStructuredUBO("world", world.getConditions())
 
                     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
-                    bindingContext.preDraw(commandBuffer)
+                    bindingContext.commitAndBind(commandBuffer)
 
                     var instance = 0
 
@@ -262,7 +262,7 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
                         if(animated) {
                             perMaterialBindingContext.bindInstancedInput("animationData", animationDataGpuBuffer!!)
                         }
-                        perMaterialBindingContext.preDraw(commandBuffer)
+                        perMaterialBindingContext.commitAndBind(commandBuffer)
 
 
                         vkCmdDraw(commandBuffer, mesh.vertices, materialInstancesCount, 0, firstInstance)

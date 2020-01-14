@@ -74,7 +74,7 @@ class VulkanFarTerrainRenderer(pass: VulkanPass, dslCode: VulkanFarTerrainRender
         bindingContext.bindTextureAndSampler("heightTexture", textureManager.heightTexture, sampler, 0)
         bindingContext.bindTextureAndSampler("terrainColor", textureManager.terrainColor, sampler, 0)
         bindingContext.bindSSBO("elementsBuffer", vkBuffer)
-        bindingContext.preDraw(commandBuffer)
+        bindingContext.commitAndBind(commandBuffer)
 
         val playerEntity = client.player.controlledEntity
         if(playerEntity != null) {

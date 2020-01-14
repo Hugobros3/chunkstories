@@ -1,4 +1,4 @@
-package xyz.chunkstories.graphics.vulkan.resources
+    package xyz.chunkstories.graphics.vulkan.resources
 
 import xyz.chunkstories.api.graphics.structs.InterfaceBlock
 import xyz.chunkstories.graphics.vulkan.Pipeline
@@ -40,7 +40,7 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
                 TODO("Handle variable size layouts")
         }
 
-        fun createMoreDescriptorSets() {
+        private fun createMoreDescriptorSets() {
             stackPush()
 
             val descriptorsCountPerType = layout.descriptorsCountByType
@@ -89,7 +89,7 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
             memFree(pDescriptorSets)
             available.addAll(instances.asList())
 
-            println("Created $allocationSize new descriptors for layout $layout")
+            //println("Created $allocationSize new descriptors for layout $layout")
 
             // Geometric growth for our descriptor sets pools
             allocatedTotal += allocationSize
@@ -113,13 +113,12 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
 
     /** Thread UNSAFE semi-immediate mode emulation of the conventional binding model */
     inner class ShaderBindingContext internal constructor(val pipeline: Pipeline) {
-        val sets = mutableMapOf<Int, VkDescriptorSet>()
-        val dirty = mutableSetOf<Int>()
+        private val sets = mutableMapOf<Int, VkDescriptorSet>()
 
         val samplers: VulkanSamplers
             get() = this@DescriptorSetsMegapool.samplers
 
-        val spentSets = mutableMapOf<LayoutSubpool, MutableList<VkDescriptorSet>>()
+        //TODO delete me
         val tempBuffers = mutableListOf<VulkanBuffer>()
 
         private fun getSet(slot: Int): VkDescriptorSet {
@@ -130,16 +129,6 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
             if (set == null) {
                 set = subpool.acquireDescriptorSet()
                 sets[slot] = set
-            } else if (dirty.remove(slot)) {
-                val oldset = set
-                set = subpool.acquireDescriptorSet()
-                sets[slot] = set
-
-                //TODO don't do this idk
-                TODO("kill")
-                //backend.copyDescriptorSet(oldset, set, slotLayout.bindingsCountTotal)
-
-                spentSets.getOrPut(subpool) { mutableListOf() }.add(oldset)
             }
 
             return set
@@ -159,7 +148,7 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
             tempBuffers.add(buffer)
 
             buffer.upload(interfaceBlock)
-            backend.updateDescriptorSet(set, uboBindPoint.locator.binding, buffer)
+            backend.writeUniformBufferDescriptor(set, uboBindPoint.locator.binding, buffer, 0, buffer.bufferSize)
         }
 
         fun bindRawUBO(rawName: String, buffer: VulkanUniformBuffer) {
@@ -167,7 +156,7 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
                     ?: throw Exception("Can't find a program resource matching that name in this context")
 
             val set = getSet(uboBindPoint.locator.descriptorSetSlot)
-            backend.updateDescriptorSet(set, uboBindPoint.locator.binding, buffer)
+            backend.writeUniformBufferDescriptor(set, uboBindPoint.locator.binding, buffer, 0, buffer.bufferSize)
         }
 
         fun bindInstancedInput(name: String, buffer: VulkanBuffer, offset: Long = 0) {
@@ -194,7 +183,7 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
 
         fun bindSSBO(ssbo: GLSLShaderStorage, buffer: VulkanBuffer, offset: Long = 0) {
             val set = getSet(ssbo.locator.descriptorSetSlot)
-            backend.updateDescriptorSet(set, ssbo.locator.binding, buffer, offset)
+            backend.writeStorageBufferDescriptor(set, ssbo.locator.binding, buffer, offset)
         }
 
         fun bindTextureAndSampler(name: String, texture: VulkanTexture2D, sampler: VulkanSampler, index: Int = 0) {
@@ -203,7 +192,7 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
             } ?: return // ?: throw Exception("I can't find a program sampler2D resource matching that name '$name'")
 
             val set = getSet(resource.locator.descriptorSetSlot)
-            backend.updateDescriptorSet(set, resource.locator.binding, texture, sampler, index)
+            backend.writeCombinedImageSamplerDescriptor(set, resource.locator.binding, texture, sampler, index)
         }
 
         fun bindTextureAndSampler(name: String, texture: VulkanOnionTexture2D, sampler: VulkanSampler, index: Int = 0) {
@@ -212,7 +201,7 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
             } ?: return // ?: throw Exception("I can't find a program sampler2DArray resource matching that name '$name'")
 
             val set = getSet(resource.locator.descriptorSetSlot)
-            backend.updateDescriptorSet(set, resource.locator.binding, texture, sampler, index)
+            backend.writeCombinedImageSamplerDescriptor(set, resource.locator.binding, texture, sampler, index)
         }
 
         fun bindTextureAndSampler(name: String, texture: VulkanTexture3D, sampler: VulkanSampler, index: Int = 0) {
@@ -221,7 +210,7 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
             } ?: return // ?: throw Exception("I can't find a program sampler3D resource matching that name '$name'")
 
             val set = getSet(resource.locator.descriptorSetSlot)
-            backend.updateDescriptorSet(set, resource.locator.binding, texture, sampler, index)
+            backend.writeCombinedImageSamplerDescriptor(set, resource.locator.binding, texture, sampler, index)
         }
 
         fun bindTextureAndSampler(name: String, texture: VulkanTextureCubemap, sampler: VulkanSampler, index: Int = 0) {
@@ -230,25 +219,21 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
             } ?: return // ?: throw Exception("I can't find a program sampler3D resource matching that name '$name'")
 
             val set = getSet(resource.locator.descriptorSetSlot)
-            backend.updateDescriptorSet(set, resource.locator.binding, texture, sampler, index)
+            backend.writeCombinedImageSamplerDescriptor(set, resource.locator.binding, texture, sampler, index)
         }
 
-        fun preDraw(commandBuffer: VkCommandBuffer) {
+        /** Commits the binds and bind appropriate sets to the command buffer */
+        fun commitAndBind(commandBuffer: VkCommandBuffer) {
             stackPush()
             for ((slot, set) in sets.entries) {
                 vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, slot, stackLongs(set), null as? IntBuffer)
             }
 
-            dirty.addAll(sets.keys)
             stackPop()
         }
 
         fun recycle() {
             var i = 0
-            for ((subpool, usedSlots) in spentSets) {
-                subpool.available.addAll(usedSlots)
-                i += usedSlots.size
-            }
 
             for ((slot, set) in sets) {
                 val slotLayout = pipeline.program.slotLayouts[slot]

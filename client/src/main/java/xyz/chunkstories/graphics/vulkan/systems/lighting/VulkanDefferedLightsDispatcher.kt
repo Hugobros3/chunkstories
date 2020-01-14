@@ -77,7 +77,7 @@ class VulkanDefferedLightsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
                 context.bindShaderResources(bindingContext)
 
                 VK10.vkCmdBindVertexBuffers(commandBuffer, 0, MemoryStack.stackLongs(vertexBuffer.handle), MemoryStack.stackLongs(0))
-                bindingContext.preDraw(commandBuffer)
+                bindingContext.commitAndBind(commandBuffer)
 
                 VK10.vkCmdDraw(commandBuffer, 3, 1, 0, 0)
             }
