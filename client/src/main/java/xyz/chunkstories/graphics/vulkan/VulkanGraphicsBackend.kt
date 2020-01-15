@@ -1,21 +1,15 @@
 package xyz.chunkstories.graphics.vulkan
 
-import xyz.chunkstories.api.graphics.systems.drawing.FullscreenQuadDrawer
-import xyz.chunkstories.api.gui.GuiDrawer
 import xyz.chunkstories.client.glfw.GLFWWindow
 import xyz.chunkstories.graphics.GLFWBasedGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.devices.LogicalDevice
 import xyz.chunkstories.graphics.vulkan.devices.PhysicalDevice
-import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.vulkan.graph.VulkanRenderGraph
 import xyz.chunkstories.graphics.vulkan.resources.DescriptorSetsMegapool
 import xyz.chunkstories.graphics.vulkan.memory.VulkanMemoryManager
 import xyz.chunkstories.graphics.vulkan.shaders.VulkanShaderFactory
 import xyz.chunkstories.graphics.vulkan.swapchain.SwapChain
 import xyz.chunkstories.graphics.vulkan.swapchain.WindowSurface
-import xyz.chunkstories.graphics.vulkan.systems.*
-import xyz.chunkstories.graphics.vulkan.systems.debug.VulkanDebugDrawer
-import xyz.chunkstories.graphics.vulkan.systems.gui.VulkanGuiDrawer
 import xyz.chunkstories.graphics.vulkan.textures.VulkanTextures
 import xyz.chunkstories.graphics.vulkan.util.*
 import org.lwjgl.PointerBuffer
@@ -24,22 +18,13 @@ import org.lwjgl.glfw.GLFWVulkan.glfwGetRequiredInstanceExtensions
 import org.lwjgl.glfw.GLFWVulkan.glfwVulkanSupported
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
+import org.lwjgl.vulkan.EXTDebugMarker.VK_EXT_DEBUG_MARKER_EXTENSION_NAME
 import org.lwjgl.vulkan.EXTDebugReport.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.content.Content
-import xyz.chunkstories.api.graphics.systems.RegisteredGraphicSystem
-import xyz.chunkstories.api.graphics.systems.dispatching.*
-import xyz.chunkstories.api.graphics.systems.drawing.DrawingSystem
-import xyz.chunkstories.api.graphics.systems.drawing.FarTerrainDrawer
 import xyz.chunkstories.graphics.GraphicsEngineImplementation
-import xyz.chunkstories.graphics.vulkan.systems.debug.VulkanSpinningCubeDrawer
-import xyz.chunkstories.graphics.vulkan.systems.lighting.VulkanDefferedLightsDispatcher
-import xyz.chunkstories.graphics.vulkan.systems.models.VulkanLinesDispatcher
-import xyz.chunkstories.graphics.vulkan.systems.models.VulkanModelsDispatcher
-import xyz.chunkstories.graphics.vulkan.systems.models.VulkanSpritesDispatcher
-import xyz.chunkstories.graphics.vulkan.systems.world.VulkanChunkRepresentationsDispatcher
-import xyz.chunkstories.graphics.vulkan.systems.world.farterrain.VulkanFarTerrainRenderer
+import xyz.chunkstories.graphics.vulkan.debug.DebugMarkersUtil
 import xyz.chunkstories.graphics.vulkan.textures.voxels.VulkanVoxelTexturesArray
 import xyz.chunkstories.graphics.vulkan.world.VulkanWorldRenderer
 import xyz.chunkstories.voxel.VoxelTexturesSupport
@@ -50,8 +35,13 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
     internal val enableValidation = window.client.arguments["enableValidation"] == "true"
 
     internal var instance: VkInstance
-    private val debugCallback: Long
+
+    private var debugOutputEnable = false
+    private var debugCallback: Long = 0L
     private var cookie = true
+
+    private var debugMarkerEnable = false
+    val debugMarketUtil: DebugMarkersUtil?
 
     /** All the physical devices available to Vulkan */
     private val physicalDevices: List<PhysicalDevice>
@@ -85,13 +75,20 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
         val glfwRequiredExtensions = glfwGetRequiredInstanceExtensions() ?: throw Exception("Vulkan is not supported for windowed rendering on this machine.")
 
         instance = createVkInstance(glfwRequiredExtensions)
-        debugCallback = setupDebug(instance)
+        if(debugOutputEnable)
+            debugCallback = setupDebug(instance)
+
         surface = WindowSurface(instance, window)
 
         physicalDevices = enumeratePhysicalDevices()
         physicalDevice = pickPhysicalDevice(true)
 
+        if(physicalDevice.availableExtensions.contains(VK_EXT_DEBUG_MARKER_EXTENSION_NAME))
+            debugMarkerEnable = true
+
         logicalDevice = LogicalDevice(this, physicalDevice)
+
+        debugMarketUtil = if(debugMarkerEnable) DebugMarkersUtil(this) else null
 
         shaderFactory = VulkanShaderFactory(this, window.client, logicalDevice)
         memoryManager = VulkanMemoryManager(this, logicalDevice)
@@ -168,28 +165,45 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
 
     /** Creates a Vulkan instance */
     private fun createVkInstance(requiredExtensions: PointerBuffer): VkInstance = stackPush().use {
+        // List available Vulkan extensions
+        val extensionsCount = stackInts(0)
+        vkEnumerateInstanceExtensionProperties(null as? CharSequence, extensionsCount, null as? VkExtensionProperties.Buffer)
+        val extensionProperties = VkExtensionProperties.calloc(extensionsCount[0])
+        vkEnumerateInstanceExtensionProperties(null as? CharSequence, extensionsCount, extensionProperties)
+
+        val availableInstanceExtensions = extensionProperties.map { it.extensionNameString() }
+        logger.info("Available instance extensions: $availableInstanceExtensions")
+
+        val missingInstanceExtensions = requiredInstanceExtensions.filter { !availableInstanceExtensions.contains(it) }
+        if(missingInstanceExtensions.isNotEmpty()) {
+            throw Exception("Missing some required instance extensions: $missingInstanceExtensions")
+        }
+
+        val instanceExtensionsToEnable = requiredInstanceExtensions.union(preferredInstanceExtensions.intersect(availableInstanceExtensions))
+        logger.info("Enabling instance extensions: $instanceExtensionsToEnable")
+
+        if(availableInstanceExtensions.contains(VK_EXT_DEBUG_REPORT_EXTENSION_NAME))
+            debugOutputEnable = true
+
+        val pRequestedInstanceExtensions = stackMallocPointer(requiredExtensions.remaining() + instanceExtensionsToEnable.size)
+        pRequestedInstanceExtensions.put(requiredExtensions)
+        instanceExtensionsToEnable.forEach { extensionName -> pRequestedInstanceExtensions.put(stackUTF8(extensionName)) }
+        pRequestedInstanceExtensions.flip()
+
+        var pRequestedLayers: PointerBuffer? = null
+        if (enableValidation) {
+            logger.info("Validation layer requested, enabling...")
+            pRequestedLayers = stackCallocPointer(1)
+            pRequestedLayers.put(stackUTF8("VK_LAYER_KHRONOS_validation"))
+            pRequestedLayers.flip()
+        }
+
         val appInfoStruct = VkApplicationInfo.callocStack().sType(VK_STRUCTURE_TYPE_APPLICATION_INFO).apply {
             pApplicationName(stackUTF8("Chunk Stories"))
             pEngineName(stackUTF8("Chunk Stories Vulkan Backend"))
 
             apiVersion(VK_MAKE_VERSION(1, 1, 70))
         }
-
-        val additionalInstanceExtensions = requiredInstanceExtensions.toMutableList()
-
-        val pRequestedInstanceExtensions = stackMallocPointer(requiredExtensions.remaining() + additionalInstanceExtensions.size)
-        pRequestedInstanceExtensions.put(requiredExtensions)
-        additionalInstanceExtensions.forEach { extensionName -> pRequestedInstanceExtensions.put(stackUTF8(extensionName)) }
-        pRequestedInstanceExtensions.flip()
-
-        var pRequestedLayers: PointerBuffer? = null
-        if (enableValidation) {
-            logger.info("Validation layer enabled")
-            pRequestedLayers = stackCallocPointer(1)
-            pRequestedLayers.put(stackUTF8("VK_LAYER_LUNARG_standard_validation"))
-            pRequestedLayers.flip()
-        }
-
         val createInfoStruct = VkInstanceCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO).apply {
             pApplicationInfo(appInfoStruct)
             ppEnabledExtensionNames(pRequestedInstanceExtensions)
@@ -213,9 +227,7 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
         }
 
         val vkInstance = VkInstance(pInstance.get(0), createInfoStruct)
-
         logger.info("Successfully created Vulkan instance")
-
         return vkInstance
     }
 
@@ -282,53 +294,6 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
         logger.debug("Picking physical device $bestPhysicalDevice")
 
         return bestPhysicalDevice ?: throw Exception("Could not find suitable physical device !")
-    }
-
-    // TODO move to dedicated class
-    fun <T : DrawingSystem> createDrawingSystem(pass: VulkanPass, registration: RegisteredGraphicSystem<T>): VulkanDrawingSystem {
-        val dslCode = registration.dslCode as DrawingSystem.() -> Unit
-
-        return when (registration.clazz) {
-            GuiDrawer::class.java -> VulkanGuiDrawer(pass, window.client.gui)
-            FullscreenQuadDrawer::class.java -> VulkanFullscreenQuadDrawer(pass, dslCode)
-            FarTerrainDrawer::class.java -> VulkanFarTerrainRenderer(pass, dslCode)
-
-            Vulkan3DVoxelRaytracer::class.java -> Vulkan3DVoxelRaytracer(pass, dslCode)
-            VulkanSpinningCubeDrawer::class.java -> VulkanSpinningCubeDrawer(pass, dslCode)
-            VulkanDebugDrawer::class.java -> VulkanDebugDrawer(pass, dslCode, window.client.ingame!!)
-
-            else -> throw Exception("Unimplemented system on this backend: ${registration.clazz}")
-        }
-    }
-
-    // TODO move to dedicated class
-    fun <T: DispatchingSystem> getOrCreateDispatchingSystem(list: MutableList<VulkanDispatchingSystem<*,*>>, dispatchingSystemRegistration: RegisteredGraphicSystem<T>): VulkanDispatchingSystem<*,*> {
-        val implemClass =  when(dispatchingSystemRegistration.clazz) {
-            ChunksRenderer::class.java -> VulkanChunkRepresentationsDispatcher::class
-            ModelsRenderer::class.java -> VulkanModelsDispatcher::class
-            SpritesRenderer::class.java -> VulkanSpritesDispatcher::class
-            LinesRenderer::class.java -> VulkanLinesDispatcher::class
-            DefferedLightsRenderer::class.java -> VulkanDefferedLightsDispatcher::class
-            else -> throw Exception("Unimplemented system on this backend: ${dispatchingSystemRegistration.clazz}")
-        }.java
-
-        val existing = list.find { implemClass.isAssignableFrom(it::class.java) }
-        if(existing != null)
-            return existing
-
-        //val new = implemClass.getConstructor(VulkanGraphicsBackend::class.java).newInstance(this)
-        val new = when(dispatchingSystemRegistration.clazz) {
-            ChunksRenderer::class.java -> VulkanChunkRepresentationsDispatcher(this)
-            ModelsRenderer::class.java -> VulkanModelsDispatcher(this)
-            SpritesRenderer::class.java -> VulkanSpritesDispatcher(this)
-            LinesRenderer::class.java -> VulkanLinesDispatcher(this)
-            DefferedLightsRenderer::class.java -> VulkanDefferedLightsDispatcher(this)
-            else -> throw Exception("Unimplemented system on this backend: ${dispatchingSystemRegistration.clazz}")
-        }
-
-        list.add(new)
-
-        return new
     }
 
     // yes this engine is a little tailor-made, what gives

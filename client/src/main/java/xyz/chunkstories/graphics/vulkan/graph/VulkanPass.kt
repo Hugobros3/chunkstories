@@ -9,15 +9,15 @@ import xyz.chunkstories.api.graphics.systems.RegisteredGraphicSystem
 import xyz.chunkstories.api.graphics.systems.dispatching.DispatchingSystem
 import xyz.chunkstories.api.graphics.systems.drawing.DrawingSystem
 import xyz.chunkstories.graphics.common.Cleanable
-import xyz.chunkstories.graphics.vulkan.CommandPool
 import xyz.chunkstories.graphics.vulkan.RenderPass
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
+import xyz.chunkstories.graphics.vulkan.systems.createDrawingSystem
+import xyz.chunkstories.graphics.vulkan.systems.getOrCreateDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.util.VkFramebuffer
 import xyz.chunkstories.graphics.vulkan.util.ensureIs
-import kotlin.collections.ArrayList
 
 open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: VulkanRenderTask, val declaration: PassDeclaration) : Cleanable {
     val drawingSystems: List<VulkanDrawingSystem>
@@ -191,6 +191,8 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
 
                 vkBeginCommandBuffer(this, beginInfo)
 
+                backend.debugMarketUtil?.enterPass(this, passInstance)
+
                 val viewport = VkViewport.callocStack(1).apply {
                     x(0.0F)
                     y(0.0F)
@@ -299,15 +301,22 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
 
                 // Transition image layouts now !
                 for (drawingSystem in drawingSystems) {
+                    backend.debugMarketUtil?.enterSystem(this, passInstance, drawingSystem.javaClass.simpleName)
                     drawingSystem.registerDrawingCommands(passInstance, this)
+                    backend.debugMarketUtil?.leaveSystem(this)
                 }
 
                 for (drawer in dispatchingDrawers) {
                     val relevantBucket = representationsGathered[drawer] ?: continue
+                    backend.debugMarketUtil?.enterSystem(this, passInstance, drawer.system.javaClass.simpleName)
                     drawer.registerDrawingCommands_(passInstance, this, relevantBucket)
+                    backend.debugMarketUtil?.leaveSystem(this)
                 }
 
                 vkCmdEndRenderPass(this)
+
+                backend.debugMarketUtil?.leavePass(this)
+
                 vkEndCommandBuffer(this)
             }
         }

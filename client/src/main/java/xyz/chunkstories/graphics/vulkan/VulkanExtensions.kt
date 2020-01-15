@@ -1,6 +1,7 @@
 package xyz.chunkstories.graphics.vulkan
 
 import org.lwjgl.vulkan.AMDRasterizationOrder.VK_AMD_RASTERIZATION_ORDER_EXTENSION_NAME
+import org.lwjgl.vulkan.EXTDebugMarker.VK_EXT_DEBUG_MARKER_EXTENSION_NAME
 import org.lwjgl.vulkan.EXTDebugReport.VK_EXT_DEBUG_REPORT_EXTENSION_NAME
 import org.lwjgl.vulkan.EXTDescriptorIndexing.VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME
 import org.lwjgl.vulkan.KHRGetPhysicalDeviceProperties2.VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME
@@ -9,9 +10,10 @@ import org.lwjgl.vulkan.KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME
 import org.lwjgl.vulkan.KHRGetMemoryRequirements2.VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME
 import org.lwjgl.vulkan.KHRDedicatedAllocation.VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME
 
-val requiredInstanceExtensions = listOf(VK_EXT_DEBUG_REPORT_EXTENSION_NAME, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)
+val requiredInstanceExtensions = setOf(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)
+val preferredInstanceExtensions = setOf(VK_EXT_DEBUG_REPORT_EXTENSION_NAME)
 
 val requiredDeviceExtensions = setOf(VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME, VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME)
 
 val descriptorIndexingExtensions = setOf(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME, VK_KHR_MAINTENANCE3_EXTENSION_NAME)
-val preferredDeviceExtensions = setOf(VK_AMD_RASTERIZATION_ORDER_EXTENSION_NAME).union(descriptorIndexingExtensions)
+val preferredDeviceExtensions = setOf(VK_AMD_RASTERIZATION_ORDER_EXTENSION_NAME, VK_EXT_DEBUG_MARKER_EXTENSION_NAME).union(descriptorIndexingExtensions)
