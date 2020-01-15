@@ -29,6 +29,10 @@ fun VulkanGraphicsBackend.writeUniformBufferDescriptor(set: VkDescriptorSet, bin
         pBufferInfo(bufferInfo)
     }
 
+    //println("offset: $offset range: $range")
+    if(range == 0L)
+        throw Exception("RIP")
+
     vkUpdateDescriptorSets(logicalDevice.vkDevice, stuffToWrite, null)
 
     stackPop()

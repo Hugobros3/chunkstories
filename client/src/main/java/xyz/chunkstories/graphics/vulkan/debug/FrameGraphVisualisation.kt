@@ -1,10 +1,14 @@
-package xyz.chunkstories.graphics.vulkan.graph
+package xyz.chunkstories.graphics.vulkan.debug
 
 import guru.nidi.graphviz.attribute.Color
 import guru.nidi.graphviz.attribute.Label
 import guru.nidi.graphviz.engine.Format
 import guru.nidi.graphviz.engine.Graphviz
 import guru.nidi.graphviz.model.Factory.*
+import xyz.chunkstories.graphics.vulkan.graph.FrameGraphNode
+import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
+import xyz.chunkstories.graphics.vulkan.graph.VulkanPassInstance
+import xyz.chunkstories.graphics.vulkan.graph.VulkanRenderTaskInstance
 import java.io.File
 
 fun exportRenderGraphPng(frameGraph: VulkanFrameGraph) {
