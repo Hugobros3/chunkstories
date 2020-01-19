@@ -11,6 +11,7 @@ import xyz.chunkstories.api.graphics.rendergraph.ImageInput
 import xyz.chunkstories.api.graphics.systems.drawing.FarTerrainDrawer
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
+import xyz.chunkstories.graphics.common.geometry.generateGridVerticesAndIndices
 import xyz.chunkstories.graphics.common.world.FarTerrainCellHelper
 import xyz.chunkstories.graphics.vulkan.Pipeline
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
@@ -57,10 +58,17 @@ class VulkanFarTerrainRenderer(pass: VulkanPass, dslCode: VulkanFarTerrainRender
         program = backend.shaderFactory.createProgram(shaderName)
         pipeline = Pipeline(backend, program, pass, vertexInputConfiguration { /** nothing hahahaha */ }, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
 
-        val bb = memAlloc(16 * 1024 * 1024 * 2)
+        /*val bb = memAlloc(16 * 1024 * 1024 * 2)
         bb.limit(bb.capacity())
         bb.position(0)
-        indexesBuffer = VulkanBuffer(backend, bb, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, MemoryUsagePattern.STATIC)
+        indexesBuffer = VulkanBuffer(backend, bb, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, MemoryUsagePattern.STATIC)*/
+        val (meshGeom, indices) = generateGridVerticesAndIndices(34)
+        val indicesBB = memAlloc(indices.size * 2)
+        indicesBB.asShortBuffer().put(indices.map { it.toShort() }.toShortArray())
+        indicesBB.limit(indicesBB.capacity())
+        indicesBB.position(0)
+        indexesBuffer = VulkanBuffer(backend, indicesBB, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, MemoryUsagePattern.STATIC)
+        memFree(indicesBB)
     }
 
     override fun registerDrawingCommands(context: VulkanPassInstance, commandBuffer: VkCommandBuffer) {
@@ -101,9 +109,9 @@ class VulkanFarTerrainRenderer(pass: VulkanPass, dslCode: VulkanFarTerrainRender
             //vkCmdDraw(commandBuffer, 2 * 3 * patchSize * patchSize, 1, 0, i)
             i++
         }
-        vkCmdDraw(commandBuffer, 2 * 3 * patchSize * patchSize, i, 0, 0)
-        //vkCmdBindIndexBuffer(commandBuffer, indexesBuffer.handle, 0, VK_INDEX_TYPE_UINT16)
-        //vkCmdDrawIndexed(commandBuffer, 2 * 3 * patchSize * patchSize * i, 1, 0, 0, 0)
+        //vkCmdDraw(commandBuffer, 2 * 3 * patchSize * patchSize, i, 0, 0)
+        vkCmdBindIndexBuffer(commandBuffer, indexesBuffer.handle, 0, VK_INDEX_TYPE_UINT16)
+        vkCmdDrawIndexed(commandBuffer, 2 * 3 * patchSize * patchSize, i, 0, 0, 0)
         //println(i)
         /*val patchSize = 32*/
         uploadBuffer.flip()
@@ -122,6 +130,7 @@ class VulkanFarTerrainRenderer(pass: VulkanPass, dslCode: VulkanFarTerrainRender
         program.cleanup()
 
         sampler.cleanup()
+        indexesBuffer.cleanup()
 
         memFree(uploadBuffer)
     }
