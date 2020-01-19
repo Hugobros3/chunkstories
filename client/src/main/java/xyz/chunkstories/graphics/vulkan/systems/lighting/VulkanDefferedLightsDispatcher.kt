@@ -14,7 +14,7 @@ import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPassInstance
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
-import xyz.chunkstories.graphics.vulkan.resources.DescriptorSetsMegapool
+import xyz.chunkstories.graphics.vulkan.resources.VulkanShaderResourcesContext
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.vertexInputConfiguration
 
@@ -65,7 +65,7 @@ class VulkanDefferedLightsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
         private val pipeline = Pipeline(backend, program, pass, vertexInputConfiguration, Primitive.TRIANGLES, FaceCullingMode.DISABLED)
 
         override fun registerDrawingCommands(context: VulkanPassInstance, commandBuffer: VkCommandBuffer, work: VkDefferedLightIR) {
-            val bindingContexts = mutableListOf<DescriptorSetsMegapool.ShaderBindingContext>()
+            val bindingContexts = mutableListOf<VulkanShaderResourcesContext>()
 
             for (light in work) {
                 val bindingContext = context.getBindingContext(pipeline)

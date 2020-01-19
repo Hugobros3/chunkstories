@@ -6,7 +6,7 @@ import xyz.chunkstories.api.graphics.rendergraph.*
 import xyz.chunkstories.api.graphics.shader.ShaderResources
 import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.graphics.vulkan.Pipeline
-import xyz.chunkstories.graphics.vulkan.resources.DescriptorSetsMegapool
+import xyz.chunkstories.graphics.vulkan.resources.VulkanShaderResourcesContext
 import xyz.chunkstories.graphics.vulkan.shaders.extractInto
 import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.systems.world.ViewportSize
@@ -108,8 +108,8 @@ class VulkanPassInstance(graph: VulkanFrameGraph, override val taskInstance: Vul
         shaderResources.supplyUniformBlock("viewportSize", viewportSize)
     }
 
-    fun getBindingContext(pipeline: Pipeline): DescriptorSetsMegapool.ShaderBindingContext {
-        val shaderBindingContext = frameGraph.renderGraph.backend.descriptorMegapool.getBindingContext_(pipeline)
+    fun getBindingContext(pipeline: Pipeline): VulkanShaderResourcesContext {
+        val shaderBindingContext = VulkanShaderResourcesContext(frameGraph.renderGraph.backend.descriptorMegapool, pipeline)
         shaderResources.extractInto(shaderBindingContext, this)
         return shaderBindingContext
     }

@@ -7,14 +7,13 @@ import xyz.chunkstories.graphics.common.shaders.GLSLUniformBlock
 import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampledImage
 import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampledImage2D
 import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampledImageCubemap
-import xyz.chunkstories.graphics.vulkan.graph.VulkanFrameGraph
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPassInstance
 import xyz.chunkstories.graphics.vulkan.graph.VulkanRenderTaskInstance
-import xyz.chunkstories.graphics.vulkan.resources.DescriptorSetsMegapool
+import xyz.chunkstories.graphics.vulkan.resources.VulkanShaderResourcesContext
 import xyz.chunkstories.graphics.vulkan.textures.VulkanTexture2D
 
 /** Adapts the API-style ShaderResources provider to the Vulkan-style descriptor set instance */
-fun ShaderResources.extractInto(target: DescriptorSetsMegapool.ShaderBindingContext, passInstance: PassInstance) {
+fun ShaderResources.extractInto(target: VulkanShaderResourcesContext, passInstance: PassInstance) {
     parent?.extractInto(target, passInstance)
 
     val backend = target.pipeline.backend

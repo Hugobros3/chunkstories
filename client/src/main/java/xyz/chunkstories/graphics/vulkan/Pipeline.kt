@@ -10,8 +10,6 @@ import xyz.chunkstories.graphics.vulkan.util.VkPipelineLayout
 import xyz.chunkstories.graphics.vulkan.util.ensureIs
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
-import org.lwjgl.vulkan.AMDRasterizationOrder.VK_RASTERIZATION_ORDER_RELAXED_AMD
-import org.lwjgl.vulkan.AMDRasterizationOrder.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_RASTERIZATION_ORDER_AMD
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.graphics.rendergraph.DepthTestingConfiguration
@@ -199,7 +197,7 @@ class Pipeline(val backend: VulkanGraphicsBackend, val program : VulkanShaderPro
 
         val pipelineLayoutCreateInfo = VkPipelineLayoutCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO).apply {
             val pDescriptorSets = stackMallocLong(program.slotLayouts.size)
-            program.slotLayouts.forEach { pDescriptorSets.put(it.vulkanLayout) }
+            program.slotLayouts.forEach { pDescriptorSets.put(it.vkLayoutHandle) }
             pDescriptorSets.flip()
 
             pSetLayouts(pDescriptorSets)

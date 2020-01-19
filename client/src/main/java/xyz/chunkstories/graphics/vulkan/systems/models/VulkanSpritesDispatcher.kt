@@ -22,7 +22,7 @@ import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPassInstance
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
-import xyz.chunkstories.graphics.vulkan.resources.DescriptorSetsMegapool
+import xyz.chunkstories.graphics.vulkan.resources.VulkanShaderResourcesContext
 import xyz.chunkstories.graphics.vulkan.shaders.VulkanShaderProgram
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
@@ -101,7 +101,7 @@ class VulkanSpritesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchin
 
             val client = backend.window.client.ingame ?: return
 
-            val bindingContexts = mutableListOf<DescriptorSetsMegapool.ShaderBindingContext>()
+            val bindingContexts = mutableListOf<VulkanShaderResourcesContext>()
 
             val instancesGpuBuffer = VulkanBuffer(backend, ssboBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, MemoryUsagePattern.DYNAMIC)
             val instancesBuffer = MemoryUtil.memAlloc(instancesGpuBuffer.bufferSize.toInt())

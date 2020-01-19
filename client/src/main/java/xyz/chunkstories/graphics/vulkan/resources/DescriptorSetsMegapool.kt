@@ -1,44 +1,38 @@
-    package xyz.chunkstories.graphics.vulkan.resources
+package xyz.chunkstories.graphics.vulkan.resources
 
-import xyz.chunkstories.api.graphics.structs.InterfaceBlock
-import xyz.chunkstories.graphics.vulkan.Pipeline
-import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
-import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
-import xyz.chunkstories.graphics.vulkan.buffers.VulkanUniformBuffer
-import xyz.chunkstories.graphics.vulkan.shaders.DescriptorSlotLayout
 import org.lwjgl.system.MemoryStack.*
-import org.lwjgl.system.MemoryUtil.*
-import org.lwjgl.vulkan.*
+import org.lwjgl.system.MemoryUtil.memAllocLong
+import org.lwjgl.system.MemoryUtil.memFree
 import org.lwjgl.vulkan.VK10.*
+import org.lwjgl.vulkan.VkDescriptorPoolCreateInfo
+import org.lwjgl.vulkan.VkDescriptorPoolSize
+import org.lwjgl.vulkan.VkDescriptorSetAllocateInfo
 import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.common.shaders.*
-import xyz.chunkstories.graphics.vulkan.textures.*
+import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
+import xyz.chunkstories.graphics.vulkan.shaders.DescriptorSlotLayout
 import xyz.chunkstories.graphics.vulkan.util.*
-import java.nio.IntBuffer
 import java.util.concurrent.ConcurrentLinkedDeque
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
+    private val layoutsLock = ReentrantLock()
 
-    private val mainPool = mutableMapOf<DescriptorSlotLayout, LayoutSubpool>()
+    private val layouts = mutableMapOf<Set<GLSLResource>, ReferenceCountedDescriptorSlotLayout>()
+    private val poolsForLayouts = mutableMapOf<DescriptorSlotLayout, LayoutSubpool>()
 
     val samplers = VulkanSamplers(backend)
 
-    private fun getSubpoolForLayout(layout: DescriptorSlotLayout): LayoutSubpool = mainPool.getOrPut(layout) {
-        LayoutSubpool(layout)
-    }
+    internal fun getSubpoolForLayout(layout: DescriptorSlotLayout): LayoutSubpool = poolsForLayouts[layout] ?: throw Exception("This layout no longer exists! Did you get it from a destroyed shader too ?")
 
-    /** A pool of descriptor pools contaning only instances of a single descriptor set type. The descriptor sets get recycled. */
+    /** A pool of descriptor pools contaning only instances of a single descriptor set layout. The descriptor sets get recycled. */
     inner class LayoutSubpool internal constructor(val layout: DescriptorSlotLayout) : Cleanable {
         var allocationSize = 4
         var allocatedTotal = 0
         val pools = mutableListOf<VkDescriptorPool>()
 
         val available = ConcurrentLinkedDeque<VkDescriptorSet>()
-
-        init {
-            if(layout.variableSize)
-                TODO("Handle variable size layouts")
-        }
 
         private fun createMoreDescriptorSets() {
             stackPush()
@@ -70,7 +64,7 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
             // Allocate every set we need from this pool
             val layouts = memAllocLong(descriptorSetsCount) // allocate on heap because this gets big
             for (i in 0 until allocationSize) {
-                layouts.put(layout.vulkanLayout)
+                layouts.put(layout.vkLayoutHandle)
             }
             layouts.flip()
 
@@ -109,148 +103,40 @@ class DescriptorSetsMegapool(val backend: VulkanGraphicsBackend) : Cleanable {
         }
     }
 
-    fun getBindingContext_(pipeline: Pipeline) = ShaderBindingContext(pipeline)
+    data class ReferenceCountedDescriptorSlotLayout(var users: Int = 0, val descriptorSlotLayout: DescriptorSlotLayout)
 
-    /** Thread UNSAFE semi-immediate mode emulation of the conventional binding model */
-    inner class ShaderBindingContext internal constructor(val pipeline: Pipeline) {
-        private val sets = mutableMapOf<Int, VkDescriptorSet>()
+    fun acquireDescriptorSlotLayout(slotResources: Set<GLSLResource>): DescriptorSlotLayout {
+        layoutsLock.withLock {
+            val entry = layouts.getOrPut(slotResources) {
+                val descriptorSetLayout = DescriptorSlotLayout(backend, slotResources)
 
-        val samplers: VulkanSamplers
-            get() = this@DescriptorSetsMegapool.samplers
+                if(poolsForLayouts.containsKey(descriptorSetLayout))
+                    throw Exception("Layout subpools should *not* get duplicated !")
 
-        //TODO delete me
-        val tempBuffers = mutableListOf<VulkanBuffer>()
-
-        private fun getSet(slot: Int): VkDescriptorSet {
-            val slotLayout = pipeline.program.slotLayouts[slot]
-            val subpool = getSubpoolForLayout(slotLayout)
-            var set = sets[slot]
-
-            if (set == null) {
-                set = subpool.acquireDescriptorSet()
-                sets[slot] = set
+                poolsForLayouts[descriptorSetLayout] = LayoutSubpool(descriptorSetLayout)
+                ReferenceCountedDescriptorSlotLayout(descriptorSlotLayout = descriptorSetLayout)
             }
-
-            return set
+            entry.users++
+            return entry.descriptorSlotLayout
         }
+    }
 
-        fun bindStructuredUBO(instanceName: String, interfaceBlock: InterfaceBlock) {
-            //TODO path w/ name instead of IB class
-            val uboBindPoint = pipeline.program.glslProgram.resources.filterIsInstance<GLSLUniformBlock>().find {
-                it.struct.kClass == interfaceBlock.javaClass.kotlin //TODO ::class ?
-                && it.instanceName == instanceName
-            } ?: throw Exception("I can't find a program resource matching that interface block :s")
+    fun releaseDescriptorSlotLayout(descriptorSlotLayout: DescriptorSlotLayout) {
+        layoutsLock.withLock {
+            val entry = layouts[descriptorSlotLayout.resources] ?: throw Exception("Double free")
+            entry.users--
+            if (entry.users == 0) {
+                poolsForLayouts[descriptorSlotLayout]!!.cleanup()
+                poolsForLayouts.remove(descriptorSlotLayout)
 
-            val set = getSet(uboBindPoint.locator.descriptorSetSlot)
-
-            //TODO UBO MEGAPOOL
-            val buffer = VulkanUniformBuffer(backend, uboBindPoint.struct)
-            tempBuffers.add(buffer)
-
-            buffer.upload(interfaceBlock)
-            backend.writeUniformBufferDescriptor(set, uboBindPoint.locator.binding, buffer, 0, buffer.bufferSize)
-        }
-
-        fun bindRawUBO(rawName: String, buffer: VulkanUniformBuffer) {
-            val uboBindPoint = pipeline.program.glslProgram.resources.filterIsInstance<GLSLUniformBlock>().find { it.name == rawName }
-                    ?: throw Exception("Can't find a program resource matching that name in this context")
-
-            val set = getSet(uboBindPoint.locator.descriptorSetSlot)
-            backend.writeUniformBufferDescriptor(set, uboBindPoint.locator.binding, buffer, 0, buffer.bufferSize)
-        }
-
-        fun bindInstancedInput(name: String, buffer: VulkanBuffer, offset: Long = 0) {
-            val ressource = pipeline.program.glslProgram.instancedInputs.find { it.name == name }!!
-            bindInstancedInput(ressource, buffer, offset)
-        }
-
-        fun bindInstancedInput(instancedInput: GLSLInstancedInput, buffer: VulkanBuffer, offset: Long = 0) {
-            val realResource = instancedInput.associatedResource
-            when(realResource) {
-                is GLSLShaderStorage -> {
-                    bindSSBO(realResource, buffer, offset)
-                }
-                else -> throw Exception("Associated ressource to an instanced input is not a SSBO yet we are in Vulkan mode!")
+                entry.descriptorSlotLayout.cleanup()
+                layouts.remove(descriptorSlotLayout.resources)
             }
-        }
-
-        fun bindSSBO(name: String, buffer: VulkanBuffer, offset: Long = 0) {
-            val ssbo =  pipeline.program.glslProgram.resources.filterIsInstance<GLSLShaderStorage>().find {
-                it.name == name
-            } ?: return // ?: throw Exception("I can't find a program sampler2D resource matching that name '$name'")
-            bindSSBO(ssbo, buffer, offset)
-        }
-
-        fun bindSSBO(ssbo: GLSLShaderStorage, buffer: VulkanBuffer, offset: Long = 0) {
-            val set = getSet(ssbo.locator.descriptorSetSlot)
-            backend.writeStorageBufferDescriptor(set, ssbo.locator.binding, buffer, offset)
-        }
-
-        fun bindTextureAndSampler(name: String, texture: VulkanTexture2D, sampler: VulkanSampler, index: Int = 0) {
-            val resource = pipeline.program.glslProgram.resources.filterIsInstance<GLSLUniformSampledImage2D>().find {
-                it.name == name
-            } ?: return // ?: throw Exception("I can't find a program sampler2D resource matching that name '$name'")
-
-            val set = getSet(resource.locator.descriptorSetSlot)
-            backend.writeCombinedImageSamplerDescriptor(set, resource.locator.binding, texture, sampler, index)
-        }
-
-        fun bindTextureAndSampler(name: String, texture: VulkanOnionTexture2D, sampler: VulkanSampler, index: Int = 0) {
-            val resource = pipeline.program.glslProgram.resources.filterIsInstance<GLSLUniformSampledImage2DArray>().find {
-                it.name == name
-            } ?: return // ?: throw Exception("I can't find a program sampler2DArray resource matching that name '$name'")
-
-            val set = getSet(resource.locator.descriptorSetSlot)
-            backend.writeCombinedImageSamplerDescriptor(set, resource.locator.binding, texture, sampler, index)
-        }
-
-        fun bindTextureAndSampler(name: String, texture: VulkanTexture3D, sampler: VulkanSampler, index: Int = 0) {
-            val resource = pipeline.program.glslProgram.resources.filterIsInstance<GLSLUniformSampledImage3D>().find {
-                it.name == name
-            } ?: return // ?: throw Exception("I can't find a program sampler3D resource matching that name '$name'")
-
-            val set = getSet(resource.locator.descriptorSetSlot)
-            backend.writeCombinedImageSamplerDescriptor(set, resource.locator.binding, texture, sampler, index)
-        }
-
-        fun bindTextureAndSampler(name: String, texture: VulkanTextureCubemap, sampler: VulkanSampler, index: Int = 0) {
-            val resource = pipeline.program.glslProgram.resources.filterIsInstance<GLSLUniformSampledImageCubemap>().find {
-                it.name == name
-            } ?: return // ?: throw Exception("I can't find a program sampler3D resource matching that name '$name'")
-
-            val set = getSet(resource.locator.descriptorSetSlot)
-            backend.writeCombinedImageSamplerDescriptor(set, resource.locator.binding, texture, sampler, index)
-        }
-
-        /** Commits the binds and bind appropriate sets to the command buffer */
-        fun commitAndBind(commandBuffer: VkCommandBuffer) {
-            stackPush()
-            for ((slot, set) in sets.entries) {
-                vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, slot, stackLongs(set), null as? IntBuffer)
-            }
-
-            stackPop()
-        }
-
-        fun recycle() {
-            var i = 0
-
-            for ((slot, set) in sets) {
-                val slotLayout = pipeline.program.slotLayouts[slot]
-                val subpool = getSubpoolForLayout(slotLayout)
-                subpool.available.add(set)
-                i++
-            }
-
-            //println("Recycled $i sets")
-
-            for(buffer in tempBuffers)
-                buffer.cleanup()
         }
     }
 
     override fun cleanup() {
-        mainPool.values.forEach { it.cleanup() }
+        //mainPool.values.forEach { it.cleanup() }
         samplers.cleanup()
     }
 }

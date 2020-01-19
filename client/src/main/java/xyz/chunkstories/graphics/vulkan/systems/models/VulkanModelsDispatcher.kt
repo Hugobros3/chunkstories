@@ -25,7 +25,7 @@ import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPassInstance
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
-import xyz.chunkstories.graphics.vulkan.resources.DescriptorSetsMegapool
+import xyz.chunkstories.graphics.vulkan.resources.VulkanShaderResourcesContext
 import xyz.chunkstories.graphics.vulkan.shaders.VulkanShaderProgram
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
@@ -149,7 +149,7 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
             val realWorldTimeMs = realWorldTimeTruncated / 1000_000
             val animationTime = (realWorldTimeMs / 1000.0) * 1000.0
 
-            val bindingContexts = mutableListOf<DescriptorSetsMegapool.ShaderBindingContext>()
+            val bindingContexts = mutableListOf<VulkanShaderResourcesContext>()
 
             for ((mesh, nonAnimatedInstances, animatedInstances) in work) {
                 fun handle(entries: Collection<Map.Entry<MeshMaterial, MeshMaterialInstances>>, animated: Boolean) {
