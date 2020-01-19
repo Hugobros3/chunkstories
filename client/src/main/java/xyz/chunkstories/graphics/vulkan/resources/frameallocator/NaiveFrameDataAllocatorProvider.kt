@@ -79,11 +79,17 @@ class NaiveFrameDataAllocatorProvider(val backend: VulkanGraphicsBackend) : Fram
             TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
         }
 
+        override fun getMappedSSBO(size: Long): Pair<ByteBuffer, Pair<VulkanBuffer, Long>> {
+            val bb = memAlloc(size.toInt())
+            val ubo = VulkanBuffer(backend, size, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, MemoryUsagePattern.DYNAMIC)
+            uploadRequests.add(UploadRequest(bb, ubo))
+            return Pair(bb, Pair(ubo, 0L))
+        }
+
         override fun beforeSubmission() {
             for((src, target) in uploadRequests) {
-                if(src.limit() == 0)
-                    throw Exception("CANT")
-                target.upload(src, 0, src.limit().toLong())
+                if(src.limit() > 0)
+                    target.upload(src, 0, src.limit().toLong())
             }
 
             println("naive per frame data report: allocated ${allocatedByteBuffers.size} temp buffers, ${allocatedBuffers.size} vkbuffers, ${uploadRequests.size} combined upload requests")

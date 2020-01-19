@@ -1,8 +1,6 @@
 package xyz.chunkstories.graphics.vulkan.systems.world
 
 import org.lwjgl.system.MemoryStack.*
-import org.lwjgl.system.MemoryUtil.memAlloc
-import org.lwjgl.system.MemoryUtil.memFree
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 import xyz.chunkstories.api.graphics.TextureTilingMode
@@ -13,14 +11,11 @@ import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompilationParame
 import xyz.chunkstories.graphics.vulkan.Pipeline
 import xyz.chunkstories.graphics.vulkan.VertexInputConfiguration
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
-import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
 import xyz.chunkstories.graphics.common.util.extractInterfaceBlock
 import xyz.chunkstories.graphics.common.util.getStd140AlignedSizeForStruct
 import xyz.chunkstories.graphics.common.world.*
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPassInstance
-import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
-import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
 import xyz.chunkstories.graphics.vulkan.textures.voxels.VulkanVoxelTexturesArray
@@ -146,17 +141,15 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
 
                 vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, cubesPipeline.handle)
 
-                //TODO pool those
-                val chunkInformationsStorageBuffer = VulkanBuffer(backend, ssboBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, MemoryUsagePattern.DYNAMIC)
+                val (chunkInformationsCpuBuffer, chunkInformationsGpuBuffer) = bindingContext.dataAllocator.getMappedSSBO(ssboBufferSize)
 
-                val chunkInformations = memAlloc(chunkInformationsStorageBuffer.bufferSize.toInt())
-                var instance = 0
                 val voxelTexturesArray = client.content.voxels.textures as VulkanVoxelTexturesArray
                 bindingContext.bindTextureAndSampler("albedoTextures", voxelTexturesArray.albedoOnionTexture, sampler)
-                bindingContext.bindInstancedInput("chunkInfo", chunkInformationsStorageBuffer)
+                bindingContext.bindInstancedInput("chunkInfo", chunkInformationsGpuBuffer.first, chunkInformationsGpuBuffer.second)
 
                 bindingContext.commitAndBind(commandBuffer)
 
+                var instancesCounter = 0
                 for (staticMesh in cubes) {
                     val chunkRepresentation = staticMesh.parent
                     vkCmdBindVertexBuffers(commandBuffer, 0, stackLongs(staticMesh.buffer.handle), stackLongs(0))
@@ -167,22 +160,19 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
                         chunkZ = chunkRepresentation.chunk.chunkZ
                     }
 
-                    extractInterfaceBlock(chunkInformations, instance * sizeAligned16, chunkRenderInfo, chunkInfoStruct)
+                    extractInterfaceBlock(chunkInformationsCpuBuffer, instancesCounter * sizeAligned16, chunkRenderInfo, chunkInfoStruct)
 
-                    vkCmdDraw(commandBuffer, staticMesh.count, 1, 0, instance++)
+                    vkCmdDraw(commandBuffer, staticMesh.count, 1, 0, instancesCounter++)
 
                     context.frame.stats.totalVerticesDrawn += staticMesh.count
                     context.frame.stats.totalDrawcalls++
                 }
 
-                chunkInformations.position(instance * sizeAligned16)
-                chunkInformations.flip()
-                chunkInformationsStorageBuffer.upload(chunkInformations)
-                memFree(chunkInformations)
+                chunkInformationsCpuBuffer.position(instancesCounter * sizeAligned16)
+                chunkInformationsCpuBuffer.flip()
 
                 context.frame.recyclingTasks.add {
                     bindingContext.recycle()
-                    chunkInformationsStorageBuffer.cleanup()//TODO recycle don't destroy!
                 }
             }
             drawCubes()
@@ -197,17 +187,12 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
 
                 vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshesPipeline.handle)
 
-                //TODO not here
-                //if (backend.logicalDevice.useGlobalTexturing)
-                //    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshesPipeline.pipelineLayout, 0, MemoryStack.stackLongs(backend.textures.magicTexturing!!.theSet), null)
+                val (chunkInformationsCpuBuffer, chunkInformationsGpuBuffer) = bindingContext.dataAllocator.getMappedSSBO(ssboBufferSize)
 
-                //TODO pool those
-                val chunkInformationsStorageBuffer = VulkanBuffer(backend, ssboBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, MemoryUsagePattern.DYNAMIC)
-                val chunkInformations = memAlloc(chunkInformationsStorageBuffer.bufferSize.toInt())
                 val voxelTexturesArray = client.content.voxels.textures as VulkanVoxelTexturesArray
                 bindingContext.bindTextureAndSampler("albedoTextures", voxelTexturesArray.albedoOnionTexture, sampler)
-                bindingContext.bindInstancedInput("chunkInfo", chunkInformationsStorageBuffer)
-                //context.bindShaderResources(bindingContext)
+                bindingContext.bindInstancedInput("chunkInfo", chunkInformationsGpuBuffer.first, chunkInformationsGpuBuffer.second)
+
                 bindingContext.commitAndBind(commandBuffer)
 
                 var instancesCounter = 0
@@ -230,7 +215,7 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
                         chunkZ = cz
                     }
 
-                    extractInterfaceBlock(chunkInformations, instancesCounter * sizeAligned16, chunkRenderInfo, chunkInfoStruct)
+                    extractInterfaceBlock(chunkInformationsCpuBuffer, instancesCounter * sizeAligned16, chunkRenderInfo, chunkInfoStruct)
 
                     vkCmdDraw(commandBuffer, staticMesh.count, 1, 0, instancesCounter++)
 
@@ -238,14 +223,14 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
                     context.frame.stats.totalDrawcalls++
                 }
 
-                chunkInformations.position(instancesCounter * sizeAligned16)
-                chunkInformations.flip()
-                chunkInformationsStorageBuffer.upload(chunkInformations)
-                memFree(chunkInformations)
+                chunkInformationsCpuBuffer.position(instancesCounter * sizeAligned16)
+                chunkInformationsCpuBuffer.flip()
+                //chunkInformationsStorageBuffer.upload(chunkInformations)
+                //memFree(chunkInformations)
 
                 context.frame.recyclingTasks.add {
                     bindingContext.recycle()
-                    chunkInformationsStorageBuffer.cleanup()//TODO recycle don't destroy!
+                    //chunkInformationsStorageBuffer.cleanup()//TODO recycle don't destroy!
                 }
             }
             drawStaticMeshes()

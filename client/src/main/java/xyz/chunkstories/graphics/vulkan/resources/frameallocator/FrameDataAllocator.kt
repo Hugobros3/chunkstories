@@ -26,6 +26,8 @@ interface FrameDataAllocator {
     /** Overloads getSSBO to also populate the buffer immediately with some data */
     fun getSSBO(buffer: ByteBuffer): Pair<VulkanBuffer, Long>
 
+    fun getMappedSSBO(size: Long): Pair<ByteBuffer, Pair<VulkanBuffer, Long>>
+
     ///** Overloads getSSBO but this time the buffer isn't consumed right away to allow the memory operations to be merged */
     //fun getSSBOUploadWhenever(buffer: ByteBuffer, callback: (() -> Unit)?): Pair<VulkanBuffer, Long>
     fun beforeSubmission()
