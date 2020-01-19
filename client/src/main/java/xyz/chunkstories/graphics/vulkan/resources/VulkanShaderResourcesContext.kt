@@ -9,7 +9,6 @@ import xyz.chunkstories.graphics.common.util.extractInterfaceBlock
 import xyz.chunkstories.graphics.vulkan.Pipeline
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
-import xyz.chunkstories.graphics.vulkan.buffers.VulkanUniformBuffer
 import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.textures.*
 import xyz.chunkstories.graphics.vulkan.util.VkDescriptorSet
@@ -26,7 +25,7 @@ class VulkanShaderResourcesContext internal constructor(private val frame: Vulka
     val samplers: VulkanSamplers
         get() = megapool.samplers
 
-    val frameDataAllocator = frame.frameDataAllocator
+    val dataAllocator = frame.frameDataAllocator
 
     private fun getSet(slot: Int): VkDescriptorSet {
         val slotLayout = pipeline.program.slotLayouts[slot]
@@ -54,7 +53,7 @@ class VulkanShaderResourcesContext internal constructor(private val frame: Vulka
         val structSize = struct.size.toLong()
 
         //TODO UBO MEGAPOOL
-        val (cpuBuffer, gpuBuffer) = frameDataAllocator.getMappedUBO(structSize)
+        val (cpuBuffer, gpuBuffer) = dataAllocator.getMappedUBO(structSize)
         val (ubo, offset) = gpuBuffer
 
         extractInterfaceBlock(cpuBuffer, 0, interfaceBlock, struct)
