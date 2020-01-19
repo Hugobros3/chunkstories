@@ -6,6 +6,7 @@ import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
 import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import java.nio.ByteBuffer
 import java.util.*
+import java.util.concurrent.ConcurrentLinkedDeque
 
 /** Generic interface for obtaining scratch buffers for per-frame data, has multiple per-vendor implementations for "optimal" usage */
 interface FrameDataAllocator {
@@ -18,8 +19,8 @@ interface FrameDataAllocator {
     /** Overloads getUBO to also populate the buffer immediately with some data */
     fun getUBO(buffer: ByteBuffer): Pair<VulkanBuffer, Long>
 
-    /** Overloads getUBO but this time the buffer isn't consumed right away to allow the memory operations to be merged */
-    fun getUBOUploadWhenever(buffer: ByteBuffer, callback: (() -> Unit)?): Pair<VulkanBuffer, Long>
+    ///** Overloads getUBO but this time the buffer isn't consumed right away to allow the memory operations to be merged */
+    //fun getUBOUploadWhenever(buffer: ByteBuffer, callback: (() -> Unit)?): Pair<VulkanBuffer, Long>
 
     /** Returns a reserved offset into a SSBO whose lifetime is tied to the current frame (it gets destroyed when the frame is done rendering */
     fun getSSBO(size: Long): Pair<VulkanBuffer, Long>
@@ -27,8 +28,8 @@ interface FrameDataAllocator {
     /** Overloads getSSBO to also populate the buffer immediately with some data */
     fun getSSBO(buffer: ByteBuffer): Pair<VulkanBuffer, Long>
 
-    /** Overloads getSSBO but this time the buffer isn't consumed right away to allow the memory operations to be merged */
-    fun getSSBOUploadWhenever(buffer: ByteBuffer, callback: (() -> Unit)?): Pair<VulkanBuffer, Long>
+    ///** Overloads getSSBO but this time the buffer isn't consumed right away to allow the memory operations to be merged */
+    //fun getSSBOUploadWhenever(buffer: ByteBuffer, callback: (() -> Unit)?): Pair<VulkanBuffer, Long>
 }
 
 internal interface PerFrameDataProvider {
@@ -57,6 +58,9 @@ class NaivePerFrameDataProvider(val backend: VulkanGraphicsBackend) : PerFrameDa
     }
 
     inner class NaivePerFrameData(val frame: VulkanFrame) : FrameDataAllocator, Cleanable {
+        val allocatedByteBuffers = ConcurrentLinkedDeque<ByteBuffer>()
+        val allocatedBuffers = ConcurrentLinkedDeque<ByteBuffer>()
+
         override fun getByteBuffer(size: Long): ByteBuffer {
             TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
         }
@@ -69,19 +73,11 @@ class NaivePerFrameDataProvider(val backend: VulkanGraphicsBackend) : PerFrameDa
             TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
         }
 
-        override fun getUBOUploadWhenever(buffer: ByteBuffer, callback: (() -> Unit)?): Pair<VulkanBuffer, Long> {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-
         override fun getSSBO(size: Long): Pair<VulkanBuffer, Long> {
             TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
         }
 
         override fun getSSBO(buffer: ByteBuffer): Pair<VulkanBuffer, Long> {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-
-        override fun getSSBOUploadWhenever(buffer: ByteBuffer, callback: (() -> Unit)?): Pair<VulkanBuffer, Long> {
             TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
         }
 
