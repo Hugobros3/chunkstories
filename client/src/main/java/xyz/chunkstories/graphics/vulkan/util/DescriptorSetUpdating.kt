@@ -10,7 +10,7 @@ import xyz.chunkstories.graphics.vulkan.buffers.VulkanUniformBuffer
 import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
 import xyz.chunkstories.graphics.vulkan.textures.VulkanTexture
 
-fun VulkanGraphicsBackend.writeUniformBufferDescriptor(set: VkDescriptorSet, binding: Int, buffer: VulkanUniformBuffer, offset: Long, range: Long) {
+fun VulkanGraphicsBackend.writeUniformBufferDescriptor(set: VkDescriptorSet, binding: Int, buffer: VulkanBuffer, offset: Long, range: Long) {
     stackPush()
 
     val bufferInfo = VkDescriptorBufferInfo.callocStack(1).apply {

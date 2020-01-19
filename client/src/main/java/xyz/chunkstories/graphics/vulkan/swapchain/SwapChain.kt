@@ -199,7 +199,7 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
         vkWaitForFences(backend.logicalDevice.vkDevice, fence, true, Long.MAX_VALUE)
 
         if(retiringFrame != null) {
-            retiringFrame.recyclingTasks.forEach { it.invoke() }
+            retiringFrame.cleanup()
             // Null out this index so we don't accidentally refer to the old frame again
             inFlightFrames[inflightFrameIndex] = null
 
@@ -249,7 +249,7 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
 
         stackPop()
 
-        val frame = VulkanFrame(frameNumber, getAnimationTime().toFloat(), swapchainImageIndex, swapChainImages[swapchainImageIndex], swapChainImageViews[swapchainImageIndex], swapChainFramebuffers[swapchainImageIndex], imageAvailableSemaphore, renderingFinishedSemaphore, fence, System.nanoTime())
+        val frame = VulkanFrame(backend, frameNumber, getAnimationTime().toFloat(), swapchainImageIndex, swapChainImages[swapchainImageIndex], swapChainImageViews[swapchainImageIndex], swapChainFramebuffers[swapchainImageIndex], imageAvailableSemaphore, renderingFinishedSemaphore, fence, System.nanoTime())
         performanceCounter.whenFrameBegins()
         lastFrame = frame
 
@@ -285,8 +285,9 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
     fun flush() {
         // Finish the recycling tasks for the frames that were in-flight
         for(i in 0 until maxFramesInFlight) {
-            inFlightFrames[i]?.recyclingTasks?.forEach { it.invoke() }
-            inFlightFrames[i] = null
+            val j = (inflightFrameIndex + i) % maxFramesInFlight
+            inFlightFrames[j]?.cleanup()
+            inFlightFrames[j] = null
         }
     }
 

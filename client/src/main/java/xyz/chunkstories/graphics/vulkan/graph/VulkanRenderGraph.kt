@@ -5,7 +5,9 @@ import org.lwjgl.system.MemoryStack.stackPush
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkSubmitInfo
 import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
-import xyz.chunkstories.api.graphics.rendergraph.*
+import xyz.chunkstories.api.graphics.rendergraph.PassInstance
+import xyz.chunkstories.api.graphics.rendergraph.RenderGraphDeclaration
+import xyz.chunkstories.api.graphics.rendergraph.RenderTaskInstance
 import xyz.chunkstories.api.graphics.representation.Representation
 import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.graphics.common.Cleanable
@@ -13,8 +15,8 @@ import xyz.chunkstories.graphics.common.representations.gatherRepresentations
 import xyz.chunkstories.graphics.vulkan.CommandPool
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.debug.exportRenderGraphPng
-import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.swapchain.SwapchainBlitHelper
+import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.util.ensureIs
 
@@ -24,7 +26,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
 
     val commandPool = CommandPool(backend, backend.logicalDevice.graphicsQueue.family, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT or VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
 
-    val dispatchingSystems = mutableListOf<VulkanDispatchingSystem<*,*>>()
+    val dispatchingSystems = mutableListOf<VulkanDispatchingSystem<*, *>>()
 
     val blitHelper = SwapchainBlitHelper(backend)
 
@@ -78,9 +80,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
 
         var passIndex = 0
         val globalStates = mutableMapOf<VulkanRenderBuffer, UsageType>()
-        for (graphNodeIndex in 0 until sequencedGraph.size) {
-            val graphNode = sequencedGraph[graphNodeIndex]
-
+        for (graphNode in sequencedGraph) {
             when (graphNode) {
                 is VulkanPassInstance -> {
                     val pass = graphNode.pass
@@ -102,7 +102,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
         val passesInstances = sequencedGraph.mapNotNull { (it as? VulkanPassInstance) }
         val vulkanPasses = passesInstances.map { it.pass }
 
-        //println(passesInstances.map { "${it.vulkanPass.declaration.name}:${it.context.name}" })
+        frame.frameDataAllocator.beforeSubmission()
 
         stackPush().use {
             val submitInfo = VkSubmitInfo.callocStack().sType(VK_STRUCTURE_TYPE_SUBMIT_INFO).apply {
@@ -127,7 +127,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
             }
 
             backend.logicalDevice.graphicsQueue.mutex.acquireUninterruptibly()
-            vkQueueSubmit(backend.logicalDevice.graphicsQueue.handle, submitInfo, VK_NULL_HANDLE).ensureIs("Failed to submit command buffer", VK_SUCCESS)
+            vkQueueSubmit(backend.logicalDevice.graphicsQueue.handle, submitInfo, VK_NULL_HANDLE).ensureIs("Failed to submit command buffers", VK_SUCCESS)
             backend.logicalDevice.graphicsQueue.mutex.release()
         }
 

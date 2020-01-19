@@ -9,8 +9,7 @@ import xyz.chunkstories.graphics.common.shaders.GLSLType
 import xyz.chunkstories.graphics.common.util.extractInterfaceBlock
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 
-class VulkanUniformBuffer(backend: VulkanGraphicsBackend, val mapper: GLSLType.JvmStruct) :
-        VulkanBuffer(backend, mapper.size.toLong(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, MemoryUsagePattern.DYNAMIC) {
+class VulkanUniformBuffer(backend: VulkanGraphicsBackend, val mapper: GLSLType.JvmStruct) : VulkanBuffer(backend, mapper.size.toLong(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, MemoryUsagePattern.DYNAMIC) {
 
     fun upload(interfaceBlock: InterfaceBlock) {
         stackPush()
@@ -24,22 +23,5 @@ class VulkanUniformBuffer(backend: VulkanGraphicsBackend, val mapper: GLSLType.J
         upload(fillMe)
 
         stackPop()
-    }
-
-    companion object {
-        val zero2 = Vector2f(0.0F)
-        val zero3 = Vector3f(0.0F)
-        val zero4 = Vector4f(0.0F)
-
-        val zero2d = Vector2d(0.0)
-        val zero3d = Vector3d(0.0)
-        val zero4d = Vector4d(0.0)
-
-        val zero2i = Vector2i(0)
-        val zero3i = Vector3i(0)
-        val zero4i = Vector4i(0)
-
-        val mat4identity = Matrix4f()
-        val mat3identity = Matrix3f()
     }
 }
