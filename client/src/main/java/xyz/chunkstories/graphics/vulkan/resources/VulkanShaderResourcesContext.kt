@@ -5,10 +5,12 @@ import org.lwjgl.vulkan.VK10
 import org.lwjgl.vulkan.VkCommandBuffer
 import xyz.chunkstories.api.graphics.structs.InterfaceBlock
 import xyz.chunkstories.graphics.common.shaders.*
+import xyz.chunkstories.graphics.common.util.extractInterfaceBlock
 import xyz.chunkstories.graphics.vulkan.Pipeline
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanUniformBuffer
+import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.textures.*
 import xyz.chunkstories.graphics.vulkan.util.VkDescriptorSet
 import xyz.chunkstories.graphics.vulkan.util.writeCombinedImageSamplerDescriptor
@@ -17,15 +19,14 @@ import xyz.chunkstories.graphics.vulkan.util.writeUniformBufferDescriptor
 import java.nio.IntBuffer
 
 /** Thread UNSAFE semi-immediate mode emulation of the conventional binding model */
-class VulkanShaderResourcesContext internal constructor(val megapool: DescriptorSetsMegapool, val pipeline: Pipeline) {
+class VulkanShaderResourcesContext internal constructor(private val frame: VulkanFrame, private val megapool: DescriptorSetsMegapool, val pipeline: Pipeline) {
     val backend: VulkanGraphicsBackend = megapool.backend
     private val sets = mutableMapOf<Int, VkDescriptorSet>()
 
     val samplers: VulkanSamplers
         get() = megapool.samplers
 
-    //TODO delete me
-    val tempBuffers = mutableListOf<VulkanBuffer>()
+    val frameDataAllocator = frame.frameDataAllocator
 
     private fun getSet(slot: Int): VkDescriptorSet {
         val slotLayout = pipeline.program.slotLayouts[slot]
@@ -49,15 +50,21 @@ class VulkanShaderResourcesContext internal constructor(val megapool: Descriptor
 
         val set = getSet(uboBindPoint.locator.descriptorSetSlot)
 
-        //TODO UBO MEGAPOOL
-        val buffer = VulkanUniformBuffer(backend, uboBindPoint.struct)
-        tempBuffers.add(buffer)
+        val struct = uboBindPoint.struct
+        val structSize = struct.size.toLong()
 
-        buffer.upload(interfaceBlock)
-        backend.writeUniformBufferDescriptor(set, uboBindPoint.locator.binding, buffer, 0, buffer.bufferSize)
+        //TODO UBO MEGAPOOL
+        val (cpuBuffer, gpuBuffer) = frameDataAllocator.getMappedUBO(structSize)
+        val (ubo, offset) = gpuBuffer
+
+        extractInterfaceBlock(cpuBuffer, 0, interfaceBlock, struct)
+        cpuBuffer.position(0)
+        cpuBuffer.limit(structSize.toInt())
+
+        backend.writeUniformBufferDescriptor(set, uboBindPoint.locator.binding, ubo, offset, structSize)
     }
 
-    fun bindRawUBO(rawName: String, buffer: VulkanUniformBuffer) {
+    fun bindRawUBO(rawName: String, buffer: VulkanBuffer) {
         val uboBindPoint = pipeline.program.glslProgram.resources.filterIsInstance<GLSLUniformBlock>().find { it.name == rawName }
                 ?: throw Exception("Can't find a program resource matching that name in this context")
 
@@ -149,8 +156,7 @@ class VulkanShaderResourcesContext internal constructor(val megapool: Descriptor
         }
 
         //println("Recycled $i sets")
-
-        for (buffer in tempBuffers)
-            buffer.cleanup()
+        //for (buffer in tempBuffers)
+        //    buffer.cleanup()
     }
 }

@@ -10,6 +10,7 @@ import org.lwjgl.vulkan.KHRSurface.*
 import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.client.InternalClientOptions
+import xyz.chunkstories.graphics.common.vendor.Vendors
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.descriptorIndexingExtensions
 import xyz.chunkstories.graphics.vulkan.requiredDeviceExtensions
@@ -17,39 +18,45 @@ import xyz.chunkstories.graphics.vulkan.util.*
 import java.nio.IntBuffer
 
 class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vkPhysicalDevice: VkPhysicalDevice) {
-    val deviceName: String
-    val deviceType: PhysicalDeviceType
+    val name: String
+    val type: PhysicalDeviceType
+    val vendor: Vendors
     val deviceId: Int
 
-    val maxBoundSets: Int
+    // Device selection
+    internal val suitable: Boolean
+    internal var fitnessScore: Int
 
+    // Device limits things
+    val maxBoundSets: Int
+    val uboAlignment: Long
+
+    // Features
     /** I don't think I really care about GS tbh */
     val canDoGS: Boolean
     val canDoOutOfOrderRasterization: Boolean
 
-    internal val suitable: Boolean
-    internal var fitnessScore: Int
-
-    val queueFamilies: List<QueueFamily>
-
     val availableExtensions: List<String>
     val texturesArrayIndexingSupportTier: TexturesArrayIndexingSupportTier
 
+    val queueFamilies: List<QueueFamily>
     internal val swapchainDetails: SwapChainSupportDetails
 
     init {
         MemoryStack.stackPush() // todo use use() when Contracts work correctly on AutoCloseable
 
         // Query device properties
-        val vkPhysicalDeviceProperties = VkPhysicalDeviceProperties.callocStack()
+        val vkPhysicalDeviceProperties = VkPhysicalDeviceProperties.calloc()
         vkGetPhysicalDeviceProperties(vkPhysicalDevice, vkPhysicalDeviceProperties)
 
-        deviceName = vkPhysicalDeviceProperties.deviceNameString()
-        deviceType = vkPhysicalDeviceProperties.deviceType().physicalDeviceType()
+        name = vkPhysicalDeviceProperties.deviceNameString()
+        type = vkPhysicalDeviceProperties.deviceType().physicalDeviceType()
+        vendor = vkPhysicalDeviceProperties.vendorID().vendorId()
         deviceId = vkPhysicalDeviceProperties.deviceID()
 
         // Query device limits
         maxBoundSets = vkPhysicalDeviceProperties.limits().maxBoundDescriptorSets()
+        uboAlignment = vkPhysicalDeviceProperties.limits().minUniformBufferOffsetAlignment()
 
         // Query device extensions
         val pExtensionsCount = stackMallocInt(1)
@@ -62,7 +69,7 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
             availableExtensions += extension.extensionNameString()
         }
 
-        logger.debug("Available Vulkan extensions on $deviceName: $availableExtensions")
+        logger.debug("Available Vulkan extensions on $name: $availableExtensions")
 
         // Query device features
         val vkPhysicalDeviceFeatures2 = VkPhysicalDeviceFeatures2.callocStack().sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2_KHR)
@@ -130,7 +137,7 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
 
         // Decide if suitable or not based on all that
         suitable = availableExtensions.containsAll(requiredDeviceExtensions) && swapchainDetails.suitable
-        fitnessScore = 1 + deviceType.fitnessScoreBonus
+        fitnessScore = 1 + type.fitnessScoreBonus
 
         MemoryStack.stackPop()
     }
@@ -206,7 +213,7 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
     }
 
     override fun toString(): String {
-        return "PhysicalDevice(deviceName='$deviceName', deviceType=$deviceType, queueFamilies=$queueFamilies)"
+        return "PhysicalDevice(deviceName='$name', deviceType=$type, queueFamilies=$queueFamilies)"
     }
 
     companion object {

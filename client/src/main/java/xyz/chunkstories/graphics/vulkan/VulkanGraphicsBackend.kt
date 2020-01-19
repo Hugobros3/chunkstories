@@ -25,6 +25,8 @@ import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.content.Content
 import xyz.chunkstories.graphics.GraphicsEngineImplementation
 import xyz.chunkstories.graphics.vulkan.debug.DebugMarkersUtil
+import xyz.chunkstories.graphics.vulkan.resources.frameallocator.FrameDataAllocatorProvider
+import xyz.chunkstories.graphics.vulkan.resources.frameallocator.createFrameDataAllocatorProvider
 import xyz.chunkstories.graphics.vulkan.textures.voxels.VulkanVoxelTexturesArray
 import xyz.chunkstories.graphics.vulkan.world.VulkanWorldRenderer
 import xyz.chunkstories.voxel.VoxelTexturesSupport
@@ -53,6 +55,7 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
     val logicalDevice: LogicalDevice
 
     val memoryManager: VulkanMemoryManager
+    val frameDataAllocatorProvider: FrameDataAllocatorProvider
 
     /** The actual surface we're drawing onto */
     internal var surface: WindowSurface
@@ -92,6 +95,7 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
 
         shaderFactory = VulkanShaderFactory(this, window.client, logicalDevice)
         memoryManager = VulkanMemoryManager(this, logicalDevice)
+        frameDataAllocatorProvider = createFrameDataAllocatorProvider()
 
         textures = VulkanTextures(this)
         //virtualTexturing = VirtualTexturing(this)
@@ -318,6 +322,7 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
         vkDestroyRenderPass(logicalDevice.vkDevice, renderToBackbuffer, null)
         swapchain.cleanup()
 
+        frameDataAllocatorProvider.cleanup()
         memoryManager.cleanup()
 
         logicalDevice.cleanup()

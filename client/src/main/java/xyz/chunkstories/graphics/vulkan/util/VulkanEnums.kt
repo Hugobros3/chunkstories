@@ -2,6 +2,7 @@ package xyz.chunkstories.graphics.vulkan.util
 
 import org.lwjgl.vulkan.KHRSurface.*
 import org.lwjgl.vulkan.VK10.*
+import xyz.chunkstories.graphics.common.vendor.Vendors
 import java.lang.Exception
 
 fun Int.physicalDeviceType() = when(this) {
@@ -223,4 +224,14 @@ enum class VulkanFormat {
     VK_FORMAT_ASTC_12x10_SRGB_BLOCK,
     VK_FORMAT_ASTC_12x12_UNORM_BLOCK,
     VK_FORMAT_ASTC_12x12_SRGB_BLOCK
+}
+
+fun Int.vendorId() = when(this) {
+    0x1002 -> Vendors.AMD
+    0x1010 -> Vendors.IMGTEC
+    0x10DE -> Vendors.NVIDIA
+    0x13B5 -> Vendors.ARM
+    0x5143 -> Vendors.QUALCOMM
+    0x8086 -> Vendors.INTEL
+    else -> Vendors.UNKNOWN_GENERIC
 }

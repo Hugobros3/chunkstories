@@ -109,7 +109,7 @@ class VulkanPassInstance(graph: VulkanFrameGraph, override val taskInstance: Vul
     }
 
     fun getBindingContext(pipeline: Pipeline): VulkanShaderResourcesContext {
-        val shaderBindingContext = VulkanShaderResourcesContext(frameGraph.renderGraph.backend.descriptorMegapool, pipeline)
+        val shaderBindingContext = VulkanShaderResourcesContext(frame, frameGraph.renderGraph.backend.descriptorMegapool, pipeline)
         shaderResources.extractInto(shaderBindingContext, this)
         return shaderBindingContext
     }

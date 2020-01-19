@@ -4,7 +4,6 @@ import org.joml.*
 import xyz.chunkstories.api.graphics.structs.InterfaceBlock
 import xyz.chunkstories.graphics.common.shaders.GLSLType
 import xyz.chunkstories.graphics.common.shaders.JvmStructField
-import xyz.chunkstories.graphics.vulkan.buffers.VulkanUniformBuffer
 import java.nio.ByteBuffer
 
 fun getStd140AlignedSizeForStruct(struct: GLSLType.JvmStruct): Int {
@@ -110,20 +109,20 @@ private fun extractBaseTypeRawData(baseType: GLSLType.BaseType, data: Any?, fill
 
         // SP vectors
         GLSLType.BaseType.GlslVec2 -> {
-            val vec = data as? Vector2fc ?: VulkanUniformBuffer.zero2
+            val vec = data as? Vector2fc ?: GLSLDefaults.zero2
             fillMe.putFloat(vec.x())
             fillMe.putFloat(vec.y())
         }
 
         GLSLType.BaseType.GlslVec3 -> {
-            val vec = data as? Vector3fc ?: VulkanUniformBuffer.zero3
+            val vec = data as? Vector3fc ?: GLSLDefaults.zero3
             fillMe.putFloat(vec.x())
             fillMe.putFloat(vec.y())
             fillMe.putFloat(vec.z())
         }
 
         GLSLType.BaseType.GlslVec4 -> {
-            val vec = data as? Vector4fc ?: VulkanUniformBuffer.zero4
+            val vec = data as? Vector4fc ?: GLSLDefaults.zero4
             fillMe.putFloat(vec.x())
             fillMe.putFloat(vec.y())
             fillMe.putFloat(vec.z())
@@ -132,20 +131,20 @@ private fun extractBaseTypeRawData(baseType: GLSLType.BaseType, data: Any?, fill
 
         // DP vectors
         GLSLType.BaseType.GlslVec2d -> {
-            val vec = data as? Vector2dc ?: VulkanUniformBuffer.zero2d
+            val vec = data as? Vector2dc ?: GLSLDefaults.zero2d
             fillMe.putFloat(vec.x().toFloat())
             fillMe.putFloat(vec.y().toFloat())
         }
 
         GLSLType.BaseType.GlslVec3d -> {
-            val vec = data as? Vector3dc ?: VulkanUniformBuffer.zero3d
+            val vec = data as? Vector3dc ?: GLSLDefaults.zero3d
             fillMe.putFloat(vec.x().toFloat())
             fillMe.putFloat(vec.y().toFloat())
             fillMe.putFloat(vec.z().toFloat())
         }
 
         GLSLType.BaseType.GlslVec4d -> {
-            val vec = data as? Vector4dc ?: VulkanUniformBuffer.zero4d
+            val vec = data as? Vector4dc ?: GLSLDefaults.zero4d
             fillMe.putFloat(vec.x().toFloat())
             fillMe.putFloat(vec.y().toFloat())
             fillMe.putFloat(vec.z().toFloat())
@@ -154,20 +153,20 @@ private fun extractBaseTypeRawData(baseType: GLSLType.BaseType, data: Any?, fill
 
         // Int vectors
         GLSLType.BaseType.GlslIVec2 -> {
-            val vec = data as? Vector2ic ?: VulkanUniformBuffer.zero2i
+            val vec = data as? Vector2ic ?: GLSLDefaults.zero2i
             fillMe.putInt(vec.x())
             fillMe.putInt(vec.y())
         }
 
         GLSLType.BaseType.GlslIVec3 -> {
-            val vec = data as? Vector3ic ?: VulkanUniformBuffer.zero3i
+            val vec = data as? Vector3ic ?: GLSLDefaults.zero3i
             fillMe.putInt(vec.x())
             fillMe.putInt(vec.y())
             fillMe.putInt(vec.z())
         }
 
         GLSLType.BaseType.GlslIVec4 -> {
-            val vec = data as? Vector4ic ?: VulkanUniformBuffer.zero4i
+            val vec = data as? Vector4ic ?: GLSLDefaults.zero4i
             fillMe.putInt(vec.x())
             fillMe.putInt(vec.y())
             fillMe.putInt(vec.z())
@@ -176,20 +175,20 @@ private fun extractBaseTypeRawData(baseType: GLSLType.BaseType, data: Any?, fill
 
         // UInt vectors
         GLSLType.BaseType.GlslUVec2 -> {
-            val vec = data as? Vector2ic ?: VulkanUniformBuffer.zero2i
+            val vec = data as? Vector2ic ?: GLSLDefaults.zero2i
             fillMe.putInt(vec.x())
             fillMe.putInt(vec.y())
         }
 
         GLSLType.BaseType.GlslUVec3 -> {
-            val vec = data as? Vector3ic ?: VulkanUniformBuffer.zero3i
+            val vec = data as? Vector3ic ?: GLSLDefaults.zero3i
             fillMe.putInt(vec.x())
             fillMe.putInt(vec.y())
             fillMe.putInt(vec.z())
         }
 
         GLSLType.BaseType.GlslUVec4 -> {
-            val vec = data as? Vector4ic ?: VulkanUniformBuffer.zero4i
+            val vec = data as? Vector4ic ?: GLSLDefaults.zero4i
             fillMe.putInt(vec.x())
             fillMe.putInt(vec.y())
             fillMe.putInt(vec.z())
@@ -197,13 +196,13 @@ private fun extractBaseTypeRawData(baseType: GLSLType.BaseType, data: Any?, fill
         }
 
         GLSLType.BaseType.GlslMat4 -> {
-            val mat4 = data as? Matrix4fc ?: VulkanUniformBuffer.mat4identity
+            val mat4 = data as? Matrix4fc ?: GLSLDefaults.mat4identity
             mat4.get(fillMe)
             //fillMe.position(fillMe.position())
         }
 
         GLSLType.BaseType.GlslMat3 -> {
-            val mat3 = data as? Matrix3fc ?: VulkanUniformBuffer.mat3identity
+            val mat3 = data as? Matrix3fc ?: GLSLDefaults.mat3identity
             val vec3 = Vector3f()
             for (i in 0..2) {
                 mat3.getColumn(i, vec3)
@@ -217,4 +216,21 @@ private fun extractBaseTypeRawData(baseType: GLSLType.BaseType, data: Any?, fill
 
         GLSLType.BaseType.GlslDouble -> TODO()
     }
+}
+
+object GLSLDefaults {
+    val zero2 = Vector2f(0.0F)
+    val zero3 = Vector3f(0.0F)
+    val zero4 = Vector4f(0.0F)
+
+    val zero2d = Vector2d(0.0)
+    val zero3d = Vector3d(0.0)
+    val zero4d = Vector4d(0.0)
+
+    val zero2i = Vector2i(0)
+    val zero3i = Vector3i(0)
+    val zero4i = Vector4i(0)
+
+    val mat4identity = Matrix4f()
+    val mat3identity = Matrix3f()
 }

@@ -9,11 +9,10 @@ import org.lwjgl.vulkan.VkDescriptorSetLayoutCreateInfo
 import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.common.shaders.*
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
-import xyz.chunkstories.graphics.vulkan.textures.GlobalTextures
 import xyz.chunkstories.graphics.vulkan.util.VkDescriptorSetLayout
 import xyz.chunkstories.graphics.vulkan.util.ensureIs
 
-data class DescriptorSlotLayout constructor(private val backend: VulkanGraphicsBackend, val resources: Set<GLSLResource>): Cleanable {
+data class DescriptorSlotLayout constructor(private val backend: VulkanGraphicsBackend, val resources: Set<GLSLResource>) : Cleanable {
     val vkLayoutHandle: VkDescriptorSetLayout = createLayoutForSlot(resources)
 
     val descriptorsCountByType = getDescriptorCountByType(resources)
@@ -66,14 +65,14 @@ data class DescriptorSlotLayout constructor(private val backend: VulkanGraphicsB
     private fun getDescriptorCountByType(resources: Set<GLSLResource>): Map<Int, Int> {
         return resources.map { resource ->
 
-                    val descriptorType = resource.vkDescriptorType
-                    val descriptorsNeeded = resource.vkDescriptorCount
+            val descriptorType = resource.vkDescriptorType
+            val descriptorsNeeded = resource.vkDescriptorCount
 
-                    Pair(descriptorType, descriptorsNeeded)
-                }.groupBy { it.first }.mapValues { it.value.sumBy { it.second } }
+            Pair(descriptorType, descriptorsNeeded)
+        }.groupBy { it.first }.mapValues { it.value.sumBy { it.second } }
     }
 
-    val GLSLResource.vkDescriptorType: Int
+    private val GLSLResource.vkDescriptorType: Int
         get() = when (this) {
             is GLSLUniformBlock -> VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
             is GLSLUniformImage2D -> VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE
@@ -87,7 +86,7 @@ data class DescriptorSlotLayout constructor(private val backend: VulkanGraphicsB
             else -> throw Exception("Missing mapping from GLSLResource type to Vulkan descriptor type !")
         }
 
-    val GLSLResource.vkDescriptorCount: Int
+    private val GLSLResource.vkDescriptorCount: Int
         get() = when (this) {
             is GLSLUniformBlock -> 1
             is GLSLUniformSampler -> 1
@@ -97,7 +96,7 @@ data class DescriptorSlotLayout constructor(private val backend: VulkanGraphicsB
             is GLSLUniformSampledImage3D -> 1
             is GLSLUniformSampledImageCubemap -> 1
 
-            is GLSLUniformImage2D -> if (this.count != 0) this.count else GlobalTextures.magicTexturesUpperBound
+            is GLSLUniformImage2D -> this.count
             else -> throw Exception("Missing mapping from GLSLResource type to Vulkan descriptor type !")
         }
 }
