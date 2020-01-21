@@ -206,7 +206,7 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
             pApplicationName(stackUTF8("Chunk Stories"))
             pEngineName(stackUTF8("Chunk Stories Vulkan Backend"))
 
-            apiVersion(VK_MAKE_VERSION(1, 1, 70))
+            apiVersion(VK_MAKE_VERSION(1, 0, 70))
         }
         val createInfoStruct = VkInstanceCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO).apply {
             pApplicationInfo(appInfoStruct)

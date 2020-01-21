@@ -13,9 +13,9 @@ enum class GraphicsBackendsEnum(val glfwInitHints: () -> Unit, val usable: () ->
     VULKAN({
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API)
     }, {
-        if(OSHelper.os == SupportedOS.OSX)
-            false // don't even try my dude
-        else
+        //if(OSHelper.os == SupportedOS.OSX)
+        //    false // don't even try my dude
+        //else
             GLFWVulkan.glfwVulkanSupported()
     }, { e, w ->
         VulkanGraphicsBackend(e, w)
