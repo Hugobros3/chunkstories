@@ -2,9 +2,9 @@ package xyz.chunkstories.graphics.vulkan.textures
 
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
-import org.lwjgl.vulkan.KHRGetMemoryRequirements2.vkGetImageMemoryRequirements2KHR
-import org.lwjgl.vulkan.VK10.vkAllocateMemory
-import org.lwjgl.vulkan.VK11.*
+import org.lwjgl.vulkan.KHRDedicatedAllocation.*
+import org.lwjgl.vulkan.KHRGetMemoryRequirements2.*
+import org.lwjgl.vulkan.VK10.*
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.graphics.Texture
 import xyz.chunkstories.api.graphics.TextureFormat
@@ -74,16 +74,16 @@ open class VulkanTexture(val backend: VulkanGraphicsBackend, final override val 
         if (eligibleForDedicatedAllocation) {
             //println("texture $this is eligible for dedicated allocation")
             val memReqInfo2 = VkImageMemoryRequirementsInfo2.callocStack().apply {
-                sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_REQUIREMENTS_INFO_2)
+                sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_REQUIREMENTS_INFO_2_KHR)
                 this.image(imageHandle)
             }
 
             val memReq2 = VkMemoryRequirements2.callocStack().apply {
-                sType(VK_STRUCTURE_TYPE_MEMORY_REQUIREMENTS_2)
+                sType(VK_STRUCTURE_TYPE_MEMORY_REQUIREMENTS_2_KHR)
             }
 
             val memDedicatedReq = VkMemoryDedicatedRequirements.callocStack().apply {
-                sType(VK_STRUCTURE_TYPE_MEMORY_DEDICATED_REQUIREMENTS)
+                sType(VK_STRUCTURE_TYPE_MEMORY_DEDICATED_REQUIREMENTS_KHR)
             }
 
             memReq2.pNext(memDedicatedReq.address())
@@ -96,13 +96,13 @@ open class VulkanTexture(val backend: VulkanGraphicsBackend, final override val 
                 val (memoryTypeIndex, memoryType) = backend.memoryManager.findMemoryTypeToUse(memReq2.memoryRequirements().memoryTypeBits(), VK10.VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
 
                 val allocateInfo = VkMemoryAllocateInfo.callocStack().apply {
-                    sType(VK10.VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO)
+                    sType(VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO)
                     allocationSize(memReq2.memoryRequirements().size())
                     memoryTypeIndex(memoryTypeIndex)
                 }
 
                 val dedicatedAllocateInfo = VkMemoryDedicatedAllocateInfo.callocStack().apply {
-                    sType(VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO)
+                    sType(VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO_KHR)
                     image(imageHandle)
                 }
 
