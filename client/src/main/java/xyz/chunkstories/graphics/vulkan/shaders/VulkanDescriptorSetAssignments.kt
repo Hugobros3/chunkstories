@@ -8,7 +8,7 @@ import xyz.chunkstories.graphics.vulkan.devices.LogicalDevice
 import xyz.chunkstories.graphics.vulkan.textures.GlobalTextures
 
 class VulkanResourceLocationAssigner(logicalDevice: LogicalDevice) : ResourceLocationAssigner {
-    val maxSets = logicalDevice.physicalDevice.maxBoundSets
+    val maxSets = logicalDevice.physicalDevice.maxBoundSets.coerceIn(1..8)
     val nextFreeBinding = IntArray(maxSets)
 
     private fun UniformUpdateFrequency.toSet() = if(maxSets >= 8) when(this) {
