@@ -17,7 +17,7 @@ class VulkanOnionTexture2D(backend: VulkanGraphicsBackend, format: TextureFormat
     fun copyBufferToImage(buffer: VulkanBuffer) {
         MemoryStack.stackPush()
         val operationsPool = backend.logicalDevice.graphicsQueue.threadSafePools.get()
-        val commandBuffer = operationsPool.startCommandBuffer()
+        val commandBuffer = operationsPool.startPrimaryCommandBuffer()
 
         val region = VkBufferImageCopy.callocStack(1).apply {
             bufferOffset(0)
@@ -49,13 +49,14 @@ class VulkanOnionTexture2D(backend: VulkanGraphicsBackend, format: TextureFormat
         vkCmdCopyBufferToImage(commandBuffer, buffer.handle, imageHandle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, region)
 
         val fence = backend.createFence(false)
-        operationsPool.finishAndSubmitCmdBuffer(commandBuffer, backend.logicalDevice.graphicsQueue, fence)
+        vkEndCommandBuffer(commandBuffer)
+        operationsPool.submitAndReturnPrimaryCommandBuffer(commandBuffer, backend.logicalDevice.graphicsQueue, fence)
 
         backend.waitFence(fence)
 
         vkDestroyFence(backend.logicalDevice.vkDevice, fence, null)
 
-        operationsPool.returnCommandBuffer(commandBuffer)
+        operationsPool.returnPrimaryCommandBuffer(commandBuffer)
         //vkFreeCommandBuffers(backend.logicalDevice.vkDevice, operationsPool.handle, commandBuffer)
 
         MemoryStack.stackPop()

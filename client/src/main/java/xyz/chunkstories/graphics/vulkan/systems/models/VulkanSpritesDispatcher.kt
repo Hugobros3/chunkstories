@@ -10,6 +10,7 @@ import xyz.chunkstories.api.graphics.representation.Sprite
 import xyz.chunkstories.api.graphics.systems.dispatching.SpritesRenderer
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
+import xyz.chunkstories.graphics.common.representations.RepresentationsGathered
 import xyz.chunkstories.graphics.common.shaders.GLSLInstancedInput
 import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompilationParameters
 import xyz.chunkstories.graphics.common.util.extractInterfaceBlock
@@ -21,15 +22,17 @@ import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPassInstance
+import xyz.chunkstories.graphics.vulkan.graph.VulkanRenderTaskInstance
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import xyz.chunkstories.graphics.vulkan.resources.VulkanShaderResourcesContext
 import xyz.chunkstories.graphics.vulkan.shaders.VulkanShaderProgram
+import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
 
 private typealias VkSpriteIR = MutableList<Sprite>
 
-class VulkanSpritesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingSystem<Sprite, VkSpriteIR>(backend) {
+class VulkanSpritesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingSystem<Sprite>(backend) {
 
     override val representationName: String = Sprite::class.java.canonicalName
 
@@ -50,11 +53,11 @@ class VulkanSpritesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchin
         }
     }
 
-    inner class Drawer(pass: VulkanPass, initCode: Drawer.() -> Unit) : VulkanDispatchingSystem.Drawer<VkSpriteIR>(pass), SpritesRenderer {
+    inner class Drawer(pass: VulkanPass, initCode: Drawer.() -> Unit) : VulkanDispatchingSystem.Drawer(pass), SpritesRenderer {
         override lateinit var materialTag: String
         override lateinit var shader: String
 
-        override val system: VulkanDispatchingSystem<Sprite, VkSpriteIR>
+        override val system: VulkanDispatchingSystem<Sprite>
             get() = this@VulkanSpritesDispatcher
 
         val program: VulkanShaderProgram
@@ -96,7 +99,7 @@ class VulkanSpritesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchin
 
         val ssboBufferSize = 1024 * 1024L
 
-        override fun registerDrawingCommands(context: VulkanPassInstance, commandBuffer: VkCommandBuffer, work: VkSpriteIR) {
+        fun registerDrawingCommands(context: VulkanPassInstance, commandBuffer: VkCommandBuffer, work: VkSpriteIR) {
             MemoryStack.stackPush()
 
             val client = backend.window.client.ingame ?: return
@@ -152,20 +155,9 @@ class VulkanSpritesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchin
         }
     }
 
-    override fun createDrawerForPass(pass: VulkanPass, drawerInitCode: VulkanDispatchingSystem.Drawer<VkSpriteIR>.() -> Unit) = Drawer(pass, drawerInitCode)
+    override fun createDrawerForPass(pass: VulkanPass, drawerInitCode: VulkanDispatchingSystem.Drawer.() -> Unit) = Drawer(pass, drawerInitCode)
 
-    /*override fun sort(instance: Sprite, drawers: Array<VulkanDispatchingSystem.Drawer<*>>, outputs: List<MutableList<Any>>) {
-        //val meshInstance = MeshInstance(mesh, instance.materials[i] ?: mesh.material, instance)
-
-        for ((index, drawer) in drawers.withIndex()) {
-            if ((drawer as VulkanSpritesDispatcher.Drawer).materialTag == instance.material.tag) {
-                outputs[index].add(instance)
-            }
-        }
-
-    }*/
-
-    override fun sort(representations: Sequence<Sprite>, drawers: List<VulkanDispatchingSystem.Drawer<VkSpriteIR>>, workForDrawers: MutableMap<VulkanDispatchingSystem.Drawer<VkSpriteIR>, VkSpriteIR>) {
+    /*override fun sort(representations: Sequence<Sprite>, drawers: List<VulkanDispatchingSystem.Drawer<VkSpriteIR>>, workForDrawers: MutableMap<VulkanDispatchingSystem.Drawer<VkSpriteIR>, VkSpriteIR>) {
         val lists = drawers.associateWith { mutableListOf<Sprite>() }
 
         for (representation in representations) {
@@ -181,6 +173,10 @@ class VulkanSpritesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchin
                 workForDrawers[entry.key] = entry.value
             }
         }
+    }*/
+
+    override fun sortAndDraw(frame: VulkanFrame, drawers: Map<VulkanRenderTaskInstance, List<Pair<VulkanPassInstance, VulkanDispatchingSystem.Drawer>>>, maskedBuckets: Map<Int, RepresentationsGathered.Bucket>): Map<Pair<VulkanPassInstance, VulkanDispatchingSystem.Drawer>, VkCommandBuffer> {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun cleanup() {
