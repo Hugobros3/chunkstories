@@ -16,18 +16,19 @@ class VulkanTexture3D(backend: VulkanGraphicsBackend, format: TextureFormat, val
     fun copyBufferToImage(buffer: VulkanBuffer) {
         MemoryStack.stackPush()
         val operationsPool = backend.logicalDevice.graphicsQueue.threadSafePools.get()
-        val commandBuffer = operationsPool.startCommandBuffer()
+        val commandBuffer = operationsPool.startPrimaryCommandBuffer()
 
         copyBufferToImage(commandBuffer, buffer)
 
         val fence = backend.createFence(false)
-        operationsPool.finishAndSubmitCmdBuffer(commandBuffer, backend.logicalDevice.graphicsQueue, fence)
+        vkEndCommandBuffer(commandBuffer)
+        operationsPool.submitAndReturnPrimaryCommandBuffer(commandBuffer, backend.logicalDevice.graphicsQueue, fence)
 
         backend.waitFence(fence)
 
         vkDestroyFence(backend.logicalDevice.vkDevice, fence, null)
 
-        operationsPool.returnCommandBuffer(commandBuffer)
+        operationsPool.returnPrimaryCommandBuffer(commandBuffer)
         //vkFreeCommandBuffers(backend.logicalDevice.vkDevice, operationsPool.handle, commandBuffer)
 
         MemoryStack.stackPop()

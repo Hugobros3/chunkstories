@@ -126,7 +126,7 @@ data class FarTerrainTextureManager(val backend: VulkanGraphicsBackend, var base
             if (reqs.size > 0) {
                 // start building cmdbuffer
                 val operationsPool = backend.logicalDevice.graphicsQueue.threadSafePools.get()
-                val commandBuffer = operationsPool.startCommandBuffer()
+                val commandBuffer = operationsPool.startPrimaryCommandBuffer()
 
                 preBarrier(commandBuffer)
 
@@ -209,7 +209,7 @@ data class FarTerrainTextureManager(val backend: VulkanGraphicsBackend, var base
 
                 // lock everything before executing cmd buffer!
                 dataLock.lock()
-                operationsPool.submitCmdBuffer(commandBuffer, backend.logicalDevice.graphicsQueue, fence)
+                operationsPool.submitAndReturnPrimaryCommandBuffer(commandBuffer, backend.logicalDevice.graphicsQueue, fence)
                 backend.waitFence(fence)
 
                 // swap "representing" arrays!

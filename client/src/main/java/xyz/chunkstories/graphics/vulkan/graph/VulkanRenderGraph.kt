@@ -3,11 +3,10 @@ package xyz.chunkstories.graphics.vulkan.graph
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryStack.stackPush
 import org.lwjgl.vulkan.VK10.*
+import org.lwjgl.vulkan.VkCommandBuffer
 import org.lwjgl.vulkan.VkSubmitInfo
 import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
-import xyz.chunkstories.api.graphics.rendergraph.PassInstance
 import xyz.chunkstories.api.graphics.rendergraph.RenderGraphDeclaration
-import xyz.chunkstories.api.graphics.rendergraph.RenderTaskInstance
 import xyz.chunkstories.api.graphics.representation.Representation
 import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.graphics.common.Cleanable
@@ -26,7 +25,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
 
     val commandPool = CommandPool(backend, backend.logicalDevice.graphicsQueue.family, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT or VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
 
-    val dispatchingSystems = mutableListOf<VulkanDispatchingSystem<*, *>>()
+    val dispatchingSystems = mutableListOf<VulkanDispatchingSystem<*>>()
 
     val blitHelper = SwapchainBlitHelper(backend)
 
@@ -49,32 +48,38 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
         val graph = VulkanFrameGraph(frame, this, mainTask, mainCamera, map)
         val sequencedGraph = graph.sequenceGraph()
 
-        val passInstances: Array<PassInstance> = sequencedGraph.filterIsInstance<PassInstance>().toTypedArray()
-        val renderingContexts: Array<RenderTaskInstance> = sequencedGraph.filterIsInstance<RenderTaskInstance>().toTypedArray()
-        val gathered = backend.graphicsEngine.gatherRepresentations(frame, passInstances, renderingContexts)
+        val passInstances: List<VulkanPassInstance> = sequencedGraph.filterIsInstance<VulkanPassInstance>()
+        val renderTasks: List<VulkanRenderTaskInstance> = sequencedGraph.filterIsInstance<VulkanRenderTaskInstance>()
 
-        // Fancy preparing of the representations to render
-        val workForDrawersPerPassInstance: List<MutableMap<VulkanDispatchingSystem.Drawer<*>, *>> = passInstances.map {
-            mutableMapOf<VulkanDispatchingSystem.Drawer<*>, Any>()
+        renderTasks.forEachIndexed { index, vulkanRenderTaskInstance ->
+            vulkanRenderTaskInstance.inOrderId = index
+            vulkanRenderTaskInstance.mask = 1 shl index
         }
 
-        for ((passInstanceIndex, passInstance) in passInstances.withIndex()) {
-            val pass = passInstance as VulkanPassInstance
+        passInstances.forEach {
+            it.pass.resolveOutputs(it)
+        }
 
-            val renderContextIndex = renderingContexts.indexOf(pass.taskInstance)
-            val ctxMask = 1 shl renderContextIndex
+        val gathered = backend.graphicsEngine.gatherRepresentations(frame, passInstances, renderTasks)
 
-            val workForDrawers = workForDrawersPerPassInstance[passInstanceIndex]
+        val l = passInstances.flatMap { passInstance -> passInstance.pass.dispatchingDrawers.map { drawer -> Pair(passInstance.taskInstance, Pair(passInstance, drawer)) } }
+        val l2 = l.groupBy { it.first }.mapValues { it.value.map { it.second } }
+        //val l3 = l.groupBy { it.second }.mapValues { it.value.map { it.first } }
 
-            for (bucket in gathered.buckets.values) {
-                val responsibleSystem = dispatchingSystems.find { it.representationName == bucket.representationName } ?: continue
+        val prepareDrawerCmdBuffers = mutableMapOf<VulkanPassInstance, MutableMap<VulkanDispatchingSystem.Drawer, VkCommandBuffer>>()
 
-                val drawers = pass.pass.dispatchingDrawers.filter {
-                    it.system == responsibleSystem
-                }
+        for ((reprClass, metaBucket) in gathered.buckets) {
+            // The system that's registered as interested in those representations (only 1:1 for now)
+            val responsibleSystem = dispatchingSystems.find { it.representationName == metaBucket.representationName } ?: continue
 
-                val filteredRepresentations = bucket.representations.filterIndexed { index, _ -> bucket.masks[index] and ctxMask != 0 }
-                (responsibleSystem as VulkanDispatchingSystem<Representation, *>).sort_(filteredRepresentations.asSequence(), drawers, workForDrawers)
+            val l22 = l2.mapValues { it.value.filter { responsibleSystem.drawersInstances.contains(it.second) } }
+
+            val `that's work now!` =responsibleSystem.sortAndDraw(frame, l22, metaBucket.maskedBuckets)
+
+            for((loc, cmdBuf) in `that's work now!`) {
+                val existing = prepareDrawerCmdBuffers.getOrPut(loc.first) { mutableMapOf() }.put(loc.second, cmdBuf)
+                if(existing != null)
+                    throw Exception("oh no this should really not happen!")
             }
         }
 
@@ -84,7 +89,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
             when (graphNode) {
                 is VulkanPassInstance -> {
                     val pass = graphNode.pass
-                    pass.render(frame, graphNode, globalStates, workForDrawersPerPassInstance[passIndex])
+                    pass.render(frame, graphNode, globalStates, prepareDrawerCmdBuffers[graphNode] ?: emptyMap())
                     passIndex++
                 }
                 is VulkanRenderTaskInstance -> {
@@ -135,7 +140,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
     }
 
     fun resizeBuffers() {
-        tasks.values.forEach {
+        tasks.values.forEach { it ->
             it.buffers.values.forEach { it.resize() }
             it.passes.values.forEach { it.dumpFramebuffers() }
         }

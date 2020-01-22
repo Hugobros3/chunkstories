@@ -7,6 +7,7 @@ import xyz.chunkstories.api.graphics.systems.drawing.FarTerrainDrawer
 import xyz.chunkstories.api.graphics.systems.drawing.FullscreenQuadDrawer
 import xyz.chunkstories.api.gui.GuiDrawer
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
+import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend.Companion.logger
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.vulkan.systems.debug.VulkanDebugDrawer
 import xyz.chunkstories.graphics.vulkan.systems.debug.VulkanSpinningCubeDrawer
@@ -34,7 +35,7 @@ fun <T : DrawingSystem> VulkanGraphicsBackend.createDrawingSystem(pass: VulkanPa
     }
 }
 
-fun <T: DispatchingSystem> VulkanGraphicsBackend.getOrCreateDispatchingSystem(list: MutableList<VulkanDispatchingSystem<*,*>>, dispatchingSystemRegistration: RegisteredGraphicSystem<T>): VulkanDispatchingSystem<*,*> {
+fun <T: DispatchingSystem> VulkanGraphicsBackend.getOrCreateDispatchingSystem(list: MutableList<VulkanDispatchingSystem<*>>, dispatchingSystemRegistration: RegisteredGraphicSystem<T>): VulkanDispatchingSystem<*>? {
     val implemClass =  when(dispatchingSystemRegistration.clazz) {
         ChunksRenderer::class.java -> VulkanChunkRepresentationsDispatcher::class
         ModelsRenderer::class.java -> VulkanModelsDispatcher::class
@@ -48,13 +49,17 @@ fun <T: DispatchingSystem> VulkanGraphicsBackend.getOrCreateDispatchingSystem(li
     if(existing != null)
         return existing
 
-    val new = when(dispatchingSystemRegistration.clazz) {
+    val new: VulkanDispatchingSystem<*> = when(dispatchingSystemRegistration.clazz) {
         ChunksRenderer::class.java -> VulkanChunkRepresentationsDispatcher(this)
         ModelsRenderer::class.java -> VulkanModelsDispatcher(this)
-        SpritesRenderer::class.java -> VulkanSpritesDispatcher(this)
-        LinesRenderer::class.java -> VulkanLinesDispatcher(this)
-        DefferedLightsRenderer::class.java -> VulkanDefferedLightsDispatcher(this)
-        else -> throw Exception("Unimplemented system on this backend: ${dispatchingSystemRegistration.clazz}")
+        //SpritesRenderer::class.java -> VulkanSpritesDispatcher(this)
+        //LinesRenderer::class.java -> VulkanLinesDispatcher(this)
+        //DefferedLightsRenderer::class.java -> VulkanDefferedLightsDispatcher(this)
+        else -> {
+            //throw Exception("Unimplemented system on this backend: ${dispatchingSystemRegistration.clazz}")
+            logger.error("Unimplemented system on this backend: ${dispatchingSystemRegistration.clazz}")
+            return null
+        }
     }
 
     list.add(new)

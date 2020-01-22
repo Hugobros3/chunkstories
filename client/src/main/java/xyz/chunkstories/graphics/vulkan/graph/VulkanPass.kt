@@ -1,5 +1,6 @@
 package xyz.chunkstories.graphics.vulkan.graph
 
+import org.joml.Vector2i
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
@@ -21,7 +22,7 @@ import xyz.chunkstories.graphics.vulkan.util.ensureIs
 
 open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: VulkanRenderTask, val declaration: PassDeclaration) : Cleanable {
     val drawingSystems: List<VulkanDrawingSystem>
-    val dispatchingDrawers: List<VulkanDispatchingSystem.Drawer<*>>
+    val dispatchingDrawers: List<VulkanDispatchingSystem.Drawer>
 
     val canonicalRenderPass: RenderPass
     val renderPassesMap = mutableMapOf<List<UsageType>, RenderPass>()
@@ -45,10 +46,10 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
 
                     drawingSystems.add(drawingSystem)
                 } else if (DispatchingSystem::class.java.isAssignableFrom(registeredSystem.clazz)) {
-                    val dispatchingSystem = backend.getOrCreateDispatchingSystem(renderTask.renderGraph.dispatchingSystems, registeredSystem as RegisteredGraphicSystem<DispatchingSystem>)
-                    val drawer = dispatchingSystem.createDrawerForPass(this, registeredSystem.dslCode as VulkanDispatchingSystem.Drawer<*>.() -> Unit)
+                    val dispatchingSystem = backend.getOrCreateDispatchingSystem(renderTask.renderGraph.dispatchingSystems, registeredSystem as RegisteredGraphicSystem<DispatchingSystem>) ?: continue
+                    val drawer = dispatchingSystem.createDrawerForPass(this, registeredSystem.dslCode as VulkanDispatchingSystem.Drawer.() -> Unit)
 
-                    //dispatchingSystem.drawersInstances.add(drawer)
+                    dispatchingSystem.drawersInstances.add(drawer)
                     dispatchingDrawers.add(drawer)
                 } else {
                     throw Exception("What is this :$registeredSystem ?")
@@ -63,56 +64,13 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
     fun render(frame: VulkanFrame,
                passInstance: VulkanPassInstance,
                allBufferStates: MutableMap<VulkanRenderBuffer, UsageType>,
-               representationsGathered: MutableMap<VulkanDispatchingSystem.Drawer<*>, *>
+               secondaryCommandBuffers: Map<VulkanDispatchingSystem.Drawer, VkCommandBuffer>
+               //representationsGathered: MutableMap<VulkanDispatchingSystem.Drawer<*>, *>
     ) {
         //declaration.setupLambdas.forEach { it.invoke(passInstance) }
 
         val outputs = declaration.outputs.outputs
         val depth = declaration.depthTestingConfiguration
-
-        fun resolveRenderTarget(renderTarget: RenderTarget): VulkanRenderBuffer = when (renderTarget) {
-            RenderTarget.BackBuffer -> TODO()
-            is RenderTarget.RenderBufferReference -> renderTask.buffers[renderTarget.renderBufferName]
-                    ?: throw Exception("Missing render target: No render buffer named '${renderTarget.renderBufferName}' found in RenderTask ${renderTask.declaration.name}")
-            is RenderTarget.TaskInput -> {
-                val resolvedParameter = (passInstance.taskInstance.parameters[renderTarget.name]
-                        ?: throw Exception("The parent context lacks a '${renderTarget.name}' parameter"))
-
-                when (resolvedParameter) {
-                    is VulkanRenderBuffer -> resolvedParameter
-                    is RenderTarget.RenderBufferReference -> {
-                        val localRenderBuffer = renderTask.buffers[resolvedParameter.renderBufferName]
-                        if (localRenderBuffer != null)
-                            localRenderBuffer
-                        else {
-                            val parentRenderTask = passInstance.taskInstance.requester!!.taskInstance
-                            parentRenderTask.renderTask.buffers[resolvedParameter.renderBufferName]
-                                    ?: throw Exception("Can't find render buffer named: ${resolvedParameter.renderBufferName}")
-                        }
-                    }
-                    else -> throw Exception("The $resolvedParameter parameter is not a render buffer")
-                }
-            }
-        }
-
-        val resolvedOutputs = mutableMapOf<PassOutput, VulkanRenderBuffer>()
-
-        val resolvedDepthAndColorBuffers = mutableListOf<VulkanRenderBuffer>()
-        for (colorOutput in outputs) {
-            val resolved = resolveRenderTarget(colorOutput.target
-                    ?: RenderTarget.RenderBufferReference(colorOutput.name))
-            resolvedDepthAndColorBuffers.add(resolved)
-            resolvedOutputs[colorOutput] = resolved
-        }
-        if (depth.enabled) {
-            val resolved = resolveRenderTarget(depth.depthBuffer!!)
-            resolvedDepthAndColorBuffers.add(resolved)
-            passInstance.resolvedDepthBuffer = resolved
-        }
-
-        passInstance.resolvedOutputs = resolvedOutputs
-
-        passInstance.postResolve(resolvedDepthAndColorBuffers)
 
         val resolvedInputBuffers = mutableListOf<VulkanRenderBuffer>()
 
@@ -153,7 +111,7 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
         }
         lookForRenderBufferImages(passInstance.shaderResources.images)
 
-        val attachementsPreviousState = resolvedDepthAndColorBuffers.map {
+        val attachementsPreviousState = passInstance.resolvedDepthAndColorBuffers.map {
             allBufferStates[it] ?: UsageType.NONE
         }
         //println(attachementsPreviousState.mapIndexed { i, u -> "${resolvedDepthAndColorBuffers[i]}:$u"})
@@ -163,8 +121,8 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
             RenderPass(backend, this, attachementsPreviousState)
         }
 
-        val framebuffer = frameBuffers.getOrPut(resolvedDepthAndColorBuffers) {
-            backend.createFramebuffer(this, resolvedDepthAndColorBuffers)
+        val framebuffer = frameBuffers.getOrPut(passInstance.resolvedDepthAndColorBuffers) {
+            backend.createFramebuffer(this, passInstance.resolvedDepthAndColorBuffers)
         }
 
         /** The images to transition using image barriers, with their current usage/layout */
@@ -176,16 +134,15 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
                 inputImageNeedingLayoutTransition.add(Pair(imageInputResolved, currentUsage))
         }
 
-        val viewportSize = resolvedDepthAndColorBuffers[0].textureSize
 
         //val commandBuffer = commandPool.createOneUseCB()
-        val commandBuffer = renderTask.renderGraph.commandPool.loanCommandBuffer()
+        val commandBuffer = renderTask.renderGraph.commandPool.loanPrimaryCommandBuffer()
         passInstance.commandBuffer = commandBuffer
 
         stackPush().use {
             commandBuffer.apply {
                 val beginInfo = VkCommandBufferBeginInfo.callocStack().sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO).apply {
-                    flags(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT)
+                    flags()
                     pInheritanceInfo(null)
                 }
 
@@ -193,27 +150,8 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
 
                 backend.debugMarketUtil?.enterPass(this, passInstance)
 
-                val viewport = VkViewport.callocStack(1).apply {
-                    x(0.0F)
-                    y(0.0F)
-                    width(viewportSize.x.toFloat())
-                    height(viewportSize.y.toFloat())
-                    minDepth(0.0F)
-                    maxDepth(1.0F)
-                }
-
-                val zeroZero = VkOffset2D.callocStack().apply {
-                    x(0)
-                    y(0)
-                }
-                val scissor = VkRect2D.callocStack(1).apply {
-                    offset(zeroZero)
-                    extent().width(viewportSize.x)
-                    extent().height(viewportSize.y)
-                }
-
-                vkCmdSetViewport(this, 0, viewport)
-                vkCmdSetScissor(this, 0, scissor)
+                val viewportSize = passInstance.resolvedDepthAndColorBuffers[0].textureSize
+                setScissorAndViewport(this, viewportSize)
 
                 val renderPassBeginInfo = VkRenderPassBeginInfo.callocStack().sType(VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO).apply {
                     renderPass(relevantRenderPass.handle)
@@ -297,20 +235,45 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
                     stackPop()
                 }
 
-                vkCmdBeginRenderPass(this, renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE)
+                vkCmdBeginRenderPass(this, renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS)
 
-                // Transition image layouts now !
-                for (drawingSystem in drawingSystems) {
-                    backend.debugMarketUtil?.enterSystem(this, passInstance, drawingSystem.javaClass.simpleName)
-                    drawingSystem.registerDrawingCommands(passInstance, this)
-                    backend.debugMarketUtil?.leaveSystem(this)
+                val cmdBuf = backend.renderGraph.commandPool.loanSecondaryCommandBuffer()
+
+                stackPush().use {
+                    val inheritInfo = VkCommandBufferInheritanceInfo.callocStack().apply {
+                        sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO)
+                        renderPass(canonicalRenderPass.handle)
+                        subpass(0)
+                        framebuffer(VK_NULL_HANDLE /** I don't know, I mean I could but I can't be assed :P */)
+                    }
+                    val beginInfo2 = VkCommandBufferBeginInfo.callocStack().apply {
+                        sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO)
+                        flags(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT or VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT)
+                        pInheritanceInfo(inheritInfo)
+                    }
+                    vkBeginCommandBuffer(cmdBuf, beginInfo2)
+                    setScissorAndViewport(cmdBuf, passInstance.renderTargetSize)
+
+                    for (drawingSystem in drawingSystems) {
+                        backend.debugMarketUtil?.enterSystem(cmdBuf, passInstance, drawingSystem.javaClass.simpleName)
+                        drawingSystem.registerDrawingCommands(passInstance, cmdBuf)
+                        backend.debugMarketUtil?.leaveSystem(cmdBuf)
+                    }
+
+                    vkEndCommandBuffer(cmdBuf)
+                }
+
+                vkCmdExecuteCommands(this, cmdBuf)
+
+                frame.recyclingTasks.add {
+                    renderTask.renderGraph.commandPool.returnSecondaryCommandBuffer(cmdBuf)
                 }
 
                 for (drawer in dispatchingDrawers) {
-                    val relevantBucket = representationsGathered[drawer] ?: continue
-                    backend.debugMarketUtil?.enterSystem(this, passInstance, drawer.system.javaClass.simpleName)
-                    drawer.registerDrawingCommands_(passInstance, this, relevantBucket)
-                    backend.debugMarketUtil?.leaveSystem(this)
+                    val registeredCommands = secondaryCommandBuffers[drawer] ?: continue
+                    //backend.debugMarketUtil?.enterSystem(this, passInstance, drawer.system.javaClass.simpleName)
+                    vkCmdExecuteCommands(this, registeredCommands)
+                    //backend.debugMarketUtil?.leaveSystem(this)
                 }
 
                 vkCmdEndRenderPass(this)
@@ -321,7 +284,7 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
             }
         }
 
-        for (output in resolvedDepthAndColorBuffers)
+        for (output in passInstance.resolvedDepthAndColorBuffers)
             allBufferStates[output] = UsageType.OUTPUT
 
         for (input in resolvedInputBuffers)
@@ -330,8 +293,79 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
         frame.recyclingTasks.add {
             //vkDestroyFramebuffer(backend.logicalDevice.vkDevice, framebuffer, null)
             //vkFreeCommandBuffers(backend.logicalDevice.vkDevice, commandPool.handle, commandBuffer)
-            renderTask.renderGraph.commandPool.returnCommandBuffer(commandBuffer)
+            renderTask.renderGraph.commandPool.returnPrimaryCommandBuffer(commandBuffer)
         }
+    }
+
+    fun resolveOutputs(passInstance: VulkanPassInstance) {
+        val outputs = declaration.outputs.outputs
+        val depth = declaration.depthTestingConfiguration
+
+        fun resolveRenderTarget(renderTarget: RenderTarget): VulkanRenderBuffer = when (renderTarget) {
+            RenderTarget.BackBuffer -> TODO()
+            is RenderTarget.RenderBufferReference -> renderTask.buffers[renderTarget.renderBufferName]
+                    ?: throw Exception("Missing render target: No render buffer named '${renderTarget.renderBufferName}' found in RenderTask ${renderTask.declaration.name}")
+            is RenderTarget.TaskInput -> {
+                val resolvedParameter = (passInstance.taskInstance.parameters[renderTarget.name]
+                        ?: throw Exception("The parent context lacks a '${renderTarget.name}' parameter"))
+
+                when (resolvedParameter) {
+                    is VulkanRenderBuffer -> resolvedParameter
+                    is RenderTarget.RenderBufferReference -> {
+                        val localRenderBuffer = renderTask.buffers[resolvedParameter.renderBufferName]
+                        if (localRenderBuffer != null)
+                            localRenderBuffer
+                        else {
+                            val parentRenderTask = passInstance.taskInstance.requester!!.taskInstance
+                            parentRenderTask.renderTask.buffers[resolvedParameter.renderBufferName]
+                                    ?: throw Exception("Can't find render buffer named: ${resolvedParameter.renderBufferName}")
+                        }
+                    }
+                    else -> throw Exception("The $resolvedParameter parameter is not a render buffer")
+                }
+            }
+        }
+
+        val resolvedOutputs = mutableMapOf<PassOutput, VulkanRenderBuffer>()
+
+        val resolvedDepthAndColorBuffers = mutableListOf<VulkanRenderBuffer>()
+        for (colorOutput in outputs) {
+            val resolved = resolveRenderTarget(colorOutput.target ?: RenderTarget.RenderBufferReference(colorOutput.name))
+            resolvedDepthAndColorBuffers.add(resolved)
+            resolvedOutputs[colorOutput] = resolved
+        }
+        if (depth.enabled) {
+            val resolved = resolveRenderTarget(depth.depthBuffer!!)
+            resolvedDepthAndColorBuffers.add(resolved)
+            passInstance.resolvedDepthBuffer = resolved
+        }
+
+        passInstance.resolvedOutputs = resolvedOutputs
+        passInstance.postResolve(resolvedDepthAndColorBuffers)
+    }
+
+    fun setScissorAndViewport(commandBuffer: VkCommandBuffer, viewportSize: Vector2i) {
+        val viewport = VkViewport.callocStack(1).apply {
+            x(0.0F)
+            y(0.0F)
+            width(viewportSize.x.toFloat())
+            height(viewportSize.y.toFloat())
+            minDepth(0.0F)
+            maxDepth(1.0F)
+        }
+
+        val zeroZero = VkOffset2D.callocStack().apply {
+            x(0)
+            y(0)
+        }
+        val scissor = VkRect2D.callocStack(1).apply {
+            offset(zeroZero)
+            extent().width(viewportSize.x)
+            extent().height(viewportSize.y)
+        }
+
+        vkCmdSetViewport(commandBuffer, 0, viewport)
+        vkCmdSetScissor(commandBuffer, 0, scissor)
     }
 
     fun dumpFramebuffers() {

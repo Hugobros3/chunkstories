@@ -47,7 +47,7 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
 
     fun updateArround(position: Vector3dc) {
         val operationsPool = backend.logicalDevice.graphicsQueue.threadSafePools.get()
-        val commandBuffer = operationsPool.startCommandBuffer()
+        val commandBuffer = operationsPool.startPrimaryCommandBuffer()
 
         try {
             info.noise = (info.noise + 1) % 256
@@ -200,7 +200,8 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
                 vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, null, null, postUpdateBarrier)
 
                 val fence = backend.createFence(false)
-                operationsPool.finishAndSubmitCmdBuffer(commandBuffer, backend.logicalDevice.graphicsQueue, fence)
+                vkEndCommandBuffer(commandBuffer)
+                operationsPool.submitAndReturnPrimaryCommandBuffer(commandBuffer, backend.logicalDevice.graphicsQueue, fence)
                 backend.waitFence(fence)
 
                 vkDestroyFence(backend.logicalDevice.vkDevice, fence, null)
@@ -210,7 +211,7 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
                 scratchVkBuffer.cleanup()
             }
         } finally {
-            operationsPool.returnCommandBuffer(commandBuffer)
+            operationsPool.returnPrimaryCommandBuffer(commandBuffer)
         }
     }
 

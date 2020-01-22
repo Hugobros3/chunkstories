@@ -38,8 +38,8 @@ class OpenglRenderGraph(val backend: OpenglGraphicsBackend, val dslCode: RenderG
         val graph = OpenglFrameGraph(frame, this, mainTask, mainCamera, map)
         val sequencedGraph = graph.sequenceGraph()
 
-        val passInstances: Array<PassInstance> = sequencedGraph.filterIsInstance<PassInstance>().toTypedArray()
-        val renderingContexts: Array<RenderTaskInstance> = sequencedGraph.filterIsInstance<RenderTaskInstance>().toTypedArray()
+        val passInstances: List<PassInstance> = sequencedGraph.filterIsInstance<PassInstance>()
+        val renderingContexts: List<RenderTaskInstance> = sequencedGraph.filterIsInstance<RenderTaskInstance>()
         val gathered = backend.graphicsEngine.gatherRepresentations(frame, passInstances, renderingContexts)
 
         // Fancy preparing of the representations to render
@@ -68,7 +68,8 @@ class OpenglRenderGraph(val backend: OpenglGraphicsBackend, val dslCode: RenderG
                     }
                 }
 
-                for (i in 0 until bucket.representations.size) {
+                TODO()
+                /*for (i in 0 until bucket.representations.size) {
                     val item = bucket.representations[i]
                     val mask = bucket.masks[i]
 
@@ -76,7 +77,7 @@ class OpenglRenderGraph(val backend: OpenglGraphicsBackend, val dslCode: RenderG
                         continue
 
                     (responsibleSystem as OpenglDispatchingSystem<Representation>).sort(item, drawersArray, allowedOutputs as List<MutableList<Any>>)
-                }
+                }*/
             }
         }
 

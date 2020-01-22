@@ -7,26 +7,29 @@ import xyz.chunkstories.api.graphics.representation.PointLight
 import xyz.chunkstories.api.graphics.systems.dispatching.DefferedLightsRenderer
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
+import xyz.chunkstories.graphics.common.representations.RepresentationsGathered
 import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompilationParameters
 import xyz.chunkstories.graphics.vulkan.Pipeline
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPassInstance
+import xyz.chunkstories.graphics.vulkan.graph.VulkanRenderTaskInstance
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import xyz.chunkstories.graphics.vulkan.resources.VulkanShaderResourcesContext
+import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.vertexInputConfiguration
 
 private typealias VkDefferedLightIR = MutableList<PointLight>
 
-class VulkanDefferedLightsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingSystem<PointLight, VkDefferedLightIR>(backend) {
+class VulkanDefferedLightsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingSystem<PointLight>(backend) {
 
     override val representationName: String
         get() = PointLight::class.java.canonicalName
 
-    inner class Drawer(pass: VulkanPass, drawerInitCode: VulkanDispatchingSystem.Drawer<VkDefferedLightIR>.() -> Unit) : VulkanDispatchingSystem.Drawer<VkDefferedLightIR>(pass), DefferedLightsRenderer {
-        override val system: VulkanDispatchingSystem<*, VkDefferedLightIR>
+    inner class Drawer(pass: VulkanPass, drawerInitCode: VulkanDispatchingSystem.Drawer.() -> Unit) : VulkanDispatchingSystem.Drawer(pass), DefferedLightsRenderer {
+        override val system: VulkanDispatchingSystem<*>
             get() = this@VulkanDefferedLightsDispatcher
 
         private val vertexBuffer: VulkanVertexBuffer
@@ -64,7 +67,7 @@ class VulkanDefferedLightsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
         private val program = backend.shaderFactory.createProgram("pointLight", ShaderCompilationParameters(outputs = pass.declaration.outputs))
         private val pipeline = Pipeline(backend, program, pass, vertexInputConfiguration, Primitive.TRIANGLES, FaceCullingMode.DISABLED)
 
-        override fun registerDrawingCommands(context: VulkanPassInstance, commandBuffer: VkCommandBuffer, work: VkDefferedLightIR) {
+        fun registerDrawingCommands(context: VulkanPassInstance, commandBuffer: VkCommandBuffer, work: VkDefferedLightIR) {
             val bindingContexts = mutableListOf<VulkanShaderResourcesContext>()
 
             for (light in work) {
@@ -93,9 +96,9 @@ class VulkanDefferedLightsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
 
     }
 
-    override fun createDrawerForPass(pass: VulkanPass, drawerInitCode: VulkanDispatchingSystem.Drawer<VkDefferedLightIR>.() -> Unit) = Drawer(pass, drawerInitCode)
+    override fun createDrawerForPass(pass: VulkanPass, drawerInitCode: VulkanDispatchingSystem.Drawer.() -> Unit) = Drawer(pass, drawerInitCode)
 
-    override fun sort(representations: Sequence<PointLight>, drawers: List<VulkanDispatchingSystem.Drawer<VkDefferedLightIR>>, workForDrawers: MutableMap<VulkanDispatchingSystem.Drawer<VkDefferedLightIR>, VkDefferedLightIR>) {
+    /*fun sort(representations: Sequence<PointLight>, drawers: List<VulkanDispatchingSystem.Drawer<VkDefferedLightIR>>, workForDrawers: MutableMap<VulkanDispatchingSystem.Drawer<VkDefferedLightIR>, VkDefferedLightIR>) {
         val lists = drawers.associateWith { mutableListOf<PointLight>() }
 
         for (representation in representations) {
@@ -109,6 +112,10 @@ class VulkanDefferedLightsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
                 workForDrawers[entry.key] = entry.value
             }
         }
+    }*/
+
+    override fun sortAndDraw(frame: VulkanFrame, drawers: Map<VulkanRenderTaskInstance, List<Pair<VulkanPassInstance, VulkanDispatchingSystem.Drawer>>>, maskedBuckets: Map<Int, RepresentationsGathered.Bucket>): Map<Pair<VulkanPassInstance, VulkanDispatchingSystem.Drawer>, VkCommandBuffer> {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun cleanup() {

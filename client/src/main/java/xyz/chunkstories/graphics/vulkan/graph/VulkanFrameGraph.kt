@@ -98,14 +98,17 @@ class VulkanPassInstance(graph: VulkanFrameGraph, override val taskInstance: Vul
 
     lateinit var resolvedDepthBuffer: VulkanRenderBuffer
     lateinit var resolvedOutputs: Map<PassOutput, VulkanRenderBuffer>
+    lateinit var resolvedDepthAndColorBuffers: MutableList<VulkanRenderBuffer>
 
     lateinit var commandBuffer: VkCommandBuffer
 
     fun postResolve(resolvedDepthAndColorBuffers: MutableList<VulkanRenderBuffer>) {
         val viewportSize = ViewportSize()
         viewportSize.size.set(resolvedDepthAndColorBuffers[0].textureSize)
-        renderTargetSize.set(resolvedDepthAndColorBuffers[0].textureSize)
-        shaderResources.supplyUniformBlock("viewportSize", viewportSize)
+        this.shaderResources.supplyUniformBlock("viewportSize", viewportSize)
+
+        this.renderTargetSize.set(resolvedDepthAndColorBuffers[0].textureSize)
+        this.resolvedDepthAndColorBuffers = resolvedDepthAndColorBuffers
     }
 
     fun getBindingContext(pipeline: Pipeline): VulkanShaderResourcesContext {
@@ -133,6 +136,9 @@ class VulkanPassInstance(graph: VulkanFrameGraph, override val taskInstance: Vul
 }
 
 class VulkanRenderTaskInstance(graph: VulkanFrameGraph, override val requester: VulkanPassInstance?, override val name: String, val renderTask: VulkanRenderTask, override val camera: Camera, parameters: Map<String, Any>) : FrameGraphNode(graph), RenderTaskInstance {
+    var inOrderId = -1
+    var mask = 0
+
     override val declaration: RenderTaskDeclaration = renderTask.declaration
 
     override val artifacts = mutableMapOf<String, Any>()

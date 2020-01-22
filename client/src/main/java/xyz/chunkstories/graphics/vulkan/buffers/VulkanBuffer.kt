@@ -86,7 +86,7 @@ open class VulkanBuffer(val backend: VulkanGraphicsBackend, val bufferSize: Long
             val stagingBuffer = VulkanBuffer(backend, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, MemoryUsagePattern.STAGING)
             stagingBuffer.upload(dataToUpload)
 
-            val commandBuffer = operationsPool.startCommandBuffer()
+            val commandBuffer = operationsPool.startPrimaryCommandBuffer()
             val region = VkBufferCopy.callocStack(1).apply {
                 size(size)
                 dstOffset(dstOffset)
@@ -94,13 +94,14 @@ open class VulkanBuffer(val backend: VulkanGraphicsBackend, val bufferSize: Long
             }
             vkCmdCopyBuffer(commandBuffer, stagingBuffer.handle, handle, region)
 
-            operationsPool.finishAndSubmitCmdBuffer(commandBuffer, backend.logicalDevice.transferQueue, fence)
+            vkEndCommandBuffer(commandBuffer)
+            operationsPool.submitAndReturnPrimaryCommandBuffer(commandBuffer, backend.logicalDevice.transferQueue, fence)
 
             backend.waitFence(fence)
 
             vkDestroyFence(backend.logicalDevice.vkDevice, fence, null)
 
-            operationsPool.returnCommandBuffer(commandBuffer)
+            operationsPool.returnPrimaryCommandBuffer(commandBuffer)
             //vkFreeCommandBuffers(backend.logicalDevice.vkDevice, operationsPool.handle, commandBuffer)
             stagingBuffer.cleanup()
         }
