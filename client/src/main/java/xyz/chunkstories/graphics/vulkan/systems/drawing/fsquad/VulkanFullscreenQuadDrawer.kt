@@ -1,4 +1,4 @@
-package xyz.chunkstories.graphics.vulkan.systems
+package xyz.chunkstories.graphics.vulkan.systems.drawing.fsquad
 
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.VK10.*
@@ -14,7 +14,7 @@ import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPassInstance
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import xyz.chunkstories.graphics.vulkan.shaders.VulkanShaderProgram
-import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
+import xyz.chunkstories.graphics.vulkan.systems.drawing.VulkanDrawingSystem
 import xyz.chunkstories.graphics.vulkan.vertexInputConfiguration
 
 class VulkanFullscreenQuadDrawer(pass: VulkanPass, dslCode: FullscreenQuadDrawer.() -> Unit) : VulkanDrawingSystem(pass), FullscreenQuadDrawer {

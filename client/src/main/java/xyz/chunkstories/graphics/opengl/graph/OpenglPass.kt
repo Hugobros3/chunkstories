@@ -1,7 +1,6 @@
 package xyz.chunkstories.graphics.opengl.graph
 
 import org.lwjgl.opengl.ARBDirectStateAccess.*
-import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL33.*
 
 import xyz.chunkstories.api.graphics.rendergraph.PassDeclaration
@@ -11,11 +10,11 @@ import xyz.chunkstories.api.graphics.systems.dispatching.DispatchingSystem
 import xyz.chunkstories.api.graphics.systems.drawing.DrawingSystem
 import xyz.chunkstories.api.util.kotlin.toVec4f
 import xyz.chunkstories.graphics.common.Cleanable
+import xyz.chunkstories.graphics.common.structs.ViewportSize
 import xyz.chunkstories.graphics.opengl.OpenglFrame
 import xyz.chunkstories.graphics.opengl.OpenglGraphicsBackend
 import xyz.chunkstories.graphics.opengl.systems.OpenglDispatchingSystem
 import xyz.chunkstories.graphics.opengl.systems.OpenglDrawingSystem
-import xyz.chunkstories.graphics.vulkan.systems.world.ViewportSize
 
 class OpenglPass(val backend: OpenglGraphicsBackend, val renderTask: OpenglRenderTask, val declaration: PassDeclaration) : Cleanable {
     val drawingSystems: List<OpenglDrawingSystem>
@@ -57,10 +56,10 @@ class OpenglPass(val backend: OpenglGraphicsBackend, val renderTask: OpenglRende
         declaration.draws?.registeredSystems?.let {
             for (registeredSystem in it) {
                 if (DrawingSystem::class.java.isAssignableFrom(registeredSystem.clazz)) {
-                    val drawingSystem = backend.createDrawingSystem(this, registeredSystem as RegisteredGraphicSystem<DrawingSystem>)
+                    val drawingSystem = backend.createDrawingSystem(this, registeredSystem as RegisteredGraphicSystem<DrawingSystem>) ?: continue
                     drawingSystems.add(drawingSystem)
                 } else if (DispatchingSystem::class.java.isAssignableFrom(registeredSystem.clazz)) {
-                    val dispatchingSystem = backend.getOrCreateDispatchingSystem(renderTask.renderGraph.dispatchingSystems, registeredSystem as RegisteredGraphicSystem<DispatchingSystem>)
+                    val dispatchingSystem = backend.getOrCreateDispatchingSystem(renderTask.renderGraph.dispatchingSystems, registeredSystem as RegisteredGraphicSystem<DispatchingSystem>) ?: continue
                     val drawer = dispatchingSystem.createDrawerForPass(this, registeredSystem.dslCode as OpenglDispatchingSystem.Drawer<*>.() -> Unit)
 
                     dispatchingSystem.drawersInstances.add(drawer)

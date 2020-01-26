@@ -159,21 +159,29 @@ class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
     override fun createWorldRenderer(world: WorldClientCommon): WorldRenderer =
             OpenglWorldRenderer(this, world)
 
-    fun <T : DrawingSystem> createDrawingSystem(pass: OpenglPass, registration: RegisteredGraphicSystem<T>): OpenglDrawingSystem {
+    fun <T : DrawingSystem> createDrawingSystem(pass: OpenglPass, registration: RegisteredGraphicSystem<T>): OpenglDrawingSystem? {
         val dslCode = registration.dslCode as DrawingSystem.() -> Unit
 
         return when(registration.clazz) {
             GuiDrawer::class.java -> OpenglGuiDrawer(pass, dslCode)
             FullscreenQuadDrawer::class.java -> OpenglFullscreenQuadDrawer(pass, dslCode)
-            else -> throw Exception("Unimplemented system on this backend: ${registration.clazz}")
+            else -> {
+                logger.error("Unimplemented system on this backend: ${registration.clazz}")
+                null
+                //throw Exception("Unimplemented system on this backend: ${registration.clazz}")
+            }
         }
     }
 
-    fun <T : DispatchingSystem> getOrCreateDispatchingSystem(list: MutableList<OpenglDispatchingSystem<*>>, dispatchingSystemRegistration: RegisteredGraphicSystem<T>) : OpenglDispatchingSystem<*> {
+    fun <T : DispatchingSystem> getOrCreateDispatchingSystem(list: MutableList<OpenglDispatchingSystem<*>>, dispatchingSystemRegistration: RegisteredGraphicSystem<T>) : OpenglDispatchingSystem<*>? {
         val implemClass: Class<out OpenglDispatchingSystem<out Representation>> = when(dispatchingSystemRegistration.clazz) {
             ModelsRenderer::class.java -> OpenglModelsDispatcher::class
             ChunksRenderer::class.java -> OpenglChunkRepresentationsDispatcher::class
-            else -> throw Exception("Unimplemented system on this backend: ${dispatchingSystemRegistration.clazz}")
+            else -> {
+                logger.error("Unimplemented system on this backend: ${dispatchingSystemRegistration.clazz}")
+                return null
+                //throw Exception("Unimplemented system on this backend: ${dispatchingSystemRegistration.clazz}")
+            }
         }.java
 
         val existing = list.find { implemClass.isAssignableFrom(it::class.java) }

@@ -1,11 +1,10 @@
-package xyz.chunkstories.graphics.vulkan.systems.models
+package xyz.chunkstories.graphics.vulkan.systems.dispatching.lines
 
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil.memAlloc
 import org.lwjgl.system.MemoryUtil.memFree
 import org.lwjgl.vulkan.VK10
 import org.lwjgl.vulkan.VK10.*
-import org.lwjgl.vulkan.VkCommandBuffer
 import xyz.chunkstories.api.graphics.representation.Line
 import xyz.chunkstories.api.graphics.systems.dispatching.LinesRenderer
 import xyz.chunkstories.graphics.common.FaceCullingMode
@@ -20,7 +19,7 @@ import xyz.chunkstories.graphics.vulkan.graph.VulkanPassInstance
 import xyz.chunkstories.graphics.vulkan.graph.VulkanRenderTaskInstance
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
-import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
+import xyz.chunkstories.graphics.vulkan.systems.dispatching.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.vertexInputConfiguration
 
 class VulkanLinesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingSystem<Line>(backend) {

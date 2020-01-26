@@ -9,7 +9,6 @@ import xyz.chunkstories.graphics.common.util.toByteBuffer
 import xyz.chunkstories.graphics.common.voxel.VoxelTexturesArray
 import xyz.chunkstories.graphics.opengl.OpenglGraphicsBackend
 import xyz.chunkstories.graphics.opengl.textures.OpenglOnionTexture2D
-import xyz.chunkstories.graphics.vulkan.systems.gui.guiBufferSize
 import java.awt.image.BufferedImage
 
 class OpenglVoxelTexturesArray(val backend: OpenglGraphicsBackend, voxels: Content.Voxels) : VoxelTexturesArray(voxels), Cleanable {

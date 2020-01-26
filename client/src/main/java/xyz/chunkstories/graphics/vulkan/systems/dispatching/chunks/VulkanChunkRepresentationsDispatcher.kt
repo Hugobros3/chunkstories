@@ -1,4 +1,4 @@
-package xyz.chunkstories.graphics.vulkan.systems.world
+package xyz.chunkstories.graphics.vulkan.systems.dispatching.chunks
 
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.VK10.*
@@ -21,7 +21,7 @@ import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPassInstance
 import xyz.chunkstories.graphics.vulkan.graph.VulkanRenderTaskInstance
 import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
-import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
+import xyz.chunkstories.graphics.vulkan.systems.dispatching.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
 import xyz.chunkstories.graphics.vulkan.textures.voxels.VulkanVoxelTexturesArray
 

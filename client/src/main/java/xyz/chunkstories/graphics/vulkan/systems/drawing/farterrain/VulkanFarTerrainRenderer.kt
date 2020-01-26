@@ -1,4 +1,4 @@
-package xyz.chunkstories.graphics.vulkan.systems.world.farterrain
+package xyz.chunkstories.graphics.vulkan.systems.drawing.farterrain
 
 import org.joml.Vector2i
 import org.lwjgl.system.MemoryUtil.memAlloc
@@ -21,8 +21,7 @@ import xyz.chunkstories.graphics.vulkan.graph.VulkanPassInstance
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import xyz.chunkstories.graphics.vulkan.resources.InflightFrameResource
 import xyz.chunkstories.graphics.vulkan.shaders.VulkanShaderProgram
-import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
-import xyz.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
+import xyz.chunkstories.graphics.vulkan.systems.drawing.VulkanDrawingSystem
 import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
 import xyz.chunkstories.graphics.vulkan.vertexInputConfiguration
 import xyz.chunkstories.world.WorldClientCommon

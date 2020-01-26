@@ -2,7 +2,6 @@ package xyz.chunkstories.graphics.opengl.world.chunks
 
 import xyz.chunkstories.graphics.common.world.ChunkRepresentationsProvider
 import xyz.chunkstories.graphics.opengl.OpenglGraphicsBackend
-import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
 import xyz.chunkstories.world.WorldClientCommon
 
 class OpenglChunkRepresentationsProvider(backend: OpenglGraphicsBackend, world: WorldClientCommon) :

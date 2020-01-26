@@ -13,10 +13,10 @@ import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.vulkan.RenderPass
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
-import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
-import xyz.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
-import xyz.chunkstories.graphics.vulkan.systems.createDrawingSystem
-import xyz.chunkstories.graphics.vulkan.systems.getOrCreateDispatchingSystem
+import xyz.chunkstories.graphics.vulkan.systems.dispatching.VulkanDispatchingSystem
+import xyz.chunkstories.graphics.vulkan.systems.drawing.VulkanDrawingSystem
+import xyz.chunkstories.graphics.vulkan.systems.dispatching.getOrCreateDispatchingSystem
+import xyz.chunkstories.graphics.vulkan.systems.drawing.createDrawingSystem
 import xyz.chunkstories.graphics.vulkan.util.VkFramebuffer
 import xyz.chunkstories.graphics.vulkan.util.ensureIs
 
@@ -39,7 +39,7 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
             for (registeredSystem in it) {
 
                 if (DrawingSystem::class.java.isAssignableFrom(registeredSystem.clazz)) {
-                    val drawingSystem = backend.createDrawingSystem(this, registeredSystem as RegisteredGraphicSystem<DrawingSystem>) as VulkanDrawingSystem
+                    val drawingSystem = backend.createDrawingSystem(this, registeredSystem as RegisteredGraphicSystem<DrawingSystem>) ?: continue
 
                     //val d = declaredDrawingSystem.dslCode as GraphicSystem.() -> Unit
                     //drawingSystem.apply(d)

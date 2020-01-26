@@ -1,4 +1,4 @@
-package xyz.chunkstories.graphics.vulkan.systems.gui
+package xyz.chunkstories.graphics.vulkan.systems.drawing.gui
 
 import org.joml.Vector4f
 import org.joml.Vector4fc
@@ -23,7 +23,7 @@ import xyz.chunkstories.graphics.vulkan.graph.VulkanPassInstance
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import xyz.chunkstories.graphics.vulkan.resources.InflightFrameResource
 import xyz.chunkstories.graphics.vulkan.resources.VulkanShaderResourcesContext
-import xyz.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
+import xyz.chunkstories.graphics.vulkan.systems.drawing.VulkanDrawingSystem
 import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
 import xyz.chunkstories.graphics.vulkan.textures.VulkanTexture2D
 import xyz.chunkstories.graphics.vulkan.vertexInputConfiguration
