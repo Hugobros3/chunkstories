@@ -2,11 +2,9 @@ package xyz.chunkstories.graphics.common
 
 import org.joml.Vector4d
 import xyz.chunkstories.api.client.IngameClient
-import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
 import xyz.chunkstories.api.graphics.TextureFormat
 import xyz.chunkstories.api.graphics.TextureTilingMode
 import xyz.chunkstories.api.graphics.rendergraph.*
-import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.api.graphics.systems.dispatching.*
 import xyz.chunkstories.api.graphics.systems.drawing.FarTerrainDrawer
 import xyz.chunkstories.api.graphics.systems.drawing.FullscreenQuadDrawer
@@ -16,7 +14,7 @@ import xyz.chunkstories.graphics.GLFWBasedGraphicsBackend
 import xyz.chunkstories.graphics.common.world.doShadowMapping
 import xyz.chunkstories.graphics.vulkan.VulkanBackendOptions
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
-import xyz.chunkstories.graphics.vulkan.systems.Vulkan3DVoxelRaytracer
+import xyz.chunkstories.graphics.vulkan.systems.drawing.rt.Vulkan3DVoxelRaytracer
 import xyz.chunkstories.world.WorldClientCommon
 
 abstract class WorldRenderer(val world: WorldClientCommon) : Cleanable {

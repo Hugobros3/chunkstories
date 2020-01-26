@@ -5,11 +5,11 @@ import org.lwjgl.vulkan.VkCommandBuffer
 import xyz.chunkstories.api.graphics.rendergraph.*
 import xyz.chunkstories.api.graphics.shader.ShaderResources
 import xyz.chunkstories.api.graphics.structs.Camera
+import xyz.chunkstories.graphics.common.structs.ViewportSize
 import xyz.chunkstories.graphics.vulkan.Pipeline
 import xyz.chunkstories.graphics.vulkan.resources.VulkanShaderResourcesContext
 import xyz.chunkstories.graphics.vulkan.shaders.extractInto
 import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
-import xyz.chunkstories.graphics.vulkan.systems.world.ViewportSize
 
 class VulkanFrameGraph(val frame: VulkanFrame, val renderGraph: VulkanRenderGraph, startTask: VulkanRenderTask, mainCamera: Camera, parameters: Map<String, Any>) {
     val rootNode: FrameGraphNode

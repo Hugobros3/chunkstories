@@ -1,4 +1,4 @@
-package xyz.chunkstories.graphics.vulkan.systems.gui
+package xyz.chunkstories.graphics.vulkan.systems.drawing.gui
 
 //
 // This file is a part of the Chunk Stories Implementation codebase

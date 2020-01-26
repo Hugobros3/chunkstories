@@ -1,8 +1,6 @@
-package xyz.chunkstories.graphics.vulkan.systems.debug
+package xyz.chunkstories.graphics.vulkan.systems.drawing.dbgwireframe
 
 import xyz.chunkstories.api.client.IngameClient
-import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
-import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.client.InternalClientOptions
 import xyz.chunkstories.client.ingame.LocalPlayerImplementation
 import xyz.chunkstories.graphics.common.FaceCullingMode
@@ -12,7 +10,7 @@ import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.vulkan.resources.InflightFrameResource
-import xyz.chunkstories.graphics.vulkan.systems.VulkanDrawingSystem
+import xyz.chunkstories.graphics.vulkan.systems.drawing.VulkanDrawingSystem
 import xyz.chunkstories.graphics.vulkan.vertexInputConfiguration
 import org.joml.Vector3d
 import org.lwjgl.system.MemoryStack.*

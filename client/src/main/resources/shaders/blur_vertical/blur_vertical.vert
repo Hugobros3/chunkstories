@@ -1,6 +1,6 @@
 #version 330
 
-#include struct xyz.chunkstories.graphics.vulkan.systems.world.ViewportSize
+#include struct xyz.chunkstories.graphics.common.structs.ViewportSize
 uniform ViewportSize viewportSize;
 
 in vec2 vertexIn;

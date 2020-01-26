@@ -3,7 +3,7 @@ package xyz.chunkstories.graphics.vulkan.world
 import xyz.chunkstories.graphics.common.WorldRenderer
 import xyz.chunkstories.graphics.common.world.EntitiesRepresentationsProvider
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
-import xyz.chunkstories.graphics.vulkan.systems.world.VulkanChunkRepresentationsProvider
+import xyz.chunkstories.graphics.vulkan.systems.dispatching.chunks.VulkanChunkRepresentationsProvider
 import xyz.chunkstories.world.WorldClientCommon
 
 class VulkanWorldRenderer(override val backend: VulkanGraphicsBackend, world: WorldClientCommon) : WorldRenderer(world) {

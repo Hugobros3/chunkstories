@@ -1,4 +1,4 @@
-package xyz.chunkstories.graphics.vulkan.systems.world
+package xyz.chunkstories.graphics.vulkan.systems.dispatching.chunks
 
 import xyz.chunkstories.graphics.common.world.TaskCreateChunkMesh
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend

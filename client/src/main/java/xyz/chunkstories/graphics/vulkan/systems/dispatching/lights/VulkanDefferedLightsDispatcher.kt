@@ -1,4 +1,4 @@
-package xyz.chunkstories.graphics.vulkan.systems.lighting
+package xyz.chunkstories.graphics.vulkan.systems.dispatching.lights
 
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryStack.stackLongs
@@ -18,7 +18,7 @@ import xyz.chunkstories.graphics.vulkan.graph.VulkanRenderTaskInstance
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import xyz.chunkstories.graphics.vulkan.resources.VulkanShaderResourcesContext
 import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
-import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
+import xyz.chunkstories.graphics.vulkan.systems.dispatching.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.vertexInputConfiguration
 
 class VulkanDefferedLightsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingSystem<PointLight>(backend) {

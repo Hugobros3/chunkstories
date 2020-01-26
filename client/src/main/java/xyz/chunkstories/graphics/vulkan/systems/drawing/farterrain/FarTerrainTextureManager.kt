@@ -1,4 +1,4 @@
-package xyz.chunkstories.graphics.vulkan.systems.world.farterrain
+package xyz.chunkstories.graphics.vulkan.systems.drawing.farterrain
 
 import org.lwjgl.system.MemoryStack.stackPop
 import org.lwjgl.system.MemoryStack.stackPush

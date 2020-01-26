@@ -1,4 +1,4 @@
-package xyz.chunkstories.graphics.vulkan.systems.world
+package xyz.chunkstories.graphics.vulkan.systems.drawing.rt
 
 import org.joml.Vector3dc
 import org.joml.Vector3i
