@@ -92,7 +92,7 @@ class NaiveFrameDataAllocatorProvider(val backend: VulkanGraphicsBackend) : Fram
                     target.upload(src, 0, src.limit().toLong())
             }
 
-            println("naive per frame data report: allocated ${allocatedByteBuffers.size} temp buffers, ${allocatedBuffers.size} vkbuffers, ${uploadRequests.size} combined upload requests")
+            //println("naive per frame data report: allocated ${allocatedByteBuffers.size} temp buffers, ${allocatedBuffers.size} vkbuffers, ${uploadRequests.size} combined upload requests")
         }
 
         override fun cleanup() {
