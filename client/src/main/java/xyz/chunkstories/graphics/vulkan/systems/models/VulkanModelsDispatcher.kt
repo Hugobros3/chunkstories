@@ -143,7 +143,10 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
 
         private val ssboBufferSize = 1024 * 1024L
 
-        fun registerDrawingCommands(context: VulkanPassInstance, commandBuffer: VkCommandBuffer, work: WorkForDrawerInstance) {
+        override fun registerDrawingCommands(drawerWork: DrawerWork) {
+            val work = drawerWork as ModelDrawerWork
+            val context = work.drawerInstance.first
+            val commandBuffer = work.cmdBuffer
             stackPush()
 
             val modelPositionsBuffer = MemoryUtil.memAlloc(ssboBufferSize.toInt())
@@ -288,20 +291,20 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
         sampler.cleanup()
     }
 
-    class WorkForDrawerInstance(val drawerInstance: Pair<VulkanPassInstance, Drawer>) {
+    class ModelDrawerWork(drawerInstance: Pair<VulkanPassInstance, Drawer>): DrawerWork(drawerInstance) {
         val animationSupported = drawerInstance.second.supportsAnimations
 
         val queuedWork = mutableMapOf<Mesh, MutableMap<MeshMaterial, MeshMaterialInstances>>()
         val queuedWorkAnimated = mutableMapOf<Mesh, MutableMap<MeshMaterial, MeshMaterialInstances>>()
 
-        lateinit var cmdBuffer: VkCommandBuffer
+        override fun isEmpty() =queuedWork.isEmpty() && queuedWorkAnimated.isEmpty()
     }
 
-    override fun sortAndDraw(frame: VulkanFrame, drawers: Map<VulkanRenderTaskInstance, List<Pair<VulkanPassInstance, VulkanDispatchingSystem.Drawer>>>, maskedBuckets: Map<Int, RepresentationsGathered.Bucket>): Map<Pair<VulkanPassInstance, VulkanDispatchingSystem.Drawer>, VkCommandBuffer> {
+    override fun sortWork(frame: VulkanFrame, drawers: Map<VulkanRenderTaskInstance, List<Pair<VulkanPassInstance, VulkanDispatchingSystem.Drawer>>>, maskedBuckets: Map<Int, RepresentationsGathered.Bucket>): Map<Pair<VulkanPassInstance, VulkanDispatchingSystem.Drawer>, DrawerWork> {
         val allDrawersPlusInstances = drawers.values.flatten().filterIsInstance<Pair<VulkanPassInstance, Drawer>>()
 
-        var workForDrawers = allDrawersPlusInstances.associateWith {
-            WorkForDrawerInstance(it)
+        val workForDrawers = allDrawersPlusInstances.associateWith {
+            ModelDrawerWork(it)
         }
 
         // Very complicated confusing logic here
@@ -314,7 +317,7 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
             @Suppress("UNCHECKED_CAST") val somewhatRelevantDrawers = drawers.filter { it.key.mask and mask != 0 }.flatMap { it.value } as List<Pair<VulkanPassInstance, Drawer>>
             @Suppress("UNCHECKED_CAST") val representations = bucket.representations as ArrayList<ModelInstance>
 
-            val drawerRelevancyMap = mutableMapOf<DrawerRelevancyKey, List<WorkForDrawerInstance>>()
+            val drawerRelevancyMap = mutableMapOf<DrawerRelevancyKey, List<ModelDrawerWork>>()
 
             for (modelInstance in representations) {
                 for ((i, mesh) in modelInstance.model.meshes.withIndex()) {
@@ -338,42 +341,7 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
             }
         }
 
-        // Get rid of the work for the drawers that won't do anything
-        workForDrawers = workForDrawers.filter {
-            it.value.queuedWork.isNotEmpty() || it.value.queuedWorkAnimated.isNotEmpty()
-        }
-
-        for (workForDrawer in workForDrawers.values) {
-            val cmdBuf = backend.renderGraph.commandPool.loanSecondaryCommandBuffer()
-            workForDrawer.cmdBuffer = cmdBuf
-
-            stackPush().use {
-                val inheritInfo = VkCommandBufferInheritanceInfo.callocStack().apply {
-                    sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO)
-                    renderPass(workForDrawer.drawerInstance.first.pass.canonicalRenderPass.handle)
-                    subpass(0)
-                    framebuffer(VK_NULL_HANDLE
-                            /** I don't know, I mean I could but I can't be arsed :P */)
-                }
-                val beginInfo = VkCommandBufferBeginInfo.callocStack().apply {
-                    sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO)
-                    flags(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT or VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT)
-                    pInheritanceInfo(inheritInfo)
-                }
-                vkBeginCommandBuffer(cmdBuf, beginInfo)
-                workForDrawer.drawerInstance.first.pass.setScissorAndViewport(cmdBuf, workForDrawer.drawerInstance.first.renderTargetSize)
-                workForDrawer.drawerInstance.second.registerDrawingCommands(workForDrawer.drawerInstance.first, cmdBuf, workForDrawer)
-                vkEndCommandBuffer(cmdBuf)
-            }
-        }
-
-        frame.recyclingTasks += {
-            workForDrawers.forEach {
-                backend.renderGraph.commandPool.returnSecondaryCommandBuffer(it.value.cmdBuffer)
-            }
-        }
-
-        return workForDrawers.map { Pair(it.key, it.value.cmdBuffer) }.toMap()
+        return workForDrawers.map { Pair(it.key, it.value) }.toMap()
     }
 }
 

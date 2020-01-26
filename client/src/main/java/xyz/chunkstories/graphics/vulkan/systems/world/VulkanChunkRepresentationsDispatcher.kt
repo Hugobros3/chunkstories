@@ -2,9 +2,6 @@ package xyz.chunkstories.graphics.vulkan.systems.world
 
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.vulkan.VK10.*
-import org.lwjgl.vulkan.VkCommandBuffer
-import org.lwjgl.vulkan.VkCommandBufferBeginInfo
-import org.lwjgl.vulkan.VkCommandBufferInheritanceInfo
 import xyz.chunkstories.api.graphics.TextureTilingMode
 import xyz.chunkstories.api.graphics.systems.dispatching.ChunksRenderer
 import xyz.chunkstories.graphics.common.FaceCullingMode
@@ -134,11 +131,15 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
         val maxChunksRendered = 4096
         val ssboBufferSize = (sizeAligned16 * maxChunksRendered).toLong()
 
-        fun registerDrawingCommands(context: VulkanPassInstance, commandBuffer: VkCommandBuffer, work: MutableList<VulkanChunkRepresentation.Section>) {
+        override fun registerDrawingCommands(drawerWork: DrawerWork) {
+            val work = drawerWork as ChunkMeshesDrawerWork
+            val context = work.drawerInstance.first
+            val commandBuffer = work.cmdBuffer
+
             val client = backend.window.client.ingame ?: return
 
-            val staticMeshes = work.mapNotNull { it.staticMesh }
-            val cubes = work.mapNotNull { it.cubes }
+            val staticMeshes = work.queuedWork.mapNotNull { it.staticMesh }
+            val cubes = work.queuedWork.mapNotNull { it.cubes }
 
             stackPush()
 
@@ -253,44 +254,22 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
         }
     }
 
-    override fun createDrawerForPass(pass: VulkanPass, drawerInitCode: VulkanDispatchingSystem.Drawer.() -> Unit) =
-            Drawer(pass, drawerInitCode)
+    override fun createDrawerForPass(pass: VulkanPass, drawerInitCode: VulkanDispatchingSystem.Drawer.() -> Unit) = Drawer(pass, drawerInitCode)
 
-    /*override fun sort(representations: Sequence<VulkanChunkRepresentation>, drawers: List<VulkanDispatchingSystem.Drawer>, workForDrawers: MutableMap<VulkanDispatchingSystem.Drawer<VkChunkIR>, VkChunkIR>) {
-        val lists = drawers.associateWith { mutableListOf<VulkanChunkRepresentation.Section>() }
-
-        for(representation in representations) {
-            for (section in representation.sections.values) {
-                for (drawer in drawers) {
-                    if ((drawer as Drawer).materialTag == section.materialTag) {
-                        lists[drawer]!!.add(section)
-                    }
-                }
-            }
-        }
-
-        for(entry in lists) {
-            if(entry.value.isNotEmpty()) {
-                workForDrawers[entry.key] = entry.value
-            }
-        }
-    }*/
-
-    class WorkForDrawerInstance(val drawerInstance: Pair<VulkanPassInstance, Drawer>) {
+    class ChunkMeshesDrawerWork(drawerInstance: Pair<VulkanPassInstance, Drawer>): DrawerWork(drawerInstance) {
         val queuedWork = arrayListOf<VulkanChunkRepresentation.Section>()
-
-        lateinit var cmdBuffer: VkCommandBuffer
+        override fun isEmpty() = queuedWork.isEmpty()
     }
 
-    override fun sortAndDraw(frame: VulkanFrame, drawers: Map<VulkanRenderTaskInstance, List<Pair<VulkanPassInstance, VulkanDispatchingSystem.Drawer>>>, maskedBuckets: Map<Int, RepresentationsGathered.Bucket>): Map<Pair<VulkanPassInstance, VulkanDispatchingSystem.Drawer>, VkCommandBuffer> {
+    override fun sortWork(frame: VulkanFrame, drawers: Map<VulkanRenderTaskInstance, List<Pair<VulkanPassInstance, VulkanDispatchingSystem.Drawer>>>, maskedBuckets: Map<Int, RepresentationsGathered.Bucket>): Map<Pair<VulkanPassInstance, VulkanDispatchingSystem.Drawer>, DrawerWork> {
         @Suppress("UNCHECKED_CAST") val allDrawersPlusInstances = drawers.values.flatten().filterIsInstance<Pair<VulkanPassInstance, Drawer>>()
 
-        var workForDrawers = allDrawersPlusInstances.associateWith {
-            WorkForDrawerInstance(it)
+        val workForDrawers = allDrawersPlusInstances.associateWith {
+            ChunkMeshesDrawerWork(it)
         }
 
         for ((mask, bucket) in maskedBuckets) {
-            val drawerRelevancyMap = mutableMapOf<String, List<WorkForDrawerInstance>>()
+            val drawerRelevancyMap = mutableMapOf<String, List<ChunkMeshesDrawerWork>>()
 
             @Suppress("UNCHECKED_CAST") val somewhatRelevantDrawers = drawers.filter { it.key.mask and mask != 0 }.flatMap { it.value } as List<Pair<VulkanPassInstance, Drawer>>
             @Suppress("UNCHECKED_CAST") val representations = bucket.representations as ArrayList<VulkanChunkRepresentation>
@@ -308,42 +287,7 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
             }
         }
 
-        // Get rid of the work for the drawers that won't do anything
-        workForDrawers = workForDrawers.filter {
-            it.value.queuedWork.isNotEmpty()
-        }
-
-        for (workForDrawer in workForDrawers.values) {
-            val cmdBuf = backend.renderGraph.commandPool.loanSecondaryCommandBuffer()
-            workForDrawer.cmdBuffer = cmdBuf
-
-            stackPush().use {
-                val inheritInfo = VkCommandBufferInheritanceInfo.callocStack().apply {
-                    sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO)
-                    renderPass(workForDrawer.drawerInstance.first.pass.canonicalRenderPass.handle)
-                    subpass(0)
-                    framebuffer(VK_NULL_HANDLE
-                            /** I don't know, I mean I could but I can't be assed :P */)
-                }
-                val beginInfo = VkCommandBufferBeginInfo.callocStack().apply {
-                    sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO)
-                    flags(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT or VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT)
-                    pInheritanceInfo(inheritInfo)
-                }
-                vkBeginCommandBuffer(cmdBuf, beginInfo)
-                workForDrawer.drawerInstance.first.pass.setScissorAndViewport(cmdBuf, workForDrawer.drawerInstance.first.renderTargetSize)
-                workForDrawer.drawerInstance.second.registerDrawingCommands(workForDrawer.drawerInstance.first, cmdBuf, workForDrawer.queuedWork)
-                vkEndCommandBuffer(cmdBuf)
-            }
-        }
-
-        frame.recyclingTasks += {
-            workForDrawers.forEach {
-                backend.renderGraph.commandPool.returnSecondaryCommandBuffer(it.value.cmdBuffer)
-            }
-        }
-
-        return workForDrawers.map { Pair(it.key, it.value.cmdBuffer) }.toMap()
+        return workForDrawers.map { Pair(it.key, it.value) }.toMap()
     }
 
     override fun cleanup() {

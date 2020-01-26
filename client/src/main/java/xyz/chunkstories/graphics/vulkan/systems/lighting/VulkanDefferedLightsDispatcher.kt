@@ -1,8 +1,8 @@
 package xyz.chunkstories.graphics.vulkan.systems.lighting
 
 import org.lwjgl.system.MemoryStack
+import org.lwjgl.system.MemoryStack.stackLongs
 import org.lwjgl.vulkan.VK10.*
-import org.lwjgl.vulkan.VkCommandBuffer
 import xyz.chunkstories.api.graphics.representation.PointLight
 import xyz.chunkstories.api.graphics.systems.dispatching.DefferedLightsRenderer
 import xyz.chunkstories.graphics.common.FaceCullingMode
@@ -20,8 +20,6 @@ import xyz.chunkstories.graphics.vulkan.resources.VulkanShaderResourcesContext
 import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.vertexInputConfiguration
-
-private typealias VkDefferedLightIR = MutableList<PointLight>
 
 class VulkanDefferedLightsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingSystem<PointLight>(backend) {
 
@@ -67,16 +65,20 @@ class VulkanDefferedLightsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
         private val program = backend.shaderFactory.createProgram("pointLight", ShaderCompilationParameters(outputs = pass.declaration.outputs))
         private val pipeline = Pipeline(backend, program, pass, vertexInputConfiguration, Primitive.TRIANGLES, FaceCullingMode.DISABLED)
 
-        fun registerDrawingCommands(context: VulkanPassInstance, commandBuffer: VkCommandBuffer, work: VkDefferedLightIR) {
+        override fun registerDrawingCommands(drawerWork: DrawerWork) {
+            val work = drawerWork as DefferedLightsDrawerWork
+            val context = work.drawerInstance.first
+            val commandBuffer = work.cmdBuffer
+
             val bindingContexts = mutableListOf<VulkanShaderResourcesContext>()
 
-            for (light in work) {
+            for (light in work.pointLights) {
                 val bindingContext = context.getBindingContext(pipeline)
                 bindingContexts.add(bindingContext)
                 vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
-                context.shaderResources.supplyUniformBlock("light", light)
+                bindingContext.bindStructuredUBO("light", light)
 
-                vkCmdBindVertexBuffers(commandBuffer, 0, MemoryStack.stackLongs(vertexBuffer.handle), MemoryStack.stackLongs(0))
+                vkCmdBindVertexBuffers(commandBuffer, 0, stackLongs(vertexBuffer.handle), stackLongs(0))
                 bindingContext.commitAndBind(commandBuffer)
 
                 vkCmdDraw(commandBuffer, 3, 1, 0, 0)
@@ -113,9 +115,31 @@ class VulkanDefferedLightsDispatcher(backend: VulkanGraphicsBackend) : VulkanDis
             }
         }
     }*/
+    class DefferedLightsDrawerWork(drawerInstance: Pair<VulkanPassInstance, VulkanDispatchingSystem.Drawer>) : DrawerWork(drawerInstance) {
+        val pointLights = arrayListOf<PointLight>()
+        override fun isEmpty(): Boolean = pointLights.isEmpty()
+    }
 
-    override fun sortAndDraw(frame: VulkanFrame, drawers: Map<VulkanRenderTaskInstance, List<Pair<VulkanPassInstance, VulkanDispatchingSystem.Drawer>>>, maskedBuckets: Map<Int, RepresentationsGathered.Bucket>): Map<Pair<VulkanPassInstance, VulkanDispatchingSystem.Drawer>, VkCommandBuffer> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun sortWork(frame: VulkanFrame, drawers: Map<VulkanRenderTaskInstance, List<Pair<VulkanPassInstance, VulkanDispatchingSystem.Drawer>>>, maskedBuckets: Map<Int, RepresentationsGathered.Bucket>): Map<Pair<VulkanPassInstance, VulkanDispatchingSystem.Drawer>, DrawerWork> {
+        val allDrawersPlusInstances = drawers.values.flatten().filterIsInstance<Pair<VulkanPassInstance, Drawer>>()
+
+        val workForDrawers = allDrawersPlusInstances.associateWith {
+            DefferedLightsDrawerWork(it)
+        }
+
+        for ((mask, bucket) in maskedBuckets) {
+            @Suppress("UNCHECKED_CAST") val somewhatRelevantDrawers = drawers.filter { it.key.mask and mask != 0 }.flatMap { it.value } as List<Pair<VulkanPassInstance, Drawer>>
+            @Suppress("UNCHECKED_CAST") val representations = bucket.representations as ArrayList<PointLight>
+
+            for (light in representations) {
+                for (e in somewhatRelevantDrawers) {
+                    val queue = workForDrawers[e]!!
+                    queue.pointLights.add(light)
+                }
+            }
+        }
+
+        return workForDrawers.map { Pair(it.key, it.value) }.toMap()
     }
 
     override fun cleanup() {
