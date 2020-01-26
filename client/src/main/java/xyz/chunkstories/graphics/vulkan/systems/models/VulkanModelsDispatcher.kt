@@ -311,9 +311,10 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
         // 2) the mesh mask in the model didn't mask off that mesh
         // 3) the mesh material tag matches with the drawer materialTag
         for ((mask, bucket) in maskedBuckets) {
-            val drawerRelevancyMap = mutableMapOf<DrawerRelevancyKey, List<WorkForDrawerInstance>>()
             @Suppress("UNCHECKED_CAST") val somewhatRelevantDrawers = drawers.filter { it.key.mask and mask != 0 }.flatMap { it.value } as List<Pair<VulkanPassInstance, Drawer>>
             @Suppress("UNCHECKED_CAST") val representations = bucket.representations as ArrayList<ModelInstance>
+
+            val drawerRelevancyMap = mutableMapOf<DrawerRelevancyKey, List<WorkForDrawerInstance>>()
 
             for (modelInstance in representations) {
                 for ((i, mesh) in modelInstance.model.meshes.withIndex()) {
@@ -352,7 +353,7 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
                     renderPass(workForDrawer.drawerInstance.first.pass.canonicalRenderPass.handle)
                     subpass(0)
                     framebuffer(VK_NULL_HANDLE
-                            /** I don't know, I mean I could but I can't be assed :P */)
+                            /** I don't know, I mean I could but I can't be arsed :P */)
                 }
                 val beginInfo = VkCommandBufferBeginInfo.callocStack().apply {
                     sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO)

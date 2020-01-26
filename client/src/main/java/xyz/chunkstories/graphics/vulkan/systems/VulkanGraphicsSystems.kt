@@ -52,7 +52,7 @@ fun <T: DispatchingSystem> VulkanGraphicsBackend.getOrCreateDispatchingSystem(li
     val new: VulkanDispatchingSystem<*> = when(dispatchingSystemRegistration.clazz) {
         ChunksRenderer::class.java -> VulkanChunkRepresentationsDispatcher(this)
         ModelsRenderer::class.java -> VulkanModelsDispatcher(this)
-        //SpritesRenderer::class.java -> VulkanSpritesDispatcher(this)
+        SpritesRenderer::class.java -> VulkanSpritesDispatcher(this)
         //LinesRenderer::class.java -> VulkanLinesDispatcher(this)
         //DefferedLightsRenderer::class.java -> VulkanDefferedLightsDispatcher(this)
         else -> {
