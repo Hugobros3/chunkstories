@@ -23,8 +23,6 @@ import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.systems.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.vertexInputConfiguration
 
-private typealias VkLinesIR = MutableList<Line>
-
 class VulkanLinesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingSystem<Line>(backend) {
 
     override val representationName: String
@@ -62,10 +60,14 @@ class VulkanLinesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingS
         private val program = backend.shaderFactory.createProgram("colored", ShaderCompilationParameters(outputs = pass.declaration.outputs))
         private val pipeline = Pipeline(backend, program, pass, vertexInput, Primitive.LINES, FaceCullingMode.DISABLED)
 
-        fun registerDrawingCommands(context: VulkanPassInstance, commandBuffer: VkCommandBuffer, work: VkLinesIR) {
+        override fun registerDrawingCommands(drawerWork: DrawerWork) {
+            val work = drawerWork as LinesDrawerWork
+            val context = work.drawerInstance.first
+            val commandBuffer = work.cmdBuffer
+
             val buffer = memAlloc(1024 * 1024) // 1Mb buffer
             var points = 0
-            for (line in work) {
+            for (line in work.lines) {
                 buffer.putFloat(line.start.x.toFloat())
                 buffer.putFloat(line.start.y.toFloat())
                 buffer.putFloat(line.start.z.toFloat())
@@ -115,10 +117,33 @@ class VulkanLinesDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingS
 
     }
 
+    class LinesDrawerWork(drawerInstance: Pair<VulkanPassInstance, VulkanDispatchingSystem.Drawer>) : DrawerWork(drawerInstance) {
+        val lines = arrayListOf<Line>()
+        override fun isEmpty(): Boolean = lines.isEmpty()
+    }
+
     override fun createDrawerForPass(pass: VulkanPass, drawerInitCode: VulkanDispatchingSystem.Drawer.() -> Unit) = Drawer(pass, drawerInitCode)
 
-    override fun sortAndDraw(frame: VulkanFrame, drawers: Map<VulkanRenderTaskInstance, List<Pair<VulkanPassInstance, VulkanDispatchingSystem.Drawer>>>, maskedBuckets: Map<Int, RepresentationsGathered.Bucket>): Map<Pair<VulkanPassInstance, VulkanDispatchingSystem.Drawer>, VkCommandBuffer> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun sortWork(frame: VulkanFrame, drawers: Map<VulkanRenderTaskInstance, List<Pair<VulkanPassInstance, VulkanDispatchingSystem.Drawer>>>, maskedBuckets: Map<Int, RepresentationsGathered.Bucket>): Map<Pair<VulkanPassInstance, VulkanDispatchingSystem.Drawer>, DrawerWork> {
+        val allDrawersPlusInstances = drawers.values.flatten().filterIsInstance<Pair<VulkanPassInstance, Drawer>>()
+
+        val workForDrawers = allDrawersPlusInstances.associateWith {
+            LinesDrawerWork(it)
+        }
+
+        for ((mask, bucket) in maskedBuckets) {
+            @Suppress("UNCHECKED_CAST") val somewhatRelevantDrawers = drawers.filter { it.key.mask and mask != 0 }.flatMap { it.value } as List<Pair<VulkanPassInstance, Drawer>>
+            @Suppress("UNCHECKED_CAST") val representations = bucket.representations as ArrayList<Line>
+
+            for (line in representations) {
+                for (e in somewhatRelevantDrawers) {
+                    val queue = workForDrawers[e]!!
+                    queue.lines.add(line)
+                }
+            }
+        }
+
+        return workForDrawers.map { Pair(it.key, it.value) }.toMap()
     }
 
     override fun cleanup() {

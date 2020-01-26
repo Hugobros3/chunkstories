@@ -4,10 +4,11 @@ import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryStack.stackPush
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
+import org.lwjgl.vulkan.VkCommandBufferBeginInfo
+import org.lwjgl.vulkan.VkCommandBufferInheritanceInfo
 import org.lwjgl.vulkan.VkSubmitInfo
 import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
 import xyz.chunkstories.api.graphics.rendergraph.RenderGraphDeclaration
-import xyz.chunkstories.api.graphics.representation.Representation
 import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.common.representations.gatherRepresentations
@@ -74,11 +75,46 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
 
             val l22 = l2.mapValues { it.value.filter { responsibleSystem.drawersInstances.contains(it.second) } }
 
-            val `that's work now!` =responsibleSystem.sortAndDraw(frame, l22, metaBucket.maskedBuckets)
+            val sortedWork = responsibleSystem.sortWork(frame, l22, metaBucket.maskedBuckets)
 
-            for((loc, cmdBuf) in `that's work now!`) {
-                val existing = prepareDrawerCmdBuffers.getOrPut(loc.first) { mutableMapOf() }.put(loc.second, cmdBuf)
-                if(existing != null)
+            // Get rid of the work for the drawers that won't do anything
+            val filteredWork = sortedWork.filter {
+                !it.value.isEmpty()
+            }
+
+            for (workForDrawer in filteredWork.values) {
+                val cmdBuf = backend.renderGraph.commandPool.loanSecondaryCommandBuffer()
+                workForDrawer.cmdBuffer = cmdBuf
+
+                stackPush().use {
+                    val inheritInfo = VkCommandBufferInheritanceInfo.callocStack().apply {
+                        sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO)
+                        renderPass(workForDrawer.drawerInstance.first.pass.canonicalRenderPass.handle)
+                        subpass(0)
+                        framebuffer(VK_NULL_HANDLE
+                                /** I don't know, I mean I could but I can't be arsed :P */)
+                    }
+                    val beginInfo = VkCommandBufferBeginInfo.callocStack().apply {
+                        sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO)
+                        flags(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT or VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT)
+                        pInheritanceInfo(inheritInfo)
+                    }
+                    vkBeginCommandBuffer(cmdBuf, beginInfo)
+                    workForDrawer.drawerInstance.first.pass.setScissorAndViewport(cmdBuf, workForDrawer.drawerInstance.first.renderTargetSize)
+                    workForDrawer.drawerInstance.second.registerDrawingCommands(workForDrawer)
+                    vkEndCommandBuffer(cmdBuf)
+                }
+            }
+
+            frame.recyclingTasks += {
+                filteredWork.forEach {
+                    backend.renderGraph.commandPool.returnSecondaryCommandBuffer(it.value.cmdBuffer)
+                }
+            }
+
+            for ((loc, recordedWork) in filteredWork) {
+                val existing = prepareDrawerCmdBuffers.getOrPut(loc.first) { mutableMapOf() }.put(loc.second, recordedWork.cmdBuffer)
+                if (existing != null)
                     throw Exception("oh no this should really not happen!")
             }
         }

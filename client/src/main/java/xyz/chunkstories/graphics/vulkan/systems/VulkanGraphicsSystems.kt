@@ -53,8 +53,8 @@ fun <T: DispatchingSystem> VulkanGraphicsBackend.getOrCreateDispatchingSystem(li
         ChunksRenderer::class.java -> VulkanChunkRepresentationsDispatcher(this)
         ModelsRenderer::class.java -> VulkanModelsDispatcher(this)
         SpritesRenderer::class.java -> VulkanSpritesDispatcher(this)
-        //LinesRenderer::class.java -> VulkanLinesDispatcher(this)
-        //DefferedLightsRenderer::class.java -> VulkanDefferedLightsDispatcher(this)
+        LinesRenderer::class.java -> VulkanLinesDispatcher(this)
+        DefferedLightsRenderer::class.java -> VulkanDefferedLightsDispatcher(this)
         else -> {
             //throw Exception("Unimplemented system on this backend: ${dispatchingSystemRegistration.clazz}")
             logger.error("Unimplemented system on this backend: ${dispatchingSystemRegistration.clazz}")
