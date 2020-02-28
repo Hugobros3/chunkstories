@@ -136,7 +136,7 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
         swapchainDetails = SwapChainSupportDetails(pSurfaceCapabilities, pSurfaceFormats, pPresentModes)
 
         // Decide if suitable or not based on all that
-        suitable = availableExtensions.containsAll(requiredDeviceExtensions) && swapchainDetails.suitable
+        suitable = availableExtensions.containsAll(requiredDeviceExtensions) && swapchainDetails.suitable && queueFamilies.count { it.canPresent } > 0
         fitnessScore = 1 + type.fitnessScoreBonus
 
         MemoryStack.stackPop()
@@ -208,7 +208,7 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
 
             transformToUse = capabilities.currentTransform()
 
-            suitable = surfaceFormats.capacity() > 0 && availablePresentationModes.isNotEmpty()
+            suitable = capabilities.supportedUsageFlags() != 0 && surfaceFormats.count() > 0 && availablePresentationModes.isNotEmpty()
         }
     }
 
