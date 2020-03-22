@@ -11,7 +11,7 @@ import xyz.chunkstories.graphics.vulkan.util.waitFence
 
 class VulkanOnionTexture2D(backend: VulkanGraphicsBackend, format: TextureFormat, val width: Int, val height: Int, val layerCount: Int, usageFlags: Int) :
         VulkanTexture(backend, format,
-                width, height, 1, layerCount,
+                width, height, 1, layerCount, 1,
                 VK_IMAGE_TYPE_2D, VK_IMAGE_VIEW_TYPE_2D_ARRAY, usageFlags) {
 
     fun copyBufferToImage(buffer: VulkanBuffer) {

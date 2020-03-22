@@ -13,7 +13,7 @@ import xyz.chunkstories.graphics.vulkan.util.waitFence
 
 class VulkanTexture2D(backend: VulkanGraphicsBackend, format: TextureFormat, override val width: Int, override val height: Int, usageFlags: Int) :
         VulkanTexture(backend, format,
-                width, height, 1, 1,
+                width, height, 1, 1, 1,
                 VK_IMAGE_TYPE_2D, VK_IMAGE_VIEW_TYPE_2D, usageFlags), Texture2D {
 
     val mapping: Int by lazy { backend.textures.magicTexturing!!.assignId(this) }

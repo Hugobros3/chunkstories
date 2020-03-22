@@ -16,7 +16,7 @@ import xyz.chunkstories.graphics.vulkan.util.*
 import kotlin.concurrent.withLock
 
 open class VulkanTexture(val backend: VulkanGraphicsBackend, final override val format: TextureFormat,
-                         private val width: Int, private val height: Int, private val depth: Int, private val layerCount: Int,
+                         private val width: Int, private val height: Int, private val depth: Int, private val layerCount: Int, private val mipLevelsCount: Int,
                          private val imageType: Int, private val imageViewType: Int, private val usageFlags: Int) : Texture, Cleanable {
 
     private val vulkanFormat = format.vulkanFormat
@@ -35,7 +35,7 @@ open class VulkanTexture(val backend: VulkanGraphicsBackend, final override val 
             extent().width(width)
             extent().height(height)
             extent().depth(depth)
-            mipLevels(1)
+            mipLevels(mipLevelsCount)
             arrayLayers(layerCount)
 
             format(vulkanFormat.ordinal)
@@ -50,8 +50,8 @@ open class VulkanTexture(val backend: VulkanGraphicsBackend, final override val 
 
             var flags = 0
 
-            if(imageViewType == VK10.VK_IMAGE_VIEW_TYPE_CUBE || imageViewType == VK10.VK_IMAGE_VIEW_TYPE_CUBE_ARRAY)
-                flags = flags or VK10.VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT
+            if(imageViewType == VK_IMAGE_VIEW_TYPE_CUBE || imageViewType == VK_IMAGE_VIEW_TYPE_CUBE_ARRAY)
+                flags = flags or VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT
 
             flags(flags)
         }
@@ -143,7 +143,7 @@ open class VulkanTexture(val backend: VulkanGraphicsBackend, final override val 
                 else
                     aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
                 baseMipLevel(0)
-                levelCount(1)
+                levelCount(mipLevelsCount)
                 baseArrayLayer(0)
                 layerCount(layerCount)
             }
@@ -240,7 +240,7 @@ open class VulkanTexture(val backend: VulkanGraphicsBackend, final override val 
             subresourceRange().apply {
                 aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
                 baseMipLevel(0)
-                levelCount(1)
+                levelCount(mipLevelsCount)
                 baseArrayLayer(0)
                 layerCount(layerCount)
             }

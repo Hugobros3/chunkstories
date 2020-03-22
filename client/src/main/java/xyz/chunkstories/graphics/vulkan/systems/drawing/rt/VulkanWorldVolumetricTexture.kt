@@ -26,13 +26,13 @@ import xyz.chunkstories.world.WorldClientCommon
 import xyz.chunkstories.world.chunk.ChunkImplementation
 import java.nio.ByteBuffer
 
-class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world: WorldClientCommon) : Cleanable {
-    val size = 128
-    val texture = VulkanTexture3D(backend, TextureFormat.RGBA_8, size, size, size, VK_IMAGE_USAGE_SAMPLED_BIT or VK_IMAGE_USAGE_TRANSFER_DST_BIT)
+class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world: WorldClientCommon, val volumeSideLength: Int) : Cleanable {
+    val mipLevels = 6
+    val texture = VulkanTexture3D(backend, TextureFormat.RGBA_8, volumeSideLength, volumeSideLength, volumeSideLength, mipLevels, VK_IMAGE_USAGE_SAMPLED_BIT or VK_IMAGE_USAGE_TRANSFER_DST_BIT)
 
-    val chunksSidesCount = size / 32
+    val chunksSidesCount = volumeSideLength / 32
     val singleChunkSizeInRam = 32 * 32 * 32 * 4
-    val scratchByteBuffer = memAlloc(chunksSidesCount * chunksSidesCount * chunksSidesCount * singleChunkSizeInRam)
+    val scratchByteBuffer = memAlloc((chunksSidesCount * chunksSidesCount * chunksSidesCount * singleChunkSizeInRam * 1.5f).toInt())
 
     val info = VolumetricTextureMetadata()
 
@@ -74,9 +74,9 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
 
                 lastPos.set(info.baseChunkPos)*/
 
-                info.size = size
+                info.size = volumeSideLength
 
-                val copies = VkBufferImageCopy.callocStack(chunksSidesCount * chunksSidesCount * chunksSidesCount)
+                val copies = VkBufferImageCopy.calloc(chunksSidesCount * chunksSidesCount * chunksSidesCount * mipLevels)
                 var copiesCount = 0
                 for (x in 0 until chunksSidesCount)
                     for (y in 0 until chunksSidesCount)
@@ -110,34 +110,7 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
 
                             chunksCache[cacheIndex] = chunk
 
-                            copies[copiesCount++].apply {
-                                bufferOffset(scratchByteBuffer.position().toLong())
-
-                                // tightly packed
-                                bufferRowLength(0)
-                                bufferImageHeight(0)
-
-                                imageSubresource().apply {
-                                    aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
-                                    mipLevel(0)
-                                    baseArrayLayer(0)
-                                    layerCount(1)
-                                }
-
-                                imageOffset().apply {
-                                    x((chunk.chunkX % chunksSidesCount) * 32)
-                                    y((chunk.chunkY % chunksSidesCount) * 32)
-                                    z((chunk.chunkZ % chunksSidesCount) * 32)
-                                }
-
-                                imageExtent().apply {
-                                    width(32)
-                                    height(32)
-                                    depth(32)
-                                }
-                            }
-
-                            extractChunkInBuffer(scratchByteBuffer, chunk)
+                            copiesCount = handleChunk(copies, copiesCount, chunk)
                         }
 
                 if (copiesCount == 0)
@@ -162,7 +135,7 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
                     subresourceRange().apply {
                         aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
                         baseMipLevel(0)
-                        levelCount(1)
+                        levelCount(mipLevels)
                         baseArrayLayer(0)
                         layerCount(1)
                     }
@@ -189,7 +162,7 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
                     subresourceRange().apply {
                         aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
                         baseMipLevel(0)
-                        levelCount(1)
+                        levelCount(mipLevels)
                         baseArrayLayer(0)
                         layerCount(1)
                     }
@@ -204,6 +177,8 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
                 operationsPool.submitAndReturnPrimaryCommandBuffer(commandBuffer, backend.logicalDevice.graphicsQueue, fence)
                 backend.waitFence(fence)
 
+                copies.free()
+
                 vkDestroyFence(backend.logicalDevice.vkDevice, fence, null)
 
                 //vkFreeCommandBuffers(backend.logicalDevice.vkDevice, operationsPool.handle, commandBuffer)
@@ -213,6 +188,102 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
         } finally {
             operationsPool.returnPrimaryCommandBuffer(commandBuffer)
         }
+    }
+
+    private fun handleChunk(copies: VkBufferImageCopy.Buffer, copiesCount: Int, chunk: ChunkImplementation): Int {
+        var copiesCount1 = copiesCount
+
+        val base = scratchByteBuffer.position().toLong()
+        val basePtrs = LongArray(6)
+        basePtrs[0] = base
+        copies[copiesCount1++].apply {
+            bufferOffset(base)
+
+            // tightly packed
+            bufferRowLength(0)
+            bufferImageHeight(0)
+
+            imageSubresource().apply {
+                aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
+                mipLevel(0)
+                baseArrayLayer(0)
+                layerCount(1)
+            }
+
+            imageOffset().apply {
+                x((chunk.chunkX % chunksSidesCount) * 32)
+                y((chunk.chunkY % chunksSidesCount) * 32)
+                z((chunk.chunkZ % chunksSidesCount) * 32)
+            }
+
+            imageExtent().apply {
+                width(32)
+                height(32)
+                depth(32)
+            }
+        }
+
+        extractChunkInBuffer(scratchByteBuffer, chunk)
+
+        fun isOccluded(level: Int, x: Int, y: Int, z: Int): Boolean {
+            val index = basePtrs[level - 1] + ((((z * (32 shr (level - 1))) + y) * (32 shr (level - 1))) + x) * 4 + 3
+            return scratchByteBuffer.get(index.toInt()) > 0
+        }
+
+        for (mipLevel in 1..1) {
+            basePtrs[mipLevel] = scratchByteBuffer.position().toLong()
+
+            copies[copiesCount1++].apply {
+                bufferOffset(basePtrs[mipLevel])
+
+                // tightly packed
+                bufferRowLength(0)
+                bufferImageHeight(0)
+
+                imageSubresource().apply {
+                    aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
+                    mipLevel(mipLevel)
+                    baseArrayLayer(0)
+                    layerCount(1)
+                }
+
+                imageOffset().apply {
+                    x((chunk.chunkX % chunksSidesCount) * (32 shr mipLevel))
+                    y((chunk.chunkY % chunksSidesCount) * (32 shr mipLevel))
+                    z((chunk.chunkZ % chunksSidesCount) * (32 shr mipLevel))
+                }
+
+                imageExtent().apply {
+                    width(32 shr mipLevel)
+                    height(32 shr mipLevel)
+                    depth(32 shr mipLevel)
+                }
+            }
+
+            for (z in 0 until (32 shr mipLevel)) {
+                for (y in 0 until (32 shr mipLevel)) {
+                    for (x in 0 until (32 shr mipLevel)) {
+
+                        var occluded = false
+                        for(fz in (z shl 1)..((z shl 1) + 1)) {
+                            for(fy in (y shl 1)..((y shl 1) + 1)) {
+                                for(fx in (x shl 1)..((x shl 1) + 1)) {
+                                    occluded = occluded || isOccluded(mipLevel, fx, fy, fz)
+                                }
+                            }
+                        }
+
+                        scratchByteBuffer.put((if(occluded) 255 else 0).toByte())
+                        scratchByteBuffer.put((if(occluded) 255 else 0).toByte())
+                        scratchByteBuffer.put((if(occluded) 255 else 0).toByte())
+                        scratchByteBuffer.put((if(occluded) 127 else 0).toByte())
+                        //print((if(occluded) 127 else 0).toByte())
+                    }
+                }
+            }
+        }
+
+        return copiesCount1
     }
 
     private fun extractChunkInBuffer(byteBuffer: ByteBuffer, chunk: ChunkImplementation) {
@@ -254,16 +325,7 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
                             byteBuffer.put((color.z() * 255).toInt().toByte())
 
                             byteBuffer.put(((0.5 + 0.5 * voxel.emittedLightLevel / 15.0) * 255).toInt().toByte())
-
-                            //if(voxel.emittedLightLevel > 1)
-                            //    println(((0.5 + 0.5 * voxel.emittedLightLevel / 15.0) * 255))
-
-                            /*if (topTexture.name.equals("grass_top"))
-                                byteBuffer.put((0.5 * 255).toInt().toByte())
-                            else
-                                byteBuffer.put((color.w() * 255).toInt().toByte())*/
                         }
-
                     }
         }
     }

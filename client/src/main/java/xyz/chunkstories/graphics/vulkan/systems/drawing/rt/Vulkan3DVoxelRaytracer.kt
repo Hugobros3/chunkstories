@@ -7,6 +7,7 @@ import xyz.chunkstories.api.client.IngameClient
 import xyz.chunkstories.api.graphics.TextureTilingMode
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
+import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompilationParameters
 import xyz.chunkstories.graphics.vulkan.Pipeline
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
@@ -40,13 +41,14 @@ class Vulkan3DVoxelRaytracer(pass: VulkanPass, dslCode: Vulkan3DVoxelRaytracer.(
         }
     }
 
-    val program = backend.shaderFactory.createProgram("raytraced")
+    val volumeSideLength = 256
+    val program = backend.shaderFactory.createProgram("raytraced", ShaderCompilationParameters(defines = mapOf("VOLUME_TEXTURE_SIZE" to "$volumeSideLength")))
     val pipeline = Pipeline(backend, program, pass, vertexInputConfiguration, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
     val sampler = VulkanSampler(backend, tilingMode = TextureTilingMode.REPEAT)
 
     private val vertexBuffer: VulkanVertexBuffer
 
-    val volumetricTexture = VulkanWorldVolumetricTexture(backend, client.ingame?.world as WorldClientCommon)
+    val volumetricTexture = VulkanWorldVolumetricTexture(backend, client.ingame?.world as WorldClientCommon, volumeSideLength)
 
     init {
         dslCode()
@@ -69,10 +71,10 @@ class Vulkan3DVoxelRaytracer(pass: VulkanPass, dslCode: Vulkan3DVoxelRaytracer.(
     }
 
     override fun registerDrawingCommands(context: VulkanPassInstance, commandBuffer: VkCommandBuffer) {
+        volumetricTexture.updateArround(context.taskInstance.camera.position)
+
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle)
         val bindingContext = context.getBindingContext(pipeline)
-
-        volumetricTexture.updateArround(context.taskInstance.camera.position)
 
         bindingContext.bindStructuredUBO("voxelDataInfo", volumetricTexture.info)
         bindingContext.bindTextureAndSampler("voxelData", volumetricTexture.texture, sampler)

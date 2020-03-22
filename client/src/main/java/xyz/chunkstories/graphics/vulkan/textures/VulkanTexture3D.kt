@@ -10,8 +10,8 @@ import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
 import xyz.chunkstories.graphics.vulkan.util.createFence
 import xyz.chunkstories.graphics.vulkan.util.waitFence
 
-class VulkanTexture3D(backend: VulkanGraphicsBackend, format: TextureFormat, val width: Int, val height: Int, val depth: Int, usageFlags: Int) :
-        VulkanTexture(backend, format, width, height, depth, 1, VK_IMAGE_TYPE_3D, VK_IMAGE_VIEW_TYPE_3D, usageFlags) {
+class VulkanTexture3D(backend: VulkanGraphicsBackend, format: TextureFormat, val width: Int, val height: Int, val depth: Int, val mipLevelsCount: Int, usageFlags: Int) :
+        VulkanTexture(backend, format, width, height, depth, 1, mipLevelsCount, VK_IMAGE_TYPE_3D, VK_IMAGE_VIEW_TYPE_3D, usageFlags) {
 
     fun copyBufferToImage(buffer: VulkanBuffer) {
         MemoryStack.stackPush()

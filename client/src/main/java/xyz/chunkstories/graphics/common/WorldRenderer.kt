@@ -149,9 +149,9 @@ abstract class WorldRenderer(val world: WorldClientCommon) : Cleanable {
                                 shader = "sprites"
                                 materialTag = "opaque"
                             }
-                        system(FarTerrainDrawer::class) {
+                        /*system(FarTerrainDrawer::class) {
 
-                        }
+                        }*/
                     }
 
                     setup {
@@ -503,9 +503,9 @@ abstract class WorldRenderer(val world: WorldClientCommon) : Cleanable {
                             supportsAnimations = true
                         }
                         if (backend is VulkanGraphicsBackend) {
-                            system(FarTerrainDrawer::class) {
+                            /*system(FarTerrainDrawer::class) {
 
-                            }
+                            }*/
                         }
                     }
 
