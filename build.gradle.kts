@@ -38,7 +38,7 @@ plugins {
 val apiRevisionBuiltAgainst by extra { "203" }
 var actualContentLocation = "core_content.zip"
 
-val lwjglVersion by extra { "3.2.2-SNAPSHOT" }
+val lwjglVersion by extra { "3.2.3" }
 val natives by extra { listOf("natives-windows", "natives-linux", "natives-macos")}
 
 task("buildAll") {

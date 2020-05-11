@@ -16,7 +16,7 @@ class DebugMarkersUtil(val backend: VulkanGraphicsBackend) {
 
     fun enterRenderTask(commandBuffer: VkCommandBuffer, renderTask: RenderTaskInstance) {
         stackPush()
-        val markerInfo = VkDebugMarkerMarkerInfoEXT.calloc()
+        val markerInfo = VkDebugMarkerMarkerInfoEXT.callocStack()
         markerInfo.sType(VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT)
         val prettyName = renderTask.name()
         val color = color(prettyName)

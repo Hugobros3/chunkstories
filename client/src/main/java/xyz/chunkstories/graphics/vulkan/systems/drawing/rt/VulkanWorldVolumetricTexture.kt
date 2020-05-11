@@ -121,18 +121,18 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
 
                 scratchByteBuffer.flip()
 
-                val preUpdateBarrier = VkImageMemoryBarrier.callocStack(1).apply {
-                    sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER)
+                val preUpdateBarrier = VkImageMemoryBarrier.callocStack(1).also {
+                    it.sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER)
 
-                    oldLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-                    newLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+                    it.oldLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+                    it.newLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
 
-                    srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
-                    dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+                    it.srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+                    it.dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
 
-                    image(texture.imageHandle)
+                    it.image(texture.imageHandle)
 
-                    subresourceRange().apply {
+                    it.subresourceRange().apply {
                         aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
                         baseMipLevel(0)
                         levelCount(mipLevels)
@@ -140,26 +140,26 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
                         layerCount(1)
                     }
 
-                    srcAccessMask(0)
-                    dstAccessMask(VK_ACCESS_TRANSFER_WRITE_BIT)
+                    it.srcAccessMask(0)
+                    it.dstAccessMask(VK_ACCESS_TRANSFER_WRITE_BIT)
                 }
                 vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, null, null, preUpdateBarrier)
 
                 val scratchVkBuffer = VulkanBuffer(backend, scratchByteBuffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT or VK_BUFFER_USAGE_TRANSFER_DST_BIT, MemoryUsagePattern.SEMI_STATIC)
                 vkCmdCopyBufferToImage(commandBuffer, scratchVkBuffer.handle, texture.imageHandle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, copies)
 
-                val postUpdateBarrier = VkImageMemoryBarrier.callocStack(1).apply {
-                    sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER)
+                val postUpdateBarrier = VkImageMemoryBarrier.callocStack(1).also {
+                    it.sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER)
 
-                    oldLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-                    newLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+                    it.oldLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+                    it.newLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
 
-                    srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
-                    dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+                    it.srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+                    it.dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
 
-                    image(texture.imageHandle)
+                    it.image(texture.imageHandle)
 
-                    subresourceRange().apply {
+                    it.subresourceRange().apply {
                         aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
                         baseMipLevel(0)
                         levelCount(mipLevels)
@@ -167,8 +167,8 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
                         layerCount(1)
                     }
 
-                    srcAccessMask(VK_ACCESS_TRANSFER_WRITE_BIT)
-                    dstAccessMask(VK_ACCESS_SHADER_READ_BIT)
+                    it.srcAccessMask(VK_ACCESS_TRANSFER_WRITE_BIT)
+                    it.dstAccessMask(VK_ACCESS_SHADER_READ_BIT)
                 }
                 vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, null, null, postUpdateBarrier)
 
@@ -230,7 +230,7 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
             return scratchByteBuffer.get(index.toInt()) > 0
         }
 
-        for (mipLevel in 1..1) {
+        for (mipLevel in 1..5) {
             basePtrs[mipLevel] = scratchByteBuffer.position().toLong()
 
             copies[copiesCount1++].apply {

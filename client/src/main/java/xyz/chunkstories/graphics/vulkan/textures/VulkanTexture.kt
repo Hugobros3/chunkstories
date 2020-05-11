@@ -10,6 +10,7 @@ import xyz.chunkstories.api.graphics.Texture
 import xyz.chunkstories.api.graphics.TextureFormat
 import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
+import xyz.chunkstories.graphics.vulkan.graph.VulkanPass
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import xyz.chunkstories.graphics.vulkan.memory.VulkanMemoryManager
 import xyz.chunkstories.graphics.vulkan.util.*
@@ -230,14 +231,14 @@ open class VulkanTexture(val backend: VulkanGraphicsBackend, final override val 
             else -> logger.error("Unhandled transition : $oldLayout to $newLayout")
         }
 
-        val imageBarrier = VkImageMemoryBarrier.callocStack(1).sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER).apply {
-            oldLayout(oldLayout)
-            newLayout(newLayout)
-            srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
-            dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
-            image(imageHandle)
+        val imageBarrier = VkImageMemoryBarrier.callocStack(1).sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER).also {
+            it.oldLayout(oldLayout)
+            it.newLayout(newLayout)
+            it.srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+            it.dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+            it.image(imageHandle)
 
-            subresourceRange().apply {
+            it.subresourceRange().apply {
                 aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
                 baseMipLevel(0)
                 levelCount(mipLevelsCount)
@@ -245,8 +246,8 @@ open class VulkanTexture(val backend: VulkanGraphicsBackend, final override val 
                 layerCount(layerCount)
             }
 
-            srcAccessMask(srcAccessMask)
-            dstAccessMask(dstAccessMask)
+            it.srcAccessMask(srcAccessMask)
+            it.dstAccessMask(dstAccessMask)
         }
 
         vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, null, null, imageBarrier)

@@ -15,40 +15,40 @@ object RenderPassHelpers {
         logger.info("Creating render pass")
 
         stackPush()
-        val attachmentDescription = VkAttachmentDescription.callocStack(1).apply {
-            format(backend.physicalDevice.swapchainDetails.formatToUse.ordinal)
-            samples(VK_SAMPLE_COUNT_1_BIT)
+        val attachmentDescription = VkAttachmentDescription.callocStack(1).also {
+            it.format(backend.physicalDevice.swapchainDetails.formatToUse.ordinal)
+            it.samples(VK_SAMPLE_COUNT_1_BIT)
 
             //loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
-            loadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
-            storeOp(VK_ATTACHMENT_STORE_OP_STORE)
+            it.loadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
+            it.storeOp(VK_ATTACHMENT_STORE_OP_STORE)
 
-            stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
-            stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
+            it.stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
+            it.stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
 
-            initialLayout(VK_IMAGE_LAYOUT_UNDEFINED)
-            finalLayout(VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
+            it.initialLayout(VK_IMAGE_LAYOUT_UNDEFINED)
+            it.finalLayout(VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
         }
 
-        val colorAttachmentReference = VkAttachmentReference.callocStack(1).apply {
-            attachment(0)
-            layout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+        val colorAttachmentReference = VkAttachmentReference.callocStack(1).also {
+            it.attachment(0)
+            it.layout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
         }
 
-        val subpassDescription = VkSubpassDescription.callocStack(1).apply {
-            pipelineBindPoint(VK_PIPELINE_BIND_POINT_GRAPHICS)
-            pColorAttachments(colorAttachmentReference)
-            colorAttachmentCount(1)
+        val subpassDescription = VkSubpassDescription.callocStack(1).also {
+            it.pipelineBindPoint(VK_PIPELINE_BIND_POINT_GRAPHICS)
+            it.pColorAttachments(colorAttachmentReference)
+            it.colorAttachmentCount(1)
         }
 
-        val dependencies = VkSubpassDependency.calloc(1).apply {
-            srcSubpass(VK_SUBPASS_EXTERNAL)
-            srcStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
-            srcAccessMask(0)
+        val dependencies = VkSubpassDependency.callocStack(1).also {
+            it.srcSubpass(VK_SUBPASS_EXTERNAL)
+            it.srcStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
+            it.srcAccessMask(0)
 
-            dstSubpass(0)
-            dstStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
-            dstAccessMask(VK_ACCESS_COLOR_ATTACHMENT_READ_BIT or VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
+            it.dstSubpass(0)
+            it.dstStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
+            it.dstAccessMask(VK_ACCESS_COLOR_ATTACHMENT_READ_BIT or VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
         }
 
         val renderPassCreateInfo = VkRenderPassCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO).apply {

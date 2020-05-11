@@ -35,27 +35,27 @@ class VulkanTexture3D(backend: VulkanGraphicsBackend, format: TextureFormat, val
     }
 
     fun copyBufferToImage(commandBuffer: VkCommandBuffer, buffer: VulkanBuffer) {
-        val region = VkBufferImageCopy.callocStack(1).apply {
-            bufferOffset(0)
+        val region = VkBufferImageCopy.callocStack(1).also {
+            it.bufferOffset(0)
 
             // tightly packed
-            bufferRowLength(0)
-            bufferImageHeight(0)
+            it.bufferRowLength(0)
+            it.bufferImageHeight(0)
 
-            imageSubresource().apply {
+            it.imageSubresource().apply {
                 aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
                 mipLevel(0)
                 baseArrayLayer(0)
                 layerCount(1)
             }
 
-            imageOffset().apply {
+            it.imageOffset().apply {
                 x(0)
                 y(0)
                 z(0)
             }
 
-            imageExtent().apply {
+            it.imageExtent().apply {
                 width(width)
                 height(height)
                 depth(depth)

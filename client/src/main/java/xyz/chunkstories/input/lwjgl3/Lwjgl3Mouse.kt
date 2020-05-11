@@ -16,6 +16,7 @@ import org.lwjgl.glfw.GLFW.glfwSetInputMode
 
 import xyz.chunkstories.api.client.Client
 import org.joml.Vector2d
+import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.system.MemoryUtil
 
 import xyz.chunkstories.api.input.Input
@@ -29,12 +30,12 @@ class Lwjgl3Mouse(internal val inputsManager: Lwjgl3ClientInputsManager) : Mouse
 
     val mousePosition: Vector2d
         get() {
-            val b1 = MemoryUtil.memAllocDouble(1)
-            val b2 = MemoryUtil.memAllocDouble(1)
+            stackPush()
+            val b1 = stackMallocDouble(1)
+            val b2 = stackMallocDouble(1)
             glfwGetCursorPos(inputsManager.gameWindow.glfwWindowHandle, b1, b2)
             val vec2 = Vector2d(b1.get(), inputsManager.gameWindow.height - b2.get())
-            MemoryUtil.memFree(b1)
-            MemoryUtil.memFree(b2)
+            stackPop()
 
             return vec2
         }

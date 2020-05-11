@@ -41,7 +41,6 @@ class RenderPass(val backend: VulkanGraphicsBackend, val pass: VulkanPass, val p
             val currentUsage = UsageType.OUTPUT
 
             attachmentDescription[index].apply {
-
                 format(format.vulkanFormat.ordinal)
                 samples(VK_SAMPLE_COUNT_1_BIT)
 
@@ -116,11 +115,11 @@ class RenderPass(val backend: VulkanGraphicsBackend, val pass: VulkanPass, val p
             }
         }
 
-        val subpassDescription = VkSubpassDescription.callocStack(1).apply {
-            pipelineBindPoint(VK_PIPELINE_BIND_POINT_GRAPHICS)
+        val subpassDescription = VkSubpassDescription.callocStack(1).also {
+            it.pipelineBindPoint(VK_PIPELINE_BIND_POINT_GRAPHICS)
 
-            pColorAttachments(colorAttachmentReference)
-            colorAttachmentCount(colorAttachmentReference.capacity())
+            it.pColorAttachments(colorAttachmentReference)
+            it.colorAttachmentCount(colorAttachmentReference.capacity())
 
             if (depth.enabled) {
                 val depthBufferAttachmentIndex = attachmentDescription.capacity() - 1
@@ -131,13 +130,13 @@ class RenderPass(val backend: VulkanGraphicsBackend, val pass: VulkanPass, val p
                     else
                         layout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL)
                 }
-                pDepthStencilAttachment(depthAttachmentReference)
+                it.pDepthStencilAttachment(depthAttachmentReference)
             }
         }
 
-        val dependencies = VkSubpassDependency.calloc(1).apply {
-            srcSubpass(VK_SUBPASS_EXTERNAL)
-            dstSubpass(0)
+        val dependencies = VkSubpassDependency.callocStack(1).also {
+            it.srcSubpass(VK_SUBPASS_EXTERNAL)
+            it.dstSubpass(0)
 
             //TODO we could be really smart here and be aware of the read/writes between passes to further optimize those masks
             //TODO maybe even do different scheduling based on that. Unfortunately I just want to get this renderer going atm
@@ -148,9 +147,9 @@ class RenderPass(val backend: VulkanGraphicsBackend, val pass: VulkanPass, val p
             }
 
             if (depth.enabled)
-                srcStageMask(VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT or VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
+                it.srcStageMask(VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT or VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
             else
-                srcStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
+                it.srcStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
 
             // If this is the first pass we just want to wait on the image being available
             /*if (graph.passesInOrder.indexOf(this@VulkanPass) == 0)
@@ -158,20 +157,20 @@ class RenderPass(val backend: VulkanGraphicsBackend, val pass: VulkanPass, val p
             else*/ //TODO is this sort of optimisation worth it ?
             //srcAccessMask(access)
 
-            srcAccessMask(0)
+            it.srcAccessMask(0)
 
             if (depth.enabled)
-                dstStageMask(VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT or VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
+                it.dstStageMask(VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT or VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
             else
-                dstStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
-            dstAccessMask(access)
+                it.dstStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
+            it.dstAccessMask(access)
         }
 
-        val renderPassCreateInfo = VkRenderPassCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO).apply {
-            pAttachments(attachmentDescription)
-            pSubpasses(subpassDescription)
+        val renderPassCreateInfo = VkRenderPassCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO).also {
+            it.pAttachments(attachmentDescription)
+            it.pSubpasses(subpassDescription)
 
-            pDependencies(dependencies)
+            it.pDependencies(dependencies)
         }
 
         val pRenderPass = MemoryStack.stackMallocLong(1)

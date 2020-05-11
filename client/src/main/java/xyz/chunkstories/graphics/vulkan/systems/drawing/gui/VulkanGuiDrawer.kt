@@ -315,16 +315,16 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
 
         override fun withScissor(startX: Int, startY: Int, width: Int, height: Int, code: () -> Unit) {
             stackPush().use {
-                val scissor = VkRect2D.callocStack(1).apply {
+                val scissor = VkRect2D.callocStack(1).also {
                     val s = this@VulkanGuiDrawer.gui.guiScale
 
-                    offset().set(startX * s, localContext.renderTargetSize.y - (height * s + startY * s))
-                    extent().set(width * s, height * s)
+                    it.offset().set(startX * s, localContext.renderTargetSize.y - (height * s + startY * s))
+                    it.extent().set(width * s, height * s)
                 }
 
-                val defaultScissor = VkRect2D.callocStack(1).apply {
-                    offset().set(0, 0)
-                    extent().set(localContext.renderTargetSize.x, localContext.renderTargetSize.y)
+                val defaultScissor = VkRect2D.callocStack(1).also {
+                    it.offset().set(0, 0)
+                    it.extent().set(localContext.renderTargetSize.x, localContext.renderTargetSize.y)
                 }
 
                 vkCmdSetScissor(commandBuffer, 0, scissor)

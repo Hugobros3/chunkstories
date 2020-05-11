@@ -227,6 +227,7 @@ data class FarTerrainTextureManager(val backend: VulkanGraphicsBackend, var base
                 colorStagingBuffer.cleanup()
                 reqs.forEach {
                     memFree(it.heightBuffer)
+                    memFree(it.colorBuffer)
                 }
                 stackPop()
             }

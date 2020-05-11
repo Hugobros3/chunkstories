@@ -20,6 +20,7 @@ import org.joml.Vector3fc
 import org.lwjgl.openal.AL
 import org.lwjgl.openal.ALC
 import org.lwjgl.openal.ALUtil
+import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.system.MemoryUtil
 import org.slf4j.LoggerFactory
 
@@ -158,13 +159,15 @@ class ALSoundManager(private val client: ClientImplementation) : ClientSoundMana
     }
 
     override fun setListenerPosition(position: Vector3fc, lookAt: Vector3fc, up: Vector3fc) {
-        val posScratch = MemoryUtil.memAllocFloat(3).put(floatArrayOf(position.x(), position.y(), position.z()))
+        stackPush()
+        val posScratch = stackMallocFloat(3).put(floatArrayOf(position.x(), position.y(), position.z()))
         posScratch.flip()
         alListenerfv(AL_POSITION, posScratch)
 
-        val rotScratch = MemoryUtil.memAllocFloat(6).put(floatArrayOf(lookAt.x(), lookAt.y(), lookAt.z(), up.x(), up.y(), up.z()))
+        val rotScratch = stackMallocFloat(6).put(floatArrayOf(lookAt.x(), lookAt.y(), lookAt.z(), up.x(), up.y(), up.z()))
         rotScratch.flip()
         alListenerfv(AL_ORIENTATION, rotScratch)
+        stackPop()
     }
 
     private fun removeUnplayingSources(): Int {

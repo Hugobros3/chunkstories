@@ -13,20 +13,21 @@ import xyz.chunkstories.graphics.vulkan.textures.VulkanTexture
 fun VulkanGraphicsBackend.writeUniformBufferDescriptor(set: VkDescriptorSet, binding: Int, buffer: VulkanBuffer, offset: Long, range: Long) {
     stackPush()
 
-    val bufferInfo = VkDescriptorBufferInfo.callocStack(1).apply {
-        buffer(buffer.handle)
-        offset(offset)
-        range(range)
+    val bufferInfo = VkDescriptorBufferInfo.callocStack(1).also {
+        it.buffer(buffer.handle)
+        it.offset(offset)
+        it.range(range)
     }
 
-    val stuffToWrite = VkWriteDescriptorSet.callocStack(1).sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET).apply {
-        dstSet(set)
-        dstBinding(binding)
-        dstArrayElement(0)
-        descriptorType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
+    val stuffToWrite = VkWriteDescriptorSet.callocStack(1).sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET).also {
+        it.dstSet(set)
+        it.dstBinding(binding)
+        it.dstArrayElement(0)
+        it.descriptorType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
 
         // Just update the descriptor for our lone ubo buffer
-        pBufferInfo(bufferInfo)
+        it.pBufferInfo(bufferInfo)
+        it.descriptorCount(1)
     }
 
     //println("offset: $offset range: $range")
@@ -41,20 +42,21 @@ fun VulkanGraphicsBackend.writeUniformBufferDescriptor(set: VkDescriptorSet, bin
 fun VulkanGraphicsBackend.writeStorageBufferDescriptor(set: VkDescriptorSet, binding: Int, buffer: VulkanBuffer, offset: Long = 0) {
     stackPush()
 
-    val bufferInfo = VkDescriptorBufferInfo.callocStack(1).apply {
-        buffer(buffer.handle)
-        offset(offset)
-        range(buffer.bufferSize)
+    val bufferInfo = VkDescriptorBufferInfo.callocStack(1).also {
+        it.buffer(buffer.handle)
+        it.offset(offset)
+        it.range(buffer.bufferSize)
     }
 
-    val stuffToWrite = VkWriteDescriptorSet.callocStack(1).sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET).apply {
-        dstSet(set)
-        dstBinding(binding)
-        dstArrayElement(0)
-        descriptorType(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER)
+    val stuffToWrite = VkWriteDescriptorSet.callocStack(1).sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET).also {
+        it.dstSet(set)
+        it.dstBinding(binding)
+        it.dstArrayElement(0)
+        it.descriptorType(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER)
 
         // Just update the descriptor for our lone ubo buffer
-        pBufferInfo(bufferInfo)
+        it.pBufferInfo(bufferInfo)
+        it.descriptorCount(1)
     }
 
     vkUpdateDescriptorSets(logicalDevice.vkDevice, stuffToWrite, null)
@@ -65,20 +67,21 @@ fun VulkanGraphicsBackend.writeStorageBufferDescriptor(set: VkDescriptorSet, bin
 fun VulkanGraphicsBackend.writeCombinedImageSamplerDescriptor(set: VkDescriptorSet, binding: Int, texture: VulkanTexture, sampler: VulkanSampler, dstArrayElement: Int = 0) {
     stackPush()
 
-    val imageInfo = VkDescriptorImageInfo.callocStack(1).apply {
-        imageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) //TODO maybe we can get that from VulkanTexture2D current layout field ?
-        imageView(texture.imageView)
-        sampler(sampler.handle)
+    val imageInfo = VkDescriptorImageInfo.callocStack(1).also {
+        it.imageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) //TODO maybe we can get that from VulkanTexture2D current layout field ?
+        it.imageView(texture.imageView)
+        it.sampler(sampler.handle)
     }
 
-    val stuffToWrite = VkWriteDescriptorSet.callocStack(1).sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET).apply {
-        dstSet(set)
-        dstBinding(binding)
-        dstArrayElement(dstArrayElement)
-        descriptorType(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
+    val stuffToWrite = VkWriteDescriptorSet.callocStack(1).sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET).also {
+        it.dstSet(set)
+        it.dstBinding(binding)
+        it.dstArrayElement(dstArrayElement)
+        it.descriptorType(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
 
         // Just update the descriptor for our lone ubo buffer
-        pImageInfo(imageInfo)
+        it.pImageInfo(imageInfo)
+        it.descriptorCount(1)
     }
 
     vkUpdateDescriptorSets(logicalDevice.vkDevice, stuffToWrite, null)
@@ -89,19 +92,20 @@ fun VulkanGraphicsBackend.writeCombinedImageSamplerDescriptor(set: VkDescriptorS
 fun VulkanGraphicsBackend.writeSampledImageDescriptor(set: VkDescriptorSet, binding: Int, texture: VulkanTexture, dstArrayElement: Int = 0) {
     stackPush()
 
-    val imageInfo = VkDescriptorImageInfo.callocStack(1).apply {
-        imageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) //TODO maybe we can get that from VulkanTexture2D current layout field ?
-        imageView(texture.imageView)
-        sampler(VK_NULL_HANDLE)
+    val imageInfo = VkDescriptorImageInfo.callocStack(1).also {
+        it.imageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) //TODO maybe we can get that from VulkanTexture2D current layout field ?
+        it.imageView(texture.imageView)
+        it.sampler(VK_NULL_HANDLE)
     }
 
-    val stuffToWrite = VkWriteDescriptorSet.callocStack(1).sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET).apply {
-        dstSet(set)
-        dstBinding(binding)
-        dstArrayElement(dstArrayElement)
-        descriptorType(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE)
+    val stuffToWrite = VkWriteDescriptorSet.callocStack(1).sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET).also {
+        it.dstSet(set)
+        it.dstBinding(binding)
+        it.dstArrayElement(dstArrayElement)
+        it.descriptorType(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE)
 
-        pImageInfo(imageInfo)
+        it.pImageInfo(imageInfo)
+        it.descriptorCount(1)
     }
 
     vkUpdateDescriptorSets(logicalDevice.vkDevice, stuffToWrite, null)
@@ -113,17 +117,18 @@ fun VulkanGraphicsBackend.writeSamplerDescriptor(set: VkDescriptorSet, binding: 
     stackPush()
 
     val imageInfo = VkDescriptorImageInfo.callocStack(1).apply {
-        imageView(VK_NULL_HANDLE)
-        sampler(sampler.handle)
+        it.imageView(VK_NULL_HANDLE)
+        it.sampler(sampler.handle)
     }
 
     val stuffToWrite = VkWriteDescriptorSet.callocStack(1).sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET).apply {
-        dstSet(set)
-        dstBinding(binding)
-        dstArrayElement(0)
-        descriptorType(VK_DESCRIPTOR_TYPE_SAMPLER)
+        it.dstSet(set)
+        it.dstBinding(binding)
+        it.dstArrayElement(0)
+        it.descriptorType(VK_DESCRIPTOR_TYPE_SAMPLER)
 
-        pImageInfo(imageInfo)
+        it.pImageInfo(imageInfo)
+        it.descriptorCount(1)
     }
 
     vkUpdateDescriptorSets(logicalDevice.vkDevice, stuffToWrite, null)
@@ -134,10 +139,10 @@ fun VulkanGraphicsBackend.writeSamplerDescriptor(set: VkDescriptorSet, binding: 
 fun VulkanGraphicsBackend.copyDescriptorSet(source: VkDescriptorSet, destination: VkDescriptorSet, setSize: Int) {
     stackPush()
 
-    val copies = VkCopyDescriptorSet.callocStack(1).apply {
-        srcSet(source)
-        dstSet(destination)
-        descriptorCount(setSize)
+    val copies = VkCopyDescriptorSet.callocStack(1).let {
+        it.srcSet(source)
+        it.dstSet(destination)
+        it.descriptorCount(setSize)
     }
 
     vkUpdateDescriptorSets(logicalDevice.vkDevice, null, copies)

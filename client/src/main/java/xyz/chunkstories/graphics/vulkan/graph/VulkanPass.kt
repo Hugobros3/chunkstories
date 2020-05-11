@@ -235,6 +235,7 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
                     stackPop()
                 }
 
+
                 vkCmdBeginRenderPass(this, renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS)
 
                 val cmdBuf = backend.renderGraph.commandPool.loanSecondaryCommandBuffer()
@@ -345,23 +346,23 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
     }
 
     fun setScissorAndViewport(commandBuffer: VkCommandBuffer, viewportSize: Vector2i) {
-        val viewport = VkViewport.callocStack(1).apply {
-            x(0.0F)
-            y(0.0F)
-            width(viewportSize.x.toFloat())
-            height(viewportSize.y.toFloat())
-            minDepth(0.0F)
-            maxDepth(1.0F)
+        val viewport = VkViewport.callocStack(1).also {
+            it.x(0.0F)
+            it.y(0.0F)
+            it.width(viewportSize.x.toFloat())
+            it.height(viewportSize.y.toFloat())
+            it.minDepth(0.0F)
+            it.maxDepth(1.0F)
         }
 
         val zeroZero = VkOffset2D.callocStack().apply {
             x(0)
             y(0)
         }
-        val scissor = VkRect2D.callocStack(1).apply {
-            offset(zeroZero)
-            extent().width(viewportSize.x)
-            extent().height(viewportSize.y)
+        val scissor = VkRect2D.callocStack(1).also {
+            it.offset(zeroZero)
+            it.extent().width(viewportSize.x)
+            it.extent().height(viewportSize.y)
         }
 
         vkCmdSetViewport(commandBuffer, 0, viewport)

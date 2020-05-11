@@ -130,8 +130,8 @@ class CommandPool(val backend: VulkanGraphicsBackend, queueFamily: PhysicalDevic
     fun submitAndReturnPrimaryCommandBuffer(commandBuffer: VkCommandBuffer, queue: LogicalDevice.Queue, fence : VkFence) {
         stackPush()
 
-        val submitInfo = VkSubmitInfo.callocStack(1).sType(VK_STRUCTURE_TYPE_SUBMIT_INFO).apply {
-            pCommandBuffers(stackPointers(commandBuffer))
+        val submitInfo = VkSubmitInfo.callocStack(1).sType(VK_STRUCTURE_TYPE_SUBMIT_INFO).also {
+            it.pCommandBuffers(stackPointers(commandBuffer))
         }
 
         queue.mutex.acquireUninterruptibly()

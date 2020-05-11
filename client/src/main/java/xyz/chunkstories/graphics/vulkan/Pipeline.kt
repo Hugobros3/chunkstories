@@ -208,7 +208,7 @@ class Pipeline(val backend: VulkanGraphicsBackend, val program : VulkanShaderPro
         vkCreatePipelineLayout(backend.logicalDevice.vkDevice, pipelineLayoutCreateInfo, null, pPipelineLayout).ensureIs("Failed to create pipeline layout", VK_SUCCESS)
         pipelineLayout = pPipelineLayout.get(0)
 
-        val pipelineCreateInfo = VkGraphicsPipelineCreateInfo.callocStack(1).sType(VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO).apply {
+        val pipelineCreateInfo = VkGraphicsPipelineCreateInfo.callocStack(1).sType(VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO).run {
             pStages(shaderStagesCreateInfo)
             pVertexInputState(vertexInputStateCreateInfo)
             pInputAssemblyState(inputAssemblyStateCreateInfo)

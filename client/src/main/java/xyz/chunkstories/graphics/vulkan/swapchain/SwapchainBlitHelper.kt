@@ -109,23 +109,23 @@ class SwapchainBlitHelper(val backend: VulkanGraphicsBackend) : Cleanable {
                 }
 
                 vkCmdCopyImage(this, finalRenderBuffer.texture.imageHandle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, frame.swapchainImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, region)*/
-                val region = VkImageBlit.callocStack(1).apply {
-                    srcSubresource().apply {
+                val region = VkImageBlit.callocStack(1).also {
+                    it.srcSubresource().apply {
                         aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
                         mipLevel(0)
                         baseArrayLayer(0)
                         layerCount(1)
                     }
 
-                    dstSubresource().set(srcSubresource())
+                    it.dstSubresource().set(it.srcSubresource())
 
-                    srcOffsets()[1].apply {
+                    it.srcOffsets()[1].apply {
                         x(finalRenderBuffer.textureSize.x)
                         y(finalRenderBuffer.textureSize.y)
                         z(1)
                     }
 
-                    dstOffsets()[1].apply {
+                    it.dstOffsets()[1].apply {
                         x(backend.window.width)
                         y(backend.window.height)
                         z(1)
@@ -133,14 +133,14 @@ class SwapchainBlitHelper(val backend: VulkanGraphicsBackend) : Cleanable {
                 }
                 vkCmdBlitImage(this, finalRenderBuffer.getRenderToTexture().imageHandle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, frame.swapchainImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, region, VK_FILTER_LINEAR)
 
-                val swapchainImageReadyPresentBarrier = VkImageMemoryBarrier.callocStack(1).sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER).apply {
-                    oldLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-                    newLayout(VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
-                    srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
-                    dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
-                    image(frame.swapchainImage)
+                val swapchainImageReadyPresentBarrier = VkImageMemoryBarrier.callocStack(1).sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER).also {
+                    it.oldLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+                    it.newLayout(VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
+                    it.srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+                    it.dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+                    it.image(frame.swapchainImage)
 
-                    subresourceRange().apply {
+                    it.subresourceRange().apply {
                         aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
                         baseMipLevel(0)
                         levelCount(1)
@@ -148,8 +148,8 @@ class SwapchainBlitHelper(val backend: VulkanGraphicsBackend) : Cleanable {
                         layerCount(1)
                     }
 
-                    srcAccessMask(VK_ACCESS_TRANSFER_WRITE_BIT)
-                    dstAccessMask(VK_ACCESS_COLOR_ATTACHMENT_READ_BIT)
+                    it.srcAccessMask(VK_ACCESS_TRANSFER_WRITE_BIT)
+                    it.dstAccessMask(VK_ACCESS_COLOR_ATTACHMENT_READ_BIT)
                 }
 
                 vkCmdPipelineBarrier(this, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, null, null, swapchainImageReadyPresentBarrier)

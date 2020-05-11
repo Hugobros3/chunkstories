@@ -87,10 +87,10 @@ open class VulkanBuffer(val backend: VulkanGraphicsBackend, val bufferSize: Long
             stagingBuffer.upload(dataToUpload)
 
             val commandBuffer = operationsPool.startPrimaryCommandBuffer()
-            val region = VkBufferCopy.callocStack(1).apply {
-                size(size)
-                dstOffset(dstOffset)
-                srcOffset(0)
+            val region = VkBufferCopy.callocStack(1).also {
+                it.size(size)
+                it.dstOffset(dstOffset)
+                it.srcOffset(0)
             }
             vkCmdCopyBuffer(commandBuffer, stagingBuffer.handle, handle, region)
 
