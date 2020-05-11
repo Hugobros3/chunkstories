@@ -88,8 +88,10 @@ class NaiveFrameDataAllocatorProvider(val backend: VulkanGraphicsBackend) : Fram
 
         override fun beforeSubmission() {
             for((src, target) in uploadRequests) {
-                if(src.limit() > 0)
+                if(src.limit() > 0) {
                     target.upload(src, 0, src.limit().toLong())
+                }
+                memFree(src)
             }
 
             //println("naive per frame data report: allocated ${allocatedByteBuffers.size} temp buffers, ${allocatedBuffers.size} vkbuffers, ${uploadRequests.size} combined upload requests")
