@@ -188,5 +188,9 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
         blitHelper.cleanup()
 
         commandPool.cleanup()
+
+        for(cleanupHook in declaration.cleanupHooks) {
+            cleanupHook()
+        }
     }
 }

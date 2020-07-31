@@ -187,5 +187,9 @@ class OpenglPass(val backend: OpenglGraphicsBackend, val renderTask: OpenglRende
 
         drawingSystems.forEach(Cleanable::cleanup)
         dispatchingDrawers.forEach(Cleanable::cleanup)
+
+        for(cleanupHook in declaration.cleanupHooks) {
+            cleanupHook()
+        }
     }
 }

@@ -27,5 +27,9 @@ class VulkanRenderTask(val backend: VulkanGraphicsBackend, val renderGraph: Vulk
     override fun cleanup() {
         buffers.values.forEach(Cleanable::cleanup)
         passes.values.forEach(Cleanable::cleanup)
+
+        for(cleanupHook in declaration.cleanupHooks) {
+            cleanupHook()
+        }
     }
 }

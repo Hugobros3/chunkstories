@@ -78,7 +78,6 @@ class Vulkan3DVoxelRaytracer(pass: VulkanPass, dslCode: Vulkan3DVoxelRaytracer.(
 
         bindingContext.bindStructuredUBO("voxelDataInfo", volumetricTexture.info)
         bindingContext.bindTextureAndSampler("voxelData", volumetricTexture.texture, sampler)
-
         bindingContext.bindTextureAndSampler("blueNoise", backend.textures.getOrLoadTexture2D("textures/noise/blue1024.png"), sampler)
 
         bindingContext.commitAndBind(commandBuffer)
@@ -93,7 +92,6 @@ class Vulkan3DVoxelRaytracer(pass: VulkanPass, dslCode: Vulkan3DVoxelRaytracer.(
 
     override fun cleanup() {
         sampler.cleanup()
-
         volumetricTexture.cleanup()
 
         vertexBuffer.cleanup()

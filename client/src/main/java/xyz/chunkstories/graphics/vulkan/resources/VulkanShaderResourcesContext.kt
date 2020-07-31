@@ -98,8 +98,8 @@ class VulkanShaderResourcesContext internal constructor(private val frame: Vulka
         backend.writeStorageBufferDescriptor(set, ssbo.locator.binding, buffer, offset)
     }
 
-    fun bindTextureAndSampler(name: String, texture: VulkanTexture2D, sampler: VulkanSampler, index: Int = 0) {
-        val resource = pipeline.program.glslProgram.resources.filterIsInstance<GLSLUniformSampledImage2D>().find {
+    fun bindTextureAndSampler(name: String, texture: VulkanTexture, sampler: VulkanSampler, index: Int = 0) {
+        val resource = pipeline.program.glslProgram.resources.filterIsInstance<GLSLUniformSampledImage>().find {
             it.name == name
         } ?: return // ?: throw Exception("I can't find a program sampler2D resource matching that name '$name'")
 
@@ -107,7 +107,7 @@ class VulkanShaderResourcesContext internal constructor(private val frame: Vulka
         backend.writeCombinedImageSamplerDescriptor(set, resource.locator.binding, texture, sampler, index)
     }
 
-    fun bindTextureAndSampler(name: String, texture: VulkanOnionTexture2D, sampler: VulkanSampler, index: Int = 0) {
+    /*fun bindTextureAndSampler(name: String, texture: VulkanOnionTexture2D, sampler: VulkanSampler, index: Int = 0) {
         val resource = pipeline.program.glslProgram.resources.filterIsInstance<GLSLUniformSampledImage2DArray>().find {
             it.name == name
         } ?: return // ?: throw Exception("I can't find a program sampler2DArray resource matching that name '$name'")
@@ -132,7 +132,7 @@ class VulkanShaderResourcesContext internal constructor(private val frame: Vulka
 
         val set = getSet(resource.locator.descriptorSetSlot)
         backend.writeCombinedImageSamplerDescriptor(set, resource.locator.binding, texture, sampler, index)
-    }
+    }*/
 
     /** Commits the binds and bind appropriate sets to the command buffer */
     fun commitAndBind(commandBuffer: VkCommandBuffer) {

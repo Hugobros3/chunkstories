@@ -7,6 +7,7 @@ import xyz.chunkstories.api.client.IngameClient
 import xyz.chunkstories.api.graphics.systems.drawing.FullscreenQuadDrawer
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
+import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompilationParameters
 import xyz.chunkstories.graphics.vulkan.Pipeline
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanVertexBuffer
@@ -22,6 +23,8 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass, dslCode: FullscreenQuadDrawer
         get() = pass.backend
     val client: IngameClient
         get() = backend.window.client.ingame!!
+
+    override val defines = mutableMapOf<String, String>()
 
     val vertexInputConfiguration = vertexInputConfiguration {
         binding {
@@ -48,7 +51,7 @@ class VulkanFullscreenQuadDrawer(pass: VulkanPass, dslCode: FullscreenQuadDrawer
     init {
         dslCode()
 
-        program = backend.shaderFactory.createProgram(shader)
+        program = backend.shaderFactory.createProgram(shader, ShaderCompilationParameters(defines = defines))
         pipeline = Pipeline(backend, program, pass, vertexInputConfiguration, Primitive.TRIANGLES, FaceCullingMode.CULL_BACK)
 
         val vertices = floatArrayOf(-1.0F, -3.0F, 3.0F, 1.0F, -1.0F, 1.0F)

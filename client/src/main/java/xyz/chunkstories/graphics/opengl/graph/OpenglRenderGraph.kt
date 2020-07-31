@@ -136,5 +136,9 @@ class OpenglRenderGraph(val backend: OpenglGraphicsBackend, val dslCode: RenderG
     override fun cleanup() {
         dispatchingSystems.forEach(Cleanable::cleanup)
         tasks.values.forEach(Cleanable::cleanup)
+
+        for(cleanupHook in declaration.cleanupHooks) {
+            cleanupHook()
+        }
     }
 }

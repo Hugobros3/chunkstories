@@ -3,14 +3,13 @@ package xyz.chunkstories.graphics.vulkan.shaders
 import xyz.chunkstories.api.graphics.rendergraph.ImageSource
 import xyz.chunkstories.api.graphics.rendergraph.PassInstance
 import xyz.chunkstories.api.graphics.shader.ShaderResources
-import xyz.chunkstories.graphics.common.shaders.GLSLUniformBlock
-import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampledImage
-import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampledImage2D
-import xyz.chunkstories.graphics.common.shaders.GLSLUniformSampledImageCubemap
+import xyz.chunkstories.graphics.common.shaders.*
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPassInstance
 import xyz.chunkstories.graphics.vulkan.graph.VulkanRenderTaskInstance
 import xyz.chunkstories.graphics.vulkan.resources.VulkanShaderResourcesContext
+import xyz.chunkstories.graphics.vulkan.textures.VulkanTexture
 import xyz.chunkstories.graphics.vulkan.textures.VulkanTexture2D
+import xyz.chunkstories.graphics.vulkan.textures.VulkanTexture3D
 
 /** Adapts the API-style ShaderResources provider to the Vulkan-style descriptor set instance */
 fun ShaderResources.extractInto(target: VulkanShaderResourcesContext, passInstance: PassInstance) {
@@ -35,7 +34,7 @@ fun ShaderResources.extractInto(target: VulkanShaderResourcesContext, passInstan
                             val vrti = passInstance.taskInstance as VulkanRenderTaskInstance
                             vrti.renderTask.buffers[source.renderBufferName]!!.texture
                         }
-                        is ImageSource.TextureReference -> source.texture as VulkanTexture2D
+                        is ImageSource.TextureReference -> source.texture as VulkanTexture
                         is ImageSource.TaskOutput -> {
                             val referencedTaskInstance = source.context as VulkanRenderTaskInstance
 
@@ -68,6 +67,13 @@ fun ShaderResources.extractInto(target: VulkanShaderResourcesContext, passInstan
                         else -> throw Exception("Unhandled image source type ${source::class} for ${this::class}")
                     }
                     target.bindTextureAndSampler(imageName, cubemap, sampler, index)
+                }
+                is GLSLUniformSampledImage3D -> {
+                    val texture3d = when(val source = imageInput.source) {
+                        is ImageSource.TextureReference -> source.texture as VulkanTexture3D
+                        else -> throw Exception("Not a 3D texture $source")
+                    }
+                    target.bindTextureAndSampler(imageName, texture3d, sampler, index)
                 }
                 else -> throw Exception("Unhandled image type :${this::class}")
             }

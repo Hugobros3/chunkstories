@@ -46,6 +46,7 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
     //val lastPos = Vector3i(0)
 
     fun updateArround(position: Vector3dc) {
+
         val operationsPool = backend.logicalDevice.graphicsQueue.threadSafePools.get()
         val commandBuffer = operationsPool.startPrimaryCommandBuffer()
 
@@ -113,8 +114,10 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
                             copiesCount = handleChunk(copies, copiesCount, chunk)
                         }
 
-                if (copiesCount == 0)
+                if (copiesCount == 0) {
+                    copies.free()
                     return
+                }
 
                 copies.position(0)
                 copies.limit(copiesCount)
@@ -185,6 +188,7 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
 
                 scratchVkBuffer.cleanup()
             }
+            return
         } finally {
             operationsPool.returnPrimaryCommandBuffer(commandBuffer)
         }

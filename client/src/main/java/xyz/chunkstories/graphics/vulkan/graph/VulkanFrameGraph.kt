@@ -153,6 +153,8 @@ class VulkanRenderTaskInstance(graph: VulkanFrameGraph, override val requester: 
 
     init {
         this.parameters["camera"] = camera // Implicitly part of the parameters
-        shaderResources.supplyUniformBlock("camera", camera)
+        this.shaderResources.supplyUniformBlock("camera", camera)
+
+        declaration.setupLambdas.forEach { it.invoke(this) }
     }
 }

@@ -7,6 +7,7 @@ import xyz.chunkstories.api.graphics.VertexFormat
 import xyz.chunkstories.api.graphics.systems.drawing.DrawingSystem
 import xyz.chunkstories.api.graphics.systems.drawing.FullscreenQuadDrawer
 import xyz.chunkstories.graphics.common.FaceCullingMode
+import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompilationParameters
 import xyz.chunkstories.graphics.opengl.*
 import xyz.chunkstories.graphics.opengl.buffers.OpenglVertexBuffer
 import xyz.chunkstories.graphics.opengl.graph.OpenglPass
@@ -15,6 +16,8 @@ import xyz.chunkstories.graphics.opengl.shaders.OpenglShaderProgram
 import xyz.chunkstories.graphics.opengl.shaders.bindShaderResources
 
 class OpenglFullscreenQuadDrawer(pass: OpenglPass, dslCode: DrawingSystem.() -> Unit) : OpenglDrawingSystem(pass), FullscreenQuadDrawer {
+    override val defines = mutableMapOf<String, String>()
+
     val backend: OpenglGraphicsBackend
         get() = pass.backend
 
@@ -43,7 +46,7 @@ class OpenglFullscreenQuadDrawer(pass: OpenglPass, dslCode: DrawingSystem.() -> 
     init {
         dslCode()
 
-        program = backend.shaderFactory.createProgram(shader)
+        program = backend.shaderFactory.createProgram(shader, ShaderCompilationParameters(defines = defines))
         pipeline = FakePSO(backend, program, pass, vertexInputConfiguration, FaceCullingMode.CULL_BACK)
 
         val vertices = floatArrayOf(-1.0F, -3.0F, 3.0F, 1.0F, -1.0F, 1.0F)

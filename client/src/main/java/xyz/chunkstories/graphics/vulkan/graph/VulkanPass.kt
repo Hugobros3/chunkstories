@@ -376,17 +376,6 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
         frameBuffers.clear()
     }
 
-    override fun cleanup() {
-        dumpFramebuffers()
-
-        drawingSystems.forEach(Cleanable::cleanup)
-        dispatchingDrawers.forEach(Cleanable::cleanup)
-
-        canonicalRenderPass.cleanup()
-        for (renderPass in renderPassesMap.values)
-            renderPass.cleanup()
-    }
-
     companion object {
         val logger = LoggerFactory.getLogger("client.vulkan")
     }
@@ -413,5 +402,20 @@ open class VulkanPass(val backend: VulkanGraphicsBackend, val renderTask: Vulkan
         val handle = pFramebuffer.get(0)
         stackPop()
         return handle
+    }
+
+    override fun cleanup() {
+        dumpFramebuffers()
+
+        drawingSystems.forEach(Cleanable::cleanup)
+        dispatchingDrawers.forEach(Cleanable::cleanup)
+
+        canonicalRenderPass.cleanup()
+        for (renderPass in renderPassesMap.values)
+            renderPass.cleanup()
+
+        for(cleanupHook in declaration.cleanupHooks) {
+            cleanupHook()
+        }
     }
 }
