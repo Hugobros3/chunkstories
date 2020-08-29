@@ -68,7 +68,7 @@ object SpirvCrossHelper {
             ShaderStage.FRAGMENT -> ".frag"
         }
 
-    fun generateSpirV(transpiledGLSL: GLSLProgram): GeneratedSpirV {
+    fun generateSpirV(transpiledGLSL: GLSLProgram, spirv_13: Boolean): GeneratedSpirV {
         libspirvcrossj.initializeProcess()
         val ressources = libspirvcrossj.getDefaultTBuiltInResource()
 
@@ -86,6 +86,11 @@ object SpirvCrossHelper {
             var messages = EShMessages.EShMsgDefault
             messages = messages or EShMessages.EShMsgVulkanRules
             messages = messages or EShMessages.EShMsgSpvRules
+
+            if (spirv_13) {
+                stage.tShader.setEnvClient(EShTargetClientVersion.EShTargetVulkan_1_1, 100)
+                stage.tShader.setEnvTarget(EShTargetLanguage.EShTargetSpv, EShTargetLanguageVersion.EShTargetSpv_1_3)
+            }
 
             val parse = stage.tShader.parse(ressources, 450, false, messages)
             if (!parse) {

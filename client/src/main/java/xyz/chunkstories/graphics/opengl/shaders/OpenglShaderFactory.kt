@@ -24,4 +24,6 @@ class OpenglShaderFactory(val backend: OpenglGraphicsBackend, val client: Client
     }
 
     fun createProgram(basePath: String, shaderCompilationParameters: ShaderCompilationParameters = ShaderCompilationParameters()) = OpenglShaderProgram(backend, loadGLSLProgram(basePath, shaderCompilationParameters))
+
+    override val spirv_13: Boolean = false
 }

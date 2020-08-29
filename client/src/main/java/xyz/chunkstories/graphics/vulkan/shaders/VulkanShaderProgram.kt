@@ -9,8 +9,16 @@ import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.SpirvCrossHe
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import java.io.File
 
+fun supportsSpirv13(backend: VulkanGraphicsBackend): Boolean {
+    if(backend.vulkanVersion.major > 1)
+        return true
+    if(backend.vulkanVersion.minor >= 1)
+        return true
+    return false
+}
+
 data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsBackend, val basePath: String, val glslProgram: GLSLProgram) : Cleanable {
-    val spirvCode = SpirvCrossHelper.generateSpirV(glslProgram)
+    val spirvCode = SpirvCrossHelper.generateSpirV(glslProgram, supportsSpirv13(backend))
     val modules: Map<ShaderStage, ShaderModule>
 
     private val maxSlotUsed: Int

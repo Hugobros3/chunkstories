@@ -6,7 +6,7 @@ import xyz.chunkstories.graphics.common.shaders.*
 import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompiler
 import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.SpirvCrossHelper.spirvStageInt
 
-fun ShaderCompiler.buildIntermediaryStructure(stages: Map<ShaderStage, String>, dumpCodeOnError: Boolean): IntermediaryCompilationResults {
+fun ShaderCompiler.buildIntermediaryStructure(stages: Map<ShaderStage, String>, dumpCodeOnError: Boolean, spirv_13: Boolean): IntermediaryCompilationResults {
     libspirvcrossj.initializeProcess()
     val ressources = libspirvcrossj.getDefaultTBuiltInResource()
 
@@ -17,6 +17,11 @@ fun ShaderCompiler.buildIntermediaryStructure(stages: Map<ShaderStage, String>, 
         tShader.setStrings(arrayOf(shaderCode), 1)
         tShader.setAutoMapBindings(true)
         tShader.setAutoMapLocations(true)
+
+        if(spirv_13) {
+            tShader.setEnvClient(EShTargetClientVersion.EShTargetVulkan_1_1, 100)
+            tShader.setEnvTarget(EShTargetLanguage.EShTargetSpv, EShTargetLanguageVersion.EShTargetSpv_1_3)
+        }
 
         var messages = EShMessages.EShMsgDefault
         messages = messages or EShMessages.EShMsgVulkanRules

@@ -1,17 +1,5 @@
 package xyz.chunkstories.graphics.vulkan
 
-import xyz.chunkstories.client.glfw.GLFWWindow
-import xyz.chunkstories.graphics.GLFWBasedGraphicsBackend
-import xyz.chunkstories.graphics.vulkan.devices.LogicalDevice
-import xyz.chunkstories.graphics.vulkan.devices.PhysicalDevice
-import xyz.chunkstories.graphics.vulkan.graph.VulkanRenderGraph
-import xyz.chunkstories.graphics.vulkan.resources.DescriptorSetsMegapool
-import xyz.chunkstories.graphics.vulkan.memory.VulkanMemoryManager
-import xyz.chunkstories.graphics.vulkan.shaders.VulkanShaderFactory
-import xyz.chunkstories.graphics.vulkan.swapchain.SwapChain
-import xyz.chunkstories.graphics.vulkan.swapchain.WindowSurface
-import xyz.chunkstories.graphics.vulkan.textures.VulkanTextures
-import xyz.chunkstories.graphics.vulkan.util.*
 import org.lwjgl.PointerBuffer
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWVulkan.glfwGetRequiredInstanceExtensions
@@ -21,13 +9,29 @@ import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.EXTDebugMarker.VK_EXT_DEBUG_MARKER_EXTENSION_NAME
 import org.lwjgl.vulkan.EXTDebugReport.*
 import org.lwjgl.vulkan.VK10.*
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.content.Content
+import xyz.chunkstories.client.glfw.GLFWWindow
+import xyz.chunkstories.graphics.GLFWBasedGraphicsBackend
 import xyz.chunkstories.graphics.GraphicsEngineImplementation
 import xyz.chunkstories.graphics.vulkan.debug.DebugMarkersUtil
+import xyz.chunkstories.graphics.vulkan.devices.LogicalDevice
+import xyz.chunkstories.graphics.vulkan.devices.PhysicalDevice
+import xyz.chunkstories.graphics.vulkan.graph.VulkanRenderGraph
+import xyz.chunkstories.graphics.vulkan.memory.VulkanMemoryManager
+import xyz.chunkstories.graphics.vulkan.resources.DescriptorSetsMegapool
 import xyz.chunkstories.graphics.vulkan.resources.frameallocator.FrameDataAllocatorProvider
 import xyz.chunkstories.graphics.vulkan.resources.frameallocator.createFrameDataAllocatorProvider
+import xyz.chunkstories.graphics.vulkan.shaders.VulkanShaderFactory
+import xyz.chunkstories.graphics.vulkan.swapchain.SwapChain
+import xyz.chunkstories.graphics.vulkan.swapchain.WindowSurface
+import xyz.chunkstories.graphics.vulkan.textures.VulkanTextures
 import xyz.chunkstories.graphics.vulkan.textures.voxels.VulkanVoxelTexturesArray
+import xyz.chunkstories.graphics.vulkan.util.RenderPassHelpers
+import xyz.chunkstories.graphics.vulkan.util.VkRenderPass
+import xyz.chunkstories.graphics.vulkan.util.ensureIs
+import xyz.chunkstories.graphics.vulkan.util.iterator
 import xyz.chunkstories.graphics.vulkan.world.VulkanWorldRenderer
 import xyz.chunkstories.voxel.VoxelTexturesSupport
 import xyz.chunkstories.world.WorldClientCommon
@@ -36,7 +40,7 @@ import java.awt.image.BufferedImage
 class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window: GLFWWindow) : GLFWBasedGraphicsBackend(graphicsEngine, window), VoxelTexturesSupport {
     internal val enableValidation = window.client.arguments["enableValidation"] == "true"
 
-    internal var instance: VkInstance
+    private var instance: VkInstance
 
     private var debugOutputEnable = false
     private var debugCallback: Long = 0L
@@ -47,6 +51,10 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
 
     /** All the physical devices available to Vulkan */
     private val physicalDevices: List<PhysicalDevice>
+
+    data class VulkanVersion(val major: Int, val minor: Int, val rev: Int)
+    lateinit var vulkanVersion: VulkanVersion
+        private set
 
     /** The physical device in use by the application */
     val physicalDevice: PhysicalDevice
@@ -171,9 +179,9 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
     private fun createVkInstance(requiredExtensions: PointerBuffer): VkInstance = stackPush().use {
         // List available Vulkan extensions
         val extensionsCount = stackInts(0)
-        vkEnumerateInstanceExtensionProperties(null as? CharSequence, extensionsCount, null as? VkExtensionProperties.Buffer)
+        vkEnumerateInstanceExtensionProperties(null as CharSequence?, extensionsCount, null as VkExtensionProperties.Buffer?)
         val extensionProperties = VkExtensionProperties.calloc(extensionsCount[0])
-        vkEnumerateInstanceExtensionProperties(null as? CharSequence, extensionsCount, extensionProperties)
+        vkEnumerateInstanceExtensionProperties(null as CharSequence?, extensionsCount, extensionProperties)
 
         val availableInstanceExtensions = extensionProperties.map { it.extensionNameString() }
         logger.info("Available instance extensions: $availableInstanceExtensions")
@@ -202,11 +210,28 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
             pRequestedLayers.flip()
         }
 
+        val patch = 70
+        var vulkan11OrLater = true
+        val apiVersion = stackMallocInt(1)
+        try {
+            apiVersion.clear()
+            VK11.vkEnumerateInstanceVersion(apiVersion)
+            vulkanVersion = VulkanVersion(VK_VERSION_MAJOR(apiVersion.get(0)), VK_VERSION_MINOR(apiVersion.get(0)), VK_VERSION_PATCH(apiVersion.get(0)))
+        } catch(e: NullPointerException) {
+            logger.info("Caught NPE calling vkEnumerateInstanceVersion, assuming Vulkan 1.0 instance...")
+            vulkanVersion = VulkanVersion(1, 1, patch)
+            vulkan11OrLater = false
+        }
+
         val appInfoStruct = VkApplicationInfo.callocStack().sType(VK_STRUCTURE_TYPE_APPLICATION_INFO).apply {
             pApplicationName(stackUTF8("Chunk Stories"))
             pEngineName(stackUTF8("Chunk Stories Vulkan Backend"))
 
-            apiVersion(VK_MAKE_VERSION(1, 0, 70))
+            // Vulkan 1.0 instances cannot deal with forward instance API versions
+            if(vulkan11OrLater)
+                apiVersion(VK_MAKE_VERSION(vulkanVersion.major, vulkanVersion.minor, patch))
+            else
+                apiVersion(VK_MAKE_VERSION(1, 0, patch))
         }
         val createInfoStruct = VkInstanceCreateInfo.callocStack().sType(VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO).apply {
             pApplicationInfo(appInfoStruct)
@@ -340,6 +365,6 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
     }
 
     companion object {
-        val logger = LoggerFactory.getLogger("client.gfx_vk")
+        val logger: Logger = LoggerFactory.getLogger("client.gfx_vk")
     }
 }

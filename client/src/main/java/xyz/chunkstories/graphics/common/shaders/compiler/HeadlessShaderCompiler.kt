@@ -9,4 +9,6 @@ class HeadlessShaderCompiler(dialect: GLSLDialect, override val classLoader: Cla
     override val newResourceLocationAssigner: () -> ResourceLocationAssigner = {
         OpenglResourceLocationAssigner()
     }
+
+    override val spirv_13: Boolean = false
 }

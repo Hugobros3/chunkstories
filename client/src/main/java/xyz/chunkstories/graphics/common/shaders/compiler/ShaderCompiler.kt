@@ -19,6 +19,7 @@ abstract class ShaderCompiler(val dialect: GLSLDialect) {
     abstract val content: Content?
 
     abstract val newResourceLocationAssigner: () -> ResourceLocationAssigner
+    abstract val spirv_13: Boolean
 
     /** We keep track of all the JVM classes we encounter so we don't have to do the mapping into GLSL structs every time */
     val jvmGlslMappings = mutableMapOf<KClass<InterfaceBlock>, GLSLType.JvmStruct>()
@@ -79,7 +80,7 @@ abstract class ShaderCompiler(val dialect: GLSLDialect) {
                 }
 
 
-                val intermediaryCompilationResults = buildIntermediaryStructure(stages, tries == 0)
+                val intermediaryCompilationResults = buildIntermediaryStructure(stages, tries == 0, spirv_13)
                 val (perInstanceDataInputs, resources) = createShaderResources(intermediaryCompilationResults, materialBoundResources)
 
                 addDecorations(intermediaryCompilationResults, resources, perInstanceDataInputs)

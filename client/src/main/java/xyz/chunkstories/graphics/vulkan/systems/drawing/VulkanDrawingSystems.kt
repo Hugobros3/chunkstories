@@ -15,7 +15,6 @@ import xyz.chunkstories.graphics.vulkan.systems.drawing.debugcube.VulkanSpinning
 import xyz.chunkstories.graphics.vulkan.systems.drawing.farterrain.VulkanFarTerrainRenderer
 import xyz.chunkstories.graphics.vulkan.systems.drawing.fsquad.VulkanFullscreenQuadDrawer
 import xyz.chunkstories.graphics.vulkan.systems.drawing.gui.VulkanGuiDrawer
-import xyz.chunkstories.graphics.vulkan.systems.drawing.rt.Vulkan3DVoxelRaytracer
 
 /** Drawing systems are instanced per-declared pass for now */
 abstract class VulkanDrawingSystem(val pass: VulkanPass) : DrawingSystem, Cleanable {
@@ -32,7 +31,6 @@ fun <T : DrawingSystem> VulkanGraphicsBackend.createDrawingSystem(pass: VulkanPa
         FullscreenQuadDrawer::class.java -> VulkanFullscreenQuadDrawer(pass, dslCode)
         FarTerrainDrawer::class.java -> VulkanFarTerrainRenderer(pass, dslCode)
 
-        Vulkan3DVoxelRaytracer::class.java -> Vulkan3DVoxelRaytracer(pass, dslCode)
         VulkanSpinningCubeDrawer::class.java -> VulkanSpinningCubeDrawer(pass, dslCode)
         VulkanDebugDrawer::class.java -> VulkanDebugDrawer(pass, dslCode, window.client.ingame!!)
 

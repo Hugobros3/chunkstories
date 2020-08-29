@@ -231,7 +231,7 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
 
         fun isOccluded(level: Int, x: Int, y: Int, z: Int): Boolean {
             val index = basePtrs[level - 1] + ((((z * (32 shr (level - 1))) + y) * (32 shr (level - 1))) + x) * 4 + 3
-            return scratchByteBuffer.get(index.toInt()) > 0
+            return scratchByteBuffer.get(index.toInt()).toInt() != 0
         }
 
         for (mipLevel in 1..5) {

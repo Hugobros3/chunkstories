@@ -26,4 +26,6 @@ class VulkanShaderFactory(val backend: VulkanGraphicsBackend, val client: Client
     }
 
     fun createProgram(basePath: String, shaderCompilationParameters: ShaderCompilationParameters = ShaderCompilationParameters()) = VulkanShaderProgram(backend, basePath, loadGLSLProgram(basePath, shaderCompilationParameters))
+
+    override val spirv_13: Boolean = supportsSpirv13(backend)
 }
