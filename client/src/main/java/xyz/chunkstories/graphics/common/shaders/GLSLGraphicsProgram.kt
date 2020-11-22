@@ -2,7 +2,7 @@ package xyz.chunkstories.graphics.common.shaders
 
 import xyz.chunkstories.api.graphics.shader.ShaderStage
 
-data class GLSLProgram(
+data class GLSLGraphicsProgram (
         val name: String,
         val dialect: GLSLDialect,
         val vertexInputs: List<GLSLVertexInput>,

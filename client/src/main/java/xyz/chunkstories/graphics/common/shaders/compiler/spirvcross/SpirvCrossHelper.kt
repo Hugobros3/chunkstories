@@ -3,7 +3,7 @@ package xyz.chunkstories.graphics.common.shaders.compiler.spirvcross
 import graphics.scenery.spirvcrossj.*
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.graphics.shader.ShaderStage
-import xyz.chunkstories.graphics.common.shaders.GLSLProgram
+import xyz.chunkstories.graphics.common.shaders.GLSLGraphicsProgram
 import xyz.chunkstories.util.OSHelper
 import xyz.chunkstories.util.SupportedOS
 import java.io.File
@@ -68,7 +68,7 @@ object SpirvCrossHelper {
             ShaderStage.FRAGMENT -> ".frag"
         }
 
-    fun generateSpirV(transpiledGLSL: GLSLProgram, spirv_13: Boolean): GeneratedSpirV {
+    fun generateSpirV(transpiledGLSL: GLSLGraphicsProgram, spirv_13: Boolean): GeneratedSpirV {
         libspirvcrossj.initializeProcess()
         val ressources = libspirvcrossj.getDefaultTBuiltInResource()
 
@@ -126,7 +126,7 @@ object SpirvCrossHelper {
     }
 
     /** the generated spirv the engine can ingest for that shader program */
-    data class GeneratedSpirV(val source: GLSLProgram, val stages: Map<ShaderStage, ByteBuffer>)
+    data class GeneratedSpirV(val source: GLSLGraphicsProgram, val stages: Map<ShaderStage, ByteBuffer>)
 }
 
 private fun <E> List<List<E>>.merge(): List<E> {

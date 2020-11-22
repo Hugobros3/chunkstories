@@ -6,7 +6,7 @@ import xyz.chunkstories.graphics.common.shaders.*
 import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompiler
 import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.SpirvCrossHelper.spirvStageInt
 
-fun ShaderCompiler.buildIntermediaryStructure(stages: Map<ShaderStage, String>, dumpCodeOnError: Boolean, spirv_13: Boolean): IntermediaryCompilationResults {
+fun ShaderCompiler.buildIntermediaryStructure(stages: Map<ShaderStage, String>, spirv_13: Boolean): IntermediaryCompilationResults {
     libspirvcrossj.initializeProcess()
     val ressources = libspirvcrossj.getDefaultTBuiltInResource()
 
@@ -32,8 +32,14 @@ fun ShaderCompiler.buildIntermediaryStructure(stages: Map<ShaderStage, String>, 
             ShaderCompiler.logger.warn(tShader.infoLog)
             ShaderCompiler.logger.warn(tShader.infoDebugLog)
 
-            if (dumpCodeOnError)
-                println(shaderCode)
+            val errorLine = tShader.infoLog?.split(":")?.getOrNull(2)?.toInt() ?: -1
+            val area = 3
+            val lines = shaderCode.lines()
+            if (errorLine != -1) {
+                for (lineNumber in Math.max(0, errorLine - area)..Math.min(errorLine + area, lines.size - 1))
+                    println(lineNumber.toString().padStart(4, '0') + ": " + lines[lineNumber])
+            }
+
             throw Exception("Failed to parse stage $stage of the shader program")
         }
 

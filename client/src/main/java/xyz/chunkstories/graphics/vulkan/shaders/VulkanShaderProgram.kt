@@ -4,7 +4,7 @@ import org.lwjgl.system.MemoryStack.stackPop
 import org.lwjgl.system.MemoryStack.stackPush
 import xyz.chunkstories.api.graphics.shader.ShaderStage
 import xyz.chunkstories.graphics.common.Cleanable
-import xyz.chunkstories.graphics.common.shaders.GLSLProgram
+import xyz.chunkstories.graphics.common.shaders.GLSLGraphicsProgram
 import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.SpirvCrossHelper
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import java.io.File
@@ -17,7 +17,7 @@ fun supportsSpirv13(backend: VulkanGraphicsBackend): Boolean {
     return false
 }
 
-data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsBackend, val basePath: String, val glslProgram: GLSLProgram) : Cleanable {
+data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsBackend, val basePath: String, val glslProgram: GLSLGraphicsProgram) : Cleanable {
     val spirvCode = SpirvCrossHelper.generateSpirV(glslProgram, supportsSpirv13(backend))
     val modules: Map<ShaderStage, ShaderModule>
 

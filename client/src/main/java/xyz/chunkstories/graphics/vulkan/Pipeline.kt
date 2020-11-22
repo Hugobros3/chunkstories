@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.graphics.rendergraph.DepthTestingConfiguration
 import xyz.chunkstories.api.graphics.rendergraph.PassOutputsDeclaration
 import xyz.chunkstories.api.graphics.shader.ShaderStage
-import xyz.chunkstories.graphics.common.shaders.GLSLProgram
+import xyz.chunkstories.graphics.common.shaders.GLSLGraphicsProgram
 import xyz.chunkstories.graphics.vulkan.shaders.VulkanShaderProgram
 
 fun vertexInputConfiguration(declaration: VertexInputConfigurationContext.() -> Unit) = VertexInputConfiguration(declaration)
@@ -23,7 +23,7 @@ fun vertexInputConfiguration(declaration: VertexInputConfigurationContext.() -> 
 data class VertexInputConfiguration(val declaration: VertexInputConfigurationContext.() -> Unit)
 
 interface VertexInputConfigurationContext {
-    val program: GLSLProgram
+    val program: GLSLGraphicsProgram
 
     fun binding(decl: VkVertexInputBindingDescription.() -> Unit)
 
@@ -64,7 +64,7 @@ class Pipeline(val backend: VulkanGraphicsBackend, val program : VulkanShaderPro
             val attributes = mutableListOf<VkVertexInputAttributeDescription>()
 
             val localConfigCtx = object : VertexInputConfigurationContext {
-                override val program: GLSLProgram
+                override val program: GLSLGraphicsProgram
                     get() = this@Pipeline.program.glslProgram
 
                 override fun binding(decl: VkVertexInputBindingDescription.() -> Unit) {

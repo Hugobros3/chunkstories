@@ -5,7 +5,7 @@ import xyz.chunkstories.api.content.Content
 import xyz.chunkstories.api.graphics.shader.ShaderStage
 import xyz.chunkstories.api.graphics.structs.InterfaceBlock
 import xyz.chunkstories.graphics.common.shaders.GLSLDialect
-import xyz.chunkstories.graphics.common.shaders.GLSLProgram
+import xyz.chunkstories.graphics.common.shaders.GLSLGraphicsProgram
 import xyz.chunkstories.graphics.common.shaders.GLSLType
 import xyz.chunkstories.graphics.common.shaders.MaterialImage
 import xyz.chunkstories.graphics.common.shaders.compiler.postprocessing.addVirtualTexturingHeader
@@ -29,7 +29,7 @@ abstract class ShaderCompiler(val dialect: GLSLDialect) {
         SpirvCrossHelper.initSpirvCross()
     }
 
-    fun loadGLSLProgram(shaderName: String, compilationParameters: ShaderCompilationParameters = ShaderCompilationParameters()) : GLSLProgram {
+    fun loadGLSLProgram(shaderName: String, compilationParameters: ShaderCompilationParameters = ShaderCompilationParameters()) : GLSLGraphicsProgram {
         var tries = 0
         while(true) {
             try {
@@ -80,7 +80,7 @@ abstract class ShaderCompiler(val dialect: GLSLDialect) {
                 }
 
 
-                val intermediaryCompilationResults = buildIntermediaryStructure(stages, tries == 0, spirv_13)
+                val intermediaryCompilationResults = buildIntermediaryStructure(stages, spirv_13)
                 val (perInstanceDataInputs, resources) = createShaderResources(intermediaryCompilationResults, materialBoundResources)
 
                 addDecorations(intermediaryCompilationResults, resources, perInstanceDataInputs)
@@ -91,7 +91,7 @@ abstract class ShaderCompiler(val dialect: GLSLDialect) {
                     stages = stages.mapValues { (stage, shaderCode) -> annotateForNonUniformAccess(shaderCode) }
 
                 //val perInstanceDataInputs = resources.filterIsInstance<GLSLShaderStorage>().mapNotNull { it.associatedInstanceData }
-                return GLSLProgram(shaderName, dialect, vertexInputs, fragmentOutputs, perInstanceDataInputs, resources, materialBoundResources.map { MaterialImage(it) }, stages)
+                return GLSLGraphicsProgram(shaderName, dialect, vertexInputs, fragmentOutputs, perInstanceDataInputs, resources, materialBoundResources.map { MaterialImage(it) }, stages)
             } catch(e: Exception) {
                 tries++
                 logger.error("Shader compilation failed! Retrying in 10s to allow dev to iterate ...")

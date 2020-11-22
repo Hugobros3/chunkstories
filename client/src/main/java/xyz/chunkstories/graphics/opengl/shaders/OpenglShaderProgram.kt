@@ -1,16 +1,15 @@
 package xyz.chunkstories.graphics.opengl.shaders
 
-import org.lwjgl.opengl.GL31
 import org.lwjgl.opengl.GL32.*
 import org.slf4j.LoggerFactory
 
 import xyz.chunkstories.api.graphics.shader.ShaderStage
 import xyz.chunkstories.graphics.common.Cleanable
-import xyz.chunkstories.graphics.common.shaders.GLSLProgram
+import xyz.chunkstories.graphics.common.shaders.GLSLGraphicsProgram
 import xyz.chunkstories.graphics.common.shaders.GLSLUniformBlock
 import xyz.chunkstories.graphics.opengl.OpenglGraphicsBackend
 
-class OpenglShaderProgram(val backend: OpenglGraphicsBackend, val glslProgram: GLSLProgram) : Cleanable {
+class OpenglShaderProgram(val backend: OpenglGraphicsBackend, val glslProgram: GLSLGraphicsProgram) : Cleanable {
     internal val programId: Int
     private val stages: List<Int>
 
