@@ -9,7 +9,8 @@ dependencies {
     api(kotlin("reflect"))
 
     // We obviously depend on the project's API !
-    api("xyz.chunkstories:api:${rootProject.extra.get("apiRevisionBuiltAgainst")}")
+    // api("xyz.chunkstories:api:${rootProject.extra.get("apiRevisionBuiltAgainst")}")
+    api(project(":api"))
 
     api("org.lwjgl:lwjgl:${rootProject.extra.get("lwjglVersion")}")
     for (natives in listOf("natives-windows", "natives-linux", "natives-macos"))

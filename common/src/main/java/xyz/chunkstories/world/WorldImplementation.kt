@@ -20,7 +20,7 @@ import xyz.chunkstories.api.events.voxel.WorldModificationCause
 import xyz.chunkstories.api.exceptions.world.ChunkNotLoadedException
 import xyz.chunkstories.api.exceptions.world.RegionNotLoadedException
 import xyz.chunkstories.api.exceptions.world.WorldException
-import xyz.chunkstories.api.math.Math2
+import xyz.chunkstories.api.math.MathUtils
 import xyz.chunkstories.api.physics.Box
 import xyz.chunkstories.api.util.IterableIterator
 import xyz.chunkstories.api.util.concurrency.Fence
@@ -241,7 +241,7 @@ constructor(override val gameContext: GameContext, final override val worldInfo:
 
             if (internalData.varyWeather) {
                 val diff = (Math.random() - 0.5f) * 0.0005 * Math.random()
-                val rslt = Math2.clamp(internalData.weather + diff, 0.0, 1.0)
+                val rslt = MathUtils.clamp(internalData.weather + diff, 0.0, 1.0)
                 internalData.weather = rslt
             }
         }

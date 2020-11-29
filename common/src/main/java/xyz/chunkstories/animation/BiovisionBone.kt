@@ -10,7 +10,7 @@ import org.joml.*
 
 import xyz.chunkstories.api.animation.Animation
 
-import xyz.chunkstories.api.math.Math2
+import xyz.chunkstories.api.math.MathUtils
 import xyz.chunkstories.api.math.Quaternion4d
 import java.lang.Math
 
@@ -99,9 +99,9 @@ class BiovisionBone(override val name: String, val channels: Int, private val an
 
         // Apply transformations
         if (channels == 6) {
-            matrix.m30(matrix.m30() + Math2.mix(animationData[frameLower][animationDataOffset + 0].toDouble(), animationData[frameUpper][animationDataOffset + 0].toDouble(), t))
-            matrix.m31(matrix.m31() + Math2.mix(animationData[frameLower][animationDataOffset + 1].toDouble(), animationData[frameUpper][animationDataOffset + 1].toDouble(), t))
-            matrix.m32(matrix.m32() + Math2.mix(animationData[frameLower][animationDataOffset + 2].toDouble(), animationData[frameUpper][animationDataOffset + 2].toDouble(), t))
+            matrix.m30(matrix.m30() + MathUtils.mix(animationData[frameLower][animationDataOffset + 0].toDouble(), animationData[frameUpper][animationDataOffset + 0].toDouble(), t))
+            matrix.m31(matrix.m31() + MathUtils.mix(animationData[frameLower][animationDataOffset + 1].toDouble(), animationData[frameUpper][animationDataOffset + 1].toDouble(), t))
+            matrix.m32(matrix.m32() + MathUtils.mix(animationData[frameLower][animationDataOffset + 2].toDouble(), animationData[frameUpper][animationDataOffset + 2].toDouble(), t))
         } else {
             matrix.m30(matrix.m30() + offset.x())
             matrix.m31(matrix.m31() + offset.y())

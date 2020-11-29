@@ -6,7 +6,7 @@
 
 package xyz.chunkstories.world.heightmap
 
-import xyz.chunkstories.api.math.Math2
+import xyz.chunkstories.api.math.MathUtils
 import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.server.RemotePlayer
 import xyz.chunkstories.api.util.concurrency.Fence
@@ -90,8 +90,8 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
                     var dirZ = 0
 
                     if (firstUser is Player) {
-                        val playerRegionX = Math2.floor(firstUser.controlledEntity!!.location.x() / 256)
-                        val playerRegionZ = Math2.floor(firstUser.controlledEntity!!.location.z() / 256)
+                        val playerRegionX = MathUtils.floor(firstUser.controlledEntity!!.location.x() / 256)
+                        val playerRegionZ = MathUtils.floor(firstUser.controlledEntity!!.location.z() / 256)
 
                         if (regionX < playerRegionX)
                             dirX = -1

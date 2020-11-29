@@ -9,9 +9,7 @@ package xyz.chunkstories.content.mods
 import java.io.IOException
 import java.security.DigestInputStream
 import java.security.MessageDigest
-import java.security.NoSuchAlgorithmException
 import java.util.ArrayList
-import java.util.Comparator
 
 import org.slf4j.Logger
 
@@ -19,8 +17,7 @@ import xyz.chunkstories.api.content.Asset
 import xyz.chunkstories.api.content.mods.Mod
 import xyz.chunkstories.api.content.mods.ModInfo
 import xyz.chunkstories.api.exceptions.content.mods.ModLoadFailureException
-import xyz.chunkstories.api.math.HexTools
-import xyz.chunkstories.api.util.IterableIterator
+import xyz.chunkstories.api.math.HexUtils
 
 abstract class ModImplementation @Throws(ModLoadFailureException::class)
 internal constructor() : Mod {
@@ -54,7 +51,7 @@ internal constructor() : Mod {
             completeNamesString += "$s;"
 
         // MD5 it
-        val hashedNames = HexTools.byteArrayAsHexString(md.digest(completeNamesString.toByteArray()))
+        val hashedNames = HexUtils.byteArrayAsHexString(md.digest(completeNamesString.toByteArray()))
 
         // Iterate over each asset, hash it then add that to the sb
         val sb = StringBuilder()
@@ -71,13 +68,13 @@ internal constructor() : Mod {
             }
 
             // Append
-            sb.append(HexTools.byteArrayAsHexString(md.digest()))
+            sb.append(HexUtils.byteArrayAsHexString(md.digest()))
         }
         // Append hash of list of names
         sb.append(hashedNames)
 
         // Hash the whole stuff again
-        return HexTools.byteArrayAsHexString(md.digest(sb.toString().toByteArray()))
+        return HexUtils.byteArrayAsHexString(md.digest(sb.toString().toByteArray()))
     }
 
     abstract fun close()

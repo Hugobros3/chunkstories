@@ -11,7 +11,7 @@ import xyz.chunkstories.api.client.Client
 import xyz.chunkstories.api.client.LocalPlayer
 import xyz.chunkstories.api.exceptions.net.IllegalPacketException
 import xyz.chunkstories.api.math.LoopingMathHelper
-import xyz.chunkstories.api.math.Math2
+import xyz.chunkstories.api.math.MathUtils
 import xyz.chunkstories.api.net.packets.PacketWorldUser
 import xyz.chunkstories.api.net.packets.PacketWorldUser.Type
 import xyz.chunkstories.api.world.WorldClient
@@ -46,9 +46,9 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
             lock.lock()
 
             // Subscribe to nearby wanted chunks
-            val cameraChunkX = Math2.floor(controlledEntity.location.x() / 32)
-            val cameraChunkY = Math2.floor(controlledEntity.location.y() / 32)
-            val cameraChunkZ = Math2.floor(controlledEntity.location.z() / 32)
+            val cameraChunkX = MathUtils.floor(controlledEntity.location.x() / 32)
+            val cameraChunkY = MathUtils.floor(controlledEntity.location.y() / 32)
+            val cameraChunkZ = MathUtils.floor(controlledEntity.location.z() / 32)
 
             val chunksViewDistance = world.client.configuration.getIntValue(InternalClientOptions.viewDistance) / 32
             val chunksViewDistanceHeight = 6
@@ -63,7 +63,7 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
                         val size = worldInfo.size
 
                         val filteredChunkX = chunkX and size.maskForChunksCoordinates
-                        val filteredChunkY = Math2.clampi(chunkY, 0, size.sizeInChunks - 1)
+                        val filteredChunkY = MathUtils.clampi(chunkY, 0, size.sizeInChunks - 1)
                         val filteredChunkZ = chunkZ and size.maskForChunksCoordinates
 
                         val summed = (((filteredChunkX shl size.bitlengthOfVerticalChunksCoordinates) or filteredChunkY) shl size.bitlengthOfHorizontalChunksCoordinates) or filteredChunkZ
@@ -99,7 +99,7 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
                     val size = worldInfo.size
 
                     val filteredChunkX = holder.chunkX and size.maskForChunksCoordinates
-                    val filteredChunkY = Math2.clampi(holder.chunkY, 0, 31)
+                    val filteredChunkY = MathUtils.clampi(holder.chunkY, 0, 31)
                     val filteredChunkZ = holder.chunkZ and size.maskForChunksCoordinates
 
                     val summed = (((filteredChunkX shl size.bitlengthOfVerticalChunksCoordinates) or filteredChunkY) shl size.bitlengthOfHorizontalChunksCoordinates) or filteredChunkZ
@@ -197,7 +197,7 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
                 val size = worldInfo.size
 
                 val filteredChunkX = holder.chunkX and size.maskForChunksCoordinates
-                val filteredChunkY = Math2.clampi(holder.chunkY, 0, 31)
+                val filteredChunkY = MathUtils.clampi(holder.chunkY, 0, 31)
                 val filteredChunkZ = holder.chunkZ and size.maskForChunksCoordinates
 
                 val summed = filteredChunkX shl size.bitlengthOfVerticalChunksCoordinates or filteredChunkY shl size.bitlengthOfHorizontalChunksCoordinates or filteredChunkZ
