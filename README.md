@@ -8,9 +8,9 @@ Chunk Stories is an advanced Minecraft clone, with a tailor-built engine boastin
 
 ### Why yet another Minecraft clone ?
 
-Not everyone is happy with the direction Minecraft is taking under the direction of Microsoft. While the game is doing very well for now, it's also clear Redmont wants to keep an iron grip over it's modding potential, and refuses to provide a real modding API with a permissive licensing scheme. There is also the issue of the Bedrock edition, which is a dystopian version of the game, complete with paid mods, microtransactions and completely locked-down executables, which threatens to replace the good old Java Edition over time.
+Not everyone is happy with the direction Minecraft is taking under the direction of Microsoft. ~~While the game is doing very well for now,~~ (See edit later) it's clear Redmont wants to keep an iron grip over it's modding potential, and refuses to provide a real modding API with a permissive licensing scheme. There is also the issue of the Bedrock edition, which is a dystopian version of the game, complete with paid mods, microtransactions and completely locked-down executables, which threatens to replace the good old Java Edition over time. **Edit 2020.12.02: this threat is now a much more concrete one with the move to Microsoft accounts forcing players to submit to very problematic terms of service if they do not want to give up their access to the game, further highliting the importance of a free (as in beer) alternative.**
 
-In contrast, Chunk Stories is free software and runs on any platform someone can be bothered to port the implementation to.
+Chunk Stories is free software and runs on any platform someone can be bothered to port the implementation to.
 
 ### You didn't answer the question, there already are multiple open minecraft clones!
 
@@ -84,4 +84,4 @@ The chunkstories **implementation** is released under LGPL, see LICENSE.MD
 
 # Code of Conduct
 
-We haven't yet adopted a CoC as to us it would come off more as a political statement than anything else at this point, given the small size of this project. In general we'd like to not shoot ourselves in the foot by limiting our audience through insufferable polarized politics, and ideally everyone would put their differences aside within this community. So don't be a jerk, exercise some empathy, verbal restraint and try to understand where others are coming from. Polite arguments are fine, but keep it about the points -- not about the people.
+We haven't yet adopted a CoC as to us it would come off more as a political statement than anything else at this point, given the small size of this project. In general we'd like to keep this space safe from extremely polarized political flamewars, and ideally everyone would put their differences aside within this project. So don't be a jerk, exercise some empathy, verbal restraint and try to understand where others are coming from.
