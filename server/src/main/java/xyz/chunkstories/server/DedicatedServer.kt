@@ -15,8 +15,8 @@ import xyz.chunkstories.api.content.Content
 import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.server.PermissionsManager
 import xyz.chunkstories.api.server.Server
-import xyz.chunkstories.api.util.ColorsTools
 import xyz.chunkstories.api.util.configuration.Configuration
+import xyz.chunkstories.api.util.convertToAnsi
 import xyz.chunkstories.api.workers.Tasks
 import xyz.chunkstories.api.world.WorldInfo
 import xyz.chunkstories.api.world.WorldSize
@@ -319,7 +319,7 @@ class DedicatedServer internal constructor(coreContentLocation: File, modsString
     override fun getPlayerByUUID(UUID: Long): Player? = connectedPlayers.find { it.uuid == UUID }
 
     override fun broadcastMessage(message: String) {
-        logger().info(ColorsTools.convertToAnsi(message))
+        logger().info(convertToAnsi(message))
         for (player in connectedPlayers) {
             player.sendMessage(message)
         }

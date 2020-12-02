@@ -17,7 +17,7 @@ import xyz.chunkstories.api.content.Asset
 import xyz.chunkstories.api.content.mods.Mod
 import xyz.chunkstories.api.content.mods.ModInfo
 import xyz.chunkstories.api.exceptions.content.mods.ModLoadFailureException
-import xyz.chunkstories.api.math.HexUtils
+import xyz.chunkstories.api.math.byteArrayAsHexString
 
 abstract class ModImplementation @Throws(ModLoadFailureException::class)
 internal constructor() : Mod {
@@ -51,7 +51,7 @@ internal constructor() : Mod {
             completeNamesString += "$s;"
 
         // MD5 it
-        val hashedNames = HexUtils.byteArrayAsHexString(md.digest(completeNamesString.toByteArray()))
+        val hashedNames = byteArrayAsHexString(md.digest(completeNamesString.toByteArray()))
 
         // Iterate over each asset, hash it then add that to the sb
         val sb = StringBuilder()
@@ -68,13 +68,13 @@ internal constructor() : Mod {
             }
 
             // Append
-            sb.append(HexUtils.byteArrayAsHexString(md.digest()))
+            sb.append(byteArrayAsHexString(md.digest()))
         }
         // Append hash of list of names
         sb.append(hashedNames)
 
         // Hash the whole stuff again
-        return HexUtils.byteArrayAsHexString(md.digest(sb.toString().toByteArray()))
+        return byteArrayAsHexString(md.digest(sb.toString().toByteArray()))
     }
 
     abstract fun close()

@@ -11,11 +11,11 @@ import xyz.chunkstories.api.gui.Gui
 import xyz.chunkstories.api.gui.GuiDrawer
 import xyz.chunkstories.api.gui.Layer
 import xyz.chunkstories.api.gui.elements.Button
-import xyz.chunkstories.api.math.HexUtils
 import xyz.chunkstories.api.net.packets.PacketText
 import xyz.chunkstories.api.world.WorldClientNetworkedRemote
 import xyz.chunkstories.api.world.WorldMaster
 import org.joml.Vector4f
+import xyz.chunkstories.api.math.intToHex
 import xyz.chunkstories.world.WorldImplementation
 import xyz.chunkstories.world.spawnPlayer
 
@@ -51,9 +51,9 @@ class DeathScreenUI(gui: Gui, parent: Layer) : Layer(gui, parent) {
         drawer.drawBox(0, 0, gui.viewportWidth, gui.viewportHeight, Vector4f(0.0f, 0.0f, 0.0f, 0.5f))
 
         var color = "#"
-        color += HexUtils.intToHex((Math.random() * 255).toInt())
-        color += HexUtils.intToHex((Math.random() * 255).toInt())
-        color += HexUtils.intToHex((Math.random() * 255).toInt())
+        color += intToHex((Math.random() * 255).toInt())
+        color += intToHex((Math.random() * 255).toInt())
+        color += intToHex((Math.random() * 255).toInt())
 
         val titleFont = drawer.fonts.getFont("LiberationSans-Regular", 32f)
         val font = drawer.fonts.getFont("LiberationSans-Regular", 11f)

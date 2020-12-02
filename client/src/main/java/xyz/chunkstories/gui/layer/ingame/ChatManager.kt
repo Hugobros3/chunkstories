@@ -21,7 +21,7 @@ import xyz.chunkstories.api.gui.Layer
 import xyz.chunkstories.api.gui.elements.InputText
 import xyz.chunkstories.api.input.Input
 import xyz.chunkstories.api.input.Mouse.MouseScroll
-import xyz.chunkstories.api.util.ColorsTools
+import xyz.chunkstories.api.util.getUniqueColorPrefix
 import xyz.chunkstories.client.glfw.GLFWWindow
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.world.WorldClientLocal
@@ -261,7 +261,7 @@ class ChatManager(private val ingameClient: IngameClient, private val ingameGuiU
             (ingameClient.world as WorldClientRemote).connection
                     .sendTextMessage("chat/$input")
         else
-            insert(ColorsTools.getUniqueColorPrefix(clientUserName) + clientUserName + "#FFFFFF > " + input)
+            insert(getUniqueColorPrefix(clientUserName) + clientUserName + "#FFFFFF > " + input)
 
         logger.info("$clientUserName > $input")
 

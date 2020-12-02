@@ -21,9 +21,8 @@ import xyz.chunkstories.api.net.packets.PacketOpenInventory
 import xyz.chunkstories.api.physics.Box
 import xyz.chunkstories.api.server.RemotePlayer
 import xyz.chunkstories.api.server.Server
-import xyz.chunkstories.api.util.ColorsTools
+import xyz.chunkstories.api.util.getUniqueColorPrefix
 import xyz.chunkstories.api.world.WorldMaster
-import xyz.chunkstories.entity.EntityFileSerialization
 import xyz.chunkstories.server.net.ClientConnection
 import xyz.chunkstories.server.propagation.VirtualServerDecalsManager.ServerPlayerVirtualDecalsManager
 import xyz.chunkstories.server.propagation.VirtualServerParticlesManager.ServerPlayerVirtualParticlesManager
@@ -53,7 +52,7 @@ class ServerPlayer(val playerConnection: ClientConnection, name: String) : Playe
     private val serverMetadataFile: File
 
     override val displayName: String
-        get() = ColorsTools.getUniqueColorPrefix(name) + name + "#FFFFFF"
+        get() = getUniqueColorPrefix(name) + name + "#FFFFFF"
     override val inputsManager: ServerPlayerInputsManager
 
     override val subscribedToList: Collection<Entity>

@@ -4,8 +4,8 @@ import org.joml.Vector4f
 import org.joml.Vector4fc
 import xyz.chunkstories.api.graphics.TextureFormat
 import xyz.chunkstories.api.gui.Font
-import xyz.chunkstories.api.math.HexUtils
-import xyz.chunkstories.api.util.ColorsTools
+import xyz.chunkstories.api.math.isHexOnly
+import xyz.chunkstories.api.util.parseHexadecimalColorCode
 import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.common.gui.InternalGuiDrawer
 import xyz.chunkstories.graphics.common.util.toByteBuffer
@@ -68,11 +68,11 @@ class OpenglFontRenderer (val backend: OpenglGraphicsBackend) : Cleanable {
             if (glyph != null) {
                 // Detects and parses #C0L0R codes
                 if (charCurrent == '#'.toInt() && whatchars.length - i - 1 >= 6 && whatchars.toCharArray()[i + 1] != '#'
-                        && HexUtils.isHexOnly(whatchars.substring(i + 1, i + 7))) {
+                        && isHexOnly(whatchars.substring(i + 1, i + 7))) {
                     if (!(i > 1 && whatchars.toCharArray()[i - 1] == '#')) {
                         val colorCode = whatchars.substring(i + 1, i + 7)
-                        val rgb = ColorsTools.hexToRGB(colorCode)
-                        colorModified = Vector4f(rgb!![0] / 255.0f * color.x(), rgb[1] / 255.0f * color.y(),
+                        val rgb = parseHexadecimalColorCode(colorCode)
+                        colorModified = Vector4f(rgb[0] / 255.0f * color.x(), rgb[1] / 255.0f * color.y(),
                                 rgb[2] / 255.0f * color.z(), color.w())
                         i += 7
                         continue
