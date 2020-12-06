@@ -21,6 +21,7 @@ import xyz.chunkstories.api.exceptions.world.ChunkNotLoadedException
 import xyz.chunkstories.api.exceptions.world.RegionNotLoadedException
 import xyz.chunkstories.api.exceptions.world.WorldException
 import xyz.chunkstories.api.math.MathUtils
+import xyz.chunkstories.api.math.MathUtils.rnd_uniformf
 import xyz.chunkstories.api.physics.Box
 import xyz.chunkstories.api.util.IterableIterator
 import xyz.chunkstories.api.util.concurrency.Fence
@@ -240,8 +241,8 @@ constructor(override val gameContext: GameContext, final override val worldInfo:
             sunCycle = (sunCycle + increment) % 24000
 
             if (internalData.varyWeather) {
-                val diff = (Math.random() - 0.5f) * 0.0005 * Math.random()
-                val rslt = MathUtils.clamp(internalData.weather + diff, 0.0, 1.0)
+                val diff: Float = (rnd_uniformf() - 0.5f) * 0.0005f * rnd_uniformf()
+                val rslt = MathUtils.clampf(internalData.weather + diff, 0.0f, 1.0f)
                 internalData.weather = rslt
             }
         }

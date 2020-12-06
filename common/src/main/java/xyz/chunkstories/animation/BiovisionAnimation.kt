@@ -10,25 +10,27 @@ import org.joml.Matrix4f
 import org.joml.Vector3f
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.animation.Animation
+import xyz.chunkstories.api.math.MathUtils.ceil
+import xyz.chunkstories.api.math.MathUtils.floor
 
 class BiovisionAnimation(val frames: Int, val frameTime: Float, val root: BiovisionBone, val bones: Map<String, BiovisionBone>, val animationData: Array<FloatArray>) : Animation {
 
-    override fun getBoneHierarchyTransformationMatrix(nameOfEndBone: String, animationTime: Double): Matrix4f {
+    override fun getBoneHierarchyTransformationMatrix(nameOfEndBone: String, animationTime: Float): Matrix4f {
         var matrix = Matrix4f()
         if (frames == 0) {
             logger
             return matrix
         }
 
-        val frame = animationTime / 1000.0 / frameTime.toDouble()
+        val frame = animationTime / 1000.0f / frameTime
 
-        val frameUpperBound = Math.ceil(frame)
-        val frameLowerBound = Math.floor(frame)
+        val frameUpperBound = ceil(frame)
+        val frameLowerBound = floor(frame)
 
-        var interp = frame % 1.0
+        var interp = frame % 1.0f
         // Don't try to interpolate if we're on an exact frame
         if (frameLowerBound == frameUpperBound)
-            interp = 0.0
+            interp = 0.0f
 
         val frameLower = frameLowerBound.toInt() % frames
         val frameUpper = frameUpperBound.toInt() % frames
@@ -63,7 +65,7 @@ class BiovisionAnimation(val frames: Int, val frameTime: Float, val root: Biovis
         return offsetMatrix
     }
 
-    override fun getBoneHierarchyTransformationMatrixWithOffset(boneName: String, animationTime: Double): Matrix4f {
+    override fun getBoneHierarchyTransformationMatrixWithOffset(boneName: String, animationTime: Float): Matrix4f {
         var matrix: Matrix4f? = null
         if (frames == 0) {
             println("Invalid bone : " + boneName + "in animation" + this)

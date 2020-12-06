@@ -15,7 +15,7 @@ import xyz.chunkstories.api.entity.Entity
 import xyz.chunkstories.api.entity.EntitySerialization
 import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
 import xyz.chunkstories.api.item.inventory.Inventory
-import xyz.chunkstories.api.math.LoopingMathHelper
+import xyz.chunkstories.api.math.MathUtils.mod_dist
 import xyz.chunkstories.api.net.Packet
 import xyz.chunkstories.api.net.packets.PacketOpenInventory
 import xyz.chunkstories.api.physics.Box
@@ -139,7 +139,7 @@ class ServerPlayer(val playerConnection: ClientConnection, name: String) : Playe
         val controlledEntity = this.controlledEntity ?: return
 
         // Cache (idk if HotSpot makes it redudant but whatever)
-        val worldSize = controlledEntity.world.worldSize
+        val worldSize = (controlledEntity.world.sizeInChunks * 32)
         val controlledTraitLocation = controlledEntity.location
 
 
@@ -168,13 +168,11 @@ class ServerPlayer(val playerConnection: ClientConnection, name: String) : Playe
             val loc = e.location
 
             // Distance calculations
-            val dx = LoopingMathHelper.moduloDistance(controlledTraitLocation.x(), loc.x(), worldSize)
+            val dx = mod_dist(controlledTraitLocation.x(), loc.x(), worldSize.toDouble())
             val dy = Math.abs(controlledTraitLocation.y() - loc.y())
-            val dz = LoopingMathHelper.moduloDistance(controlledTraitLocation.z(), loc.z(), worldSize)
+            val dz = mod_dist(controlledTraitLocation.z(), loc.z(), worldSize.toDouble())
             val inRange = (dx < ENTITY_VISIBILITY_SIZE && dz < ENTITY_VISIBILITY_SIZE
                     && dy < ENTITY_VISIBILITY_SIZE)
-
-            // System.out.println(inRange);
 
             // Reasons other than distance to stop tracking this entity
             if (/* !e.shouldBeTrackedBy(this) || */!inRange)

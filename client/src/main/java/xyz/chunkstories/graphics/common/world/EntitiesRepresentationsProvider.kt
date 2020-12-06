@@ -10,14 +10,13 @@ import xyz.chunkstories.api.graphics.representation.drawCube
 import xyz.chunkstories.api.graphics.systems.dispatching.RepresentationsGobbler
 import xyz.chunkstories.api.graphics.systems.dispatching.RepresentationsProvider
 import xyz.chunkstories.api.util.kotlin.toMatrix4d
+import xyz.chunkstories.api.world.animationTime
 import xyz.chunkstories.client.InternalClientOptions
 import xyz.chunkstories.world.WorldClientCommon
 
 class EntitiesRepresentationsProvider(val world: WorldClientCommon) : RepresentationsProvider {
     override fun gatherRepresentations(representationsGobbler: RepresentationsGobbler) {
-        val realWorldTimeTruncated = (System.nanoTime() % 1000_000_000_000)
-        val realWorldTimeMs = realWorldTimeTruncated / 1000_000
-        val animationTime = (realWorldTimeMs / 1000.0) * 1000.0
+        val animationTime = world.animationTime
 
         for (entity in world.allLoadedEntities) {
             entity.traits[TraitRenderable::class]?.buildRepresentation(representationsGobbler)

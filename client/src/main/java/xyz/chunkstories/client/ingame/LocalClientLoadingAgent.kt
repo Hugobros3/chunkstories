@@ -10,8 +10,6 @@ import com.carrotsearch.hppc.IntHashSet
 import xyz.chunkstories.api.client.Client
 import xyz.chunkstories.api.client.LocalPlayer
 import xyz.chunkstories.api.exceptions.net.IllegalPacketException
-import xyz.chunkstories.api.math.LoopingMathHelper
-import xyz.chunkstories.api.math.MathUtils
 import xyz.chunkstories.api.net.packets.PacketWorldUser
 import xyz.chunkstories.api.net.packets.PacketWorldUser.Type
 import xyz.chunkstories.api.world.WorldClient
@@ -25,6 +23,9 @@ import xyz.chunkstories.world.heightmap.HeightmapImplementation
 import xyz.chunkstories.world.chunk.ChunkHolderImplementation
 import xyz.chunkstories.world.region.RegionImplementation
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.api.math.MathUtils.clamp
+import xyz.chunkstories.api.math.MathUtils.floor
+import xyz.chunkstories.api.math.MathUtils.mod_dist
 import xyz.chunkstories.world.WorldImplementation
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
@@ -46,9 +47,9 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
             lock.lock()
 
             // Subscribe to nearby wanted chunks
-            val cameraChunkX = MathUtils.floor(controlledEntity.location.x() / 32)
-            val cameraChunkY = MathUtils.floor(controlledEntity.location.y() / 32)
-            val cameraChunkZ = MathUtils.floor(controlledEntity.location.z() / 32)
+            val cameraChunkX = floor(controlledEntity.location.x() / 32)
+            val cameraChunkY = floor(controlledEntity.location.y() / 32)
+            val cameraChunkZ = floor(controlledEntity.location.z() / 32)
 
             val chunksViewDistance = world.client.configuration.getIntValue(InternalClientOptions.viewDistance) / 32
             val chunksViewDistanceHeight = 6
@@ -63,7 +64,7 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
                         val size = worldInfo.size
 
                         val filteredChunkX = chunkX and size.maskForChunksCoordinates
-                        val filteredChunkY = MathUtils.clampi(chunkY, 0, size.sizeInChunks - 1)
+                        val filteredChunkY = clamp(chunkY, 0, size.sizeInChunks - 1)
                         val filteredChunkZ = chunkZ and size.maskForChunksCoordinates
 
                         val summed = (((filteredChunkX shl size.bitlengthOfVerticalChunksCoordinates) or filteredChunkY) shl size.bitlengthOfHorizontalChunksCoordinates) or filteredChunkZ
@@ -92,14 +93,14 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
             val i = acquiredChunkHolders.iterator()
             while (i.hasNext()) {
                 val holder = i.next()
-                if (LoopingMathHelper.moduloDistance(holder.chunkX, cameraChunkX, world.sizeInChunks) > chunksViewDistance + 1
-                        || LoopingMathHelper.moduloDistance(holder.chunkZ, cameraChunkZ, world.sizeInChunks) > chunksViewDistance + 1
+                if (mod_dist(holder.chunkX, cameraChunkX, world.sizeInChunks) > chunksViewDistance + 1
+                        || mod_dist(holder.chunkZ, cameraChunkZ, world.sizeInChunks) > chunksViewDistance + 1
                         || Math.abs(holder.chunkY - cameraChunkY) > chunksViewDistanceHeight + 1) {
                     val worldInfo = world.worldInfo
                     val size = worldInfo.size
 
                     val filteredChunkX = holder.chunkX and size.maskForChunksCoordinates
-                    val filteredChunkY = MathUtils.clampi(holder.chunkY, 0, 31)
+                    val filteredChunkY = clamp(holder.chunkY, 0, 31)
                     val filteredChunkZ = holder.chunkZ and size.maskForChunksCoordinates
 
                     val summed = (((filteredChunkX shl size.bitlengthOfVerticalChunksCoordinates) or filteredChunkY) shl size.bitlengthOfHorizontalChunksCoordinates) or filteredChunkZ
@@ -163,8 +164,8 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
 
                 val key = regionX * sizeInRegions + regionZ
 
-                val dx = LoopingMathHelper.moduloDistance(cameraRegionX, regionX, sizeInRegions)
-                val dz = LoopingMathHelper.moduloDistance(cameraRegionZ, regionZ, sizeInRegions)
+                val dx = mod_dist(cameraRegionX, regionX, sizeInRegions)
+                val dz = mod_dist(cameraRegionZ, regionZ, sizeInRegions)
                 if (dx > distInRegions + 1 || dz > distInRegions + 1) {
                     entry.unregisterUser(player)
                     iterator.remove()
@@ -197,7 +198,7 @@ class LocalClientLoadingAgent(private val client: Client, private val player: Lo
                 val size = worldInfo.size
 
                 val filteredChunkX = holder.chunkX and size.maskForChunksCoordinates
-                val filteredChunkY = MathUtils.clampi(holder.chunkY, 0, 31)
+                val filteredChunkY = clamp(holder.chunkY, 0, 31)
                 val filteredChunkZ = holder.chunkZ and size.maskForChunksCoordinates
 
                 val summed = filteredChunkX shl size.bitlengthOfVerticalChunksCoordinates or filteredChunkY shl size.bitlengthOfHorizontalChunksCoordinates or filteredChunkZ

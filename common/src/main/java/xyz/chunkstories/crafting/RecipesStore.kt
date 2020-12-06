@@ -1,7 +1,5 @@
 package xyz.chunkstories.crafting
 
-import com.google.gson.Gson
-import com.google.gson.internal.LinkedTreeMap
 import org.hjson.JsonValue
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.content.Asset
@@ -42,17 +40,17 @@ class RecipesStore(val store: GameContentStore) : Content.Recipes {
                     throw Exception("Recipes should be dicts! ($recipeJson)")
 
                 try {
-                    val result = recipeJson["result"]// as? String ?: throw Exception("No result!")
-                    val resolvedResult = when(result) {
+                    val resolvedResult = when(val result = recipeJson["result"]) {
                         is Json.Value.Text -> Pair(store.items.getItemDefinition(result.text)!!, 1)
                         is Json.Array -> Pair(store.items.getItemDefinition(result.elements[0].asString!!)!!, result.elements.getOrNull(1).asInt ?: 1)
                         else -> throw Exception("What to do with $result")
                     }
 
+                    val ingredients = recipeJson["ingredients"].asDict ?: throw Exception("No ingredients!")
+                    val ingredientsMap = ingredients.elements.entries.map { Pair(it.key, store.items.getItemDefinition(it.value.asString!!)!!) }.toMap()
+
                     val pattern = recipeJson["pattern"].asString
                     if (pattern != null) {
-                        val ingredients = recipeJson["ingredients"].asDict ?: throw Exception("No ingredients!")
-                        val ingredientsMap = ingredients.elements.entries.map { Pair(it.key, store.items.getItemDefinition(it.value.asString!!)) }.toMap()
 
                         val patternLines = pattern.lines()
                         val patternHeight = patternLines.size
@@ -63,6 +61,8 @@ class RecipesStore(val store: GameContentStore) : Content.Recipes {
                         val recipe = PatternedRecipe(resolvedPattern, resolvedResult)
                         all += recipe
                         logger.info("Successfully loaded recipe $recipe")
+                    } else {
+                        TODO("Implement recipes with no pattern and a list of ingredients instead")
                     }
                 } catch (e: Exception) {
                     Recipe.logger.error("Failed to load recipe $recipeJson $e")

@@ -9,6 +9,7 @@ import xyz.chunkstories.api.graphics.Mesh
 import xyz.chunkstories.api.graphics.MeshMaterial
 import xyz.chunkstories.api.graphics.representation.ModelInstance
 import xyz.chunkstories.api.graphics.systems.dispatching.ModelsRenderer
+import xyz.chunkstories.api.world.animationTime
 import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
@@ -57,8 +58,7 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
         }
     }
 
-    fun getGpuMeshData(mesh: Mesh) =
-            gpuUploadedMeshes.getOrPut(mesh) { GpuMeshData(mesh) }
+    fun getGpuMeshData(mesh: Mesh) = gpuUploadedMeshes.getOrPut(mesh) { GpuMeshData(mesh) }
 
     data class SpecializedPipelineKey(val shader: String, val enableAnimations: Boolean, val inputs: List<AvailableVertexInput>)
 
@@ -151,9 +151,7 @@ class VulkanModelsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatching
 
             val client = backend.window.client.ingame ?: return
 
-            val realWorldTimeTruncated = (System.nanoTime() % 1000_000_000_000)
-            val realWorldTimeMs = realWorldTimeTruncated / 1000_000
-            val animationTime = (realWorldTimeMs / 1000.0) * 1000.0
+            val animationTime = client.world.animationTime
 
             val bindingContexts = mutableListOf<VulkanShaderResourcesContext>()
 
