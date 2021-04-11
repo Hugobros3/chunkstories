@@ -13,7 +13,6 @@ import java.util.concurrent.Semaphore;
 
 import xyz.chunkstories.api.exceptions.PacketProcessingException;
 import xyz.chunkstories.api.net.PacketReceptionContext;
-import xyz.chunkstories.api.net.PacketSender;
 import xyz.chunkstories.client.net.ClientPacketsEncoderDecoder;
 import xyz.chunkstories.net.Connection.DownloadStatus;
 import xyz.chunkstories.net.Connection.PendingDownload;

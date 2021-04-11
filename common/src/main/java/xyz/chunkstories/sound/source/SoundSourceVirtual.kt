@@ -15,9 +15,8 @@ import xyz.chunkstories.sound.VirtualSoundManager
 /**
  * Server-side version of a soundSource
  */
-class SoundSourceVirtual(private val virtualServerSoundManager: VirtualSoundManager, soundEffect: String, mode: SoundSource.Mode,
-                         position: Vector3dc, pitch: Float, gain: Float, attStart: Float, attEnd: Float) : SoundSourceAbstract(DummySoundData(soundEffect), position, mode, pitch, gain, attStart, attEnd) {
-
+class SoundSourceVirtual(private val virtualServerSoundManager: VirtualSoundManager, soundEffect: String, mode: SoundSource.Mode, position: Vector3dc, pitch: Float, gain: Float, attStart: Float, attEnd: Float) :
+        SoundSourceAbstract(DummySoundData(soundEffect), position, mode, pitch, gain, attStart, attEnd) {
     override var isDonePlaying = false
 
     override fun stop() {

@@ -16,7 +16,7 @@ import xyz.chunkstories.input.Pollable
 /**
  * Describes a key assignated to some action
  */
-class Lwjgl3KeyBind internal constructor(inputsManager: Lwjgl3ClientInputsManager, name: String, defaultKeyName: String, val hidden: Boolean, val repeat: Boolean) : Lwjgl3Input(inputsManager, name), KeyboardKeyInput, Pollable {
+class Lwjgl3KeyBind internal constructor(inputsManager: GLFWInputManager, name: String, defaultKeyName: String, val hidden: Boolean, val repeat: Boolean) : Lwjgl3Input(inputsManager, name), KeyboardKeyInput, Pollable {
 
     /**
      * Internal to the engine, should not be interfered with by external mods

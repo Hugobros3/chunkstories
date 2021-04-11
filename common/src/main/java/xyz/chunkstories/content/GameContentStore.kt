@@ -8,14 +8,12 @@ package xyz.chunkstories.content
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.Engine
 import xyz.chunkstories.animation.AnimationsStore
-import xyz.chunkstories.api.GameContext
 import xyz.chunkstories.api.content.Asset
 import xyz.chunkstories.api.content.Content
-import xyz.chunkstories.api.content.mods.ModsManager
 import xyz.chunkstories.api.exceptions.content.mods.NotAllModsLoadedException
 import xyz.chunkstories.content.mods.ModsManagerImplementation
-import xyz.chunkstories.content.mods.ModsManagerImplementation.NonExistentCoreContent
 import xyz.chunkstories.crafting.RecipesStore
 import xyz.chunkstories.entity.EntityDefinitionsStore
 import xyz.chunkstories.item.ItemDefinitionsStore
@@ -24,51 +22,27 @@ import xyz.chunkstories.loot.LootTablesStore
 import xyz.chunkstories.mesh.MeshStore
 import xyz.chunkstories.net.PacketsStore
 import xyz.chunkstories.particle.ParticlesTypesStore
-import xyz.chunkstories.voxel.VoxelsStore
+import xyz.chunkstories.block.BlockTypesStore
 import xyz.chunkstories.world.generator.WorldGeneratorsStore
 
 import java.io.File
 
-class GameContentStore(override val context: GameContext, coreContentLocation: File, enabledModsLaunchArguments: String) : Content {
-    override val modsManager: ModsManager
+class GameContentStore(val engine: Engine, coreContentLocation: File, requestedMods: List<String>) : Content {
+    override val modsManager: ModsManagerImplementation = ModsManagerImplementation(coreContentLocation, requestedMods)
 
-    override val lootTables: LootTablesStore
-    override val items: ItemDefinitionsStore
-    override val voxels: VoxelsStore
-    override val recipes: RecipesStore
-    override val entities: EntityDefinitionsStore
-    override val packets: PacketsStore
-    override val particles: ParticlesTypesStore
-    override val generators: WorldGeneratorsStore
+    override val lootTables: LootTablesStore = LootTablesStore(this)
+    override val items: ItemDefinitionsStore = ItemDefinitionsStore(this)
+    override val blockTypes: BlockTypesStore = BlockTypesStore(this)
+    override val recipes: RecipesStore = RecipesStore(this)
+    override val entities: EntityDefinitionsStore = EntityDefinitionsStore(this)
+    val packets: PacketsStore = PacketsStore(this)
+    override val particles: ParticlesTypesStore = ParticlesTypesStore(this)
+    override val generators: WorldGeneratorsStore = WorldGeneratorsStore(this)
 
-    override val animationsLibrary: AnimationsStore
-    override val models: MeshStore
+    override val animationsLibrary: AnimationsStore = AnimationsStore(this)
+    override val models: MeshStore = MeshStore(this)
 
-    private val localizationManager: LocalizationManagerImplementation
-
-    init {
-        try {
-            this.modsManager = ModsManagerImplementation(coreContentLocation, enabledModsLaunchArguments)
-        } catch (e: NonExistentCoreContent) {
-            logger.error("Could not find core content at the location: " + coreContentLocation.absolutePath)
-            throw RuntimeException("Could not find core content at the location: " + coreContentLocation.absolutePath)
-        }
-
-        lootTables = LootTablesStore(this)
-        items = ItemDefinitionsStore(this)
-        voxels = VoxelsStore(this)
-        recipes = RecipesStore(this)
-        entities = EntityDefinitionsStore(this)
-        packets = PacketsStore(this)
-        particles = ParticlesTypesStore(this)
-        generators = WorldGeneratorsStore(this)
-
-        animationsLibrary = AnimationsStore(this)
-
-        models = MeshStore(this)
-
-        localizationManager = LocalizationManagerImplementation(this, "en")
-    }
+    private val localizationManager: LocalizationManagerImplementation = LocalizationManagerImplementation(this, "en")
 
     override fun reload() {
         try {
@@ -79,7 +53,7 @@ class GameContentStore(override val context: GameContext, coreContentLocation: F
 
         lootTables.reload()
         items.reload()
-        voxels.reload()
+        blockTypes.reload()
         recipes.reload()
         entities.reload()
         packets.reload()

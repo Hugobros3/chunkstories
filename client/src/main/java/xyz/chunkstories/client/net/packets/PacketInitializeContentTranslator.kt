@@ -2,7 +2,6 @@ package xyz.chunkstories.client.net.packets
 
 import xyz.chunkstories.api.exceptions.PacketProcessingException
 import xyz.chunkstories.api.net.PacketReceptionContext
-import xyz.chunkstories.api.net.PacketSender
 import xyz.chunkstories.client.net.ClientPacketsEncoderDecoder
 import xyz.chunkstories.content.translator.IncompatibleContentException
 import xyz.chunkstories.content.translator.LoadedContentTranslator

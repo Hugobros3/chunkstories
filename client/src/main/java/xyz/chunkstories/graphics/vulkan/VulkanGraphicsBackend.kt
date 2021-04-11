@@ -33,11 +33,11 @@ import xyz.chunkstories.graphics.vulkan.util.VkRenderPass
 import xyz.chunkstories.graphics.vulkan.util.ensureIs
 import xyz.chunkstories.graphics.vulkan.util.iterator
 import xyz.chunkstories.graphics.vulkan.world.VulkanWorldRenderer
-import xyz.chunkstories.voxel.VoxelTexturesSupport
+import xyz.chunkstories.block.BlockTexturesProvider
 import xyz.chunkstories.world.WorldClientCommon
 import java.awt.image.BufferedImage
 
-class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window: GLFWWindow) : GLFWBasedGraphicsBackend(graphicsEngine, window), VoxelTexturesSupport {
+class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window: GLFWWindow) : GLFWBasedGraphicsBackend(graphicsEngine, window), BlockTexturesProvider {
     internal val enableValidation = window.client.arguments["enableValidation"] == "true"
 
     private var instance: VkInstance
@@ -326,7 +326,7 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
     }
 
     // yes this engine is a little tailor-made, what gives
-    override fun createVoxelTextures(voxels: Content.Voxels) = VulkanVoxelTexturesArray(this, voxels)
+    override fun createVoxelTextures(blockTypes: Content.BlockTypes) = VulkanVoxelTexturesArray(this, blockTypes)
 
     override fun createWorldRenderer(world: WorldClientCommon) = VulkanWorldRenderer(this, world)
 

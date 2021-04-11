@@ -12,24 +12,23 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Random;
 
+import xyz.chunkstories.api.world.GameInstance;
+import xyz.chunkstories.api.world.World;
 import xyz.chunkstories.api.world.WorldSize;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import xyz.chunkstories.api.GameContext;
 import xyz.chunkstories.api.content.Content;
 import xyz.chunkstories.api.converter.MinecraftBlocksTranslator;
 import xyz.chunkstories.api.plugin.PluginManager;
-import xyz.chunkstories.api.world.WorldInfo;
 import xyz.chunkstories.api.world.WorldUser;
 import xyz.chunkstories.content.GameContentStore;
 import xyz.chunkstories.util.FoldersUtils;
 import xyz.chunkstories.util.LogbackSetupHelper;
-import xyz.chunkstories.world.WorldLoadingException;
 import xyz.chunkstories.world.WorldTool;
 import io.xol.enklume.MinecraftWorld;
 
-public abstract class OfflineWorldConverter implements GameContext, WorldUser {
+public abstract class OfflineWorldConverter implements GameInstance, WorldUser {
 
 	public static void main(String arguments[]) throws IOException {
 		// Parse arguments first
@@ -183,7 +182,7 @@ public abstract class OfflineWorldConverter implements GameContext, WorldUser {
 		Random random = new Random();
 
 		File folder = new File("out/"+internalName);
-		WorldInfo info = new WorldInfo(internalName, csWorldName, description,random.nextLong() + "", size, worldGenerator);
+		World.Properties info = new World.Properties(internalName, csWorldName, description,random.nextLong() + "", size, worldGenerator);
 
 		csWorld = WorldTool.Companion.createWorld(this, folder, info);
 	}

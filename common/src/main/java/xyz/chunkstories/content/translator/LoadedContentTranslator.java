@@ -15,15 +15,15 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-import xyz.chunkstories.api.content.Content;
 import xyz.chunkstories.api.entity.EntityDefinition;
 import xyz.chunkstories.api.item.ItemDefinition;
 import xyz.chunkstories.api.net.PacketDefinition;
-import xyz.chunkstories.api.voxel.Voxel;
+import xyz.chunkstories.api.block.BlockType;
+import xyz.chunkstories.content.GameContentStore;
 
 public class LoadedContentTranslator extends AbstractContentTranslator {
 
-	public LoadedContentTranslator(Content content, BufferedReader reader)
+	public LoadedContentTranslator(GameContentStore content, BufferedReader reader)
 			throws IOException, IncompatibleContentException {
 		super(content);
 
@@ -48,7 +48,7 @@ public class LoadedContentTranslator extends AbstractContentTranslator {
 
 				switch (defType) {
 				case "voxel":
-					Voxel voxel = content.getVoxels().getVoxel(defName);
+					BlockType voxel = content.getVoxels().getVoxel(defName);
 					failIfNull(voxel, "Missing voxel definition " + defName);
 					voxelMappings.put(voxel, id);
 					break;
@@ -108,7 +108,7 @@ public class LoadedContentTranslator extends AbstractContentTranslator {
 			throw new IncompatibleContentException(err);
 	}
 
-	public static LoadedContentTranslator loadFromFile(Content content, File file)
+	public static LoadedContentTranslator loadFromFile(GameContentStore content, File file)
 			throws IOException, IncompatibleContentException {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
 		return new LoadedContentTranslator(content, reader);

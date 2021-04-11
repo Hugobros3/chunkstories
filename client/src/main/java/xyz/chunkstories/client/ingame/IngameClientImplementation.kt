@@ -5,6 +5,8 @@ import xyz.chunkstories.api.client.Client
 import xyz.chunkstories.api.client.IngameClient
 import xyz.chunkstories.api.graphics.systems.dispatching.DecalsManager
 import xyz.chunkstories.api.particles.ParticlesManager
+import xyz.chunkstories.api.player.Player
+import xyz.chunkstories.api.server.Host
 import xyz.chunkstories.client.ClientImplementation
 import xyz.chunkstories.client.commands.installClientCommands
 import xyz.chunkstories.graphics.common.WorldRenderer
@@ -14,54 +16,58 @@ import xyz.chunkstories.gui.layer.MessageBoxUI
 import xyz.chunkstories.gui.layer.WorldLoadingUI
 import xyz.chunkstories.gui.layer.ingame.IngameUI
 import xyz.chunkstories.plugin.DefaultPluginManager
-import xyz.chunkstories.server.commands.installServerCommands
+import xyz.chunkstories.server.commands.installHostCommands
+import xyz.chunkstories.sound.ALSoundManager
 import xyz.chunkstories.task.WorkerThreadPool
+import xyz.chunkstories.util.alias
 import xyz.chunkstories.world.WorldClientCommon
 import xyz.chunkstories.world.WorldClientLocal
 
 abstract class IngameClientImplementation protected constructor(val client: ClientImplementation, worldInitializer: (IngameClientImplementation) -> WorldClientCommon) : IngameClient, Client by client {
-    final override val tasks: WorkerThreadPool = client.tasks
+    val tasks: WorkerThreadPool = client.tasks
 
-    final override val ingame: IngameClient? = this
+    final override val ingame: IngameClient = this
+    final override val soundManager: ALSoundManager by alias(client::soundManager)
+    final override val pluginManager: DefaultPluginManager
 
-    val internalPluginManager: DefaultPluginManager
-    val internalWorld: WorldClientCommon = worldInitializer.invoke(this)
+    val loadingAgent = LocalClientLoadingAgent(world)
 
+    val world_: WorldClientCommon = worldInitializer.invoke(this)
     abstract override val world: WorldClientCommon
 
-    final override val decalsManager: DecalsManager
-    final override val particlesManager: ParticlesManager
+    val decalsManager: DecalsManager
+    val particlesManager: ParticlesManager
 
-    final override val player: LocalPlayerImplementation
+    final override val player: Player
 
     val ingameGuiUI: IngameUI
 
     val worldRenderer: WorldRenderer
 
     init {
-        decalsManager = internalWorld.decalsManager
-        particlesManager = internalWorld.particlesManager
+        decalsManager = world_.decalsManager
+        particlesManager = world_.particlesManager
 
         // We need the plugin manager very early so we make it in the common abstract class constructor
-        internalPluginManager = DefaultPluginManager(this)
-        internalPluginManager.reloadPlugins()
+        pluginManager = DefaultPluginManager(this)
+        pluginManager.reloadPlugins()
 
         // Prepare command line
         installClientCommands(this)
-        if (this is IngameClientLocalHost) {
-            installServerCommands(this)
+        if (this is Host) {
+            installHostCommands(this)
         }
 
-        player = LocalPlayerImplementation(this, internalWorld)
+        player = LocalPlayerImplementation(this)
 
         client.ingame = this
 
-        worldRenderer = client.gameWindow.graphicsEngine.backend.createWorldRenderer(internalWorld)
+        worldRenderer = client.gameWindow.graphicsEngine.backend.createWorldRenderer(world_)
 
         ingameGuiUI = IngameUI(gui, this)
         // Spawn manually the player if we're in single player mode
-        if (internalWorld is WorldClientLocal) {
-            gui.topLayer = WorldLoadingUI(internalWorld, gui, ingameGuiUI)
+        if (world_ is WorldClientLocal) {
+            gui.topLayer = WorldLoadingUI(world_, gui, ingameGuiUI)
         } else {
             gui.topLayer = ingameGuiUI
         }
@@ -75,34 +81,31 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
 
     override fun exitToMainMenu() {
         exitCommon()
-
         gui.topLayer = MainMenuUI(gui, null)
-        soundManager.stopAnySound()
-        client.ingame = null
     }
 
     override fun exitToMainMenu(errorMessage: String) {
         exitCommon()
-
         gui.topLayer = MessageBoxUI(gui, MainMenuUI(gui, null), "Disconnected from server", errorMessage)
-        soundManager.stopAnySound()
-        client.ingame = null
     }
 
     open fun exitCommon() {
         pluginManager.disablePlugins()
 
         worldRenderer.cleanup()
+        loadingAgent.unloadEverything(true)
+        world_.destroy()
+
+        soundManager.stopAllSounds()
         client.gameWindow.graphicsEngine.loadRenderGraph(BuiltInRendergraphs.onlyGuiRenderGraph(client))
 
-        // Destroy the world
-        internalWorld.destroy()
+        client.ingame = null
     }
 
-    override fun logger(): Logger = client.logger()
+    fun logger(): Logger = client.logger
 
-    override fun print(message: String) {
+    fun print(message: String) {
         ingameGuiUI.chatManager.insert(message)
-        client.print(message)
+        client.chatLogger.info(message)
     }
 }

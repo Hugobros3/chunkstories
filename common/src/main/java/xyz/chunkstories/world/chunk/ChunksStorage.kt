@@ -4,10 +4,14 @@ import xyz.chunkstories.api.Location
 import xyz.chunkstories.api.world.WorldUser
 import xyz.chunkstories.api.world.chunk.ChunkHolder
 import xyz.chunkstories.api.world.chunk.WorldChunksManager
-import xyz.chunkstories.world.WorldImplementation
+import xyz.chunkstories.world.WorldCommon
+import xyz.chunkstories.world.region.RegionsStorage
+import xyz.chunkstories.world.sanitizeHorizontalCoordinate
+import xyz.chunkstories.world.sanitizeVerticalCoordinate
 
-class ChunksStorage(override val world: WorldImplementation) : WorldChunksManager {
-    val sizeInChunks = world.sizeInChunks
+class ChunksStorage(override val world: WorldCommon) : WorldChunksManager {
+    private val sizeInChunks = world.properties.size.sizeInChunks
+    private val heightInChunks = world.properties.size.heightInChunks
 
     override fun acquireChunkHolderLocation(user: WorldUser, location: Location): ChunkHolder {
         return acquireChunkHolder(user, location.x().toInt(), location.y().toInt(), location.z().toInt())
@@ -50,7 +54,7 @@ class ChunksStorage(override val world: WorldImplementation) : WorldChunksManage
         // Out of bounds checks
         if (chunkY < 0)
             return false
-        return if (chunkY >= world.worldInfo.size.heightInChunks) false else world.regionsManager.getChunk(chunkX, chunkY, chunkZ) != null
+        return if (chunkY >= heightInChunks) false else world.regionsManager.getChunk(chunkX, chunkY, chunkZ) != null
         // If it doesn't return null then it exists
     }
 
@@ -74,7 +78,7 @@ class ChunksStorage(override val world: WorldImplementation) : WorldChunksManage
             chunkZ += sizeInChunks
         if (chunkY < 0)
             return null
-        return if (chunkY >= world.worldInfo.size.heightInChunks) null else world.regionsManager.getChunk(chunkX, chunkY, chunkZ)
+        return if (chunkY >= heightInChunks) null else world.regionsManager.getChunk(chunkX, chunkY, chunkZ)
     }
 
     override val allLoadedChunks: Sequence<ChunkImplementation>

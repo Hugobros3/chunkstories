@@ -6,8 +6,8 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.content.Asset
 import xyz.chunkstories.api.content.Content
-import xyz.chunkstories.api.voxel.textures.VoxelTexture
-import xyz.chunkstories.voxel.ReloadableVoxelTextures
+import xyz.chunkstories.api.block.textures.BlockTexture
+import xyz.chunkstories.block.ReloadableVoxelTextures
 import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 
@@ -17,9 +17,9 @@ open class VoxelTexturesArray(override val parent: Content.Voxels) : ReloadableV
 
     private val voxelTextures = mutableMapOf<String, VoxelTextureInArray>()
 
-    override lateinit var defaultVoxelTexture: VoxelTexture
+    override lateinit var defaultVoxelTexture: BlockTexture
 
-    override val all: Collection<VoxelTexture>
+    override val all: Collection<BlockTexture>
         get() = voxelTextures.values
 
     init {
@@ -135,7 +135,7 @@ open class VoxelTexturesArray(override val parent: Content.Voxels) : ReloadableV
         else -> i
     }
 
-    inner class VoxelTextureInArray(override val name: String, val asset: Asset) : VoxelTexture {
+    inner class VoxelTextureInArray(override val name: String, val asset: Asset) : BlockTexture {
         override val animationFrames: Int = 1 //TODO support animations ?
 
         override var color: Vector4fc = Vector4f(1f)
@@ -208,7 +208,7 @@ open class VoxelTexturesArray(override val parent: Content.Voxels) : ReloadableV
         }
     }
 
-    override fun get(voxelTextureName: String): VoxelTexture {
+    override fun get(voxelTextureName: String): BlockTexture {
         return voxelTextures[voxelTextureName] ?: defaultVoxelTexture
     }
 

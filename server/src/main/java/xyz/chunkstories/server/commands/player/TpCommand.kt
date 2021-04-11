@@ -11,13 +11,13 @@ import xyz.chunkstories.api.entity.Entity
 import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.plugin.commands.Command
 import xyz.chunkstories.api.plugin.commands.CommandEmitter
-import xyz.chunkstories.api.server.Server
-import xyz.chunkstories.server.commands.ServerCommandBasic
+import xyz.chunkstories.api.server.Host
+import xyz.chunkstories.server.commands.AbstractHostCommandHandler
 
-class TpCommand(serverConsole: Server) : ServerCommandBasic(serverConsole) {
+class TpCommand(serverConsole: Host) : AbstractHostCommandHandler(serverConsole) {
 
     init {
-        server.pluginManager.registerCommand("tp", this)
+        host.pluginManager.registerCommand("tp", this)
     }
 
     override fun handleCommand(emitter: CommandEmitter, command: Command, arguments: Array<String>): Boolean {
@@ -45,17 +45,17 @@ class TpCommand(serverConsole: Server) : ServerCommandBasic(serverConsole) {
 
         when {
             arguments.size == 1 -> {
-                val otherPlayer = server.getPlayerByName(arguments[0]) ?: throw Exception("#FF8966Player not found : " + arguments[0])
+                val otherPlayer = host.getPlayer(arguments[0]) ?: throw Exception("#FF8966Player not found : " + arguments[0])
                 val otherPlayerEntity = otherPlayer?.controlledEntity ?: throw Exception("#FF8966Player $otherPlayer is not controlling an entity currently...")
 
                 to = otherPlayerEntity.location
                 what = who.controlledEntity ?: throw Exception("#FF8966Player $who is not controlling an entity currently...")
             }
             arguments.size == 2 -> {
-                who = server.getPlayerByName(arguments[0]) ?: throw Exception("#FF8966Player not found : " + arguments[0])
+                who = host.getPlayer(arguments[0]) ?: throw Exception("#FF8966Player not found : " + arguments[0])
                 what = who.controlledEntity ?: throw Exception("#FF8966Player $who is not controlling an entity currently...")
 
-                val otherPlayer = server.getPlayerByName(arguments[1]) ?: throw Exception("#FF8966Player not found : " + arguments[1])
+                val otherPlayer = host.getPlayer(arguments[1]) ?: throw Exception("#FF8966Player not found : " + arguments[1])
                 val otherPlayerEntity = otherPlayer.controlledEntity ?: throw Exception("#FF8966Player $otherPlayer is not controlling an entity currently...")
 
                 to = otherPlayerEntity.location
@@ -69,7 +69,7 @@ class TpCommand(serverConsole: Server) : ServerCommandBasic(serverConsole) {
                 to = Location(what.location.world, x.toDouble(), y.toDouble(), z.toDouble())
             }
             arguments.size == 4 -> {
-                who = server.getPlayerByName(arguments[0]) ?: throw Exception("#FF8966Player not found : " + arguments[0])
+                who = host.getPlayer(arguments[0]) ?: throw Exception("#FF8966Player not found : " + arguments[0])
 
                 val x = Integer.parseInt(arguments[1])
                 val y = Integer.parseInt(arguments[2])

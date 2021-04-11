@@ -11,8 +11,7 @@ import java.io.IOException;
 
 import xyz.chunkstories.api.exceptions.net.IllegalPacketException;
 import xyz.chunkstories.api.net.PacketReceptionContext;
-import xyz.chunkstories.api.net.PacketSender;
-import xyz.chunkstories.api.net.packets.PacketWorldUser;
+import xyz.chunkstories.net.packets.PacketWorldUser;
 import xyz.chunkstories.api.world.World;
 import xyz.chunkstories.client.ingame.LocalPlayerImplementation;
 import xyz.chunkstories.client.net.ClientPacketsEncoderDecoder;

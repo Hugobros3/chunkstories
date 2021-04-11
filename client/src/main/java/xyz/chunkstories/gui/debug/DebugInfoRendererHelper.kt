@@ -3,7 +3,6 @@ package xyz.chunkstories.gui.debug
 import xyz.chunkstories.api.entity.traits.TraitSight
 import xyz.chunkstories.api.entity.traits.serializable.TraitRotation
 import xyz.chunkstories.api.gui.GuiDrawer
-import xyz.chunkstories.api.util.kotlin.toVec3i
 import xyz.chunkstories.client.glfw.GLFWWindow
 import xyz.chunkstories.graphics.opengl.OpenglGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
@@ -68,7 +67,7 @@ class DebugInfoRendererHelper(ingameUI: IngameUI) {
             regionsCount++
             chunksCount += region.loadedChunks.size
         }
-        debugLine("World info : $chunksCount chunks, $regionsCount regions, ${world.allLoadedEntities.count()} entities")
+        debugLine("World info : $chunksCount chunks, $regionsCount regions, ${world.entities.count()} entities")
 
         //debugLine("#FFFF00Extra counters for debug info ${CubicChunk.chunksCounter.get()}")
 
@@ -89,7 +88,7 @@ class DebugInfoRendererHelper(ingameUI: IngameUI) {
             debugLine("ChunkHolder: $holder")
             debugLine("Chunk: $chunk")
 
-            debugLine("Controlled entity id ${playerEntity.UUID} position ${playerEntity.location} type ${playerEntity.definition.name}")
+            debugLine("Controlled entity id ${playerEntity.id} position ${playerEntity.location} type ${playerEntity.definition.name}")
 
             val lookingAt = playerEntity.traits[TraitSight::class]?.getLookingAt(10.0)
             debugLine("Looking at $lookingAt in direction ${playerEntity.traits[TraitRotation::class]?.directionLookingAt}")

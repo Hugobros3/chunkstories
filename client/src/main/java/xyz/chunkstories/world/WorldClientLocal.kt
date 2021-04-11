@@ -10,8 +10,6 @@ import java.io.File
 
 import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.sound.SoundManager
-import xyz.chunkstories.api.util.IterableIterator
-import xyz.chunkstories.api.world.WorldInfo
 import xyz.chunkstories.api.world.WorldMaster
 import xyz.chunkstories.client.ingame.IngameClientLocalHost
 import xyz.chunkstories.world.io.IOTasks
@@ -35,7 +33,7 @@ constructor(val localHost: IngameClientLocalHost, info: WorldInfo, folder: File)
     }
 
     override val players: Set<Player>
-        get() = localHost.connectedPlayers
+        get() = localHost.players
 
-    override fun getPlayerByName(playerName: String): Player? = localHost.getPlayerByName(playerName)
+    override fun getPlayerByName(playerName: String): Player? = localHost.getPlayer(playerName)
 }

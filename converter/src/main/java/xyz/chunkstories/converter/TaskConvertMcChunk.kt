@@ -10,7 +10,6 @@ import xyz.chunkstories.api.converter.MinecraftBlocksTranslator
 import xyz.chunkstories.api.converter.mappings.NonTrivialMapper
 import xyz.chunkstories.api.workers.Task
 import xyz.chunkstories.api.workers.TaskExecutor
-import xyz.chunkstories.api.world.cell.FutureCell
 import xyz.chunkstories.api.world.chunk.ChunkHolder
 import xyz.chunkstories.converter.ConverterWorkers.ConverterWorkerThread
 import xyz.chunkstories.util.concurrency.CompoundFence

@@ -10,14 +10,14 @@ import xyz.chunkstories.api.entity.traits.serializable.TraitFlyingMode
 import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.plugin.commands.Command
 import xyz.chunkstories.api.plugin.commands.CommandEmitter
-import xyz.chunkstories.api.server.Server
-import xyz.chunkstories.server.commands.ServerCommandBasic
+import xyz.chunkstories.api.server.Host
+import xyz.chunkstories.server.commands.AbstractHostCommandHandler
 
 /** Regulates flying  */
-class FlyCommand(serverConsole: Server) : ServerCommandBasic(serverConsole) {
+class FlyCommand(serverConsole: Host) : AbstractHostCommandHandler(serverConsole) {
 
     init {
-        server.pluginManager.registerCommand("fly", this)
+        host.pluginManager.registerCommand("fly", this)
     }
 
     override fun handleCommand(emitter: CommandEmitter, command: Command, arguments: Array<String>): Boolean {

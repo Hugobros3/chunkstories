@@ -36,14 +36,14 @@ import xyz.chunkstories.graphics.opengl.voxels.OpenglVoxelTexturesArray
 import xyz.chunkstories.graphics.opengl.world.OpenglWorldRenderer
 import xyz.chunkstories.graphics.opengl.world.chunks.OpenglChunkRepresentationsDispatcher
 import xyz.chunkstories.graphics.vulkan.swapchain.PerformanceCounter
-import xyz.chunkstories.voxel.VoxelTexturesSupport
+import xyz.chunkstories.block.BlockTexturesProvider
 import xyz.chunkstories.world.WorldClientCommon
 import java.awt.image.BufferedImage
 import javax.swing.JOptionPane
 
 data class OpenglSupport(val dsaSupport: Boolean)
 
-class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window: GLFWWindow) : GLFWBasedGraphicsBackend(graphicsEngine, window), VoxelTexturesSupport {
+class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window: GLFWWindow) : GLFWBasedGraphicsBackend(graphicsEngine, window), BlockTexturesProvider {
     private val capabilities: GLCapabilities
     private val requiredExtensions = setOf("GL_ARB_texture_storage", "GL_ARB_draw_buffers_blend")
     val openglSupport: OpenglSupport

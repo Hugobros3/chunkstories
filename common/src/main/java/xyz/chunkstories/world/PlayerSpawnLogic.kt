@@ -9,8 +9,8 @@ import xyz.chunkstories.api.events.player.PlayerSpawnEvent
 import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.world.WorldMaster
 
-fun WorldImplementation.figureOutWherePlayerWillSpawn(player: Player): Location {
-    val playerWorldMetadata = this.playersMetadata[player]!!
+fun WorldCommon.figureOutWherePlayerWillSpawn(player: Player): Location {
+    val playerWorldMetadata = this.playersMetadata[player.id]!!
     val savedEntity = playerWorldMetadata.savedEntity?.let { EntitySerialization.deserializeEntity(this, it) }
 
     var previousLocation: Location? = null
@@ -20,17 +20,17 @@ fun WorldImplementation.figureOutWherePlayerWillSpawn(player: Player): Location 
     }
 
     val playerSpawnEvent = PlayerSpawnEvent(player, this as WorldMaster, savedEntity, previousLocation)
-    this.gameContext.pluginManager.fireEvent(playerSpawnEvent)
+    this.gameInstance.pluginManager.fireEvent(playerSpawnEvent)
 
     //entity = playerSpawnEvent.entity
     var expectedSpawnLocation = playerSpawnEvent.spawnLocation
     if (expectedSpawnLocation == null)
-        expectedSpawnLocation = this.defaultSpawnLocation
+        expectedSpawnLocation = Location(this, this.properties.spawn)
 
     return expectedSpawnLocation
 }
 
-fun WorldImplementation.spawnPlayer(player: Player, force: Boolean = false) {
+fun WorldCommon.spawnPlayer(player: Player, force: Boolean = false) {
     if (this !is WorldMaster)
         throw UnsupportedOperationException("Only Master Worlds can do this")
 

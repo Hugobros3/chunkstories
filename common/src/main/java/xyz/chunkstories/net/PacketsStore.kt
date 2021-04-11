@@ -7,24 +7,20 @@
 package xyz.chunkstories.net
 
 import com.google.gson.Gson
-import com.google.gson.internal.LinkedTreeMap
 import org.hjson.JsonValue
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import xyz.chunkstories.api.content.Content
 import xyz.chunkstories.api.content.json.asDict
 import xyz.chunkstories.api.exceptions.net.UnknowPacketException
 import xyz.chunkstories.api.net.Packet
-import xyz.chunkstories.api.net.PacketDefinition
 import xyz.chunkstories.content.GameContentStore
 import xyz.chunkstories.content.eat
-import xyz.chunkstories.content.extractProperties
 import java.io.Reader
 import java.util.*
 
-class PacketsStore(override val parent: GameContentStore) : Content.PacketDefinitions {
-    private val byNames = HashMap<String, PacketDefinitionImplementation>()
-    private val byClasses = HashMap<Class<out Packet>, PacketDefinitionImplementation>()
+class PacketsStore(val parent: GameContentStore) {
+    private val byNames = HashMap<String, PacketDefinition>()
+    private val byClasses = HashMap<Class<out Packet>, PacketDefinition>()
 
     fun reload() {
         byNames.clear()
@@ -40,7 +36,7 @@ class PacketsStore(override val parent: GameContentStore) : Content.PacketDefini
                 val name = element.key
                 val properties = element.value.asDict ?: throw Exception("Definitions have to be dicts")
 
-                val packetDefinition = PacketDefinitionImplementation(parent, name, properties)
+                val packetDefinition = PacketDefinition(parent, name, properties)
                 byNames[name] = packetDefinition
 
                 packetDefinition.commonClass?.let { byClasses[it] = packetDefinition }
@@ -61,12 +57,12 @@ class PacketsStore(override val parent: GameContentStore) : Content.PacketDefini
         }
     }
 
-    override fun getPacketByName(name: String): PacketDefinition? {
+    fun getPacketByName(name: String): PacketDefinition? {
         return byNames[name]
     }
 
     @Throws(UnknowPacketException::class)
-    override fun getPacketFromInstance(packet: Packet): PacketDefinition {
+    fun getPacketFromInstance(packet: Packet): PacketDefinition {
         val pclass = packet.javaClass
 
         val ptd = this.byClasses[pclass]
@@ -76,7 +72,7 @@ class PacketsStore(override val parent: GameContentStore) : Content.PacketDefini
         throw UnknowPacketException(packet)
     }
 
-    override val all: Collection<PacketDefinition>
+    val all: Collection<PacketDefinition>
         get() {
             return byNames.values
         }
@@ -85,6 +81,6 @@ class PacketsStore(override val parent: GameContentStore) : Content.PacketDefini
         private val logger = LoggerFactory.getLogger("content.packets")
     }
 
-    override val logger: Logger
+    val logger: Logger
         get() = Companion.logger
 }

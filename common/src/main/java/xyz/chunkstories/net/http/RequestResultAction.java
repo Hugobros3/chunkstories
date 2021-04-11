@@ -6,6 +6,7 @@
 
 package xyz.chunkstories.net.http;
 
+@Deprecated
 public interface RequestResultAction {
 	public void action(String result);
 }

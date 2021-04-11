@@ -8,9 +8,8 @@ package xyz.chunkstories.client.net;
 
 import xyz.chunkstories.api.client.Client;
 import xyz.chunkstories.api.client.IngameClient;
-import xyz.chunkstories.api.client.LocalPlayer;
+import xyz.chunkstories.api.client.LocalIngamePlayer;
 import xyz.chunkstories.api.client.net.ClientPacketsProcessor;
-import xyz.chunkstories.api.net.Interlocutor;
 import xyz.chunkstories.content.translator.InitialContentTranslator;
 import xyz.chunkstories.net.PacketsEncoderDecoder;
 import xyz.chunkstories.world.WorldClientRemote;
@@ -58,7 +57,7 @@ public class ClientPacketsEncoderDecoder extends PacketsEncoderDecoder implement
 	}
 
 	@Override
-	public LocalPlayer getPlayer() {
+	public LocalIngamePlayer getPlayer() {
 		return getContext().getPlayer();
 	}
 

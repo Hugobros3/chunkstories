@@ -18,7 +18,7 @@ class EntitiesRepresentationsProvider(val world: WorldClientCommon) : Representa
     override fun gatherRepresentations(representationsGobbler: RepresentationsGobbler) {
         val animationTime = world.animationTime
 
-        for (entity in world.allLoadedEntities) {
+        for (entity in world.entities) {
             entity.traits[TraitRenderable::class]?.buildRepresentation(representationsGobbler)
 
             if (world.client.configuration.getBooleanValue(InternalClientOptions.debugWireframe)) {

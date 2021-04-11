@@ -8,143 +8,131 @@
 
 package xyz.chunkstories.world
 
+import com.google.gson.Gson
 import com.googlecode.concurentlocks.ReentrantReadWriteUpdateLock
-import org.joml.Vector3dc
-import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import xyz.chunkstories.api.GameContext
-import xyz.chunkstories.api.Location
+import xyz.chunkstories.api.block.BlockAdditionalData
+import xyz.chunkstories.api.block.structures.Prefab
 import xyz.chunkstories.api.content.Content
 import xyz.chunkstories.api.entity.Entity
-import xyz.chunkstories.api.events.voxel.WorldModificationCause
-import xyz.chunkstories.api.exceptions.world.ChunkNotLoadedException
-import xyz.chunkstories.api.exceptions.world.RegionNotLoadedException
-import xyz.chunkstories.api.exceptions.world.WorldException
-import xyz.chunkstories.api.math.MathUtils
-import xyz.chunkstories.api.math.MathUtils.rnd_uniformf
 import xyz.chunkstories.api.physics.Box
-import xyz.chunkstories.api.util.IterableIterator
 import xyz.chunkstories.api.util.concurrency.Fence
-import xyz.chunkstories.api.voxel.Voxel
-import xyz.chunkstories.api.voxel.VoxelSide
+import xyz.chunkstories.api.entity.EntityID
+import xyz.chunkstories.api.graphics.systems.dispatching.DecalsManager
+import xyz.chunkstories.api.math.MathUtils.ceil
+import xyz.chunkstories.api.math.MathUtils.floor
+import xyz.chunkstories.api.net.PacketWorld
+import xyz.chunkstories.api.net.packets.PacketEntity
+import xyz.chunkstories.api.particles.ParticlesManager
+import xyz.chunkstories.api.player.Player
+import xyz.chunkstories.api.server.Host
+import xyz.chunkstories.api.sound.SoundManager
 import xyz.chunkstories.api.world.*
-import xyz.chunkstories.api.world.cell.AbstractCell
 import xyz.chunkstories.api.world.cell.Cell
-import xyz.chunkstories.api.world.cell.FutureCell
-import xyz.chunkstories.api.world.chunk.ChunkCell
+import xyz.chunkstories.api.world.cell.CellData
 import xyz.chunkstories.api.world.generator.WorldGenerator
-import xyz.chunkstories.api.world.heightmap.Heightmap
+import xyz.chunkstories.content.GameContentStore
 import xyz.chunkstories.content.sandbox.UnthrustedUserContentSecurityManager
 import xyz.chunkstories.content.translator.AbstractContentTranslator
 import xyz.chunkstories.content.translator.IncompatibleContentException
 import xyz.chunkstories.content.translator.InitialContentTranslator
 import xyz.chunkstories.content.translator.LoadedContentTranslator
-import xyz.chunkstories.entity.EntityWorldIterator
 import xyz.chunkstories.util.alias
 import xyz.chunkstories.util.concurrency.CompoundFence
 import xyz.chunkstories.world.chunk.ChunksStorage
 import xyz.chunkstories.world.heightmap.HeightmapsStorage
 import xyz.chunkstories.world.io.IOTasks
-import xyz.chunkstories.world.iterators.BlocksInBoundingBoxIterator
 import xyz.chunkstories.world.logic.WorldLogicThread
 import xyz.chunkstories.world.region.RegionsStorage
 import java.io.File
 import java.io.IOException
+import java.util.*
 import java.util.concurrent.locks.ReadWriteLock
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
-abstract class WorldImplementation @Throws(WorldLoadingException::class)
-constructor(override val gameContext: GameContext, final override val worldInfo: WorldInfo, initialContentTranslator: AbstractContentTranslator?, val folderFile: File?) : World {
-    final override val contentTranslator: AbstractContentTranslator
+const val TPS = 60
 
-    final override val generator: WorldGenerator
+class WorldLoadingException(message: String, cause: Throwable? = null) : Exception(message, cause)
 
-    abstract val ioHandler: IOTasks
-    final override val gameLogic: WorldLogicThread
+/*if (this is WorldMaster) {
+    // Check for an existing content translator
+    val contentTranslatorFile = File(folder!!.path + "/content_mappings.dat")
+    if (contentTranslatorFile.exists()) {
+        contentTranslator = LoadedContentTranslator.loadFromFile(gameInstance.content as GameContentStore, contentTranslatorFile)
+    } else {
+        // Build a new content translator
+        contentTranslator = InitialContentTranslator(gameInstance.content)
+    }
 
-    //TODO delete
-    override val maxHeight: Int
-        get() = worldInfo.size.heightInChunks * 32
-    override val sizeInChunks: Int = worldInfo.size.sizeInChunks
-    override val worldSize: Double = (worldInfo.size.sizeInChunks * 32).toDouble()
+    this.contentTranslator.save(File(this.folderPath + "/content_mappings.dat"))
+} else {
+    // Slave world initialization
+    if (initialContentTranslator == null) {
+        throw WorldLoadingException("No ContentTranslator providen and none could be found on disk since this is a Slave World.")
+    } else {
+        this.contentTranslator = initialContentTranslator
+    }
+}
+*/
+class This<T: Any> {
+    private lateinit var t: T;
+    fun get() = t
+    fun set(t: T) {this.t = t}
+}
 
-    final override val chunksManager: ChunksStorage
-    final override val regionsManager: RegionsStorage
-    final override val heightmapsManager: HeightmapsStorage
+interface WorldCommon: World {
+    val entitiesLock: ReadWriteLock
+    val ioHandler: IOTasks
+    val contentTranslator: AbstractContentTranslator
 
-    //TODO store the entities in a smarter way ?
-    protected val entities: WorldEntitiesHolder
+    override val chunksManager: ChunksStorage
+    override val regionsManager: RegionsStorage
+    override val heightmapsManager: HeightmapsStorage
+}
+
+class WorldImplementation constructor(
+        val this_: This<WorldCommon>,
+        override val gameInstance: GameInstance,
+        override var properties: World.Properties,
+        var internalData: WorldInternalData,
+        override val contentTranslator: AbstractContentTranslator)
+    : WorldCommon {
+
+    override val generator: WorldGenerator
+
+    override val ioHandler by lazy { IOTasks(this_.get()) }
+    val gameLogic: WorldLogicThread
+
+    override val chunksManager by lazy { ChunksStorage(this_.get()) }
+    override val regionsManager by lazy { RegionsStorage(this_.get()) }
+    override val heightmapsManager by lazy { HeightmapsStorage(this_.get()) }
+
     //TODO go through the code & change write locks into update locks where possible
-    var entitiesLock: ReadWriteLock = ReentrantReadWriteUpdateLock()
+    override val entitiesLock: ReadWriteLock = ReentrantReadWriteUpdateLock()
+    val entities_ = mutableListOf<Entity>()
 
-    final override val collisionsManager: WorldCollisionsManager
+    override val collisionsManager by lazy { DefaultWorldCollisionsManager(this_.get()) }
 
-    private val internalData: WorldInternalData =
-            if (this is WorldMaster) loadInternalDataFromDisk(File("$folderPath/$worldInternalDataFilename"))
-            else WorldInternalData()
+    val internalDataLock = ReentrantLock()
 
     val playersMetadata = WorldPlayersMetadata(this)
 
-    // The world age, also tick counter. Can count for billions of real-world
-    // time so we are not in trouble.
-    // Let's say that the game world runs at 60Ticks per second
-    final override var ticksElapsed: Long by alias(internalData::ticksCounter)
+    override var ticksElapsed: Long by alias(internalData::ticksCounter)
 
-    // Timecycle counter
-    final override var sunCycle: Int by alias(internalData::sunCycleTime)
-    final override var weather: Float by alias(internalData::weather)
+    val content: Content
+        get() = gameInstance.content
 
-    override var defaultSpawnLocation: Location
-        get() = Location(this, internalData.spawnLocation)
-        set(value) {
-            internalData.spawnLocation.set(value)
-        }
+    override var sky: World.Sky
+        get() = TODO("Not yet implemented")
+        set(value) {}
 
-    val folderPath: String
-        get() = folderFile?.absolutePath ?: throw Exception("This is not a WorldMaster !")
-
-    override val allLoadedEntities: IterableIterator<Entity>
-        get() = EntityWorldIterator(entities.iterator())
-
-
-    final override val content: Content
-        get() = gameContext.content
+    override val entities
+        get() = entities_.asSequence()
 
     init {
         try {
-            // Create holders for the world data
-            this.chunksManager = ChunksStorage(this)
-            this.regionsManager = RegionsStorage(this)
-            this.heightmapsManager = HeightmapsStorage(this)
-
-            // And for the citizens
-            this.entities = WorldEntitiesHolder(this)
-
-            if (this is WorldMaster) {
-
-                // Check for an existing content translator
-                val contentTranslatorFile = File(folderFile!!.path + "/content_mappings.dat")
-                if (contentTranslatorFile.exists()) {
-                    contentTranslator = LoadedContentTranslator.loadFromFile(gameContext.content,
-                            contentTranslatorFile)
-                } else {
-                    // Build a new content translator
-                    contentTranslator = InitialContentTranslator(gameContext.content)
-                }
-
-                this.contentTranslator.save(File(this.folderPath + "/content_mappings.dat"))
-            } else {
-                // Slave world initialization
-                if (initialContentTranslator == null) {
-                    throw WorldLoadingException("No ContentTranslator providen and none could be found on disk since this is a Slave World.")
-                } else {
-                    this.contentTranslator = initialContentTranslator
-                }
-            }
-
-            this.generator = gameContext.content.generators.getWorldGenerator(worldInfo.generatorName).createForWorld(this)
-            this.collisionsManager = DefaultWorldCollisionsManager(this)
+            this.generator = gameInstance.content.generators.getWorldGenerator(properties.generator).createForWorld(this)
 
             // Start the world logic thread
             this.gameLogic = WorldLogicThread(this, UnthrustedUserContentSecurityManager())
@@ -163,345 +151,279 @@ constructor(override val gameContext: GameContext, final override val worldInfo:
         return gameLogic.stopLogicThread()
     }
 
-    override fun addEntity(entity: Entity) {
+    override fun addEntity(entity: Entity): EntityID {
         if (entity.world != this)
             throw Exception("This entity was not created for this world")
 
-        // Assign an UUID to entities lacking one
-        if (this is WorldMaster && entity.UUID == -1L) {
-            val nextUUID = nextEntityId()
-            entity.UUID = nextUUID
-        }
-
-        val existingEntity = this.getEntityByUUID(entity.UUID)
+        val existingEntity = this.getEntity(entity.id)
         if (existingEntity != null) {
-            logger.warn("Tried to add an entity twice (duplicated UUID ${entity.UUID}), new entity $entity conflits with $existingEntity")
-            //throw java.lang.Exception("Added an entity twice " + check + " conflits with " + entity + " UUID: " + entity.UUID)
-            return
+            logger.warn("Tried to add an entity twice (duplicated id ${entity.id}), new entity $entity conflits with $existingEntity")
+            return -1
         }
-        // Add it to the world
 
-        entity.traitLocation.onSpawn()
-
-        this.entities.insertEntity(entity)
+        entities_.add(entity)
+        return entity.id
     }
 
-    override fun removeEntity(entity: Entity): Boolean {
+    override fun removeEntity(id: EntityID): Boolean {
         try {
             entitiesLock.writeLock().lock()
-            entity.traitLocation.onRemoval()
-
-            // Actually removes it from the world list
-            removeEntityFromList(entity)
-
-            return true
+            val entity = getEntity(id) ?: return false
+            entity.traitLocation.entity.subscribers.toList().forEach { subscriber ->
+                subscriber.pushPacket(PacketEntity.createKillerPacket(entity.traitLocation.entity))
+            }
+            return entities_.remove(entity)
         } finally {
             entitiesLock.writeLock().unlock()
         }
     }
 
-    override fun removeEntityByUUID(uuid: Long): Boolean {
-        val entityFound = this.getEntityByUUID(uuid)
-
-        return if (entityFound != null)
-            removeEntity(entityFound) else false
-    }
-
-    /**
-     * Internal methods that actually removes the entity from the list after having
-     * removed it's reference from elsewere.
-     *
-     * @return
-     */
-    fun removeEntityFromList(entity: Entity): Boolean {
-        // Remove the entity from the world first
-        return entities.removeEntity(entity)
-    }
-
-    open fun tick() {
-        // Iterates over every entity
-        try {
-            entitiesLock.writeLock().lock()
-            val iter = this.allLoadedEntities
-            var entity: Entity
-            while (iter.hasNext()) {
-                entity = iter.next()
+    fun tick() {
+        entitiesLock.writeLock().withLock {
+            for (entity in entities_) {
                 entity.tick()
             }
-        } finally {
-            entitiesLock.writeLock().unlock()
         }
 
-        // Increase the ticks counter
-        ticksElapsed++
-
+        // TODO probably belongs in game content
         // Time cycle & weather change
-        if (this is WorldMaster && ticksElapsed % 3L == 0L) {
-            val increment = internalData.dayNightCycleSpeed
-            sunCycle = (sunCycle + increment) % 24000
+        /*if (this is WorldMaster) internalDataLock.withLock {
+            if(internalData.dayNightCycleDuration != 0.0) {
+                val increment = (1.0 / TPS) / internalData.dayNightCycleDuration
+                internalData.sky.timeOfDay += increment.toFloat()
+            }
 
             if (internalData.varyWeather) {
-                val diff: Float = (rnd_uniformf() - 0.5f) * 0.0005f * rnd_uniformf()
-                val rslt = MathUtils.clampf(internalData.weather + diff, 0.0f, 1.0f)
-                internalData.weather = rslt
+                val randomFuzz1: Float = (rnd_uniformf() - 0.5f) * 0.0005f * rnd_uniformf()
+                val randomFuzz2: Float = (rnd_uniformf() - 0.5f) * 0.0005f * rnd_uniformf()
+
+                internalData.sky.overcast = MathUtils.clampf(internalData.sky.overcast + randomFuzz1, 0.0f, 1.0f)
+                internalData.sky.raining = MathUtils.clampf(internalData.sky.raining + randomFuzz2, 0.0f, 1.0f)
             }
-        }
+        }*/
+
+        ticksElapsed++
     }
 
-    override fun getEntitiesInBox(box: Box): World.NearEntitiesIterator {
-        return entities.getEntitiesInBox(box)
+    override fun getEntitiesInBox(box: Box): Sequence<Entity> {
+        return entities.asSequence().filter { it.getBoundingBox().collidesWith(box) }
     }
 
-    override fun getEntityByUUID(entityID: Long): Entity? {
-        return entities.getEntityByUUID(entityID)
+    override fun getEntity(id: EntityID): Entity? {
+        return entities_.find { it.id == id }
     }
 
-    @Throws(WorldException::class)
-    override fun tryPeek(location: Vector3dc): ChunkCell {
-        return tryPeek(location.x().toInt(), location.y().toInt(), location.z().toInt())
-    }
-
-    /** Fancy getter method that throws exceptions when the world isn't loaded  */
-    @Throws(WorldException::class)
-    override fun tryPeek(x: Int, y: Int, z: Int): ChunkCell {
-        var x = x
-        var y = y
-        var z = z
-        x = sanitizeHorizontalCoordinate(x)
-        y = sanitizeVerticalCoordinate(y)
-        z = sanitizeHorizontalCoordinate(z)
-
-        val region = regionsManager.getRegionWorldCoordinates(x, y, z)
-                ?: throw RegionNotLoadedException(this, x / 256, y / 256, z / 256)
-
-        val chunk = region.getChunk(x / 32 % 8, y / 32 % 8, z / 32 % 8)
-                ?: throw ChunkNotLoadedException(this, region, x / 32 % 8, y / 32 % 8, z / 32 % 8)
-
-        return chunk.peek(x, y, z)
-    }
-
-    override fun peek(x: Int, y: Int, z: Int): WorldCell {
-        var x = x
-        var y = y
-        var z = z
-
-        x = sanitizeHorizontalCoordinate(x)
-        y = sanitizeVerticalCoordinate(y)
-        z = sanitizeHorizontalCoordinate(z)
-
-        val region = regionsManager.getRegionWorldCoordinates(x, y, z)
-                ?: return UnloadedWorldCell(x, y, z, this.gameContext.content.voxels.air, 0, 0, 0)
-
-        val chunk = region.getChunk(x / 32 % 8, y / 32 % 8, z / 32 % 8)
-                ?: return UnloadedWorldCell(x, y, z, this.gameContext.content.voxels.air, 0, 0, 0)
-
-        return chunk.peek(x, y, z)
-    }
-
-    /** Safety: provide an alternative 'fake' getCell if the proper one isn't loaded  */
-    internal inner class UnloadedWorldCell(x: Int, y: Int, z: Int, voxel: Voxel, meta: Int, blocklight: Int, sunlight: Int) : AbstractCell(x, y, z, voxel, meta, blocklight, sunlight), WorldCell {
-        override val world: World
-            get() = this@WorldImplementation
-
-        init {
-
-            val groundHeight = heightmapsManager.getHeightAtWorldCoordinates(x, z)
-            if (groundHeight < y && groundHeight != Heightmap.NO_DATA)
-                this.sunlight = 15
-        }
-
-        override fun getNeightbor(side_int: Int): Cell {
-            val side = VoxelSide.values()[side_int]
-            return peek(x + side.dx, y + side.dy, z + side.dz)
-        }
-    }
-
-    override fun peek(location: Vector3dc): WorldCell {
-        return peek(location.x().toInt(), location.y().toInt(), location.z().toInt())
-    }
-
-    override fun peekSimple(x: Int, y: Int, z: Int): Voxel {
-        var x = x
-        var y = y
-        var z = z
-        x = sanitizeHorizontalCoordinate(x)
-        y = sanitizeVerticalCoordinate(y)
-        z = sanitizeHorizontalCoordinate(z)
+    override fun getCell(x: Int, y: Int, z: Int) = getCellMut(x, y, z)
+    override fun getCellMut(x: Int, y: Int, z: Int): MutableWorldCell? {
+        val x = sanitizeHorizontalCoordinate(x)
+        val y = sanitizeVerticalCoordinate(y)
+        val z = sanitizeHorizontalCoordinate(z)
 
         val chunk = chunksManager.getChunkWorldCoordinates(x, y, z)
-        return if (chunk == null)
-            gameContext.content.voxels.air
-        else
-            chunk.peekSimple(x, y, z)
+        return chunk?.getCellMut(x, y, z)
     }
 
-    override fun peekRaw(x: Int, y: Int, z: Int): Int {
-        var x = x
-        var y = y
-        var z = z
-        x = sanitizeHorizontalCoordinate(x)
-        y = sanitizeVerticalCoordinate(y)
-        z = sanitizeHorizontalCoordinate(z)
+    override fun setCellData(x: Int, y: Int, z: Int, data: CellData): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override fun pastePrefab(x: Int, y: Int, z: Int, prefab: Prefab): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    /*override fun peekRaw(x: Int, y: Int, z: Int): Int {
+        val x = sanitizeHorizontalCoordinate(x)
+        val y = sanitizeVerticalCoordinate(y)
+        val z = sanitizeHorizontalCoordinate(z)
 
         val chunk = chunksManager.getChunkWorldCoordinates(x, y, z)
         return chunk?.peekRaw(x, y, z) ?: 0x00000000
     }
 
-    @Throws(WorldException::class)
-    override fun poke(x: Int, y: Int, z: Int, voxel: Voxel?, sunlight: Int, blocklight: Int, metadata: Int,
-                      cause: WorldModificationCause?): ChunkCell {
-        var x = x
-        var y = y
-        var z = z
-        x = sanitizeHorizontalCoordinate(x)
-        y = sanitizeVerticalCoordinate(y)
-        z = sanitizeHorizontalCoordinate(z)
-
-        val region = regionsManager.getRegionWorldCoordinates(x, y, z)
-                ?: throw RegionNotLoadedException(this, x / 256, y / 256, z / 256)
-
-        val chunk = region.getChunk(x / 32 % 8, y / 32 % 8, z / 32 % 8)
-                ?: throw ChunkNotLoadedException(this, region, x / 32 % 8, y / 32 % 8, z / 32 % 8)
-
-        return chunk.poke(x, y, z, voxel, sunlight, blocklight, metadata, cause)
-    }
-
-    @Throws(WorldException::class)
-    override fun poke(future: FutureCell, cause: WorldModificationCause?): ChunkCell {
-        return poke(future.x, future.y, future.z, future.voxel, future.sunlight,
-                future.blocklight, future.metaData, cause)
-    }
-
-    override fun pokeSimple(x: Int, y: Int, z: Int, voxel: Voxel?, sunlight: Int, blocklight: Int, metadata: Int) {
-        var x = x
-        var y = y
-        var z = z
-        x = sanitizeHorizontalCoordinate(x)
-        y = sanitizeVerticalCoordinate(y)
-        z = sanitizeHorizontalCoordinate(z)
+    override fun pokeRaw(x: Int, y: Int, z: Int, data: Int) {
+        val x = sanitizeHorizontalCoordinate(x)
+        val y = sanitizeVerticalCoordinate(y)
+        val z = sanitizeHorizontalCoordinate(z)
 
         val chunk = chunksManager.getChunkWorldCoordinates(x, y, z)
-        chunk?.pokeSimple(x, y, z, voxel, sunlight, blocklight, metadata)
-    }
+        chunk?.pokeRaw(x, y, z, data)
+    }*/
 
-    override fun pokeSimple(future: FutureCell) {
-        pokeSimple(future.x, future.y, future.z, future.voxel, future.sunlight,
-                future.blocklight, future.metaData)
-    }
+    override fun getCellsInBox(box: Box): Sequence<Cell> {
+        val minx = floor(box.min.x)
+        val miny = floor(box.min.y)
+        val minz = floor(box.min.z)
 
-    override fun pokeSimpleSilently(x: Int, y: Int, z: Int, voxel: Voxel?, sunlight: Int, blocklight: Int, metadata: Int) {
-        var x = x
-        var y = y
-        var z = z
-        x = sanitizeHorizontalCoordinate(x)
-        y = sanitizeVerticalCoordinate(y)
-        z = sanitizeHorizontalCoordinate(z)
+        val maxx = ceil(box.max.x)
+        val maxy = ceil(box.max.y)
+        val maxz = ceil(box.max.z)
 
-        val chunk = chunksManager.getChunkWorldCoordinates(x, y, z)
-        chunk?.pokeSimpleSilently(x, y, z, voxel, sunlight, blocklight, metadata)
-    }
-
-    override fun pokeSimpleSilently(future: FutureCell) {
-        pokeSimpleSilently(future.x, future.y, future.z, future.voxel, future.sunlight,
-                future.blocklight, future.metaData)
-    }
-
-    override fun pokeRaw(x: Int, y: Int, z: Int, raw_data: Int) {
-        var x = x
-        var y = y
-        var z = z
-        x = sanitizeHorizontalCoordinate(x)
-        y = sanitizeVerticalCoordinate(y)
-        z = sanitizeHorizontalCoordinate(z)
-
-        val chunk = chunksManager.getChunkWorldCoordinates(x, y, z)
-        chunk?.pokeRaw(x, y, z, raw_data)
-    }
-
-    override fun pokeRawSilently(x: Int, y: Int, z: Int, raw_data: Int) {
-        var x = x
-        var y = y
-        var z = z
-        x = sanitizeHorizontalCoordinate(x)
-        y = sanitizeVerticalCoordinate(y)
-        z = sanitizeHorizontalCoordinate(z)
-
-        val chunk = chunksManager.getChunkWorldCoordinates(x, y, z)
-        chunk?.pokeRawSilently(x, y, z, raw_data)
-    }
-
-    override fun getVoxelsWithin(boundingBox: Box): IterableIterator<Cell> {
-        return BlocksInBoundingBoxIterator(this, boundingBox)
-    }
-
-    /** Requests a full serialization of the world  */
-    fun saveEverything(): Fence {
-        val ioOperationsFence = CompoundFence()
-
-        logger.info("Saving all parts of world " + worldInfo.name)
-        ioOperationsFence.add(regionsManager.saveAll())
-        //ioOperationsFence.add(regionsSummariesHolder.saveAllLoadedSummaries())
-
-        saveInternalData()
-
-        return ioOperationsFence
-    }
-
-    val entityUUIDLock = ReentrantLock()
-    fun nextEntityId(): Long {
-        entityUUIDLock.withLock {
-            return internalData.nextEntityId++
+        return (minx..maxx).asSequence().flatMap { x ->
+            (miny..maxy).asSequence().flatMap { y ->
+                (minz..maxz).asSequence().mapNotNull { z -> getCell(x, y, z) }
+            }
         }
     }
 
-    //TODO move to worldsize
-    internal fun sanitizeHorizontalCoordinate(coordinate: Int): Int {
-        var coordinate = coordinate
-        coordinate %= (sizeInChunks * 32)
-        if (coordinate < 0)
-            coordinate += sizeInChunks * 32
-        return coordinate
-    }
+    override val decalsManager: DecalsManager
+        get() = TODO("Not yet implemented")
+    override val particlesManager: ParticlesManager
+        get() = TODO("Not yet implemented")
+    override val soundManager: SoundManager
+        get() = TODO("Not yet implemented")
 
-    //TODO move to worldsize
-    internal fun sanitizeVerticalCoordinate(coordinate: Int): Int {
-        var coordinate = coordinate
-        if (coordinate < 0)
-            coordinate = 0
-        if (coordinate >= worldInfo.size.heightInChunks * 32)
-            coordinate = worldInfo.size.heightInChunks * 32 - 1
-        return coordinate
-    }
-
-
-    open fun destroy() {
-        // Stop the game logic first
+    fun destroy() {
         gameLogic.stopLogicThread().traverse()
-
-        //this.regionsStorage!!.destroy()
-        //this.regionsSummariesHolder.destroy()
-
-        // Always, ALWAYS save this.
-        if (this is WorldMaster) {
-            saveInternalData()
-        }
-
-        // Kill the IO handler
         ioHandler.kill()
     }
 
-    private fun saveInternalData() {
-        internalData.writeToDisk(File(this.folderPath + "/" + worldInternalDataFilename))
-    }
-
-    fun logger(): Logger {
-        return logger
-    }
+    override val logger = LoggerFactory.getLogger("world")
 
     companion object {
-        private val logger = LoggerFactory.getLogger("world")
-
-        val worldInfoFilename = "worldInfo.json"
-        val worldInternalDataFilename = "internalData.json"
+        val worldPropertiesFilename = "worldInfo.json"
     }
+
+    override fun hashCode(): Int {
+        throw UnsupportedOperationException()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        throw UnsupportedOperationException()
+    }
+}
+
+/** This garbage is because Kotlin doesn't have intersection types */
+interface WorldCommonMaster: WorldCommon, WorldMaster
+
+class WorldMasterImplementation(
+        gameInstance: GameInstance,
+        properties: World.Properties,
+        internalData: WorldInternalData,
+        contentTranslator: AbstractContentTranslator,
+        internal val world_: This<WorldCommon>,
+        internal val super_: WorldImplementation = WorldImplementation(world_, gameInstance, properties, internalData, contentTranslator)
+        ): WorldCommon by super_, WorldMaster, WorldCommonMaster {
+    override val gameInstance: Host
+        get() = super_.gameInstance as Host
+
+    override val folderPath: String
+        get() = TODO("Not yet implemented")
+
+    override fun BlockAdditionalData.pushChanges() {
+        TODO("Not yet implemented")
+    }
+
+    override fun Player.startPlayingAs(entity: Entity) {
+        TODO("Not yet implemented")
+    }
+
+    override fun Player.startSpectating() {
+        TODO("Not yet implemented")
+    }
+
+    override fun Player.pushPacket(packet: PacketWorld) {
+        TODO("Not yet implemented")
+    }
+
+    override val players: Sequence<Player>
+        get() = TODO("Not yet implemented")
+
+    override fun addEntity(entity: Entity): EntityID {
+        if (entity.id == -1L) {
+            val nextUUID = super_.internalDataLock.withLock { super_.internalData.nextEntityId++ }
+            entity.id = nextUUID
+        }
+        return super_.addEntity(entity)
+    }
+
+    fun saveEverything(): Fence {
+        val fence = CompoundFence()
+        logger.info("Saving all parts of world " + properties.name)
+        fence.add(super_.regionsManager.saveAll())
+        saveInternalData()
+        return fence
+    }
+
+    fun destroy() {
+        super_.destroy()
+        saveInternalData()
+    }
+}
+
+fun newMasterWorldImplementation(world_: This<WorldCommon>, gameInstance: GameInstance, folder: File): WorldMasterImplementation {
+    if (!folder.exists() || !folder.isDirectory)
+        throw WorldLoadingException("The folder $folder doesn't exist !")
+
+    val contentTranslatorFile = File(folder.path + "/content_mappings.dat")
+    val contentTranslator: AbstractContentTranslator
+    if (contentTranslatorFile.exists()) {
+        contentTranslator = LoadedContentTranslator.loadFromFile(gameInstance.content as GameContentStore, contentTranslatorFile)
+    } else {
+        contentTranslator = InitialContentTranslator(gameInstance.content)
+        contentTranslator.save(File(folder.path + "/content_mappings.dat"))
+    }
+
+    val worldInfoFile = File(folder.path + "/" + WorldImplementation.worldPropertiesFilename)
+    if (!worldInfoFile.exists())
+        throw WorldLoadingException("The folder $folder doesn't contain a ${WorldImplementation.worldPropertiesFilename} file !")
+
+    val properties = deserializeWorldInfo(worldInfoFile)
+    val internalData = tryLoadWorldInternalData(folder)
+
+    return WorldMasterImplementation(gameInstance, properties, internalData, contentTranslator, world_)
+}
+
+class EvenBetterWorld(world_: This<WorldCommon>, gameInstance: GameInstance, folder: File): WorldCommonMaster by newMasterWorldImplementation(world_, gameInstance, folder)
+fun createEBW(gameInstance: GameInstance, folder: File): EvenBetterWorld {
+    val this_ = This<WorldCommon>()
+    val world = EvenBetterWorld(this_, gameInstance, folder)
+    this_.set(world)
+    return world
+}
+
+fun initializeWorld(folder: File, properties: World.Properties) {
+    folder.mkdirs()
+    val worldInfoFile = File(folder.path + "/" + WorldImplementation.worldPropertiesFilename)
+    worldInfoFile.writeText(serializeWorldInfo(properties, true))
+
+    val internalData = WorldInternalData()
+    val seedAsByteArray = (properties.seed + "_spawn").toByteArray()
+    var i = 0
+    var processedSeed: Long = 0
+    while (i < 512) {
+        for (j in 0..7)
+            processedSeed = processedSeed xor ((seedAsByteArray[(i * 3 + j) % seedAsByteArray.size].toLong().shl(j * 8)))
+        i += 8
+    }
+
+    val random = Random(processedSeed)
+    val randomWeather = random.nextFloat()
+    internalData.sky.overcast = randomWeather * randomWeather // bias towards sunny
+
+    /*val spawnCoordinateX = random.nextInt(properties.size.sizeInChunks * 32)
+    val spawnCoordinateZ = random.nextInt(properties.size.sizeInChunks * 32)
+    properties.spawn.set(spawnCoordinateX + 0.5, 0.0, spawnCoordinateZ + 0.5)*/
+
+    val internalDataFile = File(folder.path + "/" + worldInternalDataFilename)
+    val gson = Gson()
+    val contents = gson.toJson(internalData)
+    internalDataFile.writeText(contents)
+}
+
+//TODO move to worldsize
+internal inline fun World.sanitizeHorizontalCoordinate(coordinate: Int): Int {
+    var coordinate = coordinate
+    coordinate %= (properties.size.squareSizeInBlocks)
+    if (coordinate < 0)
+        coordinate += properties.size.squareSizeInBlocks
+    return coordinate
+}
+
+internal inline fun World.sanitizeVerticalCoordinate(coordinate: Int): Int {
+    var coordinate = coordinate
+    if (coordinate < 0)
+        coordinate = 0
+    if (coordinate >= properties.size.squareSizeInBlocks)
+        coordinate = properties.size.squareSizeInBlocks - 1
+    return coordinate
 }

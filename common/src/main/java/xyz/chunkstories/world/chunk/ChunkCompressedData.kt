@@ -9,19 +9,18 @@ import xyz.chunkstories.api.content.json.toJson
 import xyz.chunkstories.api.entity.EntitySerialization
 import java.io.DataInputStream
 import java.io.DataOutputStream
-import java.nio.ByteBuffer
 import net.jpountz.lz4.LZ4Exception
 import xyz.chunkstories.api.entity.traits.TraitDontSave
-
 
 sealed class ChunkCompressedData(internal val entities: Json.Array ) {
 
     class Air(entities: Json.Array) : ChunkCompressedData(entities)
 
-    class NonAir constructor(internal val voxelData: ByteArray, internal val voxelExtendedData: Json.Array, entities: Json.Array) : ChunkCompressedData(entities) {
+    // TODO be consistent wrt to extracting stuff or keeping it compressed
+    class NonAir constructor(internal val blockData: ByteArray, internal val blocksADditionalAdata: Json.Array, entities: Json.Array) : ChunkCompressedData(entities) {
         fun extractVoxelData() : IntArray {
-            val f4st = MemoryUtil.memAlloc(voxelData.size)
-            f4st.put(voxelData)
+            val f4st = MemoryUtil.memAlloc(blockData.size)
+            f4st.put(blockData)
             f4st.flip()
 
             val t3mp = MemoryUtil.memAlloc(32 * 32 * 32 * 4)
@@ -44,7 +43,7 @@ sealed class ChunkCompressedData(internal val entities: Json.Array ) {
         }
 
         fun extractVoxelExtendedData() : Json.Array {
-            return voxelExtendedData
+            return blocksADditionalAdata
         }
     }
 
@@ -80,14 +79,14 @@ sealed class ChunkCompressedData(internal val entities: Json.Array ) {
         fun compressChunkData(chunk: ChunkImplementation): ChunkCompressedData {
             val compressedEntityData = Json.Array(chunk.entitiesWithinChunk.filter { it.traits[TraitDontSave::class] == null }.map { EntitySerialization.serializeEntity(it) })
 
-            val compressedVoxelData = chunk.voxelDataArray?.let{ compressVoxelData(it) } ?: return Air(compressedEntityData)
+            val compressedVoxelData = chunk.blockData?.let{ compressVoxelData(it) } ?: return Air(compressedEntityData)
 
-            val compressedExtendedData = Json.Array(chunk.allCellComponents.values.map { Json.Dict(mapOf(
-                    "index" to Json.Value.Number(it.index.toDouble()),
-                    "components" to Json.Array(it.map.mapNotNull { cellComponentEntry ->
-                        val serialized = cellComponentEntry.value.serialize() ?: return@mapNotNull null
+            val compressedExtendedData = Json.Array(chunk.allCellComponents.map { (key, value) -> Json.Dict(mapOf(
+                    "index" to Json.Value.Number(key.toDouble()),
+                    "components" to Json.Array(value.mapNotNull { additionalBlockData ->
+                        val serialized = additionalBlockData.serialize() ?: return@mapNotNull null
                         Json.Dict(mapOf(
-                            "name" to Json.Value.Text(cellComponentEntry.key),
+                            "name" to Json.Value.Text(additionalBlockData.serializationName),
                             "data" to serialized
                     )) })
             )) })
@@ -98,14 +97,14 @@ sealed class ChunkCompressedData(internal val entities: Json.Array ) {
 
         fun fromBytes(dis: DataInputStream): ChunkCompressedData {
             val type = dis.read()
-            if(type == 0) {
-                return Air(dis.readUTF().toJson().asArray!!)
+            return if(type == 0) {
+                Air(dis.readUTF().toJson().asArray!!)
             } else {
                 val compressedVoxelDataSize = dis.readInt()
                 val compressedVoxelData = ByteArray(compressedVoxelDataSize)
                 dis.readFully(compressedVoxelData)
 
-                return NonAir(compressedVoxelData, dis.readUTF().toJson().asArray!!,  dis.readUTF().toJson().asArray!!)
+                NonAir(compressedVoxelData, dis.readUTF().toJson().asArray!!,  dis.readUTF().toJson().asArray!!)
             }
         }
     }
@@ -117,10 +116,10 @@ sealed class ChunkCompressedData(internal val entities: Json.Array ) {
             dos.write(1)
 
         if(this is NonAir) {
-            dos.writeInt(this.voxelData.size)
-            dos.write(this.voxelData)
+            dos.writeInt(this.blockData.size)
+            dos.write(this.blockData)
 
-            dos.writeUTF(this.voxelExtendedData.stringSerialize())
+            dos.writeUTF(this.blocksADditionalAdata.stringSerialize())
         }
 
         dos.writeUTF(this.entities.stringSerialize())
@@ -130,6 +129,6 @@ sealed class ChunkCompressedData(internal val entities: Json.Array ) {
     fun stripEntities(): ChunkCompressedData =
         when(this) {
             is Air -> Air(Json.Array(emptyList()))
-            is NonAir -> NonAir(voxelData, voxelExtendedData, Json.Array(emptyList()))
+            is NonAir -> NonAir(blockData, blocksADditionalAdata, Json.Array(emptyList()))
         }
 }

@@ -17,6 +17,7 @@ import java.util.concurrent.Semaphore;
 import javax.net.ssl.HttpsURLConnection;
 
 /** Does a GET request and wraps the result into a boilerplate-less fashion */
+@Deprecated
 public class SimplePostRequest extends Thread {
 
 	final String url;

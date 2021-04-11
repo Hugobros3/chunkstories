@@ -1,6 +1,6 @@
 package xyz.chunkstories.input
 
-import xyz.chunkstories.api.GameContext
+import xyz.chunkstories.Engine
 import xyz.chunkstories.api.content.Asset
 import xyz.chunkstories.api.input.Input
 import xyz.chunkstories.api.input.InputsManager
@@ -14,12 +14,12 @@ abstract class CommonInputsManager : InputsManager {
     override val allInputs: Collection<Input>
         get() = inputsList
 
-    abstract val context: GameContext
+    abstract val context: Engine
 
     fun reload() {
         val inputs = mutableListOf<AbstractInput>()
 
-        for (asset in context.content.modsManager.getAllAssetsByExtension("inputs")) {
+        for (asset in context.modsManager.getAllAssetsByExtension("inputs")) {
             loadKeyBindsFile(asset, inputs)
         }
 

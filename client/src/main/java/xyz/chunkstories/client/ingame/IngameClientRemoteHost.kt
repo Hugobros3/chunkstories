@@ -12,7 +12,7 @@ fun ClientImplementation.connectToRemoteWorld(serverAddress: String, port: Int) 
 }
 
 class IngameClientRemoteHost(client: ClientImplementation, val connection: ServerConnection, worldInitializer: (IngameClientImplementation) -> WorldClientRemote) : IngameClientImplementation(client, worldInitializer) {
-    override val world: WorldClientRemote = super.internalWorld as WorldClientRemote
+    override val world: WorldClientRemote = super.world_ as WorldClientRemote
     override val pluginManager: DefaultPluginManager
         get() = super.internalPluginManager
 

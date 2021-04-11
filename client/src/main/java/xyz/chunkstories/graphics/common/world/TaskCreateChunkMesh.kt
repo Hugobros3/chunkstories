@@ -7,11 +7,11 @@ import org.lwjgl.system.MemoryUtil
 import xyz.chunkstories.api.graphics.MeshMaterial
 import xyz.chunkstories.api.graphics.representation.Model
 import xyz.chunkstories.api.util.kotlin.getNormalMatrix
-import xyz.chunkstories.api.voxel.ChunkMeshRenderingInterface
-import xyz.chunkstories.api.voxel.Voxel
-import xyz.chunkstories.api.voxel.VoxelFormat
-import xyz.chunkstories.api.voxel.VoxelSide
-import xyz.chunkstories.api.voxel.textures.VoxelTexture
+import xyz.chunkstories.api.block.ChunkMeshRenderingInterface
+import xyz.chunkstories.api.block.BlockType
+import xyz.chunkstories.block.VoxelFormat
+import xyz.chunkstories.api.block.BlockSide
+import xyz.chunkstories.api.block.textures.BlockTexture
 import xyz.chunkstories.api.workers.TaskExecutor
 import xyz.chunkstories.api.world.chunk.ChunkHolder
 import xyz.chunkstories.graphics.common.Cleanable
@@ -26,13 +26,13 @@ import java.util.*
 
 abstract class TaskCreateChunkMesh(
         val chunk: ChunkImplementation, attachedProperty: AutoRebuildingProperty, updates: Int,
-        val voxelTextureId: (VoxelTexture) -> Int,
+        val voxelTextureId: (BlockTexture) -> Int,
         val done: (Map<String, ScratchBuffer>) -> Unit
 
 ) : AutoRebuildingProperty.UpdateTask(attachedProperty, updates) {
     lateinit var rawChunkData: IntArray
 
-    inline fun opaque(voxel: Voxel) = voxel.opaque// || voxel.name == "water"
+    inline fun opaque(voxel: BlockType) = voxel.opaque// || voxel.name == "water"
 
     inline fun opaque(data: Int) = if (data == 0) false else opaque(chunk.world.contentTranslator.getVoxelForId(VoxelFormat.id(data))!!)
 
@@ -68,7 +68,7 @@ abstract class TaskCreateChunkMesh(
 
         val rng = Random(1)
 
-        val chunkDataRef = chunk.voxelDataArray
+        val chunkDataRef = chunk.blockData
 
         val map = mutableMapOf<String, ScratchBuffer>()
 
@@ -195,7 +195,7 @@ abstract class TaskCreateChunkMesh(
                             return true
                         }*/
 
-                            if (!voxel.isAir()) {
+                            if (!voxel.isAir) {
                                 val routine = voxel.customRenderingRoutine
                                 if (routine != null) {
                                     mesher.let {
@@ -211,12 +211,12 @@ abstract class TaskCreateChunkMesh(
                                     val meshData = scratch.meshData
                                     val cubesData = scratch.cubesData
 
-                                    fun face(neighborData: Int, face: UnitCube.CubeFaceData, side: VoxelSide) {
+                                    fun face(neighborData: Int, face: UnitCube.CubeFaceData, side: BlockSide) {
                                         val neighborVoxel = chunk.world.contentTranslator.getVoxelForId(VoxelFormat.id(neighborData))!!
                                         if (opaque(neighborVoxel) || (voxel == neighborVoxel && voxel.selfOpaque))
                                             return
 
-                                        val voxelTexture = voxel.getVoxelTexture(cell, side)
+                                        val voxelTexture = voxel.getTexture(cell, side)
                                         val textureId = voxelTextureId(voxelTexture)
 
                                         val sunlight = VoxelFormat.sunlight(neighborData)
@@ -243,7 +243,7 @@ abstract class TaskCreateChunkMesh(
                                         }
 
                                         when (side) {
-                                            VoxelSide.TOP -> {
+                                            BlockSide.TOP -> {
                                                 for (s in -1..1) {
                                                     for (t in -1..1) {
                                                         val cs = s + 1
@@ -253,7 +253,7 @@ abstract class TaskCreateChunkMesh(
                                                     }
                                                 }
                                             }
-                                            VoxelSide.BOTTOM -> {
+                                            BlockSide.BOTTOM -> {
                                                 for (s in -1..1) {
                                                     for (t in -1..1) {
                                                         val cs = s + 1
@@ -263,7 +263,7 @@ abstract class TaskCreateChunkMesh(
                                                     }
                                                 }
                                             }
-                                            VoxelSide.LEFT -> {
+                                            BlockSide.LEFT -> {
                                                 for (s in -1..1) {
                                                     for (t in -1..1) {
                                                         val cs = s + 1
@@ -273,7 +273,7 @@ abstract class TaskCreateChunkMesh(
                                                     }
                                                 }
                                             }
-                                            VoxelSide.RIGHT -> {
+                                            BlockSide.RIGHT -> {
                                                 for (s in -1..1) {
                                                     for (t in -1..1) {
                                                         val cs = s + 1
@@ -283,7 +283,7 @@ abstract class TaskCreateChunkMesh(
                                                     }
                                                 }
                                             }
-                                            VoxelSide.FRONT -> {
+                                            BlockSide.FRONT -> {
                                                 for (s in -1..1) {
                                                     for (t in -1..1) {
                                                         val cs = s + 1
@@ -293,7 +293,7 @@ abstract class TaskCreateChunkMesh(
                                                     }
                                                 }
                                             }
-                                            VoxelSide.BACK -> {
+                                            BlockSide.BACK -> {
                                                 for (s in -1..1) {
                                                     for (t in -1..1) {
                                                         val cs = s + 1
@@ -341,14 +341,14 @@ abstract class TaskCreateChunkMesh(
                                     }
 
                                     fun cube() {
-                                        face(data(x, y - 1, z), UnitCube.bottomFace, VoxelSide.BOTTOM)
-                                        face(data(x, y + 1, z), UnitCube.topFace, VoxelSide.TOP)
+                                        face(data(x, y - 1, z), UnitCube.bottomFace, BlockSide.BOTTOM)
+                                        face(data(x, y + 1, z), UnitCube.topFace, BlockSide.TOP)
 
-                                        face(data(x - 1, y, z), UnitCube.leftFace, VoxelSide.LEFT)
-                                        face(data(x + 1, y, z), UnitCube.rightFace, VoxelSide.RIGHT)
+                                        face(data(x - 1, y, z), UnitCube.leftFace, BlockSide.LEFT)
+                                        face(data(x + 1, y, z), UnitCube.rightFace, BlockSide.RIGHT)
 
-                                        face(data(x, y, z - 1), UnitCube.backFace, VoxelSide.BACK)
-                                        face(data(x, y, z + 1), UnitCube.frontFace, VoxelSide.FRONT)
+                                        face(data(x, y, z - 1), UnitCube.backFace, BlockSide.BACK)
+                                        face(data(x, y, z + 1), UnitCube.frontFace, BlockSide.FRONT)
                                     }
 
                                     cube()

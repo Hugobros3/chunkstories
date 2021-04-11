@@ -9,25 +9,19 @@ package xyz.chunkstories.world
 import java.io.File
 
 import xyz.chunkstories.api.graphics.systems.dispatching.DecalsManager
-import xyz.chunkstories.api.world.WorldInfo
 import org.joml.Vector3dc
-import org.joml.Vector3fc
 
-import xyz.chunkstories.api.GameContext
 import xyz.chunkstories.api.particles.ParticleType
 import xyz.chunkstories.api.particles.ParticleTypeDefinition
 import xyz.chunkstories.api.particles.ParticlesManager
 import xyz.chunkstories.api.player.Player
+import xyz.chunkstories.api.server.Host
 import xyz.chunkstories.api.sound.SoundManager
-import xyz.chunkstories.api.sound.SoundSource
-import xyz.chunkstories.api.sound.SoundSource.Mode
-import xyz.chunkstories.api.util.IterableIterator
+import xyz.chunkstories.api.world.World
 import xyz.chunkstories.api.world.WorldMaster
-import xyz.chunkstories.sound.source.DummySoundSource
 import xyz.chunkstories.world.io.IOTasks
 
-class WorldTool @Throws(WorldLoadingException::class)
-constructor(gameContext: GameContext, info: WorldInfo, folder: File, immediateIO: Boolean) : WorldImplementation(gameContext, info, null, folder), WorldMaster {
+class WorldTool constructor(override val gameInstance: Host, properties: World.Properties, folder: File, immediateIO: Boolean) : WorldCommonMaster by newMasterWorldImplementation() {
 
     var isLightningEnabled = true
     var isGenerationEnabled = true
@@ -35,9 +29,7 @@ constructor(gameContext: GameContext, info: WorldInfo, folder: File, immediateIO
     override val ioHandler: IOTasks = IOTasks(this)
 
     override val soundManager: SoundManager
-        get() = nullSoundManager
-
-    private var nullSoundManager = NullSoundManager()
+        get() = throw UnsupportedOperationException()
 
     override val particlesManager: ParticlesManager
         get() = nullParticlesManager
@@ -49,53 +41,30 @@ constructor(gameContext: GameContext, info: WorldInfo, folder: File, immediateIO
 
     private var nullDecalsManager = NullDecalsManager()
 
-    override val players: Set<Player>
+    override val players: Sequence<Player>
         get() = throw UnsupportedOperationException("getPlayers")
+
+    override var sky: World.Sky
+        get() = throw UnsupportedOperationException()
+        set(value) = throw UnsupportedOperationException()
 
     init {
         ioHandler.start()
     }
 
     companion object {
-        fun GameContext.createWorld(folder: File, worldInfo: WorldInfo) : WorldTool {
+        fun Host.createWorld(folder: File, properties: World.Properties) : WorldTool {
             if(folder.exists())
                 throw Exception("The folder $folder already exists !")
 
-            logger().debug("Creating new world")
+            logger.debug("Creating new world")
             folder.mkdirs()
-            val worldInfoFile = java.io.File(folder.path + "/" + WorldImplementation.worldInfoFilename)
-            worldInfoFile.writeText(xyz.chunkstories.world.serializeWorldInfo(worldInfo, true))
-            logger().debug("Created directory & wrote ${WorldImplementation.worldInfoFilename} ; now entering world")
+            val worldInfoFile = java.io.File(folder.path + "/" + WorldImplementation.worldPropertiesFilename)
+            worldInfoFile.writeText(xyz.chunkstories.world.serializeWorldInfo(properties, true))
+            logger.debug("Created directory & wrote ${WorldImplementation.worldPropertiesFilename} ; now entering world")
 
-            return WorldTool(this, worldInfo, folder, false)
+            return WorldTool(this, properties, folder, false)
         }
-    }
-
-    internal inner class NullSoundManager : SoundManager {
-
-        override fun playSoundEffect(soundEffect: String): SoundSource? {
-
-            return null
-        }
-
-        override fun stopAnySound(soundEffect: String) {
-
-        }
-
-        override fun stopAnySound() {}
-
-        override fun getAllPlayingSounds(): Set<SoundSource>? {
-            return null
-        }
-
-        override fun setListenerPosition(position: Vector3fc, lookAt: Vector3fc, up: Vector3fc) {}
-
-        override fun playSoundEffect(soundEffect: String, mode: Mode, position: Vector3dc?, pitch: Float, gain: Float,
-                                     attStart: Float, attEnd: Float): SoundSource {
-            // TODO Auto-generated method stub
-            return DummySoundSource()
-        }
-
     }
 
     class NullParticlesManager : ParticlesManager {
@@ -111,9 +80,5 @@ constructor(gameContext: GameContext, info: WorldInfo, folder: File, immediateIO
         override fun add(vector3dc: Vector3dc, vector3dc1: Vector3dc, vector3dc2: Vector3dc, s: String) {
 
         }
-    }
-
-    override fun getPlayerByName(playerName: String): Player? {
-        throw UnsupportedOperationException("getPlayers")
     }
 }

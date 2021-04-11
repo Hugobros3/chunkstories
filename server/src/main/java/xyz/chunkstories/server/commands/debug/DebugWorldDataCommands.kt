@@ -9,18 +9,18 @@ package xyz.chunkstories.server.commands.debug
 import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.plugin.commands.Command
 import xyz.chunkstories.api.plugin.commands.CommandEmitter
-import xyz.chunkstories.api.server.Server
+import xyz.chunkstories.api.server.Host
 import xyz.chunkstories.api.world.heightmap.Heightmap
-import xyz.chunkstories.server.commands.ServerCommandBasic
+import xyz.chunkstories.server.commands.AbstractHostCommandHandler
 import xyz.chunkstories.world.WorldImplementation
 
-class DebugWorldDataCommands(serverConsole: Server) : ServerCommandBasic(serverConsole) {
+class DebugWorldDataCommands(serverConsole: Host) : AbstractHostCommandHandler(serverConsole) {
 
     init {
-        server.pluginManager.registerCommand("chunk", this)
-        server.pluginManager.registerCommand("region", this)
-        server.pluginManager.registerCommand("heightmap", this)
-        server.pluginManager.registerCommand("heightmaps", this)
+        host.pluginManager.registerCommand("chunk", this)
+        host.pluginManager.registerCommand("region", this)
+        host.pluginManager.registerCommand("heightmap", this)
+        host.pluginManager.registerCommand("heightmaps", this)
     }
 
     override fun handleCommand(emitter: CommandEmitter, command: Command, arguments: Array<String>): Boolean {
@@ -46,7 +46,7 @@ class DebugWorldDataCommands(serverConsole: Server) : ServerCommandBasic(serverC
             if (arguments.size == 2) {
                 val x = Integer.parseInt(arguments[0])
                 val z = Integer.parseInt(arguments[1])
-                sum = server.world.heightmapsManager.getHeightmap(x, z)
+                sum = host.world.heightmapsManager.getHeightmap(x, z)
             } else {
                 val player = emitter as Player
                 val playerEntity = player.controlledEntity ?: throw Exception("Not currently controlling an entity !")
@@ -56,7 +56,7 @@ class DebugWorldDataCommands(serverConsole: Server) : ServerCommandBasic(serverC
             emitter.sendMessage("#00FFD0" + sum!!)
             return true
         } else if (command.name == "heightmaps" && emitter.hasPermission("server.debug")) {
-            dumpLoadedHeightmap(server.world as WorldImplementation, emitter)
+            dumpLoadedHeightmap(host.world as WorldImplementation, emitter)
         }
         return false
     }

@@ -12,8 +12,8 @@ import org.lwjgl.vulkan.VkImageMemoryBarrier
 import xyz.chunkstories.api.graphics.TextureFormat
 import xyz.chunkstories.api.graphics.structs.InterfaceBlock
 import xyz.chunkstories.api.util.kotlin.toVec3i
-import xyz.chunkstories.api.voxel.VoxelFormat
-import xyz.chunkstories.api.voxel.VoxelSide
+import xyz.chunkstories.block.VoxelFormat
+import xyz.chunkstories.api.block.BlockSide
 import xyz.chunkstories.api.world.chunk.Chunk
 import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
@@ -291,7 +291,7 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
     }
 
     private fun extractChunkInBuffer(byteBuffer: ByteBuffer, chunk: ChunkImplementation) {
-        val voxelData = chunk.voxelDataArray
+        val voxelData = chunk.blockData
 
         if (voxelData == null) {
             for (i in 0 until 32 * 32 * 32) {
@@ -308,7 +308,7 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
                         val data = voxelData[x * 32 * 32 + y * 32 + z]
                         val voxel = world.contentTranslator.getVoxelForId(VoxelFormat.id(data)) ?: world.content.voxels.air
 
-                        if (voxel.isAir() || (!voxel.solid && voxel.emittedLightLevel == 0) || voxel.name.startsWith("glass")) {
+                        if (voxel.isAir || (!voxel.solid && voxel.emittedLightLevel == 0) || voxel.name.startsWith("glass")) {
                             byteBuffer.put(0)
                             byteBuffer.put(0)
                             byteBuffer.put(0)
@@ -317,7 +317,7 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
                             if (voxel.name.startsWith("lava"))
                                 println("shit" + voxel.emittedLightLevel)
                         } else {
-                            val topTexture = voxel.getVoxelTexture(chunk.peek(x, y, z), VoxelSide.TOP)
+                            val topTexture = voxel.getTexture(chunk.peek(x, y, z), BlockSide.TOP)
                             color.set(topTexture.color)
 
                             if (topTexture.name.equals("grass_top")) {

@@ -12,10 +12,9 @@ import xyz.chunkstories.api.entity.Entity
 import xyz.chunkstories.api.util.concurrency.Fence
 import xyz.chunkstories.api.world.WorldMaster
 import xyz.chunkstories.api.world.WorldUser
-import xyz.chunkstories.api.world.heightmap.Heightmap
 import xyz.chunkstories.api.world.region.Region
 import xyz.chunkstories.util.concurrency.TrivialFence
-import xyz.chunkstories.world.WorldImplementation
+import xyz.chunkstories.world.WorldCommon
 import xyz.chunkstories.world.WorldTool
 import xyz.chunkstories.world.chunk.ChunkHolderImplementation
 import xyz.chunkstories.world.chunk.ChunkImplementation
@@ -27,13 +26,15 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Semaphore
 import java.util.concurrent.locks.ReentrantLock
 
-class RegionImplementation(override val world: WorldImplementation, override val heightmap: HeightmapImplementation, override val regionX: Int, override val regionY: Int, override val regionZ: Int) : Region, WorldUser {
-    val file: File
-        get() = File(world.folderPath + "/regions/" + regionX + "." + regionY + "." + regionZ + ".csf")
-    //val handler: CSFRegionFile?
+class RegionImplementation(override val world: WorldCommon, override val heightmap: HeightmapImplementation, override val regionX: Int, override val regionY: Int, override val regionZ: Int) : Region, WorldUser {
+    val file: File by lazy {
+        if (world is WorldMaster)
+            File(world.folderPath + "/regions/" + regionX + "." + regionY + "." + regionZ + ".csf")
+        else
+            throw IllegalAccessException("World is not master")
+    }
 
     val stateLock = ReentrantLock()
-    //val stateCondition = stateLock.newCondition()
     override lateinit var state: Region.State
         private set
 
@@ -85,9 +86,6 @@ class RegionImplementation(override val world: WorldImplementation, override val
 
         // Only the WorldMaster has a concept of files
         if (world is WorldMaster) {
-            //file = File(world.folderPath + "/regions/" + regionX + "." + regionY + "." + regionZ + ".csf")
-            //handler = CSFRegionFile.determineVersionAndCreate(this)
-
             when {
                 file.exists() -> {
                     val task = IOTaskLoadRegion(this)

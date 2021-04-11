@@ -27,7 +27,7 @@ class WorldRenameUI internal constructor(gui: Gui, parent: Layer, val worldInfo:
             val internalName = levelName.text.replace("[^\\w\\s]".toRegex(), "_")
 
             val newWorldInfo = worldInfo.copy(name = levelName.text)
-            val worldInfoFile = File(directory.path + "/" + WorldImplementation.worldInfoFilename)
+            val worldInfoFile = File(directory.path + "/" + WorldImplementation.worldPropertiesFilename)
             worldInfoFile.writeText(serializeWorldInfo(newWorldInfo, true))
             gui.popTopLayer()
             callback()

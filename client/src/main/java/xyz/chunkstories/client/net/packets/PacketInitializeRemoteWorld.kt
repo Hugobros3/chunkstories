@@ -7,7 +7,6 @@
 package xyz.chunkstories.client.net.packets
 
 import xyz.chunkstories.api.net.PacketReceptionContext
-import xyz.chunkstories.api.net.PacketSender
 import xyz.chunkstories.client.ingame.IngameClientRemoteHost
 import xyz.chunkstories.client.net.ClientPacketsEncoderDecoder
 import xyz.chunkstories.content.translator.AbstractContentTranslator

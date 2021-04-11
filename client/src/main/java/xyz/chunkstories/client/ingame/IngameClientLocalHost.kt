@@ -1,31 +1,32 @@
 package xyz.chunkstories.client.ingame
 
-import xyz.chunkstories.api.events.player.PlayerLogoutEvent
+import org.slf4j.Logger
 import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.server.PermissionsManager
-import xyz.chunkstories.api.server.Server
-import xyz.chunkstories.api.world.WorldInfo
+import xyz.chunkstories.api.server.Host
 import xyz.chunkstories.api.world.WorldMaster
 import xyz.chunkstories.client.ClientImplementation
-import xyz.chunkstories.entity.EntityFileSerialization
-import xyz.chunkstories.server.FileBasedUsersPrivileges
 import org.slf4j.LoggerFactory
-import xyz.chunkstories.plugin.DefaultPluginManager
+import xyz.chunkstories.api.content.ContentTranslator
+import xyz.chunkstories.api.entity.Entity
+import xyz.chunkstories.api.player.IngamePlayer
+import xyz.chunkstories.api.player.PlayerID
+import xyz.chunkstories.api.player.SpectatingPlayer
+import xyz.chunkstories.api.world.World
 import xyz.chunkstories.world.*
 import java.io.File
-import java.util.*
-import kotlin.streams.toList
+import java.lang.UnsupportedOperationException
 
 fun ClientImplementation.enterExistingWorld(folder: File) {
     if (!folder.exists() || !folder.isDirectory)
         throw WorldLoadingException("The folder $folder doesn't exist !")
 
-    val worldInfoFile = File(folder.path + "/" + WorldImplementation.worldInfoFilename)
+    val worldInfoFile = File(folder.path + "/" + WorldImplementation.worldPropertiesFilename)
     if (!worldInfoFile.exists())
-        throw WorldLoadingException("The folder $folder doesn't contain a ${WorldImplementation.worldInfoFilename} file !")
+        throw WorldLoadingException("The folder $folder doesn't contain a ${WorldImplementation.worldPropertiesFilename} file !")
 
     val worldInfo = deserializeWorldInfo(worldInfoFile)
-    logger().debug("Entering world $worldInfo")
+    logger.debug("Entering world $worldInfo")
 
     // Create the context for the local server
     val localHostCtx = IngameClientLocalHost(this) {
@@ -35,24 +36,25 @@ fun ClientImplementation.enterExistingWorld(folder: File) {
     this.ingame = localHostCtx
 }
 
-fun ClientImplementation.createAndEnterWorld(folder: File, worldInfo: WorldInfo) {
-    if(folder.exists())
+fun ClientImplementation.createAndEnterWorld(folder: File, properties: World.Properties) {
+    if (folder.exists())
         throw Exception("The folder $folder already exists !")
 
-    logger().debug("Creating new singleplayer world")
-    createWorld(folder, worldInfo)
-    logger().debug("Created new world '${worldInfo.name}' ; now entering world")
+    logger.debug("Creating new singleplayer world")
+    initializeWorld(folder, properties)
+    logger.debug("Created new world '${properties.name}' ; now entering world")
 
     enterExistingWorld(folder)
 }
 
 /** Represent an IngameClient that is also a local Server (with minimal server functionality). Used in local SP. */
-class IngameClientLocalHost(client: ClientImplementation, worldInitializer: (IngameClientImplementation) -> WorldClientLocal) : IngameClientImplementation(client, worldInitializer), Server {
-    override val world: WorldClientLocal = super.internalWorld as WorldClientLocal
-    override val pluginManager: DefaultPluginManager
-            get() = super.internalPluginManager
+class IngameClientLocalHost(client: ClientImplementation, worldInitializer: (IngameClientImplementation) -> WorldClientLocal) : IngameClientImplementation(client, worldInitializer), Host {
+    override val world: WorldClientLocal = super.world_ as WorldClientLocal
+    override val contentTranslator: ContentTranslator
+        get() = world.contentTranslator
+    override val logger: Logger = LoggerFactory.getLogger("client.world")
 
-    override var permissionsManager: PermissionsManager = object: PermissionsManager {
+    override var permissionsManager: PermissionsManager = object : PermissionsManager {
         override fun hasPermission(player: Player, permissionNode: String): Boolean {
             //TODO have an actual permissions system
             return true
@@ -61,9 +63,11 @@ class IngameClientLocalHost(client: ClientImplementation, worldInitializer: (Ing
 
     /** When exiting a localhost world, ensure to save everything */
     override fun exitCommon() {
-        if (internalWorld is WorldMaster) {
+        if (world_ is WorldMaster) {
             // Stop the world clock so hopefully as to freeze it's state
-            internalWorld.stopLogic().traverse()
+            world_.stopLogic().traverse()
+
+            val playerWorldMetadata = world.playersMetadata[player.id]!!
 
             player.destroy()
             // Save everything the world contains
@@ -72,33 +76,37 @@ class IngameClientLocalHost(client: ClientImplementation, worldInitializer: (Ing
         super.exitCommon()
     }
 
-    override fun getPlayerByUUID(UUID: Long): Player? {
-        if (UUID == player.uuid)
-            return player
-        return null
+    override fun startPlayingAs_(entity: Entity): IngamePlayer {
+        TODO("Not yet implemented")
+    }
+
+    override fun startSpectating_(): SpectatingPlayer {
+        TODO("Not yet implemented")
     }
 
     override fun reloadConfig() {
         // doesn't do shit
     }
 
-    override fun getPlayerByName(playerName: String): Player? {
+    override fun getPlayer(playerName: String): Player? {
         if (playerName == player.name)
             return player
         return null
+    }
+
+    override fun getPlayer(id: PlayerID): Player? {
+        if (id == player.id)
+            return player
+        return null
+    }
+
+    override fun Player.disconnect(disconnectMessage: String) {
+        throw UnsupportedOperationException()
     }
 
     override fun broadcastMessage(message: String) {
         print(message)
     }
 
-    override val connectedPlayers = setOf(player)
-
-    override val connectedPlayersCount: Int = 1
-    override val publicIp: String = "127.0.0.1"
-    override val uptime: Long = -1L
-
-    companion object {
-        val logger = LoggerFactory.getLogger("client.world")
-    }
+    override val players = setOf(player)
 }

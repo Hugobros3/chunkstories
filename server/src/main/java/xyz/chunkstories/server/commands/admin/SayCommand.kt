@@ -8,13 +8,13 @@ package xyz.chunkstories.server.commands.admin
 
 import xyz.chunkstories.api.plugin.commands.Command
 import xyz.chunkstories.api.plugin.commands.CommandEmitter
-import xyz.chunkstories.api.server.Server
-import xyz.chunkstories.server.commands.ServerCommandBasic
+import xyz.chunkstories.api.server.Host
+import xyz.chunkstories.server.commands.AbstractHostCommandHandler
 
-class SayCommand(serverConsole: Server) : ServerCommandBasic(serverConsole) {
+class SayCommand(serverConsole: Host) : AbstractHostCommandHandler(serverConsole) {
 
     init {
-        server.pluginManager.registerCommand("say", this)
+        host.pluginManager.registerCommand("say", this)
     }
 
     override fun handleCommand(emitter: CommandEmitter, command: Command, arguments: Array<String>): Boolean {
@@ -23,7 +23,7 @@ class SayCommand(serverConsole: Server) : ServerCommandBasic(serverConsole) {
             for (a in arguments) {
                 message += "$a "
             }
-            server.broadcastMessage("#FFFF00SERVER: $message")
+            host.broadcastMessage("#FFFF00SERVER: $message")
         }
         return false
     }

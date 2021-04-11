@@ -9,7 +9,7 @@ import org.lwjgl.vulkan.VkBufferImageCopy
 import org.lwjgl.vulkan.VkCommandBuffer
 import org.lwjgl.vulkan.VkImageMemoryBarrier
 import xyz.chunkstories.api.graphics.TextureFormat
-import xyz.chunkstories.api.voxel.VoxelSide
+import xyz.chunkstories.api.block.BlockSide
 import xyz.chunkstories.api.workers.Task
 import xyz.chunkstories.api.workers.TaskExecutor
 import xyz.chunkstories.api.world.heightmap.Heightmap
@@ -100,7 +100,7 @@ data class FarTerrainTextureManager(val backend: VulkanGraphicsBackend, var base
                                     val voxelId = heightmap.getRawVoxelData(x, z) and 0xFFFF
                                     val color = colors.getOrPut(voxelId) {
                                         val voxel = world.contentTranslator.getVoxelForId(voxelId) ?: world.content.voxels.air
-                                        val topTex = voxel.voxelTextures[VoxelSide.TOP.ordinal]
+                                        val topTex = voxel.voxelTextures[BlockSide.TOP.ordinal]
                                         val vec4 = topTex.color
 
                                         byteArrayOf((vec4.x() * 255).toInt().coerceIn(0..255).toByte(), (vec4.y() * 255).toInt().coerceIn(0..255).toByte(), (vec4.z() * 255).toInt().coerceIn(0..255).toByte(), (vec4.w() * 255).toInt().coerceIn(0..255).toByte())

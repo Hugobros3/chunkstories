@@ -6,7 +6,7 @@
 
 package xyz.chunkstories.gui.layer.ingame
 
-import xyz.chunkstories.api.client.LocalPlayer
+import xyz.chunkstories.api.client.LocalIngamePlayer
 import xyz.chunkstories.api.entity.traits.TraitHasOverlay
 import xyz.chunkstories.api.entity.traits.serializable.TraitHealth
 import xyz.chunkstories.api.entity.traits.serializable.TraitInventory
@@ -30,7 +30,7 @@ import xyz.chunkstories.world.WorldClientCommon
  * gui elements
  */
 class IngameUI(window: Gui, private val client: IngameClientImplementation) : Layer(window, null) {
-    private val player: LocalPlayer
+    private val player: LocalIngamePlayer
     private val world: WorldClientCommon
 
     // Renderer & client interface components

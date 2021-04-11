@@ -10,9 +10,7 @@ import java.io.DataInputStream
 import java.io.IOException
 
 import xyz.chunkstories.api.net.PacketReceptionContext
-import xyz.chunkstories.api.net.PacketSender
 import xyz.chunkstories.api.net.packets.PacketText
-import xyz.chunkstories.client.net.ClientPacketsEncoderDecoder
 
 class PacketReceiveText : PacketText() {
     @Throws(IOException::class)

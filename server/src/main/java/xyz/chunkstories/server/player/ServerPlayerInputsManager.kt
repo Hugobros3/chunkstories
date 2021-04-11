@@ -1,6 +1,6 @@
 package xyz.chunkstories.server.player
 
-import xyz.chunkstories.api.GameContext
+import xyz.chunkstories.Engine
 import xyz.chunkstories.input.AbstractInput
 import xyz.chunkstories.input.CommonInputsManager
 import xyz.chunkstories.input.InputVirtual
@@ -10,8 +10,8 @@ class ServerPlayerInputsManager(private val serverPlayer: ServerPlayer) : Common
         reload()
     }
 
-    override val context: GameContext
-        get() = serverPlayer.getContext()
+    override val context: Engine
+        get() = serverPlayer.playerConnection.server
 
     override fun addBuiltInInputs(inputs: MutableList<AbstractInput>) {
         val mouseLeft = InputVirtual(this, "mouse.left")

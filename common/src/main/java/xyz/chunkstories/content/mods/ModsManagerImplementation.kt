@@ -13,9 +13,7 @@ import xyz.chunkstories.api.content.mods.ModsManager
 import xyz.chunkstories.api.exceptions.content.mods.ModLoadFailureException
 import xyz.chunkstories.api.exceptions.content.mods.ModNotFoundException
 import xyz.chunkstories.api.exceptions.content.mods.NotAllModsLoadedException
-import xyz.chunkstories.api.exceptions.plugins.PluginLoadException
 import xyz.chunkstories.content.sandbox.ForeignCodeClassLoader
-import xyz.chunkstories.plugin.NotAPluginException
 import xyz.chunkstories.util.FoldersUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -26,15 +24,12 @@ import java.io.*
 import java.net.URLClassLoader
 import java.util.*
 
-class ModsManagerImplementation @Throws(NonExistentCoreContent::class)
-@JvmOverloads constructor(private val baseContentLocation: File, enabledModsAtStart: String? = null) : ModsManager {
-
-    private var modsToEnableInOrder: Array<String> = emptyArray()
-
+class ModsManagerImplementation
+constructor(private val baseContentLocation: File, var requestedMods: List<String>) : ModsManager {
     private lateinit var baseContent: ModImplementation
 
     private val mods = HashMap<String, Mod>()
-    private val modsInOrder = LinkedList<Mod>()
+    private val loadedMods = mutableListOf<Mod>()
 
     private lateinit var allEntriesCached: Collection<AssetHierarchy>
     private lateinit var allAssetsCached: Collection<Asset>
@@ -50,34 +45,17 @@ class ModsManagerImplementation @Throws(NonExistentCoreContent::class)
     var finalClassLoader: ClassLoader? = null
         private set
 
-    //lateinit var allModsPlugins: Collection<PluginInformationImplementation>
-    //    private set
-
     init {
         if (!baseContentLocation.exists())
-            throw NonExistentCoreContent()
-
-        if (enabledModsAtStart != null)
-            modsToEnableInOrder = enabledModsAtStart.split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-    }
-
-    inner class NonExistentCoreContent : Exception() {
-        /*companion object {
-            private val serialVersionUID = 8127068941907724484L
-        }*/
-    }
-
-    override fun setEnabledMods(vararg modsEnabled: String) {
-        this.modsToEnableInOrder = modsEnabled as Array<String>
+            throw Exception("Missing core content: file $baseContentLocation does not exist")
     }
 
     @Throws(NotAllModsLoadedException::class)
-    override fun loadEnabledMods() {
+    fun loadEnabledMods() {
         mods.clear()
-        modsInOrder.clear()
+        loadedMods.clear()
 
         val modLoadExceptions = findAndLoadMods()
-
         buildModsFileSystem()
 
         // Return an exception if some mods failed to load.
@@ -102,7 +80,7 @@ class ModsManagerImplementation @Throws(NonExistentCoreContent::class)
         if (!serverMods.exists())
             serverMods.mkdirs()
 
-        for (name in modsToEnableInOrder) {
+        for (name in requestedMods) {
             try {
                 var mod: ModImplementation? = null
 
@@ -168,7 +146,7 @@ class ModsManagerImplementation @Throws(NonExistentCoreContent::class)
 
                 if (mods.put(mod.modInfo.internalName, mod) != null)
                     throw ModLoadFailureException(mod, "Conflicting mod, another mod with the same name or hash is already loaded.")
-                modsInOrder.add(mod)
+                loadedMods.add(mod)
 
             } catch (exception: ModLoadFailureException) {
                 modLoadExceptions.add(exception)
@@ -209,7 +187,7 @@ class ModsManagerImplementation @Throws(NonExistentCoreContent::class)
 
         var childClassLoader = loadModAssets(baseContent, Thread.currentThread().contextClassLoader)
         // Iterates over mods, in order of priority (lowest to highest)
-        for (mod in modsInOrder) {
+        for (mod in loadedMods) {
             childClassLoader = loadModAssets(mod as ModImplementation, childClassLoader)
         }
 
@@ -280,16 +258,10 @@ class ModsManagerImplementation @Throws(NonExistentCoreContent::class)
                 val pluginInformation = loadPluginInfo(jarFile) ?: continue
                 logger.info("Found plugin $pluginInformation in $mod")
                 pluginsWithinEnabledMods.add(pluginInformation)
-            } catch (nap: NotAPluginException) {
-                // Discard silently
-            } catch (e: PluginLoadException) {
-                println("Something went wrong loading the plugin $jarFile from $mod")
-                e.printStackTrace()
-            } catch (e: IOException) {
+            } catch (e: Exception) {
                 println("Something went wrong loading the plugin $jarFile from $mod")
                 e.printStackTrace()
             }
-
         }
 
         return classLoader
@@ -325,34 +297,34 @@ class ModsManagerImplementation @Throws(NonExistentCoreContent::class)
 
     }
 
-    override val allUniqueEntries: Collection<AssetHierarchy>
+    val allUniqueEntries: Collection<AssetHierarchy>
         get() = allEntriesCached
 
     override val allAssets: Collection<Asset>
         get() = allAssetsCached
 
     override fun getAsset(assetName: String): Asset? {
-        var assetName = assetName
+        var filteredAssetName = assetName
 
-        if (assetName.startsWith("./")) {
+        if (filteredAssetName.startsWith("./")) {
             logger.warn("Requesting asset using the old deprecated ./ prefix !")
             //Thread.dumpStack()
-            assetName = assetName.substring(2)
+            filteredAssetName = filteredAssetName.substring(2)
         }
 
-        if(assetName.startsWith("@")) {
-            val withoutPrefix = assetName.removePrefix("@")
-            val i = assetName.indexOf(':')
+        if(filteredAssetName.startsWith("@")) {
+            val withoutPrefix = filteredAssetName.removePrefix("@")
+            val i = filteredAssetName.indexOf(':')
             if(i < 0)
-                throw Exception("Malformed asset name: $assetName")
+                throw Exception("Malformed asset name: $filteredAssetName")
 
             val modInternalName = withoutPrefix.subSequence(0, i - 1)
-            assetName = withoutPrefix.substring(i)
+            filteredAssetName = withoutPrefix.substring(i)
 
-            return mods[modInternalName]?.getAssetByName(assetName)
+            return mods[modInternalName]?.getAssetByName(filteredAssetName)
         }
 
-        val asset: ModsAssetHierarchy? = avaibleAssets[assetName]
+        val asset: ModsAssetHierarchy? = avaibleAssets[filteredAssetName]
 
         return asset?.topInstance
 
@@ -362,15 +334,13 @@ class ModsManagerImplementation @Throws(NonExistentCoreContent::class)
         return avaibleAssets[assetName]
     }
 
-    override fun getAllAssetsByExtension(extension: String): Collection<Asset> = allAssetsCached.filter { it.name.endsWith(extension) }
+    fun getAllAssetsByExtension(extension: String): Collection<Asset> = allAssetsCached.filter { it.name.endsWith(extension) }
     override fun getAllAssetsByPrefix(prefix: String): Collection<Asset> = allAssetsCached.filter { it.name.startsWith(prefix) }
 
     override fun getClassByName(className: String): Class<*>? {
-        // TODO: Make this absolutely unecessary
+        // TODO: Make this absolutely unnecessary
         try {
-            val inBaseClasspath = Class.forName(className)
-            if (inBaseClasspath != null)
-                return inBaseClasspath
+            return Class.forName(className)
         } catch (ignore: ClassNotFoundException) {
         }
 
@@ -417,11 +387,8 @@ class ModsManagerImplementation @Throws(NonExistentCoreContent::class)
         }
     }
 
-    override val enabledModsString: Array<String>
-        get() = modsToEnableInOrder
-
     override val currentlyLoadedMods: Collection<Mod>
-        get() = modsInOrder
+        get() = loadedMods
 
     fun logger(): Logger {
         return logger

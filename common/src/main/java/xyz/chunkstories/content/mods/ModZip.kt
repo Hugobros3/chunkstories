@@ -19,7 +19,7 @@ import xyz.chunkstories.api.exceptions.content.mods.ModLoadFailureException
 class ModZip @Throws(ModLoadFailureException::class)
 constructor(val zipFileLocation: File) : ModImplementation() {
     internal val zipFile: ZipFile
-    internal val assetsMap: MutableMap<String, ModZipAsset> = HashMap()
+    private val assetsMap: MutableMap<String, ModZipAsset> = HashMap()
 
     override val loadString: String
         get() = zipFileLocation.absolutePath
@@ -62,6 +62,6 @@ constructor(val zipFileLocation: File) : ModImplementation() {
 
     }
 
-    override val assets: Collection<Asset>
-        get() = assetsMap.values
+    override val assets: Sequence<Asset>
+        get() = assetsMap.values.asSequence()
 }

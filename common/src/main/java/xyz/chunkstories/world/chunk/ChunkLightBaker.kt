@@ -10,18 +10,15 @@ import java.util.concurrent.locks.ReentrantLock
 
 import com.carrotsearch.hppc.IntArrayDeque
 import com.carrotsearch.hppc.IntDeque
+import xyz.chunkstories.Engine
 
-import xyz.chunkstories.api.voxel.VoxelFormat
-import xyz.chunkstories.api.voxel.VoxelSide
 import xyz.chunkstories.api.workers.TaskExecutor
 import xyz.chunkstories.api.world.chunk.ChunkLightUpdater
-import xyz.chunkstories.api.world.heightmap.Heightmap
-import xyz.chunkstories.world.cell.ScratchCell
 import xyz.chunkstories.world.chunk.deriveddata.AutoRebuildingProperty
 
 //TODO use custom propagation for ALL propagation functions & cleanup this whole darn mess
 /** Responsible for propagating voxel volumetric light  */
-class ChunkLightBaker(internal val chunk: ChunkImplementation) : AutoRebuildingProperty(chunk.world.gameContext, true), ChunkLightUpdater {
+class ChunkLightBaker(internal val chunk: ChunkImplementation) : AutoRebuildingProperty((chunk.world.gameInstance as Engine).tasks, true), ChunkLightUpdater {
     internal val world = chunk.world
     internal val chunkX: Int = chunk.chunkX
     internal val chunkY: Int = chunk.chunkY
@@ -34,12 +31,12 @@ class ChunkLightBaker(internal val chunk: ChunkImplementation) : AutoRebuildingP
     /** Hack until we move to fibers/coroutines: immediately do the lighting baking ( to avoid worker gridlocking ) */
     fun hackyUpdateDirect() {
         val task = TaskLightChunk(this, 0, true)
-        task.findAndSpreadLight()
+        // TODO task.findAndSpreadLight()
     }
 
     /** Called when a voxel is changed  */
     fun computeLightSpread(bx: Int, by: Int, bz: Int, dataBefore: Int, data: Int) {
-        try {
+        /*try {
             lightDataLock.lock()
 
             val sunLightBefore = VoxelFormat.sunlight(dataBefore)
@@ -48,7 +45,7 @@ class ChunkLightBaker(internal val chunk: ChunkImplementation) : AutoRebuildingP
             var sunLightAfter = VoxelFormat.sunlight(data)
             val blockLightAfter = VoxelFormat.blocklight(data)
 
-            val csh = world.heightmapsManager.getHeightAtWorldCoordinates(bx + chunkX * 32, bz + chunkZ * 32)
+            val csh = world.heightmapsManager.getHeight(bx + chunkX * 32, bz + chunkZ * 32)
             val block_height = by + chunkY * 32
 
             // If the block is at or above (never) the topmost tile it's sunlit
@@ -93,7 +90,7 @@ class ChunkLightBaker(internal val chunk: ChunkImplementation) : AutoRebuildingP
             this.propagateLightningBeyondChunk(blockSources, sunSources)
         } finally {
             lightDataLock.unlock()
-        }
+        }*/
     }
 
     inner class TaskLightChunk(baker: ChunkLightBaker, private val updatesToCommit: Int, private val considerAdjacentChunks: Boolean) : AutoRebuildingProperty.UpdateTask(baker, updatesToCommit) {
@@ -119,12 +116,12 @@ class ChunkLightBaker(internal val chunk: ChunkImplementation) : AutoRebuildingP
                 return true
 
             // Actual computation takes place here
-            findAndSpreadLight()
+            // TODO findAndSpreadLight()
 
             return true
         }
 
-        internal fun findAndSpreadLight(): Int {
+        /*internal fun findAndSpreadLight(): Int {
             try {
                 lightDataLock.lock()
                 // Checks first if chunk contains blocks
@@ -160,25 +157,27 @@ class ChunkLightBaker(internal val chunk: ChunkImplementation) : AutoRebuildingP
             } finally {
                 lightDataLock.unlock()
             }
-        }
+        }*/
 
-        private fun propagateLightSources(blockSources: IntDeque, sunSources: IntDeque, propagateToAdjacentChunks: Boolean): Int {
+        /*private fun propagateLightSources(blockSources: IntDeque, sunSources: IntDeque, propagateToAdjacentChunks: Boolean): Int {
             var modifiedBlocks = 0
 
-            /*val leftChunk: CubicChunk? = world.getChunk(chunkX - 1, chunkY, chunkZ)
-            val rightChunk: CubicChunk? = world.getChunk(chunkX + 1, chunkY, chunkZ)
-            val topChunk: CubicChunk? = world.getChunk(chunkX, chunkY + 1, chunkZ)
-            val bottomChunk: CubicChunk? = world.getChunk(chunkX, chunkY - 1, chunkZ)
-            val frontChunk: CubicChunk? = world.getChunk(chunkX, chunkY, chunkZ + 1)
-            val backChunk: CubicChunk? = world.getChunk(chunkX, chunkY, chunkZ - 1)*/
-
             // Don't spam the requeue requests
-            var checkTopBleeding = propagateToAdjacentChunks && topChunk != null
-            var checkBottomBleeding = propagateToAdjacentChunks && bottomChunk != null
-            var checkFrontBleeding = propagateToAdjacentChunks && frontChunk != null
-            var checkBackBleeding = propagateToAdjacentChunks && backChunk != null
-            var checkLeftBleeding = propagateToAdjacentChunks && leftChunk != null
-            var checkRightBleeding = propagateToAdjacentChunks && rightChunk != null
+            var checkTopBleeding = propagateToAdjacentChunks    // && topChunk != null
+            var checkBottomBleeding = propagateToAdjacentChunks // && bottomChunk != null
+            var checkFrontBleeding = propagateToAdjacentChunks  // && frontChunk != null
+            var checkBackBleeding = propagateToAdjacentChunks   // && backChunk != null
+            var checkLeftBleeding = propagateToAdjacentChunks   // && leftChunk != null
+            var checkRightBleeding = propagateToAdjacentChunks  // && rightChunk != null
+
+            if (propagateToAdjacentChunks) {
+                assert(topChunk != null)
+                assert(bottomChunk != null)
+                assert(frontChunk != null)
+                assert(backChunk != null)
+                assert(leftChunk != null)
+                assert(rightChunk != null)
+            }
 
             var requestTop = false
             var requestBot = false
@@ -187,133 +186,125 @@ class ChunkLightBaker(internal val chunk: ChunkImplementation) : AutoRebuildingP
             var requestLeft = false
             var requestRight = false
 
-            val cell = ScratchCell(world)
-            val adj = ScratchCell(world)
             while (blockSources.size() > 0) {
                 val z = blockSources.removeLast()
                 val y = blockSources.removeLast()
                 val x = blockSources.removeLast()
 
-                peek(x, y, z, cell)
-                var cellLightLevel = cell.blocklight
+                val cellData = getCellDataMutFast(x, y, z)
+                var cellLightLevel = cellData.blocklightLevel
 
-                if (cell.voxel.opaque)
-                    cellLightLevel = cell.voxel.getEmittedLightLevel(cell)
+                if (cellData.blockType.opaque)
+                    cellLightLevel = cellData.blockType.getEmittedLightLevel(cellData)
 
                 if (cellLightLevel > 1) {
                     if (x < 31) {
-                        peek(x + 1, y, z, adj)
-                        val fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSide.LEFT) + 1)
-                        if (adj.blocklight < fadedLightLevel) {
-                            adj.blocklight = fadedLightLevel
-                            poke(adj)
+                        val adj = getCellDataMutFast(x + 1, y, z)
+                        val fadedLightLevel = cellLightLevel - (adj.blockType.getLightLevelModifier(adj, cellData, BlockSide.LEFT) + 1)
+                        if (adj.blocklightLevel < fadedLightLevel) {
+                            adj.blocklightLevel = fadedLightLevel
                             modifiedBlocks++
                             blockSources.addLast(x + 1)
                             blockSources.addLast(y)
                             blockSources.addLast(z)
                         }
                     } else if (checkRightBleeding) {
-                        peek(32, y, z, adj)
-                        val fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSide.LEFT) + 1)
-                        if (adj.blocklight < fadedLightLevel) {
+                        val adj = getCellDataMutFast(32, y, z)
+                        val fadedLightLevel = cellLightLevel - (adj.blockType.getLightLevelModifier(adj, cellData, BlockSide.LEFT) + 1)
+                        if (adj.blocklightLevel < fadedLightLevel) {
                             requestRight = true
                             checkRightBleeding = false
                         }
                     }
                     if (x > 0) {
-                        peek(x - 1, y, z, adj)
-                        val fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSide.RIGHT) + 1)
-                        if (adj.blocklight < fadedLightLevel) {
-                            adj.blocklight = fadedLightLevel
-                            poke(adj)
+                        val adj = getCellDataMutFast(x - 1, y, z)
+                        val fadedLightLevel = cellLightLevel - (adj.blockType.getLightLevelModifier(adj, cellData, BlockSide.RIGHT) + 1)
+                        if (adj.blocklightLevel < fadedLightLevel) {
+                            adj.blocklightLevel = fadedLightLevel
                             modifiedBlocks++
                             blockSources.addLast(x - 1)
                             blockSources.addLast(y)
                             blockSources.addLast(z)
                         }
                     } else if (checkLeftBleeding) {
-                        peek(-1, y, z, adj)
-                        val fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSide.RIGHT) + 1)
-                        if (adj.blocklight < fadedLightLevel) {
+                        val adj = getCellDataMutFast(-1, y, z)
+                        val fadedLightLevel = cellLightLevel - (adj.blockType.getLightLevelModifier(adj, cellData, BlockSide.RIGHT) + 1)
+                        if (adj.blocklightLevel < fadedLightLevel) {
                             requestLeft = true
                             checkLeftBleeding = false
                         }
                     }
 
                     if (z < 31) {
-                        peek(x, y, z + 1, adj)
-                        val fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSide.BACK) + 1)
-                        if (adj.blocklight < fadedLightLevel) {
-                            adj.blocklight = fadedLightLevel
-                            poke(adj)
+                        val adj = getCellDataMutFast(x, y, z + 1)
+                        val fadedLightLevel = cellLightLevel - (adj.blockType.getLightLevelModifier(adj, cellData, BlockSide.BACK) + 1)
+                        if (adj.blocklightLevel < fadedLightLevel) {
+                            adj.blocklightLevel = fadedLightLevel
                             modifiedBlocks++
                             blockSources.addLast(x)
                             blockSources.addLast(y)
                             blockSources.addLast(z + 1)
                         }
                     } else if (checkFrontBleeding) {
-                        peek(x, y, 32, adj)
-                        val fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSide.BACK) + 1)
-                        if (adj.blocklight < fadedLightLevel) {
+                        val adj = getCellDataMutFast(x, y, 32)
+                        val fadedLightLevel = cellLightLevel - (adj.blockType.getLightLevelModifier(adj, cellData, BlockSide.BACK) + 1)
+                        if (adj.blocklightLevel < fadedLightLevel) {
                             requestFront = true
                             checkFrontBleeding = false
                         }
                     }
                     if (z > 0) {
-                        peek(x, y, z - 1, adj)
-                        val fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSide.FRONT) + 1)
-                        if (adj.blocklight < fadedLightLevel) {
-                            adj.blocklight = fadedLightLevel
-                            poke(adj)
+                        val adj = getCellDataMutFast(x, y, z - 1)
+                        val fadedLightLevel = cellLightLevel - (adj.blockType.getLightLevelModifier(adj, cellData, BlockSide.FRONT) + 1)
+                        if (adj.blocklightLevel < fadedLightLevel) {
+                            adj.blocklightLevel = fadedLightLevel
                             modifiedBlocks++
                             blockSources.addLast(x)
                             blockSources.addLast(y)
                             blockSources.addLast(z - 1)
                         }
                     } else if (checkBackBleeding) {
-                        peek(x, y, -1, adj)
-                        val fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSide.FRONT) + 1)
-                        if (adj.blocklight < fadedLightLevel) {
+                        val adj = getCellDataMutFast(x, y, -1)
+                        val fadedLightLevel = cellLightLevel - (adj.blockType.getLightLevelModifier(adj, cellData, BlockSide.FRONT) + 1)
+                        if (adj.blocklightLevel < fadedLightLevel) {
                             requestBack = true
                             checkBackBleeding = false
                         }
                     }
 
                     if (y < 31) {
-                        peek(x, y + 1, z, adj)
-                        val fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSide.BOTTOM) + 1)
-                        if (adj.blocklight < fadedLightLevel) {
-                            adj.blocklight = fadedLightLevel
-                            poke(adj)
+                        val adj = getCellDataMutFast(x, y + 1, z)
+                        val fadedLightLevel = cellLightLevel - (adj.blockType.getLightLevelModifier(adj, cellData, BlockSide.BOTTOM) + 1)
+                        if (adj.blocklightLevel < fadedLightLevel) {
+                            adj.blocklightLevel = fadedLightLevel
                             modifiedBlocks++
                             blockSources.addLast(x)
                             blockSources.addLast(y + 1)
                             blockSources.addLast(z)
                         }
                     } else if (checkTopBleeding) {
-                        peek(x, 32, z, adj)
-                        val fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSide.BOTTOM) + 1)
-                        if (adj.blocklight < fadedLightLevel) {
+                        val adj = getCellDataMutFast(x, 32, z)
+                        val fadedLightLevel = cellLightLevel - (adj.blockType.getLightLevelModifier(adj, cellData, BlockSide.BOTTOM) + 1)
+                        if (adj.blocklightLevel < fadedLightLevel) {
                             requestTop = true
                             checkTopBleeding = false
                         }
                     }
 
                     if (y > 0) {
-                        peek(x, y - 1, z, adj)
-                        val fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSide.TOP) + 1)
-                        if (adj.blocklight < fadedLightLevel) {
-                            adj.blocklight = fadedLightLevel
-                            poke(adj)
+                        val adj = getCellDataMutFast(x, y - 1, z)
+                        val fadedLightLevel = cellLightLevel - (adj.blockType.getLightLevelModifier(adj, cellData, BlockSide.TOP) + 1)
+                        if (adj.blocklightLevel < fadedLightLevel) {
+                            adj.blocklightLevel = fadedLightLevel
                             modifiedBlocks++
                             blockSources.addLast(x)
                             blockSources.addLast(y - 1)
                             blockSources.addLast(z)
                         }
                     } else if (checkBottomBleeding) {
-                        peek(x, -1, z, adj)
-                        val fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSide.TOP) + 1)
-                        if (adj.blocklight < fadedLightLevel) {
+                        val adj = getCellDataMutFast(x, -1, z)
+                        val fadedLightLevel = cellLightLevel - (adj.blockType.getLightLevelModifier(adj, cellData, BlockSide.TOP) + 1)
+                        if (adj.blocklightLevel < fadedLightLevel) {
                             requestBot = true
                             checkBottomBleeding = false
                         }
@@ -326,106 +317,101 @@ class ChunkLightBaker(internal val chunk: ChunkImplementation) : AutoRebuildingP
                 val y = sunSources.removeLast()
                 val x = sunSources.removeLast()
 
-                peek(x, y, z, cell)
-                var cellLightLevel = cell.sunlight
+                val cell = getCellDataMutFast(x, y, z)
+                var cellLightLevel = cell.sunlightLevel
 
-                if (cell.voxel.opaque)
-                    cellLightLevel = cell.voxel.getEmittedLightLevel(cell)
+                if (cell.blockType.opaque)
+                    cellLightLevel = cell.blockType.getEmittedLightLevel(cell)
 
                 if (cellLightLevel > 1) {
                     if (x < 31) {
-                        peek(x + 1, y, z, adj)
-                        val fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSide.LEFT) + 1)
-                        if (adj.sunlight < fadedLightLevel) {
-                            adj.sunlight = fadedLightLevel
-                            poke(adj)
+                        val adj = getCellDataMutFast(x + 1, y, z)
+                        val fadedLightLevel = cellLightLevel - (adj.blockType.getLightLevelModifier(adj, cell, BlockSide.LEFT) + 1)
+                        if (adj.sunlightLevel < fadedLightLevel) {
+                            adj.sunlightLevel = fadedLightLevel
                             modifiedBlocks++
                             sunSources.addLast(x + 1)
                             sunSources.addLast(y)
                             sunSources.addLast(z)
                         }
                     } else if (checkRightBleeding) {
-                        peek(32, y, z, adj)
-                        val fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSide.LEFT) + 1)
-                        if (adj.sunlight < fadedLightLevel) {
+                        val adj = getCellDataMutFast(32, y, z)
+                        val fadedLightLevel = cellLightLevel - (adj.blockType.getLightLevelModifier(adj, cell, BlockSide.LEFT) + 1)
+                        if (adj.sunlightLevel < fadedLightLevel) {
                             requestRight = true
                             checkRightBleeding = false
                         }
                     }
                     if (x > 0) {
-                        peek(x - 1, y, z, adj)
-                        val fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSide.RIGHT) + 1)
-                        if (adj.sunlight < fadedLightLevel) {
-                            adj.sunlight = fadedLightLevel
-                            poke(adj)
+                        val adj = getCellDataMutFast(x - 1, y, z)
+                        val fadedLightLevel = cellLightLevel - (adj.blockType.getLightLevelModifier(adj, cell, BlockSide.RIGHT) + 1)
+                        if (adj.sunlightLevel < fadedLightLevel) {
+                            adj.sunlightLevel = fadedLightLevel
                             modifiedBlocks++
                             sunSources.addLast(x - 1)
                             sunSources.addLast(y)
                             sunSources.addLast(z)
                         }
                     } else if (checkLeftBleeding) {
-                        peek(-1, y, z, adj)
-                        val fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSide.RIGHT) + 1)
-                        if (adj.sunlight < fadedLightLevel) {
+                        val adj = getCellDataMutFast(-1, y, z)
+                        val fadedLightLevel = cellLightLevel - (adj.blockType.getLightLevelModifier(adj, cell, BlockSide.RIGHT) + 1)
+                        if (adj.sunlightLevel < fadedLightLevel) {
                             requestLeft = true
                             checkLeftBleeding = false
                         }
                     }
 
                     if (z < 31) {
-                        peek(x, y, z + 1, adj)
-                        val fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSide.BACK) + 1)
-                        if (adj.sunlight < fadedLightLevel) {
-                            adj.sunlight = fadedLightLevel
-                            poke(adj)
+                        val adj = getCellDataMutFast(x, y, z + 1)
+                        val fadedLightLevel = cellLightLevel - (adj.blockType.getLightLevelModifier(adj, cell, BlockSide.BACK) + 1)
+                        if (adj.sunlightLevel < fadedLightLevel) {
+                            adj.sunlightLevel = fadedLightLevel
                             modifiedBlocks++
                             sunSources.addLast(x)
                             sunSources.addLast(y)
                             sunSources.addLast(z + 1)
                         }
                     } else if (checkFrontBleeding) {
-                        peek(x, y, 32, adj)
-                        val fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSide.BACK) + 1)
-                        if (adj.sunlight < fadedLightLevel) {
+                        val adj = getCellDataMutFast(x, y, 32)
+                        val fadedLightLevel = cellLightLevel - (adj.blockType.getLightLevelModifier(adj, cell, BlockSide.BACK) + 1)
+                        if (adj.sunlightLevel < fadedLightLevel) {
                             requestFront = true
                             checkFrontBleeding = false
                         }
                     }
                     if (z > 0) {
-                        peek(x, y, z - 1, adj)
-                        val fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSide.FRONT) + 1)
-                        if (adj.sunlight < fadedLightLevel) {
-                            adj.sunlight = fadedLightLevel
-                            poke(adj)
+                        val adj = getCellDataMutFast(x, y, z - 1)
+                        val fadedLightLevel = cellLightLevel - (adj.blockType.getLightLevelModifier(adj, cell, BlockSide.FRONT) + 1)
+                        if (adj.sunlightLevel < fadedLightLevel) {
+                            adj.sunlightLevel = fadedLightLevel
                             modifiedBlocks++
                             sunSources.addLast(x)
                             sunSources.addLast(y)
                             sunSources.addLast(z - 1)
                         }
                     } else if (checkBackBleeding) {
-                        peek(x, y, -1, adj)
-                        val fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSide.FRONT) + 1)
-                        if (adj.sunlight < fadedLightLevel) {
+                        val adj = getCellDataMutFast(x, y, -1)
+                        val fadedLightLevel = cellLightLevel - (adj.blockType.getLightLevelModifier(adj, cell, BlockSide.FRONT) + 1)
+                        if (adj.sunlightLevel < fadedLightLevel) {
                             requestBack = true
                             checkBackBleeding = false
                         }
                     }
 
                     if (y < 31) {
-                        peek(x, y + 1, z, adj)
-                        val fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSide.BOTTOM) + 1)
-                        if (adj.sunlight < fadedLightLevel) {
-                            adj.sunlight = fadedLightLevel
-                            poke(adj)
+                        val adj = getCellDataMutFast(x, y + 1, z)
+                        val fadedLightLevel = cellLightLevel - (adj.blockType.getLightLevelModifier(adj, cell, BlockSide.BOTTOM) + 1)
+                        if (adj.sunlightLevel < fadedLightLevel) {
+                            adj.sunlightLevel = fadedLightLevel
                             modifiedBlocks++
                             sunSources.addLast(x)
                             sunSources.addLast(y + 1)
                             sunSources.addLast(z)
                         }
                     } else if (checkTopBleeding) {
-                        peek(x, 32, z, adj)
-                        val fadedLightLevel = cellLightLevel - (adj.voxel.getLightLevelModifier(adj, cell, VoxelSide.BOTTOM) + 1)
-                        if (adj.sunlight < fadedLightLevel) {
+                        val adj = getCellDataMutFast(x, 32, z)
+                        val fadedLightLevel = cellLightLevel - (adj.blockType.getLightLevelModifier(adj, cell, BlockSide.BOTTOM) + 1)
+                        if (adj.sunlightLevel < fadedLightLevel) {
                             requestTop = true
                             checkTopBleeding = false
                         }
@@ -434,20 +420,19 @@ class ChunkLightBaker(internal val chunk: ChunkImplementation) : AutoRebuildingP
                     // Special case! This is the bottom computation for light spread, light doesn't
                     // fade when traveling backwards so we do not decrement fadedLightLevel !
                     if (y > 0) {
-                        peek(x, y - 1, z, adj)
-                        val fadedLightLevel = cellLightLevel - adj.voxel.getLightLevelModifier(adj, cell, VoxelSide.TOP)
-                        if (adj.sunlight < fadedLightLevel) {
-                            adj.sunlight = fadedLightLevel
-                            poke(adj)
+                        val adj = getCellDataMutFast(x, y - 1, z)
+                        val fadedLightLevel = cellLightLevel - adj.blockType.getLightLevelModifier(adj, cell, BlockSide.TOP)
+                        if (adj.sunlightLevel < fadedLightLevel) {
+                            adj.sunlightLevel = fadedLightLevel
                             modifiedBlocks++
                             sunSources.addLast(x)
                             sunSources.addLast(y - 1)
                             sunSources.addLast(z)
                         }
                     } else if (checkBottomBleeding) {
-                        peek(x, -1, z, adj)
-                        val fadedLightLevel = cellLightLevel - adj.voxel.getLightLevelModifier(adj, cell, VoxelSide.TOP)
-                        if (adj.sunlight < fadedLightLevel) {
+                        val adj = getCellDataMutFast(x, -1, z)
+                        val fadedLightLevel = cellLightLevel - adj.blockType.getLightLevelModifier(adj, cell, BlockSide.TOP)
+                        if (adj.sunlightLevel < fadedLightLevel) {
                             requestBot = true
                             checkBottomBleeding = false
                         }
@@ -469,34 +454,33 @@ class ChunkLightBaker(internal val chunk: ChunkImplementation) : AutoRebuildingP
                 frontChunk?.lightBaker?.requestUpdate()
 
             return modifiedBlocks
-        }
+        }*/
 
-        private fun findLightSources(blockSources: IntDeque, sunSources: IntDeque) {
-            val cell = ScratchCell(world)
+        /*private fun findLightSources(blockSources: IntDeque, sunSources: IntDeque) {
             for (x in 0..31)
                 for (z in 0..31) {
                     var y = 31
                     var hitGroundYet = false
 
-                    val csh = world.heightmapsManager.getHeightAtWorldCoordinates(chunkX * 32 + x, chunkZ * 32 + z)
+                    val groundHeight = world.heightmapsManager.getHeight(chunkX * 32 + x, chunkZ * 32 + z)
                     while (y >= 0) {
-                        peek(x, y, z, cell)
-                        val ll = cell.voxel.getEmittedLightLevel(cell)
+                        val cell = getCellDataMutFast(x, y, z)
+                        val emittedLight = cell.blockType.getEmittedLightLevel(cell)
 
-                        if (ll > 0) {
-                            cell.blocklight = ll
+                        if (emittedLight > 0) {
+                            cell.blocklightLevel = emittedLight
                             blockSources.addLast(x)
                             blockSources.addLast(y)
                             blockSources.addLast(z)
                         }
 
-                        if (!hitGroundYet && csh != Heightmap.NO_DATA) {
-                            if (chunkY * 32 + y >= csh) {
-                                if (chunkY * 32 + y <= csh ||
-                                        !world.contentTranslator.getVoxelForId(VoxelFormat.id(chunk.voxelDataArray!![x * 1024 + y * 32 + z]))!!.isAir())
+                        if (!hitGroundYet && groundHeight != -1) {
+                            if (chunkY * 32 + y >= groundHeight) {
+                                if (chunkY * 32 + y <= groundHeight ||
+                                        !world.contentTranslator.getVoxelForId(VoxelFormat.id(chunk.voxelDataArray!![x * 1024 + y * 32 + z]))!!.isAir)
                                     hitGroundYet = true
                                 else {
-                                    cell.sunlight = 15
+                                    cell.sunlightLevel = 15
                                     sunSources.addLast(x)
                                     sunSources.addLast(y)
                                     sunSources.addLast(z)
@@ -504,37 +488,31 @@ class ChunkLightBaker(internal val chunk: ChunkImplementation) : AutoRebuildingP
                             }
                         }
 
-                        poke(cell)
                         y--
                     }
                 }
-        }
+        }*/
 
-        private fun propagateLightFromBorders(blockSources: IntDeque, sunSources: IntDeque): Int {
-            val cell = ScratchCell(world)
-            val adj = ScratchCell(world)
-
+        /*private fun propagateLightFromBorders(blockSources: IntDeque, sunSources: IntDeque): Int {
             var mods = 0
 
             if (rightChunk != null) {
                 for (z in 0..31)
                     for (y in 0..31) {
-                        peek(32, y, z, adj)
-                        peek(31, y, z, cell)
+                        val adj = getCellDataMutFast(32, y, z)
+                        val cell = getCellDataMutFast(31, y, z)
 
-                        val modifier = cell.voxel.getLightLevelModifier(cell, adj, VoxelSide.RIGHT) + 1
-                        if (adj.blocklight - modifier > cell.blocklight) {
-                            cell.blocklight = adj.blocklight - modifier
-                            poke(cell)
+                        val modifier = cell.blockType.getLightLevelModifier(cell, adj, BlockSide.RIGHT) + 1
+                        if (adj.blocklightLevel - modifier > cell.blocklightLevel) {
+                            cell.blocklightLevel = adj.blocklightLevel - modifier
                             mods++
                             blockSources.addLast(cell.x and 0x1f)
                             blockSources.addLast(cell.y and 0x1f)
                             blockSources.addLast(cell.z and 0x1f)
                         }
-                        if (adj.sunlight - modifier > cell.sunlight) {
-                            cell.sunlight = adj.sunlight - modifier
+                        if (adj.sunlightLevel - modifier > cell.sunlightLevel) {
+                            cell.sunlightLevel = adj.sunlightLevel - modifier
                             mods++
-                            poke(cell)
                             sunSources.addLast(cell.x and 0x1f)
                             sunSources.addLast(cell.y and 0x1f)
                             sunSources.addLast(cell.z and 0x1f)
@@ -544,63 +522,43 @@ class ChunkLightBaker(internal val chunk: ChunkImplementation) : AutoRebuildingP
             if (leftChunk != null) {
                 for (z in 0..31)
                     for (y in 0..31) {
-                        peek(-1, y, z, adj)
-                        peek(0, y, z, cell)
+                        val adj = getCellDataMutFast(-1, y, z)
+                        val cell = getCellDataMutFast(0, y, z)
 
-                        val modifier = cell.voxel.getLightLevelModifier(cell, adj, VoxelSide.LEFT) + 1
-                        if (adj.blocklight - modifier > cell.blocklight) {
-                            cell.blocklight = adj.blocklight - modifier
-                            poke(cell)
+                        val modifier = cell.blockType.getLightLevelModifier(cell, adj, BlockSide.LEFT) + 1
+                        if (adj.blocklightLevel - modifier > cell.blocklightLevel) {
+                            cell.blocklightLevel = adj.blocklightLevel - modifier
                             mods++
                             blockSources.addLast(cell.x and 0x1f)
                             blockSources.addLast(cell.y and 0x1f)
                             blockSources.addLast(cell.z and 0x1f)
                         }
-                        if (adj.sunlight - modifier > cell.sunlight) {
-                            cell.sunlight = adj.sunlight - modifier
+                        if (adj.sunlightLevel - modifier > cell.sunlightLevel) {
+                            cell.sunlightLevel = adj.sunlightLevel - modifier
                             mods++
-                            poke(cell)
                             sunSources.addLast(cell.x and 0x1f)
                             sunSources.addLast(cell.y and 0x1f)
                             sunSources.addLast(cell.z and 0x1f)
                         }
                     }
             }
-            if (topChunk != null && !topChunk.isAirChunk) {
+            if (topChunk != null) {
                 for (z in 0..31)
                     for (x in 0..31) {
-                        peek(x, 32, z, adj)
-                        peek(x, 31, z, cell)
+                        val adj = getCellDataMutFast(x, 32, z)
+                        val cell = getCellDataMutFast(x, 31, z)
 
-                        var modifier = cell.voxel.getLightLevelModifier(cell, adj, VoxelSide.TOP) + 1
-                        if (adj.blocklight - modifier > cell.blocklight) {
-                            cell.blocklight = adj.blocklight - modifier
-                            poke(cell)
+                        var modifier = cell.blockType.getLightLevelModifier(cell, adj, BlockSide.TOP) + 1
+                        if (adj.blocklightLevel - modifier > cell.blocklightLevel) {
+                            cell.blocklightLevel = adj.blocklightLevel - modifier
                             mods++
                             blockSources.addLast(cell.x and 0x1f)
                             blockSources.addLast(cell.y and 0x1f)
                             blockSources.addLast(cell.z and 0x1f)
                         }
                         modifier -= 1 // sunlight doesn't dim travelling downwards
-                        if (adj.sunlight - modifier > cell.sunlight) {
-                            cell.sunlight = adj.sunlight - modifier
-                            mods++
-                            poke(cell)
-                            sunSources.addLast(cell.x and 0x1f)
-                            sunSources.addLast(cell.y and 0x1f)
-                            sunSources.addLast(cell.z and 0x1f)
-                        }
-                    }
-            } else {
-                for (x in 0..31)
-                    for (z in 0..31) {
-                        peek(x, 32, z, adj)
-                        peek(x, 31, z, cell)
-
-                        val modifier = cell.voxel.getLightLevelModifier(cell, adj, VoxelSide.TOP)
-                        if (adj.sunlight - modifier > cell.sunlight) {
-                            cell.sunlight = adj.sunlight - modifier
-                            poke(cell)
+                        if (adj.sunlightLevel - modifier > cell.sunlightLevel) {
+                            cell.sunlightLevel = adj.sunlightLevel - modifier
                             mods++
                             sunSources.addLast(cell.x and 0x1f)
                             sunSources.addLast(cell.y and 0x1f)
@@ -611,22 +569,20 @@ class ChunkLightBaker(internal val chunk: ChunkImplementation) : AutoRebuildingP
             if (bottomChunk != null) {
                 for (z in 0..31)
                     for (x in 0..31) {
-                        peek(x, -1, z, adj)
-                        peek(x, 0, z, cell)
+                        val adj = getCellDataMutFast(x, -1, z)
+                        val cell = getCellDataMutFast(x, 0, z)
 
-                        val modifier = cell.voxel.getLightLevelModifier(cell, adj, VoxelSide.BOTTOM) + 1
-                        if (adj.blocklight - modifier > cell.blocklight) {
-                            cell.blocklight = adj.blocklight - modifier
-                            poke(cell)
+                        val modifier = cell.blockType.getLightLevelModifier(cell, adj, BlockSide.BOTTOM) + 1
+                        if (adj.blocklightLevel - modifier > cell.blocklightLevel) {
+                            cell.blocklightLevel = adj.blocklightLevel - modifier
                             mods++
                             blockSources.addLast(cell.x and 0x1f)
                             blockSources.addLast(cell.y and 0x1f)
                             blockSources.addLast(cell.z and 0x1f)
                         }
-                        if (adj.sunlight - modifier > cell.sunlight) {
-                            cell.sunlight = adj.sunlight - modifier
+                        if (adj.sunlightLevel - modifier > cell.sunlightLevel) {
+                            cell.sunlightLevel = adj.sunlightLevel - modifier
                             mods++
-                            poke(cell)
                             sunSources.addLast(cell.x and 0x1f)
                             sunSources.addLast(cell.y and 0x1f)
                             sunSources.addLast(cell.z and 0x1f)
@@ -637,22 +593,20 @@ class ChunkLightBaker(internal val chunk: ChunkImplementation) : AutoRebuildingP
             if (frontChunk != null) {
                 for (y in 0..31)
                     for (x in 0..31) {
-                        peek(x, y, 32, adj)
-                        peek(x, y, 31, cell)
+                        val adj = getCellDataMutFast(x, y, 32)
+                        val cell = getCellDataMutFast(x, y, 31)
 
-                        val modifier = cell.voxel.getLightLevelModifier(cell, adj, VoxelSide.FRONT) + 1
-                        if (adj.blocklight - modifier > cell.blocklight) {
-                            cell.blocklight = adj.blocklight - modifier
-                            poke(cell)
+                        val modifier = cell.blockType.getLightLevelModifier(cell, adj, BlockSide.FRONT) + 1
+                        if (adj.blocklightLevel - modifier > cell.blocklightLevel) {
+                            cell.blocklightLevel = adj.blocklightLevel - modifier
                             mods++
                             blockSources.addLast(cell.x and 0x1f)
                             blockSources.addLast(cell.y and 0x1f)
                             blockSources.addLast(cell.z and 0x1f)
                         }
-                        if (adj.sunlight - modifier > cell.sunlight) {
-                            cell.sunlight = adj.sunlight - modifier
+                        if (adj.sunlightLevel - modifier > cell.sunlightLevel) {
+                            cell.sunlightLevel = adj.sunlightLevel - modifier
                             mods++
-                            poke(cell)
                             sunSources.addLast(cell.x and 0x1f)
                             sunSources.addLast(cell.y and 0x1f)
                             sunSources.addLast(cell.z and 0x1f)
@@ -663,22 +617,20 @@ class ChunkLightBaker(internal val chunk: ChunkImplementation) : AutoRebuildingP
             if (backChunk != null) {
                 for (y in 0..31)
                     for (x in 0..31) {
-                        peek(x, y, -1, adj)
-                        peek(x, y, 0, cell)
+                        val adj = getCellDataMutFast(x, y, -1)
+                        val cell = getCellDataMutFast(x, y, 0)
 
-                        val modifier = cell.voxel.getLightLevelModifier(cell, adj, VoxelSide.BACK) + 1
-                        if (adj.blocklight - modifier > cell.blocklight) {
-                            cell.blocklight = adj.blocklight - modifier
-                            poke(cell)
+                        val modifier = cell.blockType.getLightLevelModifier(cell, adj, BlockSide.BACK) + 1
+                        if (adj.blocklightLevel - modifier > cell.blocklightLevel) {
+                            cell.blocklightLevel = adj.blocklightLevel - modifier
                             mods++
                             blockSources.addLast(cell.x and 0x1f)
                             blockSources.addLast(cell.y and 0x1f)
                             blockSources.addLast(cell.z and 0x1f)
                         }
-                        if (adj.sunlight - modifier > cell.sunlight) {
-                            cell.sunlight = adj.sunlight - modifier
+                        if (adj.sunlightLevel - modifier > cell.sunlightLevel) {
+                            cell.sunlightLevel = adj.sunlightLevel - modifier
                             mods++
-                            poke(cell)
                             sunSources.addLast(cell.x and 0x1f)
                             sunSources.addLast(cell.y and 0x1f)
                             sunSources.addLast(cell.z and 0x1f)
@@ -687,448 +639,13 @@ class ChunkLightBaker(internal val chunk: ChunkImplementation) : AutoRebuildingP
             }
 
             return mods
-        }
+        }*/
     }
 
-    // TODO use getLightLevelModifier
-    private fun propagateLightRemovalBeyondChunks(blockSources: IntDeque, sunSources: IntDeque, blockSourcesRemoval: IntDeque, sunSourcesRemoval: IntDeque) {
-        val bounds = 64
-
-        fun getSunLight(x: Int, y: Int, z: Int): Int =
-                if (x in 0..31 && y in 0..31 && z in 0..31)
-                    VoxelFormat.sunlight(chunk.peekRaw(x, y, z))
-                else
-                    VoxelFormat.sunlight(this.peekRawFast(x, y, z))
-
-        fun setSunLight(x: Int, y: Int, z: Int, level: Int) =
-                if (x in 0..31 && y in 0..31 && z in 0..31)
-                    chunk.pokeRawSilently(x, y, z, VoxelFormat.changeSunlight(chunk.peekRaw(x, y, z), level))
-                else
-                    this.pokeRawFast(x, y, z, VoxelFormat.changeSunlight(this.peekRawFast(x, y, z), level))
-
-        while (sunSourcesRemoval.size() > 0) {
-            val sunLightLevel = sunSourcesRemoval.removeLast()
-            val z = sunSourcesRemoval.removeLast()
-            val y = sunSourcesRemoval.removeLast()
-            val x = sunSourcesRemoval.removeLast()
-
-            // X Axis
-            if (x > -bounds) {
-                val neighborSunLightLevel = getSunLight(x - 1, y, z)
-                if (neighborSunLightLevel in 1..(sunLightLevel - 1)) {
-                    setSunLight(x - 1, y, z, 0)
-                    sunSourcesRemoval.addLast(x - 1)
-                    sunSourcesRemoval.addLast(y)
-                    sunSourcesRemoval.addLast(z)
-                    sunSourcesRemoval.addLast(neighborSunLightLevel)
-                } else if (neighborSunLightLevel >= sunLightLevel) {
-                    sunSources.addLast(x - 1)
-                    sunSources.addLast(y)
-                    sunSources.addLast(z)
-                }
-            }
-            if (x < bounds) {
-                val neighborSunLightLevel = getSunLight(x + 1, y, z)
-                if (neighborSunLightLevel in 1..(sunLightLevel - 1)) {
-                    setSunLight(x + 1, y, z, 0)
-                    sunSourcesRemoval.addLast(x + 1)
-                    sunSourcesRemoval.addLast(y)
-                    sunSourcesRemoval.addLast(z)
-                    sunSourcesRemoval.addLast(neighborSunLightLevel)
-                } else if (neighborSunLightLevel >= sunLightLevel) {
-                    sunSources.addLast(x + 1)
-                    sunSources.addLast(y)
-                    sunSources.addLast(z)
-                }
-            }
-            // Y axis
-            if (y > -bounds) {
-                val neighborSunLightLevel = getSunLight(x, y - 1, z)
-                if (neighborSunLightLevel in 1..sunLightLevel) {
-                    setSunLight(x, y - 1, z, 0)
-                    sunSourcesRemoval.addLast(x)
-                    sunSourcesRemoval.addLast(y - 1)
-                    sunSourcesRemoval.addLast(z)
-                    sunSourcesRemoval.addLast(neighborSunLightLevel)
-                } else if (neighborSunLightLevel >= sunLightLevel) {
-                    sunSources.addLast(x)
-                    sunSources.addLast(y - 1)
-                    sunSources.addLast(z)
-                }
-            }
-            if (y < bounds) {
-                val neighborSunLightLevel = getSunLight(x, y + 1, z)
-
-                if (neighborSunLightLevel in 1..(sunLightLevel - 1)) {
-                    setSunLight(x, y + 1, z, 0)
-                    sunSourcesRemoval.addLast(x)
-                    sunSourcesRemoval.addLast(y + 1)
-                    sunSourcesRemoval.addLast(z)
-                    sunSourcesRemoval.addLast(neighborSunLightLevel)
-                } else if (neighborSunLightLevel >= sunLightLevel) {
-                    sunSources.addLast(x)
-                    sunSources.addLast(y + 1)
-                    sunSources.addLast(z)
-                }
-            }
-            // Z Axis
-            if (z > -bounds) {
-                val neighborSunLightLevel = getSunLight(x, y, z - 1)
-                if (neighborSunLightLevel in 1..(sunLightLevel - 1)) {
-                    setSunLight(x, y, z - 1, 0)
-                    sunSourcesRemoval.addLast(x)
-                    sunSourcesRemoval.addLast(y)
-                    sunSourcesRemoval.addLast(z - 1)
-                    sunSourcesRemoval.addLast(neighborSunLightLevel)
-                } else if (neighborSunLightLevel >= sunLightLevel) {
-                    sunSources.addLast(x)
-                    sunSources.addLast(y)
-                    sunSources.addLast(z - 1)
-                }
-            }
-            if (z < bounds) {
-                val neighborSunLightLevel = getSunLight(x, y, z + 1)
-                if (neighborSunLightLevel in 1..(sunLightLevel - 1))
-                // TODO wrong!
-                {
-                    setSunLight(x, y, z + 1, 0)
-                    sunSourcesRemoval.addLast(x)
-                    sunSourcesRemoval.addLast(y)
-                    sunSourcesRemoval.addLast(z + 1)
-                    sunSourcesRemoval.addLast(neighborSunLightLevel)
-                } else if (neighborSunLightLevel >= sunLightLevel) {
-                    sunSources.addLast(x)
-                    sunSources.addLast(y)
-                    sunSources.addLast(z + 1)
-                }
-            }
-        }
-
-        fun getBlockLight(x: Int, y: Int, z: Int): Int =
-                if (x in 0..31 && y in 0..31 && z in 0..31)
-                    VoxelFormat.blocklight(chunk.peekRaw(x, y, z))
-                else
-                    VoxelFormat.blocklight(this.peekRawFast(x, y, z))
-
-
-        fun setBlockLight(x: Int, y: Int, z: Int, level: Int) =
-                if (x in 0..31 && y in 0..31 && z in 0..31)
-                    chunk.pokeRawSilently(x, y, z, VoxelFormat.changeBlocklight(chunk.peekRaw(x, y, z), level))
-                else
-                    this.pokeRawFast(x, y, z, VoxelFormat.changeBlocklight(this.peekRawFast(x, y, z), level))
-
-        while (blockSourcesRemoval.size() > 0) {
-            val blockLightLevel = blockSourcesRemoval.removeLast()
-            val z = blockSourcesRemoval.removeLast()
-            val y = blockSourcesRemoval.removeLast()
-            val x = blockSourcesRemoval.removeLast()
-
-            // X Axis
-            if (x > -bounds) {
-                val neighborBlockLightLevel = getBlockLight(x - 1, y, z)
-                if (neighborBlockLightLevel in 1..(blockLightLevel - 1)) {
-                    setBlockLight(x - 1, y, z, 0)
-                    blockSourcesRemoval.addLast(x - 1)
-                    blockSourcesRemoval.addLast(y)
-                    blockSourcesRemoval.addLast(z)
-                    blockSourcesRemoval.addLast(neighborBlockLightLevel)
-                } else if (neighborBlockLightLevel >= blockLightLevel) {
-                    blockSources.addLast(x - 1)
-                    blockSources.addLast(y)
-                    blockSources.addLast(z)
-                }
-            }
-            if (x < bounds) {
-                val neighborBlockLightLevel = getBlockLight(x + 1, y, z)
-                if (neighborBlockLightLevel in 1..(blockLightLevel - 1)) {
-                    setBlockLight(x + 1, y, z, 0)
-                    blockSourcesRemoval.addLast(x + 1)
-                    blockSourcesRemoval.addLast(y)
-                    blockSourcesRemoval.addLast(z)
-                    blockSourcesRemoval.addLast(neighborBlockLightLevel)
-                } else if (neighborBlockLightLevel >= blockLightLevel) {
-                    blockSources.addLast(x + 1)
-                    blockSources.addLast(y)
-                    blockSources.addLast(z)
-                }
-            }
-            // Y axis
-            if (y > -bounds) {
-                val neighborBlockLightLevel = getBlockLight(x, y - 1, z)
-                if (neighborBlockLightLevel in 1..(blockLightLevel - 1)) {
-                    setBlockLight(x, y - 1, z, 0)
-                    blockSourcesRemoval.addLast(x)
-                    blockSourcesRemoval.addLast(y - 1)
-                    blockSourcesRemoval.addLast(z)
-                    blockSourcesRemoval.addLast(neighborBlockLightLevel)
-                } else if (neighborBlockLightLevel >= blockLightLevel) {
-                    blockSources.addLast(x)
-                    blockSources.addLast(y - 1)
-                    blockSources.addLast(z)
-                }
-            }
-            if (y < bounds) {
-                val neighborBlockLightLevel = getBlockLight(x, y + 1, z)
-                if (neighborBlockLightLevel in 1..(blockLightLevel - 1)) {
-                    setBlockLight(x, y + 1, z, 0)
-                    blockSourcesRemoval.addLast(x)
-                    blockSourcesRemoval.addLast(y + 1)
-                    blockSourcesRemoval.addLast(z)
-                    blockSourcesRemoval.addLast(neighborBlockLightLevel)
-                } else if (neighborBlockLightLevel >= blockLightLevel) {
-                    blockSources.addLast(x)
-                    blockSources.addLast(y + 1)
-                    blockSources.addLast(z)
-                }
-            }
-            // Z Axis
-            if (z > -bounds) {
-                val neighborBlockLightLevel = getBlockLight(x, y, z - 1)
-                if (neighborBlockLightLevel in 1..(blockLightLevel - 1)) {
-                    setBlockLight(x, y, z - 1, 0)
-                    blockSourcesRemoval.addLast(x)
-                    blockSourcesRemoval.addLast(y)
-                    blockSourcesRemoval.addLast(z - 1)
-                    blockSourcesRemoval.addLast(neighborBlockLightLevel)
-                } else if (neighborBlockLightLevel >= blockLightLevel) {
-                    blockSources.addLast(x)
-                    blockSources.addLast(y)
-                    blockSources.addLast(z - 1)
-                }
-            }
-            if (z < bounds) {
-                val neighborBlockLightLevel = getBlockLight(x, y, z + 1)
-                if (neighborBlockLightLevel in 1..(blockLightLevel - 1)) {
-                    setBlockLight(x, y, z + 1, 0)
-                    blockSourcesRemoval.addLast(x)
-                    blockSourcesRemoval.addLast(y)
-                    blockSourcesRemoval.addLast(z + 1)
-                    blockSourcesRemoval.addLast(neighborBlockLightLevel)
-                } else if (neighborBlockLightLevel >= blockLightLevel) {
-                    blockSources.addLast(x)
-                    blockSources.addLast(y)
-                    blockSources.addLast(z + 1)
-                }
-            }
-        }
-    }
-
-    // TODO use getLightLevelModifier
-    private fun propagateLightningBeyondChunk(blockSources: IntDeque, sunSources: IntDeque): Int {
-        var modifiedBlocks = 0
-        val bounds = 64
-
-        val cell = ScratchCell(world)
-        val sideCell = ScratchCell(world)
-        while (blockSources.size() > 0) {
-            val z = blockSources.removeLast()
-            val y = blockSources.removeLast()
-            val x = blockSources.removeLast()
-            peek(x, y, z, cell)
-            var ll = cell.blocklight
-
-            if (cell.voxel.opaque)
-                ll = cell.voxel.getEmittedLightLevel(cell)
-
-            if (ll > 1) {
-                // X-propagation
-                if (x < bounds) {
-                    val adj = this.peekRawFast(x + 1, y, z)
-                    if (!world.contentTranslator.getVoxelForId(adj and 0xFFFF)!!.opaque && adj and blocklightMask shr blockBitshift < ll - 1) {
-                        this.pokeRawFast(x + 1, y, z, adj and blockAntiMask or (ll - 1 shl blockBitshift))
-                        modifiedBlocks++
-                        blockSources.addLast(x + 1)
-                        blockSources.addLast(y)
-                        blockSources.addLast(z)
-                    }
-                }
-                if (x > -bounds) {
-                    val adj = this.peekRawFast(x - 1, y, z)
-                    if (!world.contentTranslator.getVoxelForId(adj and 0xFFFF)!!.opaque && adj and blocklightMask shr blockBitshift < ll - 1) {
-                        this.pokeRawFast(x - 1, y, z, adj and blockAntiMask or (ll - 1 shl blockBitshift))
-                        modifiedBlocks++
-                        blockSources.addLast(x - 1)
-                        blockSources.addLast(y)
-                        blockSources.addLast(z)
-                    }
-                }
-                // Z-propagation
-                if (z < bounds) {
-                    val adj = this.peekRawFast(x, y, z + 1)
-                    if (!world.contentTranslator.getVoxelForId(adj and 0xFFFF)!!.opaque && adj and blocklightMask shr blockBitshift < ll - 1) {
-                        this.pokeRawFast(x, y, z + 1, adj and blockAntiMask or (ll - 1 shl blockBitshift))
-                        modifiedBlocks++
-                        blockSources.addLast(x)
-                        blockSources.addLast(y)
-                        blockSources.addLast(z + 1)
-                    }
-                }
-                if (z > -bounds) {
-                    val adj = this.peekRawFast(x, y, z - 1)
-                    if (!world.contentTranslator.getVoxelForId(adj and 0xFFFF)!!.opaque && adj and blocklightMask shr blockBitshift < ll - 1) {
-                        this.pokeRawFast(x, y, z - 1, adj and blockAntiMask or (ll - 1 shl blockBitshift))
-                        modifiedBlocks++
-                        blockSources.addLast(x)
-                        blockSources.addLast(y)
-                        blockSources.addLast(z - 1)
-                    }
-                }
-                // Y-propagation
-                if (y < bounds)
-                // y = 254+1
-                {
-                    val adj = this.peekRawFast(x, y + 1, z)
-                    if (!world.contentTranslator.getVoxelForId(adj and 0xFFFF)!!.opaque && adj and blocklightMask shr blockBitshift < ll - 1) {
-                        this.pokeRawFast(x, y + 1, z, adj and blockAntiMask or (ll - 1 shl blockBitshift))
-                        modifiedBlocks++
-                        blockSources.addLast(x)
-                        blockSources.addLast(y + 1)
-                        blockSources.addLast(z)
-                    }
-                }
-                if (y > -bounds) {
-                    val adj = this.peekRawFast(x, y - 1, z)
-                    if (!world.contentTranslator.getVoxelForId(adj and 0xFFFF)!!.opaque && adj and blocklightMask shr blockBitshift < ll - 1) {
-                        this.pokeRawFast(x, y - 1, z, adj and blockAntiMask or (ll - 1 shl blockBitshift))
-                        modifiedBlocks++
-                        blockSources.addLast(x)
-                        blockSources.addLast(y - 1)
-                        blockSources.addLast(z)
-                    }
-                }
-            }
-        }
-        // Sunlight propagation
-        while (sunSources.size() > 0) {
-            val z = sunSources.removeLast()
-            val y = sunSources.removeLast()
-            val x = sunSources.removeLast()
-            peek(x, y, z, cell)
-            var ll = cell.sunlight
-
-            if (cell.voxel.opaque)
-                ll = 0
-
-            if (ll > 1) {
-                // X-propagation
-                if (x < bounds) {
-                    peek(x + 1, y, z, sideCell)
-                    val llRight = ll - sideCell.voxel.getLightLevelModifier(sideCell, cell, VoxelSide.LEFT)
-                    if (!sideCell.voxel.opaque && sideCell.sunlight < llRight - 1) {
-                        sideCell.sunlight = llRight - 1
-                        poke(sideCell)
-                        modifiedBlocks++
-                        sunSources.addLast(x + 1)
-                        sunSources.addLast(y)
-                        sunSources.addLast(z)
-                    }
-                }
-                if (x > -bounds) {
-                    peek(x - 1, y, z, sideCell)
-                    val llLeft = ll - sideCell.voxel.getLightLevelModifier(sideCell, cell, VoxelSide.RIGHT)
-                    if (!sideCell.voxel.opaque && sideCell.sunlight < llLeft - 1) {
-                        sideCell.sunlight = llLeft - 1
-                        poke(sideCell)
-                        modifiedBlocks++
-                        sunSources.addLast(x - 1)
-                        sunSources.addLast(y)
-                        sunSources.addLast(z)
-                    }
-                }
-                // Z-propagation
-                if (z < bounds) {
-                    peek(x, y, z + 1, sideCell)
-                    val llFront = ll - sideCell.voxel.getLightLevelModifier(sideCell, cell, VoxelSide.BACK)
-                    if (!sideCell.voxel.opaque && sideCell.sunlight < llFront - 1) {
-                        sideCell.sunlight = llFront - 1
-                        poke(sideCell)
-                        modifiedBlocks++
-                        sunSources.addLast(x)
-                        sunSources.addLast(y)
-                        sunSources.addLast(z + 1)
-                    }
-                }
-                if (z > -bounds) {
-                    peek(x, y, z - 1, sideCell)
-                    val llBack = ll - sideCell.voxel.getLightLevelModifier(sideCell, cell, VoxelSide.FRONT)
-                    if (!sideCell.voxel.opaque && sideCell.sunlight < llBack - 1) {
-                        sideCell.sunlight = llBack - 1
-                        poke(sideCell)
-                        modifiedBlocks++
-                        sunSources.addLast(x)
-                        sunSources.addLast(y)
-                        sunSources.addLast(z - 1)
-                    }
-                }
-                // Y-propagation
-                if (y < bounds) {
-                    peek(x, y + 1, z, sideCell)
-                    val llTop = ll - sideCell.voxel.getLightLevelModifier(sideCell, cell, VoxelSide.BOTTOM)
-                    if (!sideCell.voxel.opaque && sideCell.sunlight < llTop - 1) {
-                        sideCell.sunlight = llTop - 1
-                        poke(sideCell)
-                        modifiedBlocks++
-                        sunSources.addLast(x)
-                        sunSources.addLast(y + 1)
-                        sunSources.addLast(z)
-                    }
-                }
-                if (y > -bounds) {
-                    peek(x, y - 1, z, sideCell)
-                    val llBottom = ll - sideCell.voxel.getLightLevelModifier(sideCell, cell, VoxelSide.TOP)
-                    if (!sideCell.voxel.opaque && sideCell.sunlight < llBottom) {
-                        sideCell.sunlight = llBottom
-                        poke(sideCell)
-                        modifiedBlocks++
-                        sunSources.addLast(x)
-                        sunSources.addLast(y - 1)
-                        sunSources.addLast(z)
-                    }
-                }
-            }
-        }
-        return modifiedBlocks
-    }
-
-    private inline fun peekRawFast(x: Int, y: Int, z: Int): Int =
-            if (x in 0..31 && y in 0..31 && z in 0..31)
-                chunk.peekRaw(x, y, z)
-            else world.peekRaw(x + chunkX * 32, y + chunkY * 32, z + chunkZ * 32)
-
-    private inline fun peek(x: Int, y: Int, z: Int, cell: ScratchCell) {
-        cell.x = x
-        cell.y = y
-        cell.z = z
-        val rawData = peekRawFast(x, y, z)
-        cell.voxel = world.contentTranslator.getVoxelForId(VoxelFormat.id(rawData)) ?: world.content.voxels.air
-        cell.sunlight = VoxelFormat.sunlight(rawData)
-        cell.blocklight = VoxelFormat.blocklight(rawData)
-        cell.metaData = VoxelFormat.meta(rawData)
-    }
-
-    private fun pokeRawFast(x: Int, y: Int, z: Int, data: Int) {
-        // Still within bounds !
-        if (x in 0..31 && y in 0..31 && z in 0..31) {
-            chunk.pokeRawSilently(x, y, z, data)
-        } else {
-
-            val oldData = world.peekRaw(x + chunkX * 32, y + chunkY * 32, z + chunkZ * 32)
-            world.pokeRawSilently(x + chunkX * 32, y + chunkY * 32, z + chunkZ * 32, data)
-
-            val chunk = world.chunksManager.getChunkWorldCoordinates(x + chunkX * 32, y + chunkY * 32, z + chunkZ * 32)
-            if (chunk != null && oldData != data) {
-                chunk.lightBaker.requestUpdate()
-                chunk.mesh.requestUpdate()
-            }
-
-            return
-        }
-    }
-
-    private fun poke(cell: ScratchCell) {
-        val data = VoxelFormat.format(world.contentTranslator.getIdForVoxel(cell.voxel), cell.metaData, cell.sunlight, cell.blocklight)
-        pokeRawFast(cell.x, cell.y, cell.z, data)
-    }
+    private fun getCellDataMutFast(lx: Int, ly: Int, lz: Int) =
+            if (lx in 0..31 && ly in 0..31 && lz in 0..31)
+                chunk.getCellMut(lx, ly, lz).data
+            else world.getCellMut(lx + chunkX * 32, ly + chunkY * 32, lz + chunkZ * 32)!!.data
 
     override fun toString(): String {
         return "ChunkLightBaker(pending updates=$pendingUpdates)"

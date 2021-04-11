@@ -9,7 +9,7 @@ package xyz.chunkstories.server.propagation;
 import xyz.chunkstories.api.graphics.systems.dispatching.DecalsManager;
 import org.joml.Vector3dc;
 
-import xyz.chunkstories.api.net.packets.PacketDecal;
+import xyz.chunkstories.net.packets.PacketDecal;
 import xyz.chunkstories.api.player.Player;
 import xyz.chunkstories.server.DedicatedServer;
 import xyz.chunkstories.server.player.ServerPlayer;

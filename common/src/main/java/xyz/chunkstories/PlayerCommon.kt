@@ -5,6 +5,7 @@ import xyz.chunkstories.api.world.World
 import xyz.chunkstories.api.world.WorldMaster
 import xyz.chunkstories.world.WorldImplementation
 
+/*
 abstract class PlayerCommon(final override val name: String) : Player {
     fun eventEntersWorld(world: World) {
         if (world is WorldMaster) {
@@ -17,4 +18,4 @@ abstract class PlayerCommon(final override val name: String) : Player {
             (world as WorldImplementation).playersMetadata.playerLeaves(this)
         }
     }
-}
+}*/

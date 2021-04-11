@@ -6,8 +6,8 @@
 
 package xyz.chunkstories.item
 
-import com.google.gson.Gson
 import org.hjson.JsonValue
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.content.Asset
 import xyz.chunkstories.api.content.Content.ItemsDefinitions
@@ -21,18 +21,12 @@ import java.util.*
 class ItemDefinitionsStore(override val parent: GameContentStore) : ItemsDefinitions {
     var itemDefinitions: MutableMap<String, ItemDefinition> = HashMap()
 
-    private val modsManager: ModsManager
+    private val modsManager: ModsManager = parent.modsManager
 
-    override val logger = LoggerFactory.getLogger("content.items")
-
-    init {
-        this.modsManager = parent.modsManager
-    }
+    override val logger: Logger = LoggerFactory.getLogger("content.items")
 
     fun reload() {
         itemDefinitions.clear()
-
-        val gson = Gson()
 
         fun readDefinitions(asset: Asset) {
             logger.debug("Reading items definitions in :$asset")
@@ -53,15 +47,6 @@ class ItemDefinitionsStore(override val parent: GameContentStore) : ItemsDefinit
 
         for (asset in parent.modsManager.allAssets.filter { it.name.startsWith("items/") && it.name.endsWith(".hjson") }) {
             readDefinitions(asset)
-        }
-    }
-
-    internal fun addVoxelItems() {
-        // Include definitions from the voxels variants
-        for(voxel in parent.voxels.all) {
-            for(variantDefinition in voxel.variants) {
-                itemDefinitions[variantDefinition.name] = variantDefinition
-            }
         }
     }
 

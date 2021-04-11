@@ -17,7 +17,7 @@ import xyz.chunkstories.api.util.IterableIterator
 
 class ModFolder @Throws(ModLoadFailureException::class)
 constructor(internal val folder: File) : ModImplementation() {
-    internal val assetsMap: MutableMap<String, ModFolderAsset> = HashMap()
+    private val assetsMap: MutableMap<String, ModFolderAsset> = HashMap()
 
     override val loadString: String
         get() = folder.absolutePath
@@ -54,7 +54,7 @@ constructor(internal val folder: File) : ModImplementation() {
 
     override fun close() {}
 
-    override val assets: Collection<Asset>
-        get() = assetsMap.values
+    override val assets: Sequence<Asset>
+        get() = assetsMap.values.asSequence()
 
 }

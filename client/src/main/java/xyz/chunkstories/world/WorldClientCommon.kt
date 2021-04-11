@@ -18,7 +18,8 @@ import java.io.File
 /**
  * Mostly the common methods of WorldClientRemote and WorldClientLocal
  */
-abstract class WorldClientCommon @Throws(WorldLoadingException::class)
+abstract class
+WorldClientCommon @Throws(WorldLoadingException::class)
 constructor(override val client: IngameClientImplementation, info: WorldInfo, translator: AbstractContentTranslator?, folder: File?) : WorldImplementation(client, info, translator, folder), WorldClient {
 
     val pluginManager: PluginManager

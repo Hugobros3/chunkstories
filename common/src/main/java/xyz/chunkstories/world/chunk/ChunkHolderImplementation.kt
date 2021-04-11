@@ -7,7 +7,6 @@
 package xyz.chunkstories.world.chunk
 
 import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
-import xyz.chunkstories.api.server.RemotePlayer
 import xyz.chunkstories.api.util.concurrency.Fence
 import xyz.chunkstories.api.world.WorldUser
 import xyz.chunkstories.api.world.chunk.ChunkHolder
@@ -18,6 +17,7 @@ import xyz.chunkstories.world.WorldTool
 import xyz.chunkstories.world.io.TaskLoadChunk
 import net.jpountz.lz4.LZ4Factory
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.RemotePlayer
 import xyz.chunkstories.api.world.WorldClientNetworkedRemote
 import xyz.chunkstories.world.region.RegionImplementation
 import java.util.*
@@ -50,8 +50,6 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
 
     /** Used by IO operations only  */
     var compressedData: ChunkCompressedData? = null
-
-    //var loadChunkTask: IOTask? = null
 
     override val chunk: ChunkImplementation?
         get() = (state as? ChunkHolder.State.Available)?.chunk as? ChunkImplementation
@@ -460,7 +458,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
                     // Remove the entities from this chunk from the world
                     for (entity in chunk.localEntities) {
                         // If there is no controller
-                        if (entity.traits[TraitControllable::class]?.controller == null)
+                        if (entity.controller == null)
                             region.world.removeEntityFromList(entity)
                     }
 

@@ -15,31 +15,25 @@ import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.entity.traits.serializable.TraitHealth
 import xyz.chunkstories.api.events.player.PlayerChatEvent
 import xyz.chunkstories.api.events.player.PlayerLogoutEvent
-import xyz.chunkstories.api.net.Interlocutor
-import xyz.chunkstories.api.server.Server
-import xyz.chunkstories.content.translator.AbstractContentTranslator
+import xyz.chunkstories.api.player.entityIfIngame
 import xyz.chunkstories.net.Connection
-import xyz.chunkstories.net.PacketsEncoderDecoder
 import xyz.chunkstories.net.packets.PacketContentTranslator
 import xyz.chunkstories.net.packets.PacketSendFile
 import xyz.chunkstories.net.packets.PacketSendWorldInfo
-import xyz.chunkstories.server.net.ServerPacketsProcessorImplementation.ClientPacketsContext
+import xyz.chunkstories.server.DedicatedServer
 import xyz.chunkstories.server.player.ServerPlayer
-import xyz.chunkstories.world.WorldServer
 import xyz.chunkstories.world.spawnPlayer
 
-abstract class ClientConnection(val context: Server, internal val clientsManager: ClientsManager, remoteAddress: String, port: Int) : Connection(remoteAddress, port), Interlocutor {
+abstract class ClientConnection(val server: DedicatedServer, internal val connectionsManager: ConnectionsManager, remoteAddress: String, port: Int) : Connection(remoteAddress, port) {
     internal val logger: Logger
 
     private val loginHelper: PlayerAuthenticationHelper
 
-    abstract override var encoderDecoder: ClientPacketsContext protected set
     var player: ServerPlayer? = null
 
     init {
         // This way we can tell the logs from one use to the next
         this.logger = LoggerFactory.getLogger("server.net.users." + usersCount.getAndIncrement())
-
         this.loginHelper = PlayerAuthenticationHelper(this)
     }
 
@@ -48,25 +42,27 @@ abstract class ClientConnection(val context: Server, internal val clientsManager
     }
 
     override fun handleSystemRequest(message: String): Boolean {
-        if (message.startsWith("info")) {
-            this.clientsManager.sendServerInfo(this)
-            return true
-
-        } else if (message.startsWith("login/")) {
-            return loginHelper.handleLogin(message.substring(6, message.length))
-
-        } else if (message == "mods") {
-            sendTextMessage("info/mods:" + clientsManager.server.modsProvider.modsString)
-            this.flush()
-            return true
-
-        } else if (message == "icon-file") {
-            val iconPacket = PacketSendFile()
-            iconPacket.file = File("server-icon.png")
-            iconPacket.fileTag = "server-icon"
-            this.pushPacket(iconPacket)
-            this.flush()
-            return true
+        when {
+            message.startsWith("info") -> {
+                this.connectionsManager.sendServerInfo(this)
+                return true
+            }
+            message.startsWith("login/") -> {
+                return loginHelper.handleLogin(message.substring(6, message.length))
+            }
+            message == "mods" -> {
+                sendTextMessage("info/mods:" + connectionsManager.server.modsProvider.modsString)
+                this.flush()
+                return true
+            }
+            message == "icon-file" -> {
+                val iconPacket = PacketSendFile()
+                iconPacket.file = File("server-icon.png")
+                iconPacket.fileTag = "server-icon"
+                this.pushPacket(iconPacket)
+                this.flush()
+                return true
+            }
         }
 
         // Any other commands need an authentificated player !
@@ -83,7 +79,7 @@ abstract class ClientConnection(val context: Server, internal val clientsManager
             logger.info("$this asked to be sent mod $md5")
 
             // Give him what he asked for.
-            val found = clientsManager.server.modsProvider.obtainModRedistribuable(md5)
+            val found = connectionsManager.server.modsProvider.obtainModRedistribuable(md5)
             if (found == null) {
                 logger.info("No such mod found.")
             } else {
@@ -95,66 +91,61 @@ abstract class ClientConnection(val context: Server, internal val clientsManager
             }
 
         } else if (message.startsWith("world/")) {
-            // TODO this bit will obviously need to be rewritten when I get arround to doing
-            // multiworld support
-            val world = clientsManager.server.world
-            val message = message.substring(6, message.length)
+            // TODO this cannot support multi-world servers
+            val world = connectionsManager.server.world
+            when (message.substring(6, message.length)) {
+                "enter" -> {
+                    player.whenEnteringWorld(world)
+                    // Sends the construction info for the world, and then the player entity
+                    val packet = PacketSendWorldInfo(world.properties)
+                    pushPacket(packet)
 
-            if (message == "enter") {
-                player.whenEnteringWorld(world)
-                // Sends the construction info for the world, and then the player entity
-                val packet = PacketSendWorldInfo(world.worldInfo)
-                pushPacket(packet)
-
-                // TODO only spawn the player when he asks to
-                world.spawnPlayer(player)
-                return true
-
-            } else if (message == "translator") {
-                val packet = PacketContentTranslator(
-                        world.contentTranslator)
-                player.pushPacket(packet)
-                return true
-
-            } else if (message == "respawn") {
-                // Only allow to respawn if the current entity is null or dead
-                if (player.controlledEntity == null || player.controlledEntity?.traits?.get(TraitHealth::class)?.isDead == true) {
+                    // TODO only spawn the player when he asks to
                     world.spawnPlayer(player)
-                    player.sendMessage("Respawning ...")
-                } else
-                    player.sendMessage("You're not dead, or you are controlling a non-living entity.")
-                return true
-            }
-
-            return false
-        } else if (message.startsWith("chat/")) {
-            var chatMessage = message.substring(5, message.length)
-
-            // Messages starting with / are commands
-            if (chatMessage.startsWith("/")) {
-                chatMessage = chatMessage.substring(1, chatMessage.length)
-
-                var cmdName = chatMessage.toLowerCase()
-                var args = arrayOf<String>()
-                if (chatMessage.contains(" ")) {
-                    cmdName = chatMessage.substring(0, chatMessage.indexOf(" "))
-                    args = chatMessage.substring(chatMessage.indexOf(" ") + 1, chatMessage.length).split(" ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+                    return true
                 }
-
-                clientsManager.server.console.dispatchCommand(player, cmdName, args)
-                return true
-                // The rest is just normal chat
-            } else if (chatMessage.length > 0) {
-                val event = PlayerChatEvent(player, chatMessage)
-                clientsManager.server.pluginManager.fireEvent(event)
-
-                if (!event.isCancelled)
-                    context.broadcastMessage(event.formattedMessage)
-
-                return true
-            } else {
-                return true // Ignore empty messages
+                "translator" -> {
+                    val packet = PacketContentTranslator(world.contentTranslator)
+                    player.pushPacket(packet)
+                    return true
+                }
+                "respawn" -> {
+                    // Only allow to respawn if the current entity is null or dead
+                    val playerEntity = player.entityIfIngame
+                    if (playerEntity == null || playerEntity.traits[TraitHealth::class]?.isDead == true) {
+                        world.spawnPlayer(player)
+                        player.sendMessage("Respawning ...")
+                    } else
+                        player.sendMessage("You're not dead, or you are controlling a non-living entity.")
+                    return true
+                }
+                else -> return false
             }
+
+        } else if (message.startsWith("chat/")) {
+            val chatMessage = message.substring(5, message.length)
+            when {
+                chatMessage.startsWith("/") -> {
+                    val commandString = chatMessage.substring(1, chatMessage.length)
+
+                    var cmdName = commandString.toLowerCase()
+                    var args = arrayOf<String>()
+                    if (commandString.contains(" ")) {
+                        cmdName = commandString.substring(0, commandString.indexOf(" "))
+                        args = commandString.substring(commandString.indexOf(" ") + 1, commandString.length).split(" ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+                    }
+
+                    connectionsManager.server.dispatchCommand(player, cmdName, args)
+                }
+                chatMessage.isNotEmpty() -> {
+                    val event = PlayerChatEvent(player, chatMessage)
+                    connectionsManager.server.pluginManager.fireEvent(event)
+
+                    if (!event.isCancelled)
+                        server.broadcastMessage(event.formattedMessage)
+                }
+            }
+            return true
         }
         return false
     }
@@ -167,12 +158,11 @@ abstract class ClientConnection(val context: Server, internal val clientsManager
     }
 
     internal fun associatePlayer(player: ServerPlayer) {
-        this.player = player;
-        this.encoderDecoder = this.encoderDecoder.toPlayer(player)
-        this.clientsManager.registerPlayer(this)
+        this.player = player
+        this.connectionsManager.registerPlayer(this)
     }
 
-    /** Disconnects the remote party but tells them why  */
+    /** Disconnects the remote party but tells them why */
     fun disconnect(disconnectionReason: String) {
         this.sendTextMessage("disconnect/$disconnectionReason")
         this.flush()
@@ -181,23 +171,18 @@ abstract class ClientConnection(val context: Server, internal val clientsManager
 
     override fun close(reason: String) {
         logger.info("Disconnecting $this :$reason")
-        clientsManager.removeClient(this)
+        connectionsManager.removeClient(this)
 
         if (player != null) {
             val playerDisconnectionEvent = PlayerLogoutEvent(player!!)
-            clientsManager.server.pluginManager.fireEvent(playerDisconnectionEvent)
-            clientsManager.server.broadcastMessage(playerDisconnectionEvent.logoutMessage!!)
+            connectionsManager.server.pluginManager.fireEvent(playerDisconnectionEvent)
+            connectionsManager.server.broadcastMessage(playerDisconnectionEvent.logoutMessage!!)
 
             player!!.destroy()
         }
     }
 
     companion object {
-
-        /**
-         * Keeps track of how many client connections were opened to assign them an
-         * unique id (debug purposes)
-         */
         private val usersCount = AtomicInteger()
     }
 }

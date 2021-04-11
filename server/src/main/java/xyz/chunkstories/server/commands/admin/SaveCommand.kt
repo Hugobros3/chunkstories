@@ -8,20 +8,21 @@ package xyz.chunkstories.server.commands.admin
 
 import xyz.chunkstories.api.plugin.commands.Command
 import xyz.chunkstories.api.plugin.commands.CommandEmitter
-import xyz.chunkstories.api.server.Server
-import xyz.chunkstories.server.commands.ServerCommandBasic
+import xyz.chunkstories.api.server.Host
+import xyz.chunkstories.server.commands.AbstractHostCommandHandler
 import xyz.chunkstories.world.WorldImplementation
+import xyz.chunkstories.world.WorldMasterImplementation
 
-class SaveCommand(serverConsole: Server) : ServerCommandBasic(serverConsole) {
+class SaveCommand(serverConsole: Host) : AbstractHostCommandHandler(serverConsole) {
 
     init {
-        server.pluginManager.registerCommand("save", this)
+        host.pluginManager.registerCommand("save", this)
     }
 
     override fun handleCommand(emitter: CommandEmitter, command: Command, arguments: Array<String>): Boolean {
         if (command.name == "save" && emitter.hasPermission("server.admin.forcesave")) {
             emitter.sendMessage("#00FFD0Saving the world...")
-            (server.world as WorldImplementation).saveEverything()
+            (host.world as WorldMasterImplementation).saveEverything()
             return true
         }
         return false

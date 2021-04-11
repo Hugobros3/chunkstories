@@ -2,10 +2,10 @@ package xyz.chunkstories.plugin
 
 import com.google.gson.Gson
 import org.hjson.JsonValue
-import xyz.chunkstories.api.GameContext
 import xyz.chunkstories.api.exceptions.plugins.PluginLoadException
-import xyz.chunkstories.api.plugin.ChunkStoriesPlugin
+import xyz.chunkstories.api.plugin.Plugin
 import xyz.chunkstories.api.plugin.PluginInformation
+import xyz.chunkstories.api.world.GameInstance
 import java.io.File
 import java.util.jar.JarFile
 
@@ -32,11 +32,11 @@ fun loadPluginInfo(file: File): PluginInformation? {
     return null
 }
 
-fun PluginInformation.createInstance(gameContext: GameContext, classLoader: ClassLoader): ChunkStoriesPlugin = try {
+fun PluginInformation.createInstance(gameContext: GameInstance, classLoader: ClassLoader): Plugin = try {
     val entryPointClassUnchecked = Class.forName(entryPoint, true, classLoader)
 
     // Checks for class fitness as an entry point
-    if (!ChunkStoriesPlugin::class.java.isAssignableFrom(entryPointClassUnchecked))
+    if (!Plugin::class.java.isAssignableFrom(entryPointClassUnchecked))
         throw object : PluginLoadException() {
             override val message: String?
                 get() {
@@ -44,9 +44,9 @@ fun PluginInformation.createInstance(gameContext: GameContext, classLoader: Clas
                 }
         }
 
-    val entryPointClass = entryPointClassUnchecked.asSubclass(ChunkStoriesPlugin::class.java)
+    val entryPointClass = entryPointClassUnchecked.asSubclass(Plugin::class.java)
 
-    val types = arrayOf(PluginInformation::class.java, GameContext::class.java)
+    val types = arrayOf(PluginInformation::class.java, GameInstance::class.java)
     val entryPointConstructor = entryPointClass.getConstructor(*types)
 
     entryPointConstructor.newInstance(this, gameContext)

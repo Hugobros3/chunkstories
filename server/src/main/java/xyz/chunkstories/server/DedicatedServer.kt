@@ -6,281 +6,194 @@
 
 package xyz.chunkstories.server
 
-import org.fusesource.jansi.Ansi.Color.*
-import org.fusesource.jansi.Ansi.ansi
 import org.fusesource.jansi.AnsiConsole
 import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import xyz.chunkstories.api.content.Content
+import xyz.chunkstories.Engine
+import xyz.chunkstories.api.content.ContentTranslator
 import xyz.chunkstories.api.player.Player
+import xyz.chunkstories.api.player.PlayerID
+import xyz.chunkstories.api.plugin.commands.CommandEmitter
 import xyz.chunkstories.api.server.PermissionsManager
-import xyz.chunkstories.api.server.Server
+import xyz.chunkstories.api.server.Host
 import xyz.chunkstories.api.util.configuration.Configuration
 import xyz.chunkstories.api.util.convertToAnsi
-import xyz.chunkstories.api.workers.Tasks
-import xyz.chunkstories.api.world.WorldInfo
+import xyz.chunkstories.api.world.World
 import xyz.chunkstories.api.world.WorldSize
 import xyz.chunkstories.content.GameContentStore
+import xyz.chunkstories.content.mods.ModsManagerImplementation
+import xyz.chunkstories.gameName
 import xyz.chunkstories.plugin.DefaultPluginManager
 import xyz.chunkstories.server.commands.DedicatedServerConsole
-import xyz.chunkstories.server.commands.installServerCommands
-import xyz.chunkstories.server.net.ClientsManager
+import xyz.chunkstories.server.commands.installHostCommands
+import xyz.chunkstories.server.net.ConnectionsManager
 import xyz.chunkstories.server.net.announcer.ServerAnnouncerThread
-import xyz.chunkstories.server.net.vanillasockets.VanillaClientsManager
+import xyz.chunkstories.server.net.vanillasockets.TCPConnectionsManager
+import xyz.chunkstories.server.player.ServerPlayer
 import xyz.chunkstories.server.propagation.ServerModsProvider
+import xyz.chunkstories.setupLogFile
 import xyz.chunkstories.task.WorkerThreadPool
-import xyz.chunkstories.util.LogbackSetupHelper
 import xyz.chunkstories.util.VersionInfo
 import xyz.chunkstories.world.*
-import java.io.BufferedReader
 import java.io.File
-import java.io.IOException
-import java.io.InputStreamReader
-import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 
-/**
- * The server class handles and make the link between all server components It
- * also takes care of the command line input as it's the main thread, thought
- * the processing of command lines is handled by ServerConsole.java
- */
-class DedicatedServer internal constructor(coreContentLocation: File, modsString: String?) : Runnable, Server {
-    private val gameContent: GameContentStore
-    private val workers: WorkerThreadPool
+private val configFile = File("config/server.config")
+
+fun main(args: Array<String>) {
+    var coreContentLocation = File("core_content.zip")
+
+    var requestedMods = emptyList<String>()
+    for (argument in args) {
+        when {
+            argument.contains("--mods") -> {
+                val modsString = argument.replace("--mods=", "")
+                requestedMods = modsString.split(',').map { it.trim() }.filter { it.isNotEmpty() }
+            }
+            argument.contains("--core") -> {
+                val coreContentLocationPath = argument.replace("--core=", "")
+                coreContentLocation = File(coreContentLocationPath)
+            }
+            else -> {
+                var helpText = "Chunk Stories server " + VersionInfo.versionJson.verboseVersion + "\n"
+
+                helpText += if (argument == "-h" || argument == "--help")
+                    "Valid parameters: \n"
+                else
+                    "Unrecognized parameter: $argument\n"
+
+                helpText += "--mods=xxx,yyy | -mods=* Tells the game to start with those mods enabled\n"
+                helpText += "--dir=whatever Tells the game not to look for .chunkstories at it's normal location and instead use the argument\n"
+                helpText += "--core=whaterverfolder/ or --core=whatever.zip Tells the game to use some specific folder or archive as it's base content.\n"
+
+                println(helpText)
+                return
+            }
+        }
+    }
+
+    DedicatedServer(coreContentLocation, requestedMods)
+}
+
+class DedicatedServer(coreContentLocation: File, requestedMods: List<String>) : Host, Engine {
+    override val content: GameContentStore
+    override val tasks: WorkerThreadPool
 
     val console = DedicatedServerConsole(this)
 
-    private val configFile = File("./config/server.config")
-    val serverConfig = Configuration(this, configFile)
+    val config = Configuration(configFile)
+    val userPrivileges = UserPrivileges()
+    override lateinit var permissionsManager: PermissionsManager
 
-    private val running = AtomicBoolean(true)
-
-    private val initTimestamp = System.currentTimeMillis() / 1000
+    override val pluginManager: DefaultPluginManager
 
     override val world: WorldServer
 
-    val handler: ClientsManager
-
-    val userPrivileges = FileBasedUsersPrivileges()
-
-    // Sleeper thread to keep servers list updated
+    internal val connectionsManager: ConnectionsManager
     private val announcer: ServerAnnouncerThread
+    internal val modsProvider: ServerModsProvider
 
-    override lateinit var permissionsManager: PermissionsManager
+    internal val keepRunning = AtomicBoolean(true)
 
-    // What mods are required to join this server ?
-    val modsProvider: ServerModsProvider
-
-    //private var pluginsManager: DefaultServerPluginManager? = null
-    override val pluginManager: DefaultPluginManager
-
-    override val connectedPlayers: Set<Player>
-        get() = handler.players
-
-    override val connectedPlayersCount: Int
-        get() = handler.playersNumber
-
-    override val uptime: Long
+    private val initTimestamp = System.currentTimeMillis() / 1000
+    val uptime: Long
         get() = System.currentTimeMillis() / 1000 - initTimestamp
 
-    override val content: Content
-        get() = gameContent
+    override val players: Sequence<Player>
+        get() = connectionsManager.authenticatedPlayers.values.asSequence()
+    override val contentTranslator: ContentTranslator
+        get() = world.contentTranslator
+    override val modsManager: ModsManagerImplementation
+        get() = content.modsManager
 
-    override
-            /** Dedicated servers openly broadcast their public IP  */
-    val publicIp: String
-        get() = this.handler.ip
-
-    override val tasks: Tasks
-        get() = workers
-
-    val logger: Logger
+    override val logger: Logger
 
     init {
-        serverConfig.addOptions(DedicatedServerOptions.createOptions(this))
-        serverConfig.load(configFile)
+        config.addOptions(DedicatedServerOptions.createOptions(this))
+        config.load(configFile)
         AnsiConsole.systemInstall()
 
-        // Start server services
-        try {
-            // Initialize logs to a file bearing the current date
-            val cal = Calendar.getInstance()
-            val sdf = SimpleDateFormat("YYYY.MM.dd HH.mm.ss")
-            val time = sdf.format(cal.time)
+        logger = setupLogFile("server_logs")
 
-            logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)
+        logger.info("Starting $gameName server " + VersionInfo.versionJson.verboseVersion + " (network protocol version " + VersionInfo.networkProtocolVersion + ")")
 
-            val loggingFilename = "./serverlogs/$time.log"
-            LogbackSetupHelper(loggingFilename)
+        content = GameContentStore(this, coreContentLocation, requestedMods)
+        content.reload()
 
-            logger.info("Starting Chunkstories server " + VersionInfo.versionJson.verboseVersion + " network protocol version "
-                    + VersionInfo.networkProtocolVersion)
+        // Spawns worker threads
+        var nbThreads = this.config.getIntValue(DedicatedServerOptions.workerThreads)
+        if (nbThreads <= 0) {
+            nbThreads = Runtime.getRuntime().availableProcessors() - 2
 
-            // Loads the mods/build filesystem
-            gameContent = GameContentStore(this, coreContentLocation, modsString ?: "")
-            gameContent.reload()
-
-            // Spawns worker threads
-            var nbThreads = this.serverConfig.getIntValue(DedicatedServerOptions.workerThreads)
-            if (nbThreads <= 0) {
-                nbThreads = Runtime.getRuntime().availableProcessors() - 2
-
-                // Fail-safe
-                if (nbThreads < 1)
-                    nbThreads = 1
-            }
-
-            workers = WorkerThreadPool(nbThreads)
-            workers.start()
-
-            handler = VanillaClientsManager(this)
-            modsProvider = ServerModsProvider(this)
-            pluginManager = DefaultPluginManager(this)
-
-            // Load the world(s)
-            val worldName = serverConfig.getValue(DedicatedServerOptions.worldName)
-            val worldPath = "./worlds/$worldName"
-            val worldDir = File(worldPath)
-            if (!worldDir.exists()) {
-                val internalName = worldName.replace("[^\\w\\s]".toRegex(), "_")
-                val size = serverConfig.getValue(DedicatedServerOptions.worldSize).let { WorldSize.getWorldSize(it.toUpperCase()) } ?: WorldSize.MEDIUM
-                val worldInfo = WorldInfo(
-                        internalName = internalName,
-                        name = worldName,
-                        description = "Automatically generated server map",
-                        seed = Random().nextLong().toString(),
-                        size = size,
-                        generatorName = serverConfig.getValue(DedicatedServerOptions.worldGenerator)
-                )
-                createWorld(worldDir, worldInfo)
-            }
-
-            if (worldDir.exists()) {
-                val worldInfoFile = File(worldDir.path + "/" + WorldImplementation.worldInfoFilename)
-                if (!worldInfoFile.exists())
-                    throw WorldLoadingException("The folder $worldDir doesn't contain a ${WorldImplementation.worldInfoFilename} file !")
-
-                val worldInfo = deserializeWorldInfo(worldInfoFile)
-
-                world = WorldServer(this, worldInfo, worldDir)
-            } else {
-                throw Exception("Can't find the world $worldName in $worldPath.")
-            }
-
-            // Opens socket and starts accepting clients
-            handler.open()
-            // Initializes the announcer ( server listings )
-            announcer = ServerAnnouncerThread(this)
-            announcer.start()
-
-            permissionsManager = object : PermissionsManager {
-                override fun hasPermission(player: Player, permissionNode: String) = userPrivileges.admins.contains(player.name)
-            }
-
-            // Load plugins
-            pluginManager.reloadPlugins()
-            installServerCommands(this)
-
-            // Finally start logic
-            world.startLogic()
-
-            serverConfig.save(configFile)
-        } catch (e: Exception) {
-            serverConfig.save(configFile)
-            e.printStackTrace()
-            error("Failed to initialize server, see exception")
+            // Fail-safe
+            if (nbThreads < 1)
+                nbThreads = 1
         }
+
+        tasks = WorkerThreadPool(nbThreads)
+        tasks.start()
+
+        connectionsManager = TCPConnectionsManager(this)
+        modsProvider = ServerModsProvider(this)
+        pluginManager = DefaultPluginManager(this)
+
+        // Load the world(s)
+        val worldName = config.getValue(DedicatedServerOptions.worldName)
+        val worldPath = "worlds/$worldName"
+        val worldDir = File(worldPath)
+        if (!worldDir.exists()) {
+            val internalName = worldName.replace("[^\\w\\s]".toRegex(), "_")
+            val size = config.getValue(DedicatedServerOptions.worldSize).let { WorldSize.getWorldSize(it.toUpperCase()) }
+                    ?: WorldSize.MEDIUM
+            initializeWorld(worldDir, World.Properties(
+                    internalName = internalName,
+                    name = worldName,
+                    description = "Automatically generated server map",
+                    seed = Random().nextLong().toString(),
+                    size = size,
+                    generator = config.getValue(DedicatedServerOptions.worldGenerator),
+                    spawn = TODO("generate a decent spawn point")
+            ))
+        }
+
+        if (worldDir.exists()) {
+            val worldInfoFile = File(worldDir.path + "/" + WorldImplementation.worldPropertiesFilename)
+            if (!worldInfoFile.exists())
+                throw WorldLoadingException("The folder $worldDir doesn't contain a ${WorldImplementation.worldPropertiesFilename} file !")
+
+            val worldInfo = deserializeWorldInfo(worldInfoFile)
+
+            world = WorldServer(this, worldInfo, worldDir)
+        } else {
+            throw Exception("Can't find the world $worldName in $worldPath.")
+        }
+
+        connectionsManager.open()
+        announcer = ServerAnnouncerThread(this)
+        announcer.start()
+
+        permissionsManager = object : PermissionsManager {
+            override fun hasPermission(player: Player, permissionNode: String) = userPrivileges.admins.contains(player.name)
+        }
+
+        // Load plugins
+        pluginManager.reloadPlugins()
+        installHostCommands(this)
+
+        // Finally start logic
+        world.startLogic()
+
+        console.run()
+        shutdown()
     }
 
-    //TODO move to another class
-    override fun run() {
-        val br = BufferedReader(InputStreamReader(System.`in`))
-        print("> ")
-        while (running.get()) {
-            try {
-                // wait until we have data to complete a readLine()
-                while (!br.ready() && running.get()) {
-                    printTopScreenDebug()
-
-                    Thread.sleep(1000L)
-                }
-                if (!running.get())
-                    break
-                val unparsedCommandText = br.readLine() ?: continue
-                try {
-                    // Parse and fire
-                    var cmdName = unparsedCommandText.toLowerCase()
-                    var args = arrayOf<String>()
-                    if (unparsedCommandText.contains(" ")) {
-                        cmdName = unparsedCommandText.substring(0, unparsedCommandText.indexOf(" "))
-                        args = unparsedCommandText
-                                .substring(unparsedCommandText.indexOf(" ") + 1, unparsedCommandText.length)
-                                .split(" ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-                    }
-
-                    console.dispatchCommand(console, cmdName, args)
-
-                    print("> ")
-                    System.out.flush()
-                } catch (e: Exception) {
-                    println("error while handling command :")
-                    e.printStackTrace()
-                }
-
-            } catch (e: IOException) {
-                e.printStackTrace()
-            } catch (e: InterruptedException) {
-                println("ConsoleInputReadTask() cancelled")
-                break
-            }
-
-        }
-        try {
-            br.close()
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-
-        closeServer()
-    }
-
-    private fun printTopScreenDebug() {
-        var txt = "" + ansi().fg(BLACK).bg(CYAN)
-
-        var ec = 0
-        val i = world.allLoadedEntities
-        while (i.hasNext()) {
-            i.next()
-            ec++
-        }
-
-        val maxRam = Runtime.getRuntime().maxMemory() / (1024 * 1024)
-        val freeRam = Runtime.getRuntime().freeMemory() / (1024 * 1024)
-        val usedRam = maxRam - freeRam
-
-        txt += "ChunkStories server " + VersionInfo.versionJson.verboseVersion
-        txt += " | fps:" + world.gameLogic.simulationFps
-        txt += " | ent:$ec"
-        txt += " | players:" + this.handler.playersNumber + "/" + this.handler.maxClients
-        txt += (" | lc:" + this.world.regionsManager.regionsList.count() + " ls:"
-                + this.world.heightmapsManager.all().count())
-        txt += " | ram:$usedRam/$maxRam"
-        txt += " | " + this.workers.toShortString()
-        txt += " | ioq:" + this.world.ioHandler.size
-
-        txt += ansi().bg(BLACK).fg(WHITE)
-
-        System.out.print(ansi().saveCursorPosition().cursor(0, 0).eraseLine().fg(RED).toString() + txt + ansi().restoreCursorPosition())
-        System.out.flush()
-    }
-
-    private fun closeServer() {
+    private fun shutdown() {
         // When stopped, close sockets and save config.
         logger.info("Stopping world logic")
+        world.stopLogic()
 
         logger.info("Killing all connections")
-        handler.close()
+        connectionsManager.terminate()
 
         logger.info("Shutting down plugins ...")
         pluginManager.disablePlugins()
@@ -291,84 +204,51 @@ class DedicatedServer internal constructor(coreContentLocation: File, modsString
         world.destroy()
 
         logger.info("Saving configuration")
-        serverConfig.save(configFile)
+        config.save(configFile)
         userPrivileges.save()
 
         logger.info("Good night sweet prince")
-        Runtime.getRuntime().exit(0)
+
+        // TODO check this terminates OK
+        // Runtime.getRuntime().exit(0)
     }
 
-    fun stop() {
+    internal fun requestShutdown() {
         announcer.stopAnnouncer()
-        workers.cleanup()
-
-        // When stopped, close sockets and save config.
-        running.set(false)
+        tasks.cleanup()
+        keepRunning.set(false)
     }
 
-    override fun reloadConfig() {
+    internal fun reloadConfig() {
+        config.load(configFile)
         userPrivileges.load()
-        serverConfig.load(configFile)
     }
 
-    override fun toString(): String {
-        return "[ChunkStories Server " + VersionInfo.versionJson.verboseVersion + "]"
+    override fun getPlayer(playerName: String): Player? = connectionsManager.getPlayerByName(playerName)
+    override fun getPlayer(id: PlayerID): Player? = players.find { it.id == id }
+    override fun Player.disconnect(disconnectMessage: String) {
+        (this as ServerPlayer).disconnect(disconnectMessage)
     }
-
-    override fun getPlayerByName(playerName: String): Player? = handler.getPlayerByName(playerName)
-    override fun getPlayerByUUID(UUID: Long): Player? = connectedPlayers.find { it.uuid == UUID }
 
     override fun broadcastMessage(message: String) {
-        logger().info(convertToAnsi(message))
-        for (player in connectedPlayers) {
+        logger.info(convertToAnsi(message))
+        for (player in players) {
             player.sendMessage(message)
         }
     }
 
-    override fun print(message: String) {
-        logger.info(message)
-    }
-
-    override fun logger(): Logger {
-        return logger
-    }
-
-    companion object {
-
-        @JvmStatic
-        fun main(args: Array<String>) {
-            var coreContentLocation = File("core_content.zip")
-
-            var modsString: String? = null
-            for (s in args)
-            // Debug arguments
-            {
-                if (s.contains("--mods")) {
-                    modsString = s.replace("--mods=", "")
-                } else if (s.contains("--core")) {
-                    val coreContentLocationPath = s.replace("--core=", "")
-                    coreContentLocation = File(coreContentLocationPath)
-                } else {
-                    var helpText = "Chunk Stories server " + VersionInfo.versionJson.verboseVersion + "\n"
-
-                    if (s == "-h" || s == "--help")
-                        helpText += "Command line help: \n"
-                    else
-                        helpText += "Unrecognized command: $s\n"
-
-                    helpText += "--mods=xxx,yyy | -mods=* Tells the game to start with those mods enabled\n"
-                    helpText += "--dir=whatever Tells the game not to look for .chunkstories at it's normal location and instead use the argument\n"
-                    helpText += "--core=whaterverfolder/ or --core=whatever.zip Tells the game to use some specific folder or archive as it's base content.\n"
-
-                    println(helpText)
-                    return
-
-                    // Runtime.getRuntime().exit(0);
-                }
-            }
-
-            val server = DedicatedServer(coreContentLocation, modsString)
-            server.run()
+    fun dispatchCommand(emitter: CommandEmitter, command: String, arguments: Array<String>): Boolean {
+        logger.info("[" + emitter.name + "] " + "Entered command : " + command)
+        try {
+            return pluginManager.dispatchCommand(emitter, command, arguments)
+        } catch (e: Exception) {
+            emitter.sendMessage("An error occurred: " + e.localizedMessage)
+            logger.warn("Player command triggered an exception", e)
         }
+        return false
+    }
+
+    override fun toString(): String {
+        return "[ChunkStories Server " + VersionInfo.versionJson.verboseVersion + "]"
     }
 }

@@ -10,13 +10,10 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 import org.slf4j.LoggerFactory
 
-import xyz.chunkstories.Constants
-import xyz.chunkstories.api.GameContext
-import xyz.chunkstories.api.GameLogic
+import xyz.chunkstories.ThreadPriorities
 import xyz.chunkstories.api.Location
 import xyz.chunkstories.api.events.world.WorldTickEvent
-import xyz.chunkstories.api.plugin.PluginManager
-import xyz.chunkstories.api.plugin.Scheduler
+import xyz.chunkstories.api.player.entityIfIngame
 import xyz.chunkstories.api.util.concurrency.Fence
 import xyz.chunkstories.api.world.WorldMaster
 import xyz.chunkstories.util.concurrency.SimpleFence
@@ -29,9 +26,7 @@ import java.util.concurrent.Semaphore
  * Sandboxed thread that runs all the game logic for one world
  */
 //TODO actually sandbox it lol
-class WorldLogicThread(private val world: WorldImplementation, securityManager: SecurityManager) : Thread(), GameLogic {
-    override val gameContext: GameContext
-
+class WorldLogicThread(private val world: WorldImplementation, securityManager: SecurityManager) : Thread() {
     private val gameLogicScheduler: GameLogicScheduler
 
     private val die = AtomicBoolean(false)
@@ -45,26 +40,18 @@ class WorldLogicThread(private val world: WorldImplementation, securityManager: 
     internal var lastTime: Long = 0
     internal var lastTimeNs: Long = 0
 
-    override val targetFps: Int
+    val targetFps: Int
         get() = 60
 
-    override val simulationFps: Double
+    val simulationFps: Double
         get() = Math.floor((fps * 100f).toDouble()) / 100f
 
-    override val simulationSpeed: Double
+    val simulationSpeed: Double
         get() = 1.0
 
-    override val pluginsManager: PluginManager
-        get() = gameContext.pluginManager
-
-    override val scheduler: Scheduler
-        get() = gameLogicScheduler
-
     init {
-        this.gameContext = world.gameContext
-
-        this.name = "World '" + world.worldInfo.internalName + "' logic thread"
-        this.priority = Constants.MAIN_SINGLEPLAYER_LOGIC_THREAD_PRIORITY
+        this.name = "World '" + world.properties.internalName + "' logic thread"
+        this.priority = ThreadPriorities.MAIN_SINGLEPLAYER_LOGIC_THREAD_PRIORITY
 
         gameLogicScheduler = GameLogicScheduler()
     }
@@ -92,12 +79,12 @@ class WorldLogicThread(private val world: WorldImplementation, securityManager: 
             fps = 1f / ((System.nanoTime() - lastTimeNs).toFloat() / 1000f / 1000f / 1000f)
             lastTimeNs = System.nanoTime()
 
-            this.pluginsManager.fireEvent(WorldTickEvent(world))
+            world.gameInstance.pluginManager.fireEvent(WorldTickEvent(world))
 
             try {
                 world.tick()
             } catch (e: Exception) {
-                world.logger().error("Exception occured while ticking the world : ", e)
+                world.logger.error("Exception occured while ticking the world : ", e)
             }
 
             // nanoCheckStep(5, "Tick");
@@ -120,7 +107,7 @@ class WorldLogicThread(private val world: WorldImplementation, securityManager: 
                         var minDistance = Double.MAX_VALUE
                         val chunkLocation = Location(world, chunk.chunkX * 32.0 + 16.0, chunk.chunkY * 32.0 + 16.0, chunk.chunkZ * 32.0 + 16.0)
                         for(player in players) {
-                            val playerLocation = player.controlledEntity?.location ?: continue
+                            val playerLocation = player.entityIfIngame?.location ?: continue
                             val distance = playerLocation.distance(chunkLocation)
                             if(distance < minDistance)
                                 minDistance = distance

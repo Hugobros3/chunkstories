@@ -8,30 +8,27 @@ package xyz.chunkstories.sound
 
 import org.joml.Vector3dc
 import org.joml.Vector3fc
+import xyz.chunkstories.RemotePlayer
 import xyz.chunkstories.api.player.Player
+import xyz.chunkstories.api.player.entityIfIngame
 import xyz.chunkstories.api.sound.SoundManager
 import xyz.chunkstories.api.sound.SoundSource
 import xyz.chunkstories.api.sound.SoundSource.Mode
+import xyz.chunkstories.api.sound.SoundSourceID
 import xyz.chunkstories.api.world.WorldMaster
 import xyz.chunkstories.net.packets.PacketSoundSource
 import xyz.chunkstories.sound.source.SoundSourceVirtual
 import java.lang.ref.WeakReference
 import java.util.concurrent.ConcurrentHashMap
 
-class VirtualSoundManager(private val worldServer: WorldMaster)// this.server = server;
-    : SoundManager {
-
-    // We weakly keep track of playing sounds, the server has no idea of the actual
-    // sound data and this does not keeps track of played sounds !
-    private val allPlayingSoundSources = ConcurrentHashMap.newKeySet<WeakReference<SoundSourceVirtual>>()
-
-    // Each player has his own instance of the soundManager
+class VirtualSoundManager(private val worldServer: WorldMaster) : SoundManager {
+    private val allPlayingSoundSources = mutableListOf<WeakReference<SoundSourceVirtual>>()
     private val playersSoundManagers = ConcurrentHashMap.newKeySet<ServerPlayerVirtualSoundManager>()
 
-    inner class ServerPlayerVirtualSoundManager(internal var serverPlayer: Player) : SoundManager {
+    inner class ServerPlayerVirtualSoundManager(internal val serverPlayer: RemotePlayer) : SoundManager {
 
         // As above, individual players have their playing sound sources kept track of
-        internal var playingSoundSources: MutableSet<WeakReference<SoundSourceVirtual>> = ConcurrentHashMap.newKeySet()
+        internal var playingSoundSources = mutableListOf<WeakReference<SoundSourceVirtual>>()
 
         init {
             playersSoundManagers.add(this)
@@ -49,77 +46,38 @@ class VirtualSoundManager(private val worldServer: WorldMaster)// this.server = 
             playingSoundSources.add(WeakReference(soundSource))
         }
 
-        override fun playSoundEffect(soundEffect: String, mode: Mode, position: Vector3dc?, pitch: Float, gain: Float,
-                                     attStart: Float, attEnd: Float): SoundSource {
-            val soundSource = SoundSourceVirtual(this@VirtualSoundManager, soundEffect, mode,
-                    position!!, pitch, gain, attStart, attEnd)
+        override fun playSoundEffect(soundEffect: String, mode: Mode, position: Vector3dc?, pitch: Float, gain: Float, attStart: Float, attEnd: Float): SoundSource {
+            val soundSource = SoundSourceVirtual(this@VirtualSoundManager, soundEffect, mode, position!!, pitch, gain, attStart, attEnd)
             // Play the sound effect for everyone
             addSourceToEveryone(soundSource, this)
             return soundSource
         }
 
-        override fun playSoundEffect(soundEffect: String): SoundSource? {
+        override fun getSoundSource(id: SoundSourceID): SoundSource? {
+            for(ref in playingSoundSources) {
+                val source = ref.get() ?: continue
+                if(source.id == id)
+                    return source
+            }
             return null
         }
 
-        override fun stopAnySound(soundEffect: String) {
-            for (s in allPlayingSounds) {
-                if (s.name.contains(soundEffect)) {
-                    s.stop()
+        fun stopAllSounds(soundEffect: String) {
+            for (source in playingSounds) {
+                if (source.soundName.contains(soundEffect)) {
+                    source.stop()
                 }
             }
         }
 
-        override fun stopAnySound() {
-            for (soundSource in allPlayingSounds) {
+        override fun stopAllSounds() {
+            for (soundSource in playingSounds) {
                 soundSource.stop()
             }
         }
 
-        /**
-         * Alls sounds we kept track of playing for this player
-         */
-        override fun getAllPlayingSounds(): Set<SoundSource> {
-            return allPlayingSoundSources.mapNotNull { it.get() }.filter { !it.isDonePlaying }.toSet()
-            /*return new Iterator<SoundSource>() {
-				Iterator<WeakReference<SoundSourceVirtual>> iterator = playingSoundSources.iterator();
-				SoundSource next = null;
-
-				@Override
-				public boolean hasNext() {
-					if (next != null)
-						return true;
-
-					while (iterator.hasNext() && next == null) {
-						WeakReference<SoundSourceVirtual> weakReference = iterator.next();
-						SoundSourceVirtual soundSource = weakReference.get();
-						if (soundSource == null || soundSource.isDonePlaying()) {
-							iterator.remove();
-							continue;
-						}
-
-						next = soundSource;
-					}
-
-					return false;
-				}
-
-				@Override
-				public SoundSource next() {
-					if (next == null)
-						hasNext();
-
-					SoundSource oldNext = next;
-					next = null;
-					return oldNext;
-				}
-
-			};*/
-        }
-
-        override fun setListenerPosition(position: Vector3fc, lookAt: Vector3fc, up: Vector3fc) {
-            throw UnsupportedOperationException("Irrelevant")
-        }
+        override val playingSounds: Collection<SoundSource>
+            get() = allPlayingSoundSources.mapNotNull { it.get() }.filter { !it.isDonePlaying }.toSet()
 
         internal fun couldHearSource(soundSource: SoundSourceVirtual): Boolean {
             if (soundSource.position == null)
@@ -133,9 +91,13 @@ class VirtualSoundManager(private val worldServer: WorldMaster)// this.server = 
                 return true
 
             // Null location == Not spawned == No positional sounds for you!
-            val loc = serverPlayer.controlledEntity?.location ?: return false
-
+            val loc = serverPlayer.entityIfIngame?.location ?: return false
             return loc.distance(soundSource.position!!) < soundSource.attenuationEnd + 1.0
+        }
+
+        //TODO call this
+        fun cleanup() {
+            playersSoundManagers.remove(this)
         }
     }
 
@@ -187,38 +149,36 @@ class VirtualSoundManager(private val worldServer: WorldMaster)// this.server = 
         }
     }
 
-    override fun playSoundEffect(soundEffect: String, mode: Mode, position: Vector3dc?, pitch: Float, gain: Float,
-                                 attStart: Float, attEnd: Float): SoundSource {
-        val soundSource = SoundSourceVirtual(this@VirtualSoundManager, soundEffect, mode, position!!,
-                pitch, gain, attStart, attEnd)
-        // Play the sound effect for everyone
+    override fun playSoundEffect(soundEffect: String, mode: Mode, position: Vector3dc?, pitch: Float, gain: Float, attenuationStart: Float, attenuationEnd: Float): SoundSource {
+        val soundSource = SoundSourceVirtual(this@VirtualSoundManager, soundEffect, mode, position!!, pitch, gain, attenuationStart, attenuationEnd)
         addSourceToEveryone(soundSource, null)
         return soundSource
     }
 
-    /*
-	 * @Override public SoundSource playSoundEffect(String soundEffect) { // TODO
-	 * Have yet to specify on playing GUI sounds for everyone return null; }
-	 */
-
-    override fun stopAnySound(soundEffect: String) {
-        for (s in allPlayingSounds) {
-            if (s.name.contains(soundEffect)) {
-                s.stop()
+    fun stopAnySound(soundEffect: String) {
+        for (soundSource in playingSounds) {
+            if (soundSource.soundName.contains(soundEffect)) {
+                soundSource.stop()
             }
         }
     }
 
-    override fun stopAnySound() {
-        for (soundSource in allPlayingSounds) {
+    override fun stopAllSounds() {
+        for (soundSource in playingSounds) {
             soundSource.stop()
         }
     }
 
-    override fun setListenerPosition(position: Vector3fc, lookAt: Vector3fc, up: Vector3fc) {}
-
-    override fun getAllPlayingSounds(): Set<SoundSource> {
-        return allPlayingSoundSources.mapNotNull { it.get() }.filter { !it.isDonePlaying }.toSet()
+    override fun getSoundSource(id: SoundSourceID): SoundSource? {
+        for(ref in allPlayingSoundSources) {
+            val source = ref.get() ?: continue
+            if(source.id == id)
+                return source
+        }
+        return null
     }
+
+    override val playingSounds: Collection<SoundSource>
+        get() = allPlayingSoundSources.mapNotNull { it.get() }.filter { !it.isDonePlaying }.toSet()
 
 }

@@ -58,7 +58,7 @@ class WorldSelectionUI internal constructor(gui: Gui, parent: Layer) : Layer(gui
             worldsFolder.mkdirs()
 
         val list = worldsFolder.listFiles()?.mapNotNull { worldDirectory ->
-            val worldInfoFile = File(worldDirectory.absolutePath + "/" + WorldImplementation.worldInfoFilename)
+            val worldInfoFile = File(worldDirectory.absolutePath + "/" + WorldImplementation.worldPropertiesFilename)
 
             if (worldInfoFile.exists()) {
                 val worldInfo = deserializeWorldInfo(worldInfoFile)

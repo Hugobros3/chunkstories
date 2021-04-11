@@ -17,12 +17,11 @@ import org.lwjgl.glfw.GLFW.glfwSetInputMode
 import xyz.chunkstories.api.client.Client
 import org.joml.Vector2d
 import org.lwjgl.system.MemoryStack.*
-import org.lwjgl.system.MemoryUtil
 
 import xyz.chunkstories.api.input.Input
 import xyz.chunkstories.api.input.Mouse
 
-class Lwjgl3Mouse(internal val inputsManager: Lwjgl3ClientInputsManager) : Mouse {
+class Lwjgl3Mouse(internal val inputsManager: GLFWInputManager) : Mouse {
 
     override val mainButton = Lwjgl3MouseButton(this, "mouse.left", 0)
     override val secondaryButton = Lwjgl3MouseButton(this, "mouse.right", 1)

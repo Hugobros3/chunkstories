@@ -26,7 +26,7 @@ internal constructor() : Mod {
 
     protected var md5hash: String? = null
 
-    override val mD5Hash: String by lazy { computeMD5Hash() }
+    override val hash: String by lazy { computeMD5Hash() }
 
     abstract val loadString: String
 

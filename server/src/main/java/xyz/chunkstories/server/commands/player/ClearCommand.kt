@@ -10,14 +10,14 @@ import xyz.chunkstories.api.entity.traits.serializable.TraitInventory
 import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.plugin.commands.Command
 import xyz.chunkstories.api.plugin.commands.CommandEmitter
-import xyz.chunkstories.api.server.Server
-import xyz.chunkstories.server.commands.ServerCommandBasic
+import xyz.chunkstories.api.server.Host
+import xyz.chunkstories.server.commands.AbstractHostCommandHandler
 
 /** Removes all items from inventory  */
-class ClearCommand(serverConsole: Server) : ServerCommandBasic(serverConsole) {
+class ClearCommand(serverConsole: Host) : AbstractHostCommandHandler(serverConsole) {
 
     init {
-        server.pluginManager.registerCommand("clear", this)
+        host.pluginManager.registerCommand("clear", this)
     }
 
     override fun handleCommand(emitter: CommandEmitter, command: Command, arguments: Array<String>): Boolean {

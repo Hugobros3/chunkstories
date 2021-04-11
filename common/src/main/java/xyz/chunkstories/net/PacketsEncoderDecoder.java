@@ -19,7 +19,6 @@ import xyz.chunkstories.api.content.OnlineContentTranslator;
 import xyz.chunkstories.api.exceptions.PacketProcessingException;
 import xyz.chunkstories.api.exceptions.net.IllegalPacketException;
 import xyz.chunkstories.api.exceptions.net.UnknowPacketException;
-import xyz.chunkstories.api.net.Interlocutor;
 import xyz.chunkstories.api.net.Packet;
 import xyz.chunkstories.api.net.PacketDefinition;
 import xyz.chunkstories.api.net.PacketReceptionContext;
@@ -85,7 +84,7 @@ public abstract class PacketsEncoderDecoder implements PacketReceptionContext, P
 			packetTypeId = secondByte | (firstByte & 0x7F) << 8;
 		}
 
-		PacketDefinitionImplementation def = (PacketDefinitionImplementation) this.getContentTranslator().getPacketForId(packetTypeId);
+		PacketDefinition def = (PacketDefinition) this.getContentTranslator().getPacketForId(packetTypeId);
 		if (def == null) {
 			throw new UnknowPacketException(packetTypeId);
 		}

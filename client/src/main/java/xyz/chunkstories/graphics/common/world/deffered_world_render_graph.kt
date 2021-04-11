@@ -16,13 +16,10 @@ import xyz.chunkstories.graphics.common.getConditions
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 
 fun createWorldDeferredRenderGraph(client: IngameClient, backend: GraphicsBackend, world: World) = renderGraph {
-    val precomputedSimplesSeed = PrecomputedSimplexSeed(world.worldInfo.seed)
+    val precomputedSimplesSeed = PrecomputedSimplexSeed(world.properties.seed)
 
     setup {
-        val entity = client.player.controlledEntity
-        val world = client.world
-
-        shaderResources.supplyUniformBlock("world", world.getConditions())
+        shaderResources.supplyUniformBlock("world", client.world.getConditions())
     }
 
     renderTask {

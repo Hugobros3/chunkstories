@@ -18,7 +18,7 @@ import xyz.chunkstories.client.ClientImplementation
 import xyz.chunkstories.client.net.*
 import xyz.chunkstories.net.Connection
 import xyz.chunkstories.net.LogicalPacketDatagram
-import xyz.chunkstories.net.PacketDefinitionImplementation
+import xyz.chunkstories.net.PacketDefinition
 import xyz.chunkstories.net.vanillasockets.SendQueue
 import xyz.chunkstories.net.vanillasockets.StreamGobbler
 
@@ -82,16 +82,16 @@ open class TCPServerConnection(connectionSequence: ClientConnectionSequence) : S
 
     @Throws(IOException::class, PacketProcessingException::class, IllegalPacketException::class)
     override fun handleDatagram(datagram: LogicalPacketDatagram) {
-        val definition = datagram.packetDefinition as PacketDefinitionImplementation// (PacketDefinitionImpl)
+        val definition = datagram.packetDefinition as PacketDefinition// (PacketDefinitionImpl)
         // getEncoderDecoder().getContentTranslator().getPacketForId(datagram.packetTypeId);
         if (definition.genre == PacketGenre.GENERAL_PURPOSE) {
             val packet = definition.createNew(true, null)
-            packet!!.process(remoteServer, datagram.data, encoderDecoder)
+            packet!!.receive(remoteServer, datagram.data, encoderDecoder)
             datagram.dispose()
 
         } else if (definition.genre == PacketGenre.SYSTEM) {
             val packet = definition.createNew(true, null)
-            packet!!.process(remoteServer, datagram.data, encoderDecoder)
+            packet!!.receive(remoteServer, datagram.data, encoderDecoder)
             if (packet is PacketText) {
                 handleSystemRequest(packet.text)
             }
@@ -108,7 +108,7 @@ open class TCPServerConnection(connectionSequence: ClientConnectionSequence) : S
         } else if (definition.genre == PacketGenre.WORLD_STREAMING) {
             val world = encoderDecoder.world
             val packet = definition.createNew(true, world) as PacketWorldStreaming
-            packet.process(remoteServer, datagram.data, encoderDecoder)
+            packet.receive(remoteServer, datagram.data, encoderDecoder)
             world.ioHandler().handlePacketWorldStreaming(packet)
             datagram.dispose()
         } else {

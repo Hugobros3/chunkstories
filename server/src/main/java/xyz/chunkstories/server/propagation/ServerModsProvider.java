@@ -45,7 +45,7 @@ public class ServerModsProvider {
 		// Build the modstring
 		modsString = "";
 		for (Mod mod : server.getContent().getModsManager().getCurrentlyLoadedMods()) {
-			String hash = mod.getMD5Hash();
+			String hash = mod.getHash();
 			long size;
 
 			server.logger().info("Building distribuable zipfile for mod " + mod.getModInfo().getName());

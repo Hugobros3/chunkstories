@@ -18,24 +18,18 @@ import xyz.chunkstories.api.exceptions.PacketProcessingException
 import xyz.chunkstories.api.exceptions.net.IllegalPacketException
 import xyz.chunkstories.api.exceptions.net.UnknowPacketException
 import xyz.chunkstories.api.net.Packet
-import xyz.chunkstories.api.net.PacketDefinition.PacketGenre
-import xyz.chunkstories.api.net.PacketWorldStreaming
 import xyz.chunkstories.api.net.packets.PacketText
-import xyz.chunkstories.api.server.Server
 import xyz.chunkstories.net.Connection
 import xyz.chunkstories.net.LogicalPacketDatagram
-import xyz.chunkstories.net.PacketDefinitionImplementation
+import xyz.chunkstories.net.PacketDefinition
 import xyz.chunkstories.net.vanillasockets.SendQueue
 import xyz.chunkstories.net.vanillasockets.StreamGobbler
+import xyz.chunkstories.server.DedicatedServer
 import xyz.chunkstories.server.net.ClientConnection
-import xyz.chunkstories.server.net.ClientsManager
-import xyz.chunkstories.server.net.ServerPacketsProcessorImplementation
+import xyz.chunkstories.server.net.ConnectionsManager
 import xyz.chunkstories.world.WorldServer
 
-class TCPClientConnection @Throws(IOException::class)
-constructor(server: Server, clientsManager: ClientsManager, internal val socket: Socket) : ClientConnection(server, clientsManager, socket.getInetAddress().hostAddress, socket.getPort()) {
-    final override var encoderDecoder: ServerPacketsProcessorImplementation.ClientPacketsContext
-
+class TCPClientConnection constructor(server: DedicatedServer, connectionsManager: ConnectionsManager, internal val socket: Socket) : ClientConnection(server, connectionsManager, socket.inetAddress.hostAddress, socket.port) {
     private val closeOnce = AtomicBoolean(false)
     private var disconnected = false
 
@@ -53,8 +47,6 @@ constructor(server: Server, clientsManager: ClientsManager, internal val socket:
         val inputDataStream = DataInputStream(BufferedInputStream(socketInputStream))
         val dataOutputStream = DataOutputStream(BufferedOutputStream(socketOutputStream))
 
-        this.encoderDecoder = clientsManager.packetsProcessor.forConnection(this)
-
         streamGobbler = ServerClientGobbler(this, inputDataStream)
         streamGobbler.start()
 
@@ -70,15 +62,15 @@ constructor(server: Server, clientsManager: ClientsManager, internal val socket:
 
     @Throws(IOException::class, PacketProcessingException::class, IllegalPacketException::class)
     override fun handleDatagram(datagram: LogicalPacketDatagram) {
-        val definition = datagram.packetDefinition as PacketDefinitionImplementation// getEncoderDecoder().getContentTranslator().getPacketForId(datagram.packetTypeId);
+        val definition = datagram.packetDefinition as PacketDefinition// getEncoderDecoder().getContentTranslator().getPacketForId(datagram.packetTypeId);
         if (definition.genre == PacketGenre.GENERAL_PURPOSE) {
             val packet = definition.createNew(true, null)
-            packet!!.process(encoderDecoder.interlocutor, datagram.data, encoderDecoder)
+            packet!!.receive(encoderDecoder.interlocutor, datagram.data, encoderDecoder)
             datagram.dispose()
 
         } else if (definition.genre == PacketGenre.SYSTEM) {
             val packet = definition.createNew(true, null)
-            packet!!.process(encoderDecoder.interlocutor, datagram.data, encoderDecoder)
+            packet!!.receive(encoderDecoder.interlocutor, datagram.data, encoderDecoder)
             if (packet is PacketText) {
                 handleSystemRequest(packet.text)
             }
@@ -98,7 +90,7 @@ constructor(server: Server, clientsManager: ClientsManager, internal val socket:
             // track of the client's world data
             val world = encoderDecoder.world
             val packet = definition.createNew(false, world) as PacketWorldStreaming
-            packet.process(encoderDecoder.interlocutor, datagram.data, encoderDecoder)
+            packet.receive(encoderDecoder.interlocutor, datagram.data, encoderDecoder)
             datagram.dispose()
         } else {
             throw RuntimeException("whut")

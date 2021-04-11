@@ -9,12 +9,12 @@ package xyz.chunkstories.client
 import org.lwjgl.glfw.GLFW
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import xyz.chunkstories.Constants
-import xyz.chunkstories.api.GameContext
+import xyz.chunkstories.ThreadPriorities
+import xyz.chunkstories.Engine
 import xyz.chunkstories.api.client.Client
 import xyz.chunkstories.api.client.ClientIdentity
 import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
-import xyz.chunkstories.api.plugin.PluginManager
+import xyz.chunkstories.api.player.entityIfIngame
 import xyz.chunkstories.api.util.configuration.Configuration
 import xyz.chunkstories.client.glfw.GLFWWindow
 import xyz.chunkstories.client.ingame.IngameClientImplementation
@@ -23,7 +23,7 @@ import xyz.chunkstories.graphics.GraphicsBackendsEnum
 import xyz.chunkstories.graphics.GraphicsEngineImplementation
 import xyz.chunkstories.gui.ClientGui
 import xyz.chunkstories.gui.layer.LoginUI
-import xyz.chunkstories.input.lwjgl3.Lwjgl3ClientInputsManager
+import xyz.chunkstories.input.lwjgl3.GLFWInputManager
 import xyz.chunkstories.sound.ALSoundManager
 import xyz.chunkstories.task.WorkerThreadPool
 import xyz.chunkstories.util.LogbackSetupHelper
@@ -32,19 +32,66 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
+fun main(launchArguments: Array<String>) {
+    val argumentsMap = mutableMapOf<String, String>()
+    for (launchArgument in launchArguments) {
+        if (launchArgument.startsWith("--")) {
+            val stripped = launchArgument.removePrefix("--")
+
+            if (launchArgument.contains('=')) {
+                val firstIndex = stripped.indexOf('=')
+                val argName = stripped.substring(0, firstIndex)
+                val argValue = stripped.substring(firstIndex + 1, stripped.length).removeSurrounding("\"")
+
+                argumentsMap[argName] = argValue
+            } else {
+                argumentsMap[stripped] = "true"
+            }
+        } else {
+            println("Unrecognized launch argument: $launchArgument")
+        }
+    }
+
+    if (argumentsMap["help"] != null) {
+        printHelp()
+        System.exit(0)
+    }
+
+    ClientImplementation(argumentsMap)
+}
+
+private fun printHelp() {
+    println("""
+                Chunk Stories Client version: ${VersionInfo.versionJson.verboseVersion}
+
+                Available commandline options:
+                --core=... Specifies the folder/file to use as the base content
+                --mods=... Specifies some mods to load
+                --backend=[${GraphicsBackendsEnum.values()}] Forces a specific backend to be used.
+
+                Backend-specific options:
+
+                Vulkan-specific options:
+                --enableValidation Enables the validation layers
+
+                OpenGL-specific options:
+            """.trimIndent())
+}
+
 /** Client implementation entry point, is the root of the systems and holds state through them  */
-class ClientImplementation internal constructor(val arguments: Map<String, String>) : Client, GameContext {
-    private val logger: Logger
-    private val chatLogger = LoggerFactory.getLogger("game.chat")
-
-    private val configFile: File = File("./config/client.config")
-    override val configuration: Configuration = Configuration(this, configFile)
-
-    override val content: GameContentStore
+class ClientImplementation internal constructor(val arguments: Map<String, String>) : Engine, Client {
     override val tasks: WorkerThreadPool
 
+    val logger: Logger
+    val chatLogger: Logger = LoggerFactory.getLogger("game.chat")
+
+    private val configFile: File = File("./config/client.config")
+    override val configuration: Configuration = Configuration(configFile)
+
+    override val content: GameContentStore
+
     override val graphics: GraphicsEngineImplementation
-    override val inputsManager: Lwjgl3ClientInputsManager
+    override val inputsManager: GLFWInputManager
 
     override val gameWindow: GLFWWindow
         get() = graphics.window
@@ -55,15 +102,12 @@ class ClientImplementation internal constructor(val arguments: Map<String, Strin
 
     override var ingame: IngameClientImplementation? = null
 
-    override val pluginManager: PluginManager
-        get() = throw UnsupportedOperationException("There is no plugin manager in a non-ingame context ! Use an IngameClient object instead.")
-
     override lateinit var user: ClientIdentity
 
     init {
         // Name the thread
         Thread.currentThread().name = "Main thread"
-        Thread.currentThread().priority = Constants.MAIN_THREAD_PRIORITY
+        Thread.currentThread().priority = ThreadPriorities.MAIN_THREAD_PRIORITY
 
         configuration.addOptions(InternalClientOptions.createOptions(this))
 
@@ -79,7 +123,7 @@ class ClientImplementation internal constructor(val arguments: Map<String, Strin
         soundManager = ALSoundManager(this)
 
         graphics = GraphicsEngineImplementation(this)
-        inputsManager = Lwjgl3ClientInputsManager(gameWindow)
+        inputsManager = GLFWInputManager(gameWindow)
 
         val coreContentLocation = File(arguments["core"] ?: "core_content.zip")
 
@@ -92,17 +136,17 @@ class ClientImplementation internal constructor(val arguments: Map<String, Strin
         inputsManager.reload()
 
         // Spawns worker threads
-        var nbThreads: Int = configuration.getIntValue(InternalClientOptions.workerThreads)
+        var workerThreadsCount: Int = configuration.getIntValue(InternalClientOptions.workerThreads)
 
-        if (nbThreads <= 0) {
-            nbThreads = Runtime.getRuntime().availableProcessors() / 2
+        if (workerThreadsCount <= 0) {
+            workerThreadsCount = Runtime.getRuntime().availableProcessors() / 2
 
             // Fail-safe
-            if (nbThreads < 1)
-                nbThreads = 1
+            if (workerThreadsCount < 1)
+                workerThreadsCount = 1
         }
 
-        tasks = WorkerThreadPool(nbThreads)
+        tasks = WorkerThreadPool(workerThreadsCount)
         tasks.start()
 
         // Load the correct language
@@ -110,7 +154,7 @@ class ClientImplementation internal constructor(val arguments: Map<String, Strin
         if (lang != "")
             content.localization().loadTranslation(lang)
 
-        // Initlializes windows screen to main menu ( and ask for login )
+        // Initializes windows screen to main menu ( and ask for login )
         gui.topLayer = LoginUI(gui, null)
 
         mainLoop()
@@ -126,10 +170,11 @@ class ClientImplementation internal constructor(val arguments: Map<String, Strin
 
             GLFW.glfwPollEvents()
             inputsManager.updateInputs()
-
             soundManager.updateAllSoundSources()
 
-            ingame?.player?.controlledEntity?.let { it.traits[TraitControllable::class]?.onEachFrame() }
+            val entity = ingame?.player?.entityIfIngame
+            if (entity != null)
+                entity.traits[TraitControllable::class]?.onEachFrame()
 
             graphics.renderGame()
         }
@@ -148,63 +193,5 @@ class ClientImplementation internal constructor(val arguments: Map<String, Strin
         content.reload()
         inputsManager.reload()
         //TODO hook some rendering stuff in here
-    }
-
-    override fun print(message: String) {
-        chatLogger.info(message+Math.random())
-    }
-
-    override fun logger(): Logger {
-        return this.logger
-    }
-
-    companion object {
-
-        @JvmStatic
-        fun main(launchArguments: Array<String>) {
-            val argumentsMap = mutableMapOf<String, String>()
-            for (launchArgument in launchArguments) {
-                if(launchArgument.startsWith("--")) {
-                    val stripped = launchArgument.removePrefix("--")
-
-                    if(launchArgument.contains('=')) {
-                        val firstIndex = stripped.indexOf('=')
-                        val argName = stripped.substring(0, firstIndex)
-                        val argValue = stripped.substring(firstIndex + 1, stripped.length).removeSurrounding("\"")
-
-                        argumentsMap[argName] = argValue
-                    } else {
-                        argumentsMap[stripped] = "true"
-                    }
-                } else {
-                    println("Unrecognized launch argument: $launchArgument")
-                }
-            }
-
-            if(argumentsMap["help"] != null) {
-                printHelp()
-                System.exit(0)
-            }
-
-            ClientImplementation(argumentsMap)
-        }
-
-        private fun printHelp() {
-            println("""
-                Chunk Stories Client version: ${VersionInfo.versionJson.verboseVersion}
-
-                Available commandline options:
-                --core=... Specifies the folder/file to use as the base content
-                --mods=... Specifies some mods to load
-                --backend=[${GraphicsBackendsEnum.values()}] Forces a specific backend to be used.
-
-                Backend-specific options:
-
-                Vulkan-specific options:
-                --enableValidation Enables the validation layers
-
-                OpenGL-specific options:
-            """.trimIndent())
-        }
     }
 }

@@ -9,15 +9,12 @@ package xyz.chunkstories.server.propagation;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 import org.jetbrains.annotations.NotNull;
-import xyz.chunkstories.api.net.packets.PacketParticle;
 import xyz.chunkstories.api.particles.ParticleType;
 import xyz.chunkstories.api.particles.ParticleTypeDefinition;
 import xyz.chunkstories.api.particles.ParticlesManager;
-import xyz.chunkstories.api.player.Player;
 import xyz.chunkstories.server.DedicatedServer;
 import xyz.chunkstories.server.player.ServerPlayer;
 import xyz.chunkstories.world.WorldServer;
-import org.joml.Vector3dc;
 
 public class VirtualServerParticlesManager implements ParticlesManager {
 	private final WorldServer worldServer;

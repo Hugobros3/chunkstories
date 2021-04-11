@@ -1,9 +1,9 @@
 package xyz.chunkstories.world.chunk.deriveddata
 
-import xyz.chunkstories.api.GameContext
 import xyz.chunkstories.api.util.concurrency.Fence
 import xyz.chunkstories.api.workers.Task
 import xyz.chunkstories.api.workers.TaskExecutor
+import xyz.chunkstories.api.workers.Tasks
 import xyz.chunkstories.util.concurrency.TrivialFence
 import java.util.concurrent.locks.ReentrantLock
 
@@ -12,7 +12,7 @@ import java.util.concurrent.locks.ReentrantLock
  * Maintains a state of updates that are yet to be taken into account.
  * Examples: Chunk lighting, occlusion, meshes, heightmap metadata, etc.
  * */
-abstract class AutoRebuildingProperty(val context: GameContext, initializeClean: Boolean) {
+abstract class AutoRebuildingProperty(val tasks: Tasks, initializeClean: Boolean) {
     protected val lock = ReentrantLock()
     protected var pendingUpdates = if(initializeClean) 0 else 1
 
@@ -32,7 +32,7 @@ abstract class AutoRebuildingProperty(val context: GameContext, initializeClean:
 
                 //println("updates waiting: $updatesToConsider $this")
                 task = createTask(updatesToConsider)
-                context.tasks.scheduleTask(task)
+                tasks.scheduleTask(task)
             }
             return null
         } finally {

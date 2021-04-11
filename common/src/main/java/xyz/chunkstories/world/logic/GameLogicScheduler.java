@@ -7,13 +7,12 @@
 package xyz.chunkstories.world.logic;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import xyz.chunkstories.api.plugin.ChunkStoriesPlugin;
+import xyz.chunkstories.api.plugin.Plugin;
 import xyz.chunkstories.api.plugin.Scheduler;
 
 public class GameLogicScheduler implements Scheduler {
@@ -36,7 +35,7 @@ public class GameLogicScheduler implements Scheduler {
 	}
 
 	@Override
-	public void scheduleSyncRepeatingTask(ChunkStoriesPlugin p, Runnable runnable, long delay, long period) {
+	public void scheduleSyncRepeatingTask(Plugin p, Runnable runnable, long delay, long period) {
 		scheduledTasks.add(new ScheduledTask(runnable, delay, period));
 	}
 

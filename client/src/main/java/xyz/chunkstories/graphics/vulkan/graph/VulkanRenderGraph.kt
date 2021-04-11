@@ -10,6 +10,7 @@ import org.lwjgl.vulkan.VkSubmitInfo
 import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
 import xyz.chunkstories.api.graphics.rendergraph.RenderGraphDeclaration
 import xyz.chunkstories.api.graphics.structs.Camera
+import xyz.chunkstories.api.graphics.structs.camera
 import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.common.representations.gatherRepresentations
 import xyz.chunkstories.graphics.vulkan.CommandPool
@@ -40,7 +41,7 @@ class VulkanRenderGraph(val backend: VulkanGraphicsBackend, val dslCode: RenderG
     }
 
     fun renderFrame(frame: VulkanFrame) {
-        val mainCamera = backend.window.client.ingame?.player?.controlledEntity?.traits?.get(TraitControllable::class)?.camera ?: Camera()
+        val mainCamera = backend.window.client.ingame?.camera ?: Camera()
         val mainTaskName = "main"
         val mainTask = tasks[mainTaskName]!!
         val map = mutableMapOf<String, Any>()

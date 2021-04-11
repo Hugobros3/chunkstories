@@ -7,23 +7,18 @@
 package xyz.chunkstories.world.io;
 
 import java.util.Deque;
-import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.Semaphore;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import xyz.chunkstories.Constants;
 import xyz.chunkstories.api.workers.TaskExecutor;
-import xyz.chunkstories.world.WorldImplementation;
+import xyz.chunkstories.api.world.World;
 
-/**
- * This thread does I/O work in queue. Extended by IOTaskMultiplayerClient and
- * IOTaskMultiplayerServer for the client/server model.
- */
+/** A shitty task system to deal with I/O */
 public class IOTasks extends Thread implements TaskExecutor {
-	protected WorldImplementation world;
+	protected World world;
 
 	public final Deque<IOTask> tasks = new ConcurrentLinkedDeque<>();
 	private final Semaphore tasksCounter = new Semaphore(0);
@@ -36,7 +31,7 @@ public class IOTasks extends Thread implements TaskExecutor {
 		}
 	};
 
-	public IOTasks(WorldImplementation world) {
+	public IOTasks(World world) {
 		this.world = world;
 	}
 
@@ -53,10 +48,9 @@ public class IOTasks extends Thread implements TaskExecutor {
 
 	@Override
 	public void run() {
-		logger().info("IO Thread started for '" + this.world.getWorldInfo().getName() + "'");
+		logger().info("IO Thread started for '" + this.world.getProperties().getName() + "'");
 
-		this.setPriority(Constants.IO_THREAD_PRIORITY);
-		this.setName("IO thread for '" + this.world.getWorldInfo().getName() + "'");
+		this.setName("IO thread for '" + this.world.getProperties().getName() + "'");
 		while (true) {
 			IOTask task = null;
 
@@ -74,7 +68,7 @@ public class IOTasks extends Thread implements TaskExecutor {
 					boolean taskSuccessfull = task.run(this);
 
 					// If it returns false, requeue it.
-					if (taskSuccessfull == false)
+					if (!taskSuccessfull)
 						rescheduleTask(task);
 
 				} catch (Exception e) {

@@ -23,26 +23,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import xyz.chunkstories.api.content.Content;
-import xyz.chunkstories.api.content.OnlineContentTranslator;
+import xyz.chunkstories.api.content.ContentTranslator;
 import xyz.chunkstories.api.content.mods.Mod;
 import xyz.chunkstories.api.entity.Entity;
 import xyz.chunkstories.api.entity.EntityDefinition;
 import xyz.chunkstories.api.item.Item;
 import xyz.chunkstories.api.item.ItemDefinition;
 import xyz.chunkstories.api.net.PacketDefinition;
-import xyz.chunkstories.api.voxel.Voxel;
-import xyz.chunkstories.net.PacketDefinitionImplementation;
+import xyz.chunkstories.api.block.BlockType;
+import xyz.chunkstories.content.GameContentStore;
+import xyz.chunkstories.net.PacketDefinition;
 
 /** Assigns IDs for everything that needs one */
-public abstract class AbstractContentTranslator implements OnlineContentTranslator {
+public abstract class AbstractContentTranslator implements ContentTranslator {
 
 	final static Logger logger = LoggerFactory.getLogger("content.translator");
 
-	final Content content;
+	final GameContentStore content;
 	Set<String> requiredMods;
 
-	Map<Voxel, Integer> voxelMappings;
-	private Voxel[] voxelsArray;
+	Map<BlockType, Integer> voxelMappings;
+	private BlockType[] voxelsArray;
 
 	Map<EntityDefinition, Integer> entityMappings;
 	private EntityDefinition[] entitiesArray;
@@ -54,7 +55,7 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 	private PacketDefinition[] packetsArray;
 
 	/** Create an initial content translator */
-	public AbstractContentTranslator(Content content) {
+	public AbstractContentTranslator(GameContentStore content) {
 		this.content = content;
 	}
 
@@ -97,7 +98,7 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 			packetMappings = new HashMap<>();
 
 		content.getPackets().getAll().forEach(def -> {
-			PacketDefinitionImplementation definition = (PacketDefinitionImplementation) def;
+			PacketDefinition definition = (PacketDefinition) def;
 
 			if (overwrite || packetMappings.get(definition) == null) {
 
@@ -110,7 +111,7 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 		});
 
 		content.getPackets().getAll().forEach(def -> {
-			PacketDefinitionImplementation definition = (PacketDefinitionImplementation) def;
+			PacketDefinition definition = (PacketDefinition) def;
 
 			if (overwrite || packetMappings.get(definition) == null) {
 				int packetId = definition.getFixedId();
@@ -133,7 +134,7 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 
 	public void buildArrays() {
 		// Create indexable arrays
-		voxelsArray = new Voxel[Collections.max(voxelMappings.values()) + 1];
+		voxelsArray = new BlockType[Collections.max(voxelMappings.values()) + 1];
 		voxelMappings.forEach((voxel, id) -> voxelsArray[id] = voxel);
 
 		entitiesArray = new EntityDefinition[Collections.max(entityMappings.values()) + 1];
@@ -183,13 +184,13 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 	/**
 	 * Can we load an existing world with the current configuration without issues ?
 	 */
-	public boolean compatibleWith(Content content) {
+	public boolean compatibleWith(GameContentStore content) {
 		// Check every needed mod is present
 		if (hasRequiredMods(content).size() > 0)
 			return false;
 
 		// Check every translatable definition has a match
-		for (Voxel voxel : voxelMappings.keySet())
+		for (BlockType voxel : voxelMappings.keySet())
 			if (content.getVoxels().getVoxel(voxel.getName()) == null)
 				return false;
 
@@ -219,12 +220,12 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 	}
 
 	@Override
-	public int getIdForVoxel(Voxel voxel) {
+	public int getIdForVoxel(BlockType voxel) {
 		return voxelMappings.getOrDefault(voxel, -1);
 	}
 
 	@Override
-	public Voxel getVoxelForId(int id) {
+	public BlockType getVoxelForId(int id) {
 		if (id < 0 || id >= voxelsArray.length)
 			return content.getVoxels().getAir();
 		return voxelsArray[id];
@@ -264,7 +265,6 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 		return entitiesArray[id];
 	}
 
-	@Override
 	public int getIdForPacket(PacketDefinition definition) {
 		int id = packetMappings.getOrDefault(definition, -1);
 		if (id == -1) {
@@ -274,7 +274,6 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 		return id;
 	}
 
-	@Override
 	public PacketDefinition getPacketForId(int id) {
 		if (id < 0 || id >= packetsArray.length)
 			return null;
@@ -286,7 +285,7 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 			writer.write("requiredMod " + internalName + "\n");
 		}
 
-		for (Entry<Voxel, Integer> e : voxelMappings.entrySet()) {
+		for (Entry<BlockType, Integer> e : voxelMappings.entrySet()) {
 			writer.write("voxel " + e.getValue() + " " + e.getKey().getName() + "\n");
 		}
 
@@ -316,7 +315,7 @@ public abstract class AbstractContentTranslator implements OnlineContentTranslat
 			sb.append("requiredMod " + internalName + "\n");
 		}
 
-		for (Entry<Voxel, Integer> e : voxelMappings.entrySet()) {
+		for (Entry<BlockType, Integer> e : voxelMappings.entrySet()) {
 			sb.append("voxel " + e.getValue() + " " + e.getKey().getName() + "\n");
 		}
 

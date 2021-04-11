@@ -8,27 +8,20 @@ package xyz.chunkstories.server.commands.admin
 
 import xyz.chunkstories.api.plugin.commands.Command
 import xyz.chunkstories.api.plugin.commands.CommandEmitter
-import xyz.chunkstories.api.server.Server
+import xyz.chunkstories.api.plugin.commands.CommandHandler
 import xyz.chunkstories.server.DedicatedServer
-import xyz.chunkstories.server.commands.ServerCommandBasic
 
-class StopServerCommand(serverConsole: Server) : ServerCommandBasic(serverConsole) {
+class StopServerCommand(val host: DedicatedServer) : CommandHandler {
 
     init {
-        server.pluginManager.registerCommand("stop", this)
+        this.host.pluginManager.registerCommand("stop", this)
     }
 
     override fun handleCommand(emitter: CommandEmitter, command: Command, arguments: Array<String>): Boolean {
         if (command.name.startsWith("stop") && emitter.hasPermission("server.stop")) {
-            if (server is DedicatedServer) {
-                emitter.sendMessage("Stopping server.")
-                server.stop()
-                return true
-            } else {
-                //TODO instead of being a smartass just register the command in DedicatedServer.java ?
-                emitter.sendMessage("This isn't a dedicated server.")
-                return true
-            }
+            emitter.sendMessage("Stopping server.")
+            host.requestShutdown()
+            return true
         }
         return false
     }

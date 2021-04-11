@@ -6,20 +6,16 @@
 
 package xyz.chunkstories.net.packets
 
+import xyz.chunkstories.api.net.PacketWorld
+import xyz.chunkstories.api.player.Player
 import java.io.DataInputStream
 import java.io.DataOutputStream
-import java.io.IOException
 
-import xyz.chunkstories.api.net.PacketDestinator
-import xyz.chunkstories.api.net.PacketReceptionContext
-import xyz.chunkstories.api.net.PacketSender
-import xyz.chunkstories.api.net.PacketSendingContext
-import xyz.chunkstories.api.net.PacketWorldStreaming
 import xyz.chunkstories.api.world.World
 import xyz.chunkstories.world.chunk.ChunkImplementation
 import xyz.chunkstories.world.chunk.ChunkCompressedData
 
-class PacketChunkCompressedData : PacketWorldStreaming {
+class PacketChunkCompressedData : PacketWorld {
 
     var x: Int = 0
     var y: Int = 0
@@ -38,8 +34,7 @@ class PacketChunkCompressedData : PacketWorldStreaming {
         this.data = data.stripEntities()
     }
 
-    @Throws(IOException::class)
-    override fun send(destinator: PacketDestinator, dos: DataOutputStream, ctx: PacketSendingContext) {
+    override fun send(dos: DataOutputStream) {
         dos.writeInt(x)
         dos.writeInt(y)
         dos.writeInt(z)
@@ -47,8 +42,7 @@ class PacketChunkCompressedData : PacketWorldStreaming {
         data.toBytes(dos)
     }
 
-    @Throws(IOException::class)
-    override fun process(sender: PacketSender, dis: DataInputStream, processor: PacketReceptionContext) {
+    override fun receive(dis: DataInputStream, player: Player?) {
         x = dis.readInt()
         y = dis.readInt()
         z = dis.readInt()
