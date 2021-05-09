@@ -9,8 +9,6 @@ package xyz.chunkstories.net;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 
-import xyz.chunkstories.api.net.PacketDefinition;
-
 public class PacketIngoingBuffered extends LogicalPacketDatagram {
 
 	DataInputStream dis;

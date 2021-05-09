@@ -5,7 +5,6 @@ import xyz.chunkstories.api.client.Client
 import xyz.chunkstories.api.client.IngameClient
 import xyz.chunkstories.api.graphics.systems.dispatching.DecalsManager
 import xyz.chunkstories.api.particles.ParticlesManager
-import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.server.Host
 import xyz.chunkstories.client.ClientImplementation
 import xyz.chunkstories.client.commands.installClientCommands
@@ -20,25 +19,25 @@ import xyz.chunkstories.server.commands.installHostCommands
 import xyz.chunkstories.sound.ALSoundManager
 import xyz.chunkstories.task.WorkerThreadPool
 import xyz.chunkstories.util.alias
-import xyz.chunkstories.world.WorldClientCommon
-import xyz.chunkstories.world.WorldClientLocal
+import xyz.chunkstories.world.WorldImplementation
+import xyz.chunkstories.world.WorldMasterImplementation
 
-abstract class IngameClientImplementation protected constructor(val client: ClientImplementation, worldInitializer: (IngameClientImplementation) -> WorldClientCommon) : IngameClient, Client by client {
+abstract class IngameClientImplementation protected constructor(val client: ClientImplementation, worldInitializer: (IngameClientImplementation) -> WorldImplementation) : IngameClient, Client by client {
     val tasks: WorkerThreadPool = client.tasks
 
     final override val ingame: IngameClient = this
     final override val soundManager: ALSoundManager by alias(client::soundManager)
     final override val pluginManager: DefaultPluginManager
 
-    val loadingAgent = LocalClientLoadingAgent(world)
+    val loadingAgent = LocalClientLoadingAgent(this)
 
-    val world_: WorldClientCommon = worldInitializer.invoke(this)
-    abstract override val world: WorldClientCommon
+    val world_: WorldImplementation = worldInitializer.invoke(this)
+    abstract override val world: WorldImplementation
 
     val decalsManager: DecalsManager
     val particlesManager: ParticlesManager
 
-    final override val player: Player
+    final override val player: LocalPlayerImplementation
 
     val ingameGuiUI: IngameUI
 
@@ -66,8 +65,8 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
 
         ingameGuiUI = IngameUI(gui, this)
         // Spawn manually the player if we're in single player mode
-        if (world_ is WorldClientLocal) {
-            gui.topLayer = WorldLoadingUI(world_, gui, ingameGuiUI)
+        if (world_ is WorldMasterImplementation) {
+            gui.topLayer = WorldLoadingUI(world_, this, gui, ingameGuiUI)
         } else {
             gui.topLayer = ingameGuiUI
         }

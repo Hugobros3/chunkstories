@@ -14,20 +14,21 @@ import xyz.chunkstories.api.world.chunk.ChunkHolder
 import xyz.chunkstories.api.world.heightmap.Heightmap
 import xyz.chunkstories.api.world.region.Region
 import xyz.chunkstories.util.concurrency.CompoundFence
-import xyz.chunkstories.world.WorldClientRemote
 import xyz.chunkstories.world.heightmap.HeightmapImplementation
 import xyz.chunkstories.world.chunk.ChunkHolderImplementation
 import xyz.chunkstories.world.region.RegionImplementation
-import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.math.MathUtils.clamp
 import xyz.chunkstories.api.math.MathUtils.mod_dist
 import xyz.chunkstories.api.world.WorldUser
-import xyz.chunkstories.world.WorldClientCommon
-import xyz.chunkstories.world.WorldImplementation
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
+import org.slf4j.LoggerFactory
+import xyz.chunkstories.api.player.PlayerState
+import xyz.chunkstories.api.util.kotlin.toVec3i
+import xyz.chunkstories.api.world.WorldSub
+import xyz.chunkstories.client.InternalClientOptions
 
-class LocalClientLoadingAgent(private val world: WorldClientCommon) {
+class LocalClientLoadingAgent(val ingame: IngameClientImplementation) {
     val user = object : WorldUser {}
 
     val aquiredChunkHoldersMask = IntHashSet()
@@ -38,7 +39,28 @@ class LocalClientLoadingAgent(private val world: WorldClientCommon) {
 
     private val lock = ReentrantLock()
 
+    fun updateUsedWorldBits() {
+        val position = when (val state = ingame.player.state) {
+            PlayerState.None -> return
+            is PlayerState.Ingame -> state.entity.location
+            is PlayerState.Spectating -> state.location
+        }
+
+        val ipos = position.toVec3i()
+
+        val cx = ipos.x / 32
+        val cy = ipos.y / 32
+        val cz = ipos.z / 32
+
+        val chunksViewDistance = ingame.client.configuration.getIntValue(InternalClientOptions.viewDistance) / 32
+        val chunksViewDistanceHeight = 6
+
+        updateUsedWorldBits(cx, cy, cz, chunksViewDistance, chunksViewDistanceHeight)
+    }
+
     fun updateUsedWorldBits(cameraChunkX: Int, cameraChunkY: Int, cameraChunkZ: Int, chunkViewRange: Int, verticalChunkViewRange: Int) {
+        val world = ingame.world
+
         try {
             lock.lock()
 
@@ -48,17 +70,11 @@ class LocalClientLoadingAgent(private val world: WorldClientCommon) {
             val sizeInRegions = (world.properties.size.sizeInChunks / 8)
             val summaryDistance = 32//(int) (world.getClient().getConfiguration().getIntOption("client.rendering.viewDistance") / 24);
 
-            //val chunksViewDistance = world.client.configuration.getIntValue(InternalClientOptions.viewDistance) / 32
-            //val chunksViewDistanceHeight = 6
-
             for (chunkX in cameraChunkX - chunkViewRange - 1..cameraChunkX + chunkViewRange + 1) {
                 for (chunkZ in cameraChunkZ - chunkViewRange - 1..cameraChunkZ + chunkViewRange + 1)
                     for (chunkY in cameraChunkY - verticalChunkViewRange - 1..cameraChunkY + verticalChunkViewRange + 1) {
                         if (chunkY < 0 || chunkY >= world.properties.size.heightInChunks)
                             continue
-
-                        val worldInfo = world.properties
-                        val size = worldInfo.size
 
                         val filteredChunkX = chunkX and size.maskForChunksCoordinates
                         val filteredChunkY = clamp(chunkY, 0, size.sizeInChunks - 1)
@@ -74,14 +90,13 @@ class LocalClientLoadingAgent(private val world: WorldClientCommon) {
 
                         val holder = world.chunksManager.acquireChunkHolder(user, chunkX, chunkY, chunkZ)!!
 
-                        if (holder.region.state is Region.State.Zombie)
-                            throw Exception("WOW THIS IS NOT COOL :(((")
+                        assert(holder.region.state !is Region.State.Zombie)
 
                         acquiredChunkHolders.add(holder)
                         aquiredChunkHoldersMask.add(summed)
 
-                        if (world is WorldClientRemote) {
-                            world.connection.pushPacket(PacketWorldUser.registerChunkPacket(world, filteredChunkX, filteredChunkY, filteredChunkZ))
+                        if (world is WorldSub) {
+                            world.pushPacket(PacketWorldUser.registerChunkPacket(world, filteredChunkX, filteredChunkY, filteredChunkZ))
                         }
                     }
             }
@@ -105,8 +120,8 @@ class LocalClientLoadingAgent(private val world: WorldClientCommon) {
                     i.remove()
                     holder.unregisterUser(user)
 
-                    if (world is WorldClientRemote) {
-                        world.connection.pushPacket(PacketWorldUser.unregisterChunkPacket(world, filteredChunkX, filteredChunkY, filteredChunkZ))
+                    if (world is WorldSub) {
+                        world.pushPacket(PacketWorldUser.unregisterChunkPacket(world, filteredChunkX, filteredChunkY, filteredChunkZ))
                     }
                 }
             }
@@ -132,9 +147,8 @@ class LocalClientLoadingAgent(private val world: WorldClientCommon) {
 
                             val regionSummary = world.heightmapsManager.acquireHeightmap(user, regionX, regionZ)
                             acquiredHeightmaps.add(regionSummary)
-                            if (world is WorldClientRemote) {
-
-                                world.connection.pushPacket(PacketWorldUser.registerSummary(world, regionX, regionZ))
+                            if (world is WorldSub) {
+                                world.pushPacket(PacketWorldUser.registerSummary(world, regionX, regionZ))
                             }
                         }
                     }
@@ -161,8 +175,8 @@ class LocalClientLoadingAgent(private val world: WorldClientCommon) {
                     iterator.remove()
                     acquiredHeightmapsMask.remove(key)
 
-                    if (world is WorldClientRemote) {
-                        world.connection.pushPacket(PacketWorldUser.unregisterSummary(world, regionX, regionZ))
+                    if (world is WorldSub) {
+                        world.pushPacket(PacketWorldUser.unregisterSummary(world, regionX, regionZ))
                     }
                 }
             }
@@ -172,9 +186,8 @@ class LocalClientLoadingAgent(private val world: WorldClientCommon) {
         }
     }
 
-    @Throws(IllegalPacketException::class)
     fun handleServerResponse(packet: PacketWorldUser) {
-
+        val world = ingame.world
         try {
             lock.lock()
             // The server refused to register us to this chunk. We gracefully accept.
@@ -238,7 +251,7 @@ class LocalClientLoadingAgent(private val world: WorldClientCommon) {
 
         logger.debug("Additional wait for heightmaps that were transitively loaded")
 
-        for(heightmap in (world as WorldImplementation).heightmapsManager.all()) {
+        for(heightmap in ingame.world.heightmapsManager.all()) {
             heightmap.waitUntilStateIs(Heightmap.State.Zombie::class.java).traverse()
         }
 

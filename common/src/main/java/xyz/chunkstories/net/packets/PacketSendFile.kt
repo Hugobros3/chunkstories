@@ -7,12 +7,13 @@ package xyz.chunkstories.net.packets
 
 import xyz.chunkstories.api.net.Packet
 import xyz.chunkstories.api.player.Player
+import xyz.chunkstories.api.world.GameInstance
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.File
 import java.io.FileInputStream
 
-open class PacketSendFile : Packet() {
+open class PacketSendFile(gameInstance: GameInstance) : Packet(gameInstance) {
     lateinit var fileTag: String
     lateinit var file: File
 

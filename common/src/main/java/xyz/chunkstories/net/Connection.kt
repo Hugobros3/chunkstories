@@ -6,7 +6,6 @@
 
 package xyz.chunkstories.net
 
-import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.exceptions.PacketProcessingException
 import xyz.chunkstories.api.exceptions.net.IllegalPacketException
@@ -32,9 +31,7 @@ abstract class Connection(val remoteAddress: String, val port: Int) {
 
     abstract fun flush()
 
-    @Throws(IOException::class, PacketProcessingException::class, IllegalPacketException::class)
     abstract fun handleDatagram(datagram: LogicalPacketDatagram)
-
     abstract fun handleSystemRequest(message: String): Boolean
 
     open fun sendTextMessage(string: String) {
@@ -67,12 +64,7 @@ abstract class Connection(val remoteAddress: String, val port: Int) {
 
     interface DownloadStatus {
         fun bytesDownloaded(): Int
-
         fun totalBytes(): Int
-
-        /**
-         * Waits for the download to end and returns true if successful
-         */
         fun waitsUntilDone(): Boolean
     }
 

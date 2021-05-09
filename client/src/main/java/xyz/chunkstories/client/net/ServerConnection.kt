@@ -6,12 +6,12 @@
 
 package xyz.chunkstories.client.net
 
-import xyz.chunkstories.api.net.RemoteServer
+import xyz.chunkstories.api.entity.Subscriber
 import xyz.chunkstories.net.Connection
 
 /** A connection from a client *to* a server.  */
 abstract class ServerConnection(val connectionSequence: ClientConnectionSequence) : Connection(connectionSequence.serverAddress, connectionSequence.serverPort) {
-    abstract val remoteServer: RemoteServer
+    abstract val remoteServer: Subscriber
 
     open fun onDisconnect(reason: String) {
 

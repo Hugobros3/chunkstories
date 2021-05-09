@@ -10,16 +10,14 @@ import xyz.chunkstories.api.graphics.systems.dispatching.DecalsManager
 import xyz.chunkstories.api.particles.ParticlesManager
 import xyz.chunkstories.api.plugin.PluginManager
 import xyz.chunkstories.api.world.WorldClient
-import xyz.chunkstories.api.world.WorldInfo
 import xyz.chunkstories.client.ingame.IngameClientImplementation
 import xyz.chunkstories.content.translator.AbstractContentTranslator
 import java.io.File
 
-/**
+/*/**
  * Mostly the common methods of WorldClientRemote and WorldClientLocal
  */
-abstract class
-WorldClientCommon @Throws(WorldLoadingException::class)
+abstract class WorldClientCommon @Throws(WorldLoadingException::class)
 constructor(override val client: IngameClientImplementation, info: WorldInfo, translator: AbstractContentTranslator?, folder: File?) : WorldImplementation(client, info, translator, folder), WorldClient {
 
     val pluginManager: PluginManager
@@ -49,3 +47,4 @@ constructor(override val client: IngameClientImplementation, info: WorldInfo, tr
         //	((ClientParticlesRenderer) getParticlesManager()).updatePhysics();
     }
 }
+*/

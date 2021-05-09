@@ -9,9 +9,7 @@ import xyz.chunkstories.client.ClientImplementation
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.content.ContentTranslator
 import xyz.chunkstories.api.entity.Entity
-import xyz.chunkstories.api.player.IngamePlayer
 import xyz.chunkstories.api.player.PlayerID
-import xyz.chunkstories.api.player.SpectatingPlayer
 import xyz.chunkstories.api.world.World
 import xyz.chunkstories.world.*
 import java.io.File
@@ -30,7 +28,7 @@ fun ClientImplementation.enterExistingWorld(folder: File) {
 
     // Create the context for the local server
     val localHostCtx = IngameClientLocalHost(this) {
-        WorldClientLocal(it as IngameClientLocalHost, worldInfo, folder)
+        newMasterWorldImplementation(it as IngameClientLocalHost,  folder)
     }
     localHostCtx.world.startLogic()
     this.ingame = localHostCtx
@@ -48,8 +46,8 @@ fun ClientImplementation.createAndEnterWorld(folder: File, properties: World.Pro
 }
 
 /** Represent an IngameClient that is also a local Server (with minimal server functionality). Used in local SP. */
-class IngameClientLocalHost(client: ClientImplementation, worldInitializer: (IngameClientImplementation) -> WorldClientLocal) : IngameClientImplementation(client, worldInitializer), Host {
-    override val world: WorldClientLocal = super.world_ as WorldClientLocal
+class IngameClientLocalHost(client: ClientImplementation, worldInitializer: (IngameClientImplementation) -> WorldImplementation) : IngameClientImplementation(client, worldInitializer), Host {
+    override val world: WorldMasterImplementation = super.world_ as WorldMasterImplementation
     override val contentTranslator: ContentTranslator
         get() = world.contentTranslator
     override val logger: Logger = LoggerFactory.getLogger("client.world")
@@ -76,16 +74,12 @@ class IngameClientLocalHost(client: ClientImplementation, worldInitializer: (Ing
         super.exitCommon()
     }
 
-    override fun startPlayingAs_(entity: Entity): IngamePlayer {
+    override fun startPlayingAs_(entity: Entity) {
         TODO("Not yet implemented")
     }
 
-    override fun startSpectating_(): SpectatingPlayer {
+    override fun startSpectating_() {
         TODO("Not yet implemented")
-    }
-
-    override fun reloadConfig() {
-        // doesn't do shit
     }
 
     override fun getPlayer(playerName: String): Player? {
@@ -108,5 +102,5 @@ class IngameClientLocalHost(client: ClientImplementation, worldInitializer: (Ing
         print(message)
     }
 
-    override val players = setOf(player)
+    override val players = setOf(player).asSequence()
 }

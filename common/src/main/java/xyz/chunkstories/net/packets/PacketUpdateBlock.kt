@@ -12,7 +12,7 @@ import xyz.chunkstories.api.world.World
 import xyz.chunkstories.api.world.chunk.ChunkCell
 import xyz.chunkstories.api.net.PacketWorld
 import xyz.chunkstories.api.player.Player
-import xyz.chunkstories.api.world.WorldClient
+import xyz.chunkstories.api.world.WorldSub
 import xyz.chunkstories.api.world.cell.PodCellData
 import xyz.chunkstories.content.translator.AbstractContentTranslator
 import java.io.DataInputStream
@@ -46,7 +46,7 @@ class PacketUpdateBlock : PacketWorld {
     }
 
     override fun receive(dis: DataInputStream, player: Player?) {
-        if (world is WorldClient) {
+        if (world is WorldSub) {
             val x = dis.readInt()
             val y = dis.readInt()
             val z = dis.readInt()

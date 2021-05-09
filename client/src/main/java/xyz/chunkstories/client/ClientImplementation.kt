@@ -9,7 +9,6 @@ package xyz.chunkstories.client
 import org.lwjgl.glfw.GLFW
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import xyz.chunkstories.ThreadPriorities
 import xyz.chunkstories.Engine
 import xyz.chunkstories.api.client.Client
 import xyz.chunkstories.api.client.ClientIdentity
@@ -19,6 +18,8 @@ import xyz.chunkstories.api.util.configuration.Configuration
 import xyz.chunkstories.client.glfw.GLFWWindow
 import xyz.chunkstories.client.ingame.IngameClientImplementation
 import xyz.chunkstories.content.GameContentStore
+import xyz.chunkstories.content.mods.ModsManagerImplementation
+import xyz.chunkstories.gameName
 import xyz.chunkstories.graphics.GraphicsBackendsEnum
 import xyz.chunkstories.graphics.GraphicsEngineImplementation
 import xyz.chunkstories.gui.ClientGui
@@ -62,7 +63,7 @@ fun main(launchArguments: Array<String>) {
 
 private fun printHelp() {
     println("""
-                Chunk Stories Client version: ${VersionInfo.versionJson.verboseVersion}
+                $gameName Client version: ${VersionInfo.versionJson.verboseVersion}
 
                 Available commandline options:
                 --core=... Specifies the folder/file to use as the base content
@@ -89,6 +90,8 @@ class ClientImplementation internal constructor(val arguments: Map<String, Strin
     override val configuration: Configuration = Configuration(configFile)
 
     override val content: GameContentStore
+    override val modsManager: ModsManagerImplementation
+        get() = content.modsManager
 
     override val graphics: GraphicsEngineImplementation
     override val inputsManager: GLFWInputManager
@@ -107,7 +110,6 @@ class ClientImplementation internal constructor(val arguments: Map<String, Strin
     init {
         // Name the thread
         Thread.currentThread().name = "Main thread"
-        Thread.currentThread().priority = ThreadPriorities.MAIN_THREAD_PRIORITY
 
         configuration.addOptions(InternalClientOptions.createOptions(this))
 
@@ -128,7 +130,7 @@ class ClientImplementation internal constructor(val arguments: Map<String, Strin
         val coreContentLocation = File(arguments["core"] ?: "core_content.zip")
 
         // Create game content manager
-        content = GameContentStore(this, coreContentLocation, arguments["mods"] ?: "")
+        content = GameContentStore(this, coreContentLocation, arguments["mods"]?.split(",")?.map { it.trim() } ?: emptyList())
         content.reload()
 
         configuration.load()

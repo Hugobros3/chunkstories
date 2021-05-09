@@ -6,13 +6,11 @@
 
 package xyz.chunkstories.client.commands
 
-import xyz.chunkstories.api.GameContext
 import xyz.chunkstories.api.client.IngameClient
 import xyz.chunkstories.api.plugin.commands.Command
 import xyz.chunkstories.api.plugin.commands.CommandEmitter
 import xyz.chunkstories.api.plugin.commands.CommandHandler
 import xyz.chunkstories.client.glfw.GLFWWindow
-import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 
 class ReloadContentCommand(private val client: IngameClient) : CommandHandler {
 

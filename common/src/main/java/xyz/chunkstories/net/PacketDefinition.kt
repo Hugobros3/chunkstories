@@ -6,22 +6,19 @@
 
 package xyz.chunkstories.net
 
-import java.io.IOException
 import java.lang.reflect.Constructor
 import java.lang.reflect.InvocationTargetException
 
-import xyz.chunkstories.api.content.Definition
 import xyz.chunkstories.api.content.json.Json
 import xyz.chunkstories.api.content.json.asBoolean
 import xyz.chunkstories.api.content.json.asInt
 import xyz.chunkstories.api.content.json.asString
-import xyz.chunkstories.api.exceptions.content.IllegalPacketDeclarationException
 import xyz.chunkstories.api.net.Packet
+import xyz.chunkstories.api.world.GameInstance
 import xyz.chunkstories.api.world.World
 import xyz.chunkstories.content.GameContentStore
 
-class PacketDefinition @Throws(IllegalPacketDeclarationException::class, IOException::class)
-constructor(store: GameContentStore, name: String, properties: Json.Dict) : Definition(name, properties) {
+class PacketDefinition constructor(store: GameContentStore, val name: String, val properties: Json.Dict)  {
 
     val allowedFrom: AllowedFrom
 
@@ -39,34 +36,36 @@ constructor(store: GameContentStore, name: String, properties: Json.Dict) : Defi
     internal val serverClassConstructor: Constructor<out Packet>?
     internal val commonClassConstructor: Constructor<out Packet>?
 
-    private var constructorTakesWorld = false // True if the Packet constructor takes a World parameter
+    var constructorTakesWorld = false // True if the Packet constructor takes a World parameter
+        private set
 
     init {
-        isStreamed = this["streamed"].asBoolean ?: false
-        fixedId = this["fixedId"].asInt ?: -1
+        isStreamed = properties["streamed"].asBoolean ?: false
+        fixedId = properties["fixedId"].asInt ?: -1
 
-        allowedFrom = when(this["allowedFrom"].asString ?: "all") {
+        allowedFrom = when(properties["allowedFrom"].asString ?: "all") {
             "all" -> AllowedFrom.ALL
             "client" -> AllowedFrom.CLIENT
             "server" -> AllowedFrom.SERVER
-            else -> throw IllegalPacketDeclarationException("allowedFrom can only take one of {all, client, server}.")
+            else -> throw Exception("allowedFrom can only take one of {all, client, server}.")
         }
 
-        clientClass = this["clientClass"].asString?.let { resolveClass(store, it) }
-        serverClass = this["serverClass"].asString?.let { resolveClass(store, it) }
-        commonClass = this["commonClass"].asString?.let { resolveClass(store, it) }
+        clientClass = properties["clientClass"].asString?.let { resolveClass(store, it) }
+        serverClass = properties["serverClass"].asString?.let { resolveClass(store, it) }
+        commonClass = properties["commonClass"].asString?.let { resolveClass(store, it) }
 
         // Security trips in case someone forgets to set up a handler
         if (this.commonClass == null) {
-            if (allowedFrom == AllowedFrom.ALL && (this.clientClass == null || this.serverClass == null)) {
-                throw IllegalPacketDeclarationException(
-                        "Packet can be received from both client and servers, but isn't provided with a way to handle both." + "\nEither commonClass must be set, or both clientClass and serverClass")
-            } else if (allowedFrom == AllowedFrom.SERVER && this.clientClass == null) {
-                throw IllegalPacketDeclarationException(
-                        "This packet lacks a handler class, please set either commonClass or clientClass")
-            } else if (allowedFrom == AllowedFrom.CLIENT && this.serverClass == null) {
-                throw IllegalPacketDeclarationException(
-                        "This packet lacks a handler class, please set either commonClass or serverClass")
+            when {
+                allowedFrom == AllowedFrom.ALL && (this.clientClass == null || this.serverClass == null) -> {
+                    throw Exception("Packet can be received from both client and servers, but isn't provided with a way to handle both." + "\nEither commonClass must be set, or both clientClass and serverClass")
+                }
+                allowedFrom == AllowedFrom.SERVER && this.clientClass == null -> {
+                    throw Exception("This packet lacks a handler class, please set either commonClass or clientClass")
+                }
+                allowedFrom == AllowedFrom.CLIENT && this.serverClass == null -> {
+                    throw Exception("This packet lacks a handler class, please set either commonClass or serverClass")
+                }
             }
         }
 
@@ -76,7 +75,6 @@ constructor(store: GameContentStore, name: String, properties: Json.Dict) : Defi
         commonClassConstructor = extractConstructor(this.commonClass)
     }
 
-    @Throws(IllegalPacketDeclarationException::class)
     private fun resolveClass(store: GameContentStore, className: String): Class<out Packet>? {
 
         val rawClass = store.modsManager.getClassByName(className)
@@ -93,13 +91,12 @@ constructor(store: GameContentStore, name: String, properties: Json.Dict) : Defi
         return rawClass as Class<out Packet>?
     }
 
-    @Throws(IllegalPacketDeclarationException::class)
     private fun extractConstructor(packetClass: Class<out Packet>?): Constructor<out Packet>? {
         // Null leads to null.
         if (packetClass == null)
             return null
 
-        val types = if (constructorTakesWorld) arrayOf<Class<*>>(World::class.java) else arrayOf()
+        val types = if (constructorTakesWorld) arrayOf<Class<*>>(World::class.java) else arrayOf<Class<*>>(GameInstance::class.java)
         var constructor: Constructor<out Packet>?
         try {
             constructor = packetClass.getConstructor(*types)
@@ -110,38 +107,34 @@ constructor(store: GameContentStore, name: String, properties: Json.Dict) : Defi
         }
 
         if (constructor == null) {
-            throw IllegalPacketDeclarationException(
-                    "Packet " + this.name + " does not provide a valid constructor.")
+            throw Exception("Packet " + this.name + " does not provide a valid constructor.")
         }
 
         return constructor
     }
 
-    fun createNew(client: Boolean, world: World?): Packet? {
-        try {
-            val parameters = if (constructorTakesWorld) arrayOf<Any>(world!!) else arrayOf()
+    fun createNewWithInstance(client: Boolean, gameInstance: GameInstance): Packet? {
+        assert(!constructorTakesWorld)
+        val parameters = arrayOf<Any>(gameInstance)
 
-            return if (client && clientClass != null)
-                clientClassConstructor!!.newInstance(*parameters)
-            else if (!client && serverClass != null)
-                serverClassConstructor!!.newInstance(*parameters)
-            else
-                commonClassConstructor!!.newInstance(*parameters)
+        return if (client && clientClass != null)
+            clientClassConstructor!!.newInstance(*parameters)
+        else if (!client && serverClass != null)
+            serverClassConstructor!!.newInstance(*parameters)
+        else
+            commonClassConstructor!!.newInstance(*parameters)
+    }
 
-        } catch (e: InstantiationException) {
-            e.printStackTrace()
-            return null
-        } catch (e: IllegalAccessException) {
-            e.printStackTrace()
-            return null
-        } catch (e: IllegalArgumentException) {
-            e.printStackTrace()
-            return null
-        } catch (e: InvocationTargetException) {
-            e.printStackTrace()
-            return null
-        }
+    fun createNewWithWorld(client: Boolean, world: World?): Packet? {
+        assert(constructorTakesWorld)
+        val parameters = arrayOf<Any>(world!!)
 
+        return if (client && clientClass != null)
+            clientClassConstructor!!.newInstance(*parameters)
+        else if (!client && serverClass != null)
+            serverClassConstructor!!.newInstance(*parameters)
+        else
+            commonClassConstructor!!.newInstance(*parameters)
     }
 
     override fun toString(): String {

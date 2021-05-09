@@ -25,17 +25,10 @@ import xyz.chunkstories.server.player.ServerPlayer
 import xyz.chunkstories.world.spawnPlayer
 
 abstract class ClientConnection(val server: DedicatedServer, internal val connectionsManager: ConnectionsManager, remoteAddress: String, port: Int) : Connection(remoteAddress, port) {
-    internal val logger: Logger
-
-    private val loginHelper: PlayerAuthenticationHelper
+    internal val logger: Logger = LoggerFactory.getLogger("server.net.users." + usersCount.getAndIncrement())
+    private val loginHelper = PlayerAuthenticationHelper(this)
 
     var player: ServerPlayer? = null
-
-    init {
-        // This way we can tell the logs from one use to the next
-        this.logger = LoggerFactory.getLogger("server.net.users." + usersCount.getAndIncrement())
-        this.loginHelper = PlayerAuthenticationHelper(this)
-    }
 
     override fun connect(): Boolean {
         throw UnsupportedOperationException()

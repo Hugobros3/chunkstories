@@ -7,19 +7,20 @@ package xyz.chunkstories.net.packets
 
 import org.joml.Vector3d
 import org.joml.Vector3dc
+import xyz.chunkstories.api.client.Client
 import xyz.chunkstories.api.net.PacketWorld
 import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.sound.SoundSource
 import xyz.chunkstories.api.world.World
-import xyz.chunkstories.api.world.WorldClient
+import xyz.chunkstories.api.world.WorldSub
 import xyz.chunkstories.sound.source.SoundSourceVirtual
 import java.io.DataInputStream
 import java.io.DataOutputStream
 
-class PacketSoundSource(world: World?) : PacketWorld(world!!) {
+class PacketSoundSource(world: World) : PacketWorld(world) {
     var soundSourceToSend: SoundSourceVirtual? = null
 
-    constructor(world: World?, soundSource: SoundSourceVirtual?) : this(world) {
+    constructor(world: World, soundSource: SoundSourceVirtual) : this(world) {
         soundSourceToSend = soundSource
     }
 
@@ -57,14 +58,14 @@ class PacketSoundSource(world: World?) : PacketWorld(world!!) {
         val attenuationStart = dis.readFloat()
         val attenuationEnd = dis.readFloat()
 
-        val worldClient = world as? WorldClient ?: throw Exception("Not a client !")
+        val worldClient = world as? WorldSub ?: throw Exception("Not a client !")
+        val client = worldClient.gameInstance as Client
 
-        var soundSource: SoundSource? = worldClient.client.soundManager.getSoundSource(sourceId)
+        var soundSource: SoundSource? = client.soundManager.getSoundSource(sourceId)
 
         if (soundSource == null && stopped) return
         if (soundSource == null) {
-            soundSource = worldClient.client.soundManager.replicateServerSoundSource(soundName, mode, position!!,
-                    pitch, gain, attenuationStart, attenuationEnd, sourceId)
+            soundSource = client.soundManager.replicateServerSoundSource(soundName, mode, position!!, pitch, gain, attenuationStart, attenuationEnd, sourceId)
             return
         }
         if (stopped) {

@@ -7,16 +7,16 @@ package xyz.chunkstories.net.packets
 
 import xyz.chunkstories.api.net.Packet
 import xyz.chunkstories.api.player.Player
+import xyz.chunkstories.api.world.GameInstance
 import xyz.chunkstories.api.world.World
 import xyz.chunkstories.world.serializeWorldInfo
 import java.io.DataInputStream
 import java.io.DataOutputStream
 
-open class PacketSendWorldInfo : Packet {
+open class PacketSendWorldInfo(gameInstance: GameInstance) : Packet(gameInstance) {
     var worldInfo: World.Properties? = null
 
-    constructor()
-    constructor(info: World.Properties?) {
+    constructor(gameInstance: GameInstance, info: World.Properties?) : this(gameInstance) {
         worldInfo = info
     }
 

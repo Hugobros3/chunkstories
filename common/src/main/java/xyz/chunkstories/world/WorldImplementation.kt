@@ -18,9 +18,11 @@ import xyz.chunkstories.api.entity.Entity
 import xyz.chunkstories.api.physics.Box
 import xyz.chunkstories.api.util.concurrency.Fence
 import xyz.chunkstories.api.entity.EntityID
+import xyz.chunkstories.api.entity.Subscriber
 import xyz.chunkstories.api.graphics.systems.dispatching.DecalsManager
 import xyz.chunkstories.api.math.MathUtils.ceil
 import xyz.chunkstories.api.math.MathUtils.floor
+import xyz.chunkstories.api.net.Packet
 import xyz.chunkstories.api.net.PacketWorld
 import xyz.chunkstories.api.net.packets.PacketEntity
 import xyz.chunkstories.api.particles.ParticlesManager
@@ -75,11 +77,6 @@ class WorldLoadingException(message: String, cause: Throwable? = null) : Excepti
     }
 }
 */
-class This<T: Any> {
-    private lateinit var t: T;
-    fun get() = t
-    fun set(t: T) {this.t = t}
-}
 
 interface WorldCommon: World {
     val entitiesLock: ReadWriteLock
@@ -91,8 +88,7 @@ interface WorldCommon: World {
     override val heightmapsManager: HeightmapsStorage
 }
 
-class WorldImplementation constructor(
-        val this_: This<WorldCommon>,
+sealed class WorldImplementation constructor(
         override val gameInstance: GameInstance,
         override var properties: World.Properties,
         var internalData: WorldInternalData,
@@ -101,18 +97,18 @@ class WorldImplementation constructor(
 
     override val generator: WorldGenerator
 
-    override val ioHandler by lazy { IOTasks(this_.get()) }
+    override val ioHandler = IOTasks(this)
     val gameLogic: WorldLogicThread
 
-    override val chunksManager by lazy { ChunksStorage(this_.get()) }
-    override val regionsManager by lazy { RegionsStorage(this_.get()) }
-    override val heightmapsManager by lazy { HeightmapsStorage(this_.get()) }
+    override val chunksManager by lazy { ChunksStorage(this) }
+    override val regionsManager by lazy { RegionsStorage(this) }
+    override val heightmapsManager by lazy { HeightmapsStorage(this) }
 
     //TODO go through the code & change write locks into update locks where possible
     override val entitiesLock: ReadWriteLock = ReentrantReadWriteUpdateLock()
     val entities_ = mutableListOf<Entity>()
 
-    override val collisionsManager by lazy { DefaultWorldCollisionsManager(this_.get()) }
+    override val collisionsManager by lazy { DefaultWorldCollisionsManager(this) }
 
     val internalDataLock = ReentrantLock()
 
@@ -120,8 +116,8 @@ class WorldImplementation constructor(
 
     override var ticksElapsed: Long by alias(internalData::ticksCounter)
 
-    val content: Content
-        get() = gameInstance.content
+    val content: GameContentStore
+        get() = gameInstance.content as GameContentStore
 
     override var sky: World.Sky
         get() = TODO("Not yet implemented")
@@ -178,7 +174,7 @@ class WorldImplementation constructor(
         }
     }
 
-    fun tick() {
+    open fun tick() {
         entitiesLock.writeLock().withLock {
             for (entity in entities_) {
                 entity.tick()
@@ -272,7 +268,7 @@ class WorldImplementation constructor(
     override val soundManager: SoundManager
         get() = TODO("Not yet implemented")
 
-    fun destroy() {
+    open fun destroy() {
         gameLogic.stopLogicThread().traverse()
         ioHandler.kill()
     }
@@ -299,12 +295,10 @@ class WorldMasterImplementation(
         gameInstance: GameInstance,
         properties: World.Properties,
         internalData: WorldInternalData,
-        contentTranslator: AbstractContentTranslator,
-        internal val world_: This<WorldCommon>,
-        internal val super_: WorldImplementation = WorldImplementation(world_, gameInstance, properties, internalData, contentTranslator)
-        ): WorldCommon by super_, WorldMaster, WorldCommonMaster {
+        contentTranslator: AbstractContentTranslator
+        ): WorldImplementation(gameInstance, properties, internalData, contentTranslator), WorldMaster, WorldCommonMaster {
     override val gameInstance: Host
-        get() = super_.gameInstance as Host
+    get() = super.gameInstance as Host
 
     override val folderPath: String
         get() = TODO("Not yet implemented")
@@ -328,29 +322,39 @@ class WorldMasterImplementation(
     override val players: Sequence<Player>
         get() = TODO("Not yet implemented")
 
+    fun getPlayerByName(playerName: String): Player? {
+        TODO()
+    }
+
+    override fun tick() {
+        // TODO: processIncommingPackets();
+        // TODO: flush all
+        super.tick()
+    }
+
     override fun addEntity(entity: Entity): EntityID {
         if (entity.id == -1L) {
-            val nextUUID = super_.internalDataLock.withLock { super_.internalData.nextEntityId++ }
+            val nextUUID = internalDataLock.withLock { internalData.nextEntityId++ }
             entity.id = nextUUID
         }
-        return super_.addEntity(entity)
+        return super.addEntity(entity)
     }
 
     fun saveEverything(): Fence {
         val fence = CompoundFence()
         logger.info("Saving all parts of world " + properties.name)
-        fence.add(super_.regionsManager.saveAll())
+        fence.add(regionsManager.saveAll())
         saveInternalData()
         return fence
     }
 
-    fun destroy() {
-        super_.destroy()
+    override fun destroy() {
+        super.destroy()
         saveInternalData()
     }
 }
 
-fun newMasterWorldImplementation(world_: This<WorldCommon>, gameInstance: GameInstance, folder: File): WorldMasterImplementation {
+fun newMasterWorldImplementation(gameInstance: GameInstance, folder: File): WorldMasterImplementation {
     if (!folder.exists() || !folder.isDirectory)
         throw WorldLoadingException("The folder $folder doesn't exist !")
 
@@ -359,7 +363,7 @@ fun newMasterWorldImplementation(world_: This<WorldCommon>, gameInstance: GameIn
     if (contentTranslatorFile.exists()) {
         contentTranslator = LoadedContentTranslator.loadFromFile(gameInstance.content as GameContentStore, contentTranslatorFile)
     } else {
-        contentTranslator = InitialContentTranslator(gameInstance.content)
+        contentTranslator = InitialContentTranslator(gameInstance.content as GameContentStore)
         contentTranslator.save(File(folder.path + "/content_mappings.dat"))
     }
 
@@ -370,15 +374,7 @@ fun newMasterWorldImplementation(world_: This<WorldCommon>, gameInstance: GameIn
     val properties = deserializeWorldInfo(worldInfoFile)
     val internalData = tryLoadWorldInternalData(folder)
 
-    return WorldMasterImplementation(gameInstance, properties, internalData, contentTranslator, world_)
-}
-
-class EvenBetterWorld(world_: This<WorldCommon>, gameInstance: GameInstance, folder: File): WorldCommonMaster by newMasterWorldImplementation(world_, gameInstance, folder)
-fun createEBW(gameInstance: GameInstance, folder: File): EvenBetterWorld {
-    val this_ = This<WorldCommon>()
-    val world = EvenBetterWorld(this_, gameInstance, folder)
-    this_.set(world)
-    return world
+    return WorldMasterImplementation(gameInstance, properties, internalData, contentTranslator)
 }
 
 fun initializeWorld(folder: File, properties: World.Properties) {
@@ -408,6 +404,16 @@ fun initializeWorld(folder: File, properties: World.Properties) {
     val gson = Gson()
     val contents = gson.toJson(internalData)
     internalDataFile.writeText(contents)
+}
+
+class WorldSubImplementation(gameInstance: GameInstance, properties: World.Properties, internalData: WorldInternalData, contentTranslator: AbstractContentTranslator)
+    : WorldImplementation(gameInstance, properties, internalData, contentTranslator), WorldSub {
+    override val remoteServer: Subscriber
+        get() = TODO("Not yet implemented")
+
+    override fun pushPacket(packet: Packet) {
+        TODO("Not yet implemented")
+    }
 }
 
 //TODO move to worldsize

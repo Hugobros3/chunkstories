@@ -11,8 +11,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.concurrent.Semaphore;
 
+import org.jetbrains.annotations.NotNull;
 import xyz.chunkstories.api.exceptions.PacketProcessingException;
-import xyz.chunkstories.api.net.PacketReceptionContext;
+import xyz.chunkstories.api.player.Player;
 import xyz.chunkstories.client.net.ClientPacketsEncoderDecoder;
 import xyz.chunkstories.net.Connection.DownloadStatus;
 import xyz.chunkstories.net.Connection.PendingDownload;
@@ -20,19 +21,14 @@ import xyz.chunkstories.net.PacketsEncoderDecoder;
 import xyz.chunkstories.net.packets.PacketSendFile;
 
 public class PacketReceiveFile extends PacketSendFile {
+
 	@Override
-	public void process(PacketSender sender, DataInputStream in, PacketReceptionContext processor)
-			throws IOException, PacketProcessingException {
-		if (!(processor instanceof ClientPacketsEncoderDecoder))
-			return;
-
-		// ClientPacketsEncoderDecoder cppi = (ClientPacketsEncoderDecoder)processor;
-
-		String fileTag = in.readUTF();
-		long fileLength = in.readLong();
+	public void receive(@NotNull DataInputStream dis, Player player) {
+		/*String fileTag = dis.readUTF();
+		long fileLength = dis.readLong();
 
 		if (fileLength > 0) {
-			PacketsEncoderDecoder context = (PacketsEncoderDecoder) processor;
+			// PacketsEncoderDecoder context = (PacketsEncoderDecoder) processor;
 			PendingDownload pendingDownload = context.getConnection().getLocationForExpectedFile(fileTag);
 			if (pendingDownload == null)
 				throw new IOException("Received unexpected PacketFile with tag: " + fileTag);
@@ -48,7 +44,6 @@ public class PacketReceiveFile extends PacketSendFile {
 			byte[] buffer = new byte[4096];
 			while (remaining > 0) {
 				long toRead = Math.min(4096, remaining);
-				System.out.println("Working ! ...");
 				// cppi.getConnection().getCurrentlyDownloadedFileProgress().setStepText("Downloading
 				// "+fileTag+", "+(fileLength - remaining)/1024+"/"+fileLength/1024+"kb");
 				int actuallyRead = in.read(buffer, 0, (int) toRead);
@@ -59,10 +54,11 @@ public class PacketReceiveFile extends PacketSendFile {
 
 			status.end.release();
 			fos.close();
-		}
+		}*/
+		throw new RuntimeException("TODO");
 	}
 
-	class PacketFileDownloadStatus implements DownloadStatus {
+	static class PacketFileDownloadStatus implements DownloadStatus {
 
 		public PacketFileDownloadStatus(int fileLength) {
 			this.fileLength = fileLength;

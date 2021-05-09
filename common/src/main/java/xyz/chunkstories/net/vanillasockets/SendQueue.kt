@@ -14,7 +14,6 @@ import java.io.IOException
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.locks.ReentrantLock
 
 /**
  * The job of this thread is to write datagrams to an output stream. Not much in
@@ -27,15 +26,17 @@ class SendQueue(private val connection: Connection, private val outputStream: Da
     private val deathSemaphore = Semaphore(0)
 
     /** Special one that breaks the loop */
-    internal var DIE: PacketOutgoing = PacketOutgoing { throw UnsupportedOperationException() }
+    private val killerPacket: PacketOutgoing = object : PacketOutgoing {
+        override fun write(out: DataOutputStream) {
+            throw UnsupportedOperationException()
+        }
+    }
 
     init {
         this.name = "Send queue thread"
     }
 
     internal inner class Flush : PacketOutgoing {
-
-        @Throws(IOException::class)
         override fun write(out: DataOutputStream) {
             throw UnsupportedOperationException()
         }
@@ -62,7 +63,7 @@ class SendQueue(private val connection: Connection, private val outputStream: Da
                 e1.printStackTrace()
             }
 
-            if (packet === DIE) {
+            if (packet === killerPacket) {
                 // Kill request ? accept gracefully our fate
                 break
             }
@@ -101,7 +102,7 @@ class SendQueue(private val connection: Connection, private val outputStream: Da
     }
 
     fun shutdown() {
-        sendQueue.add(DIE)
+        sendQueue.add(killerPacket)
         queueSemaphore.release()
 
         // 5s grace time

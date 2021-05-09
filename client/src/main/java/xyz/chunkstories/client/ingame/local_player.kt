@@ -7,16 +7,26 @@
 package xyz.chunkstories.client.ingame
 
 import xyz.chunkstories.api.graphics.structs.camera
+import xyz.chunkstories.api.input.InputsManager
 import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.player.PlayerID
+import xyz.chunkstories.api.player.PlayerState
 import xyz.chunkstories.api.util.kotlin.toVec3f
+import xyz.chunkstories.api.world.World
+import xyz.chunkstories.api.world.WorldMaster
+import xyz.chunkstories.world.WorldImplementation
 
-class LocalPlayerImplementation(val client: IngameClientImplementation) : Player {
+class LocalPlayerImplementation(val ingame: IngameClientImplementation) : Player {
+    override var state: PlayerState = PlayerState.None
 
+    override val name: String
+        get() = ingame.client.user.name
     override val id: PlayerID
-        get() = client.user.id
+        get() = ingame.user.id
     override val displayName: String
         get() = name
+    override val inputsManager: InputsManager
+        get() = ingame.client.inputsManager
 
     /*override var controlledEntity: Entity? = null
         set(new) {
@@ -56,14 +66,14 @@ class LocalPlayerImplementation(val client: IngameClientImplementation) : Player
         }*/
 
     init {
-        eventEntersWorld(client.world)
+        eventEntersWorld(ingame.world)
     }
 
     fun update() {
-        loadingAgent.updateUsedWorldBits()
+        ingame.loadingAgent.updateUsedWorldBits()
 
-        val camera = client.camera
-        client.soundManager.setListenerPosition(camera.position.toVec3f(), camera.lookingAt, camera.up)
+        val camera = ingame.camera
+        ingame.soundManager.setListenerPosition(camera.position.toVec3f(), camera.lookingAt, camera.up)
     }
 
     /*override fun hasFocus(): Boolean {
@@ -71,7 +81,7 @@ class LocalPlayerImplementation(val client: IngameClientImplementation) : Player
     }*/
 
     override fun sendMessage(msg: String) {
-        client.print(msg)
+        ingame.print(msg)
     }
 
     override fun hasPermission(permissionNode: String): Boolean {
@@ -91,7 +101,19 @@ class LocalPlayerImplementation(val client: IngameClientImplementation) : Player
     }*/
 
     fun destroy() {
-        eventLeavesWorld(client.world)
-        loadingAgent.unloadEverything(true)
+        eventLeavesWorld(ingame.world)
+        ingame.loadingAgent.unloadEverything(true)
+    }
+
+    fun eventEntersWorld(world: World) {
+        if (world is WorldMaster) {
+            (world as WorldImplementation).playersMetadata.playerEnters(this)
+        }
+    }
+
+    fun eventLeavesWorld(world: World) {
+        if (world is WorldMaster) {
+            (world as WorldImplementation).playersMetadata.playerLeaves(this)
+        }
     }
 }

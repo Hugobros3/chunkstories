@@ -13,6 +13,7 @@ import xyz.chunkstories.api.client.net.ClientPacketsProcessor;
 import xyz.chunkstories.content.translator.InitialContentTranslator;
 import xyz.chunkstories.net.PacketsEncoderDecoder;
 import xyz.chunkstories.world.WorldClientRemote;
+import xyz.chunkstories.world.WorldImplementation;
 
 public class ClientPacketsEncoderDecoder extends PacketsEncoderDecoder implements ClientPacketsProcessor {
 
@@ -36,7 +37,7 @@ public class ClientPacketsEncoderDecoder extends PacketsEncoderDecoder implement
 	}
 
 	@Override
-	public WorldClientRemote getWorld() {
+	public WorldImplementation getWorld() {
 		if(getContext() == null)
 			return null;
 		return (WorldClientRemote) getContext().getWorld();

@@ -11,7 +11,6 @@ import org.hjson.JsonValue
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.content.json.asDict
-import xyz.chunkstories.api.exceptions.net.UnknowPacketException
 import xyz.chunkstories.api.net.Packet
 import xyz.chunkstories.content.GameContentStore
 import xyz.chunkstories.content.eat
@@ -61,15 +60,14 @@ class PacketsStore(val parent: GameContentStore) {
         return byNames[name]
     }
 
-    @Throws(UnknowPacketException::class)
-    fun getPacketFromInstance(packet: Packet): PacketDefinition {
+    fun getPacketFromInstance(packet: Packet): PacketDefinition? {
         val pclass = packet.javaClass
 
         val ptd = this.byClasses[pclass]
         if (ptd != null)
             return ptd
 
-        throw UnknowPacketException(packet)
+        return null
     }
 
     val all: Collection<PacketDefinition>

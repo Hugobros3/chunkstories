@@ -10,7 +10,7 @@ import org.joml.Vector3dc
 import xyz.chunkstories.api.net.PacketWorld
 import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.world.World
-import xyz.chunkstories.api.world.WorldClient
+import xyz.chunkstories.api.world.WorldSub
 import java.io.DataInputStream
 import java.io.DataOutputStream
 
@@ -56,7 +56,7 @@ class PacketDecal : PacketWorld {
         size.x = dis.readDouble()
         size.y = dis.readDouble()
         size.z = dis.readDouble()
-        if (world is WorldClient) {
+        if (world is WorldSub) {
             world.decalsManager.add(position, orientation, size, decalName)
         }
     }

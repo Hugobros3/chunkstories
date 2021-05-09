@@ -7,13 +7,10 @@
 package xyz.chunkstories.world
 
 import xyz.chunkstories.api.exceptions.PacketProcessingException
-import xyz.chunkstories.api.net.PacketDefinition.PacketGenre
 import xyz.chunkstories.api.net.PacketWorld
 import xyz.chunkstories.api.net.packets.PacketTime
 import xyz.chunkstories.api.player.Player
-import xyz.chunkstories.api.world.WorldInfo
 import xyz.chunkstories.api.world.WorldMaster
-import xyz.chunkstories.api.world.WorldNetworked
 import xyz.chunkstories.net.LogicalPacketDatagram
 import xyz.chunkstories.net.PacketDefinition
 import xyz.chunkstories.server.DedicatedServer
@@ -26,7 +23,7 @@ import java.io.File
 import java.io.IOException
 import java.util.concurrent.ConcurrentLinkedDeque
 
-class WorldServer @Throws(WorldLoadingException::class)
+/*class WorldServer @Throws(WorldLoadingException::class)
 constructor(val server: DedicatedServer, worldInfo: WorldInfo, folder: File) : WorldImplementation(server, worldInfo, null, folder), WorldMaster, WorldCommon, WorldNetworked {
     override val ioHandler: IOTasks
 
@@ -125,11 +122,6 @@ constructor(val server: DedicatedServer, worldInfo: WorldInfo, folder: File) : W
         packetsQueue.addLast(PendingPlayerDatagram(datagram, player))
     }
 
-    override fun getPlayerByName(playerName: String): Player? {
-        // Does the server have this player ?
-        val player = server.getPlayer(playerName) ?: return null
-
-        //TODO We don't want players from other worlds
-        return player
-    }
+    override
 }
+*/

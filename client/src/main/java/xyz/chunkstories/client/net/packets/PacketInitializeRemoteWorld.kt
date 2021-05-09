@@ -6,7 +6,7 @@
 
 package xyz.chunkstories.client.net.packets
 
-import xyz.chunkstories.api.net.PacketReceptionContext
+import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.client.ingame.IngameClientRemoteHost
 import xyz.chunkstories.client.net.ClientPacketsEncoderDecoder
 import xyz.chunkstories.content.translator.AbstractContentTranslator
@@ -19,12 +19,12 @@ import java.io.IOException
 class PacketInitializeRemoteWorld : PacketSendWorldInfo() {
 
     @Throws(IOException::class)
-    override fun process(sender: PacketSender, `in`: DataInputStream, processor: PacketReceptionContext) {
-        val initializationString = `in`.readUTF()
+    override fun receive(dis: DataInputStream, player: Player?) {
+        val initializationString = dis.readUTF()
 
         worldInfo = deserializeWorldInfo(initializationString)
 
-        if (processor is ClientPacketsEncoderDecoder) {
+        /*if (processor is ClientPacketsEncoderDecoder) {
             processor.logger().info("Received World initialization packet")
 
             val contentTranslator = processor.contentTranslator
@@ -63,6 +63,7 @@ class PacketInitializeRemoteWorld : PacketSendWorldInfo() {
                     }*/
         } else {
             error("shit")
-        }
+        }*/
+        TODO()
     }
 }
