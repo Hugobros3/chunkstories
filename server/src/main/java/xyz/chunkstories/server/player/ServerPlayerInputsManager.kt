@@ -1,6 +1,6 @@
 package xyz.chunkstories.server.player
 
-import xyz.chunkstories.Engine
+import xyz.chunkstories.EngineImplemI
 import xyz.chunkstories.input.AbstractInput
 import xyz.chunkstories.input.CommonInputsManager
 import xyz.chunkstories.input.InputVirtual
@@ -10,7 +10,7 @@ class ServerPlayerInputsManager(private val serverPlayer: ServerPlayer) : Common
         reload()
     }
 
-    override val context: Engine
+    override val context: EngineImplemI
         get() = serverPlayer.playerConnection.server
 
     override fun addBuiltInInputs(inputs: MutableList<AbstractInput>) {

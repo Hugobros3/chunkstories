@@ -6,7 +6,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.content.Asset
 import xyz.chunkstories.api.content.Content
-import xyz.chunkstories.api.block.textures.BlockTexture
+import xyz.chunkstories.api.block.BlockTexture
 import xyz.chunkstories.block.ReloadableVoxelTextures
 import java.awt.image.BufferedImage
 import javax.imageio.ImageIO

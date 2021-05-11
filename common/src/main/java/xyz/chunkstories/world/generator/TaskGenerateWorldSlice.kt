@@ -6,7 +6,7 @@
 
 package xyz.chunkstories.world.generator
 
-import xyz.chunkstories.Engine
+import xyz.chunkstories.EngineImplemI
 import xyz.chunkstories.api.workers.Task
 import xyz.chunkstories.api.workers.TaskExecutor
 import xyz.chunkstories.api.world.WorldUser
@@ -92,7 +92,7 @@ class TaskGenerateWorldSlice(private val world: WorldImplementation, val heightm
                 val task = TaskGenerateWorldThinSlice(world,
                         heightmap.regionX * 8 + directed_relative_chunkX,
                         heightmap.regionZ * 8 + directed_relative_chunkZ, heightmap)
-                (world.gameInstance as Engine).tasks.scheduleTask(task)
+                (world.gameInstance as EngineImplemI).tasks.scheduleTask(task)
                 tasks!![relative_chunkZ] = task
             }
             wave++

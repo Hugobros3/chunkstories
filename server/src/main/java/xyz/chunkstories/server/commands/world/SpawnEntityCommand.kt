@@ -10,6 +10,7 @@ import xyz.chunkstories.api.Location
 import xyz.chunkstories.api.entity.Entity
 import xyz.chunkstories.api.entity.EntityDefinition
 import xyz.chunkstories.api.player.Player
+import xyz.chunkstories.api.player.entityIfIngame
 import xyz.chunkstories.api.plugin.commands.Command
 import xyz.chunkstories.api.plugin.commands.CommandEmitter
 import xyz.chunkstories.api.server.Host
@@ -30,7 +31,7 @@ class SpawnEntityCommand(serverConsole: Host) : AbstractHostCommandHandler(serve
             return true
         }
 
-        val playerEntity = emitter.controlledEntity
+        val playerEntity = emitter.entityIfIngame
 
         if(playerEntity == null) {
             emitter.sendMessage("You need to be controlling an entity")
@@ -42,7 +43,7 @@ class SpawnEntityCommand(serverConsole: Host) : AbstractHostCommandHandler(serve
             return true
         }
 
-        if (arguments.size == 0) {
+        if (arguments.isEmpty()) {
             emitter.sendMessage("Syntax: /spawnEntity <entityId> [x y z]")
             return false
         }

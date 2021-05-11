@@ -14,20 +14,16 @@ import java.io.IOException
 import java.net.Socket
 import java.util.concurrent.atomic.AtomicBoolean
 
-import xyz.chunkstories.api.exceptions.PacketProcessingException
-import xyz.chunkstories.api.exceptions.net.IllegalPacketException
-import xyz.chunkstories.api.exceptions.net.UnknowPacketException
 import xyz.chunkstories.api.net.Packet
-import xyz.chunkstories.api.net.packets.PacketText
+import xyz.chunkstories.api.server.UserConnection
 import xyz.chunkstories.net.Connection
-import xyz.chunkstories.net.LogicalPacketDatagram
-import xyz.chunkstories.net.PacketDefinition
+import xyz.chunkstories.net.PacketsEncoderDecoder
 import xyz.chunkstories.net.vanillasockets.SendQueue
 import xyz.chunkstories.net.vanillasockets.StreamGobbler
 import xyz.chunkstories.server.DedicatedServer
 import xyz.chunkstories.server.net.ClientConnection
 import xyz.chunkstories.server.net.ConnectionsManager
-import xyz.chunkstories.world.WorldServer
+import xyz.chunkstories.world.WorldImplementation
 
 class TCPClientConnection constructor(server: DedicatedServer, connectionsManager: ConnectionsManager, internal val socket: Socket) : ClientConnection(server, connectionsManager, socket.inetAddress.hostAddress, socket.port) {
     private val closeOnce = AtomicBoolean(false)
@@ -38,6 +34,13 @@ class TCPClientConnection constructor(server: DedicatedServer, connectionsManage
 
     override val isOpen: Boolean
         get() = !disconnected
+
+    override val world: WorldImplementation?
+        get() = server.world
+    override val userConnection: UserConnection?
+        get() = this
+    override val encoderDecoder: PacketsEncoderDecoder
+        get() = TODO("Not yet implemented")
 
     init {
         // We get exceptions early if this fails
@@ -60,7 +63,7 @@ class TCPClientConnection constructor(server: DedicatedServer, connectionsManage
         sendQueue!!.flush()
     }
 
-    @Throws(IOException::class, PacketProcessingException::class, IllegalPacketException::class)
+    /*@Throws(IOException::class, PacketProcessingException::class, IllegalPacketException::class)
     override fun handleDatagram(datagram: LogicalPacketDatagram) {
         val definition = datagram.packetDefinition as PacketDefinition// getEncoderDecoder().getContentTranslator().getPacketForId(datagram.packetTypeId);
         if (definition.genre == PacketGenre.GENERAL_PURPOSE) {
@@ -95,17 +98,14 @@ class TCPClientConnection constructor(server: DedicatedServer, connectionsManage
         } else {
             throw RuntimeException("whut")
         }
-    }
+    }*/
 
     override fun pushPacket(packet: Packet) {
         try {
             sendQueue!!.queue(encoderDecoder.buildOutgoingPacket(packet))
-        } catch (e: UnknowPacketException) {
-            logger.error("Couldn't pushPacket()", e)
-        } catch (e: IOException) {
+        }  catch (e: IOException) {
             close("IOException " + e.message)
         }
-
     }
 
     override fun close(reason: String) {

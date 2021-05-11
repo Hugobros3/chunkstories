@@ -3,28 +3,20 @@
 // Check out README.md for more information
 // Website: http://chunkstories.xyz
 //
+package xyz.chunkstories.client.net.packets
 
-package xyz.chunkstories.client.net.packets;
+import xyz.chunkstories.api.Engine
+import xyz.chunkstories.net.packets.PacketSendFile
+import xyz.chunkstories.api.player.Player
+import xyz.chunkstories.api.server.UserConnection
+import java.lang.RuntimeException
+import xyz.chunkstories.net.Connection.DownloadStatus
+import java.io.DataInputStream
+import java.util.concurrent.Semaphore
 
-import java.io.DataInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.concurrent.Semaphore;
-
-import org.jetbrains.annotations.NotNull;
-import xyz.chunkstories.api.exceptions.PacketProcessingException;
-import xyz.chunkstories.api.player.Player;
-import xyz.chunkstories.client.net.ClientPacketsEncoderDecoder;
-import xyz.chunkstories.net.Connection.DownloadStatus;
-import xyz.chunkstories.net.Connection.PendingDownload;
-import xyz.chunkstories.net.PacketsEncoderDecoder;
-import xyz.chunkstories.net.packets.PacketSendFile;
-
-public class PacketReceiveFile extends PacketSendFile {
-
-	@Override
-	public void receive(@NotNull DataInputStream dis, Player player) {
-		/*String fileTag = dis.readUTF();
+class PacketReceiveFile(engine: Engine) : PacketSendFile(engine) {
+    override fun receive(dis: DataInputStream, user: UserConnection?) {
+        /*String fileTag = dis.readUTF();
 		long fileLength = dis.readLong();
 
 		if (fileLength > 0) {
@@ -55,34 +47,23 @@ public class PacketReceiveFile extends PacketSendFile {
 			status.end.release();
 			fos.close();
 		}*/
-		throw new RuntimeException("TODO");
-	}
+        TODO()
+    }
 
-	static class PacketFileDownloadStatus implements DownloadStatus {
+    internal class PacketFileDownloadStatus(val fileLength: Int) : DownloadStatus {
+        var downloaded = 0
+        var end = Semaphore(0)
+        override fun bytesDownloaded(): Int {
+            return downloaded
+        }
 
-		public PacketFileDownloadStatus(int fileLength) {
-			this.fileLength = fileLength;
-		}
+        override fun totalBytes(): Int {
+            return fileLength
+        }
 
-		final int fileLength;
-		int downloaded;
-		Semaphore end = new Semaphore(0);
-
-		@Override
-		public int bytesDownloaded() {
-			return downloaded;
-		}
-
-		@Override
-		public int totalBytes() {
-			return (int) fileLength;
-		}
-
-		@Override
-		public boolean waitsUntilDone() {
-			end.acquireUninterruptibly();
-			return true;
-		}
-	}
-
+        override fun waitsUntilDone(): Boolean {
+            end.acquireUninterruptibly()
+            return true
+        }
+    }
 }

@@ -6,16 +6,19 @@
 
 package xyz.chunkstories.client.net.packets
 
+import xyz.chunkstories.api.Engine
 import java.io.DataInputStream
 import java.io.IOException
 
-import xyz.chunkstories.api.net.PacketReceptionContext
 import xyz.chunkstories.api.net.packets.PacketText
+import xyz.chunkstories.api.server.UserConnection
 
-class PacketReceiveText : PacketText() {
+class PacketReceiveText(engine: Engine) : PacketText(engine) {
     @Throws(IOException::class)
-    override fun process(sender: PacketSender?, `in`: DataInputStream, processor: PacketReceptionContext?) {
-        super.process(sender, `in`, processor)
-        //(processor as ClientPacketsEncoderDecoder).connection.handleSystemRequest(text)
+
+    override fun receive(dis: DataInputStream, user: UserConnection?) {
+        super.receive(dis, user)
+        TODO()
+        // (processor as ClientPacketsEncoderDecoder).connection.handleSystemRequest(text)
     }
 }

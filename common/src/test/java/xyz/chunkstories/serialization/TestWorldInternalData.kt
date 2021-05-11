@@ -9,13 +9,14 @@ class TestWorldInternalData {
 
     @Test
     fun testJsonSerialization() {
-        val gson = Gson()
+        /*val gson = Gson()
         val start = WorldInternalData()
         start.spawnLocation.set(42.0, 69.0, 0.3333)
         val serialized = gson.toJson(start)
         println(serialized)
         val end = gson.fromJson(serialized, WorldInternalData::class.java)
         assertTrue(start == end)
-        println(end)
+        println(end)*/
+        TODO("this is no longer current")
     }
 }

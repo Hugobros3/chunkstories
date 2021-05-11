@@ -7,9 +7,11 @@ import xyz.chunkstories.api.entity.traits.serializable.TraitHealth
 import xyz.chunkstories.api.entity.traits.serializable.TraitName
 import xyz.chunkstories.api.events.player.PlayerSpawnEvent
 import xyz.chunkstories.api.player.Player
+import xyz.chunkstories.api.player.PlayerState
 import xyz.chunkstories.api.world.WorldMaster
+import xyz.chunkstories.api.world.getCell
 
-fun WorldCommon.figureOutWherePlayerWillSpawn(player: Player): Location {
+fun WorldMasterImplementation.figureOutWherePlayerWillSpawn(player: Player): Location {
     val playerWorldMetadata = this.playersMetadata[player.id]!!
     val savedEntity = playerWorldMetadata.savedEntity?.let { EntitySerialization.deserializeEntity(this, it) }
 
@@ -30,11 +32,8 @@ fun WorldCommon.figureOutWherePlayerWillSpawn(player: Player): Location {
     return expectedSpawnLocation
 }
 
-fun WorldCommon.spawnPlayer(player: Player, force: Boolean = false) {
-    if (this !is WorldMaster)
-        throw UnsupportedOperationException("Only Master Worlds can do this")
-
-    val playerWorldMetadata = playersMetadata[player]!!
+fun WorldMasterImplementation.spawnPlayer(player: Player, force: Boolean = false) {
+    val playerWorldMetadata = playersMetadata[player.id]!!
     val savedEntity = playerWorldMetadata.savedEntity?.let { EntitySerialization.deserializeEntity(this, it) }
 
     var previousLocation: Location? = null
@@ -43,16 +42,16 @@ fun WorldCommon.spawnPlayer(player: Player, force: Boolean = false) {
     }
 
     val playerSpawnEvent = PlayerSpawnEvent(player, this as WorldMaster, savedEntity, previousLocation)
-    gameContext.pluginManager.fireEvent(playerSpawnEvent)
+    gameInstance.pluginManager.fireEvent(playerSpawnEvent)
 
     if (!playerSpawnEvent.isCancelled || force) {
         var entity = playerSpawnEvent.entity
 
-        val shouldSpawnAtLocation = playerSpawnEvent.spawnLocation ?: this.defaultSpawnLocation
+        val shouldSpawnAtLocation = playerSpawnEvent.spawnLocation ?: Location(this, this.properties.spawn)
 
         // Create a new entity if the event didn't handle it
         if (entity == null || entity.traits[TraitHealth::class.java]?.isDead == true) {
-            entity = this.gameContext.content.entities.getEntityDefinition("player")!!.newEntity(this)
+            entity = this.gameInstance.content.entities.getEntityDefinition("player")!!.newEntity(this)
         }
 
         // Spawn point we checked as "valid" (ie not inside a block)
@@ -61,7 +60,8 @@ fun WorldCommon.spawnPlayer(player: Player, force: Boolean = false) {
         val traitCollisions = entity.traits[TraitCollidable::class]
         if (traitCollisions != null) {
             fun isSuitableSpawningPoint(location: Location): Boolean {
-                val voxel = peek(location).voxel
+                val cell = getCell(location) ?: return false
+                val blockType = cell.data.blockType
                 var collision = false
                 for (box in traitCollisions.collisionBoxes) {
                     box.translate(location)
@@ -69,7 +69,7 @@ fun WorldCommon.spawnPlayer(player: Player, force: Boolean = false) {
                         collision = true
                 }
 
-                return !collision && !voxel.liquid
+                return !collision && !blockType.liquid
             }
 
             if (!isSuitableSpawningPoint(validatedSpawnLocation)) {
@@ -88,7 +88,7 @@ fun WorldCommon.spawnPlayer(player: Player, force: Boolean = false) {
                     var lastWasSuitable = false
 
                     // Look for correct spawn points all the way to the top
-                    while (attemptedSpawnLocation.y < worldInfo.size.heightInChunks * 32) {
+                    while (attemptedSpawnLocation.y < properties.size.heightInChunks * 32) {
                         val suitable = isSuitableSpawningPoint(attemptedSpawnLocation)
 
                         if (suitable) {
@@ -115,8 +115,7 @@ fun WorldCommon.spawnPlayer(player: Player, force: Boolean = false) {
         entity.traitLocation.set(validatedSpawnLocation)
 
         this.addEntity(entity)
-        player.controlledEntity = entity
-
+        player.startPlayingAs(entity)
         playerWorldMetadata.savedEntity = null
     }
 }

@@ -9,7 +9,6 @@ package xyz.chunkstories.world
 import xyz.chunkstories.api.graphics.systems.dispatching.DecalsManager
 import xyz.chunkstories.api.particles.ParticlesManager
 import xyz.chunkstories.api.plugin.PluginManager
-import xyz.chunkstories.api.world.WorldClient
 import xyz.chunkstories.client.ingame.IngameClientImplementation
 import xyz.chunkstories.content.translator.AbstractContentTranslator
 import java.io.File

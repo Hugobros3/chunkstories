@@ -8,7 +8,8 @@ package xyz.chunkstories.server
 
 import org.fusesource.jansi.AnsiConsole
 import org.slf4j.Logger
-import xyz.chunkstories.Engine
+import xyz.chunkstories.EngineImplemI
+import xyz.chunkstories.api.Engine
 import xyz.chunkstories.api.content.ContentTranslator
 import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.player.PlayerID
@@ -26,7 +27,6 @@ import xyz.chunkstories.plugin.DefaultPluginManager
 import xyz.chunkstories.server.commands.DedicatedServerConsole
 import xyz.chunkstories.server.commands.installHostCommands
 import xyz.chunkstories.server.net.ConnectionsManager
-import xyz.chunkstories.server.net.announcer.ServerAnnouncerThread
 import xyz.chunkstories.server.net.vanillasockets.TCPConnectionsManager
 import xyz.chunkstories.server.player.ServerPlayer
 import xyz.chunkstories.server.propagation.ServerModsProvider
@@ -75,7 +75,9 @@ fun main(args: Array<String>) {
     DedicatedServer(coreContentLocation, requestedMods)
 }
 
-class DedicatedServer(coreContentLocation: File, requestedMods: List<String>) : Host, Engine {
+class DedicatedServer(coreContentLocation: File, requestedMods: List<String>) : Host, EngineImplemI {
+    override val engine: Engine
+        get() = this
     override val content: GameContentStore
     override val tasks: WorkerThreadPool
 
@@ -87,10 +89,9 @@ class DedicatedServer(coreContentLocation: File, requestedMods: List<String>) : 
 
     override val pluginManager: DefaultPluginManager
 
-    override val world: WorldServer
+    override val world: WorldMasterImplementation
 
     internal val connectionsManager: ConnectionsManager
-    private val announcer: ServerAnnouncerThread
     internal val modsProvider: ServerModsProvider
 
     internal val keepRunning = AtomicBoolean(true)
@@ -163,14 +164,12 @@ class DedicatedServer(coreContentLocation: File, requestedMods: List<String>) : 
 
             val worldInfo = deserializeWorldInfo(worldInfoFile)
 
-            world = WorldServer(this, worldInfo, worldDir)
+            world = loadWorld(this, worldDir)
         } else {
             throw Exception("Can't find the world $worldName in $worldPath.")
         }
 
         connectionsManager.open()
-        announcer = ServerAnnouncerThread(this)
-        announcer.start()
 
         permissionsManager = object : PermissionsManager {
             override fun hasPermission(player: Player, permissionNode: String) = userPrivileges.admins.contains(player.name)
@@ -214,7 +213,6 @@ class DedicatedServer(coreContentLocation: File, requestedMods: List<String>) : 
     }
 
     internal fun requestShutdown() {
-        announcer.stopAnnouncer()
         tasks.cleanup()
         keepRunning.set(false)
     }
@@ -226,9 +224,10 @@ class DedicatedServer(coreContentLocation: File, requestedMods: List<String>) : 
 
     override fun getPlayer(playerName: String): Player? = connectionsManager.getPlayerByName(playerName)
     override fun getPlayer(id: PlayerID): Player? = players.find { it.id == id }
-    override fun Player.disconnect(disconnectMessage: String) {
+
+    /*override fun Player.disconnect(disconnectMessage: String) {
         (this as ServerPlayer).disconnect(disconnectMessage)
-    }
+    }*/
 
     override fun broadcastMessage(message: String) {
         logger.info(convertToAnsi(message))

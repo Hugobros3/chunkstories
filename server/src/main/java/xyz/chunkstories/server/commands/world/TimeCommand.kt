@@ -7,6 +7,7 @@
 package xyz.chunkstories.server.commands.world
 
 import xyz.chunkstories.api.player.Player
+import xyz.chunkstories.api.player.entityIfIngame
 import xyz.chunkstories.api.plugin.commands.Command
 import xyz.chunkstories.api.plugin.commands.CommandEmitter
 import xyz.chunkstories.api.server.Host
@@ -28,7 +29,7 @@ class TimeCommand(serverConsole: Host) : AbstractHostCommandHandler(serverConsol
             return true
         }
 
-        val playerEntity = emitter.controlledEntity
+        val playerEntity = emitter.entityIfIngame
 
         if(playerEntity == null) {
             emitter.sendMessage("You need to be controlling an entity")
@@ -36,10 +37,10 @@ class TimeCommand(serverConsole: Host) : AbstractHostCommandHandler(serverConsol
         }
 
         when {
-            arguments.isEmpty() -> emitter.sendMessage("#82FFDBCurrent time is: ${playerEntity.location.world.sunCycle}")
+            arguments.isEmpty() -> emitter.sendMessage("#82FFDBCurrent time is: ${playerEntity.location.world.sky.timeOfDay}")
             arguments.size == 1 -> {
                 val newTime = arguments[0].toInt()
-                playerEntity.location.world.sunCycle = newTime
+                playerEntity.location.world.sky.timeOfDay = newTime / 24000.0f
                 emitter.sendMessage("#82FFDBSet time to  :$newTime")
             }
             else -> emitter.sendMessage("#82FFDBSyntax : /time [0-24000]")

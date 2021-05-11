@@ -143,10 +143,6 @@ class ALSoundManager(private val client: ClientImplementation) : ClientSoundMana
         playingSoundSources.add(soundSource)
     }
 
-    override fun getAllPlayingSounds(): List<SoundSource> {
-        return playingSoundSources.toList()
-    }
-
     fun updateAllSoundSources() {
         val result= alGetError()
         if (result != AL_NO_ERROR)
@@ -158,7 +154,7 @@ class ALSoundManager(private val client: ClientImplementation) : ClientSoundMana
         }
     }
 
-    override fun setListenerPosition(position: Vector3fc, lookAt: Vector3fc, up: Vector3fc) {
+    fun setListenerPosition(position: Vector3fc, lookAt: Vector3fc, up: Vector3fc) {
         stackPush()
         val posScratch = stackMallocFloat(3).put(floatArrayOf(position.x(), position.y(), position.z()))
         posScratch.flip()
@@ -184,7 +180,7 @@ class ALSoundManager(private val client: ClientImplementation) : ClientSoundMana
         return j
     }
 
-    override fun stopAnySound(sfx: String) {
+    fun stopAnySound(sfx: String) {
         val i = playingSoundSources.iterator()
         while (i.hasNext()) {
             val soundSource = i.next()
@@ -195,7 +191,7 @@ class ALSoundManager(private val client: ClientImplementation) : ClientSoundMana
         }
     }
 
-    override fun stopAnySound() {
+    fun stopAnySound() {
         for (source in playingSoundSources)
             source.stop()
         playingSoundSources.clear()

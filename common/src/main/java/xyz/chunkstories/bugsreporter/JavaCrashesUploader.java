@@ -8,20 +8,20 @@ package xyz.chunkstories.bugsreporter;
 
 import java.io.File;
 
+import xyz.chunkstories.api.Engine;
 import xyz.chunkstories.api.client.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import xyz.chunkstories.api.GameContext;
 
 /**
  * A straightforward class that look for hs_id_err files, uploads them and then
  * moves the files to logs/
  */
 public class JavaCrashesUploader extends Thread {
-	private final GameContext context;
+	private final Engine context;
 
-	public JavaCrashesUploader(GameContext context) {
+	public JavaCrashesUploader(Engine context) {
 		this.context = context;
 	}
 

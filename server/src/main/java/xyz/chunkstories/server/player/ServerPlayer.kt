@@ -10,24 +10,28 @@ import com.google.gson.Gson
 import org.joml.Vector3d
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import xyz.chunkstories.RemotePlayer
 import xyz.chunkstories.api.entity.Entity
 import xyz.chunkstories.api.entity.EntitySerialization
+import xyz.chunkstories.api.entity.Subscriber
+import xyz.chunkstories.api.input.InputsManager
 import xyz.chunkstories.api.item.inventory.Inventory
 import xyz.chunkstories.api.math.MathUtils.mod_dist
 import xyz.chunkstories.api.net.Packet
 import xyz.chunkstories.api.net.packets.PacketOpenInventory
 import xyz.chunkstories.api.physics.Box
+import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.player.PlayerID
+import xyz.chunkstories.api.player.PlayerState
 import xyz.chunkstories.api.player.entityIfIngame
 import xyz.chunkstories.api.util.getUniqueColorPrefix
+import xyz.chunkstories.api.world.World
 import xyz.chunkstories.api.world.WorldMaster
 import xyz.chunkstories.server.net.ClientConnection
 import xyz.chunkstories.server.propagation.VirtualServerDecalsManager.ServerPlayerVirtualDecalsManager
 import xyz.chunkstories.server.propagation.VirtualServerParticlesManager.ServerPlayerVirtualParticlesManager
-import xyz.chunkstories.sound.VirtualSoundManager.ServerPlayerVirtualSoundManager
+import xyz.chunkstories.server.propagation.VirtualSoundManager
 import xyz.chunkstories.world.WorldImplementation
-import xyz.chunkstories.world.WorldServer
+import xyz.chunkstories.world.WorldMasterImplementation
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 
@@ -43,7 +47,9 @@ data class ServerPlayerMetadata(
 
 const val ENTITY_VISIBILITY_SIZE = 192.0
 
-class ServerPlayer(val playerConnection: ClientConnection, override val id: PlayerID, override val name: String) : RemotePlayer {
+class ServerPlayer(val playerConnection: ClientConnection, override val id: PlayerID, override val name: String) : Player, Subscriber {
+    override var state: PlayerState = PlayerState.None
+
     private val loginTime = System.currentTimeMillis()
     private var metadata = ServerPlayerMetadata()
     private val file: File
@@ -51,26 +57,15 @@ class ServerPlayer(val playerConnection: ClientConnection, override val id: Play
     override val displayName: String
         get() = getUniqueColorPrefix(name) + name + "#FFFFFF"
 
-    fun whenEnteringWorld(world: WorldServer) {
-        eventEntersWorld(world)
-
-        if (::loadingAgent.isInitialized)
-            this.loadingAgent.destroy()
-
-        this.loadingAgent = ServerPlayerLoadingAgent(this, world)
-
-        this.virtualSoundManager = world.soundManager.ServerPlayerVirtualSoundManager(this)
-        this.virtualParticlesManager = world.particlesManager.ServerPlayerVirtualParticlesManager(this)
-        this.virtualDecalsManager = world.decalsManager.ServerPlayerVirtualDecalsManager(this)
-    }
-
     // Streaming control
     private val subscribedEntities = ConcurrentHashMap.newKeySet<Entity>()
 
     // Dummy managers to relay synchronisation stuff
-    private var virtualSoundManager: ServerPlayerVirtualSoundManager? = null
+    private var virtualSoundManager: VirtualSoundManager.ServerPlayerVirtualSoundManager? = null
     private var virtualParticlesManager: ServerPlayerVirtualParticlesManager? = null
     private var virtualDecalsManager: ServerPlayerVirtualDecalsManager? = null
+
+    override val inputsManager: InputsManager = ServerPlayerInputsManager(this)
 
     lateinit var loadingAgent: ServerPlayerLoadingAgent private set
 
@@ -83,12 +78,28 @@ class ServerPlayer(val playerConnection: ClientConnection, override val id: Play
         //this.inputsManager = ServerPlayerInputsManager(this)
     }
 
+    fun whenEnteringWorld(world: WorldMasterImplementation) {
+        eventEntersWorld(world)
+
+        if (::loadingAgent.isInitialized) {
+            assert(false) { "This should be cleaned up instead"}
+            // this.loadingAgent.destroy()
+        }
+
+        this.loadingAgent = ServerPlayerLoadingAgent(this, world)
+
+        TODO()
+        /*this.virtualSoundManager = world.soundManager.ServerPlayerVirtualSoundManager(this)
+        this.virtualParticlesManager = world.particlesManager.ServerPlayerVirtualParticlesManager(this)
+        this.virtualDecalsManager = world.decalsManager.ServerPlayerVirtualDecalsManager(this)*/
+    }
+
     /** Asks the server's permission manager if the player is ok to do that  */
     override fun hasPermission(permissionNode: String): Boolean {
         return playerConnection.server.permissionsManager.hasPermission(this, permissionNode)
     }
 
-    override fun openInventory(inventory: Inventory) {
+    fun openInventory(inventory: Inventory) {
         val entity = this.entityIfIngame
         if (entity != null && inventory.isAccessibleTo(entity)) {
             if (inventory.owner is Entity) {
@@ -220,13 +231,26 @@ class ServerPlayer(val playerConnection: ClientConnection, override val id: Play
     fun destroy() {
         val playerEntity = this.entityIfIngame
         if (playerEntity != null) {
-            (playerEntity.world as WorldImplementation).playersMetadata[id]!!.savedEntity = EntitySerialization.serializeEntity(playerEntity)
+            (playerEntity.world as WorldMasterImplementation).playersMetadata[id]!!.savedEntity = EntitySerialization.serializeEntity(playerEntity)
             playerEntity.world.removeEntity(playerEntity.id)
+
             eventLeavesWorld(playerEntity.world)
         }
         saveMetadata()
         unsubscribeAll()
         loadingAgent.destroy()
+    }
+
+    fun eventEntersWorld(world: World) {
+        if (world is WorldMaster) {
+            (world as WorldMasterImplementation).playersMetadata.playerEnters(this)
+        }
+    }
+
+    fun eventLeavesWorld(world: World) {
+        if (world is WorldMaster) {
+            (world as WorldMasterImplementation).playersMetadata.playerLeaves(this)
+        }
     }
 
     companion object {

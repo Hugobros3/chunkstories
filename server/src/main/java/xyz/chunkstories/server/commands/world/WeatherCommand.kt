@@ -7,6 +7,7 @@
 package xyz.chunkstories.server.commands.world
 
 import xyz.chunkstories.api.player.Player
+import xyz.chunkstories.api.player.entityIfIngame
 import xyz.chunkstories.api.plugin.commands.Command
 import xyz.chunkstories.api.plugin.commands.CommandEmitter
 import xyz.chunkstories.api.server.Host
@@ -28,7 +29,7 @@ class WeatherCommand(serverConsole: Host) : AbstractHostCommandHandler(serverCon
             return true
         }
 
-        val playerEntity = emitter.controlledEntity
+        val playerEntity = emitter.entityIfIngame
 
         if(playerEntity == null) {
             emitter.sendMessage("You need to be controlling an entity")
@@ -37,11 +38,11 @@ class WeatherCommand(serverConsole: Host) : AbstractHostCommandHandler(serverCon
 
         when {
             arguments.isEmpty() -> {
-                emitter.sendMessage("#82FFDBCurrent weather is ${playerEntity.location.world.weather}")
+                emitter.sendMessage("#82FFDBCurrent weather is ${playerEntity.location.world.sky.overcast}")
             }
             arguments.size == 1 -> {
                 val overcastFactor = java.lang.Float.parseFloat(arguments[0])
-                playerEntity.location.world.weather = overcastFactor
+                playerEntity.location.world.sky.overcast = overcastFactor
                 emitter.sendMessage("#82FFDBSet weather for world to $overcastFactor")
             }
             else -> emitter.sendMessage("#82FFDBSyntax : /weather [0.0 - 1.0]")

@@ -23,7 +23,7 @@ class ListPlayersCommand(serverConsole: Host) : AbstractHostCommandHandler(serve
             val players = host.players
             val list = players.map { it.name }.toString()
 
-            emitter.sendMessage("#00FFD0${players.size} players connected : $list")
+            emitter.sendMessage("#00FFD0${players.count()} players connected : $list")
             return true
         }
 

@@ -13,6 +13,7 @@ class LocalClientIdentity(val client: ClientImplementation) : ClientIdentity {
         get() = PlayerID(UUID.randomUUID())
 }
 
+@Deprecated("Dead")
 class LoggedInClientIdentity(val client: ClientImplementation, override val name: String, val sessionKey: String) : ClientIdentity {
     override val authenticationMethod = AuthenticationMethod.CHUNKSTORIES_OFFICIAL_WEBSITE
     override val id: PlayerID

@@ -32,7 +32,7 @@ class TaskGenerateWorldThinSlice internal constructor(private val world: World, 
 
     init {
 
-        maxGenerationHeight = generator.definition["maxGenerationHeight"].asInt ?: 1024
+        maxGenerationHeight = generator.definition.properties["maxGenerationHeight"].asInt ?: 1024
         maxGenerationHeightInChunks = ceil(maxGenerationHeight / 32.0).toInt()
 
         holders = Array(maxGenerationHeightInChunks) {

@@ -4,13 +4,13 @@
 // Website: http://chunkstories.xyz
 //
 
-package xyz.chunkstories.sound.source
+package xyz.chunkstories.server.propagation
 
 import xyz.chunkstories.sound.DummySoundData
 import org.joml.Vector3dc
 
 import xyz.chunkstories.api.sound.SoundSource
-import xyz.chunkstories.sound.VirtualSoundManager
+import xyz.chunkstories.sound.source.SoundSourceAbstract
 
 /**
  * Server-side version of a soundSource

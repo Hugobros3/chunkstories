@@ -9,6 +9,7 @@ package xyz.chunkstories.server.commands.system
 import xyz.chunkstories.api.plugin.commands.Command
 import xyz.chunkstories.api.plugin.commands.CommandEmitter
 import xyz.chunkstories.api.server.Host
+import xyz.chunkstories.gameName
 import xyz.chunkstories.server.DedicatedServer
 import xyz.chunkstories.server.commands.AbstractHostCommandHandler
 import xyz.chunkstories.util.VersionInfo
@@ -33,10 +34,7 @@ class InfoCommands(host: Host) : AbstractHostCommandHandler(host) {
                 return true
             }
             command.name == "info" -> {
-                if (host is DedicatedServer)
-                    emitter.sendMessage("#00FFD0The server's ip is " + host.connectionsManager.ip)
-                emitter.sendMessage("#00FFD0It's running version " + VersionInfo.versionJson.verboseVersion + " of the server software.")
-                emitter.sendMessage("#00FFD0" + host.world)
+                emitter.sendMessage("#00FFD0$gameName server version " + VersionInfo.versionJson.verboseVersion)
                 emitter.sendMessage("#00FFD0" + Runtime.getRuntime().freeMemory() / 1024 / 1024 + "Mb used out of " + Runtime.getRuntime().maxMemory() / 1024 / 1024 + "Mb allocated")
                 return true
             }

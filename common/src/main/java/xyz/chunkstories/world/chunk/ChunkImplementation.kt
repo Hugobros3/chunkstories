@@ -8,22 +8,16 @@ package xyz.chunkstories.world.chunk
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import xyz.chunkstories.RemotePlayer
 import xyz.chunkstories.api.block.BlockAdditionalData
 import xyz.chunkstories.api.content.json.*
 import xyz.chunkstories.api.entity.Entity
 import xyz.chunkstories.api.entity.EntitySerialization
 import xyz.chunkstories.api.block.BlockType
-import xyz.chunkstories.block.VoxelFormat
 import xyz.chunkstories.api.world.World
-import xyz.chunkstories.api.world.WorldMaster
 import xyz.chunkstories.api.world.cell.MutableCellData
-import xyz.chunkstories.api.world.cell.PodCellData
 import xyz.chunkstories.api.world.chunk.*
-import xyz.chunkstories.api.world.heightmap.Heightmap
 import xyz.chunkstories.api.world.region.Region
 import xyz.chunkstories.world.WorldImplementation
-import xyz.chunkstories.world.WorldTool
 import xyz.chunkstories.world.chunk.deriveddata.AutoRebuildingProperty
 import xyz.chunkstories.world.chunk.deriveddata.ChunkOcclusionProperty
 import xyz.chunkstories.world.region.RegionImplementation
@@ -78,7 +72,7 @@ class ChunkImplementation(override val holder: ChunkHolderImplementation, overri
 
             val extendedData = compressedData.extractVoxelExtendedData()
             for (cellWithExtendedData in extendedData.elements) {
-                val index = (cellWithExtendedData as? Json.Dict ?: continue)["index"].asInt!!
+                /*val index = (cellWithExtendedData as? Json.Dict ?: continue)["index"].asInt!!
 
                 val components = CellComponentsHolder(this, index)
                 allCellComponents[index] = components
@@ -100,7 +94,8 @@ class ChunkImplementation(override val holder: ChunkHolderImplementation, overri
                         continue
                     }
                     component.deserialize(data)
-                }
+                }*/
+                TODO("Load components")
             }
 
             val savedEntities = compressedData.extractEntities()
@@ -124,6 +119,10 @@ class ChunkImplementation(override val holder: ChunkHolderImplementation, overri
 
     override fun getCell(x: Int, y: Int, z: Int): ChunkCellProxy {
         return ChunkCellProxy(x, y, z, false)
+    }
+
+    override fun getCellMut(x: Int, y: Int, z: Int): MutableChunkCell {
+        TODO("Not yet implemented")
     }
 
     inner class ChunkCellProxy(override val x: Int, override val y: Int, override val z: Int, val mutable: Boolean): MutableChunkCell {
@@ -179,7 +178,7 @@ class ChunkImplementation(override val holder: ChunkHolderImplementation, overri
         pokeInternal(x, y, z, null, 0, 0, 0, raw_data_bits, true, true, false, null)
     }*/
 
-    /**
+    /*/**
      * The 'core' of the core, this private function is responsible for placing and
      * keeping everyone up to snuff on block modifications. It all comes back to
      * this really.
@@ -306,7 +305,7 @@ class ChunkImplementation(override val holder: ChunkHolderImplementation, overri
             }*/
             TODO("fix networking")
         }
-    }
+    }*/
 
     fun removeComponents(index: Int) {
         allCellComponents.remove(index)

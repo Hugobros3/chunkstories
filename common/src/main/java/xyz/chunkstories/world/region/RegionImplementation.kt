@@ -15,6 +15,7 @@ import xyz.chunkstories.api.world.WorldUser
 import xyz.chunkstories.api.world.region.Region
 import xyz.chunkstories.util.concurrency.TrivialFence
 import xyz.chunkstories.world.WorldCommon
+import xyz.chunkstories.world.WorldImplementation
 import xyz.chunkstories.world.WorldTool
 import xyz.chunkstories.world.chunk.ChunkHolderImplementation
 import xyz.chunkstories.world.chunk.ChunkImplementation
@@ -26,7 +27,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Semaphore
 import java.util.concurrent.locks.ReentrantLock
 
-class RegionImplementation(override val world: WorldCommon, override val heightmap: HeightmapImplementation, override val regionX: Int, override val regionY: Int, override val regionZ: Int) : Region, WorldUser {
+class RegionImplementation(override val world: WorldImplementation, override val heightmap: HeightmapImplementation, override val regionX: Int, override val regionY: Int, override val regionZ: Int) : Region, WorldUser {
     val file: File by lazy {
         if (world is WorldMaster)
             File(world.folderPath + "/regions/" + regionX + "." + regionY + "." + regionZ + ".csf")

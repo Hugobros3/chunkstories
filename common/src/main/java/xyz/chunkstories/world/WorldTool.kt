@@ -18,10 +18,19 @@ import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.server.Host
 import xyz.chunkstories.api.sound.SoundManager
 import xyz.chunkstories.api.world.World
-import xyz.chunkstories.api.world.WorldMaster
+import xyz.chunkstories.content.GameContentStore
+import xyz.chunkstories.content.translator.AbstractContentTranslator
+import xyz.chunkstories.content.translator.InitialContentTranslator
+import xyz.chunkstories.content.translator.LoadedContentTranslator
 import xyz.chunkstories.world.io.IOTasks
 
-class WorldTool constructor(override val gameInstance: Host, properties: World.Properties, folder: File, immediateIO: Boolean) : WorldCommonMaster by newMasterWorldImplementation() {
+class WorldTool constructor(override val gameInstance: Host,
+                            properties: World.Properties,
+                            internalData: WorldInternalData,
+                            contentTranslator: AbstractContentTranslator,
+                            folder: File,
+                            val immediateIO: Boolean) :
+        WorldMasterImplementation(gameInstance, properties, internalData, contentTranslator, folder) {
 
     var isLightningEnabled = true
     var isGenerationEnabled = true
@@ -59,26 +68,25 @@ class WorldTool constructor(override val gameInstance: Host, properties: World.P
 
             logger.debug("Creating new world")
             folder.mkdirs()
-            val worldInfoFile = java.io.File(folder.path + "/" + WorldImplementation.worldPropertiesFilename)
-            worldInfoFile.writeText(xyz.chunkstories.world.serializeWorldInfo(properties, true))
+            val worldInfoFile = File(folder.path + "/" + WorldImplementation.worldPropertiesFilename)
+            worldInfoFile.writeText(serializeWorldInfo(properties, true))
             logger.debug("Created directory & wrote ${WorldImplementation.worldPropertiesFilename} ; now entering world")
 
-            return WorldTool(this, properties, folder, false)
+            val contentTranslator = InitialContentTranslator(content as GameContentStore)
+            contentTranslator.save(File(folder.path + "/content_mappings.dat"))
+
+            val internalData = tryLoadWorldInternalData(folder)
+
+            return WorldTool(this, properties, internalData, contentTranslator, folder, false)
         }
     }
 
     class NullParticlesManager : ParticlesManager {
-        override fun <T : ParticleType.Particle> spawnParticle(typeName: String, init: T.() -> Unit) {
-        }
-
-        override fun <T : ParticleType.Particle> spawnParticle(type: ParticleTypeDefinition, init: T.() -> Unit) {
-        }
+        override fun <T : ParticleType.Particle> spawnParticle(typeName: String, init: T.() -> Unit) {}
+        override fun <T : ParticleType.Particle> spawnParticle(type: ParticleTypeDefinition, init: T.() -> Unit) {}
     }
 
     class NullDecalsManager : DecalsManager {
-
-        override fun add(vector3dc: Vector3dc, vector3dc1: Vector3dc, vector3dc2: Vector3dc, s: String) {
-
-        }
+        override fun add(vector3dc: Vector3dc, vector3dc1: Vector3dc, vector3dc2: Vector3dc, s: String) {}
     }
 }

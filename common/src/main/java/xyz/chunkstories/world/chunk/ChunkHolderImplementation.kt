@@ -17,8 +17,8 @@ import xyz.chunkstories.world.WorldTool
 import xyz.chunkstories.world.io.TaskLoadChunk
 import net.jpountz.lz4.LZ4Factory
 import org.slf4j.LoggerFactory
-import xyz.chunkstories.RemotePlayer
-import xyz.chunkstories.api.world.WorldClientNetworkedRemote
+import xyz.chunkstories.api.server.RemotePlayer
+import xyz.chunkstories.world.WorldSubImplementation
 import xyz.chunkstories.world.region.RegionImplementation
 import java.util.*
 import java.util.concurrent.Semaphore
@@ -55,15 +55,15 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
         get() = (state as? ChunkHolder.State.Available)?.chunk as? ChunkImplementation
 
     init {
-        uuid = chunkX shl region.world.worldInfo.size.bitlengthOfVerticalChunksCoordinates or chunkY shl region.world.worldInfo.size.bitlengthOfHorizontalChunksCoordinates or chunkZ
+        uuid = chunkX shl region.world.properties.size.bitlengthOfVerticalChunksCoordinates or chunkY shl region.world.properties.size.bitlengthOfHorizontalChunksCoordinates or chunkZ
     }
 
-    override fun compressChunkData() {
+    fun compressChunkData() {
         val chunk = this.chunk ?: return
 
-        chunk.entitiesLock.lock()
+        //chunk.entitiesLock.lock()
         val compressedData = ChunkCompressedData.compressChunkData(chunk)//compressChunkData(chunk)
-        chunk.entitiesLock.unlock()
+        //chunk.entitiesLock.unlock()
 
         this.compressedData = compressedData
     }
@@ -281,7 +281,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
                         transitionLoading()
                     else if(region.state is Region.State.Generating)
                         transitionGenerating()
-                    else if(region.world is WorldClientNetworkedRemote) {
+                    else if(region.world is WorldSubImplementation) {
                         transitionWaitingOnRemoteData()
                     } else
                         throw Exception("Broken assertion: If the chunk is unloaded, either it has to have unloaded data, or be in a yet region pending generation!")
@@ -459,11 +459,11 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
                     for (entity in chunk.localEntities) {
                         // If there is no controller
                         if (entity.controller == null)
-                            region.world.removeEntityFromList(entity)
+                            region.world.removeEntity(entity.id)
                     }
 
                     // Lock it down
-                    chunk.entitiesLock.lock()
+                    // chunk.entitiesLock.lock()
 
                     // Compress chunk one last time before it has to go
                     compressChunkData()
@@ -474,7 +474,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
                     ChunkImplementation.chunksCounter.decrementAndGet()
 
                     // unlock it (whoever messes with it now, his problem)
-                    chunk.entitiesLock.unlock()
+                    // chunk.entitiesLock.unlock()
                 }
             }
 

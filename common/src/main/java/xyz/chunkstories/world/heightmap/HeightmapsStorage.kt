@@ -18,7 +18,7 @@ import xyz.chunkstories.world.sanitizeHorizontalCoordinate
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.ReentrantReadWriteLock
 
-class HeightmapsStorage(override val world: WorldCommon) : WorldHeightmapsManager {
+class HeightmapsStorage(override val world: WorldImplementation) : WorldHeightmapsManager {
     private val worldSize: Int = world.properties.size.squareSizeInBlocks
     private val worldSizeInChunks: Int = worldSize / 32
     private val worldSizeInRegions: Int = worldSizeInChunks / 8

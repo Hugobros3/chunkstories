@@ -5,7 +5,7 @@
 //
 
 package xyz.chunkstories.world
-
+/*
 import java.io.IOException
 import java.util.Deque
 import java.util.concurrent.ConcurrentLinkedDeque
@@ -107,3 +107,4 @@ constructor(client: IngameClientRemoteHost, info: WorldInfo, translator: Abstrac
         return ioHandler
     }
 }
+*/

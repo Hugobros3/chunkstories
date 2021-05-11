@@ -10,7 +10,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 import org.slf4j.LoggerFactory
 
-import xyz.chunkstories.ThreadPriorities
 import xyz.chunkstories.api.Location
 import xyz.chunkstories.api.events.world.WorldTickEvent
 import xyz.chunkstories.api.player.entityIfIngame
@@ -51,7 +50,6 @@ class WorldLogicThread(private val world: WorldImplementation, securityManager: 
 
     init {
         this.name = "World '" + world.properties.internalName + "' logic thread"
-        this.priority = ThreadPriorities.MAIN_SINGLEPLAYER_LOGIC_THREAD_PRIORITY
 
         gameLogicScheduler = GameLogicScheduler()
     }

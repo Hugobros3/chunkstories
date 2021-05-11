@@ -35,6 +35,6 @@ fun tryLoadWorldInternalData(folder: File) : WorldInternalData {
 fun WorldMasterImplementation.saveInternalData() {
     val file = File("$folderPath/$worldInternalDataFilename")
     val gson = Gson()
-    val contents = gson.toJson(super_.internalData)
+    val contents = gson.toJson(internalData)
     file.writeText(contents)
 }

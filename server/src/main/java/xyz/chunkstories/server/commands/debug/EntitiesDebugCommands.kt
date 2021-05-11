@@ -20,8 +20,7 @@ class EntitiesDebugCommands(serverConsole: Host) : AbstractHostCommandHandler(se
     override fun handleCommand(emitter: CommandEmitter, command: Command, arguments: Array<String>): Boolean {
         if (command.name == "entities" && emitter.hasPermission("server.debug")) {
             val entities = host.world.entities
-            while (entities.hasNext()) {
-                val entity = entities.next()
+            for (entity in entities) {
                 emitter.sendMessage("#FFDD00$entity")
             }
             return true

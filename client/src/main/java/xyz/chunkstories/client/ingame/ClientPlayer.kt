@@ -15,8 +15,9 @@ import xyz.chunkstories.api.util.kotlin.toVec3f
 import xyz.chunkstories.api.world.World
 import xyz.chunkstories.api.world.WorldMaster
 import xyz.chunkstories.world.WorldImplementation
+import xyz.chunkstories.world.WorldMasterImplementation
 
-class LocalPlayerImplementation(val ingame: IngameClientImplementation) : Player {
+class ClientPlayer(val ingame: IngameClientImplementation) : Player {
     override var state: PlayerState = PlayerState.None
 
     override val name: String
@@ -76,12 +77,12 @@ class LocalPlayerImplementation(val ingame: IngameClientImplementation) : Player
         ingame.soundManager.setListenerPosition(camera.position.toVec3f(), camera.lookingAt, camera.up)
     }
 
-    /*override fun hasFocus(): Boolean {
-        return client.gui.hasFocus() // && inputsManager.mouse.isGrabbed
-    }*/
+    fun hasFocus(): Boolean {
+        return ingame.gui.hasFocus() // && inputsManager.mouse.isGrabbed
+    }
 
-    override fun sendMessage(msg: String) {
-        ingame.print(msg)
+    override fun sendMessage(message: String) {
+        ingame.print(message)
     }
 
     override fun hasPermission(permissionNode: String): Boolean {
@@ -106,14 +107,10 @@ class LocalPlayerImplementation(val ingame: IngameClientImplementation) : Player
     }
 
     fun eventEntersWorld(world: World) {
-        if (world is WorldMaster) {
-            (world as WorldImplementation).playersMetadata.playerEnters(this)
-        }
+        if (world is WorldMasterImplementation) world.playersMetadata.playerEnters(this)
     }
 
     fun eventLeavesWorld(world: World) {
-        if (world is WorldMaster) {
-            (world as WorldImplementation).playersMetadata.playerLeaves(this)
-        }
+        if (world is WorldMasterImplementation) world.playersMetadata.playerLeaves(this)
     }
 }

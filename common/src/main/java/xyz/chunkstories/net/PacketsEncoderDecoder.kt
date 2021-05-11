@@ -65,7 +65,7 @@ abstract class PacketsEncoderDecoder(protected val store: PacketsStore, val conn
         }
     }
 
-    fun buildOutgoingPacket(packet: Packet): PacketOutgoing? {
+    fun buildOutgoingPacket(packet: Packet): PacketOutgoing {
         try {
             val packetId = findIdForPacket(packet)
             if (packet is PacketSendFile) {
@@ -81,9 +81,9 @@ abstract class PacketsEncoderDecoder(protected val store: PacketsStore, val conn
             packet.send(dos)
             return PacketOutgoingBuffered(this, packetId, baos.size(), baos.toByteArray())
         } catch (e: Exception) {
-            logger().error("Error : unable to buffer Packet $packet", e)
+            logger.error("Error : unable to buffer Packet $packet", e)
+            throw e
         }
-        return null
     }
 
     private fun findIdForPacket(packet: Packet): PacketId {
@@ -101,10 +101,6 @@ abstract class PacketsEncoderDecoder(protected val store: PacketsStore, val conn
                 throw Exception("Could not find the id of packet definition " + def.name)
             id
         }
-    }
-
-    fun logger(): Logger {
-        return logger
     }
 
     companion object {

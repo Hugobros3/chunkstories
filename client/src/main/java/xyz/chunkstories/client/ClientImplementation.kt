@@ -9,7 +9,7 @@ package xyz.chunkstories.client
 import org.lwjgl.glfw.GLFW
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import xyz.chunkstories.Engine
+import xyz.chunkstories.EngineImplemI
 import xyz.chunkstories.api.client.Client
 import xyz.chunkstories.api.client.ClientIdentity
 import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
@@ -80,10 +80,10 @@ private fun printHelp() {
 }
 
 /** Client implementation entry point, is the root of the systems and holds state through them  */
-class ClientImplementation internal constructor(val arguments: Map<String, String>) : Engine, Client {
+class ClientImplementation internal constructor(val arguments: Map<String, String>) : EngineImplemI, Client {
     override val tasks: WorkerThreadPool
 
-    val logger: Logger
+    override val logger: Logger
     val chatLogger: Logger = LoggerFactory.getLogger("game.chat")
 
     private val configFile: File = File("./config/client.config")
@@ -103,9 +103,8 @@ class ClientImplementation internal constructor(val arguments: Map<String, Strin
 
     override val gui = ClientGui(this)
 
-    override var ingame: IngameClientImplementation? = null
-
     override lateinit var user: ClientIdentity
+    override var ingame: IngameClientImplementation? = null
 
     init {
         // Name the thread

@@ -5,18 +5,19 @@
 //
 package xyz.chunkstories.net.packets
 
+import xyz.chunkstories.api.Engine
 import xyz.chunkstories.api.net.Packet
 import xyz.chunkstories.api.player.Player
-import xyz.chunkstories.api.world.GameInstance
+import xyz.chunkstories.api.server.UserConnection
 import xyz.chunkstories.api.world.World
 import xyz.chunkstories.world.serializeWorldInfo
 import java.io.DataInputStream
 import java.io.DataOutputStream
 
-open class PacketSendWorldInfo(gameInstance: GameInstance) : Packet(gameInstance) {
+open class PacketSendWorldInfo(engine: Engine) : Packet(engine) {
     var worldInfo: World.Properties? = null
 
-    constructor(gameInstance: GameInstance, info: World.Properties?) : this(gameInstance) {
+    constructor(engine: Engine, info: World.Properties?) : this(engine) {
         worldInfo = info
     }
 
@@ -24,7 +25,7 @@ open class PacketSendWorldInfo(gameInstance: GameInstance) : Packet(gameInstance
         dos.writeUTF(serializeWorldInfo(worldInfo!!, false))
     }
 
-    override fun receive(dis: DataInputStream, player: Player?) {
+    override fun receive(dis: DataInputStream, player: UserConnection?) {
         throw UnsupportedOperationException()
     }
 }

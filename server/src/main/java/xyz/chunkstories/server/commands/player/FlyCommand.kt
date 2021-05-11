@@ -8,6 +8,7 @@ package xyz.chunkstories.server.commands.player
 
 import xyz.chunkstories.api.entity.traits.serializable.TraitFlyingMode
 import xyz.chunkstories.api.player.Player
+import xyz.chunkstories.api.player.entityIfIngame
 import xyz.chunkstories.api.plugin.commands.Command
 import xyz.chunkstories.api.plugin.commands.CommandEmitter
 import xyz.chunkstories.api.server.Host
@@ -32,9 +33,9 @@ class FlyCommand(serverConsole: Host) : AbstractHostCommandHandler(serverConsole
             return true
         }
 
-        val entity = emitter.controlledEntity
+        val entity = emitter.entityIfIngame ?: return false
 
-        entity?.traits?.get(TraitFlyingMode::class)?.let { fm ->
+        entity.traits[TraitFlyingMode::class]?.let { fm ->
             var state = fm.isAllowed
             state = !state
             emitter.sendMessage("Flying mode set to: $state")

@@ -9,12 +9,11 @@ import xyz.chunkstories.api.gui.Layer
 import xyz.chunkstories.api.world.WorldUser
 import xyz.chunkstories.api.world.chunk.ChunkHolder
 import xyz.chunkstories.client.ingame.IngameClientImplementation
-import xyz.chunkstories.world.WorldImplementation
+import xyz.chunkstories.world.WorldMasterImplementation
 import xyz.chunkstories.world.figureOutWherePlayerWillSpawn
 import xyz.chunkstories.world.spawnPlayer
-import java.io.File
 
-class WorldLoadingUI(val world: WorldImplementation, val ingameClient: IngameClientImplementation, gui: Gui, parentLayer: Layer?) : Layer(gui, parentLayer), WorldUser {
+class WorldLoadingUI(val world: WorldMasterImplementation, val ingameClient: IngameClientImplementation, gui: Gui, parentLayer: Layer?) : Layer(gui, parentLayer), WorldUser {
 
     //val waitOn = mutableListOf<Task>()
     val subs = mutableListOf<ChunkHolder>()

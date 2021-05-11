@@ -8,10 +8,11 @@ package xyz.chunkstories.server.net
 
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.events.player.PlayerLoginEvent
-import xyz.chunkstories.net.http.SimplePostRequest
+import xyz.chunkstories.api.player.PlayerID
 import xyz.chunkstories.server.DedicatedServerOptions
 import xyz.chunkstories.server.player.ServerPlayer
 import xyz.chunkstories.util.VersionInfo
+import java.util.*
 
 /**
  * Helper class to offload the login handling logic from ClientConnection
@@ -61,20 +62,20 @@ internal class PlayerAuthenticationHelper(private val connection: ClientConnecti
                 if (Integer.parseInt(version!!) != VersionInfo.networkProtocolVersion)
                     connection.disconnect("Wrong protocol version ! " + version + " != " + VersionInfo.networkProtocolVersion + " \n Update your game !")
             }
-            if (!connection.connectionsManager.server.config.getBooleanValue(DedicatedServerOptions.checkClientAuthentication)) {
+            if (true || !connection.connectionsManager.server.config.getBooleanValue(DedicatedServerOptions.checkClientAuthentication)) {
                 connection.logger.warn("Offline-mode is on, letting " + this.name + " connecting without verification")
                 afterLoginValidation()
                 return true
             } else {
-                // Send an async https request & notify of the results later
-                SimplePostRequest("https://chunkstories.xyz/api/serverTokenChecker.php",
-                        "username=" + this.name + "&token=" + token) { result ->
+                /*// Send an async https request & notify of the results later
+                SimplePostRequest("https://chunkstories.xyz/api/serverTokenChecker.php", "username=" + this.name + "&token=" + token) { result ->
                     if (result != null && result == "ok")
                         afterLoginValidation()
                     else
                         connection.disconnect("Invalid session id !")
                 }
-                return true
+                return true*/
+                TODO("Rewrite this")
             }
         }
 
@@ -94,18 +95,19 @@ internal class PlayerAuthenticationHelper(private val connection: ClientConnecti
         }
 
         // Creates a player based on the thrusted login information
-        val player = ServerPlayer(connection, name!!)
+        // TODO fix UUID nonsense
+        val player = ServerPlayer(connection, PlayerID(UUID.fromString(name)), name!!)
 
         // Fire the login event
         val playerConnectionEvent = PlayerLoginEvent(player)
-        connection.connectionsManager.server.pluginManager.fireEvent(playerConnectionEvent)
+        connection.server.pluginManager.fireEvent(playerConnectionEvent)
         if (playerConnectionEvent.isCancelled) {
             connection.disconnect(playerConnectionEvent.refusedConnectionMessage)
             return
         }
 
         // Announce player login
-        connection.connectionsManager.server.broadcastMessage(playerConnectionEvent.connectionMessage!!)
+        connection.server.broadcastMessage(playerConnectionEvent.connectionMessage!!)
 
         // Aknowledge the login
         loggedIn = true

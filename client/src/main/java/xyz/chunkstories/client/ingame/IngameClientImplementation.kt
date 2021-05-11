@@ -23,7 +23,7 @@ import xyz.chunkstories.world.WorldImplementation
 import xyz.chunkstories.world.WorldMasterImplementation
 
 abstract class IngameClientImplementation protected constructor(val client: ClientImplementation, worldInitializer: (IngameClientImplementation) -> WorldImplementation) : IngameClient, Client by client {
-    val tasks: WorkerThreadPool = client.tasks
+    override val tasks: WorkerThreadPool = client.tasks
 
     final override val ingame: IngameClient = this
     final override val soundManager: ALSoundManager by alias(client::soundManager)
@@ -37,7 +37,7 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
     val decalsManager: DecalsManager
     val particlesManager: ParticlesManager
 
-    final override val player: LocalPlayerImplementation
+    final override val player: ClientPlayer
 
     val ingameGuiUI: IngameUI
 
@@ -57,7 +57,7 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
             installHostCommands(this)
         }
 
-        player = LocalPlayerImplementation(this)
+        player = ClientPlayer(this)
 
         client.ingame = this
 

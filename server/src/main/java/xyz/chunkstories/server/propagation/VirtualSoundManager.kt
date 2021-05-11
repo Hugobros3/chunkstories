@@ -4,20 +4,16 @@
 // Website: http://chunkstories.xyz
 //
 
-package xyz.chunkstories.sound
+package xyz.chunkstories.server.propagation
 
 import org.joml.Vector3dc
-import org.joml.Vector3fc
-import xyz.chunkstories.RemotePlayer
-import xyz.chunkstories.api.player.Player
-import xyz.chunkstories.api.player.entityIfIngame
 import xyz.chunkstories.api.sound.SoundManager
 import xyz.chunkstories.api.sound.SoundSource
 import xyz.chunkstories.api.sound.SoundSource.Mode
 import xyz.chunkstories.api.sound.SoundSourceID
 import xyz.chunkstories.api.world.WorldMaster
 import xyz.chunkstories.net.packets.PacketSoundSource
-import xyz.chunkstories.sound.source.SoundSourceVirtual
+import xyz.chunkstories.server.player.ServerPlayer
 import java.lang.ref.WeakReference
 import java.util.concurrent.ConcurrentHashMap
 
@@ -25,7 +21,7 @@ class VirtualSoundManager(private val worldServer: WorldMaster) : SoundManager {
     private val allPlayingSoundSources = mutableListOf<WeakReference<SoundSourceVirtual>>()
     private val playersSoundManagers = ConcurrentHashMap.newKeySet<ServerPlayerVirtualSoundManager>()
 
-    inner class ServerPlayerVirtualSoundManager(internal val serverPlayer: RemotePlayer) : SoundManager {
+    inner class ServerPlayerVirtualSoundManager(internal val serverPlayer: ServerPlayer) : SoundManager {
 
         // As above, individual players have their playing sound sources kept track of
         internal var playingSoundSources = mutableListOf<WeakReference<SoundSourceVirtual>>()
@@ -90,8 +86,9 @@ class VirtualSoundManager(private val worldServer: WorldMaster) : SoundManager {
             if (soundSource.isDonePlaying)
                 return true
 
+
             // Null location == Not spawned == No positional sounds for you!
-            val loc = serverPlayer.entityIfIngame?.location ?: return false
+            val loc = serverPlayer.state.location ?: return false
             return loc.distance(soundSource.position!!) < soundSource.attenuationEnd + 1.0
         }
 

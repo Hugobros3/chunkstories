@@ -13,14 +13,13 @@ import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.sound.SoundSource
 import xyz.chunkstories.api.world.World
 import xyz.chunkstories.api.world.WorldSub
-import xyz.chunkstories.sound.source.SoundSourceVirtual
 import java.io.DataInputStream
 import java.io.DataOutputStream
 
 class PacketSoundSource(world: World) : PacketWorld(world) {
-    var soundSourceToSend: SoundSourceVirtual? = null
+    var soundSourceToSend: SoundSource? = null
 
-    constructor(world: World, soundSource: SoundSourceVirtual) : this(world) {
+    constructor(world: World, soundSource: SoundSource) : this(world) {
         soundSourceToSend = soundSource
     }
 

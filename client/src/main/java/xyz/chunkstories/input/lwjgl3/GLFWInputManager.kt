@@ -27,7 +27,7 @@ import org.lwjgl.glfw.GLFWMouseButtonCallback
 import org.lwjgl.glfw.GLFWScrollCallback
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import xyz.chunkstories.Engine
+import xyz.chunkstories.EngineImplemI
 import xyz.chunkstories.api.player.entityIfIngame
 import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.input.*
@@ -35,7 +35,7 @@ import xyz.chunkstories.input.*
 class GLFWInputManager(val gameWindow: GLFWWindow) : CommonInputsManager(), ClientInputsManager, /*InputsManagerLoader, */Cleanable {
     private val gui: Gui
 
-    override val context: Engine
+    override val context: EngineImplemI
         get() = gameWindow.client
 
     override val mouse: Lwjgl3Mouse

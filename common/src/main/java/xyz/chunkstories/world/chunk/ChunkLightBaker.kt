@@ -10,7 +10,7 @@ import java.util.concurrent.locks.ReentrantLock
 
 import com.carrotsearch.hppc.IntArrayDeque
 import com.carrotsearch.hppc.IntDeque
-import xyz.chunkstories.Engine
+import xyz.chunkstories.EngineImplemI
 
 import xyz.chunkstories.api.workers.TaskExecutor
 import xyz.chunkstories.api.world.chunk.ChunkLightUpdater
@@ -18,7 +18,7 @@ import xyz.chunkstories.world.chunk.deriveddata.AutoRebuildingProperty
 
 //TODO use custom propagation for ALL propagation functions & cleanup this whole darn mess
 /** Responsible for propagating voxel volumetric light  */
-class ChunkLightBaker(internal val chunk: ChunkImplementation) : AutoRebuildingProperty((chunk.world.gameInstance as Engine).tasks, true), ChunkLightUpdater {
+class ChunkLightBaker(internal val chunk: ChunkImplementation) : AutoRebuildingProperty((chunk.world.gameInstance as EngineImplemI).tasks, true), ChunkLightUpdater {
     internal val world = chunk.world
     internal val chunkX: Int = chunk.chunkX
     internal val chunkY: Int = chunk.chunkY

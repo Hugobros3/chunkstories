@@ -6,7 +6,7 @@ import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.player.PlayerID
 import java.io.File
 
-class WorldPlayersMetadata(val world: WorldImplementation) {
+class WorldPlayersMetadata(val world: WorldMasterImplementation) {
     private val gson = Gson()
     private val map = mutableMapOf<PlayerID, PlayerSaveData>()
 

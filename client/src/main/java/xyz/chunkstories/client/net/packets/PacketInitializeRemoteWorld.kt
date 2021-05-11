@@ -6,20 +6,17 @@
 
 package xyz.chunkstories.client.net.packets
 
-import xyz.chunkstories.api.player.Player
-import xyz.chunkstories.client.ingame.IngameClientRemoteHost
-import xyz.chunkstories.client.net.ClientPacketsEncoderDecoder
-import xyz.chunkstories.content.translator.AbstractContentTranslator
+import xyz.chunkstories.api.Engine
+import xyz.chunkstories.api.server.UserConnection
 import xyz.chunkstories.net.packets.PacketSendWorldInfo
-import xyz.chunkstories.world.WorldClientRemote
 import xyz.chunkstories.world.deserializeWorldInfo
 import java.io.DataInputStream
 import java.io.IOException
 
-class PacketInitializeRemoteWorld : PacketSendWorldInfo() {
+class PacketInitializeRemoteWorld(engine: Engine) : PacketSendWorldInfo(engine) {
 
     @Throws(IOException::class)
-    override fun receive(dis: DataInputStream, player: Player?) {
+    override fun receive(dis: DataInputStream, user: UserConnection?) {
         val initializationString = dis.readUTF()
 
         worldInfo = deserializeWorldInfo(initializationString)

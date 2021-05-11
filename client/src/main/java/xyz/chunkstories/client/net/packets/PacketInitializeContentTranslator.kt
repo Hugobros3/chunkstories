@@ -1,18 +1,15 @@
 package xyz.chunkstories.client.net.packets
 
+import xyz.chunkstories.api.Engine
 import xyz.chunkstories.api.exceptions.PacketProcessingException
-import xyz.chunkstories.api.player.Player
-import xyz.chunkstories.client.net.ClientPacketsEncoderDecoder
-import xyz.chunkstories.content.translator.IncompatibleContentException
-import xyz.chunkstories.content.translator.LoadedContentTranslator
-import xyz.chunkstories.net.PacketsEncoderDecoder
+import xyz.chunkstories.api.server.UserConnection
 import xyz.chunkstories.net.packets.PacketContentTranslator
 import java.io.*
 
-class PacketInitializeContentTranslator : PacketContentTranslator() {
+class PacketInitializeContentTranslator(engine: Engine) : PacketContentTranslator(engine) {
 
     @Throws(IOException::class, PacketProcessingException::class)
-    override fun receive(dis: DataInputStream, player: Player?) {
+    override fun receive(dis: DataInputStream, user: UserConnection?) {
         /*val serializedText = dis.readUTF()
 
         val bais = ByteArrayInputStream(serializedText.toByteArray(charset("UTF-8")))

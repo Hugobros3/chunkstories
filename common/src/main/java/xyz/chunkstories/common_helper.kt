@@ -2,6 +2,7 @@ package xyz.chunkstories
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.api.Engine
 import xyz.chunkstories.api.net.Packet
 import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.workers.Tasks
@@ -10,15 +11,8 @@ import xyz.chunkstories.util.LogbackSetupHelper
 import java.text.SimpleDateFormat
 import java.util.*
 
-// TODO move
-interface RemotePlayer : Player {
-    fun pushPacket(packet: Packet)
-}
-
-// TODO move
-interface Engine {
+interface EngineImplemI : Engine {
     val modsManager: ModsManagerImplementation
-    val tasks: Tasks
 }
 
 fun setupLogFile(logDirectory: String): Logger {

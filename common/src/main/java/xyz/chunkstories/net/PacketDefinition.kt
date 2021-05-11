@@ -6,15 +6,14 @@
 
 package xyz.chunkstories.net
 
+import xyz.chunkstories.api.Engine
 import java.lang.reflect.Constructor
-import java.lang.reflect.InvocationTargetException
 
 import xyz.chunkstories.api.content.json.Json
 import xyz.chunkstories.api.content.json.asBoolean
 import xyz.chunkstories.api.content.json.asInt
 import xyz.chunkstories.api.content.json.asString
 import xyz.chunkstories.api.net.Packet
-import xyz.chunkstories.api.world.GameInstance
 import xyz.chunkstories.api.world.World
 import xyz.chunkstories.content.GameContentStore
 
@@ -96,26 +95,18 @@ class PacketDefinition constructor(store: GameContentStore, val name: String, va
         if (packetClass == null)
             return null
 
-        val types = if (constructorTakesWorld) arrayOf<Class<*>>(World::class.java) else arrayOf<Class<*>>(GameInstance::class.java)
-        var constructor: Constructor<out Packet>?
-        try {
-            constructor = packetClass.getConstructor(*types)
-        } catch (e: NoSuchMethodException) {
-            constructor = null
-        } catch (e: SecurityException) {
-            constructor = null
-        }
+        val types = if (constructorTakesWorld) arrayOf<Class<*>>(World::class.java) else arrayOf<Class<*>>(Engine::class.java)
 
-        if (constructor == null) {
-            throw Exception("Packet " + this.name + " does not provide a valid constructor.")
-        }
-
-        return constructor
+        return try {
+            packetClass.getConstructor(*types)
+        } catch (e: Exception) {
+            null
+        } ?: throw Exception("Packet $name does not provide a valid constructor.")
     }
 
-    fun createNewWithInstance(client: Boolean, gameInstance: GameInstance): Packet? {
+    fun createNewWithEngine(client: Boolean, engine: Engine): Packet? {
         assert(!constructorTakesWorld)
-        val parameters = arrayOf<Any>(gameInstance)
+        val parameters = arrayOf<Any>(engine)
 
         return if (client && clientClass != null)
             clientClassConstructor!!.newInstance(*parameters)

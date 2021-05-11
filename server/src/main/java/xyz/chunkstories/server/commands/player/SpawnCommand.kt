@@ -6,11 +6,14 @@
 
 package xyz.chunkstories.server.commands.player
 
+import xyz.chunkstories.api.Location
 import xyz.chunkstories.api.player.Player
+import xyz.chunkstories.api.player.entityIfIngame
 import xyz.chunkstories.api.plugin.commands.Command
 import xyz.chunkstories.api.plugin.commands.CommandEmitter
 import xyz.chunkstories.api.server.Host
 import xyz.chunkstories.server.commands.AbstractHostCommandHandler
+import xyz.chunkstories.world.WorldImplementation
 
 /** Handles the (re)spawn point of a world  */
 class SpawnCommand(serverConsole: Host) : AbstractHostCommandHandler(serverConsole) {
@@ -25,12 +28,13 @@ class SpawnCommand(serverConsole: Host) : AbstractHostCommandHandler(serverConso
             return true
         }
 
-        val playerEntity = emitter.controlledEntity
+        val playerEntity = emitter.entityIfIngame
 
         if(playerEntity == null) {
             emitter.sendMessage("You need to be controlling an entity")
             return true
         }
+        val world = playerEntity.world as WorldImplementation
 
         if (command.name == "spawn") {
             if (!emitter.hasPermission("world.spawn")) {
@@ -38,7 +42,7 @@ class SpawnCommand(serverConsole: Host) : AbstractHostCommandHandler(serverConso
                 return true
             }
 
-            val loc = playerEntity.world.defaultSpawnLocation
+            val loc = Location(world, world.properties.spawn)
             playerEntity.location = loc
 
             emitter.sendMessage("#00FFD0Teleported to spawn")
@@ -50,8 +54,7 @@ class SpawnCommand(serverConsole: Host) : AbstractHostCommandHandler(serverConso
             }
 
             val loc = playerEntity.location
-            playerEntity.world.defaultSpawnLocation = loc
-
+            world.properties = world.properties.copy(spawn = loc)
             emitter.sendMessage("#00FFD0Set default spawn to : $loc")
             return true
         }

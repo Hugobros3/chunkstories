@@ -2,7 +2,7 @@ package xyz.chunkstories.graphics.vulkan.systems.drawing.dbgwireframe
 
 import xyz.chunkstories.api.client.IngameClient
 import xyz.chunkstories.client.InternalClientOptions
-import xyz.chunkstories.client.ingame.LocalPlayerImplementation
+import xyz.chunkstories.client.ingame.ClientPlayer
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
 import xyz.chunkstories.graphics.vulkan.Pipeline
@@ -106,7 +106,7 @@ class VulkanDebugDrawer(pass: VulkanPass, dslCode: VulkanDebugDrawer.() -> Unit,
         if(client.configuration.getBooleanValue(InternalClientOptions.debugWireframe)) {
             val size = client.world.worldInfo.size
 
-            for(keyc in (client.player as LocalPlayerImplementation).loadingAgent.aquiredChunkHoldersMask) {
+            for(keyc in (client.player as ClientPlayer).loadingAgent.aquiredChunkHoldersMask) {
                 val key = keyc.value
                 var rx = (key shr (size.bitlengthOfHorizontalChunksCoordinates + size.bitlengthOfVerticalChunksCoordinates)) and size.maskForChunksCoordinates
                 var ry = (key shr (size.bitlengthOfHorizontalChunksCoordinates)) and (31)

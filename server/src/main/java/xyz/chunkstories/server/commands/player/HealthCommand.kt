@@ -8,6 +8,7 @@ package xyz.chunkstories.server.commands.player
 
 import xyz.chunkstories.api.entity.traits.serializable.TraitHealth
 import xyz.chunkstories.api.player.Player
+import xyz.chunkstories.api.player.entityIfIngame
 import xyz.chunkstories.api.plugin.commands.Command
 import xyz.chunkstories.api.plugin.commands.CommandEmitter
 import xyz.chunkstories.api.server.Host
@@ -39,9 +40,9 @@ class HealthCommand(serverConsole: Host) : AbstractHostCommandHandler(serverCons
 
         val health = java.lang.Float.parseFloat(arguments[0])
 
-        val entity = emitter.controlledEntity
+        val entity = emitter.entityIfIngame ?: return false
 
-        entity?.traits?.get(TraitHealth::class)?.let { fm ->
+        entity.traits[TraitHealth::class]?.let { fm ->
             fm.health = health
             emitter.sendMessage("Health set to: " + health + "/" + fm.maxHealth)
 

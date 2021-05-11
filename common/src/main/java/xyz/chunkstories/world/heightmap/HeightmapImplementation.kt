@@ -15,17 +15,16 @@ import xyz.chunkstories.api.world.cell.Cell
 import xyz.chunkstories.api.world.heightmap.Heightmap
 import xyz.chunkstories.net.packets.PacketHeightmap
 import xyz.chunkstories.util.concurrency.SimpleFence
-import xyz.chunkstories.world.WorldImplementation
 import xyz.chunkstories.world.WorldTool
 import xyz.chunkstories.world.generator.TaskGenerateWorldSlice
 import net.jpountz.lz4.LZ4Factory
-import xyz.chunkstories.Engine
-import xyz.chunkstories.RemotePlayer
+import xyz.chunkstories.EngineImplemI
 import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.player.entityIfIngame
+import xyz.chunkstories.api.server.RemotePlayer
 import xyz.chunkstories.api.world.cell.CellData
 import xyz.chunkstories.world.WorldCommon
-import xyz.chunkstories.world.WorldMasterImplementation
+import xyz.chunkstories.world.WorldImplementation
 import java.io.File
 import java.util.*
 import java.util.concurrent.Semaphore
@@ -36,7 +35,7 @@ import java.util.concurrent.locks.ReentrantLock
  * vertical slice of the world
  */
 class HeightmapImplementation internal constructor(private val storage: HeightmapsStorage, override val regionX: Int, override val regionZ: Int, firstUser: WorldUser) : Heightmap {
-    val world: WorldCommon = storage.world
+    val world: WorldImplementation = storage.world
 
     private val stateLock = ReentrantLock()
     override lateinit var state: Heightmap.State private set
@@ -110,7 +109,7 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
                     recomputeMetadata()
 
                     transitionState(Heightmap.State.Generating(task))
-                    (world.gameInstance as Engine).tasks.scheduleTask(task)
+                    (world.gameInstance as EngineImplemI).tasks.scheduleTask(task)
                 }
             }
         } else {

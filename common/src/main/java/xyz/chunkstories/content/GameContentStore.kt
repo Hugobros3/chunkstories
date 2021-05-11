@@ -8,7 +8,7 @@ package xyz.chunkstories.content
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import xyz.chunkstories.Engine
+import xyz.chunkstories.EngineImplemI
 import xyz.chunkstories.animation.AnimationsStore
 import xyz.chunkstories.api.content.Asset
 import xyz.chunkstories.api.content.Content
@@ -27,7 +27,7 @@ import xyz.chunkstories.world.generator.WorldGeneratorsStore
 
 import java.io.File
 
-class GameContentStore(val engine: Engine, coreContentLocation: File, requestedMods: List<String>) : Content {
+class GameContentStore(val engine: EngineImplemI, coreContentLocation: File, requestedMods: List<String>) : Content {
     override val modsManager: ModsManagerImplementation = ModsManagerImplementation(coreContentLocation, requestedMods)
 
     override val lootTables: LootTablesStore = LootTablesStore(this)

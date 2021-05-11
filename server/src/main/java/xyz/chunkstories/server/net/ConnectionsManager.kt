@@ -7,7 +7,6 @@
 package xyz.chunkstories.server.net
 
 import xyz.chunkstories.api.player.PlayerID
-import xyz.chunkstories.net.http.SimpleWebRequest
 import xyz.chunkstories.server.DedicatedServer
 import xyz.chunkstories.server.DedicatedServerOptions
 import xyz.chunkstories.server.player.ServerPlayer
@@ -15,27 +14,14 @@ import xyz.chunkstories.util.VersionInfo
 import java.util.concurrent.ConcurrentHashMap
 
 abstract class ConnectionsManager(val server: DedicatedServer) {
-    var hostname: String
-        protected set
-    var ip: String
-        protected set
     val maxClients: Int
         get() = server.config.getIntValue(DedicatedServerOptions.maxUsers)
 
     val connections: MutableSet<ClientConnection> = ConcurrentHashMap.newKeySet()
     internal val authenticatedPlayers: MutableMap<PlayerID, ServerPlayer> = ConcurrentHashMap()
 
-    val allConnectedClients: MutableIterator<ClientConnection>
-        get() = connections.iterator()
-
     val playersNumber: Int
         get() = authenticatedPlayers.size
-
-    init {
-        // TODO add config option for disabling this stuff
-        ip = SimpleWebRequest("https://chunkstories.xyz/api/sayMyName.php?ip=1").waitForResult()
-        hostname = SimpleWebRequest("https://chunkstories.xyz/api/sayMyName.php?host=1").waitForResult()
-    }
 
     abstract fun open()
 

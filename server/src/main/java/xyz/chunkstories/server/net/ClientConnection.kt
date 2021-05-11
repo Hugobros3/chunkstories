@@ -16,6 +16,7 @@ import xyz.chunkstories.api.entity.traits.serializable.TraitHealth
 import xyz.chunkstories.api.events.player.PlayerChatEvent
 import xyz.chunkstories.api.events.player.PlayerLogoutEvent
 import xyz.chunkstories.api.player.entityIfIngame
+import xyz.chunkstories.api.server.UserConnection
 import xyz.chunkstories.net.Connection
 import xyz.chunkstories.net.packets.PacketContentTranslator
 import xyz.chunkstories.net.packets.PacketSendFile
@@ -24,7 +25,8 @@ import xyz.chunkstories.server.DedicatedServer
 import xyz.chunkstories.server.player.ServerPlayer
 import xyz.chunkstories.world.spawnPlayer
 
-abstract class ClientConnection(val server: DedicatedServer, internal val connectionsManager: ConnectionsManager, remoteAddress: String, port: Int) : Connection(remoteAddress, port) {
+@Suppress("LeakingThis")
+abstract class ClientConnection(val server: DedicatedServer, internal val connectionsManager: ConnectionsManager, remoteAddress: String, port: Int) : Connection(server.engine, remoteAddress, port), UserConnection {
     internal val logger: Logger = LoggerFactory.getLogger("server.net.users." + usersCount.getAndIncrement())
     private val loginHelper = PlayerAuthenticationHelper(this)
 
@@ -44,12 +46,12 @@ abstract class ClientConnection(val server: DedicatedServer, internal val connec
                 return loginHelper.handleLogin(message.substring(6, message.length))
             }
             message == "mods" -> {
-                sendTextMessage("info/mods:" + connectionsManager.server.modsProvider.modsString)
+                sendTextMessage("info/mods:" + server.modsProvider.modsString)
                 this.flush()
                 return true
             }
             message == "icon-file" -> {
-                val iconPacket = PacketSendFile()
+                val iconPacket = PacketSendFile(server.engine)
                 iconPacket.file = File("server-icon.png")
                 iconPacket.fileTag = "server-icon"
                 this.pushPacket(iconPacket)
@@ -72,12 +74,12 @@ abstract class ClientConnection(val server: DedicatedServer, internal val connec
             logger.info("$this asked to be sent mod $md5")
 
             // Give him what he asked for.
-            val found = connectionsManager.server.modsProvider.obtainModRedistribuable(md5)
+            val found = server.modsProvider.obtainModRedistribuable(md5)
             if (found == null) {
                 logger.info("No such mod found.")
             } else {
                 logger.info("Pushing mod md5 " + md5 + "to user.")
-                val modUploadPacket = PacketSendFile()
+                val modUploadPacket = PacketSendFile(server.engine)
                 modUploadPacket.file = found
                 modUploadPacket.fileTag = modDescriptor
                 this.pushPacket(modUploadPacket)
@@ -85,12 +87,12 @@ abstract class ClientConnection(val server: DedicatedServer, internal val connec
 
         } else if (message.startsWith("world/")) {
             // TODO this cannot support multi-world servers
-            val world = connectionsManager.server.world
+            val world = server.world
             when (message.substring(6, message.length)) {
                 "enter" -> {
                     player.whenEnteringWorld(world)
                     // Sends the construction info for the world, and then the player entity
-                    val packet = PacketSendWorldInfo(world.properties)
+                    val packet = PacketSendWorldInfo(server, world.properties)
                     pushPacket(packet)
 
                     // TODO only spawn the player when he asks to
@@ -98,7 +100,7 @@ abstract class ClientConnection(val server: DedicatedServer, internal val connec
                     return true
                 }
                 "translator" -> {
-                    val packet = PacketContentTranslator(world.contentTranslator)
+                    val packet = PacketContentTranslator(server, world.contentTranslator)
                     player.pushPacket(packet)
                     return true
                 }
@@ -128,11 +130,11 @@ abstract class ClientConnection(val server: DedicatedServer, internal val connec
                         args = commandString.substring(commandString.indexOf(" ") + 1, commandString.length).split(" ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
                     }
 
-                    connectionsManager.server.dispatchCommand(player, cmdName, args)
+                    server.dispatchCommand(player, cmdName, args)
                 }
                 chatMessage.isNotEmpty() -> {
                     val event = PlayerChatEvent(player, chatMessage)
-                    connectionsManager.server.pluginManager.fireEvent(event)
+                    server.pluginManager.fireEvent(event)
 
                     if (!event.isCancelled)
                         server.broadcastMessage(event.formattedMessage)
@@ -166,12 +168,12 @@ abstract class ClientConnection(val server: DedicatedServer, internal val connec
         logger.info("Disconnecting $this :$reason")
         connectionsManager.removeClient(this)
 
+        val player = player
         if (player != null) {
-            val playerDisconnectionEvent = PlayerLogoutEvent(player!!)
-            connectionsManager.server.pluginManager.fireEvent(playerDisconnectionEvent)
-            connectionsManager.server.broadcastMessage(playerDisconnectionEvent.logoutMessage!!)
-
-            player!!.destroy()
+            val playerDisconnectionEvent = PlayerLogoutEvent(player)
+            server.pluginManager.fireEvent(playerDisconnectionEvent)
+            server.broadcastMessage(playerDisconnectionEvent.logoutMessage!!)
+            player.destroy()
         }
     }
 

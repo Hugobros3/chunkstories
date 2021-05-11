@@ -21,7 +21,6 @@ import xyz.chunkstories.client.net.vanillasockets.TCPServerConnection
 import xyz.chunkstories.content.mods.ModZip
 import xyz.chunkstories.net.Connection
 import xyz.chunkstories.util.VersionInfo
-import xyz.chunkstories.net.http.SimplePostRequest
 
 
 /**
@@ -49,7 +48,7 @@ class ClientConnectionSequence constructor(val client: ClientImplementation, val
     var state: ConnectionState
 
     init {
-        this.connection = object : TCPServerConnection(this@ClientConnectionSequence) {
+        this.connection = object : TCPServerConnection(client, this@ClientConnectionSequence) {
 
             override fun handleSystemRequest(msg: String): Boolean {
                 if (msg.startsWith("info/mods:")) {
@@ -95,7 +94,8 @@ class ClientConnectionSequence constructor(val client: ClientImplementation, val
                     this.state = ConnectionState("Offline-mode enabled, skipping login token phase")
                 }
                 is LoggedInClientIdentity -> {
-                    step("Requesting a login token...")
+                    TODO("No")
+                    /*step("Requesting a login token...")
                     val spr = SimplePostRequest("https://chunkstories.xyz/api/serverTokenObtainer.php", "username=" + identity.name + "&sessid=" + identity.sessionKey)
                     val reply = spr.result()
 
@@ -111,7 +111,7 @@ class ClientConnectionSequence constructor(val client: ClientImplementation, val
                         step("Token obtained, logging in...")
                     } else {
                         abort("Failed to obtain a login token from the servers")
-                    }
+                    }*/
                 }
             }
 

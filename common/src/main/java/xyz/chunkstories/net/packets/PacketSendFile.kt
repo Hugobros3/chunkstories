@@ -5,15 +5,15 @@
 //
 package xyz.chunkstories.net.packets
 
+import xyz.chunkstories.api.Engine
 import xyz.chunkstories.api.net.Packet
-import xyz.chunkstories.api.player.Player
-import xyz.chunkstories.api.world.GameInstance
+import xyz.chunkstories.api.server.UserConnection
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.File
 import java.io.FileInputStream
 
-open class PacketSendFile(gameInstance: GameInstance) : Packet(gameInstance) {
+open class PacketSendFile(engine: Engine) : Packet(engine) {
     lateinit var fileTag: String
     lateinit var file: File
 
@@ -32,7 +32,7 @@ open class PacketSendFile(gameInstance: GameInstance) : Packet(gameInstance) {
         } else dos.writeLong(0L)
     }
 
-    override fun receive(dis: DataInputStream, player: Player?) {
+    override fun receive(dis: DataInputStream, user: UserConnection?) {
         throw Exception("Unexpected")
     }
 }

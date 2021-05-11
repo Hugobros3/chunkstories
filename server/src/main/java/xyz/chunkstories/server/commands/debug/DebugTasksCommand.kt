@@ -20,8 +20,8 @@ class DebugTasksCommand(serverConsole: Host) : AbstractHostCommandHandler(server
 
     override fun handleCommand(emitter: CommandEmitter, command: Command, arguments: Array<String>): Boolean {
         if (command.name == "tasks" && emitter.hasPermission("server.debug")) {
-            emitter.sendMessage("#00FFD0Tasks in the pipeline: " + host.tasks.submittedTasks())
-            (host.tasks as WorkerThreadPool).dumpTasks()
+            emitter.sendMessage("#00FFD0Tasks in the pipeline: " + host.engine.tasks.submittedTasks())
+            (host.engine.tasks as WorkerThreadPool).dumpTasks()
             return true
         }
         return false

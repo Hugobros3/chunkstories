@@ -39,6 +39,7 @@ import xyz.chunkstories.content.translator.AbstractContentTranslator
 import xyz.chunkstories.content.translator.IncompatibleContentException
 import xyz.chunkstories.content.translator.InitialContentTranslator
 import xyz.chunkstories.content.translator.LoadedContentTranslator
+import xyz.chunkstories.net.LogicalPacketDatagram
 import xyz.chunkstories.util.alias
 import xyz.chunkstories.util.concurrency.CompoundFence
 import xyz.chunkstories.world.chunk.ChunksStorage
@@ -111,8 +112,6 @@ sealed class WorldImplementation constructor(
     override val collisionsManager by lazy { DefaultWorldCollisionsManager(this) }
 
     val internalDataLock = ReentrantLock()
-
-    val playersMetadata = WorldPlayersMetadata(this)
 
     override var ticksElapsed: Long by alias(internalData::ticksCounter)
 
@@ -291,17 +290,20 @@ sealed class WorldImplementation constructor(
 /** This garbage is because Kotlin doesn't have intersection types */
 interface WorldCommonMaster: WorldCommon, WorldMaster
 
-class WorldMasterImplementation(
+open class WorldMasterImplementation(
         gameInstance: GameInstance,
         properties: World.Properties,
         internalData: WorldInternalData,
-        contentTranslator: AbstractContentTranslator
+        contentTranslator: AbstractContentTranslator,
+        val folder: File
         ): WorldImplementation(gameInstance, properties, internalData, contentTranslator), WorldMaster, WorldCommonMaster {
     override val gameInstance: Host
     get() = super.gameInstance as Host
 
+    val playersMetadata = WorldPlayersMetadata(this)
+
     override val folderPath: String
-        get() = TODO("Not yet implemented")
+        get() = folder.path
 
     override fun BlockAdditionalData.pushChanges() {
         TODO("Not yet implemented")
@@ -354,7 +356,7 @@ class WorldMasterImplementation(
     }
 }
 
-fun newMasterWorldImplementation(gameInstance: GameInstance, folder: File): WorldMasterImplementation {
+fun loadWorld(gameInstance: GameInstance, folder: File): WorldMasterImplementation {
     if (!folder.exists() || !folder.isDirectory)
         throw WorldLoadingException("The folder $folder doesn't exist !")
 
@@ -374,7 +376,7 @@ fun newMasterWorldImplementation(gameInstance: GameInstance, folder: File): Worl
     val properties = deserializeWorldInfo(worldInfoFile)
     val internalData = tryLoadWorldInternalData(folder)
 
-    return WorldMasterImplementation(gameInstance, properties, internalData, contentTranslator)
+    return WorldMasterImplementation(gameInstance, properties, internalData, contentTranslator, folder)
 }
 
 fun initializeWorld(folder: File, properties: World.Properties) {
@@ -413,6 +415,10 @@ class WorldSubImplementation(gameInstance: GameInstance, properties: World.Prope
 
     override fun pushPacket(packet: Packet) {
         TODO("Not yet implemented")
+    }
+
+    fun queueDatagram(d: LogicalPacketDatagram) {
+        TODO()
     }
 }
 

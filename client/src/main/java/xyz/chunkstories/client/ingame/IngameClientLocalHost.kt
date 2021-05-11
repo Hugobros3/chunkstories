@@ -7,13 +7,13 @@ import xyz.chunkstories.api.server.Host
 import xyz.chunkstories.api.world.WorldMaster
 import xyz.chunkstories.client.ClientImplementation
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.api.Engine
 import xyz.chunkstories.api.content.ContentTranslator
 import xyz.chunkstories.api.entity.Entity
 import xyz.chunkstories.api.player.PlayerID
 import xyz.chunkstories.api.world.World
 import xyz.chunkstories.world.*
 import java.io.File
-import java.lang.UnsupportedOperationException
 
 fun ClientImplementation.enterExistingWorld(folder: File) {
     if (!folder.exists() || !folder.isDirectory)
@@ -28,7 +28,7 @@ fun ClientImplementation.enterExistingWorld(folder: File) {
 
     // Create the context for the local server
     val localHostCtx = IngameClientLocalHost(this) {
-        newMasterWorldImplementation(it as IngameClientLocalHost,  folder)
+        loadWorld(it as IngameClientLocalHost,  folder)
     }
     localHostCtx.world.startLogic()
     this.ingame = localHostCtx
@@ -47,6 +47,8 @@ fun ClientImplementation.createAndEnterWorld(folder: File, properties: World.Pro
 
 /** Represent an IngameClient that is also a local Server (with minimal server functionality). Used in local SP. */
 class IngameClientLocalHost(client: ClientImplementation, worldInitializer: (IngameClientImplementation) -> WorldImplementation) : IngameClientImplementation(client, worldInitializer), Host {
+    override val engine: Engine
+        get() = client
     override val world: WorldMasterImplementation = super.world_ as WorldMasterImplementation
     override val contentTranslator: ContentTranslator
         get() = world.contentTranslator
@@ -94,9 +96,9 @@ class IngameClientLocalHost(client: ClientImplementation, worldInitializer: (Ing
         return null
     }
 
-    override fun Player.disconnect(disconnectMessage: String) {
+    /*override fun Player.disconnect(disconnectMessage: String) {
         throw UnsupportedOperationException()
-    }
+    }*/
 
     override fun broadcastMessage(message: String) {
         print(message)

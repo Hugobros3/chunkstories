@@ -12,11 +12,11 @@ import xyz.chunkstories.api.gui.GuiDrawer
 import xyz.chunkstories.api.gui.Layer
 import xyz.chunkstories.api.gui.elements.Button
 import xyz.chunkstories.api.net.packets.PacketText
-import xyz.chunkstories.api.world.WorldClientNetworkedRemote
-import xyz.chunkstories.api.world.WorldMaster
 import org.joml.Vector4f
 import xyz.chunkstories.api.math.intToHex
-import xyz.chunkstories.world.WorldImplementation
+import xyz.chunkstories.api.player.PlayerState
+import xyz.chunkstories.api.world.WorldSub
+import xyz.chunkstories.world.WorldMasterImplementation
 import xyz.chunkstories.world.spawnPlayer
 
 /**
@@ -31,10 +31,10 @@ class DeathScreenUI(gui: Gui, parent: Layer) : Layer(gui, parent) {
 
     init {
         this.respawnButton.action = Runnable {
-            if (ingameClient.world is WorldMaster)
-                (ingameClient.world as WorldImplementation).spawnPlayer(ingameClient.player)
+            if (ingameClient.world is WorldMasterImplementation)
+                (ingameClient.world as WorldMasterImplementation).spawnPlayer(ingameClient.player)
             else
-                (ingameClient.world as WorldClientNetworkedRemote).remoteServer.pushPacket(PacketText("world/respawn"))
+                (ingameClient.world as WorldSub).pushPacket(PacketText(gui.client, "world/respawn"))
 
             gui.popTopLayer()
         }
@@ -68,7 +68,7 @@ class DeathScreenUI(gui: Gui, parent: Layer) : Layer(gui, parent) {
         exitButton.render(drawer)
 
         // When the new entity arrives, pop this
-        if (ingameClient.player.controlledEntity != null)
+        if (ingameClient.player.state != PlayerState.None)
             gui.popTopLayer()
 
         // Make sure to ungrab the mouse

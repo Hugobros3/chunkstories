@@ -17,7 +17,6 @@ import xyz.chunkstories.server.DedicatedServer
 import xyz.chunkstories.server.player.ServerPlayer
 import xyz.chunkstories.server.propagation.VirtualServerDecalsManager
 import xyz.chunkstories.server.propagation.VirtualServerParticlesManager
-import xyz.chunkstories.sound.VirtualSoundManager
 import xyz.chunkstories.world.io.IOTasks
 import java.io.File
 import java.io.IOException

@@ -8,9 +8,8 @@ package xyz.chunkstories.client.net.vanillasockets
 
 import xyz.chunkstories.api.exceptions.PacketProcessingException
 import xyz.chunkstories.api.exceptions.net.IllegalPacketException
-import xyz.chunkstories.api.exceptions.net.UnknowPacketException
 import xyz.chunkstories.api.net.Packet
-import xyz.chunkstories.api.net.packets.PacketText
+import xyz.chunkstories.api.server.UserConnection
 import xyz.chunkstories.api.world.WorldSub
 import xyz.chunkstories.client.ClientImplementation
 import xyz.chunkstories.client.net.*
@@ -19,6 +18,7 @@ import xyz.chunkstories.net.LogicalPacketDatagram
 import xyz.chunkstories.net.PacketDefinition
 import xyz.chunkstories.net.vanillasockets.SendQueue
 import xyz.chunkstories.net.vanillasockets.StreamGobbler
+import xyz.chunkstories.world.WorldImplementation
 
 import java.io.DataInputStream
 import java.io.DataOutputStream
@@ -27,7 +27,7 @@ import java.net.Socket
 import java.util.concurrent.atomic.AtomicBoolean
 
 /** A clientside connection to a server using the TCP protocol.  */
-open class TCPServerConnection(connectionSequence: ClientConnectionSequence) : ServerConnection(connectionSequence) {
+open class TCPServerConnection(client: ClientImplementation, connectionSequence: ClientConnectionSequence) : ServerConnection(client, connectionSequence) {
     private val client: ClientImplementation = connectionSequence.client
     final override val encoderDecoder: ClientPacketsEncoderDecoder
 
@@ -45,6 +45,12 @@ open class TCPServerConnection(connectionSequence: ClientConnectionSequence) : S
         get() = connected && !disconnected
 
     override val remoteServer = RemoteServerImplementation(this)
+
+    override val world: WorldImplementation?
+        get() = client.ingame?.world
+
+    override val userConnection: UserConnection?
+        get() = null
 
     init {
         encoderDecoder = ClientPacketsEncoderDecoder(client, this)
@@ -75,50 +81,6 @@ open class TCPServerConnection(connectionSequence: ClientConnectionSequence) : S
     }
 
     internal inner class ClientGobbler(connection: Connection, `in`: DataInputStream) : StreamGobbler(connection, `in`)
-
-    @Throws(IOException::class, PacketProcessingException::class, IllegalPacketException::class)
-    override fun handleDatagram(datagram: LogicalPacketDatagram) {
-        val definition = datagram.packetDefinition as PacketDefinition
-        if (definition.constructorTakesWorld) {
-            val world = client.ingame?.world
-            if (world == null)
-                Connection.Companion.logger.error("Received packet $definition but no world is up yet !")
-
-            (world as? WorldSub)
-            TODO("")
-            //world.queueDatagram(datagram)
-        } else {
-            /*val packet = definition.createNewWithInstance(true, client)
-            packet!!.receive(remoteServer, datagram.data, encoderDecoder)
-            datagram.dispose()*/
-            TODO()
-        }
-        /*if (definition.genre == PacketGenre.GENERAL_PURPOSE) {
-            val packet = definition.createNew(true, null)
-            packet!!.receive(remoteServer, datagram.data, encoderDecoder)
-            datagram.dispose()
-
-        } else if (definition.genre == PacketGenre.SYSTEM) {
-            val packet = definition.createNew(true, null)
-            packet!!.receive(remoteServer, datagram.data, encoderDecoder)
-            if (packet is PacketText) {
-                // TODO
-                handleSystemRequest(packet.text)
-            }
-            datagram.dispose()
-
-        } else if (definition.genre == PacketGenre.WORLD) {
-
-        } else if (definition.genre == PacketGenre.WORLD_STREAMING) {
-            val world = encoderDecoder.world
-            val packet = definition.createNew(true, world) as PacketWorldStreaming
-            packet.receive(remoteServer, datagram.data, encoderDecoder)
-            world.ioHandler.handlePacketWorldStreaming(packet)
-            datagram.dispose()
-        } else {
-            throw RuntimeException("Unknown packet genre")
-        }*/
-    }
 
     override fun handleSystemRequest(message: String): Boolean {
         if (message.startsWith("chat/")) {

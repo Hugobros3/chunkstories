@@ -9,6 +9,7 @@ package xyz.chunkstories.server.commands.player
 import xyz.chunkstories.api.entity.traits.serializable.TraitInventory
 import xyz.chunkstories.api.item.Item
 import xyz.chunkstories.api.player.Player
+import xyz.chunkstories.api.player.entityIfIngame
 import xyz.chunkstories.api.plugin.commands.Command
 import xyz.chunkstories.api.plugin.commands.CommandEmitter
 import xyz.chunkstories.api.server.Host
@@ -33,13 +34,13 @@ class GiveCommand(serverConsole: Host) : AbstractHostCommandHandler(serverConsol
 
         val gameContent = host.content
 
-        if (arguments.size == 0) {
+        if (arguments.isEmpty()) {
             emitter.sendMessage("#FF969BSyntax : /give <item> [amount] [to]")
             return true
         }
 
         var amount = 1
-        var to: Player? = emitter
+        var targetPlayer: Player? = emitter
 
         val itemName = arguments[0]
 
@@ -61,25 +62,22 @@ class GiveCommand(serverConsole: Host) : AbstractHostCommandHandler(serverConsol
         }
         if (arguments.size >= 3) {
             if (gameContent is Host)
-                to = (gameContent as Host).getPlayer(arguments[2])
+                targetPlayer = (gameContent as Host).getPlayer(arguments[2])
             else {
                 emitter.sendMessage("#FF969BThis is a singleplayer world - there are no other players")
                 return true
             }
         }
-        if (to == null) {
+        if (targetPlayer == null) {
             emitter.sendMessage("#FF969BPlayer \"" + arguments[2] + " can't be found.")
             return true
         }
-        /*val itemPile = ItemPile(item)
-        itemPile.amount = amount*/
 
         val amountFinal = min(amount, item.definition.maxStackSize)
-        val to2 = to
 
-        to.controlledEntity?.traits?.get(TraitInventory::class)?.inventory?.apply {
+        targetPlayer.entityIfIngame?.traits?.get(TraitInventory::class)?.inventory?.apply {
             addItem(item, amountFinal)
-            emitter.sendMessage("#FF969BGave " + (if (amountFinal > 1) amountFinal.toString() + "x " else "") + "#4CFF00" + item.name + " #FF969Bto " + to2.displayName)
+            emitter.sendMessage("#FF969BGave " + (if (amountFinal > 1) amountFinal.toString() + "x " else "") + "#4CFF00" + item.name + " #FF969Bto " + targetPlayer.displayName)
         }
 
         return true

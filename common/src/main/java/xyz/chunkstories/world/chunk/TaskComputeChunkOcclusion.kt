@@ -70,7 +70,7 @@ class TaskComputeChunkOcclusion {
                 mask[x * 1024 + y * 32 + z] = true
                 completion++
 
-                if (!chunk!!.peekSimple(x, y, z).opaque) {
+                if (!chunk!!.getCell(x, y, z).data.blockType.opaque) {
                     // Adds touched sides to set
 
                     if (x == 0)

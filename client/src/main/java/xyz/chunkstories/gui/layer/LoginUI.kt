@@ -10,14 +10,11 @@ import xyz.chunkstories.api.gui.*
 import xyz.chunkstories.api.gui.elements.Button
 import xyz.chunkstories.api.gui.elements.InputText
 import xyz.chunkstories.api.input.Input
-import xyz.chunkstories.bugsreporter.JavaCrashesUploader
 import xyz.chunkstories.client.ClientImplementation
 import xyz.chunkstories.client.identity.LocalClientIdentity
 import xyz.chunkstories.client.identity.LoggedInClientIdentity
 import xyz.chunkstories.client.identity.PasswordStorage
 import xyz.chunkstories.gui.layer.config.LanguageSelectionUI
-import xyz.chunkstories.net.http.RequestResultAction
-import xyz.chunkstories.net.http.SimplePostRequest
 import org.joml.Vector4f
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.gui.printCopyrightNotice
@@ -112,13 +109,14 @@ class LoginUI(gui: Gui, parent: Layer?) : Layer(gui, parent) {
     }
 
     private fun connect() {
-        if (usernameForm.text == "OFFLINE") {
+        if (true || usernameForm.text == "OFFLINE") {
             val client = gui.client as ClientImplementation
             client.user = LocalClientIdentity(client)
 
             gui.topLayer = MainMenuUI(gui, parentLayer)
         } else {
-            logging_in = true
+            TODO("Rewrite")
+            /*logging_in = true
 
             SimplePostRequest("https://chunkstories.xyz/api/login.php", "user=" + usernameForm.text + "&pass=" + passwordForm.text, RequestResultAction { result ->
                 logger.debug("Received login answer")
@@ -152,32 +150,32 @@ class LoginUI(gui: Gui, parent: Layer?) : Layer(gui, parent) {
                 } else {
                     message = "Unknown error"
                 }
-            })
+            })*/
         }
     }
 
     override fun handleInput(input: Input): Boolean {
-        if (input.name == "exit")
-            autologin = false
-        else if (input.name == "enter")
-            connect()
-        else if (input.name == "tab") {
-            val shift = if (gui.client.inputsManager.getInputByName("shift")!!.isPressed) -1 else 1
-            var i = focusedElement?.let {this.elements.indexOf(it) } ?: 0
+        when (input.name) {
+            "exit" -> autologin = false
+            "enter" -> connect()
+            "tab" -> {
+                val shift = if (gui.client.inputsManager.getInputByName("shift")!!.isPressed) -1 else 1
+                var i = focusedElement?.let {this.elements.indexOf(it) } ?: 0
 
-            var elem: GuiElement? = null
+                var elem: GuiElement? = null
 
-            while (elem == null || elem !is FocusableGuiElement) {
-                i += shift
-                if (i < 0)
-                    i = this.elements.size
-                if (i >= this.elements.size)
-                    i = 0
+                while (elem == null || elem !is FocusableGuiElement) {
+                    i += shift
+                    if (i < 0)
+                        i = this.elements.size
+                    if (i >= this.elements.size)
+                        i = 0
 
-                elem = this.elements[i]
+                    elem = this.elements[i]
+                }
+
+                this.focusedElement = elem as FocusableGuiElement?
             }
-
-            this.focusedElement = elem as FocusableGuiElement?
         }
 
         return super.handleInput(input)

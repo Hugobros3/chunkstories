@@ -5,15 +5,15 @@
 //
 package xyz.chunkstories.net.packets
 
+import xyz.chunkstories.api.Engine
 import xyz.chunkstories.api.net.Packet
-import xyz.chunkstories.api.player.Player
-import xyz.chunkstories.api.world.GameInstance
+import xyz.chunkstories.api.server.UserConnection
 import xyz.chunkstories.content.translator.AbstractContentTranslator
 import java.io.DataInputStream
 import java.io.DataOutputStream
 
-open class PacketContentTranslator(gameInstance: GameInstance) : Packet(gameInstance) {
-    constructor(gameInstance: GameInstance, contentTranslator: AbstractContentTranslator) : this(gameInstance) {
+open class PacketContentTranslator(engine: Engine) : Packet(engine) {
+    constructor(engine: Engine, contentTranslator: AbstractContentTranslator) : this(engine) {
         serializedText = contentTranslator.toString(true)
     }
 
@@ -23,7 +23,7 @@ open class PacketContentTranslator(gameInstance: GameInstance) : Packet(gameInst
         dos.writeUTF(serializedText)
     }
 
-    override fun receive(dis: DataInputStream, player: Player?) {
+    override fun receive(dis: DataInputStream, user: UserConnection?) {
         throw UnsupportedOperationException()
     }
 }
