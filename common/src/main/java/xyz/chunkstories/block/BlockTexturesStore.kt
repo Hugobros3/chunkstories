@@ -14,6 +14,7 @@ interface BlockTexturesProvider {
 
 interface BlockTextures {
     fun getTexture(textureName: String): BlockTexture?
+    fun getTextureOrDefault(textureName: String): BlockTexture
     val defaultTexture: BlockTexture
     fun reload()
 }
@@ -46,6 +47,8 @@ abstract class BlockTexturesStore(val parent: Content.BlockTypes) : BlockTexture
 
     protected abstract fun loadTexture(textureName: String, asset: Asset)
 
+    override fun getTextureOrDefault(textureName: String) = getTexture(textureName) ?: defaultTexture
+
     companion object {
         val logger: Logger = LoggerFactory.getLogger("content.voxels.textures")
     }
@@ -72,7 +75,7 @@ class HeadlessBlockTexturesStore(parent: Content.BlockTypes) : BlockTexturesStor
     //     get() = voxelTextures.values
 
     override lateinit var defaultTexture: BlockTexture
-    override fun getTexture(name: String): BlockTexture? {
-        return voxelTextures[name]
+    override fun getTexture(textureName: String): BlockTexture? {
+        return voxelTextures[textureName]
     }
 }

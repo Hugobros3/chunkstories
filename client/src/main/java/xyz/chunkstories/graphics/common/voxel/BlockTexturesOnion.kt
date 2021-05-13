@@ -112,7 +112,7 @@ abstract class BlockTexturesOnion(parent: BlockTypesStore) : BlockTexturesStore(
         }
     }
 
-    override fun getTexture(textureName: String): BlockTexture {
-        return voxelTextures[textureName]?.blockTexture ?: defaultTexture
+    override fun getTexture(textureName: String): BlockTexture? {
+        return voxelTextures[textureName]?.blockTexture
     }
 }

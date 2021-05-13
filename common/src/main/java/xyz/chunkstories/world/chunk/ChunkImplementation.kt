@@ -30,7 +30,7 @@ class ChunkImplementation(override val holder: ChunkHolderImplementation, overri
     override val world: WorldImplementation
     protected val holdingRegion: RegionImplementation
 
-    internal var blockData: IntArray? = null
+    public var blockData: IntArray? = null
     val allCellComponents = mutableMapOf<Int, MutableList<BlockAdditionalData>>()
 
     // Count unsaved edits atomically, fancy :]

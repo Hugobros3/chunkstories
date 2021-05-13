@@ -7,16 +7,18 @@ import xyz.chunkstories.api.graphics.systems.dispatching.RepresentationsGobbler
 import xyz.chunkstories.api.graphics.systems.dispatching.RepresentationsProvider
 import xyz.chunkstories.api.physics.Box
 import xyz.chunkstories.api.physics.Frustrum
-import xyz.chunkstories.world.WorldClientCommon
+import xyz.chunkstories.world.WorldImplementation
 import xyz.chunkstories.world.chunk.ChunkImplementation
 import xyz.chunkstories.world.region.RegionImplementation
 
 abstract class ChunkRepresentationsProvider<R : ChunkRepresentation>(
-        val world: WorldClientCommon,
+        val world: WorldImplementation,
         val getRepresentation: (Frame, ChunkImplementation) -> R?,
         val postGather: (Frame, List<R>) -> Unit
 ) : RepresentationsProvider {
     final override fun gatherRepresentations(representationsGobbler: RepresentationsGobbler) {
+        val sizeInChunks = world.properties.size.sizeInChunks
+
         val contexts = representationsGobbler.renderTaskInstances
         val cameras = contexts.map { it.camera }.toTypedArray()
 
@@ -45,8 +47,8 @@ abstract class ChunkRepresentationsProvider<R : ChunkRepresentation>(
                 val rxSection = sectionRegion(rx, world)
                 val rzSection = sectionRegion(rz, world)
 
-                rx += shouldWrap(camerasSections[index].first, rxSection) * world.sizeInChunks / 8
-                rz += shouldWrap(camerasSections[index].second, rzSection) * world.sizeInChunks / 8
+                rx += shouldWrap(camerasSections[index].first, rxSection) * sizeInChunks / 8
+                rz += shouldWrap(camerasSections[index].second, rzSection) * sizeInChunks / 8
 
                 if (camera.frustrum.isBoxInFrustrumFAST(Box.fromExtents(256.0, 256.0, 256.0).translate(rx * 256.0, region.regionY * 256.0, rz * 256.0)))
                     mask = mask or (1 shl index)
@@ -85,8 +87,8 @@ abstract class ChunkRepresentationsProvider<R : ChunkRepresentation>(
                         val cxSection = sectionChunk(cx, world)
                         val czSection = sectionChunk(cz, world)
 
-                        cx += shouldWrap(camerasSections[index].first, cxSection) * world.sizeInChunks
-                        cz += shouldWrap(camerasSections[index].second, czSection) * world.sizeInChunks
+                        cx += shouldWrap(camerasSections[index].first, cxSection) * sizeInChunks
+                        cz += shouldWrap(camerasSections[index].second, czSection) * sizeInChunks
 
                         if (camera.frustrum.isBoxInFrustrumFAST(Box.fromExtents(32.0, 32.0, 32.0).translate(cx * 32.0, chunk.chunkY * 32.0, cz * 32.0)))
                             mask = mask or submask
