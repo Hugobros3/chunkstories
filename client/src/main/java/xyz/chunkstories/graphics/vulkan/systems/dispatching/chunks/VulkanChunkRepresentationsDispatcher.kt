@@ -23,7 +23,7 @@ import xyz.chunkstories.graphics.vulkan.graph.VulkanRenderTaskInstance
 import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.systems.dispatching.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
-import xyz.chunkstories.graphics.vulkan.textures.voxels.VulkanVoxelTexturesArray
+import xyz.chunkstories.graphics.vulkan.textures.voxels.VulkanBlockTexturesArray
 
 class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingSystem<VulkanChunkRepresentation>(backend) {
     override val representationName: String = VulkanChunkRepresentation::class.java.canonicalName
@@ -150,7 +150,7 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
 
                 val (chunkInformationsCpuBuffer, chunkInformationsGpuBuffer) = bindingContext.dataAllocator.getMappedSSBO(ssboBufferSize)
 
-                val voxelTexturesArray = client.content.voxels.textures as VulkanVoxelTexturesArray
+                val voxelTexturesArray = client.content.voxels.textures as VulkanBlockTexturesArray
                 bindingContext.bindTextureAndSampler("albedoTextures", voxelTexturesArray.albedoOnionTexture, sampler)
                 bindingContext.bindInstancedInput("chunkInfo", chunkInformationsGpuBuffer.first, chunkInformationsGpuBuffer.second)
 
@@ -196,7 +196,7 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
 
                 val (chunkInformationsCpuBuffer, chunkInformationsGpuBuffer) = bindingContext.dataAllocator.getMappedSSBO(ssboBufferSize)
 
-                val voxelTexturesArray = client.content.voxels.textures as VulkanVoxelTexturesArray
+                val voxelTexturesArray = client.content.voxels.textures as VulkanBlockTexturesArray
                 bindingContext.bindTextureAndSampler("albedoTextures", voxelTexturesArray.albedoOnionTexture, sampler)
                 bindingContext.bindInstancedInput("chunkInfo", chunkInformationsGpuBuffer.first, chunkInformationsGpuBuffer.second)
 

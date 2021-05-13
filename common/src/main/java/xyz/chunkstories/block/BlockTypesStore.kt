@@ -34,7 +34,7 @@ class BlockTypesStore(override val content: GameContentStore) : Content.BlockTyp
             is BlockTexturesProvider ->
                 backend.createVoxelTextures(this)
             else ->
-                DummyVoxelTextures(this)
+                HeadlessBlockTexturesStore(this)
         }
     }
 

@@ -32,7 +32,7 @@ import xyz.chunkstories.graphics.opengl.systems.OpenglFullscreenQuadDrawer
 import xyz.chunkstories.graphics.opengl.systems.gui.OpenglGuiDrawer
 import xyz.chunkstories.graphics.opengl.systems.world.OpenglModelsDispatcher
 import xyz.chunkstories.graphics.opengl.textures.OpenglTextures
-import xyz.chunkstories.graphics.opengl.voxels.OpenglVoxelTexturesArray
+import xyz.chunkstories.graphics.opengl.voxels.OpenglBlockTexturesArray
 import xyz.chunkstories.graphics.opengl.world.OpenglWorldRenderer
 import xyz.chunkstories.graphics.opengl.world.chunks.OpenglChunkRepresentationsDispatcher
 import xyz.chunkstories.graphics.vulkan.swapchain.PerformanceCounter
@@ -199,7 +199,7 @@ class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
         return new
     }
 
-    override fun createVoxelTextures(voxels: Content.Voxels) = OpenglVoxelTexturesArray(this, voxels)
+    override fun createVoxelTextures(voxels: Content.Voxels) = OpenglBlockTexturesArray(this, voxels)
 
     override fun reloadRendergraph() {
         this.queuedRenderGraph = this.renderGraph.dslCode

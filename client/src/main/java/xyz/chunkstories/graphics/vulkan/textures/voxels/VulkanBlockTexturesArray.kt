@@ -5,18 +5,18 @@ import org.lwjgl.system.MemoryStack.stackPush
 import org.lwjgl.system.MemoryUtil.memAlloc
 import org.lwjgl.system.MemoryUtil.memFree
 import org.lwjgl.vulkan.VK10.*
-import xyz.chunkstories.api.content.Content
 import xyz.chunkstories.api.graphics.TextureFormat
+import xyz.chunkstories.block.BlockTypesStore
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.buffers.VulkanBuffer
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import xyz.chunkstories.graphics.common.Cleanable
-import xyz.chunkstories.graphics.common.voxel.VoxelTexturesArray
+import xyz.chunkstories.graphics.common.voxel.BlockTexturesOnion
 import xyz.chunkstories.graphics.vulkan.textures.VulkanOnionTexture2D
 import xyz.chunkstories.util.toByteBuffer
 import java.awt.image.BufferedImage
 
-class VulkanVoxelTexturesArray(val backend: VulkanGraphicsBackend, voxels: Content.Voxels) : VoxelTexturesArray(voxels), Cleanable {
+class VulkanBlockTexturesArray(val backend: VulkanGraphicsBackend, blockTypes: BlockTypesStore) : BlockTexturesOnion(blockTypes), Cleanable {
     lateinit var albedoOnionTexture: VulkanOnionTexture2D
 
     override fun createTextureArray(textureResolution: Int, imageData: List<Array<BufferedImage>>) {

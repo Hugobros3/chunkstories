@@ -1,6 +1,6 @@
 package xyz.chunkstories.graphics.opengl.world.chunks
 
-import xyz.chunkstories.graphics.common.voxel.VoxelTexturesArray
+import xyz.chunkstories.graphics.common.voxel.BlockTexturesOnion
 import xyz.chunkstories.graphics.common.world.TaskCreateChunkMesh
 import xyz.chunkstories.graphics.opengl.OpenglGraphicsBackend
 import xyz.chunkstories.graphics.opengl.buffers.OpenglVertexBuffer
@@ -11,7 +11,7 @@ import java.nio.ByteBuffer
 class TaskCreateVulkanChunkRepresentation(val backend: OpenglGraphicsBackend, chunk: ChunkImplementation, attachedProperty: AutoRebuildingProperty, updates: Int) :
         TaskCreateChunkMesh(chunk, attachedProperty, updates
                 , {
-            (it as VoxelTexturesArray.VoxelTextureInArray).textureArrayIndex
+            (it as BlockTexturesOnion.VoxelTextureInArray).textureArrayIndex
         }
                 , { sections ->
 

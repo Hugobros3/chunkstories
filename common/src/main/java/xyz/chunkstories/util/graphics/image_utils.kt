@@ -1,6 +1,7 @@
 package xyz.chunkstories.util.graphics
 
 import org.joml.Vector4f
+import xyz.chunkstories.api.math.MathUtils.clamp
 import java.awt.image.BufferedImage
 
 fun BufferedImage.getRGBVec4f(x: Int, y: Int): Vector4f {
@@ -29,4 +30,18 @@ fun averageColor(image: BufferedImage, weightAlpha: Boolean = true): Vector4f {
         accumulator.mul(1.0f / accumulator.w)
 
     return accumulator
+}
+
+/** Low quality NN scaling */
+fun resizeImage(originalImage: BufferedImage, width: Int, height: Int): BufferedImage {
+    val resizedImage = BufferedImage(width, height, originalImage.type)
+    for (x in 0 until resizedImage.width)
+        for (y in 0 until resizedImage.height) {
+            val sx = clamp((x / resizedImage.width.toFloat() * originalImage.width.toFloat()).toInt(), 0, originalImage.width - 1)
+            val sy = clamp((y / resizedImage.height.toFloat() * originalImage.height.toFloat()).toInt(), 0, originalImage.height - 1)
+            val rgb = originalImage.getRGB(sx, sy)
+            resizedImage.setRGB(x, y, rgb)
+        }
+
+    return resizedImage
 }

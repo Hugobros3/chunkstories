@@ -27,14 +27,14 @@ import xyz.chunkstories.graphics.vulkan.shaders.VulkanShaderFactory
 import xyz.chunkstories.graphics.vulkan.swapchain.SwapChain
 import xyz.chunkstories.graphics.vulkan.swapchain.WindowSurface
 import xyz.chunkstories.graphics.vulkan.textures.VulkanTextures
-import xyz.chunkstories.graphics.vulkan.textures.voxels.VulkanVoxelTexturesArray
+import xyz.chunkstories.graphics.vulkan.textures.voxels.VulkanBlockTexturesArray
 import xyz.chunkstories.graphics.vulkan.util.RenderPassHelpers
 import xyz.chunkstories.graphics.vulkan.util.VkRenderPass
 import xyz.chunkstories.graphics.vulkan.util.ensureIs
 import xyz.chunkstories.graphics.vulkan.util.iterator
 import xyz.chunkstories.graphics.vulkan.world.VulkanWorldRenderer
 import xyz.chunkstories.block.BlockTexturesProvider
-import xyz.chunkstories.world.WorldClientCommon
+import xyz.chunkstories.world.WorldImplementation
 import java.awt.image.BufferedImage
 
 class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window: GLFWWindow) : GLFWBasedGraphicsBackend(graphicsEngine, window), BlockTexturesProvider {
@@ -326,9 +326,9 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
     }
 
     // yes this engine is a little tailor-made, what gives
-    override fun createVoxelTextures(blockTypes: Content.BlockTypes) = VulkanVoxelTexturesArray(this, blockTypes)
+    override fun createVoxelTextures(blockTypes: Content.BlockTypes) = VulkanBlockTexturesArray(this, blockTypes)
 
-    override fun createWorldRenderer(world: WorldClientCommon) = VulkanWorldRenderer(this, world)
+    override fun createWorldRenderer(world: WorldImplementation) = VulkanWorldRenderer(this, world)
 
     override fun reloadRendergraph() {
         this.queuedRenderGraph = this.renderGraph.dslCode
