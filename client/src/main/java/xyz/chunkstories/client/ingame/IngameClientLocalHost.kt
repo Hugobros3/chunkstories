@@ -47,8 +47,6 @@ fun ClientImplementation.createAndEnterWorld(folder: File, properties: World.Pro
 
 /** Represent an IngameClient that is also a local Server (with minimal server functionality). Used in local SP. */
 class IngameClientLocalHost(client: ClientImplementation, worldInitializer: (IngameClientImplementation) -> WorldImplementation) : IngameClientImplementation(client, worldInitializer), Host {
-    override val engine: Engine
-        get() = client
     override val world: WorldMasterImplementation = super.world_ as WorldMasterImplementation
     override val contentTranslator: ContentTranslator
         get() = world.contentTranslator

@@ -22,9 +22,6 @@ class IngameClientRemoteHost(client: ClientImplementation, val connection: Serve
     override val contentTranslator: ContentTranslator
         get() = world.contentTranslator
     override val logger: Logger = LoggerFactory.getLogger("client.world")
-    override val engine: Engine
-        get() = client
-
     override fun startPlayingAs_(entity: Entity) {
         TODO("Not yet implemented")
     }

@@ -23,6 +23,8 @@ import xyz.chunkstories.world.WorldImplementation
 import xyz.chunkstories.world.WorldMasterImplementation
 
 abstract class IngameClientImplementation protected constructor(val client: ClientImplementation, worldInitializer: (IngameClientImplementation) -> WorldImplementation) : IngameClient, Client by client {
+    override val engine: Client
+        get() = client
     override val tasks: WorkerThreadPool = client.tasks
 
     final override val ingame: IngameClient = this

@@ -145,9 +145,17 @@ class ChunkImplementation(override val holder: ChunkHolderImplementation, overri
             override var extraData: Int
                 get() = TODO("Not yet implemented")
                 set(value) {}
-            override val additionalData: MutableList<BlockAdditionalData>
-                get() = TODO("Not yet implemented")
 
+        }
+        override val additionalData: MutableMap<String, BlockAdditionalData>
+            get() = TODO("Not yet implemented")
+
+        override fun registerAdditionalData(name: String, data: BlockAdditionalData) {
+            TODO("Not yet implemented")
+        }
+
+        override fun unregisterAdditionalData(name: String): Boolean {
+            TODO("Not yet implemented")
         }
     }
 

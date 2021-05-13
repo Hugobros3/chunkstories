@@ -36,10 +36,10 @@ class PacketUpdateBlock : PacketWorld {
 
         dos.writeInt(blockID)
 
-        for (additionalData in cell.data.additionalData) {
-            val serializedData = additionalData.serialize() ?: continue
+        for ((name, additionalData) in cell.additionalData) {
+            val serializedData = additionalData.serialize(world.gameInstance) ?: continue
             dos.writeByte(0x01.toByte().toInt())
-            dos.writeUTF(additionalData.serializationName)
+            dos.writeUTF(name)
             dos.writeUTF(serializedData.stringSerialize())
         }
         dos.writeByte(0x00.toByte().toInt())
@@ -61,12 +61,12 @@ class PacketUpdateBlock : PacketWorld {
 
             // TODO this isn't exactly super robust
             world.setCellData(x, y, z, data)
-            val cell = world.getCell(x, y, z)!!
+            val cell = world.getCell(x, y, z) as ChunkCell
 
             var nextComponent = dis.readByte()
             while (nextComponent.toInt() != 0) {
-                val componentName = dis.readUTF()
-                cell.data.additionalData.find { it.name == componentName }!!.deserialize(dis.readUTF().toJson())
+                val name = dis.readUTF()
+                cell.additionalData[name]!!.deserialize(world.gameInstance, dis.readUTF().toJson())
                 nextComponent = dis.readByte()
             }
 

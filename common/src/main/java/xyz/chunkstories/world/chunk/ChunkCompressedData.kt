@@ -84,7 +84,7 @@ sealed class ChunkCompressedData(internal val entities: Json.Array ) {
             val compressedExtendedData = Json.Array(chunk.allCellComponents.map { (key, value) -> Json.Dict(mapOf(
                     "index" to Json.Value.Number(key.toDouble()),
                     "components" to Json.Array(value.mapNotNull { additionalBlockData ->
-                        val serialized = additionalBlockData.serialize() ?: return@mapNotNull null
+                        val serialized = additionalBlockData.serialize(chunk.world.gameInstance) ?: return@mapNotNull null
                         Json.Dict(mapOf(
                             "name" to Json.Value.Text(additionalBlockData.serializationName),
                             "data" to serialized
