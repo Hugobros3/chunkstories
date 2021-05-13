@@ -68,7 +68,7 @@ class ModsSelectionUI(window: Gui, parent: Layer) : Layer(window, parent) {
 
     private fun buildModsList() {
         modsContainer.elements.clear()
-        val currentlyEnabledMods = Arrays.asList(*(gui.client.content.modsManager as ModsManagerImplementation).enabledModsString)
+        val currentlyEnabledMods = (gui.client.content.modsManager as ModsManagerImplementation).currentlyLoadedMods.map { it.modInfo.name }
 
         val uniqueMods = HashSet<String>()
         // First put in already loaded mods

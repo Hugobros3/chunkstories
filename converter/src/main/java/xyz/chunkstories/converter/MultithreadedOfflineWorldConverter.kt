@@ -17,6 +17,13 @@ import xyz.chunkstories.world.WorldTool
 import xyz.chunkstories.world.chunk.ChunkHolderImplementation
 import io.xol.enklume.MinecraftWorld
 import io.xol.enklume.nbt.NBTInt
+import xyz.chunkstories.api.Engine
+import xyz.chunkstories.api.content.ContentTranslator
+import xyz.chunkstories.api.player.Player
+import xyz.chunkstories.api.player.PlayerID
+import xyz.chunkstories.api.server.PermissionsManager
+import xyz.chunkstories.api.world.World
+import xyz.chunkstories.content.mods.ModsManagerImplementation
 import java.io.File
 import java.util.*
 
@@ -26,9 +33,34 @@ constructor(verboseMode: Boolean, mcFolder: File, csFolder: File, mcWorldName: S
             private val threadsCount: Int) : OfflineWorldConverter(verboseMode, mcFolder, csFolder, mcWorldName, csWorldName, size, minecraftOffsetX, minecraftOffsetZ, coreContentLocation) {
 
     private val workers: ConverterWorkers = ConverterWorkers(this, this.csWorld, threadsCount)
+    override fun getPlayer(playerName: String): Player? {
+        TODO("Not yet implemented")
+    }
+
+    override fun getPlayer(id: PlayerID): Player? {
+        TODO("Not yet implemented")
+    }
+
+    override fun broadcastMessage(message: String) {
+        TODO("Not yet implemented")
+    }
+
+    override val modsManager: ModsManagerImplementation
+        get() = TODO("Not yet implemented")
 
     override val tasks: Tasks
         get() = workers
+    override var permissionsManager: PermissionsManager
+        get() = TODO("Not yet implemented")
+        set(value) {}
+    override val players: Sequence<Player>
+        get() = TODO("Not yet implemented")
+    override val contentTranslator: ContentTranslator
+        get() = TODO("Not yet implemented")
+    override val engine: Engine
+        get() = TODO("Not yet implemented")
+    override val world: World
+        get() = TODO("Not yet implemented")
 
     fun run() {
         val benchmarkingStart = System.currentTimeMillis()
@@ -59,7 +91,7 @@ constructor(verboseMode: Boolean, mcFolder: File, csFolder: File, mcWorldName: S
         verbose("Entering step one: converting raw block data")
 
         // Prepares the loops
-        val size = csWorld.worldInfo.size
+        val size = csWorld.properties.size
 
         val mcRegionStartX = MinecraftWorld.blockToRegionCoordinates(minecraftOffsetX)
         val mcRegionStartZ = MinecraftWorld.blockToRegionCoordinates(minecraftOffsetZ)
@@ -93,9 +125,9 @@ constructor(verboseMode: Boolean, mcFolder: File, csFolder: File, mcWorldName: S
 
                             // Is it within our borders ?
                             if (chunkStoriesCurrentChunkX >= 0
-                                    && chunkStoriesCurrentChunkX < csWorld.worldInfo.size.sizeInChunks * 32
+                                    && chunkStoriesCurrentChunkX < csWorld.properties.size.sizeInChunks * 32
                                     && chunkStoriesCurrentChunkZ >= 0
-                                    && chunkStoriesCurrentChunkZ < csWorld.worldInfo.size.sizeInChunks * 32) {
+                                    && chunkStoriesCurrentChunkZ < csWorld.properties.size.sizeInChunks * 32) {
 
                                 if (minecraftRegion != null) {
                                     val minecraftChunk = minecraftRegion.getChunk(
@@ -145,7 +177,7 @@ constructor(verboseMode: Boolean, mcFolder: File, csFolder: File, mcWorldName: S
     protected fun stepTwoCreateHeightmapData(csWorld: WorldTool) {
         verbose("Entering step two: making heightmap data")
 
-        val size = csWorld.worldInfo.size
+        val size = csWorld.properties.size
 
         var done = 0
         val todo = size.sizeInChunks / 8 * (size.sizeInChunks / 8)
@@ -200,7 +232,7 @@ constructor(verboseMode: Boolean, mcFolder: File, csFolder: File, mcWorldName: S
         verbose("Entering step three: spreading light")
         csWorld.isLightningEnabled = true
 
-        val size = csWorld.worldInfo.size
+        val size = csWorld.properties.size
         val maxHeightPossible = 256
 
         var done = 0
@@ -344,8 +376,10 @@ constructor(verboseMode: Boolean, mcFolder: File, csFolder: File, mcWorldName: S
         val spawnY = (mcWorld.levelDotDat.root.getTag("Data.SpawnY") as NBTInt).getData()
         val spawnZ = (mcWorld.levelDotDat.root.getTag("Data.SpawnZ") as NBTInt).getData()
 
-        csWorld.defaultSpawnLocation = Location(csWorld, spawnX.toDouble(), spawnY.toDouble(), spawnZ.toDouble())
-        csWorld.saveEverything().traverse()
+        csWorld.properties = csWorld.properties.copy(spawn = Location(csWorld, spawnX.toDouble(), spawnY.toDouble(), spawnZ.toDouble()))
+
+        // TODO
+        // csWorld.saveEverything().traverse()
 
         csWorld.destroy()
     }

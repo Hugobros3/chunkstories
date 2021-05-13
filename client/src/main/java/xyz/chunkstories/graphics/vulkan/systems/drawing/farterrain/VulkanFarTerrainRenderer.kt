@@ -9,6 +9,7 @@ import xyz.chunkstories.api.client.IngameClient
 import xyz.chunkstories.api.graphics.TextureTilingMode
 import xyz.chunkstories.api.graphics.rendergraph.ImageInput
 import xyz.chunkstories.api.graphics.systems.drawing.FarTerrainDrawer
+import xyz.chunkstories.api.player.entityIfIngame
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
 import xyz.chunkstories.graphics.common.geometry.generateGridVerticesAndIndices
@@ -24,7 +25,7 @@ import xyz.chunkstories.graphics.vulkan.shaders.VulkanShaderProgram
 import xyz.chunkstories.graphics.vulkan.systems.drawing.VulkanDrawingSystem
 import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
 import xyz.chunkstories.graphics.vulkan.vertexInputConfiguration
-import xyz.chunkstories.world.WorldClientCommon
+import xyz.chunkstories.world.WorldImplementation
 
 class VulkanFarTerrainRenderer(pass: VulkanPass, dslCode: VulkanFarTerrainRenderer.() -> Unit) : FarTerrainDrawer, VulkanDrawingSystem(pass) {
     val backend: VulkanGraphicsBackend
@@ -80,12 +81,12 @@ class VulkanFarTerrainRenderer(pass: VulkanPass, dslCode: VulkanFarTerrainRender
         bindingContext.bindSSBO("elementsBuffer", vkBuffer)
         bindingContext.commitAndBind(commandBuffer)
 
-        val playerEntity = client.player.controlledEntity
+        val playerEntity = client.player.entityIfIngame
         if(playerEntity != null) {
             val horizontalCoords = playerEntity.location.let { Vector2i(it.x.toInt(), it.z.toInt()) }
 
             if(helper.update(horizontalCoords)) {
-                textureManager.requestUpdate(helper.currentSnappedCameraPos.x / 256, helper.currentSnappedCameraPos.y / 256, client.world as WorldClientCommon)
+                textureManager.requestUpdate(helper.currentSnappedCameraPos.x / 256, helper.currentSnappedCameraPos.y / 256, client.world as WorldImplementation)
             }
         }
         //?.let {  }?.let { helper.update(it) }

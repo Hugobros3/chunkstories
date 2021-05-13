@@ -21,11 +21,12 @@ import xyz.chunkstories.api.gui.Layer
 import xyz.chunkstories.api.gui.elements.InputText
 import xyz.chunkstories.api.input.Input
 import xyz.chunkstories.api.input.Mouse.MouseScroll
+import xyz.chunkstories.api.net.packets.PacketText
 import xyz.chunkstories.api.util.getUniqueColorPrefix
 import xyz.chunkstories.client.glfw.GLFWWindow
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
-import xyz.chunkstories.world.WorldClientLocal
-import xyz.chunkstories.world.WorldClientRemote
+import xyz.chunkstories.world.WorldMasterImplementation
+import xyz.chunkstories.world.WorldSubImplementation
 
 class ChatManager(private val ingameClient: IngameClient, private val ingameGuiUI: IngameUI) {
     private val gui: Gui
@@ -186,6 +187,7 @@ class ChatManager(private val ingameClient: IngameClient, private val ingameGuiU
     }
 
     private fun processTextInput(input: String) {
+        val world = ingameClient.world
         val clientUserName = ingameClient.user.name
 
         if (input.startsWith("/")) {
@@ -209,10 +211,10 @@ class ChatManager(private val ingameClient: IngameClient, private val ingameGuiU
                     return
                 }
                 cmdName == "plugins" -> {
-                    val count = ingameClient.pluginManager.activePlugins().count()
-                    val list = ingameClient.pluginManager.activePlugins().map { it.name }.joinToString(", ")
+                    val count = ingameClient.pluginManager.activePlugins.count()
+                    val list = ingameClient.pluginManager.activePlugins.map { it.name }.joinToString(", ")
 
-                    if (ingameClient.world is WorldClientLocal)
+                    if (world is WorldMasterImplementation)
                         insert("#00FFD0$count active client [master] plugins : $list")
                     else
                         insert("#74FFD0$count active client [remote] plugins : $list")
@@ -230,7 +232,7 @@ class ChatManager(private val ingameClient: IngameClient, private val ingameGuiU
                         list += mod.modInfo.name + if (i == ingameClient.content.modsManager.currentlyLoadedMods.size) "" else ", "
                     }
 
-                    if (ingameClient.world is WorldClientLocal)
+                    if (world is WorldMasterImplementation)
                         insert("#FF0000$i active client [master] mods : $list")
                     else
                         insert("#FF7070$i active client [remote] mods : $list")
@@ -257,9 +259,8 @@ class ChatManager(private val ingameClient: IngameClient, private val ingameGuiU
             option!!.trySetting(true)
         }
 
-        if (ingameClient.world is WorldClientRemote)
-            (ingameClient.world as WorldClientRemote).connection
-                    .sendTextMessage("chat/$input")
+        if (world is WorldSubImplementation)
+            world.pushPacket(PacketText(ingameClient.engine, "chat/$input"))
         else
             insert(getUniqueColorPrefix(clientUserName) + clientUserName + "#FFFFFF > " + input)
 

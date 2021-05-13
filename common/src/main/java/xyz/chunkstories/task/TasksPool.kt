@@ -12,9 +12,9 @@ import java.util.concurrent.Semaphore
 import java.util.concurrent.atomic.AtomicInteger
 
 abstract class TasksPool<T : Task?> {
-    internal var tasksQueue: Deque<T> = ConcurrentLinkedDeque()
-    internal var tasksCounter = Semaphore(0)
-    internal var tasksQueueSize = AtomicInteger(0)
+    var tasksQueue: Deque<T> = ConcurrentLinkedDeque()
+    var tasksCounter = Semaphore(0)
+    var tasksQueueSize = AtomicInteger(0)
 
     fun scheduleTask(task: T) {
         tasksQueue.add(task)

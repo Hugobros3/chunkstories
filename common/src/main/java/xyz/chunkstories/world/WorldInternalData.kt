@@ -15,7 +15,7 @@ data class WorldInternalData(
         var varyWeather: Boolean = true
 )
 
-internal const val worldInternalDataFilename = "internalData.json"
+const val worldInternalDataFilename = "internalData.json"
 
 fun tryLoadWorldInternalData(folder: File) : WorldInternalData {
     val file = File("${folder.path}/$worldInternalDataFilename")

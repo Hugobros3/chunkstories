@@ -6,7 +6,6 @@
 
 package xyz.chunkstories.gui.layer.ingame
 
-import xyz.chunkstories.api.client.LocalIngamePlayer
 import xyz.chunkstories.api.entity.traits.TraitHasOverlay
 import xyz.chunkstories.api.entity.traits.serializable.TraitHealth
 import xyz.chunkstories.api.entity.traits.serializable.TraitInventory
@@ -17,21 +16,23 @@ import xyz.chunkstories.api.gui.Layer
 import xyz.chunkstories.api.input.Input
 import xyz.chunkstories.api.input.Mouse.MouseScroll
 import xyz.chunkstories.api.item.inventory.ItemPile
+import xyz.chunkstories.api.player.entityIfIngame
 import xyz.chunkstories.api.util.configuration.Configuration
 import xyz.chunkstories.client.InternalClientOptions
+import xyz.chunkstories.client.ingame.ClientPlayer
 import xyz.chunkstories.client.ingame.IngameClientImplementation
 import xyz.chunkstories.gui.debug.DebugInfoRendererHelper
 import xyz.chunkstories.gui.debug.FrametimesGraph
 import xyz.chunkstories.gui.layer.WorldLoadingUI
-import xyz.chunkstories.world.WorldClientCommon
+import xyz.chunkstories.world.WorldImplementation
 
 /**
  * The main layer that hosts the gameplay: renders the world, inventory and most
  * gui elements
  */
 class IngameUI(window: Gui, private val client: IngameClientImplementation) : Layer(window, null) {
-    private val player: LocalIngamePlayer
-    private val world: WorldClientCommon
+    private val player: ClientPlayer
+    private val world: WorldImplementation
 
     // Renderer & client interface components
     private val debugInfoRendererHelper: DebugInfoRendererHelper
@@ -55,7 +56,7 @@ class IngameUI(window: Gui, private val client: IngameClientImplementation) : La
     }
 
     override fun render(drawer: GuiDrawer) {
-        val playerEntity = player.controlledEntity
+        val playerEntity = player.entityIfIngame
 
         // TODO MOVE MOVE MOVE
         if (gui.topLayer !is WorldLoadingUI && (playerEntity == null || playerEntity.traits[TraitHealth::class]?.isDead == true) && gui.topLayer !is DeathScreenUI)
@@ -103,7 +104,7 @@ class IngameUI(window: Gui, private val client: IngameClientImplementation) : La
     }
 
     override fun handleInput(input: Input): Boolean {
-        val playerEntity = player.controlledEntity
+        val playerEntity = player.entityIfIngame
         // Block inputs if chatting
         when {
             input.name == "chat" -> {
@@ -131,7 +132,7 @@ class IngameUI(window: Gui, private val client: IngameClientImplementation) : La
                 client.client.reloadAssets()
 
                 // Reload plugins
-                world.pluginManager.reloadPlugins()
+                world.gameInstance.pluginManager.reloadPlugins()
                 return true
                 // CTRL-R redraws chunks
             }

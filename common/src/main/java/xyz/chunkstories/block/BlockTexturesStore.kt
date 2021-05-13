@@ -54,7 +54,7 @@ abstract class BlockTexturesStore(val parent: BlockTypesStore) : BlockTextures {
     }
 }
 
-class HeadlessBlockTexturesStore(parent: Content.BlockTypes) : BlockTexturesStore(parent) {
+class HeadlessBlockTexturesStore(parent: BlockTypesStore) : BlockTexturesStore(parent) {
     private val voxelTextures = mutableMapOf<String, BlockTexture>()
     private var nextId = 0
 

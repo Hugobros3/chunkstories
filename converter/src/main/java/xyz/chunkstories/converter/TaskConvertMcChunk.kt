@@ -7,7 +7,6 @@
 package xyz.chunkstories.converter
 
 import xyz.chunkstories.api.converter.MinecraftBlocksTranslator
-import xyz.chunkstories.api.converter.mappings.NonTrivialMapper
 import xyz.chunkstories.api.workers.Task
 import xyz.chunkstories.api.workers.TaskExecutor
 import xyz.chunkstories.api.world.chunk.ChunkHolder
@@ -16,6 +15,7 @@ import xyz.chunkstories.util.concurrency.CompoundFence
 import xyz.chunkstories.world.chunk.ChunkHolderImplementation
 import io.xol.enklume.MinecraftChunk
 import io.xol.enklume.MinecraftRegion
+import xyz.chunkstories.api.converter.NonTrivialMapper
 
 class TaskConvertMcChunk(private val minecraftRegion: MinecraftRegion, private val minecraftChunk: MinecraftChunk?, private val chunkStoriesCurrentChunkX: Int, private val chunkStoriesCurrentChunkZ: Int, private val minecraftCurrentChunkXinsideRegion: Int, private val minecraftCuurrentChunkZinsideRegion: Int, private val minecraftRegionX: Int, private val minecraftRegionZ: Int, private val mappers: MinecraftBlocksTranslator) : Task() {
 
@@ -48,23 +48,22 @@ class TaskConvertMcChunk(private val minecraftRegion: MinecraftRegion, private v
                         for (y in 0 until OfflineWorldConverter.mcWorldHeight) {
                             // Translate each block
                             val mcId = minecraftChunk.getBlockID(x, y, z) and 0xFFF
-                            val meta = (minecraftChunk.getBlockMeta(x, y, z) and 0xF).toByte()
+                            val meta = (minecraftChunk.getBlockMeta(x, y, z) and 0xF)
 
                             // Ignore air blocks
                             if (mcId != 0) {
                                 val mapper = this.mappers.getMapper(mcId, meta) ?: continue
 
                                 if (mapper is NonTrivialMapper) {
-                                    mapper.output(csWorld, chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, mcId, meta.toInt(), minecraftRegion,
-                                            minecraftCurrentChunkXinsideRegion, minecraftCuurrentChunkZinsideRegion, x, y, z)
+                                    mapper.output(csWorld, chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, mcId, meta.toInt(), minecraftRegion, minecraftCurrentChunkXinsideRegion, minecraftCuurrentChunkZinsideRegion, x, y, z)
                                 } else {
-                                    val future = FutureCell(csWorld, chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z,
-                                            csWorld.content.voxels.air)
+                                    // val future = FutureCell(csWorld, chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, csWorld.content.voxels.air)
+                                    val cell = csWorld.getCellMut(chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z)!!.data
 
                                     // Directly set trivial blocks
-                                    mapper.output(mcId, meta, future)
-                                    if (!future.voxel.isAir())
-                                        csWorld.pokeSimpleSilently(future)
+                                    mapper.output(mcId, meta.toByte(), cell)
+                                    // if (!future.voxel.isAir())
+                                    //     csWorld.pokeSimpleSilently(future)
                                 }
                             }
                         }

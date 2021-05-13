@@ -39,6 +39,7 @@ import xyz.chunkstories.content.translator.AbstractContentTranslator
 import xyz.chunkstories.content.translator.IncompatibleContentException
 import xyz.chunkstories.content.translator.InitialContentTranslator
 import xyz.chunkstories.content.translator.LoadedContentTranslator
+import xyz.chunkstories.net.Connection
 import xyz.chunkstories.net.LogicalPacketDatagram
 import xyz.chunkstories.util.alias
 import xyz.chunkstories.util.concurrency.CompoundFence
@@ -416,6 +417,8 @@ class WorldSubImplementation(gameInstance: GameInstance, properties: World.Prope
     override fun pushPacket(packet: Packet) {
         TODO("Not yet implemented")
     }
+
+    val connection: Connection = TODO()
 
     fun queueDatagram(d: LogicalPacketDatagram) {
         TODO()

@@ -9,10 +9,14 @@ package xyz.chunkstories.converter;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Random;
 
-import xyz.chunkstories.api.world.GameInstance;
+import org.joml.Vector3d;
+import xyz.chunkstories.EngineImplemI;
+import xyz.chunkstories.api.Engine;
+import xyz.chunkstories.api.server.Host;
 import xyz.chunkstories.api.world.World;
 import xyz.chunkstories.api.world.WorldSize;
 import org.slf4j.Logger;
@@ -28,7 +32,7 @@ import xyz.chunkstories.util.LogbackSetupHelper;
 import xyz.chunkstories.world.WorldTool;
 import io.xol.enklume.MinecraftWorld;
 
-public abstract class OfflineWorldConverter implements GameInstance, WorldUser {
+public abstract class OfflineWorldConverter implements EngineImplemI, Host, WorldUser {
 
 	public static void main(String arguments[]) throws IOException {
 		// Parse arguments first
@@ -129,7 +133,7 @@ public abstract class OfflineWorldConverter implements GameInstance, WorldUser {
 
 	protected final boolean verboseMode;
 	protected final GameContentStore content;
-	protected Logger logger;
+	private Logger logger;
 
 	// TODO make these configurable
 	protected final int targetChunksToKeepInRam = 4096;
@@ -162,7 +166,7 @@ public abstract class OfflineWorldConverter implements GameInstance, WorldUser {
 		String loggingFilename = "./logs/converter_" + time + ".log";
 		new LogbackSetupHelper(loggingFilename);
 
-		content = new GameContentStore(this, coreContentLocation, "");
+		content = new GameContentStore(this, coreContentLocation, new ArrayList<>());
 		content.reload();
 
 		verbose("Loading converter mappings");
@@ -182,7 +186,7 @@ public abstract class OfflineWorldConverter implements GameInstance, WorldUser {
 		Random random = new Random();
 
 		File folder = new File("out/"+internalName);
-		World.Properties info = new World.Properties(internalName, csWorldName, description,random.nextLong() + "", size, worldGenerator);
+		World.Properties info = new World.Properties(internalName, csWorldName, description,random.nextLong() + "", size, new Vector3d(), worldGenerator);
 
 		csWorld = WorldTool.Companion.createWorld(this, folder, info);
 	}
@@ -204,13 +208,13 @@ public abstract class OfflineWorldConverter implements GameInstance, WorldUser {
 		return null;
 	}
 
-	@Override
+	/*@Override
 	public void print(String message) {
 		logger.info("GameContext:" + message);
-	}
+	}*/
 
 	@Override
-	public Logger logger() {
+	public Logger getLogger() {
 		return logger;
 	}
 }

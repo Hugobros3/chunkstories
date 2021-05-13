@@ -19,7 +19,6 @@ import xyz.chunkstories.api.input.Mouse.MouseButton
 import xyz.chunkstories.client.glfw.GLFWWindow
 import xyz.chunkstories.gui.layer.config.KeyBindSelectionUI
 import xyz.chunkstories.net.packets.PacketInput
-import xyz.chunkstories.world.WorldClientRemote
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWCharCallback
 import org.lwjgl.glfw.GLFWKeyCallback
@@ -31,6 +30,7 @@ import xyz.chunkstories.EngineImplemI
 import xyz.chunkstories.api.player.entityIfIngame
 import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.input.*
+import xyz.chunkstories.world.WorldSubImplementation
 
 class GLFWInputManager(val gameWindow: GLFWWindow) : CommonInputsManager(), ClientInputsManager, /*InputsManagerLoader, */Cleanable {
     private val gui: Gui
@@ -200,10 +200,10 @@ class GLFWInputManager(val gameWindow: GLFWWindow) : CommonInputsManager(), Clie
         val world = playerEntity.world
 
         // Send input to server
-        if (world is WorldClientRemote) {
+        if (world is WorldSubImplementation) {
             // MouseScroll inputs are strictly client-side
             if (input !is Mouse.MouseScroll) {
-                val connection = (playerEntity.world as WorldClientRemote).connection
+                val connection = world.connection
                 val packet = PacketInput(world)
                 packet.input = input
                 packet.isPressed = true
@@ -235,8 +235,8 @@ class GLFWInputManager(val gameWindow: GLFWWindow) : CommonInputsManager(), Clie
 
         // Send input to server
         val world = playerEntity.world
-        return if (world is WorldClientRemote) {
-            val connection = (playerEntity.world as WorldClientRemote).connection
+        return if (world is WorldSubImplementation) {
+            val connection = world.connection
             val packet = PacketInput(world)
             packet.input = input
             packet.isPressed = false

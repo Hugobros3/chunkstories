@@ -39,7 +39,7 @@ public class ConverterWorkers extends TasksPool<Task> implements Tasks {
 		this.converter = converter;
 
 		this.csWorld = csWorld;
-		this.size = csWorld.getWorldInfo().getSize();
+		this.size = csWorld.getProperties().getSize();
 
 		this.threadsCount = threadsCount;
 
@@ -87,10 +87,10 @@ public class ConverterWorkers extends TasksPool<Task> implements Tasks {
 		public void run() {
 			while (true) {
 				// acquire a work permit
-				tasksCounter.acquireUninterruptibly();
+				getTasksCounter().acquireUninterruptibly();
 
 				// If one such permit was found to exist, assert a task is readily avaible
-				Task task = tasksQueue.poll();
+				Task task = getTasksQueue().poll();
 
 				assert task != null;
 
@@ -106,7 +106,7 @@ public class ConverterWorkers extends TasksPool<Task> implements Tasks {
 				if (!result)
 					rescheduleTask(task);
 				else
-					tasksQueueSize.decrementAndGet();
+					getTasksQueueSize().decrementAndGet();
 
 				// We have a security to prevent gobbling up too much ram
 				// Also serves as a mechanism to clear loaded data when finishing a step.
@@ -141,8 +141,8 @@ public class ConverterWorkers extends TasksPool<Task> implements Tasks {
 	long tasksRescheduled = 0;
 
 	void rescheduleTask(Task task) {
-		tasksQueue.add(task);
-		tasksCounter.release();
+		getTasksQueue().add(task);
+		getTasksCounter().release();
 
 		tasksRescheduled++;
 	}
@@ -209,6 +209,6 @@ public class ConverterWorkers extends TasksPool<Task> implements Tasks {
 
 	@Override
 	public int submittedTasks() {
-		return this.tasksQueueSize.get();
+		return this.getTasksQueueSize().get();
 	}
 }
