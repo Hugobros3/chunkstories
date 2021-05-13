@@ -20,7 +20,7 @@ import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import xyz.chunkstories.graphics.vulkan.textures.VulkanTexture2D
 import xyz.chunkstories.graphics.vulkan.util.createFence
 import xyz.chunkstories.graphics.vulkan.util.waitFence
-import xyz.chunkstories.world.WorldClientCommon
+import xyz.chunkstories.world.WorldImplementation
 import xyz.chunkstories.world.heightmap.HeightmapImplementation
 import java.nio.ByteBuffer
 import java.util.concurrent.locks.ReentrantLock
@@ -43,12 +43,12 @@ data class FarTerrainTextureManager(val backend: VulkanGraphicsBackend, var base
     var task: TaskUpdateFarTerrainTexture? = null
     var request: RequestUpdate? = null
 
-    data class RequestUpdate(val newX: Int, val newZ: Int, val world: WorldClientCommon)
+    data class RequestUpdate(val newX: Int, val newZ: Int, val world: WorldImplementation)
 
-    fun requestUpdate(newX: Int, newZ: Int, world: WorldClientCommon) {
+    fun requestUpdate(newX: Int, newZ: Int, world: WorldImplementation) {
         taskLock.lock()
         if (task == null) {
-            world.client.tasks.scheduleTask(TaskUpdateFarTerrainTexture(newX, newZ, world))
+            world.gameInstance.engine.tasks.scheduleTask(TaskUpdateFarTerrainTexture(newX, newZ, world))
         } else {
             request = RequestUpdate(newX, newZ, world)
         }
@@ -60,7 +60,7 @@ data class FarTerrainTextureManager(val backend: VulkanGraphicsBackend, var base
         terrainColor.transitionLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
     }
 
-    inner class TaskUpdateFarTerrainTexture(val newX: Int, val newZ: Int, val world: WorldClientCommon) : Task() {
+    inner class TaskUpdateFarTerrainTexture(val newX: Int, val newZ: Int, val world: WorldImplementation) : Task() {
         private inner class HeightmapTemp(val destX: Int, val destZ: Int, val heightmap: HeightmapImplementation) {
             lateinit var heightBuffer: ByteBuffer
             lateinit var colorBuffer: ByteBuffer
@@ -72,7 +72,7 @@ data class FarTerrainTextureManager(val backend: VulkanGraphicsBackend, var base
             val colors = mutableMapOf<Int, ByteArray>()
 
             val reqs = arrayListOf<HeightmapTemp>()
-            val worldSizeInRegions = world.sizeInChunks / 8
+            val worldSizeInRegions = world.properties.size.sizeInChunks / 8
             for (_rx in newX until newX + size) {
                 for (_rz in newZ until newZ + size) {
                     // real regions coords are like so
@@ -99,9 +99,9 @@ data class FarTerrainTextureManager(val backend: VulkanGraphicsBackend, var base
                                     //req.buffer.putShort((256 * Math.random()).toShort())
                                     val voxelId = heightmap.getRawVoxelData(x, z) and 0xFFFF
                                     val color = colors.getOrPut(voxelId) {
-                                        val voxel = world.contentTranslator.getVoxelForId(voxelId) ?: world.content.voxels.air
-                                        val topTex = voxel.voxelTextures[BlockSide.TOP.ordinal]
-                                        val vec4 = topTex.color
+                                        val voxel = world.contentTranslator.getVoxelForId(voxelId) ?: world.content.blockTypes.air
+                                        val topTex = voxel.textures[BlockSide.TOP.ordinal]
+                                        val vec4 = topTex.averagedColor
 
                                         byteArrayOf((vec4.x() * 255).toInt().coerceIn(0..255).toByte(), (vec4.y() * 255).toInt().coerceIn(0..255).toByte(), (vec4.z() * 255).toInt().coerceIn(0..255).toByte(), (vec4.w() * 255).toInt().coerceIn(0..255).toByte())
                                     }
@@ -236,7 +236,7 @@ data class FarTerrainTextureManager(val backend: VulkanGraphicsBackend, var base
             task = null
             val lastRequest = request
             if (lastRequest != null) {
-                world.client.tasks.scheduleTask(TaskUpdateFarTerrainTexture(lastRequest.newX, lastRequest.newZ, lastRequest.world))
+                world.gameInstance.engine.tasks.scheduleTask(TaskUpdateFarTerrainTexture(lastRequest.newX, lastRequest.newZ, lastRequest.world))
                 request = null
             }
             taskLock.unlock()

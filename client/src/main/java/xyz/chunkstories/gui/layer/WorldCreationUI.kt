@@ -12,7 +12,6 @@ import xyz.chunkstories.api.gui.GuiDrawer
 import xyz.chunkstories.api.gui.Layer
 import xyz.chunkstories.api.gui.elements.Button
 import xyz.chunkstories.api.gui.elements.InputText
-import xyz.chunkstories.api.world.WorldInfo
 import xyz.chunkstories.api.world.WorldSize
 import xyz.chunkstories.api.world.generator.WorldGeneratorDefinition
 import xyz.chunkstories.client.ClientImplementation

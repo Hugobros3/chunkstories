@@ -10,11 +10,7 @@ import xyz.chunkstories.world.chunk.deriveddata.AutoRebuildingProperty
 import java.nio.ByteBuffer
 
 class TaskCreateVulkanChunkRepresentation(val backend: VulkanGraphicsBackend, chunk: ChunkImplementation, attachedProperty: AutoRebuildingProperty, updates: Int) :
-        TaskCreateChunkMesh(chunk, attachedProperty, updates
-                , {
-            (it as BlockTexturesOnion.VoxelTextureInArray).textureArrayIndex
-        }
-                , { sections ->
+        TaskCreateChunkMesh(chunk, attachedProperty, updates, { sections ->
             val sectionsBuffers = sections.mapValues {
                 val scratch = it.value
 

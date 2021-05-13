@@ -6,7 +6,7 @@ import xyz.chunkstories.graphics.vulkan.resources.RefCountedProperty
 import xyz.chunkstories.world.chunk.ChunkImplementation
 import xyz.chunkstories.world.chunk.deriveddata.AutoRebuildingProperty
 
-class VulkanChunkMeshProperty(val backend: VulkanGraphicsBackend, val chunk: ChunkImplementation) : AutoRebuildingProperty(chunk.world.gameContext, true), ChunkMesh {
+class VulkanChunkMeshProperty(val backend: VulkanGraphicsBackend, val chunk: ChunkImplementation) : AutoRebuildingProperty(chunk.world.gameInstance.engine.tasks, true), ChunkMesh {
     val actualProperty = RefCountedProperty<VulkanChunkRepresentation>()
 
     init {

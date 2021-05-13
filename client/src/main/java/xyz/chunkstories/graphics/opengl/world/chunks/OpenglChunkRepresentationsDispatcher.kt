@@ -98,14 +98,15 @@ class OpenglChunkRepresentationsDispatcher(backend: OpenglGraphicsBackend) : Ope
         val ssboBufferSize = (sizeAligned16 * maxChunksRendered)
 
         override fun executeDrawingCommands(context: OpenglPassInstance, work: Sequence<OpenglChunkRepresentation.Section>) {
-            val client = backend.window.client.ingame ?: return
+            val client = backend.window.client
+            val ingameClient = client.ingame ?: return
 
             val staticMeshes = work.mapNotNull { it.staticMesh }
 
             pipeline.bind()
 
             val camera = context.taskInstance.camera
-            val world = client.world
+            val world = ingameClient.world
 
             context.bindShaderResources(pipeline)
 
@@ -128,7 +129,7 @@ class OpenglChunkRepresentationsDispatcher(backend: OpenglGraphicsBackend) : Ope
 
             val chunkInfoUboResource = chunkInfoII.associatedResource as GLSLUniformBlock
 
-            val voxelTexturesArray = client.content.voxels.textures as OpenglBlockTexturesArray
+            val voxelTexturesArray = client.content.blockTypes.textures as OpenglBlockTexturesArray
             pipeline.bindTexture("albedoTextures", voxelTexturesArray.albedoOnionTexture)
             //glBindBufferRange(GL_UNIFORM_BUFFER, program.uboBindings[chunkInfoUboResource]!!, chunkInfoUBO.glId, 0L, ssboBufferSize.toLong())
 

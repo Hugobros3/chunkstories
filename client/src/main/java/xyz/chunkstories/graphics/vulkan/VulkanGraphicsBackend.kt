@@ -34,6 +34,7 @@ import xyz.chunkstories.graphics.vulkan.util.ensureIs
 import xyz.chunkstories.graphics.vulkan.util.iterator
 import xyz.chunkstories.graphics.vulkan.world.VulkanWorldRenderer
 import xyz.chunkstories.block.BlockTexturesProvider
+import xyz.chunkstories.block.BlockTypesStore
 import xyz.chunkstories.world.WorldImplementation
 import java.awt.image.BufferedImage
 
@@ -326,7 +327,7 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
     }
 
     // yes this engine is a little tailor-made, what gives
-    override fun createVoxelTextures(blockTypes: Content.BlockTypes) = VulkanBlockTexturesArray(this, blockTypes)
+    override fun createVoxelTextures(blockTypes: BlockTypesStore) = VulkanBlockTexturesArray(this, blockTypes)
 
     override fun createWorldRenderer(world: WorldImplementation) = VulkanWorldRenderer(this, world)
 

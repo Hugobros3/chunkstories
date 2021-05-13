@@ -9,7 +9,7 @@ import xyz.chunkstories.util.graphics.averageColor
 import javax.imageio.ImageIO
 
 interface BlockTexturesProvider {
-    fun createVoxelTextures(blockTypes: Content.BlockTypes): BlockTextures
+    fun createVoxelTextures(blockTypes: BlockTypesStore): BlockTextures
 }
 
 interface BlockTextures {
@@ -19,7 +19,7 @@ interface BlockTextures {
     fun reload()
 }
 
-abstract class BlockTexturesStore(val parent: Content.BlockTypes) : BlockTextures {
+abstract class BlockTexturesStore(val parent: BlockTypesStore) : BlockTextures {
     val content = parent.content
 
     override fun reload() {

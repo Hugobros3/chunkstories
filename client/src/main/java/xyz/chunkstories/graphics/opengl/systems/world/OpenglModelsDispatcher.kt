@@ -23,7 +23,7 @@ import xyz.chunkstories.graphics.opengl.shaders.bindShaderResources
 import xyz.chunkstories.graphics.opengl.shaders.bindTexture
 import xyz.chunkstories.graphics.opengl.shaders.bindStructuredUBO
 import xyz.chunkstories.graphics.opengl.systems.OpenglDispatchingSystem
-import xyz.chunkstories.world.WorldClientCommon
+import xyz.chunkstories.world.WorldImplementation
 
 class OpenglModelsDispatcher(backend: OpenglGraphicsBackend) : OpenglDispatchingSystem<ModelInstance>(backend) {
 
@@ -148,7 +148,7 @@ class OpenglModelsDispatcher(backend: OpenglGraphicsBackend) : OpenglDispatching
             }
 
             val camera = context.taskInstance.camera
-            val world = client.world as WorldClientCommon
+            val world = client.world
             val animationTime = world.animationTime
 
             for ((specializedPipelineKey, meshInstances) in buckets) {

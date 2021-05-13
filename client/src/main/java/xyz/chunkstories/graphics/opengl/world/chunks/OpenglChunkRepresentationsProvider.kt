@@ -2,9 +2,9 @@ package xyz.chunkstories.graphics.opengl.world.chunks
 
 import xyz.chunkstories.graphics.common.world.ChunkRepresentationsProvider
 import xyz.chunkstories.graphics.opengl.OpenglGraphicsBackend
-import xyz.chunkstories.world.WorldClientCommon
+import xyz.chunkstories.world.WorldImplementation
 
-class OpenglChunkRepresentationsProvider(backend: OpenglGraphicsBackend, world: WorldClientCommon) :
+class OpenglChunkRepresentationsProvider(backend: OpenglGraphicsBackend, world: WorldImplementation) :
         ChunkRepresentationsProvider<OpenglChunkRepresentation>(world, { _, chunk ->
             if (chunk.mesh is OpenglChunkMeshProperty) {
                 val block = (chunk.mesh as OpenglChunkMeshProperty).getAndAcquire()

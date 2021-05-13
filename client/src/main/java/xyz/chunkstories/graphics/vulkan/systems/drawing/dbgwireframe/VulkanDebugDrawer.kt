@@ -18,6 +18,7 @@ import org.lwjgl.system.MemoryUtil.memAlloc
 import org.lwjgl.system.MemoryUtil.memFree
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
+import xyz.chunkstories.api.player.entityIfIngame
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPassInstance
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 
@@ -56,8 +57,6 @@ class VulkanDebugDrawer(pass: VulkanPass, dslCode: VulkanDebugDrawer.() -> Unit,
     }
 
     override fun registerDrawingCommands(context: VulkanPassInstance, commandBuffer: VkCommandBuffer) {
-        val entity = client.player.controlledEntity
-
         val bindingContext = context.getBindingContext(pipeline)
 
         var linesCount = 0
@@ -104,9 +103,9 @@ class VulkanDebugDrawer(pass: VulkanPass, dslCode: VulkanDebugDrawer.() -> Unit,
         }
 
         if(client.configuration.getBooleanValue(InternalClientOptions.debugWireframe)) {
-            val size = client.world.worldInfo.size
+            val size = client.world.properties.size
 
-            for(keyc in (client.player as ClientPlayer).loadingAgent.aquiredChunkHoldersMask) {
+            for(keyc in (client.player as ClientPlayer).ingame.loadingAgent.aquiredChunkHoldersMask) {
                 val key = keyc.value
                 var rx = (key shr (size.bitlengthOfHorizontalChunksCoordinates + size.bitlengthOfVerticalChunksCoordinates)) and size.maskForChunksCoordinates
                 var ry = (key shr (size.bitlengthOfHorizontalChunksCoordinates)) and (31)

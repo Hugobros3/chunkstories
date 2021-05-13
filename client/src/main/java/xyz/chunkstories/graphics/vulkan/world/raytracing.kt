@@ -14,12 +14,12 @@ import xyz.chunkstories.graphics.common.getConditions
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.systems.drawing.rt.VulkanWorldVolumetricTexture
 import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
-import xyz.chunkstories.world.WorldClientCommon
+import xyz.chunkstories.world.WorldImplementation
 
 fun createWorldRaytracingRenderGraph(client: IngameClient, backend: VulkanGraphicsBackend, world: World) = renderGraph {
     val volumeSideLength = 256
     val sampler = VulkanSampler(backend, tilingMode = TextureTilingMode.REPEAT)
-    val volumetricTexture = VulkanWorldVolumetricTexture(backend, client.ingame?.world as WorldClientCommon, volumeSideLength)
+    val volumetricTexture = VulkanWorldVolumetricTexture(backend, client.ingame?.world as WorldImplementation, volumeSideLength)
 
     setup {
         shaderResources.supplyUniformBlock("world", world.getConditions())

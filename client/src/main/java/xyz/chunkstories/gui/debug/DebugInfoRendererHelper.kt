@@ -3,6 +3,9 @@ package xyz.chunkstories.gui.debug
 import xyz.chunkstories.api.entity.traits.TraitSight
 import xyz.chunkstories.api.entity.traits.serializable.TraitRotation
 import xyz.chunkstories.api.gui.GuiDrawer
+import xyz.chunkstories.api.player.entityIfIngame
+import xyz.chunkstories.api.world.getCell
+import xyz.chunkstories.api.world.heightmap.getHeight
 import xyz.chunkstories.client.glfw.GLFWWindow
 import xyz.chunkstories.graphics.opengl.OpenglGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
@@ -60,7 +63,6 @@ class DebugInfoRendererHelper(ingameUI: IngameUI) {
 
         debugLine("Tasks queued: ${client.tasks.submittedTasks()} IO operations queud: ${world.ioHandler.size}")
 
-
         var chunksCount = 0
         var regionsCount = 0
         for(region in world.regionsManager.allLoadedRegions) {
@@ -71,14 +73,14 @@ class DebugInfoRendererHelper(ingameUI: IngameUI) {
 
         //debugLine("#FFFF00Extra counters for debug info ${CubicChunk.chunksCounter.get()}")
 
-        val playerEntity = client.player.controlledEntity
-        if(playerEntity != null ) {
-            val region = world.regionsManager.getRegionLocation(playerEntity.location)
+        val location = client.player.state.location
+        if (location != null) {
+            val region = world.regionsManager.getRegionLocation(location)
             val heightmap = region?.heightmap
             val holder = region?.let {
-                val cx = playerEntity.location.x.toInt() / 32
-                val cy = playerEntity.location.y.toInt() / 32
-                val cz = playerEntity.location.z.toInt() / 32
+                val cx = location.x.toInt() / 32
+                val cy = location.y.toInt() / 32
+                val cz = location.z.toInt() / 32
                 it.getChunkHolder(cx, cy, cz)
             }
             val chunk = holder?.chunk
@@ -88,15 +90,25 @@ class DebugInfoRendererHelper(ingameUI: IngameUI) {
             debugLine("ChunkHolder: $holder")
             debugLine("Chunk: $chunk")
 
-            debugLine("Controlled entity id ${playerEntity.id} position ${playerEntity.location} type ${playerEntity.definition.name}")
+            val entity = client.player.entityIfIngame
+            if (entity != null) {
+                debugLine("Controlled entity id ${entity.id} position ${location} type ${entity.definition.name}")
 
-            val lookingAt = playerEntity.traits[TraitSight::class]?.getLookingAt(10.0)
-            debugLine("Looking at $lookingAt in direction ${playerEntity.traits[TraitRotation::class]?.directionLookingAt}")
+                val lookingAt = entity.traits[TraitSight::class]?.getLookingAt(10.0)
+                debugLine("Looking at $lookingAt in direction ${entity.traits[TraitRotation::class]?.directionLookingAt}")
 
-            val standingAt = playerEntity.location
-            val standingIn = world.peek(playerEntity.location)
-            val height = world.heightmapsManager.getHeightAtWorldCoordinates(standingIn.x, standingIn.z)
-            debugLine("Standing at ${standingAt.x()} ${standingAt.y()} ${standingAt.z} in ${standingIn.voxel} metadata=${standingIn.metaData} bl=${standingIn.blocklight} sl=${standingIn.sunlight} heightmap=$height")
+            } else {
+                debugLine("Position: $location")
+            }
+
+            val height = world.heightmapsManager.getHeight(location)
+
+            val cell = world.getCell(location)
+            if (cell != null) {
+                debugLine("Standing at ${location.x()} ${location.y()} ${location.z} in ${cell.data.blockType.name} metadata=${cell.data.extraData} bl=${cell.data.blockType} sl=${cell.data.sunlightLevel} heightmap=$height")
+            } else {
+                debugLine("Standing at ${location.x()} ${location.y()} ${location.z} in [unloaded] heightmap=$height\"")
+            }
         } else {
             debugLine("No controlled entity")
         }
