@@ -363,7 +363,7 @@ fun initializeWorld(folder: File, properties: World.Properties) {
 
     val random = Random(processedSeed)
     val randomWeather = random.nextFloat()
-    internalData.sky.overcast = randomWeather * randomWeather // bias towards sunny
+    internalData.sky = internalData.sky.copy(overcast = randomWeather * randomWeather) // bias towards sunny
 
     /*val spawnCoordinateX = random.nextInt(properties.size.sizeInChunks * 32)
     val spawnCoordinateZ = random.nextInt(properties.size.sizeInChunks * 32)

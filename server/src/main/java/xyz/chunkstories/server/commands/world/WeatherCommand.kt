@@ -42,7 +42,9 @@ class WeatherCommand(serverConsole: Host) : AbstractHostCommandHandler(serverCon
             }
             arguments.size == 1 -> {
                 val overcastFactor = java.lang.Float.parseFloat(arguments[0])
-                playerEntity.location.world.sky.overcast = overcastFactor
+                playerEntity.location.world.apply {
+                    sky = sky.copy(overcast = overcastFactor)
+                }
                 emitter.sendMessage("#82FFDBSet weather for world to $overcastFactor")
             }
             else -> emitter.sendMessage("#82FFDBSyntax : /weather [0.0 - 1.0]")

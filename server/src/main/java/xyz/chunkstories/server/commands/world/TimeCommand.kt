@@ -40,7 +40,9 @@ class TimeCommand(serverConsole: Host) : AbstractHostCommandHandler(serverConsol
             arguments.isEmpty() -> emitter.sendMessage("#82FFDBCurrent time is: ${playerEntity.location.world.sky.timeOfDay}")
             arguments.size == 1 -> {
                 val newTime = arguments[0].toInt()
-                playerEntity.location.world.sky.timeOfDay = newTime / 24000.0f
+                playerEntity.location.world.apply {
+                    sky = sky.copy(timeOfDay = newTime / 24000.0f)
+                }
                 emitter.sendMessage("#82FFDBSet time to  :$newTime")
             }
             else -> emitter.sendMessage("#82FFDBSyntax : /time [0-24000]")
