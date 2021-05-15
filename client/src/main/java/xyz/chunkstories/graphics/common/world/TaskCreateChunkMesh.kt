@@ -15,7 +15,6 @@ import xyz.chunkstories.api.block.BlockSide
 import xyz.chunkstories.api.workers.TaskExecutor
 import xyz.chunkstories.api.world.cell.Cell
 import xyz.chunkstories.api.world.cell.CellData
-import xyz.chunkstories.api.world.cell.PodCellData
 import xyz.chunkstories.api.world.chunk.ChunkHolder
 import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.common.UnitCube
@@ -31,7 +30,7 @@ abstract class TaskCreateChunkMesh(
         val done: (Map<String, ScratchBuffer>) -> Unit
 
 ) : AutoRebuildingProperty.UpdateTask(attachedProperty, updates) {
-    val dummyData = PodCellData(chunk.world.content.blockTypes.air)
+    val dummyData = CellData(chunk.world.content.blockTypes.air)
 
     inline fun opaque(voxel: BlockType) = voxel.opaque
     inline fun opaque(x2: Int, y2: Int, z2: Int): Boolean = opaque(data(x2, y2, z2).blockType)

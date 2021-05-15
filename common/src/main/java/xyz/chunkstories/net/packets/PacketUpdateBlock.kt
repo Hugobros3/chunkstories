@@ -13,7 +13,7 @@ import xyz.chunkstories.api.world.chunk.ChunkCell
 import xyz.chunkstories.api.net.PacketWorld
 import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.world.WorldSub
-import xyz.chunkstories.api.world.cell.PodCellData
+import xyz.chunkstories.api.world.cell.CellData
 import xyz.chunkstories.content.translator.AbstractContentTranslator
 import java.io.DataInputStream
 import java.io.DataOutputStream
@@ -57,7 +57,7 @@ class PacketUpdateBlock : PacketWorld {
             val extraData = dis.readInt()
 
             val block = world.gameInstance.contentTranslator.getVoxelForId(blockID)!!
-            val data = PodCellData(block, sunlight, blocklight, extraData)
+            val data = CellData(block, sunlight, blocklight, extraData)
 
             // TODO this isn't exactly super robust
             world.setCellData(x, y, z, data)

@@ -12,10 +12,8 @@ import xyz.chunkstories.api.block.BlockAdditionalData
 import xyz.chunkstories.api.content.json.*
 import xyz.chunkstories.api.entity.Entity
 import xyz.chunkstories.api.entity.EntitySerialization
-import xyz.chunkstories.api.block.BlockType
 import xyz.chunkstories.api.world.World
 import xyz.chunkstories.api.world.cell.CellData
-import xyz.chunkstories.api.world.cell.PodCellData
 import xyz.chunkstories.api.world.chunk.*
 import xyz.chunkstories.api.world.region.Region
 import xyz.chunkstories.block.VoxelFormat
@@ -307,9 +305,9 @@ class ChunkImplementation constructor(override val holder: ChunkHolderImplementa
     override fun getCellData(x: Int, y: Int, z: Int): CellData {
         val air = world.gameInstance.content.blockTypes.air
         if (blockData == null)
-            return PodCellData(air)
+            return CellData(air)
         val compressed = blockData!![x * 32 * 32 + y * 32 + z]
-        return PodCellData(blockType = world.contentTranslator.getVoxelForId(VoxelFormat.id(compressed)) ?: air,
+        return CellData(blockType = world.contentTranslator.getVoxelForId(VoxelFormat.id(compressed)) ?: air,
             sunlightLevel = VoxelFormat.sunlight(compressed),
             blocklightLevel = VoxelFormat.blocklight(compressed),
             extraData = VoxelFormat.meta(compressed))
