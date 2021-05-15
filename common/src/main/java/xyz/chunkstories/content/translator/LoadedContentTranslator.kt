@@ -28,8 +28,8 @@ class LoadedContentTranslator(content: GameContentStore, reader: BufferedReader)
         entityMappings = mutableMapOf()
         itemMappings = mutableMapOf()
         packetMappings = mutableMapOf()
-        var line: String
-        while (reader.readLine().also { line = it } != null) {
+        var line: String = ""
+        while (reader.readLine().let { line = it ?: return@let false ; true }) {
             val tokens = line.split(" ").toTypedArray()
             if (line.startsWith("#")) continue
 

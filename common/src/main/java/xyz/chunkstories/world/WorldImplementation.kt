@@ -92,7 +92,7 @@ interface WorldCommon: World {
 
 sealed class WorldImplementation constructor(
         override val gameInstance: GameInstance,
-        override var properties: World.Properties,
+        final override var properties: World.Properties,
         var internalData: WorldInternalData,
         override val contentTranslator: AbstractContentTranslator)
     : WorldCommon {

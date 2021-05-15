@@ -66,7 +66,7 @@ class LoginUI(gui: Gui, parent: Layer?) : Layer(gui, parent) {
         usernameForm.setPosition(gui.viewportWidth / 2 - 125, gui.viewportHeight / 2 + 16)
         usernameForm.render(drawer)
         passwordForm.setPosition(usernameForm.positionX, usernameForm.positionY - usernameForm.height - (20 + 4))
-        passwordForm.render(drawer)
+        // passwordForm.render(drawer)
 
         loginButton.setPosition(usernameForm.positionX, passwordForm.positionY - 30)
 
