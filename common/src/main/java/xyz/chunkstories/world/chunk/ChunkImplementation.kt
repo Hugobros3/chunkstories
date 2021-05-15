@@ -15,7 +15,6 @@ import xyz.chunkstories.api.entity.EntitySerialization
 import xyz.chunkstories.api.block.BlockType
 import xyz.chunkstories.api.world.World
 import xyz.chunkstories.api.world.cell.CellData
-import xyz.chunkstories.api.world.cell.MutableCellData
 import xyz.chunkstories.api.world.cell.PodCellData
 import xyz.chunkstories.api.world.chunk.*
 import xyz.chunkstories.api.world.region.Region
@@ -133,21 +132,10 @@ class ChunkImplementation constructor(override val holder: ChunkHolderImplementa
         override val world: World
             get() = this@ChunkImplementation.world
 
-        override val data = object : MutableCellData {
-            override var blockType: BlockType
-                get() = TODO("Not yet implemented")
-                set(value) {}
-            override var sunlightLevel: Int
-                get() = TODO("Not yet implemented")
-                set(value) {}
-            override var blocklightLevel: Int
-                get() = TODO("Not yet implemented")
-                set(value) {}
-            override var extraData: Int
-                get() = TODO("Not yet implemented")
-                set(value) {}
+        override var data: CellData
+            get() = getCellData(x, y, z)
+            set(value) = setCellData(x, y, z, data)
 
-        }
         override val additionalData: MutableMap<String, BlockAdditionalData>
             get() = TODO("Not yet implemented")
 
@@ -327,9 +315,8 @@ class ChunkImplementation constructor(override val holder: ChunkHolderImplementa
             extraData = VoxelFormat.meta(compressed))
     }
 
-    override fun setCellData(x: Int, y: Int, z: Int, data: CellData): Boolean {
+    override fun setCellData(x: Int, y: Int, z: Int, data: CellData) {
         setCellDataSilent(x, y, z, data)
-        return true
     }
 
     fun setCellDataSilent(x: Int, y: Int, z: Int, data: CellData) {

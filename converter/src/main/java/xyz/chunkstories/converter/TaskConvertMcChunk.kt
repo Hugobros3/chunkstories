@@ -58,10 +58,10 @@ class TaskConvertMcChunk(private val minecraftRegion: MinecraftRegion, private v
                                     mapper.output(csWorld, chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, mcId, meta.toInt(), minecraftRegion, minecraftCurrentChunkXinsideRegion, minecraftCuurrentChunkZinsideRegion, x, y, z)
                                 } else {
                                     // val future = FutureCell(csWorld, chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z, csWorld.content.voxels.air)
-                                    val cell = csWorld.getCellMut(chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z)!!.data
+                                    val cell = csWorld.getCellMut(chunkStoriesCurrentChunkX + x, y, chunkStoriesCurrentChunkZ + z)!!
 
                                     // Directly set trivial blocks
-                                    mapper.output(mcId, meta.toByte(), cell)
+                                    cell.data = mapper.output(mcId, meta.toByte())
                                     // if (!future.voxel.isAir())
                                     //     csWorld.pokeSimpleSilently(future)
                                 }
