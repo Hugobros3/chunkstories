@@ -31,9 +31,9 @@ class DebugInfoRendererHelper(ingameUI: IngameUI) {
             guiDrawer.drawStringWithShadow(font, 4, posY, text)
         }
 
-        val client = gui.client.ingame!!
-        val window = (client.gameWindow as GLFWWindow)
-        val world = client.world as WorldImplementation
+        val ingameClient = gui.client.ingame!!
+        val window = (ingameClient.engine.gameWindow as GLFWWindow)
+        val world = ingameClient.world as WorldImplementation
         val graphicsBackend = window.graphicsEngine.backend
 
         debugLine("Chunk Stories ${VersionInfo.versionJson.verboseVersion} running on the ${graphicsBackend.javaClass.simpleName}")
@@ -61,7 +61,7 @@ class DebugInfoRendererHelper(ingameUI: IngameUI) {
         debugLine("RAM usage: ${Runtime.getRuntime().freeMemory() / 1024 / 1024} mb free")
         //debugLine("VMA usage: ${VmaAllocator.allocations} allocations totalling ${VmaAllocator.allocatedBytes.get()/1024/1024}mb ")
 
-        debugLine("Tasks queued: ${client.tasks.submittedTasks()} IO operations queud: ${world.ioHandler.size}")
+        debugLine("Tasks queued: ${ingameClient.engine.tasks.submittedTasks()} IO operations queud: ${world.ioHandler.size}")
 
         var chunksCount = 0
         var regionsCount = 0
@@ -73,7 +73,7 @@ class DebugInfoRendererHelper(ingameUI: IngameUI) {
 
         //debugLine("#FFFF00Extra counters for debug info ${CubicChunk.chunksCounter.get()}")
 
-        val location = client.player.state.location
+        val location = ingameClient.player.state.location
         if (location != null) {
             val region = world.regionsManager.getRegionLocation(location)
             val heightmap = region?.heightmap
@@ -90,7 +90,7 @@ class DebugInfoRendererHelper(ingameUI: IngameUI) {
             debugLine("ChunkHolder: $holder")
             debugLine("Chunk: $chunk")
 
-            val entity = client.player.entityIfIngame
+            val entity = ingameClient.player.entityIfIngame
             if (entity != null) {
                 debugLine("Controlled entity id ${entity.id} position ${location} type ${entity.definition.name}")
 

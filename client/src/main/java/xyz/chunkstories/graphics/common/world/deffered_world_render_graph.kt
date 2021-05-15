@@ -15,11 +15,11 @@ import xyz.chunkstories.graphics.common.CommonGraphicsOptions
 import xyz.chunkstories.graphics.common.getConditions
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 
-fun createWorldDeferredRenderGraph(client: IngameClient, backend: GraphicsBackend, world: World) = renderGraph {
+fun createWorldDeferredRenderGraph(ingameClient: IngameClient, backend: GraphicsBackend, world: World) = renderGraph {
     val precomputedSimplesSeed = PrecomputedSimplexSeed(world.properties.seed)
 
     setup {
-        shaderResources.supplyUniformBlock("world", client.world.getConditions())
+        shaderResources.supplyUniformBlock("world", ingameClient.world.getConditions())
     }
 
     renderTask {
@@ -91,8 +91,8 @@ fun createWorldDeferredRenderGraph(client: IngameClient, backend: GraphicsBacken
                 size = viewportSize * 0.0625
             }
 
-            val shadowCascades = client.configuration.getIntValue(CommonGraphicsOptions.shadowCascades)
-            val shadowResolution = client.configuration.getIntValue(CommonGraphicsOptions.shadowMapSize)
+            val shadowCascades = ingameClient.engine.configuration.getIntValue(CommonGraphicsOptions.shadowCascades)
+            val shadowResolution = ingameClient.engine.configuration.getIntValue(CommonGraphicsOptions.shadowMapSize)
             for (i in 0 until shadowCascades) {
                 renderBuffer {
                     name = "shadowBuffer$i"

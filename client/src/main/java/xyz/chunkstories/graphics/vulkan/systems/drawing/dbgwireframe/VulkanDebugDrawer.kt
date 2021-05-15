@@ -18,11 +18,10 @@ import org.lwjgl.system.MemoryUtil.memAlloc
 import org.lwjgl.system.MemoryUtil.memFree
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
-import xyz.chunkstories.api.player.entityIfIngame
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPassInstance
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 
-class VulkanDebugDrawer(pass: VulkanPass, dslCode: VulkanDebugDrawer.() -> Unit, val client: IngameClient) : VulkanDrawingSystem(pass) {
+class VulkanDebugDrawer(pass: VulkanPass, dslCode: VulkanDebugDrawer.() -> Unit, val ingameClient: IngameClient) : VulkanDrawingSystem(pass) {
     val backend: VulkanGraphicsBackend
         get() = pass.backend
 
@@ -102,10 +101,10 @@ class VulkanDebugDrawer(pass: VulkanPass, dslCode: VulkanDebugDrawer.() -> Unit,
             line(p101, p111)
         }
 
-        if(client.configuration.getBooleanValue(InternalClientOptions.debugWireframe)) {
-            val size = client.world.properties.size
+        if(ingameClient.engine.configuration.getBooleanValue(InternalClientOptions.debugWireframe)) {
+            val size = ingameClient.world.properties.size
 
-            for(keyc in (client.player as ClientPlayer).ingame.loadingAgent.aquiredChunkHoldersMask) {
+            for(keyc in (ingameClient.player as ClientPlayer).ingame.loadingAgent.aquiredChunkHoldersMask) {
                 val key = keyc.value
                 var rx = (key shr (size.bitlengthOfHorizontalChunksCoordinates + size.bitlengthOfVerticalChunksCoordinates)) and size.maskForChunksCoordinates
                 var ry = (key shr (size.bitlengthOfHorizontalChunksCoordinates)) and (31)

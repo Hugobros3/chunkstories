@@ -29,7 +29,7 @@ import xyz.chunkstories.world.WorldMasterImplementation
 import xyz.chunkstories.world.WorldSubImplementation
 
 class ChatManager(private val ingameClient: IngameClient, private val ingameGuiUI: IngameUI) {
-    private val gui: Gui
+    private val gui: Gui = ingameGuiUI.gui
 
     private val chatHistorySize = 150
 
@@ -40,10 +40,6 @@ class ChatManager(private val ingameClient: IngameClient, private val ingameGuiU
     private var sentHistory = 0
 
     private var scroll = 0
-
-    init {
-        this.gui = ingameGuiUI.gui
-    }
 
     private inner class ChatLine(text: String?) {
 
@@ -188,7 +184,7 @@ class ChatManager(private val ingameClient: IngameClient, private val ingameGuiU
 
     private fun processTextInput(input: String) {
         val world = ingameClient.world
-        val clientUserName = ingameClient.user.name
+        val clientUserName = ingameClient.engine.user.name
 
         if (input.startsWith("/")) {
             var chatMsg = input
@@ -243,7 +239,7 @@ class ChatManager(private val ingameClient: IngameClient, private val ingameGuiU
                     }
                 }
                 cmdName == "buddydbg" -> {
-                    val glfwWindow = ingameClient.gameWindow as GLFWWindow
+                    val glfwWindow = ingameClient.engine.gameWindow as GLFWWindow
                     val graphicsBackend = glfwWindow.graphicsEngine.backend as VulkanGraphicsBackend
                     graphicsBackend.memoryManager.debug()
                     insert("#FF7070FDumped debug visuals for buddy allocator")
@@ -255,7 +251,7 @@ class ChatManager(private val ingameClient: IngameClient, private val ingameGuiU
             chat.clear()
         } else if (input == "I am Mr Debug") {
             // it was you this whole time
-            val option = ingameClient.configuration.get<Configuration.OptionBoolean>(InternalClientOptions.debugMode)
+            val option = ingameClient.engine.configuration.get<Configuration.OptionBoolean>(InternalClientOptions.debugMode)
             option!!.trySetting(true)
         }
 
