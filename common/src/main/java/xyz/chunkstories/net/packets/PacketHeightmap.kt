@@ -21,7 +21,7 @@ class PacketHeightmap : PacketWorld {
 
     lateinit var compressedData: ByteArray
 
-    constructor(world: World?) : super(world!!) {}
+    constructor(world: World) : super(world)
     constructor(heightmap: HeightmapImplementation) : super(heightmap.world) {
         rx = heightmap.regionX
         rz = heightmap.regionZ

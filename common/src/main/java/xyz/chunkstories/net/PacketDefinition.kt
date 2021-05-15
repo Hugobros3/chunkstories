@@ -35,8 +35,7 @@ class PacketDefinition constructor(store: GameContentStore, val name: String, va
     internal val serverClassConstructor: Constructor<out Packet>?
     internal val commonClassConstructor: Constructor<out Packet>?
 
-    var constructorTakesWorld = false // True if the Packet constructor takes a World parameter
-        private set
+    val constructorTakesWorld: Boolean
 
     init {
         isStreamed = properties["streamed"].asBoolean ?: false
@@ -49,9 +48,15 @@ class PacketDefinition constructor(store: GameContentStore, val name: String, va
             else -> throw Exception("allowedFrom can only take one of {all, client, server}.")
         }
 
-        clientClass = properties["clientClass"].asString?.let { resolveClass(store, it) }
-        serverClass = properties["serverClass"].asString?.let { resolveClass(store, it) }
+        constructorTakesWorld = when (val type = properties["type"].asString) {
+            "world" -> true
+            "system" -> false
+            else -> throw Exception("Unrecognized packet type: $type")
+        }
+
         commonClass = properties["commonClass"].asString?.let { resolveClass(store, it) }
+        clientClass = properties["clientClass"].asString?.let { resolveClass(store, it) } ?: commonClass
+        serverClass = properties["serverClass"].asString?.let { resolveClass(store, it) } ?: commonClass
 
         // Security trips in case someone forgets to set up a handler
         if (this.commonClass == null) {
@@ -79,12 +84,8 @@ class PacketDefinition constructor(store: GameContentStore, val name: String, va
         val rawClass = store.modsManager.getClassByName(className)
         if (rawClass == null) {
             return null
-            // throw new IllegalPacketDeclarationException("Packet class " + this.getName()
-            // + " does not exist in codebase.");
         } else if (!Packet::class.java.isAssignableFrom(rawClass)) {
             return null
-            // throw new IllegalPacketDeclarationException("Class " + this.getName() + " is
-            // not extending the Packet class.");
         }
 
         return rawClass as Class<out Packet>?

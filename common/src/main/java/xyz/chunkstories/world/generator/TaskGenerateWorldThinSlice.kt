@@ -51,7 +51,9 @@ class TaskGenerateWorldThinSlice internal constructor(private val world: World, 
             ChunkImplementation(holders[chunkY], chunkX, chunkY, chunkZ, null)
         }
 
-        generator.generateWorldSlice(chunks)
+        TODO("...")
+        // generator.generateWorldSlice(chunks)
+        generator.generateWorldSlicePhaseII(chunks)
 
         for (chunkY in 0 until maxGenerationHeightInChunks) {
             holders[chunkY].eventGenerationFinishes(chunks[chunkY] as ChunkImplementation)

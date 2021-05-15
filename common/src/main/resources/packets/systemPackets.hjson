@@ -44,15 +44,15 @@
         # Sends compressed chunk data to a client who requested it
         chunk_data: {
             allowedFrom: server
-            type: world_streaming
+            type: world
             fixedId: 4
             commonClass: xyz.chunkstories.net.packets.PacketChunkCompressedData
         }
 
         # Sends compressed summary data (heightmap stuff) to a client who requested it
-        region_summary: {
+        heightmap: {
             allowedFrom: server
-            type: world_streaming
+            type: world
             fixedId: 5
             commonClass: xyz.chunkstories.net.packets.PacketHeightmap
         }
@@ -61,9 +61,15 @@
             allowFrom: all
             type: world
             fixedId: 6
-            commonClass: xyz.chunkstories.api.net.packets.PacketWorldUser
+            commonClass: xyz.chunkstories.net.packets.PacketWorldUser
             clientClass: xyz.chunkstories.client.net.packets.ClientPacketWorldUser
             serverClass: xyz.chunkstories.server.net.packets.ServerPacketWorldUser
+        }
+
+        block_update: {
+            allowedFrom: server
+            type: world
+            commonClass: xyz.chunkstories.net.packets.PacketUpdateBlock
         }
     }
 }

@@ -3,8 +3,8 @@ import java.util.Date
 
 group = "xyz.chunkstories"
 version = "0.1.1"
-val verboseVersion = "Alpha 1.1"
-description = "A voxel game engine"
+val verboseVersion = "cleanup-branch"
+description = "A Block Game engine"
 
 subprojects {
     repositories {

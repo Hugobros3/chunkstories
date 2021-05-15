@@ -76,12 +76,13 @@ class BlockTypesStore(override val content: GameContentStore) : Content.BlockTyp
                 }  ?: BlockType::class.java
 
                 val constructor = try {
-                    clazz.getConstructor(String::class.java, Json.Dict::class.java, this::class.java)
+                    clazz.getConstructor(String::class.java, Json.Dict::class.java, Content::class.java)
                 } catch (e: NoSuchMethodException) {
                     throw Exception("Your custom class, $clazz, lacks the correct BlockType(String, Json.Dict, Content) constructor.")
                 }
 
-                val block = constructor.newInstance(this)
+                val block = constructor.newInstance(name, definition, content)
+                block.finalizeInit()
                 byName[name] = block
 
                 logger.debug("Loaded $block from $a")
@@ -92,6 +93,7 @@ class BlockTypesStore(override val content: GameContentStore) : Content.BlockTyp
                 "solid" to Json.Value.Bool(false),
                 "opaque" to Json.Value.Bool(false)
         )), content)
+        air.finalizeInit()
         byName["air"] = air
 
         for (asset in content.modsManager.allAssets.filter { it.name.startsWith("voxels/") && !it.name.startsWith("voxels/materials/") && it.name.endsWith(".hjson") }) {

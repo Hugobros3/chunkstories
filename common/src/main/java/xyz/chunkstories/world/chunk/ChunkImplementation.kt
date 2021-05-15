@@ -14,6 +14,7 @@ import xyz.chunkstories.api.entity.Entity
 import xyz.chunkstories.api.entity.EntitySerialization
 import xyz.chunkstories.api.block.BlockType
 import xyz.chunkstories.api.world.World
+import xyz.chunkstories.api.world.cell.CellData
 import xyz.chunkstories.api.world.cell.MutableCellData
 import xyz.chunkstories.api.world.chunk.*
 import xyz.chunkstories.api.world.region.Region
@@ -314,6 +315,14 @@ class ChunkImplementation(override val holder: ChunkHolderImplementation, overri
             TODO("fix networking")
         }
     }*/
+
+    override fun getCellData(x: Int, y: Int, z: Int): CellData {
+        TODO("Not yet implemented")
+    }
+
+    override fun setCellData(x: Int, y: Int, z: Int, data: CellData): Boolean {
+        TODO("Not yet implemented")
+    }
 
     fun removeComponents(index: Int) {
         allCellComponents.remove(index)
