@@ -24,7 +24,7 @@ class WorldLoadingUI(val world: WorldMasterImplementation, val ingameClient: Ing
     private lateinit var spawnLocation: Location
 
     init {
-        // preloa arround spawn location
+        // preload arround spawn location
         val spawnLocation = world.figureOutWherePlayerWillSpawn(ingameClient.player)
 
         world.gameLogic.logicThreadBlocking {

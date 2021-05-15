@@ -12,7 +12,6 @@ import xyz.chunkstories.api.world.WorldUser
 import xyz.chunkstories.api.world.cell.CellData
 import xyz.chunkstories.api.world.heightmap.Heightmap
 import xyz.chunkstories.api.world.heightmap.WorldHeightmapsManager
-import xyz.chunkstories.world.WorldCommon
 import xyz.chunkstories.world.WorldImplementation
 import xyz.chunkstories.world.sanitizeHorizontalCoordinate
 import java.util.concurrent.ConcurrentHashMap

@@ -66,10 +66,6 @@ class ClientPlayer(val ingame: IngameClientImplementation) : Player {
             return
         }*/
 
-    init {
-        eventEntersWorld(ingame.world)
-    }
-
     fun update() {
         ingame.loadingAgent.updateUsedWorldBits()
 
@@ -102,15 +98,6 @@ class ClientPlayer(val ingame: IngameClientImplementation) : Player {
     }*/
 
     fun destroy() {
-        eventLeavesWorld(ingame.world)
         ingame.loadingAgent.unloadEverything(true)
-    }
-
-    fun eventEntersWorld(world: World) {
-        if (world is WorldMasterImplementation) world.playersMetadata.playerEnters(this)
-    }
-
-    fun eventLeavesWorld(world: World) {
-        if (world is WorldMasterImplementation) world.playersMetadata.playerLeaves(this)
     }
 }

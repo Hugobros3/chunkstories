@@ -28,7 +28,7 @@ import xyz.chunkstories.api.server.Host
 import xyz.chunkstories.api.world.GameInstance
 import xyz.chunkstories.content.mods.ModsManagerImplementation
 
-open class DefaultPluginManager(private val pluginExecutionContext: GameInstance) : PluginManager {
+open class DefaultPluginManager(private val gameInstance: GameInstance) : PluginManager {
     override var activePlugins = mutableListOf<Plugin>()
     //private val registeredEventListeners = HashMap<EventListeners, RegisteredListener>()
 
@@ -53,8 +53,8 @@ open class DefaultPluginManager(private val pluginExecutionContext: GameInstance
                     val pluginInformation: PluginInformation = loadPluginInfo(file) ?: continue
 
                     // Checks type is appropriate
-                    if (pluginInformation.pluginType == PluginType.CLIENT_ONLY && pluginExecutionContext !is Client ||
-                            pluginInformation.pluginType == PluginType.MASTER && pluginExecutionContext !is Host)
+                    if (pluginInformation.pluginType == PluginType.CLIENT_ONLY && gameInstance !is Client ||
+                            pluginInformation.pluginType == PluginType.MASTER && gameInstance !is Host)
                         continue
 
                     pluginsToLoad.add(pluginInformation)
@@ -70,11 +70,11 @@ open class DefaultPluginManager(private val pluginExecutionContext: GameInstance
         }
 
         // Mods too can bundle plugins
-        for (pluginInformation in (this.pluginExecutionContext.content.modsManager as ModsManagerImplementation).pluginsWithinEnabledMods) {
+        for (pluginInformation in (this.gameInstance.content.modsManager as ModsManagerImplementation).pluginsWithinEnabledMods) {
 
             // Checks type is appropriate
-            if (pluginInformation.pluginType == PluginType.CLIENT_ONLY && pluginExecutionContext !is Client ||
-                    pluginInformation.pluginType == PluginType.MASTER && pluginExecutionContext !is Host)
+            if (pluginInformation.pluginType == PluginType.CLIENT_ONLY && gameInstance !is Client ||
+                    pluginInformation.pluginType == PluginType.MASTER && gameInstance !is Host)
                 continue
 
             pluginsToLoad.add(pluginInformation)
@@ -86,11 +86,11 @@ open class DefaultPluginManager(private val pluginExecutionContext: GameInstance
 
     private fun enablePlugins(pluginsToInitialize: List<PluginInformation>) {
         logger().info(pluginsToInitialize.size.toString() + " plugins to initialize")
-        val finalClassLoader = (pluginExecutionContext.content.modsManager as ModsManagerImplementation).finalClassLoader!!
+        val finalClassLoader = (gameInstance.content.modsManager as ModsManagerImplementation).finalClassLoader!!
         // TODO sort plugins requirements (requires/before)
         for (pluginInformation in pluginsToInitialize) {
             try {
-                activePlugins.add(pluginInformation.createInstance(pluginExecutionContext, finalClassLoader))
+                activePlugins.add(pluginInformation.createInstance(gameInstance, finalClassLoader))
             } catch (e: PluginCreationException) {
                 logger().error("Couldn't create plugin " + pluginInformation + " : " + e.message)
                 e.printStackTrace()
@@ -105,10 +105,10 @@ open class DefaultPluginManager(private val pluginExecutionContext: GameInstance
             plugin.onDisable()
 
         // Remove one by one each listener
+        // TODO
         /*for ((key, value) in registeredEventListeners) {
             key.unRegisterListener(value)
         }*/
-        TODO()
 
         // Remove registered commands
         // TODO only remove plugins commands
@@ -252,7 +252,8 @@ open class DefaultPluginManager(private val pluginExecutionContext: GameInstance
         // If we didn't surpress it's behaviour
         // if(event.isAllowedToExecute())
         // event.defaultBehaviour();*/
-        TODO()
+        // TODO()
+        println("TODO: rework event system")
     }
 
     fun logger(): Logger {

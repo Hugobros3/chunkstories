@@ -25,7 +25,7 @@ import java.util.concurrent.Semaphore
  * Sandboxed thread that runs all the game logic for one world
  */
 //TODO actually sandbox it lol
-class WorldLogicThread(private val world: WorldImplementation, securityManager: SecurityManager) : Thread() {
+class WorldTickingThread(private val world: WorldImplementation, securityManager: SecurityManager) : Thread() {
     private val gameLogicScheduler: GameLogicScheduler
 
     private val die = AtomicBoolean(false)
@@ -175,7 +175,7 @@ class WorldLogicThread(private val world: WorldImplementation, securityManager: 
         lastTime = System.nanoTime() - overSleep
     }
 
-    fun stopLogicThread(): Fence {
+    fun terminate(): Fence {
         if (!this.isAlive)
             return TrivialFence()
 

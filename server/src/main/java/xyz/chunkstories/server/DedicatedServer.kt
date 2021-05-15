@@ -28,7 +28,6 @@ import xyz.chunkstories.server.commands.DedicatedServerConsole
 import xyz.chunkstories.server.commands.installHostCommands
 import xyz.chunkstories.server.net.ConnectionsManager
 import xyz.chunkstories.server.net.vanillasockets.TCPConnectionsManager
-import xyz.chunkstories.server.player.ServerPlayer
 import xyz.chunkstories.server.propagation.ServerModsProvider
 import xyz.chunkstories.setupLogFile
 import xyz.chunkstories.task.WorkerThreadPool
@@ -180,7 +179,7 @@ class DedicatedServer(coreContentLocation: File, requestedMods: List<String>) : 
         installHostCommands(this)
 
         // Finally start logic
-        world.startLogic()
+        world.startTicking()
 
         console.run()
         shutdown()
@@ -189,7 +188,7 @@ class DedicatedServer(coreContentLocation: File, requestedMods: List<String>) : 
     private fun shutdown() {
         // When stopped, close sockets and save config.
         logger.info("Stopping world logic")
-        world.stopLogic()
+        world.stopTicking()
 
         logger.info("Killing all connections")
         connectionsManager.terminate()

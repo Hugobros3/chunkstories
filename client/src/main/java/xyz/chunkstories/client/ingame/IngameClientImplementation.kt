@@ -1,8 +1,10 @@
 package xyz.chunkstories.client.ingame
 
 import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.client.Client
 import xyz.chunkstories.api.client.IngameClient
+import xyz.chunkstories.api.content.ContentTranslator
 import xyz.chunkstories.api.graphics.systems.dispatching.DecalsManager
 import xyz.chunkstories.api.particles.ParticlesManager
 import xyz.chunkstories.api.server.Host
@@ -25,24 +27,27 @@ import xyz.chunkstories.world.WorldMasterImplementation
 abstract class IngameClientImplementation protected constructor(val client: ClientImplementation, worldInitializer: (IngameClientImplementation) -> WorldImplementation) : IngameClient, Client by client {
     override val engine: Client
         get() = client
-    override val tasks: WorkerThreadPool = client.tasks
+    override val contentTranslator: ContentTranslator
+        get() = world.contentTranslator
+    override val logger: Logger
+        get() = client.logger
+    override val tasks: WorkerThreadPool
+        get() = client.tasks
 
     final override val ingame: IngameClient = this
     final override val soundManager: ALSoundManager by alias(client::soundManager)
     final override val pluginManager: DefaultPluginManager
 
-    val loadingAgent = LocalClientLoadingAgent(this)
-
-    val world_: WorldImplementation = worldInitializer.invoke(this)
+    protected val world_: WorldImplementation = worldInitializer.invoke(this)
     abstract override val world: WorldImplementation
+    final override val player: ClientPlayer
+
+    val loadingAgent = LocalClientLoadingAgent(this)
 
     val decalsManager: DecalsManager
     val particlesManager: ParticlesManager
 
-    final override val player: ClientPlayer
-
-    val ingameGuiUI: IngameUI
-
+    val ingameUI: IngameUI
     val worldRenderer: WorldRenderer
 
     init {
@@ -64,13 +69,15 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
         client.ingame = this
 
         worldRenderer = client.gameWindow.graphicsEngine.backend.createWorldRenderer(world_)
+        ingameUI = IngameUI(gui, this)
+    }
 
-        ingameGuiUI = IngameUI(gui, this)
+    open fun onceCreated() {
         // Spawn manually the player if we're in single player mode
         if (world_ is WorldMasterImplementation) {
-            gui.topLayer = WorldLoadingUI(world_, this, gui, ingameGuiUI)
+            gui.topLayer = WorldLoadingUI(world_, this, gui, ingameUI)
         } else {
-            gui.topLayer = ingameGuiUI
+            gui.topLayer = ingameUI
         }
         //     internalWorld.spawnPlayer(player)
 
@@ -103,10 +110,8 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
         client.ingame = null
     }
 
-    fun logger(): Logger = client.logger
-
     fun print(message: String) {
-        ingameGuiUI.chatManager.insert(message)
+        ingameUI.chatManager.insert(message)
         client.chatLogger.info(message)
     }
 }

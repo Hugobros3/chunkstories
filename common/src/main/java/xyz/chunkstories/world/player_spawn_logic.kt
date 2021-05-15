@@ -12,7 +12,8 @@ import xyz.chunkstories.api.world.WorldMaster
 import xyz.chunkstories.api.world.getCell
 
 fun WorldMasterImplementation.figureOutWherePlayerWillSpawn(player: Player): Location {
-    val playerWorldMetadata = this.playersMetadata[player.id]!!
+    val playerWorldMetadata = this.playersMetadata[player.id]
+            ?: throw Exception("Player metadata is lacking")
     val savedEntity = playerWorldMetadata.savedEntity?.let { EntitySerialization.deserializeEntity(this, it) }
 
     var previousLocation: Location? = null

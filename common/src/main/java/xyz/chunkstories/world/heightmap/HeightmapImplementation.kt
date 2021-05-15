@@ -23,7 +23,6 @@ import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.player.entityIfIngame
 import xyz.chunkstories.api.server.RemotePlayer
 import xyz.chunkstories.api.world.cell.CellData
-import xyz.chunkstories.world.WorldCommon
 import xyz.chunkstories.world.WorldImplementation
 import java.io.File
 import java.util.*
@@ -109,7 +108,7 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
                     recomputeMetadata()
 
                     transitionState(Heightmap.State.Generating(task))
-                    (world.gameInstance as EngineImplemI).tasks.scheduleTask(task)
+                    (world.gameInstance.engine as EngineImplemI).tasks.scheduleTask(task)
                 }
             }
         } else {

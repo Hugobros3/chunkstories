@@ -21,7 +21,6 @@ import xyz.chunkstories.api.world.World
 import xyz.chunkstories.content.GameContentStore
 import xyz.chunkstories.content.translator.AbstractContentTranslator
 import xyz.chunkstories.content.translator.InitialContentTranslator
-import xyz.chunkstories.content.translator.LoadedContentTranslator
 import xyz.chunkstories.world.io.IOTasks
 
 class WorldTool constructor(override val gameInstance: Host,
@@ -43,12 +42,12 @@ class WorldTool constructor(override val gameInstance: Host,
     override val particlesManager: ParticlesManager
         get() = nullParticlesManager
 
-    private var nullParticlesManager = NullParticlesManager()
+    private var nullParticlesManager = NoOpParticlesManager()
 
     override val decalsManager: DecalsManager
         get() = nullDecalsManager
 
-    private var nullDecalsManager = NullDecalsManager()
+    private var nullDecalsManager = NoOpDecalsManager()
 
     override val players: Sequence<Player>
         get() = throw UnsupportedOperationException("getPlayers")
@@ -79,14 +78,5 @@ class WorldTool constructor(override val gameInstance: Host,
 
             return WorldTool(this, properties, internalData, contentTranslator, folder, false)
         }
-    }
-
-    class NullParticlesManager : ParticlesManager {
-        override fun <T : ParticleType.Particle> spawnParticle(typeName: String, init: T.() -> Unit) {}
-        override fun <T : ParticleType.Particle> spawnParticle(type: ParticleTypeDefinition, init: T.() -> Unit) {}
-    }
-
-    class NullDecalsManager : DecalsManager {
-        override fun add(vector3dc: Vector3dc, vector3dc1: Vector3dc, vector3dc2: Vector3dc, s: String) {}
     }
 }

@@ -14,9 +14,7 @@ import xyz.chunkstories.world.chunk.ChunkImplementation
 import xyz.chunkstories.world.generator.TaskGenerateWorldSlice
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.Location
-import xyz.chunkstories.api.world.World
 import xyz.chunkstories.api.world.region.WorldRegionsManager
-import xyz.chunkstories.world.WorldCommon
 import xyz.chunkstories.world.WorldImplementation
 import xyz.chunkstories.world.sanitizeHorizontalCoordinate
 import xyz.chunkstories.world.sanitizeVerticalCoordinate

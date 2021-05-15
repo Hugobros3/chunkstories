@@ -4,12 +4,12 @@ import xyz.chunkstories.api.Location
 import xyz.chunkstories.api.world.WorldUser
 import xyz.chunkstories.api.world.chunk.ChunkHolder
 import xyz.chunkstories.api.world.chunk.WorldChunksManager
-import xyz.chunkstories.world.WorldCommon
+import xyz.chunkstories.world.WorldImplementation
 import xyz.chunkstories.world.region.RegionsStorage
 import xyz.chunkstories.world.sanitizeHorizontalCoordinate
 import xyz.chunkstories.world.sanitizeVerticalCoordinate
 
-class ChunksStorage(override val world: WorldCommon) : WorldChunksManager {
+class ChunksStorage(override val world: WorldImplementation) : WorldChunksManager {
     private val sizeInChunks = world.properties.size.sizeInChunks
     private val heightInChunks = world.properties.size.heightInChunks
 

@@ -32,7 +32,7 @@ fun loadPluginInfo(file: File): PluginInformation? {
     return null
 }
 
-fun PluginInformation.createInstance(gameContext: GameInstance, classLoader: ClassLoader): Plugin = try {
+fun PluginInformation.createInstance(gameInstance: GameInstance, classLoader: ClassLoader): Plugin = try {
     val entryPointClassUnchecked = Class.forName(entryPoint, true, classLoader)
 
     // Checks for class fitness as an entry point
@@ -49,7 +49,7 @@ fun PluginInformation.createInstance(gameContext: GameInstance, classLoader: Cla
     val types = arrayOf(PluginInformation::class.java, GameInstance::class.java)
     val entryPointConstructor = entryPointClass.getConstructor(*types)
 
-    entryPointConstructor.newInstance(this, gameContext)
+    entryPointConstructor.newInstance(this, gameInstance)
 
 
 } catch (e: ClassNotFoundException) {

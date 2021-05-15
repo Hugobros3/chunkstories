@@ -22,7 +22,7 @@ import java.util.concurrent.locks.ReentrantLock
 import kotlin.math.*
 
 /** Responsible for handling the 'pixel-perfect' AABB collisions  */
-class DefaultWorldCollisionsManager(private val world: WorldCommon) : WorldCollisionsManager {
+class DefaultWorldCollisionsManager(private val world: WorldImplementation) : WorldCollisionsManager {
 
     internal val lock = ReentrantLock()
 

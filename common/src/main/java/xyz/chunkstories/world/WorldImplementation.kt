@@ -10,10 +10,10 @@ package xyz.chunkstories.world
 
 import com.google.gson.Gson
 import com.googlecode.concurentlocks.ReentrantReadWriteUpdateLock
+import org.joml.Vector3dc
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.block.BlockAdditionalData
 import xyz.chunkstories.api.block.structures.Prefab
-import xyz.chunkstories.api.content.Content
 import xyz.chunkstories.api.entity.Entity
 import xyz.chunkstories.api.physics.Box
 import xyz.chunkstories.api.util.concurrency.Fence
@@ -25,6 +25,8 @@ import xyz.chunkstories.api.math.MathUtils.floor
 import xyz.chunkstories.api.net.Packet
 import xyz.chunkstories.api.net.PacketWorld
 import xyz.chunkstories.api.net.packets.PacketEntity
+import xyz.chunkstories.api.particles.ParticleType
+import xyz.chunkstories.api.particles.ParticleTypeDefinition
 import xyz.chunkstories.api.particles.ParticlesManager
 import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.server.Host
@@ -41,12 +43,13 @@ import xyz.chunkstories.content.translator.InitialContentTranslator
 import xyz.chunkstories.content.translator.LoadedContentTranslator
 import xyz.chunkstories.net.Connection
 import xyz.chunkstories.net.LogicalPacketDatagram
+import xyz.chunkstories.sound.DummySoundData
 import xyz.chunkstories.util.alias
 import xyz.chunkstories.util.concurrency.CompoundFence
 import xyz.chunkstories.world.chunk.ChunksStorage
 import xyz.chunkstories.world.heightmap.HeightmapsStorage
 import xyz.chunkstories.world.io.IOTasks
-import xyz.chunkstories.world.logic.WorldLogicThread
+import xyz.chunkstories.world.logic.WorldTickingThread
 import xyz.chunkstories.world.region.RegionsStorage
 import java.io.File
 import java.io.IOException
@@ -59,55 +62,24 @@ const val TPS = 60
 
 class WorldLoadingException(message: String, cause: Throwable? = null) : Exception(message, cause)
 
-/*if (this is WorldMaster) {
-    // Check for an existing content translator
-    val contentTranslatorFile = File(folder!!.path + "/content_mappings.dat")
-    if (contentTranslatorFile.exists()) {
-        contentTranslator = LoadedContentTranslator.loadFromFile(gameInstance.content as GameContentStore, contentTranslatorFile)
-    } else {
-        // Build a new content translator
-        contentTranslator = InitialContentTranslator(gameInstance.content)
-    }
-
-    this.contentTranslator.save(File(this.folderPath + "/content_mappings.dat"))
-} else {
-    // Slave world initialization
-    if (initialContentTranslator == null) {
-        throw WorldLoadingException("No ContentTranslator providen and none could be found on disk since this is a Slave World.")
-    } else {
-        this.contentTranslator = initialContentTranslator
-    }
-}
-*/
-
-interface WorldCommon: World {
-    val entitiesLock: ReadWriteLock
-    val ioHandler: IOTasks
-    val contentTranslator: AbstractContentTranslator
-
-    override val chunksManager: ChunksStorage
-    override val regionsManager: RegionsStorage
-    override val heightmapsManager: HeightmapsStorage
-}
-
 sealed class WorldImplementation constructor(
         override val gameInstance: GameInstance,
         final override var properties: World.Properties,
         var internalData: WorldInternalData,
-        override val contentTranslator: AbstractContentTranslator)
-    : WorldCommon {
+        val contentTranslator: AbstractContentTranslator)
+    : World {
 
     override val generator: WorldGenerator
 
-    override val ioHandler = IOTasks(this)
-    val gameLogic: WorldLogicThread
+    open val ioHandler = IOTasks(this)
+    val gameLogic: WorldTickingThread
 
     override val chunksManager by lazy { ChunksStorage(this) }
     override val regionsManager by lazy { RegionsStorage(this) }
     override val heightmapsManager by lazy { HeightmapsStorage(this) }
 
     //TODO go through the code & change write locks into update locks where possible
-    override val entitiesLock: ReadWriteLock = ReentrantReadWriteUpdateLock()
+    val entitiesLock: ReadWriteLock = ReentrantReadWriteUpdateLock()
     val entities_ = mutableListOf<Entity>()
 
     override val collisionsManager by lazy { DefaultWorldCollisionsManager(this) }
@@ -126,12 +98,16 @@ sealed class WorldImplementation constructor(
     override val entities
         get() = entities_.asSequence()
 
+    override val decalsManager: DecalsManager = NoOpDecalsManager()
+    override val particlesManager: ParticlesManager = NoOpParticlesManager()
+    override val soundManager: SoundManager = NoOpSoundManager()
+
     init {
         try {
             this.generator = gameInstance.content.generators.getWorldGenerator(properties.generator).createForWorld(this)
 
             // Start the world logic thread
-            this.gameLogic = WorldLogicThread(this, UnthrustedUserContentSecurityManager())
+            this.gameLogic = WorldTickingThread(this, UnthrustedUserContentSecurityManager())
         } catch (e: IOException) {
             throw WorldLoadingException("Couldn't load world ", e)
         } catch (e: IncompatibleContentException) {
@@ -139,12 +115,12 @@ sealed class WorldImplementation constructor(
         }
     }
 
-    fun startLogic() {
+    fun startTicking() {
         gameLogic.start()
     }
 
-    fun stopLogic(): Fence {
-        return gameLogic.stopLogicThread()
+    fun stopTicking(): Fence {
+        return gameLogic.terminate()
     }
 
     override fun addEntity(entity: Entity): EntityID {
@@ -261,22 +237,13 @@ sealed class WorldImplementation constructor(
         }
     }
 
-    override val decalsManager: DecalsManager
-        get() = TODO("Not yet implemented")
-    override val particlesManager: ParticlesManager
-        get() = TODO("Not yet implemented")
-    override val soundManager: SoundManager
-        get() = TODO("Not yet implemented")
-
     open fun destroy() {
-        gameLogic.stopLogicThread().traverse()
+        gameLogic.terminate().traverse()
         ioHandler.kill()
     }
 
-    override val logger = LoggerFactory.getLogger("world")
-
     companion object {
-        val worldPropertiesFilename = "worldInfo.json"
+        val worldPropertiesFilename = "properties.json"
     }
 
     override fun hashCode(): Int {
@@ -286,10 +253,9 @@ sealed class WorldImplementation constructor(
     override fun equals(other: Any?): Boolean {
         throw UnsupportedOperationException()
     }
-}
 
-/** This garbage is because Kotlin doesn't have intersection types */
-interface WorldCommonMaster: WorldCommon, WorldMaster
+    override val logger = LoggerFactory.getLogger("world")
+}
 
 open class WorldMasterImplementation(
         gameInstance: GameInstance,
@@ -297,7 +263,7 @@ open class WorldMasterImplementation(
         internalData: WorldInternalData,
         contentTranslator: AbstractContentTranslator,
         val folder: File
-        ): WorldImplementation(gameInstance, properties, internalData, contentTranslator), WorldMaster, WorldCommonMaster {
+        ): WorldImplementation(gameInstance, properties, internalData, contentTranslator), WorldMaster {
     override val gameInstance: Host
     get() = super.gameInstance as Host
 

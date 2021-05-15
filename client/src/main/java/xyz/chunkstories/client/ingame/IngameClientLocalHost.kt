@@ -7,7 +7,6 @@ import xyz.chunkstories.api.server.Host
 import xyz.chunkstories.api.world.WorldMaster
 import xyz.chunkstories.client.ClientImplementation
 import org.slf4j.LoggerFactory
-import xyz.chunkstories.api.Engine
 import xyz.chunkstories.api.content.ContentTranslator
 import xyz.chunkstories.api.entity.Entity
 import xyz.chunkstories.api.player.PlayerID
@@ -30,7 +29,7 @@ fun ClientImplementation.enterExistingWorld(folder: File) {
     val localHostCtx = IngameClientLocalHost(this) {
         loadWorld(it as IngameClientLocalHost,  folder)
     }
-    localHostCtx.world.startLogic()
+    localHostCtx.onceCreated()
     this.ingame = localHostCtx
 }
 
@@ -46,11 +45,15 @@ fun ClientImplementation.createAndEnterWorld(folder: File, properties: World.Pro
 }
 
 /** Represent an IngameClient that is also a local Server (with minimal server functionality). Used in local SP. */
-class IngameClientLocalHost(client: ClientImplementation, worldInitializer: (IngameClientImplementation) -> WorldImplementation) : IngameClientImplementation(client, worldInitializer), Host {
-    override val world: WorldMasterImplementation = super.world_ as WorldMasterImplementation
-    override val contentTranslator: ContentTranslator
-        get() = world.contentTranslator
-    override val logger: Logger = LoggerFactory.getLogger("client.world")
+class IngameClientLocalHost constructor(client: ClientImplementation, worldInitializer: (IngameClientImplementation) -> WorldImplementation) : IngameClientImplementation(client, worldInitializer), Host {
+    override val world: WorldMasterImplementation
+        get() = super.world_ as WorldMasterImplementation
+
+    override fun onceCreated() {
+        world.playersMetadata.playerEnters(player)
+        super.onceCreated()
+        world.startTicking()
+    }
 
     override var permissionsManager: PermissionsManager = object : PermissionsManager {
         override fun hasPermission(player: Player, permissionNode: String): Boolean {
@@ -61,9 +64,10 @@ class IngameClientLocalHost(client: ClientImplementation, worldInitializer: (Ing
 
     /** When exiting a localhost world, ensure to save everything */
     override fun exitCommon() {
+        world.playersMetadata.playerLeaves(player)
         if (world_ is WorldMaster) {
             // Stop the world clock so hopefully as to freeze it's state
-            world_.stopLogic().traverse()
+            world_.stopTicking().traverse()
 
             val playerWorldMetadata = world.playersMetadata[player.id]!!
 

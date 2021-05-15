@@ -9,8 +9,7 @@ import java.util.*
 class LocalClientIdentity(val client: ClientImplementation) : ClientIdentity {
     override val name = "OfflinePlayer${Random().nextInt(999)}"
     override val authenticationMethod = AuthenticationMethod.NONE
-    override val id: PlayerID
-        get() = PlayerID(UUID.randomUUID())
+    override val id: PlayerID = PlayerID(UUID.randomUUID())
 }
 
 @Deprecated("Dead")
