@@ -92,7 +92,7 @@ class TaskGenerateWorldSlice(private val world: WorldImplementation, val heightm
                 val task = TaskGenerateWorldThinSlice(world,
                         heightmap.regionX * 8 + directed_relative_chunkX,
                         heightmap.regionZ * 8 + directed_relative_chunkZ, heightmap)
-                (world.gameInstance as EngineImplemI).tasks.scheduleTask(task)
+                world.gameInstance.engine.tasks.scheduleTask(task)
                 tasks!![relative_chunkZ] = task
             }
             wave++

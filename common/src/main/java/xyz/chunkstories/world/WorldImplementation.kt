@@ -91,9 +91,7 @@ sealed class WorldImplementation constructor(
     val content: GameContentStore
         get() = gameInstance.content as GameContentStore
 
-    override var sky: World.Sky
-        get() = TODO("Not yet implemented")
-        set(value) {}
+    override var sky = World.Sky()
 
     override val entities
         get() = entities_.asSequence()
@@ -289,10 +287,10 @@ open class WorldMasterImplementation(
     }
 
     override val players: Sequence<Player>
-        get() = TODO("Not yet implemented")
+        get() = gameInstance.players
 
     fun getPlayerByName(playerName: String): Player? {
-        TODO()
+        return gameInstance.getPlayer(playerName)
     }
 
     override fun tick() {

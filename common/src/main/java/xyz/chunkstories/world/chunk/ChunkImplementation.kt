@@ -16,8 +16,10 @@ import xyz.chunkstories.api.block.BlockType
 import xyz.chunkstories.api.world.World
 import xyz.chunkstories.api.world.cell.CellData
 import xyz.chunkstories.api.world.cell.MutableCellData
+import xyz.chunkstories.api.world.cell.PodCellData
 import xyz.chunkstories.api.world.chunk.*
 import xyz.chunkstories.api.world.region.Region
+import xyz.chunkstories.block.VoxelFormat
 import xyz.chunkstories.world.WorldImplementation
 import xyz.chunkstories.world.chunk.deriveddata.AutoRebuildingProperty
 import xyz.chunkstories.world.chunk.deriveddata.ChunkOcclusionProperty
@@ -27,7 +29,7 @@ import java.util.concurrent.Semaphore
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 
-class ChunkImplementation(override val holder: ChunkHolderImplementation, override val chunkX: Int, override val chunkY: Int, override val chunkZ: Int, compressedData: ChunkCompressedData?) : Chunk {
+class ChunkImplementation constructor(override val holder: ChunkHolderImplementation, override val chunkX: Int, override val chunkY: Int, override val chunkZ: Int, compressedData: ChunkCompressedData?) : Chunk {
     override val world: WorldImplementation
     protected val holdingRegion: RegionImplementation
 
@@ -47,8 +49,6 @@ class ChunkImplementation(override val holder: ChunkHolderImplementation, overri
     val chunkDestructionSemaphore = Semaphore(1)
 
     val localEntities: MutableSet<Entity> = ConcurrentHashMap.newKeySet()
-
-    private val chunkDataArrayCreation = Semaphore(1)
 
     val isAirChunk: Boolean
         get() = blockData == null
@@ -317,27 +317,30 @@ class ChunkImplementation(override val holder: ChunkHolderImplementation, overri
     }*/
 
     override fun getCellData(x: Int, y: Int, z: Int): CellData {
-        TODO("Not yet implemented")
+        val air = world.gameInstance.content.blockTypes.air
+        if (blockData == null)
+            return PodCellData(air)
+        val compressed = blockData!![x * 32 * 32 + y * 32 + z]
+        return PodCellData(blockType = world.contentTranslator.getVoxelForId(VoxelFormat.id(compressed)) ?: air,
+            sunlightLevel = VoxelFormat.sunlight(compressed),
+            blocklightLevel = VoxelFormat.blocklight(compressed),
+            extraData = VoxelFormat.meta(compressed))
     }
 
     override fun setCellData(x: Int, y: Int, z: Int, data: CellData): Boolean {
-        TODO("Not yet implemented")
+        setCellDataSilent(x, y, z, data)
+        return true
+    }
+
+    fun setCellDataSilent(x: Int, y: Int, z: Int, data: CellData) {
+        val compressed = VoxelFormat.format(data.blockType.assignedId, data.extraData, data.sunlightLevel, data.blocklightLevel)
+        if (blockData == null)
+            blockData = IntArray(32 * 32 * 32)
+        blockData!![x * 32 * 32 + y * 32 + z] = compressed
     }
 
     fun removeComponents(index: Int) {
         allCellComponents.remove(index)
-    }
-
-    private fun atomicalyCreateInternalData(): IntArray {
-        chunkDataArrayCreation.acquireUninterruptibly()
-
-        // If it's STILL null
-        if (blockData == null)
-            blockData = IntArray(32 * 32 * 32)
-
-        chunkDataArrayCreation.release()
-
-        return blockData!!
     }
 
     fun tick(tick: Long) {

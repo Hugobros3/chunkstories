@@ -12,6 +12,7 @@ import xyz.chunkstories.api.workers.Task
 import xyz.chunkstories.api.workers.TaskExecutor
 import xyz.chunkstories.api.world.World
 import xyz.chunkstories.api.world.WorldUser
+import xyz.chunkstories.api.world.cell.CellData
 import xyz.chunkstories.api.world.chunk.Chunk
 import xyz.chunkstories.api.world.chunk.ChunkHolder
 import xyz.chunkstories.api.world.generator.WorldGenerator
@@ -51,8 +52,23 @@ class TaskGenerateWorldThinSlice internal constructor(private val world: World, 
             ChunkImplementation(holders[chunkY], chunkX, chunkY, chunkZ, null)
         }
 
-        TODO("...")
-        // generator.generateWorldSlice(chunks)
+        val preChunks = Array<WorldGenerator.PreChunk>(maxGenerationHeightInChunks) { chunkY ->
+            object : WorldGenerator.PreChunk {
+                override val chunkX: Int
+                    get() = this@TaskGenerateWorldThinSlice.chunkX
+                override val chunkY: Int
+                    get() = chunkY
+                override val chunkZ: Int
+                    get() = this@TaskGenerateWorldThinSlice.chunkZ
+
+                override fun setCellData(x: Int, y: Int, z: Int, cellData: CellData) {
+                    TODO("Not yet implemented")
+                }
+
+            }
+        }
+
+        generator.generateWorldSlice(preChunks)
         generator.generateWorldSlicePhaseII(chunks)
 
         for (chunkY in 0 until maxGenerationHeightInChunks) {

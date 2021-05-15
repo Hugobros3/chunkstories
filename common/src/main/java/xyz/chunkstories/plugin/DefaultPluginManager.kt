@@ -253,7 +253,6 @@ open class DefaultPluginManager(private val gameInstance: GameInstance) : Plugin
         // if(event.isAllowedToExecute())
         // event.defaultBehaviour();*/
         // TODO()
-        println("TODO: rework event system")
     }
 
     fun logger(): Logger {

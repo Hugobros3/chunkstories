@@ -108,7 +108,7 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
                     recomputeMetadata()
 
                     transitionState(Heightmap.State.Generating(task))
-                    (world.gameInstance.engine as EngineImplemI).tasks.scheduleTask(task)
+                    world.gameInstance.engine.tasks.scheduleTask(task)
                 }
             }
         } else {
