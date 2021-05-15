@@ -330,7 +330,9 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
                     val cellData = world.getCell(x, height, z)?.data ?: return
                     solid = cellData.blockType.solid
                     liquid = cellData.blockType.name.endsWith("water")
-                    raw_data = cellData.blockType.assignedId
+                    with(world.contentTranslator) {
+                        raw_data = cellData.blockType.assignedId
+                    }
                 } while (height >= 0 && loaded && !solid && !liquid)
 
                 if (loaded) {

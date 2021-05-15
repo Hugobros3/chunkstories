@@ -62,7 +62,7 @@ class TaskGenerateWorldThinSlice internal constructor(private val world: World, 
                     get() = this@TaskGenerateWorldThinSlice.chunkZ
 
                 override fun setCellData(x: Int, y: Int, z: Int, cellData: CellData) {
-                    TODO("Not yet implemented")
+                    (chunks[chunkY] as ChunkImplementation).setCellDataSilent(x, y, z, cellData)
                 }
 
             }

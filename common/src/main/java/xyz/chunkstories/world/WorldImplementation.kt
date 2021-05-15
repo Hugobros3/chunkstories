@@ -29,6 +29,7 @@ import xyz.chunkstories.api.particles.ParticleType
 import xyz.chunkstories.api.particles.ParticleTypeDefinition
 import xyz.chunkstories.api.particles.ParticlesManager
 import xyz.chunkstories.api.player.Player
+import xyz.chunkstories.api.player.PlayerState
 import xyz.chunkstories.api.server.Host
 import xyz.chunkstories.api.sound.SoundManager
 import xyz.chunkstories.api.world.*
@@ -194,11 +195,14 @@ sealed class WorldImplementation constructor(
     }
 
     override fun setCellData(x: Int, y: Int, z: Int, data: CellData): Boolean {
-        TODO("Not yet implemented")
+        getCell(x, y, z)?.let { it.data = data } ?: return false
+        return true
     }
 
     override fun pastePrefab(x: Int, y: Int, z: Int, prefab: Prefab): Boolean {
-        TODO("Not yet implemented")
+        // println("paste prefab not implemented")
+        return false
+        // TODO("Not yet implemented")
     }
 
     /*override fun peekRaw(x: Int, y: Int, z: Int): Int {
@@ -244,18 +248,10 @@ sealed class WorldImplementation constructor(
         val worldPropertiesFilename = "properties.json"
     }
 
-    override fun hashCode(): Int {
-        throw UnsupportedOperationException()
-    }
-
-    override fun equals(other: Any?): Boolean {
-        throw UnsupportedOperationException()
-    }
-
     override val logger = LoggerFactory.getLogger("world")
 }
 
-open class WorldMasterImplementation(
+open class WorldMasterImplementation constructor(
         gameInstance: GameInstance,
         properties: World.Properties,
         internalData: WorldInternalData,
@@ -275,7 +271,8 @@ open class WorldMasterImplementation(
     }
 
     override fun Player.startPlayingAs(entity: Entity) {
-        TODO("Not yet implemented")
+        entity.controller = this
+        state = PlayerState.Ingame(entity)
     }
 
     override fun Player.startSpectating() {
@@ -341,7 +338,9 @@ fun loadWorld(gameInstance: GameInstance, folder: File): WorldMasterImplementati
     val properties = deserializeWorldInfo(worldInfoFile)
     val internalData = tryLoadWorldInternalData(folder)
 
-    return WorldMasterImplementation(gameInstance, properties, internalData, contentTranslator, folder)
+    val world = WorldMasterImplementation(gameInstance, properties, internalData, contentTranslator, folder)
+    world.ioHandler.start()
+    return world
 }
 
 fun initializeWorld(folder: File, properties: World.Properties) {
@@ -373,7 +372,7 @@ fun initializeWorld(folder: File, properties: World.Properties) {
     internalDataFile.writeText(contents)
 }
 
-class WorldSubImplementation(gameInstance: GameInstance, properties: World.Properties, internalData: WorldInternalData, contentTranslator: AbstractContentTranslator)
+class WorldSubImplementation constructor(gameInstance: GameInstance, properties: World.Properties, internalData: WorldInternalData, contentTranslator: AbstractContentTranslator)
     : WorldImplementation(gameInstance, properties, internalData, contentTranslator), WorldSub {
     override val remoteServer: Subscriber
         get() = TODO("Not yet implemented")

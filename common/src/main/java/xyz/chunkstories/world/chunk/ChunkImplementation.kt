@@ -120,7 +120,7 @@ class ChunkImplementation constructor(override val holder: ChunkHolderImplementa
     }
 
     override fun getCellMut(x: Int, y: Int, z: Int): MutableChunkCell {
-        TODO("Not yet implemented")
+        return ChunkCellProxy(x, y, z, true)
     }
 
     inner class ChunkCellProxy(override val x: Int, override val y: Int, override val z: Int, val mutable: Boolean): MutableChunkCell {
@@ -303,6 +303,9 @@ class ChunkImplementation constructor(override val holder: ChunkHolderImplementa
     }*/
 
     override fun getCellData(x: Int, y: Int, z: Int): CellData {
+        val x = x and 0x1F
+        val y = y and 0x1F
+        val z = z and 0x1F
         val air = world.gameInstance.content.blockTypes.air
         if (blockData == null)
             return CellData(air)
@@ -318,10 +321,15 @@ class ChunkImplementation constructor(override val holder: ChunkHolderImplementa
     }
 
     fun setCellDataSilent(x: Int, y: Int, z: Int, data: CellData) {
-        val compressed = VoxelFormat.format(data.blockType.assignedId, data.extraData, data.sunlightLevel, data.blocklightLevel)
-        if (blockData == null)
-            blockData = IntArray(32 * 32 * 32)
-        blockData!![x * 32 * 32 + y * 32 + z] = compressed
+        val x = x and 0x1F
+        val y = y and 0x1F
+        val z = z and 0x1F
+        with(world.contentTranslator) {
+            val compressed = VoxelFormat.format(data.blockType.assignedId, data.extraData, data.sunlightLevel, data.blocklightLevel)
+            if (blockData == null)
+                blockData = IntArray(32 * 32 * 32)
+            blockData!![x * 32 * 32 + y * 32 + z] = compressed
+        }
     }
 
     fun removeComponents(index: Int) {

@@ -69,7 +69,7 @@ class IngameClientLocalHost constructor(client: ClientImplementation, worldIniti
             // Stop the world clock so hopefully as to freeze it's state
             world_.stopTicking().traverse()
 
-            val playerWorldMetadata = world.playersMetadata[player.id]!!
+            // val playerWorldMetadata = world.playersMetadata[player.id]!!
 
             player.destroy()
             // Save everything the world contains

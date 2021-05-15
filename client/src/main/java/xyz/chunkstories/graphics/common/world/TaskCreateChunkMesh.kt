@@ -100,15 +100,15 @@ abstract class TaskCreateChunkMesh(
                         // TODO move to just referencing the actual tex
                         when {
                             texName.startsWith("voxels/blockmodels") -> {
-                                assert(false)
+                                // assert(false)
                                 texName = texName.removePrefix("voxels/blockmodels/").substringAfter("/", "notex") ?: "notex"
                             }
                             texName.startsWith("voxels/textures") -> {
-                                assert(false)
+                                // assert(false)
                                 texName = texName.removePrefix("voxels/textures/") ?: "notex"
                             }
                         }
-                        assert(!texName.endsWith(".png"))
+                        // assert(!texName.endsWith(".png"))
                         texName = texName.removeSuffix(".png")
 
                         val voxelTexture = chunk.world.content.blockTypes.textures.getTextureOrDefault(texName)
