@@ -115,6 +115,9 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
     }
 
     protected open fun destroy() {
+        logger.info("Removing player from world")
+        player.destroy()
+
         logger.info("Terminating ticking thread...")
         tickingThread.terminate().traverse()
         logger.info("Terminating ticking thread... done")

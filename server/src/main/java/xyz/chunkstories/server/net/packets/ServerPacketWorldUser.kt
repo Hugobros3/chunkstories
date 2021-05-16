@@ -11,11 +11,12 @@ import xyz.chunkstories.net.packets.PacketWorldUser
 import xyz.chunkstories.server.player.ServerPlayer
 import java.io.DataInputStream
 
-class ServerPacketWorldUser(world: World?) : PacketWorldUser(world) {
+class ServerPacketWorldUser(world: World) : PacketWorldUser(world) {
     override fun receive(dis: DataInputStream, player: Player?) {
         super.receive(dis, player)
         if (player is ServerPlayer) {
-            player.loadingAgent.handleClientRequest(this)
+            assert(player.world == world)
+            player.loadingAgent!!.handleClientRequest(this)
         }
     }
 }

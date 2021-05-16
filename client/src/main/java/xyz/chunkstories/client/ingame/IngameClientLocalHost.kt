@@ -45,7 +45,7 @@ class IngameClientLocalHost constructor(client: ClientImplementation, worldIniti
         get() = super.world_ as WorldMasterImplementation
 
     override fun onceCreated() {
-        world.playersMetadata.playerEnters(player)
+        world.playerEnters(player)
         super.onceCreated()
     }
 
@@ -54,11 +54,6 @@ class IngameClientLocalHost constructor(client: ClientImplementation, worldIniti
             //TODO have an actual permissions system
             return true
         }
-    }
-
-    override fun destroy() {
-        world.playersMetadata.playerLeaves(player)
-        super.destroy()
     }
 
     override fun getPlayer(playerName: String): Player? {

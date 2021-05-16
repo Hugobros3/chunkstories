@@ -12,7 +12,7 @@ import xyz.chunkstories.api.world.World
 import xyz.chunkstories.client.ingame.IngameClientImplementation
 import java.io.DataInputStream
 
-class ClientPacketWorldUser(world: World?) : PacketWorldUser(world) {
+class ClientPacketWorldUser(world: World) : PacketWorldUser(world) {
     override fun receive(dis: DataInputStream, player: Player?) {
         super.receive(dis, player)
         val instance = world.gameInstance

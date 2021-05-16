@@ -28,7 +28,7 @@ open class PacketWorldUser : PacketWorld {
         REGISTER_CHUNK, UNREGISTER_CHUNK, REGISTER_SUMMARY, UNREGISTER_SUMMARY
     }
 
-    constructor(world: World?) : super(world!!) {}
+    constructor(world: World) : super(world)
     private constructor(world: World, tag: Tag, x: Int, y: Int, z: Int) : super(world) {
         this.tag = tag
         this.x = x

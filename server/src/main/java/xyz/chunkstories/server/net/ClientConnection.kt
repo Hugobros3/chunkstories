@@ -90,7 +90,7 @@ abstract class ClientConnection(val server: DedicatedServer, internal val connec
             val world = server.world
             when (message.substring(6, message.length)) {
                 "enter" -> {
-                    player.whenEnteringWorld(world)
+                    player.enterWorld(world)
                     // Sends the construction info for the world, and then the player entity
                     val packet = PacketSendWorldInfo(server, world.properties)
                     pushPacket(packet)

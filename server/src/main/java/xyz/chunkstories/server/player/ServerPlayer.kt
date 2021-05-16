@@ -24,14 +24,13 @@ import xyz.chunkstories.api.player.PlayerID
 import xyz.chunkstories.api.player.PlayerState
 import xyz.chunkstories.api.player.entityIfIngame
 import xyz.chunkstories.api.util.getUniqueColorPrefix
-import xyz.chunkstories.api.world.World
-import xyz.chunkstories.api.world.WorldMaster
 import xyz.chunkstories.server.net.ClientConnection
 import xyz.chunkstories.server.propagation.VirtualServerDecalsManager.ServerPlayerVirtualDecalsManager
 import xyz.chunkstories.server.propagation.VirtualServerParticlesManager.ServerPlayerVirtualParticlesManager
 import xyz.chunkstories.server.propagation.VirtualSoundManager
-import xyz.chunkstories.world.WorldImplementation
 import xyz.chunkstories.world.WorldMasterImplementation
+import xyz.chunkstories.world.playerEnters
+import xyz.chunkstories.world.playerLeaves
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 
@@ -67,7 +66,10 @@ class ServerPlayer(val playerConnection: ClientConnection, override val id: Play
 
     override val inputsManager: InputsManager = ServerPlayerInputsManager(this)
 
-    lateinit var loadingAgent: ServerPlayerLoadingAgent private set
+    var world: WorldMasterImplementation? = null
+        private set
+    var loadingAgent: ServerPlayerLoadingAgent? = null
+        private set
 
     init {
         File("players/").mkdirs()
@@ -78,14 +80,9 @@ class ServerPlayer(val playerConnection: ClientConnection, override val id: Play
         //this.inputsManager = ServerPlayerInputsManager(this)
     }
 
-    fun whenEnteringWorld(world: WorldMasterImplementation) {
-        eventEntersWorld(world)
-
-        if (::loadingAgent.isInitialized) {
-            assert(false) { "This should be cleaned up instead"}
-            // this.loadingAgent.destroy()
-        }
-
+    fun enterWorld(world: WorldMasterImplementation) {
+        world.playerEnters(this)
+        this.world = world
         this.loadingAgent = ServerPlayerLoadingAgent(this, world)
 
         TODO()
@@ -228,29 +225,25 @@ class ServerPlayer(val playerConnection: ClientConnection, override val id: Play
         return name
     }
 
-    fun destroy() {
+    fun leaveWorld() {
+        assert(world != null)
         val playerEntity = this.entityIfIngame
         if (playerEntity != null) {
-            (playerEntity.world as WorldMasterImplementation).playersMetadata[id]!!.savedEntity = EntitySerialization.serializeEntity(playerEntity)
+            assert(playerEntity.world == world)
+            world!!.playersMetadata[id]!!.savedEntity = EntitySerialization.serializeEntity(playerEntity)
             playerEntity.world.removeEntity(playerEntity.id)
-
-            eventLeavesWorld(playerEntity.world)
         }
+        world!!.playerLeaves(this)
+        world = null
+        loadingAgent!!.destroy()
+        loadingAgent = null
+    }
+
+    fun destroy() {
+        if (world != null)
+            leaveWorld()
         saveMetadata()
         unsubscribeAll()
-        loadingAgent.destroy()
-    }
-
-    fun eventEntersWorld(world: World) {
-        if (world is WorldMaster) {
-            (world as WorldMasterImplementation).playersMetadata.playerEnters(this)
-        }
-    }
-
-    fun eventLeavesWorld(world: World) {
-        if (world is WorldMaster) {
-            (world as WorldMasterImplementation).playersMetadata.playerLeaves(this)
-        }
     }
 
     companion object {

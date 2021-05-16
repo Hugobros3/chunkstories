@@ -6,6 +6,7 @@
 
 package xyz.chunkstories.client.ingame
 
+import xyz.chunkstories.api.entity.EntitySerialization
 import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
 import xyz.chunkstories.api.graphics.structs.camera
 import xyz.chunkstories.api.input.InputsManager
@@ -18,6 +19,7 @@ import xyz.chunkstories.api.world.World
 import xyz.chunkstories.api.world.WorldMaster
 import xyz.chunkstories.world.WorldImplementation
 import xyz.chunkstories.world.WorldMasterImplementation
+import xyz.chunkstories.world.playerLeaves
 
 class ClientPlayer(val ingame: IngameClientImplementation) : Player {
     override var state: PlayerState = PlayerState.None
@@ -30,6 +32,9 @@ class ClientPlayer(val ingame: IngameClientImplementation) : Player {
         get() = name
     override val inputsManager: InputsManager
         get() = ingame.client.inputsManager
+
+    val world: WorldImplementation
+        get() = ingame.world
 
     /*override var controlledEntity: Entity? = null
         set(new) {
@@ -91,6 +96,21 @@ class ClientPlayer(val ingame: IngameClientImplementation) : Player {
 
     override fun hasPermission(permissionNode: String): Boolean {
         return true
+    }
+
+    fun leaveWorld() {
+        val world = world as? WorldMasterImplementation ?: return // for remote world it doesn't matter - it gets nuked either way
+        val playerEntity = this.entityIfIngame
+        if (playerEntity != null) {
+            assert(playerEntity.world == world)
+            world.playersMetadata[id]!!.savedEntity = EntitySerialization.serializeEntity(playerEntity)
+            world.removeEntity(playerEntity.id)
+        }
+        world.playerLeaves(this)
+    }
+
+    fun destroy() {
+        leaveWorld()
     }
 
     /*override fun openInventory(inventory: Inventory) {
