@@ -9,12 +9,11 @@ import java.util.*
 class LocalClientIdentity(val client: ClientImplementation) : ClientIdentity {
     override val name = "OfflinePlayer${Random().nextInt(999)}"
     override val authenticationMethod = AuthenticationMethod.NONE
-    override val id: PlayerID = PlayerID(UUID.randomUUID())
+    override val id: PlayerID = PlayerID(UUID.nameUUIDFromBytes(name.toByteArray()))
 }
 
 @Deprecated("Dead")
 class LoggedInClientIdentity(val client: ClientImplementation, override val name: String, val sessionKey: String) : ClientIdentity {
     override val authenticationMethod = AuthenticationMethod.CHUNKSTORIES_OFFICIAL_WEBSITE
-    override val id: PlayerID
-        get() = PlayerID(UUID.fromString(name))
+    override val id: PlayerID = PlayerID(UUID.nameUUIDFromBytes(name.toByteArray()))
 }

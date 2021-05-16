@@ -25,7 +25,7 @@ class ClientPlayer(val ingame: IngameClientImplementation) : Player {
     override val name: String
         get() = ingame.client.user.name
     override val id: PlayerID
-        get() = ingame.user.id
+        get() = ingame.client.user.id
     override val displayName: String
         get() = name
     override val inputsManager: InputsManager
@@ -70,7 +70,7 @@ class ClientPlayer(val ingame: IngameClientImplementation) : Player {
 
     fun onFrame() {
         val camera = ingame.camera
-        ingame.soundManager.setListenerPosition(camera.position.toVec3f(), camera.lookingAt, camera.up)
+        ingame.client.soundManager.setListenerPosition(camera.position.toVec3f(), camera.lookingAt, camera.up)
 
         val playerEntity = entityIfIngame
         if (playerEntity != null)
@@ -82,7 +82,7 @@ class ClientPlayer(val ingame: IngameClientImplementation) : Player {
     }
 
     fun hasFocus(): Boolean {
-        return ingame.gui.hasFocus() // && inputsManager.mouse.isGrabbed
+        return ingame.client.gui.hasFocus() && ingame.client.inputsManager.mouse.isGrabbed
     }
 
     override fun sendMessage(message: String) {

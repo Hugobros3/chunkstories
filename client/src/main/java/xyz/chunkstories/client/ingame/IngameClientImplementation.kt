@@ -3,6 +3,7 @@ package xyz.chunkstories.client.ingame
 import org.slf4j.Logger
 import xyz.chunkstories.api.client.Client
 import xyz.chunkstories.api.client.IngameClient
+import xyz.chunkstories.api.content.Content
 import xyz.chunkstories.api.content.ContentTranslator
 import xyz.chunkstories.api.graphics.systems.dispatching.DecalsManager
 import xyz.chunkstories.api.particles.ParticlesManager
@@ -24,18 +25,16 @@ import xyz.chunkstories.world.WorldImplementation
 import xyz.chunkstories.world.WorldMasterImplementation
 import xyz.chunkstories.world.logic.GameLogicThread
 
-abstract class IngameClientImplementation protected constructor(val client: ClientImplementation, worldInitializer: (IngameClientImplementation) -> WorldImplementation) : IngameClient, Client by client {
+abstract class IngameClientImplementation protected constructor(val client: ClientImplementation, worldInitializer: (IngameClientImplementation) -> WorldImplementation) : IngameClient {
     override val engine: Client
         get() = client
     override val contentTranslator: ContentTranslator
         get() = world.contentTranslator
     override val logger: Logger
         get() = client.logger
-    override val tasks: WorkerThreadPool
-        get() = client.tasks
+    override val content: Content
+        get() = client.content
 
-    final override val ingame: IngameClient = this
-    final override val soundManager: ALSoundManager by alias(client::soundManager)
     final override val pluginManager: DefaultPluginManager
 
     protected val world_: WorldImplementation = worldInitializer.invoke(this)
@@ -70,7 +69,7 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
         client.ingame = this
 
         worldRenderer = client.gameWindow.graphicsEngine.backend.createWorldRenderer(world_)
-        ingameUI = IngameUI(gui, this)
+        ingameUI = IngameUI(client.gui, this)
 
         tickingThread = object : GameLogicThread(world_) {
             override fun tick() {
@@ -82,9 +81,9 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
     open fun onceCreated() {
         // Spawn manually the player if we're in single player mode
         if (world_ is WorldMasterImplementation) {
-            gui.topLayer = WorldLoadingUI(world_, this, gui, ingameUI)
+            client.gui.topLayer = WorldLoadingUI(world_, this, client.gui, ingameUI)
         } else {
-            gui.topLayer = ingameUI
+            client.gui.topLayer = ingameUI
         }
 
        tickingThread.start()
@@ -107,12 +106,12 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
 
     override fun exitToMainMenu() {
         destroy()
-        gui.topLayer = MainMenuUI(gui, null)
+        client.gui.topLayer = MainMenuUI(client.gui, null)
     }
 
     override fun exitToMainMenu(errorMessage: String) {
         destroy()
-        gui.topLayer = MessageBoxUI(gui, MainMenuUI(gui, null), "Disconnected from server", errorMessage)
+        client.gui.topLayer = MessageBoxUI(client.gui, MainMenuUI(client.gui, null), "Disconnected from server", errorMessage)
     }
 
     protected open fun destroy() {
@@ -126,7 +125,7 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
         loadingAgent.unloadEverything(true)
         logger.debug("Unloaded world bits")
         world_.destroy()
-        soundManager.stopAllSounds()
+        client.soundManager.stopAllSounds()
 
         logger.debug("Left ingame state")
         client.gameWindow.graphicsEngine.loadRenderGraph(BuiltInRendergraphs.onlyGuiRenderGraph(client))

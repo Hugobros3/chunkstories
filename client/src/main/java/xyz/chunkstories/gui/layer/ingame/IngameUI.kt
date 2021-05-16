@@ -30,7 +30,8 @@ import xyz.chunkstories.world.WorldImplementation
  * The main layer that hosts the gameplay: renders the world, inventory and most
  * gui elements
  */
-class IngameUI(window: Gui, private val client: IngameClientImplementation) : Layer(window, null) {
+class IngameUI(window: Gui, private val ingame: IngameClientImplementation) : Layer(window, null) {
+    private val client = ingame.client
     private val player: ClientPlayer
     private val world: WorldImplementation
 
@@ -45,10 +46,10 @@ class IngameUI(window: Gui, private val client: IngameClientImplementation) : La
         get() = gui.topLayer !== this
 
     init {
-        this.player = client.player
-        this.world = client.world
+        this.player = ingame.player
+        this.world = ingame.world
 
-        this.chatManager = ChatManager(client, this)
+        this.chatManager = ChatManager(ingame, this)
         this.debugInfoRendererHelper = DebugInfoRendererHelper(this)
 
         // Give focus
@@ -129,7 +130,7 @@ class IngameUI(window: Gui, private val client: IngameClientImplementation) : La
             // CTRL-F12 reloads
             input.name == "reloadContent" -> {
                 // Rebuild the mod FS
-                client.client.reloadAssets()
+                client.reloadAssets()
 
                 // Reload plugins
                 world.gameInstance.pluginManager.reloadPlugins()

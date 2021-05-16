@@ -50,8 +50,6 @@ fun PluginInformation.createInstance(gameInstance: GameInstance, classLoader: Cl
     val entryPointConstructor = entryPointClass.getConstructor(*types)
 
     entryPointConstructor.newInstance(this, gameInstance)
-
-
 } catch (e: ClassNotFoundException) {
     throw object : PluginLoadException() {
         override val message: String
