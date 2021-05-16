@@ -54,8 +54,6 @@ import java.util.concurrent.locks.ReadWriteLock
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
-const val TPS = 60
-
 class WorldLoadingException(message: String, cause: Throwable? = null) : Exception(message, cause)
 
 sealed class WorldImplementation constructor(
@@ -86,7 +84,7 @@ sealed class WorldImplementation constructor(
     val content: GameContentStore
         get() = gameInstance.content as GameContentStore
 
-    override var sky = World.Sky()
+    override var sky by alias(internalData::sky)
 
     override val entities
         get() = entities_.asSequence()

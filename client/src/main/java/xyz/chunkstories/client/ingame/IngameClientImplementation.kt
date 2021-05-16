@@ -18,12 +18,9 @@ import xyz.chunkstories.gui.layer.WorldLoadingUI
 import xyz.chunkstories.gui.layer.ingame.IngameUI
 import xyz.chunkstories.plugin.DefaultPluginManager
 import xyz.chunkstories.server.commands.installHostCommands
-import xyz.chunkstories.sound.ALSoundManager
-import xyz.chunkstories.task.WorkerThreadPool
-import xyz.chunkstories.util.alias
 import xyz.chunkstories.world.WorldImplementation
 import xyz.chunkstories.world.WorldMasterImplementation
-import xyz.chunkstories.world.logic.GameLogicThread
+import xyz.chunkstories.TickingThread
 
 abstract class IngameClientImplementation protected constructor(val client: ClientImplementation, worldInitializer: (IngameClientImplementation) -> WorldImplementation) : IngameClient {
     override val engine: Client
@@ -41,7 +38,7 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
     abstract override val world: WorldImplementation
     final override val player: ClientPlayer
 
-    val tickingThread: GameLogicThread
+    val tickingThread: TickingThread
     val loadingAgent = LocalClientLoadingAgent(this)
 
     val decalsManager: DecalsManager
@@ -71,7 +68,7 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
         worldRenderer = client.gameWindow.graphicsEngine.backend.createWorldRenderer(world_)
         ingameUI = IngameUI(client.gui, this)
 
-        tickingThread = object : GameLogicThread(world_) {
+        tickingThread = object : TickingThread(world_) {
             override fun tick() {
                 onTick()
             }

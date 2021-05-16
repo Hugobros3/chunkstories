@@ -39,6 +39,8 @@ import xyz.chunkstories.world.WorldImplementation
 import java.awt.image.BufferedImage
 
 class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window: GLFWWindow) : GLFWBasedGraphicsBackend(graphicsEngine, window), BlockTexturesProvider {
+    val logger: Logger = LoggerFactory.getLogger("client.vulkan")
+
     internal val enableValidation = window.client.arguments["enableValidation"] == "true"
 
     private var instance: VkInstance
@@ -363,9 +365,5 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
 
         vkDestroyInstance(instance, null)
         logger.debug("Successfully finished cleaning up Vulkan objects")
-    }
-
-    companion object {
-        val logger: Logger = LoggerFactory.getLogger("client.gfx_vk")
     }
 }

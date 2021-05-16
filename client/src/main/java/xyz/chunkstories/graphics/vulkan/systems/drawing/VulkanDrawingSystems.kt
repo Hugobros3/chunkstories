@@ -36,7 +36,7 @@ fun <T : DrawingSystem> VulkanGraphicsBackend.createDrawingSystem(pass: VulkanPa
 
         else -> {
             //throw Exception("Unimplemented system on this backend: ${registration.clazz}")
-            VulkanGraphicsBackend.logger.error("Unimplemented system on this backend: ${registration.clazz}")
+            logger.error("Unimplemented system on this backend: ${registration.clazz}")
             null
         }
     }
