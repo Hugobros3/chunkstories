@@ -129,12 +129,11 @@ sealed class WorldImplementation constructor(
     }
 
     open fun tick() {
-
         ticksElapsed++
         gameInstance.pluginManager.fireEvent(WorldTickEvent(this))
 
         entitiesLock.writeLock().withLock {
-            for (entity in entities_) {
+            for (entity in entities_.toList()) {
                 entity.tick()
             }
         }

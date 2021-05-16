@@ -109,49 +109,48 @@ class LoginUI(gui: Gui, parent: Layer?) : Layer(gui, parent) {
     }
 
     private fun connect() {
-        if (true || usernameForm.text == "OFFLINE") {
+        if (usernameForm.text.isNotEmpty()) {
             val client = gui.client as ClientImplementation
-            client.user = LocalClientIdentity(client)
+            client.user = LocalClientIdentity(client, usernameForm.text)
 
             gui.topLayer = MainMenuUI(gui, parentLayer)
-        } else {
-            TODO("Rewrite")
-            /*logging_in = true
-
-            SimplePostRequest("https://chunkstories.xyz/api/login.php", "user=" + usernameForm.text + "&pass=" + passwordForm.text, RequestResultAction { result ->
-                logger.debug("Received login answer")
-
-                logging_in = false
-                if (result == null) {
-                    failed_login = true
-                    message = "Can't connect to server."
-                } else if (result.startsWith("ok")) {
-                    val session = result.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[1]
-
-                    val client = gui.client as ClientImplementation
-                    client.user = LoggedInClientIdentity(client, usernameForm.text, session)
-
-                    //TODO actually secure storage
-                    //TODO ask if need to remember
-                    PasswordStorage.save(PasswordStorage(usernameForm.text, passwordForm.text))
-
-                    // If the user didn't opt-out, look for crash files and upload those
-                    if (gui.client.configuration.getValue("client.game.logPolicy") == "send") {
-                        val t = JavaCrashesUploader(gui.client as ClientImplementation)
-                        t.start()
-                    }
-
-                    gui.topLayer = MainMenuUI(gui, parentLayer)
-                } else if (result.startsWith("ko")) {
-                    failed_login = true
-                    val reason = result.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[1]
-                    if (reason == "invalidcredentials")
-                        message = "Invalid credentials"
-                } else {
-                    message = "Unknown error"
-                }
-            })*/
         }
+        /*logging_in = true
+
+        SimplePostRequest("https://chunkstories.xyz/api/login.php", "user=" + usernameForm.text + "&pass=" + passwordForm.text, RequestResultAction { result ->
+            logger.debug("Received login answer")
+
+            logging_in = false
+            if (result == null) {
+                failed_login = true
+                message = "Can't connect to server."
+            } else if (result.startsWith("ok")) {
+                val session = result.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[1]
+
+                val client = gui.client as ClientImplementation
+                client.user = LoggedInClientIdentity(client, usernameForm.text, session)
+
+                //TODO actually secure storage
+                //TODO ask if need to remember
+                PasswordStorage.save(PasswordStorage(usernameForm.text, passwordForm.text))
+
+                // If the user didn't opt-out, look for crash files and upload those
+                if (gui.client.configuration.getValue("client.game.logPolicy") == "send") {
+                    val t = JavaCrashesUploader(gui.client as ClientImplementation)
+                    t.start()
+                }
+
+                gui.topLayer = MainMenuUI(gui, parentLayer)
+            } else if (result.startsWith("ko")) {
+                failed_login = true
+                val reason = result.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[1]
+                if (reason == "invalidcredentials")
+                    message = "Invalid credentials"
+            } else {
+                message = "Unknown error"
+            }
+        })*/
+
     }
 
     override fun handleInput(input: Input): Boolean {
@@ -160,7 +159,7 @@ class LoginUI(gui: Gui, parent: Layer?) : Layer(gui, parent) {
             "enter" -> connect()
             "tab" -> {
                 val shift = if (gui.client.inputsManager.getInputByName("shift")!!.isPressed) -1 else 1
-                var i = focusedElement?.let {this.elements.indexOf(it) } ?: 0
+                var i = focusedElement?.let { this.elements.indexOf(it) } ?: 0
 
                 var elem: GuiElement? = null
 

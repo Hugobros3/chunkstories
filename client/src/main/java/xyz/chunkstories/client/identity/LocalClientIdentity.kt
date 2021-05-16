@@ -6,8 +6,7 @@ import xyz.chunkstories.api.player.PlayerID
 import xyz.chunkstories.client.ClientImplementation
 import java.util.*
 
-class LocalClientIdentity(val client: ClientImplementation) : ClientIdentity {
-    override val name = "OfflinePlayer${Random().nextInt(999)}"
+class LocalClientIdentity(val client: ClientImplementation, override val name: String) : ClientIdentity {
     override val authenticationMethod = AuthenticationMethod.NONE
     override val id: PlayerID = PlayerID(UUID.nameUUIDFromBytes(name.toByteArray()))
 }
