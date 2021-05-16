@@ -6,11 +6,13 @@
 
 package xyz.chunkstories.client.ingame
 
+import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
 import xyz.chunkstories.api.graphics.structs.camera
 import xyz.chunkstories.api.input.InputsManager
 import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.player.PlayerID
 import xyz.chunkstories.api.player.PlayerState
+import xyz.chunkstories.api.player.entityIfIngame
 import xyz.chunkstories.api.util.kotlin.toVec3f
 import xyz.chunkstories.api.world.World
 import xyz.chunkstories.api.world.WorldMaster
@@ -66,11 +68,17 @@ class ClientPlayer(val ingame: IngameClientImplementation) : Player {
             return
         }*/
 
-    fun update() {
-        ingame.loadingAgent.updateUsedWorldBits()
-
+    fun onFrame() {
         val camera = ingame.camera
         ingame.soundManager.setListenerPosition(camera.position.toVec3f(), camera.lookingAt, camera.up)
+
+        val playerEntity = entityIfIngame
+        if (playerEntity != null)
+            playerEntity.traits[TraitControllable::class]?.onEachFrame()
+    }
+
+    fun onTick() {
+        ingame.loadingAgent.updateUsedWorldBits()
     }
 
     fun hasFocus(): Boolean {
@@ -96,8 +104,4 @@ class ClientPlayer(val ingame: IngameClientImplementation) : Player {
                 client.gui.openInventories(inventory)
         }
     }*/
-
-    fun destroy() {
-        ingame.loadingAgent.unloadEverything(true)
-    }
 }

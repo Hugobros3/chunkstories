@@ -12,8 +12,6 @@ import org.slf4j.LoggerFactory
 import xyz.chunkstories.EngineImplemI
 import xyz.chunkstories.api.client.Client
 import xyz.chunkstories.api.client.ClientIdentity
-import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
-import xyz.chunkstories.api.player.entityIfIngame
 import xyz.chunkstories.api.util.configuration.Configuration
 import xyz.chunkstories.client.glfw.GLFWWindow
 import xyz.chunkstories.client.ingame.IngameClientImplementation
@@ -173,11 +171,9 @@ class ClientImplementation internal constructor(val arguments: Map<String, Strin
             inputsManager.updateInputs()
             soundManager.updateAllSoundSources()
 
-            val entity = ingame?.player?.entityIfIngame
-            if (entity != null)
-                entity.traits[TraitControllable::class]?.onEachFrame()
+            ingame?.onFrame()
 
-            graphics.renderGame()
+            graphics.renderFrame()
         }
 
         ingame?.exitToMainMenu()

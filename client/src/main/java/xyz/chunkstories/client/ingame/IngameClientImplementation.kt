@@ -1,7 +1,6 @@
 package xyz.chunkstories.client.ingame
 
 import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.client.Client
 import xyz.chunkstories.api.client.IngameClient
 import xyz.chunkstories.api.content.ContentTranslator
@@ -23,6 +22,7 @@ import xyz.chunkstories.task.WorkerThreadPool
 import xyz.chunkstories.util.alias
 import xyz.chunkstories.world.WorldImplementation
 import xyz.chunkstories.world.WorldMasterImplementation
+import xyz.chunkstories.world.logic.GameLogicThread
 
 abstract class IngameClientImplementation protected constructor(val client: ClientImplementation, worldInitializer: (IngameClientImplementation) -> WorldImplementation) : IngameClient, Client by client {
     override val engine: Client
@@ -42,6 +42,7 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
     abstract override val world: WorldImplementation
     final override val player: ClientPlayer
 
+    val tickingThread: GameLogicThread
     val loadingAgent = LocalClientLoadingAgent(this)
 
     val decalsManager: DecalsManager
@@ -70,6 +71,12 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
 
         worldRenderer = client.gameWindow.graphicsEngine.backend.createWorldRenderer(world_)
         ingameUI = IngameUI(gui, this)
+
+        tickingThread = object : GameLogicThread(world_) {
+            override fun tick() {
+                onTick()
+            }
+        }
     }
 
     open fun onceCreated() {
@@ -79,6 +86,8 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
         } else {
             gui.topLayer = ingameUI
         }
+
+       tickingThread.start()
         //     internalWorld.spawnPlayer(player)
 
         /*val connectionProgressLayer = gui.topLayer as? ConnectingScreen
@@ -87,26 +96,40 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
         else*/
     }
 
+    open fun onFrame() {
+        player.onFrame()
+    }
+
+    open fun onTick() {
+        player.onTick()
+        tickingThread.tickWorld()
+    }
+
     override fun exitToMainMenu() {
-        exitCommon()
+        destroy()
         gui.topLayer = MainMenuUI(gui, null)
     }
 
     override fun exitToMainMenu(errorMessage: String) {
-        exitCommon()
+        destroy()
         gui.topLayer = MessageBoxUI(gui, MainMenuUI(gui, null), "Disconnected from server", errorMessage)
     }
 
-    open fun exitCommon() {
+    protected open fun destroy() {
+        logger.info("Terminating ticking thread...")
+        tickingThread.terminate().traverse()
+        logger.info("Terminating ticking thread... done")
         pluginManager.disablePlugins()
-
+        logger.info("Disabled plugins")
         worldRenderer.cleanup()
+        logger.debug("Destroyed world renderer")
         loadingAgent.unloadEverything(true)
+        logger.debug("Unloaded world bits")
         world_.destroy()
-
         soundManager.stopAllSounds()
-        client.gameWindow.graphicsEngine.loadRenderGraph(BuiltInRendergraphs.onlyGuiRenderGraph(client))
 
+        logger.debug("Left ingame state")
+        client.gameWindow.graphicsEngine.loadRenderGraph(BuiltInRendergraphs.onlyGuiRenderGraph(client))
         client.ingame = null
     }
 

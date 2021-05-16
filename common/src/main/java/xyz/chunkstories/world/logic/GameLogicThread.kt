@@ -21,11 +21,7 @@ import xyz.chunkstories.world.WorldImplementation
 import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.Semaphore
 
-/**
- * Sandboxed thread that runs all the game logic for one world
- */
-//TODO actually sandbox it lol
-class WorldTickingThread(private val world: WorldImplementation, securityManager: SecurityManager) : Thread() {
+abstract class GameLogicThread(private val world: WorldImplementation) : Thread() {
     private val gameLogicScheduler: GameLogicScheduler
 
     private val die = AtomicBoolean(false)
@@ -49,8 +45,6 @@ class WorldTickingThread(private val world: WorldImplementation, securityManager
         get() = 1.0
 
     init {
-        this.name = "World '" + world.properties.internalName + "' logic thread"
-
         gameLogicScheduler = GameLogicScheduler()
     }
 
@@ -64,10 +58,6 @@ class WorldTickingThread(private val world: WorldImplementation, securityManager
     }
 
     override fun run() {
-        // TODO
-        // Installs a custom SecurityManager
-        logger.info("Security manager: " + System.getSecurityManager())
-
         while (!die.get()) {
             // Dirty performance metric :]
             // perfMetric();
@@ -77,49 +67,9 @@ class WorldTickingThread(private val world: WorldImplementation, securityManager
             fps = 1f / ((System.nanoTime() - lastTimeNs).toFloat() / 1000f / 1000f / 1000f)
             lastTimeNs = System.nanoTime()
 
-            world.gameInstance.pluginManager.fireEvent(WorldTickEvent(world))
-
-            try {
-                world.tick()
-            } catch (e: Exception) {
-                world.logger.error("Exception occured while ticking the world : ", e)
-            }
-
-            // nanoCheckStep(5, "Tick");
-
-            // Every second, unloads unused stuff
-            if (world.ticksElapsed % 60 == 0L) {
-                // Compresses pending chunk summaries
-                if (world is WorldMaster) {
-                    for (region in world.regionsManager.regionsList) {
-                        region.compressChangedChunks()
-                    }
-                }
-            }
-
-            val physicsRate = 4
-            if(world is WorldMaster) {
-                val players = world.players
-                if (world.ticksElapsed % physicsRate == 0L) {
-                    for (chunk in world.chunksManager.allLoadedChunks) {
-                        var minDistance = Double.MAX_VALUE
-                        val chunkLocation = Location(world, chunk.chunkX * 32.0 + 16.0, chunk.chunkY * 32.0 + 16.0, chunk.chunkZ * 32.0 + 16.0)
-                        for(player in players) {
-                            val playerLocation = player.entityIfIngame?.location ?: continue
-                            val distance = playerLocation.distance(chunkLocation)
-                            if(distance < minDistance)
-                                minDistance = distance
-                        }
-
-                        if(minDistance < 32 * 2.0) {
-                            chunk.tick(world.ticksElapsed / physicsRate)
-                        }
-                    }
-                }
-            }
+            tick()
 
             gameLogicScheduler.runScheduledTasks()
-            // nanoCheckStep(1, "schedule");
 
             // Game logic is 60 ticks/s
             sync(targetFps)
@@ -128,25 +78,25 @@ class WorldTickingThread(private val world: WorldImplementation, securityManager
         waitForLogicFinish.signal()
     }
 
-    fun perfMetric() {
-        val ms = Math.floor((System.nanoTime() - lastTimeNs) / 10000.0) / 100.0
-        var kek = ""
-        val d = 0.02
-        var i = 0.0
-        while (i < 1.0) {
-            kek += if (Math.abs(ms - 16.0 - i) > d) " " else "|"
-            i += d
+    fun tickWorld() {
+        try {
+            world.tick()
+        } catch (e: Exception) {
+            world.logger.error("Exception occurred while ticking the world : ", e)
         }
-        println(kek + ms + "ms")
     }
+
+    abstract fun tick()
+
+    val lastTimeInMs: Float
+        get() = (((System.nanoTime() - lastTimeNs) / 1000.0) / 1000.0).toFloat()
 
     /** fancy sync method from SO iirc  */
     fun sync(fps: Int) {
         if (fps <= 0)
             return
 
-        val errorMargin = (1000 * 1000).toLong() // 1 millisecond error margin for
-        // Thread.sleep()
+        val errorMargin = (1000 * 1000).toLong() // 1 millisecond error margin for  Thread.sleep()
         val sleepTime = (1000000000 / fps).toLong() // nanoseconds to sleep this frame
 
         // if smaller than sleepTime burn for errorMargin + remainder micro &
@@ -212,7 +162,6 @@ class WorldTickingThread(private val world: WorldImplementation, securityManager
         }
     }
     companion object {
-
-        private val logger = LoggerFactory.getLogger("worldlogic")
+        private val logger = LoggerFactory.getLogger("gameLogic")
     }
 }

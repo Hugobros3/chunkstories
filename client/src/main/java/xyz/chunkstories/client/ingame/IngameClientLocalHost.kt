@@ -1,14 +1,9 @@
 package xyz.chunkstories.client.ingame
 
-import org.slf4j.Logger
 import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.server.PermissionsManager
 import xyz.chunkstories.api.server.Host
-import xyz.chunkstories.api.world.WorldMaster
 import xyz.chunkstories.client.ClientImplementation
-import org.slf4j.LoggerFactory
-import xyz.chunkstories.api.content.ContentTranslator
-import xyz.chunkstories.api.entity.Entity
 import xyz.chunkstories.api.player.PlayerID
 import xyz.chunkstories.api.world.World
 import xyz.chunkstories.world.*
@@ -52,7 +47,6 @@ class IngameClientLocalHost constructor(client: ClientImplementation, worldIniti
     override fun onceCreated() {
         world.playersMetadata.playerEnters(player)
         super.onceCreated()
-        world.startTicking()
     }
 
     override var permissionsManager: PermissionsManager = object : PermissionsManager {
@@ -62,28 +56,9 @@ class IngameClientLocalHost constructor(client: ClientImplementation, worldIniti
         }
     }
 
-    /** When exiting a localhost world, ensure to save everything */
-    override fun exitCommon() {
+    override fun destroy() {
         world.playersMetadata.playerLeaves(player)
-        if (world_ is WorldMaster) {
-            // Stop the world clock so hopefully as to freeze it's state
-            world_.stopTicking().traverse()
-
-            // val playerWorldMetadata = world.playersMetadata[player.id]!!
-
-            player.destroy()
-            // Save everything the world contains
-            //internalWorld.saveEverything().traverse()
-        }
-        super.exitCommon()
-    }
-
-    override fun startPlayingAs_(entity: Entity) {
-        TODO("Not yet implemented")
-    }
-
-    override fun startSpectating_() {
-        TODO("Not yet implemented")
+        super.destroy()
     }
 
     override fun getPlayer(playerName: String): Player? {
@@ -97,10 +72,6 @@ class IngameClientLocalHost constructor(client: ClientImplementation, worldIniti
             return player
         return null
     }
-
-    /*override fun Player.disconnect(disconnectMessage: String) {
-        throw UnsupportedOperationException()
-    }*/
 
     override fun broadcastMessage(message: String) {
         print(message)

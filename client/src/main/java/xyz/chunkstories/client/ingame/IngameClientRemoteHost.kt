@@ -15,16 +15,9 @@ fun ClientImplementation.connectToRemoteWorld(serverAddress: String, port: Int) 
 class IngameClientRemoteHost constructor(client: ClientImplementation, val connection: ServerConnection, worldInitializer: (IngameClientImplementation) -> WorldImplementation) : IngameClientImplementation(client, worldInitializer) {
     override val world: WorldSubImplementation
         get() = super.world_ as WorldSubImplementation
-    override fun startPlayingAs_(entity: Entity) {
-        TODO("Not yet implemented")
-    }
 
-    override fun startSpectating_() {
-        TODO("Not yet implemented")
-    }
-
-    override fun exitCommon() {
+    override fun destroy() {
         connection.close("Exiting world")
-        super.exitCommon()
+        super.destroy()
     }
 }

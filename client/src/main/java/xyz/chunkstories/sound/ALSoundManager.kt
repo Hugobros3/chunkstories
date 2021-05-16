@@ -97,7 +97,7 @@ class ALSoundManager(private val client: ClientImplementation) : ClientSoundMana
         get() = TODO("Not yet implemented")
 
     override fun stopAllSounds() {
-        TODO("Not yet implemented")
+
     }
 
     override fun getSoundSource(id: SoundSourceID): SoundSource? {

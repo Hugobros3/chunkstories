@@ -179,7 +179,7 @@ class DedicatedServer(coreContentLocation: File, requestedMods: List<String>) : 
         installHostCommands(this)
 
         // Finally start logic
-        world.startTicking()
+        // TODO("world.startTicking()")
 
         console.run()
         shutdown()
@@ -188,7 +188,7 @@ class DedicatedServer(coreContentLocation: File, requestedMods: List<String>) : 
     private fun shutdown() {
         // When stopped, close sockets and save config.
         logger.info("Stopping world logic")
-        world.stopTicking()
+        TODO("world.stopTicking()")
 
         logger.info("Killing all connections")
         connectionsManager.terminate()
@@ -198,7 +198,7 @@ class DedicatedServer(coreContentLocation: File, requestedMods: List<String>) : 
 
         logger.info("Saving map and waiting for IO to finish")
         world.saveEverything()
-        world.ioHandler.waitThenKill()
+        world.ioThread.waitThenKill()
         world.destroy()
 
         logger.info("Saving configuration")

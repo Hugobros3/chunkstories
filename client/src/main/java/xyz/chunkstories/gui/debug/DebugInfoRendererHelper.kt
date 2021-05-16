@@ -7,6 +7,7 @@ import xyz.chunkstories.api.player.entityIfIngame
 import xyz.chunkstories.api.world.getCell
 import xyz.chunkstories.api.world.heightmap.getHeight
 import xyz.chunkstories.client.glfw.GLFWWindow
+import xyz.chunkstories.client.ingame.IngameClientImplementation
 import xyz.chunkstories.graphics.opengl.OpenglGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.swapchain.PerformanceCounter
@@ -31,15 +32,18 @@ class DebugInfoRendererHelper(ingameUI: IngameUI) {
             guiDrawer.drawStringWithShadow(font, 4, posY, text)
         }
 
-        val ingameClient = gui.client.ingame!!
-        val window = (ingameClient.engine.gameWindow as GLFWWindow)
-        val world = ingameClient.world as WorldImplementation
+        val window = (gui.client.gameWindow as GLFWWindow)
         val graphicsBackend = window.graphicsEngine.backend
 
         debugLine("Chunk Stories ${VersionInfo.versionJson.verboseVersion} running on the ${graphicsBackend.javaClass.simpleName}")
+        val ingameClient: IngameClientImplementation = gui.client.ingame as? IngameClientImplementation ?: let {
+            debugLine("Not ingame !")
+            return
+        }
+        val world = ingameClient.world as WorldImplementation
 
         fun PerformanceCounter.print() {
-            debugLine("#FF0000Rendering: ${lastFrametimeNs/1000000}ms fps: ${avgFps.toInt()} (min ${minFps.toInt()}, max ${maxFps.toInt()}) #00FFFFSimulation performance : ${world.gameLogic.simulationFps}")
+            debugLine("#FF0000Rendering: ${lastFrametimeNs/1000000}ms fps: ${avgFps.toInt()} (min ${minFps.toInt()}, max ${maxFps.toInt()}) #00FFFFSimulation performance : ${ingameClient.tickingThread.simulationFps}")
         }
 
         when(graphicsBackend) {
@@ -61,7 +65,7 @@ class DebugInfoRendererHelper(ingameUI: IngameUI) {
         debugLine("RAM usage: ${Runtime.getRuntime().freeMemory() / 1024 / 1024} mb free")
         //debugLine("VMA usage: ${VmaAllocator.allocations} allocations totalling ${VmaAllocator.allocatedBytes.get()/1024/1024}mb ")
 
-        debugLine("Tasks queued: ${ingameClient.engine.tasks.submittedTasks()} IO operations queud: ${world.ioHandler.size}")
+        debugLine("Tasks queued: ${ingameClient.engine.tasks.submittedTasks()} IO operations queud: ${world.ioThread.size}")
 
         var chunksCount = 0
         var regionsCount = 0

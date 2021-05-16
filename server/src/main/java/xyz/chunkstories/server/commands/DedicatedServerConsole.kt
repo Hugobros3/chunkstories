@@ -86,13 +86,13 @@ class DedicatedServerConsole(val server: DedicatedServer) : CommandEmitter, Runn
         val usedRam = maxRam - freeRam
 
         txt += "ChunkStories server " + VersionInfo.versionJson.verboseVersion
-        txt += " | fps:" + server.world.gameLogic.simulationFps
+        // txt += " | fps:" + server.world.gameLogic.simulationFps
         txt += " | ent:$ec"
         txt += " | players:" + server.connectionsManager.playersNumber + "/" + server.connectionsManager.maxClients
         txt += (" | lc:" + server.world.regionsManager.regionsList.count() + " ls:" + server.world.heightmapsManager.all().count())
         txt += " | ram:$usedRam/$maxRam"
         txt += " | " + server.tasks.toShortString()
-        txt += " | ioq:" + server.world.ioHandler.size
+        txt += " | ioq:" + server.world.ioThread.size
 
         txt += Ansi.ansi().bg(Ansi.Color.BLACK).fg(Ansi.Color.WHITE)
 

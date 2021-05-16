@@ -9,10 +9,7 @@ package xyz.chunkstories.world
 import java.io.File
 
 import xyz.chunkstories.api.graphics.systems.dispatching.DecalsManager
-import org.joml.Vector3dc
 
-import xyz.chunkstories.api.particles.ParticleType
-import xyz.chunkstories.api.particles.ParticleTypeDefinition
 import xyz.chunkstories.api.particles.ParticlesManager
 import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.server.Host
@@ -34,7 +31,7 @@ class WorldTool constructor(override val gameInstance: Host,
     var isLightningEnabled = true
     var isGenerationEnabled = true
 
-    override val ioHandler: IOTasks = IOTasks(this)
+    override val ioThread: IOTasks = IOTasks(this)
 
     override val soundManager: SoundManager
         get() = throw UnsupportedOperationException()
@@ -57,7 +54,7 @@ class WorldTool constructor(override val gameInstance: Host,
         set(value) = throw UnsupportedOperationException()
 
     init {
-        ioHandler.start()
+        ioThread.start()
     }
 
     companion object {

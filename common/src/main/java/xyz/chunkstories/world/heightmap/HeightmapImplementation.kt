@@ -18,7 +18,6 @@ import xyz.chunkstories.util.concurrency.SimpleFence
 import xyz.chunkstories.world.WorldTool
 import xyz.chunkstories.world.generator.TaskGenerateWorldSlice
 import net.jpountz.lz4.LZ4Factory
-import xyz.chunkstories.EngineImplemI
 import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.player.entityIfIngame
 import xyz.chunkstories.api.server.RemotePlayer
@@ -74,7 +73,7 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
             if (file.exists()) {
                 val task = IOTaskLoadHeightmap(this)
                 transitionState(Heightmap.State.Loading(task))
-                world.ioHandler.scheduleTask(task)
+                world.ioThread.scheduleTask(task)
             } else {
                 if(world is WorldTool && !world.isGenerationEnabled) {
                     this.heightData = IntArray(Math.ceil(256.0 * 256.0 * (1 + 1 / 3.0)).toInt())
@@ -261,7 +260,7 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
     private fun transitionSaving() {
         val task = IOTaskSaveHeightmap(this)
         transitionState(Heightmap.State.Saving(task))
-        world.ioHandler.scheduleTask(task)
+        world.ioThread.scheduleTask(task)
     }
 
     private fun transitionAvailable() {

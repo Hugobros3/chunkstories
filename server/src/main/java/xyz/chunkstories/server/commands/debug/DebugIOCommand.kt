@@ -20,8 +20,8 @@ class DebugIOCommand(serverConsole: Host) : AbstractHostCommandHandler(serverCon
 
     override fun handleCommand(emitter: CommandEmitter, command: Command, arguments: Array<String>): Boolean {
         if (command.name == "io" && emitter.hasPermission("server.debug")) {
-            emitter.sendMessage("#00FFD0" + (host.world as WorldImplementation).ioHandler)
-            (host.world as WorldImplementation).ioHandler.dumpIOTaks()
+            emitter.sendMessage("#00FFD0" + (host.world as WorldImplementation).ioThread)
+            (host.world as WorldImplementation).ioThread.dumpIOTaks()
             return true
         }
         return false

@@ -6,7 +6,6 @@
 
 package xyz.chunkstories.world.chunk
 
-import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
 import xyz.chunkstories.api.util.concurrency.Fence
 import xyz.chunkstories.api.world.WorldUser
 import xyz.chunkstories.api.world.chunk.ChunkHolder
@@ -396,7 +395,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
             val task = TaskLoadChunk(this)
             transitionState(ChunkHolder.State.Loading(task))
             //TODO this is a hack for working arround the lack of fibers in the task system!
-            region.world.ioHandler.scheduleTask(task)
+            region.world.ioThread.scheduleTask(task)
             //region.world.gameContext.tasks.scheduleTask(task)
         } finally {
             region.stateLock.unlock()

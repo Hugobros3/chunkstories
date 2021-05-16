@@ -10,8 +10,8 @@ package xyz.chunkstories.world
 
 import com.google.gson.Gson
 import com.googlecode.concurentlocks.ReentrantReadWriteUpdateLock
-import org.joml.Vector3dc
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.api.Location
 import xyz.chunkstories.api.block.BlockAdditionalData
 import xyz.chunkstories.api.block.structures.Prefab
 import xyz.chunkstories.api.entity.Entity
@@ -19,17 +19,17 @@ import xyz.chunkstories.api.physics.Box
 import xyz.chunkstories.api.util.concurrency.Fence
 import xyz.chunkstories.api.entity.EntityID
 import xyz.chunkstories.api.entity.Subscriber
+import xyz.chunkstories.api.events.world.WorldTickEvent
 import xyz.chunkstories.api.graphics.systems.dispatching.DecalsManager
 import xyz.chunkstories.api.math.MathUtils.ceil
 import xyz.chunkstories.api.math.MathUtils.floor
 import xyz.chunkstories.api.net.Packet
 import xyz.chunkstories.api.net.PacketWorld
 import xyz.chunkstories.api.net.packets.PacketEntity
-import xyz.chunkstories.api.particles.ParticleType
-import xyz.chunkstories.api.particles.ParticleTypeDefinition
 import xyz.chunkstories.api.particles.ParticlesManager
 import xyz.chunkstories.api.player.Player
 import xyz.chunkstories.api.player.PlayerState
+import xyz.chunkstories.api.player.entityIfIngame
 import xyz.chunkstories.api.server.Host
 import xyz.chunkstories.api.sound.SoundManager
 import xyz.chunkstories.api.world.*
@@ -37,23 +37,18 @@ import xyz.chunkstories.api.world.cell.Cell
 import xyz.chunkstories.api.world.cell.CellData
 import xyz.chunkstories.api.world.generator.WorldGenerator
 import xyz.chunkstories.content.GameContentStore
-import xyz.chunkstories.content.sandbox.UnthrustedUserContentSecurityManager
 import xyz.chunkstories.content.translator.AbstractContentTranslator
-import xyz.chunkstories.content.translator.IncompatibleContentException
 import xyz.chunkstories.content.translator.InitialContentTranslator
 import xyz.chunkstories.content.translator.LoadedContentTranslator
 import xyz.chunkstories.net.Connection
 import xyz.chunkstories.net.LogicalPacketDatagram
-import xyz.chunkstories.sound.DummySoundData
 import xyz.chunkstories.util.alias
 import xyz.chunkstories.util.concurrency.CompoundFence
 import xyz.chunkstories.world.chunk.ChunksStorage
 import xyz.chunkstories.world.heightmap.HeightmapsStorage
 import xyz.chunkstories.world.io.IOTasks
-import xyz.chunkstories.world.logic.WorldTickingThread
 import xyz.chunkstories.world.region.RegionsStorage
 import java.io.File
-import java.io.IOException
 import java.util.*
 import java.util.concurrent.locks.ReadWriteLock
 import java.util.concurrent.locks.ReentrantLock
@@ -70,10 +65,9 @@ sealed class WorldImplementation constructor(
         val contentTranslator: AbstractContentTranslator)
     : World {
 
-    override val generator: WorldGenerator
+    final override val generator: WorldGenerator
 
-    open val ioHandler = IOTasks(this)
-    val gameLogic: WorldTickingThread
+    open val ioThread = IOTasks(this)
 
     override val chunksManager by lazy { ChunksStorage(this) }
     override val regionsManager by lazy { RegionsStorage(this) }
@@ -104,22 +98,9 @@ sealed class WorldImplementation constructor(
     init {
         try {
             this.generator = gameInstance.content.generators.getWorldGenerator(properties.generator).createForWorld(this)
-
-            // Start the world logic thread
-            this.gameLogic = WorldTickingThread(this, UnthrustedUserContentSecurityManager())
-        } catch (e: IOException) {
-            throw WorldLoadingException("Couldn't load world ", e)
-        } catch (e: IncompatibleContentException) {
+        } catch (e: Exception) {
             throw WorldLoadingException("Couldn't load world ", e)
         }
-    }
-
-    fun startTicking() {
-        gameLogic.start()
-    }
-
-    fun stopTicking(): Fence {
-        return gameLogic.terminate()
     }
 
     override fun addEntity(entity: Entity): EntityID {
@@ -150,6 +131,10 @@ sealed class WorldImplementation constructor(
     }
 
     open fun tick() {
+
+        ticksElapsed++
+        gameInstance.pluginManager.fireEvent(WorldTickEvent(this))
+
         entitiesLock.writeLock().withLock {
             for (entity in entities_) {
                 entity.tick()
@@ -172,8 +157,6 @@ sealed class WorldImplementation constructor(
                 internalData.sky.raining = MathUtils.clampf(internalData.sky.raining + randomFuzz2, 0.0f, 1.0f)
             }
         }*/
-
-        ticksElapsed++
     }
 
     override fun getEntitiesInBox(box: Box): Sequence<Entity> {
@@ -240,8 +223,7 @@ sealed class WorldImplementation constructor(
     }
 
     open fun destroy() {
-        gameLogic.terminate().traverse()
-        ioHandler.kill()
+        ioThread.terminate()
     }
 
     companion object {
@@ -294,6 +276,32 @@ open class WorldMasterImplementation constructor(
         // TODO: processIncommingPackets();
         // TODO: flush all
         super.tick()
+
+        if (ticksElapsed % 60 == 0L) {
+            for (region in this.regionsManager.regionsList) {
+                // TODO probably should be some sort of async task eventually
+                region.compressChangedChunks()
+            }
+        }
+
+        val physicsRate = 4
+        val players = this.players
+        if (this.ticksElapsed % physicsRate == 0L) {
+            for (chunk in this.chunksManager.allLoadedChunks) {
+                var minDistance = Double.MAX_VALUE
+                val chunkLocation = Location(this, chunk.chunkX * 32.0 + 16.0, chunk.chunkY * 32.0 + 16.0, chunk.chunkZ * 32.0 + 16.0)
+                for(player in players) {
+                    val playerLocation = player.entityIfIngame?.location ?: continue
+                    val distance = playerLocation.distance(chunkLocation)
+                    if(distance < minDistance)
+                        minDistance = distance
+                }
+
+                if(minDistance < 32 * 2.0) {
+                    chunk.tick(this.ticksElapsed / physicsRate)
+                }
+            }
+        }
     }
 
     override fun addEntity(entity: Entity): EntityID {
@@ -339,7 +347,7 @@ fun loadWorld(gameInstance: GameInstance, folder: File): WorldMasterImplementati
     val internalData = tryLoadWorldInternalData(folder)
 
     val world = WorldMasterImplementation(gameInstance, properties, internalData, contentTranslator, folder)
-    world.ioHandler.start()
+    world.ioThread.start()
     return world
 }
 

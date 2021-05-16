@@ -93,7 +93,7 @@ public class IOTasks extends Thread implements TaskExecutor {
 		return i;
 	}
 
-	public void kill() {
+	public void terminate() {
 		scheduleTask(DIE);
 		synchronized (this) {
 			notifyAll();
@@ -120,8 +120,7 @@ public class IOTasks extends Thread implements TaskExecutor {
 	public void dumpIOTaks() {
 		System.out.println("dumping io tasks");
 
-		// Hardcoding a security because you can fill the queue faster than you can
-		// iterate it
+		// Hardcoding a security because you can fill the queue faster than you can iterate it
 		int hardLimit = 500;
 		for (IOTask task : this.tasks) {
 			hardLimit--;

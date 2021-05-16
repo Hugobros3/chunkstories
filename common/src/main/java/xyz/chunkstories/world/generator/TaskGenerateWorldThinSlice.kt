@@ -43,8 +43,9 @@ class TaskGenerateWorldThinSlice internal constructor(private val world: World, 
 
     override fun task(taskExecutor: TaskExecutor): Boolean {
         for (chunkY in 0 until maxGenerationHeightInChunks) {
-            if (holders[chunkY].state !is ChunkHolder.State.Generating)
-                throw Exception("Trying to generate a chunk that is already generated!")
+            val chunkState = holders[chunkY].state
+            if (chunkState !is ChunkHolder.State.Generating)
+                throw Exception("Trying to generate a chunk that is already generated! ($chunkState)")
         }
 
         // Doing the lord's work

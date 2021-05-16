@@ -90,7 +90,7 @@ class RegionImplementation(override val world: WorldImplementation, override val
                 file.exists() -> {
                     val task = IOTaskLoadRegion(this)
                     transitionState(Region.State.Loading(task))
-                    world.ioHandler.scheduleTask(task)
+                    world.ioThread.scheduleTask(task)
                 }
                 world is WorldTool && !world.isGenerationEnabled -> {
                     // Just fill out with dummy data (air)
@@ -261,7 +261,7 @@ class RegionImplementation(override val world: WorldImplementation, override val
 
         val task = IOTaskSaveRegion(this)
         transitionState(Region.State.Saving(task))
-        world.ioHandler.scheduleTask(task)
+        world.ioThread.scheduleTask(task)
     }
 
     private fun transitionAvailable() {

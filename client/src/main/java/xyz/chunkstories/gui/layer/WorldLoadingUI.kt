@@ -13,21 +13,20 @@ import xyz.chunkstories.world.WorldMasterImplementation
 import xyz.chunkstories.world.figureOutWherePlayerWillSpawn
 import xyz.chunkstories.world.spawnPlayer
 
-class WorldLoadingUI(val world: WorldMasterImplementation, val ingameClient: IngameClientImplementation, gui: Gui, parentLayer: Layer?) : Layer(gui, parentLayer), WorldUser {
+class WorldLoadingUI(val world: WorldMasterImplementation, val ingameClient: IngameClientImplementation, gui: Gui, parentLayer: Layer?) : Layer(gui, parentLayer) {
 
     //val waitOn = mutableListOf<Task>()
     val subs = mutableListOf<ChunkHolder>()
     val count: Int
     var todo: Int
 
-    private var entity: Entity? = null
-    private lateinit var spawnLocation: Location
+    val preloadUser = object : WorldUser {}
 
     init {
         // preload arround spawn location
         val spawnLocation = world.figureOutWherePlayerWillSpawn(ingameClient.player)
 
-        world.gameLogic.logicThreadBlocking {
+        ingameClient.tickingThread.logicThreadBlocking {
             preloadArround((spawnLocation.x / 32).toInt(), (spawnLocation.y / 32).toInt(), (spawnLocation.z / 32).toInt())
         }
 
@@ -42,7 +41,7 @@ class WorldLoadingUI(val world: WorldMasterImplementation, val ingameClient: Ing
                     continue
 
                 for (z in (cz - 2)..(cz + 2)) {
-                    val ch = world.chunksManager.acquireChunkHolder(this, x, y, z)
+                    val ch = world.chunksManager.acquireChunkHolder(preloadUser, x, y, z)
                     subs.add(ch)
                 }
             }
@@ -103,11 +102,11 @@ class WorldLoadingUI(val world: WorldMasterImplementation, val ingameClient: Ing
         //println(text)
 
         if (done == count) {
-            world.gameLogic.logicThreadBlocking {
+            ingameClient.tickingThread.logicThreadBlocking {
                 world.spawnPlayer(ingameClient.player)
                 ingameClient.loadingAgent.updateUsedWorldBits()
                 for (ch in subs)
-                    ch.unregisterUser(this)
+                    ch.unregisterUser(preloadUser)
             }
 
             gui.popTopLayer()
