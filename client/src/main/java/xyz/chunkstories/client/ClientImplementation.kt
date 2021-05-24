@@ -66,7 +66,7 @@ private fun printHelp() {
                 Available commandline options:
                 --core=... Specifies the folder/file to use as the base content
                 --mods=... Specifies some mods to load
-                --backend=[${GraphicsBackendsEnum.values()}] Forces a specific backend to be used.
+                --backend=${GraphicsBackendsEnum.values().map { it.name }} Forces a specific backend to be used.
 
                 Backend-specific options:
 
