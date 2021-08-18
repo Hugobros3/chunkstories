@@ -9,6 +9,7 @@ package xyz.chunkstories.sound.source
 import org.joml.Vector3dc
 
 import xyz.chunkstories.api.sound.SoundSource
+import xyz.chunkstories.api.sound.SoundSourceID
 
 class DummySoundSource : SoundSource {
     override var attenuationEnd = 0f
@@ -16,11 +17,11 @@ class DummySoundSource : SoundSource {
     override var gain = 0f
     override val isDonePlaying = true
     override val mode: SoundSource.Mode = SoundSource.Mode.NORMAL
-    override val name: String
+    override val soundName: String
         get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
     override var pitch = 1f
     override var position: Vector3dc? = null
-    override val uuid: Long = -1
+    override val id: SoundSourceID = -1
 
     override fun stop() {
         

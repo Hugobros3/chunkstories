@@ -69,7 +69,7 @@ fun <T: DispatchingSystem> VulkanGraphicsBackend.getOrCreateDispatchingSystem(li
         DefferedLightsRenderer::class.java -> VulkanDefferedLightsDispatcher(this)
         else -> {
             //throw Exception("Unimplemented system on this backend: ${dispatchingSystemRegistration.clazz}")
-            VulkanGraphicsBackend.logger.error("Unimplemented system on this backend: ${dispatchingSystemRegistration.clazz}")
+            logger.error("Unimplemented system on this backend: ${dispatchingSystemRegistration.clazz}")
             return null
         }
     }

@@ -8,7 +8,6 @@ import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL30.*
 import org.lwjgl.opengl.GLCapabilities
 import org.slf4j.LoggerFactory
-import xyz.chunkstories.api.content.Content
 import xyz.chunkstories.api.graphics.representation.Representation
 import xyz.chunkstories.api.graphics.systems.RegisteredGraphicSystem
 import xyz.chunkstories.api.graphics.systems.dispatching.ChunksRenderer
@@ -32,18 +31,19 @@ import xyz.chunkstories.graphics.opengl.systems.OpenglFullscreenQuadDrawer
 import xyz.chunkstories.graphics.opengl.systems.gui.OpenglGuiDrawer
 import xyz.chunkstories.graphics.opengl.systems.world.OpenglModelsDispatcher
 import xyz.chunkstories.graphics.opengl.textures.OpenglTextures
-import xyz.chunkstories.graphics.opengl.voxels.OpenglVoxelTexturesArray
+import xyz.chunkstories.graphics.opengl.voxels.OpenglBlockTexturesArray
 import xyz.chunkstories.graphics.opengl.world.OpenglWorldRenderer
 import xyz.chunkstories.graphics.opengl.world.chunks.OpenglChunkRepresentationsDispatcher
 import xyz.chunkstories.graphics.vulkan.swapchain.PerformanceCounter
-import xyz.chunkstories.voxel.VoxelTexturesSupport
-import xyz.chunkstories.world.WorldClientCommon
+import xyz.chunkstories.block.BlockTexturesProvider
+import xyz.chunkstories.block.BlockTypesStore
+import xyz.chunkstories.world.WorldImplementation
 import java.awt.image.BufferedImage
 import javax.swing.JOptionPane
 
 data class OpenglSupport(val dsaSupport: Boolean)
 
-class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window: GLFWWindow) : GLFWBasedGraphicsBackend(graphicsEngine, window), VoxelTexturesSupport {
+class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window: GLFWWindow) : GLFWBasedGraphicsBackend(graphicsEngine, window), BlockTexturesProvider {
     private val capabilities: GLCapabilities
     private val requiredExtensions = setOf("GL_ARB_texture_storage", "GL_ARB_draw_buffers_blend")
     val openglSupport: OpenglSupport
@@ -156,7 +156,7 @@ class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun createWorldRenderer(world: WorldClientCommon): WorldRenderer =
+    override fun createWorldRenderer(world: WorldImplementation): WorldRenderer =
             OpenglWorldRenderer(this, world)
 
     fun <T : DrawingSystem> createDrawingSystem(pass: OpenglPass, registration: RegisteredGraphicSystem<T>): OpenglDrawingSystem? {
@@ -199,7 +199,7 @@ class OpenglGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
         return new
     }
 
-    override fun createVoxelTextures(voxels: Content.Voxels) = OpenglVoxelTexturesArray(this, voxels)
+    override fun createVoxelTextures(blockTypes: BlockTypesStore) = OpenglBlockTexturesArray(this, blockTypes)
 
     override fun reloadRendergraph() {
         this.queuedRenderGraph = this.renderGraph.dslCode

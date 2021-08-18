@@ -2,7 +2,7 @@ package xyz.chunkstories.graphics.vulkan.systems.drawing.dbgwireframe
 
 import xyz.chunkstories.api.client.IngameClient
 import xyz.chunkstories.client.InternalClientOptions
-import xyz.chunkstories.client.ingame.LocalPlayerImplementation
+import xyz.chunkstories.client.ingame.ClientPlayer
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.Primitive
 import xyz.chunkstories.graphics.vulkan.Pipeline
@@ -21,7 +21,7 @@ import org.lwjgl.vulkan.VK10.*
 import xyz.chunkstories.graphics.vulkan.graph.VulkanPassInstance
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 
-class VulkanDebugDrawer(pass: VulkanPass, dslCode: VulkanDebugDrawer.() -> Unit, val client: IngameClient) : VulkanDrawingSystem(pass) {
+class VulkanDebugDrawer(pass: VulkanPass, dslCode: VulkanDebugDrawer.() -> Unit, val ingameClient: IngameClient) : VulkanDrawingSystem(pass) {
     val backend: VulkanGraphicsBackend
         get() = pass.backend
 
@@ -56,8 +56,6 @@ class VulkanDebugDrawer(pass: VulkanPass, dslCode: VulkanDebugDrawer.() -> Unit,
     }
 
     override fun registerDrawingCommands(context: VulkanPassInstance, commandBuffer: VkCommandBuffer) {
-        val entity = client.player.controlledEntity
-
         val bindingContext = context.getBindingContext(pipeline)
 
         var linesCount = 0
@@ -103,10 +101,10 @@ class VulkanDebugDrawer(pass: VulkanPass, dslCode: VulkanDebugDrawer.() -> Unit,
             line(p101, p111)
         }
 
-        if(client.configuration.getBooleanValue(InternalClientOptions.debugWireframe)) {
-            val size = client.world.worldInfo.size
+        if(ingameClient.engine.configuration.getBooleanValue(InternalClientOptions.debugWireframe)) {
+            val size = ingameClient.world.properties.size
 
-            for(keyc in (client.player as LocalPlayerImplementation).loadingAgent.aquiredChunkHoldersMask) {
+            for(keyc in (ingameClient.player as ClientPlayer).ingame.loadingAgent.aquiredChunkHoldersMask) {
                 val key = keyc.value
                 var rx = (key shr (size.bitlengthOfHorizontalChunksCoordinates + size.bitlengthOfVerticalChunksCoordinates)) and size.maskForChunksCoordinates
                 var ry = (key shr (size.bitlengthOfHorizontalChunksCoordinates)) and (31)

@@ -13,8 +13,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 import org.slf4j.LoggerFactory
 
-import xyz.chunkstories.api.GameContext
 import xyz.chunkstories.api.content.Asset
+import xyz.chunkstories.api.world.GameInstance
 import xyz.chunkstories.content.mods.ModFolderAsset
 import xyz.chunkstories.content.mods.ModZipAsset
 import xyz.chunkstories.util.FoldersUtils
@@ -30,7 +30,7 @@ object AssetAsFileHelper {
     internal var createCacheFolder = AtomicBoolean(false)
     internal var cacheFolder: File? = null
 
-    fun cacheAsset(asset: Asset, context: GameContext): File {
+    fun cacheAsset(asset: Asset, gameInstance: GameInstance): File {
         // Mod folders: we just pass the file
         if (asset is ModFolderAsset) {
             return asset.file
@@ -40,7 +40,7 @@ object AssetAsFileHelper {
             val extracted = extractAssert(asset, cacheFolder!!)
             // Hack on hack: obj files will require some stuff next to them
             if (asset.name.endsWith(".obj")) {
-                val materialFileAsset = context.content
+                val materialFileAsset = gameInstance.content
                         .getAsset(asset.name.substring(0, asset.name.length - 4) + ".mtl")
                 if (materialFileAsset != null)
                     extractAssert(materialFileAsset, cacheFolder)

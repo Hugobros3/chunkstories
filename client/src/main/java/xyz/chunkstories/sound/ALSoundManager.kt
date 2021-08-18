@@ -28,6 +28,7 @@ import xyz.chunkstories.api.client.ClientSoundManager
 import xyz.chunkstories.api.exceptions.SoundEffectNotFoundException
 import xyz.chunkstories.api.sound.SoundSource
 import xyz.chunkstories.api.sound.SoundSource.Mode
+import xyz.chunkstories.api.sound.SoundSourceID
 import xyz.chunkstories.sound.ogg.SoundDataOggSample
 import xyz.chunkstories.sound.source.ALBufferedSoundSource
 import xyz.chunkstories.sound.source.ALSoundSource
@@ -92,6 +93,17 @@ class ALSoundManager(private val client: ClientImplementation) : ClientSoundMana
         }
     }
 
+    override val playingSounds: Collection<SoundSource>
+        get() = TODO("Not yet implemented")
+
+    override fun stopAllSounds() {
+
+    }
+
+    override fun getSoundSource(id: SoundSourceID): SoundSource? {
+        TODO("Not yet implemented")
+    }
+
     override fun playSoundEffect(soundEffect: String, mode: Mode, position: Vector3dc?, pitch: Float, gain: Float, attenuationStart: Float, attenuationEnd: Float): SoundSource {
         try {
             val soundSource = when(mode) {
@@ -115,7 +127,7 @@ class ALSoundManager(private val client: ClientImplementation) : ClientSoundMana
     }
 
     override fun replicateServerSoundSource(soundEffect: String, mode: Mode, position: Vector3dc, pitch: Float, gain: Float, attenuationStart: Float, attenuationEnd: Float, UUID: Long): SoundSource {
-        try {
+        /*try {
             val soundSource = when(mode) {
                 Mode.STREAMED -> {
                     val streamingData = library.obtainBufferedSample(soundEffect) ?: throw SoundEffectNotFoundException()
@@ -135,16 +147,13 @@ class ALSoundManager(private val client: ClientImplementation) : ClientSoundMana
         } catch (e: SoundEffectNotFoundException) {
             logger.warn("Sound not found $soundEffect")
             throw e //return null
-        }
+        }*/
+        TODO()
     }
 
     private fun addSoundSource(soundSource: ALSoundSource) {
         soundSource.play()
         playingSoundSources.add(soundSource)
-    }
-
-    override fun getAllPlayingSounds(): List<SoundSource> {
-        return playingSoundSources.toList()
     }
 
     fun updateAllSoundSources() {
@@ -158,7 +167,7 @@ class ALSoundManager(private val client: ClientImplementation) : ClientSoundMana
         }
     }
 
-    override fun setListenerPosition(position: Vector3fc, lookAt: Vector3fc, up: Vector3fc) {
+    fun setListenerPosition(position: Vector3fc, lookAt: Vector3fc, up: Vector3fc) {
         stackPush()
         val posScratch = stackMallocFloat(3).put(floatArrayOf(position.x(), position.y(), position.z()))
         posScratch.flip()
@@ -184,18 +193,18 @@ class ALSoundManager(private val client: ClientImplementation) : ClientSoundMana
         return j
     }
 
-    override fun stopAnySound(sfx: String) {
+    fun stopAnySound(sfx: String) {
         val i = playingSoundSources.iterator()
         while (i.hasNext()) {
             val soundSource = i.next()
-            if (soundSource.name.contains(sfx)) {
+            if (soundSource.soundData.name.contains(sfx)) {
                 soundSource.stop()
                 i.remove()
             }
         }
     }
 
-    override fun stopAnySound() {
+    fun stopAnySound() {
         for (source in playingSoundSources)
             source.stop()
         playingSoundSources.clear()

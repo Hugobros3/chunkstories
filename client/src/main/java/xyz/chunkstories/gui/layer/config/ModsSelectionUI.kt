@@ -24,6 +24,7 @@ import xyz.chunkstories.client.ClientImplementation
 import xyz.chunkstories.content.mods.ModFolder
 import xyz.chunkstories.content.mods.ModImplementation
 import xyz.chunkstories.content.mods.ModZip
+import xyz.chunkstories.content.mods.ModsManagerImplementation
 import xyz.chunkstories.gui.layer.config.ModsSelectionUI.ModsScrollableContainer.ModItem
 import java.io.File
 import java.util.*
@@ -56,7 +57,7 @@ class ModsSelectionUI(window: Gui, parent: Layer) : Layer(window, parent) {
                     modsEnabled.add((modItem.mod as ModImplementation).loadString)
                 }
             }
-            gui.client.content.modsManager.setEnabledMods(*modsEnabled.toTypedArray())
+            (gui.client.content.modsManager as ModsManagerImplementation).requestedMods = modsEnabled
 
             (gui.client as ClientImplementation).reloadAssets()
             buildModsList()
@@ -67,7 +68,7 @@ class ModsSelectionUI(window: Gui, parent: Layer) : Layer(window, parent) {
 
     private fun buildModsList() {
         modsContainer.elements.clear()
-        val currentlyEnabledMods = Arrays.asList(*gui.client.content.modsManager.enabledModsString)
+        val currentlyEnabledMods = (gui.client.content.modsManager as ModsManagerImplementation).currentlyLoadedMods.map { it.modInfo.name }
 
         val uniqueMods = HashSet<String>()
         // First put in already loaded mods

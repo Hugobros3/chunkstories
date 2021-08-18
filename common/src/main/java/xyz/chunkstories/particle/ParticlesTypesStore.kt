@@ -44,7 +44,7 @@ class ParticlesTypesStore(override val parent: GameContentStore) : Content.Parti
                 try {
                     val particleTypeDefinition = ParticleTypeDefinition(this, name, properties)
 
-                    val className = particleTypeDefinition["class"].asString ?: throw Exception("no 'class' property set")
+                    val className = particleTypeDefinition.properties["class"].asString ?: throw Exception("no 'class' property set")
                     val klass = parent.modsManager.getClassByName(className) ?: throw Exception("Class $className not found")
                     val constructor = klass.getConstructor(ParticleTypeDefinition::class.java)
                             ?: throw Exception("$className doesn't have the right constructor")

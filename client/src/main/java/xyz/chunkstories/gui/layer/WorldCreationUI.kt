@@ -6,18 +6,17 @@
 
 package xyz.chunkstories.gui.layer
 
-import xyz.chunkstories.api.gui.Font
+import org.joml.Vector3d
 import xyz.chunkstories.api.gui.Gui
 import xyz.chunkstories.api.gui.GuiDrawer
 import xyz.chunkstories.api.gui.Layer
 import xyz.chunkstories.api.gui.elements.Button
 import xyz.chunkstories.api.gui.elements.InputText
-import xyz.chunkstories.api.world.WorldInfo
 import xyz.chunkstories.api.world.WorldSize
-import xyz.chunkstories.api.world.generator.WorldGeneratorDefinition
 import xyz.chunkstories.client.ClientImplementation
 import xyz.chunkstories.client.ingame.*
 import org.joml.Vector4f
+import xyz.chunkstories.api.world.World
 
 import java.io.File
 
@@ -38,8 +37,16 @@ class WorldCreationUI internal constructor(gui: Gui, parent: Layer) : Layer(gui,
         this.createOption.action = Runnable {
             //Escapes the unused characters
             val internalName = levelName.text.replace("[^\\w\\s]".toRegex(), "_")
-
-            val worldInfo = WorldInfo(internalName, levelName.text, "Player-generated world", "" + System.currentTimeMillis(), WorldSize.MEDIUM, worldGenName.text)
+            val size = WorldSize.MEDIUM
+            val worldInfo = World.Properties(
+                    internalName = internalName,
+                    name = levelName.text,
+                    description = "Player-generated world",
+                    seed = "" + System.currentTimeMillis(),
+                    size = size,
+                    generator = worldGenName.text,
+                    spawn = Vector3d(size.squareSizeInBlocks / 2.0, 100.0, size.squareSizeInBlocks / 2.0)
+                    )
             (gui.client as ClientImplementation).createAndEnterWorld(File("./worlds/$internalName/"), worldInfo)
         }
 

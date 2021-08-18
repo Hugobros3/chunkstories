@@ -6,70 +6,49 @@
 
 package xyz.chunkstories.world.chunk
 
-import org.joml.Vector3dc
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.api.block.BlockAdditionalData
 import xyz.chunkstories.api.content.json.*
 import xyz.chunkstories.api.entity.Entity
 import xyz.chunkstories.api.entity.EntitySerialization
-import xyz.chunkstories.api.events.voxel.WorldModificationCause
-import xyz.chunkstories.api.exceptions.world.WorldException
-import xyz.chunkstories.api.net.packets.PacketVoxelUpdate
-import xyz.chunkstories.api.server.RemotePlayer
-import xyz.chunkstories.api.voxel.Voxel
-import xyz.chunkstories.api.voxel.VoxelFormat
-import xyz.chunkstories.api.world.WorldMaster
+import xyz.chunkstories.api.world.World
+import xyz.chunkstories.api.world.cell.CellData
 import xyz.chunkstories.api.world.chunk.*
-import xyz.chunkstories.api.world.heightmap.Heightmap
 import xyz.chunkstories.api.world.region.Region
-import xyz.chunkstories.util.concurrency.SimpleLock
-import xyz.chunkstories.voxel.components.CellComponentsHolder
+import xyz.chunkstories.block.VoxelFormat
 import xyz.chunkstories.world.WorldImplementation
-import xyz.chunkstories.world.WorldTool
 import xyz.chunkstories.world.chunk.deriveddata.AutoRebuildingProperty
 import xyz.chunkstories.world.chunk.deriveddata.ChunkOcclusionProperty
 import xyz.chunkstories.world.region.RegionImplementation
-import java.util.HashMap
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Semaphore
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 
-/**
- * Essential class that holds actual chunk voxel data, entities and voxel
- * component !
- */
-class ChunkImplementation(override val holder: ChunkHolderImplementation, override val chunkX: Int, override val chunkY: Int, override val chunkZ: Int, compressedData: ChunkCompressedData?) : Chunk {
+class ChunkImplementation constructor(override val holder: ChunkHolderImplementation, override val chunkX: Int, override val chunkY: Int, override val chunkZ: Int, compressedData: ChunkCompressedData?) : Chunk {
     override val world: WorldImplementation
     protected val holdingRegion: RegionImplementation
-    protected val uuid: Int
 
-    // Actual data holding here
-    var voxelDataArray: IntArray? = null
+    public var blockData: IntArray? = null
+    val allCellComponents = mutableMapOf<Int, MutableList<BlockAdditionalData>>()
 
     // Count unsaved edits atomically, fancy :]
     val compressionUncommitedModifications = AtomicInteger()
     val revision = AtomicLong(0)
 
-    override val occlusion: ChunkOcclusionManager
-    override val lightBaker: ChunkLightBaker
-    override lateinit var mesh: ChunkMesh
+    val occlusion: ChunkOcclusionManager
+    val lightBaker: ChunkLightBaker
+    lateinit var mesh: ChunkMesh
 
-    // Set to true after destroy()
+    // Set after destroy()
     var isDestroyed = false
     val chunkDestructionSemaphore = Semaphore(1)
 
-    val allCellComponents: MutableMap<Int, CellComponentsHolder> = HashMap()
     val localEntities: MutableSet<Entity> = ConcurrentHashMap.newKeySet()
 
-    //TODO use semaphores/RW locks
-    val componentsLock = SimpleLock()
-    val entitiesLock = SimpleLock()
-
-    private val chunkDataArrayCreation = Semaphore(1)
-
-    override val isAirChunk: Boolean
-        get() = voxelDataArray == null
+    val isAirChunk: Boolean
+        get() = blockData == null
 
     override val region: Region
         get() = holdingRegion
@@ -78,54 +57,49 @@ class ChunkImplementation(override val holder: ChunkHolderImplementation, overri
         get() = localEntities
 
     init {
-        //var compressedData = compressedData
         chunksCounter.incrementAndGet()
 
         this.holdingRegion = holder.region
         this.world = holdingRegion.world
 
-        this.uuid = chunkX shl world.worldInfo.size.bitlengthOfVerticalChunksCoordinates or chunkY shl world
-                .worldInfo.size.bitlengthOfHorizontalChunksCoordinates or chunkZ
-
         occlusion = ChunkOcclusionProperty(this)
         lightBaker = ChunkLightBaker(this)
 
-        if (compressedData != null) {
-            if(compressedData is ChunkCompressedData.NonAir) {
-                this.voxelDataArray = compressedData.extractVoxelData()
+        if (compressedData is ChunkCompressedData.NonAir) {
+            this.blockData = compressedData.extractVoxelData()
 
-                val extendedData = compressedData.extractVoxelExtendedData()
-                for (cellWithExtendedData in extendedData.elements) {
-                    val index = (cellWithExtendedData as? Json.Dict ?: continue)["index"].asInt!!
+            val extendedData = compressedData.extractVoxelExtendedData()
+            for (cellWithExtendedData in extendedData.elements) {
+                /*val index = (cellWithExtendedData as? Json.Dict ?: continue)["index"].asInt!!
 
-                    val components = CellComponentsHolder(this, index)
-                    allCellComponents[index] = components
+                val components = CellComponentsHolder(this, index)
+                allCellComponents[index] = components
 
-                    // Call the block's onPlace method as to make it spawn the necessary components
-                    val peek = peek(components.x, components.y, components.z)
-                    val future = FreshFutureCell(this, peek)
-                    peek.voxel.whenPlaced(future)
+                // Call the block's onPlace method as to make it spawn the necessary components
+                val peek = getCell(components.x, components.y, components.z)
+                val future = FreshFutureCell(this, peek)
+                //peek.voxel.whenPlaced(future)
 
-                    val savedComponents = cellWithExtendedData["components"].asArray!!
-                    for (savedComponent in savedComponents.elements) {
-                        val dict = savedComponent.asDict ?: continue
-                        val name = dict["name"].asString!!
-                        val data = dict["data"]!!
+                val savedComponents = cellWithExtendedData["components"].asArray!!
+                for (savedComponent in savedComponents.elements) {
+                    val dict = savedComponent.asDict ?: continue
+                    val name = dict["name"].asString!!
+                    val data = dict["data"]!!
 
-                        val component = components.getVoxelComponent(name)
-                        if (component == null) {
-                            logger.warn("Component named $name was saved, but was not recreated by the voxel whenPlaced() method.")
-                            continue
-                        }
-                        component.deserialize(data)
+                    val component = components.getVoxelComponent(name)
+                    if (component == null) {
+                        logger.warn("Component named $name was saved, but was not recreated by the voxel whenPlaced() method.")
+                        continue
                     }
-                }
+                    component.deserialize(data)
+                }*/
+                TODO("Load components")
             }
 
             val savedEntities = compressedData.extractEntities()
-            for(savedEntity in savedEntities.elements) {
+            for (savedEntity in savedEntities.elements) {
                 val entity = EntitySerialization.deserializeEntity(world, savedEntity)
-                this.addEntity(entity)
+                // TODO this should be the world's responsability
                 world.addEntity(entity)
             }
         }
@@ -141,19 +115,38 @@ class ChunkImplementation(override val holder: ChunkHolderImplementation, overri
         return a and 0x1F
     }
 
-    override fun peek(x: Int, y: Int, z: Int): ActualChunkCell {
-        return ActualChunkCell(this, x, y, z, peekRaw(x, y, z))
+    override fun getCell(x: Int, y: Int, z: Int): ChunkCellProxy {
+        return ChunkCellProxy(x, y, z, false)
     }
 
-    override fun peek(location: Vector3dc): ActualChunkCell {
-        return peek(location.x().toInt(), location.y().toInt(), location.z().toInt())
+    override fun getCellMut(x: Int, y: Int, z: Int): MutableChunkCell {
+        return ChunkCellProxy(x, y, z, true)
     }
 
-    override fun peekSimple(x: Int, y: Int, z: Int): Voxel {
-        return world.contentTranslator.getVoxelForId(VoxelFormat.id(peekRaw(x, y, z))) ?: world.content.voxels.air
+    inner class ChunkCellProxy(override val x: Int, override val y: Int, override val z: Int, val mutable: Boolean): MutableChunkCell {
+        override val chunk: Chunk
+            get() = this@ChunkImplementation
+
+        override val world: World
+            get() = this@ChunkImplementation.world
+
+        override var data: CellData
+            get() = getCellData(x, y, z)
+            set(value) = setCellData(x, y, z, data)
+
+        override val additionalData: MutableMap<String, BlockAdditionalData>
+            get() = TODO("Not yet implemented")
+
+        override fun registerAdditionalData(name: String, data: BlockAdditionalData) {
+            TODO("Not yet implemented")
+        }
+
+        override fun unregisterAdditionalData(name: String): Boolean {
+            TODO("Not yet implemented")
+        }
     }
 
-    override fun peekRaw(x: Int, y: Int, z: Int): Int {
+    /*override fun peekRaw(x: Int, y: Int, z: Int): Int {
         var x = x
         var y = y
         var z = z
@@ -161,7 +154,7 @@ class ChunkImplementation(override val holder: ChunkHolderImplementation, overri
         y = sanitizeCoordinate(y)
         z = sanitizeCoordinate(z)
 
-        if (voxelDataArray == null) {
+        if (blockData == null) {
             // Empty chunk ?
             // Use the heightmap to figure out wether or not that getCell should be skylit.
             var sunlight = 0
@@ -172,40 +165,22 @@ class ChunkImplementation(override val holder: ChunkHolderImplementation, overri
 
             return VoxelFormat.format(0, 0, sunlight, 0)
         } else {
-            return voxelDataArray!![x * 32 * 32 + y * 32 + z]
+            return blockData!![x * 32 * 32 + y * 32 + z]
         }
-    }
-
-    override fun poke(x: Int, y: Int, z: Int, voxel: Voxel?, sunlight: Int, blocklight: Int, metadata: Int, cause: WorldModificationCause?): ChunkCell {
-        return pokeInternal(x, y, z, voxel, sunlight, blocklight, metadata, 0x00, false, true, true, cause)!!
-    }
-
-    override fun pokeSimple(x: Int, y: Int, z: Int, voxel: Voxel?, sunlight: Int, blocklight: Int, metadata: Int) {
-        pokeInternal(x, y, z, voxel, sunlight, blocklight, metadata, 0x00, false, true, false, null)
-    }
-
-    override fun pokeSimpleSilently(x: Int, y: Int, z: Int, voxel: Voxel?, sunlight: Int, blocklight: Int, metadata: Int) {
-        pokeInternal(x, y, z, voxel, sunlight, blocklight, metadata, 0x00, false, false, false, null)
     }
 
     override fun pokeRaw(x: Int, y: Int, z: Int, raw_data_bits: Int) {
         pokeInternal(x, y, z, null, 0, 0, 0, raw_data_bits, true, true, false, null)
-    }
+    }*/
 
-    override fun pokeRawSilently(x: Int, y: Int, z: Int, raw_data_bits: Int) {
-        pokeInternal(x, y, z, null, 0, 0, 0, raw_data_bits, true, false, false, null)
-    }
-
-    /**
+    /*/**
      * The 'core' of the core, this private function is responsible for placing and
      * keeping everyone up to snuff on block modifications. It all comes back to
      * this really.
      */
-    private fun pokeInternal(worldX: Int, worldY: Int, worldZ: Int, newVoxel: Voxel?,
+    private fun pokeInternal(worldX: Int, worldY: Int, worldZ: Int, newVoxel: BlockType?,
                              sunlight: Int, blocklight: Int, metadata: Int, raw_data: Int, use_raw_data: Boolean,
-                             update: Boolean, return_context: Boolean, cause: WorldModificationCause?): ActualChunkCell? {
-        var newVoxel = newVoxel
-        var raw_data = raw_data
+                             update: Boolean, return_context: Boolean) {
         val x = sanitizeCoordinate(worldX)
         val y = sanitizeCoordinate(worldY)
         val z = sanitizeCoordinate(worldZ)
@@ -213,14 +188,14 @@ class ChunkImplementation(override val holder: ChunkHolderImplementation, overri
         val cell_pre = peek(x, y, z)
         val formerVoxel = cell_pre.voxel
 
-        val future = FreshFutureCell(this, cell_pre)
+        val future = PodCellData()
 
         if (use_raw_data) {
             // We need this for voxel placement logic
             newVoxel = world.contentTranslator.getVoxelForId(VoxelFormat.id(raw_data))
             // Build the future from parsing the raw data
-            newVoxel?.let { future.voxel = it}
-            future.sunlight = VoxelFormat.sunlight(raw_data)
+            newVoxel?.let { future.voxel = it }
+            future.sun = VoxelFormat.sunlight(raw_data)
             future.blocklight = VoxelFormat.blocklight(raw_data)
             future.metaData = VoxelFormat.meta(raw_data)
         } else {
@@ -245,28 +220,20 @@ class ChunkImplementation(override val holder: ChunkHolderImplementation, overri
             }
         }
 
-        try {
-            if (newVoxel == null || formerVoxel == newVoxel) {
-                formerVoxel.onModification(cell_pre, future, cause)
-            } else {
-                formerVoxel.onRemove(cell_pre, cause)
-                //newVoxel.onPlace(future, cause)
+        if (newVoxel == null || formerVoxel == newVoxel) {
+            formerVoxel.onModification(cell_pre, future, cause)
+        } else {
+            formerVoxel.onRemove(cell_pre, cause)
+            //newVoxel.onPlace(future, cause)
 
-                raw_data = VoxelFormat.format(world.contentTranslator.getIdForVoxel(future.voxel), future.metaData, future.sunlight, future.blocklight)
-            }
-        } catch (e: WorldException) {
-            // Abort !
-            return if (return_context)
-                cell_pre
-            else
-                null// throw e;
+            raw_data = VoxelFormat.format(world.contentTranslator.getIdForVoxel(future.voxel), future.metaData, future.sunlight, future.blocklight)
         }
 
         // Allocate if it makes sense
-        if (voxelDataArray == null)
-            voxelDataArray = atomicalyCreateInternalData()
+        if (blockData == null)
+            blockData = atomicalyCreateInternalData()
 
-        voxelDataArray!![x * 32 * 32 + y * 32 + z] = raw_data
+        blockData!![x * 32 * 32 + y * 32 + z] = raw_data
 
         if (newVoxel != null && formerVoxel != newVoxel)
             newVoxel.whenPlaced(future)
@@ -320,8 +287,7 @@ class ChunkImplementation(override val holder: ChunkHolderImplementation, overri
 
         // If this is a 'master' world, notify remote users of the change !
         if (update && world is WorldMaster && world !is WorldTool) {
-            val packet = PacketVoxelUpdate(
-                    ActualChunkCell(this, chunkX * 32 + x, chunkY * 32 + y, chunkZ * 32 + z, raw_data))
+            /*val packet = PacketVoxelUpdate(ActualChunkCell(this, chunkX * 32 + x, chunkY * 32 + y, chunkZ * 32 + z, raw_data))
 
             for (user in this.holder.users) {
                 if (user !is RemotePlayer)
@@ -331,61 +297,56 @@ class ChunkImplementation(override val holder: ChunkHolderImplementation, overri
                 val clientEntity = user.controlledEntity ?: continue
 
                 user.pushPacket(packet)
-            }
+            }*/
+            TODO("fix networking")
         }
+    }*/
 
-        return if (return_context)
-            ActualChunkCell(this, chunkX * 32 + x, chunkY * 32 + y, chunkZ * 32 + z, raw_data)
-        else
-            null
+    override fun getCellData(x: Int, y: Int, z: Int): CellData {
+        val x = x and 0x1F
+        val y = y and 0x1F
+        val z = z and 0x1F
+        val air = world.gameInstance.content.blockTypes.air
+        if (blockData == null)
+            return CellData(air)
+        val compressed = blockData!![x * 32 * 32 + y * 32 + z]
+        return CellData(blockType = world.contentTranslator.getVoxelForId(VoxelFormat.id(compressed)) ?: air,
+            sunlightLevel = VoxelFormat.sunlight(compressed),
+            blocklightLevel = VoxelFormat.blocklight(compressed),
+            extraData = VoxelFormat.meta(compressed))
     }
 
-    override fun getComponentsAt(x: Int, y: Int, z: Int): CellComponentsHolder {
-        var x = x
-        var y = y
-        var z = z
-        x = x and 0x1f
-        y = y and 0x1f
-        z = z and 0x1f
+    override fun setCellData(x: Int, y: Int, z: Int, data: CellData) {
+        setCellDataSilent(x, y, z, data)
+    }
 
-        val index = x * 1024 + y * 32 + z
-        // System.out.println(index);
-
-        var components: CellComponentsHolder? = allCellComponents[index]
-        if (components == null) {
-            components = CellComponentsHolder(this, index)
-            allCellComponents[index] = components
+    fun setCellDataSilent(x: Int, y: Int, z: Int, data: CellData) {
+        val x = x and 0x1F
+        val y = y and 0x1F
+        val z = z and 0x1F
+        with(world.contentTranslator) {
+            val compressed = VoxelFormat.format(data.blockType.assignedId, data.extraData, data.sunlightLevel, data.blocklightLevel)
+            if (blockData == null)
+                blockData = IntArray(32 * 32 * 32)
+            blockData!![x * 32 * 32 + y * 32 + z] = compressed
         }
-        return components
     }
 
     fun removeComponents(index: Int) {
         allCellComponents.remove(index)
     }
 
-    private fun atomicalyCreateInternalData(): IntArray {
-        chunkDataArrayCreation.acquireUninterruptibly()
-
-        // If it's STILL null
-        if (voxelDataArray == null)
-            voxelDataArray = IntArray(32 * 32 * 32)
-
-        chunkDataArrayCreation.release()
-
-        return voxelDataArray!!
-    }
-
     fun tick(tick: Long) {
         val stride = 8
         val offset = (tick % stride.toLong()).toInt()
-        for(i in 0 until 32 * 32 * 32 / stride) {
+        for (i in 0 until 32 * 32 * 32 / stride) {
             val j = i * stride + offset
             val x = j / 1024
             val y = (j / 32) % 32
             val z = (j) % 32
 
-            val cell = peek(chunkX * 32 + x, chunkY * 32 + y, chunkZ * 32 + z)
-            cell.voxel.tick(cell)
+            val cell = getCell(chunkX * 32 + x, chunkY * 32 + y, chunkZ * 32 + z)
+            cell.data.blockType.tick(cell)
         }
     }
 
@@ -397,11 +358,7 @@ class ChunkImplementation(override val holder: ChunkHolderImplementation, overri
         return holder
     }
 
-    override fun hashCode(): Int {
-        return uuid
-    }
-
-    override fun destroy() {
+    fun destroy() {
         chunkDestructionSemaphore.acquireUninterruptibly()
         this.lightBaker.destroy()
         if (mesh is AutoRebuildingProperty)
@@ -411,7 +368,7 @@ class ChunkImplementation(override val holder: ChunkHolderImplementation, overri
         chunkDestructionSemaphore.release()
     }
 
-    override fun addEntity(entity: Entity) {
+    /*override fun addEntity(entity: Entity) {
         entitiesLock.lock()
         localEntities.add(entity)
         entitiesLock.unlock()
@@ -421,7 +378,7 @@ class ChunkImplementation(override val holder: ChunkHolderImplementation, overri
         entitiesLock.lock()
         localEntities.remove(entity)
         entitiesLock.unlock()
-    }
+    }*/
 
     companion object {
         val chunksCounter = AtomicInteger(0)

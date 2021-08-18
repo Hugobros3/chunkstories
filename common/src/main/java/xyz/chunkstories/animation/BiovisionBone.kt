@@ -10,7 +10,9 @@ import org.joml.*
 
 import xyz.chunkstories.api.animation.Animation
 
-import xyz.chunkstories.api.math.Math2
+import xyz.chunkstories.api.math.MathUtils
+import xyz.chunkstories.api.math.MathUtils.ceil
+import xyz.chunkstories.api.math.MathUtils.floor
 import xyz.chunkstories.api.math.Quaternion4d
 import java.lang.Math
 
@@ -25,7 +27,7 @@ class BiovisionBone(override val name: String, val channels: Int, private val an
      * @param frameLower
      * @return
      */
-    fun getTransformationMatrixInterpolatedRecursive(frameLower: Int, frameUpper: Int, t: Double): Matrix4f {
+    fun getTransformationMatrixInterpolatedRecursive(frameLower: Int, frameUpper: Int, t: Float): Matrix4f {
         val matrix = getTransformationMatrixInterpolatedInternal(frameLower, frameUpper, t)
 
         // Apply the father transformation
@@ -36,16 +38,16 @@ class BiovisionBone(override val name: String, val channels: Int, private val an
         return matrix
     }
 
-    override fun getTransformationMatrix(animationTime: Double): Matrix4f {
-        val frame = animationTime / 1000.0 / animation.frameTime
+    override fun getTransformationMatrix(animationTime: Float): Matrix4f {
+        val frame = animationTime / 1000.0f / animation.frameTime
 
-        val frameUpperBound = Math.ceil(frame)
-        val frameLowerBound = Math.floor(frame)
+        val frameUpperBound = ceil(frame)
+        val frameLowerBound = floor(frame)
 
-        var interp = frame % 1.0
+        var interp = frame % 1.0f
         // Don't try to interpolate if we're on an exact frame
         if (frameLowerBound == frameUpperBound)
-            interp = 0.0
+            interp = 0.0f
 
         val frameLower = frameLowerBound.toInt() % animation.frames
         val frameUpper = frameUpperBound.toInt() % animation.frames
@@ -53,7 +55,7 @@ class BiovisionBone(override val name: String, val channels: Int, private val an
         return getTransformationMatrixInterpolatedInternal(frameLower, frameUpper, interp)
     }
 
-    private fun getTransformationMatrixInterpolatedInternal(frameLower: Int, frameUpper: Int, t: Double): Matrix4f {
+    private fun getTransformationMatrixInterpolatedInternal(frameLower: Int, frameUpper: Int, t: Float): Matrix4f {
         val animationData = animation.animationData
 
         // Read rotation data from where it is
@@ -93,15 +95,16 @@ class BiovisionBone(override val name: String, val channels: Int, private val an
         val quaternionZUpper = Quaternion4d.fromAxisAngle(Vector3d(0.0, 0.0, 1.0), rotZUpper.toDouble())
         val totalUpper = quaternionXUpper.mult(quaternionYUpper).mult(quaternionZUpper)
 
-        val total = Quaternion4d.slerp(totalLower, totalUpper, t)
+        // TODO use Quat4f ?
+        val total = Quaternion4d.slerp(totalLower, totalUpper, t.toDouble())
 
         val matrix = total.toMatrix4f()
 
         // Apply transformations
         if (channels == 6) {
-            matrix.m30(matrix.m30() + Math2.mix(animationData[frameLower][animationDataOffset + 0].toDouble(), animationData[frameUpper][animationDataOffset + 0].toDouble(), t))
-            matrix.m31(matrix.m31() + Math2.mix(animationData[frameLower][animationDataOffset + 1].toDouble(), animationData[frameUpper][animationDataOffset + 1].toDouble(), t))
-            matrix.m32(matrix.m32() + Math2.mix(animationData[frameLower][animationDataOffset + 2].toDouble(), animationData[frameUpper][animationDataOffset + 2].toDouble(), t))
+            matrix.m30(matrix.m30() + MathUtils.mixf(animationData[frameLower][animationDataOffset + 0], animationData[frameUpper][animationDataOffset + 0], t))
+            matrix.m31(matrix.m31() + MathUtils.mixf(animationData[frameLower][animationDataOffset + 1], animationData[frameUpper][animationDataOffset + 1], t))
+            matrix.m32(matrix.m32() + MathUtils.mixf(animationData[frameLower][animationDataOffset + 2], animationData[frameUpper][animationDataOffset + 2], t))
         } else {
             matrix.m30(matrix.m30() + offset.x())
             matrix.m31(matrix.m31() + offset.y())

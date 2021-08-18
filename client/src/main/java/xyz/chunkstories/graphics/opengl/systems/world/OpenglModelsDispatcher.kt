@@ -8,6 +8,7 @@ import xyz.chunkstories.api.graphics.MeshMaterial
 import xyz.chunkstories.api.graphics.representation.Model
 import xyz.chunkstories.api.graphics.representation.ModelInstance
 import xyz.chunkstories.api.graphics.systems.dispatching.ModelsRenderer
+import xyz.chunkstories.api.world.animationTime
 import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.common.FaceCullingMode
 import xyz.chunkstories.graphics.common.shaders.compiler.AvailableVertexInput
@@ -22,7 +23,7 @@ import xyz.chunkstories.graphics.opengl.shaders.bindShaderResources
 import xyz.chunkstories.graphics.opengl.shaders.bindTexture
 import xyz.chunkstories.graphics.opengl.shaders.bindStructuredUBO
 import xyz.chunkstories.graphics.opengl.systems.OpenglDispatchingSystem
-import xyz.chunkstories.world.WorldClientCommon
+import xyz.chunkstories.world.WorldImplementation
 
 class OpenglModelsDispatcher(backend: OpenglGraphicsBackend) : OpenglDispatchingSystem<ModelInstance>(backend) {
 
@@ -146,17 +147,14 @@ class OpenglModelsDispatcher(backend: OpenglGraphicsBackend) : OpenglDispatching
                 bucket.add(meshInstance)
             }
 
-            val realWorldTimeTruncated = (System.nanoTime() % 1000_000_000_000)
-            val realWorldTimeMs = realWorldTimeTruncated / 1000_000
-            val animationTime = (realWorldTimeMs / 1000.0) * 1000.0
+            val camera = context.taskInstance.camera
+            val world = client.world
+            val animationTime = world.animationTime
 
             for ((specializedPipelineKey, meshInstances) in buckets) {
                 val specializedPipeline = specializedPipelines.getOrPut(specializedPipelineKey) { SpecializedPipeline(specializedPipelineKey) }
 
                 val pipeline = specializedPipeline.pipeline
-
-                val camera = context.taskInstance.camera
-                val world = client.world as WorldClientCommon
 
                 pipeline.bind()
                 context.bindShaderResources(pipeline)

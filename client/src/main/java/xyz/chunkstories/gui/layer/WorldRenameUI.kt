@@ -6,12 +6,12 @@ import xyz.chunkstories.api.gui.GuiDrawer
 import xyz.chunkstories.api.gui.Layer
 import xyz.chunkstories.api.gui.elements.Button
 import xyz.chunkstories.api.gui.elements.InputText
-import xyz.chunkstories.api.world.WorldInfo
+import xyz.chunkstories.api.world.World
 import xyz.chunkstories.world.WorldImplementation
 import xyz.chunkstories.world.serializeWorldInfo
 import java.io.File
 
-class WorldRenameUI internal constructor(gui: Gui, parent: Layer, val worldInfo: WorldInfo, val directory: File, val callback: () -> Unit) : Layer(gui, parent) {
+class WorldRenameUI internal constructor(gui: Gui, parent: Layer, val worldInfo: World.Properties, val directory: File, val callback: () -> Unit) : Layer(gui, parent) {
     private val cancelOption = Button(this, 0, 0, 75, "#{menu.cancel}")
     private val renameOption = Button(this, 0, 0, 75, "#{menu.rename}")
 
@@ -27,7 +27,7 @@ class WorldRenameUI internal constructor(gui: Gui, parent: Layer, val worldInfo:
             val internalName = levelName.text.replace("[^\\w\\s]".toRegex(), "_")
 
             val newWorldInfo = worldInfo.copy(name = levelName.text)
-            val worldInfoFile = File(directory.path + "/" + WorldImplementation.worldInfoFilename)
+            val worldInfoFile = File(directory.path + "/" + WorldImplementation.worldPropertiesFilename)
             worldInfoFile.writeText(serializeWorldInfo(newWorldInfo, true))
             gui.popTopLayer()
             callback()

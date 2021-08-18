@@ -8,8 +8,6 @@ package xyz.chunkstories.graphics.vulkan.systems.drawing.gui
 
 import xyz.chunkstories.api.graphics.TextureFormat
 import xyz.chunkstories.api.gui.Font
-import xyz.chunkstories.api.math.HexTools
-import xyz.chunkstories.api.util.ColorsTools
 import xyz.chunkstories.graphics.common.util.toByteBuffer
 import xyz.chunkstories.graphics.vulkan.CommandPool
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
@@ -21,6 +19,8 @@ import xyz.chunkstories.gui.TrueTypeFont
 import org.joml.Vector4f
 import org.joml.Vector4fc
 import org.lwjgl.vulkan.VK10.*
+import xyz.chunkstories.api.math.isHexOnly
+import xyz.chunkstories.api.util.parseHexadecimalColorCode
 import xyz.chunkstories.graphics.common.gui.InternalGuiDrawer
 import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 
@@ -92,11 +92,11 @@ class VulkanFontRenderer(internal val backend: VulkanGraphicsBackend) : Cleanabl
             if (glyph != null) {
                 // Detects and parses #C0L0R codes
                 if (charCurrent == '#'.toInt() && whatchars.length - i - 1 >= 6 && whatchars.toCharArray()[i + 1] != '#'
-                        && HexTools.isHexOnly(whatchars.substring(i + 1, i + 7))) {
+                        && isHexOnly(whatchars.substring(i + 1, i + 7))) {
                     if (!(i > 1 && whatchars.toCharArray()[i - 1] == '#')) {
                         val colorCode = whatchars.substring(i + 1, i + 7)
-                        val rgb = ColorsTools.hexToRGB(colorCode)
-                        colorModified = Vector4f(rgb!![0] / 255.0f * color.x(), rgb[1] / 255.0f * color.y(),
+                        val rgb = parseHexadecimalColorCode(colorCode)
+                        colorModified = Vector4f(rgb[0] / 255.0f * color.x(), rgb[1] / 255.0f * color.y(),
                                 rgb[2] / 255.0f * color.z(), color.w())
                         i += 7
                         continue

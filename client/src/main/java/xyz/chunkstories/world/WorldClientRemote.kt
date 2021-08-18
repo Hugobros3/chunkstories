@@ -5,28 +5,20 @@
 //
 
 package xyz.chunkstories.world
-
+/*
 import java.io.IOException
 import java.util.Deque
 import java.util.concurrent.ConcurrentLinkedDeque
 
-import xyz.chunkstories.api.content.OnlineContentTranslator
 import xyz.chunkstories.api.exceptions.PacketProcessingException
-import xyz.chunkstories.api.net.Packet
-import xyz.chunkstories.api.net.PacketDefinition.PacketGenre
 import xyz.chunkstories.api.net.PacketWorld
-import xyz.chunkstories.api.net.RemoteServer
 import xyz.chunkstories.api.sound.SoundManager
-import xyz.chunkstories.api.world.WorldClientNetworkedRemote
-import xyz.chunkstories.api.world.WorldInfo
 import xyz.chunkstories.client.ingame.IngameClientRemoteHost
 import xyz.chunkstories.client.net.ServerConnection
 import xyz.chunkstories.content.translator.AbstractContentTranslator
 import xyz.chunkstories.net.LogicalPacketDatagram
-import xyz.chunkstories.net.PacketDefinitionImplementation
+import xyz.chunkstories.net.PacketDefinition
 import xyz.chunkstories.net.PacketsEncoderDecoder
-import xyz.chunkstories.world.io.IOTasks
-import xyz.chunkstories.world.io.IOTasksMultiplayerClient
 
 class WorldClientRemote @Throws(WorldLoadingException::class)
 constructor(client: IngameClientRemoteHost, info: WorldInfo, translator: AbstractContentTranslator, val connection: ServerConnection) : WorldClientCommon(client, info, translator, null), WorldClientNetworkedRemote {
@@ -80,21 +72,21 @@ constructor(client: IngameClientRemoteHost, info: WorldInfo, translator: Abstrac
                 val datagram = i.next()
 
                 try {
-                    val definition = datagram.packetDefinition as PacketDefinitionImplementation // this.getContentTranslator().getPacketForId(datagram.packetTypeId);
+                    val definition = datagram.packetDefinition as PacketDefinition // this.getContentTranslator().getPacketForId(datagram.packetTypeId);
                     val packet = definition.createNew(true, this)
                     if (definition.genre != PacketGenre.WORLD || packet !is PacketWorld) {
-                        logger().error("$definition isn't a PacketWorld")
+                        logger.error("$definition isn't a PacketWorld")
                     } else {
 
                         // packetsProcessor.getSender() is equivalent to getRemoteServer() here
-                        packet.process(packetsProcessor.interlocutor, datagram.data, packetsProcessor)
+                        packet.receive(packetsProcessor.interlocutor, datagram.data, packetsProcessor)
                     }
                 } catch (e: IOException) {
-                    logger().warn("Networking Exception while processing datagram: $e")
+                    logger.warn("Networking Exception while processing datagram: $e")
                 } catch (e: PacketProcessingException) {
-                    logger().warn("Networking Exception while processing datagram: $e")
+                    logger.warn("Networking Exception while processing datagram: $e")
                 } catch (e: Exception) {
-                    logger().warn("Exception while processing datagram: " + e.toString() + " " + e.message)
+                    logger.warn("Exception while processing datagram: " + e.toString() + " " + e.message)
                 }
 
                 datagram.dispose()
@@ -115,3 +107,4 @@ constructor(client: IngameClientRemoteHost, info: WorldInfo, translator: Abstrac
         return ioHandler
     }
 }
+*/

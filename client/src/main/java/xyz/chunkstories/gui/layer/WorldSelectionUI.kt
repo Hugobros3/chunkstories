@@ -15,7 +15,7 @@ import xyz.chunkstories.api.gui.elements.Scroller
 import xyz.chunkstories.api.input.Input
 import xyz.chunkstories.api.input.Mouse
 import xyz.chunkstories.api.input.Mouse.MouseScroll
-import xyz.chunkstories.api.world.WorldInfo
+import xyz.chunkstories.api.world.World
 import xyz.chunkstories.client.ClientImplementation
 import xyz.chunkstories.client.ingame.enterExistingWorld
 import xyz.chunkstories.gui.ConfirmUI
@@ -23,6 +23,7 @@ import xyz.chunkstories.util.FoldersUtils
 import xyz.chunkstories.world.WorldImplementation
 import xyz.chunkstories.world.WorldLoadingException
 import xyz.chunkstories.world.deserializeWorldInfo
+import xyz.chunkstories.world.worldInternalDataFilename
 import java.io.File
 import java.sql.Timestamp
 import java.text.SimpleDateFormat
@@ -58,7 +59,7 @@ class WorldSelectionUI internal constructor(gui: Gui, parent: Layer) : Layer(gui
             worldsFolder.mkdirs()
 
         val list = worldsFolder.listFiles()?.mapNotNull { worldDirectory ->
-            val worldInfoFile = File(worldDirectory.absolutePath + "/" + WorldImplementation.worldInfoFilename)
+            val worldInfoFile = File(worldDirectory.absolutePath + "/" + WorldImplementation.worldPropertiesFilename)
 
             if (worldInfoFile.exists()) {
                 val worldInfo = deserializeWorldInfo(worldInfoFile)
@@ -106,8 +107,7 @@ class WorldSelectionUI internal constructor(gui: Gui, parent: Layer) : Layer(gui
         return super.handleInput(input)
     }
 
-    inner class LocalWorldUIPanel
-    internal constructor(x: Int, y: Int, private val directory: File, val worldInfo: WorldInfo) : GuiElement(this@WorldSelectionUI, 0, 0), ClickableGuiElement {
+    inner class LocalWorldUIPanel internal constructor(x: Int, y: Int, private val directory: File, val properties: World.Properties) : GuiElement(this@WorldSelectionUI, 0, 0), ClickableGuiElement {
 
         val buttons = mutableListOf<Button>()
 
@@ -127,7 +127,7 @@ class WorldSelectionUI internal constructor(gui: Gui, parent: Layer) : Layer(gui
             }
 
             deleteButton.action = Runnable {
-                gui.topLayer = ConfirmUI(gui, layer, "Do you reall want to delete '${worldInfo.name} ?'", "It will be gone forever! I heard somewhere that's a long time!") { confirmed ->
+                gui.topLayer = ConfirmUI(gui, layer, "Do you reall want to delete '${properties.name} ?'", "It will be gone forever! I heard somewhere that's a long time!") { confirmed ->
                     if (confirmed) {
                         FoldersUtils.deleteFolder(directory)
                         this@WorldSelectionUI.loadWorlds()
@@ -136,7 +136,7 @@ class WorldSelectionUI internal constructor(gui: Gui, parent: Layer) : Layer(gui
             }
 
             renameButton.action = Runnable {
-                gui.topLayer = WorldRenameUI(gui, layer, worldInfo, directory) {
+                gui.topLayer = WorldRenameUI(gui, layer, properties, directory) {
                     this@WorldSelectionUI.loadWorlds()
                 }
             }
@@ -149,7 +149,7 @@ class WorldSelectionUI internal constructor(gui: Gui, parent: Layer) : Layer(gui
         private val lastEdit: String
 
         init {
-            val internalDataFile = File(directory.absolutePath + "/" + WorldImplementation.worldInternalDataFilename)
+            val internalDataFile = File(directory.absolutePath + "/" + worldInternalDataFilename)
             lastEdit = if (internalDataFile.exists()) {
                 "Last edit: " + SimpleDateFormat("yyyy-MM-dd HH:mm").format(Timestamp(internalDataFile.lastModified()))
             } else {
@@ -176,13 +176,13 @@ class WorldSelectionUI internal constructor(gui: Gui, parent: Layer) : Layer(gui
             drawer.drawBox(positionX, positionY, 64, 64, "textures/gui/icon.png", null)
 
             //title
-            drawer.drawString(fontBigue, positionX + 72, positionY + 32 + 4, worldInfo.name, width - 72, Vector4f(0.25f, 0.25f, 0.25f, 1.0f))
+            drawer.drawString(fontBigue, positionX + 72, positionY + 32 + 4, properties.name, width - 72, Vector4f(0.25f, 0.25f, 0.25f, 1.0f))
 
             //desc
-            drawer.drawString(font, positionX + 72, positionY + 20, worldInfo.description, -1, Vector4f(0.25f, 0.25f, 0.25f, 1.0f))
+            drawer.drawString(font, positionX + 72, positionY + 20, properties.description, -1, Vector4f(0.25f, 0.25f, 0.25f, 1.0f))
 
             //size
-            val sizeTxt = "${worldInfo.size.sizeInChunks * 32}x${worldInfo.size.sizeInChunks * 32} blocks, ${worldInfo.generatorName} generator"
+            val sizeTxt = "${properties.size.sizeInChunks * 32}x${properties.size.sizeInChunks * 32} blocks, ${properties.generator} generator"
             val sizeSize = fontSmale.getWidth(sizeTxt)
             drawer.drawString(fontSmale, positionX + width - sizeSize - 4, positionY + 32 + 12, sizeTxt, width - 72, Vector4f(0.25f, 0.25f, 0.25f, 1.0f))
 

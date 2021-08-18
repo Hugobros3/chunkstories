@@ -53,7 +53,7 @@ class GraphicsEngineImplementation(val client: ClientImplementation) : GraphicsE
     }
 
     var frameNumber = 0
-    fun renderGame() {
+    fun renderFrame() {
         backend.drawFrame(frameNumber)
         frameNumber++
     }

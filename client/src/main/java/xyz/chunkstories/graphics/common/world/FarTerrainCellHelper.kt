@@ -10,7 +10,7 @@ import xyz.chunkstories.graphics.common.Cleanable
 import java.lang.Math.min
 
 class FarTerrainCellHelper(val world: World) : Cleanable {
-    val maxDistanceToRender = min(4096, world.worldInfo.size.sizeInChunks * 32)
+    val maxDistanceToRender = min(4096, world.properties.size.sizeInChunks * 32)
     var currentSnappedCameraPos = Vector2i(-1000)
 
     val sizes = intArrayOf(1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768)

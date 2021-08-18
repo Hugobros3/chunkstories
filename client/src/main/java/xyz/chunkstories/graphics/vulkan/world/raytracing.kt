@@ -1,32 +1,24 @@
 package xyz.chunkstories.graphics.vulkan.world
 
 import xyz.chunkstories.api.client.IngameClient
-import xyz.chunkstories.api.graphics.GraphicsBackend
 import xyz.chunkstories.api.graphics.TextureFormat
 import xyz.chunkstories.api.graphics.TextureTilingMode
 import xyz.chunkstories.api.graphics.rendergraph.*
-import xyz.chunkstories.api.graphics.systems.dispatching.*
 import xyz.chunkstories.api.graphics.systems.drawing.FullscreenQuadDrawer
 import xyz.chunkstories.api.gui.GuiDrawer
-import xyz.chunkstories.api.math.random.PrecomputedSimplexSeed
 import xyz.chunkstories.api.world.World
 import xyz.chunkstories.graphics.common.getConditions
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.systems.drawing.rt.VulkanWorldVolumetricTexture
 import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
-import xyz.chunkstories.world.WorldClientCommon
+import xyz.chunkstories.world.WorldImplementation
 
-fun createWorldRaytracingRenderGraph(client: IngameClient, backend: VulkanGraphicsBackend, world: World) = renderGraph {
-    val precomputedSimplesSeed = PrecomputedSimplexSeed(world.worldInfo.seed)
-
+fun createWorldRaytracingRenderGraph(ingame: IngameClient, backend: VulkanGraphicsBackend, world: World) = renderGraph {
     val volumeSideLength = 256
     val sampler = VulkanSampler(backend, tilingMode = TextureTilingMode.REPEAT)
-    val volumetricTexture = VulkanWorldVolumetricTexture(backend, client.ingame?.world as WorldClientCommon, volumeSideLength)
+    val volumetricTexture = VulkanWorldVolumetricTexture(backend, ingame.world as WorldImplementation, volumeSideLength)
 
     setup {
-        val entity = client.player.controlledEntity
-        val world = client.world
-
         shaderResources.supplyUniformBlock("world", world.getConditions())
     }
 

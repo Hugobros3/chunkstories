@@ -8,18 +8,18 @@ package xyz.chunkstories.server.commands.player
 
 import xyz.chunkstories.api.entity.traits.serializable.TraitInventory
 import xyz.chunkstories.api.item.Item
-import xyz.chunkstories.api.item.ItemVoxel
 import xyz.chunkstories.api.player.Player
+import xyz.chunkstories.api.player.entityIfIngame
 import xyz.chunkstories.api.plugin.commands.Command
 import xyz.chunkstories.api.plugin.commands.CommandEmitter
-import xyz.chunkstories.api.server.Server
-import xyz.chunkstories.server.commands.ServerCommandBasic
+import xyz.chunkstories.api.server.Host
+import xyz.chunkstories.server.commands.AbstractHostCommandHandler
 import java.lang.Integer.min
 
-class GiveCommand(serverConsole: Server) : ServerCommandBasic(serverConsole) {
+class GiveCommand(serverConsole: Host) : AbstractHostCommandHandler(serverConsole) {
 
     init {
-        server.pluginManager.registerCommand("give", this)
+        host.pluginManager.registerCommand("give", this)
     }
 
     override fun handleCommand(emitter: CommandEmitter, command: Command, arguments: Array<String>): Boolean {
@@ -32,15 +32,15 @@ class GiveCommand(serverConsole: Server) : ServerCommandBasic(serverConsole) {
             return true
         }
 
-        val gameContent = server.content
+        val gameContent = host.content
 
-        if (arguments.size == 0) {
+        if (arguments.isEmpty()) {
             emitter.sendMessage("#FF969BSyntax : /give <item> [amount] [to]")
             return true
         }
 
         var amount = 1
-        var to: Player? = emitter
+        var targetPlayer: Player? = emitter
 
         val itemName = arguments[0]
 
@@ -61,26 +61,23 @@ class GiveCommand(serverConsole: Server) : ServerCommandBasic(serverConsole) {
             amount = Integer.parseInt(arguments[1])
         }
         if (arguments.size >= 3) {
-            if (gameContent is Server)
-                to = (gameContent as Server).getPlayerByName(arguments[2])
+            if (gameContent is Host)
+                targetPlayer = (gameContent as Host).getPlayer(arguments[2])
             else {
                 emitter.sendMessage("#FF969BThis is a singleplayer world - there are no other players")
                 return true
             }
         }
-        if (to == null) {
+        if (targetPlayer == null) {
             emitter.sendMessage("#FF969BPlayer \"" + arguments[2] + " can't be found.")
             return true
         }
-        /*val itemPile = ItemPile(item)
-        itemPile.amount = amount*/
 
         val amountFinal = min(amount, item.definition.maxStackSize)
-        val to2 = to
 
-        to.controlledEntity?.traits?.get(TraitInventory::class)?.inventory?.apply {
+        targetPlayer.entityIfIngame?.traits?.get(TraitInventory::class)?.inventory?.apply {
             addItem(item, amountFinal)
-            emitter.sendMessage("#FF969BGave " + (if (amountFinal > 1) amountFinal.toString() + "x " else "") + "#4CFF00" + item.name + " #FF969Bto " + to2.displayName)
+            emitter.sendMessage("#FF969BGave " + (if (amountFinal > 1) amountFinal.toString() + "x " else "") + "#4CFF00" + item.name + " #FF969Bto " + targetPlayer.displayName)
         }
 
         return true

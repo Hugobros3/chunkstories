@@ -11,7 +11,7 @@ import java.io.File
 
 object VersionInfo {
     val versionJson: VersionJson
-    val networkProtocolVersion = 37
+    val networkProtocolVersion = 40
 
     init {
         val file = File("version.json")

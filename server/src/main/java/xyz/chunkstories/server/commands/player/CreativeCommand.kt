@@ -8,16 +8,17 @@ package xyz.chunkstories.server.commands.player
 
 import xyz.chunkstories.api.entity.traits.serializable.TraitCreativeMode
 import xyz.chunkstories.api.player.Player
+import xyz.chunkstories.api.player.entityIfIngame
 import xyz.chunkstories.api.plugin.commands.Command
 import xyz.chunkstories.api.plugin.commands.CommandEmitter
-import xyz.chunkstories.api.server.Server
-import xyz.chunkstories.server.commands.ServerCommandBasic
+import xyz.chunkstories.api.server.Host
+import xyz.chunkstories.server.commands.AbstractHostCommandHandler
 
 /** Handles creativity  */
-class CreativeCommand(serverConsole: Server) : ServerCommandBasic(serverConsole) {
+class CreativeCommand(serverConsole: Host) : AbstractHostCommandHandler(serverConsole) {
 
     init {
-        server.pluginManager.registerCommand("creative", this)
+        host.pluginManager.registerCommand("creative", this)
     }
 
     override fun handleCommand(emitter: CommandEmitter, command: Command, arguments: Array<String>): Boolean {
@@ -32,8 +33,8 @@ class CreativeCommand(serverConsole: Server) : ServerCommandBasic(serverConsole)
             return true
         }
 
-        val entity = emitter.controlledEntity
-        entity?.traits?.get(TraitCreativeMode::class.java)?.let { fm ->
+        val entity = emitter.entityIfIngame ?: return false
+        entity.traits.get(TraitCreativeMode::class.java)?.let { fm ->
             var state = fm.enabled
             state = !state
             emitter.sendMessage("Creative mode set to: $state")

@@ -9,7 +9,7 @@ package xyz.chunkstories.input.lwjgl3
 import org.lwjgl.glfw.GLFW
 import xyz.chunkstories.api.input.KeyboardKeyInput
 
-class Lwjgl3KeyBindCompound(inputsManager: Lwjgl3ClientInputsManager, name: String, internal val defaultKeysNames: String) : Lwjgl3Input(inputsManager, name), KeyboardKeyInput {
+class Lwjgl3KeyBindCompound(inputsManager: GLFWInputManager, name: String, internal val defaultKeysNames: String) : Lwjgl3Input(inputsManager, name), KeyboardKeyInput {
     internal var glfwKeys: IntArray
 
     init {

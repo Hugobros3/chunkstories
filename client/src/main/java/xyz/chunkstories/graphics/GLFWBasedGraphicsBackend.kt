@@ -6,7 +6,7 @@ import xyz.chunkstories.client.glfw.GLFWWindow
 import xyz.chunkstories.graphics.common.CommonGraphicsOptions
 import xyz.chunkstories.graphics.common.WorldRenderer
 import xyz.chunkstories.graphics.vulkan.util.BuiltInRendergraphs
-import xyz.chunkstories.world.WorldClientCommon
+import xyz.chunkstories.world.WorldImplementation
 import java.awt.image.BufferedImage
 
 /** This implementaiton uses GLFW and so the backends have to hook into that ! */
@@ -22,6 +22,6 @@ abstract class GLFWBasedGraphicsBackend(val graphicsEngine: GraphicsEngineImplem
     abstract fun cleanup()
     abstract fun captureFramebuffer(): BufferedImage
 
-    abstract fun createWorldRenderer(world: WorldClientCommon): WorldRenderer
+    abstract fun createWorldRenderer(world: WorldImplementation): WorldRenderer
     abstract fun reloadRendergraph()
 }

@@ -8,49 +8,32 @@ package xyz.chunkstories.plugin
 
 import java.io.File
 import java.io.IOException
-import java.lang.reflect.InvocationTargetException
-import java.lang.reflect.Method
 import java.util.HashMap
-import java.util.HashSet
-import java.util.concurrent.LinkedBlockingDeque
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-import xyz.chunkstories.api.GameContext
 import xyz.chunkstories.api.client.Client
 import xyz.chunkstories.api.events.Event
-import xyz.chunkstories.api.events.EventExecutor
-import xyz.chunkstories.api.events.EventHandler
-import xyz.chunkstories.api.events.EventListeners
-import xyz.chunkstories.api.events.Listener
-import xyz.chunkstories.api.events.RegisteredListener
 import xyz.chunkstories.api.exceptions.plugins.PluginCreationException
 import xyz.chunkstories.api.exceptions.plugins.PluginLoadException
-import xyz.chunkstories.api.plugin.ChunkStoriesPlugin
+import xyz.chunkstories.api.plugin.Plugin
 import xyz.chunkstories.api.plugin.PluginInformation
 import xyz.chunkstories.api.plugin.PluginInformation.PluginType
 import xyz.chunkstories.api.plugin.PluginManager
 import xyz.chunkstories.api.plugin.commands.Command
 import xyz.chunkstories.api.plugin.commands.CommandEmitter
 import xyz.chunkstories.api.plugin.commands.CommandHandler
-import xyz.chunkstories.api.server.Server
+import xyz.chunkstories.api.server.Host
+import xyz.chunkstories.api.world.GameInstance
 import xyz.chunkstories.content.mods.ModsManagerImplementation
-import kotlin.reflect.KProperty1
-import kotlin.reflect.full.companionObject
-import kotlin.reflect.full.companionObjectInstance
-import kotlin.reflect.full.memberProperties
 
-open class DefaultPluginManager(private val pluginExecutionContext: GameContext) : PluginManager {
-    var activePlugins: MutableSet<ChunkStoriesPlugin> = HashSet()
-    private val registeredEventListeners = HashMap<EventListeners, RegisteredListener>()
+open class DefaultPluginManager(private val gameInstance: GameInstance) : PluginManager {
+    override var activePlugins = mutableListOf<Plugin>()
+    //private val registeredEventListeners = HashMap<EventListeners, RegisteredListener>()
 
     var commandsAliases: MutableMap<String, Command> = HashMap()
-    var commands: MutableSet<Command> = HashSet()
-
-    override fun activePlugins(): Collection<ChunkStoriesPlugin> {
-        return activePlugins
-    }
+    override var commands = mutableListOf<Command>()
 
     override fun reloadPlugins() {
         // First disable any leftover plugins
@@ -70,8 +53,8 @@ open class DefaultPluginManager(private val pluginExecutionContext: GameContext)
                     val pluginInformation: PluginInformation = loadPluginInfo(file) ?: continue
 
                     // Checks type is appropriate
-                    if (pluginInformation.pluginType == PluginType.CLIENT_ONLY && pluginExecutionContext !is Client ||
-                            pluginInformation.pluginType == PluginType.MASTER && pluginExecutionContext !is Server)
+                    if (pluginInformation.pluginType == PluginType.CLIENT_ONLY && gameInstance !is Client ||
+                            pluginInformation.pluginType == PluginType.MASTER && gameInstance !is Host)
                         continue
 
                     pluginsToLoad.add(pluginInformation)
@@ -87,11 +70,11 @@ open class DefaultPluginManager(private val pluginExecutionContext: GameContext)
         }
 
         // Mods too can bundle plugins
-        for (pluginInformation in (this.pluginExecutionContext.content.modsManager as ModsManagerImplementation).pluginsWithinEnabledMods) {
+        for (pluginInformation in (this.gameInstance.content.modsManager as ModsManagerImplementation).pluginsWithinEnabledMods) {
 
             // Checks type is appropriate
-            if (pluginInformation.pluginType == PluginType.CLIENT_ONLY && pluginExecutionContext !is Client ||
-                    pluginInformation.pluginType == PluginType.MASTER && pluginExecutionContext !is Server)
+            if (pluginInformation.pluginType == PluginType.CLIENT_ONLY && gameInstance !is Client ||
+                    pluginInformation.pluginType == PluginType.MASTER && gameInstance !is Host)
                 continue
 
             pluginsToLoad.add(pluginInformation)
@@ -103,59 +86,29 @@ open class DefaultPluginManager(private val pluginExecutionContext: GameContext)
 
     private fun enablePlugins(pluginsToInitialize: List<PluginInformation>) {
         logger().info(pluginsToInitialize.size.toString() + " plugins to initialize")
-        val finalClassLoader = (pluginExecutionContext.content.modsManager as ModsManagerImplementation).finalClassLoader!!
-
-        val order = LinkedBlockingDeque<PluginInformation>()
-
+        val finalClassLoader = (gameInstance.content.modsManager as ModsManagerImplementation).finalClassLoader!!
         // TODO sort plugins requirements (requires/before)
         for (pluginInformation in pluginsToInitialize) {
-            order.add(pluginInformation)
-        }
-
-        // Loads each provided plugin
-        for (pluginInformation in order) {
             try {
-                // Add commands support
-                /*for (Command command : pluginInformation.getCommands()) {
-                    // Checks the command isn't already defined
-                    if (commands.contains(command)) {
-                        logger().warn("Plugin " + pluginInformation.getName() + " can't define the command "
-                                + command.getName() + " as it's already defined by another plugin.");
-                        continue;
-                    }
-
-                    commands.add(command);
-
-                    for (String alias : command.aliases())
-                        if (commandsAliases.put(alias, command) != null)
-                            logger().warn("Plugin " + pluginInformation + " tried to register alias " + alias
-                                    + " for command " + command + ".");
-
-                }*/
-
-                // Instanciate the plugin after all
-                val pluginInstance = pluginInformation.createInstance(pluginExecutionContext, finalClassLoader)
-
-                activePlugins.add(pluginInstance)
-                pluginInstance.onEnable()
-            } catch (pce: PluginCreationException) {
-                logger().error("Couldn't create plugin " + pluginInformation + " : " + pce.message)
-                pce.printStackTrace()
+                activePlugins.add(pluginInformation.createInstance(gameInstance, finalClassLoader))
+            } catch (e: PluginCreationException) {
+                logger().error("Couldn't create plugin " + pluginInformation + " : " + e.message)
+                e.printStackTrace()
             }
 
         }
-
     }
 
-    override fun disablePlugins() {
+    fun disablePlugins() {
         // Call onDisable for plugins
         for (plugin in activePlugins)
             plugin.onDisable()
 
         // Remove one by one each listener
-        for ((key, value) in registeredEventListeners) {
+        // TODO
+        /*for ((key, value) in registeredEventListeners) {
             key.unRegisterListener(value)
-        }
+        }*/
 
         // Remove registered commands
         // TODO only remove plugins commands
@@ -166,9 +119,9 @@ open class DefaultPluginManager(private val pluginExecutionContext: GameContext)
         activePlugins.clear()
     }
 
-    override fun registerCommand(commandName: String, handler: CommandHandler, vararg aliases: String): Command {
+    override fun registerCommand(commandName: String, commandHandler: CommandHandler, vararg aliases: String): Command {
         val command = Command(commandName)
-        command.handler = handler
+        command.handler = commandHandler
 
         for (alias in aliases) {
             command.addAlias(alias)
@@ -181,7 +134,7 @@ open class DefaultPluginManager(private val pluginExecutionContext: GameContext)
         return command
     }
 
-    override fun unregisterCommand(command: Command) {
+    fun unregisterCommand(command: Command) {
         commands.remove(command)
         //TODO remove aliases
     }
@@ -210,8 +163,9 @@ open class DefaultPluginManager(private val pluginExecutionContext: GameContext)
         return commandsAliases[commandName.toLowerCase()]
     }
 
-    override fun registerEventListener(listener: Listener, plugin: ChunkStoriesPlugin) {
-        try {
+    override fun registerEventListener(listener: Any, plugin: Plugin) {
+    TODO()
+    /*try {
             val methods = HashSet<Method>()
             for (method in listener.javaClass.methods)
                 methods.add(method)
@@ -265,10 +219,10 @@ open class DefaultPluginManager(private val pluginExecutionContext: GameContext)
             }
         } catch (e: Exception) {
             e.printStackTrace()
-        }
+        }*/
     }
 
-    private fun addRegisteredListenerToEventChildren(listeners: EventListeners, registeredListener: RegisteredListener, recursive: Boolean) {
+    /*private fun addRegisteredListenerToEventChildren(listeners: EventListeners, registeredListener: RegisteredListener, recursive: Boolean) {
         for (el in listeners.childrens) {
             el.registerListener(registeredListener)
             registeredEventListeners[el] = registeredListener
@@ -276,10 +230,10 @@ open class DefaultPluginManager(private val pluginExecutionContext: GameContext)
             if (recursive)
                 addRegisteredListenerToEventChildren(el, registeredListener, true)
         }
-    }
+    }*/
 
     override fun fireEvent(event: Event) {
-        val listeners = event.listeners
+        /*val listeners = event.listeners
 
         for (listener in listeners.listeners) {
             try {
@@ -297,18 +251,19 @@ open class DefaultPluginManager(private val pluginExecutionContext: GameContext)
 
         // If we didn't surpress it's behaviour
         // if(event.isAllowedToExecute())
-        // event.defaultBehaviour();
+        // event.defaultBehaviour();*/
+        // TODO()
     }
 
     fun logger(): Logger {
         return pluginsLogger
     }
 
-    override fun commands(): Collection<Command> {
+    fun commands(): Collection<Command> {
         return commands
     }
 
-    override fun getPluginDirectory(plugin: ChunkStoriesPlugin): File {
+    override fun getPluginDirectory(plugin: Plugin): File {
         val file = File("." + "/" + plugin.name + "/")
         file.mkdirs()
 

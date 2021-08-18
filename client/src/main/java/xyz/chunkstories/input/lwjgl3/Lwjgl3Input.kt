@@ -8,7 +8,7 @@ package xyz.chunkstories.input.lwjgl3
 
 import xyz.chunkstories.input.AbstractInput
 
-abstract class Lwjgl3Input(protected val inputsManager: Lwjgl3ClientInputsManager, name: String) : AbstractInput(inputsManager, name) {
+abstract class Lwjgl3Input(protected val inputsManager: GLFWInputManager, name: String) : AbstractInput(inputsManager, name) {
 
     /*override var hash: Long = 0
 

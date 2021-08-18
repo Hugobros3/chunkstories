@@ -9,38 +9,48 @@ package xyz.chunkstories.content
 import java.io.File
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import xyz.chunkstories.EngineImplemI
+import xyz.chunkstories.api.Engine
 
-import xyz.chunkstories.api.GameContext
 import xyz.chunkstories.api.content.Content
+import xyz.chunkstories.api.content.ContentTranslator
 import xyz.chunkstories.api.plugin.PluginManager
 import xyz.chunkstories.api.workers.Tasks
+import xyz.chunkstories.api.world.GameInstance
+import xyz.chunkstories.api.world.World
+import xyz.chunkstories.content.mods.ModsManagerImplementation
 
 /** Dummy GameContext for testing purposes  */
-class TestGameContext(mods: String) : GameContext {
+class TestGameContext(mods: String) : GameInstance {
 
-    private val logger: Logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)
-    override val content: GameContentStore
+    override val logger: Logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)
+    override val engine: EngineImplemI
+        get() = TODO("Not yet implemented")
+    override val world: World
+        get() = TODO("Not yet implemented")
+    override val contentTranslator: ContentTranslator
+        get() = TODO("Not yet implemented")
 
     override val pluginManager: PluginManager
         get() = throw UnsupportedOperationException()
 
-    override val tasks: Tasks
-        get() = throw UnsupportedOperationException()
+    override val content: GameContentStore
 
     init {
 
         val coreContentLocation = System.getProperty("coreContentLocation", "../../chunkstories-core/res/")
 
-        content = GameContentStore(this, File(coreContentLocation), mods)
+        content = GameContentStore(engine, File(coreContentLocation), emptyList())
         content.reload()
     }
+}
 
-    override fun print(message: String) {
-        logger.info(message)
-    }
+class DummyEngine : EngineImplemI {
+    override val logger: Logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)
 
-    override fun logger(): Logger {
-        return logger
-    }
+    override val tasks: Tasks
+        get() = throw UnsupportedOperationException()
 
+    override val modsManager: ModsManagerImplementation
+        get() = TODO("Not yet implemented")
 }

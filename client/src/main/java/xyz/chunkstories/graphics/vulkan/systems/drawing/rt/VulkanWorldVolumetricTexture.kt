@@ -12,8 +12,8 @@ import org.lwjgl.vulkan.VkImageMemoryBarrier
 import xyz.chunkstories.api.graphics.TextureFormat
 import xyz.chunkstories.api.graphics.structs.InterfaceBlock
 import xyz.chunkstories.api.util.kotlin.toVec3i
-import xyz.chunkstories.api.voxel.VoxelFormat
-import xyz.chunkstories.api.voxel.VoxelSide
+import xyz.chunkstories.block.VoxelFormat
+import xyz.chunkstories.api.block.BlockSide
 import xyz.chunkstories.api.world.chunk.Chunk
 import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
@@ -22,11 +22,11 @@ import xyz.chunkstories.graphics.vulkan.memory.MemoryUsagePattern
 import xyz.chunkstories.graphics.vulkan.textures.VulkanTexture3D
 import xyz.chunkstories.graphics.vulkan.util.createFence
 import xyz.chunkstories.graphics.vulkan.util.waitFence
-import xyz.chunkstories.world.WorldClientCommon
+import xyz.chunkstories.world.WorldImplementation
 import xyz.chunkstories.world.chunk.ChunkImplementation
 import java.nio.ByteBuffer
 
-class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world: WorldClientCommon, val volumeSideLength: Int) : Cleanable {
+class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world: WorldImplementation, val volumeSideLength: Int) : Cleanable {
     val mipLevels = 6
     val texture = VulkanTexture3D(backend, TextureFormat.RGBA_8, volumeSideLength, volumeSideLength, volumeSideLength, mipLevels, VK_IMAGE_USAGE_SAMPLED_BIT or VK_IMAGE_USAGE_TRANSFER_DST_BIT)
 
@@ -291,7 +291,7 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
     }
 
     private fun extractChunkInBuffer(byteBuffer: ByteBuffer, chunk: ChunkImplementation) {
-        val voxelData = chunk.voxelDataArray
+        val voxelData = chunk.blockData
 
         if (voxelData == null) {
             for (i in 0 until 32 * 32 * 32) {
@@ -306,9 +306,9 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
                 for (y in 0..31)
                     for (x in 0..31) {
                         val data = voxelData[x * 32 * 32 + y * 32 + z]
-                        val voxel = world.contentTranslator.getVoxelForId(VoxelFormat.id(data)) ?: world.content.voxels.air
+                        val voxel = world.contentTranslator.getVoxelForId(VoxelFormat.id(data)) ?: world.content.blockTypes.air
 
-                        if (voxel.isAir() || (!voxel.solid && voxel.emittedLightLevel == 0) || voxel.name.startsWith("glass")) {
+                        if (voxel.isAir || (!voxel.solid && voxel.emittedLightLevel == 0) || voxel.name.startsWith("glass")) {
                             byteBuffer.put(0)
                             byteBuffer.put(0)
                             byteBuffer.put(0)
@@ -317,8 +317,8 @@ class VulkanWorldVolumetricTexture(val backend: VulkanGraphicsBackend, val world
                             if (voxel.name.startsWith("lava"))
                                 println("shit" + voxel.emittedLightLevel)
                         } else {
-                            val topTexture = voxel.getVoxelTexture(chunk.peek(x, y, z), VoxelSide.TOP)
-                            color.set(topTexture.color)
+                            val topTexture = voxel.getTexture(chunk.getCell(x, y, z), BlockSide.TOP)
+                            color.set(topTexture.averagedColor)
 
                             if (topTexture.name.equals("grass_top")) {
                                 color.set(0.4f, 0.8f, 0.4f, 1.0f)

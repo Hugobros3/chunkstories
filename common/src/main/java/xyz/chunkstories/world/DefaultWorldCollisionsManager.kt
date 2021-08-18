@@ -15,6 +15,8 @@ import xyz.chunkstories.api.physics.Box
 import xyz.chunkstories.api.physics.overlaps
 import xyz.chunkstories.api.world.WorldCollisionsManager
 import xyz.chunkstories.api.world.cell.Cell
+import xyz.chunkstories.api.world.cell.translatedCollisionBoxes
+import xyz.chunkstories.api.world.getCell
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.math.*
@@ -115,8 +117,8 @@ class DefaultWorldCollisionsManager(private val world: WorldImplementation) : Wo
                     for (i in floor(pos.x() + checkerMin.x).toInt() - 1 until ceil(pos.x() + checkerMax.x).toInt() + 1) {
                         for (j in floor(pos.y() + checkerMin.y).toInt() - 1 until ceil(pos.y() + checkerMax.y).toInt() + 1) {
                             for (k in floor(pos.z() + checkerMin.z).toInt() - 1 until ceil(pos.z() + checkerMax.z).toInt() + 1) {
-                                cell = world.peek(i, j, k)
-                                if (cell.voxel.solid)
+                                cell = world.getCell(i, j, k) ?: continue
+                                if (cell.data.blockType.solid)
                                     addAllSafe(boxes, cell.translatedCollisionBoxes)
                             }
                         }
@@ -155,8 +157,8 @@ class DefaultWorldCollisionsManager(private val world: WorldImplementation) : Wo
                     for (i in floor(pos.x() + checkerMin.x).toInt() - 1 until ceil(pos.x() + checkerMax.x).toInt() + 1) {
                         for (j in floor(pos.y() + checkerMin.y).toInt() - 1 until ceil(pos.y() + checkerMax.y).toInt() + 1) {
                             for (k in floor(pos.z() + checkerMin.z).toInt() - 1 until ceil(pos.z() + checkerMax.z).toInt() + 1) {
-                                cell = world.peek(i, j, k)
-                                if (cell.voxel.solid)
+                                cell = world.getCell(i, j, k) ?: continue
+                                if (cell.data.blockType.solid)
                                     addAllSafe(boxes, cell.translatedCollisionBoxes)
                             }
                         }
@@ -190,8 +192,8 @@ class DefaultWorldCollisionsManager(private val world: WorldImplementation) : Wo
                     for (i in floor(pos.x() + checkerMin.x).toInt() - 1 until ceil(pos.x() + checkerMax.x).toInt() + 1) {
                         for (j in floor(pos.y() + checkerMin.y).toInt() - 1 until ceil(pos.y() + checkerMax.y).toInt() + 1) {
                             for (k in floor(pos.z() + checkerMin.z).toInt() - 1 until ceil(pos.z() + checkerMax.z).toInt() + 1) {
-                                cell = world.peek(i, j, k)
-                                if (cell.voxel.solid)
+                                cell = world.getCell(i, j, k) ?: continue
+                                if (cell.data.blockType.solid)
                                     addAllSafe(boxes, cell.translatedCollisionBoxes)
                             }
                         }
@@ -251,21 +253,20 @@ class DefaultWorldCollisionsManager(private val world: WorldImplementation) : Wo
     }
 
     override fun isPointSolid(point: Vector3dc): Boolean {
-        val peek = world.peek(point)
+        val peek = world.getCell(point) ?: return false
 
-        if (peek.voxel.solid) {
+        if (peek.data.blockType.solid) {
             // Fast check if the voxel is just a solid block
             // TODO isOpaque doesn't mean that exactly, newEntity a new type variable that
             // represents that specific trait
-            if (peek.voxel.opaque)
+            if (peek.data.blockType.opaque)
                 return true
 
             // Else iterate over each box that make up that block
-            val boxes = peek.voxel.getTranslatedCollisionBoxes(peek)
-            if (boxes != null)
-                for (box in boxes)
-                    if (box.isPointInside(point))
-                        return true
+            val boxes = peek.translatedCollisionBoxes
+            for (box in boxes)
+                if (box.isPointInside(point))
+                    return true
 
         }
         return false

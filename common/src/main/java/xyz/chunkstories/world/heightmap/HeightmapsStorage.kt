@@ -7,19 +7,20 @@
 package xyz.chunkstories.world.heightmap
 
 import xyz.chunkstories.api.Location
+import xyz.chunkstories.api.block.BlockType
 import xyz.chunkstories.api.world.WorldUser
-import xyz.chunkstories.api.world.cell.Cell
-import xyz.chunkstories.api.world.cell.FutureCell
+import xyz.chunkstories.api.world.cell.CellData
 import xyz.chunkstories.api.world.heightmap.Heightmap
 import xyz.chunkstories.api.world.heightmap.WorldHeightmapsManager
 import xyz.chunkstories.world.WorldImplementation
+import xyz.chunkstories.world.sanitizeHorizontalCoordinate
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.ReentrantReadWriteLock
 
 class HeightmapsStorage(override val world: WorldImplementation) : WorldHeightmapsManager {
-    private val worldSize: Int = world.sizeInChunks * 32
-    private val worldSizeInChunks: Int = world.sizeInChunks
-    private val worldSizeInRegions: Int = world.sizeInChunks / 8
+    private val worldSize: Int = world.properties.size.squareSizeInBlocks
+    private val worldSizeInChunks: Int = worldSize / 32
+    private val worldSizeInRegions: Int = worldSizeInChunks / 8
 
     private val heightmapData = ConcurrentHashMap<Long, HeightmapImplementation>()
     private val heightmapsLock = ReentrantReadWriteLock()
@@ -91,8 +92,8 @@ class HeightmapsStorage(override val world: WorldImplementation) : WorldHeightma
     override fun acquireHeightmapWorldCoordinates(worldUser: WorldUser, worldX: Int, worldZ: Int): HeightmapImplementation {
         var worldX = worldX
         var worldZ = worldZ
-        worldX = sanitizeHorizontalCoordinate(worldX)
-        worldZ = sanitizeHorizontalCoordinate(worldZ)
+        worldX = world.sanitizeHorizontalCoordinate(worldX)
+        worldZ = world.sanitizeHorizontalCoordinate(worldZ)
         return acquireHeightmap(worldUser, worldX / 256, worldZ / 256)
     }
 
@@ -113,12 +114,10 @@ class HeightmapsStorage(override val world: WorldImplementation) : WorldHeightma
     }
 
     override fun getHeightmapWorldCoordinates(worldX: Int, worldZ: Int): HeightmapImplementation? {
-        var worldX = worldX
-        var worldZ = worldZ
-        worldX = sanitizeHorizontalCoordinate(worldX)
-        worldZ = sanitizeHorizontalCoordinate(worldZ)
+        val sx = world.sanitizeHorizontalCoordinate(worldX)
+        val sz = world.sanitizeHorizontalCoordinate(worldZ)
 
-        val i = index(worldX, worldZ)
+        val i = index(sx, sz)
 
         try {
             //heightmapsLock.readLock().lock()
@@ -136,7 +135,7 @@ class HeightmapsStorage(override val world: WorldImplementation) : WorldHeightma
         }
     }
 
-    fun getHeightMipmapped(x: Int, z: Int, level: Int): Int {
+    /*fun getHeightMipmapped(x: Int, z: Int, level: Int): Int {
         var x = x
         var z = z
         x %= worldSize
@@ -160,85 +159,36 @@ class HeightmapsStorage(override val world: WorldImplementation) : WorldHeightma
             z += worldSize
         val cs = getHeightmapWorldCoordinates(x, z) ?: return 0
         return cs.getDataMipmapped(x % 256, z % 256, level)
-    }
-
-    override fun getHeightAtWorldCoordinates(x: Int, z: Int): Int {
-        var x = x
-        var z = z
-        x %= worldSize
-        z %= worldSize
-        if (x < 0)
-            x += worldSize
-        if (z < 0)
-            z += worldSize
-        val cs = getHeightmapWorldCoordinates(x, z) ?: return Heightmap.NO_DATA
-        return cs.getHeight(x % 256, z % 256)
-    }
-
-    fun getRawDataAtWorldCoordinates(x: Int, z: Int): Int {
-        var x = x
-        var z = z
-        x %= worldSize
-        z %= worldSize
-        if (x < 0)
-            x += worldSize
-        if (z < 0)
-            z += worldSize
-        val cs = getHeightmapWorldCoordinates(x, z) ?: return 0
-        return cs.getRawVoxelData(x % 256, z % 256)
-    }
-
-    override fun getTopCellAtWorldCoordinates(x: Int, z: Int): Cell {
-        var x = x
-        var z = z
-        x %= worldSize
-        z %= worldSize
-        if (x < 0)
-            x += worldSize
-        if (z < 0)
-            z += worldSize
-        val cs = getHeightmapWorldCoordinates(x, z) ?: return TODO()
-        return cs.getTopCell(x, z)
-    }
-
-    fun updateOnBlockPlaced(x: Int, y: Int, z: Int, future: FutureCell) {
-        var x = x
-        var z = z
-        x %= worldSize
-        z %= worldSize
-        if (x < 0)
-            x += worldSize
-        if (z < 0)
-            z += worldSize
-        val summary = getHeightmapWorldCoordinates(x, z)
-
-        summary?.updateOnBlockModification(x % 256, y, z % 256, future)
-    }
-
-    /*fun saveAllLoadedSummaries(): Fence {
-        val allSummariesSaves = CompoundFence()
-        for (cs in heightmapData.values) {
-            allSummariesSaves.add(cs.save())
-        }
-
-        return allSummariesSaves
     }*/
 
-    internal fun removeSummary(regionSummary: HeightmapImplementation): Boolean {
+    override fun getHeight(x: Int, z: Int): Int {
+        val sx = world.sanitizeHorizontalCoordinate(x)
+        val sz = world.sanitizeHorizontalCoordinate(z)
+        val heightmap = getHeightmapWorldCoordinates(x, z) ?: return -1
+        return heightmap.getHeight(sx, sz)
+    }
+
+    override fun getBlockType(x: Int, z: Int): BlockType {
+        val sx = world.sanitizeHorizontalCoordinate(x)
+        val sz = world.sanitizeHorizontalCoordinate(z)
+        val heightmap = getHeightmapWorldCoordinates(x, z) ?: return world.gameInstance.content.blockTypes.air
+        return heightmap.getBlockType(sx, sz)
+    }
+
+    fun updateOnBlockPlaced(x: Int, y: Int, z: Int, cellData: CellData) {
+        val sx = world.sanitizeHorizontalCoordinate(x)
+        val sz = world.sanitizeHorizontalCoordinate(z)
+        val heightmap = getHeightmapWorldCoordinates(x, z) ?: return
+        heightmap.updateOnBlockModification(x, y, z, cellData)
+    }
+
+    internal fun remove(regionSummary: HeightmapImplementation): Boolean {
         try {
             heightmapsLock.writeLock().lock()
             return heightmapData.remove(this.index(regionSummary.regionX * 256, regionSummary.regionZ * 256)) != null
         } finally {
             heightmapsLock.writeLock().unlock()
         }
-    }
-
-    private fun sanitizeHorizontalCoordinate(coordinate: Int): Int {
-        var coordinate = coordinate
-        coordinate %= (world.sizeInChunks * 32)
-        if (coordinate < 0)
-            coordinate += world.sizeInChunks * 32
-        return coordinate
     }
 
     fun all(): Collection<HeightmapImplementation> {

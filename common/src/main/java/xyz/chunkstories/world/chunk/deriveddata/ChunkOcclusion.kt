@@ -1,10 +1,11 @@
 package xyz.chunkstories.world.chunk.deriveddata
 
+import xyz.chunkstories.EngineImplemI
 import xyz.chunkstories.api.workers.TaskExecutor
 import xyz.chunkstories.api.world.chunk.ChunkOcclusionManager
 import xyz.chunkstories.world.chunk.ChunkImplementation
 
-class ChunkOcclusionProperty(val chunk: ChunkImplementation) : AutoRebuildingProperty(chunk.world.gameContext, false), ChunkOcclusionManager {
+class ChunkOcclusionProperty(val chunk: ChunkImplementation) : AutoRebuildingProperty(chunk.world.gameInstance.engine.tasks, false), ChunkOcclusionManager {
 
     override fun createTask(updatesToConsider: Int): UpdateTask = ChunkOcclusionRebuildTask(this, updatesToConsider)
 

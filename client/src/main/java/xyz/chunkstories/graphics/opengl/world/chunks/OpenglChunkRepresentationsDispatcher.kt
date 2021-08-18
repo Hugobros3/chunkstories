@@ -4,7 +4,6 @@ import org.lwjgl.opengl.GL32.*
 import xyz.chunkstories.api.graphics.VertexFormat
 import xyz.chunkstories.api.graphics.systems.dispatching.ChunksRenderer
 import xyz.chunkstories.graphics.common.FaceCullingMode
-import xyz.chunkstories.graphics.common.getConditions
 import xyz.chunkstories.graphics.common.shaders.GLSLUniformBlock
 import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompilationParameters
 import xyz.chunkstories.graphics.common.util.getStd140AlignedSizeForStruct
@@ -15,9 +14,8 @@ import xyz.chunkstories.graphics.opengl.graph.OpenglPassInstance
 import xyz.chunkstories.graphics.opengl.shaders.bindInstancedInput
 import xyz.chunkstories.graphics.opengl.shaders.bindShaderResources
 import xyz.chunkstories.graphics.opengl.shaders.bindTexture
-import xyz.chunkstories.graphics.opengl.shaders.bindStructuredUBO
 import xyz.chunkstories.graphics.opengl.systems.OpenglDispatchingSystem
-import xyz.chunkstories.graphics.opengl.voxels.OpenglVoxelTexturesArray
+import xyz.chunkstories.graphics.opengl.voxels.OpenglBlockTexturesArray
 
 class OpenglChunkRepresentationsDispatcher(backend: OpenglGraphicsBackend) : OpenglDispatchingSystem<OpenglChunkRepresentation>(backend) {
 
@@ -100,14 +98,15 @@ class OpenglChunkRepresentationsDispatcher(backend: OpenglGraphicsBackend) : Ope
         val ssboBufferSize = (sizeAligned16 * maxChunksRendered)
 
         override fun executeDrawingCommands(context: OpenglPassInstance, work: Sequence<OpenglChunkRepresentation.Section>) {
-            val client = backend.window.client.ingame ?: return
+            val client = backend.window.client
+            val ingameClient = client.ingame ?: return
 
             val staticMeshes = work.mapNotNull { it.staticMesh }
 
             pipeline.bind()
 
             val camera = context.taskInstance.camera
-            val world = client.world
+            val world = ingameClient.world
 
             context.bindShaderResources(pipeline)
 
@@ -130,7 +129,7 @@ class OpenglChunkRepresentationsDispatcher(backend: OpenglGraphicsBackend) : Ope
 
             val chunkInfoUboResource = chunkInfoII.associatedResource as GLSLUniformBlock
 
-            val voxelTexturesArray = client.content.voxels.textures as OpenglVoxelTexturesArray
+            val voxelTexturesArray = client.content.blockTypes.textures as OpenglBlockTexturesArray
             pipeline.bindTexture("albedoTextures", voxelTexturesArray.albedoOnionTexture)
             //glBindBufferRange(GL_UNIFORM_BUFFER, program.uboBindings[chunkInfoUboResource]!!, chunkInfoUBO.glId, 0L, ssboBufferSize.toLong())
 

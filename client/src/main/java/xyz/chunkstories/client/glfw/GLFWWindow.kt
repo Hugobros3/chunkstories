@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.Semaphore
 import javax.imageio.ImageIO
 
-/** Backend independant implementation of the game window interface.
+/** Backend independent implementation of the game window interface.
  * Provides input management through the use of GLFW's input API
  *
  * For now only implements a Vulkan graphicsBackend
@@ -94,7 +94,7 @@ class GLFWWindow(val client: ClientImplementation, val graphicsEngine: GraphicsE
 
             ImageIO.write(image, "PNG", File("./screenshots/${sdf.format(cal.time)}.png"))
         } catch (err: UnsupportedOperationException) {
-            client.print("This graphicsBackend doesn't support taking screenshots !")
+            client.ingame?.print("This graphics backend doesn't support taking screenshots !")
         }
     }
 

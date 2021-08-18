@@ -140,7 +140,7 @@ class LogicalDevice(val backend: VulkanGraphicsBackend, val physicalDevice: Phys
         }
 
         stackPop()
-        VulkanGraphicsBackend.logger.debug("Successfully created logical device $this")
+        logger.debug("Successfully created logical device $this")
     }
 
     fun cleanup() {

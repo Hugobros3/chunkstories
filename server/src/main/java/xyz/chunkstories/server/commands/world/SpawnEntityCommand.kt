@@ -10,18 +10,19 @@ import xyz.chunkstories.api.Location
 import xyz.chunkstories.api.entity.Entity
 import xyz.chunkstories.api.entity.EntityDefinition
 import xyz.chunkstories.api.player.Player
+import xyz.chunkstories.api.player.entityIfIngame
 import xyz.chunkstories.api.plugin.commands.Command
 import xyz.chunkstories.api.plugin.commands.CommandEmitter
-import xyz.chunkstories.api.server.Server
-import xyz.chunkstories.server.commands.ServerCommandBasic
+import xyz.chunkstories.api.server.Host
+import xyz.chunkstories.server.commands.AbstractHostCommandHandler
 
 /**
  * Spawns arbitrary entities in the World
  */
-class SpawnEntityCommand(serverConsole: Server) : ServerCommandBasic(serverConsole) {
+class SpawnEntityCommand(serverConsole: Host) : AbstractHostCommandHandler(serverConsole) {
 
     init {
-        server.pluginManager.registerCommand("spawnentity", this)
+        host.pluginManager.registerCommand("spawnentity", this)
     }
 
     override fun handleCommand(emitter: CommandEmitter, command: Command, arguments: Array<String>): Boolean {
@@ -30,7 +31,7 @@ class SpawnEntityCommand(serverConsole: Server) : ServerCommandBasic(serverConso
             return true
         }
 
-        val playerEntity = emitter.controlledEntity
+        val playerEntity = emitter.entityIfIngame
 
         if(playerEntity == null) {
             emitter.sendMessage("You need to be controlling an entity")
@@ -42,7 +43,7 @@ class SpawnEntityCommand(serverConsole: Server) : ServerCommandBasic(serverConso
             return true
         }
 
-        if (arguments.size == 0) {
+        if (arguments.isEmpty()) {
             emitter.sendMessage("Syntax: /spawnEntity <entityId> [x y z]")
             return false
         }
@@ -56,7 +57,7 @@ class SpawnEntityCommand(serverConsole: Server) : ServerCommandBasic(serverConso
         val entityType: EntityDefinition?
 
         val TraitName = arguments[0]
-        entityType = server.content.entities.getEntityDefinition(TraitName)
+        entityType = host.content.entities.getEntityDefinition(TraitName)
 
         if (entityType == null) {
             emitter.sendMessage("Entity type : " + arguments[0] + " not found in loaded content.")

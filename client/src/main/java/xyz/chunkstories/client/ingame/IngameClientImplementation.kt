@@ -3,8 +3,11 @@ package xyz.chunkstories.client.ingame
 import org.slf4j.Logger
 import xyz.chunkstories.api.client.Client
 import xyz.chunkstories.api.client.IngameClient
+import xyz.chunkstories.api.content.Content
+import xyz.chunkstories.api.content.ContentTranslator
 import xyz.chunkstories.api.graphics.systems.dispatching.DecalsManager
 import xyz.chunkstories.api.particles.ParticlesManager
+import xyz.chunkstories.api.server.Host
 import xyz.chunkstories.client.ClientImplementation
 import xyz.chunkstories.client.commands.installClientCommands
 import xyz.chunkstories.graphics.common.WorldRenderer
@@ -14,57 +17,73 @@ import xyz.chunkstories.gui.layer.MessageBoxUI
 import xyz.chunkstories.gui.layer.WorldLoadingUI
 import xyz.chunkstories.gui.layer.ingame.IngameUI
 import xyz.chunkstories.plugin.DefaultPluginManager
-import xyz.chunkstories.server.commands.installServerCommands
-import xyz.chunkstories.task.WorkerThreadPool
-import xyz.chunkstories.world.WorldClientCommon
-import xyz.chunkstories.world.WorldClientLocal
+import xyz.chunkstories.server.commands.installHostCommands
+import xyz.chunkstories.world.WorldImplementation
+import xyz.chunkstories.world.WorldMasterImplementation
+import xyz.chunkstories.TickingThread
 
-abstract class IngameClientImplementation protected constructor(val client: ClientImplementation, worldInitializer: (IngameClientImplementation) -> WorldClientCommon) : IngameClient, Client by client {
-    final override val tasks: WorkerThreadPool = client.tasks
+abstract class IngameClientImplementation protected constructor(val client: ClientImplementation, worldInitializer: (IngameClientImplementation) -> WorldImplementation) : IngameClient {
+    override val engine: Client
+        get() = client
+    override val contentTranslator: ContentTranslator
+        get() = world.contentTranslator
+    override val logger: Logger
+        get() = client.logger
+    override val content: Content
+        get() = client.content
 
-    final override val ingame: IngameClient? = this
+    final override val pluginManager: DefaultPluginManager
 
-    val internalPluginManager: DefaultPluginManager
-    val internalWorld: WorldClientCommon = worldInitializer.invoke(this)
+    protected val world_: WorldImplementation = worldInitializer.invoke(this)
+    abstract override val world: WorldImplementation
+    final override val player: ClientPlayer
 
-    abstract override val world: WorldClientCommon
+    val tickingThread: TickingThread
+    val loadingAgent = LocalClientLoadingAgent(this)
 
-    final override val decalsManager: DecalsManager
-    final override val particlesManager: ParticlesManager
+    val decalsManager: DecalsManager
+    val particlesManager: ParticlesManager
 
-    final override val player: LocalPlayerImplementation
-
-    val ingameGuiUI: IngameUI
-
+    val ingameUI: IngameUI
     val worldRenderer: WorldRenderer
 
     init {
-        decalsManager = internalWorld.decalsManager
-        particlesManager = internalWorld.particlesManager
+        decalsManager = world_.decalsManager
+        particlesManager = world_.particlesManager
 
         // We need the plugin manager very early so we make it in the common abstract class constructor
-        internalPluginManager = DefaultPluginManager(this)
-        internalPluginManager.reloadPlugins()
+        pluginManager = DefaultPluginManager(this)
+        pluginManager.reloadPlugins()
 
         // Prepare command line
         installClientCommands(this)
-        if (this is IngameClientLocalHost) {
-            installServerCommands(this)
+        if (this is Host) {
+            installHostCommands(this)
         }
 
-        player = LocalPlayerImplementation(this, internalWorld)
+        player = ClientPlayer(this)
 
         client.ingame = this
 
-        worldRenderer = client.gameWindow.graphicsEngine.backend.createWorldRenderer(internalWorld)
+        worldRenderer = client.gameWindow.graphicsEngine.backend.createWorldRenderer(world_)
+        ingameUI = IngameUI(client.gui, this)
 
-        ingameGuiUI = IngameUI(gui, this)
-        // Spawn manually the player if we're in single player mode
-        if (internalWorld is WorldClientLocal) {
-            gui.topLayer = WorldLoadingUI(internalWorld, gui, ingameGuiUI)
-        } else {
-            gui.topLayer = ingameGuiUI
+        tickingThread = object : TickingThread(world_) {
+            override fun tick() {
+                onTick()
+            }
         }
+    }
+
+    open fun onceCreated() {
+        // Spawn manually the player if we're in single player mode
+        if (world_ is WorldMasterImplementation) {
+            client.gui.topLayer = WorldLoadingUI(world_, this, client.gui, ingameUI)
+        } else {
+            client.gui.topLayer = ingameUI
+        }
+
+       tickingThread.start()
         //     internalWorld.spawnPlayer(player)
 
         /*val connectionProgressLayer = gui.topLayer as? ConnectingScreen
@@ -73,36 +92,48 @@ abstract class IngameClientImplementation protected constructor(val client: Clie
         else*/
     }
 
-    override fun exitToMainMenu() {
-        exitCommon()
+    open fun onFrame() {
+        player.onFrame()
+    }
 
-        gui.topLayer = MainMenuUI(gui, null)
-        soundManager.stopAnySound()
-        client.ingame = null
+    open fun onTick() {
+        player.onTick()
+        tickingThread.tickWorld()
+    }
+
+    override fun exitToMainMenu() {
+        destroy()
+        client.gui.topLayer = MainMenuUI(client.gui, null)
     }
 
     override fun exitToMainMenu(errorMessage: String) {
-        exitCommon()
+        destroy()
+        client.gui.topLayer = MessageBoxUI(client.gui, MainMenuUI(client.gui, null), "Disconnected from server", errorMessage)
+    }
 
-        gui.topLayer = MessageBoxUI(gui, MainMenuUI(gui, null), "Disconnected from server", errorMessage)
-        soundManager.stopAnySound()
+    protected open fun destroy() {
+        logger.info("Removing player from world")
+        player.destroy()
+
+        logger.info("Terminating ticking thread...")
+        tickingThread.terminate().traverse()
+        logger.info("Terminating ticking thread... done")
+        pluginManager.disablePlugins()
+        logger.info("Disabled plugins")
+        worldRenderer.cleanup()
+        logger.debug("Destroyed world renderer")
+        loadingAgent.unloadEverything(true)
+        logger.debug("Unloaded world bits")
+        world_.destroy()
+        client.soundManager.stopAllSounds()
+
+        logger.debug("Left ingame state")
+        client.gameWindow.graphicsEngine.loadRenderGraph(BuiltInRendergraphs.onlyGuiRenderGraph(client))
         client.ingame = null
     }
 
-    open fun exitCommon() {
-        pluginManager.disablePlugins()
-
-        worldRenderer.cleanup()
-        client.gameWindow.graphicsEngine.loadRenderGraph(BuiltInRendergraphs.onlyGuiRenderGraph(client))
-
-        // Destroy the world
-        internalWorld.destroy()
-    }
-
-    override fun logger(): Logger = client.logger()
-
-    override fun print(message: String) {
-        ingameGuiUI.chatManager.insert(message)
-        client.print(message)
+    fun print(message: String) {
+        ingameUI.chatManager.insert(message)
+        client.chatLogger.info(message)
     }
 }

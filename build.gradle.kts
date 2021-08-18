@@ -2,9 +2,8 @@ import org.ajoberstar.grgit.Grgit
 import java.util.Date
 
 group = "xyz.chunkstories"
-version = "0.1.1"
-val verboseVersion = "Alpha 1.1"
-description = "A voxel game engine"
+version = "1.1.0"
+val verboseVersion = "cleanup-branch"
 
 subprojects {
     repositories {
@@ -32,10 +31,9 @@ buildscript {
 
 plugins {
     id("org.ajoberstar.grgit") version "3.1.1"
-    id("com.github.hierynomus.license") version "0.14.0"
 }
 
-val apiRevisionBuiltAgainst by extra { "203" }
+val apiRevisionBuiltAgainst by extra { "2.0.3" }
 var actualContentLocation = "core_content.zip"
 
 val lwjglVersion by extra { "3.2.3" }

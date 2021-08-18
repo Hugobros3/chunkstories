@@ -11,7 +11,6 @@ import java.nio.ByteBuffer;
 
 import xyz.chunkstories.api.workers.TaskExecutor;
 import xyz.chunkstories.api.world.heightmap.Heightmap;
-import xyz.chunkstories.world.heightmap.HeightmapImplementation;
 import xyz.chunkstories.world.io.IOTask;
 
 public class IOTaskSaveHeightmap extends IOTask {
@@ -33,7 +32,7 @@ public class IOTaskSaveHeightmap extends IOTask {
 			FileOutputStream out = new FileOutputStream(heightmap.getFile());
 
 			int[] heights = heightmap.getHeightData();
-			int[] ids = heightmap.getVoxelData();
+			int[] ids = heightmap.getBlockTypesData();
 
 			ByteBuffer writeMe = ByteBuffer.allocate(256 * 256 * 4);
 

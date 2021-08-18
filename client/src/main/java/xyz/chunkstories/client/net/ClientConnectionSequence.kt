@@ -21,7 +21,6 @@ import xyz.chunkstories.client.net.vanillasockets.TCPServerConnection
 import xyz.chunkstories.content.mods.ModZip
 import xyz.chunkstories.net.Connection
 import xyz.chunkstories.util.VersionInfo
-import xyz.chunkstories.net.http.SimplePostRequest
 
 
 /**
@@ -49,7 +48,7 @@ class ClientConnectionSequence constructor(val client: ClientImplementation, val
     var state: ConnectionState
 
     init {
-        this.connection = object : TCPServerConnection(this@ClientConnectionSequence) {
+        this.connection = object : TCPServerConnection(client, this@ClientConnectionSequence) {
 
             override fun handleSystemRequest(msg: String): Boolean {
                 if (msg.startsWith("info/mods:")) {
@@ -95,7 +94,8 @@ class ClientConnectionSequence constructor(val client: ClientImplementation, val
                     this.state = ConnectionState("Offline-mode enabled, skipping login token phase")
                 }
                 is LoggedInClientIdentity -> {
-                    step("Requesting a login token...")
+                    TODO("No")
+                    /*step("Requesting a login token...")
                     val spr = SimplePostRequest("https://chunkstories.xyz/api/serverTokenObtainer.php", "username=" + identity.name + "&sessid=" + identity.sessionKey)
                     val reply = spr.result()
 
@@ -111,7 +111,7 @@ class ClientConnectionSequence constructor(val client: ClientImplementation, val
                         step("Token obtained, logging in...")
                     } else {
                         abort("Failed to obtain a login token from the servers")
-                    }
+                    }*/
                 }
             }
 
@@ -142,9 +142,7 @@ class ClientConnectionSequence constructor(val client: ClientImplementation, val
                 val modMd5Hash = properties[1]
                 val modSizeInBytes = java.lang.Long.parseLong(properties[2])
 
-                // String md5Required = requiredMod.contains(":") ? requiredMod.split(":")[0] :
-                // requiredMod;
-                client.logger().info("Server asks for mod $modInternalName ($modSizeInBytes bytes), md5=$modMd5Hash")
+                client.logger.info("Server asks for mod $modInternalName ($modSizeInBytes bytes, hash=$modMd5Hash)")
 
                 requiredMd5s.add(modMd5Hash)
 
@@ -178,10 +176,7 @@ class ClientConnectionSequence constructor(val client: ClientImplementation, val
 
                 // Check their size and signature
                 if (cached.length() != modSizeInBytes) {
-                    client.logger()
-                            .info("Invalid filesize for downloaded mod " + modInternalName + " (hash: " + modMd5Hash
-                                    + ")" + " expected filesize = " + modSizeInBytes + " != actual filesize = "
-                                    + cached.length())
+                    client.logger.info("Invalid file size for downloaded mod $modInternalName ($modMd5Hash) expected $modSizeInBytes bytes but got ${cached.length()} bytes")
                     cached.delete() // Delete suspicious file
                     abort("Failed to download $modInternalName, wrong file size. You can try again.")
                 }
@@ -193,17 +188,15 @@ class ClientConnectionSequence constructor(val client: ClientImplementation, val
                 } catch (e: ModLoadFailureException) {
                     e.printStackTrace()
 
-                    client.logger().info("Could not load downloaded mod " + modInternalName + " (hash: "
-                            + modMd5Hash + "), see stack trace")
+                    client.logger.info("Could not load downloaded mod $modInternalName ($modMd5Hash), see stack trace")
                     cached.delete() // Delete suspicious file
                     abort("Failed to load $modInternalName, check error log.")
                 }
 
                 // Test the md5 hash wasn't tampered with
-                val actualMd5Hash = testHash!!.mD5Hash
+                val actualMd5Hash = testHash!!.hash
                 if (actualMd5Hash != modMd5Hash) {
-                    client.logger().info("Invalid md5 hash for mod " + modInternalName
-                            + " expected md5 hash = " + modMd5Hash + " != actual md5 hash = " + actualMd5Hash)
+                    client.logger.info("Invalid md5 hash for mod $modInternalName expected md5 hash $modMd5Hash but got $actualMd5Hash")
                     cached.delete() // Delete suspicious file
                     abort("Mod $modInternalName hash did not match.")
                 }
@@ -211,7 +204,7 @@ class ClientConnectionSequence constructor(val client: ClientImplementation, val
 
             // Build the string to pass to the modsManager as to ask it to enable said mods
             val requiredMods = requiredMd5s.map { "md5:$it" }
-            client.content.modsManager.setEnabledMods(*requiredMods.toTypedArray())
+            client.content.modsManager.requestedMods = requiredMods
 
             step("Reloading mods...")
             client.reloadAssets()
@@ -229,8 +222,9 @@ class ClientConnectionSequence constructor(val client: ClientImplementation, val
 
             step("Loading world...")
 
-            // Ask the server to eventually spawn the player entity
-            // TODO
+            connection.sendTextMessage("world/spawn")
+            // TODO actually wait for spawn ?
+
             synchronized(this) {
                 try {
                     sleep(5000)
@@ -238,7 +232,6 @@ class ClientConnectionSequence constructor(val client: ClientImplementation, val
                     // TODO Auto-generated catch block
                     e.printStackTrace()
                 }
-
             }
 
             // We are good.

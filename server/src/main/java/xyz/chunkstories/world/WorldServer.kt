@@ -7,27 +7,23 @@
 package xyz.chunkstories.world
 
 import xyz.chunkstories.api.exceptions.PacketProcessingException
-import xyz.chunkstories.api.net.PacketDefinition.PacketGenre
 import xyz.chunkstories.api.net.PacketWorld
 import xyz.chunkstories.api.net.packets.PacketTime
 import xyz.chunkstories.api.player.Player
-import xyz.chunkstories.api.world.WorldInfo
 import xyz.chunkstories.api.world.WorldMaster
-import xyz.chunkstories.api.world.WorldNetworked
 import xyz.chunkstories.net.LogicalPacketDatagram
-import xyz.chunkstories.net.PacketDefinitionImplementation
+import xyz.chunkstories.net.PacketDefinition
 import xyz.chunkstories.server.DedicatedServer
 import xyz.chunkstories.server.player.ServerPlayer
 import xyz.chunkstories.server.propagation.VirtualServerDecalsManager
 import xyz.chunkstories.server.propagation.VirtualServerParticlesManager
-import xyz.chunkstories.sound.VirtualSoundManager
 import xyz.chunkstories.world.io.IOTasks
 import java.io.File
 import java.io.IOException
 import java.util.concurrent.ConcurrentLinkedDeque
 
-class WorldServer @Throws(WorldLoadingException::class)
-constructor(val server: DedicatedServer, worldInfo: WorldInfo, folder: File) : WorldImplementation(server, worldInfo, null, folder), WorldMaster, WorldNetworked {
+/*class WorldServer @Throws(WorldLoadingException::class)
+constructor(val server: DedicatedServer, worldInfo: WorldInfo, folder: File) : WorldImplementation(server, worldInfo, null, folder), WorldMaster, WorldCommon, WorldNetworked {
     override val ioHandler: IOTasks
 
     override val soundManager: VirtualSoundManager
@@ -43,7 +39,7 @@ constructor(val server: DedicatedServer, worldInfo: WorldInfo, folder: File) : W
 
     override//TODO make sure they are in that world
     val players: Set<Player>
-        get() = server.connectedPlayers
+        get() = server.players
 
     init {
         this.soundManager = VirtualSoundManager(this)
@@ -69,7 +65,7 @@ constructor(val server: DedicatedServer, worldInfo: WorldInfo, folder: File) : W
 
             // Update time & weather
             val packetTime = PacketTime(this)
-            packetTime.time = this.sunCycle
+            packetTime.tod = this.sunCycle
             packetTime.overcastFactor = this.weather
             player.pushPacket(packetTime)
         }
@@ -77,7 +73,7 @@ constructor(val server: DedicatedServer, worldInfo: WorldInfo, folder: File) : W
         soundManager.update()
 
         // TODO this should work per-world
-        this.server.handler.flushAll()
+        this.server.connectionsManager.flushAll()
     }
 
     internal inner class PendingPlayerDatagram(var datagram: LogicalPacketDatagram, var player: ServerPlayer)
@@ -95,23 +91,23 @@ constructor(val server: DedicatedServer, worldInfo: WorldInfo, folder: File) : W
                 val datagram = incomming.datagram
 
                 try {
-                    val definition = datagram.packetDefinition as PacketDefinitionImplementation // this.getContentTranslator().getPacketForId(datagram.packetTypeId);
+                    val definition = datagram.packetDefinition as PacketDefinition // this.getContentTranslator().getPacketForId(datagram.packetTypeId);
                     val packet = definition.createNew(false, this)
 
                     if (definition.genre != PacketGenre.WORLD || packet !is PacketWorld) {
-                        logger().error("$definition isn't a PacketWorld")
+                        logger.error("$definition isn't a PacketWorld")
                     } else {
 
                         // packetsProcessor.getSender() is equivalent to player here
-                        packet.process(player, datagram.data,
+                        packet.receive(player, datagram.data,
                                 player.playerConnection.encoderDecoder)
                     }
                 } catch (e: IOException) {
-                    logger().warn("Networking Exception while processing datagram: " + e.message)
+                    logger.warn("Networking Exception while processing datagram: " + e.message)
                 } catch (e: PacketProcessingException) {
-                    logger().warn("Networking Exception while processing datagram: " + e.message)
+                    logger.warn("Networking Exception while processing datagram: " + e.message)
                 } catch (e: Exception) {
-                    logger().warn("Exception while processing datagram: " + e.message)
+                    logger.warn("Exception while processing datagram: " + e.message)
                 }
 
                 datagram.dispose()
@@ -125,11 +121,6 @@ constructor(val server: DedicatedServer, worldInfo: WorldInfo, folder: File) : W
         packetsQueue.addLast(PendingPlayerDatagram(datagram, player))
     }
 
-    override fun getPlayerByName(playerName: String): Player? {
-        // Does the server have this player ?
-        val player = server.getPlayerByName(playerName) ?: return null
-
-        //TODO We don't want players from other worlds
-        return player
-    }
+    override
 }
+*/

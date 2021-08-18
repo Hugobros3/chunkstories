@@ -9,7 +9,8 @@ dependencies {
     api(kotlin("reflect"))
 
     // We obviously depend on the project's API !
-    api("xyz.chunkstories:api:${rootProject.extra.get("apiRevisionBuiltAgainst")}")
+    // api("xyz.chunkstories:api:${rootProject.extra.get("apiRevisionBuiltAgainst")}")
+    api(project(":api"))
 
     api("org.lwjgl:lwjgl:${rootProject.extra.get("lwjglVersion")}")
     for (natives in listOf("natives-windows", "natives-linux", "natives-macos"))
@@ -26,10 +27,6 @@ dependencies {
     // TODO client-only isn't it
     // TODO sort out the duplication with ImageIO.read
     api("org.l33tlabs.twl:pngdecoder:1.0")
-
-    // NBT Parsing
-    // TODO converter-only
-    api("io.xol.enklume:enklume:100")
 
     // Assimp & friends
     implementation("com.github.kotlin-graphics:glm:7651f1f42ef7fd6661fe8e27556f3060394d65cc")

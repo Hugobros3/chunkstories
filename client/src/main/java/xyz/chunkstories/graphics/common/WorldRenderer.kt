@@ -8,16 +8,16 @@ import xyz.chunkstories.graphics.common.world.createWorldDeferredRenderGraph
 import xyz.chunkstories.graphics.vulkan.world.createWorldRaytracingRenderGraph
 import xyz.chunkstories.graphics.vulkan.VulkanBackendOptions
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
-import xyz.chunkstories.world.WorldClientCommon
+import xyz.chunkstories.world.WorldImplementation
 
-abstract class WorldRenderer(val world: WorldClientCommon) : Cleanable {
+abstract class WorldRenderer(val world: WorldImplementation) : Cleanable {
     abstract val backend: GLFWBasedGraphicsBackend
 
-    fun createInstructions(client: IngameClient): RenderGraphDeclaration.() -> Unit = renderGraph {
-        if (backend is VulkanGraphicsBackend && client.configuration.getBooleanValue(VulkanBackendOptions.raytracedGI))
-            createWorldRaytracingRenderGraph(client, backend as VulkanGraphicsBackend, world)()
+    fun createInstructions(ingameClient: IngameClient): RenderGraphDeclaration.() -> Unit = renderGraph {
+        if (backend is VulkanGraphicsBackend && ingameClient.engine.configuration.getBooleanValue(VulkanBackendOptions.raytracedGI))
+            createWorldRaytracingRenderGraph(ingameClient, backend as VulkanGraphicsBackend, world)()
         else
-            createWorldDeferredRenderGraph(client, backend, world)()
+            createWorldDeferredRenderGraph(ingameClient, backend, world)()
     }
 
 }

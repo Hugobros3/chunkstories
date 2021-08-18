@@ -10,26 +10,27 @@ import com.google.gson.Gson
 import org.joml.Vector3d
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import xyz.chunkstories.PlayerCommon
 import xyz.chunkstories.api.entity.Entity
 import xyz.chunkstories.api.entity.EntitySerialization
-import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
+import xyz.chunkstories.api.entity.Subscriber
+import xyz.chunkstories.api.input.InputsManager
 import xyz.chunkstories.api.item.inventory.Inventory
-import xyz.chunkstories.api.math.LoopingMathHelper
+import xyz.chunkstories.api.math.MathUtils.mod_dist
 import xyz.chunkstories.api.net.Packet
 import xyz.chunkstories.api.net.packets.PacketOpenInventory
 import xyz.chunkstories.api.physics.Box
-import xyz.chunkstories.api.server.RemotePlayer
-import xyz.chunkstories.api.server.Server
-import xyz.chunkstories.api.util.ColorsTools
-import xyz.chunkstories.api.world.WorldMaster
-import xyz.chunkstories.entity.EntityFileSerialization
+import xyz.chunkstories.api.player.Player
+import xyz.chunkstories.api.player.PlayerID
+import xyz.chunkstories.api.player.PlayerState
+import xyz.chunkstories.api.player.entityIfIngame
+import xyz.chunkstories.api.util.getUniqueColorPrefix
 import xyz.chunkstories.server.net.ClientConnection
 import xyz.chunkstories.server.propagation.VirtualServerDecalsManager.ServerPlayerVirtualDecalsManager
 import xyz.chunkstories.server.propagation.VirtualServerParticlesManager.ServerPlayerVirtualParticlesManager
-import xyz.chunkstories.sound.VirtualSoundManager.ServerPlayerVirtualSoundManager
-import xyz.chunkstories.world.WorldImplementation
-import xyz.chunkstories.world.WorldServer
+import xyz.chunkstories.server.propagation.VirtualSoundManager
+import xyz.chunkstories.world.WorldMasterImplementation
+import xyz.chunkstories.world.playerEnters
+import xyz.chunkstories.world.playerLeaves
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 
@@ -45,81 +46,58 @@ data class ServerPlayerMetadata(
 
 const val ENTITY_VISIBILITY_SIZE = 192.0
 
-class ServerPlayer(val playerConnection: ClientConnection, name: String) : PlayerCommon(name), RemotePlayer {
-    private val server = playerConnection.context
+class ServerPlayer(val playerConnection: ClientConnection, override val id: PlayerID, override val name: String) : Player, Subscriber {
+    override var state: PlayerState = PlayerState.None
 
     private val loginTime = System.currentTimeMillis()
-    private var serverMetadata = ServerPlayerMetadata()
-    private val serverMetadataFile: File
+    private var metadata = ServerPlayerMetadata()
+    private val file: File
 
     override val displayName: String
-        get() = ColorsTools.getUniqueColorPrefix(name) + name + "#FFFFFF"
-    override val inputsManager: ServerPlayerInputsManager
-
-    override val subscribedToList: Collection<Entity>
-        get() = subscribedEntities
-
-    fun whenEnteringWorld(world: WorldServer) {
-        eventEntersWorld(world)
-
-        if (::loadingAgent.isInitialized)
-            this.loadingAgent.destroy()
-
-        this.loadingAgent = ServerPlayerLoadingAgent(this, world)
-
-        this.virtualSoundManager = world.soundManager.ServerPlayerVirtualSoundManager(this)
-        this.virtualParticlesManager = world.particlesManager.ServerPlayerVirtualParticlesManager(this)
-        this.virtualDecalsManager = world.decalsManager.ServerPlayerVirtualDecalsManager(this)
-    }
-
-    override var controlledEntity: Entity? = null
-        set(newEntity) {
-            synchronized(this) {
-                val oldEntity = controlledEntity
-
-                if (newEntity == oldEntity)
-                    return
-
-                if (oldEntity != null)
-                    oldEntity.traits[TraitControllable::class]?.controller = null
-
-                if (newEntity != null)
-                    newEntity.traits[TraitControllable::class]?.controller = this
-
-                field = newEntity
-            }
-        }
-
-    override val uuid
-        get() = this.name.hashCode().toLong()
+        get() = getUniqueColorPrefix(name) + name + "#FFFFFF"
 
     // Streaming control
     private val subscribedEntities = ConcurrentHashMap.newKeySet<Entity>()
 
     // Dummy managers to relay synchronisation stuff
-    private var virtualSoundManager: ServerPlayerVirtualSoundManager? = null
+    private var virtualSoundManager: VirtualSoundManager.ServerPlayerVirtualSoundManager? = null
     private var virtualParticlesManager: ServerPlayerVirtualParticlesManager? = null
     private var virtualDecalsManager: ServerPlayerVirtualDecalsManager? = null
 
-    lateinit var loadingAgent: ServerPlayerLoadingAgent private set
+    override val inputsManager: InputsManager = ServerPlayerInputsManager(this)
+
+    var world: WorldMasterImplementation? = null
+        private set
+    var loadingAgent: ServerPlayerLoadingAgent? = null
+        private set
 
     init {
         File("players/").mkdirs()
-        //TODO this should use revised UUIDs
-        this.serverMetadataFile = File("players/" + name.toLowerCase() + ".json")
-        if (this.serverMetadataFile.exists())
-            this.serverMetadata = Gson().fromJson(serverMetadataFile.reader(), ServerPlayerMetadata::class.java)
+        this.file = File("players/" + id.uuid.toString() + ".json")
+        if (this.file.exists())
+            this.metadata = Gson().fromJson(file.reader(), ServerPlayerMetadata::class.java)
 
-        this.inputsManager = ServerPlayerInputsManager(this)
+        //this.inputsManager = ServerPlayerInputsManager(this)
+    }
+
+    fun enterWorld(world: WorldMasterImplementation) {
+        world.playerEnters(this)
+        this.world = world
+        this.loadingAgent = ServerPlayerLoadingAgent(this, world)
+
+        TODO()
+        /*this.virtualSoundManager = world.soundManager.ServerPlayerVirtualSoundManager(this)
+        this.virtualParticlesManager = world.particlesManager.ServerPlayerVirtualParticlesManager(this)
+        this.virtualDecalsManager = world.decalsManager.ServerPlayerVirtualDecalsManager(this)*/
     }
 
     /** Asks the server's permission manager if the player is ok to do that  */
     override fun hasPermission(permissionNode: String): Boolean {
-        return playerConnection.context.permissionsManager.hasPermission(this, permissionNode)
+        return playerConnection.server.permissionsManager.hasPermission(this, permissionNode)
     }
 
-    override fun openInventory(inventory: Inventory) {
-        val entity = this.controlledEntity
+    fun openInventory(inventory: Inventory) {
+        val entity = this.entityIfIngame
         if (entity != null && inventory.isAccessibleTo(entity)) {
             if (inventory.owner is Entity) {
                 //TODO have open/close mechanics for inventories
@@ -137,21 +115,17 @@ class ServerPlayer(val playerConnection: ClientConnection, name: String) : Playe
 
     // Entity tracking
     fun updateTrackedEntities() {
-        val controlledEntity = this.controlledEntity ?: return
+        val controlledEntity = this.entityIfIngame ?: return
 
-        // Cache (idk if HotSpot makes it redudant but whatever)
-        val worldSize = controlledEntity.world.worldSize
+        val worldSize = (controlledEntity.world.properties.size.squareSizeInBlocks)
         val controlledTraitLocation = controlledEntity.location
-
 
         //println(controlledEntity.world.allLoadedChunks.count())
         if (!subscribedEntities.contains(controlledEntity))
             subscribe(controlledEntity)
 
-        val inRangeEntitiesIterator = controlledEntity.world.getEntitiesInBox(Box.Companion.fromExtentsCentered(Vector3d(ENTITY_VISIBILITY_SIZE)).translate(controlledTraitLocation))
-        while (inRangeEntitiesIterator.hasNext()) {
-            val e = inRangeEntitiesIterator.next()
-
+        val inRangeEntities = controlledEntity.world.getEntitiesInBox(Box.Companion.fromExtentsCentered(Vector3d(ENTITY_VISIBILITY_SIZE)).translate(controlledTraitLocation))
+        for (e in inRangeEntities) {
             val shouldTrack = true// e.shouldBeTrackedBy(this);
             val contains = subscribedEntities.contains(e)
 
@@ -169,13 +143,11 @@ class ServerPlayer(val playerConnection: ClientConnection, name: String) : Playe
             val loc = e.location
 
             // Distance calculations
-            val dx = LoopingMathHelper.moduloDistance(controlledTraitLocation.x(), loc.x(), worldSize)
+            val dx = mod_dist(controlledTraitLocation.x(), loc.x(), worldSize.toDouble())
             val dy = Math.abs(controlledTraitLocation.y() - loc.y())
-            val dz = LoopingMathHelper.moduloDistance(controlledTraitLocation.z(), loc.z(), worldSize)
+            val dz = mod_dist(controlledTraitLocation.z(), loc.z(), worldSize.toDouble())
             val inRange = (dx < ENTITY_VISIBILITY_SIZE && dz < ENTITY_VISIBILITY_SIZE
                     && dy < ENTITY_VISIBILITY_SIZE)
-
-            // System.out.println(inRange);
 
             // Reasons other than distance to stop tracking this entity
             if (/* !e.shouldBeTrackedBy(this) || */!inRange)
@@ -185,7 +157,7 @@ class ServerPlayer(val playerConnection: ClientConnection, name: String) : Playe
         }
     }
 
-    override fun subscribe(entity: Entity): Boolean {
+    fun subscribe(entity: Entity): Boolean {
         if (subscribedEntities.add(entity)) {
             entity.subscribers.register(this)
             return true
@@ -193,7 +165,7 @@ class ServerPlayer(val playerConnection: ClientConnection, name: String) : Playe
         return false
     }
 
-    override fun unsubscribe(entity: Entity): Boolean {
+    fun unsubscribe(entity: Entity): Boolean {
         if (entity.subscribers.unregister(this)) {
             subscribedEntities.remove(entity)
             return true
@@ -201,16 +173,12 @@ class ServerPlayer(val playerConnection: ClientConnection, name: String) : Playe
         return false
     }
 
-    override fun unsubscribeAll() {
+    fun unsubscribeAll() {
         val iterator = subscribedEntities.iterator()
         while (iterator.hasNext()) {
             val entity = iterator.next()
             // If one of the entities is controllable ...
-            entity.traits[TraitControllable::class]?.apply {
-                if (controller == this)
-                    controller = null
-            }
-
+            entity.controller = null
             entity.subscribers.unregister(this)
             iterator.remove()
         }
@@ -224,56 +192,58 @@ class ServerPlayer(val playerConnection: ClientConnection, name: String) : Playe
         this.playerConnection.pushPacket(packet)
     }
 
-    override fun flush() {
+    fun flush() {
         this.playerConnection.flush()
     }
 
-    override fun disconnect(disconnectionReason: String) {
+    fun disconnect(disconnectionReason: String) {
         this.playerConnection.disconnect(disconnectionReason)
-    }
-
-    fun getContext(): Server {
-        return server
     }
 
     /** Serializes the stuff describing this player (non world-specific) */
     private fun saveMetadata() {
-        if (controlledEntity != null) {
-            // Useless, kept for admin easyness, scripts, whatnot
-            val controlledTraitLocation = controlledEntity!!.location
-
-            // Safely assumes as a SERVER the world will be master ;)
-            val world = controlledTraitLocation.world as WorldMaster
-
-            serverMetadata.lastPositionX = controlledTraitLocation.x()
-            serverMetadata.lastPositionY = controlledTraitLocation.y()
-            serverMetadata.lastPositionZ = controlledTraitLocation.z()
-            serverMetadata.worldName = world.worldInfo.internalName
+        val playerEntity = this.entityIfIngame
+        if (playerEntity != null) {
+            val controlledTraitLocation = playerEntity.location
+            val world = controlledTraitLocation.world
+            metadata.lastPositionX = controlledTraitLocation.x()
+            metadata.lastPositionY = controlledTraitLocation.y()
+            metadata.lastPositionZ = controlledTraitLocation.z()
+            metadata.worldName = world.properties.internalName
         }
 
-        // Telemetry (zomg so EVIL)
+        // 'Telemetry' (zomg so EVIL)
         val now = System.currentTimeMillis()
-        serverMetadata.timePlayed += now - loginTime
-        serverMetadata.lastLogin = now
+        metadata.timePlayed += now - loginTime
+        metadata.lastLogin = now
 
-        serverMetadataFile.writeText(Gson().toJson(serverMetadata))
-        logger.info("Player profile $name saved in $serverMetadataFile")
+        file.writeText(Gson().toJson(metadata))
+        logger.info("Player profile $name saved in $file")
     }
 
     override fun toString(): String {
         return name
     }
 
-    fun destroy() {
-        val controlledEntity = this.controlledEntity
-        if (controlledEntity != null) {
-            (controlledEntity.world as WorldImplementation).playersMetadata[this]!!.savedEntity = EntitySerialization.serializeEntity(controlledEntity)
-            controlledEntity.world.removeEntity(controlledEntity)
-            eventLeavesWorld(controlledEntity.world)
+    fun leaveWorld() {
+        assert(world != null)
+        val playerEntity = this.entityIfIngame
+        if (playerEntity != null) {
+            assert(playerEntity.world == world)
+            world!!.playersMetadata[id]!!.savedEntity = EntitySerialization.serializeEntity(playerEntity)
+            playerEntity.world.removeEntity(playerEntity.id)
         }
+        world!!.playerLeaves(this)
+        world = null
+        loadingAgent!!.destroy()
+        loadingAgent = null
+    }
+
+    fun destroy() {
+        if (world != null)
+            leaveWorld()
         saveMetadata()
         unsubscribeAll()
-        loadingAgent.destroy()
     }
 
     companion object {

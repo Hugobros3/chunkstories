@@ -6,26 +6,23 @@
 
 package xyz.chunkstories.world.heightmap
 
-import xyz.chunkstories.api.math.Math2
-import xyz.chunkstories.api.player.Player
-import xyz.chunkstories.api.server.RemotePlayer
+import xyz.chunkstories.api.math.MathUtils
 import xyz.chunkstories.api.util.concurrency.Fence
-import xyz.chunkstories.api.voxel.Voxel
-import xyz.chunkstories.api.voxel.VoxelFormat
-import xyz.chunkstories.api.voxel.VoxelSide
-import xyz.chunkstories.api.world.World
+import xyz.chunkstories.api.block.BlockType
 import xyz.chunkstories.api.world.WorldMaster
 import xyz.chunkstories.api.world.WorldUser
 import xyz.chunkstories.api.world.cell.Cell
-import xyz.chunkstories.api.world.cell.FutureCell
 import xyz.chunkstories.api.world.heightmap.Heightmap
 import xyz.chunkstories.net.packets.PacketHeightmap
 import xyz.chunkstories.util.concurrency.SimpleFence
-import xyz.chunkstories.world.WorldImplementation
 import xyz.chunkstories.world.WorldTool
 import xyz.chunkstories.world.generator.TaskGenerateWorldSlice
 import net.jpountz.lz4.LZ4Factory
-import xyz.chunkstories.api.world.cell.AbstractCell
+import xyz.chunkstories.api.player.Player
+import xyz.chunkstories.api.player.entityIfIngame
+import xyz.chunkstories.api.server.RemotePlayer
+import xyz.chunkstories.api.world.cell.CellData
+import xyz.chunkstories.world.WorldImplementation
 import java.io.File
 import java.util.*
 import java.util.concurrent.Semaphore
@@ -39,7 +36,6 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
     val world: WorldImplementation = storage.world
 
     private val stateLock = ReentrantLock()
-    //private val stateCondition = stateLock.newCondition()
     override lateinit var state: Heightmap.State private set
 
     fun transitionState(value: Heightmap.State) {
@@ -58,14 +54,14 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
     val stateSemaphore = Semaphore(0)
 
     private val usersSet = HashSet<WorldUser>()
-    private val usersWaitingForIntialData = HashSet<RemotePlayer>()
+    private val waitingForInitialData = HashSet<RemotePlayer>()
     override var users: Set<WorldUser> = emptySet()
         private set
 
     val file: File?
 
     lateinit var heightData: IntArray private set
-    lateinit var voxelData: IntArray private set
+    lateinit var blockTypesData: IntArray private set
 
     lateinit var min: Array<IntArray> private set
     lateinit var max: Array<IntArray> private set
@@ -77,11 +73,11 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
             if (file.exists()) {
                 val task = IOTaskLoadHeightmap(this)
                 transitionState(Heightmap.State.Loading(task))
-                world.ioHandler.scheduleTask(task)
+                world.ioThread.scheduleTask(task)
             } else {
                 if(world is WorldTool && !world.isGenerationEnabled) {
                     this.heightData = IntArray(Math.ceil(256.0 * 256.0 * (1 + 1 / 3.0)).toInt())
-                    this.voxelData = IntArray(Math.ceil(256.0 * 256.0 * (1 + 1 / 3.0)).toInt())
+                    this.blockTypesData = IntArray(Math.ceil(256.0 * 256.0 * (1 + 1 / 3.0)).toInt())
                     recomputeMetadata()
 
                     transitionAvailable()
@@ -89,9 +85,10 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
                     var dirX = 0
                     var dirZ = 0
 
-                    if (firstUser is Player) {
-                        val playerRegionX = Math2.floor(firstUser.controlledEntity!!.location.x() / 256)
-                        val playerRegionZ = Math2.floor(firstUser.controlledEntity!!.location.z() / 256)
+                    val playerEntity = (firstUser as? Player)?.entityIfIngame
+                    if (playerEntity != null) {
+                        val playerRegionX = MathUtils.floor(playerEntity.location.x() / 256)
+                        val playerRegionZ = MathUtils.floor(playerEntity.location.z() / 256)
 
                         if (regionX < playerRegionX)
                             dirX = -1
@@ -106,11 +103,11 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
 
                     val task = TaskGenerateWorldSlice(world, this, dirX, dirZ)
                     this.heightData = IntArray(Math.ceil(256.0 * 256.0 * (1 + 1 / 3.0)).toInt())
-                    this.voxelData = IntArray(Math.ceil(256.0 * 256.0 * (1 + 1 / 3.0)).toInt())
+                    this.blockTypesData = IntArray(Math.ceil(256.0 * 256.0 * (1 + 1 / 3.0)).toInt())
                     recomputeMetadata()
 
                     transitionState(Heightmap.State.Generating(task))
-                    world.gameContext.tasks.scheduleTask(task)
+                    world.gameInstance.engine.tasks.scheduleTask(task)
                 }
             }
         } else {
@@ -132,7 +129,7 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
                 if (user is RemotePlayer) {
                     when (state) {
                         is Heightmap.State.Available -> user.pushPacket(PacketHeightmap(this))
-                        is Heightmap.State.Loading -> this.usersWaitingForIntialData.add(user)
+                        is Heightmap.State.Loading -> this.waitingForInitialData.add(user)
                     }
                 }
                 return true
@@ -206,20 +203,20 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
 
                 // 512kb per summary, use of max mipmaps for heights
                 this.heightData = IntArray(Math.ceil(256.0 * 256.0 * (1 + 1 / 3.0)).toInt())
-                this.voxelData = IntArray(Math.ceil(256.0 * 256.0 * (1 + 1 / 3.0)).toInt())
+                this.blockTypesData = IntArray(Math.ceil(256.0 * 256.0 * (1 + 1 / 3.0)).toInt())
 
                 System.arraycopy(heightData, 0, this.heightData, 0, 256 * 256)
-                System.arraycopy(voxelData, 0, this.voxelData, 0, 256 * 256)
+                System.arraycopy(voxelData, 0, this.blockTypesData, 0, 256 * 256)
 
                 recomputeMetadata()
                 transitionAvailable()
 
                 // Already have clients waiting for it ? Satisfy these messieurs
                 // TODO copy list and then send so we block less
-                for (user in usersWaitingForIntialData) {
+                for (user in waitingForInitialData) {
                     user.pushPacket(PacketHeightmap(this))
                 }
-                usersWaitingForIntialData.clear()
+                waitingForInitialData.clear()
             }
         } finally {
             stateLock.unlock()
@@ -263,7 +260,7 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
     private fun transitionSaving() {
         val task = IOTaskSaveHeightmap(this)
         transitionState(Heightmap.State.Saving(task))
-        world.ioHandler.scheduleTask(task)
+        world.ioThread.scheduleTask(task)
     }
 
     private fun transitionAvailable() {
@@ -274,7 +271,7 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
         if (state !is Heightmap.State.Loading && state !is Heightmap.State.Saving)
             throw Exception("Illegal state transition: When unloading, heightmap was in state $state")
 
-        if (!storage.removeSummary(this))
+        if (!storage.remove(this))
             throw Exception(toString() + " failed to be removed from the holder " + storage)
 
         transitionState(Heightmap.State.Zombie)
@@ -303,50 +300,49 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
         return x * 256 + z
     }
 
-    fun updateOnBlockModification(worldX: Int, height: Int, worldZ: Int, cell: FutureCell) {
-        var worldX = worldX
-        var height = height
-        var worldZ = worldZ
+    fun updateOnBlockModification(x: Int, y: Int, z: Int, newData: CellData) {
+        val lx = x and 0xFF
+        val lz = z and 0xFF
 
-        worldX = worldX and 0xFF
-        worldZ = worldZ and 0xFF
-
-        val h = getHeight(worldX, worldZ)
+        val h = getHeight(lx, lz)
 
         // If we place something solid over the last solid thing
-        if (cell.voxel.solid || cell.voxel.name.endsWith("water")) {
-            if (height >= h || h == Heightmap.NO_DATA) {
-                heightData[index(worldX, worldZ)] = height
-                voxelData[index(worldX, worldZ)] = cell.data
+        if (newData.blockType.solid || newData.blockType.name.endsWith("water")) {
+            if (y >= h || h == -1) {
+                heightData[index(lx, lz)] = y
+                blockTypesData[index(lx, lz)] = world.gameInstance.contentTranslator.getIdForVoxel(newData.blockType)
             }
         } else {
             // If removing the top block, start a loop to find bottom.
-            if (height == h) {
-                var raw_data = cell.data
+            if (y == h && h > 0) {
+                var raw_data: Int
 
                 var loaded = false
                 var solid = false
                 var liquid = false
+
+                var height = y
                 do {
                     height--
-                    loaded = world.chunksManager.isChunkLoaded(worldX / 32, height / 32, worldZ / 32)
+                    loaded = world.chunksManager.isChunkLoaded(x / 32, height / 32, z / 32)
 
-                    val celli = world.peek(worldX, height, worldZ)
-                    solid = celli.voxel.solid
-                    liquid = celli.voxel.name.endsWith("water")
-
-                    raw_data = world.peekRaw(worldX, height, worldZ)
+                    val cellData = world.getCell(x, height, z)?.data ?: return
+                    solid = cellData.blockType.solid
+                    liquid = cellData.blockType.name.endsWith("water")
+                    with(world.contentTranslator) {
+                        raw_data = cellData.blockType.assignedId
+                    }
                 } while (height >= 0 && loaded && !solid && !liquid)
 
                 if (loaded) {
-                    heightData[index(worldX, worldZ)] = height
-                    voxelData[index(worldX, worldZ)] = raw_data
+                    heightData[index(lx, lz)] = y
+                    blockTypesData[index(lx, lz)] = raw_data
                 }
             }
         }
     }
 
-    override fun setTopCell(cell: Cell) {
+    fun setTopCell(cell: Cell) {
         if (state !is Heightmap.State.Available && state !is Heightmap.State.Generating)
             return
 
@@ -357,63 +353,37 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
         worldX = worldX and 0xFF
         worldZ = worldZ and 0xFF
         heightData[index(worldX, worldZ)] = height
-        voxelData[index(worldX, worldZ)] = world.contentTranslator.getIdForVoxel(cell.voxel)
+        blockTypesData[index(worldX, worldZ)] = world.contentTranslator.getIdForVoxel(cell.data.blockType)
     }
 
     override fun getHeight(x: Int, z: Int): Int {
         if (state !is Heightmap.State.Available && state !is Heightmap.State.Generating)
-            return Heightmap.NO_DATA
-
-        var x = x
-        var z = z
-
-        x = x and 0xFF
-        z = z and 0xFF
-        return heightData[index(x, z)]
+            return -1
+        return heightData[index(x and 0xFF, z and 0xFF)]
     }
 
     fun getRawVoxelData(x: Int, z: Int): Int {
         if (state !is Heightmap.State.Available && state !is Heightmap.State.Generating)
-            return Heightmap.NO_DATA
-
-        var x = x
-        var z = z
-        x = x and 0xFF
-        z = z and 0xFF
-        return voxelData[index(x, z)]
+            return -1
+        return blockTypesData[index(x and 0xFF, z and 0xFF)]
     }
 
-    override fun getTopCell(x: Int, z: Int): Cell {
-        val raw_data = getRawVoxelData(x, z)
-        return SummaryCell(x, getHeight(x, z), z,
-                world.contentTranslator.getVoxelForId(VoxelFormat.id(raw_data))!!, VoxelFormat.sunlight(raw_data),
-                VoxelFormat.blocklight(raw_data), VoxelFormat.meta(raw_data))
-    }
-
-    internal inner class SummaryCell(x: Int, y: Int, z: Int, voxel: Voxel, meta: Int, blocklight: Int, sunlight: Int) : AbstractCell(x, y, z, voxel, meta, blocklight, sunlight) {
-
-        override val world: World
-            get() = this@HeightmapImplementation.world
-
-        override fun getNeightbor(side_int: Int): Cell {
-            val side = VoxelSide.values()[side_int]
-            return getTopCell(x + side.dx, z + side.dz)
-        }
-
+    override fun getBlockType(x: Int, z: Int): BlockType {
+        return world.contentTranslator.getVoxelForId(getRawVoxelData(x, z)) ?: world.content.blockTypes.air
     }
 
     fun getHeightMipmapped(x: Int, z: Int, level: Int): Int {
         var x = x
         var z = z
         if (state !is Heightmap.State.Available)
-            return Heightmap.NO_DATA
+            return -1
         if (level > 8)
-            return Heightmap.NO_DATA
+            return -1
         val resolution = 256 shr level
         x = x shr level
         z = z shr level
         val offset = mainMimpmapOffsets[level]
-        return heightData!![offset + resolution * x + z]
+        return heightData[offset + resolution * x + z]
     }
 
     fun getDataMipmapped(x: Int, z: Int, level: Int): Int {
@@ -427,13 +397,13 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
         x = x shr level
         z = z shr level
         val offset = mainMimpmapOffsets[level]
-        return voxelData!![offset + resolution * x + z]
+        return blockTypesData[offset + resolution * x + z]
     }
 
     fun recomputeMetadata() {
         //if (::state.isInitialized && state !is Heightmap.State.Available)
         //    return
-        if(!::voxelData.isInitialized)
+        if(!::blockTypesData.isInitialized)
             throw Exception("Computing metadata but heightmap is not properly initialized yet!")
 
         this.generateMipLevels()
@@ -474,7 +444,7 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
                     // Skip the already passed steps and the current resolution being sampled data
                     // to go write the next one
                     heightData[offset + resolution * 2 * (resolution * 2) + resolution * x + z] = maxHeight
-                    voxelData[offset + resolution * 2 * (resolution * 2) + resolution * x + z] = voxelData[maxIndex]
+                    blockTypesData[offset + resolution * 2 * (resolution * 2) + resolution * x + z] = blockTypesData[maxIndex]
                 }
 
             offset += resolution * 2 * resolution * 2

@@ -12,21 +12,21 @@ import xyz.chunkstories.api.world.World
  */
 
 fun section(position: Double, world: World): Int {
-    val worldSize = world.worldInfo.size.sizeInChunks * 32.0
+    val worldSize = world.properties.size.sizeInChunks * 32.0
     val leftSection = worldSize / 4
     val rightSection = worldSize - leftSection
     return if (position <= leftSection) -1 else if(position >= rightSection) 1 else 0
 }
 
 fun sectionChunk(position: Int, world: World): Int {
-    val worldSize = world.worldInfo.size.sizeInChunks
+    val worldSize = world.properties.size.sizeInChunks
     val leftSection = worldSize / 4
     val rightSection = worldSize - leftSection
     return if (position <= leftSection) -1 else if(position >= rightSection) 1 else 0
 }
 
 fun sectionRegion(position: Int, world: World): Int {
-    val worldSize = world.worldInfo.size.sizeInChunks / 8
+    val worldSize = world.properties.size.sizeInChunks / 8
     val leftSection = worldSize / 4
     val rightSection = worldSize - leftSection
     return if (position <= leftSection) -1 else if(position >= rightSection) 1 else 0

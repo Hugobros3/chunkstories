@@ -10,14 +10,11 @@ import xyz.chunkstories.api.gui.*
 import xyz.chunkstories.api.gui.elements.Button
 import xyz.chunkstories.api.gui.elements.InputText
 import xyz.chunkstories.api.input.Input
-import xyz.chunkstories.bugsreporter.JavaCrashesUploader
 import xyz.chunkstories.client.ClientImplementation
 import xyz.chunkstories.client.identity.LocalClientIdentity
 import xyz.chunkstories.client.identity.LoggedInClientIdentity
 import xyz.chunkstories.client.identity.PasswordStorage
 import xyz.chunkstories.gui.layer.config.LanguageSelectionUI
-import xyz.chunkstories.net.http.RequestResultAction
-import xyz.chunkstories.net.http.SimplePostRequest
 import org.joml.Vector4f
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.gui.printCopyrightNotice
@@ -69,7 +66,7 @@ class LoginUI(gui: Gui, parent: Layer?) : Layer(gui, parent) {
         usernameForm.setPosition(gui.viewportWidth / 2 - 125, gui.viewportHeight / 2 + 16)
         usernameForm.render(drawer)
         passwordForm.setPosition(usernameForm.positionX, usernameForm.positionY - usernameForm.height - (20 + 4))
-        passwordForm.render(drawer)
+        // passwordForm.render(drawer)
 
         loginButton.setPosition(usernameForm.positionX, passwordForm.positionY - 30)
 
@@ -112,72 +109,72 @@ class LoginUI(gui: Gui, parent: Layer?) : Layer(gui, parent) {
     }
 
     private fun connect() {
-        if (usernameForm.text == "OFFLINE") {
+        if (usernameForm.text.isNotEmpty()) {
             val client = gui.client as ClientImplementation
-            client.user = LocalClientIdentity(client)
+            client.user = LocalClientIdentity(client, usernameForm.text)
 
             gui.topLayer = MainMenuUI(gui, parentLayer)
-        } else {
-            logging_in = true
-
-            SimplePostRequest("https://chunkstories.xyz/api/login.php", "user=" + usernameForm.text + "&pass=" + passwordForm.text, RequestResultAction { result ->
-                logger.debug("Received login answer")
-
-                logging_in = false
-                if (result == null) {
-                    failed_login = true
-                    message = "Can't connect to server."
-                } else if (result.startsWith("ok")) {
-                    val session = result.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[1]
-
-                    val client = gui.client as ClientImplementation
-                    client.user = LoggedInClientIdentity(client, usernameForm.text, session)
-
-                    //TODO actually secure storage
-                    //TODO ask if need to remember
-                    PasswordStorage.save(PasswordStorage(usernameForm.text, passwordForm.text))
-
-                    // If the user didn't opt-out, look for crash files and upload those
-                    if (gui.client.configuration.getValue("client.game.logPolicy") == "send") {
-                        val t = JavaCrashesUploader(gui.client as ClientImplementation)
-                        t.start()
-                    }
-
-                    gui.topLayer = MainMenuUI(gui, parentLayer)
-                } else if (result.startsWith("ko")) {
-                    failed_login = true
-                    val reason = result.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[1]
-                    if (reason == "invalidcredentials")
-                        message = "Invalid credentials"
-                } else {
-                    message = "Unknown error"
-                }
-            })
         }
+        /*logging_in = true
+
+        SimplePostRequest("https://chunkstories.xyz/api/login.php", "user=" + usernameForm.text + "&pass=" + passwordForm.text, RequestResultAction { result ->
+            logger.debug("Received login answer")
+
+            logging_in = false
+            if (result == null) {
+                failed_login = true
+                message = "Can't connect to server."
+            } else if (result.startsWith("ok")) {
+                val session = result.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[1]
+
+                val client = gui.client as ClientImplementation
+                client.user = LoggedInClientIdentity(client, usernameForm.text, session)
+
+                //TODO actually secure storage
+                //TODO ask if need to remember
+                PasswordStorage.save(PasswordStorage(usernameForm.text, passwordForm.text))
+
+                // If the user didn't opt-out, look for crash files and upload those
+                if (gui.client.configuration.getValue("client.game.logPolicy") == "send") {
+                    val t = JavaCrashesUploader(gui.client as ClientImplementation)
+                    t.start()
+                }
+
+                gui.topLayer = MainMenuUI(gui, parentLayer)
+            } else if (result.startsWith("ko")) {
+                failed_login = true
+                val reason = result.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[1]
+                if (reason == "invalidcredentials")
+                    message = "Invalid credentials"
+            } else {
+                message = "Unknown error"
+            }
+        })*/
+
     }
 
     override fun handleInput(input: Input): Boolean {
-        if (input.name == "exit")
-            autologin = false
-        else if (input.name == "enter")
-            connect()
-        else if (input.name == "tab") {
-            val shift = if (gui.client.inputsManager.getInputByName("shift")!!.isPressed) -1 else 1
-            var i = focusedElement?.let {this.elements.indexOf(it) } ?: 0
+        when (input.name) {
+            "exit" -> autologin = false
+            "enter" -> connect()
+            "tab" -> {
+                val shift = if (gui.client.inputsManager.getInputByName("shift")!!.isPressed) -1 else 1
+                var i = focusedElement?.let { this.elements.indexOf(it) } ?: 0
 
-            var elem: GuiElement? = null
+                var elem: GuiElement? = null
 
-            while (elem == null || elem !is FocusableGuiElement) {
-                i += shift
-                if (i < 0)
-                    i = this.elements.size
-                if (i >= this.elements.size)
-                    i = 0
+                while (elem == null || elem !is FocusableGuiElement) {
+                    i += shift
+                    if (i < 0)
+                        i = this.elements.size
+                    if (i >= this.elements.size)
+                        i = 0
 
-                elem = this.elements[i]
+                    elem = this.elements[i]
+                }
+
+                this.focusedElement = elem as FocusableGuiElement?
             }
-
-            this.focusedElement = elem as FocusableGuiElement?
         }
 
         return super.handleInput(input)

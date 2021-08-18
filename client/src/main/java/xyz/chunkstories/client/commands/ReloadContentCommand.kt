@@ -6,18 +6,16 @@
 
 package xyz.chunkstories.client.commands
 
-import xyz.chunkstories.api.GameContext
 import xyz.chunkstories.api.client.IngameClient
 import xyz.chunkstories.api.plugin.commands.Command
 import xyz.chunkstories.api.plugin.commands.CommandEmitter
 import xyz.chunkstories.api.plugin.commands.CommandHandler
 import xyz.chunkstories.client.glfw.GLFWWindow
-import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 
-class ReloadContentCommand(private val client: IngameClient) : CommandHandler {
+class ReloadContentCommand(private val ingameClient: IngameClient) : CommandHandler {
 
     init {
-        client.pluginManager.registerCommand("reload", this)
+        ingameClient.pluginManager.registerCommand("reload", this)
     }
 
     override fun handleCommand(emitter: CommandEmitter, command: Command, arguments: Array<String>): Boolean {
@@ -32,14 +30,14 @@ class ReloadContentCommand(private val client: IngameClient) : CommandHandler {
             } else {
                 when(val subsystem = arguments[0]) {
                     "all" -> {
-                        client.content.reload()
+                        ingameClient.content.reload()
                         emitter.sendMessage("#00FFD0" + "Reloaded everything.")
                     }
                     "plugins" -> {
 
                     }
                     "rendergraph" -> {
-                        val backend = (client.gameWindow as GLFWWindow).graphicsEngine.backend
+                        val backend = (ingameClient.engine.gameWindow as GLFWWindow).graphicsEngine.backend
                         backend.reloadRendergraph()
 
                         emitter.sendMessage("Rendergraph reloaded!")

@@ -82,7 +82,7 @@ public class IOTaskLoadHeightmap extends IOTask {
 		int[] ids = new int[256 * 256];
 
 		t = 0;
-		h = Heightmap.Companion.getNO_DATA();
+		h = 0; // TODO: check Heightmap.Companion.getNO_DATA();
 		for (int x = 0; x < 256; x++)
 			for (int z = 0; z < 256; z++) {
 				heights[x * 256 + z] = h;

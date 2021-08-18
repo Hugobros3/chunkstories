@@ -23,7 +23,7 @@ import xyz.chunkstories.graphics.vulkan.graph.VulkanRenderTaskInstance
 import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
 import xyz.chunkstories.graphics.vulkan.systems.dispatching.VulkanDispatchingSystem
 import xyz.chunkstories.graphics.vulkan.textures.VulkanSampler
-import xyz.chunkstories.graphics.vulkan.textures.voxels.VulkanVoxelTexturesArray
+import xyz.chunkstories.graphics.vulkan.textures.voxels.VulkanBlockTexturesArray
 
 class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : VulkanDispatchingSystem<VulkanChunkRepresentation>(backend) {
     override val representationName: String = VulkanChunkRepresentation::class.java.canonicalName
@@ -132,11 +132,12 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
         val ssboBufferSize = (sizeAligned16 * maxChunksRendered).toLong()
 
         override fun registerDrawingCommands(drawerWork: DrawerWork) {
+            val client = backend.window.client
+            val ingameClient = client.ingame ?: return
+
             val work = drawerWork as ChunkMeshesDrawerWork
             val context = work.drawerInstance.first
             val commandBuffer = work.cmdBuffer
-
-            val client = backend.window.client.ingame ?: return
 
             val staticMeshes = work.queuedWork.mapNotNull { it.staticMesh }
             val cubes = work.queuedWork.mapNotNull { it.cubes }
@@ -150,7 +151,7 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
 
                 val (chunkInformationsCpuBuffer, chunkInformationsGpuBuffer) = bindingContext.dataAllocator.getMappedSSBO(ssboBufferSize)
 
-                val voxelTexturesArray = client.content.voxels.textures as VulkanVoxelTexturesArray
+                val voxelTexturesArray = client.content.blockTypes.textures as VulkanBlockTexturesArray
                 bindingContext.bindTextureAndSampler("albedoTextures", voxelTexturesArray.albedoOnionTexture, sampler)
                 bindingContext.bindInstancedInput("chunkInfo", chunkInformationsGpuBuffer.first, chunkInformationsGpuBuffer.second)
 
@@ -187,16 +188,17 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
             fun drawStaticMeshes() {
                 val bindingContext = context.getBindingContext(meshesPipeline)
 
-                val world = client.world
+                val world = ingameClient.world
                 val camera = context.taskInstance.camera
                 val cameraSectionX = section(camera.position.x(), world)
                 val cameraSectionZ = section(camera.position.z(), world)
+                val sizeInChunks = world.properties.size.sizeInChunks
 
                 vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshesPipeline.handle)
 
                 val (chunkInformationsCpuBuffer, chunkInformationsGpuBuffer) = bindingContext.dataAllocator.getMappedSSBO(ssboBufferSize)
 
-                val voxelTexturesArray = client.content.voxels.textures as VulkanVoxelTexturesArray
+                val voxelTexturesArray = client.content.blockTypes.textures as VulkanBlockTexturesArray
                 bindingContext.bindTextureAndSampler("albedoTextures", voxelTexturesArray.albedoOnionTexture, sampler)
                 bindingContext.bindInstancedInput("chunkInfo", chunkInformationsGpuBuffer.first, chunkInformationsGpuBuffer.second)
 
@@ -214,8 +216,8 @@ class VulkanChunkRepresentationsDispatcher(backend: VulkanGraphicsBackend) : Vul
                         val cxSection = sectionChunk(cx, world)
                         val czSection = sectionChunk(cz, world)
 
-                        cx += shouldWrap(cameraSectionX, cxSection) * world.sizeInChunks
-                        cz += shouldWrap(cameraSectionZ, czSection) * world.sizeInChunks
+                        cx += shouldWrap(cameraSectionX, cxSection) * sizeInChunks
+                        cz += shouldWrap(cameraSectionZ, czSection) * sizeInChunks
 
                         chunkX = cx
                         chunkY = chunkRepresentation.chunk.chunkY

@@ -2,17 +2,18 @@ package xyz.chunkstories.graphics.common.world
 
 import org.joml.Matrix4f
 import org.joml.Vector3f
+import xyz.chunkstories.api.client.Client
 import xyz.chunkstories.api.graphics.rendergraph.*
 import xyz.chunkstories.api.graphics.structs.Camera
 import xyz.chunkstories.api.util.kotlin.toVec3f
 import xyz.chunkstories.api.world.World
-import xyz.chunkstories.api.world.WorldClient
 import xyz.chunkstories.graphics.common.CommonGraphicsOptions
 import xyz.chunkstories.graphics.common.getConditions
 import xyz.chunkstories.graphics.common.structs.ShadowMappingInfo
+import xyz.chunkstories.world.WorldImplementation
 
 fun doShadowMapping(ctx: PassInstance, world: World) {
-    val client = (world as WorldClient).client
+    val client = (world as WorldImplementation).gameInstance.engine as Client
 
     val mainCamera = ctx.taskInstance.camera
 

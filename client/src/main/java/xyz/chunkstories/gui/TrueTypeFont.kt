@@ -9,7 +9,7 @@ package xyz.chunkstories.gui
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.content.Asset
 import xyz.chunkstories.api.gui.Font
-import xyz.chunkstories.api.math.HexTools
+import xyz.chunkstories.api.math.isHexOnly
 import java.awt.*
 import java.awt.image.BufferedImage
 import java.io.IOException
@@ -198,8 +198,7 @@ class TrueTypeFont @Throws(FontFormatException::class, IOException::class) const
             glyph = glyphs[charCurrent.toInt()]
 
             if (glyph != null) {
-                if (charCurrent == '#' && text.length - i - 1 >= 6 && text.toCharArray()[i + 1] != '#' && HexTools
-                                .isHexOnly(text.substring(i + 1, i + 7))) {
+                if (charCurrent == '#' && text.length - i - 1 >= 6 && text.toCharArray()[i + 1] != '#' && isHexOnly(text.substring(i + 1, i + 7))) {
                     if (!(i > 1 && text.toCharArray()[i - 1] == '#')) {
                         i += 7
                         continue

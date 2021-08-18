@@ -17,7 +17,6 @@ import xyz.chunkstories.api.input.Input
 import xyz.chunkstories.api.input.Mouse.MouseButton
 import xyz.chunkstories.api.util.configuration.Configuration
 import xyz.chunkstories.gui.layer.ServerSelectionUI.ServerSelectionZone.ServerGuiItem
-import xyz.chunkstories.net.http.SimpleWebRequest
 import org.joml.Vector4f
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.client.ClientImplementation
@@ -157,7 +156,8 @@ class ServerSelectionUI internal constructor(gui: Gui, parent: Layer, private va
     }
 
     private fun refreshServers() {
-        SimpleWebRequest("https://chunkstories.xyz/api/listServers.php") { result ->
+        TODO()
+        /*SimpleWebRequest("https://chunkstories.xyz/api/listServers.php") { result ->
             serverSelectionZone.elements.clear()
             try {
                 for (line in result.split(";".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()) {
@@ -167,7 +167,7 @@ class ServerSelectionUI internal constructor(gui: Gui, parent: Layer, private va
             } catch (ignored: Exception) {
             }
 
-        }
+        }*/
     }
 
     private fun repingServers() {

@@ -9,6 +9,7 @@ package xyz.chunkstories.sound.source
 import xyz.chunkstories.api.sound.SoundSource
 import xyz.chunkstories.sound.SoundData
 import org.joml.Vector3dc
+import xyz.chunkstories.api.sound.SoundSourceID
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.properties.Delegates
 
@@ -21,8 +22,8 @@ abstract class SoundSourceAbstract(
         attenuationStart: Float = 1f,
         attenuationEnd: Float = 25f
 ) : SoundSource {
-    override var uuid: Long = -1
-    override val name = soundData.name!!
+    override val id: SoundSourceID = -1
+    override val soundName = soundData.name!!
 
     override var position: Vector3dc? by Delegates.observable(position, ::dirty)
     override var mode: SoundSource.Mode by Delegates.observable(mode, ::dirty)

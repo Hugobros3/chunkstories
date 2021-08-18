@@ -10,12 +10,14 @@ import xyz.chunkstories.api.world.WorldUser
 import xyz.chunkstories.api.world.chunk.ChunkHolder
 import xyz.chunkstories.api.world.region.Region
 import xyz.chunkstories.util.concurrency.TrivialFence
-import xyz.chunkstories.world.WorldImplementation
 import xyz.chunkstories.world.chunk.ChunkImplementation
 import xyz.chunkstories.world.generator.TaskGenerateWorldSlice
 import org.slf4j.LoggerFactory
 import xyz.chunkstories.api.Location
 import xyz.chunkstories.api.world.region.WorldRegionsManager
+import xyz.chunkstories.world.WorldImplementation
+import xyz.chunkstories.world.sanitizeHorizontalCoordinate
+import xyz.chunkstories.world.sanitizeVerticalCoordinate
 import java.util.concurrent.locks.ReentrantLock
 
 class RegionsStorage(override val world: WorldImplementation) : WorldRegionsManager{
@@ -26,8 +28,8 @@ class RegionsStorage(override val world: WorldImplementation) : WorldRegionsMana
     var regionsList: List<RegionImplementation> = emptyList()
         private set
 
-    private val sizeInRegions = world.worldInfo.size.sizeInChunks / 8
-    private val heightInRegions = world.worldInfo.size.heightInChunks / 8
+    private val sizeInRegions = world.properties.size.sizeInChunks / 8
+    private val heightInRegions = world.properties.size.heightInChunks / 8
 
     /** Regions require a reference to their heightmap data, but the heightmap initial data creation process will also require a reference to all the regions
      * vertically encompassed by it. To solve this loop, we first acquire the heightmap data and pass it to the region constructor, using this dummy user.*/
@@ -66,7 +68,7 @@ class RegionsStorage(override val world: WorldImplementation) : WorldRegionsMana
     fun countChunks(): Int = regionsList.size
 
     override fun acquireRegion(user: WorldUser, regionX: Int, regionY: Int, regionZ: Int): RegionImplementation {
-        if (regionY < 0 || regionY > world.maxHeight / 256)
+        if (regionY < 0 || regionY > world.properties.size.heightInBlocks / 256)
             throw Exception("Out of bounds: RegionY = $regionY is out of world bounds.")
 
         val key = (regionX * sizeInRegions + regionZ) * heightInRegions + regionY
@@ -124,7 +126,7 @@ class RegionsStorage(override val world: WorldImplementation) : WorldRegionsMana
     }
 
     fun acquireChunkHolder(user: WorldUser, chunkX: Int, chunkY: Int, chunkZ: Int): ChunkHolder {
-        if (chunkY < 0 || chunkY > world.maxHeight / 32)
+        if (chunkY < 0 || chunkY > world.properties.size.heightInBlocks / 32)
             throw Exception("Out of bounds: ChunkY = $chunkY is out of world bounds.")
 
         val regionX = chunkX shr 3

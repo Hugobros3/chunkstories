@@ -6,8 +6,6 @@
 
 package xyz.chunkstories.world.chunk
 
-import xyz.chunkstories.api.entity.traits.serializable.TraitControllable
-import xyz.chunkstories.api.server.RemotePlayer
 import xyz.chunkstories.api.util.concurrency.Fence
 import xyz.chunkstories.api.world.WorldUser
 import xyz.chunkstories.api.world.chunk.ChunkHolder
@@ -18,7 +16,8 @@ import xyz.chunkstories.world.WorldTool
 import xyz.chunkstories.world.io.TaskLoadChunk
 import net.jpountz.lz4.LZ4Factory
 import org.slf4j.LoggerFactory
-import xyz.chunkstories.api.world.WorldClientNetworkedRemote
+import xyz.chunkstories.api.server.RemotePlayer
+import xyz.chunkstories.world.WorldSubImplementation
 import xyz.chunkstories.world.region.RegionImplementation
 import java.util.*
 import java.util.concurrent.Semaphore
@@ -51,21 +50,19 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
     /** Used by IO operations only  */
     var compressedData: ChunkCompressedData? = null
 
-    //var loadChunkTask: IOTask? = null
-
     override val chunk: ChunkImplementation?
         get() = (state as? ChunkHolder.State.Available)?.chunk as? ChunkImplementation
 
     init {
-        uuid = chunkX shl region.world.worldInfo.size.bitlengthOfVerticalChunksCoordinates or chunkY shl region.world.worldInfo.size.bitlengthOfHorizontalChunksCoordinates or chunkZ
+        uuid = chunkX shl region.world.properties.size.bitlengthOfVerticalChunksCoordinates or chunkY shl region.world.properties.size.bitlengthOfHorizontalChunksCoordinates or chunkZ
     }
 
-    override fun compressChunkData() {
+    fun compressChunkData() {
         val chunk = this.chunk ?: return
 
-        chunk.entitiesLock.lock()
+        //chunk.entitiesLock.lock()
         val compressedData = ChunkCompressedData.compressChunkData(chunk)//compressChunkData(chunk)
-        chunk.entitiesLock.unlock()
+        //chunk.entitiesLock.unlock()
 
         this.compressedData = compressedData
     }
@@ -283,7 +280,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
                         transitionLoading()
                     else if(region.state is Region.State.Generating)
                         transitionGenerating()
-                    else if(region.world is WorldClientNetworkedRemote) {
+                    else if(region.world is WorldSubImplementation) {
                         transitionWaitingOnRemoteData()
                     } else
                         throw Exception("Broken assertion: If the chunk is unloaded, either it has to have unloaded data, or be in a yet region pending generation!")
@@ -398,7 +395,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
             val task = TaskLoadChunk(this)
             transitionState(ChunkHolder.State.Loading(task))
             //TODO this is a hack for working arround the lack of fibers in the task system!
-            region.world.ioHandler.scheduleTask(task)
+            region.world.ioThread.scheduleTask(task)
             //region.world.gameContext.tasks.scheduleTask(task)
         } finally {
             region.stateLock.unlock()
@@ -460,12 +457,12 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
                     // Remove the entities from this chunk from the world
                     for (entity in chunk.localEntities) {
                         // If there is no controller
-                        if (entity.traits[TraitControllable::class]?.controller == null)
-                            region.world.removeEntityFromList(entity)
+                        if (entity.controller == null)
+                            region.world.removeEntity(entity.id)
                     }
 
                     // Lock it down
-                    chunk.entitiesLock.lock()
+                    // chunk.entitiesLock.lock()
 
                     // Compress chunk one last time before it has to go
                     compressChunkData()
@@ -476,7 +473,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
                     ChunkImplementation.chunksCounter.decrementAndGet()
 
                     // unlock it (whoever messes with it now, his problem)
-                    chunk.entitiesLock.unlock()
+                    // chunk.entitiesLock.unlock()
                 }
             }
 

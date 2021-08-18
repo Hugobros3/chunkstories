@@ -12,7 +12,6 @@ import xyz.chunkstories.api.entity.Entity
 import xyz.chunkstories.api.util.concurrency.Fence
 import xyz.chunkstories.api.world.WorldMaster
 import xyz.chunkstories.api.world.WorldUser
-import xyz.chunkstories.api.world.heightmap.Heightmap
 import xyz.chunkstories.api.world.region.Region
 import xyz.chunkstories.util.concurrency.TrivialFence
 import xyz.chunkstories.world.WorldImplementation
@@ -28,12 +27,14 @@ import java.util.concurrent.Semaphore
 import java.util.concurrent.locks.ReentrantLock
 
 class RegionImplementation(override val world: WorldImplementation, override val heightmap: HeightmapImplementation, override val regionX: Int, override val regionY: Int, override val regionZ: Int) : Region, WorldUser {
-    val file: File
-        get() = File(world.folderPath + "/regions/" + regionX + "." + regionY + "." + regionZ + ".csf")
-    //val handler: CSFRegionFile?
+    val file: File by lazy {
+        if (world is WorldMaster)
+            File(world.folderPath + "/regions/" + regionX + "." + regionY + "." + regionZ + ".csf")
+        else
+            throw IllegalAccessException("World is not master")
+    }
 
     val stateLock = ReentrantLock()
-    //val stateCondition = stateLock.newCondition()
     override lateinit var state: Region.State
         private set
 
@@ -85,14 +86,11 @@ class RegionImplementation(override val world: WorldImplementation, override val
 
         // Only the WorldMaster has a concept of files
         if (world is WorldMaster) {
-            //file = File(world.folderPath + "/regions/" + regionX + "." + regionY + "." + regionZ + ".csf")
-            //handler = CSFRegionFile.determineVersionAndCreate(this)
-
             when {
                 file.exists() -> {
                     val task = IOTaskLoadRegion(this)
                     transitionState(Region.State.Loading(task))
-                    world.ioHandler.scheduleTask(task)
+                    world.ioThread.scheduleTask(task)
                 }
                 world is WorldTool && !world.isGenerationEnabled -> {
                     // Just fill out with dummy data (air)
@@ -263,7 +261,7 @@ class RegionImplementation(override val world: WorldImplementation, override val
 
         val task = IOTaskSaveRegion(this)
         transitionState(Region.State.Saving(task))
-        world.ioHandler.scheduleTask(task)
+        world.ioThread.scheduleTask(task)
     }
 
     private fun transitionAvailable() {

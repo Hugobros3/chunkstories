@@ -3,9 +3,9 @@ package xyz.chunkstories.graphics.vulkan.systems.dispatching.chunks
 import xyz.chunkstories.graphics.common.world.ChunkRepresentationsProvider
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import xyz.chunkstories.graphics.vulkan.swapchain.VulkanFrame
-import xyz.chunkstories.world.WorldClientCommon
+import xyz.chunkstories.world.WorldImplementation
 
-class VulkanChunkRepresentationsProvider(val backend: VulkanGraphicsBackend, world: WorldClientCommon) :
+class VulkanChunkRepresentationsProvider(val backend: VulkanGraphicsBackend, world: WorldImplementation) :
         ChunkRepresentationsProvider<VulkanChunkRepresentation>(world, { _, chunk ->
             if (chunk.mesh is VulkanChunkMeshProperty) {
                 val block = (chunk.mesh as VulkanChunkMeshProperty).getAndAcquire()

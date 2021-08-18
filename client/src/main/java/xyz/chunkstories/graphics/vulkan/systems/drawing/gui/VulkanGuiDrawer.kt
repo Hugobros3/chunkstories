@@ -387,8 +387,5 @@ class VulkanGuiDrawer(pass: VulkanPass, val gui: ClientGui) : VulkanDrawingSyste
         MemoryUtil.memFree(stagingByteBuffer)
     }
 
-    companion object {
-        val logger = LoggerFactory.getLogger("client.gfx_vk.gui")
-    }
-
+    val logger = LoggerFactory.getLogger("client.vulkan.gui")
 }

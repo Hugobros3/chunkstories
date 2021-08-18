@@ -8,19 +8,17 @@ package xyz.chunkstories.client.net.vanillasockets
 
 import xyz.chunkstories.api.exceptions.PacketProcessingException
 import xyz.chunkstories.api.exceptions.net.IllegalPacketException
-import xyz.chunkstories.api.exceptions.net.UnknowPacketException
 import xyz.chunkstories.api.net.Packet
-import xyz.chunkstories.api.net.PacketDefinition.PacketGenre
-import xyz.chunkstories.api.net.PacketWorldStreaming
-import xyz.chunkstories.api.net.RemoteServer
-import xyz.chunkstories.api.net.packets.PacketText
+import xyz.chunkstories.api.server.UserConnection
+import xyz.chunkstories.api.world.WorldSub
 import xyz.chunkstories.client.ClientImplementation
 import xyz.chunkstories.client.net.*
 import xyz.chunkstories.net.Connection
 import xyz.chunkstories.net.LogicalPacketDatagram
-import xyz.chunkstories.net.PacketDefinitionImplementation
+import xyz.chunkstories.net.PacketDefinition
 import xyz.chunkstories.net.vanillasockets.SendQueue
 import xyz.chunkstories.net.vanillasockets.StreamGobbler
+import xyz.chunkstories.world.WorldImplementation
 
 import java.io.DataInputStream
 import java.io.DataOutputStream
@@ -29,7 +27,7 @@ import java.net.Socket
 import java.util.concurrent.atomic.AtomicBoolean
 
 /** A clientside connection to a server using the TCP protocol.  */
-open class TCPServerConnection(connectionSequence: ClientConnectionSequence) : ServerConnection(connectionSequence) {
+open class TCPServerConnection(client: ClientImplementation, connectionSequence: ClientConnectionSequence) : ServerConnection(client, connectionSequence) {
     private val client: ClientImplementation = connectionSequence.client
     final override val encoderDecoder: ClientPacketsEncoderDecoder
 
@@ -43,14 +41,18 @@ open class TCPServerConnection(connectionSequence: ClientConnectionSequence) : S
 
     private var sendQueue: SendQueue? = null
 
-    // A representation of who we're talking to
-    final override val remoteServer: RemoteServer
-
     override val isOpen: Boolean
         get() = connected && !disconnected
 
+    override val remoteServer = RemoteServerImplementation(this)
+
+    override val world: WorldImplementation?
+        get() = client.ingame?.world
+
+    override val userConnection: UserConnection?
+        get() = null
+
     init {
-        remoteServer = RemoteServerImplementation(this)
         encoderDecoder = ClientPacketsEncoderDecoder(client, this)
     }
 
@@ -80,48 +82,12 @@ open class TCPServerConnection(connectionSequence: ClientConnectionSequence) : S
 
     internal inner class ClientGobbler(connection: Connection, `in`: DataInputStream) : StreamGobbler(connection, `in`)
 
-    @Throws(IOException::class, PacketProcessingException::class, IllegalPacketException::class)
-    override fun handleDatagram(datagram: LogicalPacketDatagram) {
-        val definition = datagram.packetDefinition as PacketDefinitionImplementation// (PacketDefinitionImpl)
-        // getEncoderDecoder().getContentTranslator().getPacketForId(datagram.packetTypeId);
-        if (definition.genre == PacketGenre.GENERAL_PURPOSE) {
-            val packet = definition.createNew(true, null)
-            packet!!.process(remoteServer, datagram.data, encoderDecoder)
-            datagram.dispose()
-
-        } else if (definition.genre == PacketGenre.SYSTEM) {
-            val packet = definition.createNew(true, null)
-            packet!!.process(remoteServer, datagram.data, encoderDecoder)
-            if (packet is PacketText) {
-                handleSystemRequest(packet.text)
-            }
-            datagram.dispose()
-
-        } else if (definition.genre == PacketGenre.WORLD) {
-            val world = encoderDecoder.world
-            if (world == null) {
-                Connection.Companion.logger.error("Received packet $definition but no world is up yet !")
-            } else {
-                world.queueDatagram(datagram)
-            }
-
-        } else if (definition.genre == PacketGenre.WORLD_STREAMING) {
-            val world = encoderDecoder.world
-            val packet = definition.createNew(true, world) as PacketWorldStreaming
-            packet.process(remoteServer, datagram.data, encoderDecoder)
-            world.ioHandler().handlePacketWorldStreaming(packet)
-            datagram.dispose()
-        } else {
-            throw RuntimeException("Unknown packet genre")
-        }
-    }
-
-    override fun handleSystemRequest(msg: String): Boolean {
-        if (msg.startsWith("chat/")) {
+    override fun handleSystemRequest(message: String): Boolean {
+        if (message.startsWith("chat/")) {
             val ingame = client.ingame
-            ingame?.print(msg.substring(5))
-        } else if (msg.startsWith("disconnect/")) {
-            val serverKickReason = msg.replace("disconnect/", "")
+            ingame?.print(message.substring(5))
+        } else if (message.startsWith("disconnect/")) {
+            val serverKickReason = message.replace("disconnect/", "")
             Connection.logger.info(serverKickReason)
             close("Disconnected by server: \n$serverKickReason")
         }
@@ -130,14 +96,14 @@ open class TCPServerConnection(connectionSequence: ClientConnectionSequence) : S
     }
 
     override fun pushPacket(packet: Packet) {
-        try {
+        /*try {
             sendQueue!!.queue(encoderDecoder.buildOutgoingPacket(packet))
         } catch (e: UnknowPacketException) {
             Connection.logger.error("Couldn't pushPacket()", e)
         } catch (e: IOException) {
             close("Failed to push packet")
-        }
-
+        }*/
+        TODO()
     }
 
     override fun flush() {

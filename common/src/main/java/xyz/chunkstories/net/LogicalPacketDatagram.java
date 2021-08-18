@@ -8,8 +8,6 @@ package xyz.chunkstories.net;
 
 import java.io.DataInputStream;
 
-import xyz.chunkstories.api.net.PacketDefinition;
-
 public abstract class LogicalPacketDatagram {
 
 	public final PacketDefinition packetDefinition;

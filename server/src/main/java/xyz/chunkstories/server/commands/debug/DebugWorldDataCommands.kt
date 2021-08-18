@@ -7,56 +7,60 @@
 package xyz.chunkstories.server.commands.debug
 
 import xyz.chunkstories.api.player.Player
+import xyz.chunkstories.api.player.entityIfIngame
 import xyz.chunkstories.api.plugin.commands.Command
 import xyz.chunkstories.api.plugin.commands.CommandEmitter
-import xyz.chunkstories.api.server.Server
+import xyz.chunkstories.api.server.Host
 import xyz.chunkstories.api.world.heightmap.Heightmap
-import xyz.chunkstories.server.commands.ServerCommandBasic
+import xyz.chunkstories.server.commands.AbstractHostCommandHandler
 import xyz.chunkstories.world.WorldImplementation
 
-class DebugWorldDataCommands(serverConsole: Server) : ServerCommandBasic(serverConsole) {
+class DebugWorldDataCommands(serverConsole: Host) : AbstractHostCommandHandler(serverConsole) {
 
     init {
-        server.pluginManager.registerCommand("chunk", this)
-        server.pluginManager.registerCommand("region", this)
-        server.pluginManager.registerCommand("heightmap", this)
-        server.pluginManager.registerCommand("heightmaps", this)
+        host.pluginManager.registerCommand("chunk", this)
+        host.pluginManager.registerCommand("region", this)
+        host.pluginManager.registerCommand("heightmap", this)
+        host.pluginManager.registerCommand("heightmaps", this)
     }
 
     override fun handleCommand(emitter: CommandEmitter, command: Command, arguments: Array<String>): Boolean {
         if (command.name == "chunk" && emitter.hasPermission("server.debug")) {
             val player = emitter as Player
-
-            emitter.sendMessage("#00FFD0" + player.controlledEntity!!.traitLocation.chunk!!)
+            val loc = player.state.location ?: kotlin.run {
+                return true
+            }
+            TODO("get chunk intrinsic thing")
+            emitter.sendMessage("#00FFD0" + loc.world)
             return true
         } else if (command.name == "region" && emitter.hasPermission("server.debug")) {
             val player = emitter as Player
 
-            val chunk = player.controlledEntity!!.traitLocation.chunk
+            val chunk = TODO() //player.controlledEntity!!.traitLocation.chunk
 
-            if (chunk != null)
+            /*if (chunk != null)
                 emitter.sendMessage("#00FFD0" + chunk.region)
             else
                 emitter.sendMessage("#00FFD0" + "not within a loaded chunk, so no parent region could be found.")
 
-            return true
+            return true*/
         } else if (command.name == "heightmap" && emitter.hasPermission("server.debug")) {
             val sum: Heightmap?
 
             if (arguments.size == 2) {
                 val x = Integer.parseInt(arguments[0])
                 val z = Integer.parseInt(arguments[1])
-                sum = server.world.heightmapsManager.getHeightmap(x, z)
+                sum = host.world.heightmapsManager.getHeightmap(x, z)
             } else {
                 val player = emitter as Player
-                val playerEntity = player.controlledEntity ?: throw Exception("Not currently controlling an entity !")
+                val playerEntity = player.entityIfIngame ?: throw Exception("Not currently controlling an entity !")
                 sum = playerEntity.world.heightmapsManager.getHeightmapLocation(playerEntity.location)
             }
 
             emitter.sendMessage("#00FFD0" + sum!!)
             return true
         } else if (command.name == "heightmaps" && emitter.hasPermission("server.debug")) {
-            dumpLoadedHeightmap(server.world as WorldImplementation, emitter)
+            dumpLoadedHeightmap(host.world as WorldImplementation, emitter)
         }
         return false
     }

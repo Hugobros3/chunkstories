@@ -51,11 +51,11 @@ class TaskBuildHeightmap(private val regionX: Int, private val regionZ: Int, pri
                     val cx = i / 32
                     val cy = h / 32
                     val cz = j / 32
-                    val data = holders[(cx * 8 + cy) * heightInChunks + cz]!!.chunk!!.peek(i, h, j)
-                    if (!data.voxel!!.isAir()) {
-                        val vox = data.voxel
-                        if (vox!!.solid || vox.name == "water") {
-                            heightmap.setTopCell(data)
+                    val cell = holders[(cx * 8 + cy) * heightInChunks + cz]!!.chunk!!.getCell(i, h, j)
+                    if (!cell.data.blockType.isAir) {
+                        val blockType = cell.data.blockType
+                        if (blockType.solid || blockType.name == "water") {
+                            heightmap.setTopCell(cell)
                             break
                         }
                     }

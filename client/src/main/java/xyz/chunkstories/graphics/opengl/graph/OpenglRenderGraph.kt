@@ -9,6 +9,7 @@ import xyz.chunkstories.api.graphics.rendergraph.RenderGraphDeclaration
 import xyz.chunkstories.api.graphics.rendergraph.RenderTaskInstance
 import xyz.chunkstories.api.graphics.representation.Representation
 import xyz.chunkstories.api.graphics.structs.Camera
+import xyz.chunkstories.api.graphics.structs.camera
 import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.common.representations.gatherRepresentations
 import xyz.chunkstories.graphics.opengl.OpenglFrame
@@ -29,7 +30,7 @@ class OpenglRenderGraph(val backend: OpenglGraphicsBackend, val dslCode: RenderG
     }
 
     fun renderFrame(frame: OpenglFrame) {
-        val mainCamera = backend.window.client.ingame?.player?.controlledEntity?.traits?.get(TraitControllable::class)?.camera ?: Camera()
+        val mainCamera = backend.window.client.ingame?.camera ?: Camera()
         val mainTaskName = "main"
         val mainTask = tasks[mainTaskName]!!
         val map = mutableMapOf<String, Any>()
