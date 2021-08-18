@@ -28,10 +28,6 @@ dependencies {
     // TODO sort out the duplication with ImageIO.read
     api("org.l33tlabs.twl:pngdecoder:1.0")
 
-    // NBT Parsing
-    // TODO converter-only
-    api("io.xol.enklume:enklume:100")
-
     // Assimp & friends
     implementation("com.github.kotlin-graphics:glm:7651f1f42ef7fd6661fe8e27556f3060394d65cc")
     implementation("com.github.Hugobros3:assimp:no-lwjgl-SNAPSHOT")
