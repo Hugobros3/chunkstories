@@ -1,6 +1,10 @@
 # Chunk Stories
 
-![alt text](http://chunkstories.xyz/img/github_header.png "Header screenshot")
+> Important node:
+> 
+> The current master branch is in heavy work in progress. Many features such as multiplayer and sound are completely non-fonctional as a heavy refactor of the code is occuring. Because of heavy bit-rot, older versions of the game are also no longer usable (largely due to an defunct account system). I have limited time and willpower to spend on this unfortunately, but the refactor should ultimately make it easier going forward, the technical debt is really bad otherwise !
+
+![alt text](menu.png "Header screenshot")
 
 ## What is Chunk Stories ?
 
@@ -8,7 +12,9 @@ Chunk Stories is an advanced Minecraft clone, with a tailor-built engine boastin
 
 ### Why yet another Minecraft clone ?
 
-Not everyone is happy with the direction Minecraft is taking under the direction of Microsoft. ~~While the game is doing very well for now,~~ (See edit later) it's clear Redmont wants to keep an iron grip over it's modding potential, and refuses to provide a real modding API with a permissive licensing scheme. There is also the issue of the Bedrock edition, which is a dystopian version of the game, complete with paid mods, microtransactions and completely locked-down executables, which threatens to replace the good old Java Edition over time. **Edit 2020.12.02: this threat is now a much more concrete one with the move to Microsoft accounts forcing players to submit to very problematic terms of service if they do not want to give up their access to the game, further highliting the importance of a free (as in beer) alternative.**
+Not everyone is happy with the direction Minecraft is taking under the direction of Microsoft. ~~While the game is doing very well for now,~~ (See edit later) it's clear Redmont wants to keep an iron grip over it's modding potential, and refuses to provide a real modding API with a permissive licensing scheme. There is also the issue of the Bedrock edition, which is a dystopian version of the game, complete with paid mods, microtransactions and completely locked-down executables, which threatens to replace the good old Java Edition over time. 
+
+**Edit 2020.12.02: Unfortunately this threat is now a much more concrete one with the move to Microsoft accounts forcing players to submit to very problematic terms of service if they do not want to give up their access to the game, further highliting the importance of a free (as in beer) alternative.**
 
 Chunk Stories is free software and runs on any platform someone can be bothered to port the implementation to.
 
@@ -17,6 +23,8 @@ Chunk Stories is free software and runs on any platform someone can be bothered 
 For the author, Chunk Stories is and always has been a side project, made for fun and to become a better programmer. The author also finds the existing offerings poor, and has the smug belief he can do better, especially in the mods handling department ([Yes, that](https://xkcd.com/927/)).
 
 To this end, Chunk Stories borrows heavily from one of two best things about the Minecraft modding ecosystem: The Bukkit-style of plugins, and the server-downloadable "resource packs", mixing the two into the idea of a "Mod". Mods are merely zip files with resources ( images, 3d models, sounds, json files ) and code ( inside jars ), and are very simple to both build and use.
+
+![alt text](ingame.png "Ingame screenshot")
 
 ## Main engine features
 
