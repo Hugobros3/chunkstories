@@ -40,7 +40,7 @@ data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsB
 
         modules = spirvCode.stages.mapValues { ShaderModule(backend, it.value) }
 
-        maxSlotUsed = glslProgram.resources.maxBy { it.locator.descriptorSetSlot }?.locator?.descriptorSetSlot ?: -1
+        maxSlotUsed = glslProgram.resources.maxByOrNull { it.locator.descriptorSetSlot }?.locator?.descriptorSetSlot ?: -1
 
         slotLayouts = Array(maxSlotUsed + 1) { slot ->
             val slotResources = glslProgram.resources.filter { it.locator.descriptorSetSlot == slot }.toSet()

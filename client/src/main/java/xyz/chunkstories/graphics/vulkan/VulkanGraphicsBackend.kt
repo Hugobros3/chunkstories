@@ -321,7 +321,7 @@ class VulkanGraphicsBackend(graphicsEngine: GraphicsEngineImplementation, window
 
         // The user didn't pick his favourite device ? Use the most suitable one
         if (bestPhysicalDevice == null)
-            bestPhysicalDevice = physicalDevices.maxBy(PhysicalDevice::fitnessScore)
+            bestPhysicalDevice = physicalDevices.maxByOrNull(PhysicalDevice::fitnessScore) ?: throw Exception("No device available !")
 
         logger.debug("Picking physical device $bestPhysicalDevice")
 

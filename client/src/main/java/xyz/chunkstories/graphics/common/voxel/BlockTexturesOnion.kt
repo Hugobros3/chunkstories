@@ -40,8 +40,8 @@ abstract class BlockTexturesOnion(parent: BlockTypesStore) : BlockTexturesStore(
     }
 
     fun createVoxelArray() {
-        val minTextureSize = voxelTexturesList.minBy { it.imageSize }!!.imageSize
-        val maxTextureSize = voxelTexturesList.maxBy { it.imageSize }!!.imageSize
+        val minTextureSize = voxelTexturesList.minByOrNull { it.imageSize }!!.imageSize
+        val maxTextureSize = voxelTexturesList.maxByOrNull { it.imageSize }!!.imageSize
 
         val minAcceptableTextureResolution = 16
         val maxAcceptableTextureResolution = 32

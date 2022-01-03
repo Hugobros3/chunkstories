@@ -54,7 +54,7 @@ class RecipesStore(val store: GameContentStore) : Content.Recipes {
 
                         val patternLines = pattern.lines()
                         val patternHeight = patternLines.size
-                        val patternWidth = patternLines.map { it.length }.max()!!
+                        val patternWidth = patternLines.maxOf { it.length }
                         val resolvedPattern = Array(patternHeight) { y ->
                             Array(patternWidth) { x -> patternLines[y].toCharArray().getOrNull(x)?.let { ingredientsMap[it.toString()] } }
                         }
