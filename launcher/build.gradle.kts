@@ -10,7 +10,7 @@ buildscript {
 plugins {
     java
     application
-    kotlin("jvm") version ("1.3.10")
+    kotlin("jvm") version ("1.6.10")
 
     id("com.github.johnrengelman.shadow") version "5.1.0"
     id("edu.sc.seis.launch4j") version "2.4.6"

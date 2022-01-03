@@ -1,7 +1,7 @@
 plugins {
     java
     `java-library`
-    kotlin("jvm") version ("1.3.50")
+    kotlin("jvm") version ("1.6.10")
 }
 
 dependencies {
@@ -67,7 +67,3 @@ tasks {
         }
     }
 }
-
-/*val multiplatform by configurations.creating {
-    extendsFrom(configurations["runtime"])
-}*/

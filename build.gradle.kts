@@ -11,8 +11,6 @@ subprojects {
         mavenCentral()
         jcenter()
 
-        //TODO Fix HTTPS there
-        maven("http://maven.xol.io/repository/public/")
         maven("https://jitpack.io")
         maven("https://oss.sonatype.org/content/repositories/snapshots/")
     }
@@ -31,10 +29,10 @@ plugins {
     id("org.ajoberstar.grgit") version "3.1.1"
 }
 
-val apiRevisionBuiltAgainst by extra { "2.0.3" }
+val apiRevisionBuiltAgainst by extra { "2.0.4" }
 var actualContentLocation = "core_content.zip"
 
-val lwjglVersion by extra { "3.2.3" }
+val lwjglVersion by extra { "3.3.0" }
 val natives by extra { listOf("natives-windows", "natives-linux", "natives-macos")}
 
 task("buildAll") {
