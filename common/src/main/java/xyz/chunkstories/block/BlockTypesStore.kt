@@ -47,8 +47,8 @@ class BlockTypesStore(override val content: GameContentStore) : Content.BlockTyp
         )), content)
         this.reloadJsonFiles()
 
-        for(voxel in content.items.parent.blockTypes.all) {
-            for(variantDefinition in voxel.variants) {
+        for(blockType in content.items.parent.blockTypes.all) {
+            for(variantDefinition in blockType.variants) {
                 content.items.itemDefinitions[variantDefinition.name] = variantDefinition
             }
         }
@@ -96,7 +96,10 @@ class BlockTypesStore(override val content: GameContentStore) : Content.BlockTyp
         air.finalizeInit()
         byName["air"] = air
 
-        for (asset in content.modsManager.allAssets.filter { it.name.startsWith("voxels/") && !it.name.startsWith("voxels/materials/") && it.name.endsWith(".hjson") }) {
+        for (asset in content.modsManager.allAssets.filter {
+            (it.name.startsWith("voxels/") ||  it.name.startsWith("blocks/")) &&
+            !(it.name.startsWith("voxels/materials/") || it.name.startsWith("blocks/materials/")) &&
+            it.name.endsWith(".hjson") }) {
             readDefinitions(asset)
         }
     }
@@ -115,7 +118,7 @@ class BlockTypesStore(override val content: GameContentStore) : Content.BlockTyp
         }
 
     companion object {
-        private val logger = LoggerFactory.getLogger("content.voxels")
+        private val logger = LoggerFactory.getLogger("content.blocks")
     }
 
     override val logger: Logger
