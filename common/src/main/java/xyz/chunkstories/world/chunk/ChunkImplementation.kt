@@ -132,7 +132,7 @@ class ChunkImplementation constructor(override val holder: ChunkHolderImplementa
 
         override var data: CellData
             get() = getCellData(x, y, z)
-            set(value) = setCellData(x, y, z, data)
+            set(value) = setCellData(x, y, z, value)
 
         override val additionalData: MutableMap<String, BlockAdditionalData>
             get() = TODO("Not yet implemented")
