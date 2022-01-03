@@ -196,7 +196,7 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
         stackPush()
 
         val fence = inFlightFences[inflightFrameIndex]
-        vkWaitForFences(backend.logicalDevice.vkDevice, fence, true, Long.MAX_VALUE)
+        vkWaitForFences(backend.logicalDevice.vkDevice, fence, true, -1)
 
         if(retiringFrame != null) {
             retiringFrame.cleanup()
@@ -212,7 +212,7 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
         val renderingFinishedSemaphore = renderingSemaphores[inflightFrameIndex]
 
         val pImageIndex = stackMallocInt(1)
-        val result = vkAcquireNextImageKHR(backend.logicalDevice.vkDevice, handle, Long.MAX_VALUE, imageAvailableSemaphore, VK_NULL_HANDLE, pImageIndex)
+        val result = vkAcquireNextImageKHR(backend.logicalDevice.vkDevice, handle, -1, imageAvailableSemaphore, VK_NULL_HANDLE, pImageIndex)
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || this.expired) {
             logger.debug("Recreating swap chain !")
