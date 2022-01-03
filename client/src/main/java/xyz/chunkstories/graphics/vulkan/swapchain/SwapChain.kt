@@ -243,7 +243,7 @@ class SwapChain(val backend: VulkanGraphicsBackend, displayRenderPass: VkRenderP
 
             stackPop()
             return newSwapchain.beginFrame(frameNumber)
-        }
+        } else if (result != VK_SUCCESS) throw Exception("Unhandled result: $result")
 
         val swapchainImageIndex = pImageIndex.get(0)
 
