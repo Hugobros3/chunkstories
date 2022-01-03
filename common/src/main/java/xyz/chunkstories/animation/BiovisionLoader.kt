@@ -5,7 +5,7 @@ import org.joml.Vector3fc
 import java.util.*
 
 fun loadBiviosionFile(text: String): BiovisionAnimation {
-    val tokensStream = LinkedList(text.replace("\n", " ").replace("\t", "").split(" "))
+    val tokensStream = LinkedList(text.replace("\r\n", "\n").replace("\n", " ").replace("\t", "").split(" "))
     tokensStream.removeAll { it.isEmpty() }
 
     tokensStream.expect("HIERARCHY")
