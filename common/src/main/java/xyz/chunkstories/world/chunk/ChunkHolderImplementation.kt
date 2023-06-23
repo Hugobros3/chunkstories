@@ -475,6 +475,7 @@ class ChunkHolderImplementation(override val region: RegionImplementation, overr
                     // unlock it (whoever messes with it now, his problem)
                     // chunk.entitiesLock.unlock()
                 }
+                else -> {}
             }
 
             transitionState(ChunkHolder.State.Unloaded)

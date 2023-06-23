@@ -130,6 +130,7 @@ class HeightmapImplementation internal constructor(private val storage: Heightma
                     when (state) {
                         is Heightmap.State.Available -> user.pushPacket(PacketHeightmap(this))
                         is Heightmap.State.Loading -> this.waitingForInitialData.add(user)
+                        else -> {}
                     }
                 }
                 return true

@@ -78,6 +78,7 @@ fun ShaderCompiler.addStructsDeclaration(shaderCode: String, list: List<GLSLType
                 }
             }
             is GLSLType.Array -> this.baseType.extractDeps()
+            else -> {}
         }
     }
 

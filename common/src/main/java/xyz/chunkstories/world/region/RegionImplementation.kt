@@ -244,6 +244,7 @@ class RegionImplementation(override val world: WorldImplementation, override val
                     else
                         transitionZombie()
                 }
+                else -> {}
             }
 
         } finally {
