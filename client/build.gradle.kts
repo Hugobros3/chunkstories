@@ -25,13 +25,13 @@ dependencies {
     // LWJGL3 bindings
 
     // JVM modules
-    val lwjglModules = listOf("glfw", "openal", "opengl", "vulkan", "stb", "tinyfd")
+    val lwjglModules = listOf("glfw", "openal", "opengl", "vulkan")
     for(module in lwjglModules) {
         implementation("org.lwjgl:lwjgl-$module:${lwjglVersion}")
     }
 
     // Modules that needs native libs
-    val lwjglNativeModules = listOf("glfw", "openal", "opengl", "stb", "tinyfd")
+    val lwjglNativeModules = listOf("glfw", "openal", "opengl")
     for(module in lwjglNativeModules) {
         for(native in lwjglNatives)
             runtimeOnly("org.lwjgl:lwjgl-$module:${lwjglVersion}:$native")

@@ -4,6 +4,9 @@ plugins {
     kotlin("jvm") version ("1.8.10")
 }
 
+val lwjglVersion: String by rootProject.extra
+val lwjglNatives: List<String> by rootProject.extra
+
 dependencies {
     api(kotlin("stdlib-jdk8"))
     api(kotlin("reflect"))
@@ -13,8 +16,20 @@ dependencies {
     api(project(":api"))
 
     api("org.lwjgl:lwjgl:${rootProject.extra.get("lwjglVersion")}")
-    for (natives in listOf("natives-windows", "natives-linux", "natives-macos"))
+    for (natives in lwjglNatives)
         api("org.lwjgl:lwjgl:${rootProject.extra.get("lwjglVersion")}:${natives}")
+
+    val lwjglModules = listOf("assimp", "stb", "tinyfd")
+    for(module in lwjglModules) {
+        implementation("org.lwjgl:lwjgl-$module:${lwjglVersion}")
+    }
+
+    // Modules that needs native libs
+    val lwjglNativeModules = listOf("assimp", "stb", "tinyfd")
+    for(module in lwjglNativeModules) {
+        for(native in lwjglNatives)
+            runtimeOnly("org.lwjgl:lwjgl-$module:${lwjglVersion}:$native")
+    }
 
     // Some high-performance collections we like
     api("com.carrotsearch:hppc:0.7.2")
