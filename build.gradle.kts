@@ -1,4 +1,3 @@
-import org.ajoberstar.grgit.Grgit
 import java.util.Date
 
 group = "xyz.chunkstories"
@@ -26,7 +25,7 @@ buildscript {
 }
 
 plugins {
-    id("org.ajoberstar.grgit") version "3.1.1"
+    id("com.palantir.git-version") version "3.0.0"
 }
 
 val apiRevisionBuiltAgainst by extra { "2.0.4" }
@@ -43,16 +42,17 @@ task("buildAll") {
     dependsOn(":launcher:createExe")
 }
 
-val git = Grgit.open(mapOf("currentDir" to project.rootDir))
-
 task("versionTxt") {
     doLast {
+        val versionDetails: groovy.lang.Closure<com.palantir.gradle.gitversion.VersionDetails> by extra
+        val details = versionDetails()
+
         val file = File("${project.rootDir}/version.json")
         file.writeText("""
             {
                 "version": "$version",
                 "verboseVersion": "$verboseVersion",
-                "commit": "${git.head().id}",
+                "commit": "${details.gitHashFull}",
 		        "buildtime": "${Date()}"
             }
         """.trimIndent())
