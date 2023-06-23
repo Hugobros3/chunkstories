@@ -7,6 +7,9 @@ plugins {
     kotlin("jvm") version ("1.8.10")
 }
 
+val lwjglVersion: String by rootProject.extra
+val lwjglNatives: List<String> by rootProject.extra
+
 dependencies {
     api(project(":server"))
 
@@ -20,7 +23,6 @@ dependencies {
     //    runtime("graphics.scenery:spirvcrossj:$spirvCrossVersion:$native")
 
     // LWJGL3 bindings
-    val lwjglVersion = rootProject.extra.get("lwjglVersion")
 
     // JVM modules
     val lwjglModules = listOf("glfw", "openal", "opengl", "vulkan", "stb", "tinyfd")
@@ -31,8 +33,8 @@ dependencies {
     // Modules that needs native libs
     val lwjglNativeModules = listOf("glfw", "openal", "opengl", "stb", "tinyfd")
     for(module in lwjglNativeModules) {
-        //for(native in listOf("natives-windows", "natives-linux", "natives-macos"))
-        //    runtime("org.lwjgl:lwjgl-$module:${lwjglVersion}:$native")
+        for(native in lwjglNatives)
+            runtimeOnly("org.lwjgl:lwjgl-$module:${lwjglVersion}:$native")
     }
 }
 

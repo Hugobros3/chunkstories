@@ -31,8 +31,8 @@ plugins {
 val apiRevisionBuiltAgainst by extra { "2.0.4" }
 var actualContentLocation = "core_content.zip"
 
-val lwjglVersion by extra { "3.3.0" }
-val natives by extra { listOf("natives-windows", "natives-linux", "natives-macos")}
+val lwjglVersion by extra { "3.3.2" }
+val lwjglNatives by extra { listOf("natives-windows", "natives-linux", "natives-macos")}
 
 task("buildAll") {
     dependsOn(":client:shadowJar")
