@@ -6,7 +6,6 @@
 
 package xyz.chunkstories.mesh;
 
-import assimp.*;
 import com.carrotsearch.hppc.ByteArrayList;
 import com.carrotsearch.hppc.FloatArrayList;
 
@@ -30,13 +29,13 @@ public class AssimpMeshLoader {
 
     final MeshStore store;
 
-    Importer im = new Importer();
+    //Importer im = new Importer();
 
     public AssimpMeshLoader(MeshStore meshStore) {
         store = meshStore;
 
-        assimp.SettingsKt.setASSIMP_LOAD_TEXTURES(false);
-        im.setIoHandler(new AssetIOSystem(store.parent()));
+        //assimp.SettingsKt.setASSIMP_LOAD_TEXTURES(false);
+        //im.setIoHandler(new AssetIOSystem(store.parent()));
     }
 
     class VertexBoneWeights {
@@ -55,7 +54,7 @@ public class AssimpMeshLoader {
         try {
             lock.lock();
 
-            AiScene scene = im.readFile(mainAsset.getName(), im.getIoHandler(), 0);
+            /*AiScene scene = im.readFile(mainAsset.getName(), im.getIoHandler(), 0);
 
             if (scene == null) {
                 logger.error("Could not load meshes from asset: " + mainAsset);
@@ -242,7 +241,7 @@ public class AssimpMeshLoader {
 
                 boneIds.clear();
                 boneWeights.clear();
-
+*/
             /*String[] boneNamesArray = null;
             if(hasAnimationData) {
                 // TODO unused, left in because might be needed, see earlier in the file
@@ -252,18 +251,19 @@ public class AssimpMeshLoader {
                 }
             }*/
 
-                if (!hasAnimationData)
+             /*   if (!hasAnimationData)
                     boneNamesToIds = null;
 
                 meshes.add(new Mesh(verticesCount, attributes, meshMaterial, boneNamesToIds));
             }
 
-            return new Model(meshes);
+            return new Model(meshes);*/
         /*int verticesCount = vertices.size();
         return new Mesh(verticesCount, attributes, meshMaterials);*/
         } finally {
             lock.unlock();
         }
+        throw new RuntimeException("TODO");
     }
 
     private ByteBuffer toByteBuffer(FloatArrayList array) {
