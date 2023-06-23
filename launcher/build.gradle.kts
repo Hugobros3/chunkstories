@@ -32,22 +32,22 @@ val jar: Jar by tasks
 jar.apply {
     manifest {
         attributes("Implementation-Title" to "Chunk Stories Launcher",
-                "Implementation-Version" to version)
+                "Implementation-Version" to archiveVersion)
     }
-    baseName = "launcher"
-    classifier = "bare"
+    archiveBaseName.set("launcher")
+    archiveClassifier.set("bare")
 }
 
 val shadowJar: ShadowJar by tasks
 shadowJar.apply {
-    baseName = "launcher"
-    classifier = ""
-    version = ""
+    archiveBaseName.set("launcher")
+    archiveClassifier.set("")
+    archiveVersion.set("")
 }
 
 launch4j {
-    mainClassName = project.application.mainClassName
-    jar = "../libs/launcher.jar"
-    icon = "${projectDir}/favicon.ico"
-    maxHeapSize = 64
+    mainClassName.set(project.application.mainClass)
+    jarFiles.set(files(shadowJar.outputs))
+    icon.set("${projectDir}/favicon.ico")
+    maxHeapSize.set(64)
 }

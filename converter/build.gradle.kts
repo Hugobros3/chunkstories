@@ -22,15 +22,15 @@ val jar: Jar by tasks
 jar.apply {
     manifest {
         attributes("Implementation-Title" to "Chunk Stories Server",
-                "Implementation-Version" to version)
+                "Implementation-Version" to archiveVersion)
     }
-    baseName = "converter"
-    classifier = "bare"
+    archiveBaseName.set("converter")
+    archiveClassifier.set("bare")
 }
 
 val shadowJar: ShadowJar by tasks
 shadowJar.apply {
-    baseName = "converter"
-    classifier = ""
-    version = ""
+    archiveBaseName.set("converter")
+    archiveClassifier.set("")
+    archiveVersion.set("")
 }

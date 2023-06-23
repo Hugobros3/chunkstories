@@ -17,8 +17,8 @@ dependencies {
     // SPIRVCross bindings
     val spirvCrossVersion by extra { "0.5.0-1.1.85" }
     implementation("graphics.scenery:spirvcrossj:$spirvCrossVersion")
-    for(native in listOf("natives-windows", "natives-linux", "natives-macos"))
-        runtime("graphics.scenery:spirvcrossj:$spirvCrossVersion:$native")
+    //for(native in listOf("natives-windows", "natives-linux", "natives-macos"))
+    //    runtime("graphics.scenery:spirvcrossj:$spirvCrossVersion:$native")
 
     // LWJGL3 bindings
     val lwjglVersion = rootProject.extra.get("lwjglVersion")
@@ -32,8 +32,8 @@ dependencies {
     // Modules that needs native libs
     val lwjglNativeModules = listOf("glfw", "openal", "opengl", "stb", "tinyfd")
     for(module in lwjglNativeModules) {
-        for(native in listOf("natives-windows", "natives-linux", "natives-macos"))
-            runtime("org.lwjgl:lwjgl-$module:${lwjglVersion}:$native")
+        //for(native in listOf("natives-windows", "natives-linux", "natives-macos"))
+        //    runtime("org.lwjgl:lwjgl-$module:${lwjglVersion}:$native")
     }
 }
 
@@ -47,10 +47,10 @@ val jar: Jar by tasks
 jar.apply {
     manifest {
         attributes("Implementation-Title" to "Chunk Stories Client",
-                "Implementation-Version" to version)
+                "Implementation-Version" to archiveVersion)
     }
-    baseName = "client"
-    classifier = "bare"
+    archiveBaseName.set("client")
+    archiveClassifier.set("bare")
 }
 
 tasks {
@@ -61,7 +61,7 @@ tasks {
 
 val shadowJar: ShadowJar by tasks
 shadowJar.apply {
-    baseName = "chunkstories"
-    classifier = ""
-    version = ""
+    archiveBaseName.set("chunkstories")
+    archiveClassifier.set("")
+    archiveVersion.set("")
 }

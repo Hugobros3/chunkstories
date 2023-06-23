@@ -33,13 +33,13 @@ jar.apply {
         attributes("Implementation-Title" to "Chunk Stories Server",
                 "Implementation-Version" to version)
     }
-    baseName = "server"
-    classifier = "bare"
+    archiveBaseName.set("server")
+    archiveClassifier.set("bare")
 }
 
 val shadowJar: ShadowJar by tasks
 shadowJar.apply {
-    baseName = "server"
-    classifier = ""
-    version = ""
+    archiveBaseName.set("server")
+    archiveClassifier.set("")
+    archiveVersion.set("")
 }

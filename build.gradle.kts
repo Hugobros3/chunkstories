@@ -42,9 +42,10 @@ task("buildAll") {
     dependsOn(":launcher:createExe")
 }
 
+val versionDetails: groovy.lang.Closure<com.palantir.gradle.gitversion.VersionDetails> by extra
+
 task("versionTxt") {
     doLast {
-        val versionDetails: groovy.lang.Closure<com.palantir.gradle.gitversion.VersionDetails> by extra
         val details = versionDetails()
 
         val file = File("${project.rootDir}/version.json")
