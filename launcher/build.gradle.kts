@@ -10,15 +10,15 @@ buildscript {
 plugins {
     java
     application
-    kotlin("jvm") version ("1.6.10")
+    kotlin("jvm") version ("1.8.10")
 
-    id("com.github.johnrengelman.shadow") version "5.1.0"
-    id("edu.sc.seis.launch4j") version "2.4.6"
+    id("com.github.johnrengelman.shadow") version "7.0.0"
+    id("edu.sc.seis.launch4j") version "3.0.3"
 }
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    implementation("com.google.code.gson:gson:2.8.5")
+    implementation("com.google.code.gson:gson:2.8.9")
 }
 
 application {

@@ -1,7 +1,7 @@
 plugins {
     java
     `java-library`
-    kotlin("jvm") version ("1.6.10")
+    kotlin("jvm") version ("1.8.10")
 }
 
 dependencies {
@@ -29,8 +29,8 @@ dependencies {
     api("org.l33tlabs.twl:pngdecoder:1.0")
 
     // Assimp & friends
-    implementation("com.github.kotlin-graphics:glm:7651f1f42ef7fd6661fe8e27556f3060394d65cc")
-    implementation("com.github.Hugobros3:assimp:no-lwjgl-SNAPSHOT")
+    api("io.github.kotlin-graphics:glm:0.9.9.1-11")
+    //implementation("com.github.kotlin-graphics:assimp:4.0")
 
     // JSON stuff
     api("com.google.code.gson:gson:2.8.5")

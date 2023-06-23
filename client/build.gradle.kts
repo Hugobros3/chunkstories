@@ -3,9 +3,8 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 plugins {
     java
     application
-    kotlin("jvm") version ("1.6.10")
-
-    id("com.github.johnrengelman.shadow") version "5.1.0"
+    id("com.github.johnrengelman.shadow") version "7.0.0"
+    kotlin("jvm") version ("1.8.10")
 }
 
 dependencies {
