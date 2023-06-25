@@ -7,7 +7,7 @@ import xyz.chunkstories.api.world.World
 fun World.getConditions(): WorldConditions {
     val dayCycle = sky.timeOfDay
     val sunPos = Vector3d(0.5, -1.0, 0.0)
-    sunPos.rotateAbout(dayCycle * Math.PI * 2.0, 1.0, 0.0, 0.0).normalize()
+    sunPos.rotateAxis(dayCycle * Math.PI * 2.0, 1.0, 0.0, 0.0).normalize()
     return WorldConditions(
             time = dayCycle,
             sunPosition = sunPos,
