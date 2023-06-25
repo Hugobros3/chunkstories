@@ -318,6 +318,7 @@ class ChunkImplementation constructor(override val holder: ChunkHolderImplementa
 
     override fun setCellData(x: Int, y: Int, z: Int, data: CellData) {
         setCellDataSilent(x, y, z, data)
+        mesh.requestUpdate()
     }
 
     fun setCellDataSilent(x: Int, y: Int, z: Int, data: CellData) {
