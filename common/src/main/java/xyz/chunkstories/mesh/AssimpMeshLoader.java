@@ -9,19 +9,27 @@ package xyz.chunkstories.mesh;
 import com.carrotsearch.hppc.ByteArrayList;
 import com.carrotsearch.hppc.FloatArrayList;
 
-import glm_.vec3.Vec3;
+import kotlin.Pair;
+import org.lwjgl.assimp.*;
+
 import xyz.chunkstories.api.content.Asset;
 import xyz.chunkstories.api.exceptions.content.MeshLoadException;
 import xyz.chunkstories.api.graphics.*;
 import xyz.chunkstories.api.graphics.representation.Model;
-import xyz.chunkstories.util.FoldersUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import xyz.chunkstories.util.FoldersUtils;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Function;
+
+import static org.lwjgl.system.MemoryUtil.*;
 
 public class AssimpMeshLoader {
 
@@ -29,10 +37,76 @@ public class AssimpMeshLoader {
 
     final MeshStore store;
 
-    //Importer im = new Importer();
+    AIFileIO ioHandler = AIFileIO.malloc();
 
     public AssimpMeshLoader(MeshStore meshStore) {
         store = meshStore;
+
+        // ioHandler.set()
+
+        AIFileOpenProcI fileOpenProc = new AIFileOpenProc() {
+            public long invoke(long pFileIO, long fileName, long openMode) {
+                AIFile aiFile = AIFile.create();
+                final ByteBuffer data;
+
+                String name = memUTF8(fileName);
+                //System.err.println("Opening file... " + name);
+
+                try {
+                    data = ByteBuffer.wrap(store.parent().getAsset(name).read().readAllBytes());
+                } catch (IOException e) {
+                    throw new RuntimeException();
+                }
+
+                AIFileReadProcI fileReadProc = new AIFileReadProc() {
+                    public long invoke(long pFile, long pBuffer, long size, long count) {
+                        //System.err.println("read file... " + name);
+                        long max = Math.min(data.remaining(), size * count);
+                        //System.err.println("copying " + max + " bytes out of " + data.remaining());
+                        //System.err.println("pBuffer:" + pBuffer);
+                        //System.err.println("data.position():" + data.position());
+                        //System.err.println("memAddress(data):" + memAddress(data));
+                        ByteBuffer dst = memByteBuffer(pBuffer, (int) max);
+                        data.limit(data.position() + (int) max);
+                        //System.err.println("memAddress(dst):" + memAddress(dst));
+                        dst.put(data);
+                        // memCopy(memAddress(data) + data.position(), pBuffer, max);
+                        //System.err.println("memcpy good... " + name);
+                        return max;
+                    }
+                };
+                AIFileSeekI fileSeekProc = new AIFileSeek() {
+                    public int invoke(long pFile, long offset, int origin) {
+                        //System.err.println("seek file... " + name);
+                        if (origin == Assimp.aiOrigin_CUR) {
+                            data.position(data.position() + (int) offset);
+                        } else if (origin == Assimp.aiOrigin_SET) {
+                            data.position((int) offset);
+                        } else if (origin == Assimp.aiOrigin_END) {
+                            data.position(data.limit() + (int) offset);
+                        }
+                        return 0;
+                    }
+                };
+                AIFileTellProcI fileTellProc = new AIFileTellProc() {
+                    public long invoke(long pFile) {
+                        //System.err.println("tell file... " + name);
+                        return data.limit();
+                    }
+                };
+                aiFile.ReadProc(fileReadProc);
+                aiFile.SeekProc(fileSeekProc);
+                aiFile.FileSizeProc(fileTellProc);
+                return aiFile.address();
+            }
+        };
+        AIFileCloseProcI fileCloseProc = new AIFileCloseProc() {
+            public void invoke(long pFileIO, long pFile) {
+                //System.err.println("close file... ");
+                /* Nothing to do */
+            }
+        };
+        ioHandler.set(fileOpenProc, fileCloseProc, 0);
 
         //assimp.SettingsKt.setASSIMP_LOAD_TEXTURES(false);
         //im.setIoHandler(new AssetIOSystem(store.parent()));
@@ -54,20 +128,19 @@ public class AssimpMeshLoader {
         try {
             lock.lock();
 
-            /*AiScene scene = im.readFile(mainAsset.getName(), im.getIoHandler(), 0);
+            AIScene scene = Assimp.aiImportFileEx(mainAsset.getName(), 0, ioHandler);
 
             if (scene == null) {
                 logger.error("Could not load meshes from asset: " + mainAsset);
                 throw new MeshLoadException(mainAsset);
             }
 
-            scene.getMeshes();
-            if (scene.getMeshes().size() == 0) {
+            if (scene.mNumMeshes() == 0) {
                 logger.error("Loaded mesh did not contain any mesh data.");
                 return null;
             }
 
-            List<Mesh> meshes = new LinkedList<>();
+            List<Mesh> meshes = new ArrayList<>();
 
             FloatArrayList vertices = new FloatArrayList();
             FloatArrayList normals = new FloatArrayList();
@@ -82,13 +155,25 @@ public class AssimpMeshLoader {
             int[] order = { 0, 1, 2 };
 
             // For each submesh ...
-            for (AiMesh aiMesh : scene.getMeshes()) {
+            for (int i = 0; i < scene.mNumMeshes(); i++) {
+                AIMesh aiMesh = AIMesh.create(scene.mMeshes().get(i));
                 int firstVertex = vertices.size() / 3;
 
-                AiMaterial material = scene.getMaterials().get(aiMesh.getMaterialIndex());
+                AIMaterial material = AIMaterial.create(scene.mMaterials().get(aiMesh.mMaterialIndex()));
                 HashMap<String, String> materialTextures = new HashMap<>();
 
-                for (AiMaterial.Texture tex : material.getTextures()) {
+                /*for (int j = 0; j < material.mNumProperties(); j++) {
+                    AIMaterialProperty property = AIMaterialProperty.create(material.mProperties().get(i));
+                    switch (property.mKey().dataString()) {
+                        case Assimp.
+                    }
+                }*/
+
+                /*int texturesCount = Assimp.aiGetMaterialTextureCount(material, Assimp.aiTextureType_DIFFUSE);
+                for (int j = 0; j < texturesCount; j++) {
+                    Assimp.aiGetMaterialTexture(material, )
+                }
+
                     switch (tex.getType()) {
                     case ambient:
                         break;
@@ -125,22 +210,24 @@ public class AssimpMeshLoader {
                         break;
 
                     }
-                }
+                }*/
 
-                boolean hasAnimationData = aiMesh.getHasBones();
+                boolean hasAnimationData = aiMesh.mNumBones() > 0;
                 Map<Integer, VertexBoneWeights> boneWeightsForeachVertex = null;
 
                 if (hasAnimationData) {
                     boneWeightsForeachVertex = new HashMap<>();
 
                     // Create objects to receive the animation data for all the vertices of this submesh
-                    for (int i = 0; i < aiMesh.getNumVertices(); i++) {
-                        boneWeightsForeachVertex.put(firstVertex + i, new VertexBoneWeights());
+                    for (int j = 0; j < aiMesh.mNumVertices(); j++) {
+                        boneWeightsForeachVertex.put(firstVertex + j, new VertexBoneWeights());
                     }
 
                     // For each bone used in the submesh
-                    for (AiBone aiBone : aiMesh.getBones()) {
-                        String boneName = aiBone.getName().substring(aiBone.getName().lastIndexOf('_') + 1);
+                    for (int j = 0; j < aiMesh.mNumBones(); j++) {
+                        AIBone aiBone = AIBone.create(aiMesh.mBones().get(j));
+                        String boneName = aiBone.mName().dataString();
+                        boneName = boneName.substring(boneName.lastIndexOf('_') + 1);
 
                         // Maps a bone id to a bone name (maybe useful later!)
                         // TODO check if Assimp's bone ordering is the same as BVH, and if we need this
@@ -151,16 +238,17 @@ public class AssimpMeshLoader {
                         }
 
                         // For each weight this bone is applying
-                        for (AiVertexWeight aiWeight : aiBone.getWeights()) {
-                            int vertexId = firstVertex + aiWeight.getVertexId();
+                        for (int k = 0; k < aiBone.mNumWeights(); k++) {
+                            AIVertexWeight aiWeight = aiBone.mWeights().get(k);
+                            int vertexId = firstVertex + aiWeight.mVertexId();
                             VertexBoneWeights vertexBoneWeights = boneWeightsForeachVertex.get(vertexId);
 
                             // Write the weight and bone information to the next available slot in that vertex
                             vertexBoneWeights.bones[vertexBoneWeights.slot] = boneId;
-                            vertexBoneWeights.weights[vertexBoneWeights.slot] = aiWeight.getWeight();
+                            vertexBoneWeights.weights[vertexBoneWeights.slot] = aiWeight.mWeight();
                             vertexBoneWeights.slot++;
 
-                            vertexBoneWeights.totalWeight += aiWeight.getWeight();
+                            vertexBoneWeights.totalWeight += aiWeight.mWeight();
 
                             if (vertexBoneWeights.totalWeight > 1.0f) {
                                 logger.warn("Total weight > 1 for vertex #" + vertexId);
@@ -174,35 +262,38 @@ public class AssimpMeshLoader {
                 }
 
                 // Now onto the main course, we need the actual mesh data
-                for (List<Integer> aiFace : aiMesh.getFaces()) {
-                    if (aiFace.size() == 3) {
-                        for (int i : order) { // swap vertices order
-                            Vec3 vertex = aiMesh.getVertices().get(aiFace.get(i));
-                            Vec3 normal = aiMesh.getNormals().get(aiFace.get(i));
-                            float[] texcoord = aiMesh.getTextureCoords().get(0).get(aiFace.get(i));
+                for (int j = 0; j < aiMesh.mNumFaces(); j++) {
+                    AIFace aiFace = aiMesh.mFaces().get(j);
+                    if (aiFace.mNumIndices() == 3) {
+                        AIVector3D.Buffer buf = new AIVector3D.Buffer(aiMesh.mTextureCoords().get(0), aiMesh.mNumVertices());
+                        for (int o : order) { // swap vertices order
+                            int vertexID = aiFace.mIndices().get(o);
+                            AIVector3D vertex = aiMesh.mVertices().get(vertexID);
+                            AIVector3D normal = aiMesh.mNormals().get(vertexID);
+                            AIVector3D texcoord = buf.get(vertexID);
 
                             if (mainAsset.getName().endsWith("dae")) {
                                 // swap Y and Z axises
                                 //vertices.add(vertex.x, vertex.z, -vertex.y);
                                 //normals.add(normal.x, normal.z, -normal.y);
 
-                                vertices.add(vertex.y, vertex.z, vertex.x);
-                                normals.add(normal.y, normal.z, normal.x);
+                                vertices.add(vertex.y(), vertex.z(), vertex.x());
+                                normals.add(normal.y(), normal.z(), normal.x());
 
                                 //vertices.add(vertex.getY(), vertex.getZ(), vertex.getX());
                                 //normals.add(normal.getY(), normal.getZ(), normal.getX());
                             } else {
-                                vertices.add(vertex.x, vertex.y, vertex.z);
-                                normals.add(normal.x, normal.y, normal.z);
+                                vertices.add(vertex.x(), vertex.y(), vertex.z());
+                                normals.add(normal.x(), normal.y(), normal.z());
 
                                 //vertices.add(vertex.getX(), vertex.getY(), vertex.getZ());
                                 //normals.add(normal.getX(), normal.getY(), normal.getZ());
                             }
 
-                            texcoords.add(texcoord[0], 1.0f - texcoord[1]);
+                            texcoords.add(texcoord.x(), 1.0f - texcoord.y());
 
                             if (hasAnimationData) {
-                                VertexBoneWeights boned = boneWeightsForeachVertex.get(firstVertex + aiFace.get(i));
+                                VertexBoneWeights boned = boneWeightsForeachVertex.get(firstVertex + vertexID);
                                 boneIds.add((byte) boned.bones[0]);
                                 boneIds.add((byte) boned.bones[1]);
                                 boneIds.add((byte) boned.bones[2]);
@@ -215,10 +306,12 @@ public class AssimpMeshLoader {
                             }
                         }
                     } else
-                        logger.warn("Should triangulate! (face=" + aiFace.size() + ")");
+                        logger.warn("Should triangulate! (face=" + aiFace.mIndices() + ")");
                 }
 
-                String materialName = material.getName();//aiMesh.getName();
+                AIString aiMaterialName = AIString.create();
+                Assimp.aiGetMaterialString(material, Assimp.AI_MATKEY_NAME, 0, 0, aiMaterialName);
+                String materialName = aiMaterialName.dataString();
                 MeshMaterial meshMaterial = new MeshMaterial(materialName, materialTextures, "opaque");
 
                 int verticesCount = vertices.size() / 3;
@@ -241,7 +334,7 @@ public class AssimpMeshLoader {
 
                 boneIds.clear();
                 boneWeights.clear();
-*/
+
             /*String[] boneNamesArray = null;
             if(hasAnimationData) {
                 // TODO unused, left in because might be needed, see earlier in the file
@@ -251,19 +344,17 @@ public class AssimpMeshLoader {
                 }
             }*/
 
-             /*   if (!hasAnimationData)
+                if (!hasAnimationData)
                     boneNamesToIds = null;
 
                 meshes.add(new Mesh(verticesCount, attributes, meshMaterial, boneNamesToIds));
             }
 
-            return new Model(meshes);*/
-        /*int verticesCount = vertices.size();
-        return new Mesh(verticesCount, attributes, meshMaterials);*/
+            return new Model(meshes);
         } finally {
             lock.unlock();
         }
-        throw new RuntimeException("TODO");
+        //throw new RuntimeException("TODO");
     }
 
     private ByteBuffer toByteBuffer(FloatArrayList array) {
