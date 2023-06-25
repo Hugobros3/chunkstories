@@ -43,10 +43,6 @@ dependencies {
     // TODO sort out the duplication with ImageIO.read
     api("org.l33tlabs.twl:pngdecoder:1.0")
 
-    // Assimp & friends
-    api("io.github.kotlin-graphics:glm:0.9.9.1-11")
-    //implementation("com.github.kotlin-graphics:assimp:4.0")
-
     // JSON stuff
     api("com.google.code.gson:gson:2.8.5")
     implementation("org.hjson:hjson:1.0.0")
