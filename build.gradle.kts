@@ -36,6 +36,8 @@ val lwjglVersion by extra { "3.3.2" }
 val lwjglNatives by extra { listOf("natives-windows", "natives-linux", "natives-macos")}
 
 task("buildAll") {
+    dependsOn(":api:publishToMavenLocal")
+    dependsOn(":enklume:publishToMavenLocal")
     dependsOn(":client:shadowJar")
     dependsOn(":server:shadowJar")
     dependsOn(":converter:shadowJar")
