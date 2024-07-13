@@ -2,7 +2,7 @@ package xyz.chunkstories.graphics.common.shaders
 
 import org.joml.*
 import xyz.chunkstories.api.graphics.structs.InterfaceBlock
-import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.hex
+import xyz.chunkstories.graphics.common.shaders.compiler.hex
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.isSubclassOf

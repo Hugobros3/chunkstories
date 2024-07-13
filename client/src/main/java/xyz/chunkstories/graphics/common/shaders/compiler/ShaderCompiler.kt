@@ -12,6 +12,8 @@ import xyz.chunkstories.graphics.common.shaders.compiler.postprocessing.addVirtu
 import xyz.chunkstories.graphics.common.shaders.compiler.postprocessing.annotateForNonUniformAccess
 import xyz.chunkstories.graphics.common.shaders.compiler.preprocessing.*
 import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.*
+import xyz.chunkstories.graphics.common.shaders.compiler.zhady.buildIntermediaryStructure
+import xyz.chunkstories.graphics.common.shaders.compiler.zhady.toIntermediateGLSL
 import kotlin.reflect.KClass
 
 abstract class ShaderCompiler(val dialect: GLSLDialect) {
@@ -26,7 +28,7 @@ abstract class ShaderCompiler(val dialect: GLSLDialect) {
 
     init {
         //Loader.loadNatives()
-        SpirvCrossHelper.initSpirvCross()
+        //SpirvCrossHelper.initSpirvCross()
     }
 
     fun loadGLSLProgram(shaderName: String, compilationParameters: ShaderCompilationParameters = ShaderCompilationParameters()) : GLSLGraphicsProgram {

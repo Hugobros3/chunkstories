@@ -196,7 +196,7 @@ class PhysicalDevice(private val backend: VulkanGraphicsBackend, internal val vk
 
             val pPresentModesIa = IntArray(pPresentModes.capacity())
             pPresentModes.get(pPresentModesIa, 0, pPresentModes.capacity())
-            availablePresentationModes = pPresentModesIa.map { it.presentationMode() }
+            availablePresentationModes = pPresentModesIa.map { it.presentationMode() }.filterNotNull()
 
             // Look I'm not interested in this swap extent bs
             // TODO maybe later

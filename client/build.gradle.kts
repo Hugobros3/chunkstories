@@ -16,26 +16,24 @@ dependencies {
     // Graphviz (debug graphs)
     implementation("guru.nidi:graphviz-java:0.8.0")
 
-    // SPIRVCross bindings
-    val spirvCrossVersion by extra { "0.5.0-1.1.85" }
-    implementation("graphics.scenery:spirvcrossj:$spirvCrossVersion")
-    //for(native in listOf("natives-windows", "natives-linux", "natives-macos"))
-    //    runtime("graphics.scenery:spirvcrossj:$spirvCrossVersion:$native")
-
     // LWJGL3 bindings
 
     // JVM modules
-    val lwjglModules = listOf("glfw", "openal", "opengl", "vulkan")
+    val lwjglModules = listOf("glfw", "openal", "opengl", "vulkan", "spvc", "shaderc")
     for(module in lwjglModules) {
         implementation("org.lwjgl:lwjgl-$module:${lwjglVersion}")
     }
 
     // Modules that needs native libs
-    val lwjglNativeModules = listOf("glfw", "openal", "opengl")
+    val lwjglNativeModules = listOf("glfw", "openal", "opengl", "spvc", "shaderc")
     for(module in lwjglNativeModules) {
         for(native in lwjglNatives)
             runtimeOnly("org.lwjgl:lwjgl-$module:${lwjglVersion}:$native")
     }
+
+    testApi("junit:junit:4.12")
+
+    implementation(files("C:\\msys64\\home\\Gob\\git\\shady\\build\\zhady\\zhady_jar.jar"))
 }
 
 application {

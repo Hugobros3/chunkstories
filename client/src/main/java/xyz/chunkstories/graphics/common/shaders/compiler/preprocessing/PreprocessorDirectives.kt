@@ -11,7 +11,7 @@ fun ShaderCompiler.processFileIncludes(shaderBaseDir: String, shaderCode: String
         line.startsWith("#include") -> line.split(' ')[1].let { fileToInclude ->
             var includePath = fileToInclude
 
-            if(includePath == "struct")
+            if(includePath == "struct" || includePath.contains('<'))
                 return@let line
 
             //TODO this bit of code is duplicated and there is an util function for that
@@ -105,7 +105,7 @@ fun ShaderCompiler.inlineUniformStructs(shaderCode: String, structs: List<GLSLTy
         val uniformName = line.split(' ').getOrNull(2)?.trimEnd(';')
 
         structs.find { it.glslToken == structName }?.run {
-            """layout(std140) uniform uniformstructinlined_${structName}_$uniformName {
+            """struct uniformstructinlined_${structName}_$uniformName {
                 ${this.innerGLSLCode()}
                 } $uniformName;
             """.trim()
@@ -126,14 +126,14 @@ fun ShaderCompiler.inlinePerInstanceData(shaderCode: String, structs: List<GLSLT
             }
 
             if(canDoSSBO) {
-                """layout(std140) buffer instancedbuffer_${structName}_$instanceData {
+                """buffer instancedbuffer_${structName}_$instanceData {
                 $structName data[];
                 } ${instanceData}_buffer;
 
                 #define $instanceData ${instanceData}_buffer.data[gl_InstanceIndex]
                 """.trim()
             } else {
-                /*"""layout(std140) uniform instancedbuffer_${structName}_$instanceData {
+                /*"""uniform instancedbuffer_${structName}_$instanceData {
                 $structName data[];
                 } ${instanceData}_buffer;
 
@@ -141,7 +141,7 @@ fun ShaderCompiler.inlinePerInstanceData(shaderCode: String, structs: List<GLSLT
                 """.trim()*/
 
                 // Important: instanced buffers are flattened to a single instance in GL for now!
-                """layout(std140) uniform instancedbuffer_${structName}_$instanceData {
+                """uniform instancedbuffer_${structName}_$instanceData {
                 ${this.innerGLSLCode()}
                 } ${instanceData};
                 """.trim()

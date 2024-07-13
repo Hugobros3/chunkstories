@@ -1,23 +1,22 @@
 package xyz.chunkstories.graphics.common.shaders.compiler.spirvcross
 
-import graphics.scenery.spirvcrossj.Decoration
-import graphics.scenery.spirvcrossj.Resource
 import xyz.chunkstories.graphics.common.shaders.*
 import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompiler
+import xyz.chunkstories.graphics.common.shaders.compiler.zhady.IntermediaryCompilationResults
 
 fun ShaderCompiler.addDecorations(intermediarCompilationResults: IntermediaryCompilationResults, glslResources: List<GLSLResource>, glslInstancedInputs: List<GLSLInstancedInput>) {
-    for ((stage, compiler) in intermediarCompilationResults.compilers) {
-        val stageResources = compiler.shaderResources
+    /*for ((stage, compiler) in intermediarCompilationResults.compilers) {
+        val stageResources = compiler.aashaderResources
 
-        fun decorate(spirvResource: Resource, glslResource: GLSLResource) {
+        fun decorate(spirvResource: SpvcReflectedResource, glslResource: GLSLResource) {
             val locator = glslResource.locator
             when (dialect) {
                 GLSLDialect.VULKAN -> {
-                    compiler.setDecoration(spirvResource.id, Decoration.DecorationDescriptorSet, locator.descriptorSetSlot.toLong())
-                    compiler.setDecoration(spirvResource.id, Decoration.DecorationBinding, locator.binding.toLong())
+                    compiler.setDecoration(spirvResource.id(), Decoration.DecorationDescriptorSet, locator.descriptorSetSlot.toLong())
+                    compiler.setDecoration(spirvResource.id(), Decoration.DecorationBinding, locator.binding.toLong())
                 }
                 GLSLDialect.OPENGL -> {
-                    compiler.setDecoration(spirvResource.id, Decoration.DecorationLocation, locator.binding.toLong())
+                    compiler.setDecoration(spirvResource.id(), Decoration.DecorationLocation, locator.binding.toLong())
                 }
             }
         }
@@ -63,5 +62,6 @@ fun ShaderCompiler.addDecorations(intermediarCompilationResults: IntermediaryCom
 
             decorate(spirvResource, glslResource)
         }
-    }
+    }*/
+    TODO()
 }

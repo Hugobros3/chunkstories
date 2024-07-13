@@ -1,10 +1,13 @@
-#version 450
+//#version 450
+#include <shady.h>
+
+using namespace vcc;
 
 //Passed variables
-in vec3 eyeDirection;
+input native_vec3 eyeDirection;
 
 //Framebuffer outputs
-out vec4 colorOut;
+output native_vec4 colorOut;
 
 //Common camera matrices & uniforms
 #include struct xyz.chunkstories.api.graphics.structs.Camera

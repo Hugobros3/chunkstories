@@ -2,10 +2,18 @@ package xyz.chunkstories.graphics.common.shaders.compiler.spirvcross
 
 import xyz.chunkstories.graphics.common.shaders.*
 import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompiler
-import xyz.chunkstories.graphics.vulkan.textures.GlobalTextures
+import xyz.chunkstories.graphics.common.shaders.compiler.zhady.IntermediaryCompilationResults
+
+interface ResourceLocationAssigner {
+    fun assignSSBO(name: String, instanced: Boolean): ResourceLocator
+    fun assignInlinedUBO(jvmStruct: GLSLType.JvmStruct): ResourceLocator
+    fun assignSampler(): ResourceLocator
+    fun assignSeperateImage(separateImageName: String, materialBoundResources: MutableSet<String>): ResourceLocator
+    fun assignSampledImage(sampledImageName: String, materialBoundResources: MutableSet<String>): ResourceLocator
+}
 
 fun ShaderCompiler.createShaderResources(intermediarCompilationResults: IntermediaryCompilationResults, materialBoundResources: MutableSet<String>): Pair<List<GLSLInstancedInput>, List<GLSLResource>> {
-    val resources = mutableListOf<GLSLResource>()
+    /*val resources = mutableListOf<GLSLResource>()
     val instancedInputs = mutableListOf<GLSLInstancedInput>()
 
     val assigner = newResourceLocationAssigner()
@@ -218,13 +226,6 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
         }
     }
 
-    return Pair(instancedInputs, resources)
-}
-
-interface ResourceLocationAssigner {
-    fun assignSSBO(name: String, instanced: Boolean): ResourceLocator
-    fun assignInlinedUBO(jvmStruct: GLSLType.JvmStruct): ResourceLocator
-    fun assignSampler(): ResourceLocator
-    fun assignSeperateImage(separateImageName: String, materialBoundResources: MutableSet<String>): ResourceLocator
-    fun assignSampledImage(sampledImageName: String, materialBoundResources: MutableSet<String>): ResourceLocator
+    return Pair(instancedInputs, resources)*/
+    TODO()
 }

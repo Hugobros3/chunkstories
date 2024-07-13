@@ -28,7 +28,8 @@ fun Int.presentationMode() = when(this) {
     VK_PRESENT_MODE_MAILBOX_KHR -> PresentationMode.MAILBOX
     VK_PRESENT_MODE_FIFO_KHR -> PresentationMode.FIFO
     VK_PRESENT_MODE_FIFO_RELAXED_KHR -> PresentationMode.FIFO_RELAXED
-    else -> throw Exception("Unrecognized presentation mode !")
+    else -> null
+    // else -> throw Exception("Unrecognized presentation mode !")
 }
 
 enum class PresentationMode {

@@ -11,8 +11,7 @@ import xyz.chunkstories.graphics.vulkan.util.ensureIs
 import java.io.InputStream
 import java.nio.ByteBuffer
 
-class ShaderModule(val backend: VulkanGraphicsBackend, val spirv : ByteBuffer) {
-    constructor(backend: VulkanGraphicsBackend, inputStream: InputStream) : this(backend, inputStream.toByteBuffer())
+class ShaderModule(val backend: VulkanGraphicsBackend, val spirv: ByteBuffer) {
 
     val handle: VkShaderModule
 

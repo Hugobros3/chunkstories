@@ -1,10 +1,13 @@
-#version 450
+//#version 450
+#include <shady.h>
+
+using namespace vcc;
 
 //Vertex inputs
-in vec2 vertexIn;
+input native_vec2 vertexIn;
 
 //Passed variables
-out vec3 eyeDirection;
+output native_vec3 eyeDirection;
 
 //Common camera matrices & uniforms
 #include struct xyz.chunkstories.api.graphics.structs.Camera
