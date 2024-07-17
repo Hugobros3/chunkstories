@@ -1,13 +1,43 @@
 package xyz.chunkstories.graphics.common.shaders.compiler.spirvcross
 
+import de.unisaarland.zhady.*
+import org.lwjgl.system.MemoryStack
 import xyz.chunkstories.graphics.common.shaders.*
 import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompiler
 import xyz.chunkstories.graphics.common.shaders.compiler.zhady.IntermediaryCompilationResults
 
 fun ShaderCompiler.addDecorations(intermediarCompilationResults: IntermediaryCompilationResults, glslResources: List<GLSLResource>, glslInstancedInputs: List<GLSLInstancedInput>) {
-    /*for ((stage, compiler) in intermediarCompilationResults.compilers) {
-        val stageResources = compiler.aashaderResources
+    for ((stage, module) in intermediarCompilationResults.tShaders) {
+        //val stageResources = compiler.aashaderResources
 
+        for (res in glslResources) {
+            val decl = shady.get_declaration(SWIGTYPE_p_Module_(SWIGTYPE_p_Module.getCPtr(module), false), res.name)
+            if (Node_.getCPtr(decl) == 0L)
+                continue
+
+            var annotations = shady.get_declaration_annotations(decl)
+
+            when (dialect) {
+                GLSLDialect.VULKAN -> {
+
+                    annotations = shady.append_nodes(decl.arena, annotations, shady.annotation_value(decl.arena, AnnotationValue().apply {
+                        name = "DescriptorSet"
+                        value = shady.int32_literal(decl.arena, res.locator.descriptorSetSlot)
+                    }))
+                    annotations = shady.append_nodes(decl.arena, annotations, shady.annotation_value(decl.arena, AnnotationValue().apply {
+                        name = "DescriptorBinding"
+                        value = shady.int32_literal(decl.arena, res.locator.binding)
+                    }))
+                }
+                GLSLDialect.OPENGL -> {
+                    TODO()
+                    //compiler.setDecoration(spirvResource.id(), Decoration.DecorationLocation, locator.binding.toLong())
+                }
+            }
+        }
+
+        shady.dump_module(SWIGTYPE_p_Module_(SWIGTYPE_p_Module.getCPtr(module), false))
+        /*
         fun decorate(spirvResource: SpvcReflectedResource, glslResource: GLSLResource) {
             val locator = glslResource.locator
             when (dialect) {
@@ -61,7 +91,6 @@ fun ShaderCompiler.addDecorations(intermediarCompilationResults: IntermediaryCom
             val glslResource = glslResources.find { it.name == spirvResource.name } as GLSLShaderStorage
 
             decorate(spirvResource, glslResource)
-        }
-    }*/
-    TODO()
+        }*/
+    }
 }

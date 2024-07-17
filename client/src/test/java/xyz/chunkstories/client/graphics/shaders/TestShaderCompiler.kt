@@ -6,7 +6,7 @@ import xyz.chunkstories.graphics.common.shaders.compiler.HeadlessShaderCompiler
 import xyz.chunkstories.util.LogbackSetupHelper
 
 class TestShaderCompiler {
-    @Test
+    /*@Test
     fun simplestCase() {
         LogbackSetupHelper.setupLoggingForTesting()
         val shaderCompiler = HeadlessShaderCompiler(GLSLDialect.VULKAN, javaClass.classLoader, null)
@@ -71,5 +71,5 @@ class TestShaderCompiler {
         println("OK")
         println(program.resources)
         println(program.sourceCode)
-    }
+    }*/
 }

@@ -1,6 +1,12 @@
 package xyz.chunkstories.graphics.common.shaders.compiler
 
+import de.unisaarland.zhady.CompilerConfig_
+import de.unisaarland.zhady.DriverConfig
+import de.unisaarland.zhady.SWIGTYPE_p_CompilerConfig
+import de.unisaarland.zhady.shady
+import load_zhady
 import org.slf4j.LoggerFactory
+import sun.misc.Unsafe
 import xyz.chunkstories.api.content.Content
 import xyz.chunkstories.api.graphics.shader.ShaderStage
 import xyz.chunkstories.api.graphics.structs.InterfaceBlock
@@ -9,11 +15,10 @@ import xyz.chunkstories.graphics.common.shaders.GLSLGraphicsProgram
 import xyz.chunkstories.graphics.common.shaders.GLSLType
 import xyz.chunkstories.graphics.common.shaders.MaterialImage
 import xyz.chunkstories.graphics.common.shaders.compiler.postprocessing.addVirtualTexturingHeader
-import xyz.chunkstories.graphics.common.shaders.compiler.postprocessing.annotateForNonUniformAccess
 import xyz.chunkstories.graphics.common.shaders.compiler.preprocessing.*
 import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.*
 import xyz.chunkstories.graphics.common.shaders.compiler.zhady.buildIntermediaryStructure
-import xyz.chunkstories.graphics.common.shaders.compiler.zhady.toIntermediateGLSL
+import java.lang.reflect.Field
 import kotlin.reflect.KClass
 
 abstract class ShaderCompiler(val dialect: GLSLDialect) {
@@ -26,7 +31,19 @@ abstract class ShaderCompiler(val dialect: GLSLDialect) {
     /** We keep track of all the JVM classes we encounter so we don't have to do the mapping into GLSL structs every time */
     val jvmGlslMappings = mutableMapOf<KClass<InterfaceBlock>, GLSLType.JvmStruct>()
 
+    val driverConfig: DriverConfig
+    val pCompilerConfig: SWIGTYPE_p_CompilerConfig
+    val unsafe: Unsafe
+
     init {
+        val f: Field = Unsafe::class.java.getDeclaredField("theUnsafe")
+        f.setAccessible(true)
+        unsafe = f.get(null) as Unsafe
+
+        load_zhady()
+        driverConfig = shady.default_driver_config()
+        pCompilerConfig = SWIGTYPE_p_CompilerConfig(CompilerConfig_.getCPtr(driverConfig.config), false)
+
         //Loader.loadNatives()
         //SpirvCrossHelper.initSpirvCross()
     }
@@ -43,57 +60,58 @@ abstract class ShaderCompiler(val dialect: GLSLDialect) {
                         ?: throw Exception("Fragment shader stage not found in either built-in resources or assets for shader: $shaderName")
                 //TODO add optional geometry/tesselation stages here
 
-                var stages = mapOf(ShaderStage.VERTEX to vertexShader, ShaderStage.FRAGMENT to fragmentShader)
+                var sources = mapOf(ShaderStage.VERTEX to vertexShader, ShaderStage.FRAGMENT to fragmentShader)
 
                 //stages = stages.mapValues { (stage, shaderCode) -> removeVersionString(shaderCode) }
 
                 // Process #include statements
-                stages = stages.mapValues { (stage, shaderCode) -> processFileIncludes(shaderBaseDir, shaderCode) }
-                stages = stages.mapValues { (stage, shaderCode) -> addDefines(shaderCode, compilationParameters.defines) }
-                stages = stages.mapValues { (stage, shaderCode) -> runPrePreProcessor(shaderCode) }
+                sources = sources.mapValues { (stage, shaderCode) -> processFileIncludes(shaderBaseDir, shaderCode) }
+                sources = sources.mapValues { (stage, shaderCode) -> addDefines(shaderCode, compilationParameters.defines) }
+                sources = sources.mapValues { (stage, shaderCode) -> runPrePreProcessor(shaderCode) }
 
                 // Process #using struct statements
                 // Find them and extract the required classes
-                val jvmClassesUsed = stages.mapValues { (_, shaderCode) -> findUsedJvmClasses(shaderCode) }
+                val jvmClassesUsed = sources.mapValues { (_, shaderCode) -> findUsedJvmClasses(shaderCode) }
                 // Obtain/translate these class into the correct GLSL structs
                 val jvmStructsUsed = jvmClassesUsed.mapValues { (_, it) -> it.map { getGlslStruct(it) } }
                 // Add their declarations, in the right order.
-                stages = stages.mapValues { (stage, shaderCode) -> addStructsDeclaration(shaderCode, jvmStructsUsed[stage]!!) }
+                sources = sources.mapValues { (stage, shaderCode) -> addStructsDeclaration(shaderCode, jvmStructsUsed[stage]!!) }
 
-                stages = stages.mapValues { (stage, shaderCode) -> inlineUniformStructs(shaderCode, jvmStructsUsed[stage]!!) }
-                stages = stages.mapValues { (stage, shaderCode) -> inlinePerInstanceData(shaderCode, jvmStructsUsed[stage]!!) }
+                sources = sources.mapValues { (stage, shaderCode) -> inlineUniformStructs(shaderCode, jvmStructsUsed[stage]!!) }
+                sources = sources.mapValues { (stage, shaderCode) -> inlinePerInstanceData(shaderCode, jvmStructsUsed[stage]!!) }
 
-                stages = stages.mapValues { (stage, shaderCode) -> addVirtualTexturingHeader(shaderCode) }
+                sources = sources.mapValues { (stage, shaderCode) -> addVirtualTexturingHeader(shaderCode) }
 
                 val materialBoundResources = mutableSetOf<String>()
-                stages = stages.mapValues { (stage, shaderCode) -> findAndReplaceMaterialBoundResources(shaderCode, materialBoundResources) }
+                sources = sources.mapValues { (stage, shaderCode) -> findAndReplaceMaterialBoundResources(shaderCode, materialBoundResources) }
 
-                val vertexInputs = analyseVertexShaderInputs(stages[ShaderStage.VERTEX]!!)
-                val fragmentOutputs = analyseFragmentShaderOutputs(stages[ShaderStage.FRAGMENT]!!)
+                val vertexInputs = analyseVertexShaderInputs(sources[ShaderStage.VERTEX]!!)
+                val fragmentOutputs = analyseFragmentShaderOutputs(sources[ShaderStage.FRAGMENT]!!)
 
-                stages = stages.toMutableMap()
+                sources = sources.toMutableMap()
 
                 compilationParameters.outputs?.let {
-                    (stages as MutableMap<ShaderStage, String>)[ShaderStage.FRAGMENT] = removeUnusedOutputs(stages[ShaderStage.FRAGMENT]!!, fragmentOutputs, it)
+                    (sources as MutableMap<ShaderStage, String>)[ShaderStage.FRAGMENT] = removeUnusedOutputs(sources[ShaderStage.FRAGMENT]!!, fragmentOutputs, it)
                 }
 
                 compilationParameters.inputs?.let {
-                    (stages as MutableMap<ShaderStage, String>)[ShaderStage.VERTEX] = removeMissingInputs(stages[ShaderStage.VERTEX]!!, vertexInputs, it)
+                    (sources as MutableMap<ShaderStage, String>)[ShaderStage.VERTEX] = removeMissingInputs(sources[ShaderStage.VERTEX]!!, vertexInputs, it)
                 }
 
 
-                val intermediaryCompilationResults = buildIntermediaryStructure(stages, spirv_13)
+                val intermediaryCompilationResults = buildIntermediaryStructure(sources, spirv_13)
                 val (perInstanceDataInputs, resources) = createShaderResources(intermediaryCompilationResults, materialBoundResources)
 
                 addDecorations(intermediaryCompilationResults, resources, perInstanceDataInputs)
-                stages = toIntermediateGLSL(intermediaryCompilationResults)
+                //stages = toIntermediateGLSL(intermediaryCompilationResults)
 
                 //if(this is VulkanShaderFactory && this.backend.enableDivergingUniformSamplerIndexing)
-                if (dialect == GLSLDialect.VULKAN)
-                    stages = stages.mapValues { (stage, shaderCode) -> annotateForNonUniformAccess(shaderCode) }
+                // TODO()
+                // if (dialect == GLSLDialect.VULKAN)
+                //     stages = stages.mapValues { (stage, shaderCode) -> annotateForNonUniformAccess(shaderCode) }
 
                 //val perInstanceDataInputs = resources.filterIsInstance<GLSLShaderStorage>().mapNotNull { it.associatedInstanceData }
-                return GLSLGraphicsProgram(shaderName, dialect, vertexInputs, fragmentOutputs, perInstanceDataInputs, resources, materialBoundResources.map { MaterialImage(it) }, stages)
+                return GLSLGraphicsProgram(shaderName, dialect, vertexInputs, fragmentOutputs, perInstanceDataInputs, resources, materialBoundResources.map { MaterialImage(it) }, intermediaryCompilationResults.tShaders)
             } catch(e: Exception) {
                 tries++
                 logger.error("Shader compilation failed! Retrying in 10s to allow dev to iterate ...")

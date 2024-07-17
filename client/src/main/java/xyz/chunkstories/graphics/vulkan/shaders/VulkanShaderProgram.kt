@@ -1,13 +1,15 @@
 package xyz.chunkstories.graphics.vulkan.shaders
 
-import generateSpirV
-import org.lwjgl.system.MemoryStack.stackPop
-import org.lwjgl.system.MemoryStack.stackPush
+import de.unisaarland.zhady.*
+import org.lwjgl.system.MemoryStack.*
+import org.lwjgl.system.MemoryUtil
+import org.lwjgl.system.MemoryUtil.memAddress
 import xyz.chunkstories.api.graphics.shader.ShaderStage
 import xyz.chunkstories.graphics.common.Cleanable
 import xyz.chunkstories.graphics.common.shaders.GLSLGraphicsProgram
 import xyz.chunkstories.graphics.vulkan.VulkanGraphicsBackend
 import java.io.File
+import java.nio.ByteBuffer
 
 fun supportsSpirv13(backend: VulkanGraphicsBackend): Boolean {
     if(backend.vulkanVersion.major > 1)
@@ -25,6 +27,18 @@ data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsB
 
     val slotLayouts: Array<DescriptorSlotLayout>
 
+    data class CompiledSpvGraphicsPipeline(val stages: Map<ShaderStage, ByteBuffer>)
+
+    fun generateSpirV(program: GLSLGraphicsProgram, spv13: Boolean): CompiledSpvGraphicsPipeline {
+        return CompiledSpvGraphicsPipeline (program.sourceCode.mapValues {
+            val (stage, module) = it;
+            val spirvSize = stackCallocPointer(1);
+            val spirvPtr = stackCallocPointer(1);
+            shady.emit_spirv(backend.shaderFactory.driverConfig.config, SWIGTYPE_p_Module_(SWIGTYPE_p_Module.getCPtr(module), false), SWIGTYPE_p_size_t(memAddress(spirvSize), false), SWIGTYPE_p_p_char(memAddress(spirvPtr), false), null)
+            MemoryUtil.memByteBuffer(spirvPtr.get(), spirvSize.get().toInt())
+        })
+    }
+
     init {
         stackPush()
 
@@ -34,7 +48,8 @@ data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsB
                 dumpFile.parentFile.mkdirs()
                 dumpFile.delete()
 
-                dumpFile.writeText(txt)
+                // TODO("implement shady dump here")
+                // dumpFile.writeText(txt)
             }
         }
 

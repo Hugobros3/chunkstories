@@ -13,10 +13,14 @@ output native_vec4 colorOut;
 #include struct xyz.chunkstories.api.graphics.structs.Camera
 uniform Camera camera;
 
-uniform samplerCube background;
+uniform_constant samplerCube background;
 
-void main()
+extern "C" {
+
+fragment_shader void main()
 {
 	//colorOut = vec4(clamp(eyeDirection, 0.0, 1.0), 1.0);
 	colorOut = texture(background, normalize(vec3(eyeDirection.x, -eyeDirection.y, eyeDirection.z)));
+}
+
 }

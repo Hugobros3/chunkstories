@@ -1,5 +1,6 @@
 package xyz.chunkstories.graphics.common.shaders
 
+import de.unisaarland.zhady.SWIGTYPE_p_Module
 import xyz.chunkstories.api.graphics.shader.ShaderStage
 
 data class GLSLGraphicsProgram (
@@ -10,7 +11,7 @@ data class GLSLGraphicsProgram (
         val instancedInputs: List<GLSLInstancedInput>,
         val resources: List<GLSLResource>,
         val materialImages: List<MaterialImage>,
-        val sourceCode: Map<ShaderStage, String>
+        val sourceCode: Map<ShaderStage, SWIGTYPE_p_Module>
 )
 
 data class GLSLVertexInput(val name: String, val format: GLSLType.BaseType, val location: Int)

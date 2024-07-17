@@ -13,7 +13,9 @@ output native_vec3 eyeDirection;
 #include struct xyz.chunkstories.api.graphics.structs.Camera
 uniform Camera camera;
 
-void main()
+extern "C" {
+
+vertex_shader void main()
 {
 	vec4 screenSpaceCoordinates = vec4(vertexIn.x, vertexIn.y, 0.0, 1.0);
 	
@@ -24,4 +26,6 @@ void main()
 	//eyeDirection = vec3(cameraSpaceCoordinates.xy, 0.0);
 	
     gl_Position = vec4(vertexIn.xy, 0.0, 1.0);
+}
+
 }

@@ -22,7 +22,7 @@ class OpenglShaderProgram(val backend: OpenglGraphicsBackend, val glslProgram: G
         stages = glslProgram.sourceCode.map { (stage, code) ->
 
             val stageShaderId = glCreateShader(stage.glId)
-            glShaderSource(stageShaderId, code)
+            glShaderSource(stageShaderId, TODO("implement shady to glsl here"))
             glCompileShader(stageShaderId)
 
             val compileStatus = glGetShaderi(stageShaderId, GL_COMPILE_STATUS)

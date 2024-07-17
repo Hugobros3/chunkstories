@@ -3,36 +3,25 @@ package xyz.chunkstories.graphics.common.shaders.compiler.zhady
 import de.unisaarland.zhady.*
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.system.MemoryUtil.*
+import sun.misc.Unsafe
 import xyz.chunkstories.api.graphics.shader.ShaderStage
 import xyz.chunkstories.graphics.common.shaders.compiler.ShaderCompiler
+import java.lang.reflect.Field
 import kotlin.io.path.pathString
 import kotlin.io.path.writeText
 
-data class IntermediaryCompilationResults(val tShaders: Map<ShaderStage, Long>, val compilers: Map<ShaderStage, Long>)
+data class IntermediaryCompilationResults(val tShaders: Map<ShaderStage, SWIGTYPE_p_Module>)
 
 fun ShaderCompiler.buildIntermediaryStructure(stages: Map<ShaderStage, String>, spirv_13: Boolean): IntermediaryCompilationResults {
-    try {
-        println(System.getenv("PATH"))
-        System.loadLibrary("zhady_shared_lib")
-    } catch(e: UnsatisfiedLinkError) {
-        e.message
-    }
-
-    val targetConfig = shady.default_target_config()
-    val arenaConfig = shady.default_arena_config(targetConfig)
-    val arena = shady.new_ir_arena(arenaConfig)
-
-    vcc.vcc_check_clang()
-    val driverConfig = shady.default_driver_config()
-
     val tShaders = stages.mapValues { (stage, shaderCode) ->
-        val module: SWIGTYPE_p_Module = SWIGTYPE_p_Module(SWIGTYPE_p_Module_.getCPtr(shady.new_module(arena, "chunkstories_${stage.toString()}_shader")), false)
-        val vccConfig = vcc.vcc_init_config(SWIGTYPE_p_CompilerConfig(CompilerConfig_.getCPtr(driverConfig.config), false))
+        //val module: SWIGTYPE_p_Module = SWIGTYPE_p_Module(SWIGTYPE_p_Module_.getCPtr(shady.new_module(arena, "chunkstories_${stage.toString()}_shader")), false)
+        val vccConfig = vcc.vcc_init_config(pCompilerConfig)
         vccConfig.include_path = "C:\\msys64\\home\\Gob\\git\\shady\\build\\share\\vcc\\include/"
         val tmpFile = kotlin.io.path.createTempFile(suffix = ".cpp");
         tmpFile.writeText(shaderCode)
+        println("vcc_shader cpp tmpfile: ${tmpFile}")
 
-        val filenames = listOf(tmpFile.pathString, "--std=c++20")
+        val filenames = listOf(tmpFile.pathString, "--std=c++20", "-O3", "-fno-slp-vectorize", "-fno-vectorize")
         val longs = stackMallocLong(filenames.size)
         for (filename in filenames) {
             longs.put(memAddress(stackUTF8(filename)))
@@ -40,7 +29,16 @@ fun ShaderCompiler.buildIntermediaryStructure(stages: Map<ShaderStage, String>, 
         longs.flip()
         val filenames_pstring = SWIGTYPE_p_String(memAddress(longs), false)
         vcc.vcc_run_clang(vccConfig, filenames.size.toLong(), filenames_pstring)
-        //vcc.vcc_parse_back_into_module(SWIGTYPE_p_DriverConfig(DriverConfig.getCPtr(driverConfig), false), vccConfig, module)
+        var module = vcc.vcc_parse_back_into_module(pCompilerConfig, vccConfig, SWIGTYPE_p_String(memAddress(stackLongs(memAddress(stackUTF8("mah module brah")))), false))
+        val pModule = SWIGTYPE_p_p_Module_(memAddress(stackLongs(SWIGTYPE_p_Module.getCPtr(module))), false)
+        shady.run_compiler_passes(driverConfig.config, pModule)
+        //shady.dump_module(SWIGTYPE_p_Module_(SWIGTYPE_p_Module.getCPtr(module), false))
+        val old_arena = shady.get_module_arena(SWIGTYPE_p_Module_(SWIGTYPE_p_Module.getCPtr(module), false))
+        shady.destroy_ir_arena(old_arena)
+
+        module = SWIGTYPE_p_Module(unsafe.getLong(SWIGTYPE_p_p_Module_.getCPtr(pModule)), false)
+        //shady.dump_module(SWIGTYPE_p_Module_(SWIGTYPE_p_Module.getCPtr(module), false))
+        module
 
         //vcc.destroy_vcc_options(vccConfig)
 
@@ -105,9 +103,8 @@ fun ShaderCompiler.buildIntermediaryStructure(stages: Map<ShaderStage, String>, 
             ptr[0]
         }
     }
-
-    return IntermediaryCompilationResults(tShaders, compilers)*/
-    TODO()
+    */
+    return IntermediaryCompilationResults(tShaders)
 }
 
 fun ShaderCompiler.toIntermediateGLSL(intermediarCompilationResults: IntermediaryCompilationResults): Map<ShaderStage, String> {

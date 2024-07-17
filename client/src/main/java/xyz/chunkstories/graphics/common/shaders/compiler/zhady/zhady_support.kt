@@ -1,14 +1,16 @@
 import de.unisaarland.zhady.shady;
+import de.unisaarland.zhady.vcc
 import xyz.chunkstories.api.graphics.shader.ShaderStage
 import xyz.chunkstories.graphics.common.shaders.GLSLGraphicsProgram
 import java.nio.ByteBuffer
 
 fun load_zhady() {
+    try {
+        println(System.getenv("PATH"))
+        System.loadLibrary("zhady_shared_lib")
+    } catch(e: UnsatisfiedLinkError) {
+        e.message
+    }
 
-}
-
-data class CompiledSpvGraphicsPipeline(val stages: Map<ShaderStage, ByteBuffer>)
-
-fun generateSpirV(program: GLSLGraphicsProgram, spv13: Boolean): CompiledSpvGraphicsPipeline {
-    TODO()
+    vcc.vcc_check_clang()
 }
