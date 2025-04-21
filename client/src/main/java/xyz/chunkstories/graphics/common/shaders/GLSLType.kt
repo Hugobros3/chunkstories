@@ -48,7 +48,10 @@ sealed class GLSLType(val glslToken: String, val alignment: Int, val size: Int) 
 
             //TODO find a way to ensure we'll never map Int::class to uint by accident
             fun get(kClass: KClass<*>): GLSLType? = list.find { kClass.isSubclassOf(it.classes) }
-            fun get(glslToken: String) = list.find { !it.dontMapFromGLSL && it.glslToken == glslToken }
+            fun get(glslToken: String): GLSLType.BaseType? {
+                val clean = glslToken.removePrefix("native_")
+                return list.find { !it.dontMapFromGLSL && it.glslToken == clean }
+            }
         }
     }
 

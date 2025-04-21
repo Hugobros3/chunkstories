@@ -11,7 +11,7 @@ fun analyseVertexShaderInputs(shaderCode: String) : List<GLSLVertexInput> {
 
     var i = 0
     for(line in shaderCode.lines()) {
-        if(line.startsWith("in ")) {
+        if(line.startsWith("input ")) {
             val glslType = line.split(" ")[1]
             val name = line.split(" ")[2].removeSuffix(";")
 
@@ -27,7 +27,7 @@ fun analyseFragmentShaderOutputs(shaderCode: String) : List<GLSLFragmentOutput> 
 
     var i = 0
     for(line in shaderCode.lines()) {
-        if(line.startsWith("out ")) {
+        if(line.startsWith("output ")) {
             val glslType = line.split(" ")[1]
             val name = line.split(" ")[2].removeSuffix(";")
 

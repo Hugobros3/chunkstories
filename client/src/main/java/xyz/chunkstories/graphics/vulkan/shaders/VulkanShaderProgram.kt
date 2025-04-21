@@ -34,7 +34,8 @@ data class VulkanShaderProgram internal constructor(val backend: VulkanGraphicsB
             val (stage, module) = it;
             val spirvSize = stackCallocPointer(1);
             val spirvPtr = stackCallocPointer(1);
-            shady.emit_spirv(backend.shaderFactory.driverConfig.config, SWIGTYPE_p_Module_(SWIGTYPE_p_Module.getCPtr(module), false), SWIGTYPE_p_size_t(memAddress(spirvSize), false), SWIGTYPE_p_p_char(memAddress(spirvPtr), false), null)
+            val spvBackendConfig = shady.shd_default_spirv_backend_config()
+            shady.shd_emit_spirv(backend.shaderFactory.driverConfig.config, spvBackendConfig, SWIGTYPE_p_Module_(SWIGTYPE_p_Module.getCPtr(module), false), SWIGTYPE_p_size_t(memAddress(spirvSize), false), SWIGTYPE_p_p_char(memAddress(spirvPtr), false))
             MemoryUtil.memByteBuffer(spirvPtr.get(), spirvSize.get().toInt())
         })
     }

@@ -1,9 +1,6 @@
 package xyz.chunkstories.graphics.common.shaders.compiler
 
-import de.unisaarland.zhady.CompilerConfig_
-import de.unisaarland.zhady.DriverConfig
-import de.unisaarland.zhady.SWIGTYPE_p_CompilerConfig
-import de.unisaarland.zhady.shady
+import de.unisaarland.zhady.*
 import load_zhady
 import org.slf4j.LoggerFactory
 import sun.misc.Unsafe
@@ -17,6 +14,7 @@ import xyz.chunkstories.graphics.common.shaders.MaterialImage
 import xyz.chunkstories.graphics.common.shaders.compiler.postprocessing.addVirtualTexturingHeader
 import xyz.chunkstories.graphics.common.shaders.compiler.preprocessing.*
 import xyz.chunkstories.graphics.common.shaders.compiler.spirvcross.*
+import xyz.chunkstories.graphics.common.shaders.compiler.zhady.addDecorations
 import xyz.chunkstories.graphics.common.shaders.compiler.zhady.buildIntermediaryStructure
 import java.lang.reflect.Field
 import kotlin.reflect.KClass
@@ -41,7 +39,8 @@ abstract class ShaderCompiler(val dialect: GLSLDialect) {
         unsafe = f.get(null) as Unsafe
 
         load_zhady()
-        driverConfig = shady.default_driver_config()
+        driverConfig = shady.shd_default_driver_config()
+        driverConfig.target_type = CodegenTarget.TgtSPV
         pCompilerConfig = SWIGTYPE_p_CompilerConfig(CompilerConfig_.getCPtr(driverConfig.config), false)
 
         //Loader.loadNatives()

@@ -1,4 +1,4 @@
-package xyz.chunkstories.graphics.common.shaders.compiler.spirvcross
+package xyz.chunkstories.graphics.common.shaders.compiler.zhady
 
 import de.unisaarland.zhady.*
 import org.lwjgl.system.MemoryStack
@@ -11,22 +11,22 @@ fun ShaderCompiler.addDecorations(intermediarCompilationResults: IntermediaryCom
         //val stageResources = compiler.aashaderResources
 
         for (res in glslResources) {
-            val decl = shady.get_declaration(SWIGTYPE_p_Module_(SWIGTYPE_p_Module.getCPtr(module), false), res.name)
+            val decl = shady.shd_module_get_exported(SWIGTYPE_p_Module_(SWIGTYPE_p_Module.getCPtr(module), false), res.name)
             if (Node_.getCPtr(decl) == 0L)
                 continue
 
-            var annotations = shady.get_declaration_annotations(decl)
+            var annotations = decl.annotations
 
             when (dialect) {
                 GLSLDialect.VULKAN -> {
 
-                    annotations = shady.append_nodes(decl.arena, annotations, shady.annotation_value(decl.arena, AnnotationValue().apply {
+                    annotations = shady.shd_nodes_append(decl.arena, annotations, shady.annotation_value(decl.arena, AnnotationValue().apply {
                         name = "DescriptorSet"
-                        value = shady.int32_literal(decl.arena, res.locator.descriptorSetSlot)
+                        value = shady.shd_int32_literal(decl.arena, res.locator.descriptorSetSlot)
                     }))
-                    annotations = shady.append_nodes(decl.arena, annotations, shady.annotation_value(decl.arena, AnnotationValue().apply {
+                    annotations = shady.shd_nodes_append(decl.arena, annotations, shady.annotation_value(decl.arena, AnnotationValue().apply {
                         name = "DescriptorBinding"
-                        value = shady.int32_literal(decl.arena, res.locator.binding)
+                        value = shady.shd_int32_literal(decl.arena, res.locator.binding)
                     }))
                 }
                 GLSLDialect.OPENGL -> {
@@ -34,9 +34,11 @@ fun ShaderCompiler.addDecorations(intermediarCompilationResults: IntermediaryCom
                     //compiler.setDecoration(spirvResource.id(), Decoration.DecorationLocation, locator.binding.toLong())
                 }
             }
+
+            decl.annotations = annotations
         }
 
-        shady.dump_module(SWIGTYPE_p_Module_(SWIGTYPE_p_Module.getCPtr(module), false))
+        shady.shd_dump_module(SWIGTYPE_p_Module_(SWIGTYPE_p_Module.getCPtr(module), false))
         /*
         fun decorate(spirvResource: SpvcReflectedResource, glslResource: GLSLResource) {
             val locator = glslResource.locator

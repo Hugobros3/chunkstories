@@ -28,13 +28,15 @@ fun ShaderCompiler.buildIntermediaryStructure(stages: Map<ShaderStage, String>, 
         }
         longs.flip()
         val filenames_pstring = SWIGTYPE_p_String(memAddress(longs), false)
-        vcc.vcc_run_clang(vccConfig, filenames.size.toLong(), filenames_pstring)
-        var module = vcc.vcc_parse_back_into_module(pCompilerConfig, vccConfig, SWIGTYPE_p_String(memAddress(stackLongs(memAddress(stackUTF8("mah module brah")))), false))
+        vcc.vcc_run_clang(vccConfig, SWIGTYPE_p_String(memAddress(stackUTF8(tmpFile.pathString)), false))
+        val target_config: TargetConfig = shady.shd_default_target_config();
+        shady.shd_driver_configure_target(target_config, driverConfig)
+        var module = vcc.vcc_parse_back_into_module(pCompilerConfig, SWIGTYPE_p_TargetConfig(TargetConfig.getCPtr(target_config), false), vccConfig, SWIGTYPE_p_String(memAddress(stackLongs(memAddress(stackUTF8("mah module brah")))), false))
         val pModule = SWIGTYPE_p_p_Module_(memAddress(stackLongs(SWIGTYPE_p_Module.getCPtr(module))), false)
-        shady.run_compiler_passes(driverConfig.config, pModule)
+        shady.shd_driver_compile(driverConfig, target_config, SWIGTYPE_p_Module_(SWIGTYPE_p_Module.getCPtr(module), false))
         //shady.dump_module(SWIGTYPE_p_Module_(SWIGTYPE_p_Module.getCPtr(module), false))
-        val old_arena = shady.get_module_arena(SWIGTYPE_p_Module_(SWIGTYPE_p_Module.getCPtr(module), false))
-        shady.destroy_ir_arena(old_arena)
+        val old_arena = shady.shd_module_get_arena(SWIGTYPE_p_Module_(SWIGTYPE_p_Module.getCPtr(module), false))
+        shady.shd_destroy_ir_arena(old_arena)
 
         module = SWIGTYPE_p_Module(unsafe.getLong(SWIGTYPE_p_p_Module_.getCPtr(pModule)), false)
         //shady.dump_module(SWIGTYPE_p_Module_(SWIGTYPE_p_Module.getCPtr(module), false))

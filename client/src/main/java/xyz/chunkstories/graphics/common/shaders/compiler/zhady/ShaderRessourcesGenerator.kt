@@ -26,7 +26,7 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
         var availableTextureUnit = 0
 
         fun handleUniformBuffer(uniformBuffer: Node_) {
-            var uniformBufferName = shady.get_declaration_name(uniformBuffer)
+            var uniformBufferName = shady.shd_get_exported_name(uniformBuffer)
             uniformBufferName = uniformBufferName.removePrefix("struct.")
             val split = uniformBufferName.split("_")
 
@@ -72,7 +72,7 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
         }
 
         fun handleSSBO(storageBuffer: Node_) {
-            val storageBufferName = shady.get_declaration_name(storageBuffer)
+            val storageBufferName = shady.shd_get_exported_name(storageBuffer)
 
             // If the ressource was already handled in another iteration of this per-shader-stage loop
             if (resources.find { it is GLSLShaderStorage && it.name == storageBufferName } != null)
@@ -108,7 +108,7 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
             //println("$type ${type.array.size()} ${type.basetype} ${type.typeAlias} ${type.parentType} ${type.vecsize} ${type.columns} ${type.image} ${type.memberTypes}")
             //println("${imageType.arrayed} ${imageType.dim} ${imageType.depth} ${imageType.access} ${imageType.type} ${imageType.format}")
 
-            val separateImageName = shady.get_declaration_name(separateImage)
+            val separateImageName = shady.shd_get_exported_name(separateImage)
             val arraySize =
                 if (separateImageName in GlobalTextures.magicTexturesNames)
                     0
@@ -165,7 +165,7 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
             //println("$type ${type.array.size()} ${type.basetype} ${type.typeAlias} ${type.parentType} ${type.vecsize} ${type.columns} ${type.image} ${type.memberTypes}")
             //println("${imageType.arrayed} ${imageType.dim} ${imageType.depth} ${imageType.access} ${imageType.type} ${imageType.format}")
 
-            val sampledImageName = shady.get_declaration_name(sampledImage)
+            val sampledImageName = shady.shd_get_exported_name(sampledImage)
             val arraySize = 1 //TODO("parse arrays here") Array(type.array.size().toInt()) { type.array[it].toInt() }.toList().getOrNull(0) ?: 1
             /** https://www.khronos.org/registry/spir-v/specs/1.0/SPIRV.html#Dim */
             val dimensionality = imageType.dim.toInt()
@@ -199,7 +199,7 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
         }
 
         fun handleSampler(sampler: Node_) {
-            val samplerName = shady.get_declaration_name(sampler)
+            val samplerName = shady.shd_get_exported_name(sampler)
 
             /*val setSlot: Int
             val binding: Int
@@ -224,12 +224,12 @@ fun ShaderCompiler.createShaderResources(intermediarCompilationResults: Intermed
             resources.add(GLSLUniformSampler(samplerName, locator))
         }
 
-        val decls = shady.get_module_declarations(SWIGTYPE_p_Module_(SWIGTYPE_p_Module.getCPtr(module), false))
+        val decls = shady.shd_module_get_all_exported(SWIGTYPE_p_Module_(SWIGTYPE_p_Module.getCPtr(module), false))
         val declsNodesBuffer = MemoryUtil.memPointerBuffer(SWIGTYPE_p_p_Node_.getCPtr(decls.nodes), decls.count.toInt())
 
         for (i in 0 until decls.count.toInt()) {
             val decl = Node_(declsNodesBuffer.get(i), false)
-            shady.dump_node(decl)
+            shady.shd_dump(decl)
             if (decl.tag == NodeTag.GlobalVariable_TAG) {
                 when (decl.payload.global_variable.address_space) {
                     AddressSpace.AsUniform -> handleUniformBuffer(decl)
